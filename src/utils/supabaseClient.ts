@@ -248,7 +248,8 @@ export async function resolveArtworkImageUrlsForExport(
         try {
           const imageUrl = await resolveImageUrlForSupabase(a, { supabaseImageMap })
           const previewUrl = a.previewUrl && (a.previewUrl.startsWith('http') ? a.previewUrl : null)
-          return { ...a, imageUrl: imageUrl ?? a.imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? a.previewUrl ?? '' }
+          // Nur aufgelöste URL zählen – kein a.imageUrl übernehmen, sonst „70 mit Bild“ obwohl nicht überall Bild
+          return { ...a, imageUrl: imageUrl ?? '', previewUrl: previewUrl ?? imageUrl ?? '' }
         } catch (e) {
           console.warn('Bild-URL für Export nicht auflösbar:', a?.number ?? a?.id, e)
           return a
