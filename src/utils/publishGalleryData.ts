@@ -33,6 +33,8 @@ export interface PublishGalleryDataResult {
   error?: string
   artworksCount?: number
   imagesResolved?: number
+  /** Nummern/IDs der Werke, für die keine Bild-URL erstellt werden konnte (Anzeige in der App). */
+  artworkNumbersWithoutImageUrl?: string[]
   /** Nach erfolgreichem POST: Kontrolle was auf Vercel angekommen ist (GET direkt danach). */
   serverArtworksCount?: number
   serverImagesCount?: number
@@ -52,12 +54,15 @@ export async function publishGalleryDataToServer(artworks: any[]): Promise<Publi
   }
 
   const withUrls = await resolveArtworkImageUrlsForExport(artworks)
-  const imagesResolved = withUrls.filter(
-    (a: any) =>
-      a?.imageUrl &&
-      typeof a.imageUrl === 'string' &&
-      (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
-  ).length
+  const hasHttpsUrl = (a: any) =>
+    a?.imageUrl &&
+    typeof a.imageUrl === 'string' &&
+    (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+  const imagesResolved = withUrls.filter(hasHttpsUrl).length
+  const artworkNumbersWithoutImageUrl = withUrls
+    .filter((a: any) => !hasHttpsUrl(a))
+    .map((a: any) => String(a?.number ?? a?.id ?? '').trim())
+    .filter(Boolean)
   const forExport = artworksForExport(withUrls)
 
   const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
@@ -103,6 +108,7 @@ export async function publishGalleryDataToServer(artworks: any[]): Promise<Publi
         result,
         artworksCount: forExport.length,
         imagesResolved,
+        artworkNumbersWithoutImageUrl: artworkNumbersWithoutImageUrl.length > 0 ? artworkNumbersWithoutImageUrl : undefined,
         payloadSizeBytes: json.length
       }
       // Kontrolle: Was ist auf Vercel angekommen? (GET direkt nach POST)

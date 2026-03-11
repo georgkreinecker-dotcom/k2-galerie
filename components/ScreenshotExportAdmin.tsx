@@ -2481,6 +2481,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     version: number
     artworksCount?: number
     imagesResolved?: number
+    artworkNumbersWithoutImageUrl?: string[]
     serverArtworksCount?: number
     serverImagesCount?: number
   } | null>(null)
@@ -2861,6 +2862,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
                     version: parseInt(localStorage.getItem('k2-data-version') || '0', 10) + 1,
                     artworksCount: result.artworksCount,
                     imagesResolved: result.imagesResolved,
+                    artworkNumbersWithoutImageUrl: result.artworkNumbersWithoutImageUrl,
                     serverArtworksCount: result.serverArtworksCount,
                     serverImagesCount: result.serverImagesCount
                   })
@@ -18370,6 +18372,11 @@ ${name}`
                 {publishSuccessModal.serverArtworksCount != null && publishSuccessModal.serverImagesCount != null && (
                   <> Auf Vercel: {publishSuccessModal.serverArtworksCount} Werke, {publishSuccessModal.serverImagesCount} mit Bild.</>
                 )}
+              </p>
+            )}
+            {publishSuccessModal.artworkNumbersWithoutImageUrl != null && publishSuccessModal.artworkNumbersWithoutImageUrl.length > 0 && (
+              <p style={{ margin: '0 0 0.5rem', color: 'rgba(251,191,36,0.95)', fontSize: '0.95rem' }}>
+                Bei {publishSuccessModal.artworkNumbersWithoutImageUrl.length} Werken konnte keine Bild-URL erstellt werden (z. B. Upload-Timeout): {publishSuccessModal.artworkNumbersWithoutImageUrl.slice(0, 15).join(', ')}{publishSuccessModal.artworkNumbersWithoutImageUrl.length > 15 ? ' …' : ''}.
               </p>
             )}
             <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
