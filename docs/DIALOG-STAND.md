@@ -6,6 +6,14 @@
 
 ---
 
+## Heute 11.03.26 – Noch 5 Bilder fehlen: 0030, 0031, 0032, 0033, 0038
+
+- **Georg:** „Bis auf fünf Bilder – 30 bis 33 und 38 – sind jetzt alle da.“
+- **Ursache:** Beim Export vom iPad haben diese 5 Werke keine Bild-URL bekommen (Bild im Export nicht aufgelöst oder Upload fehlgeschlagen). Server liefert für sie also keine URL → Mac kann nichts anzeigen.
+- **Lösung (ohne Code):** Am **iPad** die 5 Werke **0030, 0031, 0032, 0033, 0038** nacheinander öffnen, prüfen ob das Bild sichtbar ist, ggf. Bild neu einfügen und speichern. Danach einmal **„An Server senden“**. Dann sollten auch diese 5 eine URL bekommen und am Mac ankommen.
+
+---
+
 ## Heute 11.03.26 – Mac blockierte 0030–0039 trotz neuer Bilder vom iPad (Fix)
 
 - **Georg:** „Das habe ich schon vor dem letzten Senden gemacht – überall sind neue Bilder drin, am iPad sichtbar, nur Mac blockiert noch.“
