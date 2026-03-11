@@ -6,11 +6,20 @@
 
 ---
 
-## Heute 11.03.26 – Kette Werk–Bild: wieder am gleichen Glied (Mechanik)
+## Heute 11.03.26 – Bildverlust iPad („bis auf 2 alle weg“) – Fix + Absicherung
 
-- **Georg:** „Wir müssen 100 % sicherstellen, dass diese Kette von Werken mit Bildern auch wenn sich einmal eine Trennung ergibt beim Speichern nachher wieder am gleichen Glied trifft – wie in der Mechanik.“
-- **Umsetzung:** (1) **Kanonischer Ref** pro Werk = `getArtworkImageRef(artwork)` (ein Glied). (2) **prepareArtworksForStorage:** Beim Speichern immer unter kanonischem Ref ablegen; wenn kein frisches data:image, aber imageRef/number vorhanden → Bild unter **Ref-Varianten** suchen (`getArtworkImageByRefVariants`), wenn gefunden unter **kanonischem Ref** speichern und Liste `imageRef = kanonischer Ref` → Kette rastet wieder ein. (3) **resolveArtworkImages:** Wenn unter gespeichertem Ref nichts → Varianten durchprobieren (Anzeige funktioniert bis zum nächsten Speichern). **Wo:** `src/utils/artworkImageStore.ts` (getArtworkImageByRefVariants neu, prepareArtworksForStorage, resolveArtworkImages). **Doku:** ANALYSE-KARTEN-BILDER-ZWEI-SPEICHERWEGE.md Abschnitt 6. Tests grün.
-- **Nächster Schritt:** Commit + Push; optional auf iPad/Mac Speichern testen (z. B. nach „Stand holen“ einmal Speichern → alle Refs sollten kanonisch sein).
+- **Georg:** Nach Push/Neuladen auf dem iPad waren fast alle Bilder weg (nur noch 2). Die zuvor gegebene Aussage „beim Neuladen verlierst du keine Bilder“ war falsch.
+- **Ursache (wahrscheinlich):** Entweder (1) GaleriePage loadData: beim ersten Laden war **localArtworks** leer oder zu klein → Merge = fast nur Server (2 Werke mit Bild) → Speichern überschrieb lokale 70 mit 2. Oder (2) der neue **Re-Join-Zweig** in prepareArtworksForStorage hatte einen unerwarteten Effekt. Beides wird abgesichert.
+- **Maßnahmen (umgesetzt):** (1) **Re-Join-Zweig in prepareArtworksForStorage zurückgebaut** – nur noch data:image in IndexedDB, bestehendes imageRef wird **niemals** leer überschrieben (Schutz: `hadRef && !next.imageRef` → next.imageRef = a.imageRef). (2) **GaleriePage loadData:** Vor saveArtworksForContextWithImageStore: wenn **lokal mehr imageRefs** als nach Merge → **Speichern überspringen** (Console-Warnung, artworks-updated mit saveSkippedImageProtection). So kann „70 mit Bild“ nie durch „2 mit Bild“ ersetzt werden.
+- **Wiederherstellung:** Aus **Vollbackup** (Admin → Einstellungen → Backup & Wiederherstellung) oder von einem Gerät, das noch alle Bilder hat, erneut „An Server senden“, dann betroffenes Gerät „Aktuellen Stand holen“.
+- **Wo:** artworkImageStore.ts (prepareArtworksForStorage), GaleriePage.tsx (loadData).
+- **Nächster Schritt:** Commit + Push; Georg: Wiederherstellung aus Backup prüfen; künftig nach „Stand“-Tipp prüfen ob Bilder noch da sind (Schutz verhindert erneuten Verlust).
+
+---
+
+## Heute 11.03.26 – Kette Werk–Bild (Re-Join zurückgebaut)
+
+- **Hinweis:** Die Umsetzung „Kette wieder am gleichen Glied“ (kanonischer Ref + Re-Join in prepareArtworksForStorage) wurde nach dem Bildverlust auf dem iPad **zurückgebaut**. **resolveArtworkImages** behält den **Varianten-Lookup** (Anzeige: wenn unter Ref nichts, unter Varianten suchen). Beim Speichern: nur noch data:image → IndexedDB; bestehendes imageRef wird nie geleert (siehe Abschnitt „Bildverlust iPad“ oben).
 
 ---
 

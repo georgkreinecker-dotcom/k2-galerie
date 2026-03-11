@@ -1550,6 +1550,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 const k = a?.number ?? a?.id
                 return k != null ? String(k) : undefined
               })
+              // Schutz vor Bildverlust (11.03.26): Nie mit weniger imageRefs überschreiben als lokal vorhanden
+              const localWithRef = localArtworks.filter((a: any) => a?.imageRef && String(a.imageRef).trim() !== '').length
+              const mergedWithRef = mergedWithImages.filter((a: any) => a?.imageRef && String(a.imageRef).trim() !== '').length
+              if (localWithRef > 0 && mergedWithRef < localWithRef) {
+                console.warn('⚠️ Initial-Load: Merge hätte weniger Bild-Refs als lokal – Speichern übersprungen (Schutz vor Bildverlust). Lokal:', localWithRef, 'Merge:', mergedWithRef)
+                window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, initialLoad: true, saveSkippedImageProtection: true } }))
+              } else {
               await saveArtworksForContextWithImageStore(musterOnly, vk2, mergedWithImages, { allowReduce: false })
               console.log('✅ Werke gemergt beim Initial-Load (Server = Quelle, alte Lokale nicht übernommen):', mergedWithImages.length, 'Gesamt,', toHistory.length, 'in History')
               console.log('📋 Lokale Nummern:', localArtworks.map((a: any) => a.number || a.id).join(', '))
@@ -1557,6 +1564,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               console.log('📋 Gemergte Nummern:', mergedWithImages.map((a: any) => a.number || a.id).join(', '))
               // Trigger Event für andere Komponenten (z.B. GalerieVorschauPage)
               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: mergedWithImages.length, fromGaleriePage: true, initialLoad: true } }))
+              }
               }
             } catch (e) {
               console.warn('⚠️ Werke zu groß für localStorage:', e)

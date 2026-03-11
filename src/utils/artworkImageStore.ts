@@ -159,57 +159,38 @@ function isBase64ImageUrl(v: unknown): boolean {
 }
 
 /**
- * Kanonischer Ref pro Werk – das eine „Glied“ der Kette (Werk ↔ Bild).
- * Beim Speichern wird immer dieser Ref verwendet; so rastet die Kette nach einer
- * Trennung wieder am gleichen Glied ein (wie in der Mechanik).
- */
-function getCanonicalImageRef(artwork: any): string {
-  return getArtworkImageRef(artwork)
-}
-
-/**
  * Bereitet eine Werkliste für localStorage vor: data:image Bilddaten
  * werden in IndexedDB ausgelagert, in der Liste bleibt nur imageRef.
- * Kette Werk ↔ Bild: Beim Speichern wird immer der kanonische Ref verwendet;
- * wenn das Bild unter einer anderen Variante lag (Trennung), wird es unter dem
- * kanonischen Ref gespeichert – die Kette trifft wieder am gleichen Glied.
  * previewUrl als Base64 wird geleert (keine Dopplung in der Liste).
+ * KRITISCH: Bestehendes imageRef niemals leer überschreiben – sonst Bildverlust (11.03.26).
  */
 export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
   const out: any[] = []
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
-    const canonicalRef = getCanonicalImageRef(a)
+    const ref = a.imageRef || getArtworkImageRef(a)
     const url = a.imageUrl
     let next = a
     if (typeof url === 'string' && url.startsWith('data:image') && url.length > MOVE_TO_IDB_THRESHOLD) {
       try {
-        await putArtworkImage(canonicalRef, url)
-        next = { ...a, imageUrl: '', imageRef: canonicalRef }
+        await putArtworkImage(ref, url)
+        next = { ...a, imageUrl: '', imageRef: ref }
       } catch (e) {
         console.warn('Artwork image store put failed, keeping in list:', e)
       }
     } else if (a.imageRef && typeof a.imageUrl === 'string' && a.imageUrl.startsWith('data:') && a.imageUrl.length > MOVE_TO_IDB_THRESHOLD) {
       try {
-        await putArtworkImage(canonicalRef, a.imageUrl)
-        next = { ...a, imageUrl: '', imageRef: canonicalRef }
+        await putArtworkImage(a.imageRef, a.imageUrl)
+        next = { ...a, imageUrl: '', imageRef: a.imageRef }
       } catch (e) {
         console.warn('Artwork image store put failed:', e)
       }
-    } else if (a.imageRef || a.number != null || a.id != null) {
-      // Kein frisches data:image – Bild ggf. unter anderem Ref (Trennung). Unter Varianten suchen und unter kanonischem Ref wieder zusammenführen.
-      const variants = getArtworkImageRefVariants(a)
-      const found = await getArtworkImageByRefVariants(variants)
-      if (found) {
-        try {
-          await putArtworkImage(canonicalRef, found.dataUrl)
-          next = { ...a, imageUrl: '', imageRef: canonicalRef }
-        } catch (e) {
-          console.warn('Artwork image store put (re-join) failed:', e)
-        }
-      }
     }
+    // Niemals vorhandenes imageRef durch leeres ersetzen (Schutz vor Bildverlust, 11.03.26)
+    const hadRef = a.imageRef && String(a.imageRef).trim() !== ''
+    if (hadRef && (!next.imageRef || String(next.imageRef).trim() === ''))
+      next = { ...next, imageRef: a.imageRef }
     if (isBase64ImageUrl(next.previewUrl)) next = { ...next, previewUrl: '' }
     out.push(next)
   }
