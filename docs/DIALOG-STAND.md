@@ -13,7 +13,8 @@
 - **Maßnahmen (umgesetzt):** (1) **Re-Join-Zweig in prepareArtworksForStorage zurückgebaut** – nur noch data:image in IndexedDB, bestehendes imageRef wird **niemals** leer überschrieben (Schutz: `hadRef && !next.imageRef` → next.imageRef = a.imageRef). (2) **GaleriePage loadData:** Vor saveArtworksForContextWithImageStore: wenn **lokal mehr imageRefs** als nach Merge → **Speichern überspringen** (Console-Warnung, artworks-updated mit saveSkippedImageProtection). So kann „70 mit Bild“ nie durch „2 mit Bild“ ersetzt werden.
 - **Wiederherstellung:** Aus **Vollbackup** (Admin → Einstellungen → Backup & Wiederherstellung) oder von einem Gerät, das noch alle Bilder hat, erneut „An Server senden“, dann betroffenes Gerät „Aktuellen Stand holen“.
 - **Wo:** artworkImageStore.ts (prepareArtworksForStorage), GaleriePage.tsx (loadData).
-- **Nächster Schritt:** Commit + Push; Georg: Wiederherstellung aus Backup prüfen; künftig nach „Stand“-Tipp prüfen ob Bilder noch da sind (Schutz verhindert erneuten Verlust).
+- **Commit:** 61a109b – auf GitHub.
+- **Nächster Schritt:** Georg: Wiederherstellung aus Backup prüfen; künftig nach „Stand“-Tipp prüfen ob Bilder noch da sind (Schutz verhindert erneuten Verlust).
 
 ---
 
