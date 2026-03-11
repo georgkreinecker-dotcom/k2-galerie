@@ -469,31 +469,37 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         return
       }
 
-      const result = await publishGalleryDataToServer(allArtworksWithImages)
-      if (!result.success) {
-        setIsPublishing(false)
-        setPublishStatus({ success: false, message: result.error || 'Unbekannter Fehler' })
-        setTimeout(() => setPublishStatus(null), 5000)
-        return
-      }
-      const backupTime = new Date().toISOString()
-      try {
-        localStorage.setItem('k2-last-publish-signature', currentSignature)
-        localStorage.setItem('k2-last-publish-time', backupTime)
-      } catch (_) {}
-      const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
-      localStorage.setItem('k2-last-published-time', backupLabel)
-      setLastPublishedTime(backupLabel)
-      console.log('✅ Veröffentlicht (zentraler Ablauf):', { path: result.result?.path, artworksCount: result.artworksCount })
-      setPublishStatus({
-        success: true,
-        message: `✅ Gespeichert (${backupLabel})\n\nAlle Änderungen werden jetzt auf alle Geräte übertragen.`,
-        artworksCount: result.artworksCount,
-        size: result.result?.size
-      })
-      setSyncStatus({ step: 'published', progress: 10 })
+      // Im Hintergrund – blockiert nicht, beim Testen muss man nicht warten
+      setPublishStatus({ success: false, message: 'Veröffentlichen läuft im Hintergrund …' })
       setIsPublishing(false)
-      setTimeout(() => setPublishStatus(null), 120000)
+      publishGalleryDataToServer(allArtworksWithImages, {
+        onProgress: (done, total) => setPublishStatus({ success: false, message: `Bilder hochladen … ${done}/${total} (im Hintergrund)` })
+      }).then((result) => {
+        if (!result.success) {
+          setPublishStatus({ success: false, message: result.error || 'Unbekannter Fehler' })
+          setTimeout(() => setPublishStatus(null), 5000)
+          return
+        }
+        const backupTime = new Date().toISOString()
+        try {
+          localStorage.setItem('k2-last-publish-signature', currentSignature)
+          localStorage.setItem('k2-last-publish-time', backupTime)
+        } catch (_) {}
+        const backupLabel = new Date(backupTime).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
+        localStorage.setItem('k2-last-published-time', backupLabel)
+        setLastPublishedTime(backupLabel)
+        setPublishStatus({
+          success: true,
+          message: `✅ Gespeichert (${backupLabel})\n\nAlle Änderungen werden jetzt auf alle Geräte übertragen.`,
+          artworksCount: result.artworksCount,
+          size: result.result?.size
+        })
+        setSyncStatus({ step: 'published', progress: 10 })
+        setTimeout(() => setPublishStatus(null), 120000)
+      }).catch((error) => {
+        setPublishStatus({ success: false, message: 'Fehler: ' + (error instanceof Error ? error.message : String(error)) })
+        setTimeout(() => setPublishStatus(null), 8000)
+      })
     } catch (error) {
       setIsPublishing(false)
       alert('Fehler: ' + (error instanceof Error ? error.message : String(error)))

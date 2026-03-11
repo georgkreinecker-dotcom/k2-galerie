@@ -11,7 +11,11 @@ import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from './syncMerge'
 import { getArtworkImageRefVariants, getArtworkImageByRefVariants } from './artworkImageStore'
 import { uploadArtworkImageToStorage } from './supabaseStorage'
+import { compressImageForStorage } from './compressImageForStorage'
 import { GALLERY_DATA_BASE_URL } from '../config/externalUrls'
+
+/** API upload-artwork-image erlaubt max. 2 MB – bei größeren Daten vorher komprimieren (Regel: maximale Komprimierung). */
+const MAX_DATAURL_BEFORE_RECOMPRESS = 1_800_000
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -154,21 +158,34 @@ export async function resolveImageUrlForSupabase(
     if (found) dataUrl = found.dataUrl
   }
   if (dataUrl) {
-    let storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
+    // Bei zu großem Bild vor Upload nachkomprimieren (API-Limit 2 MB, Regel: maximale Komprimierung)
+    let payloadUrl = dataUrl
+    if (dataUrl.length > MAX_DATAURL_BEFORE_RECOMPRESS) {
+      try {
+        payloadUrl = await compressImageForStorage(dataUrl, { context: 'artwork' })
+      } catch (_) {
+        // Komprimierung fehlgeschlagen – versuchen mit Original (kann 400 von API geben)
+      }
+    }
+    let storageUrl = await uploadArtworkImageToStorage(payloadUrl, String(number))
     // Fallback für 30+: Wenn Supabase fehlt oder fehlschlägt → Upload zu Vercel Blob (damit Handy/iPad Bilder senden können)
     if (!storageUrl && GALLERY_DATA_BASE_URL) {
       try {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 25000) // 25 s pro Bild, sonst bricht es ab
         const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/upload-artwork-image`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ artworkNumber: String(number), dataUrl })
+          body: JSON.stringify({ artworkNumber: String(number), dataUrl: payloadUrl }),
+          signal: controller.signal
         })
+        clearTimeout(timeoutId)
         if (res.ok) {
           const data = await res.json()
           if (data?.url && typeof data.url === 'string') storageUrl = data.url
         }
       } catch (_) {
-        // Fallback fehlgeschlagen – bleibt ohne URL
+        // Fallback fehlgeschlagen (Timeout oder Netz) – bleibt ohne URL
       }
     }
     return storageUrl ?? undefined
@@ -199,9 +216,15 @@ const EXPORT_UPLOAD_BATCH_SIZE = 4
  * So enthält die veröffentlichte Datei echte Bild-URLs und das Handy zeigt keine Platzhalter.
  * Fallback: Werke, die nur auf iPad (imageRef/IndexedDB) existieren, holen ihre URL aus Supabase.
  * Uploads in kleinen Batches (nicht alle parallel), damit Supabase/Netz nicht überlastet werden.
+ * onProgress(done, total) wird nach jedem Batch aufgerufen – für Anzeige „Bild X von Y“.
  */
-export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise<any[]> {
+export async function resolveArtworkImageUrlsForExport(
+  artworks: any[],
+  options?: { onProgress?: (done: number, total: number) => void }
+): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  const total = artworks.length
+  const onProgress = options?.onProgress
   const supabaseImageMap = new Map<string, string>()
   if (isSupabaseConfigured()) {
     try {
@@ -233,6 +256,7 @@ export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise
       })
     )
     out.push(...resolved)
+    onProgress?.(out.length, total)
   }
   return out
 }

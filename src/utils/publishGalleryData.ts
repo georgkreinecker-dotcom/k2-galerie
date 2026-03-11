@@ -48,12 +48,17 @@ export interface PublishGalleryDataResult {
  * 3. Payload aus localStorage bauen (Stammdaten, Events, Documents, Design)
  * 4. POST /api/write-gallery-data
  */
-export async function publishGalleryDataToServer(artworks: any[]): Promise<PublishGalleryDataResult> {
+export async function publishGalleryDataToServer(
+  artworks: any[],
+  options?: { onProgress?: (done: number, total: number) => void }
+): Promise<PublishGalleryDataResult> {
   if (!Array.isArray(artworks) || artworks.length === 0) {
     return { success: false, error: 'Keine Werke zum Veröffentlichen' }
   }
 
-  const withUrls = await resolveArtworkImageUrlsForExport(artworks)
+  const total = artworks.length
+  options?.onProgress?.(0, total)
+  const withUrls = await resolveArtworkImageUrlsForExport(artworks, { onProgress: options?.onProgress })
   const hasHttpsUrl = (a: any) =>
     a?.imageUrl &&
     typeof a.imageUrl === 'string' &&

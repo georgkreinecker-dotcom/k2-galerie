@@ -3870,18 +3870,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         }
                       }
                       
-                      // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
-                      // WICHTIG: Mit aufgelösten Bildern aus IndexedDB laden, damit alle 7 Bilder mitgehen (Handy schickt sonst nur imageRef, Server bekommt leer)
+                      // Sportwagen: Veröffentlichen im Hintergrund – blockiert nicht, beim Testen muss man nicht warten
                       setTimeout(async () => {
                         try {
+                          setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true })
+                          setTimeout(() => setLoadStatus(null), 3000)
                           const withImages = await readArtworksForContextWithResolvedImages(false, false)
                           const allArtworks = filterK2OnlyStorage(withImages || [])
-                          if (allArtworks.length > 0) {
-                            const result = await publishGalleryDataToServer(allArtworks)
+                          if (allArtworks.length === 0) return
+                          publishGalleryDataToServer(allArtworks, {
+                            onProgress: (done, total) => setLoadStatus({ message: `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                          }).then((result) => {
                             if (result.success) {
                               const sentAtIso = new Date().toISOString()
                               try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
-                              const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                               const imgInfo = result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : ''
                               const sizeInfo = result.payloadSizeBytes != null ? ` (${Math.round(result.payloadSizeBytes / 1024)} KB)` : ''
                               let serverInfo = ''
@@ -3894,18 +3896,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               const hint = (result.imagesResolved != null && result.artworksCount != null && result.imagesResolved < result.artworksCount)
                                 ? ' Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.'
                                 : ''
-                              console.log('✅ Veröffentlicht:', result.artworksCount, 'Werke', result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : '', 'um', sentAt, result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
                               setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
                               setTimeout(() => setLoadStatus(null), 6000)
                             } else {
-                              console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
                               setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
                               setTimeout(() => setLoadStatus(null), 8000)
                             }
-                          }
-                        } catch (error) {
-                          console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
-                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                          }).catch((error) => {
+                            console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
+                            setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                            setTimeout(() => setLoadStatus(null), 8000)
+                          })
+                        } catch (err) {
+                          console.warn('⚠️ Veröffentlichung fehlgeschlagen:', err)
+                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false })
                           setTimeout(() => setLoadStatus(null), 8000)
                         }
                       }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist
@@ -4128,18 +4132,20 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       }
                     }, 100)
                     
-                    // Sportwagen: Ein Standard – Veröffentlichen nur über publishGalleryDataToServer (Prozesssicherheit)
-                    // WICHTIG: Mit aufgelösten Bildern aus IndexedDB laden, damit alle Bilder mitgehen (Handy schickt sonst nur imageRef, Server bekommt leer)
+                    // Sportwagen: Veröffentlichen im Hintergrund – blockiert nicht, beim Testen muss man nicht warten
                     setTimeout(async () => {
                       try {
+                        setLoadStatus({ message: 'Gespeichert. Veröffentlichen läuft im Hintergrund …', success: true })
+                        setTimeout(() => setLoadStatus(null), 3000)
                         const withImages = await readArtworksForContextWithResolvedImages(false, false)
                         const allArtworks = filterK2OnlyStorage(withImages || [])
-                        if (allArtworks.length > 0) {
-                          const result = await publishGalleryDataToServer(allArtworks)
+                        if (allArtworks.length === 0) return
+                        publishGalleryDataToServer(allArtworks, {
+                          onProgress: (done, total) => setLoadStatus({ message: `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                        }).then((result) => {
                           if (result.success) {
                             const sentAtIso = new Date().toISOString()
                             try { localStorage.setItem('k2-last-sent-timestamp', sentAtIso) } catch (_) {}
-                            const sentAt = new Date().toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                             const imgInfo = result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : ''
                             const sizeInfo = result.payloadSizeBytes != null ? ` (${Math.round(result.payloadSizeBytes / 1024)} KB)` : ''
                             let serverInfo = ''
@@ -4152,21 +4158,23 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             const hint = (result.imagesResolved != null && result.artworksCount != null && result.imagesResolved < result.artworksCount)
                               ? ' Bei einigen Werken fehlt auf diesem Gerät das Bild – vom Gerät mit den Fotos erneut senden.'
                               : ''
-                            console.log('✅ Veröffentlicht:', result.artworksCount, 'Werke', result.imagesResolved != null ? `, ${result.imagesResolved} mit Bild` : '', 'um', sentAt, result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
                             window.dispatchEvent(new CustomEvent('gallery-data-published', {
                               detail: { success: true, artworksCount: result.artworksCount, imagesResolved: result.imagesResolved, serverArtworksCount: result.serverArtworksCount, serverImagesCount: result.serverImagesCount, size: result.result?.size }
                             }))
                             setLoadStatus({ message: `✅ Gesendet: ${result.artworksCount} Werke${imgInfo}${sizeInfo}.${serverInfo} Im Admin „Aktuellen Stand holen“.${hint}`, success: true })
                             setTimeout(() => setLoadStatus(null), 6000)
                           } else {
-                            console.warn('⚠️ Veröffentlichung fehlgeschlagen:', result.error)
                             setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${result.error || 'Unbekannt'}`, success: false })
                             setTimeout(() => setLoadStatus(null), 8000)
                           }
-                        }
-                      } catch (error) {
-                        console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
-                        setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                        }).catch((error) => {
+                          console.warn('⚠️ Veröffentlichung fehlgeschlagen:', error)
+                          setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${error instanceof Error ? error.message : String(error)}`, success: false })
+                          setTimeout(() => setLoadStatus(null), 8000)
+                        })
+                      } catch (err) {
+                        console.warn('⚠️ Veröffentlichung fehlgeschlagen:', err)
+                        setLoadStatus({ message: `❌ Veröffentlichen fehlgeschlagen: ${err instanceof Error ? err.message : String(err)}`, success: false })
                         setTimeout(() => setLoadStatus(null), 8000)
                       }
                     }, 1500) // Warte 1.5 Sekunden damit localStorage sicher gespeichert ist

@@ -15,10 +15,11 @@ export interface CompressImageOptions {
   quality?: number
 }
 
+/** Optimiert laut Regel komprimierung-fotos-videos.mdc: max. Breite 600–800 px, JPEG-Qualität 0.5–0.65. Mobil stärker. */
 const DEFAULTS: Record<CompressContext, { maxWidth: number; quality: number }> = {
   mobile: { maxWidth: 560, quality: 0.48 },
   desktop: { maxWidth: 760, quality: 0.6 },
-  /** Für Werke im Admin: stark komprimieren, damit bei vielen Werken (z. B. 30+) der localStorage nicht voll läuft (Regel: maximale Komprimierung). */
+  /** Für Werke: stark komprimieren (localStorage, Upload) – viele Werke, schnelle Speicherung. */
   artwork: { maxWidth: 520, quality: 0.5 }
 }
 
