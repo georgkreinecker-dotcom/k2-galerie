@@ -44,6 +44,20 @@ const secondaryFeatures = [
     icon: '💰',
   },
   {
+    title: 'Presse & Medien (K2)',
+    description: 'Medienkit, Presse-Vorlage – direkt aus K2 testen',
+    to: '/admin?tab=presse',
+    cta: 'Presse öffnen →',
+    icon: '📰',
+  },
+  {
+    title: 'Öffentlichkeitsarbeit & Eventplanung (K2)',
+    description: 'Events, Flyer & Werbematerial, PR-Vorschläge – direkt im Modal in K2 testen',
+    to: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1',
+    cta: 'Öffentlichkeitsarbeit öffnen →',
+    icon: '📢',
+  },
+  {
     title: 'mök2 – Vertrieb & Promotion',
     description: 'Lizenzen, Empfehlungen, Vergütung, Werbeunterlagen',
     to: MOK2_ROUTE,

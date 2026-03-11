@@ -3184,12 +3184,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               textAlign: 'center',
               letterSpacing: '-0.02em'
             }}>
-              {galerieTexts.kunstschaffendeHeading || 'Die Kunstschaffenden'}
+              {musterOnly ? 'Künstler:in' : (galerieTexts.kunstschaffendeHeading || 'Die Kunstschaffenden')}
             </h3>
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(clamp(280px, 40vw, 400px), 1fr))',
+              gridTemplateColumns: musterOnly ? '1fr' : 'repeat(auto-fit, minmax(clamp(280px, 40vw, 400px), 1fr))',
               gap: 'clamp(1.5rem, 4vw, 2.5rem)',
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
@@ -3264,7 +3264,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 </button>
               </div>
               
-              {/* Georg – Keramik: Karte mit Ton-Akzent, andere Ecke betont */}
+              {/* Georg – Keramik: nur bei K2 (ök2 = nur eine Person, Lena Berg) */}
+              {!musterOnly && (
               <div style={{
                 position: 'relative',
                 background: 'linear-gradient(145deg, rgba(255, 140, 66, 0.06) 0%, rgba(255, 255, 255, 0.04) 50%)',
@@ -3294,7 +3295,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     width: 'clamp(64px, 10vw, 80px)',
                     height: 'clamp(64px, 10vw, 80px)',
                     borderRadius: '50%',
-                    background: musterOnly ? 'linear-gradient(135deg, #6b9080 0%, var(--k2-accent) 100%)' : 'linear-gradient(135deg, #e67a2a 0%, var(--k2-accent) 100%)',
+                    background: 'linear-gradient(135deg, #e67a2a 0%, var(--k2-accent) 100%)',
                     color: theme.text,
                     display: 'grid',
                     placeItems: 'center',
@@ -3303,22 +3304,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     boxShadow: '0 8px 24px rgba(245, 87, 108, 0.4)',
                     flexShrink: 0
                   }}>
-                    {(musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))).charAt(0)}
+                    {((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)).charAt(0)}
                   </div>
                   <div>
-                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: musterOnly ? theme.muted : 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Keramik</span>
+                    <span style={{ fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', fontWeight: '600' }}>Keramik</span>
                     <h4 style={{ margin: '0.25rem 0 0', fontSize: 'clamp(1.2rem, 3.2vw, 1.6rem)', color: theme.text, fontWeight: '600' }}>
-                      {musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
+                      {(tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)}
                     </h4>
                   </div>
                 </div>
-                <p style={{ color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
-                  {(musterOnly ? (galerieTexts.georgBio || MUSTER_TEXTE.artist2Bio) : (galerieTexts.georgBio || 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.'))}
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', margin: 0, lineHeight: '1.7' }}>
+                  {(galerieTexts.georgBio || 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.')}
                 </p>
                 <button type="button" onClick={() => openVita('georg')} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.75rem', fontSize: '0.85rem', color: theme.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0, textDecoration: 'none' }} title="Vita öffnen">
                   <span aria-hidden>📄</span> Vita
                 </button>
               </div>
+              )}
             </div>
             
             <p style={{ 
@@ -3333,7 +3335,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               fontWeight: '300',
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
-              {musterOnly ? (galerieTexts.gemeinsamText?.trim() || MUSTER_TEXTE.gemeinsamText) : (galerieTexts.gemeinsamText?.trim() || `Gemeinsam eröffnen ${(tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)} und ${(tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`)}
+              {musterOnly ? (galerieTexts.gemeinsamText?.trim() || (MUSTER_TEXTE as { gemeinsamTextSinglePerson?: string }).gemeinsamTextSinglePerson || MUSTER_TEXTE.gemeinsamText) : (galerieTexts.gemeinsamText?.trim() || `Gemeinsam eröffnen ${(tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name)} und ${(tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name)} nach über 20 Jahren kreativer Tätigkeit die ${tenantConfig.galleryName} – ein Raum, wo Malerei und Keramik verschmelzen und Kunst zum Leben erwacht.`)}
             </p>
 
             {/* Eingangshalle: zwei Türen – Galerie (mit Shop-Hinweis) und Virtueller Rundgang. Admin = Button oben rechts. */}
@@ -3763,26 +3765,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     </div>
                   </div>
                   
-                  {/* Georg Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
+                  {/* Georg Kontakt - nur K2 (ök2 = nur eine Person) */}
+                  {!musterOnly && (
                   <div style={{ marginBottom: '0.75rem' }}>
                     <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {musterOnly ? MUSTER_TEXTE.georg.name : ((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
+                      {((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
                     </p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      {(musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone) && (
+                      {georgData.phone && (
                         <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          📞 {musterOnly ? MUSTER_TEXTE.georg.phone : georgData.phone}
+                          📞 {georgData.phone}
                         </span>
                       )}
-                      {(musterOnly ? MUSTER_TEXTE.georg.email : georgData.email) && (
+                      {georgData.email && (
                         <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {musterOnly ? MUSTER_TEXTE.georg.email : georgData.email}
+                          ✉️ <a href={`mailto:${georgData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
+                            {georgData.email}
                           </a>
                         </span>
                       )}
                     </div>
                   </div>
+                  )}
                   </>)}
                   
                   {/* Gewerbe & Haftungsausschluss – nur K2/ök2 */}

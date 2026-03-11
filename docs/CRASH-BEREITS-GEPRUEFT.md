@@ -16,6 +16,7 @@
 | 08.03.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert. |
 | 09.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
 | 10.03.26 | ro5 – Reopen nach Code 5; check the crash: Kontext + bereits geprüft gelesen, orientiert. |
+| 11.03.26 | ro5 – Totalabsturz, Mac musste neu hochgefahren werden; dokumentiert, orientiert. |
 
 ---
 

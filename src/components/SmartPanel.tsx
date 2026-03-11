@@ -83,6 +83,8 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
+  { id: 'presse', label: '📰 Presse & Medien (K2)', page: 'presse', url: '/admin?tab=presse', color: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08))', border: 'rgba(59,130,246,0.35)' },
+  { id: 'oeffentlichkeitsarbeit', label: '📢 Öffentlichkeitsarbeit (K2)', page: 'oeffentlichkeitsarbeit', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1', color: 'linear-gradient(135deg, rgba(234,88,12,0.15), rgba(194,65,12,0.08))', border: 'rgba(234,88,12,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
 ]
@@ -101,7 +103,7 @@ function loadOrder(): string[] {
       return order
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-markt', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-markt', 'presse', 'oeffentlichkeitsarbeit', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -110,7 +112,7 @@ function saveOrder(order: string[]) {
 
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
@@ -151,17 +153,27 @@ type DiversesItem = {
   emoji?: string
 }
 
+const DEFAULT_DIVERSES: DiversesItem[] = [
+  { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
+  { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
+  { id: 'brief-andreas', label: 'Brief an Andreas', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas, emoji: '✉️' },
+  { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
+]
+
 function loadDiverses(): DiversesItem[] {
   try {
     const v = localStorage.getItem(DIVERSES_KEY)
-    if (v) return JSON.parse(v)
+    if (v) {
+      const items: DiversesItem[] = JSON.parse(v)
+      // Fehlt "Brief an Andreas" oder ist die Liste kürzer als der Standard → auf Standard setzen (damit neue Einträge immer erscheinen)
+      if (!items.some((x) => x.id === 'brief-andreas') || items.length < DEFAULT_DIVERSES.length) {
+        saveDiverses(DEFAULT_DIVERSES)
+        return DEFAULT_DIVERSES
+      }
+      return items
+    }
   } catch { /* ignore */ }
-  // Standardeinträge beim ersten Start – inkl. Georgs Notizen (Leseansicht)
-  return [
-    { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
-    { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
-    { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
-  ]
+  return DEFAULT_DIVERSES
 }
 
 function saveDiverses(items: DiversesItem[]) {

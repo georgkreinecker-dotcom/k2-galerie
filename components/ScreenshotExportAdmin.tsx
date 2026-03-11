@@ -25,7 +25,7 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { addPendingArtwork, filterK2Only, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
+import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
@@ -994,7 +994,18 @@ function closeAllPDFWindows() {
 let globalAdminInstance: any = null
 let globalMountCount = 0
 
-function ScreenshotExportAdmin() {
+type AdminTabType = 'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen'
+type AdminProps = {
+  /** Wenn gesetzt (z. B. aus APf/DevView): Admin öffnet direkt diesen Tab – URL wird ignoriert */
+  forceTab?: AdminTabType
+  /** Bei forceTab='eventplan': welcher Sub-Tab (Events vs. Öffentlichkeitsarbeit) */
+  forceEventplanSubTab?: 'events' | 'öffentlichkeitsarbeit'
+  /** Bei Öffentlichkeitsarbeit: Vollbild-Modal sofort öffnen */
+  forceOeffentlichkeitsarbeitModal?: boolean
+}
+
+function ScreenshotExportAdmin(props?: AdminProps) {
+  const { forceTab, forceEventplanSubTab, forceOeffentlichkeitsarbeitModal } = props ?? {}
   const tenant = useTenant()
   const navigate = useNavigate()
   const location = useLocation()
@@ -1076,6 +1087,18 @@ function ScreenshotExportAdmin() {
     } catch { /* ignore */ }
   }, [location.search])
 
+  // Öffentlichkeitsarbeit: Bei openModal=1 in der URL Modal öffnen (Einstieg z. B. von APf)
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search)
+      if (params.get('openModal') === '1' && params.get('tab') === 'eventplan' && params.get('eventplan') === 'öffentlichkeitsarbeit') {
+        setActiveTab('eventplan')
+        setEventplanSubTab('öffentlichkeitsarbeit')
+        setShowOeffentlichkeitsarbeitModal(true)
+      }
+    } catch { /* ignore */ }
+  }, [location.search])
+
   // Medienspiegel aus localStorage laden, wenn Kontext wechselt
   React.useEffect(() => {
     try {
@@ -1117,30 +1140,39 @@ function ScreenshotExportAdmin() {
     } catch { return false }
   })()
 
-  // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen.
-  const initialTab = (() => {
+  // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Bei Aufruf aus APf (forceTab) hat Props Vorrang vor URL.
+  const initialTab = ((): AdminTabType => {
+    if (forceTab) return forceTab
     try {
       const params = new URLSearchParams(window.location.search)
       const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
-      // ?tab=... (vom Hub) oder ?guidetab=... (alter Guide)
       const t = params.get('tab') || params.get('guidetab')
       if (t && validTabs.includes(t as AdminTab)) return t as AdminTab
     } catch { /* ignore */ }
     return 'werke'
   })()
-  const [activeTab, setActiveTab] = useState<'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen'>(initialTab)
+  const [activeTab, setActiveTab] = useState<AdminTabType>(initialTab)
   const [guideBannerClosed, setGuideBannerClosed] = useState(false)
   const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
-  const initialEventplanSubTab = (() => {
+  const initialEventplanSubTab = ((): 'events' | 'öffentlichkeitsarbeit' => {
+    if (forceEventplanSubTab) return forceEventplanSubTab
     try {
       const p = new URLSearchParams(window.location.search)
-      if (p.get('tab') === 'eventplan' && p.get('eventplan') === 'öffentlichkeitsarbeit') return 'öffentlichkeitsarbeit' as const
+      if (p.get('tab') === 'eventplan' && p.get('eventplan') === 'öffentlichkeitsarbeit') return 'öffentlichkeitsarbeit'
     } catch { /* ignore */ }
-    return 'events' as const
+    return 'events'
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
+  // Öffentlichkeitsarbeit im Vollbild-Modal (zum Testen direkt aus K2) – öffnet sich bei openModal=1 in der URL oder forceOeffentlichkeitsarbeitModal
+  const [showOeffentlichkeitsarbeitModal, setShowOeffentlichkeitsarbeitModal] = useState(() => {
+    if (forceOeffentlichkeitsarbeitModal === true) return true
+    try {
+      const p = new URLSearchParams(window.location.search)
+      return p.get('openModal') === '1' && p.get('tab') === 'eventplan' && p.get('eventplan') === 'öffentlichkeitsarbeit'
+    } catch { return false }
+  })
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
@@ -1168,6 +1200,8 @@ function ScreenshotExportAdmin() {
   const [presseDatum, setPresseDatum] = useState('')
   const [presseAnlass, setPresseAnlass] = useState('')
   const [presseOrt, setPresseOrt] = useState('')
+  /** Welche Story in die Pressemeldung eingebaut wird: keine, Human Interest (1a), Produkt-Story (1b) */
+  const [presseStoryVariante, setPresseStoryVariante] = useState<'keine' | 'human' | 'produkt'>('keine')
   // Medienspiegel: Liste Medien (Name + E-Mail), pro Kontext gespeichert
   const [medienspiegel, setMedienspiegel] = useState<{ id: string; name: string; email: string }[]>([])
   const [medienspiegelSelectedIds, setMedienspiegelSelectedIds] = useState<Set<string>>(new Set())
@@ -3216,6 +3250,10 @@ function ScreenshotExportAdmin() {
       }
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
+        if (tenantId === 'oeffentlich' && result.error?.includes('404')) {
+          alert('Für die Demo (ök2) liegt noch kein Stand auf dem Server.\n\nEinmal im ök2-Admin „Daten an Server senden“ klicken – dann wird ein Stand angelegt und „Aktuellen Stand holen“ funktioniert.')
+          return
+        }
         const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst „Daten an Server senden“ tippen.' : '')
         alert(`Server: ${result.error || 'Fehler'}.\n\n• App von k2-galerie.vercel.app? Internet verbunden?${hint}`)
         return
@@ -3228,6 +3266,7 @@ function ScreenshotExportAdmin() {
       }
 
       // ök2: Server-Daten in k2-oeffentlich-* Keys schreiben (Export- oder Backup-Format)
+      // KRITISCH: Niemals K2-Werke in k2-oeffentlich-artworks schreiben (Datentrennung).
       if (tenant.isOeffentlich) {
         const { restoreOek2FromBackup } = await import('../src/utils/autoSave')
         let ok = false
@@ -3236,9 +3275,13 @@ function ScreenshotExportAdmin() {
           ok = r.ok
         } else {
           // Export-Format (martina, georg, gallery, artworks, …) in Keys überführen
+          // Nur artworks übernehmen wenn klar ök2: kontext=oeffentlich oder keine echten K2-Werknummern (0030, K2-K-0030)
+          const hasEchteK2Artworks = Array.isArray(data.artworks) && data.artworks.some((a: any) => isEchteK2Werknummer(String(a?.number ?? a?.id ?? '')))
+          const allowArtworks = Array.isArray(data.artworks) && (data.kontext === 'oeffentlich' || !hasEchteK2Artworks)
           try {
             const keys: Array<[string, unknown]> = []
-            if (Array.isArray(data.artworks)) keys.push(['k2-oeffentlich-artworks', data.artworks])
+            if (allowArtworks) keys.push(['k2-oeffentlich-artworks', data.artworks])
+            else if (data.kontext === 'k2' && Array.isArray(data.artworks)) console.warn('⚠️ ök2: Server lieferte K2-Werke – k2-oeffentlich-artworks wird nicht überschrieben (Datentrennung).')
             if (data.martina != null) keys.push(['k2-oeffentlich-stammdaten-martina', data.martina])
             if (data.georg != null) keys.push(['k2-oeffentlich-stammdaten-georg', data.georg])
             if (data.gallery != null) keys.push(['k2-oeffentlich-stammdaten-galerie', data.gallery])
@@ -3761,6 +3804,12 @@ function ScreenshotExportAdmin() {
     }
   }
 
+  // Beide Ausgangsgeschichten aus mök2 (MEDIENSTUDIO-K2 §1a / §1b) – für Presseaussendung
+  const STORY_1A_HUMAN_PRESSE =
+    'Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
+  const STORY_1B_PRODUKT_PRESSE =
+    'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für Künstler:innen mit eigenem Auftritt, VK2 für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+
   // Content-Generatoren im App-Design-Stil – je Kontext nur eigene Daten (K2 / ök2 / VK2)
   // variant: 'neutral' = ohne Personendaten/Kontakt (für neutrale Information), 'lokal' = mit Personenstory und Kontakt
   const generatePresseaussendungContent = (event: any, variant: 'neutral' | 'lokal' = 'lokal') => {
@@ -3800,6 +3849,7 @@ function ScreenshotExportAdmin() {
           `───────────────────────────────────────`, `ZUR AUSSTELLUNG`, `───────────────────────────────────────`, ``,
           desc, ``,
           `${kuenstlerListe} zeigen aktuelle Werke – ein Querschnitt durch das Schaffen des Vereins.`, ``,
+          STORY_1B_PRODUKT_PRESSE, ``,
           `───────────────────────────────────────`, `KONTAKT & BILDMATERIAL`, `───────────────────────────────────────`, ``,
           ...kontaktBlock,
           `– Ende der Presseaussendung –`,
@@ -3854,6 +3904,10 @@ function ScreenshotExportAdmin() {
           ``,
         ]
 
+    const storyBlock = variant === 'lokal' && !tenant.isOeffentlich
+      ? [STORY_1A_HUMAN_PRESSE, ``, STORY_1B_PRODUKT_PRESSE, ``]
+      : [STORY_1B_PRODUKT_PRESSE, ``]
+
     return {
       title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
       content: [
@@ -3875,6 +3929,7 @@ function ScreenshotExportAdmin() {
         ``,
         desc,
         ``,
+        ...storyBlock,
         ...kuenstlerBlock,
         `───────────────────────────────────────`,
         `KONTAKT & BILDMATERIAL`,
@@ -13106,6 +13161,59 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               )
             })()}
 
+            {/* ök2: Musterwerke zurücksetzen – Demo wieder auf Standard bringen (wenn z. B. versehentlich K2-Daten reingekommen sind) */}
+            {tenant.isOeffentlich && (
+              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
+                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Demo-Galerie wieder auf Musterwerke setzen:</span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!confirm('Alle aktuellen Werke in der Demo-Galerie durch die Standard-Musterwerke ersetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
+                    const muster = [...MUSTER_ARTWORKS]
+                    await saveArtworksByKeyWithImageStore('k2-oeffentlich-artworks', muster, { filterK2Only: false, allowReduce: true })
+                    const resolved = await loadArtworksWithResolvedImages(tenant)
+                    setAllArtworksSafe(resolved)
+                    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+                    alert(`✅ Musterwerke wiederhergestellt (${muster.length} Werke). Galerie-Ansicht zeigt wieder die Demo.`)
+                  }}
+                  style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  🔄 Musterwerke zurücksetzen
+                </button>
+              </div>
+            )}
+
+            {/* ök2: Musterstammdaten zurücksetzen – Lena Berg, Paul Weber, Galerie Muster wieder herstellen */}
+            {tenant.isOeffentlich && (
+              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
+                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Person & Galerie wieder auf Muster (Lena Berg, Paul Weber, Galerie Muster):</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!confirm('Stammdaten in der Demo auf die Standard-Muster (Lena Berg, Paul Weber, Galerie Muster) zurücksetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
+                    const martinaMuster = { ...MUSTER_TEXTE.martina, category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, vita: MUSTER_VITA_MARTINA, address: '', city: '', country: '' }
+                    const georgMuster = { ...MUSTER_TEXTE.georg, category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, vita: MUSTER_VITA_GEORG, address: '', city: '', country: '' }
+                    try {
+                      persistStammdaten('oeffentlich', 'martina', martinaMuster, { merge: false })
+                      persistStammdaten('oeffentlich', 'georg', georgMuster, { merge: false })
+                      persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery }, { merge: false })
+                      setMartinaData(loadStammdaten('oeffentlich', 'martina') as any)
+                      setGeorgData(loadStammdaten('oeffentlich', 'georg') as any)
+                      setGalleryData(loadStammdaten('oeffentlich', 'gallery') as any)
+                    } catch (e) {
+                      console.error('Musterstammdaten zurücksetzen:', e)
+                      alert('⚠️ Fehler beim Zurücksetzen – siehe Konsole.')
+                      return
+                    }
+                    alert('✅ Musterstammdaten wiederhergestellt (Lena Berg, Paul Weber, Galerie Muster). In der Galerie und hier im Admin sichtbar.')
+                  }}
+                  style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  🔄 Musterstammdaten zurücksetzen
+                </button>
+              </div>
+            )}
+
             {/* Nur ök2: Verwaltung-Links (Lizenzen, Empfehlungstool). K2 = nur unsere App, schlank ohne Lizenz-Button. */}
             {tenant.isOeffentlich && (
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
@@ -15689,14 +15797,21 @@ ${name}`
             n(galleryData?.openingHours) && !tenant.isVk2 ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
           ].filter(Boolean)
           const medienkitText = medienkitZeilen.join('\n\n')
-          const presseVorlageText = [
+          // Beide Ausgangsgeschichten aus mök2 (MEDIENSTUDIO-K2 §1a / §1b) – für Pressemeldung wählbar
+          const STORY_1A_HUMAN =
+            'Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
+          const STORY_1B_PRODUKT =
+            'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für Künstler:innen mit eigenem Auftritt, VK2 für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+          const presseHeader = [
             `Presseinformation – ${presseAnlass || '[Anlass]'}`,
             '',
             galerieName ? `${galerieName}` : '[Galerie/Verein]',
             presseAnlass ? presseAnlass : '[Anlass]',
             (presseDatum || presseOrt) ? `${presseDatum || '[Datum]'}${presseOrt ? ', ' + presseOrt : ''}.` : '[Datum], [Ort].',
-            (kontaktEmail || kontaktPhone) ? `Kontakt: ${[kontaktEmail, kontaktPhone].filter(Boolean).join(', ')}` : 'Kontakt: [E-Mail], [Telefon]',
           ].filter(Boolean).join('\n')
+          const presseKontakt = (kontaktEmail || kontaktPhone) ? `Kontakt: ${[kontaktEmail, kontaktPhone].filter(Boolean).join(', ')}` : 'Kontakt: [E-Mail], [Telefon]'
+          const storyText = presseStoryVariante === 'human' ? STORY_1A_HUMAN : presseStoryVariante === 'produkt' ? STORY_1B_PRODUKT : ''
+          const presseVorlageText = storyText ? `${presseHeader}\n\n${storyText}\n\n${presseKontakt}` : `${presseHeader}\n\n${presseKontakt}`
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
               <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Presse & Medien</h2>
@@ -15923,8 +16038,16 @@ ${name}`
               <div>
                 <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Presse-Vorlage</h3>
                 <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Variablen ausfüllen – fertiger Text zum Kopieren für Presseinformationen (z. B. Eröffnung, Vernissage).
+                  Variablen ausfüllen und optional eine der beiden Ausgangsgeschichten aus mök2 einbauen – fertiger Text zum Kopieren für Presseinformationen.
                 </p>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.5rem' }}>
+                  <span style={{ fontWeight: 600 }}>Story in Pressemeldung:</span>
+                  <select value={presseStoryVariante} onChange={e => setPresseStoryVariante(e.target.value as 'keine' | 'human' | 'produkt')} style={{ marginLeft: '0.5rem', padding: '0.4rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
+                    <option value="keine">Keine – nur Kopf und Kontakt</option>
+                    {!tenant.isVk2 && <option value="human">1a – Human Interest (persönlich, Martina & Georg)</option>}
+                    <option value="produkt">1b – Produkt-Story (K2 & VK2, neutral)</option>
+                  </select>
+                </label>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
                     <span>Anlass</span>
@@ -17346,8 +17469,9 @@ ${name}`
           </div>
         )}
 
-        {/* Eventplanung: Öffentlichkeitsarbeit (Marketingabteilung) */}
-        {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && (
+        {/* Eventplanung: Öffentlichkeitsarbeit (Marketingabteilung) – gleicher Inhalt im Tab und im Vollbild-Modal */}
+        {((activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') || showOeffentlichkeitsarbeitModal) && (() => {
+          const oeffSection = (
           <section style={{
             background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(20px)',
@@ -17357,6 +17481,26 @@ ${name}`
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
+            {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && !showOeffentlichkeitsarbeitModal && (
+              <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowOeffentlichkeitsarbeitModal(true)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: `${s.accent}22`,
+                    border: `1px solid ${s.accent}66`,
+                    borderRadius: '8px',
+                    color: s.accent,
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    fontSize: 'clamp(0.85rem, 2vw, 0.95rem)'
+                  }}
+                >
+                  📋 Im Vollbild-Modal öffnen (zum Testen)
+                </button>
+              </div>
+            )}
             <h2 style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
               fontWeight: '700',
@@ -18013,7 +18157,50 @@ ${name}`
               </div>
             )}
           </section>
-        )}
+          )
+          return (
+            <>
+              {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && !showOeffentlichkeitsarbeitModal && oeffSection}
+              {showOeffentlichkeitsarbeitModal && (
+                <div
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 99999,
+                    background: s.bgDark ?? 'var(--k2-bg, #0f1419)',
+                    overflow: 'auto',
+                    padding: '1rem'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <strong style={{ color: s.text }}>Öffentlichkeitsarbeit – Vollbild (zum Testen in K2)</strong>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowOeffentlichkeitsarbeitModal(false)
+                        const u = new URL(window.location.href)
+                        u.searchParams.delete('openModal')
+                        navigate(u.pathname + u.search, { replace: true })
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: s.accent,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      × Schließen
+                    </button>
+                  </div>
+                  {oeffSection}
+                </div>
+              )}
+            </>
+          )
+        })()}
 
         </main>
       </div>

@@ -93,6 +93,7 @@ export const PROJECT_ROUTES = {
     /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
     notizen: '/projects/k2-galerie/notizen',
     notizenBriefAugust: '/projects/k2-galerie/notizen/brief-an-august',
+    notizenBriefAndreas: '/projects/k2-galerie/notizen/brief-an-andreas',
     /** Board: Lizenznehmer, Empfehler, Abrechnung auf einen Blick (ein Klick zu Details) */
     uebersicht: '/projects/k2-galerie/uebersicht',
     /** Kampagne Marketing-Strategie – eigene Mappe (Zwischenergebnisse, Auftrag, Strategie) */

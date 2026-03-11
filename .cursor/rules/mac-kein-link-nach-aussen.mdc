@@ -1,0 +1,25 @@
+---
+description: Strengste Regel – vom Mac darf niemals ein Link nach außen führen
+alwaysApply: true
+---
+
+# Strengste Regel: Vom Mac kein Link nach außen
+
+## Regel (unveränderlich)
+
+**Von Georgs Mac (localhost, APf) darf niemals ein Link nach außen führen.**
+
+- **Nach außen** = zu einer anderen Origin (z. B. `https://k2-galerie.vercel.app`, andere Domain). Ein Klick darf ihn nicht von seinem Rechner wegführen.
+- **Konsequenz:** Alle Links in Inhalten, die er am Mac öffnet oder klickt, müssen **relativ** oder **gleiche Origin** sein (z. B. `/projects/k2-galerie/galerie-oeffentlich` statt `https://k2-galerie.vercel.app/projects/...`).
+- **Gilt für:** Brief an Andreas, Notizen, Druckversionen, alle Seiten/Dateien die er in der App oder im Browser auf localhost öffnet. Wenn die Seite auch auf Vercel geöffnet wird (z. B. von Andreas), bleibt der relative Link auf der jeweiligen Origin – am Mac also localhost, bei Andreas Vercel.
+
+## Konkret
+
+| Nicht | Sondern |
+|--------|---------|
+| `href="https://k2-galerie.vercel.app/..."` in HTML/Markdown das er am Mac öffnet | `href="/projects/k2-galerie/galerie-oeffentlich"` (relativer Pfad) |
+| Absolute Vercel-URL in Notizen, Briefen, Druckversionen | Immer relativer Pfad; dann bleibt er auf seinem Rechner |
+
+## Kurzfassung
+
+**Vom Mac kein Link nach außen. Immer relative Pfade – das ist klar.**

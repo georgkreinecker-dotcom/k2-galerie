@@ -1,7 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL } from '../config/tenantConfig'
 import type { Vk2Stammdaten } from '../config/tenantConfig'
+import { isEchteK2Werknummer } from '../utils/artworksStorage'
+
+/** Prüft ob URL unsere eigene App ist (K2 gallery-data) – dann dürfen wir sie im VK2-Katalog nicht fetchen (Datentrennung). */
+function isOwnAppUrl(url: string): boolean {
+  if (!url || typeof url !== 'string') return false
+  const base = (BASE_APP_URL || '').replace(/\/$/, '')
+  const u = url.replace(/\/$/, '').toLowerCase()
+  return u === base || u.startsWith(base + '/')
+}
 
 function loadVk2Stammdaten(): Vk2Stammdaten | null {
   try {
@@ -57,10 +67,10 @@ export const Vk2KatalogPage: React.FC = () => {
 
     const collected: KatalogWork[] = []
 
-    // 1. Lokale Werke aus Mitglieder-Artwork-Keys (wie bisher)
+    // 1. Lokale Werke nur aus VK2-Mitglieder-Keys (Datentrennung: niemals k2-artworks im VK2-Katalog)
     mitglieder.forEach((m: import('../config/tenantConfig').Vk2Mitglied) => {
       const keySuffix = m.name.replace(/\s+/g, '-').toLowerCase()
-      const rawLocal = localStorage.getItem(`k2-vk2-artworks-${keySuffix}`) || localStorage.getItem(`k2-artworks-${keySuffix}`)
+      const rawLocal = localStorage.getItem(`k2-vk2-artworks-${keySuffix}`)
       if (rawLocal) {
         try {
           const parsed: any[] = JSON.parse(rawLocal)
@@ -70,7 +80,11 @@ export const Vk2KatalogPage: React.FC = () => {
     })
 
     // 2. Werke aus Lizenz-Galerien per fetch (lizenzGalerieUrl → gallery-data.json)
-    const mitgliederMitUrl = mitglieder.filter((m: import('../config/tenantConfig').Vk2Mitglied) => m.lizenzGalerieUrl?.trim())
+    // Datentrennung: Eigenes App-URL (k2-galerie.vercel.app) nicht fetchen – dort liegt K2 gallery-data.json, keine Mitglieder-Daten.
+    const mitgliederMitUrl = mitglieder.filter((m: import('../config/tenantConfig').Vk2Mitglied) => {
+      const u = m.lizenzGalerieUrl?.trim()
+      return u && !isOwnAppUrl(u)
+    })
     if (mitgliederMitUrl.length > 0) {
       const base = (url: string) => url.replace(/\/$/, '')
       Promise.all(
@@ -82,7 +96,7 @@ export const Vk2KatalogPage: React.FC = () => {
             const data = await res.json()
             const artworks = Array.isArray(data.artworks) ? data.artworks : []
             return artworks
-              .filter((w: any) => w.imVereinskatalog)
+              .filter((w: any) => w?.imVereinskatalog && !isEchteK2Werknummer(String(w?.number ?? w?.id ?? '')))
               .map((w: any) => ({ ...w, mitgliedName: m.name, artist: w.artist || m.name }))
           } catch {
             return []
@@ -97,16 +111,8 @@ export const Vk2KatalogPage: React.FC = () => {
       return
     }
 
-    // 3. Fallback: globale Werke aus k2-artworks (K2-eigene Demo)
-    if (collected.length === 0) {
-      try {
-        const raw = localStorage.getItem('k2-artworks') || localStorage.getItem('k2-oeffentlich-artworks')
-        if (raw) {
-          const all: any[] = JSON.parse(raw)
-          all.filter(w => w.imVereinskatalog).forEach(w => collected.push({ ...w, mitgliedName: w.artist || 'K2 Galerie' }))
-        }
-      } catch { /* ignore */ }
-    }
+    // 3. Kein Fallback auf K2/ök2 – VK2-Katalog zeigt nur Werke von Mitgliedern (lokal oder lizenzGalerieUrl).
+    // K2-artworks und k2-oeffentlich-artworks dürfen im VK2-Kontext nicht erscheinen (Datentrennung).
 
     setWorks(collected)
     setLoading(false)

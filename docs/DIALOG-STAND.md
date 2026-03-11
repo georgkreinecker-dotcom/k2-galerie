@@ -6,6 +6,42 @@
 
 ---
 
+## Heute 11.03.26 – iPad 70 Werke mit Bild: nur 51 beim Senden aufgelöst
+
+- **Kontext (kein Gedächtnis von gestern):** Georg: Am iPad 70 Werke, alle mit Bildern; 20 davon heute gemacht; „die haben wir gestern gelöscht“ – dazu keine Session-Info. Beim „An Server senden“ kamen nur **51 mit Bild** an (19 Bilder fehlten).
+- **Ursache:** Beim Export werden Bild-URLs aus imageRef + IndexedDB aufgelöst. Wenn das Bild unter einer **anderen Ref-Variante** in IndexedDB liegt (z. B. `k2-img-0031` vs. `k2-img-K2-K-0031`), wurde es nicht gefunden → Upload unterblieb.
+- **Fix:** **Ref-Varianten beim Auflösen:** In `artworkImageStore.ts` neue Funktion **getArtworkImageRefVariants(artwork)** – liefert alle sinnvollen Refs (imageRef, number, 0031, 31). In **supabaseClient.ts** **resolveImageUrlForSupabase** probiert nacheinander diese Varianten mit **getArtworkImage(ref)**, bis ein Bild gefunden wird. So werden alle 70 Werke mit Bild beim „An Server senden“ aufgelöst und hochgeladen.
+- **Nächster Schritt:** Georg: Am iPad erneut „An Server senden“ – Meldung sollte „70 Werke, 70 mit Bild“ (oder nahe dran) zeigen; danach am Mac „Aktuellen Stand holen“.
+
+---
+
+## Heute 11.03.26 – ök2: Musterstammdaten (Lena Berg, Paul Weber) zurücksetzen
+
+- **Stand:** Musterwerke waren schon zurückgesetzt; es fehlten die **Musterstammdaten** (Person + Galerie). Lena Berg und Paul Weber sind im **Code** (MUSTER_TEXTE) definiert; in der **öffentlichen Galerie** (galerie-oeffentlich) werden sie bei ök2 immer aus MUSTER_TEXTE angezeigt (GaleriePage useEffect + Anzeige) – also **sind sie in der Galerie mit Vita weiterhin da**. Im **Admin** (ök2 Einstellungen) kommen die Felder aus localStorage (k2-oeffentlich-stammdaten-*); wenn die leer oder überschrieben waren, zeigte der Admin keine Muster.
+- **Umsetzung:** Im ök2-Admin (Einstellungen) neuer Button **„🔄 Musterstammdaten zurücksetzen“** (unter „Musterwerke zurücksetzen“). Setzt k2-oeffentlich-stammdaten-martina/georg/gallery auf MUSTER_TEXTE (Lena Berg, Paul Weber, Galerie Muster) und aktualisiert sofort den Admin-State.
+- **Wo:** ScreenshotExportAdmin.tsx (ök2 Einstellungen, nach Musterwerke-zurücksetzen-Block).
+- **Nächster Schritt:** Georg: Im ök2-Admin auf „Musterstammdaten zurücksetzen“ tippen → dann Galerie/Vita prüfen; oder mit bisherigem Faden (Eventplan, Presse) weitermachen.
+
+---
+
+## Heute 10.03.26 – ök2: K2-Werke in Muster-Galerie verhindert + Musterwerke zurücksetzen
+
+- **Problem:** In der ök2-Mustergalerie waren im Admin die Musterwerke weg und in der Galerieansicht K2-Werke sichtbar (Datentrennung verletzt).
+- **Ursache:** Beim „Aktuellen Stand holen“ im ök2-Admin wurde im Export-Format-Zweig **data.artworks** ungeprüft in `k2-oeffentlich-artworks` geschrieben – wenn der Server (oder eine falsche Quelle) K2-Daten lieferte, wurden Musterwerke überschrieben.
+- **Fix:** (1) **Absicherung:** Im ök2-Zweig werden Werke nur noch übernommen, wenn `data.kontext === 'oeffentlich'` oder die Werke nicht wie K2 aussehen (keine 0030/0031/K2-K-*-Nummern). Sonst Console-Warnung, `k2-oeffentlich-artworks` bleibt unverändert. (2) **Musterwerke zurücksetzen:** Im ök2-Admin (Einstellungen) neuer Button „🔄 Musterwerke zurücksetzen“ – setzt `k2-oeffentlich-artworks` auf MUSTER_ARTWORKS, damit die Demo wieder den Standard zeigt.
+- **Wo:** ScreenshotExportAdmin.tsx (ök2 „Aktuellen Stand holen“ else-Branch; neuer Button unter „Musterdaten löschen“).
+- **Automatische Reparatur (Georg macht nichts):** Beim Lesen von ök2-Werken (Galerie oder Admin) prüft die Artworks-Schicht, ob `k2-oeffentlich-artworks` K2-Daten enthält (z. B. 0030, 0031, K2-K-*). Wenn ja → wird automatisch durch MUSTER_ARTWORKS ersetzt. Einmal Galerie oder Admin (ök2) öffnen reicht, danach ist alles wieder in Ordnung. Implementierung: `artworksStorage.ts` (repairOek2ArtworksIfContaminated in readArtworksRawForContext und readArtworksRawByKeyOrNull).
+
+---
+
+## Heute 10.03.26 – Presse, Öffentlichkeitsarbeit & Eventplanung direkt aus K2
+
+- **Stand:** (1) **APf:** Zwei Karten – „Presse & Medien (K2)“ → `/admin?tab=presse`; „Öffentlichkeitsarbeit & Eventplanung (K2)“ → `/admin?tab=eventplan` (Veranstaltungen | Flyer & Werbematerial). (2) **mök2 (Sichtbarkeit & Werbung):** Zwei Links – Presse in K2, Öffentlichkeitsarbeit & Eventplanung in K2. (3) **Analyse:** docs/ANALYSE-K2-MARKT-GRUNDLAGE-PRESSE-MEDIEN.md – Grundlage K2 Markt = Presse-Tab + Eventplan-Bereich (Öffentlichkeitsarbeit & Eventplanung).
+- **Nächster Schritt:** Georg: Von der APf „Öffentlichkeitsarbeit & Eventplanung“ öffnen → Admin Tab Eventplan mit Veranstaltungen / Flyer & Werbematerial in K2 testen.
+- **Wo:** PlatformStartPage.tsx; MarketingOek2Page.tsx; ANALYSE-K2-MARKT-GRUNDLAGE-PRESSE-MEDIEN.md.
+
+---
+
 ## Session-Ende 10.03.26
 
 - **Knoten „Vom Server laden“ (Key-Abgleich) behoben:** Beim „Aktuellen Stand holen“ im Admin wurden Server-Werke nur mit `number`/`id` (z. B. 0030) in die Map eingetragen; lokale Werke mit `K2-K-0030` fanden keinen Treffer → Duplikate + Bildverlust/Platzhalter. **Umsetzung:** (1) **syncMerge.ts:** mergeServerWithLocal baut die Server-Map mit **getKeysForMatching** (alle Varianten: 0030, K2-K-0030, 30); Lookup nutzt dieselben Keys. (2) **Admin K2:** handleLoadFromServer nutzt nur noch **applyServerDataToLocal**(server, lokal, { onlyAddLocalIfMobileAndVeryNew: true }) – ein Standard, kein eigener Merge. (3) **Doku:** PROZESS-VEROEFFENTLICHEN-LADEN.md – Abschnitt 2a „Kette: Bild anlegen → Speicherung → zurück“, Abschnitt 4 Key-Abgleich-Fix; Aufrufer Admin ergänzt. Tests grün. **Commit:** 693d548 – auf GitHub.

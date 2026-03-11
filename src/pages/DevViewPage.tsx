@@ -257,6 +257,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'mission-control': return PLATFORM_ROUTES.missionControl
+      case 'presse': return '/admin?tab=presse'
+      case 'oeffentlichkeitsarbeit': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1'
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
   }
@@ -801,6 +803,8 @@ end tell`
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
+    { id: 'presse', name: 'Presse & Medien (K2)', component: ScreenshotExportAdmin },
+    { id: 'oeffentlichkeitsarbeit', name: 'Öffentlichkeitsarbeit (K2)', component: ScreenshotExportAdmin },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
@@ -930,7 +934,28 @@ end tell`
         </Suspense>
       )
     }
-    
+    // Presse & Medien / Öffentlichkeitsarbeit aus Smart Panel → Admin mit richtigem Tab (APf zeigt sonst Galerie)
+    if (pageToRender === 'presse') {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="presse-placeholder" />
+      }
+      return (
+        <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Presse & Medien wird geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-presse" forceTab="presse" />
+        </Suspense>
+      )
+    }
+    if (pageToRender === 'oeffentlichkeitsarbeit') {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="oeffentlichkeitsarbeit-placeholder" />
+      }
+      return (
+        <Suspense key="oeffentlichkeitsarbeit-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Öffentlichkeitsarbeit wird geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-oeffentlichkeitsarbeit" forceTab="eventplan" forceEventplanSubTab="öffentlichkeitsarbeit" forceOeffentlichkeitsarbeitModal />
+        </Suspense>
+      )
+    }
+
     return <CurrentComponent key={componentKey} />
   }
 
@@ -1314,7 +1339,9 @@ end tell`
               currentPageData.id === 'uebersicht' ? PROJECT_ROUTES['k2-galerie'].uebersicht :
               currentPageData.id === 'notizen' ? PROJECT_ROUTES['k2-galerie'].notizen :
               currentPageData.id === 'kampagne' ? PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie :
-              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-markt'].home : '/'}
+              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-markt'].home :
+              currentPageData.id === 'presse' ? '/admin?tab=presse' :
+              currentPageData.id === 'oeffentlichkeitsarbeit' ? '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1' : '/'}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',

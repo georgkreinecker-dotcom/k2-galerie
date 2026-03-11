@@ -646,6 +646,8 @@ export const MUSTER_TEXTE = {
   artist1Bio: 'Lena Berg arbeitet in Malerei, Grafik und Mischtechnik. Studium der Bildenden Kunst, seit über zwanzig Jahren freischaffend. Ihre Werke – oft Landschaften und Atelierblicke – leben von kräftigen Farben und reduzierten Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
   artist2Bio: 'Paul Weber widmet sich vor allem Keramik und Skulptur. Ausbildung zum Keramiker, langjährige Erfahrung mit Aufbau und Brand. Seine Objekte und Skulpturen verbinden handwerkliche Präzision mit klaren, zeitgenössischen Formen. Regelmäßige Teilnahme an Kunstmärkten und Gruppenausstellungen.',
   gemeinsamText: 'Gemeinsam eröffnen Lena Berg und Paul Weber die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
+  /** ök2: nur eine Person (Lena Berg) – Absatz unter der Kunstschaffenden-Karte. */
+  gemeinsamTextSinglePerson: 'Lena Berg eröffnet die Galerie Muster – ein Raum für Malerei, Grafik und Mischtechnik, wo Kunst zum Leben erwacht.',
 }
 
 /** Dummy-Vita für Künstler:in 1 (Malerei/Grafik), ~50 Zeilen – für Einstellungen, Außenkommunikation, Galeriegestaltung. */

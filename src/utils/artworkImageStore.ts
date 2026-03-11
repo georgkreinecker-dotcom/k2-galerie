@@ -33,6 +33,25 @@ export function getArtworkImageRef(artwork: any): string {
   return `k2-img-temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
+/**
+ * Alle möglichen Refs für ein Werk (für Lookup in IndexedDB).
+ * Beim Export können Werke unter 0031 oder K2-K-0031 gespeichert sein – damit alle 70 Bilder gefunden werden.
+ */
+export function getArtworkImageRefVariants(artwork: any): string[] {
+  const ref = artwork?.imageRef || getArtworkImageRef(artwork)
+  const variants = new Set<string>([ref])
+  const raw = String(artwork?.number ?? artwork?.id ?? '').trim()
+  if (raw) {
+    variants.add(`k2-img-${raw}`)
+    const digits = raw.replace(/\D/g, '')
+    if (digits.length >= 2) {
+      variants.add(`k2-img-${digits.padStart(4, '0')}`)
+      variants.add(`k2-img-${digits}`)
+    }
+  }
+  return Array.from(variants)
+}
+
 /** Speichert ein Werkbild in IndexedDB. dataUrl = data:image/... Base64. */
 export async function putArtworkImage(artworkRef: string, dataUrl: string): Promise<void> {
   if (!artworkRef || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) return

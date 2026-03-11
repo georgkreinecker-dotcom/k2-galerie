@@ -10,6 +10,7 @@ const sections: { id: string; title: string; desc: string; items: NotizItem[] }[
     desc: 'Briefe an Freunde, Gedanken über Gott und die Welt',
     items: [
       { label: 'Brief an August', to: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust },
+      { label: 'Brief an Andreas', to: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas },
     ],
   },
 ]

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel, ARTWORK_CATEGORIES } from '../../src/config/tenantConfig'
+import { isEchteK2Werknummer } from '../../src/utils/artworksStorage'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -419,22 +420,15 @@ export default function WerkkatalogTab({
 }
 
 function VereinskatalogVorschau() {
+  // VK2-Datentrennung: Nur k2-vk2-artworks-* lesen; echte K2-Nummern (0030, K2-K-0030) nicht anzeigen.
   const vereinsWerke = useMemo(() => {
     const result: any[] = []
-    try {
-      const raw = localStorage.getItem('k2-artworks') || ''
-      if (raw) {
-        const all: any[] = JSON.parse(raw)
-        all.filter(a => a.imVereinskatalog).forEach(a => result.push(a))
-      }
-    } catch (_) {}
-    // VK2-Mitglieder-Keys (Format: k2-vk2-artworks-NAME)
     try {
       Object.keys(localStorage).filter(k => k.startsWith('k2-vk2-artworks-')).forEach(key => {
         const raw = localStorage.getItem(key) || ''
         if (!raw) return
         const all: any[] = JSON.parse(raw)
-        all.filter(a => a.imVereinskatalog).forEach(a => result.push(a))
+        all.filter(a => a?.imVereinskatalog && !isEchteK2Werknummer(String(a?.number ?? a?.id ?? ''))).forEach(a => result.push(a))
       })
     } catch (_) {}
     return result.slice(0, 5)

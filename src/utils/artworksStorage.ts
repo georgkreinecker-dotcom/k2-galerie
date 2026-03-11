@@ -10,9 +10,50 @@
  */
 
 import { prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
+import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 
 const K2_ARTWORKS_KEY = 'k2-artworks'
 const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
+
+/**
+ * Klare Regel (Datentrennung ök2 vs. K2):
+ * - Echte K2-Galerie (Martina & Georg): Werknummern wie 0030, 0031, 0035, K2-K-0030 (3–4 Ziffern, ggf. Präfix K2-K-/K2-M-).
+ * - ök2-Musterwerke (Demo): nur M1, K1, G1, S1, O1 oder muster-*.
+ * Exportiert für VK2-Katalog und Admin – eine Definition, überall dieselbe Prüfung.
+ */
+export function isEchteK2Werknummer(num: string): boolean {
+  const s = String(num || '').trim()
+  if (!s) return false
+  if (/^M\d$|^K\d$|^G\d$|^S\d$|^O\d$/.test(s)) return false // Muster (ök2)
+  if (s.startsWith('muster-')) return false
+  if (/^(K2-K-|K2-M-)?\d{3,4}$/.test(s)) return true // echte K2: 0030, 0031, K2-K-0030
+  return false
+}
+
+/**
+ * Wenn k2-oeffentlich-artworks echte K2-Werke enthält (siehe isEchteK2Werknummer), ersetze durch MUSTER_ARTWORKS.
+ */
+function repairOek2ArtworksIfContaminated(): boolean {
+  try {
+    const raw = localStorage.getItem(OEF_ARTWORKS_KEY)
+    if (raw === null || raw === undefined) return false // Key fehlt = UI nutzt Fallback Muster
+    let arr: any[]
+    try {
+      const parsed = JSON.parse(raw)
+      arr = Array.isArray(parsed) ? parsed : []
+    } catch {
+      return false
+    }
+    if (arr.length === 0) return false
+    const contaminated = arr.some((a: any) => isEchteK2Werknummer(String(a?.number ?? a?.id ?? '')))
+    if (!contaminated) return false
+    console.warn('⚠️ ök2: k2-oeffentlich-artworks enthielt K2-Daten – automatisch auf Musterwerke zurückgesetzt.')
+    saveArtworksByKey(OEF_ARTWORKS_KEY, [...MUSTER_ARTWORKS], { filterK2Only: false, allowReduce: true })
+    return true
+  } catch {
+    return false
+  }
+}
 
 /** Key für Artworks je Kontext. VK2 hat keinen Artwork-Key (Regel: datentrennung-localstorage-niemals-loeschen). */
 export function getArtworksStorageKey(tenant: 'k2' | 'oeffentlich' | 'vk2'): string | null {
@@ -23,18 +64,24 @@ export function getArtworksStorageKey(tenant: 'k2' | 'oeffentlich' | 'vk2'): str
 /**
  * Phase 5.2: Kontextbezogenes Lesen – eine API, Key intern.
  * musterOnly = ök2, vk2 = VK2 (kein Artwork-Key → immer []), sonst K2.
+ * ök2: Vor Rückgabe automatische Reparatur (K2-Daten → Musterwerke), damit alles wieder in Ordnung kommt.
  */
 export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): any[] {
   if (vk2) return [] // VK2 hat keinen Artwork-Key
-  const key = musterOnly ? OEF_ARTWORKS_KEY : K2_ARTWORKS_KEY
-  return readArtworksRawByKey(key)
+  if (musterOnly) {
+    if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
+    return readArtworksRawByKey(OEF_ARTWORKS_KEY)
+  }
+  return readArtworksRawByKey(K2_ARTWORKS_KEY)
 }
 
 /**
  * Phase 5.2: Kontextbezogenes Lesen – ök2: null wenn Key fehlt (erste Nutzung → Muster).
+ * ök2: Automatische Reparatur wenn Key mit K2-Daten verseucht ist.
  */
 export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | null {
-  if (!musterOnly) return readArtworksRawForContext(false, false)
+  if (!musterOnly) return readArtworksRawForContext(false, false) as any
+  if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
   return readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
 }
 
@@ -98,9 +145,10 @@ export function readArtworksRawByKey(key: string): any[] {
   }
 }
 
-/** Wie readArtworksRawByKey, aber null wenn Key fehlt (z. B. ök2 erste Nutzung → Muster anzeigen). */
+/** Wie readArtworksRawByKey, aber null wenn Key fehlt (z. B. ök2 erste Nutzung → Muster anzeigen). Bei ök2-Key: automatische Reparatur wenn K2-Daten drin. */
 export function readArtworksRawByKeyOrNull(key: string): any[] | null {
   try {
+    if (key === OEF_ARTWORKS_KEY && repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
     const stored = localStorage.getItem(key)
     if (stored === null || stored === undefined) return null
     const parsed = JSON.parse(stored)

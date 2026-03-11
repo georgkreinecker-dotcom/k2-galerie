@@ -9,7 +9,7 @@ import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
 import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from './syncMerge'
-import { getArtworkImage } from './artworkImageStore'
+import { getArtworkImage, getArtworkImageRefVariants } from './artworkImageStore'
 import { uploadArtworkImageToStorage } from './supabaseStorage'
 
 // Sicherer Zugriff auf import.meta.env
@@ -146,8 +146,14 @@ export async function resolveImageUrlForSupabase(
   let dataUrl: string | null = null
   if (typeof url === 'string' && url.startsWith('data:image')) {
     dataUrl = url
-  } else if (ref && typeof ref === 'string') {
-    dataUrl = await getArtworkImage(ref)
+  } else {
+    // Refs probieren (0031, K2-K-0031, …), damit alle Bilder aus IndexedDB gefunden werden (z. B. 70 Werke iPad)
+    const refsToTry = getArtworkImageRefVariants(artwork)
+    for (const r of refsToTry) {
+      if (!r) continue
+      dataUrl = await getArtworkImage(r)
+      if (dataUrl) break
+    }
   }
   if (dataUrl) {
     const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
@@ -215,6 +221,39 @@ export async function resolveArtworkImageUrlsForExport(artworks: any[]): Promise
     out.push(...resolved)
   }
   return out
+}
+
+/**
+ * Füllt fehlende imageUrl bei Werken aus Supabase (Datenbank hat image_url).
+ * Nutzen: Nach „Vom Server laden“ – wenn der Blob keine Bild-URLs hatte, hier aus Supabase nachziehen.
+ */
+export async function fillArtworkImageUrlsFromSupabase(artworks: any[]): Promise<any[]> {
+  if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  if (!isSupabaseConfigured()) return artworks
+  let raw: Array<{ number?: string; id?: string; image_url?: string }> = []
+  try {
+    raw = await fetchRawArtworksFromSupabase()
+  } catch (_) {
+    return artworks
+  }
+  const map = new Map<string, string>()
+  raw.forEach((a: any) => {
+    const k = String(a?.number || a?.id || '').trim()
+    const img = a?.image_url
+    if (!k || !img || !(img.startsWith('http://') || img.startsWith('https://'))) return
+    map.set(k, img)
+    const digits = k.replace(/\D/g, '')
+    if (digits.length >= 2) map.set(digits.padStart(4, '0'), img)
+  })
+  if (map.size === 0) return artworks
+  return artworks.map((a: any) => {
+    const url = a?.imageUrl
+    if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) return a
+    const key = String(a?.number ?? a?.id ?? '').trim()
+    const fromSupabase = map.get(key) || (key.replace(/\D/g, '').length >= 2 ? map.get(key.replace(/\D/g, '').padStart(4, '0')) : undefined)
+    if (fromSupabase) return { ...a, imageUrl: fromSupabase, imageRef: fromSupabase }
+    return a
+  })
 }
 
 /**

@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-027 · Brief an Andreas – weiße Seite nach „Wird geladen“
+**Symptom:** Brief öffnet kurz, zeigt „Wird geladen …“, dann weißer Bildschirm, Tab hängt.
+**Ursache:** Endlosschleife im Markdown-Parser (renderBoldItalic): Rest wie `**` wurde nicht konsumiert → gleiche Iteration endlos. Auslöser z. B. `**→ [Link](…)**` – nach dem Link blieb `**`.
+**Lösung:** Beim Abarbeiten von \*\*/\* mindestens 1 Zeichen (bzw. 2 bei `**`) konsumieren; try/catch + Fehlerzustand bei Fetch/Render.
+**Betroffene Dateien:** `src/pages/BriefAnAndreasPage.tsx`
+**Status:** ✅ Behoben (11.03.26).
+
+---
+
 ## BUG-026 · „Vom Server laden“ – nach Erfolgsmeldung/Schließen keine Werke mehr sichtbar
 **Symptom:** User klickt „Vom Server laden“ / „Aktuellen Stand holen“, bekommt Meldung „Daten vom Server geladen (Stand: …)“; beim Schließen oder danach sind **keine Werke mehr vorhanden** („Noch keine Werke vorhanden“).
 **Ursache:** **Race:** handleRefresh setzte die Erfolgsmeldung und rief `loadArtworksResolvedForDisplay().then(setArtworksDisplay, setLoadStatus)` auf, beendete den try-Block aber sofort – **finally** setzte `setIsLoading(false)` bevor das .then() lief. Dadurch: `artworks` blieb leer, `isLoading` wurde false → useEffect „wenn leer und !isLoading“ lud erneut; in dem Moment konnte die Anzeige leer bleiben oder überschrieben werden.

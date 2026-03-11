@@ -14,8 +14,8 @@ export interface ProcessImageOptions {
   mode: ImageProcessingMode
   /** Nur bei mode 'freigestellt' */
   backgroundPreset?: BackgroundPresetKey
-  /** Kontext für Komprimierung: desktop (Seitengestaltung), artwork (Werke) */
-  context?: 'desktop' | 'artwork'
+  /** Kontext für Komprimierung: desktop (Seitengestaltung), artwork (Werke), mobile (stärkere Komprimierung) */
+  context?: 'desktop' | 'artwork' | 'mobile'
 }
 
 /**
