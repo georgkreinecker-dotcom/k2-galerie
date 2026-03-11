@@ -37,6 +37,10 @@ export function getArtworkImageRef(artwork: any): string {
  * Alle möglichen Refs für ein Werk (nur für Lookup in IndexedDB – keine Schreiblogik).
  * 30–48: iPad kann unter K2-K-0040 oder K2-K-40 speichern – alle Varianten probieren, damit Bild beim „An Server senden“ gefunden wird.
  * Wenn number nur "0030" oder "30" ist, trotzdem K2-K-/K2-M-Varianten hinzufügen, da das Bild oft unter k2-img-K2-K-0030 gespeichert wurde.
+ *
+ * WARNUNG (BUG-031): Bei number "K2-K-0030" liefert raw.replace(/\D/g,'') = "20030" (alle Ziffern) – völlig falsch.
+ * Für 0030/30 MUSS die Zifferngruppe aus dem K2-Match (k2[2]) genutzt werden, nie "digits" aus dem ganzen String.
+ * Test: src/tests/artworkImageStore.test.ts – schlägt sofort an, wenn jemand das wieder kaputt macht.
  */
 export function getArtworkImageRefVariants(artwork: any): string[] {
   const ref = artwork?.imageRef || getArtworkImageRef(artwork)
@@ -49,24 +53,26 @@ export function getArtworkImageRefVariants(artwork: any): string[] {
       const num = parseInt(digits, 10)
       if (!Number.isNaN(num)) {
         const four = String(num).padStart(4, '0')
-        variants.add(`k2-img-${digits.padStart(4, '0')}`)
-        variants.add(`k2-img-${digits}`)
         const k2 = raw.match(/^K2-([A-Z])-?(\d+)$/i)
         if (k2) {
+          // K2-K-0030: NUR k2[2] (Zifferngruppe "0030") – nie digits aus ganzem String (="20030")!
           const digitPart = k2[2]
           const digitNum = parseInt(digitPart, 10)
           const digitFour = digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0')
           variants.add(`k2-img-K2-${k2[1]}-${digitNum}`)
           variants.add(`k2-img-K2-${k2[1]}-${digitFour}`)
-          // K2-K-0030: Bild kann unter k2-img-0030 liegen (vom Server/Merge) – sonst findet Export es nicht
           variants.add(`k2-img-${digitFour}`)
           variants.add(`k2-img-${digitNum}`)
+        } else {
+          // Nur Ziffern (0030, 30): digits/four/num sind korrekt
+          variants.add(`k2-img-${digits.padStart(4, '0')}`)
+          variants.add(`k2-img-${digits}`)
+          variants.add(`k2-img-${num}`)
+          variants.add(`k2-img-K2-K-${num}`)
+          variants.add(`k2-img-K2-K-${four}`)
+          variants.add(`k2-img-K2-M-${num}`)
+          variants.add(`k2-img-K2-M-${four}`)
         }
-        // Auch K2-K- und K2-M-Varianten wenn number nur Ziffern (0030/30) – sonst findet Export Bild nicht (gespeichert unter k2-img-K2-K-0030).
-        variants.add(`k2-img-K2-K-${num}`)
-        variants.add(`k2-img-K2-K-${four}`)
-        variants.add(`k2-img-K2-M-${num}`)
-        variants.add(`k2-img-K2-M-${four}`)
       }
     }
   }

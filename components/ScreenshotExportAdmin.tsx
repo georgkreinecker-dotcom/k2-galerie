@@ -3422,9 +3422,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
       const toSave = filterK2Only(stripBase64FromArtworks(afterPersist))
       // Nur echte Bild-URLs (https) zählen – imageRef allein lädt auf iPad oft nicht (IndexedDB leer)
-      const savedWithImageCount = toSave.filter(
-        (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
-      ).length
+      const hasImageUrl = (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+      const savedWithImageCount = toSave.filter(hasImageUrl).length
+      const withoutImageNumbers = toSave.filter((a: any) => !hasImageUrl(a)).map((a: any) => String(a?.number ?? a?.id ?? '').trim()).filter(Boolean)
       const localWithImageCount = localArtworks.filter(
         (a: any) =>
           (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
@@ -3472,7 +3472,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
           setTimeout(() => {
             setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.\n\nGespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild-URL (so viele siehst du in der Galerie).`)
+            const ohneBildHinweis = withoutImageNumbers.length > 0 ? `\n\nOhne Bild-URL: ${withoutImageNumbers.slice(0, 15).join(', ')}${withoutImageNumbers.length > 15 ? ' …' : ''}` : ''
+            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.\n\nGespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild-URL (so viele siehst du in der Galerie).${ohneBildHinweis}`)
           }, 4000)
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
@@ -3489,9 +3490,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(preserved)
           const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
           const toSaveOnly = stripBase64FromArtworks(afterPersist)
-          const savedWithImageOnly = toSaveOnly.filter(
-            (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
-          ).length
+          const hasImg = (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+          const savedWithImageOnly = toSaveOnly.filter(hasImg).length
+          const withoutImageOnly = toSaveOnly.filter((a: any) => !hasImg(a)).map((a: any) => String(a?.number ?? a?.id ?? '').trim()).filter(Boolean)
           const saved = await saveArtworks(tenant, filterK2Only(toSaveOnly))
           if (saved) {
             const resolved = await loadArtworksWithResolvedImages(tenant)
@@ -3503,7 +3504,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             setSyncStatusBar({ phase: 'loading', message: `${serverCount} Werke geladen. Bilder werden angezeigt…` })
             setTimeout(() => {
               setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).\n\nGespeichert: ${serverCount} Werke, ${savedWithImageOnly} mit Bild-URL (so viele siehst du in der Galerie).`)
+              const ohneHinweis = withoutImageOnly.length > 0 ? `\n\nOhne Bild-URL: ${withoutImageOnly.slice(0, 15).join(', ')}${withoutImageOnly.length > 15 ? ' …' : ''}` : ''
+              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).\n\nGespeichert: ${serverCount} Werke, ${savedWithImageOnly} mit Bild-URL (so viele siehst du in der Galerie).${ohneHinweis}`)
             }, 4000)
           } else {
             setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })

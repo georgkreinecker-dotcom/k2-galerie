@@ -15,6 +15,7 @@
 **Ursache:** **getArtworkImageRefVariants** baut Suchvarianten aus number. Bei number **"K2-K-0030"** ist `digits` = "20030" (alle Ziffern) → Varianten k2-img-0030 und k2-img-30 fehlten. Liegt das Bild unter k2-img-0030 (z. B. nach Merge/Server), fand der Export es nicht.
 **Lösung:** Wenn das K2-Muster (K2-X-NNNN) matcht, die Zifferngruppe (0030, 30) explizit als Varianten hinzufügen.
 **Betroffene Dateien:** `src/utils/artworkImageStore.ts` (getArtworkImageRefVariants)
+**Absicherung:** Test `src/tests/artworkImageStore.test.ts` – schlägt an, wenn K2-K-0030 wieder k2-img-20030 bekommt oder k2-img-0030/30 fehlt. Warn-Kommentar im Code. Bei Änderung an getArtworkImageRefVariants: Test muss grün bleiben.
 **Status:** ✅ Behoben (11.03.26).
 
 ---
