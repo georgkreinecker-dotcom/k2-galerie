@@ -38,7 +38,7 @@ import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData } from '../src/utils/syncMerge'
-import { clearArtworkImagesForNumberRange } from '../src/utils/artworkImageStore'
+import { clearArtworkImagesForNumberRange, persistDataUrlsToIndexedDB } from '../src/utils/artworkImageStore'
 import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
 import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
@@ -3113,13 +3113,62 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           if (isMounted) setAllArtworks([])
           return
         }
-        loadArtworksWithResolvedImages(tenant).then((artworks) => {
-          if (isMounted && Array.isArray(artworks)) {
-            setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
+        /** K2: Niemals leere Anzeige, wenn localStorage noch Werke hat (z. B. Resolve fehlgeschlagen). */
+        const fallbackFromStorageForK2 = () => {
+          if (!tenant.isOeffentlich && !tenant.isVk2 && key === 'k2-artworks') {
+            const raw = localStorage.getItem('k2-artworks')
+            if (raw && raw.length > 2) {
+              try {
+                const parsed = JSON.parse(raw)
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  console.warn('⚠️ Admin: Resolve leer/Fehler, aber k2-artworks hat', parsed.length, 'Werke – zeige aus localStorage')
+                  return parsed
+                }
+              } catch (_) { /* ignore */ }
+            }
           }
-        }).catch(() => { if (isMounted) setAllArtworks([]) })
+          return null
+        }
+        loadArtworksWithResolvedImages(tenant).then((artworks) => {
+          if (!isMounted) return
+          if (Array.isArray(artworks) && artworks.length > 0) {
+            setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
+            return
+          }
+          const fallback = fallbackFromStorageForK2()
+          if (fallback && fallback.length > 0) {
+            setAllArtworks(inIframe ? stripArtworkImagesForPreview(fallback) : fallback)
+            return
+          }
+          setAllArtworks(artworks)
+        }).catch(() => {
+          if (!isMounted) return
+          const fallback = fallbackFromStorageForK2()
+          if (fallback && fallback.length > 0) {
+            setAllArtworks(inIframe ? stripArtworkImagesForPreview(fallback) : fallback)
+            return
+          }
+          setAllArtworks([])
+        })
       } catch (_) {
-        if (isMounted) setAllArtworks([])
+        if (isMounted) {
+          const key = tenant.getArtworksKey()
+          const fallback = (!tenant.isOeffentlich && !tenant.isVk2 && key === 'k2-artworks') ? (() => {
+            try {
+              const raw = localStorage.getItem('k2-artworks')
+              if (raw && raw.length > 2) {
+                const parsed = JSON.parse(raw)
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed
+              }
+            } catch (_) { /* ignore */ }
+            return null
+          })() : null
+          if (fallback && fallback.length > 0) {
+            setAllArtworks(inIframe ? stripArtworkImagesForPreview(fallback) : fallback)
+          } else {
+            setAllArtworks([])
+          }
+        }
       }
     }, 400)
     return () => { isMounted = false; clearTimeout(t) }
@@ -3369,7 +3418,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       })
       // Bilder aus Supabase nachziehen, wenn der Server-Blob keine URLs hatte (Platzhalter vermeiden)
       const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(mergedWithImages)
-      const toSave = filterK2Only(stripBase64FromArtworks(withSupabaseImages))
+      // Data-URLs vor strip in IndexedDB sichern → Kette stimmt, Karte bekommt das richtige Bild
+      const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
+      const toSave = filterK2Only(stripBase64FromArtworks(afterPersist))
       // Nur echte Bild-URLs (https) zählen – imageRef allein lädt auf iPad oft nicht (IndexedDB leer)
       const savedWithImageCount = toSave.filter(
         (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
@@ -3418,11 +3469,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
           setLastSyncLoadedAt(loadedAt)
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          const controlMsg = ` Vercel → Mac: ${serverArtworks.length} Werke, ${serverImagesCount} mit Bild angekommen. Gespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild.`
           setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
           setTimeout(() => {
             setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.${controlMsg}`)
+            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.\n\nGespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild-URL (so viele siehst du in der Galerie).`)
           }, 4000)
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
@@ -3437,7 +3487,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         if (nurServerLaden) {
           const preserved = preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
           const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(preserved)
-          const toSaveOnly = stripBase64FromArtworks(withSupabaseImages)
+          const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
+          const toSaveOnly = stripBase64FromArtworks(afterPersist)
           const savedWithImageOnly = toSaveOnly.filter(
             (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
           ).length
@@ -3449,11 +3500,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             const loadedAt = data.exportedAt || new Date().toISOString()
             try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
             setLastSyncLoadedAt(loadedAt)
-            const controlMsg = ` Vercel → Mac: ${serverCount} Werke, ${serverImagesCount} mit Bild. Gespeichert: ${serverCount} Werke, ${savedWithImageOnly} mit Bild.`
             setSyncStatusBar({ phase: 'loading', message: `${serverCount} Werke geladen. Bilder werden angezeigt…` })
             setTimeout(() => {
               setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).${controlMsg}`)
+              alert(`✅ ${serverCount} Werke vom Server geladen (nur Server-Stand).\n\nGespeichert: ${serverCount} Werke, ${savedWithImageOnly} mit Bild-URL (so viele siehst du in der Galerie).`)
             }, 4000)
           } else {
             setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
@@ -3514,7 +3564,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const getKey = (a: any) => String(a?.number ?? a?.id ?? '')
       const withPreservedImages = preserveLocalImageData(serverList, localArtworks, getKey)
       const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withPreservedImages)
-      const toSave = stripBase64FromArtworks(withSupabaseImages)
+      const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
+      const toSave = stripBase64FromArtworks(afterPersist)
       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })
       if (!ok) {
         alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte „Speicher entlasten“ oder „Aus Backup-Datei wiederherstellen“ nutzen.')

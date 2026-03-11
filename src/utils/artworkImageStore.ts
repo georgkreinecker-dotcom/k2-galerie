@@ -73,6 +73,30 @@ export async function putArtworkImage(artworkRef: string, dataUrl: string): Prom
   })
 }
 
+/**
+ * Vor stripBase64: Alle Data-URLs in IndexedDB sichern und in der Liste durch imageRef ersetzen.
+ * So geht beim „vom Server laden“ + Speichern kein Bild verloren – die Kette bleibt, die Karte bekommt das Bild.
+ */
+export async function persistDataUrlsToIndexedDB(artworks: any[]): Promise<any[]> {
+  if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  const out: any[] = []
+  for (const a of artworks) {
+    if (!a) { out.push(a); continue }
+    const url = a?.imageUrl
+    if (typeof url === 'string' && url.startsWith('data:image')) {
+      const ref = a.imageRef || getArtworkImageRef(a)
+      try {
+        await putArtworkImage(ref, url)
+      } catch (_) {}
+      const previewUrl = (a.previewUrl && !String(a.previewUrl).startsWith('data:')) ? a.previewUrl : ''
+      out.push({ ...a, imageUrl: '', imageRef: ref, previewUrl })
+    } else {
+      out.push(a)
+    }
+  }
+  return out
+}
+
 /** Liest ein Werkbild aus IndexedDB. Gibt dataUrl oder null. */
 export async function getArtworkImage(artworkRef: string): Promise<string | null> {
   if (!artworkRef) return null

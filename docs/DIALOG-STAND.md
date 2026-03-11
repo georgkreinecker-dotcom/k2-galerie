@@ -6,6 +6,15 @@
 
 ---
 
+## Heute 11.03.26 – Kette: richtiges Bild an der Karte (keine Aussagen, Kette fix)
+
+- **Georg:** „Ich habe nichts von Aussagen – stelle die Kette richtig und hänge einfach an die Karte das richtige Bild. Das kann doch nicht so schwierig sein.“
+- **Umsetzung:** (1) **persistDataUrlsToIndexedDB** in artworkImageStore.ts: Vor jedem stripBase64 werden alle Data-URLs (data:image/…) in IndexedDB gespeichert und in der Liste durch imageRef ersetzt (imageUrl = ''). So geht beim „vom Server laden“ + Speichern kein Bild verloren – die Karte bekommt das Bild über resolveArtworkImages (imageRef → IndexedDB). (2) **Admin:** An allen drei Stellen (Aktuellen Stand holen, Nur Server-Stand, Werke vom Server zurückholen) wird **vor** stripBase64FromArtworks jetzt **persistDataUrlsToIndexedDB** aufgerufen. Kette: Merge → fillSupabase → persistDataUrls → strip → save → Anzeige über resolveArtworkImages.
+- **Wo:** src/utils/artworkImageStore.ts (neue Funktion), components/ScreenshotExportAdmin.tsx (3 Aufrufe).
+- **Nächster Schritt:** Georg: „Aktuellen Stand holen“ testen – Karten sollten das richtige Bild zeigen (keine leeren Karten wo vorher Bild da war).
+
+---
+
 ## Heute 11.03.26 – Bildverlust iPad („bis auf 2 alle weg“) – Fix + Absicherung
 
 - **Georg:** Nach Push/Neuladen auf dem iPad waren fast alle Bilder weg (nur noch 2). Die zuvor gegebene Aussage „beim Neuladen verlierst du keine Bilder“ war falsch.
