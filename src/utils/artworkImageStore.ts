@@ -34,8 +34,8 @@ export function getArtworkImageRef(artwork: any): string {
 }
 
 /**
- * Alle möglichen Refs für ein Werk (für Lookup in IndexedDB).
- * Beim Export können Werke unter 0031 oder K2-K-0031 gespeichert sein – damit alle 70 Bilder gefunden werden.
+ * Alle möglichen Refs für ein Werk (nur für Lookup in IndexedDB – keine Schreiblogik).
+ * 30–48: iPad kann unter K2-K-0040 oder K2-K-40 speichern – alle Varianten probieren, damit Bild beim „An Server senden“ gefunden wird.
  */
 export function getArtworkImageRefVariants(artwork: any): string[] {
   const ref = artwork?.imageRef || getArtworkImageRef(artwork)
@@ -44,9 +44,17 @@ export function getArtworkImageRefVariants(artwork: any): string[] {
   if (raw) {
     variants.add(`k2-img-${raw}`)
     const digits = raw.replace(/\D/g, '')
-    if (digits.length >= 2) {
-      variants.add(`k2-img-${digits.padStart(4, '0')}`)
-      variants.add(`k2-img-${digits}`)
+    if (digits.length >= 1) {
+      const num = parseInt(digits, 10)
+      if (!Number.isNaN(num)) {
+        variants.add(`k2-img-${digits.padStart(4, '0')}`)
+        variants.add(`k2-img-${digits}`)
+        const k2 = raw.match(/^K2-([A-Z])-?(\d+)$/i)
+        if (k2) {
+          variants.add(`k2-img-K2-${k2[1]}-${num}`)
+          variants.add(`k2-img-K2-${k2[1]}-${String(num).padStart(4, '0')}`)
+        }
+      }
     }
   }
   return Array.from(variants)
