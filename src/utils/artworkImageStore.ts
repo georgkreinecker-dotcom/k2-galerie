@@ -36,6 +36,7 @@ export function getArtworkImageRef(artwork: any): string {
 /**
  * Alle möglichen Refs für ein Werk (nur für Lookup in IndexedDB – keine Schreiblogik).
  * 30–48: iPad kann unter K2-K-0040 oder K2-K-40 speichern – alle Varianten probieren, damit Bild beim „An Server senden“ gefunden wird.
+ * Wenn number nur "0030" oder "30" ist, trotzdem K2-K-/K2-M-Varianten hinzufügen, da das Bild oft unter k2-img-K2-K-0030 gespeichert wurde.
  */
 export function getArtworkImageRefVariants(artwork: any): string[] {
   const ref = artwork?.imageRef || getArtworkImageRef(artwork)
@@ -47,13 +48,19 @@ export function getArtworkImageRefVariants(artwork: any): string[] {
     if (digits.length >= 1) {
       const num = parseInt(digits, 10)
       if (!Number.isNaN(num)) {
+        const four = String(num).padStart(4, '0')
         variants.add(`k2-img-${digits.padStart(4, '0')}`)
         variants.add(`k2-img-${digits}`)
         const k2 = raw.match(/^K2-([A-Z])-?(\d+)$/i)
         if (k2) {
           variants.add(`k2-img-K2-${k2[1]}-${num}`)
-          variants.add(`k2-img-K2-${k2[1]}-${String(num).padStart(4, '0')}`)
+          variants.add(`k2-img-K2-${k2[1]}-${four}`)
         }
+        // Auch K2-K- und K2-M-Varianten wenn number nur Ziffern (0030/30) – sonst findet Export Bild nicht (gespeichert unter k2-img-K2-K-0030).
+        variants.add(`k2-img-K2-K-${num}`)
+        variants.add(`k2-img-K2-K-${four}`)
+        variants.add(`k2-img-K2-M-${num}`)
+        variants.add(`k2-img-K2-M-${four}`)
       }
     }
   }

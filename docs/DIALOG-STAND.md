@@ -6,11 +6,12 @@
 
 ---
 
-## Heute 11.03.26 – Noch 5 Bilder fehlen: 0030, 0031, 0032, 0033, 0038
+## Heute 11.03.26 – 5 Bilder (0030–0033, 0038) – Ref-Varianten erweitert
 
-- **Georg:** „Bis auf fünf Bilder – 30 bis 33 und 38 – sind jetzt alle da.“
-- **Ursache:** Beim Export vom iPad haben diese 5 Werke keine Bild-URL bekommen (Bild im Export nicht aufgelöst oder Upload fehlgeschlagen). Server liefert für sie also keine URL → Mac kann nichts anzeigen.
-- **Lösung (ohne Code):** Am **iPad** die 5 Werke **0030, 0031, 0032, 0033, 0038** nacheinander öffnen, prüfen ob das Bild sichtbar ist, ggf. Bild neu einfügen und speichern. Danach einmal **„An Server senden“**. Dann sollten auch diese 5 eine URL bekommen und am Mac ankommen.
+- **Georg:** „Diese Bilder sind drinnen eindeutig“ (am iPad sichtbar, kommen aber nicht an).
+- **Ursache:** Beim Lookup (Export/Anzeige) wurden für Nummern wie „0030“ oder „30“ **keine** K2-K-/K2-M-Ref-Varianten probiert. Das Bild liegt in IndexedDB aber oft unter `k2-img-K2-K-0030` → wurde nicht gefunden.
+- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) werden bei reinen Ziffernnummern (0030, 30 …) jetzt immer auch `k2-img-K2-K-30`, `k2-img-K2-K-0030`, `k2-img-K2-M-30`, `k2-img-K2-M-0030` hinzugefügt. So findet „An Server senden“ die Bilder für 0030–0033 und 0038.
+- **Wo:** src/utils/artworkImageStore.ts. **Nächster Schritt:** Vom iPad erneut **„An Server senden“** → dann „Aktuellen Stand holen“ am Mac; die 5 sollten jetzt eine URL bekommen und ankommen.
 
 ---
 
