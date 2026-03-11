@@ -11,6 +11,7 @@ import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from './syncMerge'
 import { getArtworkImageRefVariants, getArtworkImageByRefVariants } from './artworkImageStore'
 import { uploadArtworkImageToStorage } from './supabaseStorage'
+import { GALLERY_DATA_BASE_URL } from '../config/externalUrls'
 
 // Sicherer Zugriff auf import.meta.env
 let SUPABASE_URL = ''
@@ -153,7 +154,23 @@ export async function resolveImageUrlForSupabase(
     if (found) dataUrl = found.dataUrl
   }
   if (dataUrl) {
-    const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
+    let storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
+    // Fallback für 30+: Wenn Supabase fehlt oder fehlschlägt → Upload zu Vercel Blob (damit Handy/iPad Bilder senden können)
+    if (!storageUrl && GALLERY_DATA_BASE_URL) {
+      try {
+        const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/upload-artwork-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artworkNumber: String(number), dataUrl })
+        })
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.url && typeof data.url === 'string') storageUrl = data.url
+        }
+      } catch (_) {
+        // Fallback fehlgeschlagen – bleibt ohne URL
+      }
+    }
     return storageUrl ?? undefined
   }
   // Fallback: Bild existiert nur in Supabase (vom iPad hochgeladen), dieses Gerät hat es nicht in IndexedDB
