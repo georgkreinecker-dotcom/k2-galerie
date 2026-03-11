@@ -272,12 +272,12 @@ export function preserveLocalImageData(
     const local = keysToTry.map((k) => localByKey.get(k)).find(Boolean)
     if (!local) return item
     const localHasImage = !isPlaceholderOrEmpty(local.imageUrl) || (local.imageRef && String(local.imageRef).trim() !== '')
-    // Lokal bewusst leer (z. B. nach „Bilder 0030–0039 bereinigen“) → Merged-Item ebenfalls ohne Bild, sonst kommen Bilder beim Merge zurück
-    if (!localHasImage) {
+    const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
+    // Lokal bewusst leer (z. B. nach „Bilder 30–39 bereinigen“) → nur ohne Bild übernehmen, wenn Server auch keins hat. Hat Server eine URL (neue Fotos vom iPad), behalten – sonst blockiert Mac 30–39 für immer.
+    if (!localHasImage && !serverHasRealUrl) {
       return { ...item, imageUrl: '', imageRef: '', previewUrl: '' }
     }
     // KRITISCH: Wenn Server eine echte URL hat → immer Server nehmen. Sonst kommt „vom iPad gesendet“ auf Mac/Handy nie an.
-    const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
     const imageUrl = serverHasRealUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl)
     const imageRef = serverHasRealUrl ? (item.imageRef ?? item.imageUrl) : (local.imageRef ?? item.imageRef)
     const previewUrl = serverHasRealUrl ? (item.previewUrl ?? item.imageUrl) : (local.previewUrl ?? item.previewUrl)

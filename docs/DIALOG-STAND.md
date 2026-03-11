@@ -6,6 +6,24 @@
 
 ---
 
+## Heute 11.03.26 – Mac blockierte 0030–0039 trotz neuer Bilder vom iPad (Fix)
+
+- **Georg:** „Das habe ich schon vor dem letzten Senden gemacht – überall sind neue Bilder drin, am iPad sichtbar, nur Mac blockiert noch.“
+- **Ursache:** In **preserveLocalImageData** (syncMerge.ts): Wenn **lokal** (Mac) für ein Werk **kein** Bild hatte, wurde das Merged-Item immer auf „ohne Bild“ gesetzt – auch wenn der **Server** (vom iPad) eine Bild-URL geliefert hatte. Dadurch wurden die neuen Fotos für 30–39 auf dem Mac verworfen.
+- **Fix:** Nur noch dann auf „kein Bild“ setzen, wenn **sowohl** lokal **als auch** Server keine echte URL haben. Hat der Server eine URL (neue Fotos vom iPad), wird sie übernommen – Mac blockiert 30–39 nicht mehr.
+- **Wo:** src/utils/syncMerge.ts. **Doku:** GELOESTE-BUGS.md BUG-029.
+- **Nächster Schritt:** Georg: Am Mac „Aktuellen Stand holen“ (nachdem vom iPad erneut gesendet wurde) → Bilder 30–39 sollten ankommen.
+
+---
+
+## Heute 11.03.26 – Werke 0030–0039 bleiben schwarz („Sperre“)
+
+- **Georg:** „Dort wo wir einmal alle Bilder rausgelöscht haben (30 bis 38) bleiben die Bilder schwarz – da ist noch eine Sperre drin.“
+- **Erklärung:** Die einzige „Sperre“ war: Für **0030–0039** werden **alte Repo-Bilder** nicht angezeigt. **Zusätzlich** blockierte der Mac: wenn lokal kein Bild, wurde Server-Bild verworfen → Fix oben. Nach Fix: neue Bilder vom iPad für 30–39 kommen am Mac an.
+- **70 Werke, 60 mit Bild:** Die 10 ohne Bild-URL waren 0030–0039 (bereinigt). Wenn iPad für 30–39 neue Fotos hat und sendet, müssen sie jetzt auch am Mac ankommen.
+
+---
+
 ## Heute 11.03.26 – iPad sendet → Mac/Handy bekommen Gesendetes nicht (Fix preserveLocalImageData)
 
 - **Georg:** „Es geht niemals das weg was am iPad vorhanden ist, und es kommt niemals das an was gesendet wurde – und das seit 2 Tagen.“

@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-029 · Mac blockiert 0030–0039 trotz neuer Bilder vom iPad
+**Symptom:** Georg hatte überall (auch 30–39) neue Bilder eingefügt, am iPad sichtbar und gesendet – am Mac blieben 30–39 schwarz.
+**Ursache:** In **preserveLocalImageData**: Wenn **lokal** (Mac) für ein Werk kein Bild hatte (`!localHasImage`), wurde das Merged-Item immer mit `imageUrl: '', imageRef: ''` zurückgegeben – auch wenn der **Server** (vom iPad) eine echte Bild-URL lieferte. So wurden die neuen Fotos für 30–39 auf dem Mac verworfen.
+**Lösung:** Nur noch dann auf „kein Bild“ setzen, wenn **sowohl** lokal **als auch** Server keine echte URL haben (`!localHasImage && !serverHasRealUrl`). Hat der Server eine https-URL, wird sie übernommen.
+**Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData)
+**Status:** ✅ Behoben (11.03.26).
+
+---
+
 ## BUG-028 · iPad sendet → Mac/Handy bekommen Gesendetes nicht (seit 2 Tagen)
 **Symptom:** „Es geht niemals das weg was am iPad vorhanden ist, und es kommt niemals das an was gesendet wurde.“ Nach „An Server senden“ vom iPad zeigt Mac/Handy nach „Aktuellen Stand holen“ nicht den gerade gesendeten Stand (falsche/fehlende Bilder, alter Stand).
 **Ursache:** In **preserveLocalImageData** (syncMerge.ts) galt: Server-URL nur nutzen wenn **lokal keine** echte URL hatte (`useServerUrl = serverHasRealUrl && !localHasRealUrl`). Hatte der Mac von einem früheren Sync schon eine URL, wurde die **vom iPad frisch gesendete** Server-URL verworfen und die alte lokale beibehalten → „was gesendet wurde, kommt nicht an“.
