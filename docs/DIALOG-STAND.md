@@ -12,20 +12,20 @@
 
 ---
 
-## Heute 11.03.26 – 5 Bilder (30–33, 38) fehlen noch – Ref-Variante k2-img-30 ergänzt
+## Heute 11.03.26 – 5 Bilder (30–33, 38): Index überall gleich – Ursache woanders
 
-- **Georg:** „Es fehlen noch immer die fünf Bilder 30 bis 33 und 38.“
-- **Ursache:** Beim Lookup wurden zwar K2-K-/K2-M-Varianten (z. B. k2-img-K2-K-0030) probiert, aber **nicht** die reine Zahl ohne Nullen: **k2-img-30**. Wenn das iPad (oder ein anderes Gerät) unter `k2-img-30` statt `k2-img-0030` speichert, wurde das Bild beim „An Server senden“ nicht gefunden.
-- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) wird zusätzlich `k2-img-${num}` ergänzt (z. B. k2-img-30, k2-img-31, …). So werden alle Schreibweisen (0030, 30, K2-K-0030, K2-K-30) beim Export/Anzeige durchprobiert.
-- **Wo:** src/utils/artworkImageStore.ts. **Nächster Schritt:** Vom iPad erneut **„An Server senden“** ausführen → dann am Mac/Handy **„Aktuellen Stand holen“** (oder Stand-Badge tippen) → die 5 Bilder sollten jetzt mit ankommen.
+- **Georg:** „Der Index ist immer der gleiche k2-k-00… wie bei allen anderen auch, also gibt es keinen Grund für diesen Fehler.“
+- **Konsequenz:** Ref-Varianten (k2-img-30 etc.) waren der falsche Ansatz – wieder entfernt. Die Ursache liegt woanders.
+- **Mögliche Richtungen (ohne Code-Fix):** (1) Nach „An Server senden“ im Erfolgs-Modal prüfen: Zeigt es „Bei X Werken konnte keine Bild-URL erstellt werden“ und listet es 30, 31, 32, 33, 38? Dann schlägt der Upload/die Auflösung für genau diese 5 fehl (Timeout, Netz, oder Bild nicht in IndexedDB auf dem sendenden Gerät). (2) Sind die 5 in der **gespeicherten** Werkliste überhaupt mit imageRef (k2-img-K2-K-0030 …) versehen? Wenn nach einem früheren „Aktuellen Stand holen“ (Server hatte für 30–39 keine URLs) die Merged-Liste mit **leeren** imageRef gespeichert wurde, liegt das Bild evtl. noch in IndexedDB – resolveArtworkImageUrlsForExport baut die Varianten aus **number**, sollte es trotzdem finden. (3) Wurde „Bilder 30–39 bereinigen“ ausgeführt? Dann sind die Bilder aus IndexedDB gelöscht; neue Fotos müssen am iPad wieder eingefügt und dann gesendet werden.
+- **Nächster Schritt:** Beim nächsten „An Server senden“ (vom iPad) auf die Meldung achten (ohne Bild-URL für welche Nummern?). Oder kurz prüfen: Haben die 5 Werke in der Admin-Liste (nach Laden) ein imageRef-Feld gesetzt?
 
 ---
 
-## Heute 11.03.26 – 5 Bilder (0030–0033, 0038) – Ref-Varianten erweitert (erster Fix)
+## Heute 11.03.26 – 5 Bilder (0030–0033, 0038) – Ref-Varianten (erster Fix, danach zurückgenommen)
 
 - **Georg:** „Diese Bilder sind drinnen eindeutig“ (am iPad sichtbar, kommen aber nicht an).
 - **Ursache:** Beim Lookup (Export/Anzeige) wurden für Nummern wie „0030“ oder „30“ **keine** K2-K-/K2-M-Ref-Varianten probiert. Das Bild liegt in IndexedDB aber oft unter `k2-img-K2-K-0030` → wurde nicht gefunden.
-- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts) werden bei reinen Ziffernnummern (0030, 30 …) jetzt immer auch `k2-img-K2-K-30`, `k2-img-K2-K-0030`, `k2-img-K2-M-30`, `k2-img-K2-M-0030` hinzugefügt. Später ergänzt: auch `k2-img-30` (reine Zahl, siehe Abschnitt oben).
+- **Fix:** In **getArtworkImageRefVariants** werden bei reinen Ziffernnummern (0030, 30 …) auch K2-K-/K2-M-Varianten hinzugefügt. Da der Index überall k2-img-K2-K-00xx ist, war das nicht die Ursache für die 5 fehlenden Bilder (siehe Abschnitt oben).
 - **Wo:** src/utils/artworkImageStore.ts.
 
 ---

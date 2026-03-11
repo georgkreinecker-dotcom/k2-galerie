@@ -51,8 +51,6 @@ export function getArtworkImageRefVariants(artwork: any): string[] {
         const four = String(num).padStart(4, '0')
         variants.add(`k2-img-${digits.padStart(4, '0')}`)
         variants.add(`k2-img-${digits}`)
-        // Auch reine Zahl ohne Nullen (30 statt 0030) – iPad/Export kann unter k2-img-30 gespeichert haben
-        variants.add(`k2-img-${num}`)
         const k2 = raw.match(/^K2-([A-Z])-?(\d+)$/i)
         if (k2) {
           variants.add(`k2-img-K2-${k2[1]}-${num}`)
