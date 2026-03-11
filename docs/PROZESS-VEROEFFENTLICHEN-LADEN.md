@@ -99,6 +99,12 @@
 - **Speichern:** Im Admin (iPad) werden Fotos beim „Bild übernehmen“ (Neues Werk / Werk bearbeiten) auf **iPad/Handy automatisch stärker komprimiert** (context: mobile → max. 560 px, Qualität 0.48). So sind viele Fotos nacheinander schnell speicherbar, ohne Quota oder lange Wartezeiten.
 - **Ablauf empfohlen:** (1) Fotos im Admin unter „Neues Werk hinzufügen“ anlegen, jeweils Speichern. (2) **Danach auf dem iPad** „An Server senden“ (Einstellungen) – dann hat der Server alle Bild-URLs. (3) **Am Mac** „Aktuellen Stand holen“ – mit dem gefixten Key-Abgleich (0030 ↔ K2-K-0030) sollten keine Duplikate mehr entstehen und die Bilder ankommen.
 
+### 5c. iPad: Mehr Werke als Server – niemals „Aktuellen Stand holen“ (11.03.26)
+
+- **Regel:** Wenn auf dem **iPad (bzw. Mobilgerät)** **mehr Werke lokal** sind als der Server hat (z. B. 70 lokal, 51 auf Server), darf **nicht** „Aktuellen Stand holen“ ausgeführt werden – sonst würden die lokalen Daten durch den älteren/kleineren Server-Stand überschrieben und **Bilder gehen verloren**.
+- **Umsetzung:** In **handleLoadFromServer** (ScreenshotExportAdmin, K2): Wenn `isMobileDevice && localArtworks.length > serverArtworks.length` → Abbruch, Meldung: „Du hast mehr Werke (X) als der Server (Y). Zuerst hier ‚An Server senden‘ tippen. Danach am anderen Gerät ‚Aktuellen Stand holen‘.“
+- **Ablauf:** Immer zuerst auf dem Gerät mit den meisten/aktuellsten Daten **„An Server senden“**, danach auf den anderen Geräten **„Aktuellen Stand holen“**.
+
 ---
 
 ## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)

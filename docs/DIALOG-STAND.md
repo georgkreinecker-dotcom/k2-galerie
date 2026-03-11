@@ -6,12 +6,12 @@
 
 ---
 
-## Heute 11.03.26 – iPad 70 Werke mit Bild: nur 51 beim Senden aufgelöst
+## Heute 11.03.26 – iPad: Stand nicht ändern (mehr Werke als Server) + 70/51 mit Bild
 
-- **Kontext (kein Gedächtnis von gestern):** Georg: Am iPad 70 Werke, alle mit Bildern; 20 davon heute gemacht; „die haben wir gestern gelöscht“ – dazu keine Session-Info. Beim „An Server senden“ kamen nur **51 mit Bild** an (19 Bilder fehlten).
-- **Ursache:** Beim Export werden Bild-URLs aus imageRef + IndexedDB aufgelöst. Wenn das Bild unter einer **anderen Ref-Variante** in IndexedDB liegt (z. B. `k2-img-0031` vs. `k2-img-K2-K-0031`), wurde es nicht gefunden → Upload unterblieb.
-- **Fix:** **Ref-Varianten beim Auflösen:** In `artworkImageStore.ts` neue Funktion **getArtworkImageRefVariants(artwork)** – liefert alle sinnvollen Refs (imageRef, number, 0031, 31). In **supabaseClient.ts** **resolveImageUrlForSupabase** probiert nacheinander diese Varianten mit **getArtworkImage(ref)**, bis ein Bild gefunden wird. So werden alle 70 Werke mit Bild beim „An Server senden“ aufgelöst und hochgeladen.
-- **Nächster Schritt:** Georg: Am iPad erneut „An Server senden“ – Meldung sollte „70 Werke, 70 mit Bild“ (oder nahe dran) zeigen; danach am Mac „Aktuellen Stand holen“.
+- **Georg:** „iPad darf ich den Stand nicht ändern, sonst sind meine Bilder wieder gelöscht, weil der Stand vom Server niedriger ist – das hatten wir gestern schon mal, Anke müsste das wissen.“
+- **Fix (iPad-Schutz):** Wenn auf **Mobilgerät** (iPad) **mehr Werke lokal** als auf dem Server (z. B. 70 vs. 51) → **„Aktuellen Stand holen“ wird blockiert**. Meldung: „Du hast mehr Werke (70) als der Server (51). Zuerst hier ‚An Server senden‘ tippen. Danach am anderen Gerät ‚Aktuellen Stand holen‘.“ Kein Überschreiben, keine Datenverlust-Gefahr. **Wo:** ScreenshotExportAdmin.tsx handleLoadFromServer (K2), nach der 50%-Prüfung. **Doku:** PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 5c.
+- **70 Werke, 51 mit Bild:** Ref-Varianten (11.03.26) sind drin; wenn es weiter bei 51 bleibt, mögliche Ursachen: (1) 19 Bilder nie in IndexedDB gespeichert (z. B. nur imageRef ohne Put), (2) Supabase-Upload schlägt auf iPad für 19 fehl (Auth/Storage, Timeout), (3) andere Ref-Formate. Nächster Check: Auf iPad in Konsole nach „Bild-URL für Export nicht auflösbar“ oder Upload-Warnungen schauen.
+- **Anke/Briefing:** Regel „iPad mit mehr Werken als Server = nie Stand holen, zuerst senden“ ist in DIALOG-STAND und PROZESS-VEROEFFENTLICHEN-LADEN.md 5c festgehalten – für künftige Sessions abrufbar.
 
 ---
 

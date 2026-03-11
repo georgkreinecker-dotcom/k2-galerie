@@ -3349,6 +3349,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }, 0)
         return
       }
+      // iPad/Mobil: Du hast mehr Werke als der Server → niemals überschreiben (Bilder würden verloren gehen). Zuerst hier „An Server senden“.
+      if (isMobileDevice && localArtworks.length > serverArtworks.length) {
+        setIsLoadingFromServer(false)
+        setSyncStatusBar({ phase: 'error', message: 'Lokal mehr Werke als Server.' })
+        setTimeout(() => {
+          alert(
+            'Du hast mehr Werke (' + localArtworks.length + ') als der Server (' + serverArtworks.length + ').\n\n' +
+            'Damit deine Bilder nicht verloren gehen: Zuerst hier „An Server senden“ tippen. Danach am anderen Gerät „Aktuellen Stand holen“.'
+          )
+        }, 0)
+        return
+      }
       // Ein Standard: dieselbe Merge-Logik wie GaleriePage (Key-Normalisierung 0030 ↔ K2-K-0030, preserveLocalImageData)
       const { merged: mergedWithImages } = applyServerDataToLocal(serverArtworks, localArtworks, {
         onlyAddLocalIfMobileAndVeryNew: true,
