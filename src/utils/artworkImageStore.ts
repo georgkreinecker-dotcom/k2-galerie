@@ -81,6 +81,21 @@ export async function getArtworkImage(artworkRef: string): Promise<string | null
   })
 }
 
+/**
+ * Sucht ein Werkbild unter mehreren Ref-Varianten (z. B. k2-img-0031, k2-img-K2-K-0031).
+ * Gibt das erste gefundene Bild und den Ref zurück – damit die Kette beim Speichern
+ * wieder am gleichen Glied zusammengeführt werden kann (Bild unter kanonischem Ref speichern).
+ */
+export async function getArtworkImageByRefVariants(refs: string[]): Promise<{ dataUrl: string; foundRef: string } | null> {
+  if (!Array.isArray(refs) || refs.length === 0) return null
+  for (const ref of refs) {
+    if (!ref) continue
+    const dataUrl = await getArtworkImage(ref)
+    if (dataUrl) return { dataUrl, foundRef: ref }
+  }
+  return null
+}
+
 /** Entfernt ein Werkbild aus IndexedDB. */
 export async function deleteArtworkImage(artworkRef: string): Promise<void> {
   if (!artworkRef) return
@@ -144,32 +159,55 @@ function isBase64ImageUrl(v: unknown): boolean {
 }
 
 /**
+ * Kanonischer Ref pro Werk – das eine „Glied“ der Kette (Werk ↔ Bild).
+ * Beim Speichern wird immer dieser Ref verwendet; so rastet die Kette nach einer
+ * Trennung wieder am gleichen Glied ein (wie in der Mechanik).
+ */
+function getCanonicalImageRef(artwork: any): string {
+  return getArtworkImageRef(artwork)
+}
+
+/**
  * Bereitet eine Werkliste für localStorage vor: data:image Bilddaten
  * werden in IndexedDB ausgelagert, in der Liste bleibt nur imageRef.
+ * Kette Werk ↔ Bild: Beim Speichern wird immer der kanonische Ref verwendet;
+ * wenn das Bild unter einer anderen Variante lag (Trennung), wird es unter dem
+ * kanonischen Ref gespeichert – die Kette trifft wieder am gleichen Glied.
  * previewUrl als Base64 wird geleert (keine Dopplung in der Liste).
- * Gibt die schlanke Liste zurück. Sportwagenmodus: ein Standard.
  */
 export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]> {
   if (!Array.isArray(artworks) || artworks.length === 0) return artworks
   const out: any[] = []
   for (const a of artworks) {
     if (!a) { out.push(a); continue }
+    const canonicalRef = getCanonicalImageRef(a)
     const url = a.imageUrl
     let next = a
     if (typeof url === 'string' && url.startsWith('data:image') && url.length > MOVE_TO_IDB_THRESHOLD) {
-      const ref = a.imageRef || getArtworkImageRef(a)
       try {
-        await putArtworkImage(ref, url)
-        next = { ...a, imageUrl: '', imageRef: ref }
+        await putArtworkImage(canonicalRef, url)
+        next = { ...a, imageUrl: '', imageRef: canonicalRef }
       } catch (e) {
         console.warn('Artwork image store put failed, keeping in list:', e)
       }
     } else if (a.imageRef && typeof a.imageUrl === 'string' && a.imageUrl.startsWith('data:') && a.imageUrl.length > MOVE_TO_IDB_THRESHOLD) {
       try {
-        await putArtworkImage(a.imageRef, a.imageUrl)
-        next = { ...a, imageUrl: '', imageRef: a.imageRef }
+        await putArtworkImage(canonicalRef, a.imageUrl)
+        next = { ...a, imageUrl: '', imageRef: canonicalRef }
       } catch (e) {
         console.warn('Artwork image store put failed:', e)
+      }
+    } else if (a.imageRef || a.number != null || a.id != null) {
+      // Kein frisches data:image – Bild ggf. unter anderem Ref (Trennung). Unter Varianten suchen und unter kanonischem Ref wieder zusammenführen.
+      const variants = getArtworkImageRefVariants(a)
+      const found = await getArtworkImageByRefVariants(variants)
+      if (found) {
+        try {
+          await putArtworkImage(canonicalRef, found.dataUrl)
+          next = { ...a, imageUrl: '', imageRef: canonicalRef }
+        } catch (e) {
+          console.warn('Artwork image store put (re-join) failed:', e)
+        }
       }
     }
     if (isBase64ImageUrl(next.previewUrl)) next = { ...next, previewUrl: '' }
@@ -234,7 +272,13 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         continue
       }
       try {
-        const dataUrl = await getArtworkImage(ref)
+        let dataUrl = await getArtworkImage(ref)
+        // Kette: Wenn unter gespeichertem Ref nichts – unter Varianten suchen (Trennung), Anzeige funktioniert bis zum nächsten Speichern
+        if (!dataUrl) {
+          const variants = getArtworkImageRefVariants(a)
+          const found = await getArtworkImageByRefVariants(variants)
+          if (found) dataUrl = found.dataUrl
+        }
         let imageUrl = dataUrl || a.imageUrl || ''
         // Fallback: IndexedDB leer – Vercel-Pfad. 30–39: keinen Static-Fallback (keine alten Repo-Dateien)
         if (!imageUrl && ref.startsWith('k2-img-') && !inExclude) {

@@ -3377,7 +3377,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           (a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))) ||
           (a?.imageRef && typeof a.imageRef === 'string' && a.imageRef.trim() !== '')
       ).length
+      // Bildverlust: Lokal mehr Werke mit Bild als der Server/Merge liefern würde
       if (savedWithImageCount < localWithImageCount && localWithImageCount > 0) {
+        // iPad/Mobil: Keine Frage – blockieren. Kartenstand kann gleich sein (70=70), aber Bilder fehlen auf dem Server (51) → sonst gehen 19 Fotos verloren.
+        if (isMobileDevice) {
+          setIsLoadingFromServer(false)
+          setSyncStatusBar({ phase: 'error', message: 'Lokal mehr Bilder als Server.' })
+          setTimeout(() => {
+            alert(
+              'Lokal haben ' + localWithImageCount + ' Werke ein Bild, der Server liefert nur ' + savedWithImageCount + '.\n\n' +
+              'Damit deine Fotos nicht verloren gehen: Zuerst hier „An Server senden“ tippen. Danach am anderen Gerät „Aktuellen Stand holen“.'
+            )
+          }, 0)
+          return
+        }
         const ok = window.confirm(
           `Achtung – möglicher Bildverlust:\n\nLokal haben ${localWithImageCount} Werke ein Bild. Nach dem Laden vom Server wären es nur ${savedWithImageCount} mit abrufbarer Bild-URL.\n\nFotos von diesem Gerät (z. B. heute gemacht) könnten nur noch als Platzhalter erscheinen.\n\nBesser: Zuerst auf DIESEM Gerät „An Server senden“ tippen, dann auf dem anderen „Aktuellen Stand holen“.\n\nTrotzdem jetzt laden? (Lokale Daten werden ersetzt.)`
         )

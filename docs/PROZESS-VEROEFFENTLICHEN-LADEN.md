@@ -99,10 +99,13 @@
 - **Speichern:** Im Admin (iPad) werden Fotos beim „Bild übernehmen“ (Neues Werk / Werk bearbeiten) auf **iPad/Handy automatisch stärker komprimiert** (context: mobile → max. 560 px, Qualität 0.48). So sind viele Fotos nacheinander schnell speicherbar, ohne Quota oder lange Wartezeiten.
 - **Ablauf empfohlen:** (1) Fotos im Admin unter „Neues Werk hinzufügen“ anlegen, jeweils Speichern. (2) **Danach auf dem iPad** „An Server senden“ (Einstellungen) – dann hat der Server alle Bild-URLs. (3) **Am Mac** „Aktuellen Stand holen“ – mit dem gefixten Key-Abgleich (0030 ↔ K2-K-0030) sollten keine Duplikate mehr entstehen und die Bilder ankommen.
 
-### 5c. iPad: Mehr Werke als Server – niemals „Aktuellen Stand holen“ (11.03.26)
+### 5c. iPad: Zwei Schutzfälle – niemals „Aktuellen Stand holen“ wenn Daten/Bilder verloren gingen (11.03.26)
 
-- **Regel:** Wenn auf dem **iPad (bzw. Mobilgerät)** **mehr Werke lokal** sind als der Server hat (z. B. 70 lokal, 51 auf Server), darf **nicht** „Aktuellen Stand holen“ ausgeführt werden – sonst würden die lokalen Daten durch den älteren/kleineren Server-Stand überschrieben und **Bilder gehen verloren**.
-- **Umsetzung:** In **handleLoadFromServer** (ScreenshotExportAdmin, K2): Wenn `isMobileDevice && localArtworks.length > serverArtworks.length` → Abbruch, Meldung: „Du hast mehr Werke (X) als der Server (Y). Zuerst hier ‚An Server senden‘ tippen. Danach am anderen Gerät ‚Aktuellen Stand holen‘.“
+- **Zwei getrennte Logiken:** (1) **Kartenstand:** Mehr Werke lokal als auf dem Server (z. B. 70 vs. 51) → Laden würde Karten ersetzen. (2) **Bilder:** Gleich viele Karten (70 = 70), aber Server hat weniger Bilder (z. B. 51 mit Bild) → Laden würde 19 lokale Bilder durch Platzhalter ersetzen. Beides muss auf dem iPad **blockiert** werden, nicht nur abgefragt.
+- **Umsetzung** in **handleLoadFromServer** (ScreenshotExportAdmin, K2), nur auf **Mobilgerät** (`isMobileDevice`):
+  - Wenn `localArtworks.length > serverArtworks.length` → Abbruch: „Du hast mehr Werke (X) als der Server (Y). Zuerst hier ‚An Server senden‘ tippen …“
+  - Nach Merge: Wenn `savedWithImageCount < localWithImageCount` (lokal mehr Werke mit Bild als der Server/Merge liefert) → Abbruch: „Lokal haben X Werke ein Bild, der Server liefert nur Y. Zuerst hier ‚An Server senden‘ tippen …“
+- **Am Mac** bleibt bei Bildverlust die **Frage** („Trotzdem jetzt laden?“); auf dem iPad **keine** Frage, sondern harter Stopp.
 - **Ablauf:** Immer zuerst auf dem Gerät mit den meisten/aktuellsten Daten **„An Server senden“**, danach auf den anderen Geräten **„Aktuellen Stand holen“**.
 
 ---

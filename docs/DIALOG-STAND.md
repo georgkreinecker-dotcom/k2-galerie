@@ -6,12 +6,21 @@
 
 ---
 
+## Heute 11.03.26 – Kette Werk–Bild: wieder am gleichen Glied (Mechanik)
+
+- **Georg:** „Wir müssen 100 % sicherstellen, dass diese Kette von Werken mit Bildern auch wenn sich einmal eine Trennung ergibt beim Speichern nachher wieder am gleichen Glied trifft – wie in der Mechanik.“
+- **Umsetzung:** (1) **Kanonischer Ref** pro Werk = `getArtworkImageRef(artwork)` (ein Glied). (2) **prepareArtworksForStorage:** Beim Speichern immer unter kanonischem Ref ablegen; wenn kein frisches data:image, aber imageRef/number vorhanden → Bild unter **Ref-Varianten** suchen (`getArtworkImageByRefVariants`), wenn gefunden unter **kanonischem Ref** speichern und Liste `imageRef = kanonischer Ref` → Kette rastet wieder ein. (3) **resolveArtworkImages:** Wenn unter gespeichertem Ref nichts → Varianten durchprobieren (Anzeige funktioniert bis zum nächsten Speichern). **Wo:** `src/utils/artworkImageStore.ts` (getArtworkImageByRefVariants neu, prepareArtworksForStorage, resolveArtworkImages). **Doku:** ANALYSE-KARTEN-BILDER-ZWEI-SPEICHERWEGE.md Abschnitt 6. Tests grün.
+- **Nächster Schritt:** Commit + Push; optional auf iPad/Mac Speichern testen (z. B. nach „Stand holen“ einmal Speichern → alle Refs sollten kanonisch sein).
+
+---
+
 ## Heute 11.03.26 – iPad: Stand nicht ändern (mehr Werke als Server) + 70/51 mit Bild
 
 - **Georg:** „iPad darf ich den Stand nicht ändern, sonst sind meine Bilder wieder gelöscht, weil der Stand vom Server niedriger ist – das hatten wir gestern schon mal, Anke müsste das wissen.“
 - **Fix (iPad-Schutz):** Wenn auf **Mobilgerät** (iPad) **mehr Werke lokal** als auf dem Server (z. B. 70 vs. 51) → **„Aktuellen Stand holen“ wird blockiert**. Meldung: „Du hast mehr Werke (70) als der Server (51). Zuerst hier ‚An Server senden‘ tippen. Danach am anderen Gerät ‚Aktuellen Stand holen‘.“ Kein Überschreiben, keine Datenverlust-Gefahr. **Wo:** ScreenshotExportAdmin.tsx handleLoadFromServer (K2), nach der 50%-Prüfung. **Doku:** PROZESS-VEROEFFENTLICHEN-LADEN.md Abschnitt 5c.
 - **70 Werke, 51 mit Bild:** Ref-Varianten (11.03.26) sind drin; wenn es weiter bei 51 bleibt, mögliche Ursachen: (1) 19 Bilder nie in IndexedDB gespeichert (z. B. nur imageRef ohne Put), (2) Supabase-Upload schlägt auf iPad für 19 fehl (Auth/Storage, Timeout), (3) andere Ref-Formate. Nächster Check: Auf iPad in Konsole nach „Bild-URL für Export nicht auflösbar“ oder Upload-Warnungen schauen.
 - **Anke/Briefing:** Regel „iPad mit mehr Werken als Server = nie Stand holen, zuerst senden“ ist in DIALOG-STAND und PROZESS-VEROEFFENTLICHEN-LADEN.md 5c festgehalten – für künftige Sessions abrufbar.
+- **Analyse Karten/Bilder – zwei Speicherwege:** Georg: „Karten/Bilder geht zwei verschiedene Speicherwege und findet oft nicht zusammen – hat uns gestern fast den ganzen Tag beschäftigt.“ Analyse: **docs/ANALYSE-KARTEN-BILDER-ZWEI-SPEICHERWEGE.md**. Ergebnis: Die Änderungen von 11.03.26 (Ref-Varianten, iPad-Block Karten, iPad-Block Bilder) **bauen keine neue Fehlerquelle ein** (nur Lesen bzw. Abbruch, kein Schreiben mit falschem Ref). Fehlerquellen sind v. a. unterschiedliches Nummernformat (0031 vs. K2-K-0031) ohne konsistenten Ref, oder Schreibpfade die prepareArtworksForStorage umgehen. Doku für künftige Änderungen an Karten/Bilder-Speicherung. **Ergänzung:** Abschnitt 6 „Kette wieder am gleichen Glied“ – beim Speichern wird die Kette wieder vereinheitlicht.
 
 ---
 
