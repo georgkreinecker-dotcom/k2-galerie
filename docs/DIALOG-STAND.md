@@ -6,6 +6,16 @@
 
 ---
 
+## Heute 11.03.26 – Handy: falsches/fehlendes Bild (0039 anders, dazwischen fehlen) – Ursache + Fix
+
+- **Georg:** „Es kommen vereinzelt Bilder an, aber z. B. 0039 ist bei iPad und Mac gleich, am Handy ist noch ein anderes Bild; dazwischen fehlen alle Bilder.“
+- **Ursache:** Wenn die **API** (Blob = aktueller Stand) fehlschlug oder langsam war, lud das Handy als Fallback die **statische** Datei `/gallery-data.json` aus dem **Build** (alter Stand). Die enthält nicht den letzten „An Server senden“-Stand → falsche/fehlende Bilder.
+- **Fix:** **Nur noch API (Blob)** für Galerie-Daten – **kein** Fallback mehr auf statische `gallery-data.json`. Initial-Load und „Stand-Badge tippen“ (handleRefresh) nutzen ausschließlich `/api/gallery-data?tenantId=k2`. Bei API-Fehler: keine Daten überschreiben, Hinweis „Verbindung prüfen / erneut tippen“.
+- **Wo:** GaleriePage.tsx (Initial-Load + handleRefresh) – Fallback-Fetches auf pathAndQuery und GALLERY_DATA_PUBLIC_URL + pathAndQuery entfernt.
+- **Nächster Schritt:** Am iPad/Mac erneut „An Server senden“, 1–2 Min warten, dann am Handy QR neu scannen oder Stand-Badge tippen → Handy lädt nur noch vom Blob (aktueller Stand).
+
+---
+
 ## Heute 11.03.26 – Kette: richtiges Bild an der Karte (keine Aussagen, Kette fix)
 
 - **Georg:** „Ich habe nichts von Aussagen – stelle die Kette richtig und hänge einfach an die Karte das richtige Bild. Das kann doch nicht so schwierig sein.“

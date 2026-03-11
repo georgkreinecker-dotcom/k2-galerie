@@ -972,27 +972,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       // ESSENZIELL: Immer zuerst API (Blob = aktueller Stand). tenantId=k2 = K2-Daten, nie Muster/ök2 – Gleichstand mit QR.
       const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}&v=${newVersion}`
 
+      // KRITISCH: Nur API (Blob) – kein Fallback auf statische gallery-data.json (Build-Stand = alt → falsche/fehlende Bilder am Handy).
       let response: Response | null = null
       try {
         response = await fetch(apiUrl, fetchOpts)
       } catch (e) {
-        if (isLocalLan) console.warn('🔄 Fetch Vercel API fehlgeschlagen (von localhost/LAN):', e instanceof Error ? e.message : e, '– Fallbacks werden versucht.')
-      }
-      if (!response?.ok) {
-        try {
-          response = await fetch(pathAndQuery, fetchOpts)
-        } catch (_) {}
+        if (isLocalLan) console.warn('🔄 Fetch Vercel API fehlgeschlagen (von localhost/LAN):', e instanceof Error ? e.message : e)
       }
       if (!response?.ok && isLocalLan && origin) {
         try {
-          const fullUrlRes = await fetch(origin + pathAndQuery, fetchOpts)
-          if (fullUrlRes.ok) response = fullUrlRes
-        } catch (_) {}
-      }
-      if (!response?.ok) {
-        try {
-          const fallbackRes = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
-          if (fallbackRes.ok) response = fallbackRes
+          const retryRes = await fetch(apiUrl, fetchOpts)
+          if (retryRes.ok) response = retryRes
         } catch (_) {}
       }
 
@@ -1430,17 +1420,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           clearTimeout(timeoutId)
           timeoutId = null
         }
-        if (!response?.ok) {
-          try {
-            response = await fetch(pathAndQuery, fetchOpts)
-          } catch (_) {
-            response = null
-          }
-        }
-        if (timeoutId) {
-          clearTimeout(timeoutId)
-          timeoutId = null
-        }
+        // KRITISCH: Nur API (Blob) nutzen – nie Fallback auf statische gallery-data.json.
+        // Statische Datei = Build-Stand (alt) → Handy würde falsche/fehlende Bilder zeigen (z. B. 0039 anders, 31–38 fehlen).
         const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         if (!response?.ok && (isLocal || !window.location.hostname.includes('vercel.app'))) {
           try {
@@ -1455,17 +1436,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             timeoutId = null
           }
         }
-        if (!response?.ok) {
-          try {
-            response = await fetch(GALLERY_DATA_PUBLIC_URL + pathAndQuery, fetchOpts)
-          } catch (_) {
-            response = response || null
-          }
-        }
 
         if (response?.ok) {
           const jsonData = await response.json()
-          // KRITISCH: API (Blob) = einzige Quelle. Kein Ersetzen durch statische Datei – sonst überschreibt Build-Stand den frisch vom iPad veröffentlichten Stand (Sync iPad ↔ Mac kaputt).
+          // API (Blob) = einzige Quelle. Kein Fallback auf statische Datei (Build-Stand = alt, falsche Bilder am Handy).
           data = jsonData
           // QR/Gleichstand: Nur auf K2-Route Server-Daten anwenden – nie Muster/ök2-Daten in K2-Keys schreiben
           if (musterOnly || vk2) {
