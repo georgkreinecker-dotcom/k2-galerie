@@ -6,6 +6,16 @@
 
 ---
 
+## Heute 11.03.26 – iPad sendet → Mac/Handy bekommen Gesendetes nicht (Fix preserveLocalImageData)
+
+- **Georg:** „Es geht niemals das weg was am iPad vorhanden ist, und es kommt niemals das an was gesendet wurde – und das seit 2 Tagen.“
+- **Ursache:** In **preserveLocalImageData** (syncMerge.ts) wurde die Server-URL nur genutzt, wenn **lokal keine** echte URL hatte. Hatte Mac/Handy von früherem Sync schon eine URL, wurde die frisch vom iPad gesendete Server-URL verworfen → Gesendetes kam nicht an.
+- **Fix:** Wenn der **Server** eine echte Bild-URL (https) hat → **immer** Server nehmen. Lokales Bild nur, wenn Server keins hat. `imageUrl = serverHasRealUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl)` (analog imageRef, previewUrl).
+- **Wo:** src/utils/syncMerge.ts. **Doku:** GELOESTE-BUGS.md BUG-028.
+- **Nächster Schritt:** Georg: Vom iPad „An Server senden“, 1–2 Min warten, am Mac/Handy „Aktuellen Stand holen“ (oder Stand-Badge tippen) → gesendete Bilder sollten ankommen.
+
+---
+
 ## Heute 11.03.26 – Handy: falsches/fehlendes Bild (0039 anders, dazwischen fehlen) – Ursache + Fix
 
 - **Georg:** „Es kommen vereinzelt Bilder an, aber z. B. 0039 ist bei iPad und Mac gleich, am Handy ist noch ein anderes Bild; dazwischen fehlen alle Bilder.“

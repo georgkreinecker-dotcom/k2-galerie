@@ -10,6 +10,16 @@
 
 ---
 
+## BUG-028 · iPad sendet → Mac/Handy bekommen Gesendetes nicht (seit 2 Tagen)
+**Symptom:** „Es geht niemals das weg was am iPad vorhanden ist, und es kommt niemals das an was gesendet wurde.“ Nach „An Server senden“ vom iPad zeigt Mac/Handy nach „Aktuellen Stand holen“ nicht den gerade gesendeten Stand (falsche/fehlende Bilder, alter Stand).
+**Ursache:** In **preserveLocalImageData** (syncMerge.ts) galt: Server-URL nur nutzen wenn **lokal keine** echte URL hatte (`useServerUrl = serverHasRealUrl && !localHasRealUrl`). Hatte der Mac von einem früheren Sync schon eine URL, wurde die **vom iPad frisch gesendete** Server-URL verworfen und die alte lokale beibehalten → „was gesendet wurde, kommt nicht an“.
+**Lösung:** Wenn der **Server** eine echte Bild-URL (https) hat → **immer** Server-URL nehmen (damit Gesendetes ankommt). Lokales Bild nur behalten, wenn der Server **keine** URL hat. Regel: `imageUrl = serverHasRealUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl)` (analog imageRef, previewUrl).
+**Betroffene Dateien:** `src/utils/syncMerge.ts` (preserveLocalImageData)
+**Doku:** PROZESS-VEROEFFENTLICHEN-LADEN.md, BUG-021 (Ergänzung: Server hat Vorrang wenn Server URL hat)
+**Status:** ✅ Behoben (11.03.26).
+
+---
+
 ## BUG-027 · Brief an Andreas – weiße Seite nach „Wird geladen“
 **Symptom:** Brief öffnet kurz, zeigt „Wird geladen …“, dann weißer Bildschirm, Tab hängt.
 **Ursache:** Endlosschleife im Markdown-Parser (renderBoldItalic): Rest wie `**` wurde nicht konsumiert → gleiche Iteration endlos. Auslöser z. B. `**→ [Link](…)**` – nach dem Link blieb `**`.

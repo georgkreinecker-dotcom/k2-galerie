@@ -251,11 +251,11 @@ function isPlaceholderOrEmpty(url: string | undefined): boolean {
 }
 
 /**
- * Erhält lokale Bilddaten (imageUrl, imageRef, previewUrl), damit Freistellungen nicht durch Server-Originale ersetzt werden.
- * - Wenn lokal ein Bild vorhanden ist (imageUrl oder imageRef): immer lokale Bilddaten übernehmen.
- * - Verhindert, dass „Bilder vom Server laden“ oder Merge die freigestellten Fotos durch Export-Originale ersetzt.
- * - Abgleich über getKeysForMatching: 0031 ↔ K2-K-0031 ↔ 31, damit „Stand“ drücken das gerade bearbeitete Bild nicht verliert.
- * Doku: docs/GELOESTE-BUGS.md BUG-021
+ * Bilddaten beim Merge: Was der Server sendet, kommt an – lokale Daten nur, wenn Server keins hat.
+ * - Wenn Server eine echte Bild-URL (https) hat → immer Server nehmen (damit „vom iPad gesendet“ auf Mac/Handy ankommt).
+ * - Nur wenn Server KEINE URL hat: lokales Bild behalten.
+ * - Lokal bewusst leer → Merged-Item ohne Bild. Abgleich über getKeysForMatching: 0031 ↔ K2-K-0031 ↔ 31.
+ * Doku: docs/GELOESTE-BUGS.md BUG-021, PROZESS-VEROEFFENTLICHEN-LADEN.md
  */
 export function preserveLocalImageData(
   merged: any[],
@@ -276,17 +276,12 @@ export function preserveLocalImageData(
     if (!localHasImage) {
       return { ...item, imageUrl: '', imageRef: '', previewUrl: '' }
     }
-    // Server-URL (z. B. Supabase von iPad) nie durch lokales leeres/Platzhalter-Bild ersetzen – sonst sieht Mac/iPhone nichts.
+    // KRITISCH: Wenn Server eine echte URL hat → immer Server nehmen. Sonst kommt „vom iPad gesendet“ auf Mac/Handy nie an.
     const serverHasRealUrl = item.imageUrl && !isPlaceholderOrEmpty(item.imageUrl) && (String(item.imageUrl).startsWith('http://') || String(item.imageUrl).startsWith('https://'))
-    // Nur echte http(s)-URLs zählen – data:-URLs werden beim Speichern (stripBase64) entfernt; dann wäre das Bild weg (60→59).
-    const localHasRealUrl = local.imageUrl && !isPlaceholderOrEmpty(local.imageUrl) && (String(local.imageUrl).startsWith('http://') || String(local.imageUrl).startsWith('https://'))
-    const useServerUrl = serverHasRealUrl && !localHasRealUrl
-    return {
-      ...item,
-      imageUrl: useServerUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl),
-      imageRef: local.imageRef ?? item.imageRef,
-      previewUrl: local.previewUrl ?? item.previewUrl,
-    }
+    const imageUrl = serverHasRealUrl ? item.imageUrl : (local.imageUrl ?? item.imageUrl)
+    const imageRef = serverHasRealUrl ? (item.imageRef ?? item.imageUrl) : (local.imageRef ?? item.imageRef)
+    const previewUrl = serverHasRealUrl ? (item.previewUrl ?? item.imageUrl) : (local.previewUrl ?? item.previewUrl)
+    return { ...item, imageUrl, imageRef, previewUrl }
   })
 }
 
