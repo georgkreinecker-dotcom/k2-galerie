@@ -9,7 +9,7 @@ import { getAuthToken } from './supabaseAuth'
 import { filterK2ArtworksOnly } from './autoSave'
 import { readArtworksRawByKey, saveArtworksByKey } from './artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from './syncMerge'
-import { getArtworkImage, getArtworkImageRefVariants } from './artworkImageStore'
+import { getArtworkImage, getArtworkImageRefVariants, getArtworkImageByRefVariants } from './artworkImageStore'
 import { uploadArtworkImageToStorage } from './supabaseStorage'
 
 // Sicherer Zugriff auf import.meta.env
@@ -147,13 +147,10 @@ export async function resolveImageUrlForSupabase(
   if (typeof url === 'string' && url.startsWith('data:image')) {
     dataUrl = url
   } else {
-    // Refs probieren (0031, K2-K-0031, …), damit alle Bilder aus IndexedDB gefunden werden (z. B. 70 Werke iPad)
+    // Dieselbe Varianten-Suche wie in resolveArtworkImages – 40–48 auf iPad werden so gefunden (0031, K2-K-0031, K2-K-31, …)
     const refsToTry = getArtworkImageRefVariants(artwork)
-    for (const r of refsToTry) {
-      if (!r) continue
-      dataUrl = await getArtworkImage(r)
-      if (dataUrl) break
-    }
+    const found = await getArtworkImageByRefVariants(refsToTry)
+    if (found) dataUrl = found.dataUrl
   }
   if (dataUrl) {
     const storageUrl = await uploadArtworkImageToStorage(dataUrl, String(number))
