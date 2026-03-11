@@ -53,8 +53,14 @@ export function getArtworkImageRefVariants(artwork: any): string[] {
         variants.add(`k2-img-${digits}`)
         const k2 = raw.match(/^K2-([A-Z])-?(\d+)$/i)
         if (k2) {
-          variants.add(`k2-img-K2-${k2[1]}-${num}`)
-          variants.add(`k2-img-K2-${k2[1]}-${four}`)
+          const digitPart = k2[2]
+          const digitNum = parseInt(digitPart, 10)
+          const digitFour = digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0')
+          variants.add(`k2-img-K2-${k2[1]}-${digitNum}`)
+          variants.add(`k2-img-K2-${k2[1]}-${digitFour}`)
+          // K2-K-0030: Bild kann unter k2-img-0030 liegen (vom Server/Merge) – sonst findet Export es nicht
+          variants.add(`k2-img-${digitFour}`)
+          variants.add(`k2-img-${digitNum}`)
         }
         // Auch K2-K- und K2-M-Varianten wenn number nur Ziffern (0030/30) – sonst findet Export Bild nicht (gespeichert unter k2-img-K2-K-0030).
         variants.add(`k2-img-K2-K-${num}`)

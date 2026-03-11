@@ -21,12 +21,11 @@
 
 ---
 
-## Heute 11.03.26 – 5 Bilder (30–33, 38): Index überall gleich – Ursache woanders
+## Heute 11.03.26 – 5 Bilder (30–33, 38): Ref-Varianten für K2-K-0030 (Fix)
 
-- **Georg:** „Der Index ist immer der gleiche k2-k-00… wie bei allen anderen auch, also gibt es keinen Grund für diesen Fehler.“
-- **Konsequenz:** Ref-Varianten (k2-img-30 etc.) waren der falsche Ansatz – wieder entfernt. Die Ursache liegt woanders.
-- **Mögliche Richtungen (ohne Code-Fix):** (1) Nach „An Server senden“ im Erfolgs-Modal prüfen: Zeigt es „Bei X Werken konnte keine Bild-URL erstellt werden“ und listet es 30, 31, 32, 33, 38? Dann schlägt der Upload/die Auflösung für genau diese 5 fehl (Timeout, Netz, oder Bild nicht in IndexedDB auf dem sendenden Gerät). (2) Sind die 5 in der **gespeicherten** Werkliste überhaupt mit imageRef (k2-img-K2-K-0030 …) versehen? Wenn nach einem früheren „Aktuellen Stand holen“ (Server hatte für 30–39 keine URLs) die Merged-Liste mit **leeren** imageRef gespeichert wurde, liegt das Bild evtl. noch in IndexedDB – resolveArtworkImageUrlsForExport baut die Varianten aus **number**, sollte es trotzdem finden. (3) Wurde „Bilder 30–39 bereinigen“ ausgeführt? Dann sind die Bilder aus IndexedDB gelöscht; neue Fotos müssen am iPad wieder eingefügt und dann gesendet werden.
-- **Nächster Schritt:** Beim nächsten „An Server senden“ (vom iPad) auf die Meldung achten (ohne Bild-URL für welche Nummern?). Oder kurz prüfen: Haben die 5 Werke in der Admin-Liste (nach Laden) ein imageRef-Feld gesetzt?
+- **Code-Check:** Beim „An Server senden“ werden Bild-URLs über **getArtworkImageRefVariants** gesucht. Bei number **"K2-K-0030"** war `digits` = "20030" (alle Ziffern aus K2-K-0030) → es wurden **k2-img-0030** und **k2-img-30** nicht in die Suchvarianten aufgenommen. Liegt das Bild aber unter k2-img-0030 (z. B. nach Merge/Server-Stand), fand der Export es nicht.
+- **Fix:** In **getArtworkImageRefVariants** (artworkImageStore.ts): Wenn das K2-Muster matcht (K2-X-NNNN), die **Zifferngruppe** (0030, 30) explizit als Varianten hinzufügen – dann wird das Bild gefunden, egal ob unter k2-img-0030 oder k2-img-K2-K-0030 gespeichert.
+- **Wo:** src/utils/artworkImageStore.ts. Nächster Test: iPad „An Server senden“, Mac „Aktuellen Stand holen“ – die 5 Bilder sollten mitkommen.
 
 ---
 

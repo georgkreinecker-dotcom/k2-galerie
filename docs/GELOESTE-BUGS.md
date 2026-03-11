@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-031 · 5 Bilder (30–33, 38) kommen beim „An Server senden“ nicht mit
+**Symptom:** Bilder am iPad drin und gespeichert, aber beim Senden und „Aktuellen Stand holen“ am Mac fehlen sie (30–33, 38).
+**Ursache:** **getArtworkImageRefVariants** baut Suchvarianten aus number. Bei number **"K2-K-0030"** ist `digits` = "20030" (alle Ziffern) → Varianten k2-img-0030 und k2-img-30 fehlten. Liegt das Bild unter k2-img-0030 (z. B. nach Merge/Server), fand der Export es nicht.
+**Lösung:** Wenn das K2-Muster (K2-X-NNNN) matcht, die Zifferngruppe (0030, 30) explizit als Varianten hinzufügen.
+**Betroffene Dateien:** `src/utils/artworkImageStore.ts` (getArtworkImageRefVariants)
+**Status:** ✅ Behoben (11.03.26).
+
+---
+
 ## BUG-030 · Neues Werk: „nicht in Liste gefunden“ – erst zweites Speichern nötig
 **Symptom:** Beim Erstellen eines neuen Werks erscheint die Meldung „Werk wurde gespeichert, aber nicht in Liste gefunden“; erst beim **zweiten** Speichern funktioniert es.
 **Ursache:** Direkt nach `saveArtworks()` prüft **verifyNewInStorage()** (sofort + 1× nach 100 ms), ob das neue Werk in localStorage steht. Auf Mobile/langsamen Geräten braucht localStorage/IndexedDB nach dem Schreiben einen Moment → Verifikation liest noch die alte Liste.
