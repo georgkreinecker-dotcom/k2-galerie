@@ -76,8 +76,12 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
-    /** K2 Galerie Prospekt (1 Seite, fertige Form zum Drucken) */
+    /** K2 Galerie Prospekt (1 Seite, fertige Form zum Drucken). Kombiniert ök2+VK2. Varianten per ?variant= (Sportwagenmodus: eine URL). */
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    praesentationsmappeOek2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=oek2-kurz',
+    praesentationsmappeOek2Lang: '/projects/k2-galerie/praesentationsmappe?variant=oek2-lang',
+    praesentationsmappeVk2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=vk2-kurz',
+    praesentationsmappeVk2Lang: '/projects/k2-galerie/praesentationsmappe?variant=vk2-lang',
     /** Prospekt K2 Kunst und Keramik – Galerieeröffnung (1 Seite, druckbar) */
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
@@ -139,6 +143,10 @@ export const PROJECT_ROUTES = {
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    praesentationsmappeOek2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=oek2-kurz',
+    praesentationsmappeOek2Lang: '/projects/k2-galerie/praesentationsmappe?variant=oek2-lang',
+    praesentationsmappeVk2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=vk2-kurz',
+    praesentationsmappeVk2Lang: '/projects/k2-galerie/praesentationsmappe?variant=vk2-lang',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
@@ -175,6 +183,10 @@ export const PROJECT_ROUTES = {
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
+    praesentationsmappeOek2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=oek2-kurz',
+    praesentationsmappeOek2Lang: '/projects/k2-galerie/praesentationsmappe?variant=oek2-lang',
+    praesentationsmappeVk2Kurz: '/projects/k2-galerie/praesentationsmappe?variant=vk2-kurz',
+    praesentationsmappeVk2Lang: '/projects/k2-galerie/praesentationsmappe?variant=vk2-lang',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',

@@ -30,7 +30,13 @@ Beides gehört zusammen: Eine Eröffnung, eine Botschaft. Die **Texte für die P
 
 ## 3. Event-Dokumente im Admin (Galerieeröffnung)
 
-Unter **Admin → Events & Ausstellungen** das **Eröffnungsevent** (z. B. „Eröffnung der K2 Galerie“, 24.–26. April) anlegen bzw. nutzen. Zu diesem Event können erzeugt werden:
+Unter **Admin → Events & Ausstellungen** das **Eröffnungsevent** anlegen bzw. nutzen.
+
+**Empfohlener Event-Titel (Galerieeröffnung):**  
+„Galerieeröffnung K2 Kunst & Keramik – K2 Galerie, die Künstlerapp, startet.“  
+(Wird im Admin beim Typ „Galerieeröffnung“ als Platzhalter-Vorschlag angezeigt.)
+
+Zu diesem Event können erzeugt werden:
 
 - **Einladung** (z. B. zur Vernissage)  
 - **Flyer** (Event-Flyer)  

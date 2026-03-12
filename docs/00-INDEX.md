@@ -134,6 +134,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache, Favorit/Startseite).
 - **PLATZHALTER-BILDER-WIEDERBEKOMMEN.md** – 10 Platzhalter am Mac / Bilder weg nach iPad-Rescan: Ursache, Lösung A (Handy veröffentlichen → Mac/iPad laden), Lösung B (Vollbackup).
 - **STAND-QR-SO-BLEIBT-ES.md** – Stand & QR richtig halten.
+- **LINKS-QR-CODES-UEBERSICHT.md** – **Links & QR-Codes:** Zentrale Quelle (navigation.ts), wo Links/QR vorkommen, Pflicht buildQrUrlWithBust für Vercel-URLs; Einbauorte (APf, Werbeunterlagen, Zettel, Pilot, Etikett). Regel: stand-qr-niemals-zurueck.mdc.
 - **VERCEL-BENACHRICHTIGUNGEN.md** – Vercel-Benachrichtigungen.
 - **VEROEFFENTLICHEN-VOLLSTAENDIG.md** – Vollständig veröffentlichen.
 

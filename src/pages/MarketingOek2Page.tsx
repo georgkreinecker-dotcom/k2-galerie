@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
@@ -123,15 +124,17 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
   /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes). Alle QR/Links „für Michael“ zeigen darauf – nie auf die Galerie. */
   const pilotSchreibenAufHandyUrl = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [pilotHandyLinkQrUrl, setPilotHandyLinkQrUrl] = useState('')
   useEffect(() => {
     if (!pilotSchreibenAufHandyUrl.startsWith('http')) return
     let cancelled = false
-    QRCode.toDataURL(pilotSchreibenAufHandyUrl, { width: 200, margin: 1 })
+    const urlFuerQr = buildQrUrlWithBust(pilotSchreibenAufHandyUrl, qrVersionTs)
+    QRCode.toDataURL(urlFuerQr, { width: 200, margin: 1 })
       .then((url) => { if (!cancelled) setPilotHandyLinkQrUrl(url) })
       .catch(() => {})
     return () => { cancelled = true }
-  }, [pilotSchreibenAufHandyUrl])
+  }, [pilotSchreibenAufHandyUrl, qrVersionTs])
 
   const saveOefImage = async (key: 'welcome' | 'innen', file: File) => {
     setOefSaving(true)
@@ -448,6 +451,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <Link
           to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe}
+          state={{ returnTo: PROJECT_ROUTES['k2-galerie'].marketingOek2 }}
           style={{
             display: 'inline-block',
             padding: '0.65rem 1.25rem',

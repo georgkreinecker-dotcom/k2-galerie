@@ -17,5 +17,7 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 7 | [K2 Familie – Erste Schritte](17-K2-FAMILIE-ERSTE-SCHRITTE.md) | Stammbaum, Personen, Momente, Events, Kalender, Familie wechseln |
 | 8 | [K2 Familie – Projekt-Zusammenfassung](18-K2-FAMILIE-PROJEKT-ZUSAMMENFASSUNG.md) | Was ist K2 Familie, Grundbotschaft, Funktionen, Phasen – zum Ausdrucken |
 | 9 | [Martina & Muna – ök2 und VK2 ansehen](19-MARTINA-MUNA-BESUCH-OEK2-VK2.md) | Zettel für Martina: QR, Adressen, Laptop/Handy, Checkliste – einmal ausdrucken |
+| 10 | [Links & QR-Codes – Register](21-LINKS-QR-CODES-REGISTER.md) | Alle QR und zentralen Links: wo sie vorkommen, wohin sie führen, wofür sie da sind |
+| 11 | [Medienplanung – Flyer & Werbung (mök2)](22-MEDIENPLANUNG-FLYER-WERBUNG-MOK2.md) | Wo was liegt, Checkliste Flyer/Werbung, Kontext mök2 – gut arbeiten bei Medienplanung |
 
 **Weitere Kapitel** (bei Bedarf): [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)

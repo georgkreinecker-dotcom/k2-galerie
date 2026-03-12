@@ -7,11 +7,12 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
-const PILOT_GALERIE_URL = BASE_APP_URL + ENTDECKEN_ROUTE
+const PILOT_GALERIE_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 /** Diese Seite – damit Georg sie per QR aufs Handy holen und an Michael schicken kann */
-const PILOT_SEITE_URL = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
+const PILOT_SEITE_BASE = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
 
 // Kurz und klar – das Erste, was Michael sieht
 const KURZ_TEXT = 'Hallo Michael,\n\nhier dein Zugang zur K2 Galerie. Tipp einmal auf den grünen Button – dann bist du in deiner Galerie. Passwort leer lassen, unter Einstellungen deinen Namen eintragen. Fertig.'
@@ -56,12 +57,15 @@ export default function PilotStartPage() {
   const [qrUrl, setQrUrl] = useState('')
   const [qrSeiteUrl, setQrSeiteUrl] = useState('')
   const [showMore, setShowMore] = useState(false)
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
     let cancelled = false
+    const galerieBust = buildQrUrlWithBust(PILOT_GALERIE_BASE, qrVersionTs)
+    const seiteBust = buildQrUrlWithBust(PILOT_SEITE_BASE, qrVersionTs)
     Promise.all([
-      QRCode.toDataURL(PILOT_GALERIE_URL, { width: 280, margin: 1 }),
-      QRCode.toDataURL(PILOT_SEITE_URL, { width: 280, margin: 1 }),
+      QRCode.toDataURL(galerieBust, { width: 280, margin: 1 }),
+      QRCode.toDataURL(seiteBust, { width: 280, margin: 1 }),
     ])
       .then(([galerie, seite]) => {
         if (!cancelled) {
@@ -71,7 +75,7 @@ export default function PilotStartPage() {
       })
       .catch(() => {})
     return () => { cancelled = true }
-  }, [])
+  }, [qrVersionTs])
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: TEXT, padding: '1.25rem', maxWidth: 560, margin: '0 auto', fontFamily: 'system-ui, sans-serif' }}>
@@ -96,7 +100,7 @@ export default function PilotStartPage() {
       </p>
 
       <a
-        href={PILOT_GALERIE_URL}
+        href={buildQrUrlWithBust(PILOT_GALERIE_BASE, qrVersionTs)}
         style={{
           display: 'block',
           padding: '1rem 1.5rem',
@@ -148,7 +152,7 @@ export default function PilotStartPage() {
       {showMore && (
         <div style={{ marginTop: '1rem', padding: '1rem', background: '#fffefb', borderRadius: 10, border: `1px solid ${MUTED}` }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 700, color: TEXT, marginBottom: '0.35rem' }}>Link für PC (zum Kopieren)</div>
-          <p style={{ margin: 0, fontSize: '0.85rem', wordBreak: 'break-all', color: MUTED }}>{PILOT_GALERIE_URL}</p>
+          <p style={{ margin: 0, fontSize: '0.85rem', wordBreak: 'break-all', color: MUTED }}>{PILOT_GALERIE_BASE}</p>
           {qrUrl && (
             <>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: TEXT, marginTop: '1rem', marginBottom: '0.35rem' }}>QR-Code (am PC: mit Handy scannen)</div>

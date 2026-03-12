@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Admin-Button nur bei APf/Freischaltung (K2, ök2, VK2); erste Bildtest-Meilensteine.
+**Letzter Build-Push:** 12.03.26 – Präsentationsmappen: eine URL + ?variant= (Sportwagenmodus); alle Varianten funktionieren.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 

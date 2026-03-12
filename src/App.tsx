@@ -493,7 +493,8 @@ function App() {
       <Route path="/galerie-home" element={<GaleriePage />} />
       <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
-      
+      {/* Präsentationsmappe – eine Route mit Splat, damit alle Varianten (oek2-kurz, vk2-lang, …) sicher hier landen */}
+      <Route path="/projects/k2-galerie/praesentationsmappe" element={<PraesentationsmappePage />} />
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
         <AppErrorBoundary>
@@ -569,7 +570,6 @@ function App() {
       <Route path="/projects/k2-galerie/vita/:artistId" element={<VitaPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].praesentationsmappe} element={<PraesentationsmappePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung} element={<ProspektGalerieeroeffnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />

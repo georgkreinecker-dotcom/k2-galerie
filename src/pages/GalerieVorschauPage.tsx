@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
@@ -4635,19 +4636,21 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   )
 }
 
-// Kleiner QR-Code-Generator für das Etikett-Modal (inline, kein Import nötig)
+// QR-Code für Etikett-Modal: Link zur Galerie-Vorschau (Werk) – mit Server-Stand + Cache-Bust
 function EtikettQrCode({ nummer }: { nummer: string }) {
   const [qrSrc, setQrSrc] = React.useState<string | null>(null)
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   React.useEffect(() => {
     let cancelled = false
+    const baseUrl = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerieVorschau}?q=${encodeURIComponent(nummer)}`
+    const url = buildQrUrlWithBust(baseUrl, qrVersionTs)
     import('qrcode').then(QRCode => {
-      const url = `https://k2-galerie.vercel.app/projects/k2-galerie/galerie-vorschau?q=${encodeURIComponent(nummer)}`
       QRCode.default.toDataURL(url, { width: 180, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
         .then(dataUrl => { if (!cancelled) setQrSrc(dataUrl) })
         .catch(() => {})
     })
     return () => { cancelled = true }
-  }, [nummer])
+  }, [nummer, qrVersionTs])
   if (!qrSrc) return <div style={{ width: 180, height: 180, background: '#eee', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: '0.8rem' }}>Lädt…</div>
   return <img src={qrSrc} alt={`QR ${nummer}`} style={{ width: 180, height: 180, display: 'block' }} />
 }

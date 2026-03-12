@@ -994,7 +994,7 @@ function closeAllPDFWindows() {
 let globalAdminInstance: any = null
 let globalMountCount = 0
 
-type AdminTabType = 'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen'
+type AdminTabType = 'werke' | 'katalog' | 'statistik' | 'zertifikat' | 'newsletter' | 'pressemappe' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'praesentationsmappen' | 'einstellungen'
 type AdminProps = {
   /** Wenn gesetzt (z. B. aus APf/DevView): Admin öffnet direkt diesen Tab – URL wird ignoriert */
   forceTab?: AdminTabType
@@ -1078,7 +1078,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     try {
       const params = new URLSearchParams(location.search)
       const gt = params.get('guidetab')
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
       if (gt && (validTabs as readonly string[]).includes(gt)) {
         setActiveTab(gt as AdminTab)
@@ -1145,7 +1145,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     if (forceTab) return forceTab
     try {
       const params = new URLSearchParams(window.location.search)
-      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
+      const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
       const t = params.get('tab') || params.get('guidetab')
       if (t && validTabs.includes(t as AdminTab)) return t as AdminTab
@@ -11091,6 +11091,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
+               activeTab === 'praesentationsmappen' ? '📁 Präsentationsmappen' :
                activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
                activeTab}
             </strong>
@@ -11605,7 +11606,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
-                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','einstellungen'] as const
+                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
                                 type AdminTab = typeof validTabs[number]
                                 if (validTabs.includes(b.tab as AdminTab)) {
                                   setActiveTab(b.tab as AdminTab)
@@ -11684,10 +11685,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
+                    { emoji: '📁', name: 'Präsentationsmappen', beschreibung: 'Links zum Mitsenden – ök2 und VK2 Kurz & Lang, druckfertig.', tab: 'praesentationsmappen' },
                   ] : [
                     { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit, Presse-Vorlage und Einladung an Medien – ök2 testen.', tab: 'presse' },
+                    { emoji: '📁', name: 'Präsentationsmappen', beschreibung: 'Links zum Mitsenden – ök2 und VK2 Kurz & Lang, druckfertig.', tab: 'praesentationsmappen' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
@@ -11703,6 +11706,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     eventplan: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
                     presse: { bg: '#f2f4f8', text: s.text, sub: s.muted, border: '#8090b044' },
                     katalog: { bg: '#f4f8f0', text: s.text, sub: s.muted, border: '#80a09044' },
+                    praesentationsmappen: { bg: '#f8f4f0', text: s.text, sub: s.muted, border: '#c4a57444' },
                   }
                   return (
                     <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
@@ -13280,6 +13284,38 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <span style={{ fontSize: '0.85rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.35rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
               </div>
             )}
+          </section>
+        )}
+
+        {/* Präsentationsmappen – eigener Tab (von Hub erreichbar) */}
+        {activeTab === 'praesentationsmappen' && (
+          <section style={{
+            background: s.bgCard,
+            border: `1px solid ${s.accent}22`,
+            borderRadius: '12px',
+            padding: 'clamp(1.5rem, 4vw, 2rem)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 600, color: s.text, margin: '0 0 0.5rem 0' }}>
+              📁 Präsentationsmappen
+            </h2>
+            <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
+              Links zum Mitsenden (E-Mail, Chat, Werbung) – Kurz- und Langversion für ök2 und VK2. Ein Klick öffnet die Mappe in neuem Tab.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+              {[
+                { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
+                { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
+                { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
+                { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
+                { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
+              ].map(({ label, path }) => (
+                <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                  {label}
+                </a>
+              ))}
+            </div>
           </section>
         )}
 
@@ -16779,7 +16815,7 @@ ${name}`
                     type="text"
                     value={eventTitle}
                     onChange={(e) => setEventTitle(e.target.value)}
-                    placeholder="z.B. Eröffnung der K2 Galerie"
+                    placeholder={eventType === 'galerieeröffnung' ? 'Galerieeröffnung K2 Kunst & Keramik – K2 Galerie, die Künstlerapp, startet.' : 'z.B. Vernissage, Einladung zur Ausstellung'}
                     style={{
                       width: '100%',
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
@@ -17773,56 +17809,15 @@ ${name}`
                         <div
                           key={event.id}
                           style={{
-                            background: `${s.accent}0c`,
-                            border: `1px solid ${s.accent}33`,
-                            borderRadius: '16px',
-                            padding: 'clamp(1.25rem, 3vw, 1.5rem)',
-                            overflow: 'hidden'
+                            background: s.bgCard,
+                            border: `1px solid ${s.accent}22`,
+                            borderRadius: '12px',
+                            padding: 'clamp(1.25rem, 3vw, 1.75rem)',
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                           }}
                         >
-                          {/* Rubrik = dieses Event/Projekt – Überschrift mit zugehörigen Dokumenten */}
-                          <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'flex-start',
-                            marginBottom: '0.75rem',
-                            flexWrap: 'wrap',
-                            gap: '0.75rem',
-                            paddingBottom: '0.75rem',
-                            borderBottom: `1px solid ${s.accent}22`
-                          }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: s.accent, fontWeight: '600', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>
-                                Werbematerial – Dokumente
-                              </div>
-                              <h3 style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', fontWeight: '600', color: s.text, margin: '0 0 0.4rem 0' }}>
-                                {event.title}
-                              </h3>
-                              <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: s.muted, display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                                <span>📅 {new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                                {event.location && <span>📍 {event.location}</span>}
-                                {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
-                              style={{
-                                padding: '0.35rem 0.65rem',
-                                background: `${s.accent}20`,
-                                border: `1px solid ${s.accent}55`,
-                                borderRadius: '6px',
-                                color: s.accent,
-                                cursor: 'pointer',
-                                fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)',
-                                fontWeight: '500',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              ✏️ Event bearbeiten
-                            </button>
-                          </div>
-
-                          {/* ═══ KÜNSTLER-FREUNDLICHE DOKUMENT-ÜBERSICHT ═══ */}
+                          {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
                             // QR-Code Plakat = nur K2 (Martina & Georg, K2 GALERIE) – nicht im VK2-Admin anbieten
                             const qrPlakatKarte = {
@@ -17935,128 +17930,175 @@ ${name}`
                                   const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
                                   generateEditableSocialMediaPDF(evSug?.socialMedia || generateSocialMediaContent(ev), ev)
                                 }
+                              },
+                              {
+                                typ: 'praesentationsmappen' as const,
+                                icon: '📁',
+                                titel: 'Präsentationsmappen',
+                                beschreibung: 'Links zum Mitsenden – ök2 und VK2 Kurz & Lang',
+                                docs: [], // keine Dokumente, nur Links
+                                onOpen: () => {},
+                                onDelete: () => {},
+                                onErstellen: null as null | (() => void)
                               }
                             ]
 
-                            const fertigAnzahl = DOKUMENT_KARTEN.filter(k => k.docs.length > 0).length
-                            const gesamtAnzahl = DOKUMENT_KARTEN.length
+                            const kartenFuerFortschritt = DOKUMENT_KARTEN.filter(k => k.typ !== 'praesentationsmappen')
+                            const fertigAnzahl = kartenFuerFortschritt.filter(k => k.docs.length > 0).length
+                            const gesamtAnzahl = kartenFuerFortschritt.length
+                            const progressPct = gesamtAnzahl ? Math.round((fertigAnzahl / gesamtAnzahl) * 100) : 0
 
                             return (
                               <div>
-                                {/* VK2: Hinweis bei vermischten Daten (L3 o.ä.) – Dokument aus Liste entfernen, dann Neu erstellen */}
-                                {tenant.isVk2 && (
-                                  <div style={{ marginBottom: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.8rem', color: s.muted }}>
-                                    Falls ein Dokument noch K2-Daten enthält: Auf <strong>×</strong> neben dem Dokument klicken (aus Liste entfernen), dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
-                                  </div>
-                                )}
-                                {/* STATUS-BALKEN: Auf einen Blick */}
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between',
-                                  background: fertigAnzahl === gesamtAnzahl ? 'rgba(34,197,94,0.12)' : `${s.accent}10`,
-                                  border: `1px solid ${fertigAnzahl === gesamtAnzahl ? 'rgba(34,197,94,0.4)' : s.accent + '33'}`,
-                                  borderRadius: '10px',
-                                  padding: '0.75rem 1rem',
-                                  marginBottom: '1rem',
-                                  flexWrap: 'wrap',
-                                  gap: '0.5rem'
-                                }}>
-                                  <div>
-                                    <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: '700', color: s.text }}>
-                                      {fertigAnzahl === gesamtAnzahl ? '✅ Alle Dokumente bereit!' : `📋 ${fertigAnzahl} von ${gesamtAnzahl} Dokumenten erstellt`}
-                                    </div>
-                                    <div style={{ fontSize: 'clamp(0.75rem, 1.6vw, 0.82rem)', color: s.muted, marginTop: '0.2rem' }}>
-                                      {fertigAnzahl === gesamtAnzahl ? 'Alle Unterlagen für dieses Event sind vorhanden.' : 'Klicke auf einen roten Button um das Dokument sofort zu erstellen.'}
+                                {/* Header: Event-Titel + Meta + eine Aktion */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <h3 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 600, color: s.text, margin: '0 0 0.35rem 0', lineHeight: 1.3 }}>
+                                      {event.title}
+                                    </h3>
+                                    <div style={{ fontSize: '0.8rem', color: s.muted, display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                      <span>📅 {new Date(event.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                      {event.location && <span>📍 {event.location}</span>}
+                                      {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
                                     </div>
                                   </div>
-                                  {/* Fortschrittsbalken */}
-                                  <div style={{ display: 'flex', gap: 4 }}>
-                                    {DOKUMENT_KARTEN.map(k => (
-                                      <div key={k.typ} style={{ width: 10, height: 10, borderRadius: '50%', background: k.docs.length > 0 ? 'rgba(34,197,94,0.8)' : 'rgba(181,74,30,0.4)', border: `1px solid ${k.docs.length > 0 ? 'rgba(34,197,94,1)' : s.accent}` }} title={k.titel} />
-                                    ))}
+                                  <button
+                                    onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
+                                    style={{
+                                      padding: '0.4rem 0.75rem',
+                                      background: 'transparent',
+                                      border: `1px solid ${s.accent}44`,
+                                      borderRadius: '8px',
+                                      color: s.accent,
+                                      cursor: 'pointer',
+                                      fontSize: '0.8rem',
+                                      fontWeight: 500,
+                                      whiteSpace: 'nowrap',
+                                      flexShrink: 0
+                                    }}
+                                  >
+                                    Event bearbeiten
+                                  </button>
+                                </div>
+
+                                {/* Fortschritt: eine Zeile, klare Aussage */}
+                                <div style={{ marginBottom: '1.25rem' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: s.text }}>
+                                      {fertigAnzahl === gesamtAnzahl ? 'Alle Dokumente bereit' : `${fertigAnzahl} von ${gesamtAnzahl} Dokumenten`}
+                                    </span>
+                                    {fertigAnzahl < gesamtAnzahl && (
+                                      <span style={{ fontSize: '0.75rem', color: s.muted }}>Offene unten erstellen</span>
+                                    )}
+                                  </div>
+                                  <div style={{ height: 6, background: 'rgba(0,0,0,0.06)', borderRadius: 3, overflow: 'hidden' }}>
+                                    <div style={{ width: `${progressPct}%`, height: '100%', background: fertigAnzahl === gesamtAnzahl ? '#16a34a' : s.accent, borderRadius: 3, transition: 'width 0.25s ease' }} />
                                   </div>
                                 </div>
 
-                                {/* DOKUMENT-KARTEN: Eine Karte pro Dokument-Typ */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                {tenant.isVk2 && (
+                                  <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.78rem', color: s.muted }}>
+                                    Dokument mit K2-Daten? Mit <strong>×</strong> entfernen, dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
+                                  </div>
+                                )}
+
+                                {/* Karten-Grid: zwei Spalten auf breiten Bildschirmen */}
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
                                   {DOKUMENT_KARTEN.map(karte => {
+                                    const istPraesentationsmappen = karte.typ === 'praesentationsmappen'
                                     const hatDokumente = karte.docs.length > 0
                                     return (
-                                      <div key={karte.typ} style={{
-                                        background: hatDokumente ? 'rgba(34,197,94,0.07)' : s.bgElevated,
-                                        border: `1.5px solid ${hatDokumente ? 'rgba(34,197,94,0.35)' : s.accent + '22'}`,
-                                        borderRadius: '10px',
-                                        padding: '0.75rem 1rem',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '0.5rem'
-                                      }}>
-                                        {/* Kopfzeile: Icon + Titel + Status */}
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flex: 1 }}>
-                                            <span style={{ fontSize: '1.2rem' }}>{karte.icon}</span>
-                                            <div>
-                                              <div style={{ fontSize: 'clamp(0.9rem, 2vw, 1rem)', fontWeight: '700', color: s.text, lineHeight: 1.2 }}>{karte.titel}</div>
-                                              <div style={{ fontSize: 'clamp(0.72rem, 1.5vw, 0.8rem)', color: s.muted }}>{karte.beschreibung}</div>
+                                      <div
+                                        key={karte.typ}
+                                        style={{
+                                          background: istPraesentationsmappen ? s.bgElevated : (hatDokumente ? 'rgba(34,197,94,0.05)' : s.bgElevated),
+                                          border: `1px solid ${istPraesentationsmappen ? 'rgba(0,0,0,0.08)' : (hatDokumente ? 'rgba(34,197,94,0.2)' : 'rgba(0,0,0,0.08)')}`,
+                                          borderRadius: '10px',
+                                          padding: '0.85rem 1rem',
+                                          display: 'flex',
+                                          flexDirection: 'column',
+                                          gap: '0.6rem'
+                                        }}
+                                      >
+                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                                            <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{karte.icon}</span>
+                                            <div style={{ minWidth: 0 }}>
+                                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, lineHeight: 1.2 }}>{karte.titel}</div>
+                                              <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: '0.1rem' }}>{karte.beschreibung}</div>
                                             </div>
                                           </div>
-                                          <div style={{
-                                            fontSize: 'clamp(0.72rem, 1.5vw, 0.8rem)',
-                                            fontWeight: '700',
-                                            padding: '0.2rem 0.55rem',
-                                            borderRadius: '20px',
-                                            background: hatDokumente ? 'rgba(34,197,94,0.15)' : 'rgba(181,74,30,0.12)',
-                                            color: hatDokumente ? '#16a34a' : s.accent,
-                                            border: `1px solid ${hatDokumente ? 'rgba(34,197,94,0.4)' : s.accent + '44'}`,
-                                            whiteSpace: 'nowrap'
+                                          {!istPraesentationsmappen && (
+                                          <span style={{
+                                            fontSize: '0.7rem',
+                                            fontWeight: 600,
+                                            padding: '0.15rem 0.5rem',
+                                            borderRadius: '999px',
+                                            background: hatDokumente ? 'rgba(34,197,94,0.15)' : 'rgba(0,0,0,0.06)',
+                                            color: hatDokumente ? '#15803d' : s.muted,
+                                            whiteSpace: 'nowrap',
+                                            flexShrink: 0
                                           }}>
-                                            {hatDokumente ? `✅ ${karte.docs.length} vorhanden` : '○ Noch nicht erstellt'}
-                                          </div>
+                                            {hatDokumente ? `${karte.docs.length} vorhanden` : 'Offen'}
+                                          </span>
+                                          )}
                                         </div>
 
-                                        {/* Vorhandene Dokumente anzeigen */}
-                                        {hatDokumente && (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', paddingLeft: '0.25rem' }}>
+                                        {istPraesentationsmappen ? (
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                            {[
+                                              { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
+                                              { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
+                                              { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
+                                              { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
+                                              { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
+                                            ].map(({ label, path }) => (
+                                              <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: `1px solid ${s.accent}33`, borderRadius: '8px', fontSize: '0.8rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
+                                                {label}
+                                              </a>
+                                            ))}
+                                          </div>
+                                        ) : hatDokumente && (
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                             {karte.docs.map((doc: any) => (
-                                              <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                              <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                 <button
                                                   type="button"
                                                   onClick={() => karte.onOpen(doc)}
                                                   style={{
                                                     flex: 1,
                                                     textAlign: 'left',
-                                                    padding: '0.4rem 0.7rem',
+                                                    padding: '0.45rem 0.6rem',
                                                     background: '#fff',
-                                                    border: '1px solid rgba(34,197,94,0.3)',
+                                                    border: '1px solid rgba(34,197,94,0.25)',
                                                     borderRadius: '6px',
                                                     cursor: 'pointer',
-                                                    fontSize: 'clamp(0.82rem, 1.8vw, 0.9rem)',
+                                                    fontSize: '0.82rem',
                                                     color: '#15803d',
-                                                    fontWeight: '600',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '0.4rem'
+                                                    fontWeight: 500,
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap'
                                                   }}
-                                                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(34,197,94,0.1)' }}
-                                                  onMouseLeave={(e) => { e.currentTarget.style.background = '#fff' }}
+                                                  title={doc.name || doc.fileName}
                                                 >
-                                                  🔍 {doc.name?.length > 45 ? doc.name.slice(0, 42) + '…' : (doc.name || doc.fileName || 'Dokument öffnen')}
+                                                  {doc.name?.length > 38 ? doc.name.slice(0, 35) + '…' : (doc.name || doc.fileName || 'Öffnen')}
                                                 </button>
                                                 <button
                                                   type="button"
                                                   onClick={() => karte.onDelete(doc)}
                                                   style={{
-                                                    padding: '0.4rem 0.6rem',
-                                                    background: 'rgba(220,38,38,0.08)',
-                                                    border: '1px solid rgba(220,38,38,0.25)',
+                                                    padding: '0.45rem 0.55rem',
+                                                    background: 'transparent',
+                                                    border: '1px solid rgba(220,38,38,0.2)',
                                                     borderRadius: '6px',
                                                     color: '#dc2626',
                                                     cursor: 'pointer',
-                                                    fontSize: '0.85rem',
-                                                    lineHeight: 1
+                                                    fontSize: '0.9rem',
+                                                    lineHeight: 1,
+                                                    flexShrink: 0
                                                   }}
-                                                  title="Löschen"
+                                                  title="Dokument entfernen"
                                                 >
                                                   ×
                                                 </button>
@@ -18065,30 +18107,27 @@ ${name}`
                                           </div>
                                         )}
 
-                                        {/* Erstellen-Button(s) – ein Button oder zwei bei Presse (neutral/lokal) */}
-                                        {((karte as any).erstellenVarianten ? (
-                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                        {!istPraesentationsmappen && (
+                                        <>
+                                        {(karte as any).erstellenVarianten ? (
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                             {(karte as any).erstellenVarianten.map((v: { label: string, onErstellen: () => void }, idx: number) => (
                                               <button
                                                 key={idx}
                                                 type="button"
                                                 onClick={v.onErstellen}
                                                 style={{
-                                                  padding: '0.55rem 1rem',
-                                                  background: hatDokumente ? s.bgCard : '#b54a1e',
-                                                  border: `1.5px solid ${hatDokumente ? s.accent + '44' : '#8f3a16'}`,
+                                                  padding: '0.5rem 0.85rem',
+                                                  background: hatDokumente ? 'transparent' : s.accent,
+                                                  border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
                                                   borderRadius: '8px',
                                                   cursor: 'pointer',
-                                                  fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
-                                                  color: hatDokumente ? s.accent : '#ffffff',
-                                                  fontWeight: '700',
-                                                  textAlign: 'left',
-                                                  transition: 'background 0.15s'
+                                                  fontSize: '0.8rem',
+                                                  color: hatDokumente ? s.accent : '#fff',
+                                                  fontWeight: 600
                                                 }}
-                                                onMouseEnter={(e) => { e.currentTarget.style.background = hatDokumente ? `${s.accent}18` : '#d4622a' }}
-                                                onMouseLeave={(e) => { e.currentTarget.style.background = hatDokumente ? s.bgCard : '#b54a1e' }}
                                               >
-                                                {hatDokumente ? `↩ ${v.label}` : `➕ ${v.label}`}
+                                                {hatDokumente ? `Neu: ${v.label}` : v.label}
                                               </button>
                                             ))}
                                           </div>
@@ -18097,51 +18136,46 @@ ${name}`
                                             type="button"
                                             onClick={karte.onErstellen}
                                             style={{
-                                              padding: '0.55rem 1rem',
-                                              background: hatDokumente ? s.bgCard : '#b54a1e',
-                                              border: `1.5px solid ${hatDokumente ? s.accent + '44' : '#8f3a16'}`,
+                                              width: '100%',
+                                              padding: '0.5rem 0.85rem',
+                                              background: hatDokumente ? 'transparent' : s.accent,
+                                              border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
                                               borderRadius: '8px',
                                               cursor: 'pointer',
-                                              fontSize: 'clamp(0.85rem, 2vw, 0.92rem)',
-                                              color: hatDokumente ? s.accent : '#ffffff',
-                                              fontWeight: '700',
-                                              textAlign: 'left',
-                                              transition: 'background 0.15s'
+                                              fontSize: '0.85rem',
+                                              color: hatDokumente ? s.accent : '#fff',
+                                              fontWeight: 600
                                             }}
-                                            onMouseEnter={(e) => { e.currentTarget.style.background = hatDokumente ? `${s.accent}18` : '#d4622a' }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.background = hatDokumente ? s.bgCard : '#b54a1e' }}
                                           >
-                                            {hatDokumente ? `↩ Neu erstellen` : `➕ Jetzt erstellen – sofort fertig`}
+                                            {hatDokumente ? 'Neu erstellen' : 'Jetzt erstellen'}
                                           </button>
-                                        ) : null)
-                                        }
-                                        {/* Druckversionen: extra Dokument hinzufügen */}
+                                        ) : null}
+
                                         {karte.typ === 'druckversion' && (
                                           <button
                                             type="button"
                                             onClick={() => { setSelectedEventForDocument(event.id); setShowDocumentModal(true) }}
                                             style={{
-                                              padding: '0.4rem 0.75rem',
-                                              background: s.bgCard,
-                                              border: `1px solid ${s.accent}44`,
-                                              borderRadius: '8px',
+                                              padding: '0.35rem 0',
+                                              background: 'none',
+                                              border: 'none',
                                               cursor: 'pointer',
-                                              fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
-                                              color: s.accent,
-                                              fontWeight: '600',
-                                              textAlign: 'left'
+                                              fontSize: '0.75rem',
+                                              color: s.muted,
+                                              textDecoration: 'underline'
                                             }}
                                           >
-                                            ➕ Weiteres Dokument hinzufügen
+                                            + Weiteres Dokument hinzufügen
                                           </button>
+                                        )}
+                                        </>
                                         )}
                                       </div>
                                     )
                                   })}
                                 </div>
 
-                                {/* ALLES ALS PDF – ganz unten */}
-                                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22` }}>
+                                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
                                   <button
                                     onClick={() => {
                                       const sug = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -18163,17 +18197,17 @@ ${name}`
                                     }}
                                     style={{
                                       width: '100%',
-                                      padding: '0.6rem 1rem',
-                                      background: s.gradientAccent,
-                                      color: '#ffffff',
-                                      border: 'none',
+                                      padding: '0.55rem 1rem',
+                                      background: 'transparent',
+                                      color: s.accent,
+                                      border: `1px solid ${s.accent}44`,
                                       borderRadius: '8px',
-                                      fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                      fontWeight: '700',
+                                      fontSize: '0.85rem',
+                                      fontWeight: 600,
                                       cursor: 'pointer'
                                     }}
                                   >
-                                    📄 Alle PR-Dokumente auf einen Blick (PDF)
+                                    Alle PR-Vorschläge als PDF anzeigen
                                   </button>
                                 </div>
                               </div>

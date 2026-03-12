@@ -2,12 +2,12 @@
  * Neuer Test-Pilot: Name eingeben → ök2 oder VK2 wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
  */
 
-import { BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 
 const PILOT_ZETTEL_NR_KEY = 'k2-pilot-zettel-last-nr'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
 const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
-const VK2_URL = 'https://k2-galerie.vercel.app/projects/vk2/galerie'
+const VK2_URL = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 
 function getNextZettelNr(): string {
   try {

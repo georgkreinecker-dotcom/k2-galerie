@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
@@ -85,7 +85,7 @@ function formatDate(dateStr: string): string {
   }
 }
 
-const VK2_VERCEL_BASE = 'https://k2-galerie.vercel.app'
+const VK2_VERCEL_BASE = BASE_APP_URL
 
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()

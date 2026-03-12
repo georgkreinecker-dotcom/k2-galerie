@@ -7,12 +7,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, ENTDECKEN_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const PILOT_ZETTEL_MD = '/k2team-handbuch/20-PILOT-ZETTEL-OEK2-VK2.md'
 /** Testpiloten über denselben Einstieg wie alle: Entdecken → Vorschau → Admin */
-const OEK2_URL = BASE_APP_URL + ENTDECKEN_ROUTE
-const VK2_URL = 'https://k2-galerie.vercel.app/projects/vk2/galerie'
+const OEK2_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
+const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 
 export type PilotType = 'oek2' | 'vk2'
 
@@ -21,7 +22,7 @@ export default function ZettelPilotPage() {
   const name = searchParams.get('name')?.trim() || ''
   const pilotUrl = searchParams.get('pilotUrl')?.trim() || ''
   const typeParam = searchParams.get('type')?.trim().toLowerCase()
-  const pilotType: PilotType | null = typeParam === 'oek2' || typeParam === 'vk2' ? typeParam : pilotUrl === OEK2_URL ? 'oek2' : pilotUrl === VK2_URL ? 'vk2' : null
+  const pilotType: PilotType | null = typeParam === 'oek2' || typeParam === 'vk2' ? typeParam : pilotUrl === OEK2_BASE ? 'oek2' : pilotUrl === VK2_BASE ? 'vk2' : null
   const nr = searchParams.get('nr')?.trim() || ''
 
   const [content, setContent] = useState<string>('')
@@ -29,6 +30,7 @@ export default function ZettelPilotPage() {
   const [qrPilot, setQrPilot] = useState<string>('')
   const [qrVk2, setQrVk2] = useState<string>('')
   const [qrOek2, setQrOek2] = useState<string>('')
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
     fetch(PILOT_ZETTEL_MD)
@@ -41,14 +43,17 @@ export default function ZettelPilotPage() {
   }, [])
 
   useEffect(() => {
+    const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
+    const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
     if (pilotUrl) {
-      QRCode.toDataURL(pilotUrl, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
+      const busted = pilotUrl.startsWith(BASE_APP_URL) ? buildQrUrlWithBust(pilotUrl, qrVersionTs) : pilotUrl
+      QRCode.toDataURL(busted, { width: 100, margin: 1 }).then(setQrPilot).catch(() => setQrPilot(''))
     } else {
       setQrPilot('')
     }
-    QRCode.toDataURL(OEK2_URL, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
-    QRCode.toDataURL(VK2_URL, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
-  }, [pilotUrl])
+    QRCode.toDataURL(oek2Bust, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
+    QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
+  }, [pilotUrl, qrVersionTs])
 
   if (loading) {
     return (
@@ -126,8 +131,8 @@ export default function ZettelPilotPage() {
           pilotType={pilotType}
           pilotUrl={pilotUrl || null}
           qrPilot={qrPilot}
-          oek2Url={OEK2_URL}
-          vk2Url={VK2_URL}
+          oek2Url={OEK2_BASE}
+          vk2Url={VK2_BASE}
           qrOek2={qrOek2}
           qrVk2={qrVk2}
         />

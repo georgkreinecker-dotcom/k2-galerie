@@ -6,16 +6,20 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
+import { BASE_APP_URL } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ZETTEL_MD = '/k2team-handbuch/19-MARTINA-MUNA-BESUCH-OEK2-VK2.md'
-const OEK2_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich'
-const VK2_URL = 'https://k2-galerie.vercel.app/projects/vk2/galerie'
+const OEK2_BASE = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+const VK2_BASE = BASE_APP_URL + PROJECT_ROUTES.vk2.galerie
 
 export default function ZettelMartinaMunaPage() {
   const [content, setContent] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [qrOek2, setQrOek2] = useState<string>('')
   const [qrVk2, setQrVk2] = useState<string>('')
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
 
   useEffect(() => {
     fetch(ZETTEL_MD)
@@ -28,9 +32,11 @@ export default function ZettelMartinaMunaPage() {
   }, [])
 
   useEffect(() => {
-    QRCode.toDataURL(OEK2_URL, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
-    QRCode.toDataURL(VK2_URL, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
-  }, [])
+    const oek2Bust = buildQrUrlWithBust(OEK2_BASE, qrVersionTs)
+    const vk2Bust = buildQrUrlWithBust(VK2_BASE, qrVersionTs)
+    QRCode.toDataURL(oek2Bust, { width: 100, margin: 1 }).then(setQrOek2).catch(() => {})
+    QRCode.toDataURL(vk2Bust, { width: 100, margin: 1 }).then(setQrVk2).catch(() => {})
+  }, [qrVersionTs])
 
   if (loading) {
     return (

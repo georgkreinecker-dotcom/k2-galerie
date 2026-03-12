@@ -17,6 +17,8 @@ const GALERIE_DOCUMENTS = [
   { id: '14-sicherheit', name: 'Sicherheit & Vor Veröffentlichung', file: '14-SICHERHEIT-PRODUKT-LABEL.md' },
   { id: '15-skalierung', name: 'Skalierungsprinzip', file: '15-SKALIERUNGSPRINZIP.md' },
   { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md' },
+  { id: '21-links-qr', name: 'Links & QR-Codes – Register', file: '21-LINKS-QR-CODES-REGISTER.md' },
+  { id: '22-medienplanung', name: 'Medienplanung – Flyer & Werbung (mök2)', file: '22-MEDIENPLANUNG-FLYER-WERBUNG-MOK2.md' },
 ] as const
 
 export default function K2GalerieHandbuchPage() {

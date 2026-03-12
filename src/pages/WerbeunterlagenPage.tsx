@@ -1,6 +1,7 @@
 /**
  * Werbeunterlagen – Teil von mök2 (Marketing ök2). Klar strukturiert, bearbeitbar.
  * Eigenes Promotion-Design. Texte (Slogan, Botschaft) hier bearbeiten → erscheinen auch auf mök2.
+ * Modus „Für K2“: Stammdaten + QR zur echten K2-Galerie (Flyer/Werbedokumente für Martina & Georg).
  */
 
 import { useState, useEffect } from 'react'
@@ -10,6 +11,7 @@ import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../config/naviga
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, SOCIAL_MEDIA_FORMATE, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 
 const PRINT_HIDE = 'werbeunterlagen-no-print'
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
@@ -46,12 +48,30 @@ interface WerbeunterlagenPageProps {
   embeddedInMok2Layout?: boolean
 }
 
+type WerbeModus = 'oek2' | 'k2'
+
+function getK2Kontakt(): { email: string; phone: string } {
+  try {
+    const g = loadStammdaten('k2', 'gallery') as { email?: string; phone?: string }
+    const m = loadStammdaten('k2', 'martina') as { email?: string; phone?: string }
+    return {
+      email: (g?.email && g.email.trim()) || (m?.email && m.email.trim()) || '',
+      phone: (g?.phone && g.phone.trim()) || (m?.phone && m.phone.trim()) || '',
+    }
+  } catch {
+    return { email: '', phone: '' }
+  }
+}
+
 export default function WerbeunterlagenPage({ embeddedInMok2Layout }: WerbeunterlagenPageProps) {
   const s = WERBEUNTERLAGEN_STIL
   const [slogan, setSlogan] = useState(loadSlogan)
   const [botschaft, setBotschaft] = useState(loadBotschaft)
+  const [modus, setModus] = useState<WerbeModus>('oek2')
   const [willkommenQrUrl, setWillkommenQrUrl] = useState('')
+  const [galerieQrUrl, setGalerieQrUrl] = useState('')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const k2Kontakt = modus === 'k2' ? getK2Kontakt() : { email: '', phone: '' }
 
   useEffect(() => {
     setSlogan(loadSlogan())
@@ -60,11 +80,20 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
 
   const willkommenBaseUrl = BASE_APP_URL + WILLKOMMEN_ROUTE
   const willkommenFullUrl = buildQrUrlWithBust(willkommenBaseUrl, qrVersionTs)
+  const galerieBaseUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie
+  const galerieFullUrl = buildQrUrlWithBust(galerieBaseUrl, qrVersionTs)
+
   useEffect(() => {
     QRCode.toDataURL(willkommenFullUrl, { width: 200, margin: 1 })
       .then(setWillkommenQrUrl)
       .catch(() => setWillkommenQrUrl(''))
   }, [willkommenFullUrl])
+
+  useEffect(() => {
+    QRCode.toDataURL(galerieFullUrl, { width: 200, margin: 1 })
+      .then(setGalerieQrUrl)
+      .catch(() => setGalerieQrUrl(''))
+  }, [galerieFullUrl])
 
   const saveSlogan = (value: string) => {
     const v = value.trim() || PRODUCT_WERBESLOGAN
@@ -95,8 +124,13 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               Werbeunterlagen <span style={{ fontSize: '0.7em', fontWeight: 400, color: s.muted }}>(mök2)</span>
             </h1>
             <p style={{ color: s.muted, marginTop: '0.35rem', fontSize: '0.9rem' }}>
-              <strong>Struktur:</strong> 1. Prospekt · 2. Social-Media-Masken · 3. Flyer A5. Texte unten bearbeiten → gelten überall.
+              <strong>Struktur:</strong> 1. Prospekt · 2. Social-Media-Masken · 3. Flyer A5 · 4. QR &amp; Link · 5. Präsentationsmappen (Links zum Mitsenden). Texte unten bearbeiten → gelten überall.
             </p>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', color: s.muted }}>Anzeige für:</span>
+              <button type="button" onClick={() => setModus('oek2')} style={{ padding: '0.35rem 0.75rem', border: `1px solid ${modus === 'oek2' ? s.accent : s.accentSoft}`, borderRadius: 6, background: modus === 'oek2' ? s.accentSoft : 'transparent', color: s.text, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: modus === 'oek2' ? 600 : 400 }}>ök2 / Demo</button>
+              <button type="button" onClick={() => setModus('k2')} style={{ padding: '0.35rem 0.75rem', border: `1px solid ${modus === 'k2' ? s.accent : s.accentSoft}`, borderRadius: 6, background: modus === 'k2' ? s.accentSoft : 'transparent', color: s.text, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: modus === 'k2' ? 600 : 400 }}>K2 (echte Galerie)</button>
+            </div>
           </div>
           <button type="button" onClick={() => window.print()} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: s.radius, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             📄 Als PDF drucken
@@ -278,6 +312,34 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               <p style={{ margin: '0.75rem 0 0', fontSize: '0.8rem', color: s.muted }}>
                 Für Druck: QR-Code oben ausdrucken oder Link einfügen.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Präsentationsmappen – Links zum Mitsenden (E-Mail, Chat, Werbung) */}
+        <section style={{ marginBottom: '2rem' }}>
+          <h2 className={PRINT_HIDE} style={{ fontFamily: s.fontHeading, fontSize: '1.35rem', color: s.accent, marginBottom: '1rem', borderBottom: `1px solid ${s.accentSoft}`, paddingBottom: '0.5rem' }}>
+            5. Präsentationsmappen – Links zum Mitsenden
+          </h2>
+          <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
+            Kurzversion (1 Seite) zum schnellen Weiterleiten, Langversion mit allen Details. Als Link in E-Mail, Chat oder Werbedokument einfügen.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>ök2 – Kurz (1 Seite)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz}</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>ök2 – Lang (alle Details)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang}</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>VK2 – Kurz (1 Seite)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz}</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>VK2 – Lang (alle Details)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang}</a>
             </div>
           </div>
         </section>
