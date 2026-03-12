@@ -15,6 +15,8 @@ alwaysApply: true
 
 **Georg macht nichts.** Er sieht nur den Fortschrittsbalken unten in Cursor.
 
+**Nicht nachfragen.** „Soll ich commit/push machen?“ o. ä. nie stellen – das ist immer derselbe Ablauf. Einfach test → build → commit → push ausführen. Georg muss dem nicht zustimmen, das ist klar.
+
 **Nur ein Run-Klick pro Aufgabe:** Alle Schritte (Stand, DIALOG-STAND, Code) in **einem** Terminal-Block erledigen – ein Befehl `git add . && git commit -m "..." && git push`. Kein zweiter Commit direkt danach, sonst muss Georg zweimal auf Run klicken.
 
 ## Reihenfolge am Ende jeder Aufgabe
