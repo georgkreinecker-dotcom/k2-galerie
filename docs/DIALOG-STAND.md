@@ -1,10 +1,18 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Präsentationsmappen: eine URL + ?variant= (Sportwagenmodus); alle Varianten funktionieren.
+**Letzter Build-Push:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – Präsentationsmappe: eine Version, PDF-Druck
+
+- **Umgesetzt:** Nur noch eine Version (Vollversion); Langversion-Links im Admin entfernt, ein Link „Präsentationsmappe“. Druck-PDF wie Benutzerhandbuch: kompakte Abstände, kleinere Schrift im Druck, Seitenfuß „Seite X von Y“, @page-Ränder.
+- **Dateien:** PraesentationsmappeVollversionPage.tsx (Print-Styles, .pmv-seitenfuss), ScreenshotExportAdmin.tsx (ein Link, Beschreibung angepasst).
+- **Tests + Build:** grün. Commit 27e06c4, push auf main.
 
 ---
 
