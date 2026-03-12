@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Auto-Upload: Jedes Speichern einer Werkkarte wird sofort an Vercel gesendet (kein extra „An Server senden“ nötig). Commit: 08db672 ✅ auf GitHub.
+**Letzter Build-Push:** 12.03.26 – Auto-Download: Beim Neuladen/Öffnen werden Daten automatisch vom Vercel-Server geholt (Admin + Galerie). Commit: (gleich nach Push).
 
 **Vorher:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
@@ -10,11 +10,11 @@
 
 ---
 
-## Heute 12.03.26 – Auto-Upload nach jedem Speichern (Werkkarte → Vercel)
+## Heute 12.03.26 – Automatisches Downloaden (Daten vom Server bei jedem Neuladen)
 
-- **Georg:** Sobald ein Bild auf Werkkarte gespeichert wird, soll automatisch zu Vercel hochgeladen werden – Werk für Werk auf dem Server, für alle erreichbar, kein extra „Senden“, kleinere Datenmengen, mehr Kontrolle.
-- **Umgesetzt:** (1) iframe-Check entfernt: Nach jedem erfolgreichen Speichern einer Werkkarte wird immer `publishMobile({ silent: true })` ausgeführt (auch in Cursor Preview). (2) Kurze Rückmeldung: Bei Erfolg „Gespeichert & an Vercel gesendet.“ (Sync-Balken, nach 4 s weg); bei Fehler „Gespeichert. Hochladen an Vercel fehlgeschlagen.“ (3) UI-Hinweis in Einstellungen & Sync: „Jedes Speichern wird automatisch an Vercel gesendet.“; „Vom Server laden“-Hinweis: „Jedes Speichern wird automatisch hochgeladen. Hier nur bei Bedarf Stand holen.“
-- **Dateien:** ScreenshotExportAdmin.tsx (saveArtworkData, publishMobile silent-Zweige, Sync-Texte).
+- **Georg:** Beim Neuladen des Geräts müssen die Daten automatisch vom Vercel-Server abgeholt werden – keine manuelle Eingabe nötig.
+- **Umgesetzt:** (1) **Admin:** Einmal pro Öffnung (1,5 s nach Mount) wird still `handleLoadFromServer({ silent: true })` ausgeführt (nur K2). Kein Alert, nur Sync-Balken „Daten vom Server geladen.“ (2) **handleLoadFromServer** hat optionale `options.silent`: bei silent keine Alerts, nur Sync-Balken; bei Schutzfällen (Server leer, Bildverlust-Risiko) wird still abgebrochen. (3) **Galerie-Seite:** Läd bereits automatisch (loadData nach 1 s) – unverändert. (4) UI-Hinweis: „Beim Öffnen des Admin werden die Daten automatisch vom Server geholt – keine manuelle Eingabe nötig.“
+- **Dateien:** ScreenshotExportAdmin.tsx (handleLoadFromServer silent, hasAutoLoadedFromServerRef, useEffect Auto-Load, Sync-Texte).
 - **Nächster Schritt:** Commit + push.
 
 ---

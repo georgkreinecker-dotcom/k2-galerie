@@ -3233,6 +3233,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const lastSavedArtworkImageRef = useRef<{ number: string; imageUrl: string } | null>(null)
   /** Warteschlange: Speichern nacheinander, damit „Bild bei 30“ nicht verloren geht wenn danach 31 gespeichert wird (Lesen nach vorherigem Schreiben). */
   const lastArtworkSaveRef = useRef<Promise<boolean>>(Promise.resolve(true))
+  const hasAutoLoadedFromServerRef = useRef(false)
   useEffect(() => {
     const handleArtworksUpdate = (ev: Event) => {
       if (ignoreArtworksUpdatedRef.current) {
@@ -3308,11 +3309,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => window.removeEventListener('storage', onStorage)
   }, [tenant])
 
-  // KEIN Auto-Sync (Supabase / gallery-data.json) mehr beim Admin-Start – verursacht Fenster-Abstürze.
-  // Mobile-Werke kommen über artworks-updated Event beim Speichern; Werke werden nur aus localStorage geladen (siehe oben, 2 s Verzögerung).
+  // Automatisches Laden: Nach jedem Neuladen (Admin geöffnet) wird einmal still handleLoadFromServer({ silent: true }) ausgeführt (siehe useEffect unten). Galerie-Seite lädt ebenfalls automatisch (GaleriePage loadData nach 1 s).
 
-  /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben; dynamischer Mandant: von API in State) */
-  const handleLoadFromServer = async () => {
+  /** Tenantfähig: Daten von Vercel laden (K2/ök2: Werke mergen; ök2/VK2: Backup-Format in Keys schreiben; dynamischer Mandant: von API in State). options.silent = true: kein Alert, nur Sync-Balken (für automatisches Laden beim Neuladen). */
+  const handleLoadFromServer = async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true
     if (tenant.dynamicTenantId) {
       setIsLoadingFromServer(true)
       setSyncStatusBar({ phase: 'loading', message: 'Daten werden geladen…' })
@@ -3321,7 +3322,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setIsLoadingFromServer(false)
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        alert(result.error?.includes('404') ? 'Noch keine Daten auf dem Server.' : (result.error || 'Fehler beim Laden.'))
+        if (!silent) alert(result.error?.includes('404') ? 'Noch keine Daten auf dem Server.' : (result.error || 'Fehler beim Laden.'))
         return
       }
       const data = (result.data || {}) as Record<string, unknown>
@@ -3357,18 +3358,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
       if (!result.success) {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        if (tenantId === 'oeffentlich' && result.error?.includes('404')) {
-          alert('Für die Demo (ök2) liegt noch kein Stand auf dem Server.\n\nEinmal im ök2-Admin „Daten an Server senden“ klicken – dann wird ein Stand angelegt und „Aktuellen Stand holen“ funktioniert.')
-          return
+        if (!silent) {
+          if (tenantId === 'oeffentlich' && result.error?.includes('404')) {
+            alert('Für die Demo (ök2) liegt noch kein Stand auf dem Server.\n\nEinmal im ök2-Admin „Daten an Server senden“ klicken – dann wird ein Stand angelegt und „Aktuellen Stand holen“ funktioniert.')
+          } else {
+            const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst „Daten an Server senden“ tippen.' : '')
+            alert(`Server: ${result.error || 'Fehler'}.\n\n• App von k2-galerie.vercel.app? Internet verbunden?${hint}`)
+          }
         }
-        const hint = result.hint ? ` ${result.hint}` : (result.error && result.error.includes('404') ? ' Zuerst „Daten an Server senden“ tippen.' : '')
-        alert(`Server: ${result.error || 'Fehler'}.\n\n• App von k2-galerie.vercel.app? Internet verbunden?${hint}`)
         return
       }
       const data = result.data as Record<string, unknown> & { artworks?: unknown[]; exportedAt?: string; kontext?: string }
       if (!data || typeof data !== 'object') {
         setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-        alert('Antwort war kein gültiges JSON.')
+        if (!silent) alert('Antwort war kein gültiges JSON.')
         return
       }
 
@@ -3443,7 +3446,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (serverArtworks.length === 0 && localArtworks.length > 0) {
         setIsLoadingFromServer(false)
         setSyncStatusBar({ phase: 'error', message: 'Server lieferte 0 Werke.' })
-        setTimeout(() => {
+        if (!silent) setTimeout(() => {
           alert('Server hat keine Werke geliefert. Deine lokalen Daten (' + localArtworks.length + ' Werke) bleiben unverändert.\n\nZuerst am anderen Gerät „An Server senden“ tippen, dann hier erneut „Aktuellen Stand holen“.')
         }, 0)
         return
@@ -3451,7 +3454,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (serverArtworks.length < localArtworks.length * 0.5 && localArtworks.length > 0) {
         setIsLoadingFromServer(false)
         setSyncStatusBar({ phase: 'error', message: 'Server-Stand viel kleiner als lokal.' })
-        setTimeout(() => {
+        if (!silent) setTimeout(() => {
           alert('Server: ' + serverArtworks.length + ' Werke, lokal: ' + localArtworks.length + '. Zu großer Unterschied – Sync übersprungen. Deine lokalen Daten bleiben erhalten.\n\nWenn du wirklich nur den Server-Stand willst: Einstellungen → „Werke vom Server zurückholen“.')
         }, 0)
         return
@@ -3460,7 +3463,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (isMobileDevice && localArtworks.length > serverArtworks.length) {
         setIsLoadingFromServer(false)
         setSyncStatusBar({ phase: 'error', message: 'Lokal mehr Werke als Server.' })
-        setTimeout(() => {
+        if (!silent) setTimeout(() => {
           alert(
             'Du hast mehr Werke (' + localArtworks.length + ') als der Server (' + serverArtworks.length + ').\n\n' +
             'Damit deine Bilder nicht verloren gehen: Zuerst hier „An Server senden“ tippen. Danach am anderen Gerät „Aktuellen Stand holen“.'
@@ -3489,6 +3492,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       ).length
       // Bildverlust: Lokal mehr Werke mit Bild als der Server/Merge liefern würde
       if (savedWithImageCount < localWithImageCount && localWithImageCount > 0) {
+        if (silent) {
+          setIsLoadingFromServer(false)
+          setSyncStatusBar({ phase: 'idle', message: '' })
+          return
+        }
         const hintFrisch =
           'Falls du gerade vom anderen Gerät (z. B. iPad) gesendet hast: 1–2 Min warten und erneut „Aktuellen Stand holen“ – der Server braucht manchmal einen Moment, dann kommt der neue Stand (z. B. 70 Werke, 10 mit Bild) an.'
         // iPad/Mobil: Frage wie am Mac – „Trotzdem laden“ möglich, damit er nicht blockiert ist.
@@ -3526,12 +3534,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           try { localStorage.setItem('k2-last-loaded-timestamp', loadedAt) } catch (_) {}
           setLastSyncLoadedAt(loadedAt)
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(data.exportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
-          setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
-          setTimeout(() => {
-            setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
-            const ohneBildHinweis = withoutImageNumbers.length > 0 ? `\n\nOhne Bild-URL: ${withoutImageNumbers.slice(0, 15).join(', ')}${withoutImageNumbers.length > 15 ? ' …' : ''}` : ''
-            alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.\n\nGespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild-URL (so viele siehst du in der Galerie).${ohneBildHinweis}`)
-          }, 4000)
+          if (silent) {
+            setSyncStatusBar({ phase: 'success', message: 'Daten vom Server geladen.' })
+            setTimeout(() => { if (isMountedRef.current) setSyncStatusBar((p) => (p.message?.includes('Daten vom Server geladen') ? { phase: 'idle', message: '' } : p)) }, 4000)
+          } else {
+            setSyncStatusBar({ phase: 'loading', message: `${toSave.length} Werke geladen. Bilder werden angezeigt…` })
+            setTimeout(() => {
+              setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
+              const ohneBildHinweis = withoutImageNumbers.length > 0 ? `\n\nOhne Bild-URL: ${withoutImageNumbers.slice(0, 15).join(', ')}${withoutImageNumbers.length > 15 ? ' …' : ''}` : ''
+              alert(`✅ ${toSave.length} Werke vom Server geladen${exportedAt}.\n\nGespeichert: ${toSave.length} Werke, ${savedWithImageCount} mit Bild-URL (so viele siehst du in der Galerie).${ohneBildHinweis}`)
+            }, 4000)
+          }
         } else {
           setSyncStatusBar({ phase: 'error', message: 'Fehler beim Speichern.' })
         }
@@ -3539,6 +3552,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         console.warn('Merge würde weniger Werke ergeben – localStorage unverändert')
         const serverCount = serverArtworks.length
         const localCount = localArtworks.length
+        if (silent) {
+          setIsLoadingFromServer(false)
+          setSyncStatusBar({ phase: 'idle', message: '' })
+          return
+        }
         const nurServerLaden = window.confirm(
           `Server hat ${serverCount} Werke, lokal ${localCount}.\n\nNur den Server-Stand (${serverCount} Werke) laden? Lokale Werke werden ersetzt.`
         )
@@ -3570,24 +3588,37 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           }
         } else {
           setSyncStatusBar({ phase: 'success', message: 'Lokal beibehalten.' })
-          setTimeout(() => { alert('Lokal beibehalten. Für nur Server-Stand: Einstellungen → „Werke vom Server zurückholen“.') }, 0)
+          if (!silent) setTimeout(() => { alert('Lokal beibehalten. Für nur Server-Stand: Einstellungen → „Werke vom Server zurückholen“.') }, 0)
         }
         setIsLoadingFromServer(false)
       }
     } catch (e) {
       console.error('Vom Server laden:', urlPrimary, e)
       setSyncStatusBar({ phase: 'error', message: 'Fehler beim Laden.' })
-      const msg = e instanceof Error ? e.message : String(e)
-      const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
-      alert(
-        isNetwork
-          ? 'Verbindung zum Server fehlgeschlagen.\n\n• Bist du im Internet? (WLAN oder Mobil)\n• App von k2-galerie.vercel.app geöffnet? Dann erneut „Bilder vom Server laden“ klicken.'
-          : `Fehler beim Laden: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
-      )
+      if (!silent) {
+        const msg = e instanceof Error ? e.message : String(e)
+        const isNetwork = /failed|network|load|cors|fetch|typeerror/i.test(msg) || (e instanceof TypeError)
+        alert(
+          isNetwork
+            ? 'Verbindung zum Server fehlgeschlagen.\n\n• Bist du im Internet? (WLAN oder Mobil)\n• App von k2-galerie.vercel.app geöffnet? Dann erneut „Bilder vom Server laden“ klicken.'
+            : `Fehler beim Laden: ${msg}\n\nBitte Verbindung prüfen und erneut versuchen.`
+        )
+      }
     } finally {
       setIsLoadingFromServer(false)
     }
   }
+
+  // REGEL: Nach jedem Neuladen des Geräts (Seite/Admin geöffnet) automatisch Daten vom Vercel-Server holen – keine manuelle Eingabe nötig. Einmal pro Mount, nur K2, still (kein Alert).
+  useEffect(() => {
+    if (tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) return
+    if (hasAutoLoadedFromServerRef.current) return
+    hasAutoLoadedFromServerRef.current = true
+    const t = setTimeout(() => {
+      handleLoadFromServer({ silent: true })
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [tenant.isOeffentlich, tenant.isVk2, tenant.dynamicTenantId])
 
   /** K2: Werke aus der veröffentlichten gallery-data.json (Vercel) laden und in k2-artworks wiederherstellen. Server-Stand als Basis, lokale Bilddaten (imageUrl/imageRef) werden erhalten – keine Überschreibung mit leeren Bildern (z. B. 30–48). */
   const handleRestoreWerkeFromPublished = async () => {
@@ -12230,7 +12261,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }}>
                           {(!tenant.isOeffentlich && !tenant.isVk2) && (
                             <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.8rem', color: s.muted, lineHeight: 1.4 }}>
-                              <strong style={{ color: s.text }}>Jedes Speichern wird automatisch an Vercel gesendet.</strong> Werk für Werk auf dem Server, für alle Geräte erreichbar. „An Server senden“ nur bei Bedarf (z. B. manuell nochmal senden).
+                              <strong style={{ color: s.text }}>Jedes Speichern wird automatisch an Vercel gesendet.</strong> Beim Öffnen des Admin werden die Daten automatisch vom Server geholt – keine manuelle Eingabe nötig. „An Server senden“ / „Vom Server laden“ nur bei Bedarf.
                             </p>
                           )}
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
