@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Auto-Upload: Jedes Speichern einer Werkkarte wird sofort an Vercel gesendet (kein extra „An Server senden“ nötig). Commit: (gleich nach Push).
+**Letzter Build-Push:** 12.03.26 – Auto-Upload: Jedes Speichern einer Werkkarte wird sofort an Vercel gesendet (kein extra „An Server senden“ nötig). Commit: 08db672 ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
