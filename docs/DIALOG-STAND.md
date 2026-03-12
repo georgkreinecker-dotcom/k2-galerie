@@ -1,10 +1,21 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
+**Letzter Build-Push:** 12.03.26 – Auto-Upload: Jedes Speichern einer Werkkarte wird sofort an Vercel gesendet (kein extra „An Server senden“ nötig). Commit: (gleich nach Push).
+
+**Vorher:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – Auto-Upload nach jedem Speichern (Werkkarte → Vercel)
+
+- **Georg:** Sobald ein Bild auf Werkkarte gespeichert wird, soll automatisch zu Vercel hochgeladen werden – Werk für Werk auf dem Server, für alle erreichbar, kein extra „Senden“, kleinere Datenmengen, mehr Kontrolle.
+- **Umgesetzt:** (1) iframe-Check entfernt: Nach jedem erfolgreichen Speichern einer Werkkarte wird immer `publishMobile({ silent: true })` ausgeführt (auch in Cursor Preview). (2) Kurze Rückmeldung: Bei Erfolg „Gespeichert & an Vercel gesendet.“ (Sync-Balken, nach 4 s weg); bei Fehler „Gespeichert. Hochladen an Vercel fehlgeschlagen.“ (3) UI-Hinweis in Einstellungen & Sync: „Jedes Speichern wird automatisch an Vercel gesendet.“; „Vom Server laden“-Hinweis: „Jedes Speichern wird automatisch hochgeladen. Hier nur bei Bedarf Stand holen.“
+- **Dateien:** ScreenshotExportAdmin.tsx (saveArtworkData, publishMobile silent-Zweige, Sync-Texte).
+- **Nächster Schritt:** Commit + push.
 
 ---
 

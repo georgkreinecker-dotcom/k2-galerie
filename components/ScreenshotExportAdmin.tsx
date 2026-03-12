@@ -2857,8 +2857,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
                 const sentAt = new Date().toISOString()
                 try { localStorage.setItem('k2-last-sent-timestamp', sentAt) } catch (_) {}
                 setLastSyncSentAt(sentAt)
-                if (silent) console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke', result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
-                else {
+                if (silent) {
+                  console.log('✅ K2-Daten an Server (zentral):', result.artworksCount, 'Werke', result.serverArtworksCount != null ? `| Vercel: ${result.serverArtworksCount} Werke, ${result.serverImagesCount} mit Bild` : '')
+                  setSyncStatusBar({ phase: 'success', message: 'Gespeichert & an Vercel gesendet.' })
+                  setTimeout(() => { if (isMountedRef.current) setSyncStatusBar((prev) => (prev.phase === 'success' && prev.message?.includes('Gespeichert & an Vercel') ? { phase: 'idle', message: '' } : prev)) }, 4000)
+                } else {
                   setSyncStatusBar({ phase: 'success', message: 'Gesendet.' })
                   setPublishSuccessModal({
                     size: result.result?.size ?? 0,
@@ -2875,14 +2878,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
                 if (!silent) {
                   setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                   setPublishErrorMsg(result.error || 'Daten konnten nicht gesendet werden.')
-                } else console.warn('Sync (silent) fehlgeschlagen:', result.error)
+                } else {
+                  console.warn('Sync (silent) fehlgeschlagen:', result.error)
+                  setSyncStatusBar({ phase: 'error', message: 'Gespeichert. Hochladen an Vercel fehlgeschlagen.' })
+                }
               }
             }).catch((e) => {
               if (isMountedRef.current && !silent) setIsDeploying(false)
               if (!silent) {
                 setSyncStatusBar({ phase: 'error', message: 'Fehler beim Senden.' })
                 setPublishErrorMsg(e instanceof Error ? e.message : String(e))
-              } else console.warn('Sync (silent) Fehler:', e)
+              } else {
+                console.warn('Sync (silent) Fehler:', e)
+                setSyncStatusBar({ phase: 'error', message: 'Gespeichert. Hochladen an Vercel fehlgeschlagen.' })
+              }
             }).finally(() => { if (isMountedRef.current && !silent) setIsDeploying(false) })
             })
           } catch (e) {
@@ -8523,6 +8532,7 @@ ${'='.repeat(60)}
         artworkData.id = artworks[index].id
         artworkData.createdAt = artworks[index].createdAt || new Date().toISOString()
         artworkData.addedToGalleryAt = artworks[index].addedToGalleryAt || artworks[index].createdAt || artworkData.createdAt
+        artworkData.updatedAt = new Date().toISOString() // damit „Vom Server laden“ die lokale Version behält (Merge: neueres gewinnt)
         artworkData.updatedOnMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         artworks[index] = artworkData
       } else {
@@ -8923,14 +8933,11 @@ ${'='.repeat(60)}
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       setTimeout(() => { ignoreArtworksUpdatedRef.current = false }, isMobile ? 1200 : 400)
       
-      // Zentrale Stelle (Vercel): Nach jedem Speichern automatisch Daten dorthin (tenantfähig: K2, ök2, VK2).
-      // Im iframe (Cursor Preview) überspringen – reduziert Last und Crash-Risiko (Code 5).
-      if (typeof window !== 'undefined' && window.self === window.top) {
-        try {
-          publishMobile({ silent: true })
-        } catch (e) {
-          console.warn('Automatisches Sync nach Speichern fehlgeschlagen:', e)
-        }
+      // REGEL: Jedes Speichern einer Werkkarte wird sofort an Vercel hochgeladen – kein extra „An Server senden“ nötig, kleinere Datenmenge pro Schritt, für alle erreichbar.
+      try {
+        publishMobile({ silent: true })
+      } catch (e) {
+        console.warn('Automatisches Hochladen nach Speichern fehlgeschlagen:', e)
       }
       window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
         detail: { artworkCount: listWithResolved.length } 
@@ -12223,7 +12230,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         }}>
                           {(!tenant.isOeffentlich && !tenant.isVk2) && (
                             <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.8rem', color: s.muted, lineHeight: 1.4 }}>
-                              Mac ↔ iPad/Handy: <strong style={{ color: s.text }}>Normalerweise musst du nichts tun</strong> – beim Speichern gehen die Daten automatisch mit. Nur im Notfall:
+                              <strong style={{ color: s.text }}>Jedes Speichern wird automatisch an Vercel gesendet.</strong> Werk für Werk auf dem Server, für alle Geräte erreichbar. „An Server senden“ nur bei Bedarf (z. B. manuell nochmal senden).
                             </p>
                           )}
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-end' }}>
@@ -12250,6 +12257,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                                 {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
                               </button>
                               <span style={{ fontSize: '0.7rem', color: s.muted }}>Aktuellen Stand holen</span>
+                              {!tenant.isOeffentlich && !tenant.isVk2 && (
+                                <span style={{ fontSize: '0.68rem', color: s.muted, fontStyle: 'italic' }}>Jedes Speichern wird automatisch hochgeladen. Hier nur bei Bedarf Stand holen.</span>
+                              )}
                             </div>
                             {!tenant.isOeffentlich && !tenant.isVk2 && (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -13266,6 +13276,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     {isLoadingFromServer ? '⏳ Lade…' : '🔄 Vom Server laden'}
                   </button>
                   <span style={{ fontSize: '0.8rem', color: s.muted }}>Aktuellen Stand an diesen Arbeitsplatz holen</span>
+                  <span style={{ fontSize: '0.75rem', color: s.muted, fontStyle: 'italic' }}>Jedes Speichern wird automatisch hochgeladen. Hier nur bei Bedarf Stand holen.</span>
                 </div>
               )}
             </div>
@@ -18638,7 +18649,7 @@ ${name}`
         </div>
       )}
 
-      {/* Modal: Fehlermeldung Speichern – einfach, klar, kein Techniker-Jargon */}
+      {/* Modal: „An Server senden“ fehlgeschlagen – Daten sind lokal gespeichert */}
       {publishErrorMsg && (
         <div
           style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99998, padding: '1rem' }}
@@ -18649,11 +18660,15 @@ ${name}`
             onClick={e => e.stopPropagation()}
           >
             <div style={{ fontSize: '2rem', textAlign: 'center' }}>⚠️</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b', textAlign: 'center' }}>Speichern nicht möglich</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b', textAlign: 'center' }}>An Server senden nicht möglich</div>
             <div style={{ fontSize: '1rem', color: '#e2e8f0', lineHeight: 1.6, textAlign: 'center' }}>
-              Bitte nochmal auf <strong>„Speichern“</strong> klicken.<br/>
+              Deine Werke sind <strong>lokal gespeichert</strong>. Nur das Senden an den Server ist fehlgeschlagen.<br/><br/>
+              Bitte nochmal auf <strong>„An Server senden“</strong> klicken (oder später erneut versuchen).<br/>
               Falls es wieder nicht klappt: Dem Assistenten kurz Bescheid geben.
             </div>
+            {publishErrorMsg.length > 0 && publishErrorMsg.length < 200 && (
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center' }}>{publishErrorMsg}</div>
+            )}
             <button
               onClick={() => setPublishErrorMsg(null)}
               style={{ padding: '0.75rem 2rem', background: '#f59e0b', color: '#1a1d24', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', alignSelf: 'center' }}
