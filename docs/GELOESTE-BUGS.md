@@ -10,6 +10,15 @@
 
 ---
 
+## BUG-032 · 6 Werke (0030, 0031, 0032, 0033, 0038, K2-M-0018) ohne Bild-URL trotz Fix
+**Symptom:** Nach Ref-Varianten-Fix (BUG-031) blieben beim „An Server senden“ weiterhin 6 Werke ohne Bild-URL (70 Werke, 64 mit Bild).
+**Ursachen:** (1) **resolveArtworkImages:** Wenn ein Werk **kein imageRef** hat (z. B. nach Merge vom Server ohne Ref), wurde nur Repo-Fallback 1–29 genutzt; für 30–39/K2-M wurde **kein** IndexedDB-Lookup per Nummer-Varianten gemacht → Bild in IndexedDB wurde nie gefunden. (2) **supabaseClient:** Beim Befüllen der Fallback-Map (Supabase) und beim Lookup wurde für K2-K-0030 `digits` aus dem ganzen String genutzt → "20030" statt "0030"/"30" (gleicher Fehler wie BUG-031).
+**Lösung:** (1) In **resolveArtworkImages** im else-Zweig (kein imageRef): trotzdem **getArtworkImageRefVariants** + **getArtworkImageByRefVariants** aufrufen; Treffer → imageUrl + foundRef setzen. (2) In **resolveArtworkImageUrlsForExport**, **resolveImageUrlForSupabase** und **fillArtworkImageUrlsFromSupabase**: K2-Muster nutzen (Zifferngruppe k2[2] für 0030/30), nie "20030".
+**Betroffene Dateien:** `src/utils/artworkImageStore.ts` (resolveArtworkImages), `src/utils/supabaseClient.ts` (Map-Befüllung + tryMap/getFromMap).
+**Status:** ✅ Behoben (12.03.26).
+
+---
+
 ## BUG-031 · 5 Bilder (30–33, 38) kommen beim „An Server senden“ nicht mit
 **Symptom:** Bilder am iPad drin und gespeichert, aber beim Senden und „Aktuellen Stand holen“ am Mac fehlen sie (30–33, 38).
 **Ursache:** **getArtworkImageRefVariants** baut Suchvarianten aus number. Bei number **"K2-K-0030"** ist `digits` = "20030" (alle Ziffern) → Varianten k2-img-0030 und k2-img-30 fehlten. Liegt das Bild unter k2-img-0030 (z. B. nach Merge/Server), fand der Export es nicht.

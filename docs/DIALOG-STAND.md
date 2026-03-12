@@ -1,10 +1,20 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 11.03.26 (neuer Stand für iPad „An Server senden“).
+**Letzter Build-Push:** 12.03.26 (6 Bilder 0030/0031/0032/0033/0038/K2-M-0018 – Fix BUG-032).
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – 6 Bilder endgültig rein (BUG-032)
+
+- **Georg:** „Bringen wir endlich dies 6 Bilder rein – fixe das.“ (0030, 0031, 0032, 0033, 0038, K2-M-0018 blieben ohne Bild-URL.)
+- **Ursachen:** (1) **resolveArtworkImages:** Ohne imageRef (z. B. nach Merge) wurde für 30–39/K2-M kein IndexedDB-Lookup per Nummer-Varianten gemacht. (2) **supabaseClient:** Fallback-Map und Lookup nutzten für K2-K-0030 weiter „20030“ statt 0030/30.
+- **Fix:** (1) artworkImageStore: Im else-Zweig (kein imageRef) getArtworkImageRefVariants + getArtworkImageByRefVariants aufrufen → Bild aus IndexedDB holen. (2) supabaseClient: Map-Befüllung und tryMap/getFromMap mit K2-Zifferngruppe (k2[2]), nie digits aus ganzem String.
+- **Wo:** src/utils/artworkImageStore.ts, src/utils/supabaseClient.ts. **Doku:** GELOESTE-BUGS.md BUG-032.
+- **Nächster Schritt:** iPad „An Server senden“, 1–2 Min warten, Mac „Aktuellen Stand holen“ → alle 70 mit Bild (inkl. die 6).
 
 ---
 

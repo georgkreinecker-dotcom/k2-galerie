@@ -200,10 +200,21 @@ export async function resolveImageUrlForSupabase(
   if (options?.supabaseImageMap) {
     const fromKey = tryMap(key)
     if (fromKey) return fromKey
-    const digits = key.replace(/\D/g, '')
-    if (digits.length >= 2) {
-      const fromShort = tryMap(digits.padStart(4, '0'))
-      if (fromShort) return fromShort
+    // K2-K-0030 → 0030 und 30 probieren (nie "20030", BUG-031)
+    const k2 = key.match(/^K2-([A-Z])-?(\d+)$/i)
+    if (k2) {
+      const digitPart = k2[2]
+      const four = digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0')
+      const fromFour = tryMap(four)
+      if (fromFour) return fromFour
+      const fromNum = tryMap(String(parseInt(digitPart, 10)))
+      if (fromNum) return fromNum
+    } else {
+      const digits = key.replace(/\D/g, '')
+      if (digits.length >= 2) {
+        const fromShort = tryMap(digits.padStart(4, '0'))
+        if (fromShort) return fromShort
+      }
     }
   }
   return undefined
@@ -230,13 +241,20 @@ export async function resolveArtworkImageUrlsForExport(
     try {
       const raw = await fetchRawArtworksFromSupabase()
       raw.forEach((a: any) => {
-        const k = String(a?.number || a?.id || '')
+        const k = String(a?.number || a?.id || '').trim()
         const img = a?.image_url
         if (!k || !img || !(img.startsWith('http://') || img.startsWith('https://'))) return
         supabaseImageMap.set(k, img)
-        // Auch unter Kurznummer ablegen (z. B. 0030), falls Abgleich mit number "K2-K-0030" scheitert
-        const digits = k.replace(/\D/g, '')
-        if (digits.length >= 2) supabaseImageMap.set(digits.padStart(4, '0'), img)
+        // Kurznummer für Abgleich: K2-K-0030 → 0030 und 30 (nie "20030" aus allen Ziffern, BUG-031)
+        const k2 = k.match(/^K2-([A-Z])-?(\d+)$/i)
+        if (k2) {
+          const digitPart = k2[2]
+          supabaseImageMap.set(digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0'), img)
+          supabaseImageMap.set(String(parseInt(digitPart, 10)), img)
+        } else {
+          const digits = k.replace(/\D/g, '')
+          if (digits.length >= 2) supabaseImageMap.set(digits.padStart(4, '0'), img)
+        }
       })
     } catch (_) {}
   }
@@ -281,15 +299,34 @@ export async function fillArtworkImageUrlsFromSupabase(artworks: any[]): Promise
     const img = a?.image_url
     if (!k || !img || !(img.startsWith('http://') || img.startsWith('https://'))) return
     map.set(k, img)
-    const digits = k.replace(/\D/g, '')
-    if (digits.length >= 2) map.set(digits.padStart(4, '0'), img)
+    const k2 = k.match(/^K2-([A-Z])-?(\d+)$/i)
+    if (k2) {
+      const digitPart = k2[2]
+      map.set(digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0'), img)
+      map.set(String(parseInt(digitPart, 10)), img)
+    } else {
+      const digits = k.replace(/\D/g, '')
+      if (digits.length >= 2) map.set(digits.padStart(4, '0'), img)
+    }
   })
   if (map.size === 0) return artworks
+  const getFromMap = (key: string): string | undefined => {
+    const direct = map.get(key)
+    if (direct) return direct
+    const k2 = key.match(/^K2-([A-Z])-?(\d+)$/i)
+    if (k2) {
+      const digitPart = k2[2]
+      return map.get(digitPart.length >= 4 ? digitPart : digitPart.padStart(4, '0'))
+        ?? map.get(String(parseInt(digitPart, 10)))
+    }
+    if (key.replace(/\D/g, '').length >= 2) return map.get(key.replace(/\D/g, '').padStart(4, '0'))
+    return undefined
+  }
   return artworks.map((a: any) => {
     const url = a?.imageUrl
     if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) return a
     const key = String(a?.number ?? a?.id ?? '').trim()
-    const fromSupabase = map.get(key) || (key.replace(/\D/g, '').length >= 2 ? map.get(key.replace(/\D/g, '').padStart(4, '0')) : undefined)
+    const fromSupabase = getFromMap(key)
     if (fromSupabase) return { ...a, imageUrl: fromSupabase, imageRef: fromSupabase }
     return a
   })
