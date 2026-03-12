@@ -1,12 +1,21 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Auto-Download: Beim Neuladen/Öffnen werden Daten automatisch vom Vercel-Server geholt (Admin + Galerie). Commit: 54a463c ✅ auf GitHub.
+**Letzter Build-Push:** 12.03.26 – Upload-Download-Simulationstest: volle Werke inkl. Bild (mkFullArtwork, echtes kleines PNG-Base64); 50+50 Tests mit kompletten Daten. Commit: (gleich) ✅ auf GitHub.
 
-**Vorher:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
+**Vorher:** 12.03.26 – Auto-Download (54a463c). Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – Upload-Download-Test mit vollen Werken + Bild
+
+- **Georg:** Test soll echte Daten nutzen (komplettes Werk mit Bild), sonst wenig wert.
+- **Umgesetzt:** Simulationstest erweitert: `mkFullArtwork()` (alle Stammfelder: title, description, price, category, imageRef, …) + echtes kleines PNG-Base64. Upload-Tests 1–50 und Download-Tests 1–50 laufen mit vollen Werken; Export entfernt Base64, Felder bleiben; Merge/Preserve behält Bild-Referenz und Metadaten. 103 Tests grün.
+- **Dateien:** src/tests/upload-download-simulation.test.ts.
+- **Morgen:** Georg testet ob es in der App wirklich stimmt (manueller Check).
 
 ---
 
@@ -15,7 +24,7 @@
 - **Georg:** Beim Neuladen des Geräts müssen die Daten automatisch vom Vercel-Server abgeholt werden – keine manuelle Eingabe nötig.
 - **Umgesetzt:** (1) **Admin:** Einmal pro Öffnung (1,5 s nach Mount) wird still `handleLoadFromServer({ silent: true })` ausgeführt (nur K2). Kein Alert, nur Sync-Balken „Daten vom Server geladen.“ (2) **handleLoadFromServer** hat optionale `options.silent`: bei silent keine Alerts, nur Sync-Balken; bei Schutzfällen (Server leer, Bildverlust-Risiko) wird still abgebrochen. (3) **Galerie-Seite:** Läd bereits automatisch (loadData nach 1 s) – unverändert. (4) UI-Hinweis: „Beim Öffnen des Admin werden die Daten automatisch vom Server geholt – keine manuelle Eingabe nötig.“
 - **Dateien:** ScreenshotExportAdmin.tsx (handleLoadFromServer silent, hasAutoLoadedFromServerRef, useEffect Auto-Load, Sync-Texte).
-- **Nächster Schritt:** Commit + push.
+- **Nächster Schritt:** –
 
 ---
 
