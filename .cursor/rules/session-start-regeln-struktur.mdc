@@ -19,7 +19,7 @@ Georg hat sich an klare Regeln und Strukturen angepasst und erwartet, dass die A
    - **docs/GRAFIKER-TISCH-NOTIZEN.md** – nur optional, wenn Georg ihn nutzt.
    - **docs/GELOESTE-BUGS.md** – **PFLICHT** vor Code-Änderungen; niemals gelöste Bugs wieder einbauen.
 
-2. **Regeln:** Alle Dateien unter **.cursor/rules/*.mdc** mit `alwaysApply: true` werden vom System geladen. Zusätzlich die obigen Projekt-Dateien einlesen, damit **Struktur** (AGB = mök2, Handbuch = wichtige Sachen, einheitlich für K2/ök2/VK2/Tom) und **Orientierung** (HAUS-INDEX, Handbuch-Index, docs) aktiv sind. **Bei neuer Aufgabe:** Mustererkennung anwenden (alle Ebenen: Verhalten/Vision, Technik, Internet-Musterlösungen) – .cursor/rules/mustererkennung-kernstaerke.mdc (Pflicht-Checkliste „bei neuer Aufgabe“).
+2. **Regeln:** Alle Dateien unter **.cursor/rules/*.mdc** mit `alwaysApply: true` werden vom System geladen. Zusätzlich die obigen Projekt-Dateien einlesen, damit **Struktur** (AGB = mök2, Handbuch = wichtige Sachen, einheitlich für K2/ök2/VK2/Tom) und **Orientierung** (HAUS-INDEX, Handbuch-Index, docs) aktiv sind. **Bei neuer Aufgabe und bei Fehlermeldung:** Zuerst **funktionierende Muster** im Projekt suchen und 1:1 nutzen (funktionierende-muster-zuerst-nutzen.mdc); Mustererkennung anwenden (mustererkennung-kernstaerke.mdc, Pflicht-Checkliste „bei neuer Aufgabe“); ein-standard-problem.mdc (Tabelle vor Implementierung prüfen).
 
 3. **Kurz bestätigen:** In der ersten Antwort optional einen kurzen Satz wie „Regeln und Struktur (HAUS-INDEX, Handbuch, mök2) sind berücksichtigt" – dann mit der eigentlichen Aufgabe fortfahren. Kein langer Block, nur signalisieren, dass die Basis geladen ist.
 

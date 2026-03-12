@@ -24,6 +24,22 @@
 
 ---
 
+## BUG-034 · Link zu Projekt-Unterseite öffnet nur APf (Wiederholung 10×, 12.03.26)
+
+**Symptom:** Klick auf z. B. „Vollversion“ (Präsentationsmappe) oder andere Projekt-Unterseiten-Links – es öffnet sich die APf (Projekt-Startseite/DevView) statt die verlinkte Seite. Georg: „dieser Fehler passiert dir jetzt schon das 10.mal wo bleibt fehleranalyse“.
+
+**Ursachen:** (1) **Route-Reihenfolge:** In React Router v6 gewinnt die erste passende Route. Die Route `/projects/:projectId` (APf) matcht nur zwei Segmente. Unterseiten wie `/projects/k2-galerie/praesentationsmappe-vollversion` (drei Segmente) müssen eine **spezifische** Route haben, die **vor** `/projects/:projectId` steht; sonst fällt die App auf `path="*"` → Redirect zu `/` → APf. (2) **Stiller Redirect:** Bei nicht gematchter Unterseiten-URL wurde still zu `/` umgeleitet → Nutzer sieht nur „APf“ ohne Erklärung. (3) **Deploy:** Wenn die Route im Code ergänzt, aber noch nicht gepusht wurde, kennt Vercel die Route nicht.
+
+**Lösung:** (1) Kommentar in App.tsx: Projekt-Unterseiten-Routen **vor** `/projects/:projectId`; Verweis auf Regel und Analyse-Doku. (2) Catch-all geändert: **NotFoundOrRedirect** – bei URL mit Pfad `/projects/k2-galerie/...` (3+ Segmente), die nicht gematcht wurde, **kein** stiller Redirect, sondern Hinweis „Seite nicht gefunden. Bitte Stand aktualisieren (Commit & Push).“. (3) Fehleranalyse + Regel + Checkliste, damit bei neuer Unterseite und bei „Link öffnet APf“ sofort die richtige Prüfung läuft.
+
+**Betroffene Dateien:** `src/App.tsx` (Route-Reihenfolge, NotFoundOrRedirect), `src/config/navigation.ts` (PROJECT_ROUTES), `components/ScreenshotExportAdmin.tsx` (Links: BASE_APP_URL + path, target="_blank").
+
+**Absicherung:** docs/ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md, .cursor/rules/link-projekt-unterseite-nie-apf.mdc (Checkliste bei neuer Unterseite). Bei Meldung „Link öffnet APf“: zuerst diese Doku + Regel lesen.
+
+**Status:** ✅ Behoben (12.03.26). Fehlerklasse im Fehleranalyseprotokoll ergänzt.
+
+---
+
 ## BUG-032 · 6 Werke (0030, 0031, 0032, 0033, 0038, K2-M-0018) ohne Bild-URL trotz Fix
 **Symptom:** Nach Ref-Varianten-Fix (BUG-031) blieben beim „An Server senden“ weiterhin 6 Werke ohne Bild-URL (70 Werke, 64 mit Bild).
 **Ursachen:** (1) **resolveArtworkImages:** Wenn ein Werk **kein imageRef** hat (z. B. nach Merge vom Server ohne Ref), wurde nur Repo-Fallback 1–29 genutzt; für 30–39/K2-M wurde **kein** IndexedDB-Lookup per Nummer-Varianten gemacht → Bild in IndexedDB wurde nie gefunden. (2) **supabaseClient:** Beim Befüllen der Fallback-Map (Supabase) und beim Lookup wurde für K2-K-0030 `digits` aus dem ganzen String genutzt → "20030" statt "0030"/"30" (gleicher Fehler wie BUG-031).

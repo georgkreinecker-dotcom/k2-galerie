@@ -1,0 +1,46 @@
+---
+description: "Vor Implementierung und bei Fehlern: Zuerst funktionierende Muster im Projekt finden und 1:1 nutzen – nicht neu erfinden."
+alwaysApply: true
+---
+
+# Funktionierende Muster zuerst nutzen (verbindlich)
+
+## Georgs Anweisung
+
+Georg hat mehrere Anweisungen gegeben, um Fehler zu vermeiden. Dazu gehört: **Muster erkennen und funktionierende Muster nutzen.** Die AI soll diese Anweisungen kennen und anwenden – nicht neu erfinden oder an ihnen vorbeiarbeiten.
+
+## Erster Schritt (vor jedem Implementieren / bei jeder Fehlermeldung)
+
+**Bevor** du Code änderst, eine neue Route einbaust, einen Link „reparierst“ oder ein Feature erweiterst:
+
+1. **Wo im Projekt gibt es dasselbe oder fast dasselbe, das bereits funktioniert?**
+   - Gleicher Link-Typ? (z. B. Präsentationsmappen: Kombiniert + 4 Varianten nutzen **eine** Route + `?variant=`)
+   - Gleicher Ablauf? (z. B. Dokument öffnen → `openDocumentInApp`; Bild übernehmen → `runBildUebernehmen`)
+   - Gleiche Problemstellung? → Tabelle in **ein-standard-problem.mdc** prüfen; **GELOESTE-BUGS.md** prüfen.
+
+2. **Das funktionierende Muster 1:1 anwenden.**
+   - Nicht abwandeln, nicht „noch eine Variante“ oder „noch eine Route“ erfinden.
+   - Nicht herumexperimentieren – **genau so machen wie beim bestehenden, funktionierenden Fall.**
+
+3. **Fehleranalyse = bestehende Lösung finden und nutzen.**
+   - Fehleranalyse heißt nicht: eigene Theorie bauen, Catch-all erfinden, neue Absicherung erdenken.
+   - Fehleranalyse heißt: **Wo wurde das gleiche Problem schon richtig gelöst?** → Dieselbe Lösung anwenden.
+
+## Konkret (Beispiel aus dem Projekt)
+
+| Situation | Falsch | Richtig |
+|-----------|--------|---------|
+| Neue „Variante“ einer bestehenden Seite (z. B. Präsentationsmappe Vollversion) | Eigene Route `/path-vollversion` anlegen, eigene Route in App.tsx. | **Wie die anderen Varianten:** dieselbe Route, Variante per Query (`?variant=vollversion`). Im bestehenden Einstieg (PraesentationsmappePage) bei diesem Parameter die Vollversion-Komponente rendern. |
+| „Link öffnet falsche Seite“ | Neue Theorie (Route-Reihenfolge, Catch-all, Hinweis-Seite). | **Zuerst prüfen:** Wie machen die **funktionierenden** Links (Kombiniert, ök2 Kurz, …) es? → Dasselbe für den fehlerhaften Link (eine Route, Query). |
+| Neues Dokument / neuer Typ „wie bestehende“ | Eigenes Öffnen, eigener Button, andere URL. | **openDocumentInApp** bzw. den in ein-standard-problem.mdc genannten Standard nutzen. |
+
+## Verknüpfung
+
+- **Mustererkennung:** .cursor/rules/mustererkennung-kernstaerke.mdc (bei neuer Aufgabe: Checkliste, bestehende Lösung prüfen).
+- **Ein Standard pro Problem:** .cursor/rules/ein-standard-problem.mdc (Tabelle vor Neuimplementierung prüfen).
+- **Qualität bei Fehlermeldung:** .cursor/rules/qualitaet-bei-fehlermeldung.mdc (GELOESTE-BUGS, Protokoll, **bestehende Lösung anwenden**).
+- **Rad nicht zweimal erfinden:** .cursor/rules/profi-statt-dilettant-rad-nicht-zweimal.mdc.
+
+## Kurzfassung
+
+**Vor dem Implementieren und bei Fehlern: Zuerst funktionierende Muster im Projekt suchen und genau so nutzen. Fehleranalyse = bestehende funktionierende Lösung anwenden, nicht mit sich selbst beschäftigen oder neu erfinden.**

@@ -13304,6 +13304,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               Links zum Mitsenden (E-Mail, Chat, Werbung) – Kurz- und Langversion für ök2 und VK2. Ein Klick öffnet die Mappe in neuem Tab.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
+              <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Präsentationsmappe
+              </Link>
               {[
                 { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
                 { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
@@ -13316,6 +13319,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </a>
               ))}
             </div>
+            <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
+              Eine Mappe, 13 Kapitel – Handbuch-Struktur, Marketing-Stil. Drucken für PDF.
+            </p>
           </section>
         )}
 
@@ -18046,6 +18052,9 @@ ${name}`
 
                                         {istPraesentationsmappen ? (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                            <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: `1px solid ${s.accent}33`, borderRadius: '8px', fontSize: '0.8rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
+                                              Präsentationsmappe
+                                            </Link>
                                             {[
                                               { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
                                               { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },

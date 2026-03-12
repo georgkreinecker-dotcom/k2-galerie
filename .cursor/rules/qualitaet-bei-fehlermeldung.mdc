@@ -11,10 +11,11 @@ alwaysApply: true
 
 **Bei jeder Fehlermeldung von Georg** („funktioniert nicht“, „kommt nichts an“, „stürzt ab“, „zum x-ten Mal“, Kritik am Ablauf) gilt:
 
+0. **Funktionierende Muster zuerst:** Wo im Projekt gibt es **dasselbe oder fast dasselbe, das bereits funktioniert?** (z. B. gleicher Link-Typ, gleicher Ablauf.) → **Genau dieses Muster 1:1 anwenden**, nicht neu erfinden oder herumexperimentieren. Siehe funktionierende-muster-zuerst-nutzen.mdc.
 1. **Vergangene Fehler prüfen:** **docs/GELOESTE-BUGS.md** (und bei Absturz/Code 5: **docs/CRASH-BEREITS-GEPRUEFT.md**) lesen – ob **gleicher oder ähnlicher Fehler** schon vorkam (BUG-NNN, Crash-Liste). Bei Treffer: bestehende Lösung/Regel anwenden, im Protokoll als „Wiederholung von BUG-XXX“ vermerken.
 2. **Orientierung:** **docs/FEHLERANALYSEPROTOKOLL.md** lesen – Abschnitt „Vergangene Fehler – Quellen“, „Bekannte Fehlerklassen“, „Laufende Absicherungen“, letzte Protokoll-Einträge.
-4. **Analyse:** Nicht nur die eine Stelle fixen. Klären: Welche **Regel** wurde verletzt? Welche **Annahme** war falsch? Ist es eine **Wiederholung** einer bekannten Fehlerklasse?
-5. **Fix + Absicherung:** Bug beheben **und** dauerhaft absichern (Regel schärfen, Checkliste, Doku, so dass dieselbe Fehlerart nicht wieder durchgeht).
+3. **Analyse:** Nicht nur die eine Stelle fixen. Klären: Welche **Regel** wurde verletzt? Welche **Annahme** war falsch? Ist es eine **Wiederholung** einer bekannten Fehlerklasse?
+5. **Fix + Absicherung:** Bug beheben **und** dauerhaft absichern (Regel schärfen, Checkliste, Doku, so dass dieselbe Fehlerart nicht wieder durchgeht). Fix = wo möglich **bestehende funktionierende Lösung** im Projekt übernehmen, nicht neue Wege bauen.
 6. **Dokumentation:** In **FEHLERANALYSEPROTOKOLL.md** einen Eintrag unter „Protokoll-Einträge“ (Datum, Stichwort, Ursache, Maßnahme). Bei Wiederholung: in „Bekannte Fehlerklassen“ den Hinweis „Wiederholung – Absicherung verschärft am …“ ergänzen.
 7. **Bei Wiederholung:** Prüfen, warum die bestehende Absicherung nicht gegriffen hat. Absicherung **verschärfen** (z. B. Regel alwaysApply, Pflicht-Check vor „Fertig“, explizite Wiederholungs-Warnung in Doku).
 

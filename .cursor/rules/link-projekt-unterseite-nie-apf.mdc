@@ -1,0 +1,40 @@
+# Link zu Projekt-Unterseite – nie wieder nur APf (verbindlich)
+
+## Fehlerklasse (Wiederholung 10× → BUG-034)
+
+**Symptom:** Klick auf Link (z. B. Präsentationsmappe Vollversion, Werbeunterlagen) öffnet die **APf** (Projekt-Startseite/DevView) statt die verlinkte Seite.
+
+**Ursachen:** (1) Route für die Unterseite fehlt oder steht **nach** `/projects/:projectId` in App.tsx. (2) Stiller Redirect bei nicht gematchter URL. (3) Deploy-Stand auf Vercel enthält die Route noch nicht.
+
+Vollständige Analyse: **docs/ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md**. GELOESTE-BUGS: **BUG-034**.
+
+---
+
+## Pflicht bei neuer Projekt-Unterseite
+
+Wenn du eine **neue Seite** unter `/projects/k2-galerie/...` anlegst (z. B. neue Mappe, neues Handbuch, neue Werbeunterlagen-Seite):
+
+1. **navigation.ts:** Eintrag unter `PROJECT_ROUTES['k2-galerie']` (und ggf. in den anderen Projekt-Objekten).
+2. **App.tsx:** Neue Route **unbedingt VOR** der Zeile  
+   `<Route path="/projects/:projectId" element={<ProjectStartPage />} />`  
+   einfügen – **nicht** dahinter. (Kommentar in App.tsx verweist auf diese Regel.)
+3. **Admin-Links:** Wenn der Link im Admin angeboten wird:  
+   `href={BASE_APP_URL + path}` mit `path` aus `PROJECT_ROUTES['k2-galerie'].xyz`,  
+   `target="_blank"`, `rel="noopener noreferrer"`.
+4. **Nach Änderung:** Build + Push, damit Vercel die Route ausliefert.
+
+---
+
+## Pflicht bei Meldung „Link öffnet APf“
+
+1. **Zuerst lesen:** docs/ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md, GELOESTE-BUGS.md BUG-034.
+2. **Prüfen:** Steht die Route in App.tsx **vor** `/projects/:projectId`? Ist der Link `BASE_APP_URL + path` mit korrektem path?
+3. **Fix:** Route vor :projectId setzen; Link prüfen; ggf. Hinweis „Stand aktualisieren (Commit & Push)“ wenn Deploy fehlt.
+4. **Nicht:** Nur Einzelfix ohne Doku/Regel – Fehlerklasse ist dokumentiert, Wiederholung vermeiden.
+
+---
+
+## Kurzfassung
+
+**Neue Projekt-Unterseite = Route vor `/projects/:projectId` + Link mit BASE_APP_URL + path + Push.**  
+**„Link öffnet APf“ = Analyse-Doku + BUG-034 lesen, dann Route-Reihenfolge und Link prüfen.**

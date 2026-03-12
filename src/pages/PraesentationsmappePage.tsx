@@ -1,12 +1,13 @@
 /**
  * K2 Galerie – Präsentationsmappe (fertige Form).
- * Varianten: kombiniert (ök2+VK2), ök2 Kurz/Lang, VK2 Kurz/Lang. Links zum Mitsenden in Werbeunterlagen.
+ * Varianten: kombiniert (ök2+VK2), ök2 Kurz/Lang, VK2 Kurz/Lang, Vollversion. Eine Route, ?variant= (wie bei den anderen 4).
  */
 
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import PraesentationsmappeVollversionPage from './PraesentationsmappeVollversionPage'
 import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
@@ -53,12 +54,6 @@ export default function PraesentationsmappePage() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const variantParam = searchParams.get('variant')
-  const variant: MappeVariant | undefined = (variantParam && VALID_VARIANTS.includes(variantParam as MappeVariant) ? variantParam : undefined) as MappeVariant | undefined
-  const isKurz = variant === 'oek2-kurz' || variant === 'vk2-kurz'
-  const showOek2 = !variant || variant.startsWith('oek2')
-  const showVk2 = !variant || variant.startsWith('vk2')
-  const isVk2 = variant?.startsWith('vk2') ?? false
-  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
 
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
   const [qrOek2, setQrOek2] = useState('')
@@ -76,6 +71,17 @@ export default function PraesentationsmappePage() {
     QRCode.toDataURL(buildQrUrlWithBust(VK2_URL, qrVersionTs), { width: 110, margin: 1 })
       .then(setQrVk2).catch(() => setQrVk2(''))
   }, [qrVersionTs])
+
+  if (variantParam === 'vollversion') {
+    return <PraesentationsmappeVollversionPage />
+  }
+
+  const variant: MappeVariant | undefined = (variantParam && VALID_VARIANTS.includes(variantParam as MappeVariant) ? variantParam : undefined) as MappeVariant | undefined
+  const isKurz = variant === 'oek2-kurz' || variant === 'vk2-kurz'
+  const showOek2 = !variant || variant.startsWith('oek2')
+  const showVk2 = !variant || variant.startsWith('vk2')
+  const isVk2 = variant?.startsWith('vk2') ?? false
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
 
   const handleQrAktualisieren = () => {
     refetchQrStand()
@@ -105,6 +111,7 @@ export default function PraesentationsmappePage() {
           <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang} style={{ color: variant === 'oek2-lang' ? '#0d9488' : '#1c1a18', textDecoration: 'none', fontWeight: variant === 'oek2-lang' ? 600 : 400 }}>ök2 Lang</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz} style={{ color: variant === 'vk2-kurz' ? '#0d9488' : '#1c1a18', textDecoration: 'none', fontWeight: variant === 'vk2-kurz' ? 600 : 400 }}>VK2 Kurz</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang} style={{ color: variant === 'vk2-lang' ? '#0d9488' : '#1c1a18', textDecoration: 'none', fontWeight: variant === 'vk2-lang' ? 600 : 400 }}>VK2 Lang</Link>
+          <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} style={{ color: variantParam === 'vollversion' ? '#0d9488' : '#1c1a18', textDecoration: 'none', fontWeight: variantParam === 'vollversion' ? 600 : 400 }}>Vollversion</Link>
           <button type="button" onClick={handleQrAktualisieren} style={{ padding: '0.4rem 0.75rem', background: '#f0fdfa', color: '#0d9488', border: '1px solid #99f6e4', borderRadius: '6px', fontSize: '0.85rem', cursor: 'pointer' }}>
             QR aktualisieren
           </button>

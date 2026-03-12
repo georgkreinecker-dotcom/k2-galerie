@@ -386,6 +386,24 @@ const isMobileView = () => typeof window !== 'undefined' && (
 /** Handbuch-Dokument-URL: wenn jemand mit ?page=handbuch&doc=... auf "/" landet, sofort zur APf-Route weiterleiten. */
 const HANDBUCH_DOC_REDIRECT = '/projects/k2-galerie'
 
+/** Catch-all: Bei Projekt-Unterseiten-URL (3+ Segmente), die nicht gematcht wurde, Hinweis statt stiller Redirect zur APf (Link-öffnet-APf-Bug, ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md). */
+function NotFoundOrRedirect() {
+  const location = useLocation()
+  const pathname = location.pathname || ''
+  const segments = pathname.split('/').filter(Boolean)
+  const isProjectSubpath = segments[0] === 'projects' && segments[1] === 'k2-galerie' && segments.length > 2
+  if (isProjectSubpath) {
+    return (
+      <div style={{ padding: '2rem', fontFamily: 'system-ui', color: '#1c1a18', maxWidth: '480px', margin: '2rem auto' }}>
+        <h2 style={{ marginTop: 0 }}>Seite nicht gefunden</h2>
+        <p>Diese Adresse ist bekannt, aber die App kennt die Route noch nicht. Bitte Stand aktualisieren (Commit &amp; Push), dann den Link erneut öffnen.</p>
+        <p style={{ fontSize: '0.9rem', color: '#5c5650' }}>Doku: docs/ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md</p>
+      </div>
+    )
+  }
+  return <Navigate to="/" replace />
+}
+
 /** Auf Mobile / schmalem Bildschirm: Root "/" → sofort Galerie (niemals DevView/Smart Panel). */
 function MobileRootRedirect() {
   const [searchParams] = useSearchParams()
@@ -493,7 +511,8 @@ function App() {
       <Route path="/galerie-home" element={<GaleriePage />} />
       <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
-      {/* Präsentationsmappe – eine Route mit Splat, damit alle Varianten (oek2-kurz, vk2-lang, …) sicher hier landen */}
+      {/* Präsentationsmappe: eine Route, alle Varianten per ?variant= (Kombiniert, ök2, VK2, Vollversion) – wie bei den anderen 4. Legacy-URL → Redirect. */}
+      <Route path="/projects/k2-galerie/praesentationsmappe-vollversion" element={<Navigate to="/projects/k2-galerie/praesentationsmappe?variant=vollversion" replace />} />
       <Route path="/projects/k2-galerie/praesentationsmappe" element={<PraesentationsmappePage />} />
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
@@ -616,7 +635,7 @@ function App() {
         </AppErrorBoundary>
       } />
       
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundOrRedirect />} />
     </Routes>
 
     {/* Globaler Guide-Begleiter – läuft auf jeder Seite nahtlos weiter */}
