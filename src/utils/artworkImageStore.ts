@@ -346,14 +346,7 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
-      // Kein imageRef: Trotzdem in IndexedDB suchen (30–39/K2-M nach Merge). Nur imageRef setzen, keine data-URL – Export lädt dann hoch (Stand bleibt stabil).
-      const variants = getArtworkImageRefVariants(a)
-      const found = await getArtworkImageByRefVariants(variants)
-      if (found) {
-        out.push({ ...a, imageUrl: '', imageRef: found.foundRef })
-        continue
-      }
-      // Repo-Fallback nur 1–29. 30–39 und 40+ → kein Fallback, kein 404, nur „Kein Bild“.
+      // Kein imageRef: Repo-Fallback nur 1–29. 30–39 und 40+ → kein Fallback. Kein IndexedDB-Lookup hier – verursacht Stand 08.03/08.04 (Sync kaputt). 6 Bilder nur über fillMissingImageUrlsFromIndexedDB beim Laden oder Export auf Gerät mit IndexedDB.
       const fallbackId = getVercelFallbackIdFromArtwork(a)
       if (fallbackId && isInStaticFallbackAllowedRange(a)) {
         out.push({ ...a, imageUrl: `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg` })
