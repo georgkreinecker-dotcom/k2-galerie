@@ -35,6 +35,10 @@ const USE_SUPABASE = !!SUPABASE_URL && !!SUPABASE_ANON_KEY && SUPABASE_URL.lengt
 // Edge Function URL
 const ARTWORKS_API_URL = USE_SUPABASE ? `${SUPABASE_URL}/functions/v1/artworks` : null
 
+/** 401 nur einmal pro Minute loggen, damit Konsole lesbar bleibt und „📷 Nach Speichern Liste“ sichtbar ist */
+let lastSupabase401Log = 0
+const SUPABASE_401_LOG_INTERVAL_MS = 60_000
+
 /**
  * Prüft ob Supabase konfiguriert ist
  */
@@ -62,7 +66,13 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('❌ Supabase Load Error:', response.status, errorText)
+      const now = Date.now()
+      if (response.status === 401 && now - lastSupabase401Log < SUPABASE_401_LOG_INTERVAL_MS) {
+        // 401 nur gedrosselt loggen – Fallback auf localStorage läuft trotzdem
+      } else {
+        if (response.status === 401) lastSupabase401Log = now
+        console.error('❌ Supabase Load Error:', response.status, errorText)
+      }
       return loadFromLocalStorage()
     }
 

@@ -8,7 +8,7 @@
   "main": "electron/main.cjs",
   "scripts": {
     "app": "open https://k2-galerie.vercel.app",
-    "dev": "vite",
+    "dev": "node scripts/write-build-info.js && vite",
     "print-server": "node scripts/k2-print-server.js",
     "check-exports": "node scripts/check-duplicate-exports.js",
     "test": "vitest run",

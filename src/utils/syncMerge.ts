@@ -286,6 +286,53 @@ export function preserveLocalImageData(
 }
 
 /**
+ * Für AutoSave: Werke die im Speicher sind aber im State (incoming) fehlen wieder hinzufügen.
+ * Verhindert: Gerade gespeichertes Werk 30 ist im Speicher, State hat noch 29 → AutoSave würde 29 schreiben und 30 löschen.
+ */
+export function mergeMissingFromStorage(
+  incoming: any[],
+  fromStorage: any[],
+  getKey: (a: any) => string | undefined = DEFAULT_GET_KEY
+): any[] {
+  if (fromStorage.length <= incoming.length) return incoming
+  const hasMatchInIncoming = (stored: any): boolean => {
+    const keys = getKeysForMatching(stored)
+    return keys.some((k) => k && incoming.some((inItem) => getKeysForMatching(inItem).includes(k)))
+  }
+  const missing = fromStorage.filter((a) => !hasMatchInIncoming(a))
+  if (missing.length === 0) return incoming
+  return [...incoming, ...missing]
+}
+
+/**
+ * Für AutoSave: Incoming-Liste (z. B. aus React-State) mit aktuellem Speicher zusammenführen,
+ * sodass imageRef aus dem Speicher nie verloren geht, wenn der State für ein Werk kein Bild hat.
+ * Verhindert: „Bild bei 30 verschwindet wenn 31 gespeichert“ – AutoSave schreibt sonst State ohne 30s Bild.
+ */
+export function preserveStorageImageRefs(
+  incoming: any[],
+  fromStorage: any[],
+  getKey: (a: any) => string | undefined = DEFAULT_GET_KEY
+): any[] {
+  const storageByKey = new Map<string, any>()
+  fromStorage.forEach((a: any) => {
+    getKeysForMatching(a).forEach((k) => { if (k) storageByKey.set(k, a) })
+  })
+  return incoming.map((item: any) => {
+    const keysToTry = getKeysForMatching(item)
+    if (keysToTry.length === 0) return item
+    const stored = keysToTry.map((k) => storageByKey.get(k)).find(Boolean)
+    if (!stored) return item
+    const incomingHasImage = (item.imageRef && String(item.imageRef).trim() !== '') ||
+      (typeof item.imageUrl === 'string' && item.imageUrl.startsWith('data:image'))
+    if (incomingHasImage) return item
+    const storageRef = stored.imageRef && String(stored.imageRef).trim()
+    if (!storageRef) return item
+    return { ...item, imageRef: storageRef }
+  })
+}
+
+/**
  * Einziger Standard-Einstieg für „Server-Daten in lokale Galerie übernehmen“.
  * Führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus.
  * Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.

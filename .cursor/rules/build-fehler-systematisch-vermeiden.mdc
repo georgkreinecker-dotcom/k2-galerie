@@ -1,0 +1,43 @@
+---
+description: Build-Fehler systematisch vermeiden – typische Muster die oft passieren
+alwaysApply: true
+---
+
+# Build-Fehler systematisch vermeiden
+
+## Das Problem
+
+Immer wieder passieren **dieselben Arten** von Build-Fehlern (TypeScript/tsc), obwohl die QS-Regel „Build vor Commit“ gilt. Georg muss dann „Reset & neu laden“ oder bekommt „Importing a module script failed“. Ursache sind oft **von mir eingebaute** Fehler, die der Build sofort zeigen würde – wenn ich ihn ausführe.
+
+## Unveränderliche Regeln
+
+### 1. Build immer vor „Fertig“ / vor Commit
+
+- **Nach jeder Code-Änderung**, die mehrere Zeilen oder mehrere Dateien betrifft: **`npm run build`** ausführen.
+- **Niemals** „Fertig“ sagen oder committen, wenn der Build **nicht** grün durchgelaufen ist.
+- Wenn der Build fehlschlägt: Fehler **sofort** beheben, dann Build erneut – erst dann antworten/committen.
+
+### 2. Doppelte Variablendeklaration vermeiden
+
+- **Wenn ich eine neue Variable** in einer bestehenden Funktion einführe (z. B. `const justSavedKey = ...`): **vorher prüfen**, ob in derselben Funktion (gleicher Scope) schon eine Variable mit **demselben Namen** existiert.
+- **Methode:** In der Datei nach dem Variablennamen suchen (grep). Wenn derselbe Name weiter oben in derselben Funktion vorkommt → anderen Namen wählen (z. B. `dataKeyCleanup` statt zweites `justSavedKey`).
+- **Typischer Fehler:** In einem zweiten Block (z. B. „Cleanup-Pfad“) dieselbe Variable nochmal deklarieren → TS2451 „Cannot redeclare block-scoped variable“.
+
+### 3. Beim Refactoring: alle Referenzen mitziehen
+
+- **Wenn ich Code** in einen anderen Block verschiebe (z. B. in ein `.then()`, in eine Callback-Funktion, in eine Warteschlange): **alle Stellen**, die auf die **verschobenen Variablen** zugreifen, müssen angepasst werden.
+- **Typischer Fehler:** Variable `updatedArtworks` existiert nur noch **innerhalb** des neuen Blocks, aber weiter unten (z. B. in `setTimeout`) wird noch `updatedArtworks.length` verwendet → TS2552 „Cannot find name“.
+- **Methode:** Nach dem Verschieben in der ganzen Funktion nach dem alten Variablennamen suchen; jede Referenz entweder durch eine Variable ersetzen, die im aktuellen Scope existiert (z. B. `loadArtworks().length`), oder den nötigen Wert aus dem Block herausgeben/weitergeben.
+
+### 4. Checkliste vor „Fertig“
+
+- [ ] `npm run build` ausgeführt?
+- [ ] Build grün (exit code 0)?
+- [ ] Neue Variablen: gleicher Name schon im gleichen Scope? → anderen Namen wählen.
+- [ ] Code verschoben? → alle Referenzen auf die verschobenen Variablen angepasst?
+
+## Kurzfassung
+
+**Build immer ausführen. Doppelte Variablennamen im gleichen Scope vermeiden. Beim Refactoring alle Referenzen mitziehen. Erst dann „fertig“ oder Commit.**
+
+Verknüpfung: qs-standard-vor-commit.mdc (Build vor Commit), fertig-heisst-getestet-committed.mdc (Fertig = Build war erfolgreich).

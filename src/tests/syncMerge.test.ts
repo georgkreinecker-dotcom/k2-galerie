@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mergeServerWithLocal, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
+import { mergeServerWithLocal, preserveLocalImageData, preserveStorageImageRefs, applyServerDataToLocal, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
 
 const KNOWN_MAX_PREFIX = 'k2-known-max-number-'
 function clearKnownMaxKeys() {
@@ -136,5 +136,57 @@ describe('Fortlaufende Nummern', () => {
     expect(result[0].number).not.toBe('K2-M-0001')
     expect(result[0].number).toMatch(/^K2-M-\d{4}$/)
     expect(parseInt(result[0].number.replace(/\D/g, ''), 10)).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('Flow: Vom Server laden (merge + preserveLocalImageData)', () => {
+  it('Nach Merge behalten Werke ihren lokalen imageRef wenn Server kein Bild hat', () => {
+    const server = [
+      { number: '0030', title: 'A', updatedAt: '2026-01-02T12:00:00Z' },
+      { number: '0031', title: 'B', updatedAt: '2026-01-02T12:00:00Z' }
+    ]
+    const local = [
+      { number: '0030', title: 'A', imageRef: 'k2-img-0030', updatedAt: '2026-01-01T12:00:00Z' },
+      { number: '0031', title: 'B', imageRef: 'k2-img-0031', updatedAt: '2026-01-01T12:00:00Z' }
+    ]
+    const { merged } = mergeServerWithLocal(server, local)
+    const withImages = preserveLocalImageData(merged, local)
+    expect(withImages).toHaveLength(2)
+    expect(withImages[0].imageRef).toBe('k2-img-0030')
+    expect(withImages[1].imageRef).toBe('k2-img-0031')
+  })
+
+  it('applyServerDataToLocal: Ergebnis hat lokale imageRefs erhalten', () => {
+    const server = [
+      { number: '0030', title: 'Server A' },
+      { number: '0031', title: 'Server B' }
+    ]
+    const local = [
+      { number: '0030', title: 'Lokal A', imageRef: 'k2-img-0030' },
+      { number: '0031', title: 'Lokal B', imageRef: 'k2-img-0031' }
+    ]
+    const { merged } = applyServerDataToLocal(server, local)
+    expect(merged).toHaveLength(2)
+    expect(merged[0].imageRef).toBe('k2-img-0030')
+    expect(merged[1].imageRef).toBe('k2-img-0031')
+  })
+})
+
+describe('Flow: AutoSave (preserveStorageImageRefs)', () => {
+  it('State ohne imageRef für 0031 bekommt Ref aus Speicher zurück', () => {
+    const incoming = [
+      { number: '0030', imageRef: 'k2-img-0030' },
+      { number: '0031', imageRef: '' },
+      { number: '0032', imageRef: 'k2-img-0032' }
+    ]
+    const fromStorage = [
+      { number: '0030', imageRef: 'k2-img-0030' },
+      { number: '0031', imageRef: 'k2-img-0031' },
+      { number: '0032', imageRef: 'k2-img-0032' }
+    ]
+    const result = preserveStorageImageRefs(incoming, fromStorage)
+    expect(result[0].imageRef).toBe('k2-img-0030')
+    expect(result[1].imageRef).toBe('k2-img-0031')
+    expect(result[2].imageRef).toBe('k2-img-0032')
   })
 })

@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Commit 1d72bb7 ✅ – Fix: Bild bei 30 verschwindet nicht mehr wenn 31 gespeichert.
+**Letzter Build-Push:** 12.03.26 – Admin-Button nur bei APf/Freischaltung (K2, ök2, VK2); erste Bildtest-Meilensteine.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
@@ -8,7 +8,41 @@
 
 ---
 
-## Heute 12.03.26 – Bild bei 30 verschwindet wenn 31 gespeichert (Fix)
+## Reopen – Georg schließt Cursor (Session-Pause)
+
+- **Stand:** Admin-Button auf öffentlicher Galerie (K2, ök2, VK2) nur noch sichtbar, wenn von APf oder freigeschaltet – Besucher von Google sehen keinen Admin. DIALOG-STAND und Code aktuell.
+- **Cursor:** Georg schließt Cursor (Dialog-Eingabe war holprig); will nach dem Wiederöffnen wieder einsteigen.
+- **Bei Reopen (ro):** DIALOG-STAND + ggf. Ankes Briefing lesen → orientieren → weitermachen. Kein neuer großer Auftrag nötig – Faden liegt hier.
+
+---
+
+## Heute 12.03.26 – Erster erfolgreicher Bildtest (Meilenstein)
+
+- **Georg:** „Alles funktioniert jetzt – das Senden hin und her von Bildern und Abspeichern.“
+- **Vermerk:** **Erster erfolgreicher Bildtest** – Senden/Abrufen von Bildern (Server ↔ Mobil) und Speichern laufen durch; Gleichstand Mac ↔ Mobil erreichbar.
+- **Doku:** Dieser Meilenstein in DIALOG-STAND und PROZESS-VEROEFFENTLICHEN-LADEN.md vermerkt (Reproduzierbarkeit).
+
+---
+
+## Heute 12.03.26 – Admin iframe: Bilder verschwinden – GELÖST (BUG-033)
+
+- **Georg:** „Hurra gelöst“ – Fehleranalyse durchführen.
+- **Ursachen (3):** (1) iframe strippt data:-URLs → State ohne Bild. (2) **Liste verwarf blob:-URLs** → Karten zeigten „Kein Bild“, Bearbeiten zeigte Bild (blob im Objekt). (3) data:→blob nur im Save-Pfad.
+- **Lösung:** (1) convertDataUrlsToBlobUrlsInList in iframe überall (Initial-Load, artworks-updated, Save-Pfad). (2) In der Werkkarten-Liste blob:-URLs **nicht** mehr verwerfen; onError bei ungültigem Blob. (3) BUG-033, ANALYSE-ADMIN-BILD-VERSCHWINDET-BEI-SPEICHERN.md Abschnitt 10, Fehleranalyseprotokoll-Eintrag.
+- **Nächster Schritt:** Commit + push (QS war grün).
+
+---
+
+## Heute 12.03.26 – Admin: Warteschlange (Bild bei 30 bleibt wenn 31 gespeichert)
+
+- **Georg:** „Bild bei 30 verschwindet wenn ich 31 speichere“ / „woher soll ich wissen was welchen Einfluss hat – das musst du wissen.“
+- **Ursache:** Im Admin liefen zwei Speichervorgänge **parallel**. Speichern 31 las `fresh = loadArtworksRaw()` bevor Speichern 30 fertig war → `fresh` ohne 30s Bild → Schreiben überschrieb 30.
+- **Fix:** **Warteschlange:** Lese+Schreib-Block in `saveArtworkData` läuft in `lastArtworkSaveRef.current = (lastArtworkSaveRef.current ?? Promise.resolve(true)).then(() => doSerializedWrite())`. Zweiter Save wartet auf ersten → `fresh` enthält 30 mit Bild.
+- **Wo:** components/ScreenshotExportAdmin.tsx (saveArtworkData, doSerializedWrite).
+
+---
+
+## Heute 12.03.26 – GalerieVorschau: Bild bei 30 verschwindet wenn 31 gespeichert (Fix)
 
 - **Georg:** „Wenn ich 31 neues Bild mache, verschwindet es bei 30.“
 - **Ursache:** Beim Speichern von Werk 31 wurde die Liste aus einem älteren `loadArtworks()`-Stand gebaut → Werk 30 (gerade gespeichert) war darin noch ohne neues Bild → beim Schreiben wurde 30 überschrieben.

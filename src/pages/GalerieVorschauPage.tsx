@@ -627,6 +627,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [mobileLocationNumber, setMobileLocationNumber] = useState('')
   const [mobileInExhibition, setMobileInExhibition] = useState(true) // „In Online-Galerie anzeigen“ – auf Handy oft gewünscht
   const [isSaving, setIsSaving] = useState(false)
+  /** Warteschlange: Speichern nacheinander, damit „Bild bei 30“ nicht verloren geht wenn danach 31 gespeichert wird (Lesen nach vorherigem Schreiben). */
+  const lastArtworkSaveRef = useRef<Promise<boolean>>(Promise.resolve(true))
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [showLocationQR, setShowLocationQR] = useState(false)
   const [showEtikettModal, setShowEtikettModal] = useState(false)
@@ -3792,60 +3794,65 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         }
                       }
                       
-                      // GLEICHE UPDATE-STRATEGIE WIE MAC: Behalte createdAt, setze updatedAt
+                      // GLEICHE UPDATE-STRATEGIE WIE MAC: Behalte createdAt, setze updatedAt (Snap für Warteschlange)
                       const existingArtwork = artworks[index]
                       const updatedArtwork = {
-                        ...existingArtwork, // Behalte alle bestehenden Felder
+                        ...existingArtwork,
                         title: mobileTitle,
                         category: mobileCategory,
-                        imageUrl: mobilePhoto, // Kann auch das alte Bild sein wenn kein neues ausgewählt
+                        imageUrl: mobilePhoto,
                         price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                         description: mobileDescription || undefined,
                         location: locationString,
                         inExhibition: mobileInExhibition,
                         inShop: !!mobilePrice && parseFloat(mobilePrice) > 0,
-                        createdAt: existingArtwork.createdAt || new Date().toISOString(), // Behalte createdAt
-                        updatedAt: new Date().toISOString(), // Setze updatedAt
-                        updatedOnMobile: true // Marker dass es auf Mobile aktualisiert wurde
+                        createdAt: existingArtwork.createdAt || new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        updatedOnMobile: true
                       }
-                      
-                      // KRITISCH: Unmittelbar vor dem Schreiben nochmals lesen – sonst überschreiben wir gerade gespeicherte andere Werke (z. B. Bild bei 30 geht verloren wenn man danach 31 speichert)
-                      const latest = loadArtworks()
                       const key = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
-                      const idxInStorage = latest.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
-                      const updatedArtworks = idxInStorage >= 0
-                        ? [...latest.slice(0, idxInStorage), updatedArtwork, ...latest.slice(idxInStorage + 1)]
-                        : [...latest, updatedArtwork]
-                      // Beim Bearbeiten NICHT preserveLocalImageData: das würde das neue Bild (mobilePhoto) mit dem alten localStorage-Stand überschreiben → neues Bild würde nie gespeichert (Bug 0031 / Galerie ≠ Werkansicht)
-                      const toSave = updatedArtworks
-                      // Speicherproblem 0031/0035: Neues Bild in IndexedDB ablegen, nur imageRef in Liste – sonst localStorage voll / Bild geht verloren
-                      let prepared = await prepareArtworksForStorage(toSave)
-                      // Nochmals aktuellen Stand lesen und nur dieses eine Werk aus prepared übernehmen (verhindert: Bild bei 30 geht verloren wenn man 31 speichert)
-                      const rightBeforeSave = loadArtworks()
-                      const idxOther = rightBeforeSave.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
-                      const editedInPrepared = prepared.find((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
-                      if (idxOther >= 0 && editedInPrepared) {
-                        const withOnlyThisReplaced = [...rightBeforeSave.slice(0, idxOther), editedInPrepared, ...rightBeforeSave.slice(idxOther + 1)]
-                        prepared = await prepareArtworksForStorage(withOnlyThisReplaced)
-                      }
                       
-                      // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
-                      let saved = false
-                      if (isSupabaseConfigured()) {
-                        try {
-                          saved = await saveArtworksToSupabase(prepared)
-                          if (saved) {
-                            console.log('✅ Objekt in Supabase aktualisiert:', updatedArtwork.number || updatedArtwork.id)
-                          } else {
-                            console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
+                      // Warteschlange: Lesen + Schreiben erst NACH vorherigem Speichern (z. B. 30), damit Bild bei 30 nicht verloren geht
+                      const prev = lastArtworkSaveRef.current
+                      lastArtworkSaveRef.current = prev.then(async (): Promise<boolean> => {
+                        const latest = loadArtworks()
+                        const idxInStorage = latest.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                        const updatedArtworks = idxInStorage >= 0
+                          ? [...latest.slice(0, idxInStorage), updatedArtwork, ...latest.slice(idxInStorage + 1)]
+                          : [...latest, updatedArtwork]
+                        const toSave = updatedArtworks
+                        let prepared = await prepareArtworksForStorage(toSave)
+                        const rightBeforeSave = loadArtworks()
+                        const idxOther = rightBeforeSave.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                        const editedInPrepared = prepared.find((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                        if (idxOther >= 0 && editedInPrepared) {
+                          const withOnlyThisReplaced = [...rightBeforeSave.slice(0, idxOther), editedInPrepared, ...rightBeforeSave.slice(idxOther + 1)]
+                          prepared = await prepareArtworksForStorage(withOnlyThisReplaced)
+                        }
+                        let saved = false
+                        if (isSupabaseConfigured()) {
+                          try {
+                            saved = await saveArtworksToSupabase(prepared)
+                            if (saved) {
+                              console.log('✅ Objekt in Supabase aktualisiert:', updatedArtwork.number || updatedArtwork.id)
+                            } else {
+                              console.warn('⚠️ Supabase-Speichern fehlgeschlagen, verwende localStorage')
+                              saved = await saveArtworks(prepared)
+                            }
+                          } catch (supabaseError) {
+                            console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
                             saved = await saveArtworks(prepared)
                           }
-                        } catch (supabaseError) {
-                          console.warn('⚠️ Supabase-Fehler, verwende localStorage:', supabaseError)
+                        } else {
                           saved = await saveArtworks(prepared)
                         }
-                      } else {
-                        saved = await saveArtworks(prepared)
+                        return saved
+                      })
+                      let saved = false
+                      try {
+                        saved = await lastArtworkSaveRef.current
+                      } catch (e) {
+                        console.error('Speichern Fehler:', e)
                       }
                       
                       if (!saved) {
@@ -3924,11 +3931,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       
                       // Event dispatchen - mit Verzögerung
                       setTimeout(() => {
+                        const count = loadArtworks().length
                         window.dispatchEvent(new CustomEvent('artworks-updated', { 
-                          detail: { count: updatedArtworks.length, justSaved: true } 
+                          detail: { count, justSaved: true } 
                         }))
                         window.dispatchEvent(new CustomEvent('artwork-saved-needs-publish', { 
-                          detail: { artworkCount: updatedArtworks.length } 
+                          detail: { artworkCount: count } 
                         }))
                       }, 500)
                       

@@ -313,9 +313,9 @@ function StandBadgeSync() {
   const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
   const label = serverNewer
     ? (isMobile ? 'Neuer Stand – tippen!' : 'Aktualisiere …')
-    : (isLocal ? `Stand: ${BUILD_LABEL} (lokal)` : `Stand: ${displayLabel}`)
+    : (isLocal ? `Build: ${BUILD_LABEL}` : `Stand: ${displayLabel}`)
   const title = isLocal
-    ? 'Lokal gebaut. Gleich überall: pushen, dann auf Handy neu scannen.'
+    ? `Build-Zeit dieser Version. Neuer Code: Im Cursor-Terminal „npm run build“ ausführen, dann Seite neu laden (F5). Dann siehst du hier die neue Zeit.`
     : isMobile
       ? 'Tippen = Seite neu laden (immer neueste Version). Siehst du noch Blau oder alte Bilder? Einmal tippen.'
       : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'

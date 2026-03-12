@@ -11,7 +11,7 @@ alwaysApply: true
 
 ## Pflicht-Checkliste vor Commit/Push
 
-1. **Tests:** `npm run test` → alle 21 Tests grün.
+1. **Tests:** `npm run test` → alle Tests grün (Unit + Flow).
 2. **Build:** `npm run build` → durchgelaufen (inkl. test, write-build-info, tsc, vite build).
 3. **Stand:** `node scripts/write-build-info.js` (wird im Build mit erledigt).
 4. **Erst dann:** `git add .` → `git commit -m "…"` → `git push`.
@@ -30,8 +30,13 @@ git add . && git commit && git push
 - **Tests rot:** Zuerst Ursache beheben, dann weiter. Kein Commit mit roten Tests.
 - **Build fehlgeschlagen:** Fehler beheben (z. B. TypeScript, fehlende Imports), dann Build erneut. Kein Push mit kaputtem Build.
 
+## Report an Georg nach Tests
+
+- **Tests grün:** Kurz melden: „Tests grün – Verhalten wie geplant, du kannst am PC testen.“ Erst dann ist manuelles Testen am PC sinnvoll.
+- **Tests rot:** Kein Aufruf zum PC-Test; zuerst Fix, dann erneut testen. Siehe `tests-kein-selbstzweck-report-dann-pc.mdc`.
+
 ## Kurzfassung
 
 **QS-Standard = vor jedem Commit: test + build grün. Keine Ausnahme. Georg fragt nicht mehr „ist QS durch?“ – es ist immer durch, wenn committed wurde.**
 
-Verknüpfung: Session-Start = `session-start-aufwaermen.mdc` (Tests zuerst). Fertig = `fertig-heisst-getestet-committed.mdc` (committed + Build war erfolgreich).
+Verknüpfung: Session-Start = `session-start-aufwaermen.mdc` (Tests zuerst). Fertig = `fertig-heisst-getestet-committed.mdc` (committed + Build war erfolgreich). **Tests = Report, dann PC** = `tests-kein-selbstzweck-report-dann-pc.mdc`. **Typische Build-Fehler vermeiden** = `build-fehler-systematisch-vermeiden.mdc` (doppelte Variablen, Referenzen nach Refactoring, Build immer vor Fertig).

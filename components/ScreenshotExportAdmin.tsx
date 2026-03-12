@@ -37,8 +37,8 @@ import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
-import { applyServerDataToLocal, preserveLocalImageData } from '../src/utils/syncMerge'
-import { clearArtworkImagesForNumberRange, persistDataUrlsToIndexedDB } from '../src/utils/artworkImageStore'
+import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
+import { clearArtworkImagesForNumberRange, fillMissingImageRefsFromIndexedDB, persistDataUrlsToIndexedDB } from '../src/utils/artworkImageStore'
 import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
 import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
@@ -591,7 +591,7 @@ const OEF_DESIGN_DEFAULT = {
   cardBg2: 'rgba(246, 244, 240, 0.9)'
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
-import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -2060,7 +2060,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
       const data = (result.data || {}) as Record<string, unknown>
       const artworks = Array.isArray(data.artworks) ? data.artworks : []
-      setAllArtworksSafe(artworks)
+      const fromStorage = loadArtworks(tenant)
+      const withRefs = preserveStorageImageRefs(artworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+      setAllArtworksSafe(withRefs)
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
@@ -3075,7 +3077,32 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       return a
     })
   }
-  /** State setzen – in iframe ohne Base64, um Speicher/Crash 5 zu entlasten. Zuletzt gespeicherte Werke (lastSavedArtworkImageRef) behalten ihr Bild. */
+  /** In iframe: data:-URLs in blob:-URLs umwandeln, damit stripArtworkImagesForPreview sie nicht löscht – sonst verschwinden andere Werksbilder beim Speichern eines zweiten. */
+  const convertDataUrlsToBlobUrlsInList = async (list: any[]): Promise<any[]> => {
+    if (!inIframe || !Array.isArray(list) || list.length === 0) return list
+    const out: any[] = []
+    for (const a of list) {
+      if (!a || typeof a.imageUrl !== 'string' || !a.imageUrl.startsWith('data:')) {
+        out.push(a)
+        continue
+      }
+      try {
+        const [header, base64] = a.imageUrl.split(',')
+        const mime = (header?.match(/data:([^;]+)/)?.[1] || 'image/jpeg').trim()
+        const binary = atob(base64 || '')
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+        const blob = new Blob([bytes], { type: mime })
+        const url = URL.createObjectURL(blob)
+        out.push({ ...a, imageUrl: url })
+      } catch {
+        out.push(a)
+      }
+    }
+    return out
+  }
+  /** State setzen – in iframe ohne Base64, um Speicher/Crash 5 zu entlasten. Zuletzt gespeicherte Werke (lastSavedArtworkImageRef) behalten ihr Bild.
+   * KRITISCH: Andere Werke behalten ihr imageUrl aus dem aktuellen State – sonst verschwindet das erste Bild, sobald ein zweites geladen/gespeichert wird. */
   const setAllArtworksSafe = (list: any[]) => {
     const arr = Array.isArray(list) ? list : []
     if (inIframe) {
@@ -3083,11 +3110,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const last = lastSavedArtworkImageRef.current
       const map = last?.number && last?.imageUrl ? new Map<string, string>([[last.number, last.imageUrl]]) : null
       if (map && map.size > 0) {
+        const prevList = allArtworksRef.current || []
         const withSaved = stripped.map((a: any) => {
           if (!a) return a
           const id = String(a?.number ?? a?.id ?? '')
           const url = id ? map.get(id) : null
-          return url ? { ...a, imageUrl: url } : a
+          if (url) return { ...a, imageUrl: url }
+          // Anderes Werk: imageUrl aus aktuellem State erhalten (blob/https), damit erstes Bild nicht verschwindet wenn zweites geladen wird
+          const prev = prevList.find((x: any) => String(x?.number ?? x?.id ?? '') === id)
+          if (prev?.imageUrl && typeof prev.imageUrl === 'string' && prev.imageUrl.length > 50 && !prev.imageUrl.startsWith('data:'))
+            return { ...a, imageUrl: prev.imageUrl }
+          return a
         })
         setAllArtworks(withSaved)
         return
@@ -3131,10 +3164,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           }
           return null
         }
-        loadArtworksWithResolvedImages(tenant).then((artworks) => {
+        loadArtworksWithResolvedImages(tenant).then(async (artworks) => {
           if (!isMounted) return
           if (Array.isArray(artworks) && artworks.length > 0) {
-            setAllArtworks(inIframe ? stripArtworkImagesForPreview(artworks) : artworks)
+            if (inIframe) {
+              const converted = await convertDataUrlsToBlobUrlsInList(artworks)
+              setAllArtworks(converted)
+            } else {
+              setAllArtworks(artworks)
+            }
             return
           }
           const fallback = fallbackFromStorageForK2()
@@ -3184,6 +3222,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const ignoreArtworksUpdatedRef = useRef(false)
   /** Mobil: Zuletzt gespeichertes Werkbild hier halten; bei Reload wieder einsetzen, damit es sichtbar bleibt (IDB/Resolve oft langsamer). */
   const lastSavedArtworkImageRef = useRef<{ number: string; imageUrl: string } | null>(null)
+  /** Warteschlange: Speichern nacheinander, damit „Bild bei 30“ nicht verloren geht wenn danach 31 gespeichert wird (Lesen nach vorherigem Schreiben). */
+  const lastArtworkSaveRef = useRef<Promise<boolean>>(Promise.resolve(true))
   useEffect(() => {
     const handleArtworksUpdate = (ev: Event) => {
       if (ignoreArtworksUpdatedRef.current) {
@@ -3199,13 +3239,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (tenant.getArtworksKey() === 'k2-artworks' && detail?.fromBereinigung) {
         lastSavedArtworkImageRef.current = null
       }
-      loadArtworksWithResolvedImages(tenant).then((artworks) => {
+      loadArtworksWithResolvedImages(tenant).then(async (artworks) => {
         if (!tenant.isOeffentlich && !tenant.isVk2 && artworks.length === 0 && allArtworksRef.current.length > 0) {
           console.warn('⚠️ loadArtworks leer, aber Anzeige hat Werke – nicht überschreiben')
           return
         }
         const inIframe = typeof window !== 'undefined' && window.self !== window.top
-        let list = inIframe ? artworks.map((a: any) => (a && typeof a?.imageUrl === 'string' && a.imageUrl.startsWith('data:')) ? { ...a, imageUrl: '' } : a) : artworks
+        let list = inIframe ? await convertDataUrlsToBlobUrlsInList(artworks) : artworks
         // Mobil: Gespeichertes Bild wieder einsetzen, wenn resolve noch leer/Fallback liefert
         const last = lastSavedArtworkImageRef.current
         if (last?.imageUrl && list.length > 0) {
@@ -3218,7 +3258,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             return a
           })
         }
-        setAllArtworks(list)
+        setAllArtworksSafe(list)
       }).catch((error) => { console.error('Fehler beim Neuladen der Werke:', error) })
     }
     
@@ -3250,7 +3290,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             return a
           })
         }
-        setAllArtworksSafe(list)
+        const fromStorage = loadArtworks(tenant)
+        const withRefs = preserveStorageImageRefs(list, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+        setAllArtworksSafe(withRefs)
       }).catch((err) => console.warn('Storage-Reload fehlgeschlagen:', err))
     }
     window.addEventListener('storage', onStorage)
@@ -3274,7 +3316,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         return
       }
       const data = (result.data || {}) as Record<string, unknown>
-      setAllArtworksSafe(Array.isArray(data.artworks) ? data.artworks : [])
+      const apiArtworks = Array.isArray(data.artworks) ? data.artworks : []
+      const fromStorage = loadArtworks(tenant)
+      const withRefs = preserveStorageImageRefs(apiArtworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+      setAllArtworksSafe(withRefs)
       setEvents(Array.isArray(data.events) ? data.events : [])
       setDocuments(Array.isArray(data.documents) ? data.documents : [])
       if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
@@ -8509,78 +8554,111 @@ ${'='.repeat(60)}
     }
     
     try {
-      let dataToStore = JSON.stringify(artworks)
-      let currentSize = new Blob([dataToStore]).size
-      
-      // Prüfe localStorage-Größe: Cleanup wenn > 3.5MB (Browser komfortabel) oder nahe 10MB (artworksStorage lehnt ab)
-      const maxSize = 3.5 * 1024 * 1024 // 3.5MB
-      const hardLimit = 9.5 * 1024 * 1024 // 9.5MB – unter artworksStorage 10MB-Grenze bleiben
-      
-      if (currentSize > maxSize || currentSize > hardLimit) {
-        // Automatisches Cleanup: Entferne große Bilder und alte Werke
-        console.log(`⚠️ Daten zu groß (${(currentSize / 1024 / 1024).toFixed(2)}MB) - führe Cleanup durch...`)
-        
-        // 1. Komprimiere große Bilder (entferne sehr große >500KB) – NIEMALS das gerade gespeicherte Werk
-        const justSavedKey = artworkData?.number ?? artworkData?.id
-        const cleanedArtworks = artworks.map((artwork: any) => {
-          const key = artwork?.number ?? artwork?.id
-          if (key === justSavedKey) return artwork // Gerade gespeichertes Werk nie ausdünnen
-          if (artwork.imageUrl && artwork.imageUrl.length > 500000) {
-            console.log(`🗜️ Entferne sehr großes Bild von Werk ${artwork.number || artwork.id} (${(artwork.imageUrl.length / 1024).toFixed(0)}KB)`)
-            return { ...artwork, imageUrl: '' }
-          }
-          return artwork
-        })
-        
-        // 2. Sortiere nach Aktualität (updatedAt oder createdAt) – neueste zuerst
-        // WICHTIG: Bei Bearbeitung hat das Werk updatedAt = jetzt, sonst würde es nach altem createdAt sortiert und beim Kürzen rausfallen
-        const sortedArtworks = [...cleanedArtworks].sort((a: any, b: any) => {
-          const dateA = (a.updatedAt || a.createdAt) ? new Date(a.updatedAt || a.createdAt).getTime() : 0
-          const dateB = (b.updatedAt || b.createdAt) ? new Date(b.updatedAt || b.createdAt).getTime() : 0
-          return dateB - dateA
-        })
-        
-        // 3. Behalte nur die 20 neuesten/zuletzt bearbeiteten Werke
-        let keptArtworks = sortedArtworks.slice(0, 20)
-        let keptData = JSON.stringify(keptArtworks)
-        let keptSize = new Blob([keptData]).size
-        
-        // 4. Falls immer noch zu groß: weniger Werke behalten (unter 10MB für Speicher, unter 3.5MB für Komfort)
-        if (keptSize > hardLimit || keptSize > maxSize) {
-          keptArtworks = sortedArtworks.slice(0, 15)
-          keptData = JSON.stringify(keptArtworks)
-          keptSize = new Blob([keptData]).size
+      // Auto-Save pausieren – sonst überschreibt es kurz nach Speichern mit veraltetem State (Refs weg). 10s = 2 Zyklen überspringen.
+      pauseAutoSaveForMs(10000)
+      // Warteschlange: Lese+Schreib-Block serialisieren, damit „30 speichern, dann 31“ nicht parallel läuft – sonst liest 31 vor Ende von 30 → Bild bei 30 weg
+      const doSerializedWrite = async (): Promise<boolean> => {
+        let dataToStore = JSON.stringify(artworks)
+        let currentSize = new Blob([dataToStore]).size
+
+        const maxSize = 3.5 * 1024 * 1024 // 3.5MB
+        const hardLimit = 9.5 * 1024 * 1024 // 9.5MB – unter artworksStorage 10MB-Grenze bleiben
+
+        if (currentSize > maxSize || currentSize > hardLimit) {
+          console.log(`⚠️ Daten zu groß (${(currentSize / 1024 / 1024).toFixed(2)}MB) - führe Cleanup durch...`)
+          const justSavedKey = artworkData?.number ?? artworkData?.id
+          const cleanedArtworks = artworks.map((artwork: any) => {
+            const key = artwork?.number ?? artwork?.id
+            if (key === justSavedKey) return artwork
+            if (artwork.imageUrl && artwork.imageUrl.length > 500000) {
+              console.log(`🗜️ Entferne sehr großes Bild von Werk ${artwork.number || artwork.id} (${(artwork.imageUrl.length / 1024).toFixed(0)}KB)`)
+              return { ...artwork, imageUrl: '' }
+            }
+            return artwork
+          })
+          const sortedArtworks = [...cleanedArtworks].sort((a: any, b: any) => {
+            const dateA = (a.updatedAt || a.createdAt) ? new Date(a.updatedAt || a.createdAt).getTime() : 0
+            const dateB = (b.updatedAt || b.createdAt) ? new Date(b.updatedAt || b.createdAt).getTime() : 0
+            return dateB - dateA
+          })
+          let keptArtworks = sortedArtworks.slice(0, 20)
+          let keptData = JSON.stringify(keptArtworks)
+          let keptSize = new Blob([keptData]).size
           if (keptSize > hardLimit || keptSize > maxSize) {
-            keptArtworks = sortedArtworks.slice(0, 10)
+            keptArtworks = sortedArtworks.slice(0, 15)
             keptData = JSON.stringify(keptArtworks)
             keptSize = new Blob([keptData]).size
+            if (keptSize > hardLimit || keptSize > maxSize) {
+              keptArtworks = sortedArtworks.slice(0, 10)
+              keptData = JSON.stringify(keptArtworks)
+              keptSize = new Blob([keptData]).size
+            }
           }
+          if (keptSize > 10 * 1024 * 1024) {
+            alert(`⚠️ localStorage ist voll!\n\nBitte lösche einige Werke manuell oder verwende kleinere Bilder.`)
+            return false
+          }
+          const freshCleanup = loadArtworksRaw(tenant)
+          const keyForCleanup = (a: any) => String(a?.number ?? a?.id ?? '').trim()
+          const dataKeyCleanup = keyForCleanup(artworkData)
+          const idxCleanup = freshCleanup.findIndex((a: any) => keyForCleanup(a) === dataKeyCleanup)
+          const toSaveCleanup = idxCleanup >= 0
+            ? [...freshCleanup.slice(0, idxCleanup), artworkData, ...freshCleanup.slice(idxCleanup + 1)]
+            : [...freshCleanup, artworkData]
+          const keptForSize = toSaveCleanup.length > 20
+            ? [...toSaveCleanup].sort((a: any, b: any) => {
+                const dateA = (a.updatedAt || a.createdAt) ? new Date(a.updatedAt || a.createdAt).getTime() : 0
+                const dateB = (b.updatedAt || b.createdAt) ? new Date(b.updatedAt || b.createdAt).getTime() : 0
+                return dateB - dateA
+              }).slice(0, 20)
+            : toSaveCleanup
+          const saved = await saveArtworks(tenant, keptForSize)
+          if (!saved) {
+            console.error('❌ Speichern fehlgeschlagen!')
+            alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
+            return false
+          }
+          const removedCount = artworks.length - keptArtworks.length
+          artworks = keptArtworks
+          if (removedCount > 0 && currentSize > maxSize) {
+            alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
+          }
+          return true
         }
-        if (keptSize > 10 * 1024 * 1024) {
-          alert(`⚠️ localStorage ist voll!\n\nBitte lösche einige Werke manuell oder verwende kleinere Bilder.`)
-          return
+        // Minimale Änderung: Nur dieses eine Werk ersetzen, Rest 1:1 aus localStorage – so können andere Werke ihren imageRef nicht verlieren.
+        const fresh = loadArtworksRaw(tenant)
+        const freshHealed = await fillMissingImageRefsFromIndexedDB(fresh)
+        const keyFor = (a: any) => String(a?.number ?? a?.id ?? '').trim()
+        const dataKey = keyFor(artworkData)
+        let idx = freshHealed.findIndex((a: any) => keyFor(a) === dataKey)
+        if (idx === -1) {
+          const aNum = (a: any) => String(a?.number ?? a?.id ?? '').trim()
+          idx = freshHealed.findIndex((a: any) => {
+            const an = aNum(a)
+            const dn = dataKey
+            if (an === dn) return true
+            const aSuffix = an.replace(/^.*[-_]/, '') || an
+            const dSuffix = dn.replace(/^.*[-_]/, '') || dn
+            return !!(aSuffix && dSuffix && (aSuffix === dSuffix || aSuffix.endsWith(dSuffix) || dSuffix.endsWith(aSuffix)))
+          })
         }
-        
-        const saved = await saveArtworks(tenant, keptArtworks)
+        const toSave = idx >= 0
+          ? [...freshHealed.slice(0, idx), artworkData, ...freshHealed.slice(idx + 1)]
+          : [...freshHealed, artworkData]
+        // Vor dem Schreiben fehlende Refs aus IndexedDB ergänzen (letzte Absicherung)
+        const toSaveHealed = await fillMissingImageRefsFromIndexedDB(toSave)
+        const saved = await saveArtworks(tenant, toSaveHealed)
         if (!saved) {
           console.error('❌ Speichern fehlgeschlagen!')
           alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
-          return
+          return false
         }
-        const removedCount = artworks.length - keptArtworks.length
-        artworks = keptArtworks
-        if (removedCount > 0 && currentSize > maxSize) {
-          alert(`⚠️ localStorage war zu voll!\n\nDie ältesten ${removedCount} Werke wurden automatisch gelöscht.\n\nBitte verwende kleinere Bilder um Platz zu sparen.`)
-        }
-      } else {
-        const saved = await saveArtworks(tenant, artworks)
-        if (!saved) {
-          console.error('❌ Speichern fehlgeschlagen!')
-          alert('⚠️ Fehler beim Speichern! Bitte versuche es erneut.')
-          return
-        }
+        return true
       }
-      
+      lastArtworkSaveRef.current = (lastArtworkSaveRef.current ?? Promise.resolve(true)).then(() => doSerializedWrite())
+      const writeOk = await lastArtworkSaveRef.current
+      if (!writeOk) return
+
       console.log('✅ Werk gespeichert:', {
         number: artworkData.number,
         title: artworkData.title,
@@ -8747,10 +8825,22 @@ ${'='.repeat(60)}
           return { ...a, imageUrl: displayUrlWeSaved }
         return a
       })
-      setAllArtworksSafe(patched)
+      // Absicherung: imageRef aus Speicher übernehmen, wenn State es nicht hat – verhindert Bildverlust bei anderen Werken
+      const fromStorage = loadArtworks(tenant)
+      const patchedWithRefs = preserveStorageImageRefs(patched, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+      // Einmaliges Logging: beim Reproduzieren „Bild weg“ in Konsole (F12) prüfen – wenn mitRef/mitUrl < Gesamt, kommt die Liste schon ohne Ref an
+      const withRef = patchedWithRefs.filter((a: any) => a?.imageRef && String(a.imageRef).trim() !== '').length
+      const withUrl = patchedWithRefs.filter((a: any) => a?.imageUrl && String(a.imageUrl).trim().length > 20).length
+      console.log('📷 Nach Speichern Liste (vor setState):', patchedWithRefs.length, 'Werke,', withRef, 'mit imageRef,', withUrl, 'mit imageUrl')
+      if (inIframe) {
+        const converted = await convertDataUrlsToBlobUrlsInList(patchedWithRefs)
+        setAllArtworksSafe(converted)
+      } else {
+        setAllArtworksSafe(patchedWithRefs)
+      }
       // Einmal kurz nachladen aus derselben Quelle (falls IDB-Commit beim ersten resolve noch nicht sichtbar) – bleibt eine Quelle
       setTimeout(() => {
-        loadArtworksWithResolvedImages(tenant).then((again) => {
+        loadArtworksWithResolvedImages(tenant).then(async (again) => {
           if (again.length === 0) return
           // Auch beim Nachladen: gespeichertes Werk mit gespeichertem Bild anzeigen, wenn resolve wieder leer/Fallback
           const againPatched = again.map((a: any) => {
@@ -8760,7 +8850,14 @@ ${'='.repeat(60)}
             if (displayUrlWeSaved && (!r || r.length < 50 || fb)) return { ...a, imageUrl: displayUrlWeSaved }
             return a
           })
-          setAllArtworksSafe(againPatched)
+          const againFromStorage = loadArtworks(tenant)
+          const againWithRefs = preserveStorageImageRefs(againPatched, againFromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+          if (inIframe) {
+            const converted = await convertDataUrlsToBlobUrlsInList(againWithRefs)
+            setAllArtworksSafe(converted)
+          } else {
+            setAllArtworksSafe(againWithRefs)
+          }
         })
       }, 100)
       
@@ -11778,8 +11875,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                               const newArtworks = importData.artworks.filter((a: any) => !existingIds.has(a.id || a.number))
                               if (newArtworks.length === 0) { alert('Keine neuen Werke zum Importieren.'); return }
                               const merged = [...existing, ...newArtworks]
-                              saveArtworks(tenant, merged).then((ok) => {
-                                if (ok) { setAllArtworksSafe(merged); window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } })); alert(`✅ ${newArtworks.length} Werke importiert!`) }
+                              const fromStorage = loadArtworks(tenant)
+                              const toWrite = preserveStorageImageRefs(merged, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+                              saveArtworks(tenant, toWrite).then((ok) => {
+                                if (ok) { setAllArtworksSafe(toWrite); window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } })); alert(`✅ ${newArtworks.length} Werke importiert!`) }
                                 else alert('⚠️ Fehler beim Speichern.')
                               })
                             } else alert('Ungültiges Format.')
@@ -12492,8 +12591,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
                     if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
                   }
-                  // blob:-URLs werden ungültig (z. B. nach Reload) → nie anzeigen, Platzhalter nutzen
-                  if (typeof rawSrc === 'string' && rawSrc.startsWith('blob:')) rawSrc = ''
+                  // blob:-URLs in derselben Session anzeigen (z. B. nach data:→blob in iframe). Nach Reload sind sie ungültig → onError zeigt Platzhalter.
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
                   const imageSrc = (tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
                   return (
@@ -12638,8 +12736,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                             title={limitErreicht ? 'Limit (5) erreicht – erst anderes Werk abwählen' : (istDrin ? 'Favorit entfernen' : 'Als Favorit (vorne in Galerie' + (vk2 ? ' & Vereinskatalog' : '') + ')')}
                             onClick={() => {
                               if (limitErreicht) return
+                              const fromStorage = loadArtworks(tenant)
                               const updated = allArtworks.map((a: any) => a.id === artwork.id ? { ...a, imVereinskatalog: !istDrin } : a)
-                              saveArtworks(tenant, updated).then((ok) => { if (ok) setAllArtworksSafe(updated) })
+                              const toWrite = preserveStorageImageRefs(updated, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
+                              saveArtworks(tenant, toWrite).then((ok) => { if (ok) setAllArtworksSafe(toWrite) })
                             }}
                             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginTop: '0.3rem', padding: '0.2rem 0.5rem', background: istDrin ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${istDrin ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.15)'}`, borderRadius: 6, color: istDrin ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '0.72rem', cursor: limitErreicht ? 'not-allowed' : 'pointer', opacity: limitErreicht ? 0.5 : 1 }}
                           >

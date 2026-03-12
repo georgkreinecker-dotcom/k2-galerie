@@ -359,6 +359,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [musterOnly])
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
+
+  /** K2, ök2, VK2: Admin-Button nur anzeigen, wenn Nutzer von APf kommt oder bereits im Admin-Kontext – Besucher von Google sollen keinen Admin-Zugang sehen. */
+  const showAdminEntryOnGalerie = (() => {
+    try {
+      if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
+      const ctx = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('k2-admin-context') : null
+      if (ctx === 'oeffentlich' || ctx === 'vk2') return true
+      const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      if (!ref.startsWith(origin)) return false
+      const path = ref.slice(origin.length) || '/'
+      if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
+      if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return true
+    } catch (_) {}
+    return false
+  })()
+
   /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Galerie“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
@@ -2387,7 +2406,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
-        {/* Admin-Button prominent – ein Klick öffnet die ganze Admin-Seite (/mein-bereich → /admin). Auf hellem Hintergrund (ök2) kräftige Farbe, damit er sofort sichtbar ist. */}
+        {/* Admin-Button nur anzeigen, wenn von APf/freigeschaltet – Besucher von Google (öffentliche Galerie) sehen keinen Admin. */}
+        {showAdminEntryOnGalerie && (
         <button
           onClick={handleAdminButtonClick}
           style={{
@@ -2437,9 +2457,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           <span style={{ lineHeight: 1 }}>⚙️ Admin</span>
           <span style={{ fontSize: '0.7em', fontWeight: 600, opacity: 0.95 }}>Einstellungen</span>
         </button>
+        )}
 
-        {/* Am Mac: „Vom Server laden“ – damit neue Werke vom iPad hier erscheinen (iPad speichern → 1–2 Min warten → hier klicken) */}
-        {!musterOnly && !vk2 && !(isMobileDevice || isMobile) && (
+        {/* Am Mac: „Vom Server laden“ – nur wenn Admin-Zugang sichtbar (nicht für öffentliche Besucher) */}
+        {showAdminEntryOnGalerie && !musterOnly && !vk2 && !(isMobileDevice || isMobile) && (
           <button
             type="button"
             onClick={() => handleRefresh()}

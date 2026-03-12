@@ -133,4 +133,12 @@
 
 ---
 
+## 8. Erfolgreiche Tests / Meilensteine
+
+| Datum | Vermerk |
+|-------|--------|
+| **12.03.26** | **Erster erfolgreicher Bildtest:** Senden und Abrufen von Bildern (Server ↔ Mobil) sowie Abspeichern funktionieren durchgängig; Gleichstand Mac ↔ Mobil erreichbar. (Georg: „Alles funktioniert jetzt.“) |
+
+---
+
 **Verknüpfung:** .cursor/rules/ein-standard-problem.mdc, SYNC-REGEL.md, WERKE-SPEICHERUNG-CHECKLISTE.md, preserveLocalImageData (syncMerge.ts).

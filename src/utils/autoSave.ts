@@ -5,6 +5,8 @@
 
 import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { readArtworksRawByKey, saveArtworksByKey, saveArtworksByKeyWithImageStore } from './artworksStorage'
+import { preserveStorageImageRefs, mergeMissingFromStorage } from './syncMerge'
+import { fillMissingImageRefsFromIndexedDB } from './artworkImageStore'
 import { compressImageForStorage } from './compressImageForStorage'
 import {
   loadStammdaten,
@@ -20,6 +22,12 @@ const AUTO_SAVE_INTERVAL = 5000
 
 let autoSaveEnabled = true
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
+
+/** Pausiert Auto-Save für ms Millisekunden (z. B. während Werk speichern – verhindert Überschreiben mit veraltetem State). */
+export function pauseAutoSaveForMs(ms: number): void {
+  autoSaveEnabled = false
+  setTimeout(() => { autoSaveEnabled = true }, ms)
+}
 
 export interface AutoSaveData {
   martina?: any
@@ -69,7 +77,14 @@ export function startAutoSave(getData: () => AutoSaveData) {
       if (data.gallery) saveStammdaten('k2', 'gallery', data.gallery, { merge: true })
       if (data.artworks) {
         try {
-          const toSave = filterK2ArtworksOnly(data.artworks)
+          const fromStorage = readArtworksRawByKey('k2-artworks') ?? []
+          let toSave = filterK2ArtworksOnly(data.artworks)
+          // KRITISCH: State kann hinterherhinken (30 gerade gespeichert, State hat noch 29) – nie weniger Werke schreiben als im Speicher
+          toSave = mergeMissingFromStorage(toSave, fromStorage)
+          // KRITISCH: imageRef aus Speicher erhalten wenn State für ein Werk kein Bild hat
+          toSave = preserveStorageImageRefs(toSave, fromStorage)
+          // Fehlende imageRef aus IndexedDB wiederherstellen (Bild da, Ref in Liste verloren)
+          toSave = await fillMissingImageRefsFromIndexedDB(toSave)
           await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: false, allowReduce: true })
         } catch (e) {
           console.warn('⚠️ Artworks zu groß für Auto-Save')

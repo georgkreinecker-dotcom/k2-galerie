@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-033 · Admin iframe: Bilder verschwinden / nur in Bearbeiten sichtbar (gelöst 12.03.26)
+
+**Symptom:** (1) Beim Speichern eines Werks verschwindet das Bild eines anderen. (2) „Bilder unter Nr. 30“ weg oder Liste zeigt „Kein Bild“, beim Klick auf Bearbeiten erscheint das Bild. (Wiederholung der Fehlerklasse „Admin: Bild bei Werk A verschwindet beim Speichern von Werk B“.)
+
+**Ursachen:** (1) **iframe Strip:** data:-URLs werden in iframe gestrippt → State hat imageUrl: ''; beim nächsten setState war prev auch gestrippt → kein Bild. (2) **Liste verwarf blob:-URLs:** In der Werkkarten-Liste wurde `rawSrc.startsWith('blob:') → rawSrc = ''` gesetzt → Liste zeigte Platzhalter, Bearbeiten-Modal zeigte dasselbe Objekt mit blob → Bild nur dort sichtbar. (3) data:→blob-Conversion nur im Save-Pfad → Initial-Load und artworks-updated strippten weiter.
+
+**Lösung:** (1) **convertDataUrlsToBlobUrlsInList** in iframe überall: Initial-Load, artworks-updated, nach Speichern (patchedWithRefs + againWithRefs). (2) **Liste:** blob:-URLs nicht mehr verwerfen (Zeile entfernt); onError zeigt bei ungültigem Blob nach Reload Platzhalter. (3) Doku: ANALYSE-ADMIN-BILD-VERSCHWINDET-BEI-SPEICHERN.md Abschnitt 10.
+
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (convertDataUrlsToBlobUrlsInList, setAllArtworksSafe-Aufrufer, Liste rawSrc/blob).
+
+**Status:** ✅ Behoben (12.03.26). Georg: „Hurra gelöst.“
+
+---
+
 ## BUG-032 · 6 Werke (0030, 0031, 0032, 0033, 0038, K2-M-0018) ohne Bild-URL trotz Fix
 **Symptom:** Nach Ref-Varianten-Fix (BUG-031) blieben beim „An Server senden“ weiterhin 6 Werke ohne Bild-URL (70 Werke, 64 mit Bild).
 **Ursachen:** (1) **resolveArtworkImages:** Wenn ein Werk **kein imageRef** hat (z. B. nach Merge vom Server ohne Ref), wurde nur Repo-Fallback 1–29 genutzt; für 30–39/K2-M wurde **kein** IndexedDB-Lookup per Nummer-Varianten gemacht → Bild in IndexedDB wurde nie gefunden. (2) **supabaseClient:** Beim Befüllen der Fallback-Map (Supabase) und beim Lookup wurde für K2-K-0030 `digits` aus dem ganzen String genutzt → "20030" statt "0030"/"30" (gleicher Fehler wie BUG-031).

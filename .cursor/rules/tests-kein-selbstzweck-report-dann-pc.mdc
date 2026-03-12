@@ -1,0 +1,32 @@
+---
+description: Tests sind kein Selbstzweck – sie prüfen das gerade Programmierte, liefern Report; erst bei Grün testet Georg am PC
+alwaysApply: true
+---
+
+# Tests: Kein Selbstzweck – Report, dann PC
+
+## Regel (unveränderlich)
+
+**Tests sind kein Selbstzweck.** Sie haben einen klaren Zweck:
+
+1. **Prüfen, was gerade programmiert wurde** – ob es so funktioniert wie geplant.
+2. **Report geben** – grün = Verhalten passt zu dem, was umgesetzt wurde; rot = etwas stimmt nicht.
+3. **Erst wenn Tests erfolgreich (grün)** → Georg testet am PC / Gerät. Vorher am PC zu testen ist unnötig (Code könnte die geplante Logik gar nicht erfüllen).
+
+Die AI **merkt sich das und wendet es immer an**: Nach jeder Implementierung zuerst `npm run test` → Report (grün/rot) → bei Grün: Georg kann am PC prüfen. Bei Rot: zuerst Fix, dann wieder testen, dann erst PC.
+
+## Ablauf (verbindlich)
+
+```
+1. AI programmiert etwas (z. B. Bild-zu-Karte, Merge, Speichern).
+2. AI führt Tests aus – Tests prüfen genau dieses Verhalten / diesen Ablauf.
+3. Report: Tests grün → „Verhalten wie geplant, du kannst am PC testen.“
+   Tests rot → „Fehler in der Logik, ich behebe zuerst, dann wieder Tests.“
+4. Georg testet am PC nur nach grünem Report (oder wenn er explizit trotzdem prüfen will).
+```
+
+## Kurzfassung
+
+**Tests = Prüfung des gerade Umsetzten + Report. Erst bei Grün sinnvoll, am PC zu testen. Immer so anwenden.**
+
+Verknüpfung: `qs-standard-vor-commit.mdc`, `tests-flow-bei-kritischen-ablaufen.mdc`, `session-start-aufwaermen.mdc`.

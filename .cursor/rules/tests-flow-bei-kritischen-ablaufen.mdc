@@ -1,0 +1,31 @@
+---
+description: Bei kritischen Abläufen immer Flow-/E2E-Tests mitdenken – von selbst, nicht erst auf Nachfrage
+alwaysApply: true
+---
+
+# Tests: Flow bei kritischen Abläufen (selbstverständlich)
+
+## Regel
+
+**Bei kritischen Nutzerabläufen** (Bild zu Karte, Werk speichern, Veröffentlichen, Laden vom Server, Merge, …) gilt:
+
+- **Nicht nur** Unit-Tests für einzelne Funktionen.
+- **Immer auch** den **Ablauf** testen (Flow-Test oder E2E): gleiche Datenlogik wie in der App, z. B. „Liste laden → ein Werk ersetzen → prüfen, dass andere Werke ihren imageRef behalten“.
+
+Die AI macht das **von selbst** – nicht erst, wenn Georg fragt oder „testest du nur deine Codes?“ sagt.
+
+## Konkret
+
+| Ablauf | Mindestens prüfen |
+|--------|-------------------|
+| Werk speichern (Admin) | Flow: fresh → ein Werk ersetzen → toSave: andere Werke behalten imageRef (z. B. `bild-zu-karte-flow.test.ts`) |
+| Merge / Laden vom Server | Bereits in syncMerge.test.ts, mergeAndMaybeWrite – Flow bleibt abgedeckt |
+| Neue kritische Abläufe | Beim Implementieren: passenden Flow-Test (Datenebene) oder E2E anlegen |
+
+## Kurzfassung
+
+**Kritischer Ablauf = Unit-Tests + Flow-Test (oder E2E). Von vornherein mit einplanen, nicht auf Nachfrage.**
+
+**Zweck:** Tests prüfen das gerade Programmierte und geben Report; erst bei Grün testet Georg am PC. Siehe `tests-kein-selbstzweck-report-dann-pc.mdc`.
+
+Verknüpfung: `qs-standard-vor-commit.mdc` (Tests vor Commit), `session-start-aufwaermen.mdc` (Tests zuerst).

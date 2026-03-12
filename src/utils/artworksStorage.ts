@@ -9,7 +9,7 @@
  * Speichermix: Große Werkbilder werden in IndexedDB ausgelagert (artworkImageStore), nur Referenzen in localStorage.
  */
 
-import { prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
+import { fillMissingImageRefsFromIndexedDB, prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
 import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 
 const K2_ARTWORKS_KEY = 'k2-artworks'
@@ -164,7 +164,10 @@ export function readArtworksRawByKeyOrNull(key: string): any[] | null {
  */
 export async function readArtworksWithResolvedImages(key: string): Promise<any[]> {
   const raw = readArtworksRawByKey(key)
-  return resolveArtworkImages(raw)
+  const list = Array.isArray(raw) ? raw : []
+  // Fehlende imageRef aus IndexedDB holen, damit „Kein Bild“ nicht bleibt wenn Bild in IDB liegt
+  const healed = await fillMissingImageRefsFromIndexedDB(list)
+  return resolveArtworkImages(healed)
 }
 
 /** Kontext-Variante: Werke mit aufgelösten Bildern für Anzeige. */
