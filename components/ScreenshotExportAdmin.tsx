@@ -26,7 +26,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
-import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase } from '../src/utils/supabaseClient'
+import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage } from '../src/utils/eventsStorage'
@@ -3418,8 +3418,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const { merged: mergedWithImages } = applyServerDataToLocal(serverArtworks, localArtworks, {
         onlyAddLocalIfMobileAndVeryNew: true,
       })
-      // Bilder aus Supabase nachziehen, wenn der Server-Blob keine URLs hatte (Platzhalter vermeiden)
-      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(mergedWithImages)
+      // Zuerst fehlende Bild-URLs aus lokaler IndexedDB holen und hochladen (6 Werke 0030–0038, K2-M-0018), dann aus Supabase
+      const withIndexedDB = await fillMissingImageUrlsFromIndexedDB(mergedWithImages)
+      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withIndexedDB)
       // Data-URLs vor strip in IndexedDB sichern → Kette stimmt, Karte bekommt das richtige Bild
       const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
       const toSave = filterK2Only(stripBase64FromArtworks(afterPersist))
@@ -3489,7 +3490,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         )
         if (nurServerLaden) {
           const preserved = preserveLocalImageData(serverArtworks, localArtworks, (a: any) => String(a?.number ?? a?.id ?? ''))
-          const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(preserved)
+          const withIndexedDB = await fillMissingImageUrlsFromIndexedDB(preserved)
+          const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withIndexedDB)
           const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
           const toSaveOnly = stripBase64FromArtworks(afterPersist)
           const hasImg = (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
@@ -3567,7 +3569,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const localArtworks = loadArtworksRaw(tenant)
       const getKey = (a: any) => String(a?.number ?? a?.id ?? '')
       const withPreservedImages = preserveLocalImageData(serverList, localArtworks, getKey)
-      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withPreservedImages)
+      const withIndexedDB = await fillMissingImageUrlsFromIndexedDB(withPreservedImages)
+      const withSupabaseImages = await fillArtworkImageUrlsFromSupabase(withIndexedDB)
       const afterPersist = await persistDataUrlsToIndexedDB(withSupabaseImages)
       const toSave = stripBase64FromArtworks(afterPersist)
       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })

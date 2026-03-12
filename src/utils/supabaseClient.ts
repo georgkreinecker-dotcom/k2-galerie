@@ -281,6 +281,56 @@ export async function resolveArtworkImageUrlsForExport(
 }
 
 /**
+ * Füllt fehlende imageUrl bei Werken aus lokaler IndexedDB (Ref-Varianten) und lädt zu Supabase hoch.
+ * Nutzen: Nach „Vom Server laden“ – wenn der Blob 6 Werke ohne URL hat, dieses Gerät hat sie evtl. in IndexedDB (z. B. iPad hatte sie gespeichert). Dann hochladen → künftig überall sichtbar.
+ */
+export async function fillMissingImageUrlsFromIndexedDB(artworks: any[]): Promise<any[]> {
+  if (!Array.isArray(artworks) || artworks.length === 0) return artworks
+  const hasHttps = (a: any) =>
+    typeof a?.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
+  const out: any[] = []
+  for (const a of artworks) {
+    if (hasHttps(a)) {
+      out.push(a)
+      continue
+    }
+    const number = String(a?.number ?? a?.id ?? '').trim()
+    const refs = getArtworkImageRefVariants(a)
+    const found = await getArtworkImageByRefVariants(refs)
+    if (!found?.dataUrl) {
+      out.push(a)
+      continue
+    }
+    let payloadUrl = found.dataUrl
+    if (payloadUrl.length > MAX_DATAURL_BEFORE_RECOMPRESS) {
+      try {
+        payloadUrl = await compressImageForStorage(payloadUrl, { context: 'artwork' })
+      } catch (_) {}
+    }
+    let storageUrl = await uploadArtworkImageToStorage(payloadUrl, number)
+    if (!storageUrl && GALLERY_DATA_BASE_URL) {
+      try {
+        const c = new AbortController()
+        const t = setTimeout(() => c.abort(), 25000)
+        const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/upload-artwork-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artworkNumber: number, dataUrl: payloadUrl }),
+          signal: c.signal
+        })
+        clearTimeout(t)
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.url && typeof data.url === 'string') storageUrl = data.url
+        }
+      } catch (_) {}
+    }
+    out.push(storageUrl ? { ...a, imageUrl: storageUrl, imageRef: found.foundRef } : a)
+  }
+  return out
+}
+
+/**
  * Füllt fehlende imageUrl bei Werken aus Supabase (Datenbank hat image_url).
  * Nutzen: Nach „Vom Server laden“ – wenn der Blob keine Bild-URLs hatte, hier aus Supabase nachziehen.
  */
