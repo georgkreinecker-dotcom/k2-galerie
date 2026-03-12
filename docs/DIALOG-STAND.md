@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Auto-Download: Beim Neuladen/Öffnen werden Daten automatisch vom Vercel-Server geholt (Admin + Galerie). Commit: (gleich nach Push).
+**Letzter Build-Push:** 12.03.26 – Auto-Download: Beim Neuladen/Öffnen werden Daten automatisch vom Vercel-Server geholt (Admin + Galerie). Commit: 54a463c ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
