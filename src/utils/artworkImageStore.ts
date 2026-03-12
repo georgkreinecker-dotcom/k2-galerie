@@ -346,16 +346,8 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
-      // Kein imageRef: Trotzdem per Nummer-Varianten in IndexedDB suchen (30–39/K2-M oft nach Merge ohne Ref).
-      const variants = getArtworkImageRefVariants(a)
-      const found = await getArtworkImageByRefVariants(variants)
-      if (found) {
-        let imageUrl = found.dataUrl
-        if (inExclude && imageUrl && isOldVercelStaticUrl(imageUrl)) imageUrl = ''
-        out.push({ ...a, imageUrl: imageUrl || '', imageRef: found.foundRef })
-        continue
-      }
-      // Repo-Fallback nur 1–29. 30–39 und 40+ → kein Fallback, kein 404, nur „Kein Bild“.
+      // Kein imageRef: Repo-Fallback nur 1–29. 30–39 und 40+ → kein Fallback, kein 404, nur „Kein Bild“.
+      // Lookup per Varianten passiert beim Export in resolveImageUrlForSupabase – keine data-URLs hier durchreichen (Stand/Sync stabil halten).
       const fallbackId = getVercelFallbackIdFromArtwork(a)
       if (fallbackId && isInStaticFallbackAllowedRange(a)) {
         out.push({ ...a, imageUrl: `${VERCEL_IMG_BASE}/img/k2/werk-${fallbackId}.jpg` })

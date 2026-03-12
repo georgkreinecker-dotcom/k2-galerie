@@ -2484,6 +2484,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     artworkNumbersWithoutImageUrl?: string[]
     serverArtworksCount?: number
     serverImagesCount?: number
+    serverExportedAt?: string
   } | null>(null)
   /** Balken für Senden/Empfangen: phase idle | sending | loading | success | error – Nutzer sieht sofort was passiert */
   const [syncStatusBar, setSyncStatusBar] = React.useState<{ phase: 'idle' | 'sending' | 'loading' | 'success' | 'error'; message: string }>({ phase: 'idle', message: '' })
@@ -2864,7 +2865,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
                     imagesResolved: result.imagesResolved,
                     artworkNumbersWithoutImageUrl: result.artworkNumbersWithoutImageUrl,
                     serverArtworksCount: result.serverArtworksCount,
-                    serverImagesCount: result.serverImagesCount
+                    serverImagesCount: result.serverImagesCount,
+                    serverExportedAt: result.serverExportedAt
                   })
                 }
               } else {
@@ -18427,7 +18429,11 @@ ${name}`
               <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.95)', fontSize: '1rem', fontWeight: '600' }}>
                 Gesendet: {publishSuccessModal.artworksCount} Werke{publishSuccessModal.imagesResolved != null ? `, ${publishSuccessModal.imagesResolved} mit Bild` : ''}.
                 {publishSuccessModal.serverArtworksCount != null && publishSuccessModal.serverImagesCount != null && (
-                  <> Auf Vercel: {publishSuccessModal.serverArtworksCount} Werke, {publishSuccessModal.serverImagesCount} mit Bild.</>
+                  <> Auf Vercel: {publishSuccessModal.serverArtworksCount} Werke, {publishSuccessModal.serverImagesCount} mit Bild.
+                    {publishSuccessModal.serverExportedAt && (
+                      <> Stand auf Vercel jetzt: <strong>{new Date(publishSuccessModal.serverExportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}</strong>.</>
+                    )}
+                  </>
                 )}
               </p>
             )}

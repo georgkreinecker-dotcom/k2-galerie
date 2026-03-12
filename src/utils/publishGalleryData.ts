@@ -38,6 +38,8 @@ export interface PublishGalleryDataResult {
   /** Nach erfolgreichem POST: Kontrolle was auf Vercel angekommen ist (GET direkt danach). */
   serverArtworksCount?: number
   serverImagesCount?: number
+  /** exportedAt aus der Antwort direkt nach dem Schreiben – zeigt ob der neue Stand wirklich auf Vercel steht. */
+  serverExportedAt?: string
   payloadSizeBytes?: number
 }
 
@@ -116,7 +118,7 @@ export async function publishGalleryDataToServer(
         artworkNumbersWithoutImageUrl: artworkNumbersWithoutImageUrl.length > 0 ? artworkNumbersWithoutImageUrl : undefined,
         payloadSizeBytes: json.length
       }
-      // Kontrolle: Was ist auf Vercel angekommen? (GET direkt nach POST)
+      // Kontrolle: Was ist auf Vercel angekommen? (GET direkt nach POST – zeigt ob Schreiben wirklich ankam)
       try {
         const getUrl = `${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`
         const getRes = await fetch(getUrl, { cache: 'no-store' })
@@ -131,6 +133,7 @@ export async function publishGalleryDataToServer(
           ).length
           out.serverArtworksCount = serverList.length
           out.serverImagesCount = serverImages
+          if (serverData?.exportedAt) out.serverExportedAt = String(serverData.exportedAt)
         }
       } catch (_) {}
       return out
