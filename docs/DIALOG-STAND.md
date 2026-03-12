@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 (6 Bilder 0030/0031/0032/0033/0038/K2-M-0018 – Fix BUG-032).
+**Letzter Build-Push:** 12.03.26 – Commit 162a81a (Stand-Fix: resolveArtworkImages ohne data-URL-Vorfüllung; Erfolgs-Modal zeigt Stand auf Vercel).
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
@@ -8,13 +8,23 @@
 
 ---
 
-## Heute 12.03.26 – 6 Bilder endgültig rein (BUG-032)
+## Heute 12.03.26 – Stand-Fix (Revert data-URL-Vorfüllung in resolveArtworkImages)
+
+- **Problem:** Nach BUG-032 zeigte „Daten vom Server geladen“ alten Stand (08.03.); Georg: „hat gestern Abend noch funktioniert – du musst heute etwas programmiert haben.“
+- **Vermutung:** Der BUG-032-Zusatz (bei fehlendem imageRef 6 Werke mit data-URLs aus IndexedDB vorfüllen) schickte große Daten durch die Pipeline → Stand/Sync gestört.
+- **Fix:** In **resolveArtworkImages** den else-Zweig zurückgebaut: Kein Lookup per Varianten mehr, der die 6 Werke mit data-URLs füllt. Lookup passiert nur noch beim Export in **resolveImageUrlForSupabase** (Ref-Varianten + Map) – 6 Bilder sollten weiter ankommen.
+- **Zusätzlich:** Erfolgs-Modal nach „An Server senden“ zeigt jetzt **„Stand auf Vercel jetzt: [Datum/Uhrzeit]“** (aus Kontroll-GET) – zur Diagnose.
+- **Commit:** 162a81a. **Wo:** src/utils/artworkImageStore.ts, src/utils/publishGalleryData.ts, components/ScreenshotExportAdmin.tsx.
+- **Nächster Schritt:** „An Server senden“ testen → prüfen ob Stand auf Vercel aktuell ankommt; ob die 6 Bilder weiterhin mitkommen.
+
+---
+
+## Heute 12.03.26 – 6 Bilder endgültig rein (BUG-032, danach Teil zurückgebaut)
 
 - **Georg:** „Bringen wir endlich dies 6 Bilder rein – fixe das.“ (0030, 0031, 0032, 0033, 0038, K2-M-0018 blieben ohne Bild-URL.)
 - **Ursachen:** (1) **resolveArtworkImages:** Ohne imageRef (z. B. nach Merge) wurde für 30–39/K2-M kein IndexedDB-Lookup per Nummer-Varianten gemacht. (2) **supabaseClient:** Fallback-Map und Lookup nutzten für K2-K-0030 weiter „20030“ statt 0030/30.
-- **Fix:** (1) artworkImageStore: Im else-Zweig (kein imageRef) getArtworkImageRefVariants + getArtworkImageByRefVariants aufrufen → Bild aus IndexedDB holen. (2) supabaseClient: Map-Befüllung und tryMap/getFromMap mit K2-Zifferngruppe (k2[2]), nie digits aus ganzem String.
+- **Fix (bleibt):** supabaseClient: Map-Befüllung und tryMap/getFromMap mit K2-Zifferngruppe (k2[2]). **Zurückgebaut:** resolveArtworkImages-Vorfüllung mit data-URLs (siehe Stand-Fix oben).
 - **Wo:** src/utils/artworkImageStore.ts, src/utils/supabaseClient.ts. **Doku:** GELOESTE-BUGS.md BUG-032.
-- **Nächster Schritt:** iPad „An Server senden“, 1–2 Min warten, Mac „Aktuellen Stand holen“ → alle 70 mit Bild (inkl. die 6).
 
 ---
 
