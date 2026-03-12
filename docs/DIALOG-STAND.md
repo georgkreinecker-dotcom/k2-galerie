@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Commit (gleich) – Fix: Bild bei 30 verschwindet nicht mehr wenn 31 gespeichert.
+**Letzter Build-Push:** 12.03.26 – Commit 1d72bb7 ✅ – Fix: Bild bei 30 verschwindet nicht mehr wenn 31 gespeichert.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
