@@ -1,10 +1,19 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Commit 162a81a (Stand-Fix: resolveArtworkImages ohne data-URL-Vorfüllung; Erfolgs-Modal zeigt Stand auf Vercel).
+**Letzter Build-Push:** 12.03.26 – Commit (gleich) – Fix: Bild bei 30 verschwindet nicht mehr wenn 31 gespeichert.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – Bild bei 30 verschwindet wenn 31 gespeichert (Fix)
+
+- **Georg:** „Wenn ich 31 neues Bild mache, verschwindet es bei 30.“
+- **Ursache:** Beim Speichern von Werk 31 wurde die Liste aus einem älteren `loadArtworks()`-Stand gebaut → Werk 30 (gerade gespeichert) war darin noch ohne neues Bild → beim Schreiben wurde 30 überschrieben.
+- **Fix:** (1) Beim Bearbeiten: Liste aus **neuestem** `loadArtworks()` bauen („latest“), nur dieses eine Werk ersetzen. (2) Unmittelbar vor `saveArtworks`: nochmals `loadArtworks()` lesen („rightBeforeSave“), nur den Eintrag des bearbeiteten Werks durch die vorbereitete Version ersetzen, dann `prepareArtworksForStorage` und speichern. So wird kein anderes Werk (z. B. 30) mit altem Stand überschrieben.
+- **Wo:** src/pages/GalerieVorschauPage.tsx (Speicher-Handler Bearbeiten).
 
 ---
 

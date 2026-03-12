@@ -3809,17 +3809,25 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         updatedOnMobile: true // Marker dass es auf Mobile aktualisiert wurde
                       }
                       
-                      // KRITISCH: Basis = immer VOLLSTÄNDIGE Liste aus localStorage (auf Handy kann State nur Anzeige-Ausschnitt sein → sonst gehen andere Werke verloren)
-                      const currentFromStorage = loadArtworks()
+                      // KRITISCH: Unmittelbar vor dem Schreiben nochmals lesen – sonst überschreiben wir gerade gespeicherte andere Werke (z. B. Bild bei 30 geht verloren wenn man danach 31 speichert)
+                      const latest = loadArtworks()
                       const key = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
-                      const idxInStorage = currentFromStorage.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                      const idxInStorage = latest.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
                       const updatedArtworks = idxInStorage >= 0
-                        ? [...currentFromStorage.slice(0, idxInStorage), updatedArtwork, ...currentFromStorage.slice(idxInStorage + 1)]
-                        : [...currentFromStorage, updatedArtwork]
+                        ? [...latest.slice(0, idxInStorage), updatedArtwork, ...latest.slice(idxInStorage + 1)]
+                        : [...latest, updatedArtwork]
                       // Beim Bearbeiten NICHT preserveLocalImageData: das würde das neue Bild (mobilePhoto) mit dem alten localStorage-Stand überschreiben → neues Bild würde nie gespeichert (Bug 0031 / Galerie ≠ Werkansicht)
                       const toSave = updatedArtworks
                       // Speicherproblem 0031/0035: Neues Bild in IndexedDB ablegen, nur imageRef in Liste – sonst localStorage voll / Bild geht verloren
-                      const prepared = await prepareArtworksForStorage(toSave)
+                      let prepared = await prepareArtworksForStorage(toSave)
+                      // Nochmals aktuellen Stand lesen und nur dieses eine Werk aus prepared übernehmen (verhindert: Bild bei 30 geht verloren wenn man 31 speichert)
+                      const rightBeforeSave = loadArtworks()
+                      const idxOther = rightBeforeSave.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                      const editedInPrepared = prepared.find((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                      if (idxOther >= 0 && editedInPrepared) {
+                        const withOnlyThisReplaced = [...rightBeforeSave.slice(0, idxOther), editedInPrepared, ...rightBeforeSave.slice(idxOther + 1)]
+                        prepared = await prepareArtworksForStorage(withOnlyThisReplaced)
+                      }
                       
                       // PROFESSIONELL: Speichere zuerst in Supabase (wenn konfiguriert), sonst localStorage
                       let saved = false
