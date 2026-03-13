@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.03.26 – Push fbada3e: Etiketten Druckdialog + Fallbacks, ök2 Muster Standard. Vercel deployt von main.
+**Letzter Stand:** 13.03.26 – Drucker K2: „Etikett in neuem Tab“ als Standard (kein Pop-up) – keine „Pop-up blockiert“-Meldung mehr. Einstellung in Einstellungen → Drucker umschaltbar.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 

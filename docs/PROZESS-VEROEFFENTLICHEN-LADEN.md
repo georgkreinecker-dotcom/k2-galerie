@@ -108,6 +108,20 @@
 - **Am Mac** bleibt bei Bildverlust die **Frage** („Trotzdem jetzt laden?“); auf dem iPad **keine** Frage, sondern harter Stopp.
 - **Ablauf:** Immer zuerst auf dem Gerät mit den meisten/aktuellsten Daten **„An Server senden“**, danach auf den anderen Geräten **„Aktuellen Stand holen“**.
 
+### 5d. Handy: Werkbilder nicht Gleichstand trotz mehrmaligem Laden (13.03.26)
+
+**Symptom:** Am Handy sind nach mehrfachem „Stand tippen“ oder „Bilder vom Server laden“ immer noch Platzhalter oder alte Bilder – kein Gleichstand mit Mac/iPad.
+
+**Häufigste Ursache:** Der **Server (Blob)** hat gar keine oder nicht alle Bild-URLs. Was das Handy lädt, ist genau das, was beim letzten **„An Server senden“** an den Server geschrieben wurde. War das von einem Gerät, das die Bilder nicht in IndexedDB hatte (z. B. Mac, der die Fotos nie bekommen hat), stehen im Blob Werke ohne `imageRef` (https) → beim Laden kommt nichts zum Anzeigen.
+
+**Checkliste (Reihenfolge einhalten):**
+
+1. **Am Gerät mit den Bildern veröffentlichen:** iPad oder Mac öffnen, wo die Galerie-Vorschau **alle Werkbilder** zeigt (keine Platzhalter). Dort **Einstellungen → „An Server senden“** (bzw. Veröffentlichen). Warten bis Meldung z. B. „Veröffentlicht (N Werke, X mit Bild)“ – **X sollte = N** sein. Wenn X < N: Auf diesem Gerät fehlen Bilder in der Quelle; zuerst dort fehlende Bilder einpflegen, dann erneut senden.
+2. **Danach am Handy laden:** Auf dem Handy **Stand-Badge tippen** (unten links) oder in der Galerie **„Bilder vom Server laden“** / „Aktuellen Stand holen“. Die API liefert dann den gerade geschriebenen Blob-Stand (mit Bild-URLs).
+3. **Cache:** Wenn es danach am Handy immer noch nicht stimmt: **Website-Daten** für k2-galerie.vercel.app löschen (Safari: Einstellungen → Safari → Verlauf und Websitedaten; oder nur für diese Seite), dann Seite neu öffnen und erneut Stand tippen.
+
+**Technisch:** Merge und preserveLocalImageData übernehmen Server-URLs korrekt; die Anzeige nutzt `resolveArtworkImages` (imageRef https → imageUrl). Wenn die API-Antwort keine Bild-URLs enthält, kann das Handy sie nicht anzeigen – Abhilfe nur durch erneutes Veröffentlichen vom richtigen Gerät.
+
 ---
 
 ## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)

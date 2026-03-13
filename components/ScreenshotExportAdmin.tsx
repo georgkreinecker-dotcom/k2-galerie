@@ -1347,8 +1347,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
-  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave') => {
-    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : key === 'printServerUrl' ? 'print-server-url' : 'open-etikett-after-save'
+  const printerStorageKey = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab') => {
+    const suffix = key === 'ip' ? 'printer-ip' : key === 'type' ? 'printer-type' : key === 'labelSize' ? 'label-size' : key === 'printServerUrl' ? 'print-server-url' : key === 'openEtikettAfterSave' ? 'open-etikett-after-save' : 'open-etikett-in-new-tab'
     return `k2-${suffix}-${tenantId}`
   }
   const defaultPrinterSettings = () => ({
@@ -1360,7 +1360,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     printServerUrl: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3847'
       : 'http://192.168.1.1:3847',
-    openEtikettAfterSave: false
+    openEtikettAfterSave: false,
+    /** Standard: Etikett in neuem Tab öffnen statt Pop-up – dann kein „Pop-up blockiert“. */
+    openEtikettInNewTab: true
   })
   const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
     try {
@@ -1391,19 +1393,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const printServerUrl = localStorage.getItem(printerStorageKey(tenantId, 'printServerUrl'))
       const openEtikettRaw = localStorage.getItem(printerStorageKey(tenantId, 'openEtikettAfterSave'))
       const openEtikettAfterSave = openEtikettRaw === '1' || openEtikettRaw === 'true'
+      const inNewTabRaw = localStorage.getItem(printerStorageKey(tenantId, 'openEtikettInNewTab'))
+      const openEtikettInNewTab = inNewTabRaw == null ? def.openEtikettInNewTab : (inNewTabRaw === '1' || inNewTabRaw === 'true')
       return {
         ipAddress: ip || def.ipAddress,
         printerModel: def.printerModel,
         printerType: (type || def.printerType) as 'etikettendrucker' | 'standarddrucker',
         labelSize: labelSize || def.labelSize,
         printServerUrl: printServerUrl || def.printServerUrl,
-        openEtikettAfterSave: openEtikettRaw != null ? openEtikettAfterSave : def.openEtikettAfterSave
+        openEtikettAfterSave: openEtikettRaw != null ? openEtikettAfterSave : def.openEtikettAfterSave,
+        openEtikettInNewTab
       }
     } catch {
       return defaultPrinterSettings()
     }
   }
-  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave', value: string) => {
+  const savePrinterSetting = (tenantId: TenantId, key: 'ip' | 'type' | 'labelSize' | 'printServerUrl' | 'openEtikettAfterSave' | 'openEtikettInNewTab', value: string) => {
     try {
       localStorage.setItem(printerStorageKey(tenantId, key), value)
     } catch (_) {}
@@ -9111,19 +9116,33 @@ ${'='.repeat(60)}
     }
   }
 
-  // Drucken: Fenster SOFORT öffnen (vor await) – sonst blockiert Pop-up-Blocker
+  // Drucken: Bei „Etikett in neuem Tab“ → Blob-URL in Tab (kein Pop-up). Sonst Pop-up-Fenster (sofort öffnen, sonst blockiert Blocker).
   const handlePrint = async () => {
     if (!savedArtwork) return
+    const activeTenant = getCurrentTenantId()
+    const settings = loadPrinterSettingsForTenant(activeTenant)
+    if (settings.openEtikettInNewTab) {
+      try {
+        const lm = parseLabelSize(settings.labelSize)
+        const blob = await getEtikettBlob(lm.width, lm.height)
+        const url = URL.createObjectURL(blob)
+        window.open(url, '_blank')
+        setTimeout(() => URL.revokeObjectURL(url), 60000)
+        alert('Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen, dann Brother QL oder anderen Drucker.')
+      } catch (e) {
+        console.error('Etikett für Druck fehlgeschlagen:', e)
+        alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
+      }
+      return
+    }
     const win = window.open('', '_blank', 'width=400,height=500')
     if (win) try { win.focus() } catch (_) { }
     if (!win) {
-      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari) und versuche erneut.')
+      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari) oder aktiviere in Einstellungen → Drucker „Etikett in neuem Tab öffnen“.')
       return
     }
     win.document.write('<html><body style="margin:0;padding:2rem;font-family:system-ui;text-align:center;">Etikett wird erstellt …</body></html>')
     try {
-      const activeTenant = getCurrentTenantId()
-      const settings = loadPrinterSettingsForTenant(activeTenant)
       const lm = parseLabelSize(settings.labelSize)
       const blob = await getEtikettBlob(lm.width, lm.height)
       const url = URL.createObjectURL(blob)
@@ -9212,7 +9231,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         return
       }
 
-      // Desktop: immer Druckfenster + Druckdialog (kein Share-Menü – führt nicht zum Drucker)
+      const batchSettings = loadPrinterSettingsForTenant(activeTenant)
+      if (batchSettings.openEtikettInNewTab) {
+        // Ohne Pop-up: erstes Etikett in neuem Tab öffnen
+        const fallbackUrl = URL.createObjectURL(items[0].blob)
+        window.open(fallbackUrl, '_blank')
+        setTimeout(() => URL.revokeObjectURL(fallbackUrl), 60000)
+        alert(`Erstes Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nWeitere ${items.length - 1} Etiketten: nacheinander „Etikett drucken“ pro Werk oder Pop-up erlauben und „Sammeldruck“ erneut klicken.`)
+        setSelectedForBatchPrint(new Set())
+        return
+      }
+
+      // Desktop: Druckfenster (Pop-up) + Druckdialog
       const dataUrls = await Promise.all(items.map((it) => blobToDataUrl(it.blob)))
       const w = lm.width
       const h = lm.height
@@ -9230,15 +9260,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       if (win) {
         win.document.write(html)
         win.document.close()
-        // Druckdialog direkt öffnen (führt zum Drucker, nicht zum Share-Menü)
         setTimeout(() => { try { win.print() } catch (_) {} }, 500)
       } else {
-        // Fallback: Erstes Etikett in neuem Tab öffnen → User kann dort Drucken wählen
-        const firstBlob = items[0].blob
-        const fallbackUrl = URL.createObjectURL(firstBlob)
+        const fallbackUrl = URL.createObjectURL(items[0].blob)
         window.open(fallbackUrl, '_blank')
         setTimeout(() => URL.revokeObjectURL(fallbackUrl), 60000)
-        alert('Pop-up wurde blockiert.\n\nErstes Etikett stattdessen in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nFür alle Etiketten: Pop-ups für diese Seite erlauben und „Sammeldruck“ erneut klicken.')
+        alert('Pop-up wurde blockiert.\n\nErstes Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nFür alle Etiketten: Einstellungen → Drucker „Etikett in neuem Tab“ aktivieren oder Pop-ups erlauben.')
       }
       setSelectedForBatchPrint(new Set())
     } catch (e) {
@@ -9555,15 +9582,21 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         setShowShareFallbackOverlay(true)
         return
       }
-      // Desktop: Druckfenster + Druckdialog (führt zum Drucker, nicht zum Share-Menü)
+      // Desktop: bei „Etikett in neuem Tab“ → Blob in Tab; sonst Druckfenster (Pop-up)
+      const activeTenant = getCurrentTenantId()
+      const settings = loadPrinterSettingsForTenant(activeTenant)
+      if (settings.openEtikettInNewTab) {
+        const blobUrl = URL.createObjectURL(blob)
+        window.open(blobUrl, '_blank')
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        return
+      }
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const r = new FileReader()
         r.onload = () => resolve(r.result as string)
         r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
         r.readAsDataURL(blob)
       })
-      const activeTenant = getCurrentTenantId()
-      const settings = loadPrinterSettingsForTenant(activeTenant)
       const lm = parseLabelSize(settings.labelSize)
       const w = lm.width
       const h = lm.height
@@ -9583,11 +9616,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         win.document.close()
         setTimeout(() => { try { win.print() } catch (_) {} }, 500)
       } else {
-        // Fallback: Etikett in neuem Tab öffnen → User kann dort Drucken (⌘P) wählen
         const blobUrl = URL.createObjectURL(blob)
         window.open(blobUrl, '_blank')
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-        alert('Pop-up wurde blockiert.\n\nEtikett stattdessen in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen, dann Brother QL oder anderen Drucker.')
+        alert('Pop-up wurde blockiert. Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen. Oder Einstellungen → Drucker „Etikett in neuem Tab“ aktivieren.')
       }
     } catch (e) {
       if ((e as Error)?.message?.includes('QR')) alert('QR konnte nicht erzeugt werden. Bitte erneut versuchen.')
@@ -15958,6 +15990,26 @@ ${name}`
                         </label>
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.25rem', marginBottom: 0, flex: '1 1 100%' }}>
                           Mac &amp; Handy: Wenn aktiviert, öffnet sich nach dem Speichern eines Werks automatisch das Etikett-Fenster – ein Tipp zum Drucken. Mit <strong>Standarddrucker</strong> auf Normalpapier; mit <strong>Etikettendrucker</strong> wie gewohnt.
+                        </p>
+                      </div>
+
+                      {/* Standard: an – dann kein „Pop-up blockiert“. Bei Bedarf abwählbar (Pop-up-Fenster mit direktem Druckdialog). */}
+                      <div className="field" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flexWrap: 'wrap', padding: '0.75rem', background: `${s.accent}08`, borderRadius: '10px', border: `1px solid ${s.accent}22` }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flex: '1 1 auto' }}>
+                          <input
+                            type="checkbox"
+                            checked={!!printerSettings.openEtikettInNewTab}
+                            onChange={(e) => {
+                              const v = e.target.checked ? '1' : '0'
+                              setPrinterSettings(prev => ({ ...prev, openEtikettInNewTab: e.target.checked }))
+                              savePrinterSetting(printerSettingsForTenant, 'openEtikettInNewTab', v)
+                            }}
+                            style={{ width: '1.2rem', height: '1.2rem', accentColor: s.accent, flexShrink: 0 }}
+                          />
+                          <span style={{ fontSize: '0.95rem', color: s.text, fontWeight: 600 }}>Etikett in neuem Tab öffnen (kein Pop-up)</span>
+                        </label>
+                        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.25rem', marginBottom: 0, flex: '1 1 100%' }}>
+                          Wenn an: Beim Drucken öffnet sich das Etikett in einem neuen Tab – dort „Drucken“ (⌘P / Strg+P) wählen. Kein Pop-up nötig, kein „Pop-up blockiert“. Abwählen = klassisches Pop-up-Fenster mit direktem Druckdialog.
                         </p>
                       </div>
 
