@@ -1,0 +1,63 @@
+---
+description: Kritische Abläufe (Etikett, Veröffentlichen, Laden, Werke speichern) nicht abschwächen – primärer Weg bleibt Standard. Pflicht-Check in der Antwort bei Änderungen.
+alwaysApply: true
+---
+
+# 🔒 Kritische Abläufe – nicht abschwächen (verbindlich)
+
+## Hintergrund (Lehre Etikett-Druck, März 2026)
+
+Der Etikett-Druck war lange zum Laufen gebracht. Dann wurde eine Option („Etikett in neuem Tab“) so eingebaut, dass **als Standard** nur noch ein neuer Tab geöffnet wurde – **kein Druckdialog**. Nutzer: „keine Reaktion“, „warum gelöscht“, „wie oft soll ich das noch sagen“. Das ist inakzeptabel. Regel: **Bewährtes nicht ersetzen. Primärer Weg = Standard. Fallback nur, wenn der primäre Weg scheitert.**
+
+## Unveränderliche Regeln
+
+### 1. NIEMALS den primären Weg zum Fallback machen
+
+- **Primärer Weg** = der in **docs/KRITISCHE-ABLAEUFE.md** und der jeweiligen Doku (DRUCKER-AIRPRINT.md, PROZESS-VEROEFFENTLICHEN-LADEN.md, …) beschriebene Ablauf.
+- **Verboten:** Eine Einstellung oder einen Code-Pfad so setzen, dass der **Default** ein anderer Weg ist (z. B. „nur neuer Tab“) und der dokumentierte Ablauf (z. B. Druckdialog) **nur noch** bei expliziter Wahl oder als Fallback vorkommt.
+- **Erlaubt:** Zusatzoption (z. B. „In neuem Tab öffnen“) als **Fallback**, wenn der primäre Weg technisch scheitert (Popup blockiert), oder als zweiter Button – **nicht** als Standard-Reaktion auf den Haupt-Button.
+
+### 2. Vor Änderung an kritischen Abläufen: Doku lesen
+
+- **Vor** jeder Änderung an Code, der einen der folgenden Bereiche betrifft: **docs/KRITISCHE-ABLAEUFE.md** lesen.
+- Betroffene Bereiche: Etikett-Druck, Veröffentlichen, Laden vom Server, Werke speichern, Stand & QR, Kundendaten/localStorage geschützte Keys, Stammdaten (nicht leer überschreiben), Dokument öffnen (openDocumentInApp), Bild übernehmen (runBildUebernehmen), K2/ök2 Datentrennung, **Backup & Wiederherstellung** (siehe Abschnitte 1–11 in KRITISCHE-ABLAEUFE.md).
+
+### 3. Pflicht-Check in der Antwort (damit es nicht „vergessen“ wird)
+
+**Wenn du Code in einem der folgenden Bereiche änderst**, musst du **in derselben Antwort** vor „Fertig“ einen kurzen Prüfblock ausgeben. Ohne diesen Block ist die Aufgabe aus Sicht dieser Regel nicht abgeschlossen.
+
+**Bereiche:**  
+- Etikett-Druck: `components/ScreenshotExportAdmin.tsx` (handleShareLabel, showPrintModal, Druck-Button, loadPrinterSettingsForTenant, openEtikettInNewTab).  
+- Veröffentlichen: `src/utils/publishGalleryData.ts`, Aufrufer (DevViewPage, GalerieVorschauPage).  
+- Laden: `src/utils/syncMerge.ts`, GaleriePage loadData, GalerieVorschauPage handleRefresh.  
+- Werke speichern: `artworkImageStore.ts`, `artworksStorage.ts`, alle Stellen die saveArtworks*/prepareArtworksForStorage aufrufen.  
+- Stand & QR: `src/hooks/useServerBuildTimestamp.ts`, GaleriePage/PlatformStartPage/MobileConnectPage (QR-URLs), `scripts/write-build-info.js`, `vercel.json`, `index.html`.  
+- Kundendaten: alle localStorage.setItem für k2-artworks, k2-stammdaten-*, k2-vk2-stammdaten, k2-oeffentlich-*; syncMerge bei Server-Überschreiben (Leer-/50%-Prüfung).  
+- Stammdaten: `src/utils/autoSave.ts`, publishGalleryData (Stammdaten/Bilder toUrlOrEmpty), alle Stellen die Stammdaten mergen oder setGalleryData/setMartinaData/setGeorgData.  
+- Dokument öffnen: alle Aufrufer von openDocumentInApp bzw. Dokument-Öffnen (Admin, DevView).  
+- Bild übernehmen: `runBildUebernehmen` in ScreenshotExportAdmin, alle ImageProcessingOptions-/„Bild übernehmen“-Stellen.  
+- K2/ök2: GaleriePage/GalerieVorschauPage (musterOnly, getPageTexts, getPageContentGalerie), ShopPage (fromOeffentlich, galerieLink, displayPhone/Email), ScreenshotExportAdmin (Galerie/Vorschau-Links mit Kontext-Check).  
+- Backup & Wiederherstellung: `src/utils/autoSave.ts` (restoreFromBackup, restoreFromBackupFile, createK2Backup/createOek2Backup/createVk2Backup, downloadBackupAsFile, restoreK2FromBackup/…), ScreenshotExportAdmin (Einstellungen → Backup & Wiederherstellung: „Vollbackup herunterladen“, „Aus Backup-Datei wiederherstellen“, „Aus letztem Backup wiederherstellen“).
+
+**Format des Prüfblocks (wörtlich oder sinngleich):**
+
+```
+Kritische Abläufe – Prüfung:
+- [Name des geänderten Ablaufs, z. B. Etikett-Druck]: Primäre Aktion nach Klick = [z. B. Druckdialog öffnet sich]. Stimmt mit docs/KRITISCHE-ABLAEUFE.md / [konkrete Doku] überein? [Ja/Nein].
+```
+
+- Wenn **Nein**: Die Änderung darf nicht so bleiben – anpassen, bis **Ja**.
+- Wenn du keinen der genannten Bereiche geändert hast, entfällt der Block.
+
+### 4. Eine Quelle pro Ablauf
+
+- **Referenz:** docs/KRITISCHE-ABLAEUFE.md listet die primären Wege. Zusätzlich: DRUCKER-AIRPRINT.md (Etikett), PROZESS-VEROEFFENTLICHEN-LADEN.md (Publish/Load), ein-standard-problem.mdc (Tabelle).
+- Keine „Verbesserung“ einbauen, die den Nutzer zwingt, sich auf einen zweiten Weg zu verlassen („öffne in neuem Tab und drücke Cmd+P“), wenn der erste Weg (Druckdialog) dokumentiert und gewollt ist.
+
+## Kurzfassung
+
+- **Primärer Weg = Standard.** Nicht durch Option oder Default ersetzen.
+- **Vor Änderung:** KRITISCHE-ABLAEUFE.md (und ggf. spezifische Doku) lesen.
+- **Nach Änderung an einem der 11 Bereiche (Etikett, Publish, Load, Werke-Speichern, Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2, Backup):** Prüfblock in der Antwort ausgeben (Primäre Aktion = … Stimmt mit Doku? Ja/Nein). Ohne Ja keine „Fertig“-Meldung für die Regel.
+
+Verknüpfung: verbindlich-zuverlaessig-nicht-hoffnung.mdc, ein-standard-problem.mdc, funktionierende-muster-zuerst-nutzen.mdc, gemeinsamer-arbeitsraum.mdc (Bewährtes nicht anfassen).

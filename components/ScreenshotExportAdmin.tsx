@@ -1362,8 +1362,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       ? 'http://localhost:3847'
       : 'http://192.168.1.1:3847',
     openEtikettAfterSave: false,
-    /** Standard: Etikett in neuem Tab öffnen statt Pop-up – dann kein „Pop-up blockiert“. */
-    openEtikettInNewTab: true
+    /** Primärer Weg = Druckdialog (Popup + win.print()). „In neuem Tab“ nur Fallback/opt-in – siehe docs/KRITISCHE-ABLAEUFE.md. */
+    openEtikettInNewTab: false
   })
   const loadPrinterSettingsForTenant = (tenantId: TenantId) => {
     try {
@@ -9476,19 +9476,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         setShowShareFallbackOverlay(true)
         return
       }
-      // Desktop: bei „Etikett in neuem Tab“ → Blob in Tab; sonst Druckfenster (Pop-up)
+      // Desktop: immer zuerst Druckdialog (Popup + win.print()) – wie früher. Nur bei blockiertem Popup Fallback auf neuen Tab.
       const activeTenant = getCurrentTenantId()
       const settings = loadPrinterSettingsForTenant(activeTenant)
-      if (settings.openEtikettInNewTab) {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const r = new FileReader()
-          r.onload = () => resolve(r.result as string)
-          r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
-          r.readAsDataURL(blob)
-        })
-        window.open(dataUrl, '_blank')
-        return
-      }
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const r = new FileReader()
         r.onload = () => resolve(r.result as string)

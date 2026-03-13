@@ -131,6 +131,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERCEL-CHECKLISTE-BEI-KEINEM-STAND.md** – **Wenn kein neuer Stand:** Vercel Dashboard (Deployments, Production Branch), Build-Fehler, **Vercel CLI** (direkt vom Mac deployen), danach refresh.html/QR.
 - **VERCEL-DEPLOY-HOOK-ANLEITUNG.md** – Deploy Hook (URL aufrufen) + **Vercel CLI Schritt-für-Schritt** (Login, `npx vercel --prod`, Link zu k2-galerie) – für nächstes Vercel-Problem parat.
 - **PROZESS-VEROEFFENTLICHEN-LADEN.md** – **Sportwagen: Ein Standard** für Veröffentlichen (publishGalleryDataToServer) und „Bilder vom Server laden“ (merge + preserveLocalImageData). Prozesssicherheit, eine Quelle.
+- **KRITISCHE-ABLAEUFE.md** – **Eine Quelle pro Ablauf – nicht abschwächen.** Etikett-Druck, Veröffentlichen, Laden, Werke speichern: primärer Weg = Standard; niemals durch Option/Default ersetzen. Referenz für Code und AI; Regel: kritische-ablaeufe-nicht-abschnwaechen.mdc.
 - **SYNC-ABLAUF-MAC-IPAD.md** – Sync eine Quelle (Vercel); Speichern → Vercel, anderes Gerät lädt von dort.
 - **WERKE-OEFFENTLICH-SICHTBAR.md** – **Zentral:** Änderungen (Werke, Design, Stammdaten, …) → öffentlich sichtbar (in jedem Netz). Veröffentlichen + Git Push.
 - **VERCEL-STAND-HANDY.md** – Warum Handy alten Stand zeigt (Branch, Cache, Favorit/Startseite).
