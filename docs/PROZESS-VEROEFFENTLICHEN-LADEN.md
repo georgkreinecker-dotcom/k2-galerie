@@ -122,6 +122,8 @@
 
 **Technisch:** Merge und preserveLocalImageData übernehmen Server-URLs korrekt; die Anzeige nutzt `resolveArtworkImages` (imageRef https → imageUrl). Wenn die API-Antwort keine Bild-URLs enthält, kann das Handy sie nicht anzeigen – Abhilfe nur durch erneutes Veröffentlichen vom richtigen Gerät.
 
+**Cache-Bust für Werkbilder (iPhone/Safari):** Safari kann dieselbe https-URL lange cachen; trotz „Vom Server laden“ zeigt das Handy dann alte Bilder. Dafür hängen wir an alle **https**-Bild-URLs beim Anzeigen einen Query-Parameter an (`?v=<updatedAt oder Timestamp>`), sodass jede neue Version als andere URL geladen wird. Funktion: `imageUrlWithCacheBust(url, artwork)` in `artworkImageStore.ts`; verwendet in GalerieVorschauPage (Karten + Lightbox) und ScreenshotExportAdmin (Werkkarten). data: und blob: bleiben unverändert.
+
 ---
 
 ## 6. Sync-Kernregel („ein Fehler, alle Sync-Probleme“)

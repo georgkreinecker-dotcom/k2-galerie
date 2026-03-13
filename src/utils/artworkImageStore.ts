@@ -340,6 +340,19 @@ function getVercelFallbackIdFromArtwork(artwork: any): string | null {
 }
 
 /**
+ * Cache-Bust für https-Bild-URLs (Safari/iPhone zeigt sonst alte gecachte Bilder trotz „Vom Server laden“).
+ * Nur für http(s)-URLs; data: und blob: unverändert.
+ */
+export function imageUrlWithCacheBust(url: string | undefined, artwork?: any): string {
+  if (!url || typeof url !== 'string') return url || ''
+  if (url.startsWith('data:') || url.startsWith('blob:')) return url
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return url
+  const v = artwork?.updatedAt ? String(artwork.updatedAt).replace(/\D/g, '').slice(0, 14) : ''
+  const sep = url.includes('?') ? '&' : '?'
+  return url + sep + 'v=' + (v || Date.now())
+}
+
+/**
  * Löst imageRef in imageUrl auf: IndexedDB oder direkte URL (Supabase/Vercel).
  * 30–39: Kein Fallback auf Repo-Dateien (/img/k2/werk-…) – sonst erscheinen alte gelöschte Bilder. Neue Bilder (IndexedDB, frischer Server) werden normal angezeigt.
  */

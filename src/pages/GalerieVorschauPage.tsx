@@ -15,7 +15,7 @@ import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } fr
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContextWithImageStore, loadForDisplay, filterK2Only as filterK2OnlyStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
-import { prepareArtworksForStorage, isStaticFallbackAllowed } from '../utils/artworkImageStore'
+import { prepareArtworksForStorage, isStaticFallbackAllowed, imageUrlWithCacheBust } from '../utils/artworkImageStore'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
@@ -2609,10 +2609,12 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         const displaySrc = musterOnly && (!rawSrc || isPlaceholderImageUrl(rawSrc))
                           ? getOek2DefaultArtworkImage(artwork.category)
                           : rawSrc
-                        return displaySrc ? (
+                        // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
+                        const srcToShow = imageUrlWithCacheBust(displaySrc, artwork)
+                        return srcToShow ? (
                         <>
                           <img 
-                            src={displaySrc} 
+                            src={srcToShow} 
                             alt={artwork.title || artwork.number}
                             style={{ 
                               position: 'absolute',
@@ -2630,7 +2632,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                             }}
                             loading="lazy"
                             onClick={() => {
-                              const lbSrc = artwork.imageUrl || artwork.previewUrl || (musterOnly ? getOek2DefaultArtworkImage(artwork.category) : '')
+                              const lbSrc = imageUrlWithCacheBust(artwork.imageUrl || artwork.previewUrl || (musterOnly ? getOek2DefaultArtworkImage(artwork.category) : ''), artwork)
                               setLightboxImage({
                                 src: lbSrc,
                                 title: artwork.title || artwork.number || '',

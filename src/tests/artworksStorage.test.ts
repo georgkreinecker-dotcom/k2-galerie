@@ -3,7 +3,7 @@
  * Kontext-Keys korrekt; „nie mit weniger überschreiben“ (Schutz).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import {
   readArtworksRawForContext,
   saveArtworksForContext,
@@ -73,6 +73,11 @@ describe('artworksStorage: Nie mit weniger überschreiben', () => {
 
   beforeEach(() => {
     localStorage.removeItem(K2_KEY)
+    // Erwartete console.warn (Datenverlust-Schutz) unterdrücken – Test prüft Verhalten, nicht Ausgabe
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('saveArtworksByKey lehnt ab wenn weniger Werke und allowReduce false', () => {
