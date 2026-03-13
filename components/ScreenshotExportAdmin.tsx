@@ -9115,12 +9115,14 @@ ${'='.repeat(60)}
     }
   }
 
+  // iPadOS 13+ meldet sich als Mac (MacIntel) – dann wäre isMobile falsch und Popup/Druckdialog würde genutzt, was auf iPad oft nicht funktioniert. Daher iPad explizit: MacIntel + Touch.
+  const isIPadAsMac = typeof navigator !== 'undefined' && navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
   // Drucken: Auf MOBIL Overlay (Teilen/Herunterladen). Auf MAC/Desktop immer kleines Fenster → sofort Druckdialog (normaler Drucker).
   const handlePrint = async () => {
     if (!savedArtwork) return
     const activeTenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(activeTenant)
-    const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+    const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || isIPadAsMac || window.innerWidth <= 768)
     if (isMobile) {
       try {
         const lm = parseLabelSize(settings.labelSize)
@@ -9186,8 +9188,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     }
   }
 
-  // Mobil = nur echte Handys/Tablets (nicht Mac mit Trackpad – sonst Share statt Druckdialog)
-  const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+  // Mobil = Handy + iPad (iPadOS 13+ meldet oft MacIntel → isIPadAsMac ergänzt, damit Etikett-Overlay auch auf iPad erscheint)
+  const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || isIPadAsMac || window.innerWidth <= 768)
 
   const closeShareFallbackOverlay = () => {
     shareFallbackBlobRef.current = null

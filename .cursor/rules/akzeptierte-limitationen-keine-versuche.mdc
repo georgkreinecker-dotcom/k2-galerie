@@ -1,0 +1,32 @@
+---
+description: Akzeptierte Limitationen – keine weiteren "vielleicht geht's"-Versuche. Professionell = dokumentiert, eingestellt.
+alwaysApply: true
+---
+
+# Akzeptierte Limitationen – keine Versuche ohne Lösung (Profis vs. Dilettanten)
+
+## Georg (13.03.26)
+
+„Mit den Werkbildern im ök2 wo noch immer zwei fehlen und den alten Bildern am Handy muss ich mich einfach abfinden, weil da gibt es anscheinend keine Lösung – das haben wir dutzende Male schon getestet und nichts hat funktioniert. Also weist du keine Lösung sondern probierst halt vielleicht wird es schon mal gehen – das ist absolut unprofessionell und kein Sportwagenmodus. Das machen Dilettanten so und nicht die Profis.“
+
+## Regel (unveränderlich)
+
+**Themen in docs/BEKANNTE-LIMITATIONEN-AKZEPTIERT.md** sind als **akzeptierte Limitationen** dokumentiert. Dutzende Versuche haben keine Lösung gebracht.
+
+- **Verboten:** Neue Fix-Vorschläge oder „lass uns nochmal probieren“ / „vielleicht geht’s diesmal“ ohne **neue, konkrete Ursachenhypothese** oder ein **neues Mittel** (z. B. neues Tool, neue Erkenntnis).
+- **Pflicht:** Bei diesen Themen **zuerst BEKANNTE-LIMITATIONEN-AKZEPTIERT.md lesen**. Dort steht: akzeptiert, keine weiteren Versuche.
+- **Ausnahme:** Es gibt eine **konkrete neue Hypothese** oder ein **konkretes neues Mittel** → **zuerst mit Georg klären**, ob ein gezielter Versuch gewollt ist. Nicht von sich aus wieder „probieren“.
+
+## Professionell vs. Dilettant
+
+| Profi | Dilettant |
+|-------|-----------|
+| Dokumentiert den Stand | Probiert immer wieder „vielleicht“ |
+| Stellt Versuche ein, wenn keine Lösung | Macht weiter ohne klares Konzept |
+| Klärt bei neuem Ansatz zuerst ab | Baut blind weitere Versuche |
+
+## Kurzfassung
+
+**Akzeptierte Limitationen = keine weiteren Versuche ohne klaren neuen Ansatz. Dokument lesen, nicht erneut probieren. Das ist Sportwagenmodus.**
+
+Verknüpfung: docs/BEKANNTE-LIMITATIONEN-AKZEPTIERT.md, docs/FEHLERANALYSEPROTOKOLL.md (Quelle „Akzeptierte Limitationen“).
