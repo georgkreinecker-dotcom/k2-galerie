@@ -12717,14 +12717,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const n = m ? parseInt(m[1], 10) : parseInt(s.replace(/\D/g, '') || '0', 10)
                   return !Number.isNaN(n) && n >= 30 && n <= 39
                 }
+                // ök2-Musterwerke (M1, K1, G1, …): Kein Vercel-Fallback – sonst werk-M1.jpg (404) → blaues Fragezeichen. Stattdessen getOek2DefaultArtworkImage(category).
+                const isOek2MusterNummer = (a: { number?: string; id?: string }) => {
+                  const num = String(a?.number ?? a?.id ?? '').trim().toUpperCase()
+                  const id = String(a?.id ?? '').trim()
+                  return id.startsWith('muster-') || ['M1', 'M2', 'M3', 'M4', 'M5', 'K1', 'G1', 'S1', 'O1'].includes(num)
+                }
                 return filtered.map((artwork) => {
                   let rawSrc = artwork.imageUrl || artwork.previewUrl
                   // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
                   if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
                   // 30–39: Alte Repo-URL nicht anzeigen (gelöschte Dateien)
                   if (isArtwork30to39(artwork) && rawSrc && typeof rawSrc === 'string' && rawSrc.includes('/img/k2/werk-')) rawSrc = ''
-                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg. 30–39: keinen Static-Fallback (keine alten Repo-Bilder)
-                  if (!rawSrc && (artwork.number || artwork.id) && !isArtwork30to39(artwork)) {
+                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg. Nicht für 30–39; nicht für ök2-Musterwerke (M1/K1/G1 → getOek2DefaultArtworkImage).
+                  if (!rawSrc && (artwork.number || artwork.id) && !isArtwork30to39(artwork) && !(tenant.isOeffentlich && isOek2MusterNummer(artwork))) {
                     const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
                     if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
                   }

@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-036 · ök2 Admin: M1/G1 blaues Fragezeichen (404), nur K1 mit Bild (gelöst 13.03.26)
+
+**Symptom:** In „Werke verwalten“ (ök2/Admin) zeigen M1 und G1 ein blaues Fragezeichen (fehlgeschlagenes Bild), nur K1 (Keramik) zeigt ein Bild.
+
+**Ursache:** Für alle Werke mit Nummer (inkl. M1, G1) wurde der **Vercel-Static-Fallback** gesetzt: `https://k2-galerie.vercel.app/img/k2/werk-M1.jpg` bzw. `werk-G1.jpg`. Diese Dateien existieren nicht → 404 → Browser zeigt Broken-Image (Fragezeichen). K1 zeigte ein Bild, weil es z. B. bereits imageUrl (SVG/Unsplash) aus den Musterdaten hatte oder der Fallback aus anderem Grund nicht griff.
+
+**Lösung:** Für **ök2-Musterwerke** (M1, K1, G1, S1, O1, id muster-*) **keinen** Vercel-Fallback setzen. Dann bleibt `rawSrc` leer → `isPlaceholder` true → `getOek2DefaultArtworkImage(artwork.category)` wird genutzt (Unsplash/SVG pro Kategorie).
+
+**Betroffene Dateien:** `components/ScreenshotExportAdmin.tsx` (Werkkarten-Liste: isOek2MusterNummer, Vercel-Fallback nur wenn nicht tenant.isOeffentlich + Musterwerk).
+
+**Status:** ✅ Behoben (13.03.26).
+
+---
+
 ## BUG-035 · ök2 Werke verwalten: Alle Musterwerke zeigen dasselbe Bild (Vase) (gelöst 13.03.26)
 
 **Symptom:** In „Werke verwalten“ (ök2/Admin) zeigen alle vier Karten (M1, K1, G1, S1) dasselbe Bild (z. B. Vase) statt je Kategorie ein eigenes (Malerei, Keramik, Grafik, Skulptur).
