@@ -1335,7 +1335,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [])
 
-  // Brother-Etikettengröße parsen (Format "29x90.3" → { width: 29, height: 90.3 })
+  // Brother-Etikettengröße parsen (Format "29x60" oder "29x90,3" → { width: 29, height: 60 })
   const parseLabelSize = (s: string) => {
     const match = (s || '').trim().match(/^(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)$/i)
     if (match) {
@@ -1343,7 +1343,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const h = parseFloat(match[2].replace(',', '.'))
       if (w > 0 && h > 0) return { width: w, height: h }
     }
-    return { width: 29, height: 90.3 }
+    return { width: 29, height: 60 }
   }
 
   // Mandantenspezifische Drucker-Einstellungen (K2, ök2, Demo – je eigener Drucker + Format)
@@ -1355,7 +1355,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     ipAddress: '192.168.1.102',
     printerModel: 'Brother QL-820MWBc',
     printerType: 'etikettendrucker' as const,
-    labelSize: '29x90,3',
+    labelSize: '29x60',
     // Standard: Am Mac localhost; Mobilgeräte und Drucker im LAN 192.168.1.x → Print-Server-URL in diesem Netz.
     printServerUrl: typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
       ? 'http://localhost:3847'
@@ -9351,7 +9351,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   }
 
   /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Brother 300 DPI = 300/25.4 px/mm. */
-  const getEtikettBlob = (widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+  const getEtikettBlob = (widthMm = 29, heightMm = 60): Promise<Blob> => {
     if (!savedArtwork) return Promise.reject(new Error('Kein Werk'))
     const pxPerMm = 300 / 25.4  /* Brother QL-820: 300 DPI */
     const w = Math.round(widthMm * pxPerMm)
@@ -9443,7 +9443,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   }
 
   /** Etikett für beliebiges Werk (für Sammeldruck). Gleiche Logik wie getEtikettBlob, aber mit übergebenem artwork. */
-  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string; quantity?: number }, widthMm = 29, heightMm = 90.3): Promise<Blob> => {
+  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string; quantity?: number }, widthMm = 29, heightMm = 60): Promise<Blob> => {
     const num = artwork?.number || artwork?.id
     if (!num) return Promise.reject(new Error('Werk ohne Nummer'))
     const pxPerMm = 300 / 25.4
@@ -16025,7 +16025,7 @@ ${name}`
                             setPrinterSettings(prev => ({ ...prev, labelSize: v }))
                             savePrinterSetting(printerSettingsForTenant, 'labelSize', v)
                           }}
-                          placeholder="29x90,3"
+                          placeholder="29x60"
                           style={{
                             padding: '0.75rem',
                             background: s.bgElevated,
@@ -16037,7 +16037,7 @@ ${name}`
                           }}
                         />
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.5rem', marginBottom: 0 }}>
-                          Breite × Höhe in mm (z. B. 29x90,3). Pro Mandant getrennt; Kassabeleg kann anderes Format nutzen.
+                          Breite × Höhe in mm (z. B. 29x60 für Endlos-Papier, 29x90,3 optional). Pro Mandant getrennt; Kassabeleg kann anderes Format nutzen.
                         </p>
                       </div>
 
@@ -16083,7 +16083,7 @@ ${name}`
                           <li>Zweiter Router auf mobilem Gerät installiert</li>
                           <li>Zugriff von Mac, iPad und Handy möglich</li>
                           <li>Einstellungen werden automatisch gespeichert</li>
-                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother wählen (Name ggf. „QL-820NWB“ ohne c). Papier: 29×90,3 mm, 100 %.</li>
+                          <li><strong>AirPrint aktiv:</strong> Im Druckdialog Brother wählen (Name ggf. „QL-820NWB“ ohne c). Papier: 29×60 mm (oder 29×90 mm), 100 %.</li>
                         </ul>
                       </div>
 
@@ -20773,7 +20773,7 @@ ${name}`
                   </div>
                 </details>
                 <p style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem' }}>
-                  AirPrint (QL-820NWBc): „Jetzt drucken“ → Brother wählen (im Dialog ggf. „QL-820NWB“ ohne c). Papier: 29×90,3 mm, 100 %.
+                  AirPrint (QL-820NWBc): „Jetzt drucken“ → Brother wählen (im Dialog ggf. „QL-820NWB“ ohne c). Papier: 29×60 mm (oder 29×90 mm), 100 %.
                 </p>
               </div>
             </div>
