@@ -7,11 +7,11 @@
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_FEEDBACK_EMAIL, PRODUCT_FEEDBACK_BETREFF, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
@@ -48,7 +48,7 @@ const T = {
   heroTag: PRODUCT_WERBESLOGAN,
   heroTitle: PRODUCT_WERBESLOGAN_2,
   heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
-  heroDeviceHint: 'Am besten auf Tablet oder Computer – so siehst du alle Möglichkeiten auf einen Blick. Smartphone geht auch, ist aber nicht optimal, auch beim Ausfüllen.',
+  heroDeviceHint: 'Am besten auf Tablet oder PC – dann siehst du alles auf einen Blick.',
   cta: 'Jetzt entdecken →',
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
@@ -590,19 +590,8 @@ export default function EntdeckenPage() {
   })()
   const [step, setStep] = useState<Step>(initialStep)
   const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
-  const [notizOffen, setNotizOffen] = useState(false)
   /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
-  const [notizText, setNotizText] = useState('')
-  const [notizGespeichert, setNotizGespeichert] = useState(false)
-
-  const handleNotizSpeichern = useCallback(() => {
-    if (!notizText.trim()) return
-    speichereNotiz(notizText, step)
-    setNotizText('')
-    setNotizGespeichert(true)
-    setTimeout(() => { setNotizGespeichert(false); setNotizOffen(false) }, 1200)
-  }, [notizText, step])
 
   const accent = '#b54a1e'
   const accentLight = '#d4622a'
@@ -811,15 +800,6 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* Feedback-Hinweis im Hero – subtil, für echte Nutzer sichtbar */}
-      {step === 'hero' && (
-        <div style={{ position: 'fixed', bottom: '5.5rem', right: '1.5rem', zIndex: 9998 }}>
-          <div style={{ background: 'rgba(18,10,6,0.85)', border: '1px solid rgba(255,140,66,0.25)', borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.72rem', color: 'rgba(255,140,66,0.6)', whiteSpace: 'nowrap', backdropFilter: 'blur(4px)' }}>
-            Idee? Wunsch? →
-          </div>
-        </div>
-      )}
-
       {/* Fußzeile – nicht auf erster Seite (Hero), damit klare Botschaft ohne Ablenkung */}
       {step !== 'result' && step !== 'hero' && (
         <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
@@ -831,129 +811,6 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* ── FLOATING BUTTONS – nebeneinander unten rechts ────────────────── */}
-      <div style={{ position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 9999, display: 'flex', flexDirection: 'row', alignItems: 'flex-end', gap: '0.65rem' }}>
-
-        {/* 🌟 Feedback für echte Nutzer */}
-        <FeedbackButton step={step} fontBody={fontBody} accentGlow={'#ff8c42'} accent={'#b54a1e'} />
-
-        {/* 💡 Notiz-Panel (nur für Georg sichtbar – erscheint immer) */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-          {notizOffen && (
-            <div style={{ background: '#1a1008', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '14px', padding: '1rem', width: 'min(280px, calc(100vw - 5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', position: 'absolute', bottom: '3.75rem', right: 0 }}>
-              <div style={{ fontSize: '0.78rem', color: 'rgba(255,140,66,0.7)', marginBottom: '0.5rem', fontFamily: fontBody }}>
-                💡 Meine Idee – landet im Smart Panel
-              </div>
-              {notizGespeichert ? (
-                <div style={{ textAlign: 'center', padding: '0.75rem', color: '#86efac', fontSize: '0.9rem', fontWeight: 700 }}>✅ Gespeichert!</div>
-              ) : (
-                <>
-                  <textarea
-                    autoFocus
-                    value={notizText}
-                    onChange={e => setNotizText(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) handleNotizSpeichern() }}
-                    placeholder="Was fällt mir auf? Was würde ich ändern?"
-                    rows={3}
-                    style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,140,66,0.3)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
-                  />
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button type="button" onClick={() => setNotizOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
-                    <button type="button" onClick={handleNotizSpeichern} disabled={!notizText.trim()} style={{ flex: 2, padding: '0.55rem', background: notizText.trim() ? 'linear-gradient(135deg, #ff8c42, #b54a1e)' : 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', color: '#fff', cursor: notizText.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
-                      💾 Speichern
-                    </button>
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.2)', textAlign: 'right', marginTop: '0.35rem' }}>⌘+Enter zum Speichern</div>
-                </>
-              )}
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => { setNotizOffen(o => !o); setNotizText(''); setNotizGespeichert(false) }}
-            title="Meine Idee notieren (Georg)"
-            style={{ width: 52, height: 52, borderRadius: '50%', background: 'linear-gradient(135deg, #ff8c42, #b54a1e)', border: 'none', cursor: 'pointer', fontSize: '1.4rem', boxShadow: '0 4px 20px rgba(255,140,66,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)' }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)' }}
-          >
-            {notizOffen ? '✕' : '💡'}
-          </button>
-        </div>
-      </div>
     </div>
-  )
-}
-
-// ─── Feedback-Button Komponente ───────────────────────────────────────────────
-function FeedbackButton({ step, fontBody, accentGlow, accent }: { step: string; fontBody: string; accentGlow: string; accent: string }) {
-  const [offen, setOffen] = useState(false)
-  const [text, setText] = useState('')
-  const [gesendet, setGesendet] = useState(false)
-
-  const senden = () => {
-    if (!text.trim()) return
-    const betreff = encodeURIComponent(`${PRODUCT_FEEDBACK_BETREFF} (Schritt: ${step})`)
-    const body = encodeURIComponent(text.trim())
-    setGesendet(true)
-    setText('')
-    // E-Mail-Adresse wird nie im DOM sichtbar – nur im mailto-Link zur Laufzeit
-    setTimeout(() => {
-      window.location.href = `mailto:${PRODUCT_FEEDBACK_EMAIL}?subject=${betreff}&body=${body}`
-    }, 2200)
-    setTimeout(() => { setGesendet(false); setOffen(false) }, 4000)
-  }
-
-  return (
-    <>
-      {offen && (
-        <div style={{ background: '#1a1008', border: `1px solid rgba(255,255,255,0.15)`, borderRadius: '14px', padding: '1rem', width: 'min(300px, calc(100vw - 2.5rem))', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', marginBottom: '0.5rem', fontFamily: fontBody }}>
-            🌟 Was würdest du dir wünschen oder verbessern?
-          </div>
-          {gesendet ? (
-            <div style={{ textAlign: 'center', padding: '1.25rem 0.75rem' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '0.6rem' }}>💚</div>
-              <div style={{ fontFamily: fontBody, fontWeight: 700, fontSize: '1rem', color: '#fff8f0', marginBottom: '0.4rem', lineHeight: 1.3 }}>
-                Danke für deine Mitarbeit!
-              </div>
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-                Dein Wunsch hilft dabei,<br />
-                K2 Galerie besser zu machen.<br />
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>Dein E-Mail-Programm öffnet sich gleich …</span>
-              </div>
-            </div>
-          ) : (
-            <>
-              <textarea
-                autoFocus
-                value={text}
-                onChange={e => setText(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) senden() }}
-                placeholder="Dein Gedanke, dein Wunsch, deine Idee …"
-                rows={3}
-                style={{ width: '100%', padding: '0.65rem 0.75rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', color: '#fff8f0', fontFamily: fontBody, fontSize: '0.88rem', resize: 'none', outline: 'none', boxSizing: 'border-box', lineHeight: 1.55 }}
-              />
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <button type="button" onClick={() => setOffen(false)} style={{ flex: 1, padding: '0.55rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontFamily: fontBody, fontSize: '0.82rem' }}>Abbrechen</button>
-                <button type="button" onClick={senden} disabled={!text.trim()} style={{ flex: 2, padding: '0.55rem', background: text.trim() ? `linear-gradient(135deg, ${accentGlow}, ${accent})` : 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '8px', color: '#fff', cursor: text.trim() ? 'pointer' : 'default', fontFamily: fontBody, fontSize: '0.88rem', fontWeight: 700 }}>
-                  📨 Senden
-                </button>
-              </div>
-              <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.18)', textAlign: 'right', marginTop: '0.35rem' }}>Öffnet dein E-Mail-Programm · ⌘+Enter</div>
-            </>
-          )}
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={() => { setOffen(o => !o); setText(''); setGesendet(false) }}
-        title="Wunsch oder Verbesserung senden"
-        style={{ width: 52, height: 52, borderRadius: '50%', background: offen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '1.3rem', boxShadow: '0 2px 12px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = offen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.08)' }}
-      >
-        {offen ? '✕' : '🌟'}
-      </button>
-    </>
   )
 }

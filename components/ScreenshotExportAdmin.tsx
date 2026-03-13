@@ -1564,10 +1564,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [isSavingArtwork, setIsSavingArtwork] = useState(false)
   const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(new Set())
   const [batchPrintUrls, setBatchPrintUrls] = useState<string[] | null>(null)
+  /** Sammeldruck Mobile: Queue (blob + label), nacheinander im Overlay teilen; Index für „X von Y“. */
+  const [batchEtikettenQueue, setBatchEtikettenQueue] = useState<Array<{ blob: Blob; label: string }>>([])
+  const [batchEtikettenIndex, setBatchEtikettenIndex] = useState(0)
+  const batchEtikettenIndexRef = useRef(0)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
   const [showReserveModal, setShowReserveModal] = useState(false)
+  /** Idee? Wunsch? – prominent im Admin, landet in Smart Panel (Wünsche von Nutzer:innen) */
+  const [wunschModalOpen, setWunschModalOpen] = useState(false)
+  const [wunschText, setWunschText] = useState('')
+  const [wunschSending, setWunschSending] = useState(false)
+  const [wunschError, setWunschError] = useState<string | null>(null)
+  const [wunschSuccess, setWunschSuccess] = useState(false)
   const [reserveInput, setReserveInput] = useState('')
   const [reserveMethod, setReserveMethod] = useState<'scan' | 'manual'>('scan')
   const [reserveName, setReserveName] = useState('')
@@ -2851,7 +2861,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               // Mit aufgelösten Bildern veröffentlichen (30–48 etc.), sonst fehlen Bild-URLs am Server und auf anderen Geräten
               const raw = readArtworksRawByKey('k2-artworks')
               const toPublish = await resolveArtworkImages(raw)
-              publishGalleryDataToServer(toPublish).then((result) => {
+              publishGalleryDataToServer(toPublish, {
+                onProgress: (done, total, phase) => {
+                  if (!silent && isMountedRef.current) {
+                    const msg = phase === 'chunks' ? `Teil ${done} von ${total} wird gesendet …` : (total > 1 ? `Bilder vorbereiten … ${done}/${total}` : 'Daten werden gesendet…')
+                    setSyncStatusBar({ phase: 'sending', message: msg })
+                  }
+                }
+              }).then((result) => {
               if (!isMountedRef.current) return
               if (!silent) setIsDeploying(false)
               if (result.success) {
@@ -9144,40 +9161,88 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Sammeldruck: Alle ausgewählten Werke als Etiketten – über Teilen. Bei Stückzahl > 1: gleiches Etikett mehrfach (Gruppe/Serie). */
+  /** Blob → Data-URL für ein HTML-Dokument (Sammeldruck Desktop: ein Fenster mit allen Etiketten). */
+  const blobToDataUrl = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = () => resolve(r.result as string)
+      r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+      r.readAsDataURL(blob)
+    })
+
+  /** Sammeldruck: Alle ausgewählten Werke als Etiketten. Mobile: Queue nacheinander im Overlay. Desktop ohne Share: ein Fenster mit allen Etiketten. Desktop mit Share: nacheinander mit Pause. */
   const handleBatchPrintEtiketten = async () => {
     const ids = Array.from(selectedForBatchPrint)
     if (ids.length === 0) return
     const toPrint = allArtworks.filter((a: any) => {
       const n = a?.number || a?.id
-      return n && ids.includes(n)
+      return n && ids.includes(String(n))
     })
     if (toPrint.length === 0) return
     const activeTenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(activeTenant)
     const lm = parseLabelSize(settings.labelSize)
     try {
+      // Alle Etiketten vorab erzeugen (Werk × Stückzahl)
+      const items: Array<{ blob: Blob; label: string }> = []
       for (const artwork of toPrint) {
         const blob = await getEtikettBlobForArtwork(artwork, lm.width, lm.height)
         const copies = Math.max(1, Math.min(99, Number(artwork.quantity) || 1))
-        const file = new File([blob], `etikett-${artwork.number || artwork.id}.png`, { type: 'image/png' })
+        const label = String(artwork.number || artwork.id || '')
         for (let i = 0; i < copies; i++) {
-          if (isMobile) {
-            shareFallbackBlobRef.current = blob
-            setShareFallbackImageUrl(URL.createObjectURL(blob))
-            setShowShareFallbackOverlay(true)
-            await new Promise(resolve => setTimeout(resolve, 500))
-          } else if (typeof navigator !== 'undefined' && navigator.share) {
-            try {
-              await navigator.share({ title: `Etikett ${artwork.number || artwork.id}${copies > 1 ? ` (${i + 1}/${copies})` : ''}`, text: `${artwork.title || ''} – K2 Galerie`, files: [file] })
-            } catch (_) {}
-          } else {
-            const blobUrl = URL.createObjectURL(blob)
-            window.open(blobUrl, '_blank')
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-          }
-          if (copies > 1 && i < copies - 1) await new Promise(resolve => setTimeout(resolve, 400))
+          items.push({ blob, label: copies > 1 ? `${label} (${i + 1}/${copies})` : label })
         }
+      }
+      if (items.length === 0) return
+
+      if (isMobile) {
+        // Mobile: Queue – erstes Etikett im Overlay anzeigen; bei Schließen/Teilen nächstes oder fertig
+        batchEtikettenIndexRef.current = 0
+        setBatchEtikettenQueue(items)
+        setBatchEtikettenIndex(0)
+        shareFallbackBlobRef.current = items[0].blob
+        if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
+        setShareFallbackImageUrl(URL.createObjectURL(items[0].blob))
+        setSavedArtwork({ number: items[0].label })
+        setShowShareFallbackOverlay(true)
+        setSelectedForBatchPrint(new Set())
+        return
+      }
+
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        // Desktop mit Share-API: nacheinander teilen, jedes Mal neues File, Pause damit Dialog schließen kann
+        for (let i = 0; i < items.length; i++) {
+          const { blob, label } = items[i]
+          const file = new File([blob], `etikett-${label.replace(/\s*\([^)]*\)/g, '')}-${i + 1}.png`, { type: 'image/png' })
+          try {
+            await navigator.share({ title: `Etikett ${label}`, text: 'K2 Galerie', files: [file] })
+          } catch (_) {}
+          if (i < items.length - 1) await new Promise(resolve => setTimeout(resolve, 600))
+        }
+        setSelectedForBatchPrint(new Set())
+        return
+      }
+
+      // Desktop ohne Share: ein Fenster mit allen Etiketten (Drucken = alle; Popup-Blocker umgehen)
+      const dataUrls = await Promise.all(items.map((it) => blobToDataUrl(it.blob)))
+      const w = lm.width
+      const h = lm.height
+      const pw = Math.round((w * 300) / 25.4)
+      const ph = Math.round((h * 300) / 25.4)
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sammeldruck ${items.length} Etiketten</title><style>
+        body { margin: 0; padding: 8px; font-family: system-ui; }
+        .etikett { width: ${w}mm; height: ${h}mm; page-break-after: always; display: block; overflow: hidden; margin: 0 auto 8px; }
+        .etikett img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        @media print { body { padding: 0; } .etikett { margin: 0; page-break-after: always; } }
+      </style></head><body>
+        ${dataUrls.map((url) => `<div class="etikett"><img src="${url}" alt="Etikett" width="${pw}" height="${ph}"></div>`).join('\n')}
+      </body></html>`
+      const win = window.open('', '_blank')
+      if (win) {
+        win.document.write(html)
+        win.document.close()
+      } else {
+        alert('Pop-up wurde blockiert. Bitte erlaube Pop-ups für diese Seite und versuche „Etiketten drucken“ erneut.')
       }
       setSelectedForBatchPrint(new Set())
     } catch (e) {
@@ -9190,10 +9255,37 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || 'ontouchstart' in window)
 
   const closeShareFallbackOverlay = () => {
-    if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
-    setShareFallbackImageUrl(null)
+    const urlToRevoke = shareFallbackImageUrl
     shareFallbackBlobRef.current = null
-    setShowShareFallbackOverlay(false)
+    setBatchEtikettenQueue((queue) => {
+      if (queue.length === 0) {
+        setShowShareFallbackOverlay(false)
+        setSavedArtwork(null)
+        setShareFallbackImageUrl(null)
+        batchEtikettenIndexRef.current = 0
+        if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
+        return []
+      }
+      const currentIndex = batchEtikettenIndexRef.current
+      const nextIndex = currentIndex + 1
+      if (nextIndex < queue.length) {
+        const next = queue[nextIndex]
+        batchEtikettenIndexRef.current = nextIndex
+        setBatchEtikettenIndex(nextIndex)
+        shareFallbackBlobRef.current = next.blob
+        setShareFallbackImageUrl(URL.createObjectURL(next.blob))
+        setSavedArtwork({ number: next.label })
+        if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
+        return queue
+      }
+      setShowShareFallbackOverlay(false)
+      setSavedArtwork(null)
+      setShareFallbackImageUrl(null)
+      setBatchEtikettenIndex(0)
+      batchEtikettenIndexRef.current = 0
+      if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
+      return []
+    })
   }
 
   const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -11254,9 +11346,9 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </Link>
               )}
 
-              {/* Galerie / Mitglieder ansehen – aktuelle Design-Farben mitgeben, damit Vorschau und Zurück dieselbe Farbe zeigen */}
+              {/* Galerie / Mitglieder ansehen – K2/ök2: Eintrittseite (nicht Vorschau), damit Modal „Wähle deinen Einstieg“ erscheint; VK2: Vorschau */}
               <Link
-                to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerie}
+                to={tenant.isVk2 ? PROJECT_ROUTES.vk2.galerieVorschau : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}
                 state={{
                   fromAdmin: true,
                   fromAdminTab: activeTab,
@@ -11320,31 +11412,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </button>
               )}
 
-              {/* Kundendaten – nur für K2 und ök2, nicht für VK2 (Mitglieder sind in Stammdaten) */}
-              {!tenant.isVk2 && (
-                <Link
-                  to={PROJECT_ROUTES['k2-galerie'].kunden}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: s.bgCard,
-                    border: `1px solid ${s.accent}28`,
-                    color: s.text,
-                    textDecoration: 'none',
-                    borderRadius: '10px',
-                    fontSize: '0.88rem',
-                    fontWeight: 500,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard }}
-                >
-                  📋 Kundenliste
-                </Link>
-              )}
-
               {/* Besucher-Ticker – nur die Zahl der Hompage-Besucher für diesen Kontext */}
               <span
                 style={{
@@ -11363,6 +11430,31 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
               >
                 👁 {typeof besucherCount === 'number' ? besucherCount : '–'}
               </span>
+
+              {/* Idee? Wunsch? – dezent rechts, keine Hauptfunktion */}
+              <button
+                type="button"
+                onClick={() => { setWunschModalOpen(true); setWunschText(''); setWunschError(null); setWunschSuccess(false) }}
+                title="Idee oder Wunsch notieren – erscheint im Smart Panel unter Wünsche"
+                style={{
+                  padding: '0.4rem 0.75rem',
+                  background: s.bgCard,
+                  border: `1px solid ${s.accent}28`,
+                  color: s.muted,
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66`; e.currentTarget.style.background = s.bgElevated; e.currentTarget.style.color = s.text }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${s.accent}28`; e.currentTarget.style.background = s.bgCard; e.currentTarget.style.color = s.muted }}
+              >
+                💡 Idee? Wunsch?
+              </button>
 
               {/* Abmelden – klein und zurückhaltend */}
               {!tenant.isOeffentlich && (
@@ -11877,6 +11969,12 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.
                     {' '}
                     <button type="button" onClick={() => setActiveTab('katalog')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>→ Werkkatalog</button>
+                    {!tenant.isVk2 && (
+                      <>
+                        {' · '}
+                        <Link to={PROJECT_ROUTES['k2-galerie'].kunden} style={{ color: s.accent, textDecoration: 'underline', fontWeight: 600 }}>📋 Kundenadressen</Link>
+                      </>
+                    )}
                   </p>
                 )}
               </div>
@@ -18777,8 +18875,11 @@ ${name}`
               Bitte nochmal auf <strong>„An Server senden“</strong> klicken (oder später erneut versuchen).<br/>
               Falls es wieder nicht klappt: Dem Assistenten kurz Bescheid geben.
             </div>
-            {publishErrorMsg.length > 0 && publishErrorMsg.length < 200 && (
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8', textAlign: 'center' }}>{publishErrorMsg}</div>
+            {publishErrorMsg && publishErrorMsg.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#f59e0b' }}>Fehlergrund:</span>
+                <div style={{ fontSize: '0.9rem', color: '#e2e8f0', textAlign: 'left', maxHeight: '140px', overflowY: 'auto', padding: '0.75rem', background: '#0f172a', border: '1px solid rgba(245,158,11,0.4)', borderRadius: '8px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{publishErrorMsg}</div>
+              </div>
             )}
             <button
               onClick={() => setPublishErrorMsg(null)}
@@ -20658,7 +20759,7 @@ ${name}`
       )}
 
       {/* Teilen-Fallback Overlay: Bild + „Etikett teilen“ oder „Etikett herunterladen“ (neutral, kein blaues Rahmen) */}
-      {showShareFallbackOverlay && shareFallbackImageUrl && savedArtwork && (
+      {showShareFallbackOverlay && shareFallbackImageUrl && (savedArtwork || batchEtikettenQueue.length > 0) && (
         <div className="admin-modal-overlay" onClick={closeShareFallbackOverlay}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center', border: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             <div className="admin-modal-header">
@@ -20666,7 +20767,11 @@ ${name}`
               <button className="admin-modal-close" onClick={closeShareFallbackOverlay}>×</button>
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem' }}>
-              <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>Etikett {savedArtwork.number}</p>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>
+                {batchEtikettenQueue.length > 0
+                  ? `Etikett ${batchEtikettenQueue[batchEtikettenIndex]?.label ?? savedArtwork?.number} (${batchEtikettenIndex + 1} von ${batchEtikettenQueue.length})`
+                  : `Etikett ${savedArtwork?.number}`}
+              </p>
               <div style={{ background: '#fff', padding: '1rem', borderRadius: 8, margin: '0.5rem 0' }}>
                 <img src={shareFallbackImageUrl} alt="Etikett" style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', border: 'none', outline: 'none' }} />
               </div>
@@ -20880,6 +20985,70 @@ ${name}`
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Idee? Wunsch? – Modal, landet in Smart Panel (Wünsche von Nutzer:innen) */}
+      {wunschModalOpen && (
+        <div className="admin-modal-overlay" onClick={() => !wunschSending && setWunschModalOpen(false)}>
+          <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
+            <div className="admin-modal-header">
+              <h2>💡 Idee? Wunsch?</h2>
+              <button className="admin-modal-close" onClick={() => !wunschSending && setWunschModalOpen(false)} disabled={wunschSending}>×</button>
+            </div>
+            <div className="admin-modal-content">
+              <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Deine Notiz landet im Smart Panel unter „Wünsche von Nutzer:innen“. Wir freuen uns über deine Ideen – schreib hier gern, was du dir wünschst.</p>
+              {wunschSuccess ? (
+                <div style={{ textAlign: 'center', padding: '1rem', color: '#10b981', fontWeight: 700 }}>✅ Gespeichert!</div>
+              ) : (
+                <>
+                  <textarea
+                    autoFocus
+                    value={wunschText}
+                    onChange={(e) => { setWunschText(e.target.value); setWunschError(null) }}
+                    placeholder="Dein Wunsch, deine Idee …"
+                    rows={3}
+                    style={{ width: '100%', padding: '0.65rem 0.75rem', border: '1px solid var(--k2-accent, #b54a1e)33', borderRadius: '8px', fontSize: '0.9rem', resize: 'vertical', boxSizing: 'border-box' }}
+                  />
+                  {wunschError && <div style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '0.35rem' }}>{wunschError}</div>}
+                  <div className="admin-modal-actions" style={{ marginTop: '1rem' }}>
+                    <button className="btn-secondary" onClick={() => { setWunschModalOpen(false); setWunschError(null) }} disabled={wunschSending}>Abbrechen</button>
+                    <button
+                      className="btn-primary"
+                      disabled={!wunschText.trim() || wunschSending}
+                      onClick={async () => {
+                        const text = wunschText.trim()
+                        if (!text) return
+                        setWunschError(null)
+                        setWunschSending(true)
+                        try {
+                          const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                          const res = await fetch(`${origin}/api/user-wishes`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ text, source: 'admin' }),
+                          })
+                          if (!res.ok) {
+                            const data = await res.json().catch(() => ({}))
+                            throw new Error((data as { error?: string })?.error || 'Speichern fehlgeschlagen')
+                          }
+                          setWunschText('')
+                          setWunschSuccess(true)
+                          setTimeout(() => { setWunschSuccess(false); setWunschModalOpen(false) }, 1500)
+                        } catch (e) {
+                          setWunschError(e instanceof Error ? e.message : 'Fehler beim Senden')
+                        } finally {
+                          setWunschSending(false)
+                        }
+                      }}
+                    >
+                      {wunschSending ? '…' : 'Senden'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

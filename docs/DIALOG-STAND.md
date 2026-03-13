@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 13.03.26 – Aussendungen: Weiterverbreiten-Block in Presse, Newsletter, Social-Export, Event-Flyer, E-Mail-Einladung (Galerie-Link + Bitte teilen). Doku: PRESSEARBEIT-STANDARD, MEDIENSTUDIO-K2. Commit: d673df5 ✅ auf GitHub.
+**Letzter Build-Push:** 13.03.26 – (noch nicht gepusht) Wünsche von Nutzer:innen: Entdecken-Modal → API; Smart Panel Ordner „💡 Wünsche von Nutzer:innen“ mit Badge (neu seit lastSeen) und Liste.
+
+**Vorher:** 13.03.26 – Aussendungen: Weiterverbreiten-Block in Presse, Newsletter, Social-Export, Event-Flyer, E-Mail-Einladung. Commit: d673df5 ✅ auf GitHub.
 
 **Vorher:** 13.03.26 – Admin „Link zu deiner Galerie“ (9b8493a).
 

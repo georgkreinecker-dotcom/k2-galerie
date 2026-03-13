@@ -70,7 +70,10 @@ export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): an
   if (vk2) return [] // VK2 hat keinen Artwork-Key
   if (musterOnly) {
     if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
-    return readArtworksRawByKey(OEF_ARTWORKS_KEY)
+    const list = readArtworksRawByKey(OEF_ARTWORKS_KEY)
+    // ök2: Leerer Speicher = Musterwerke anzeigen (Demo soll immer etwas zeigen)
+    if (!list || list.length === 0) return [...MUSTER_ARTWORKS]
+    return list
   }
   return readArtworksRawByKey(K2_ARTWORKS_KEY)
 }
@@ -82,7 +85,10 @@ export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): an
 export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | null {
   if (!musterOnly) return readArtworksRawForContext(false, false) as any
   if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
-  return readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
+  const raw = readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
+  // ök2: Key fehlt oder leer = Musterwerke (Demo soll immer etwas zeigen)
+  if (raw === null || raw.length === 0) return [...MUSTER_ARTWORKS]
+  return raw
 }
 
 /**

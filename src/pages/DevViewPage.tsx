@@ -473,7 +473,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setPublishStatus({ success: false, message: 'Veröffentlichen läuft im Hintergrund …' })
       setIsPublishing(false)
       publishGalleryDataToServer(allArtworksWithImages, {
-        onProgress: (done, total) => setPublishStatus({ success: false, message: `Bilder hochladen … ${done}/${total} (im Hintergrund)` })
+        onProgress: (done, total, phase) => setPublishStatus({ success: false, message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)` })
       }).then((result) => {
         if (!result.success) {
           setPublishStatus({ success: false, message: result.error || 'Unbekannter Fehler' })

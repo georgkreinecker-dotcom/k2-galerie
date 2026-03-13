@@ -1,9 +1,16 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
-import { ERKUNDUNGS_NOTIZEN_KEY, type ErkundungsNotiz } from '../pages/EntdeckenPage'
-
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
+
+const WISHES_LAST_SEEN_KEY = 'k2-wishes-last-seen'
+
+interface UserWish {
+  id: string
+  text: string
+  source?: string
+  createdAt: string
+}
 
 const GUIDE_LABELS: Record<string, string> = {
   pfad: 'Pfad',
@@ -284,38 +291,43 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     }
   }
 
-  // Erkundungs-Notizen
-  const [notizen, setNotizen] = useState<ErkundungsNotiz[]>(() => {
-    try {
-      const v = localStorage.getItem(ERKUNDUNGS_NOTIZEN_KEY)
-      if (v) return JSON.parse(v)
-    } catch (_) {}
-    return []
+  // Wünsche von Nutzer:innen (API)
+  const [wishes, setWishes] = useState<UserWish[]>([])
+  const [wishesLoading, setWishesLoading] = useState(true)
+  const [wuenscheOpen, setWuenscheOpen] = useState(false)
+  const [lastSeen, setLastSeen] = useState<string | null>(() => {
+    try { return localStorage.getItem(WISHES_LAST_SEEN_KEY) } catch (_) {}
+    return null
   })
 
-  // Aktualisieren wenn aus EntdeckenPage neue Notiz gespeichert wird
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === ERKUNDUNGS_NOTIZEN_KEY) {
-        try {
-          const v = e.newValue ? JSON.parse(e.newValue) : []
-          setNotizen(v)
-        } catch (_) {}
-      }
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    fetch(`${origin}/api/user-wishes`)
+      .then(res => res.ok ? res.json() : Promise.reject(new Error('Laden fehlgeschlagen')))
+      .then((data: { wishes?: UserWish[] }) => setWishes(Array.isArray(data?.wishes) ? data.wishes : []))
+      .catch(() => setWishes([]))
+      .finally(() => setWishesLoading(false))
   }, [])
 
-  const loescheNotiz = (id: string) => {
-    const neu = notizen.filter(n => n.id !== id)
-    setNotizen(neu)
-    try { localStorage.setItem(ERKUNDUNGS_NOTIZEN_KEY, JSON.stringify(neu)) } catch (_) {}
+  const markWishesSeen = () => {
+    const now = new Date().toISOString()
+    setLastSeen(now)
+    try { localStorage.setItem(WISHES_LAST_SEEN_KEY, now) } catch (_) {}
   }
 
-  const loescheAlle = () => {
-    setNotizen([])
-    try { localStorage.removeItem(ERKUNDUNGS_NOTIZEN_KEY) } catch (_) {}
+  const newCount = useMemo(() => {
+    if (!lastSeen) return wishes.length
+    const t = new Date(lastSeen).getTime()
+    return wishes.filter(w => new Date(w.createdAt).getTime() > t).length
+  }, [wishes, lastSeen])
+
+  const toggleWuensche = () => {
+    if (!wuenscheOpen) {
+      setWuenscheOpen(true)
+      markWishesSeen()
+    } else {
+      setWuenscheOpen(false)
+    }
   }
 
   return (
@@ -663,29 +675,53 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
         )
       })}
 
-      {/* Erkundungs-Notizen Inbox (Galerie/Entdecken) */}
-      {notizen.length > 0 && (
-        <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-            <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ background: '#b54a1e', color: '#fff', borderRadius: '50%', width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700 }}>{notizen.length}</span>
-              💡 Deine Erkundungs-Ideen
-            </h4>
-            <button type="button" onClick={loescheAlle} style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.1rem 0.3rem', fontFamily: 'inherit' }}>Alle löschen</button>
-          </div>
+      {/* Wünsche von Nutzer:innen (API – Entdecken „Idee? Wunsch?“) */}
+      <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
+        <button
+          type="button"
+          onClick={toggleWuensche}
+          style={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: wuenscheOpen ? '0.6rem' : 0,
+            padding: '0.5rem 0',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            textAlign: 'left',
+          }}
+        >
+          <h4 style={{ margin: 0, fontSize: '0.88rem', color: '#fbbf24', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            {newCount > 0 && (
+              <span style={{ background: '#b54a1e', color: '#fff', borderRadius: '50%', minWidth: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, padding: '0 0.25rem' }}>{newCount}</span>
+            )}
+            💡 Wünsche von Nutzer:innen
+          </h4>
+          <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>{wuenscheOpen ? '▼' : '▶'}</span>
+        </button>
+        {wuenscheOpen && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-            {notizen.map(n => (
-              <div key={n.id} style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '8px', padding: '0.6rem 0.75rem', position: 'relative' }}>
-                <div style={{ fontSize: '0.82rem', color: '#fff8f0', lineHeight: 1.5, paddingRight: '1.2rem' }}>{n.text}</div>
-                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
-                  {n.zeit} · Schritt: {n.step}
+            {wishesLoading ? (
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)' }}>Lade …</div>
+            ) : wishes.length === 0 ? (
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)' }}>Noch keine Wünsche eingegangen.</div>
+            ) : (
+              wishes.map(w => (
+                <div key={w.id} style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '8px', padding: '0.6rem 0.75rem' }}>
+                  <div style={{ fontSize: '0.82rem', color: '#fff8f0', lineHeight: 1.5 }}>{w.text}</div>
+                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
+                    {new Date(w.createdAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}
+                    {w.source ? ` · ${w.source}` : ''}
+                  </div>
                 </div>
-                <button type="button" onClick={() => loescheNotiz(n.id)} style={{ position: 'absolute', top: '0.4rem', right: '0.4rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.1rem 0.3rem', lineHeight: 1 }} title="Erledigt">✕</button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Guide-Antworten Auswertung */}
       {Object.keys(guideAntworten).length > 0 && (

@@ -3935,7 +3935,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                           const allArtworks = filterK2OnlyStorage(withImages || [])
                           if (allArtworks.length === 0) return
                           publishGalleryDataToServer(allArtworks, {
-                            onProgress: (done, total) => setLoadStatus({ message: `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                            onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
                           }).then((result) => {
                             if (result.success) {
                               const sentAtIso = new Date().toISOString()
@@ -4198,7 +4198,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                         const allArtworks = filterK2OnlyStorage(withImages || [])
                         if (allArtworks.length === 0) return
                         publishGalleryDataToServer(allArtworks, {
-                          onProgress: (done, total) => setLoadStatus({ message: `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
+                          onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
                         }).then((result) => {
                           if (result.success) {
                             const sentAtIso = new Date().toISOString()

@@ -394,23 +394,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   useEffect(() => {
     if (!musterOnly) return
     try {
-      // APf iPhone/iPad-Vorschau (embedded=1): gleiche Ansicht wie Desktop – Willkommensseite, kein „Wähle deinen Einstieg“
+      // Einstiegs-Maske „Wähle deinen Einstieg“ für ök2 abgeschaltet – nicht mehr benötigt.
+      // Galerie-Willkommensseite wird direkt ohne Overlay angezeigt.
       if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') {
         try { sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1') } catch (_) {}
-        setShowWelcomeModal(false)
-        return
       }
-      // Von Admin/App zur Galerie gewechselt (Link state oder <a>-Klick mit sessionStorage) → kein „Wähle deinen Einstieg“
-      if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) {
-        try {
-          sessionStorage.setItem(KEY_GALERIE_WELCOME_SEEN, '1')
-          sessionStorage.removeItem(KEY_FROM_ADMIN)
-        } catch (_) {}
-        setShowWelcomeModal(false)
-        return
-      }
-      const isMobile = window.innerWidth <= 768 || /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-      if (isMobile && !sessionStorage.getItem(KEY_GALERIE_WELCOME_SEEN)) setShowWelcomeModal(true)
+      setShowWelcomeModal(false)
     } catch (_) {}
   }, [musterOnly, location.state])
   const closeWelcomeNurUmschauen = () => {
@@ -2434,7 +2423,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: showAdminEntryOnGalerie ? 'clamp(6rem, 18vw, 8.5rem)' : 'clamp(1rem, 2vw, 1.5rem)',
+            right: showAdminEntryOnGalerie ? 'clamp(12rem, 30vw, 18rem)' : 'clamp(1rem, 2vw, 1.5rem)',
             background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
             border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
             color: vk2 ? '#fff' : musterOnly ? 'var(--k2-text)' : '#fff',

@@ -12,7 +12,7 @@
 | **Etikettendruck (z. B. Brother QL)** | ✅ | ScreenshotExportAdmin: Einzeletikett pro Werk, Sammeldruck (Hakerl setzen → „Etiketten drucken“). Brother QL-820MWBc in Einstellungen (Format 29×90,3 mm, 300 DPI). |
 | **Werk-Nummer, Titel, QR-Code auf Etikett** | ✅ | `getEtikettBlob` / `getEtikettBlobForArtwork`: Nummer, Titel, Kategorie, Künstler, Preis, Maße, **QR-Code** (Galerie-URL), 300 DPI für Brother. |
 | **WLAN-fähig** | ✅ | Brother QL-820MWBc per IP (Einstellungen); optional `k2-print-server.js` / `npm run print-server` für One-Click; iPad/iPhone: Etikett teilen → Brother iPrint & Label; Doku in Einstellungen. |
-| **Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft** | ✅ | KundenPage (`/projects/k2-galerie/kunden`) + Link „📋 Kundenliste“ im Admin; KundenTab (create/update/delete, Suche, Bulk-Import). Control Studio: Tab „Kunden“. |
+| **Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft** | ✅ | KundenPage (`/projects/k2-galerie/kunden`) + Link „📋 Kundenadressen“ im Admin unter Kassa, Lager, Listen; KundenTab (create/update/delete, Suche, Bulk-Import). Control Studio: Tab „Kunden“. |
 
 ---
 
@@ -36,7 +36,7 @@
 - **Verkaufsstatistik (Umsatz, Storno, Drucken):** Admin-Hub → „Verkaufsstatistik“ → StatistikTab.
 - **Werkkatalog (Galerie/Lager/Verkauft):** Admin → Werke-Bereich → Werkkatalog (Tab/ Karte).
 - **Etiketten:** Pro Werk „Etikett drucken“; Sammeldruck: Hakerl bei Werken → „Etiketten drucken“.
-- **Kunden:** Admin → „📋 Kundenliste“ (Link) → KundenPage; oder Control Studio → Tab Kunden.
+- **Kunden:** Admin → Kassa, Lager, Listen → „📋 Kundenadressen“ (Link) → KundenPage; oder Control Studio → Tab Kunden.
 
 ---
 
