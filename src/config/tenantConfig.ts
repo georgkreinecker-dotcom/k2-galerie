@@ -12,6 +12,9 @@ export const PRODUCT_BRAND_NAME = 'K2 Galerie'
 /** Copyright-Zeile mit K2-Brand – an Footer/Impressum/AGB etc. verwenden */
 export const PRODUCT_COPYRIGHT = '© 2026 K2 Galerie · Alle Rechte vorbehalten · Design und Entwicklung: kgm solution (G. Kreinecker)'
 
+/** Nur Brand + Copyright – überall außerhalb von K2 (ök2, VK2): keine K2-Daten, nur diese Zeile. */
+export const PRODUCT_COPYRIGHT_BRAND_ONLY = '© 2026 K2 Galerie · Alle Rechte vorbehalten'
+
 /**
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
  * Eine Quelle, überall präsent.

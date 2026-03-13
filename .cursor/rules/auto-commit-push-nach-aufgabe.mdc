@@ -1,9 +1,13 @@
 ---
-description: Nach jeder erledigten Aufgabe automatisch committen und pushen
+description: Nach jeder erledigten Aufgabe automatisch committen und pushen – PFLICHT, nie vergessen
 alwaysApply: true
 ---
 
 # Auto-Commit und Push nach jeder Aufgabe
+
+## 🔥 PFLICHT – NIEMALS VERGESSEN (Georg hat das schon hundert Mal gesagt)
+
+**FERTIG = erst nach Commit + Push.** Ohne Push ist die Aufgabe NICHT fertig. Georg macht keinen manuellen Push – die KI führt nach jeder erledigten Codier-Aufgabe **selbständig** aus: Test (wenn nötig), Build, dann `git add . && git commit -m "..." && git push`. **Nicht nachfragen, nicht „du kannst pushen“ sagen – einfach tun.** Wenn die KI das vergisst, ist die Aufgabe nicht abgeschlossen.
 
 ## Regel (unveränderlich)
 

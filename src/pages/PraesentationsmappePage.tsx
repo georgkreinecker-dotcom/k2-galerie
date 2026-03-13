@@ -8,7 +8,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-do
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
 import PraesentationsmappeVollversionPage from './PraesentationsmappeVollversionPage'
-import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, MUSTER_TEXTE } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 type MappeVariant = 'oek2-kurz' | 'oek2-lang' | 'vk2-kurz' | 'vk2-lang'
@@ -241,9 +241,19 @@ export default function PraesentationsmappePage() {
 
         <div className="pm-impressum" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e5e2dd', fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.4 }}>
           <strong style={{ color: '#1c1a18' }}>Impressum</strong><br />
-          Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />
-          Kontakt: <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a><br />
-          {PRODUCT_COPYRIGHT}
+          {(variant === 'oek2-kurz' || variant === 'oek2-lang' || variant === 'vk2-kurz' || variant === 'vk2-lang') ? (
+            <>
+              Medieninhaber: K2 Galerie{variant?.startsWith('oek2') ? ' · Demo (ök2)' : ' · Vereinsplattform (VK2)'} – nur Mustertexte, keine K2-Daten.<br />
+              Kontakt: <a href={`mailto:${MUSTER_TEXTE.gallery.email}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{MUSTER_TEXTE.gallery.email}</a><br />
+              {PRODUCT_COPYRIGHT_BRAND_ONLY}
+            </>
+          ) : (
+            <>
+              Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />
+              Kontakt: <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a><br />
+              {PRODUCT_COPYRIGHT}
+            </>
+          )}
         </div>
 
         <footer className="pm-footer" style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid #e5e2dd', fontSize: '0.8rem', color: '#5c5650' }}>
