@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-035 · ök2 Werke verwalten: Alle Musterwerke zeigen dasselbe Bild (Vase) (gelöst 13.03.26)
+
+**Symptom:** In „Werke verwalten“ (ök2/Admin) zeigen alle vier Karten (M1, K1, G1, S1) dasselbe Bild (z. B. Vase) statt je Kategorie ein eigenes (Malerei, Keramik, Grafik, Skulptur).
+
+**Ursache:** (1) **prepareArtworksForStorage:** Externe URLs (Unsplash bei Musterwerken) wurden nicht als imageRef gespeichert; stattdessen wurde IndexedDB durchsucht. (2) **getArtworkImageRefVariants** für M1, K1, G1, S1 liefert alle die Ziffer „1“ → gleiche Varianten (z. B. k2-img-1). Ein in der IndexedDB unter k2-img-1 liegendes Bild wurde allen vier Werken zugeordnet.
+
+**Lösung:** (1) Externe URL (http/https) in prepareArtworksForStorage als imageRef speichern, keine IndexedDB-Suche. (2) In resolveArtworkImages: Musterwerke (M1, K1, G1, S1, O1, muster-*) weder per imageRef noch per Varianten aus IndexedDB befüllen – Bild bleibt leer, UI nutzt getOek2DefaultArtworkImage(category). (3) Hilfsfunktion isOek2MusterArtwork in artworkImageStore.
+
+**Betroffene Dateien:** `src/utils/artworkImageStore.ts` (prepareArtworksForStorage, resolveArtworkImages, isOek2MusterArtwork).
+
+**Status:** ✅ Behoben (13.03.26).
+
+---
+
 ## BUG-033 · Admin iframe: Bilder verschwinden / nur in Bearbeiten sichtbar (gelöst 12.03.26)
 
 **Symptom:** (1) Beim Speichern eines Werks verschwindet das Bild eines anderen. (2) „Bilder unter Nr. 30“ weg oder Liste zeigt „Kein Bild“, beim Klick auf Bearbeiten erscheint das Bild. (Wiederholung der Fehlerklasse „Admin: Bild bei Werk A verschwindet beim Speichern von Werk B“.)

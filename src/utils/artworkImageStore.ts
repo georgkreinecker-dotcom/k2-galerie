@@ -26,6 +26,16 @@ function openDB(): Promise<IDBDatabase> {
   })
 }
 
+/** ök2-Musterwerke (M1, K1, G1, S1, O1, muster-*) – keine IndexedDB-Suche, sonst bekommen alle dasselbe Bild (Variante k2-img-1). */
+function isOek2MusterArtwork(a: any): boolean {
+  if (!a) return false
+  const num = String(a?.number ?? a?.id ?? '').trim().toUpperCase()
+  const id = String(a?.id ?? '').trim()
+  if (id.startsWith('muster-')) return true
+  if (['M1', 'M2', 'M3', 'M4', 'M5', 'K1', 'G1', 'S1', 'O1'].includes(num)) return true
+  return false
+}
+
 /** Eindeutige Ref für ein Werk (für IndexedDB-Key). */
 export function getArtworkImageRef(artwork: any): string {
   const id = artwork?.id ?? artwork?.number
@@ -259,6 +269,9 @@ export async function prepareArtworksForStorage(artworks: any[]): Promise<any[]>
       }
     } else if (a.imageRef && (a.imageRef.startsWith('http://') || a.imageRef.startsWith('https://'))) {
       next = { ...a, imageUrl: '', imageRef: a.imageRef }
+    } else if (typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) {
+      // Externe URL (z. B. Musterwerke Unsplash): als imageRef speichern, keine IndexedDB-Suche – sonst bekommen M1/K1/G1/S1 alle dasselbe Bild (Variante k2-img-1).
+      next = { ...a, imageUrl: '', imageRef: url }
     } else {
       // 2) Kein data:image – Bild aus IndexedDB holen (Ref oder Varianten), unter kanonischem Ref sichern (Bild zu Karte)
       const variants = getArtworkImageRefVariants(a)
@@ -357,6 +370,11 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         }
         continue
       }
+      // Musterwerke (M1, K1, …): Kein IDB-Lookup – sonst alle dasselbe Bild (k2-img-1). imageUrl leer lassen → UI nutzt getOek2DefaultArtworkImage(category).
+      if (isOek2MusterArtwork(a)) {
+        out.push({ ...a, imageUrl: '', imageRef: ref })
+        continue
+      }
       try {
         let dataUrl = await getArtworkImage(ref)
         let usedRef = ref
@@ -385,7 +403,12 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         out.push({ ...a, imageUrl, imageRef: ref })
       }
     } else {
-      // Kein imageRef: IndexedDB per Varianten probieren (Bild kann da sein, Ref in Liste verloren) – sonst „Kein Bild“. Danach Repo-Fallback nur 1–29.
+      // Kein imageRef: Bei Musterwerken (M1, K1, …) keine IndexedDB-Suche – sonst bekommen alle dasselbe Bild (k2-img-1). UI nutzt getOek2DefaultArtworkImage(category).
+      if (isOek2MusterArtwork(a)) {
+        out.push(a)
+        continue
+      }
+      // IndexedDB per Varianten probieren (Bild kann da sein, Ref in Liste verloren) – sonst „Kein Bild“. Danach Repo-Fallback nur 1–29.
       const variants = getArtworkImageRefVariants(a)
       const found = await getArtworkImageByRefVariants(variants)
       if (found) {

@@ -52,25 +52,19 @@ try {
 } catch (_) {}
 if (jsonChanged) fs.writeFileSync(publicPath, jsonContent, 'utf8')
 
-// api/build-info.js: immer genau EINE return-Zeile (Duplikate komplett entfernen)
-const apiBuildInfoPath = path.join(__dirname, '..', 'api', 'build-info.js')
+// api/build-info-payload.json: von visit-and-build.js gelesen (Vercel Hobby max. 12 Functions)
+const apiPayloadPath = path.join(__dirname, '..', 'api', 'build-info-payload.json')
+const apiPayloadContent = JSON.stringify({ label, timestamp: now.getTime() })
 let apiChanged = false
 try {
-  let apiContent = fs.readFileSync(apiBuildInfoPath, 'utf8')
-  const singleReturnLine = "  return res.json({ label: '" + label + "', timestamp: " + now.getTime() + " })"
-  const returnLineRe = /\s*return res\.json\(\s*\{\s*label:\s*'[^']*',\s*timestamp:\s*\d+\s*\}\s*\)\s*\n?/g
-  const returnMatches = apiContent.match(returnLineRe) || []
-  const alreadyCorrect = returnMatches.length === 1 && apiContent.includes("label: '" + label + "'")
-  if (alreadyCorrect) {
-    // Nichts tun
-  } else {
-    // Immer: alle return-Zeilen durch genau eine ersetzen (ob 0, 1 oder 2+). Erste Ersetzung mit \n davor (regex frisst \s* inkl. Newline).
-    let first = true
-    const normalized = apiContent.replace(returnLineRe, () => (first ? (first = false, '\n' + singleReturnLine + '\n') : ''))
-    fs.writeFileSync(apiBuildInfoPath, normalized, 'utf8')
-    apiChanged = true
-  }
-} catch (_) {}
+  const existingPayload = fs.readFileSync(apiPayloadPath, 'utf8')
+  const existingParsed = JSON.parse(existingPayload)
+  if (existingParsed && existingParsed.label === label) apiChanged = false
+  else { fs.writeFileSync(apiPayloadPath, apiPayloadContent, 'utf8'); apiChanged = true }
+} catch (_) {
+  fs.writeFileSync(apiPayloadPath, apiPayloadContent, 'utf8')
+  apiChanged = true
+}
 
 // index.html: nur schreiben wenn sich die Build-MINUTE geändert hat (nicht jede Millisekunde) → Reopen nur 1× pro Minute
 let indexChanged = false

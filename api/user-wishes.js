@@ -1,8 +1,9 @@
 /**
  * Vercel Serverless: Nutzer-Wünsche (Idee? Wunsch?) – sammeln und im Smart Panel anzeigen.
- * GET: Liste (neueste zuerst), GET: POST: neuer Eintrag. Speicher: Vercel Blob user-wishes.json.
+ * GET: Liste (neueste zuerst), POST: neuer Eintrag. Speicher: Vercel Blob user-wishes.json.
+ * CommonJS für zuverlässigen Vercel-Build (ohne "type": "module").
  */
-import { get, put } from '@vercel/blob'
+const { get, put } = require('@vercel/blob')
 
 const BLOB_PATH = 'user-wishes.json'
 
@@ -19,7 +20,7 @@ async function loadWishes() {
   }
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')

@@ -1,14 +1,25 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 13.03.26 – (noch nicht gepusht) Wünsche von Nutzer:innen: Entdecken-Modal → API; Smart Panel Ordner „💡 Wünsche von Nutzer:innen“ mit Badge (neu seit lastSeen) und Liste.
+**Letzter Build-Push:** 13.03.26 – (noch nicht gepusht) Vercel Hobby 12-Functions-Limit: visit + build-info in eine API (visit-and-build) zusammengeführt; api/visit.js und api/build-info.js entfernt; write-build-info.js schreibt build-info-payload.json; Rewrites in vercel.json. Davor: ök2 Musterwerke BUG-035, user-wishes CommonJS.
 
-**Vorher:** 13.03.26 – Aussendungen: Weiterverbreiten-Block in Presse, Newsletter, Social-Export, Event-Flyer, E-Mail-Einladung. Commit: d673df5 ✅ auf GitHub.
+**Vorher:** 13.03.26 – Wünsche von Nutzer:innen (Entdecken-Modal → API; Smart Panel „💡 Wünsche“). Commit f5ca886 / 9869f8f – Vercel-Deployments zeigten Error.
 
-**Vorher:** 13.03.26 – Admin „Link zu deiner Galerie“ (9b8493a).
+**Vorher:** 13.03.26 – Aussendungen: Weiterverbreiten-Block (d673df5). Admin „Link zu deiner Galerie“ (9b8493a).
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 13.03.26 – ök2 Musterwerke gleiches Bild (BUG-035) + Vercel-Build (user-wishes.js)
+
+- **Georg:** „wieso sehe ich jetzt nur xmal ein werk“ – in Werke verwalten (ök2) zeigten alle vier Karten (M1, K1, G1, S1) dasselbe Bild (Vase).
+- **Ursache:** prepareArtworksForStorage speicherte externe URLs (Unsplash) nicht als imageRef; IndexedDB-Suche für M1/K1/G1/S1 lieferte dieselbe Variante (k2-img-1) → ein Bild für alle.
+- **Fix:** (1) Externe URL (http/https) in prepareArtworksForStorage als imageRef übernehmen, keine IDB-Suche. (2) resolveArtworkImages: Musterwerke (M1, K1, G1, S1, O1, muster-*) nicht aus IndexedDB befüllen; UI nutzt getOek2DefaultArtworkImage(category). (3) isOek2MusterArtwork in artworkImageStore. (4) GELOESTE-BUGS BUG-035, Fehleranalyseprotokoll-Eintrag, VERCEL-BUILD-FEHLER-UNTERSUCHUNG.md.
+- **Vercel-Build:** api/user-wishes.js auf CommonJS umgestellt (require + module.exports), damit Build auf Vercel durchläuft.
+- **Vercel-Fehler:** „No more than 12 Serverless Functions … Hobby plan.“ → **Fix:** visit + build-info in **eine** Function: `api/visit-and-build.js` (Dispatch per `k2route=visit` / `k2route=build-info`); Rewrites für `/api/visit` und `/api/build-info`; `api/visit.js` und `api/build-info.js` entfernt; Build-Skript schreibt `api/build-info-payload.json`. Jetzt 12 Functions.
+- **Nächster Schritt:** Commit + Push; Vercel-Deployment prüfen. Danach iPad: Stand, „An Server senden“, Musterwerke-Bilder.
 
 ---
 
