@@ -172,6 +172,28 @@ describe('Flow: Vom Server laden (merge + preserveLocalImageData)', () => {
   })
 })
 
+describe('Flow: Vom Server laden – Anzeige nicht leer (BUG-026)', () => {
+  it('Wenn Server Werke liefert und lokal leer ist, ist die Anzeige-Liste (Merge-Ergebnis) nicht leer', () => {
+    const server = [
+      { number: '0030', title: 'Werk 30', imageUrl: 'https://server.com/30.jpg', updatedAt: '2026-01-02T12:00:00Z' },
+      { number: '0031', title: 'Werk 31', imageUrl: 'https://server.com/31.jpg', updatedAt: '2026-01-02T12:00:00Z' }
+    ]
+    const local: any[] = []
+    const { merged } = applyServerDataToLocal(server, local)
+    expect(merged).toHaveLength(2)
+    expect(merged.length).toBeGreaterThan(0)
+    expect(merged[0].title).toBe('Werk 30')
+    expect(merged[1].title).toBe('Werk 31')
+  })
+
+  it('Wenn Server ein Werk liefert, hat die Anzeige-Liste genau ein Werk (kein Race/leer)', () => {
+    const server = [{ number: '1', title: 'Einzeln', updatedAt: new Date().toISOString() }]
+    const { merged } = applyServerDataToLocal(server, [])
+    expect(merged).toHaveLength(1)
+    expect(merged[0].number).toBe('1')
+  })
+})
+
 describe('Flow: AutoSave (preserveStorageImageRefs)', () => {
   it('State ohne imageRef für 0031 bekommt Ref aus Speicher zurück', () => {
     const incoming = [
