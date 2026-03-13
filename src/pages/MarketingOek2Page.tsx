@@ -852,6 +852,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
           <li><strong>Marketing aus einem Guss:</strong> Newsletter, Plakat, Presse, Social Media und QR-Plakat werden aus denselben Stammdaten erzeugt – einheitlich, sofort nutzbar.</li>
           <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
+          <li><strong>Für breite Vermarktung:</strong> Alle produktiven Funktionen laufen ohne Mac; Entwickler-Tools (APf) bleiben optional am Rechner. Technische Details und Skalierung stehen in der Produkt-Doku.</li>
           <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>
           <li><strong>Vereinsfähig (VK2):</strong> Die Plattform für Kunstvereine und Gruppen – gemeinsame Vereinsgalerie, Vereinskatalog, ab 10 Mitgliedern für den Verein kostenfrei. Am Markt kaum vergleichbar.</li>
           <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, Link teilen. In dieser Branche einzigartig.</li>

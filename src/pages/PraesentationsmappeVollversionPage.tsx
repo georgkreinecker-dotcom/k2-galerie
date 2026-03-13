@@ -8,14 +8,17 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 
 const BASE = '/praesentationsmappe-vollversion'
 const DOC_PARAM = 'doc'
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
+/** Willkommensseite – Deckblatt-Cover (Brand/Slogan + dieses Bild) */
+const DECKBLATT_WILLKOMMENSBILD = '/img/oeffentlich/willkommen-demo.jpg'
 
 const DOCUMENTS = [
-  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
+  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   { id: '04-willkommen', name: 'Willkommen und Galerie', file: '04-WILLKOMMEN-UND-GALERIE.md' },
@@ -39,6 +42,9 @@ export default function PraesentationsmappeVollversionPage() {
   const [docContent, setDocContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [qrOek2DataUrl, setQrOek2DataUrl] = useState('')
+  const [fullPrintView, setFullPrintView] = useState(false)
+  const [allDocContents, setAllDocContents] = useState<string[]>([])
+  const [loadingFullPrint, setLoadingFullPrint] = useState(false)
 
   const returnTo = searchParams.get('returnTo')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
@@ -54,14 +60,15 @@ export default function PraesentationsmappeVollversionPage() {
   }, [searchParams])
 
   useEffect(() => {
-    if (selectedDoc !== '13-KONTAKT.md') {
+    const needQr = selectedDoc === '13-KONTAKT.md' || fullPrintView
+    if (!needQr) {
       setQrOek2DataUrl('')
       return
     }
     QRCode.toDataURL(buildQrUrlWithBust(OEK2_URL, qrVersionTs), { width: 140, margin: 1 })
       .then(setQrOek2DataUrl)
       .catch(() => setQrOek2DataUrl(''))
-  }, [selectedDoc, qrVersionTs])
+  }, [selectedDoc, fullPrintView, qrVersionTs])
 
   const loadDocument = async (filename: string) => {
     setLoading(true)
@@ -83,6 +90,24 @@ export default function PraesentationsmappeVollversionPage() {
       setDocContent(`# Fehler beim Laden\n\nBitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.`)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadAllDocumentsForPrint = async () => {
+    setLoadingFullPrint(true)
+    try {
+      const contents: string[] = []
+      for (const doc of DOCUMENTS) {
+        const response = await fetch(`${BASE}/${doc.file}`)
+        const text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
+        contents.push(text)
+      }
+      setAllDocContents(contents)
+      setFullPrintView(true)
+    } catch {
+      setAllDocContents([])
+    } finally {
+      setLoadingFullPrint(false)
     }
   }
 
@@ -114,12 +139,12 @@ export default function PraesentationsmappeVollversionPage() {
     return parts.length === 1 ? parts[0] : <>{parts}</>
   }
 
-  const renderMarkdown = (text: string, chapterNumber?: number, onDocLink?: (path: string) => void) => {
+  const renderMarkdown = (text: string, chapterNumber?: number, onDocLink?: (path: string) => void, keyPrefix = 'pmv') => {
     const lines = text.split('\n')
     const out: ReactNode[] = []
     let i = 0
     let firstH1Done = false
-    const key = () => `pmv-${i}`
+    const key = () => `${keyPrefix}-${i}`
 
     while (i < lines.length) {
       const line = lines[i]
@@ -137,7 +162,7 @@ export default function PraesentationsmappeVollversionPage() {
       if (imgMatch) {
         const [, alt, src] = imgMatch
         const url = src.startsWith('http') ? src : src.startsWith('/') ? src : `${BASE}/${src}`
-        out.push(<p key={key()} className="pmv-p"><img src={url} alt={alt || 'Screenshot'} className="pmv-img" style={{ maxWidth: '100%', height: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }} /></p>)
+        out.push(<p key={key()} className="pmv-p pmv-p-with-img"><img src={url} alt={alt || 'Screenshot'} className="pmv-img" style={{ maxWidth: '100%', height: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }} /></p>)
         i++; continue
       }
       if (line.startsWith('# ')) {
@@ -244,8 +269,20 @@ export default function PraesentationsmappeVollversionPage() {
     navigate(FALLBACK_ROUTE)
   }
 
+  /** Deckblatt außen: Brand + Slogan + Foto Willkommensseite – eine schöne Mappe */
+  const renderDeckblattCover = () => (
+    <div className="pmv-deckblatt-cover" lang="de">
+      <h1 className="pmv-cover-brand">{PRODUCT_BRAND_NAME}</h1>
+      <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
+      <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
+      <div className="pmv-cover-img-wrap">
+        <img src={DECKBLATT_WILLKOMMENSBILD} alt="Willkommensseite der K2 Galerie" className="pmv-cover-img" />
+      </div>
+    </div>
+  )
+
   const styles = `
-    .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: system-ui, sans-serif; }
+    .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     .pmv-wrap .pmv-h1 { font-size: 1.75rem; margin: 1.5rem 0 0.75rem; color: #1c1a18; font-weight: 600; }
     .pmv-wrap .pmv-h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; color: #0d9488; font-weight: 600; }
     .pmv-wrap .pmv-h3 { font-size: 1.15rem; margin: 1rem 0 0.4rem; color: #4b5563; }
@@ -260,26 +297,45 @@ export default function PraesentationsmappeVollversionPage() {
     .pmv-seitenumbruch-label { font-size: 0.8rem; color: #9ca3af; }
     .pmv-leerzeile { height: 0.75rem; }
     .pmv-seitenfuss { display: none; }
+    .pmv-chapter-block { margin-bottom: 2rem; }
+    .pmv-chapter-block.pmv-chapter-first { margin-top: 0; }
+    .pmv-deckblatt-cover { text-align: center; padding: 2rem 1.5rem 2.5rem; background: linear-gradient(180deg, #0f766e 0%, #0d9488 18%, #fff 18%); color: #fff; border-radius: 12px; margin-bottom: 2rem; }
+    .pmv-deckblatt-cover .pmv-cover-brand { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: 0.02em; color: #fff; }
+    .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0.25rem; color: #fff; opacity: 0.98; }
+    .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 1rem; margin: 0 0 1.5rem; color: #e0f2f1; }
+    .pmv-deckblatt-cover .pmv-cover-img-wrap { margin: 0 auto; max-width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .pmv-deckblatt-cover .pmv-cover-img { width: 100%; height: auto; display: block; vertical-align: top; }
     @media print {
+      .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: always !important; padding: 12mm 15mm 15mm !important; background: linear-gradient(180deg, #0f766e 0%, #0d9488 22%, #fff 22%) !important; min-height: 240mm; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
+      .pmv-deckblatt-cover .pmv-cover-brand { font-size: 22pt !important; margin-bottom: 0.35em !important; }
+      .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 12pt !important; margin-bottom: 0.15em !important; }
+      .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 11pt !important; margin-bottom: 1.2em !important; }
+      .pmv-deckblatt-cover .pmv-cover-img-wrap { flex: 1; max-width: 95%; min-height: 0; }
+      .pmv-deckblatt-cover .pmv-cover-img { max-height: 180mm; width: auto; margin: 0 auto; object-fit: contain; }
+      /* Kein erzwungener Umbruch pro Kapitel – Inhalt fließt, weniger Leerseiten */
+      .pmv-chapter-block { page-break-before: auto !important; }
+      .pmv-chapter-block.pmv-chapter-first { page-break-before: auto !important; }
       .pmv-no-print { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch .pmv-seitenumbruch-label { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch { page-break-before: always !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; }
-      .pmv-wrap .pmv-h1 { font-size: 1.1rem !important; margin: 0.28rem 0 0.18rem !important; color: #1c1a18 !important; }
-      .pmv-wrap .pmv-h2 { font-size: 1rem !important; margin: 0.25rem 0 0.15rem !important; color: #1c1a18 !important; }
-      .pmv-wrap .pmv-h3 { font-size: 0.9rem !important; margin: 0.2rem 0 0.12rem !important; color: #1c1a18 !important; }
-      .pmv-wrap .pmv-p { margin: 0 0 0.1rem !important; line-height: 1.3 !important; font-size: 8.5pt !important; color: #1c1a18 !important; }
-      .pmv-wrap .pmv-ul { margin: 0.12rem 0 0.18rem 1rem !important; padding-left: 0.2rem !important; }
-      .pmv-wrap .pmv-li { margin-bottom: 0.05rem !important; line-height: 1.3 !important; }
-      .pmv-wrap .pmv-hr { margin: 0.15rem 0 !important; }
-      .pmv-wrap .pmv-leerzeile { height: 0.1rem !important; }
-      .pmv-wrap .pmv-img { max-width: 100%; border-radius: 4px; }
-      .pmv-wrap .pmv-table-wrap { margin: 0.2rem 0 !important; }
-      .pmv-wrap .pmv-table th, .pmv-wrap .pmv-table td { padding: 0.12rem 0.3rem !important; font-size: 8.5pt !important; }
-      .pmv-wrap article { padding: 0 0 10mm !important; border: none !important; box-shadow: none !important; }
-      .pmv-seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 5mm; padding: 2mm 8mm; font-size: 8pt; font-family: system-ui, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
+      /* Lesbare Setzung: 10pt, ausreichend Zeilenabstand, Silbentrennung */
+      .pmv-wrap .pmv-h1 { font-size: 12pt !important; margin: 1.2em 0 0.4em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-h2 { font-size: 11pt !important; margin: 1em 0 0.35em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-h3 { font-size: 10pt !important; margin: 0.8em 0 0.3em !important; color: #1c1a18 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-p { margin: 0 0 0.5em !important; line-height: 1.45 !important; font-size: 10pt !important; color: #1c1a18 !important; text-align: justify !important; hyphens: auto !important; -webkit-hyphens: auto !important; hyphenate-limit-chars: 6 4 2 !important; orphans: 2 !important; widows: 2 !important; }
+      .pmv-wrap .pmv-ul { margin: 0.4em 0 0.6em 1.25em !important; padding-left: 0.4em !important; }
+      .pmv-wrap .pmv-li { margin-bottom: 0.25em !important; line-height: 1.45 !important; font-size: 10pt !important; }
+      .pmv-wrap .pmv-hr { margin: 0.6em 0 !important; }
+      .pmv-wrap .pmv-leerzeile { height: 0.25em !important; }
+      .pmv-wrap .pmv-img { max-width: 100% !important; height: auto !important; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid !important; }
+      .pmv-wrap .pmv-p-with-img { page-break-inside: avoid !important; }
+      .pmv-wrap .pmv-table-wrap { margin: 0.5em 0 !important; page-break-inside: avoid !important; }
+      .pmv-wrap .pmv-table th, .pmv-wrap .pmv-table td { padding: 0.2em 0.4em !important; font-size: 9pt !important; }
+      .pmv-wrap article { padding: 0 0 12mm !important; border: none !important; box-shadow: none !important; }
+      .pmv-seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 6mm; padding: 2mm 8mm; font-size: 9pt; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
       .pmv-seitenfuss .pmv-seitenfuss-preview { display: none !important; }
       .pmv-seitenfuss::after { content: "Seite " counter(page) " von " counter(pages); color: #000 !important; }
-      @page { margin: 5mm 6mm 12mm 6mm; size: A4; background: white; }
+      @page { margin: 15mm 18mm 18mm 18mm; size: A4; background: white; }
       html, body { background: #fff !important; color: #1c1a18 !important; }
       .pmv-wrap { background: #fff !important; padding: 0 !important; }
     }
@@ -288,66 +344,105 @@ export default function PraesentationsmappeVollversionPage() {
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe'
 
   return (
-    <div className="pmv-wrap" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
+    <div className="pmv-wrap" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
       <style>{styles}</style>
 
       <header className="pmv-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1c1a18', fontWeight: 600 }}>📁 {pageTitle}</h1>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>{pageSubtitle}</p>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>{fullPrintView ? 'Alle Kapitel mit Bildern – zum Drucken' : pageSubtitle}</p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button type="button" onClick={() => window.print()} style={{ padding: '0.5rem 1rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-            🖨️ Drucken
-          </button>
-          <button type="button" onClick={handleZurueck} style={{ padding: '0.5rem 1rem', background: '#f3f4f6', color: '#1c1a18', border: '1px solid #d1d5db', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
-            ← Zurück
-          </button>
+          {fullPrintView ? (
+            <>
+              <button type="button" onClick={() => window.print()} style={{ padding: '0.5rem 1rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                🖨️ Drucken
+              </button>
+              <button type="button" onClick={() => setFullPrintView(false)} style={{ padding: '0.5rem 1rem', background: '#f3f4f6', color: '#1c1a18', border: '1px solid #d1d5db', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
+                ← Zurück zur Einzelansicht
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={loadAllDocumentsForPrint} disabled={loadingFullPrint} style={{ padding: '0.5rem 1rem', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, cursor: loadingFullPrint ? 'wait' : 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                {loadingFullPrint ? 'Lade…' : '📄 Gesamte Mappe drucken'}
+              </button>
+              <button type="button" onClick={() => window.print()} style={{ padding: '0.5rem 1rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                🖨️ Drucken
+              </button>
+              <button type="button" onClick={handleZurueck} style={{ padding: '0.5rem 1rem', background: '#f3f4f6', color: '#1c1a18', border: '1px solid #d1d5db', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
+                ← Zurück
+              </button>
+            </>
+          )}
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
-        <nav className="pmv-no-print" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
-          <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-            {DOCUMENTS.map((doc, index) => (
-              <button
-                key={doc.id}
-                type="button"
-                onClick={() => loadDocument(doc.file)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  fontSize: '0.875rem',
-                  color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
-                  fontWeight: selectedDoc === doc.file ? 600 : 400
-                }}
-              >
-                {index === 0 ? doc.name : `${index}. ${doc.name}`}
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        <article style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', minHeight: 400 }}>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
+      {fullPrintView ? (
+        <article style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+          {allDocContents.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Keine Kapitel geladen.</div>
           ) : (
-            <div>
-              {renderMarkdown(docContent, (() => { const idx = DOCUMENTS.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}
-              {selectedDoc === '13-KONTAKT.md' && qrOek2DataUrl && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-                  <img src={qrOek2DataUrl} alt="QR zur Demo (ök2)" style={{ display: 'block', width: 140, height: 140 }} />
-                </div>
-              )}
-            </div>
+            DOCUMENTS.map((doc, idx) => (
+              <div key={doc.file} className={idx === 0 ? 'pmv-chapter-block pmv-chapter-first' : 'pmv-chapter-block'}>
+                {doc.file === '01-DECKBLATT.md'
+                  ? renderDeckblattCover()
+                  : renderMarkdown(allDocContents[idx] ?? '', idx > 0 ? idx : undefined, (path) => { setFullPrintView(false); loadDocument(path); }, `ch${idx}`)}
+                {doc.file === '13-KONTAKT.md' && qrOek2DataUrl && (
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                    <img src={qrOek2DataUrl} alt="QR zur Demo (ök2)" style={{ display: 'block', width: 140, height: 140 }} />
+                  </div>
+                )}
+              </div>
+            ))
           )}
         </article>
-      </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
+          <nav className="pmv-no-print" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
+            <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              {DOCUMENTS.map((doc, index) => (
+                <button
+                  key={doc.id}
+                  type="button"
+                  onClick={() => loadDocument(doc.file)}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '0.875rem',
+                    color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
+                    fontWeight: selectedDoc === doc.file ? 600 : 400
+                  }}
+                >
+                  {index === 0 ? doc.name : `${index}. ${doc.name}`}
+                </button>
+              ))}
+            </div>
+          </nav>
+
+          <article style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', minHeight: 400 }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
+            ) : (
+              <div>
+                {selectedDoc === '01-DECKBLATT.md'
+                  ? renderDeckblattCover()
+                  : renderMarkdown(docContent, (() => { const idx = DOCUMENTS.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}
+                {selectedDoc === '13-KONTAKT.md' && qrOek2DataUrl && (
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                    <img src={qrOek2DataUrl} alt="QR zur Demo (ök2)" style={{ display: 'block', width: 140, height: 140 }} />
+                  </div>
+                )}
+              </div>
+            )}
+          </article>
+        </div>
+      )}
       <div className="pmv-seitenfuss pmv-wrap" aria-hidden>
         <span className="pmv-seitenfuss-preview">Präsentationsmappe · (Seitenzahlen beim Drucken)</span>
       </div>

@@ -199,6 +199,11 @@ export function saveArtworksByKey(
   const current = readArtworksRawByKey(key)
   const currentCount = current.length
 
+  // ök2: Niemals leere Liste persistieren – Normal ist Muster; nur explizite Aktion (z. B. „Musterwerke zurücksetzen“) darf leeren.
+  if (key === OEF_ARTWORKS_KEY && list.length === 0) {
+    console.warn('⚠️ artworksStorage: Leere Liste für ök2 abgelehnt – Musterwerke bleiben Standard.')
+    return false
+  }
   // KRITISCH: Niemals leere Liste schreiben wenn noch Werke da sind (verhindert Datenverlust bei Crash/Bug)
   if (list.length === 0 && currentCount > 0) {
     console.warn('⚠️ artworksStorage: Speichern mit 0 Werken abgelehnt (Schutz – auch bei allowReduce)')

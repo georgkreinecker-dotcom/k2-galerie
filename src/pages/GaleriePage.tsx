@@ -331,8 +331,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
-  // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Am Mac/Desktop direkt rein wie lizenzierter Benutzer.
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false)
+  // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Von Entdecken „Meine eigene Galerie“ aus nie anzeigen – Buttons „Galerie teilen“ und „Mit mir in den Admin“ müssen sichtbar bleiben.
+  const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
+    if (typeof sessionStorage === 'undefined') return false
+    try {
+      if (sessionStorage.getItem('k2-from-entdecken') === '1') return false
+      if (sessionStorage.getItem(KEY_GALERIE_WELCOME_SEEN) === '1') return false
+    } catch (_) {}
+    return false
+  })
 
   // Guide-Avatar: Name + Entwurf-Flag aus URL-Parameter (von EntdeckenPage)
   const [guideName, setGuideName] = useState<string | null>(null)
@@ -3907,18 +3914,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           <GuideAbschlussKarte name={guideName} />
         )}
 
-        {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert als Fenster */}
+        {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert. Deckt oben NICHT ab, damit „Galerie teilen“ und „Mit mir in den Admin“ sichtbar bleiben. */}
         {musterOnly && showWelcomeModal && (
           <div
             style={{
               position: 'fixed',
               inset: 0,
+              top: 'clamp(4rem, 12vw, 5rem)',
               background: 'rgba(0,0,0,0.5)',
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'center',
-              zIndex: 10000,
+              zIndex: 9999,
               padding: '1rem',
+              paddingTop: '1.5rem',
             }}
           >
             <div

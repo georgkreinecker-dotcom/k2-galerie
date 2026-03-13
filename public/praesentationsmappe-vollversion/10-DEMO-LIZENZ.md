@@ -4,8 +4,8 @@
 
 Lizenzen: Basic für Einstieg, Pro mit vollem Umfang, VK2 für Kunstvereine (ab 10 Mitgliedern für den Verein kostenfrei). Keine Mindestlaufzeit, jederzeit kündbar.
 
-![Demo-Galerie ök2 – Willkommensseite](/img/oeffentlich/willkommen-demo.jpg)
+![Lizenz abschließen – Basic, Pro, Pro+, Zahlung per Karte (Stripe)](/img/oeffentlich/pm-lizenz-abschliessen.png)
 
-*Quelle: Galerie öffnen → `/galerie-oeffentlich` (ök2 Demo).*
+*Quelle: Lizenz wählen, Name/E-Mail, optional Empfehler-ID, Bezahlung per Stripe.*
 
 [SEITENUMBRUCH]

@@ -83,7 +83,7 @@ Entwickelt wird alles mit einem KI-Assistenten namens Joe – ich habe keine Pro
 
 Unter diesem Link siehst du die **öffentliche Demo-Galerie** – so, wie eine digitale Galerie für Künstlerinnen und Künstler aussieht und funktioniert (ohne Anmeldung):
 
-**→ [ök2 Demo-Galerie](/projects/k2-galerie/galerie-oeffentlich)**
+**→ [ök2 Demo-Galerie](https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich)**
 
 Einfach im Browser öffnen – am Handy oder am Rechner.
 

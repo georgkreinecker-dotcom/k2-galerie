@@ -98,6 +98,17 @@ describe('artworksStorage: Nie mit weniger überschreiben', () => {
     expect(readArtworksRawByKey(K2_KEY)).toHaveLength(2)
   })
 
+  it('ök2: leere Liste wird nie geschrieben (Normal = Muster)', () => {
+    localStorage.removeItem(OEK2_KEY)
+    const ok = saveArtworksByKey(OEK2_KEY, [], { allowReduce: true })
+    expect(ok).toBe(false)
+    expect(localStorage.getItem(OEK2_KEY)).toBeNull()
+    localStorage.setItem(OEK2_KEY, JSON.stringify([{ number: 'M1', title: 'M' }]))
+    const ok2 = saveArtworksByKey(OEK2_KEY, [], { allowReduce: true })
+    expect(ok2).toBe(false)
+    expect(readArtworksRawByKey(OEK2_KEY)).toHaveLength(1)
+  })
+
   it('saveArtworksForContext lehnt ab wenn weniger Werke (Sportwagen: default allowReduce false)', () => {
     localStorage.setItem(K2_KEY, JSON.stringify([{ number: '1' }, { number: '2' }]))
     const ok = saveArtworksForContext(false, false, [{ number: '1', title: 'A' }])

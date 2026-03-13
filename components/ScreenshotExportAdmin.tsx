@@ -719,6 +719,13 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
     if (artworks.length < before) {
       console.warn(`⚠️ ök2: ${before - artworks.length} K2-Galerie-Werke in Anzeige ausgeblendet (nur Anzeige gefiltert, localStorage unverändert)`)
     }
+    // ök2: Für Anzeige fehlende/Platzhalter-Bilder durch Kategorie-Standardbild ersetzen (wie GalerieVorschauPage loadOeffentlichArtworks)
+    artworks = artworks.map((a: any) => {
+      const out = { ...a }
+      const u = out.imageUrl || out.previewUrl
+      if (!u || (typeof u === 'string' && u.startsWith('data:image/svg+xml'))) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      return out
+    })
   }
 
   // KRITISCH: Behebe automatisch doppelte Nummern beim Laden
@@ -9205,21 +9212,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         return
       }
 
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        // Desktop mit Share-API: nacheinander teilen, jedes Mal neues File, Pause damit Dialog schließen kann
-        for (let i = 0; i < items.length; i++) {
-          const { blob, label } = items[i]
-          const file = new File([blob], `etikett-${label.replace(/\s*\([^)]*\)/g, '')}-${i + 1}.png`, { type: 'image/png' })
-          try {
-            await navigator.share({ title: `Etikett ${label}`, text: 'K2 Galerie', files: [file] })
-          } catch (_) {}
-          if (i < items.length - 1) await new Promise(resolve => setTimeout(resolve, 600))
-        }
-        setSelectedForBatchPrint(new Set())
-        return
-      }
-
-      // Desktop ohne Share: ein Fenster mit allen Etiketten (Drucken = alle; Popup-Blocker umgehen)
+      // Desktop: immer Druckfenster + Druckdialog (kein Share-Menü – führt nicht zum Drucker)
       const dataUrls = await Promise.all(items.map((it) => blobToDataUrl(it.blob)))
       const w = lm.width
       const h = lm.height
@@ -9237,8 +9230,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       if (win) {
         win.document.write(html)
         win.document.close()
+        // Druckdialog direkt öffnen (führt zum Drucker, nicht zum Share-Menü)
+        setTimeout(() => { try { win.print() } catch (_) {} }, 500)
       } else {
-        alert('Pop-up wurde blockiert. Bitte erlaube Pop-ups für diese Seite und versuche „Etiketten drucken“ erneut.')
+        // Fallback: Erstes Etikett in neuem Tab öffnen → User kann dort Drucken wählen
+        const firstBlob = items[0].blob
+        const fallbackUrl = URL.createObjectURL(firstBlob)
+        window.open(fallbackUrl, '_blank')
+        setTimeout(() => URL.revokeObjectURL(fallbackUrl), 60000)
+        alert('Pop-up wurde blockiert.\n\nErstes Etikett stattdessen in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nFür alle Etiketten: Pop-ups für diese Seite erlauben und „Sammeldruck“ erneut klicken.')
       }
       setSelectedForBatchPrint(new Set())
     } catch (e) {
@@ -9247,8 +9247,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  // Mobil: Etikett als Bild erzeugen und Teilen-Menü öffnen (ein Tipp → Drucker/Brother-App wählen)
-  const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || 'ontouchstart' in window)
+  // Mobil = nur echte Handys/Tablets (nicht Mac mit Trackpad – sonst Share statt Druckdialog)
+  const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
 
   const closeShareFallbackOverlay = () => {
     const urlToRevoke = shareFallbackImageUrl
@@ -9549,27 +9549,62 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     const n = Math.max(1, Math.min(99, etikettAnzahl))
     try {
       const blob = await getEtikettBlob()
-      const file = new File([blob], `etikett-${savedArtwork.number}.png`, { type: 'image/png' })
       if (isMobile) {
         shareFallbackBlobRef.current = blob
         setShareFallbackImageUrl(URL.createObjectURL(blob))
         setShowShareFallbackOverlay(true)
         return
       }
-      for (let i = 0; i < n; i++) {
-        if (typeof navigator !== 'undefined' && navigator.share) {
-          await navigator.share({ title: `Etikett ${savedArtwork.number}${n > 1 ? ` (${i + 1}/${n})` : ''}`, text: `${savedArtwork.title || ''} – K2 Galerie`, files: [file] })
-        } else {
-          const blobUrl = URL.createObjectURL(blob)
-          const w = window.open(blobUrl, '_blank')
-          if (w) { try { w.focus() } catch (_) { }; w.document.title = `Etikett ${savedArtwork.number}` }
-          setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-        }
-        if (n > 1 && i < n - 1) await new Promise(r => setTimeout(r, 400))
+      // Desktop: Druckfenster + Druckdialog (führt zum Drucker, nicht zum Share-Menü)
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+        r.readAsDataURL(blob)
+      })
+      const activeTenant = getCurrentTenantId()
+      const settings = loadPrinterSettingsForTenant(activeTenant)
+      const lm = parseLabelSize(settings.labelSize)
+      const w = lm.width
+      const h = lm.height
+      const pw = Math.round((w * 300) / 25.4)
+      const ph = Math.round((h * 300) / 25.4)
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${savedArtwork.number}</title><style>
+        body { margin: 0; padding: 8px; font-family: system-ui; }
+        .etikett { width: ${w}mm; height: ${h}mm; page-break-after: always; display: block; overflow: hidden; margin: 0 auto 8px; }
+        .etikett img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        @media print { body { padding: 0; } .etikett { margin: 0; page-break-after: always; } }
+      </style></head><body>
+        ${Array(n).fill(`<div class="etikett"><img src="${dataUrl}" alt="Etikett" width="${pw}" height="${ph}"></div>`).join('\n')}
+      </body></html>`
+      const win = window.open('', '_blank')
+      if (win) {
+        win.document.write(html)
+        win.document.close()
+        setTimeout(() => { try { win.print() } catch (_) {} }, 500)
+      } else {
+        // Fallback: Etikett in neuem Tab öffnen → User kann dort Drucken (⌘P) wählen
+        const blobUrl = URL.createObjectURL(blob)
+        window.open(blobUrl, '_blank')
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        alert('Pop-up wurde blockiert.\n\nEtikett stattdessen in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen, dann Brother QL oder anderen Drucker.')
       }
     } catch (e) {
       if ((e as Error)?.message?.includes('QR')) alert('QR konnte nicht erzeugt werden. Bitte erneut versuchen.')
       else alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden.')
+    }
+  }
+
+  /** Fallback: Etikett in neuem Tab öffnen – User kann dort Drucken (⌘P/Strg+P) wählen. Immer anbieten, damit jeder zum Drucker kommt. */
+  const handleOpenEtikettInNewTab = async () => {
+    if (!savedArtwork) return
+    try {
+      const blob = await getEtikettBlob()
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
+    } catch (e) {
+      alert((e as Error)?.message || 'Etikett konnte nicht geöffnet werden.')
     }
   }
 
@@ -11838,12 +11873,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
-                    { emoji: '📁', name: 'Präsentationsmappen', beschreibung: 'Links zum Mitsenden – ök2 und VK2 Kurz & Lang, druckfertig.', tab: 'praesentationsmappen' },
                   ] : [
                     { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit, Presse-Vorlage und Einladung an Medien – ök2 testen.', tab: 'presse' },
-                    { emoji: '📁', name: 'Präsentationsmappen', beschreibung: 'Links zum Mitsenden – ök2 und VK2 Kurz & Lang, druckfertig.', tab: 'praesentationsmappen' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
@@ -11859,7 +11892,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                     eventplan: { bg: '#f5f8f2', text: s.text, sub: s.muted, border: '#90a88044' },
                     presse: { bg: '#f2f4f8', text: s.text, sub: s.muted, border: '#8090b044' },
                     katalog: { bg: '#f4f8f0', text: s.text, sub: s.muted, border: '#80a09044' },
-                    praesentationsmappen: { bg: '#f8f4f0', text: s.text, sub: s.muted, border: '#c4a57444' },
                   }
                   return (
                     <div style={{ marginBottom: 'clamp(2rem, 4vw, 2.5rem)' }}>
@@ -11872,7 +11904,11 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         Was möchtest du heute tun?
                       </h2>
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span>Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.</span>
+                        {tenant.isOeffentlich && !guideFlowAktiv ? (
+                          <span>Schau dich ein wenig in unseren Abteilungen um. Bei Fragen kannst du im Handbuch nachlesen.</span>
+                        ) : (
+                          <span>Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.</span>
+                        )}
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                           <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab))} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
                           <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
@@ -17928,7 +17964,7 @@ ${name}`
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
             marginBottom: 'clamp(2rem, 5vw, 3rem)'
           }}>
-            {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && !showOeffentlichkeitsarbeitModal && (
+            {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && !showOeffentlichkeitsarbeitModal && !tenant.isOeffentlich && (
               <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
                 <button
                   type="button"
@@ -18267,21 +18303,39 @@ ${name}`
                                         </div>
 
                                         {istPraesentationsmappen ? (
-                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                            <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: `1px solid ${s.accent}33`, borderRadius: '8px', fontSize: '0.8rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
-                                              Präsentationsmappe
-                                            </Link>
-                                            {[
-                                              { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
-                                              { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
-                                              { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
-                                              { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
-                                              { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
-                                            ].map(({ label, path }) => (
-                                              <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: `1px solid ${s.accent}33`, borderRadius: '8px', fontSize: '0.8rem', color: s.accent, textDecoration: 'none', fontWeight: 500 }}>
-                                                {label}
-                                              </a>
-                                            ))}
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                            {/* Muster im Stil der Präsentationsmappe – mit Bildern, Kachel bleibt */}
+                                            <div style={{
+                                              background: '#fffefb',
+                                              border: '1px solid rgba(13,148,136,0.25)',
+                                              borderRadius: '8px',
+                                              padding: '0.5rem 0.6rem',
+                                              boxShadow: '0 2px 6px rgba(13,148,136,0.08)'
+                                            }}>
+                                              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#0d9488', marginBottom: '0.35rem' }}>Muster – Stil deiner Mappe</div>
+                                              <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: 'linear-gradient(145deg, #1a0f0a 0%, #2d1a14 100%)', flexShrink: 0 }} title="Deckblatt" />
+                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)', flexShrink: 0 }} title="Titel" />
+                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: '#e5e2dd', flexShrink: 0 }} title="Seite" />
+                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f0fdfa', border: '1px solid #99f6e4', flexShrink: 0 }} title="Inhalt" />
+                                              </div>
+                                            </div>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                              <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                Präsentationsmappe
+                                              </Link>
+                                              {[
+                                                { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
+                                                { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
+                                                { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
+                                                { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
+                                                { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
+                                              ].map(({ label, path }) => (
+                                                <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                  {label}
+                                                </a>
+                                              ))}
+                                            </div>
                                           </div>
                                         ) : hatDokumente && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -20528,10 +20582,23 @@ ${name}`
                     🖨️ Etikett drucken
                   </button>
                   <div style={{ fontSize: '0.82rem', color: '#555', background: '#f8f7f5', borderRadius: 8, padding: '0.6rem 0.75rem', lineHeight: 1.6 }}>
-                    <strong>Teilen-Menü öffnet sich</strong> – dann:<br />
-                    • <strong>Etikettendrucker</strong> (Brother, Dymo, …) → Drucker-App wählen<br />
-                    • <strong>WLAN-Drucker</strong> (AirPrint) → Drucker direkt wählen<br />
-                    • <strong>Speichern</strong> → Bild in Foto-App → von dort drucken
+                    {isMobile ? (
+                      <>
+                        <strong>Teilen-Menü öffnet sich</strong> – dann:<br />
+                        • <strong>Etikettendrucker</strong> (Brother, Dymo, …) → Drucker-App wählen<br />
+                        • <strong>WLAN-Drucker</strong> (AirPrint) → Drucker direkt wählen<br />
+                        • <strong>Speichern</strong> → Bild in Foto-App → von dort drucken
+                      </>
+                    ) : (
+                      <>
+                        <strong>Druckdialog öffnet sich</strong> – Drucker wählen (z. B. Brother QL-820MWBc), dann drucken. Falls nicht: unten „In neuem Tab öffnen“ oder „Als Bild speichern“.
+                        {etikettAnzahl > 1 && (
+                          <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #ddd' }}>
+                            Für <strong>{etikettAnzahl} gleiche Etiketten</strong>: Im Druckdialog „Kopien“ auf {etikettAnzahl} stellen.
+                          </div>
+                        )}
+                      </>
+                    )}
                     {etikettAnzahl > 1 && isMobile && (
                       <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #ddd' }}>
                         Für <strong>{etikettAnzahl} gleiche Etiketten</strong>: In der Drucker-App „Kopien“ auf {etikettAnzahl} stellen.
@@ -20556,6 +20623,46 @@ ${name}`
                   >
                     Später drucken
                   </button>
+                  <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.75rem 0 0.25rem' }}>
+                    Immer zum Drucker: Falls der Druckdialog nicht erscheint oder ein anderer Weg nötig ist:
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <button
+                      type="button"
+                      onClick={handleOpenEtikettInNewTab}
+                      style={{
+                        padding: '0.5rem 0.9rem',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: '#8b6914',
+                        background: '#fff',
+                        border: '1px solid #8b6914',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📄 In neuem Tab öffnen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => { await handleDownloadEtikettDirect() }}
+                      style={{
+                        padding: '0.5rem 0.9rem',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        color: '#8b6914',
+                        background: '#fff',
+                        border: '1px solid #8b6914',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      ⬇️ Als Bild speichern
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.35rem 0 0' }}>
+                    Im Tab: Drucken (⌘P / Strg+P) → Brother QL wählen. Gespeichertes Bild: in Brother iPrint &amp; Label öffnen.
+                  </p>
                 </div>
                 {(() => {
                   const printTenant = getCurrentTenantId()
@@ -20792,6 +20899,24 @@ ${name}`
                 }}
               >
                 {canUseShare ? '📤 Etikett teilen' : '⬇️ Etikett herunterladen'}
+              </button>
+              <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0 0.25rem' }}>Immer zum Drucker (falls Teilen nicht geht):</p>
+              <button
+                type="button"
+                onClick={() => { if (shareFallbackImageUrl) window.open(shareFallbackImageUrl, '_blank') }}
+                style={{
+                  width: '100%',
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  color: '#8b6914',
+                  background: '#fff',
+                  border: '1px solid #8b6914',
+                  borderRadius: 8,
+                  cursor: 'pointer'
+                }}
+              >
+                📄 In neuem Tab öffnen
               </button>
               <button type="button" className="btn-secondary" onClick={closeShareFallbackOverlay} style={{ marginTop: '0.5rem' }}>
                 Schließen

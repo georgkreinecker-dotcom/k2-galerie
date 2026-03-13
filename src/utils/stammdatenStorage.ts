@@ -73,7 +73,7 @@ export function mergeStammdatenGallery(
   }
 }
 
-/** Leere Stammdaten für ök2 – neue User sehen keine Musterdaten, Felder sofort überschreibbar. */
+/** Leere Stammdaten für ök2 – nur bei expliziter Aktion (z. B. „Demo leeren“). Normal = Muster. */
 function getEmptyOeffentlich(type: StammdatenType): any {
   if (type === 'martina' || type === 'georg') {
     return { name: '', email: '', phone: '', website: '', address: '', city: '', country: '' }
@@ -107,19 +107,17 @@ function getDefaults(tenant: StammdatenTenantId, type: StammdatenType): any {
   return K2_STAMMDATEN_DEFAULTS.gallery
 }
 
-/** Liest Stammdaten – eine Schicht. Leer/ungültig → Defaults. Für ök2 bei leerem Speicher: leere Felder (keine Musterdaten für neue User). */
+/** Liest Stammdaten – eine Schicht. Leer/ungültig → Defaults. Für ök2 bei leerem Speicher: MUSTER_TEXTE (Normal = Muster; neuer User leert explizit). */
 export function loadStammdaten(tenant: StammdatenTenantId, type: StammdatenType): any {
   try {
     const key = getStammdatenKey(tenant, type)
     const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
     if (!raw || !raw.trim()) {
-      if (tenant === 'oeffentlich') return getEmptyOeffentlich(type)
       return getDefaults(tenant, type)
     }
     const parsed = JSON.parse(raw)
-    return typeof parsed === 'object' && parsed !== null ? parsed : (tenant === 'oeffentlich' ? getEmptyOeffentlich(type) : getDefaults(tenant, type))
+    return typeof parsed === 'object' && parsed !== null ? parsed : getDefaults(tenant, type)
   } catch {
-    if (tenant === 'oeffentlich') return getEmptyOeffentlich(type)
     return getDefaults(tenant, type)
   }
 }
@@ -133,7 +131,7 @@ export function saveStammdaten(
 ): void {
   try {
     const key = getStammdatenKey(tenant, type)
-    const defaults = tenant === 'oeffentlich' ? getEmptyOeffentlich(type) : getDefaults(tenant, type)
+    const defaults = getDefaults(tenant, type)
     let toWrite = data
     if (options.merge !== false) {
       const existing = loadStammdaten(tenant, type)

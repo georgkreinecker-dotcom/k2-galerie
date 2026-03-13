@@ -8,6 +8,6 @@ Zwei Bereiche, beide getrennt bearbeitbar:
 
 ![Willkommen](/img/oeffentlich/willkommen-demo.jpg)
 
-![Galerie mit Werken](/img/oeffentlich/galerie-card.jpg)
+![Galerie-Vorschau mit Werkkarten](/img/oeffentlich/galerie-vorschau-karten.png)
 
 [SEITENUMBRUCH]

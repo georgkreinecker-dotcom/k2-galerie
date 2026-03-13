@@ -147,4 +147,20 @@ Slogan und Botschaft aus mök2 (oben) übernehmen. Keine neuen Texte erfinden �
 
 ---
 
-**Stand:** 12.03.26 – Konzept und Struktur skizziert. Umsetzung folgt bei Bedarf.
+## 7. Druckqualität und professionelle Setzung
+
+**Aktuell:** Die Druckversion nutzt Browser-Druck (window.print) mit optimiertem CSS: fließender Inhalt (kein Zwangsumbruch pro Kapitel), 10pt-Satz, Silbentrennung (hyphens), Rand 15–18 mm, Seitenzahl im Fuß. Das reduziert Leerseiten und verbessert die Lesbarkeit.
+
+**Für echte „Mappen“-Qualität (Druckerei, Broschüre):** Browser-Druck hat Grenzen. Professionelle Setzung (z. B. Spalten, Laufweite, ausgewogene Umbrüche) machen spezialisierte Tools:
+
+| Tool | Beschreibung |
+|------|----------------|
+| **Paged.js** | Kostenlose JS-Bibliothek, rendert HTML mit CSS Paged Media im Browser zu PDF. W3C-Standards, laufende Köpfe/Füße, bessere Umbrüche. [pagedjs.org](https://pagedjs.org) |
+| **Prince** | Kommerziell, sehr gute PDF-Qualität aus HTML/CSS. |
+| **WeasyPrint** | Open Source, Python, HTML/CSS → PDF. |
+
+**Empfehlung:** Für schnelle Ausdrucke und PDF zum Mitgeben reicht die aktuelle Druckansicht. Soll die Mappe in Druckerei-Qualität (z. B. als gebundene Broschüre) erstellt werden, kann ein Export über Paged.js oder WeasyPrint erwogen werden – dazu müsste der Inhalt (Markdown/HTML) in ein separates Template gefüttert werden.
+
+---
+
+**Stand:** 12.03.26 – Konzept und Struktur skizziert. 13.03.26 – Druck-CSS überarbeitet (weniger Leerseiten, bessere Setzung); Abschnitt 7 ergänzt.

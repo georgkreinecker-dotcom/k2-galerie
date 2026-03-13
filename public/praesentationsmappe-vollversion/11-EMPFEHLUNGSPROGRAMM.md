@@ -6,6 +6,8 @@ Nutzer:innen werben mit persönlicher **Empfehler-ID**: 10 % Rabatt für den G
 
 **Rechtlich:** Transparent in AGB (Wer, wie, wann); Datenschutz nur für die Zuordnung; Missbrauch vermieden (keine Selbstempfehlung). Ausgestaltung der Gutschrift (Gutschrift, Auszahlung oder Gutschein) je nach Betriebsmodell.
 
-*Screenshot: Einstellungen → Empfehlungs-Programm / Empfehlungstool. Optional unter `/img/oeffentlich/pm-empfehlung.png` ablegen.*
+![Empfehlungs-Programm – Empfehler-ID, Rabattstufe, Link teilen](/img/oeffentlich/pm-empfehlungsprogramm.png)
+
+*Quelle: Einstellungen → Empfehlungs-Programm / Empfehlungstool.*
 
 [SEITENUMBRUCH]

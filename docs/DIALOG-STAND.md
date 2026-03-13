@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
+
 **Letzter Build-Push:** 13.03.26 – (noch nicht gepusht) Vercel Hobby 12-Functions-Limit: visit + build-info in eine API (visit-and-build) zusammengeführt; api/visit.js und api/build-info.js entfernt; write-build-info.js schreibt build-info-payload.json; Rewrites in vercel.json. Davor: ök2 Musterwerke BUG-035, user-wishes CommonJS.
 
 **Vorher:** 13.03.26 – Wünsche von Nutzer:innen (Entdecken-Modal → API; Smart Panel „💡 Wünsche“). Commit f5ca886 / 9869f8f – Vercel-Deployments zeigten Error.
