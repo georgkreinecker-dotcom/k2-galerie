@@ -3077,48 +3077,88 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               </button>
             )}
 
-            {/* Teilen: Link kopieren – direkter Link zu diesem Werk */}
-            {lightboxImage.artwork && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  const idOrNum = lightboxImage.artwork.number ?? lightboxImage.artwork.id ?? ''
-                  const url = `${window.location.origin}${window.location.pathname}#werk=${encodeURIComponent(String(idOrNum))}`
-                  navigator.clipboard.writeText(url).then(() => {
+            {/* Teilen (Web Share) und Link kopieren – direkter Link zu diesem Werk */}
+            {lightboxImage.artwork && (() => {
+              const art = lightboxImage.artwork
+              const idOrNum = art.number ?? art.id ?? ''
+              const url = `${window.location.origin}${window.location.pathname}#werk=${encodeURIComponent(String(idOrNum))}`
+              const shareTitle = (art.title || `Werk ${idOrNum}`).trim()
+              const shareText = [shareTitle, art.price ? `Preis: € ${art.price}` : ''].filter(Boolean).join(' · ')
+              const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+              const handleShare = async () => {
+                if (!canShare) return
+                try {
+                  await navigator.share({ title: shareTitle, text: shareText, url })
+                } catch (err) {
+                  if ((err as Error)?.name !== 'AbortError') {
+                    try { navigator.clipboard.writeText(url) } catch (_) {}
+                  }
+                }
+              }
+              const handleCopyLink = () => {
+                navigator.clipboard.writeText(url).then(() => {
+                  setShareLinkCopied(true)
+                  setTimeout(() => setShareLinkCopied(false), 2500)
+                }).catch(() => {
+                  try {
+                    const ta = document.createElement('textarea')
+                    ta.value = url
+                    document.body.appendChild(ta)
+                    ta.select()
+                    document.execCommand('copy')
+                    document.body.removeChild(ta)
                     setShareLinkCopied(true)
                     setTimeout(() => setShareLinkCopied(false), 2500)
-                  }).catch(() => {
-                    try {
-                      const ta = document.createElement('textarea')
-                      ta.value = url
-                      document.body.appendChild(ta)
-                      ta.select()
-                      document.execCommand('copy')
-                      document.body.removeChild(ta)
-                      setShareLinkCopied(true)
-                      setTimeout(() => setShareLinkCopied(false), 2500)
-                    } catch (_) {}
-                  })
-                }}
-                title="Link zu diesem Werk kopieren (zum Teilen per Mail, Social, Flyer)"
-                style={{
-                  background: shareLinkCopied ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  color: '#ffffff',
-                  fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  fontWeight: 600,
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
-              </button>
-            )}
+                  } catch (_) {}
+                })
+              }
+              return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {canShare && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShare() }}
+                      title="Teilen (WhatsApp, Mail, Social …)"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      📤 Teilen
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleCopyLink() }}
+                    title="Link zu diesem Werk kopieren (zum Teilen per Mail, Social, Flyer)"
+                    style={{
+                      background: shareLinkCopied ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      fontWeight: 600,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
+                  </button>
+                </div>
+              )
+            })()}
 
             {/* Bild bearbeiten: nur auf Desktop (auf Mobil ausblenden – Bild nur im Admin ändern) */}
             {!musterOnly && showMobileAdmin && lightboxImage.artwork && !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (

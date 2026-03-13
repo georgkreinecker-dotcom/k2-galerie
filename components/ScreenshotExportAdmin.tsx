@@ -13326,6 +13326,59 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 <span style={{ fontSize: '0.85rem', color: syncStatusBar.phase === 'error' ? '#dc2626' : syncStatusBar.phase === 'success' ? '#22c55e' : s.text, marginTop: '0.35rem', display: 'inline-block' }}>{syncStatusBar.message}</span>
               </div>
             )}
+
+            {/* Link zu deiner Galerie – kopieren und teilen (Social, Mail) */}
+            <div style={{ marginTop: '1.75rem', padding: '1rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}28`, borderRadius: '12px' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>🔗 Link zu deiner Galerie</div>
+              <p style={{ fontSize: '0.85rem', color: s.muted, margin: '0 0 0.75rem', lineHeight: 1.5 }}>Diesen Link kannst du teilen (Social Media, E-Mail, Flyer). Ein Klick – Kopieren oder Teilen.</p>
+              {(() => {
+                const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+                const galerieUrl = BASE_APP_URL + galeriePath
+                const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+                return (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+                    <code style={{ flex: '1 1 200px', minWidth: 0, fontSize: '0.8rem', padding: '0.4rem 0.6rem', background: 'rgba(0,0,0,0.06)', borderRadius: '8px', wordBreak: 'break-all', color: s.text }}>{galerieUrl}</code>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          navigator.clipboard.writeText(galerieUrl)
+                          alert('✅ Link kopiert! Einfügen in Social, Mail oder Flyer.')
+                        } catch (_) {
+                          const ta = document.createElement('textarea')
+                          ta.value = galerieUrl
+                          document.body.appendChild(ta)
+                          ta.select()
+                          document.execCommand('copy')
+                          document.body.removeChild(ta)
+                          alert('✅ Link kopiert!')
+                        }
+                      }}
+                      style={{ padding: '0.5rem 0.9rem', background: s.accent + '22', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: s.accent, cursor: 'pointer' }}
+                    >
+                      Kopieren
+                    </button>
+                    {canShare && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await navigator.share({ title: 'Galerie', text: 'Schau dir meine Galerie an', url: galerieUrl })
+                          } catch (err) {
+                            if ((err as Error)?.name !== 'AbortError') {
+                              try { navigator.clipboard.writeText(galerieUrl) } catch (_) {}
+                            }
+                          }
+                        }}
+                        style={{ padding: '0.5rem 0.9rem', background: s.accent + '22', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: s.accent, cursor: 'pointer' }}
+                      >
+                        📤 Teilen
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
           </section>
         )}
 

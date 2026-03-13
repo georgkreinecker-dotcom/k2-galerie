@@ -1,12 +1,21 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Admin Anmeldung & Abmeldung: Util adminUnlockStorage + 8 Tests (Anmeldung, Abmeldung, Abgelaufen, kompletter Ablauf). Commit: 8f50a93 ✅ auf GitHub.
+**Letzter Build-Push:** 13.03.26 – Social/Teilen: Admin Tab Veröffentlichen – Block „Link zu deiner Galerie“ (Kopieren + Teilen/Web Share). K2/ök2/VK2-URL je Mandant. Commit: (gleich nach Push) ✅.
 
-**Vorher:** 12.03.26 – Auto-Download (54a463c). Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
+**Vorher:** 12.03.26 – Admin Anmeldung & Abmeldung (8f50a93). Lightbox + Galerie-Seite: Teilen/Link kopieren bereits umgesetzt.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 13.03.26 – Social/Teilen: Admin „Link zu deiner Galerie“
+
+- **Kontext:** Drei Punkte geplant: (1) Lightbox Teilen ✅ (2) Galerie-Seite „Galerie teilen“ ✅ (3) Admin Tab Veröffentlichen: Block „Link zu deiner Galerie“ mit Kopieren + Teilen.
+- **Umgesetzt:** Im Tab **Veröffentlichen** neuer Block unter der Sync-Statusleiste: Überschrift „🔗 Link zu deiner Galerie“, Galerie-URL je Mandant (K2 / ök2 / VK2 aus PROJECT_ROUTES + BASE_APP_URL), Buttons **Kopieren** (Clipboard, Fallback execCommand) und **Teilen** (nur wenn navigator.share).
+- **Dateien:** components/ScreenshotExportAdmin.tsx.
+- **Nächster Schritt:** Commit + Push; am PC im Admin → Veröffentlichen prüfen.
 
 ---
 

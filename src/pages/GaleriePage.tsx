@@ -2402,6 +2402,56 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
           </div>
         )}
+        {/* Galerie teilen (Web Share) oder Link kopieren – für alle sichtbar. */}
+        {typeof navigator !== 'undefined' && (
+        <button
+          type="button"
+          onClick={async () => {
+            const url = window.location.origin + window.location.pathname + window.location.search
+            const text = (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
+            if (typeof navigator.share === 'function') {
+              try {
+                await navigator.share({ title: displayGalleryName || 'Galerie', text, url })
+              } catch (err) {
+                if ((err as Error)?.name !== 'AbortError') {
+                  try { await navigator.clipboard.writeText(url) } catch (_) {}
+                }
+              }
+            } else {
+              try {
+                await navigator.clipboard.writeText(url)
+              } catch (_) {
+                const ta = document.createElement('textarea')
+                ta.value = url
+                document.body.appendChild(ta)
+                ta.select()
+                document.execCommand('copy')
+                document.body.removeChild(ta)
+              }
+            }
+          }}
+          title={typeof navigator.share === 'function' ? 'Galerie teilen (WhatsApp, Mail, Social …)' : 'Link zur Galerie kopieren'}
+          style={{
+            position: 'fixed',
+            top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
+            right: showAdminEntryOnGalerie ? 'clamp(6rem, 18vw, 8.5rem)' : 'clamp(1rem, 2vw, 1.5rem)',
+            background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
+            color: vk2 ? '#fff' : musterOnly ? 'var(--k2-text)' : '#fff',
+            padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+            borderRadius: '10px',
+            fontSize: 'clamp(0.78rem, 1.8vw, 0.9rem)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.35rem'
+          }}
+        >
+          {typeof navigator.share === 'function' ? '📤 Galerie teilen' : '🔗 Link kopieren'}
+        </button>
+        )}
         {/* Admin-Button nur anzeigen, wenn von APf/freigeschaltet – Besucher von Google (öffentliche Galerie) sehen keinen Admin. */}
         {showAdminEntryOnGalerie && (
         <button
