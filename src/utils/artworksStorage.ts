@@ -9,7 +9,7 @@
  * Speichermix: Große Werkbilder werden in IndexedDB ausgelagert (artworkImageStore), nur Referenzen in localStorage.
  */
 
-import { fillMissingImageRefsFromIndexedDB, prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
+import { fillMissingImageRefsFromIndexedDB, imageUrlWithCacheBust, prepareArtworksForStorage, resolveArtworkImages } from './artworkImageStore'
 import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 
 const K2_ARTWORKS_KEY = 'k2-artworks'
@@ -183,7 +183,7 @@ export async function readArtworksForContextWithResolvedImages(musterOnly: boole
   return readArtworksWithResolvedImages(key)
 }
 
-export { resolveArtworkImages } from './artworkImageStore'
+export { imageUrlWithCacheBust, resolveArtworkImages } from './artworkImageStore'
 
 /**
  * Speichert Werke in einen Key. Schutz: nicht mit weniger überschreiben (außer allowReduce).
