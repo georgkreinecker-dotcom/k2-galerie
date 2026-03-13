@@ -34,12 +34,14 @@ alwaysApply: true
 
 ---
 
-## Laden (ein Einstieg)
+## Laden (ein Einstieg) – **eisernes Gesetz**
+
+**Eisernes Gesetz:** „An Server senden = dieser Stand ist richtig. Nach Abholen müssen Daten und Fotos zu 100 % gleich an Mac und Handy sein.“ Beim Laden vom Server **immer** `serverAsSoleTruth: true` übergeben – dann wird ein vorhandenes Server-Werk **niemals** durch die lokale Version ersetzt.
 
 | Erlaubt | Verboten |
 |--------|----------|
-| **mergeServerWithLocal** + **preserveLocalImageData** (in dieser Reihenfolge); Aufrufer: GaleriePage loadData, GalerieVorschauPage handleRefresh | Server-Daten direkt in localStorage schreiben ohne Merge |
-| Optional: gemeinsame Helper-Funktion **applyServerDataToLocal** (syncMerge.ts) nutzen | Zweiter Lade-Pfad ohne preserveLocalImageData |
+| **mergeServerWithLocal(..., { ..., serverAsSoleTruth: true })** + **preserveLocalImageData**; Aufrufer: GaleriePage loadData/handleRefresh, Admin handleLoadFromServer, supabaseClient loadArtworksFromSupabase | Server-Daten direkt in localStorage schreiben ohne Merge |
+| **applyServerDataToLocal(..., { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })** | Lade-Pfad **ohne** serverAsSoleTruth: true (würde Lokal über Server stellen) |
 
 ---
 
@@ -47,7 +49,7 @@ alwaysApply: true
 
 - [ ] Habe ich PROZESS-VEROEFFENTLICHEN-LADEN.md und ein-standard-problem.mdc gelesen?
 - [ ] Nutze ich **nur** publishGalleryDataToServer für Veröffentlichen (K2) bzw. den dort dokumentierten Ablauf?
-- [ ] Nutze ich **immer** mergeServerWithLocal + preserveLocalImageData beim Laden von Server-Daten?
+- [ ] Nutze ich **immer** mergeServerWithLocal + preserveLocalImageData beim Laden von Server-Daten – und **immer serverAsSoleTruth: true**?
 - [ ] Habe ich **keinen** neuen Fetch zu write-gallery-data oder neuen Lade-Pfad eingebaut?
 
 ---

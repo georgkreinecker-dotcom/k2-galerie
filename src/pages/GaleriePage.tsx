@@ -1089,7 +1089,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             const serverImagesCount = serverArtworks.filter(
               (a: any) => a?.imageUrl && typeof a.imageUrl === 'string' && (a.imageUrl.startsWith('http://') || a.imageUrl.startsWith('https://'))
             ).length
-            const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap, onlyAddLocalIfMobileAndVeryNew: true })
+            const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { serverMap, onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
             if (toHistory.length > 0) appendToHistory(toHistory)
 
             // BUG-021: Server-Daten haben oft keine Bilder (Export streicht Base64). Lokale Bilddaten erhalten.
@@ -1534,7 +1534,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 console.warn(`⚠️ Initial-Load: Server ${serverArtworks.length} vs. lokal ${localArtworks.length} – Sync übersprungen`)
                 window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: localArtworks.length, fromGaleriePage: true, initialLoad: true, syncSkipped: true } }))
               } else {
-              const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true })
+              const { merged, toHistory } = mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
               if (toHistory.length > 0) appendToHistory(toHistory)
               // BUG-021: Lokale Bilddaten erhalten, wenn Server keine Bilder liefert
               const mergedWithImages = preserveLocalImageData(merged, localArtworks, (a: any) => {
@@ -1922,7 +1922,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             const localArr = Array.isArray(local) ? local : []
             const lokalAnzahl = localArr.length
             if (data.artworks.length < lokalAnzahl * 0.5) return // 50%-Regel
-            const { merged } = mergeServerWithLocal(data.artworks, localArr, { onlyAddLocalIfMobileAndVeryNew: true })
+            const { merged } = mergeServerWithLocal(data.artworks, localArr, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
             const withImages = preserveLocalImageData(merged, localArr)
             await saveArtworksForContextWithImageStore(true, false, withImages, { allowReduce: false })
             window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: withImages.length, fromGaleriePage: true, oeffentlichFromServer: true } }))

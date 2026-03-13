@@ -25,20 +25,23 @@
 
 ---
 
-## 2. „Bilder vom Server laden“ (Server = Quelle)
+## 2. „Bilder vom Server laden“ (Server = Quelle) – **eisernes Gesetz**
 
 **Ein Standard:** Merge mit `mergeServerWithLocal`, dann **immer** `preserveLocalImageData` vor dem Speichern.
+
+**Eisernes Gesetz (Georg):** „Wenn ich an Server sende, ist das der absolut richtige Stand. Nach dem Abholen müssen alle Daten und Fotos zu 100 % gleich an Mac und Handy sein – ohne Wenn und Aber.“  
+**Umsetzung:** Beim Laden vom Server wird **immer** `serverAsSoleTruth: true` übergeben. Ein auf dem Server vorhandenes Werk wird **niemals** durch die lokale Version ersetzt (weder „Mobile gewinnt“ noch „neueres updatedAt“). Ergebnis: Nach „An Server senden“ und „Vom Server laden“ sind alle Geräte identisch.
 
 | Schritt | Was passiert |
 |--------|----------------|
 | 1 | Daten holen: API `/api/gallery-data?tenantId=k2` (Vercel Blob), bei Fehler statische `/gallery-data.json`. Bei wenigen Werken (≤15): Few-Works-Fallback (statische Datei nutzen wenn mehr Werke). |
-| 2 | **Merge:** `mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true })` – Server = Quelle, lokale ohne Server-Eintrag geschützt. |
-| 3 | **Bilder bewahren:** `preserveLocalImageData(merged, localArtworks)` – wenn der Server eine echte Bild-URL hat (in `imageUrl` oder `imageRef`, https), wird sie immer übernommen (Gleichstand iPhone/Mac/iPad). Nur wenn Server keine URL hat, bleibt das lokale Bild. |
+| 2 | **Merge:** `mergeServerWithLocal(..., { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })` – Server = einzige Wahrheit für vorhandene Werke; lokale nur ohne Server-Eintrag (mobile/sehr neu) ergänzt. |
+| 3 | **Bilder bewahren:** `preserveLocalImageData(merged, localArtworks)` – wenn der Server eine echte Bild-URL hat (https), wird sie immer übernommen. Nur wenn Server keine URL hat, bleibt das lokale Bild. |
 | 4 | Speichern nur wenn `merged.length >= localCount` (allowReduce: false). |
 
 **Ein Einstieg (optional):** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus. Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.
 
-**Aufrufer:** GaleriePage (loadData), GalerieVorschauPage (handleRefresh), **Admin K2 „Aktuellen Stand holen“** (handleLoadFromServer). Alle nutzen **applyServerDataToLocal** (oder äquivalent mergeServerWithLocal → preserveLocalImageData). Kein eigener Merge-Pfad im Admin mehr.
+**Aufrufer:** GaleriePage (loadData, handleRefresh), GalerieVorschauPage (über Supabase/API), **Admin „Aktuellen Stand holen“** (handleLoadFromServer), Supabase loadArtworksFromSupabase. **Alle** übergeben beim Laden vom Server **serverAsSoleTruth: true**. Kein eigener Merge-Pfad ohne diese Option.
 
 ---
 

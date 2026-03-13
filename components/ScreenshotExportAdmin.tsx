@@ -3499,6 +3499,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       // Ein Standard: dieselbe Merge-Logik wie GaleriePage (Key-Normalisierung 0030 ↔ K2-K-0030, preserveLocalImageData)
       const { merged: mergedWithImages } = applyServerDataToLocal(serverArtworks, localArtworks, {
         onlyAddLocalIfMobileAndVeryNew: true,
+        serverAsSoleTruth: true,
       })
       // Zuerst fehlende Bild-URLs aus lokaler IndexedDB holen und hochladen (6 Werke 0030–0038, K2-M-0018), dann aus Supabase
       const withIndexedDB = await fillMissingImageUrlsFromIndexedDB(mergedWithImages)

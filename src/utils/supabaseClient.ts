@@ -100,7 +100,7 @@ export async function loadArtworksFromSupabase(): Promise<any[]> {
 
     console.log(`✅ ${artworks.length} Werke aus Supabase geladen`)
     const localList = loadFromLocalStorage()
-    const { merged } = mergeServerWithLocal(artworks, localList, { onlyAddLocalIfMobileAndVeryNew: true })
+    const { merged } = mergeServerWithLocal(artworks, localList, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
     const mergedWithImages = preserveLocalImageData(merged, localList)
     try {
       // 🔒 Nur schreiben wenn mindestens so viele wie lokal – nie mit weniger überschreiben (Datenverlust)

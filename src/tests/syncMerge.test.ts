@@ -106,6 +106,27 @@ describe('mergeServerWithLocal', () => {
     expect(merged).toHaveLength(2)
     expect(merged.map((a: any) => a.number).sort()).toEqual(['1', '2'])
   })
+
+  it('serverAsSoleTruth: Server gewinnt immer bei Konflikt (eisernes Gesetz – Mac/Handy 100 % gleich)', () => {
+    const server = [{ number: '1', title: 'Stand vom Server', imageRef: 'https://example.com/1.jpg', updatedAt: '2026-01-02T12:00:00Z' }]
+    const local = [{ number: '1', title: 'Lokal Mobile', imageRef: 'k2-img-1', updatedAt: '2026-01-03T12:00:00Z', createdOnMobile: true }]
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
+    expect(merged).toHaveLength(1)
+    expect(merged[0].title).toBe('Stand vom Server')
+    expect(merged[0].imageRef).toBe('https://example.com/1.jpg')
+  })
+
+  it('serverAsSoleTruth: lokales Werk ohne Server-Eintrag wird weiterhin hinzugefügt (mobile/veryNew)', () => {
+    const server = [{ number: '1', title: 'Server' }]
+    const local = [
+      { number: '1', title: 'Lokal' },
+      { number: '2', title: 'Gerade am Handy', createdAt: new Date().toISOString(), createdOnMobile: true }
+    ]
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
+    expect(merged).toHaveLength(2)
+    expect(merged.find((a: any) => a.number === '1')?.title).toBe('Server')
+    expect(merged.find((a: any) => a.number === '2')?.title).toBe('Gerade am Handy')
+  })
 })
 
 describe('Fortlaufende Nummern', () => {

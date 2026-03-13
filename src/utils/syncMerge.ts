@@ -141,6 +141,12 @@ export interface SyncMergeOptions {
   serverMap?: Map<string, any>
   /** Wenn true: Lokale Werke ohne Server-Eintrag NUR übernehmen wenn (mobile ODER sehr neu). Mobile-Werke (createdOnMobile) bleiben immer erhalten; alte Musterwerke (nicht mobile) kommen nicht zurück. */
   onlyAddLocalIfMobileAndVeryNew?: boolean
+  /**
+   * Eisernes Gesetz: Server = einzige Wahrheit beim Abholen.
+   * Wenn true: Ein auf dem Server vorhandenes Werk wird NIEMALS durch die lokale Version ersetzt.
+   * Ergebnis: Nach „An Server senden“ und „Vom Server laden“ sind Mac und Handy zu 100 % gleich.
+   */
+  serverAsSoleTruth?: boolean
 }
 
 const DEFAULT_GET_KEY = (a: any): string | undefined => {
@@ -181,8 +187,8 @@ export interface SyncMergeResult {
 /**
  * Merged Server-Liste mit lokaler Liste nach verbindlicher Sync-Regel.
  * - Server = Quelle (merged startet mit serverList).
- * - Lokale Werke ohne Server-Eintrag werden immer übernommen.
- * - Bei Konflikt (gleicher Key): Mobile gewinnt; sonst neueres updatedAt.
+ * - Lokale Werke ohne Server-Eintrag: je nach onlyAddLocalIfMobileAndVeryNew (und ggf. mobile/veryNew).
+ * - Bei Konflikt (gleicher Key): Wenn serverAsSoleTruth → Server bleibt (eisernes Gesetz). Sonst: Mobile gewinnt; sonst neueres updatedAt.
  */
 export function mergeServerWithLocal(
   serverList: any[],
@@ -194,6 +200,7 @@ export function mergeServerWithLocal(
   const isVeryNew = options.isVeryNew ?? DEFAULT_IS_VERY_NEW
   const getUpdated = options.getUpdated ?? DEFAULT_GET_UPDATED
   const onlyAddLocalIfMobileAndVeryNew = options.onlyAddLocalIfMobileAndVeryNew === true
+  const serverAsSoleTruth = options.serverAsSoleTruth === true
 
   // Server-Map mit ALLEN Key-Varianten (0030, K2-K-0030, 30 …), damit lokales "K2-K-0030" das Server-Werk "0030" findet – sonst Duplikate + Bildverlust
   const serverMap =
@@ -223,6 +230,9 @@ export function mergeServerWithLocal(
       if (!mobile || !veryNew) toHistory.push(local)
       return
     }
+
+    // Eisernes Gesetz: Server = einzige Wahrheit. Einmal gesendet = dieser Stand gilt zu 100 %; beim Abholen wird Server nie durch Lokal überschrieben.
+    if (serverAsSoleTruth) return
 
     if (mobile) {
       const idx = merged.indexOf(serverItem)
