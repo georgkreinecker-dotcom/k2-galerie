@@ -38,6 +38,7 @@ import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
+import { clearAdminUnlock } from '../src/utils/adminUnlockStorage'
 import { clearArtworkImagesForNumberRange, fillMissingImageRefsFromIndexedDB, persistDataUrlsToIndexedDB } from '../src/utils/artworkImageStore'
 import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
 import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
@@ -11343,8 +11344,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   onClick={() => {
                     try {
                       sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
-                      localStorage.removeItem('k2-admin-unlocked')
-                      localStorage.removeItem('k2-admin-unlocked-expiry')
+                      clearAdminUnlock()
                     } catch (_) {}
                     if (tenant.isVk2) navigate(PROJECT_ROUTES.vk2.galerie)
                     else navigate(PROJECT_ROUTES['k2-galerie'].galerie)

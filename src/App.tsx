@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { safeReload, safeReloadWithCacheBypass } from './utils/env'
+import { K2_ADMIN_UNLOCKED_KEY, clearAdminUnlockIfExpired } from './utils/adminUnlockStorage'
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
 import ProjectsPage from './pages/ProjectsPage'
@@ -436,8 +437,6 @@ function DevViewMobileRedirect() {
 }
 
 /** Admin-Login dauerhaft: Bei App-Start sessionStorage aus localStorage wiederherstellen (Mobil bleibt eingeloggt). */
-const K2_ADMIN_UNLOCKED_KEY = 'k2-admin-unlocked'
-const K2_ADMIN_UNLOCKED_EXPIRY_KEY = 'k2-admin-unlocked-expiry'
 const K2_ADMIN_CONTEXT_KEY = 'k2-admin-context'
 
 function restoreAdminSessionIfNeeded() {
@@ -448,14 +447,9 @@ function restoreAdminSessionIfNeeded() {
     const isK2Route = pathname === '/' || (pathname.startsWith('/projects/k2-galerie') && !pathname.includes('galerie-oeffentlich'))
     if (!isK2Route) return
     if (sessionStorage.getItem(K2_ADMIN_CONTEXT_KEY)) return // schon gesetzt
+    if (clearAdminUnlockIfExpired()) return // war abgelaufen, jetzt weg
     const unlocked = localStorage.getItem(K2_ADMIN_UNLOCKED_KEY)
     if (unlocked !== 'k2') return
-    const expiry = localStorage.getItem(K2_ADMIN_UNLOCKED_EXPIRY_KEY)
-    if (expiry && Date.now() > parseInt(expiry, 10)) {
-      localStorage.removeItem(K2_ADMIN_UNLOCKED_KEY)
-      localStorage.removeItem(K2_ADMIN_UNLOCKED_EXPIRY_KEY)
-      return
-    }
     sessionStorage.setItem(K2_ADMIN_CONTEXT_KEY, 'k2')
   } catch (_) {}
 }

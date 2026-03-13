@@ -15,6 +15,7 @@ import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { saveStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
+import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
 
@@ -2103,11 +2104,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       setFirstVisitNow()
       sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
       if (rememberAdmin && !musterOnly) {
-        localStorage.setItem('k2-admin-unlocked', 'k2')
-        localStorage.setItem('k2-admin-unlocked-expiry', String(Date.now() + 30 * 24 * 60 * 60 * 1000))
+        setAdminUnlock(30 * 24 * 60 * 60 * 1000)
       } else if (!rememberAdmin) {
-        localStorage.removeItem('k2-admin-unlocked')
-        localStorage.removeItem('k2-admin-unlocked-expiry')
+        clearAdminUnlock()
       }
     } catch (_) {}
     navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
@@ -2129,8 +2128,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       try {
         sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
         if (rememberAdmin && !musterOnly) {
-          localStorage.setItem('k2-admin-unlocked', 'k2')
-          localStorage.setItem('k2-admin-unlocked-expiry', String(Date.now() + 30 * 24 * 60 * 60 * 1000))
+          setAdminUnlock(30 * 24 * 60 * 60 * 1000)
         }
       } catch (_) {}
       navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')
@@ -2148,11 +2146,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       try {
         sessionStorage.setItem('k2-admin-context', musterOnly ? 'oeffentlich' : 'k2')
         if (rememberAdmin && !musterOnly) {
-          localStorage.setItem('k2-admin-unlocked', 'k2')
-          localStorage.setItem('k2-admin-unlocked-expiry', String(Date.now() + 30 * 24 * 60 * 60 * 1000))
+          setAdminUnlock(30 * 24 * 60 * 60 * 1000)
         } else if (!rememberAdmin) {
-          localStorage.removeItem('k2-admin-unlocked')
-          localStorage.removeItem('k2-admin-unlocked-expiry')
+          clearAdminUnlock()
         }
       } catch (_) {}
       navigate(musterOnly ? '/admin?context=oeffentlich' : '/admin')

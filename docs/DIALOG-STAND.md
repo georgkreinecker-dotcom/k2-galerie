@@ -1,12 +1,21 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Kritische Abläufe: 4 neue Tests (Vom Server laden, Warteschlange, Routen, Veröffentlichen-Mock). Commit: 8fded25 ✅ auf GitHub.
+**Letzter Build-Push:** 12.03.26 – Admin Anmeldung & Abmeldung: Util adminUnlockStorage + 8 Tests (Anmeldung, Abmeldung, Abgelaufen, kompletter Ablauf). Commit: (gleich nach Push) ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Auto-Download (54a463c). Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
 **Regel (ro5-Absicherung):** Nach jedem Kapitel / jeder in sich abgeschlossenen Einheit **selbständig commit + push**, damit bei ro5 (Crash/Reopen) nichts verloren geht. Georg muss nicht daran erinnern – Joe macht es automatisch.
+
+---
+
+## Heute 12.03.26 – Admin Anmeldung & Abmeldung (komplettes Szenario inkl. Abmelden)
+
+- **Georg:** „ja komplete inkl abmelde scenario“ – Anmelde- und Abmelde-Flow testen.
+- **Umgesetzt:** (1) **Util** `src/utils/adminUnlockStorage.ts`: setAdminUnlock, clearAdminUnlock, clearAdminUnlockIfExpired, isAdminUnlocked (eine Quelle für GaleriePage, ScreenshotExportAdmin, App). (2) **App.tsx:** restoreAdminSessionIfNeeded nutzt clearAdminUnlockIfExpired. (3) **GaleriePage:** Anmeldung (Passwort + „Merken“) nutzt setAdminUnlock/clearAdminUnlock. (4) **ScreenshotExportAdmin:** Abmelden-Button nutzt clearAdminUnlock. (5) **Tests** `src/tests/admin-anmeldung-abmeldung.test.ts`: 8 Tests – Anmeldung (Keys gesetzt, isAdminUnlocked true), Abmeldung (Keys weg, isAdminUnlocked false), Abgelaufen (clearAdminUnlockIfExpired entfernt Keys), kompletter Ablauf Anmeldung → Abmeldung.
+- **Tests:** 173 grün (8 neue). Build vor Commit.
+- **Nächster Schritt:** Commit + Push; danach am PC: Admin einloggen (Passwort + Merken), Abmelden klicken, prüfen dass erneut Passwort nötig ist.
 
 ---
 
