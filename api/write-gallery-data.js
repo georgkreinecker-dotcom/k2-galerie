@@ -75,9 +75,13 @@ export default async function handler(req, res) {
       console.error('Chunk put Fehler:', putErr)
       const msg = (putErr?.message || String(putErr)).trim()
       const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
+      const isSuspended = /suspended|store has been suspended/i.test(msg)
+      const hint = isToken ? 'In Vercel: Storage → Blob Store anlegen.'
+        : isSuspended ? 'Vercel Blob Store pausiert. Vercel Dashboard → Storage → Blob prüfen; ggf. vercel.com/help.'
+        : msg.substring(0, 300)
       return res.status(500).json({
-        error: isToken ? 'Blob-Speicher nicht eingerichtet' : 'Speichern fehlgeschlagen',
-        hint: isToken ? 'In Vercel: Storage → Blob Store anlegen.' : msg.substring(0, 300)
+        error: isToken ? 'Blob-Speicher nicht eingerichtet' : isSuspended ? 'Blob-Speicher pausiert' : 'Speichern fehlgeschlagen',
+        hint
       })
     }
 
@@ -124,9 +128,10 @@ export default async function handler(req, res) {
     } catch (mergeErr) {
       console.error('Chunk merge Fehler:', mergeErr)
       const msg = (mergeErr?.message || String(mergeErr)).trim()
+      const isSuspended = /suspended|store has been suspended/i.test(msg)
       return res.status(500).json({
-        error: 'Zusammenführen fehlgeschlagen',
-        hint: msg.substring(0, 300)
+        error: isSuspended ? 'Blob-Speicher pausiert' : 'Zusammenführen fehlgeschlagen',
+        hint: isSuspended ? 'Vercel Blob Store pausiert. Vercel Dashboard → Storage → Blob prüfen; ggf. vercel.com/help.' : msg.substring(0, 300)
       })
     }
 
@@ -160,11 +165,17 @@ export default async function handler(req, res) {
     console.error('Blob put Fehler:', blobErr)
     const msg = (blobErr?.message || String(blobErr)).trim()
     const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
-    const hint = isToken
-      ? 'In Vercel: Storage → Blob Store anlegen. Danach ist BLOB_READ_WRITE_TOKEN automatisch gesetzt.'
-      : (msg || 'Unbekannter Blob-Fehler. In Vercel Dashboard → Logs prüfen.').substring(0, 400)
+    const isSuspended = /suspended|store has been suspended/i.test(msg)
+    let hint
+    if (isToken) {
+      hint = 'In Vercel: Storage → Blob Store anlegen. Danach ist BLOB_READ_WRITE_TOKEN automatisch gesetzt.'
+    } else if (isSuspended) {
+      hint = 'Vercel Blob Store wurde pausiert (Limits oder durch Vercel). Vercel Dashboard → Storage → Blob prüfen; ggf. Support: vercel.com/help.'
+    } else {
+      hint = (msg || 'Unbekannter Blob-Fehler. In Vercel Dashboard → Logs prüfen.').substring(0, 400)
+    }
     return res.status(500).json({
-      error: isToken ? 'Blob-Speicher nicht eingerichtet' : 'Speichern fehlgeschlagen',
+      error: isToken ? 'Blob-Speicher nicht eingerichtet' : isSuspended ? 'Blob-Speicher pausiert' : 'Speichern fehlgeschlagen',
       hint
     })
   }

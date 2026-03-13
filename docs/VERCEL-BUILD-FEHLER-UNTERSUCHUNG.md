@@ -36,6 +36,7 @@
 | Test failed | Ein Test schlägt in CI durch | Lokal `npm run test`; Test anpassen oder Ursache beheben. |
 | Timeout / Out of memory | Build zu schwer für Vercel | Chunk-Größen, dynamische Imports prüfen; ggf. Build-Optionen anpassen. |
 | **No more than 12 Serverless Functions … Hobby plan** | Zu viele `api/*.js`-Dateien (jede = 1 Function) | Zwei oder mehr APIs in **eine** Datei zusammenführen (Dispatch per Query-Param), Rewrites in vercel.json; alte Dateien entfernen. Siehe 13.03.26: visit + build-info → `api/visit-and-build.js`, Rewrites `/api/visit` und `/api/build-info` dorthin. |
+| **store has been suspended** (beim „An Server senden“ / iPad) | Vercel Blob Store wurde pausiert (Limits überschritten oder durch Vercel) | **Nicht im Code lösbar.** Vercel Dashboard → **Storage** → **Blob** prüfen; bei falscher Pausierung: Support https://vercel.com/help. App zeigt nun verständliche Meldung „Blob-Speicher pausiert“ + Hinweis. |
 
 ---
 
