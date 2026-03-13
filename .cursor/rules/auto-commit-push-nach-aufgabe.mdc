@@ -48,3 +48,7 @@ alwaysApply: true
 Ohne Commit+Push sind Änderungen nur lokal auf dem Mac.
 Vercel deployt nur was auf GitHub liegt.
 Georg muss nie manuell pushen.
+
+## FERTIG melden
+
+**„Fertig“ / „Erledigt“ erst sagen, wenn commit + push ausgeführt wurden.** Wenn die KI „Fertig“ sagt, aber nicht gepusht hat, ist die Aufgabe nicht abgeschlossen – Georg hat das schon hundert Mal gesagt. Merken = diese Regel einhalten.
