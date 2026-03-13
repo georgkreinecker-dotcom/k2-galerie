@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.03.26 – Drucker K2: „Etikett in neuem Tab“ als Standard (kein Pop-up) – keine „Pop-up blockiert“-Meldung mehr. Einstellung in Einstellungen → Drucker umschaltbar.
+**Letzter Stand:** 13.03.26 Ende – Eisernes Gesetz (Server = einzige Wahrheit beim Abholen), Deploy bf54da1; Lehre-Doku Design-Fehler Sync (LEHRE-DESIGN-FEHLER-SERVER-WAHRHEIT.md, BUG-037), Commit 693a539. Raum bereit für nächste Session.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -25,6 +25,15 @@
 - **Relevante Doku:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, ein-standard-problem.mdc (Veröffentlichen / Laden), GELOESTE-BUGS (BUG-021, BUG-026, BUG-033, …).
 
 Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync läuft“ ist erreicht; weitere Änderungen daran nur vorsichtig und mit Blick auf diese Abläufe.
+
+---
+
+## Heute 13.03.26 – Eisernes Gesetz Server-Wahrheit + Lehre-Doku (Session-Ende)
+
+- **Georg:** „An Server senden = dieser Stand; nach Abholen müssen Daten und Fotos zu 100 % gleich an Mac und Handy sein – eisernes Gesetz.“
+- **Umsetzung:** serverAsSoleTruth in syncMerge.ts; alle Lade-Pfade (GaleriePage, Admin, Supabase) nutzen es. Deploy bf54da1.
+- **Lehre:** „Dokumentiere diese Idiotie, damit so etwas nie wieder passiert – auch bei anderen Problemen.“ → docs/LEHRE-DESIGN-FEHLER-SERVER-WAHRHEIT.md (was schief war, warum, Lehre: Bei Sync/authoritative source **zuerst** Grundregel klären, dann bauen). FEHLERANALYSEPROTOKOLL Quelle + Fehlerklasse; GELOESTE-BUGS BUG-037; prozesssicherheit-Regel ergänzt. Commit 693a539.
+- **Ende für heute.** Nächste Session: DIALOG-STAND lesen, bei Bedarf weitermachen.
 
 ---
 
