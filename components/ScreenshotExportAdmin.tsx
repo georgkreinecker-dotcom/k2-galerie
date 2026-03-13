@@ -1570,12 +1570,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [savedArtwork, setSavedArtwork] = useState<any>(null)
   const [etikettAnzahl, setEtikettAnzahl] = useState(1)
   const [isSavingArtwork, setIsSavingArtwork] = useState(false)
-  const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(new Set())
-  const [batchPrintUrls, setBatchPrintUrls] = useState<string[] | null>(null)
-  /** Sammeldruck Mobile: Queue (blob + label), nacheinander im Overlay teilen; Index für „X von Y“. */
-  const [batchEtikettenQueue, setBatchEtikettenQueue] = useState<Array<{ blob: Blob; label: string }>>([])
-  const [batchEtikettenIndex, setBatchEtikettenIndex] = useState(0)
-  const batchEtikettenIndexRef = useRef(0)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
@@ -9116,18 +9110,23 @@ ${'='.repeat(60)}
     }
   }
 
-  // Drucken: Bei „Etikett in neuem Tab“ → Blob-URL in Tab (kein Pop-up). Sonst Pop-up-Fenster (sofort öffnen, sonst blockiert Blocker).
+  // Drucken: Auf MOBIL immer alter Ablauf (Fenster mit Etikett → Drucken), hat gut funktioniert. „Etikett in neuem Tab“ nur auf Desktop.
   const handlePrint = async () => {
     if (!savedArtwork) return
     const activeTenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(activeTenant)
-    if (settings.openEtikettInNewTab) {
+    const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
+    if (settings.openEtikettInNewTab && !isMobile) {
       try {
         const lm = parseLabelSize(settings.labelSize)
         const blob = await getEtikettBlob(lm.width, lm.height)
-        const url = URL.createObjectURL(blob)
-        window.open(url, '_blank')
-        setTimeout(() => URL.revokeObjectURL(url), 60000)
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader()
+          r.onload = () => resolve(r.result as string)
+          r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+          r.readAsDataURL(blob)
+        })
+        window.open(dataUrl, '_blank')
         alert('Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen, dann Brother QL oder anderen Drucker.')
       } catch (e) {
         console.error('Etikett für Druck fehlgeschlagen:', e)
@@ -9183,132 +9182,15 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Blob → Data-URL für ein HTML-Dokument (Sammeldruck Desktop: ein Fenster mit allen Etiketten). */
-  const blobToDataUrl = (blob: Blob): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const r = new FileReader()
-      r.onload = () => resolve(r.result as string)
-      r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
-      r.readAsDataURL(blob)
-    })
-
-  /** Sammeldruck: Alle ausgewählten Werke als Etiketten. Mobile: Queue nacheinander im Overlay. Desktop ohne Share: ein Fenster mit allen Etiketten. Desktop mit Share: nacheinander mit Pause. */
-  const handleBatchPrintEtiketten = async () => {
-    const ids = Array.from(selectedForBatchPrint)
-    if (ids.length === 0) return
-    const toPrint = allArtworks.filter((a: any) => {
-      const n = a?.number || a?.id
-      return n && ids.includes(String(n))
-    })
-    if (toPrint.length === 0) return
-    const activeTenant = getCurrentTenantId()
-    const settings = loadPrinterSettingsForTenant(activeTenant)
-    const lm = parseLabelSize(settings.labelSize)
-    try {
-      // Alle Etiketten vorab erzeugen (Werk × Stückzahl)
-      const items: Array<{ blob: Blob; label: string }> = []
-      for (const artwork of toPrint) {
-        const blob = await getEtikettBlobForArtwork(artwork, lm.width, lm.height)
-        const copies = Math.max(1, Math.min(99, Number(artwork.quantity) || 1))
-        const label = String(artwork.number || artwork.id || '')
-        for (let i = 0; i < copies; i++) {
-          items.push({ blob, label: copies > 1 ? `${label} (${i + 1}/${copies})` : label })
-        }
-      }
-      if (items.length === 0) return
-
-      if (isMobile) {
-        // Mobile: Queue – erstes Etikett im Overlay anzeigen; bei Schließen/Teilen nächstes oder fertig
-        batchEtikettenIndexRef.current = 0
-        setBatchEtikettenQueue(items)
-        setBatchEtikettenIndex(0)
-        shareFallbackBlobRef.current = items[0].blob
-        if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
-        setShareFallbackImageUrl(URL.createObjectURL(items[0].blob))
-        setSavedArtwork({ number: items[0].label })
-        setShowShareFallbackOverlay(true)
-        setSelectedForBatchPrint(new Set())
-        return
-      }
-
-      const batchSettings = loadPrinterSettingsForTenant(activeTenant)
-      if (batchSettings.openEtikettInNewTab) {
-        // Ohne Pop-up: erstes Etikett in neuem Tab öffnen
-        const fallbackUrl = URL.createObjectURL(items[0].blob)
-        window.open(fallbackUrl, '_blank')
-        setTimeout(() => URL.revokeObjectURL(fallbackUrl), 60000)
-        alert(`Erstes Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nWeitere ${items.length - 1} Etiketten: nacheinander „Etikett drucken“ pro Werk oder Pop-up erlauben und „Sammeldruck“ erneut klicken.`)
-        setSelectedForBatchPrint(new Set())
-        return
-      }
-
-      // Desktop: Druckfenster (Pop-up) + Druckdialog
-      const dataUrls = await Promise.all(items.map((it) => blobToDataUrl(it.blob)))
-      const w = lm.width
-      const h = lm.height
-      const pw = Math.round((w * 300) / 25.4)
-      const ph = Math.round((h * 300) / 25.4)
-      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sammeldruck ${items.length} Etiketten</title><style>
-        body { margin: 0; padding: 8px; font-family: system-ui; }
-        .etikett { width: ${w}mm; height: ${h}mm; page-break-after: always; display: block; overflow: hidden; margin: 0 auto 8px; }
-        .etikett img { width: 100%; height: 100%; object-fit: contain; display: block; }
-        @media print { body { padding: 0; } .etikett { margin: 0; page-break-after: always; } }
-      </style></head><body>
-        ${dataUrls.map((url) => `<div class="etikett"><img src="${url}" alt="Etikett" width="${pw}" height="${ph}"></div>`).join('\n')}
-      </body></html>`
-      const win = window.open('', '_blank')
-      if (win) {
-        win.document.write(html)
-        win.document.close()
-        setTimeout(() => { try { win.print() } catch (_) {} }, 500)
-      } else {
-        const fallbackUrl = URL.createObjectURL(items[0].blob)
-        window.open(fallbackUrl, '_blank')
-        setTimeout(() => URL.revokeObjectURL(fallbackUrl), 60000)
-        alert('Pop-up wurde blockiert.\n\nErstes Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen.\n\nFür alle Etiketten: Einstellungen → Drucker „Etikett in neuem Tab“ aktivieren oder Pop-ups erlauben.')
-      }
-      setSelectedForBatchPrint(new Set())
-    } catch (e) {
-      console.error('Sammeldruck fehlgeschlagen:', e)
-      alert((e as Error)?.message || 'Etiketten konnten nicht erzeugt werden. Bitte erneut versuchen.')
-    }
-  }
-
   // Mobil = nur echte Handys/Tablets (nicht Mac mit Trackpad – sonst Share statt Druckdialog)
   const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
 
   const closeShareFallbackOverlay = () => {
-    const urlToRevoke = shareFallbackImageUrl
     shareFallbackBlobRef.current = null
-    setBatchEtikettenQueue((queue) => {
-      if (queue.length === 0) {
-        setShowShareFallbackOverlay(false)
-        setSavedArtwork(null)
-        setShareFallbackImageUrl(null)
-        batchEtikettenIndexRef.current = 0
-        if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
-        return []
-      }
-      const currentIndex = batchEtikettenIndexRef.current
-      const nextIndex = currentIndex + 1
-      if (nextIndex < queue.length) {
-        const next = queue[nextIndex]
-        batchEtikettenIndexRef.current = nextIndex
-        setBatchEtikettenIndex(nextIndex)
-        shareFallbackBlobRef.current = next.blob
-        setShareFallbackImageUrl(URL.createObjectURL(next.blob))
-        setSavedArtwork({ number: next.label })
-        if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
-        return queue
-      }
-      setShowShareFallbackOverlay(false)
-      setSavedArtwork(null)
-      setShareFallbackImageUrl(null)
-      setBatchEtikettenIndex(0)
-      batchEtikettenIndexRef.current = 0
-      if (urlToRevoke) URL.revokeObjectURL(urlToRevoke)
-      return []
-    })
+    setShowShareFallbackOverlay(false)
+    setSavedArtwork(null)
+    if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
+    setShareFallbackImageUrl(null)
   }
 
   const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -9442,91 +9324,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     })
   }
 
-  /** Etikett für beliebiges Werk (für Sammeldruck). Gleiche Logik wie getEtikettBlob, aber mit übergebenem artwork. */
-  const getEtikettBlobForArtwork = (artwork: { number?: string; id?: string; title?: string; category?: string; paintingWidth?: number; paintingHeight?: number; artist?: string; price?: number | string; quantity?: number }, widthMm = 29, heightMm = 60): Promise<Blob> => {
-    const num = artwork?.number || artwork?.id
-    if (!num) return Promise.reject(new Error('Werk ohne Nummer'))
-    const pxPerMm = 300 / 25.4
-    const w = Math.round(widthMm * pxPerMm)
-    const h = Math.round(heightMm * pxPerMm)
-    return getQRDataUrl(num).then((qrDataUrl) => {
-      const canvas = document.createElement('canvas')
-      canvas.width = w
-      canvas.height = h
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return Promise.reject(new Error('Canvas fehlgeschlagen'))
-      const pad = Math.max(2, w * 0.03)
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, w, h)
-      ctx.strokeStyle = '#8b6914'
-      ctx.lineWidth = Math.max(1, w * 0.007)
-      ctx.strokeRect(pad, pad, w - pad * 2, h - pad * 2)
-      ctx.fillStyle = '#8b6914'
-      ctx.textAlign = 'center'
-      const fs1 = Math.max(8, w * 0.12)
-      const fs2 = Math.max(10, w * 0.16)
-      const fs3 = Math.max(6, w * 0.1)
-      const fs4 = Math.max(5, w * 0.09)
-      ctx.font = `bold ${fs1}px Arial,sans-serif`
-      ctx.fillText('K2 Galerie', w / 2, h * 0.08)
-      ctx.font = `bold ${fs2}px Arial,sans-serif`
-      ctx.fillText(num, w / 2, h * 0.15)
-      ctx.fillStyle = '#666'
-      ctx.font = `${fs3}px Arial,sans-serif`
-      const title = ((artwork.title || '').substring(0, 18)) + ((artwork.title || '').length > 18 ? '…' : '')
-      ctx.fillText(title, w / 2, h * 0.21)
-      let yNext = 0.26
-      if (artwork.category === 'malerei' && artwork.paintingWidth && artwork.paintingHeight) {
-        ctx.font = `${fs4}px Arial,sans-serif`
-        ctx.fillText(`${artwork.paintingWidth} × ${artwork.paintingHeight} cm`, w / 2, h * yNext)
-        yNext += 0.05
-      }
-      const priceVal = typeof artwork.price === 'number' ? artwork.price : parseFloat(String(artwork.price ?? '').replace(',', '.'))
-      if (!isNaN(priceVal) && priceVal > 0) {
-        yNext += 0.05
-        ctx.font = `bold ${fs3}px Arial,sans-serif`
-        ctx.fillStyle = '#1a1a1a'
-        ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
-        ctx.fillStyle = '#666'
-      }
-      const qty = artwork.quantity != null ? Number(artwork.quantity) : 1
-      if (qty > 1) {
-        yNext += 0.05
-        ctx.font = `${fs4}px Arial,sans-serif`
-        ctx.fillStyle = '#666'
-        ctx.fillText(`${qty} Stück`, w / 2, h * yNext)
-      }
-      const qrSize = Math.min(w * 0.75, h * 0.25)
-      const qrX = (w - qrSize) / 2
-      const qrY = h * 0.55
-      return new Promise<Blob>((resolve, reject) => {
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.onload = () => {
-          ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
-          ctx.fillStyle = '#999'
-          ctx.font = `${fs4}px Arial,sans-serif`
-          const footer = `${getCategoryLabel(artwork.category || 'malerei')} • ${(artwork.artist || '').substring(0, 15)}`
-          ctx.fillText(footer, w / 2, h - pad - fs4)
-          canvas.toBlob((b) => {
-            if (!b) { reject(new Error('Blob fehlgeschlagen')); return }
-            b.arrayBuffer().then((ab) => {
-              try {
-                const withDpi = writePngDpi(ab, 300)
-                const slice = withDpi.buffer.slice(withDpi.byteOffset, withDpi.byteOffset + withDpi.byteLength)
-                resolve(new Blob([slice as ArrayBuffer], { type: 'image/png' }))
-              } catch {
-                resolve(b)
-              }
-            }).catch(() => resolve(b))
-          }, 'image/png', 0.95)
-        }
-        img.onerror = () => reject(new Error('QR-Bild konnte nicht geladen werden.'))
-        img.src = qrDataUrl
-      })
-    })
-  }
-
   /** Ein Tipp → auf Mobil: Teilen-Sheet (Speichern / iPrint&Label), sonst Download. */
   const handleDownloadEtikettDirect = async () => {
     if (!savedArtwork) return
@@ -9586,9 +9383,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       const activeTenant = getCurrentTenantId()
       const settings = loadPrinterSettingsForTenant(activeTenant)
       if (settings.openEtikettInNewTab) {
-        const blobUrl = URL.createObjectURL(blob)
-        window.open(blobUrl, '_blank')
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader()
+          r.onload = () => resolve(r.result as string)
+          r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+          r.readAsDataURL(blob)
+        })
+        window.open(dataUrl, '_blank')
         return
       }
       const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -9616,9 +9417,13 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         win.document.close()
         setTimeout(() => { try { win.print() } catch (_) {} }, 500)
       } else {
-        const blobUrl = URL.createObjectURL(blob)
-        window.open(blobUrl, '_blank')
-        setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader()
+          r.onload = () => resolve(r.result as string)
+          r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+          r.readAsDataURL(blob)
+        })
+        window.open(dataUrl, '_blank')
         alert('Pop-up wurde blockiert. Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen. Oder Einstellungen → Drucker „Etikett in neuem Tab“ aktivieren.')
       }
     } catch (e) {
@@ -9627,14 +9432,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Fallback: Etikett in neuem Tab öffnen – User kann dort Drucken (⌘P/Strg+P) wählen. Immer anbieten, damit jeder zum Drucker kommt. */
+  /** Fallback: Etikett in neuem Tab öffnen – User kann dort Drucken (⌘P/Strg+P) wählen. Data-URL damit das Bild sofort sichtbar ist (keine weiße Seite). */
   const handleOpenEtikettInNewTab = async () => {
     if (!savedArtwork) return
     try {
       const blob = await getEtikettBlob()
-      const url = URL.createObjectURL(blob)
-      window.open(url, '_blank')
-      setTimeout(() => URL.revokeObjectURL(url), 60000)
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+        r.readAsDataURL(blob)
+      })
+      window.open(dataUrl, '_blank')
     } catch (e) {
       alert((e as Error)?.message || 'Etikett konnte nicht geöffnet werden.')
     }
@@ -12324,46 +12133,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 ) : (
                   <>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-start' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedForBatchPrint.size > 0) {
-                          handleBatchPrintEtiketten()
-                        } else {
-                          alert('Hakerl bei den Werken setzen („Etikett drucken“), dann auf diesen Button klicken.')
-                        }
-                      }}
-                      style={{
-                        padding: '0.7rem 1.2rem',
-                        background: selectedForBatchPrint.size > 0 ? s.bgElevated : 'transparent',
-                        color: selectedForBatchPrint.size > 0 ? s.text : s.muted,
-                        border: `1px solid ${selectedForBatchPrint.size > 0 ? s.accent + '44' : s.muted + '44'}`,
-                        borderRadius: '10px',
-                        fontSize: '0.88rem',
-                        fontWeight: selectedForBatchPrint.size > 0 ? 600 : 400,
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.4rem',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = selectedForBatchPrint.size > 0 ? `${s.accent}44` : `${s.muted}44` }}
-                    >
-                      🖸️ Etiketten drucken{selectedForBatchPrint.size > 0 ? (() => {
-                        const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
-                        const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
-                        return totalEtiketten !== batchWerke.length ? ` (${batchWerke.length} Werke · ${totalEtiketten} Etiketten)` : ` (${batchWerke.length} ausgewählt)`
-                      })() : ''}
-                    </button>
-                    {selectedForBatchPrint.size === 0 && (
-                      <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
-                    )}
-                    </div>
-                  </div>
-                  {/* Nebenakteure: Anzeige + Sync unter einem Aufklapp-Button – Hauptakteur (+ Neues Werk) bleibt klar sichtbar */}
+                  {/* Einstellungen & Sync unter Aufklapp-Button */}
                   <div style={{ marginTop: '0.75rem' }}>
                     <button
                       type="button"
@@ -12615,57 +12385,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </label>
                 )}
               </div>
-              {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (() => {
-                const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
-                const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
-                return (
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem',
-                  flexWrap: 'wrap',
-                  padding: '0.75rem 1rem',
-                  background: `${s.accent}15`,
-                  border: `1px solid ${s.accent}40`,
-                  borderRadius: s.radius,
-                  marginBottom: '1rem'
-                }}>
-                  <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>
-                    {batchWerke.length} Werk{batchWerke.length !== 1 ? 'e' : ''} · {totalEtiketten} Etikett{totalEtiketten !== 1 ? 'en' : ''} gesammelt
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleBatchPrintEtiketten}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: s.gradientSecondary,
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: '#fff',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
-                    }}
-                  >
-                    Sammeldruck: {totalEtiketten} Etiketten drucken
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedForBatchPrint(new Set())}
-                    style={{
-                      padding: '0.5rem 0.75rem',
-                      background: s.bgElevated,
-                      border: `1px solid ${s.accent}40`,
-                      borderRadius: '8px',
-                      color: s.text,
-                      cursor: 'pointer',
-                      fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
-                    }}
-                  >
-                    Abwählen
-                  </button>
-                </div>
-              ); })()}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(200px, 30vw, 280px), 1fr))',
@@ -12994,32 +12713,6 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </span>
                       )}
                     </div>
-                    <label style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      marginTop: 'clamp(0.75rem, 2vw, 1rem)',
-                      fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-                      color: s.muted,
-                      cursor: 'pointer'
-                    }}>
-                      <input
-                        type="checkbox"
-                        checked={selectedForBatchPrint.has(artwork.number || artwork.id || '')}
-                        onChange={() => {
-                          const num = artwork.number || artwork.id || ''
-                          if (!num) return
-                          setSelectedForBatchPrint((prev) => {
-                            const next = new Set(prev)
-                            if (next.has(num)) next.delete(num)
-                            else next.add(num)
-                            return next
-                          })
-                        }}
-                        style={{ cursor: 'pointer', accentColor: s.accent }}
-                      />
-                      🖨️ Etikett drucken
-                    </label>
                     <div style={{
                       display: 'flex',
                       gap: 'clamp(0.5rem, 2vw, 0.75rem)',
@@ -20914,7 +20607,7 @@ ${name}`
       )}
 
       {/* Teilen-Fallback Overlay: Bild + „Etikett teilen“ oder „Etikett herunterladen“ (neutral, kein blaues Rahmen) */}
-      {showShareFallbackOverlay && shareFallbackImageUrl && (savedArtwork || batchEtikettenQueue.length > 0) && (
+      {showShareFallbackOverlay && shareFallbackImageUrl && savedArtwork && (
         <div className="admin-modal-overlay" onClick={closeShareFallbackOverlay}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center', border: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             <div className="admin-modal-header">
@@ -20923,9 +20616,7 @@ ${name}`
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem' }}>
               <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>
-                {batchEtikettenQueue.length > 0
-                  ? `Etikett ${batchEtikettenQueue[batchEtikettenIndex]?.label ?? savedArtwork?.number} (${batchEtikettenIndex + 1} von ${batchEtikettenQueue.length})`
-                  : `Etikett ${savedArtwork?.number}`}
+                Etikett {savedArtwork?.number}
               </p>
               <div style={{ background: '#fff', padding: '1rem', borderRadius: 8, margin: '0.5rem 0' }}>
                 <img src={shareFallbackImageUrl} alt="Etikett" style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', border: 'none', outline: 'none' }} />
