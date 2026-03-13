@@ -9153,15 +9153,17 @@ ${'='.repeat(60)}
       const h = lm.height
       const pw = Math.round(w * (300 / 25.4))
       const ph = Math.round(h * (300 / 25.4))
+      // A4 mit Rand, damit auf Normaldrucker nichts oben/links abgeschnitten wird
+      const pageMargin = 18
       win.document.write(`
 <!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${w}×${h}mm</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-@page { size: ${w}mm ${h}mm; margin: 0; }
-html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@page { size: A4; margin: ${pageMargin}mm; }
+html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .etikett-wrap { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; overflow: hidden; }
 .etikett-wrap img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: fill; object-position: center; }
-@media print { html, body, .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
+@media print { .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
 </style></head>
 <body><div class="etikett-wrap"><img src="${dataUrl}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
       win.document.close()
@@ -9252,15 +9254,17 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
             const h = lm.height
             const pw = Math.round(w * 300 / 25.4)
             const ph = Math.round(h * 300 / 25.4)
+            // A4 mit Rand, damit auf Normaldrucker nichts oben/links abgeschnitten wird
+            const pageMargin = 18
             win.document.write(`
 <!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${art?.number}</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-@page { size: ${w}mm ${h}mm; margin: 0; }
-html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@page { size: A4; margin: ${pageMargin}mm; }
+html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 .etikett-wrap { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; overflow: hidden; }
 .etikett-wrap img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: fill; object-position: center; }
-@media print { html, body, .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
+@media print { .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
 </style></head>
 <body><div class="etikett-wrap"><img src="${dataUrl}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
             win.document.close()
