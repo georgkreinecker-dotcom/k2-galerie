@@ -1511,12 +1511,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [photoImageMode, setPhotoImageMode] = useState<'original' | 'freigestellt' | 'vollkachel'>('freigestellt')
   // Hintergrund-Variante bei Freistellung: hell | weiss | warm | kuehl | dunkel
   const [photoBackgroundPreset, setPhotoBackgroundPreset] = useState<'hell' | 'weiss' | 'warm' | 'kuehl' | 'dunkel'>('hell')
-  /** Auf Mobil: keine Freistellung/Vollkachel – nur Original + Zuschneiden. Fest: Freistellen/Vollkachel nur PC/Laptop (Regel: mobile-freistellen-vollkachel-nie.mdc). */
-  const isMobileDevice = typeof window !== 'undefined' && (
-    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-    window.innerWidth <= 1024 ||
-    (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0 && window.innerWidth <= 1280)
-  )
+  /** Auf Mobil: keine Freistellung/Vollkachel – nur Original + Zuschneiden. Fest: Freistellen/Vollkachel nur PC/Laptop (Regel: mobile-freistellen-vollkachel-nie.mdc). Nur User-Agent, damit am Mac (auch bei schmalem Fenster) immer die volle Bildverarbeitung angezeigt wird. */
+  const isMobileDevice = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   /** Läuft gerade „Jetzt freistellen“ (nachträglich für bestehendes Bild)? */
   const [freistellenInProgress, setFreistellenInProgress] = useState(false)
   /** Zuschnitt-Modal: Bild als Data-URL zum Zuschneiden (null = geschlossen) */

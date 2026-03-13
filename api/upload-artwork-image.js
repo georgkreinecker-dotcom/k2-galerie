@@ -71,9 +71,15 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, url })
   } catch (err) {
     console.error('upload-artwork-image Fehler:', err)
+    const msg = (err?.message || String(err)).trim()
+    const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
+    const isSuspended = /BlobStoreSuspendedError|suspended|store has been suspended/i.test(msg)
+    let hint = msg.substring(0, 300)
+    if (isToken) hint = 'In Vercel: Storage → Blob Store anlegen. Danach ist BLOB_READ_WRITE_TOKEN automatisch gesetzt.'
+    else if (isSuspended) hint = 'Vercel Blob Store pausiert. Vercel Dashboard → Storage → Blob prüfen; ggf. vercel.com/help.'
     return res.status(500).json({
-      error: 'Upload fehlgeschlagen',
-      hint: err?.message?.substring(0, 200) || String(err).substring(0, 200)
+      error: isToken ? 'Blob-Speicher nicht eingerichtet' : isSuspended ? 'Blob-Speicher pausiert' : 'Upload fehlgeschlagen',
+      hint
     })
   }
 }

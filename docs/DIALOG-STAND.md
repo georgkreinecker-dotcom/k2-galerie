@@ -12,6 +12,18 @@
 
 ---
 
+## Programmierstand (für KI/Orientierung) – Stand 13.03.26
+
+**Speichern und Synchronisieren funktionieren.** Mac, iPad und iPhone können auf einen gemeinsamen Werkestand gebracht werden; Bilder auf den Karten bleiben beim Speichern und beim „Bilder vom Server laden“ erhalten.
+
+- **Speichern:** Werke (neu/bearbeiten) mit ImageStore; Warteschlange im Admin verhindert Überschreiben; Merge aus neuestem Stand vor dem Schreiben (GalerieVorschau).
+- **Synchronisieren:** Veröffentlichen → Server (gallery-data); „Bilder vom Server laden“ / Stand-Badge → mergeServerWithLocal + preserveLocalImageData; Server-Bild wird erkannt auch wenn nur imageRef (https) geliefert wird → Gleichstand iPhone/Mac/iPad (inkl. Bilder um Nr. 30).
+- **Relevante Doku:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, ein-standard-problem.mdc (Veröffentlichen / Laden), GELOESTE-BUGS (BUG-021, BUG-026, BUG-033, …).
+
+Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync läuft“ ist erreicht; weitere Änderungen daran nur vorsichtig und mit Blick auf diese Abläufe.
+
+---
+
 ## Heute 13.03.26 – ök2 Musterwerke gleiches Bild (BUG-035) + Vercel-Build (user-wishes.js)
 
 - **Georg:** „wieso sehe ich jetzt nur xmal ein werk“ – in Werke verwalten (ök2) zeigten alle vier Karten (M1, K1, G1, S1) dasselbe Bild (Vase).

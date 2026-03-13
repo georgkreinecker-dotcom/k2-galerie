@@ -33,7 +33,11 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ wishes: sorted })
     } catch (err) {
       console.error('user-wishes GET:', err)
-      return res.status(500).json({ error: 'Laden fehlgeschlagen' })
+      const msg = (err?.message || String(err)).trim()
+      const isSuspended = /BlobStoreSuspendedError|suspended|store has been suspended/i.test(msg)
+      const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
+      const hint = isToken ? 'Vercel: Storage → Blob anlegen.' : isSuspended ? 'Vercel Blob pausiert. Dashboard → Storage prüfen.' : msg.substring(0, 200)
+      return res.status(500).json({ error: isToken ? 'Blob nicht eingerichtet' : isSuspended ? 'Blob pausiert' : 'Laden fehlgeschlagen', hint })
     }
   }
 
@@ -68,7 +72,11 @@ module.exports = async function handler(req, res) {
       })
     } catch (err) {
       console.error('user-wishes POST put:', err)
-      return res.status(500).json({ error: 'Speichern fehlgeschlagen' })
+      const msg = (err?.message || String(err)).trim()
+      const isSuspended = /BlobStoreSuspendedError|suspended|store has been suspended/i.test(msg)
+      const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
+      const hint = isToken ? 'Vercel: Storage → Blob anlegen.' : isSuspended ? 'Vercel Blob pausiert. Dashboard → Storage prüfen.' : msg.substring(0, 200)
+      return res.status(500).json({ error: isToken ? 'Blob nicht eingerichtet' : isSuspended ? 'Blob pausiert' : 'Speichern fehlgeschlagen', hint })
     }
     return res.status(200).json({ ok: true, id: entry.id })
   }

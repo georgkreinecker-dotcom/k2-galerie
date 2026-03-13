@@ -12,8 +12,10 @@ alwaysApply: true
 ## Umsetzung im Code
 
 1. **Mobile-Erkennung (Admin):**  
-   `isMobileDevice` = true wenn:  
-   - User-Agent iPhone/iPad/iPod/Android, **oder**  
+   `isMobileDevice` = true **nur** bei User-Agent iPhone/iPad/iPod/Android (in ScreenshotExportAdmin; kein Fensterbreiten-Check). Mac hat damit immer volle Bildverarbeitung.
+   
+   Ausnahme Admin: Keine Fensterbreite mehr – Fensterbreite/touch werden nicht mehr verwendet – nur User-Agent.)
+   - User-Agent iPhone/iPad/iPod/Android, **oder**
    - Fensterbreite ≤ 1024 px, **oder**  
    - (maxTouchPoints > 0 und Breite ≤ 1280 px).  
    So werden auch iPad im Querformat und „Desktop-Website“-Modus als Mobil behandelt.

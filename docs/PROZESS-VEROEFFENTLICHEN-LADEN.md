@@ -33,7 +33,7 @@
 |--------|----------------|
 | 1 | Daten holen: API `/api/gallery-data?tenantId=k2` (Vercel Blob), bei Fehler statische `/gallery-data.json`. Bei wenigen Werken (≤15): Few-Works-Fallback (statische Datei nutzen wenn mehr Werke). |
 | 2 | **Merge:** `mergeServerWithLocal(serverArtworks, localArtworks, { onlyAddLocalIfMobileAndVeryNew: true })` – Server = Quelle, lokale ohne Server-Eintrag geschützt. |
-| 3 | **Bilder bewahren:** `preserveLocalImageData(merged, localArtworks)` – wenn lokal ein Bild existiert und Server keins hat, bleibt das lokale Bild. Nie gutes Lokal durch leeren Server ersetzen. |
+| 3 | **Bilder bewahren:** `preserveLocalImageData(merged, localArtworks)` – wenn der Server eine echte Bild-URL hat (in `imageUrl` oder `imageRef`, https), wird sie immer übernommen (Gleichstand iPhone/Mac/iPad). Nur wenn Server keine URL hat, bleibt das lokale Bild. |
 | 4 | Speichern nur wenn `merged.length >= localCount` (allowReduce: false). |
 
 **Ein Einstieg (optional):** `applyServerDataToLocal(serverList, localList, options)` in `src/utils/syncMerge.ts` – führt mergeServerWithLocal und preserveLocalImageData in der verbindlichen Reihenfolge aus. Nutzen: GaleriePage loadData, GalerieVorschauPage handleRefresh, alle künftigen Lade-Pfade.

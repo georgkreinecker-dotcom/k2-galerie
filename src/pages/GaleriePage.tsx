@@ -361,9 +361,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
 
-  /** K2, ök2, VK2: Admin-Button nur anzeigen, wenn Nutzer von APf kommt oder bereits im Admin-Kontext – Besucher von Google sollen keinen Admin-Zugang sehen. */
+  /** K2: Admin-Button immer anzeigen (eigene Galerie). ök2/VK2: nur wenn von APf oder im Kontext – Besucher von Google sollen dort keinen Admin sehen. */
   const showAdminEntryOnGalerie = (() => {
     try {
+      if (!musterOnly && !vk2) return true
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
       if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
@@ -2423,7 +2424,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: showAdminEntryOnGalerie ? 'clamp(12rem, 30vw, 18rem)' : 'clamp(1rem, 2vw, 1.5rem)',
+            right: showAdminEntryOnGalerie ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
             background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
             border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
             color: vk2 ? '#fff' : musterOnly ? 'var(--k2-text)' : '#fff',
@@ -2448,7 +2449,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: 'clamp(1rem, 2vw, 1.5rem)',
+            right: 'max(clamp(1rem, 2vw, 1.5rem), env(safe-area-inset-right, 0px))',
             background: vk2
               ? 'linear-gradient(135deg, #d4622a, #b54a1e)'
               : musterOnly

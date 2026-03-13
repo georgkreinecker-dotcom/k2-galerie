@@ -170,6 +170,21 @@ describe('Flow: Vom Server laden (merge + preserveLocalImageData)', () => {
     expect(merged[0].imageRef).toBe('k2-img-0030')
     expect(merged[1].imageRef).toBe('k2-img-0031')
   })
+
+  it('Server hat nur imageRef (https): Server-URL wird übernommen, altes lokales Bild wird überschrieben (iPhone-Gleichstand)', () => {
+    const serverUrl = 'https://k2-galerie.vercel.app/img/k2/K2-K-0030.jpg'
+    const server = [
+      { number: '0030', title: 'A', imageRef: serverUrl, updatedAt: '2026-01-02T12:00:00Z' }
+    ]
+    const local = [
+      { number: '0030', title: 'A', imageRef: 'k2-img-0030', imageUrl: 'data:image/png;base64,alt', updatedAt: '2026-01-01T12:00:00Z' }
+    ]
+    const { merged } = mergeServerWithLocal(server, local)
+    const withImages = preserveLocalImageData(merged, local)
+    expect(withImages).toHaveLength(1)
+    expect(withImages[0].imageUrl).toBe(serverUrl)
+    expect(withImages[0].imageRef).toBe(serverUrl)
+  })
 })
 
 describe('Flow: Vom Server laden – Anzeige nicht leer (BUG-026)', () => {
