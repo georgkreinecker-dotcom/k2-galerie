@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-037 · Design-Fehler Sync: Lokal überschrieb Server beim „Vom Server laden“ (gelöst 13.03.26)
+
+**Symptom:** Nach „An Server senden“ (vom iPad) und „Aktuellen Stand holen“ (Mac/Handy) waren Daten und Fotos nicht zu 100 % gleich – lokale Versionen konnten den gerade gesendeten Server-Stand wieder überschreiben. Viele Stunden Frust.
+
+**Ursache:** Merge-Logik bei „Vom Server laden“ ließ **Lokal den Server überschreiben**: „Mobile gewinnt“ (createdOnMobile) und „neueres updatedAt gewinnt“. Die **richtige Grundregel von Anbeginn** hätte sein müssen: Nach explizitem „An Server senden“ ist der Server beim Abholen die **einzige Wahrheit** – ein vorhandenes Server-Werk darf nie durch die lokale Version ersetzt werden.
+
+**Lösung:** Option **serverAsSoleTruth: true** in mergeServerWithLocal (syncMerge.ts). Wenn gesetzt: Vorhandenes Server-Werk wird nie durch Lokal ersetzt. Alle Lade-Pfade (GaleriePage handleRefresh/loadData, Admin „Aktuellen Stand holen“, Supabase loadArtworksFromSupabase) übergeben diese Option. Doku: docs/LEHRE-DESIGN-FEHLER-SERVER-WAHRHEIT.md (Lehre: Bei Sync/authoritative source **zuerst** Grundregel klären, dann bauen – damit so etwas nie wieder passiert, auch bei anderen Problemen).
+
+**Betroffene Dateien:** src/utils/syncMerge.ts, GaleriePage.tsx, ScreenshotExportAdmin.tsx, supabaseClient.ts; docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, .cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc.
+
+**Status:** ✅ Behoben (13.03.26).
+
+---
+
 ## BUG-036 · ök2 Admin: M1/G1 blaues Fragezeichen (404), nur K1 mit Bild (gelöst 13.03.26)
 
 **Symptom:** In „Werke verwalten“ (ök2/Admin) zeigen M1 und G1 ein blaues Fragezeichen (fehlgeschlagenes Bild), nur K1 (Keramik) zeigt ein Bild.

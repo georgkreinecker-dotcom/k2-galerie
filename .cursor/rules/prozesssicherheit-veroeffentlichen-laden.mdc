@@ -23,6 +23,8 @@ alwaysApply: true
 
 **Du darfst keinen zweiten Ablauf bauen.** Kein eigener Fetch zu `/api/write-gallery-data`. Kein Laden/Speichern von Server-Daten ohne `mergeServerWithLocal` + `preserveLocalImageData`. Nur die dort genannten Funktionen nutzen.
 
+**Lehre (damit so etwas nie wieder passiert):** Merge hatte anfangs „Lokal überschreibt Server“ (Mobile/neueres gewinnt) – viele Stunden Frust. Richtige Grundregel von Anbeginn: Nach „An Server senden“ ist beim Abholen **Server = einzige Wahrheit**. Bei **jedem** neuen Sync- oder „authoritative source“-Thema: **Zuerst** docs/LEHRE-DESIGN-FEHLER-SERVER-WAHRHEIT.md lesen; Grundregel klären (wer ist nach welcher Nutzeraktion die Wahrheit?), **dann** bauen.
+
 ---
 
 ## Veröffentlichen (ein Einstieg)
