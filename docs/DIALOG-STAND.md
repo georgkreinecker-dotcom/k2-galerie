@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 13.03.26 – Social/Teilen: Admin Tab Veröffentlichen – Block „Link zu deiner Galerie“ (Kopieren + Teilen/Web Share). K2/ök2/VK2-URL je Mandant. Commit: (gleich nach Push) ✅.
+**Letzter Build-Push:** 13.03.26 – Social/Teilen: Admin Tab Veröffentlichen – Block „Link zu deiner Galerie“ (Kopieren + Teilen/Web Share). K2/ök2/VK2-URL je Mandant. Commit: 9b8493a ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Admin Anmeldung & Abmeldung (8f50a93). Lightbox + Galerie-Seite: Teilen/Link kopieren bereits umgesetzt.
 
