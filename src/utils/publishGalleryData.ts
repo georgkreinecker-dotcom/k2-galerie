@@ -78,14 +78,21 @@ export async function publishGalleryDataToServer(
 
   const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
   const pageContent = getPageContentGalerie()
+  // Nur URLs mitsenden – keine data: (Base64), sonst wird der Payload um MB groß (Speicher/Blob-Limit)
+  const toUrlOrEmpty = (v: string | undefined): string => {
+    if (!v || typeof v !== 'string') return ''
+    if (v.startsWith('data:')) return ''
+    return v
+  }
+  const welcome = (pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || ''
+  const galerieCard = (pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || ''
+  const virtualTour = (pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || ''
   const data = {
     martina: getItemSafe('k2-stammdaten-martina', {}),
     georg: getItemSafe('k2-stammdaten-georg', {}),
     gallery: {
       ...galleryStamm,
-      welcomeImage: (pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || '',
-      galerieCardImage: (pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || '',
-      virtualTourImage: (pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || ''
+      welcomeImage: toUrlOrEmpty(welcome), galerieCardImage: toUrlOrEmpty(galerieCard), virtualTourImage: toUrlOrEmpty(virtualTour)
     },
     artworks: forExport,
     events: (loadEvents('k2') as any[]).slice(0, 100),

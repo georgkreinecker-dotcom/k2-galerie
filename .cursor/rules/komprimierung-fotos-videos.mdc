@@ -14,7 +14,8 @@ alwaysApply: true
 ## Konkret
 
 - **Beim Speichern (Admin, mobil):** Bilder vor dem Speichern aggressiv komprimieren (z. B. max. Breite 600–800 px, JPEG-Qualität 0.5–0.65). Keine unnötig großen Rohdaten in localStorage/Sync.
-- **Beim Export:** Base64 wird nicht mitgeschickt – `artworksForExport` und `resolveArtworkImageUrlsForExport` (in publishGalleryData, artworkExport). Keine großen Rohdaten im Payload.
+- **Beim Export / Veröffentlichen:** Base64 wird **nirgends** mitgeschickt – (1) Werke: `artworksForExport` + `resolveArtworkImageUrlsForExport`. (2) **Seitengestaltung:** welcomeImage, galerieCardImage, virtualTourImage nur als URL mitsenden; sind sie `data:`, im Payload durch `''` ersetzen (publishGalleryData.ts). Sonst wird der Payload um MB groß → Blob-Limit / „store suspended“. **Proaktiv prüfen** bei jeder Änderung an Publish oder Payload.
+- **Für alle Nutzer (immer getrennt):** Diese Trennung (nur URLs im Payload, nie Base64) gilt **für jeden Mandanten** – K2, ök2, VK2, künftige Lizenznehmer. Jeder User, der „An Server senden“ / Veröffentlichen nutzt, darf nie versehentlich große Bilddaten mitsenden. Ein Standard, keine Ausnahme pro Kontext.
 - **Beim Speichern von Server-Daten:** Vor dem Schreiben in localStorage immer `stripBase64FromArtworks` anwenden („Vom Server laden“, „Nur Server-Stand“, „Werke vom Server zurückholen“), damit nie versehentlich Base64 in den Speicher gelangt.
 - **Neue Features:** Jede Stelle, die Fotos oder Videos lädt, speichert oder überträgt: Komprimierung einplanen. Keine „Originalgröße behalten“ ohne guten Grund.
 - **Wartezeit mobil:** Wenn das Speichern nach Foto-Aufnahme lange dauert → Ursache oft große Bilddaten. Komprimierung **vor** dem Schreiben verschärfen (kleinere max. Breite, niedrigere Qualität), nicht erst nachträglich.

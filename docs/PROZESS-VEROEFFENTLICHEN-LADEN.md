@@ -12,7 +12,7 @@
 |--------|----------------|
 | 1 | **Bild-URLs auflösen:** `resolveArtworkImageUrlsForExport(artworks)` – imageRef/Base64 → Upload (Supabase Storage) → https-URL. Ohne Auflösung käme beim Server nur '' für Bilder → andere Geräte sehen Platzhalter. |
 | 2 | **Export-Format:** `artworksForExport(...)` – Base64 aus Payload entfernen (kleiner JSON), URLs bleiben. |
-| 3 | **Payload:** Stammdaten, Events, Documents, Design, pageTexts aus localStorage; gallery-Bilder aus getPageContentGalerie(). |
+| 3 | **Payload:** Stammdaten, Events, Documents, Design, pageTexts aus localStorage; gallery-Bilder aus getPageContentGalerie() – **nur als URL**, nie als data: (Base64), sonst Payload MB groß → Blob-Limit. publishGalleryData nutzt toUrlOrEmpty für welcomeImage, galerieCardImage, virtualTourImage. **Gilt für alle Nutzer/Mandanten** (K2, ök2, VK2, Lizenznehmer) – immer getrennt, keine Ausnahme. |
 | 4 | **POST** `GALLERY_DATA_BASE_URL/api/write-gallery-data` (immer Vercel-URL) – schreibt in Vercel Blob. So landen Mobil und Mac bei derselben Quelle; relative URL würde bei localhost an den Dev-Server gehen. |
 
 **Aufrufer (dürfen nur diese eine Funktion nutzen):**
