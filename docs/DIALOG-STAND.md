@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Admin Anmeldung & Abmeldung: Util adminUnlockStorage + 8 Tests (Anmeldung, Abmeldung, Abgelaufen, kompletter Ablauf). Commit: (gleich nach Push) ✅ auf GitHub.
+**Letzter Build-Push:** 12.03.26 – Admin Anmeldung & Abmeldung: Util adminUnlockStorage + 8 Tests (Anmeldung, Abmeldung, Abgelaufen, kompletter Ablauf). Commit: 8f50a93 ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Auto-Download (54a463c). Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
