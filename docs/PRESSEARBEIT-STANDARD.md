@@ -38,6 +38,18 @@ Alles andere (Textstruktur, Verteiler, Betreff-Format) bleibt unverändert.
 
 ---
 
+## Weiterverbreiten in Social Media (ohne selbst in den Netzwerken zu sein)
+
+**Jede Aussendung aus der App** (Presse, Newsletter, Event-Flyer, E-Mail-Einladung, Social-Export) enthält automatisch einen **Weiterverbreiten-Block** mit dem Link zur Galerie. So können Empfänger (Medien, Gäste, Partner) die Information in ihren Netzwerken teilen – ohne dass ihr selbst in Facebook, Instagram, X usw. aktiv sein müsst.
+
+- **Presse / Newsletter (Kopieren als Text):** Am Ende des Textes steht „WEITERVERBREITEN: Bitte teilen Sie … Link zur Galerie: [URL].“
+- **Event-Flyer / E-Mail-Einladung:** Absatz „TEILEN: Bitte verbreiten Sie diese Einladung …“ bzw. „Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: [URL].“
+- **Social-Media-Export:** Link zum Weiterverbreiten oben mit angegeben.
+
+Die URL ist je Mandant korrekt (K2 / ök2 / VK2). Nichts Zusätzliches einfügen – die App macht es automatisch.
+
+---
+
 ## Checkliste vor Versand
 
 - [ ] Text aus Vorlage, alle [Platzhalter] ersetzt

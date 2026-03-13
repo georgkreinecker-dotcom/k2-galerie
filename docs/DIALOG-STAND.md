@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 13.03.26 – Social/Teilen: Admin Tab Veröffentlichen – Block „Link zu deiner Galerie“ (Kopieren + Teilen/Web Share). K2/ök2/VK2-URL je Mandant. Commit: 9b8493a ✅ auf GitHub.
+**Letzter Build-Push:** 13.03.26 – Aussendungen: Weiterverbreiten-Block in Presse, Newsletter, Social-Export, Event-Flyer, E-Mail-Einladung (Galerie-Link + Bitte teilen). Doku: PRESSEARBEIT-STANDARD, MEDIENSTUDIO-K2. Commit: (gleich nach Push) ✅.
 
-**Vorher:** 12.03.26 – Admin Anmeldung & Abmeldung (8f50a93). Lightbox + Galerie-Seite: Teilen/Link kopieren bereits umgesetzt.
+**Vorher:** 13.03.26 – Admin „Link zu deiner Galerie“ (9b8493a).
 
 **Kernfrage bei Wiedereinstieg:** Woran haben wir in der letzten Viertelstunde gearbeitet? → Inhaltlicher Faden, nicht nur letzter Auftrag. Kontexte verbinden, abrufbar machen.
 
@@ -10,12 +10,24 @@
 
 ---
 
+## Heute 13.03.26 – Aussendungen: Weiterverbreiten in Social Media (ohne selbst drin zu sein)
+
+- **Georg:** Da er in keinen Social-Media-Netzwerken ist, soll die Öffentlichkeitsarbeit so gestaltet sein, dass **Empfänger** (Medien, Gäste) die Aussendungen in ihren Netzwerken weiterverbreiten können – durch klaren Link und Aufforderung in jeder Aussendung.
+- **Umgesetzt:** In **alle** generierten Aussendungen einen einheitlichen **Weiterverbreiten-Block** eingebaut:
+  - **Presse** (Kopieren als Text): Absatz „WEITERVERBREITEN: Bitte teilen Sie diese Presseinformation … Link zur Galerie: [URL].“
+  - **Newsletter** (Kopieren): gleicher Block mit „Link zur Galerie“.
+  - **Social-Media-Export:** „Link zum Weiterverbreiten (in alle Kanäle): [URL]“ oben.
+  - **Event-Flyer** (K2 + VK2): Abschnitt „TEILEN: Bitte verbreiten Sie diese Einladung … Link zur Galerie: [URL].“
+  - **E-Mail-Einladung** (generateEmailNewsletterContent, K2 + VK2): „Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: [URL].“
+- **URL** je Mandant: K2 / ök2 / VK2 (PROJECT_ROUTES + BASE_APP_URL).
+- **Doku:** docs/PRESSEARBEIT-STANDARD.md – neuer Abschnitt „Weiterverbreiten in Social Media“. docs/MEDIENSTUDIO-K2.md – Verweis ergänzt.
+- **Nächster Schritt:** Commit + Push; am PC Presse/Newsletter/Flyer exportieren und Block prüfen.
+
+---
+
 ## Heute 13.03.26 – Social/Teilen: Admin „Link zu deiner Galerie“
 
-- **Kontext:** Drei Punkte geplant: (1) Lightbox Teilen ✅ (2) Galerie-Seite „Galerie teilen“ ✅ (3) Admin Tab Veröffentlichen: Block „Link zu deiner Galerie“ mit Kopieren + Teilen.
-- **Umgesetzt:** Im Tab **Veröffentlichen** neuer Block unter der Sync-Statusleiste: Überschrift „🔗 Link zu deiner Galerie“, Galerie-URL je Mandant (K2 / ök2 / VK2 aus PROJECT_ROUTES + BASE_APP_URL), Buttons **Kopieren** (Clipboard, Fallback execCommand) und **Teilen** (nur wenn navigator.share).
-- **Dateien:** components/ScreenshotExportAdmin.tsx.
-- **Nächster Schritt:** Commit + Push; am PC im Admin → Veröffentlichen prüfen.
+- **Umgesetzt:** Tab Veröffentlichen – Block „🔗 Link zu deiner Galerie“ mit Kopieren + Teilen (9b8493a).
 
 ---
 

@@ -24,6 +24,8 @@
 
 **Regel:** Jede Presseaussendung läuft über PRESSEARBEIT-STANDARD und MEDIENVERTEILER. Keine parallelen Wege.
 
+**Weiterverbreiten in Social Media:** Alle Aussendungen aus der App (Presse, Newsletter, Flyer, E-Mail-Einladung) enthalten automatisch einen Absatz mit Link zur Galerie und der Bitte, die Information in den eigenen Netzwerken zu teilen. So können Empfänger (Medien, Gäste) für euch verbreiten – auch wenn ihr selbst nicht in den Netzwerken aktiv seid. Details: PRESSEARBEIT-STANDARD.md, Abschnitt „Weiterverbreiten in Social Media“.
+
 ---
 
 ## Medienkit – immer bereit für Redaktionen

@@ -4357,7 +4357,8 @@ ${(() => { const a = getProminenteAdresseFormatiert(galleryData, martinaData, ge
       return galleryData || {}
     })()
     const adresseK2 = !tenant.isVk2 ? getProminenteAdresseFormatiert(galleryData, martinaData, georgData) : ''
-    
+    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
+
     const text = `
 ${'='.repeat(60)}
 ${galleryName.toUpperCase()}
@@ -4382,6 +4383,10 @@ ${'-'.repeat(60)}
 INHALT:
 ${presseaussendung?.content || ''}
 
+${'-'.repeat(60)}
+WEITERVERBREITEN: Bitte teilen Sie diese Presseinformation in Ihren Netzwerken (Facebook, Instagram, X, …). Link zur Galerie: ${galerieUrl}
+${'-'.repeat(60)}
+
 ${'='.repeat(60)}
 Erstellt: ${new Date().toLocaleString('de-DE')}
 ${'='.repeat(60)}
@@ -4404,12 +4409,15 @@ ${'='.repeat(60)}
   }
 
   const exportSocialMediaAsText = (socialMedia: any, event: any) => {
+    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
     const text = `
 ${'='.repeat(60)}
 SOCIAL MEDIA POSTS
 ${'='.repeat(60)}
 
 Event: ${event?.title || 'Nicht angegeben'}
+
+Link zum Weiterverbreiten (in alle Kanäle): ${galerieUrl}
 
 ${'-'.repeat(60)}
 INSTAGRAM POST:
@@ -4438,6 +4446,7 @@ ${'='.repeat(60)}
   }
 
   const exportNewsletterAsText = (newsletter: any, event: any) => {
+    const galerieUrl = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
     const text = `
 ${'='.repeat(60)}
 E-MAIL NEWSLETTER
@@ -4452,6 +4461,10 @@ ${newsletter?.subject || ''}
 ${'-'.repeat(60)}
 INHALT:
 ${newsletter?.body || ''}
+
+${'-'.repeat(60)}
+WEITERVERBREITEN: Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link zur Galerie: ${galerieUrl}
+${'-'.repeat(60)}
 
 ${'='.repeat(60)}
 Erstellt: ${new Date().toLocaleString('de-DE')}
@@ -4929,6 +4942,11 @@ ${'='.repeat(60)}
           verein.email ? `✉  ${verein.email}` : '',
           adresse ? `🏛  ${adresse}` : '',
           verein.website ? `🌐  ${verein.website}` : '',
+          ``,
+          `───────────────────────────────────────`,
+          `TEILEN: Bitte verbreiten Sie diese Einladung in Ihren Netzwerken.`,
+          `Link zur Galerie: ${BASE_APP_URL}${PROJECT_ROUTES.vk2.galerie}`,
+          `───────────────────────────────────────`,
         ].filter(line => line !== null && line !== undefined).join('\n')
       }
     }
@@ -4980,6 +4998,11 @@ ${'='.repeat(60)}
         adresse ? `🏛  ${adresse}` : '',
         g.openingHours ? `🕒  Öffnungszeiten: ${g.openingHours}` : '',
         ``,
+        `───────────────────────────────────────`,
+        `TEILEN: Bitte verbreiten Sie diese Einladung in Ihren Netzwerken.`,
+        `Link zur Galerie: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
+        `───────────────────────────────────────`,
+        ``,
         `www.k2-galerie.at`,
       ].filter(line => line !== null && line !== undefined).join('\n')
     }
@@ -5020,6 +5043,8 @@ ${'='.repeat(60)}
           `Für Getränke und eine herzliche Atmosphäre ist gesorgt.`,
           ``,
           `─────────────────────────────────────────`,
+          ``,
+          `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${BASE_APP_URL}${PROJECT_ROUTES.vk2.galerie}`,
           ``,
           verein.email ? `Anmeldung erwünscht: ${verein.email}` : '',
           ``,
@@ -5063,6 +5088,8 @@ ${'='.repeat(60)}
         `Für Getränke und eine herzliche Atmosphäre ist gesorgt.`,
         ``,
         `─────────────────────────────────────────`,
+        ``,
+        `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
         ``,
         g.openingHours ? `Öffnungszeiten: ${g.openingHours}` : '',
         g.email ? `Anmeldung erwünscht: ${g.email}` : '',
