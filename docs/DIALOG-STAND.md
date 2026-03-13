@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Build-Push:** 12.03.26 – Upload-Download-Simulationstest: volle Werke inkl. Bild (mkFullArtwork, echtes kleines PNG-Base64); 50+50 Tests mit kompletten Daten. Commit: (gleich) ✅ auf GitHub.
+**Letzter Build-Push:** 12.03.26 – Kritische Abläufe: 4 neue Tests (Vom Server laden, Warteschlange, Routen, Veröffentlichen-Mock). Commit: 8fded25 ✅ auf GitHub.
 
 **Vorher:** 12.03.26 – Auto-Download (54a463c). Präsentationsmappe: nur eine Version, Admin-Link „Präsentationsmappe“, PDF-Druck wie Benutzerhandbuch (kompakt, Seitenfuß). Commit: 27e06c4.
 
