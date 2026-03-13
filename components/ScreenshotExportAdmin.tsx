@@ -39,7 +39,7 @@ import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
 import { clearAdminUnlock } from '../src/utils/adminUnlockStorage'
-import { clearArtworkImagesForNumberRange, fillMissingImageRefsFromIndexedDB, persistDataUrlsToIndexedDB } from '../src/utils/artworkImageStore'
+import { clearArtworkImagesForNumberRange, fillMissingImageRefsFromIndexedDB, persistDataUrlsToIndexedDB, imageUrlWithCacheBust } from '../src/utils/artworkImageStore'
 import { deleteArtworkImagesInStorageForNumberRange } from '../src/utils/supabaseStorage'
 import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/githubImageUpload'
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
@@ -1569,6 +1569,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [printLabelData, setPrintLabelData] = useState<{ url: string; widthMm: number; heightMm: number } | null>(null)
   const [savedArtwork, setSavedArtwork] = useState<any>(null)
   const [etikettAnzahl, setEtikettAnzahl] = useState(1)
+  /** Ausgewählte Werke für Etikettendruck (Hakerl pro Karte); Druck nacheinander. */
+  const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(new Set())
+  const [etikettQueue, setEtikettQueue] = useState<any[]>([])
+  const [etikettQueueIndex, setEtikettQueueIndex] = useState(0)
   const [isSavingArtwork, setIsSavingArtwork] = useState(false)
   const [showSaleModal, setShowSaleModal] = useState(false)
   const [saleInput, setSaleInput] = useState('')
@@ -9110,24 +9114,19 @@ ${'='.repeat(60)}
     }
   }
 
-  // Drucken: Auf MOBIL immer alter Ablauf (Fenster mit Etikett → Drucken), hat gut funktioniert. „Etikett in neuem Tab“ nur auf Desktop.
+  // Drucken: Auf MOBIL Overlay (Teilen/Herunterladen). Auf MAC/Desktop immer kleines Fenster → sofort Druckdialog (normaler Drucker).
   const handlePrint = async () => {
     if (!savedArtwork) return
     const activeTenant = getCurrentTenantId()
     const settings = loadPrinterSettingsForTenant(activeTenant)
     const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
-    if (settings.openEtikettInNewTab && !isMobile) {
+    if (isMobile) {
       try {
         const lm = parseLabelSize(settings.labelSize)
         const blob = await getEtikettBlob(lm.width, lm.height)
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const r = new FileReader()
-          r.onload = () => resolve(r.result as string)
-          r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
-          r.readAsDataURL(blob)
-        })
-        window.open(dataUrl, '_blank')
-        alert('Etikett in neuem Tab geöffnet – dort „Drucken“ (⌘P / Strg+P) wählen, dann Brother QL oder anderen Drucker.')
+        shareFallbackBlobRef.current = blob
+        setShareFallbackImageUrl(URL.createObjectURL(blob))
+        setShowShareFallbackOverlay(true)
       } catch (e) {
         console.error('Etikett für Druck fehlgeschlagen:', e)
         alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
@@ -9137,17 +9136,21 @@ ${'='.repeat(60)}
     const win = window.open('', '_blank', 'width=400,height=500')
     if (win) try { win.focus() } catch (_) { }
     if (!win) {
-      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari) oder aktiviere in Einstellungen → Drucker „Etikett in neuem Tab öffnen“.')
+      alert('Pop-up blockiert. Bitte erlaube Fenster für diese Seite (Adresszeile/Safari), dann erneut „Etikett drucken“ klicken.')
       return
     }
     win.document.write('<html><body style="margin:0;padding:2rem;font-family:system-ui;text-align:center;">Etikett wird erstellt …</body></html>')
     try {
       const lm = parseLabelSize(settings.labelSize)
       const blob = await getEtikettBlob(lm.width, lm.height)
-      const url = URL.createObjectURL(blob)
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+        r.readAsDataURL(blob)
+      })
       const w = lm.width
       const h = lm.height
-      // Pixelmaße = Etikett in mm bei 300 DPI, damit Druck-Engine die Größe nicht falsch interpretiert
       const pw = Math.round(w * (300 / 25.4))
       const ph = Math.round(h * (300 / 25.4))
       win.document.write(`
@@ -9156,24 +9159,22 @@ ${'='.repeat(60)}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 @page { size: ${w}mm ${h}mm; margin: 0; }
 html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.etikett-wrap { width: ${w}mm; height: ${h}mm; display: block; overflow: hidden; }
-.etikett-wrap img { width: 100%; height: 100%; display: block; object-fit: contain; object-position: center; }
+.etikett-wrap { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; overflow: hidden; }
+.etikett-wrap img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: fill; object-position: center; }
+@media print { html, body, .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
 </style></head>
-<body><div class="etikett-wrap"><img src="${url}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
+<body><div class="etikett-wrap"><img src="${dataUrl}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
       win.document.close()
       const doPrint = () => {
         win.print()
-        win.addEventListener('afterprint', () => {
-          win.close()
-          URL.revokeObjectURL(url)
-        }, { once: true })
+        win.addEventListener('afterprint', () => win.close(), { once: true })
       }
       const img = win.document.querySelector('img')
       if (img?.complete) {
-        setTimeout(doPrint, 100)
+        setTimeout(doPrint, 150)
       } else {
-        img?.addEventListener('load', () => setTimeout(doPrint, 100), { once: true })
-        img?.addEventListener('error', () => { win.close(); URL.revokeObjectURL(url) }, { once: true })
+        img?.addEventListener('load', () => setTimeout(doPrint, 150), { once: true })
+        img?.addEventListener('error', () => win.close(), { once: true })
       }
     } catch (e) {
       win.close()
@@ -9188,9 +9189,99 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
   const closeShareFallbackOverlay = () => {
     shareFallbackBlobRef.current = null
     setShowShareFallbackOverlay(false)
-    setSavedArtwork(null)
     if (shareFallbackImageUrl) URL.revokeObjectURL(shareFallbackImageUrl)
     setShareFallbackImageUrl(null)
+    // Nächste Etikett aus Queue anzeigen (ein Etikett nach dem anderen, kein Sammeldruck)
+    if (etikettQueue.length > 0 && etikettQueueIndex + 1 < etikettQueue.length) {
+      const nextIndex = etikettQueueIndex + 1
+      const nextArtwork = etikettQueue[nextIndex]
+      setSavedArtwork(nextArtwork)
+      setEtikettAnzahl(Math.max(1, Number(nextArtwork?.quantity) || 1))
+      setEtikettQueueIndex(nextIndex)
+      const pSettings = loadPrinterSettingsForTenant(printerSettingsForTenant)
+      const lm = parseLabelSize(pSettings.labelSize)
+      getEtikettBlob(lm.width, lm.height, nextArtwork).then((blob) => {
+        shareFallbackBlobRef.current = blob
+        setShareFallbackImageUrl(URL.createObjectURL(blob))
+        setShowShareFallbackOverlay(true)
+      }).catch(() => { setEtikettQueue([]); setSavedArtwork(null) })
+      return
+    }
+    setEtikettQueue([])
+    setEtikettQueueIndex(0)
+    setSavedArtwork(null)
+    setSelectedForBatchPrint(new Set())
+  }
+
+  /** Ausgewählte Werke nacheinander drucken (ein Etikett nach dem anderen, Mobil: Overlay; Desktop: neuer Tab). */
+  const handleBatchPrintEtiketten = async () => {
+    const list = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
+    if (list.length === 0) {
+      alert('Hakerl bei den Werken setzen („🖨️ Etikett drucken“), dann auf „Etiketten drucken“ klicken.')
+      return
+    }
+    const first = list[0]
+    setEtikettQueue(list)
+    setEtikettQueueIndex(0)
+    setSavedArtwork(first)
+    setEtikettAnzahl(Math.max(1, Number(first?.quantity) || 1))
+    const settings = loadPrinterSettingsForTenant(printerSettingsForTenant)
+    const lm = parseLabelSize(settings.labelSize)
+    try {
+      const blob = await getEtikettBlob(lm.width, lm.height, first)
+      shareFallbackBlobRef.current = blob
+      if (isMobile) {
+        setShareFallbackImageUrl(URL.createObjectURL(blob))
+        setShowShareFallbackOverlay(true)
+      } else {
+        // Mac/Desktop: kleines Fenster → sofort Druckdialog (normaler Drucker), bei mehreren nacheinander
+        const printNext = (idx: number) => {
+          if (idx >= list.length) return
+          const art = list[idx]
+          getEtikettBlob(lm.width, lm.height, art).then((blobItem) => {
+            return new Promise<string>((resolve, reject) => {
+              const r = new FileReader()
+              r.onload = () => resolve(r.result as string)
+              r.onerror = () => reject(new Error('Blob konnte nicht gelesen werden'))
+              r.readAsDataURL(blobItem)
+            })
+          }).then((dataUrl) => {
+            const win = window.open('', '_blank', 'width=400,height=520')
+            if (!win) return
+            const w = lm.width
+            const h = lm.height
+            const pw = Math.round(w * 300 / 25.4)
+            const ph = Math.round(h * 300 / 25.4)
+            win.document.write(`
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Etikett ${art?.number}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@page { size: ${w}mm ${h}mm; margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h}mm; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.etikett-wrap { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; overflow: hidden; }
+.etikett-wrap img { width: ${w}mm; height: ${h}mm; max-width: ${w}mm; max-height: ${h}mm; display: block; object-fit: fill; object-position: center; }
+@media print { html, body, .etikett-wrap, .etikett-wrap img { width: ${w}mm !important; height: ${h}mm !important; max-width: ${w}mm !important; max-height: ${h}mm !important; } }
+</style></head>
+<body><div class="etikett-wrap"><img src="${dataUrl}" alt="Etikett" width="${pw}" height="${ph}"></div></body></html>`)
+            win.document.close()
+            const doPrint = () => {
+              win.print()
+              win.addEventListener('afterprint', () => {
+                win.close()
+                if (idx + 1 >= list.length) setSelectedForBatchPrint(new Set())
+                printNext(idx + 1)
+              }, { once: true })
+            }
+            const img = win.document.querySelector('img')
+            if (img?.complete) setTimeout(doPrint, 150)
+            else img?.addEventListener('load', () => setTimeout(doPrint, 150), { once: true })
+          }).catch(() => {})
+        }
+        printNext(0)
+      }
+    } catch (e) {
+      alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden.')
+    }
   }
 
   const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
@@ -9232,13 +9323,14 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
     }
   }
 
-  /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Brother 300 DPI = 300/25.4 px/mm. */
-  const getEtikettBlob = (widthMm = 29, heightMm = 60): Promise<Blob> => {
-    if (!savedArtwork) return Promise.reject(new Error('Kein Werk'))
+  /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Brother 300 DPI = 300/25.4 px/mm. Optional artwork für Queue-Druck. */
+  const getEtikettBlob = (widthMm = 29, heightMm = 60, artwork?: any): Promise<Blob> => {
+    const art = artwork ?? savedArtwork
+    if (!art) return Promise.reject(new Error('Kein Werk'))
     const pxPerMm = 300 / 25.4  /* Brother QL-820: 300 DPI */
     const w = Math.round(widthMm * pxPerMm)
     const h = Math.round(heightMm * pxPerMm)
-    return getQRDataUrl(savedArtwork.number).then((qrDataUrl) => {
+    return getQRDataUrl(art.number).then((qrDataUrl) => {
       const canvas = document.createElement('canvas')
       canvas.width = w
       canvas.height = h
@@ -9259,18 +9351,18 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
       ctx.font = `bold ${fs1}px Arial,sans-serif`
       ctx.fillText('K2 Galerie', w / 2, h * 0.08)
       ctx.font = `bold ${fs2}px Arial,sans-serif`
-      ctx.fillText(savedArtwork.number, w / 2, h * 0.15)
+      ctx.fillText(art.number, w / 2, h * 0.15)
       ctx.fillStyle = '#666'
       ctx.font = `${fs3}px Arial,sans-serif`
-      const title = ((savedArtwork.title || '').substring(0, 18)) + ((savedArtwork.title || '').length > 18 ? '…' : '')
+      const title = ((art.title || '').substring(0, 18)) + ((art.title || '').length > 18 ? '…' : '')
       ctx.fillText(title, w / 2, h * 0.21)
       let yNext = 0.26
-      if (savedArtwork.category === 'malerei' && savedArtwork.paintingWidth && savedArtwork.paintingHeight) {
+      if (art.category === 'malerei' && art.paintingWidth && art.paintingHeight) {
         ctx.font = `${fs4}px Arial,sans-serif`
-        ctx.fillText(`${savedArtwork.paintingWidth} × ${savedArtwork.paintingHeight} cm`, w / 2, h * yNext)
+        ctx.fillText(`${art.paintingWidth} × ${art.paintingHeight} cm`, w / 2, h * yNext)
         yNext += 0.05
       }
-      const priceVal = typeof savedArtwork.price === 'number' ? savedArtwork.price : parseFloat(String(savedArtwork.price ?? '').replace(',', '.'))
+      const priceVal = typeof art.price === 'number' ? art.price : parseFloat(String(art.price ?? '').replace(',', '.'))
       if (!isNaN(priceVal) && priceVal > 0) {
         yNext += 0.05
         ctx.font = `bold ${fs3}px Arial,sans-serif`
@@ -9278,7 +9370,7 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
         ctx.fillText('€ ' + priceVal.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), w / 2, h * yNext)
         ctx.fillStyle = '#666'
       }
-      const qty = savedArtwork.quantity != null ? Number(savedArtwork.quantity) : 1
+      const qty = art.quantity != null ? Number(art.quantity) : 1
       if (qty > 1) {
         yNext += 0.05
         ctx.font = `${fs4}px Arial,sans-serif`
@@ -9295,8 +9387,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
           ctx.drawImage(img, qrX, qrY, qrSize, qrSize)
       ctx.fillStyle = '#999'
       ctx.font = `${fs4}px Arial,sans-serif`
-      const artistName = savedArtwork.artist || ''
-      const categoryText = getCategoryLabel(savedArtwork.category)
+      const artistName = art.artist || ''
+      const categoryText = getCategoryLabel(art.category)
       // Zeilenumbruch wenn Name zu lang (>12 Zeichen)
       if (artistName.length > 12) {
         ctx.fillText(categoryText, w / 2, h - pad - fs4 * 2.2)
@@ -12133,6 +12225,42 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   </div>
                 ) : (
                   <>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'flex-start' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (selectedForBatchPrint.size > 0) handleBatchPrintEtiketten()
+                          else alert('Hakerl bei den Werken setzen („🖨️ Etikett drucken“), dann auf diesen Button klicken.')
+                        }}
+                        style={{
+                          padding: '0.7rem 1.2rem',
+                          background: selectedForBatchPrint.size > 0 ? s.bgElevated : 'transparent',
+                          color: selectedForBatchPrint.size > 0 ? s.text : s.muted,
+                          border: `1px solid ${selectedForBatchPrint.size > 0 ? s.accent + '44' : s.muted + '44'}`,
+                          borderRadius: '10px',
+                          fontSize: '0.88rem',
+                          fontWeight: selectedForBatchPrint.size > 0 ? 600 : 400,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${s.accent}66` }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = selectedForBatchPrint.size > 0 ? `${s.accent}44` : `${s.muted}44` }}
+                      >
+                        🖨️ Etiketten drucken{selectedForBatchPrint.size > 0 ? (() => {
+                          const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
+                          const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
+                          return totalEtiketten !== batchWerke.length ? ` (${batchWerke.length} Werke · ${totalEtiketten} Etiketten)` : ` (${batchWerke.length} ausgewählt)`
+                        })() : ''}
+                      </button>
+                      {selectedForBatchPrint.size === 0 && (
+                        <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
+                      )}
+                    </div>
+                  </div>
                   {/* Einstellungen & Sync unter Aufklapp-Button */}
                   <div style={{ marginTop: '0.75rem' }}>
                     <button
@@ -12385,6 +12513,58 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                 </label>
                 )}
               </div>
+              {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (() => {
+                const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
+                const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
+                return (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    flexWrap: 'wrap',
+                    padding: '0.75rem 1rem',
+                    background: `${s.accent}15`,
+                    border: `1px solid ${s.accent}40`,
+                    borderRadius: s.radius,
+                    marginBottom: '1rem'
+                  }}>
+                    <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.text }}>
+                      {batchWerke.length} Werk{batchWerke.length !== 1 ? 'e' : ''} · {totalEtiketten} Etikett{totalEtiketten !== 1 ? 'en' : ''} ausgewählt
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleBatchPrintEtiketten}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        background: s.gradientSecondary,
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: '#fff',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
+                      }}
+                    >
+                      Etiketten drucken
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedForBatchPrint(new Set())}
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        background: s.bgElevated,
+                        border: `1px solid ${s.accent}40`,
+                        borderRadius: '8px',
+                        color: s.text,
+                        cursor: 'pointer',
+                        fontSize: 'clamp(0.85rem, 2.2vw, 0.95rem)'
+                      }}
+                    >
+                      Abwählen
+                    </button>
+                  </div>
+                )
+              })()}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(200px, 30vw, 280px), 1fr))',
@@ -12547,6 +12727,8 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                   // blob:-URLs in derselben Session anzeigen (z. B. nach data:→blob in iframe). Nach Reload sind sie ungültig → onError zeigt Platzhalter.
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
                   const imageSrc = (tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
+                  // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
+                  const imageSrcBust = imageUrlWithCacheBust(imageSrc, artwork)
                   return (
                   <div 
                     key={artwork.number || artwork.id} 
@@ -12567,10 +12749,10 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                       e.currentTarget.style.background = s.bgCard
                     }}
                   >
-                    {imageSrc ? (
+                    {imageSrcBust ? (
                       <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)', background: artwork.imageDisplayMode === 'vollkachel' ? undefined : '#e8e6e2', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'clamp(180px, 30vw, 220px)' }}>
                         <img 
-                          src={imageSrc} 
+                          src={imageSrcBust} 
                           alt={artwork.title || artwork.number}
                           style={{
                             borderRadius: '12px',
@@ -12713,6 +12895,34 @@ html, body { margin: 0; padding: 0; background: #fff; width: ${w}mm; height: ${h
                         </span>
                       )}
                     </div>
+                    {!tenant.isVk2 && (
+                      <label style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        marginTop: 'clamp(0.75rem, 2vw, 1rem)',
+                        fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
+                        color: s.muted,
+                        cursor: 'pointer'
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedForBatchPrint.has(artwork.number || artwork.id || '')}
+                          onChange={() => {
+                            const num = artwork.number || artwork.id || ''
+                            if (!num) return
+                            setSelectedForBatchPrint((prev) => {
+                              const next = new Set(prev)
+                              if (next.has(num)) next.delete(num)
+                              else next.add(num)
+                              return next
+                            })
+                          }}
+                          style={{ cursor: 'pointer', accentColor: s.accent }}
+                        />
+                        🖨️ Etikett drucken
+                      </label>
+                    )}
                     <div style={{
                       display: 'flex',
                       gap: 'clamp(0.5rem, 2vw, 0.75rem)',
@@ -20616,7 +20826,7 @@ ${name}`
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem' }}>
               <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>
-                Etikett {savedArtwork?.number}
+                Etikett {savedArtwork?.number}{etikettQueue.length > 0 ? ` (${etikettQueueIndex + 1} von ${etikettQueue.length})` : ''}
               </p>
               <div style={{ background: '#fff', padding: '1rem', borderRadius: 8, margin: '0.5rem 0' }}>
                 <img src={shareFallbackImageUrl} alt="Etikett" style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', border: 'none', outline: 'none' }} />
