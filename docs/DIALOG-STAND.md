@@ -2,7 +2,9 @@
 
 **Letzter Stand:** 14.03.26 – **Pro++ in der Lizenzstruktur fertig:** Rechnungsfunktion als Lizenzstufe Pro++ (55 €/Monat) überall eingebunden: licencePricing, LicenseManager, LicencesPage, GlobaleGuideBegleitung, ScreenshotExportAdmin (State + Lizenz-Übersicht + LIZENZ_OPTIONS), LizenzKaufenPage, api/create-checkout.js (55 €, product_data), kassabuchStorage (KassabuchLizenzStufe + hasKassabuchVoll für propplus). Supabase-Migration 008_licences_licence_type_propplus.sql angelegt (CHECK um 'propplus' erweitern). **Manueller Test** (Pro++-Checkout + Migration auf Supabase ausführen) später. Commit: ef69333 (main). **Nächster Schritt:** Von Georg festlegen (z. B. Migration 008 auf Supabase ausführen, dann Testkauf; oder anderes Thema).
 
-**Was wir JETZT tun:** Pro++-Integration abgeschlossen; Commit + Push. Manueller Test folgt später.
+**Was wir JETZT tun:** Feinschliff (weiter wie von Georg vorgegeben). Pro++ manueller Test später.
+
+**📌 Erinnerung – Pro++ (vor Go-live / wenn dran):** (1) **Migration 008** auf Supabase ausführen: `supabase/migrations/008_licences_licence_type_propplus.sql` (SQL Editor oder CLI). (2) **Manuell testen:** Pro++ wählen → Stripe-Checkout (Testmodus) → prüfen, ob Lizenz in Supabase mit `licence_type = 'propplus'` ankommt.
 
 **Einordnung:** Bisher heute: Vision Werke (entryType) → ök2/Überkategorien → Migration Musterwerke → Modal Vorschau → Plausibilität Kategorie → Stammdaten Geschäftskunden → Stammdaten-Überschriften. Gesamtprojekt: K2 Galerie vermarktbar (Künstler:innen, Skalierung); ök2 Demo, VK2; ein Standard pro Problem, Datentrennung. Warum so: Stammdaten neutral („Meine Kontaktdaten“, „Ausstellungs-Galerie“) = für alle Nutzer:innen passend; Geschäftskunden-Felder = Vorbereitung für spätere Lizenznehmer.
 
