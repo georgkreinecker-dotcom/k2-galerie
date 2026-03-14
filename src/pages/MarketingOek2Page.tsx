@@ -938,7 +938,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Lizenz-Stufen (Basic, Pro, Pro+, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §7). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+          Lizenz-Stufen (Basic, Pro, Pro+, Pro++, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §7). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
         <p>
           <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
@@ -1045,7 +1045,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <p style={{ marginBottom: '0.75rem', fontWeight: 600, color: '#5ffbf1' }}>Marktwert</p>
         <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', marginBottom: '1rem', lineHeight: 1.55 }}>
-          Unverändert: Marktwert = Zahlungsbereitschaft der Zielgruppe (Künstler:innen, kleine Galerien, Vereine) und Vergleichspreise am Markt. Daraus leiten sich die <strong>realistischen Lizenzgebühren</strong> ab (Basic, Pro, Pro+, VK2) – siehe Abschnitt unten. Das gewachsene Produkt (Lebenszyklus, Multi-Tenant, Startklar) stärkt die Position für Vertrieb und Preisgestaltung; die Orientierung an marktgerechten Sätzen bleibt.
+          Unverändert: Marktwert = Zahlungsbereitschaft der Zielgruppe (Künstler:innen, kleine Galerien, Vereine) und Vergleichspreise am Markt. Daraus leiten sich die <strong>realistischen Lizenzgebühren</strong> ab (Basic, Pro, Pro+, Pro++, VK2) – siehe Abschnitt unten. Das gewachsene Produkt (Lebenszyklus, Multi-Tenant, Startklar) stärkt die Position für Vertrieb und Preisgestaltung; die Orientierung an marktgerechten Sätzen bleibt.
         </p>
 
         <h3 id="mok2-marktwert" style={{ fontSize: '1.1rem', color: '#5ffbf1', marginTop: '1.5rem', marginBottom: '0.5rem' }}>Realistische Lizenzgebühren (Orientierung für die Preisgestaltung)</h3>
@@ -1077,6 +1077,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro + <strong>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss.</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro++</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}><strong>55 €/Monat</strong></td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
               <td style={{ padding: '0.5rem 0.6rem' }}>Wie Pro (35 €); <strong>ab 10 Mitgliedern für den Verein kostenfrei</strong>; Lizenzmitglieder 50 %</td>
               <td style={{ padding: '0.5rem 0.6rem' }}>Kein direkter Marktvergleich; Multiplikator (ein Verein → viele sichtbar). Konditionen wie in Lizenzstruktur VK2.</td>
@@ -1084,12 +1089,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
+          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), Pro++ <strong>55 €/Monat</strong> (inkl. Rechnung § 11 UStG), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
         </p>
 
         <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
-          Bei Basic 15 €, Pro 35 €, Pro+ 45 €/Monat: Basic 180 €/Jahr, Pro 420 €/Jahr, Pro+ 540 €/Jahr.
+          Bei Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €/Monat: Basic 180 €/Jahr, Pro 420 €/Jahr, Pro+ 540 €/Jahr, Pro++ 660 €/Jahr.
         </p>
         <table style={{ width: '100%', maxWidth: 560, borderCollapse: 'collapse', fontSize: '0.9rem', marginBottom: '1rem' }}>
           <thead>
@@ -1174,6 +1179,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
               <td style={{ padding: '0.5rem 0.75rem' }}>45 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro++</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummer, Pflichtangaben, USt-Aufschlüsselung</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>55 €/Monat</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>VK2 (Verein)</td>
               <td style={{ padding: '0.5rem 0.75rem' }}>Pro für Kunstvereine; ab 10 Mitgliedern für den Verein kostenfrei, Lizenzmitglieder 50 %</td>
               <td style={{ padding: '0.5rem 0.75rem' }}>wie Pro (35 €); ab 10 Mitgliedern kostenfrei</td>
@@ -1184,7 +1194,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Preise für den Start festgelegt. In Prospekt, Werbeunterlagen und bei „Lizenz anfragen“ einheitlich nutzen.
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
-          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
+          <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, Pro++ <strong>55 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
         </p>
       </section>
 
@@ -1447,10 +1457,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       <section id="mok2-14" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(251,191,36,0.4)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#fbbf24', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251,191,36,0.4)', paddingBottom: '0.35rem' }}>
-          14. 💎 Pro+-Lizenz – gesamter Marketingbereich (Events, Galeriepräsentation, PR-Dokumente)
+          14. 💎 Pro+ & Pro++ – Marketingbereich & Rechnung (§ 11 UStG)
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es die <strong style={{ color: '#fbbf24' }}>Pro+-Lizenz (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss.
+          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

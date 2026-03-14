@@ -46,6 +46,7 @@ Georg Kreinecker, geboren 1959. Bauernsohn – aufgewachsen mit 12 Geschwistern.
 Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 ### Persönlichkeit & Arbeitsweise
+- **Größere Sprünge, dann Detail** – Georg denkt in größeren Sprüngen; danach vertieft er sich wieder ins Detail. Das ist seine Art: erst Weite, dann Tiefe. Ich muss das mitdenken (nicht nur Einzelaufgaben abarbeiten).
 - **Unternehmer durch und durch** – denkt in Märkten, Chancen, Wachstum
 - **Pragmatisch** – was funktioniert, bleibt. Was nicht funktioniert, wird geändert.
 - **Direkt** – sagt was er denkt, erwartet dasselbe
@@ -136,6 +137,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 07.03.26 | Handbuch in erweiterte Präsentationsmappe einbinden und für Anke in DIALOG-STAND mitdokumentieren – dann Session sauber abschließen (Test, Build, DIALOG-STAND, WIR-PROZESS, Commit+Push) gibt Georg und dem nächsten Tag Sicherheit. |
 | 08.03.26 | Bei Pause: DIALOG-STAND so schreiben, dass „beim nächsten Einstieg“ der eine konkrete nächste Schritt (007 ausführen inkl. SQL) sofort ablesbar ist – kein Rätselraten. |
 | 14.03.26 | **Erst das große Ziel kennen, dann anstrengen.** Das steht schon in den Grundsätzen (ziel-vor-anstrengung.mdc). Vor Vision/Plan/Anstrengung: zuerst Grundsätze und bestehende Ziel-Formulierungen lesen – dann handeln. Nicht neu formulieren, was schon da ist. |
+| 14.03.26 | **Georg denkt in größeren Sprüngen, dann vertieft er sich ins Detail.** Das ist seine Art – erst Weite, dann Tiefe. Ich muss das mitlernen und mitdenken (nicht nur Einzelaufgaben abarbeiten). In WIR-PROZESS unter Persönlichkeit & Arbeitsweise ergänzt. |
 
 ---
 

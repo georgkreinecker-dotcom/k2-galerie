@@ -658,12 +658,12 @@ export const MUSTER_TEXTE = {
     virtualTourImage: OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
     galerieCardImage: OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
   },
-  welcomeText: 'Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell: Kunstwerke, Produkte, Ideen. Entdecke die Verbindung von Bildern und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
-  artist1Bio: 'Lena Berg arbeitet in Malerei, Grafik und Mischtechnik. Studium der Bildenden Kunst, seit über zwanzig Jahren freischaffend. Ihre Werke – oft Landschaften und Atelierblicke – leben von kräftigen Farben und reduzierten Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
-  artist2Bio: 'Paul Weber widmet sich vor allem Keramik und Skulptur. Ausbildung zum Keramiker, langjährige Erfahrung mit Aufbau und Brand. Seine Objekte und Skulpturen verbinden handwerkliche Präzision mit klaren, zeitgenössischen Formen. Regelmäßige Teilnahme an Kunstmärkten und Gruppenausstellungen.',
-  gemeinsamText: 'Gemeinsam eröffnen Lena Berg und Paul Weber die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
+  welcomeText: 'Für Künstler:innen – eine Galerie für Werke, Ideen und Produkte. Ein Modell: Bilder und Skulptur in einem Raum.',
+  artist1Bio: 'Lena Berg: Malerei, Grafik, Mischtechnik. Studium Bildende Kunst, seit über zwanzig Jahren freischaffend. Landschaften und Atelierblicke – kräftige Farben, reduzierte Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
+  artist2Bio: 'Paul Weber: Keramik und Skulptur. Ausbildung Keramiker, langjährig Aufbau und Brand. Objekte und Skulpturen – handwerkliche Präzision, zeitgenössische Formen. Regelmäßig Kunstmärkte und Gruppenausstellungen.',
+  gemeinsamText: 'Lena Berg und Paul Weber eröffnen die Galerie Muster – Bilder und Skulptur in einem Raum.',
   /** ök2: nur eine Person (Lena Berg) – Absatz unter der Kunstschaffenden-Karte. */
-  gemeinsamTextSinglePerson: 'Lena Berg eröffnet die Galerie Muster – ein Raum für Malerei, Grafik und Mischtechnik, wo Kunst zum Leben erwacht.',
+  gemeinsamTextSinglePerson: 'Lena Berg eröffnet die Galerie Muster – Malerei, Grafik und Mischtechnik.',
 }
 
 /** Dummy-Vita für Künstler:in 1 (Malerei/Grafik), ~50 Zeilen – für Einstellungen, Außenkommunikation, Galeriegestaltung. */

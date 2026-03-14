@@ -61,7 +61,7 @@ export const mok2Groups: Mok2Group[] = [
     chapterTitle: 'Konzepte – Pro+, Leitkünstler, Guide',
     sections: [
       { id: 'mok2-13', label: '13. Werkkatalog & Werkkarte' },
-      { id: 'mok2-14', label: '14. 💎 Pro+-Lizenz' },
+      { id: 'mok2-14', label: '14. 💎 Pro+ & Pro++' },
       { id: 'mok2-15-gruender', label: '15. 🌱 Gründer-Galerie & Leitkünstler' },
       { id: 'mok2-16-leitkuenstler', label: '16. 📋 Leitkünstler:innen – Meine Liste' },
       { id: 'mok2-17-guide-avatar', label: '17. 🎙️ Guide-Avatar Vision (Option A)' },

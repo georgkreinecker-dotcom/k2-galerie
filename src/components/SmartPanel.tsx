@@ -140,14 +140,12 @@ function saveMappenOpen(open: Record<string, boolean>) {
   try { localStorage.setItem(MAPPEN_OPEN_KEY, JSON.stringify(open)) } catch { /* ignore */ }
 }
 
-/** Deine To-dos – Vermarktung & Strategie (zum Abarbeiten). Links führen direkt zur Stelle. */
+/** Deine To-dos – Feinschliff (step by step). Links führen direkt zur Stelle. */
 const MEINE_TODOS = [
-  { text: 'Kooperation in mök2 „Kanäle 2026“ eintragen (Name/Ziel)', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
-  { text: 'Lizenz-Pakete (Basic/Pro/Pro+/VK2) für Außen sichtbar prüfen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-lizenz-pakete-aussen` },
-  { text: 'Trust: AGB-Link, Datenschutz, Support prüfen', href: PROJECT_ROUTES['k2-galerie'].marketingOek2 },
-  { text: 'Quartal: Kanäle 2026 in mök2 prüfen und anpassen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
-  { text: 'Optional: Eine Kooperation anvisieren (Erstgespräch/Pilot)', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-kanale-2026` },
-  { text: 'Optional: Kurz-Anleitung „So empfiehlst du“ nutzen', href: `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-6` },
+  { text: 'Weit testen: Abläufe (Veröffentlichen, Laden, Stand, Werke, K2/ök2, Etikett, Dokument, Backup)', href: PROJECT_ROUTES['k2-galerie'].galerieVorschau },
+  { text: 'Weit testen: Geräte (Mac, iPad, Handy – Stand, Sync)', href: PROJECT_ROUTES['k2-galerie'].mobileConnect },
+  { text: 'Weit testen: Kontexte (K2, ök2, VK2 prüfen)', href: PROJECT_ROUTES['k2-galerie'].galerie },
+  { text: 'ök2-Texte kürzen/schärfen', href: PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau },
 ]
 
 // ── Diverses – frei befüllbare Ablage ──────────────────────────────────────────

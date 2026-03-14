@@ -72,6 +72,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **VERBESSERUNGEN-OHNE-MEHRKOSTEN.md** – Was ohne Mehrkosten umgesetzt wurde + was du regelmäßig tun kannst (npm audit, CORS, RLS).
 - **PRODUKT-LABEL-SICHERHEIT-ROADMAP.md** – Verkaufbares Produkt: sehr gutes Label, Zahlungen/Vergütungen sicher, Nachweis für Regress; Prioritäten (Auth, RLS, Zahlungsprovider, Audit-Log, Rechtliches).
 - **VOR-VEROEFFENTLICHUNG.md** – **Checkliste vor Go-Live** (Auth aktivieren, Migration 002, npm audit, AGB/DSGVO, Deployment) – nicht vergessen vor Veröffentlichung.
+- **FEINSCHLIFF-WEIT-TESTEN.md** – **Feinschliff Reihe 1:** Weit testen – Abläufe (Veröffentlichen, Laden, Stand/QR, Werke, K2/ök2, Etikett, Dokument, Backup), Geräte (Mac, iPad/Handy), Kontexte (K2, ök2, VK2). Zum Abhaken; danach Reihe 2 = ök2-Texte.
 - **WARTUNG-PROJEKT.md** – **Wartungsheft:** Notwendige Wartung mit Intervallen – § 1 Einmal vor Start (Supabase-Registrierung, 3 Schritte, Backup), § 2 Monatlich, § 3 Quartalsweise, § 4 Bei Ereignis. Abhakbar.
 - **SUPABASE-WOZU-KOSTEN-WARTUNG.md** – **Supabase Klarstellung:** Wozu (nur Lizenzen-DB), Vorteile, Kosten (Free/Paid), Wartung (einmal + kaum); Alternative ohne Supabase.
 - **PRAXISTEST-BEFUELLEN-SICHERHEIT.md** – **Vor dem Befüllen der Galerien (Eferding, K2):** Absolute Regeln (keine Vermischung, kein Datenverlust, nichts Unreparierbares) + Vollbackup-Anleitung (App, Git-Tag, Vercel, backupmicro). „Ab jetzt beginnt der Praxis-Test.“
