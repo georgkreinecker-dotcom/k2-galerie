@@ -105,6 +105,12 @@ export const K2_STAMMDATEN_DEFAULTS = {
     internetadresse: 'www.k2-galerie.at',
     openingHours: 'Samstag 9.30 bis 14.00 Uhr',
     bankverbindung: '',
+    /** Geschäftskunden: Firma, USt-IdNr., Rechnungsadresse (falls abweichend). Doku: STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md */
+    firmenname: '',
+    ustIdNr: '',
+    rechnungAddress: '',
+    rechnungCity: '',
+    rechnungCountry: '',
   },
 }
 
@@ -641,6 +647,11 @@ export const MUSTER_TEXTE = {
     internetadresse: 'www.galerie-muster.example',
     openingHours: 'Do–So 14–18 Uhr',
     bankverbindung: 'AT00 0000 0000 0000 0000 (Musterbank, nur Demo)',
+    firmenname: '',
+    ustIdNr: '',
+    rechnungAddress: '',
+    rechnungCity: '',
+    rechnungCountry: '',
     adminPassword: '',
     /* Einladende Musterbilder für ök2 (lizenzfrei) – Willkommensseite & Galerie-Start */
     welcomeImage: OEK2_WILLKOMMEN_IMAGES.welcomeImage,

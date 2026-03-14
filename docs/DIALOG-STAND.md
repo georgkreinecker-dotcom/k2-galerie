@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – (1) **Stammdaten Geschäftskunden:** Anforderung festgehalten (Georg): In Stammdaten auf Geschäftskunden vorbereitet sein (Firma, USt-IdNr., Rechnungsadresse). Doku: docs/STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md, Verweis in PLAN-GESCHAEFTSFELDER + 00-INDEX. (2) **Technisch:** Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten (GalerieVorschauPage) – getEntryTypeLabel(artwork.entryType) als kleines Overlay oben links auf der Karte. (3) Zuvor: Werkkatalog ök2 mit Typ+Kategorie-Filter; Slogan „für Menschen mit Idee“. Build prüfen, dann Commit + Push.
+**Letzter Stand:** 14.03.26 – (1) **Stammdaten Geschäftskunden umgesetzt:** Galerie-Stammdaten haben optional firmenname, ustIdNr, rechnungAddress/rechnungCity/rechnungCountry. Admin → Einstellungen → Galerie-Adresse + Registrierung: Block „Geschäftskunden (optional)“. Merge, Backup, Laden ziehen die Felder mit. Doku: STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md. (2) Zuvor heute: Vorschau im Modal „Neues Werk“, Plausibilität Kategorie/Unterkategorie; Badge auf Werkkarten, Werkkatalog ök2 Typ+Kategorie, Slogan „für Menschen mit Idee“. Nächster Schritt: Marketing-Strategie (AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) oder Feinschliff (Badge in Admin-Liste, ök2-Texte).
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 

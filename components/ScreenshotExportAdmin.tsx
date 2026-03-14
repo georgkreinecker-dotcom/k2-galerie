@@ -2273,6 +2273,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             internetadresse: (data.internetadresse != null && String(data.internetadresse).trim()) ? data.internetadresse : (data.website || g.internetadresse || ''),
             openingHours: (data.openingHours != null && String(data.openingHours).trim()) ? data.openingHours : (g.openingHours || data.openingHours || ''),
             bankverbindung: (data.bankverbindung != null && String(data.bankverbindung).trim()) ? data.bankverbindung : (g.bankverbindung || data.bankverbindung || ''),
+            firmenname: (data.firmenname != null && String(data.firmenname).trim()) ? data.firmenname : ((g as any).firmenname ?? (data as any).firmenname ?? ''),
+            ustIdNr: (data.ustIdNr != null && String(data.ustIdNr).trim()) ? data.ustIdNr : ((g as any).ustIdNr ?? (data as any).ustIdNr ?? ''),
+            rechnungAddress: (data.rechnungAddress != null && String(data.rechnungAddress).trim()) ? data.rechnungAddress : ((g as any).rechnungAddress ?? (data as any).rechnungAddress ?? ''),
+            rechnungCity: (data.rechnungCity != null && String(data.rechnungCity).trim()) ? data.rechnungCity : ((g as any).rechnungCity ?? (data as any).rechnungCity ?? ''),
+            rechnungCountry: (data.rechnungCountry != null && String(data.rechnungCountry).trim()) ? data.rechnungCountry : ((g as any).rechnungCountry ?? (data as any).rechnungCountry ?? ''),
             soldArtworksDisplayDays: typeof data.soldArtworksDisplayDays === 'number' ? data.soldArtworksDisplayDays : 30
           }
         } else {
@@ -2287,6 +2292,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             internetadresse: g.internetadresse || '',
             openingHours: g.openingHours || '',
             bankverbindung: g.bankverbindung || '',
+            firmenname: (g as any).firmenname ?? '',
+            ustIdNr: (g as any).ustIdNr ?? '',
+            rechnungAddress: (g as any).rechnungAddress ?? '',
+            rechnungCity: (g as any).rechnungCity ?? '',
+            rechnungCountry: (g as any).rechnungCountry ?? '',
             adminPassword: '',
             soldArtworksDisplayDays: 30,
             welcomeImage: '',
@@ -2314,7 +2324,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               website: mergedGallery.website,
               internetadresse: mergedGallery.internetadresse,
               openingHours: mergedGallery.openingHours,
-              bankverbindung: mergedGallery.bankverbindung
+              bankverbindung: mergedGallery.bankverbindung,
+              firmenname: mergedGallery.firmenname ?? '',
+              ustIdNr: mergedGallery.ustIdNr ?? '',
+              rechnungAddress: mergedGallery.rechnungAddress ?? '',
+              rechnungCity: mergedGallery.rechnungCity ?? '',
+              rechnungCountry: mergedGallery.rechnungCountry ?? ''
             }
             persistStammdaten('k2', 'gallery', toWrite)
           } catch (_) {}
@@ -2432,7 +2447,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson1 = { name: '', email: '', phone: '', website: '', category: 'malerei' as const, bio: '', vita: '' }
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
-      name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', adminPassword: '',
+      name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
       soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true
     }
     setMartinaData(emptyPerson1)
@@ -14939,6 +14954,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         />
                       </div>
                       <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}22` }}>
+                        <h4 style={{ fontSize: '0.9rem', color: s.text, margin: '0 0 0.5rem' }}>🏢 Geschäftskunden (optional)</h4>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Firma, USt-IdNr. und Rechnungsadresse – für Rechnungen und wenn du als Betrieb auftrittst.</p>
+                        <div className="field" style={{ marginBottom: '0.5rem' }}>
+                          <label style={{ fontSize: '0.85rem', color: s.text }}>Firmenname</label>
+                          <input type="text" value={galleryData.firmenname || ''} onChange={(e) => setGalleryData({ ...galleryData, firmenname: e.target.value })} placeholder="z. B. K2 Galerie KG" style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }} />
+                        </div>
+                        <div className="field" style={{ marginBottom: '0.5rem' }}>
+                          <label style={{ fontSize: '0.85rem', color: s.text }}>USt-IdNr.</label>
+                          <input type="text" value={galleryData.ustIdNr || ''} onChange={(e) => setGalleryData({ ...galleryData, ustIdNr: e.target.value })} placeholder="z. B. ATU12345678" style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }} />
+                        </div>
+                        <p style={{ margin: '0.5rem 0 0.25rem', fontSize: '0.78rem', color: s.muted }}>Rechnungsadresse (falls abweichend von Galerie-Adresse)</p>
+                        <div className="field" style={{ marginBottom: '0.35rem' }}>
+                          <input type="text" value={galleryData.rechnungAddress || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungAddress: e.target.value })} placeholder="Straße, Hausnr." style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }} />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <input type="text" value={galleryData.rechnungCity || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungCity: e.target.value })} placeholder="Ort (PLZ Ort)" style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, boxSizing: 'border-box' }} />
+                          <input type="text" value={galleryData.rechnungCountry || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungCountry: e.target.value })} placeholder="Land" style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, boxSizing: 'border-box' }} />
+                        </div>
+                      </div>
+                      <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}22` }}>
                         <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '0.25rem', color: s.text }}>📜 AGB (Allgemeine Geschäftsbedingungen)</label>
                         <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>
                       </div>
@@ -15152,6 +15187,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
                           <input type="url" value={galleryData.website || ''} onChange={(e) => setGalleryData({ ...galleryData, website: e.target.value })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Firmenname (optional)</label>
+                          <input type="text" value={galleryData.firmenname || ''} onChange={(e) => setGalleryData({ ...galleryData, firmenname: e.target.value })} placeholder="z. B. K2 Galerie KG" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>USt-IdNr. (optional)</label>
+                          <input type="text" value={galleryData.ustIdNr || ''} onChange={(e) => setGalleryData({ ...galleryData, ustIdNr: e.target.value })} placeholder="z. B. ATU12345678" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>Rechnungsadresse (optional, falls abweichend)</label>
+                          <input type="text" value={galleryData.rechnungAddress || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungAddress: e.target.value })} placeholder="Straße, Hausnr." style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text, marginBottom: '0.35rem' }} />
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                            <input type="text" value={galleryData.rechnungCity || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungCity: e.target.value })} placeholder="Ort" style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text, boxSizing: 'border-box' }} />
+                            <input type="text" value={galleryData.rechnungCountry || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungCountry: e.target.value })} placeholder="Land" style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text, boxSizing: 'border-box' }} />
+                          </div>
                         </div>
                       </div>
                     </div>

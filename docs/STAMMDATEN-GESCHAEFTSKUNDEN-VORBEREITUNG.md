@@ -21,3 +21,13 @@
 ---
 
 **Kurzfassung:** Stammdaten und künftige Kunden-/Rechnungsdaten so konzipieren, dass Geschäftskunden (Firma, USt-IdNr., Rechnungsadresse) abbildbar sind – nicht nur Privatpersonen.
+
+---
+
+## Umgesetzt (14.03.26)
+
+- **Galerie-Stammdaten** haben optional: **firmenname**, **ustIdNr**, **rechnungAddress**, **rechnungCity**, **rechnungCountry**.
+- **Admin → Einstellungen → Galerie-Adresse:** Block „Geschäftskunden (optional)“ mit Firmenname, USt-IdNr., Rechnungsadresse (falls abweichend).
+- **Admin → Einstellungen → Registrierung (K2/ök2):** Gleiche Felder unter Galerie/Atelier.
+- **Speicher/Merge:** stammdatenStorage mergeStammdatenGallery und Laden/Reparatur ziehen die neuen Felder mit; Backup enthält sie.
+- **Quelle:** K2_STAMMDATEN_DEFAULTS.gallery, MUSTER_TEXTE.gallery; Merge-Logik in stammdatenStorage.ts.
