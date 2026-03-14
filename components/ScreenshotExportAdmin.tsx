@@ -1185,6 +1185,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
+  /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
+  const adminTopRef = useRef<HTMLDivElement>(null)
   const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus' | 'propplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
@@ -1924,6 +1926,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           internetadresse: K2_STAMMDATEN_DEFAULTS.gallery.internetadresse || K2_STAMMDATEN_DEFAULTS.gallery.website,
           openingHours: K2_STAMMDATEN_DEFAULTS.gallery.openingHours,
           bankverbindung: K2_STAMMDATEN_DEFAULTS.gallery.bankverbindung,
+          iban: (K2_STAMMDATEN_DEFAULTS.gallery as any).iban ?? '',
+          bic: (K2_STAMMDATEN_DEFAULTS.gallery as any).bic ?? '',
           adminPassword: '',
           soldArtworksDisplayDays: 30,
           welcomeImage: '',
@@ -2273,6 +2277,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             internetadresse: (data.internetadresse != null && String(data.internetadresse).trim()) ? data.internetadresse : (data.website || g.internetadresse || ''),
             openingHours: (data.openingHours != null && String(data.openingHours).trim()) ? data.openingHours : (g.openingHours || data.openingHours || ''),
             bankverbindung: (data.bankverbindung != null && String(data.bankverbindung).trim()) ? data.bankverbindung : (g.bankverbindung || data.bankverbindung || ''),
+            iban: (data.iban != null && String(data.iban).trim()) ? data.iban : ((g as any).iban ?? (data as any).iban ?? ''),
+            bic: (data.bic != null && String(data.bic).trim()) ? data.bic : ((g as any).bic ?? (data as any).bic ?? ''),
             firmenname: (data.firmenname != null && String(data.firmenname).trim()) ? data.firmenname : ((g as any).firmenname ?? (data as any).firmenname ?? ''),
             ustIdNr: (data.ustIdNr != null && String(data.ustIdNr).trim()) ? data.ustIdNr : ((g as any).ustIdNr ?? (data as any).ustIdNr ?? ''),
             rechnungAddress: (data.rechnungAddress != null && String(data.rechnungAddress).trim()) ? data.rechnungAddress : ((g as any).rechnungAddress ?? (data as any).rechnungAddress ?? ''),
@@ -2292,6 +2298,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             internetadresse: g.internetadresse || '',
             openingHours: g.openingHours || '',
             bankverbindung: g.bankverbindung || '',
+            iban: (g as any).iban ?? '',
+            bic: (g as any).bic ?? '',
             firmenname: (g as any).firmenname ?? '',
             ustIdNr: (g as any).ustIdNr ?? '',
             rechnungAddress: (g as any).rechnungAddress ?? '',
@@ -2325,6 +2333,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               internetadresse: mergedGallery.internetadresse,
               openingHours: mergedGallery.openingHours,
               bankverbindung: mergedGallery.bankverbindung,
+              iban: (mergedGallery as any).iban ?? '',
+              bic: (mergedGallery as any).bic ?? '',
               firmenname: mergedGallery.firmenname ?? '',
               ustIdNr: mergedGallery.ustIdNr ?? '',
               rechnungAddress: mergedGallery.rechnungAddress ?? '',
@@ -2447,7 +2457,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson1 = { name: '', email: '', phone: '', website: '', category: 'malerei' as const, bio: '', vita: '' }
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
-      name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
+      name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', iban: '', bic: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
       soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true
     }
     setMartinaData(emptyPerson1)
@@ -11262,8 +11272,88 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         zIndex: 0
       }} />
       
-      {/* Spacer wenn Zurück-Banner sichtbar ist */}
-      {fromHub && <div style={{ height: 44 }} />}
+      {/* Oberer Rand des Admin-Bereichs (Anker für „Zurück in den Admin-Bereich“); Spacer wenn Zurück-Banner sichtbar */}
+      <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
+
+      {/* Guide-Balken: pro Aktion/Tab ein Text, der den Interessenten an der Hand nimmt und erklärt – grün, ök2-Admin */}
+      {tenant.isOeffentlich && (() => {
+        const istVerein = guidePfad === 'gemeinschaft'
+        const guideTexte: Record<string, { titel: string; text: string }> = {
+          werke: istVerein
+            ? { titel: 'Werke & Mitglieder', text: 'Hier siehst und verwaltest du alle Werke eures Vereins – Fotos, Preise, Beschreibungen. Jedes Mitglied kann eigene Werke anlegen. Klicke auf ein Werk zum Bearbeiten oder nutze „Neues Werk“, um etwas hinzuzufügen. Alles bleibt übersichtlich an einem Ort.' }
+            : { titel: 'Werke hinzufügen und bearbeiten', text: 'Hier legst du deine Werke an: Foto hochladen oder aufnehmen, Titel und Preis eintragen – schon ist das Werk in der Galerie. Du kannst jederzeit etwas ändern oder ergänzen. Einfach auf ein Werk tippen zum Bearbeiten oder „Neues Werk“ wählen.' },
+          eventplan: istVerein
+            ? { titel: 'Events & Ausstellungen', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellst du Einladungen, QR-Codes für Gäste und siehst, wer kommt. Alles für eure Events an einem Ort – ohne Zettelwirtschaft.' }
+            : { titel: 'Events & Ausstellungen', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen und QR-Codes für deine Gäste. Du siehst auf einen Blick, was ansteht – und deine Besucher können sich einfach anmelden.' },
+          presse: { titel: 'Presse & Medien', text: 'Hier findest du alles für deine Pressearbeit: Medienkit, Pressevorlagen und Texte zum Kopieren. Ein Klick – und du hast das Richtige für Zeitung, Web oder Social Media. Professionell formuliert, du musst nur noch anpassen und versenden.' },
+          design: istVerein
+            ? { titel: 'Galerie gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellst du es ein. Vorschau zeigt dir sofort, wie es wirkt.' }
+            : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
+          veroeffentlichen: { titel: 'Veröffentlichen', text: 'Damit Besucher und Geräte den aktuellen Stand sehen: Hier sendest du deine Galerie an den Server. Ein Klick auf „An Server senden“ – danach ist überall dasselbe zu sehen. Wichtig nach jeder Änderung an Werken oder Gestaltung.' },
+          einstellungen: istVerein
+            ? { titel: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Adresse – hier pflegt ihr alles, was auf der Galerie und in Einladungen erscheint. Unter „Stammdaten“ trägst du Namen und Kontakt ein. So sind eure Daten immer aktuell.' }
+            : { titel: 'Einstellungen', text: 'Dein Name, deine Adresse, Öffnungszeiten – hier trägst du alles ein, was Besucher sehen sollen. Unter „Stammdaten“ findest du die Felder. Einmal ausfüllen, dann stimmt es überall.' },
+          katalog: { titel: 'Werkkatalog', text: 'Alle Werke auf einen Blick: filtern, suchen, als Liste oder für den Druck. Hier behältst du die Übersicht – ob für dich selbst oder für Kunden. Export und PDF möglich.' },
+          statistik: { titel: 'Kassa, Lager & Listen', text: 'Verkäufe erfassen, Belege drucken, Lager und Verkaufsstatistik im Blick. Hier läuft alles rund um Verkauf und Übersicht – auch vom Handy aus bei der Ausstellung.' },
+        }
+        const allgemein = {
+          titel: 'Admin – deine Zentrale',
+          text: 'Wir sind jetzt im Admin angelangt. Hier kannst du alle deine Arbeiten erledigen. Wenn du auf eine Aufgabe tippst, gehe ich mit dir dort hinein und erkläre dir, was du dort machen kannst.',
+        }
+        const aktuell = guideTexte[activeTab] ?? allgemein
+        return (
+          <div
+            style={{
+              position: 'sticky',
+              top: fromHub ? 44 : 0,
+              zIndex: 99998,
+              padding: '0.85rem clamp(1rem, 3vw, 1.5rem)',
+              background: 'linear-gradient(135deg, #15803d, #22c55e)',
+              borderBottom: '2px solid #15803d',
+              marginBottom: 0,
+              color: '#fff',
+              boxShadow: '0 2px 12px rgba(21,128,61,0.35)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
+                  Dein Galerie-Guide
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{aktuell.titel}</div>
+                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.98)', maxWidth: '52rem' }}>
+                  {aktuell.text}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  adminTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                }}
+                style={{
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.45rem 0.85rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  borderRadius: 8,
+                  color: '#fff',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ← Zurück in den Admin-Bereich
+              </button>
+            </div>
+          </div>
+        )
+      })()}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
@@ -11753,7 +11843,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             onClick={() => {
                               setGuideBannerClosed(true)
                               if (b.tab === 'kassa') {
-                                try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
+                                try {
+                                  sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2')
+                                  if (tenant.isOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+                                } catch (_) {}
                                 if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                               } else {
                                 const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
@@ -11842,7 +11935,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
-                    try { sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2') } catch (_) {}
+                    try {
+                      sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2')
+                      if (tenant.isOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+                    } catch (_) {}
                     if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
                   }
                   // Abgestimmte Kartenfarben (Werke + Galerie gestalten gleich präsent), Rest harmonisch
@@ -14875,6 +14971,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
+                    <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.text, lineHeight: 1.5 }}>
+                      <strong style={{ color: s.accent }}>Vorteile sauber ausgefüllter Stammdaten</strong>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem' }}>Eine Quelle – überall korrekt: Rechnung (Aussteller, IBAN, SEPA-QR), Kassenbon, Werbemittel, Flyer, Presse-Einladung, Impressum und alle Dokumente beziehen Namen, Adresse, Kontakt und Bankdaten aus diesen Feldern. Je vollständiger du sie pflegst, desto professioneller wirken Rechnungen und Werbemittel ohne Nacharbeit.</p>
+                    </div>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', color: s.text }}>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Galerie-Name</label>
@@ -14966,12 +15066,32 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         />
                       </div>
                       <div className="field">
-                        <label style={{ fontSize: '0.85rem', color: s.text }}>Bankverbindung / IBAN (für Überweisungszwecke, z. B. Shop)</label>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>Bankverbindung / Freitext (für Überweisung, z. B. Kontoinhaber, Verwendungszweck)</label>
                         <input
                           type="text"
                           value={galleryData.bankverbindung || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, bankverbindung: e.target.value })}
-                          placeholder="z. B. AT12 3456 7890 1234 5678, K2 Galerie"
+                          placeholder="z. B. K2 Galerie, Verwendungszweck: Rechnungsnr."
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field" style={{ marginBottom: '0.5rem' }}>
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>IBAN (für Rechnung + SEPA-QR-Code)</label>
+                        <input
+                          type="text"
+                          value={galleryData.iban || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, iban: e.target.value })}
+                          placeholder="z. B. AT12 3456 7890 1234 5678"
+                          style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
+                        />
+                      </div>
+                      <div className="field">
+                        <label style={{ fontSize: '0.85rem', color: s.text }}>BIC (optional, für SEPA)</label>
+                        <input
+                          type="text"
+                          value={galleryData.bic || ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, bic: e.target.value })}
+                          placeholder="z. B. RLNWATWW"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
@@ -16395,7 +16515,7 @@ ${name}`
                                   <strong style={{ color: '#2d6a2d' }}>€{(Number(order?.total) || 0).toFixed(2)}</strong>
                                   <br />
                                   <small style={{ color: '#666' }}>
-                                    {order.paymentMethod === 'cash' ? '💵 Bar' : order.paymentMethod === 'card' ? '💳 Karte' : '🏦 Überweisung'}
+                                    {order.paymentMethod === 'cash' ? '💵 Bar' : order.paymentMethod === 'card' ? '💳 Karte' : '📄 Rechnung'}
                                   </small>
                                 </div>
                               </div>

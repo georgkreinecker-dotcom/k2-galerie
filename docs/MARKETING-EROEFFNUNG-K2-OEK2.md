@@ -9,7 +9,7 @@
 **Alle Werbemaßnahmen** (Presse, Flyer, Plakat, Einladung, Web, Social) tragen diese beiden Slogans – eine Quelle, überall prägend. Siehe **mök2 → Promotion für alle Medien (Sektion 7)**.
 
 1. **K2 Galerie – für Künstler:innen, die gesehen werden wollen**
-2. **Deine Kunst verdient mehr als einen Instagram-Post.**
+2. **Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.**
 
 Texte und Kernbotschaften in diesem Dokument (Kernbotschaft, Lounge-Text, Einladung, Presse, Social) sind darauf ausgerichtet. Technische Quelle: `src/config/tenantConfig.ts` (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2).
 

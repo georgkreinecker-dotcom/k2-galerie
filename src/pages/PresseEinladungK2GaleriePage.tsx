@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
-import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'presse-k2-page'
@@ -29,36 +30,26 @@ function formatEventDate(dateStr: string, endDateStr?: string): string {
   }
 }
 
-function loadStammdaten(): {
-  address: string
-  city: string
-  country: string
-  phone: string
-  email: string
-} {
-  const def = K2_STAMMDATEN_DEFAULTS.gallery
-  try {
-    const raw = localStorage.getItem('k2-stammdaten-galerie')
-    const g = raw && raw.length < 50000 ? JSON.parse(raw) as Record<string, string> : {}
-    return {
-      address: (g.address ?? def.address ?? '').trim(),
-      city: (g.city ?? def.city ?? '').trim(),
-      country: (g.country ?? def.country ?? '').trim(),
-      phone: (g.phone ?? def.phone ?? '').trim(),
-      email: (g.email ?? def.email ?? '').trim(),
-    }
-  } catch {
-    return {
-      address: def.address ?? '',
-      city: def.city ?? '',
-      country: def.country ?? '',
-      phone: def.phone ?? '',
-      email: def.email ?? '',
-    }
+function usePresseTenant(): 'k2' | 'oeffentlich' {
+  const [searchParams] = useSearchParams()
+  const fromUrl = searchParams.get('context') === 'oeffentlich'
+  const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
+  return fromUrl || fromStorage ? 'oeffentlich' : 'k2'
+}
+
+function toFlatStammdaten(g: any): { address: string; city: string; country: string; phone: string; email: string } {
+  return {
+    address: (g?.address ?? '').trim(),
+    city: (g?.city ?? '').trim(),
+    country: (g?.country ?? '').trim(),
+    phone: (g?.phone ?? '').trim(),
+    email: (g?.email ?? '').trim(),
   }
 }
 
 export default function PresseEinladungK2GaleriePage() {
+  const tenant = usePresseTenant()
+  const isOeffentlich = tenant === 'oeffentlich'
   const [event, setEvent] = useState<{
     title: string
     type: string
@@ -66,12 +57,14 @@ export default function PresseEinladungK2GaleriePage() {
     location: string
     description: string
   } | null>(null)
-  const [stammdaten, setStammdaten] = useState(loadStammdaten)
+  const [stammdaten, setStammdaten] = useState(() =>
+    toFlatStammdaten(typeof window !== 'undefined' ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') : {})
+  )
 
   useEffect(() => {
     let isMounted = true
     try {
-      const list = loadEvents('k2')
+      const list = loadEvents(isOeffentlich ? 'oeffentlich' : 'k2')
       if (Array.isArray(list) && list.length > 0) {
         const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
         const ev = eroeffnung || list.find((e: any) => e?.date) || list[0]
@@ -86,10 +79,11 @@ export default function PresseEinladungK2GaleriePage() {
           })
         }
       }
-      setStammdaten(loadStammdaten())
+      const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+      if (isMounted) setStammdaten(toFlatStammdaten(g))
     } catch (_) {}
     return () => { isMounted = false }
-  }, [])
+  }, [isOeffentlich])
 
   const location = event?.location || [stammdaten.address, stammdaten.city, stammdaten.country].filter(Boolean).join(', ')
   const contact = [stammdaten.phone, stammdaten.email].filter(Boolean).join(' · ')

@@ -53,8 +53,8 @@ const T = {
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
   weg: 'Wofür interessierst du dich?',
-  wegSolo: { emoji: '🖼️', label: 'Meine eigene Galerie', sub: 'Deine Werke, dein Name, dein Auftritt – online und im Atelier.' },
-  wegVerein: { emoji: '🏛️', label: 'Vereinsgalerie', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Galerie – eine eigene Welt.' },
+  wegSolo: { emoji: '🖼️', label: 'Meine eigene Plattform', sub: 'Deine Werke, dein Name, dein Auftritt – online und im Atelier.' },
+  wegVerein: { emoji: '🏛️', label: 'Vereinsplattform', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Plattform – eine eigene Welt.' },
 
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
@@ -273,7 +273,7 @@ interface HubArbProps {
   onZurueck: () => void
 }
 
-// Stationen je nach Weg (solo = eigene Galerie, verein = Vereinsgalerie) – keine Vermischung
+// Stationen je nach Weg (solo = eigene Plattform, verein = Vereinsplattform) – keine Vermischung
 function baueHubStationen(weg: string) {
   const istVerein = weg === 'verein'
 
@@ -386,7 +386,7 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
   }
 
   const begruessung = istVerein
-    ? (name ? `${name} – das ist eure Vereinsgalerie.` : 'Das ist eure Vereinsgalerie.')
+    ? (name ? `${name} – das ist eure Vereinsplattform.` : 'Das ist eure Vereinsplattform.')
     : (name ? `${name}, das ist deine Galerie.` : 'Das ist deine Galerie.')
   const subText = istVerein
     ? 'Das ist dein Guide – klick auf einen Bereich und schaut, was euch erwartet.'
@@ -498,7 +498,7 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
             <>
               <button type="button" onClick={onStarten}
                 style={{ width: '100%', padding: '0.95rem', background: akzentGrad, border: 'none', borderRadius: '14px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', boxShadow: `0 6px 24px ${hubAccent}55`, letterSpacing: '0.01em' }}>
-                🚀 {istVerein ? (name ? `${name} – Vereinsgalerie` : 'Vereinsgalerie') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
+                🚀 {istVerein ? (name ? `${name} – Vereinsplattform` : 'Vereinsplattform') : (name ? `${name}'s Galerie` : 'Galerie')} jetzt öffnen →
               </button>
               <a href={`mailto:${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_EMAIL)}?subject=${encodeURIComponent(PRODUCT_LIZENZ_ANFRAGE_BETREFF)}`} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: hubAccent, textDecoration: 'none', display: 'inline-block' }}>
                 Lizenz anfragen →

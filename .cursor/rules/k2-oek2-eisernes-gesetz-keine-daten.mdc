@@ -1,0 +1,48 @@
+---
+description: EISERNES GESETZ – Keine K2-Daten in ök2. Keine Stammdaten. Keine Werkedaten. Unumstösslich.
+alwaysApply: true
+---
+
+# 🔴 EISERNES GESETZ – UNUMSTÖSSLICH: Keine K2-Daten in ök2
+
+## Das Gesetz (eine Zeile)
+
+**Keine Daten von K2 gehen in ök2. Keine Stammdaten. Keine Werkedaten. Keine Ausnahme.**
+
+---
+
+## Warum diese Regel (wiederholt verletzt)
+
+Dieses Thema wurde **mehrfach** in Regeln und Doku als No-Go definiert. Trotzdem kam es vor (z. B. Rechnungen/Belege im ök2-Shop zeigten K2-Stammdaten). **Deshalb:** Eine einzige, unumstössliche Regel – oben stehend – die **vor jeder Änderung**, die ök2 oder gemischte Kontexte betrifft, gilt.
+
+---
+
+## Konkret – was NIEMALS passieren darf
+
+| In ök2-Kontext … | Verboten | Erlaubt |
+|------------------|----------|---------|
+| **Stammdaten** | `k2-stammdaten-*` lesen/schreiben, loadStammdaten('k2', …) für Anzeige/Belege/Rechnungen | Nur `k2-oeffentlich-stammdaten-*`, loadStammdaten('oeffentlich', …), MUSTER_TEXTE |
+| **Werkedaten** | `k2-artworks` lesen/schreiben, echte Werke anzeigen | Nur `k2-oeffentlich-artworks`, MUSTER_ARTWORKS |
+| **Seitentexte / Gestaltung** | getPageTexts() / getPageContentGalerie() ohne Tenant | Immer mit Tenant: getPageTexts(musterOnly ? 'oeffentlich' : undefined) |
+| **Shop / Kassa / Belege** | K2-Kontakt, K2-Adresse, K2-Name auf Bon/Rechnung wenn fromOeffentlich | Nur oeffentlich-Stammdaten bzw. MUSTER_TEXTE.gallery |
+| **Events / Dokumente** | k2-events, k2-documents im ök2-Kontext | Nur k2-oeffentlich-* bzw. MUSTER_EVENTS / [] |
+
+**ök2-Kontext** = Routen galerie-oeffentlich, galerie-oeffentlich-vorschau, Admin context=oeffentlich, Shop mit fromOeffentlich, alle Drucke/Belege/Rechnungen die aus ök2 heraus erzeugt werden.
+
+---
+
+## Pflicht vor JEDER Änderung (Checkliste)
+
+Wenn du Code änderst, der **ök2**, **Shop**, **Kasse**, **Belege**, **Rechnungen**, **Stammdaten** oder **Werke** betrifft:
+
+- [ ] Zeige oder lade ich hier **Stammdaten**? → Wenn ök2-Kontext: **nur** oeffentlich / MUSTER_TEXTE. **Nie** loadStammdaten('k2', …) für ök2-Anzeige oder ök2-Druck.
+- [ ] Zeige oder lade ich hier **Werke**? → Wenn ök2-Kontext: **nur** k2-oeffentlich-artworks / MUSTER_ARTWORKS. **Nie** k2-artworks.
+- [ ] Erzeuge ich **Beleg/Rechnung/Dokument**? → Aussteller/Kontakt/Adresse **immer** aus dem Kontext: fromOeffentlich ⇒ oeffentlich-Stammdaten + MUSTER_TEXTE, sonst K2.
+
+---
+
+## Kurzfassung
+
+**Eisernes Gesetz: Keine K2-Daten in ök2. Keine Stammdaten. Keine Werkedaten. Unumstösslich.**
+
+Verknüpfung: k2-oek2-trennung.mdc (Details), .cursorrules „KRITISCH: Keine Vermischung“, datentrennung-localstorage-niemals-loeschen.mdc, docs/K2-OEK2-DATENTRENNUNG.md.

@@ -331,7 +331,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const galerieRef = React.useRef<HTMLDivElement>(null)
   const kunstschaffendeRef = React.useRef<HTMLDivElement>(null)
   const [mobileUrl, setMobileUrl] = React.useState<string>('')
-  // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Von Entdecken „Meine eigene Galerie“ aus nie anzeigen – Buttons „Galerie teilen“ und „Mit mir in den Admin“ müssen sichtbar bleiben.
+  // Willkommens-Fenster (nur öffentliche Galerie): nur auf Mobilgeräten (QR-Einstieg). Von Entdecken „Meine eigene Plattform“ aus nie anzeigen – Buttons „Galerie teilen“ und „Mit mir in den Admin“ müssen sichtbar bleiben.
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
     if (typeof sessionStorage === 'undefined') return false
     try {
@@ -387,7 +387,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return false
   })()
 
-  /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Galerie“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
+  /** Fremde: Direktaufruf von galerie-oeffentlich → zuerst Entdecken. Von Entdecken (Klick „Meine eigene Plattform“) → nie zurück; Flag nicht löschen, damit nach ro5/Crash/Reload der Zugang bleibt (Referrer ist oft leer). */
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
     try {
@@ -2872,7 +2872,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </header>
         ) : (
         <>
-        {/* ök2: Banner oben – So könnte deine Galerie aussehen, dann mit mir in den Admin */}
+        {/* ök2: Banner oben – So könnte dein Auftritt aussehen (Galerie = Beispiel), dann mit mir in den Admin */}
         {musterOnly && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -2890,7 +2890,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px' }}>
-              So könnte deine Galerie aussehen. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie du deine Galerie gestaltest.
+              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du aber jedes Produkt oder jede Idee präsentieren. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
             </span>
             <button
               type="button"

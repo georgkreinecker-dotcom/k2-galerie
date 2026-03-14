@@ -25,8 +25,8 @@ export const PRODUCT_COPYRIGHT_BRAND_ONLY = 'Copyright © 2026 kgm solution. All
 /** Werbeslogan 1 – markante Aussage (Menschen mit Idee = Künstler:innen, Macher:innen, alle mit etwas zu zeigen) */
 export const PRODUCT_WERBESLOGAN = 'kgm solution – für Menschen mit Idee, die gesehen werden wollen'
 
-/** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 */
-export const PRODUCT_WERBESLOGAN_2 = 'Deine Kunst verdient mehr als einen Instagram-Post.'
+/** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 (Ideen + Werke = alle entryTypes) */
+export const PRODUCT_WERBESLOGAN_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
 
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'
@@ -114,6 +114,10 @@ export const K2_STAMMDATEN_DEFAULTS = {
     internetadresse: 'www.k2-galerie.at',
     openingHours: 'Samstag 9.30 bis 14.00 Uhr',
     bankverbindung: '',
+    /** IBAN für Rechnung/SEPA (optional; wenn gesetzt: auf Rechnung + EPC-QR-Code) */
+    iban: '',
+    /** BIC für SEPA (optional; bei vielen österr. Banken nicht nötig) */
+    bic: '',
     /** Geschäftskunden: Firma, USt-IdNr., Rechnungsadresse (falls abweichend). Doku: STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md */
     firmenname: '',
     ustIdNr: '',

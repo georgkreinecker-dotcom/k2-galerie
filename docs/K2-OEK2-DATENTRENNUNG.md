@@ -1,6 +1,14 @@
 # K2 vs. ök2 – strikte Datentrennung
 
-**Stand:** 16.02.26
+**Stand:** 14.03.26
+
+## 🔴 EISERNES GESETZ (unumstösslich)
+
+**Keine Daten von K2 gehen in ök2. Keine Stammdaten. Keine Werkedaten. Keine Ausnahme.**
+
+Diese Regel wurde mehrfach in Doku und Regeln als No-Go definiert und trotzdem wiederholt verletzt. **Oberste Priorität:** In jedem ök2-Kontext (Routen, Admin, Shop, Kasse, Belege, Rechnungen) ausschliesslich oeffentlich-Keys und MUSTER_* – niemals K2-Stammdaten oder K2-Werke. Regel: `.cursor/rules/k2-oek2-eisernes-gesetz-keine-daten.mdc`.
+
+---
 
 ## Warum diese Trennung
 
@@ -65,6 +73,7 @@ Danach: Nur noch in der **K2-Galerie** arbeiten, wenn du echte Daten änderst. I
 
 - [ ] **Laden:** Wird `musterOnly` / `tenantId === 'oeffentlich'` beim Laden von Werken, Stammdaten, **Seitentexten** (`getPageTexts(tenantId)`) und **Seitengestaltung** (`getPageContentGalerie(tenantId)`) berücksichtigt? Nie `getPageTexts()` oder `getPageContentGalerie()` ohne Tenant auf ök2-Routen.
 - [ ] **Schreiben:** Schreibt der Code im ök2-Kontext nur in `k2-oeffentlich-*` (inkl. page-texts, page-content-galerie, design-settings), nie in K2-Keys?
+- [ ] **Shop / Belege / Rechnungen:** Bei fromOeffentlich **niemals** K2-Stammdaten für Aussteller, Kontakt, Adresse, Bank verwenden. Immer loadStammdaten('oeffentlich', 'gallery') bzw. MUSTER_TEXTE.gallery; Rechnungszähler getrennt (k2-oeffentlich-rechnung-counter).
 - [ ] **Shop:** „Zur Galerie“ und Kontakt (displayPhone/displayEmail) immer aus **fromOeffentlich** (alle vier Quellen). Kasse-Link aus Admin mit `fromOeffentlich: isOeffentlichAdminContext()`.
 - [ ] **Admin:** Jeder Link zu Galerie/Vorschau prüft `isOeffentlichAdminContext()` und nutzt dann galerieOeffentlich/galerieOeffentlichVorschau, sonst galerie/galerieVorschau.
 - [ ] Auto-Save / Veröffentlichen: Nur im K2-Admin, im ök2-Admin deaktiviert oder mit Hinweis.

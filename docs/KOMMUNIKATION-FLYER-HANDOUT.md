@@ -11,7 +11,7 @@
 K2 Galerie – für Künstler:innen, die gesehen werden wollen.
 
 **Unterzeile:**  
-Deine Kunst verdient mehr als einen Instagram-Post.
+Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.
 
 ---
 

@@ -302,7 +302,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [ersteAktionDismissed, setErsteAktionDismissed] = useState(() => {
     try { return sessionStorage.getItem('k2-oek2-erste-aktion-dismissed') === '1' } catch { return false }
   })
-  /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte deine Galerie aussehen“ */
+  /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte dein Auftritt aussehen“ */
   const showErsteAktionBanner = musterOnly && !ersteAktionDismissed
 
   /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite. Ausnahme: Klick „Galerie betreten“ von galerie-oeffentlich (State oder Referrer). */
@@ -1942,7 +1942,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             </div>
           </div>
         )}
-        {/* ök2 Willkommensseite: So könnte deine Galerie aussehen – ein Banner, kein Doppel */}
+        {/* ök2 Willkommensseite: So könnte dein Auftritt aussehen – ein Banner, kein Doppel */}
         {showErsteAktionBanner && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -1957,7 +1957,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             flexWrap: 'wrap'
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.95rem)', flex: '1 1 200px' }}>
-              So könnte deine Galerie aussehen.
+              So könnte dein Auftritt aussehen – Galerie ist das Beispiel für Künstler:innen, hier lassen sich auch jedes Produkt und jede Idee präsentieren.
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button

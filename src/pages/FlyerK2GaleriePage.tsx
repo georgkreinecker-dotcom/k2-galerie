@@ -1,12 +1,22 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbelinie'
-import { K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 
 const DOC_CLASS = 'flyer-k2-page'
+
+/** Kontext für Flyer: ök2 = nur Muster/oeffentlich, sonst K2 (eisernes Gesetz: keine K2-Daten in ök2). */
+function useFlyerTenant(): 'k2' | 'oeffentlich' {
+  const [searchParams] = useSearchParams()
+  const fromUrl = searchParams.get('context') === 'oeffentlich'
+  const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
+  return fromUrl || fromStorage ? 'oeffentlich' : 'k2'
+}
 
 function formatEventDate(dateStr: string, endDateStr?: string): string {
   try {
@@ -23,7 +33,7 @@ function formatEventDate(dateStr: string, endDateStr?: string): string {
   }
 }
 
-function loadStammdaten(): {
+function loadStammdatenForTenant(tenant: 'k2' | 'oeffentlich'): {
   martinaName: string
   georgName: string
   address: string
@@ -32,76 +42,88 @@ function loadStammdaten(): {
   phone: string
   email: string
 } {
-  const def = K2_STAMMDATEN_DEFAULTS
   try {
-    const rawM = localStorage.getItem('k2-stammdaten-martina')
-    const rawG = localStorage.getItem('k2-stammdaten-georg')
-    const rawGal = localStorage.getItem('k2-stammdaten-galerie')
-    const martina = rawM && rawM.length < 50000 ? JSON.parse(rawM) as { name?: string } : {}
-    const georg = rawG && rawG.length < 50000 ? JSON.parse(rawG) as { name?: string } : {}
-    const gallery = rawGal && rawGal.length < 50000 ? JSON.parse(rawGal) as { address?: string; city?: string; country?: string; phone?: string; email?: string } : {}
+    const martina = tenant === 'oeffentlich' ? loadStammdaten('oeffentlich', 'martina') as { name?: string } : (() => {
+      const raw = localStorage.getItem('k2-stammdaten-martina')
+      return raw && raw.length < 50000 ? JSON.parse(raw) as { name?: string } : {}
+    })()
+    const georg = tenant === 'oeffentlich' ? loadStammdaten('oeffentlich', 'georg') as { name?: string } : (() => {
+      const raw = localStorage.getItem('k2-stammdaten-georg')
+      return raw && raw.length < 50000 ? JSON.parse(raw) as { name?: string } : {}
+    })()
+    const gallery = tenant === 'oeffentlich' ? loadStammdaten('oeffentlich', 'gallery') as { address?: string; city?: string; country?: string; phone?: string; email?: string } : (() => {
+      const raw = localStorage.getItem('k2-stammdaten-galerie')
+      return raw && raw.length < 50000 ? JSON.parse(raw) as { address?: string; city?: string; country?: string; phone?: string; email?: string } : {}
+    })()
+    const def = tenant === 'oeffentlich' ? { martina: MUSTER_TEXTE.martina, georg: MUSTER_TEXTE.georg, gallery: MUSTER_TEXTE.gallery } : K2_STAMMDATEN_DEFAULTS
     return {
-      martinaName: (martina.name || def.martina.name).trim(),
-      georgName: (georg.name || def.georg.name).trim(),
-      address: (gallery.address || def.gallery.address || '').trim(),
-      city: (gallery.city || def.gallery.city || '').trim(),
-      country: (gallery.country || def.gallery.country || '').trim(),
-      phone: (gallery.phone || def.gallery.phone || '').trim(),
-      email: (gallery.email || def.gallery.email || '').trim(),
+      martinaName: (martina?.name || (def as any).martina?.name || '').trim(),
+      georgName: (georg?.name || (def as any).georg?.name || '').trim(),
+      address: (gallery?.address ?? (def as any).gallery?.address ?? '').trim(),
+      city: (gallery?.city ?? (def as any).gallery?.city ?? '').trim(),
+      country: (gallery?.country ?? (def as any).gallery?.country ?? '').trim(),
+      phone: (gallery?.phone ?? (def as any).gallery?.phone ?? '').trim(),
+      email: (gallery?.email ?? (def as any).gallery?.email ?? '').trim(),
     }
   } catch {
+    const def = tenant === 'oeffentlich' ? { martina: MUSTER_TEXTE.martina, georg: MUSTER_TEXTE.georg, gallery: MUSTER_TEXTE.gallery } : K2_STAMMDATEN_DEFAULTS
     return {
-      martinaName: def.martina.name,
-      georgName: def.georg.name,
-      address: def.gallery.address || '',
-      city: def.gallery.city || '',
-      country: def.gallery.country || '',
-      phone: def.gallery.phone || '',
-      email: def.gallery.email || '',
+      martinaName: ((def as any).martina?.name || '').trim(),
+      georgName: ((def as any).georg?.name || '').trim(),
+      address: ((def as any).gallery?.address || '').trim(),
+      city: ((def as any).gallery?.city || '').trim(),
+      country: ((def as any).gallery?.country || '').trim(),
+      phone: ((def as any).gallery?.phone || '').trim(),
+      email: ((def as any).gallery?.email || '').trim(),
     }
   }
 }
 
 export default function FlyerK2GaleriePage() {
+  const tenant = useFlyerTenant()
   const [welcomeImage, setWelcomeImage] = useState<string>('')
   const [eventDateText, setEventDateText] = useState<string>('')
   const [tagline, setTagline] = useState<string>('Kunst & Keramik')
   const [subtitle, setSubtitle] = useState<string>('Martina & Georg Kreinecker')
   const [intro, setIntro] = useState<string>('')
-  const [stammdaten, setStammdaten] = useState(loadStammdaten)
+  const [stammdaten, setStammdaten] = useState(() => loadStammdatenForTenant(tenant))
 
   useEffect(() => {
     let isMounted = true
+    const isOeffentlich = tenant === 'oeffentlich'
     try {
-      const stamm: Record<string, string> = {}
-      const raw = localStorage.getItem('k2-stammdaten-galerie')
-      if (raw && raw.length < 6 * 1024 * 1024) {
-        Object.assign(stamm, JSON.parse(raw))
-      }
-      const images = getGalerieImages(stamm)
+      const stamm = isOeffentlich
+        ? (loadStammdaten('oeffentlich', 'gallery') as Record<string, string> || {})
+        : (() => {
+            const raw = localStorage.getItem('k2-stammdaten-galerie')
+            const out: Record<string, string> = {}
+            if (raw && raw.length < 6 * 1024 * 1024) Object.assign(out, JSON.parse(raw))
+            return out
+          })()
+      const images = getGalerieImages(stamm, isOeffentlich ? 'oeffentlich' : undefined)
       const img = images.welcomeImage
       if (img && typeof img === 'string' && img.length > 50 && img.length < 3 * 1024 * 1024 && isMounted) {
         setWelcomeImage(img)
       } else if (isMounted) {
-        setWelcomeImage('/img/k2/willkommen.jpg')
+        setWelcomeImage(isOeffentlich ? '/img/oeffentlich/willkommen-demo.jpg' : '/img/k2/willkommen.jpg')
       }
     } catch (_) {
-      if (isMounted) setWelcomeImage('/img/k2/willkommen.jpg')
+      if (isMounted) setWelcomeImage(tenant === 'oeffentlich' ? '/img/oeffentlich/willkommen-demo.jpg' : '/img/k2/willkommen.jpg')
     }
 
     try {
-      const texts = getPageTexts()
+      const texts = getPageTexts(isOeffentlich ? 'oeffentlich' : undefined)
       const g = texts.galerie
       if (g && isMounted) {
         setTagline('Kunst & Keramik')
-        const names = loadStammdaten()
+        const names = loadStammdatenForTenant(tenant)
         setSubtitle(`${names.martinaName} & ${names.georgName}`)
         setIntro((g.welcomeIntroText || '').trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
       }
     } catch (_) {}
 
     try {
-      const list = loadEvents('k2')
+      const list = loadEvents(isOeffentlich ? 'oeffentlich' : 'k2')
       if (Array.isArray(list) && list.length > 0 && isMounted) {
         const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
         const event = eroeffnung || list.find((e: any) => e?.date)
@@ -112,9 +134,9 @@ export default function FlyerK2GaleriePage() {
       }
     } catch (_) {}
 
-    setStammdaten(loadStammdaten())
+    setStammdaten(loadStammdatenForTenant(tenant))
     return () => { isMounted = false }
-  }, [])
+  }, [tenant])
 
   const footerLine1 = [
     PRODUCT_BRAND_NAME,

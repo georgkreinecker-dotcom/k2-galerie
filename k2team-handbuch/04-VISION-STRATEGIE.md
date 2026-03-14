@@ -13,7 +13,7 @@
 **Alle Strategie- und Werbepapiere** sind auf diese Werbelinie ausgerichtet. Jede Maßnahme, die nach außen geht (Presse, Flyer, Plakat, Web, Social, Prospekt), trägt beide Slogans:
 
 1. **K2 Galerie – für Künstler:innen, die gesehen werden wollen**
-2. **Deine Kunst verdient mehr als einen Instagram-Post.**
+2. **Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.**
 
 Quelle: mök2 (Marketing ök2) → Sektion „Promotion für alle Medien“; technisch `tenantConfig.ts`. Siehe auch `docs/MARKETING-EROEFFNUNG-K2-OEK2.md`.
 

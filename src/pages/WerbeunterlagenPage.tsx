@@ -80,7 +80,10 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
 
   const willkommenBaseUrl = BASE_APP_URL + WILLKOMMEN_ROUTE
   const willkommenFullUrl = buildQrUrlWithBust(willkommenBaseUrl, qrVersionTs)
-  const galerieBaseUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie
+  // Eisernes Gesetz: Im Modus ök2/Demo keine K2-Galerie-URL – nur Demo-Galerie
+  const galerieBaseUrl = modus === 'oek2'
+    ? BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+    : BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie
   const galerieFullUrl = buildQrUrlWithBust(galerieBaseUrl, qrVersionTs)
 
   useEffect(() => {
@@ -93,7 +96,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
     QRCode.toDataURL(galerieFullUrl, { width: 200, margin: 1 })
       .then(setGalerieQrUrl)
       .catch(() => setGalerieQrUrl(''))
-  }, [galerieFullUrl])
+  }, [galerieFullUrl, modus])
 
   const saveSlogan = (value: string) => {
     const v = value.trim() || PRODUCT_WERBESLOGAN

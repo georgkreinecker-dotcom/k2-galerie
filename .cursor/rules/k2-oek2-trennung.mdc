@@ -5,10 +5,18 @@ alwaysApply: true
 
 # K2 vs. ök2 – funktionssicher trennen
 
+## 🔴 EISERNES GESETZ (zuerst – unumstösslich)
+
+**Keine Daten von K2 gehen in ök2. Keine Stammdaten. Keine Werkedaten. Keine Ausnahme.**
+
+Diese Regel wurde **mehrfach** in Doku und Regeln als No-Go festgeschrieben und trotzdem wiederholt verletzt (z. B. Rechnungen/Belege im ök2-Shop mit K2-Stammdaten). **Oberste Priorität:** In jedem ök2-Kontext (Routen, Admin, Shop, Kasse, Belege, Rechnungen, Drucke) ausschliesslich oeffentlich-Keys und MUSTER_* verwenden – **niemals** K2-Stammdaten oder K2-Werke. Vollständige eiserne Regel: **.cursor/rules/k2-oek2-eisernes-gesetz-keine-daten.mdc**.
+
+---
+
 ## Warum
 
 - **K2** = echte Galerie (Martina & Georg, echte Werke/Stammdaten). **ök2** = öffentliche Demo (nur Muster).
-- K2 ist der Prototyp; ök2 und spätere Mandanten müssen **ohne Datenvermischung** laufen. Ein Fehler (z. B. ök2 schreibt in K2-Keys) kann echte Daten gefährden.
+- K2 ist der Prototyp; ök2 und spätere Mandanten müssen **ohne Datenvermischung** laufen. Ein Fehler (z. B. ök2 liest K2-Stammdaten für Belege) ist **inakzeptabel** und wurde mehrfach behoben – die eiserne Regel verhindert Rückfälle.
 
 ## Unveränderliche Regeln
 

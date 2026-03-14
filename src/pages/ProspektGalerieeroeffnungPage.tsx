@@ -1,16 +1,23 @@
 /**
- * K2 Kunst und Keramik – Prospekt Galerieeröffnung (1 Seite).
- * Oben: Eventdaten aus K2-Events. Unten: nur K2-QR und K2-Link (kein ök2/VK2).
+ * Prospekt Galerieeröffnung (1 Seite).
+ * Kontextabhängig: K2 = echte Stammdaten/Events/QR zur K2-Galerie. ök2 = nur Muster/oeffentlich (eisernes Gesetz).
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
-import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, K2_STAMMDATEN_DEFAULTS } from '../config/tenantConfig'
+import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+
+function useProspektTenant(): 'k2' | 'oeffentlich' {
+  const [searchParams] = useSearchParams()
+  const fromUrl = searchParams.get('context') === 'oeffentlich'
+  const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
+  return fromUrl || fromStorage ? 'oeffentlich' : 'k2'
+}
 
 /** Datum formatieren (YYYY-MM-DD → DD.MM.YYYY). */
 function formatDate(iso: string): string {
@@ -51,40 +58,50 @@ const printStyles = `
 `
 
 const K2_GALERIE_URL = BASE_APP_URL + '/projects/k2-galerie/galerie'
+const OEK2_GALERIE_URL = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
 
 export default function ProspektGalerieeroeffnungPage() {
+  const tenant = useProspektTenant()
+  const isOeffentlich = tenant === 'oeffentlich'
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
   const [qrK2, setQrK2] = useState('')
 
-  // Beim Öffnen der Seite sofort Server-Stand holen, damit der QR auf die aktuelle Version verweist (nicht alte BUILD_TIMESTAMP)
   useEffect(() => {
     refetchQrStand()
   }, [refetchQrStand])
 
-  const gallery = typeof window !== 'undefined' ? loadStammdaten('k2', 'gallery') : (K2_STAMMDATEN_DEFAULTS.gallery as Record<string, string>)
-  const martina = typeof window !== 'undefined' ? loadStammdaten('k2', 'martina') : (K2_STAMMDATEN_DEFAULTS.martina as Record<string, string>)
-  const georg = typeof window !== 'undefined' ? loadStammdaten('k2', 'georg') : (K2_STAMMDATEN_DEFAULTS.georg as Record<string, string>)
+  const gallery = typeof window !== 'undefined'
+    ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>
+    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>
+  const martina = typeof window !== 'undefined'
+    ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'martina') as Record<string, string>
+    : (isOeffentlich ? MUSTER_TEXTE.martina : K2_STAMMDATEN_DEFAULTS.martina) as Record<string, string>
+  const georg = typeof window !== 'undefined'
+    ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'georg') as Record<string, string>
+    : (isOeffentlich ? MUSTER_TEXTE.georg : K2_STAMMDATEN_DEFAULTS.georg) as Record<string, string>
 
-  const k2Events = typeof window !== 'undefined' ? loadEvents('k2') : []
+  const eventsList = typeof window !== 'undefined' ? loadEvents(isOeffentlich ? 'oeffentlich' : 'k2') : []
   const eventForProspekt = useMemo(() => {
-    if (!Array.isArray(k2Events) || k2Events.length === 0) return null
-    const withDate = k2Events.filter((e: any) => e && e.date)
-    if (withDate.length === 0) return k2Events[0]
+    if (!Array.isArray(eventsList) || eventsList.length === 0) return null
+    const withDate = eventsList.filter((e: any) => e && e.date)
+    if (withDate.length === 0) return eventsList[0]
     withDate.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
     return withDate[0]
-  }, [k2Events])
+  }, [eventsList])
 
-  const galleryName = (gallery?.name || 'K2 Kunst und Keramik').replace(/&/g, ' & ')
-  const address = [gallery?.address, (gallery as any)?.city, (gallery as any)?.country].filter(Boolean).join(', ') || '–'
-  const contactEmail = gallery?.email || martina?.email || georg?.email || PRODUCT_LIZENZ_ANFRAGE_EMAIL
+  const defaultName = isOeffentlich ? 'Galerie Muster' : 'K2 Kunst und Keramik'
+  const galleryName = (gallery?.name || defaultName).replace(/&/g, ' & ')
+  const address = [gallery?.address, (gallery as any)?.city, (gallery as any)?.country].filter(Boolean).join(', ') || (isOeffentlich ? 'Musterstraße 1, 12345 Musterstadt' : '–')
+  const contactEmail = gallery?.email || martina?.email || georg?.email || (isOeffentlich ? MUSTER_TEXTE.gallery.email : PRODUCT_LIZENZ_ANFRAGE_EMAIL)
   const contactPhone = gallery?.phone || martina?.phone || georg?.phone || ''
-  const martinaName = martina?.name || 'Martina Kreinecker'
-  const georgName = georg?.name || 'Georg Kreinecker'
+  const martinaName = martina?.name || (isOeffentlich ? MUSTER_TEXTE.martina.name : 'Martina Kreinecker')
+  const georgName = georg?.name || (isOeffentlich ? MUSTER_TEXTE.georg.name : 'Georg Kreinecker')
 
+  const galerieUrl = isOeffentlich ? OEK2_GALERIE_URL : K2_GALERIE_URL
   useEffect(() => {
-    QRCode.toDataURL(buildQrUrlWithBust(K2_GALERIE_URL, qrVersionTs), { width: 110, margin: 1 })
+    QRCode.toDataURL(buildQrUrlWithBust(galerieUrl, qrVersionTs), { width: 110, margin: 1 })
       .then(setQrK2).catch(() => setQrK2(''))
-  }, [qrVersionTs])
+  }, [qrVersionTs, galerieUrl])
 
   const handleQrAktualisieren = () => {
     refetchQrStand()
@@ -183,8 +200,8 @@ export default function ProspektGalerieeroeffnungPage() {
           <div className="pge-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e2dd', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
             {qrK2 && <img src={qrK2} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} />}
             <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>
-              <strong style={{ color: '#0d9488' }}>K2 Galerie – Online</strong><br />
-              <a href={buildQrUrlWithBust(K2_GALERIE_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: '#0d9488', wordBreak: 'break-all' }}>{K2_GALERIE_URL}</a>
+              <strong style={{ color: '#0d9488' }}>{isOeffentlich ? 'ök2 Demo – Galerie' : 'K2 Galerie – Online'}</strong><br />
+              <a href={buildQrUrlWithBust(galerieUrl, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: '#0d9488', wordBreak: 'break-all' }}>{galerieUrl}</a>
               <p style={{ fontSize: '0.8rem', color: '#5c5650', margin: '0.35rem 0 0' }}>
                 QR und Link verweisen auf die aktuelle Version. Nach neuem Veröffentlichen: diese Seite neu laden, dann drucken.
               </p>
@@ -193,9 +210,11 @@ export default function ProspektGalerieeroeffnungPage() {
 
           <div className="pge-impressum" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid #e5e2dd', fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.4 }}>
             <strong style={{ color: '#1c1a18' }}>Impressum</strong><br />
-            Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />
-            Kontakt: <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a><br />
-            {PRODUCT_COPYRIGHT}
+            {isOeffentlich ? (
+              <>Medieninhaber: K2 Galerie · Demo (ök2) – nur Mustertexte, keine K2-Daten.<br />Kontakt: <a href={`mailto:${MUSTER_TEXTE.gallery.email}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{MUSTER_TEXTE.gallery.email}</a><br />{PRODUCT_COPYRIGHT}</>
+            ) : (
+              <>Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />Kontakt: <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#0d9488', textDecoration: 'none' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a><br />{PRODUCT_COPYRIGHT}</>
+            )}
           </div>
         </div>
 
