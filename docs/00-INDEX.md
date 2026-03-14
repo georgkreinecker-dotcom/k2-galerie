@@ -12,6 +12,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
+- **MARKTANALYSE-K2-GALERIE.md** – **Marktanalyse für das Produkt (Stand 14.03.26):** Positionierung, Zielmärkte (Künstler:innen, Galerien, VK2, ganzer Markt), Wettbewerb, Stärken/Schwächen/Chancen/Bedrohungen, Kurzfassung. Quelle: Produkt-Vision, Präsentationsmappe, tenantConfig.
 - **VISION-WERKE-IDEEN-PRODUKTE.md** – **Werke = Ideen & Produkte, Kunst = Träger (14.03.26):** ök2/Galerie für jede Idee/jedes Produkt gebaut; Werke = Oberbegriff, Kunstwerke = Unterkategorie; Marketing: Kunst trägt die Idee, ganzer Markt hat Platz. **Sportwagen doppelt und dreifach:** ein Modell, eine Schicht, konfigurierbar, kein Sonderbau. Basis für morgen und Umsetzung.
 - **PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md** – **Plan: Vision in ök2 umsetzen (für Künstler gedacht – für jede Idee und jedes Produkt gebaut):** Wo und wie: Musterdaten (entryType), Texte/Botschaft (Willkommen, Tagline), Anzeige auf Karten (optional), mök2, SEO. Konkrete Dateien und Schritte; Reihenfolge und Checkliste. Kein Sonderbau.
 - **UEBERLEGUNG-UEBERKATEGORIEN-WERKKARTEN.md** – **Überkategorien: Sind die Werkkarten zu sehr auf Kunst eingegrenzt?** Analyse: Kategorien, Nummern, Labels heute kunst-geprägt; was für Produkt und Idee sinnvoll wäre (eigene Kategoriemengen, Begriffe); Option A (Kategorien + Labels pro entryType) vs. B (erst nur Labels). Quelle für Kassa, Etiketten, Filter.
