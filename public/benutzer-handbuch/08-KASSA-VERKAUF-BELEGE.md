@@ -4,7 +4,7 @@
 
 Dieses Kapitel erklärt die **Kassafunktion** Schritt für Schritt: wo Sie die Kassa finden, wie Sie einen Verkauf erfassen, welche Zahlungsarten es gibt, wie Sie einen Kassenbon oder eine Rechnung drucken – und was das **Kassabuch** kann. Die Kassa eignet sich für den Verkauf vor Ort (z. B. am iPad oder Handy im Atelier oder auf der Messe).
 
-**Hinweis:** Die Kassafunktion ist ab der Lizenzstufe **Pro** verfügbar. Mit **Basic** steht Ihnen keine Kassa zur Verfügung. Mit **Pro+** oder **Pro++** können Sie zusätzlich das **volle Kassabuch** nutzen (Eingänge und Ausgänge, siehe unten).
+**Hinweis zu den Lizenzstufen:** Die Kassafunktion ist ab **Pro** verfügbar. **Basic** = keine Kassa. **Pro** = Kassa + Kassabuch (nur Eingänge). **Pro+** und **Pro++** = volles Kassabuch (Eingänge + Ausgänge). **Pro++** enthält zusätzlich die **vollständige Rechnungspflege nach Rechnungslegungsnorm** (§ 11 UStG) – fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung (siehe Abschnitt „Pro++: Vollständige Rechnungspflege“ unten).
 
 ---
 
@@ -77,6 +77,20 @@ Wenn Sie **Rabatt** geben oder **Kundendaten** (z. B. für die Rechnung) erfas
 
 **Inhalt der Belege:** Auf dem **Kassabon** und auf der **Rechnung** stehen in der Regel: Datum, Uhrzeit, verkaufte Werke (Nummer, Titel, Preis), Gesamtbetrag, Zahlungsart, Ihre Galerie- bzw. Stammdaten (Name, Adresse, Kontakt). Die Rechnung (A4) enthält zusätzlich die Rechnungsnummer und eignet sich für die Abrechnung mit der Käuferin bzw. dem Käufer und für Ihre Buchführung.
 
+---
+
+## Pro++: Vollständige Rechnungspflege nach Rechnungslegungsnorm
+
+Mit der Lizenzstufe **Pro++** erhalten Sie **vollständige Rechnungspflege** nach Rechnungslegungsnorm (**§ 11 UStG**). Das bedeutet:
+
+- **Fortlaufende Rechnungsnummer:** Jede Rechnung erhält eine eindeutige, fortlaufende Nummer – lückenlos und in der richtigen Reihenfolge, wie für die Buchführung und das Finanzamt erforderlich.
+- **Pflichtangaben:** Die Rechnung enthält alle gesetzlich vorgeschriebenen Angaben (z. B. Ihr Name/ Ihre Firma, Adresse, USt-IdNr. falls vorhanden, Kundendaten, Leistungsbeschreibung, Beträge, Steueraufschlüsselung, Zahlungsbedingungen).
+- **USt-Aufschlüsselung:** Die Umsatzsteuer wird korrekt ausgewiesen und aufgeschlüsselt (z. B. Netto, USt-Satz, USt-Betrag, Brutto). So erfüllen Sie die Anforderungen an eine ordnungsgemäße Rechnung und können Ihre Abrechnung und Vorsteuer ggf. korrekt geltend machen.
+
+**Für wen ist Pro++ gedacht?** Für alle, die **rechtssicher rechnen** müssen – z. B. bei Geschäftskunden, bei Abrechnung mit dem Finanzamt oder wenn Sie Rechnungen mit USt-Aufschlüsselung ausstellen müssen. Mit **Basic, Pro oder Pro+** können Sie ebenfalls Rechnungen (A4) drucken; die **vollständige Rechnungspflege nach Rechnungslegungsnorm** (fortlaufende Nummer, alle Pflichtangaben, USt-Aufschlüsselung) ist jedoch **nur mit Pro++** enthalten.
+
+---
+
 **Bon erneut drucken:** Wenn Sie einen **bereits abgeschlossenen Verkauf** noch einmal belegen möchten, gibt es in der Kasse (wenn die Auswahl leer ist und Sie zuletzt Verkäufe hatten) einen Button **„Letzten Bon erneut drucken“**. Außerdem können Sie in der **Verkaufsstatistik** bzw. im Bereich **„Verkaufsliste – Storno“** bei einzelnen Verkäufen **„Bon erneut drucken“** wählen – dann wird nur der Beleg erneut ausgegeben, der Verkauf bleibt erfasst. **„Stornieren“** hebt den Verkauf auf (siehe unten).
 
 ---
@@ -119,5 +133,6 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 - **Abschließen:** Button **Bar**, **Karte** oder **Rechnung** → Verkauf ist sofort erfasst. Oder **„Weitere Optionen“** für Rabatt/Kundendaten.  
 - **Belege:** Nach Bar/Karte: Dialog **„Kassabon oder Rechnung?“** – **OK** = Kassabon (80 mm), **Abbrechen** = Rechnung (A4). Bei Rechnung als Zahlungsart: direkt Rechnung (A4). **Bon erneut drucken** möglich (ohne Storno).  
 - **Storno:** In **„Verkaufsliste – Storno“** Verkauf auswählen → **Stornieren** (Verkauf aufheben, Werk wieder verfügbar) oder nur **Bon erneut drucken**.  
-- **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.  
+- **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
+- **Pro++ Rechnungspflege:** Mit Pro++ = vollständige Rechnungspflege nach Rechnungslegungsnorm (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.
 - **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen bzw. Control Studio → Kunden. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.

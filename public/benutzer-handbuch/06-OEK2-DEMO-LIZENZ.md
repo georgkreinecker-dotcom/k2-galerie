@@ -31,6 +31,22 @@ Wenn Sie die Demo ausprobiert haben und eine **eigene, dauerhafte Galerie** möc
 
 ---
 
+## Lizenzstufen im Überblick
+
+Damit Sie auf einen Blick sehen, welche Stufe zu Ihnen passt, hier die **Lizenzstufen** mit Preis und Inhalt:
+
+| Stufe | Preis | Enthalten |
+|-------|--------|-----------|
+| **Basic** | 15 €/Monat | Galerie, Werke, Design, Events, Etiketten, Standard-URL. **Keine Kassa.** |
+| **Pro** | 35 €/Monat | Alles aus Basic + **Kassa** (Verkauf erfassen, Belege drucken), Kassabuch (Eingänge), unbegrenzte Werke, Custom Domain. |
+| **Pro+** | 45 €/Monat | Alles aus Pro + **volles Kassabuch** (Eingänge und Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg) + **gesamter Marketingbereich** (Events, Galeriepräsentation, Flyer, Presse, Social Media). |
+| **Pro++** | 55 €/Monat | Alles aus Pro+ + **vollständige Rechnungspflege nach Rechnungslegungsnorm** (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung. Für alle, die rechtssicher rechnen müssen. |
+| **VK2 (Kunstvereine)** | ab 10 Mitgliedern kostenfrei | Verein nutzt Pro; ab 10 registrierten Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt auf die Lizenz. |
+
+**Kurz:** Basic = Einstieg ohne Kassa. Pro = mit Kassa und Kassabuch (Eingänge). Pro+ = volles Kassabuch + ganzer Marketingbereich. Pro++ = Pro+ inkl. Rechnungspflege nach Rechnungslegungsnorm. VK2 = Vereinslizenz mit Konditionen für Verein und Mitglieder.
+
+---
+
 ## Lizenz kaufen (eigenständig, ohne Rückfragen)
 
 Der Lizenzabschluss läuft **vollständig in der App** – Sie müssen nichts anfragen und keine E-Mails schreiben. So funktioniert es:
