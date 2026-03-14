@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import jsQR from 'jsqr'
+import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getCategoryLabel, MUSTER_TEXTE, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { getCategoryLabel, MUSTER_TEXTE, MUSTER_ARTWORKS, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
-import { readArtworksRawByKey } from '../utils/artworksStorage'
+import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
-import { getCustomers, createCustomer, updateCustomer, type Customer } from '../utils/customers'
+import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
@@ -82,14 +83,41 @@ const ShopPage = () => {
   const [reservationPhone, setReservationPhone] = useState('')
   // Mobil: Wenn Besucher-Ansicht, aber Admin-Login gespeichert → „Als Kasse öffnen“ anzeigen und nach Klick Kasse aktivieren
   const [forceKasseOpen, setForceKasseOpen] = useState(false)
+  // Rechnungsformular: Kunde aus Datenbank oder manuell, Vorschau
+  const [showRechnungForm, setShowRechnungForm] = useState(false)
+  const [rechnungKundeTyp, setRechnungKundeTyp] = useState<'auswahl' | 'manuell'>('auswahl')
+  const [rechnungManual, setRechnungManual] = useState({ name: '', email: '', phone: '', street: '', plz: '', city: '' })
+  const [showNummernListe, setShowNummernListe] = useState(false)
+  const [showVerkaufsliste, setShowVerkaufsliste] = useState(false)
+  const [soldEntriesList, setSoldEntriesList] = useState<Array<{ number: string; soldAt?: string; orderId?: string; title: string; price: number }>>([])
+  // Kurze Bestätigung „zur Auswahl hinzugefügt“ – auto-schließend, kein Schließen-Button
+  const [addedToast, setAddedToast] = useState<string | null>(null)
+  const addedToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Rechnung ohne Kundendaten: manuelle Eingabe im Checkout (einfach = nur Name, ausführlich = Firma/Adresse)
+  const [rechnungManuellCheckout, setRechnungManuellCheckout] = useState<{
+    typ: 'einfach' | 'ausfuehrlich'
+    name: string
+    firma: string
+    street: string
+    plz: string
+    city: string
+    email: string
+    phone: string
+    uid: string
+  }>({ typ: 'einfach', name: '', firma: '', street: '', plz: '', city: '', email: '', phone: '', uid: '' })
 
-  // Galerie-Stammdaten: nur über Schicht (Phase 5.3)
+  // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
+  const fromOeffentlich = isOeffentlichDisplayContext(location.state)
+  const galerieLink = fromOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+
+  // Galerie-Stammdaten: Kontext getrennt – K2 = echte Daten, ök2 = nur oeffentlich/Muster
   const [internetShopNotSetUp, setInternetShopNotSetUp] = useState(true)
   const [galleryEmail, setGalleryEmail] = useState('')
   const [galleryPhone, setGalleryPhone] = useState('')
   useEffect(() => {
     try {
-      const data = loadStammdaten('k2', 'gallery')
+      const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+      const data = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
       if (data && typeof data === 'object') {
         setBankverbindung((data as any).bankverbindung || '')
         setGalleryEmail((data as any).email || '')
@@ -97,7 +125,7 @@ const ShopPage = () => {
         setInternetShopNotSetUp((data as any).internetShopNotSetUp !== false)
       }
     } catch (_) {}
-  }, [])
+  }, [fromOeffentlich])
 
   // Von Galerie (Willkommensseite oder Galerie-Vorschau) zum Shop → Kundenansicht. Flag + Referrer (State geht bei SPA oft verloren).
   const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-galerie-view') === '1'
@@ -108,9 +136,6 @@ const ShopPage = () => {
     fromStorage ||
     (location.state as { fromGalerieView?: boolean } | null)?.fromGalerieView === true ||
     fromReferrer
-  // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3)
-  const fromOeffentlich = isOeffentlichDisplayContext(location.state)
-  const galerieLink = fromOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
   const displayPhone = fromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
   const displayEmail = fromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
 
@@ -201,16 +226,22 @@ const ShopPage = () => {
     }
   }, [cart])
 
-  // Alle Werke laden für Suche – über Artworks-Schicht (Sportwagen: eine Quelle)
+  // Alle Werke laden für Suche – im ök2-Kontext Musterwerke, sonst k2-artworks
   useEffect(() => {
     const loadArtworks = () => {
-      const artworks = readArtworksRawByKey('k2-artworks')
-      if (Array.isArray(artworks)) setAllArtworks(artworks)
+      if (fromOeffentlich) {
+        const stored = readArtworksRawByKey('k2-oeffentlich-artworks')
+        const list = Array.isArray(stored) && stored.length > 0 ? stored : MUSTER_ARTWORKS
+        setAllArtworks(list)
+      } else {
+        const artworks = readArtworksRawByKey('k2-artworks')
+        if (Array.isArray(artworks)) setAllArtworks(artworks)
+      }
     }
     loadArtworks()
     window.addEventListener('artworks-updated', loadArtworks)
     return () => window.removeEventListener('artworks-updated', loadArtworks)
-  }, [])
+  }, [fromOeffentlich])
 
   // Bestellungen laden (für Bon erneut drucken)
   useEffect(() => {
@@ -233,33 +264,164 @@ const ShopPage = () => {
     return () => window.removeEventListener('customers-updated', load)
   }, [])
 
-  // Bon erneut drucken – Dialog wie bei neuem Verkauf
+  // Bon oder Rechnung erneut drucken
   const handleReprintOrder = (order: any) => {
-    const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
-    const useEtikett = confirm(`Bon ${order.orderNumber}\n€${(order.total || 0).toFixed(2)} · ${paymentText}\n\nEtikettendrucker (80mm) = OK\nA4 Druck = Abbrechen`)
-    if (useEtikett) {
+    const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung'
+    const useBon = confirm(`Bon ${order.orderNumber}\n€${(order.total || 0).toFixed(2)} · ${paymentText}\n\nKassabon (80mm) = OK\nRechnung (A4) = Abbrechen`)
+    if (useBon) {
       printReceipt(order)
     } else {
-      printReceiptA4(order)
+      printReceiptA4(order, true)
     }
   }
 
-  // Werk per Seriennummer finden und zum Warenkorb hinzufügen
+  // Eintrag aus „Bon erneut drucken“-Liste entfernen (nur Anzeige, Verkauf bleibt in k2-sold-artworks)
+  const handleDeleteOrderFromList = (order: any) => {
+    if (!confirm(`Eintrag ${order.orderNumber} (€${(order.total || 0).toFixed(2)}) aus der Liste entfernen?`)) return
+    try {
+      const stored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+      if (!Array.isArray(stored)) return
+      const key = order.id || `${order.orderNumber}-${order.date}`
+      const filtered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== key)
+      localStorage.setItem('k2-orders', JSON.stringify(filtered))
+      setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== key))
+    } catch (_) {}
+  }
+
+  // Verkauf stornieren: Eintrag aus Liste + aus k2-sold-artworks entfernen, Stückzahl pro Werk +1
+  const handleStornoOrder = (order: any) => {
+    if (!confirm(`Verkauf ${order.orderNumber} (€${(order.total || 0).toFixed(2)}) wirklich stornieren? Die Werke gelten wieder als verfügbar.`)) return
+    try {
+      const orderKey = order.id || `${order.orderNumber}-${order.date}`
+      const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+      const filtered = Array.isArray(soldArtworks)
+        ? soldArtworks.filter((e: any) => e.orderId !== order.id)
+        : []
+      if (filtered.length < (soldArtworks?.length ?? 0)) {
+        localStorage.setItem('k2-sold-artworks', JSON.stringify(filtered))
+      }
+      const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
+      const artworks = readArtworksRawByKey(artworkKey)
+      if (Array.isArray(artworks) && order.items && order.items.length > 0) {
+        let changed = false
+        order.items.forEach((item: { number: string }) => {
+          const idx = artworks.findIndex((a: any) => (a.number || a.id) === item.number)
+          if (idx !== -1) {
+            const a = artworks[idx]
+            const q = a.quantity != null ? Number(a.quantity) : 0
+            artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+            changed = true
+          }
+        })
+        if (changed) {
+          saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
+        }
+      }
+      const stored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+      if (Array.isArray(stored)) {
+        const ordersFiltered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderKey)
+        localStorage.setItem('k2-orders', JSON.stringify(ordersFiltered))
+        setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderKey))
+      }
+      window.dispatchEvent(new CustomEvent('artworks-updated'))
+      setAllArtworks(prev => {
+        const key = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
+        const next = readArtworksRawByKey(key)
+        return Array.isArray(next) ? next : prev
+      })
+      alert('✅ Verkauf storniert. Die Werke sind wieder verfügbar.')
+    } catch (_) {
+      alert('⚠️ Storno fehlgeschlagen.')
+    }
+  }
+
+  const MAX_VERKAUFSLISTE = 15
+
+  // Verkaufsliste für Storno laden (max 15 neueste)
+  const loadVerkaufslisteForStorno = () => {
+    try {
+      const raw = localStorage.getItem('k2-sold-artworks')
+      const arr = JSON.parse(raw || '[]')
+      if (!Array.isArray(arr)) {
+        setSoldEntriesList([])
+        return
+      }
+      const sorted = [...arr].sort((a: any, b: any) => (b.soldAt || '').localeCompare(a.soldAt || ''))
+      const top = sorted.slice(0, MAX_VERKAUFSLISTE).map((e: any) => {
+        const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+        return {
+          number: e.number || '',
+          soldAt: e.soldAt,
+          orderId: e.orderId,
+          title: werk?.title || e.number || '–',
+          price: e.soldPrice ?? werk?.price ?? 0
+        }
+      })
+      setSoldEntriesList(top)
+    } catch (_) {
+      setSoldEntriesList([])
+    }
+  }
+
+  // Einzelnen Verkauf stornieren (nach Index in der Anzeige, max 15)
+  const handleStornoSingle = (index: number) => {
+    const entry = soldEntriesList[index]
+    if (!entry || !confirm(`Verkauf „${entry.title}“ (Nr. ${entry.number}) stornieren? Das Werk gilt wieder als verfügbar.`)) return
+    try {
+      const raw = localStorage.getItem('k2-sold-artworks')
+      const arr = JSON.parse(raw || '[]')
+      if (!Array.isArray(arr)) return
+      const sorted = [...arr].sort((a: any, b: any) => (b.soldAt || '').localeCompare(a.soldAt || ''))
+      if (index >= sorted.length) return
+      const removed = sorted[index]
+      const removeIdx = arr.findIndex((e: any) => e.number === removed.number && (e.soldAt || '') === (removed.soldAt || ''))
+      if (removeIdx === -1) return
+      arr.splice(removeIdx, 1)
+      localStorage.setItem('k2-sold-artworks', JSON.stringify(arr))
+      const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
+      const artworks = readArtworksRawByKey(artworkKey)
+      const idx = artworks.findIndex((a: any) => (a.number || a.id) === removed.number)
+      if (idx !== -1) {
+        const a = artworks[idx]
+        const q = a.quantity != null ? Number(a.quantity) : 0
+        artworks[idx] = { ...a, quantity: q + 1, inShop: true }
+        saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
+      }
+      window.dispatchEvent(new CustomEvent('artworks-updated'))
+      setAllArtworks(prev => {
+        const next = readArtworksRawByKey(artworkKey)
+        return Array.isArray(next) ? next : prev
+      })
+      loadVerkaufslisteForStorno()
+      alert('✅ Verkauf storniert.')
+    } catch (_) {
+      alert('⚠️ Storno fehlgeschlagen.')
+    }
+  }
+
+  // Werk per Seriennummer oder Titel finden und zum Warenkorb hinzufügen
   const addBySerialNumber = (overrideSerial?: string) => {
-    const serial = (overrideSerial ?? serialInput).trim().toUpperCase()
-    if (!serial) {
-      alert('Bitte Seriennummer eingeben')
+    const raw = (overrideSerial ?? serialInput).trim()
+    if (!raw) {
+      alert('Bitte Seriennummer oder Werktitel eingeben')
       return
     }
+    const serialUpper = raw.toUpperCase()
+    const serialNorm = raw.toLowerCase()
 
-    // Suche Werk nach Nummer oder ID
-    const artwork = allArtworks.find((a: any) => 
-      (a.number && a.number.toUpperCase() === serial) || 
-      (a.id && a.id.toUpperCase() === serial)
+    // Suche: zuerst exakt nach Nummer oder ID, sonst nach Titel (enthält Suchbegriff)
+    let artwork = allArtworks.find((a: any) =>
+      (a.number && a.number.toUpperCase() === serialUpper) ||
+      (a.id && a.id.toUpperCase() === serialUpper)
     )
+    if (!artwork && serialNorm.length >= 2) {
+      artwork = allArtworks.find((a: any) =>
+        a.title && a.title.trim().toLowerCase().includes(serialNorm)
+      )
+    }
 
     if (!artwork) {
-      alert(`Werk mit Seriennummer "${serial}" nicht gefunden`)
+      alert(`Werk "${raw}" nicht gefunden`)
       return
     }
 
@@ -320,7 +482,13 @@ const ShopPage = () => {
 
     setCart([...cart, cartItem])
     setSerialInput('')
-    alert(`✅ "${artwork.title || artwork.number}" wurde zur Auswahl hinzugefügt.`)
+    const msg = `"${artwork.title || artwork.number}" wurde zur Auswahl hinzugefügt.`
+    if (addedToastTimerRef.current) clearTimeout(addedToastTimerRef.current)
+    setAddedToast(msg)
+    addedToastTimerRef.current = setTimeout(() => {
+      setAddedToast(null)
+      addedToastTimerRef.current = null
+    }, 1500)
   }
 
   // QR-Code Scanner: Kamera starten wenn Modal öffnet
@@ -377,6 +545,14 @@ const ShopPage = () => {
     return () => { cancelled = true }
   }, [showScanner])
 
+  // Toast-Timer beim Unmount aufräumen
+  useEffect(() => () => {
+    if (addedToastTimerRef.current) {
+      clearTimeout(addedToastTimerRef.current)
+      addedToastTimerRef.current = null
+    }
+  }, [])
+
   // QR-Code scannen – Modal öffnen (Kamera startet automatisch via useEffect)
   const handleQRScan = () => {
     setShowScanner(true)
@@ -418,16 +594,21 @@ const ShopPage = () => {
   const total = subtotal - discountAmount
 
   // Schnellverkauf - direkt abschließen mit gewählter Zahlungsmethode
-  // WICHTIG: paymentMethod als Parameter, da setState async ist und sonst alter Wert verwendet wird
+  // Rechnung: nur wenn noch kein Kunde → Checkout öffnen; sonst wie Bar/Karte abschließen, danach Wahl Kassenbon oder Rechnung (A4)
   const quickSale = (method: 'cash' | 'card' | 'transfer') => {
     if (cart.length === 0) {
       alert('Auswahl ist leer.')
       return
     }
+    if (method === 'transfer' && !selectedCustomerId && !rechnungManuellCheckout.name.trim()) {
+      setShowCheckout(true)
+      setPaymentMethod('transfer')
+      return
+    }
     processOrder(method)
   }
 
-  // Kassenbon drucken (80mm Breite = Standard-Kassenbon, vollständig sichtbar)
+  // Kassenbon drucken (80mm Breite, EU-normgerechter Beleg) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
   const printReceipt = (order: any) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
@@ -435,204 +616,106 @@ const ShopPage = () => {
       return
     }
 
-    let bankForReceipt = ''
+    const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+    let g: ReturnType<typeof loadStammdaten> = null
     try {
-      const g = loadStammdaten('k2', 'gallery')
-      bankForReceipt = ((g && (g as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
     } catch (_) {}
+    const defaultName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
+    const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
+    const sellerName = (g && (g as any).name && String((g as any).name).trim()) ? String((g as any).name) : defaultName
+    const sellerAddress = [g?.address, g?.city, g?.country].filter(Boolean).join(', ') || defaultAddress
+    const sellerContact = [g?.phone, g?.email].filter(Boolean).join(' · ') || ''
+    const ustId = (g && (g as any).ustIdNr && String((g as any).ustIdNr).trim()) ? String((g as any).ustIdNr).trim() : ''
+    const bankForReceipt = (g && (g as any).bankverbindung && String((g as any).bankverbindung).trim()) ? String((g as any).bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+    const sellerTagline = fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik'
+    const sellerWebsite = (g && (g as any).website && String((g as any).website).trim()) ? String((g as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : 'www.k2-galerie.at')
 
-    const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
     const date = new Date(order.date)
-    const dateStr = date.toLocaleDateString('de-DE', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const itemsRows = order.items.map((item: CartItem, idx: number) => {
+      const menge = 1
+      const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+      const betrag = menge * ep
+      const title = (item.title || item.number || '').replace(/</g, '&lt;')
+      const sn = (item.number || '').replace(/</g, '&lt;')
+      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}<br><small>Nr. ${sn}</small></td><td style="text-align:center;font-size:8px">${menge}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:center;font-size:7px">inkl.</td><td style="text-align:right;font-size:8px">€ ${betrag.toFixed(2)}</td></tr>`
+    }).join('')
+    const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
 
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="utf-8">
           <title>Kassenbon</title>
           <style>
             @media print {
-              @page {
-                size: 80mm 400mm;
-                margin: 0;
-                padding: 0;
-              }
-              * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              body {
-                margin: 0;
-                padding: 0;
-              }
+              @page { size: 80mm 400mm; margin: 0; padding: 0; }
+              * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+              body { margin: 0; padding: 0; }
             }
             body {
               font-family: 'Courier New', monospace;
-              font-size: 11px;
-              line-height: 1.3;
+              font-size: 9px;
+              line-height: 1.25;
               width: 80mm;
               max-width: 80mm;
               margin: 0;
-              padding: 5mm 4mm;
+              padding: 4mm 3mm;
               color: #000;
               background: #fff;
             }
             @media screen {
-              body {
-                width: 80mm;
-                margin: 20px auto;
-                border: 1px dashed #ccc;
-                min-height: 200px;
-              }
+              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; min-height: 200px; }
             }
-            .header {
-              text-align: center;
-              border-bottom: 1px solid #000;
-              padding-bottom: 4px;
-              margin-bottom: 4px;
-            }
-            .header h1 {
-              margin: 0;
-              font-size: 14px;
-              font-weight: bold;
-              letter-spacing: 0.5px;
-              line-height: 1.2;
-            }
-            .header p {
-              margin: 2px 0 0;
-              font-size: 9px;
-            }
-            .info {
-              margin: 6px 0;
-              font-size: 10px;
-              line-height: 1.4;
-            }
-            .items {
-              border-top: 1px solid #000;
-              border-bottom: 1px solid #000;
-              padding: 4px 0;
-              margin: 4px 0;
-            }
-            .item {
-              margin-bottom: 3px;
-              padding-bottom: 2px;
-            }
-            .item-title {
-              font-weight: bold;
-              margin-bottom: 1px;
-              font-size: 10px;
-              line-height: 1.2;
-            }
-            .item-details {
-              font-size: 9px;
-              margin-left: 4px;
-              line-height: 1.2;
-            }
-            .item-price {
-              text-align: right;
-              margin-top: 1px;
-              font-weight: bold;
-              font-size: 10px;
-            }
-            .total {
-              margin-top: 4px;
-              padding-top: 4px;
-              border-top: 1px solid #000;
-            }
-            .total-row {
-              display: flex;
-              justify-content: space-between;
-              margin: 3px 0;
-              font-size: 10px;
-            }
-            .total-final {
-              font-size: 12px;
-              font-weight: bold;
-              margin-top: 4px;
-              padding-top: 3px;
-              border-top: 1px solid #000;
-            }
-            .payment {
-              margin-top: 8px;
-              padding-top: 6px;
-              border-top: 1px solid #000;
-              text-align: center;
-              font-size: 10px;
-            }
-            .footer {
-              margin-top: 10px;
-              text-align: center;
-              font-size: 9px;
-              line-height: 1.4;
-            }
-            .divider {
-              text-align: center;
-              margin: 6px 0;
-              font-size: 9px;
-              letter-spacing: 1px;
-            }
+            .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+            .header h1 { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
+            .header .seller { font-size: 7px; margin: 1px 0 0; line-height: 1.3; }
+            .meta { margin: 4px 0; font-size: 8px; }
+            table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
+            th { text-align: left; padding: 2px 1px; border-bottom: 1px solid #000; font-size: 7px; text-transform: uppercase; }
+            th:nth-child(1), td:nth-child(1) { width: 12px; text-align: center; }
+            th:nth-child(3), td:nth-child(3) { width: 14px; text-align: center; }
+            th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) { width: 28px; text-align: right; }
+            th:nth-child(5), td:nth-child(5) { width: 18px; text-align: center; }
+            td { padding: 2px 1px; border-bottom: 1px solid #ccc; vertical-align: top; }
+            .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; }
+            .total-row { display: flex; justify-content: space-between; margin: 1px 0; }
+            .total-final { font-size: 10px; font-weight: bold; margin-top: 3px; padding-top: 2px; border-top: 1px solid #000; }
+            .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
+            .legal { margin-top: 4px; font-size: 6px; line-height: 1.3; color: #333; }
+            .bank { margin-top: 4px; font-size: 6px; text-align: left; white-space: pre-wrap; word-break: break-all; }
+            .footer { margin-top: 8px; text-align: center; font-size: 6px; line-height: 1.3; }
+            .divider { text-align: center; margin: 4px 0; font-size: 7px; }
           </style>
         </head>
         <body>
           <div class="header">
-            <h1>K2 GALERIE</h1>
-            <p>Kunst & Keramik</p>
+            <h1>KASSENBON / BELEG</h1>
+            <div class="seller"><strong>${sellerName.replace(/</g, '&lt;')}</strong><br>${sellerAddress.replace(/</g, '&lt;')}${sellerContact ? '<br>' + sellerContact.replace(/</g, '&lt;') : ''}${ustId ? '<br>UID: ' + ustId.replace(/</g, '&lt;') : ''}</div>
           </div>
-          
-          <div class="info">
+          <div class="meta">
             <div>Datum: ${dateStr}</div>
             <div>Bon-Nr.: ${order.orderNumber}</div>
           </div>
-          
-          <div class="items">
-            ${order.items.map((item: CartItem) => `
-              <div class="item">
-                <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${getCategoryLabel(item.category)}${item.artist ? ' • ' + item.artist : ''}</div>
-                <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
-                <div class="item-price">€ ${item.price.toFixed(2)}</div>
-              </div>
-            `).join('')}
-          </div>
-          
+          <table>
+            <thead><tr><th>Pos</th><th>Bezeichnung</th><th>Menge</th><th>EP</th><th>MwSt</th><th>Betrag</th></tr></thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
           <div class="total">
-            ${order.discount > 0 ? `
-              <div class="total-row">
-                <span>Zwischensumme:</span>
-                <span>€ ${order.subtotal.toFixed(2)}</span>
-              </div>
-              <div class="total-row" style="color: #666;">
-                <span>Rabatt:</span>
-                <span>-€ ${order.discount.toFixed(2)}</span>
-              </div>
-            ` : ''}
-            <div class="total-row total-final">
-              <span>GESAMT:</span>
-              <span>€ ${order.total.toFixed(2)}</span>
-            </div>
+            ${order.discount > 0 ? `<div class="total-row"><span>Zwischensumme:</span><span>€ ${(order.subtotal || order.total).toFixed(2)}</span></div><div class="total-row"><span>Rabatt:</span><span>-€ ${(order.discount || 0).toFixed(2)}</span></div>` : ''}
+            <div class="total-row total-final"><span>Gesamtbetrag:</span><span>€ ${order.total.toFixed(2)}</span></div>
           </div>
-          
+          <div class="legal">Alle Preise inkl. gesetzl. MwSt. (sofern anwendbar).${ustHinweis ? ' ' + ustHinweis + ' – keine Ausweisung der Umsatzsteuer.' : ''}</div>
           <div class="payment">
-            <div style="font-weight: bold; margin-bottom: 3px; font-size: 8px;">
-              ${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Überweisung'}
-            </div>
-            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div style="font-size: 7px; margin-top: 6px; text-align: left; white-space: pre-wrap; word-break: break-all;">Für Überweisung:\n${bankForReceipt}</div>` : ''}
-            <div style="font-size: 7px;">Vielen Dank!</div>
+            <strong>${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung (Überweisung)'}</strong>
+            ${order.paymentMethod === 'transfer' ? '<div style="margin-top:3px;font-size:7px;">Zahlbar innerhalb von 14 Tagen ohne Abzug.</div>' : ''}
+            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div class="bank">Überweisung:<br>${bankForReceipt}</div>` : ''}
+            <div style="margin-top:4px;">Vielen Dank!</div>
           </div>
-          
           <div class="divider">━━━━━━━━━━</div>
-          
-          <div class="footer">
-            <div>K2 Galerie</div>
-            <div>www.k2-galerie.at</div>
-            <div>${PRODUCT_COPYRIGHT}</div>
-          </div>
+          <div class="footer">${sellerName.replace(/</g, '&lt;')} · ${sellerAddress.replace(/</g, '&lt;')}<br>${PRODUCT_COPYRIGHT}</div>
         </body>
       </html>
     `)
@@ -650,21 +733,22 @@ const ShopPage = () => {
     }, 250)
   }
 
-  // Kassenbon als A4 drucken (gleiche Größe wie Etikettendrucker)
-  const printReceiptA4 = (order: any) => {
+  // Kassenbon oder Rechnung als A4 drucken (asRechnung = Rechnung mit Rechnungsnummer) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
+  const printReceiptA4 = async (order: any, asRechnung?: boolean) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
 
-    let bankForReceipt = ''
+    const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+    let gStamm: ReturnType<typeof loadStammdaten> = null
     try {
-      const g = loadStammdaten('k2', 'gallery')
-      bankForReceipt = ((g && (g as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      gStamm = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
     } catch (_) {}
+    const bankForReceipt = ((gStamm && (gStamm as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-    const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Überweisung'
+    const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung'
     const date = new Date(order.date)
     const dateStr = date.toLocaleDateString('de-DE', { 
       day: '2-digit', 
@@ -674,11 +758,173 @@ const ShopPage = () => {
       minute: '2-digit'
     })
 
+    const defaultHeaderName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
+    const defaultSub = fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik'
+    const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
+    const sellerNameForHeader = (gStamm && (gStamm as any).name && String((gStamm as any).name).trim()) ? String((gStamm as any).name) : defaultHeaderName
+    const sellerTaglineA4 = defaultSub
+    const sellerWebsiteA4 = (gStamm && (gStamm as any).website && String((gStamm as any).website).trim()) ? String((gStamm as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : 'www.k2-galerie.at')
+
+    let docTitle = fromOeffentlich ? 'Kassenbon - Galerie Muster' : 'Kassenbon - K2 Galerie'
+    let headerTitle = sellerNameForHeader.toUpperCase()
+    let headerSub = defaultSub
+    let nrLabel = 'Bon-Nr.:'
+    let nrValue = order.orderNumber
+    if (asRechnung) {
+      docTitle = fromOeffentlich ? 'Rechnung - Galerie Muster' : 'Rechnung - K2 Galerie'
+      headerTitle = 'RECHNUNG'
+      headerSub = sellerNameForHeader + (fromOeffentlich ? ' (Demo)' : ' · Kunst & Keramik')
+      nrLabel = 'Rechnungsnr.:'
+      try {
+        const key = fromOeffentlich ? 'k2-oeffentlich-rechnung-counter' : 'k2-rechnung-counter'
+        const year = new Date().getFullYear()
+        const stored = localStorage.getItem(key)
+        const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
+        if (parsed.year !== year) {
+          parsed.year = year
+          parsed.next = 1
+        }
+        nrValue = `RE-${year}-${String(parsed.next).padStart(4, '0')}`
+        parsed.next += 1
+        localStorage.setItem(key, JSON.stringify(parsed))
+      } catch (_) {
+        nrValue = `RE-${new Date().getFullYear()}-${order.orderNumber}`
+      }
+    }
+
+    if (asRechnung) {
+      const g = gStamm as { name?: string; address?: string; city?: string; country?: string; phone?: string; email?: string; website?: string; bankverbindung?: string; iban?: string; bic?: string; ustIdNr?: string } | null
+      const sellerName = (g && (g.name || '').trim()) ? (g.name || '').trim() : defaultHeaderName
+      const sellerAddress = [g?.address, g?.city, g?.country].filter(Boolean).join(', ') || defaultAddress
+      const sellerContact = [g?.phone, g?.email].filter(Boolean).join(' · ') || ''
+      const ustId = (g && (g as any).ustIdNr && String((g as any).ustIdNr).trim()) ? String((g as any).ustIdNr).trim() : ''
+      const bankForRechnung = (g && (g as any).bankverbindung && String((g as any).bankverbindung).trim()) ? String((g as any).bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+      const ibanRaw = (g && (g as any).iban && String((g as any).iban).trim()) ? String((g as any).iban).trim() : ''
+      const bicRaw = (g && (g as any).bic && String((g as any).bic).trim()) ? String((g as any).bic).trim() : ''
+      const ibanDisplay = ibanRaw ? ibanRaw.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+      const bicDisplay = bicRaw ? bicRaw.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+      let qrDataUrl = ''
+      if (ibanRaw) {
+        const ibanNoSpaces = ibanRaw.replace(/\s/g, '')
+        const bic = bicRaw || ''
+        const name = sellerName.slice(0, 70)
+        const amount = `EUR${Number(order.total).toFixed(2)}`
+        const remittance = nrValue
+        const epc = `BCD\n002\n1\nSCT\n${bic}\n${name}\n${ibanNoSpaces}\n${amount}\n\n\n${remittance}\n`
+        try {
+          qrDataUrl = await QRCode.toDataURL(epc, { width: 180, margin: 1 })
+        } catch (_) {}
+      }
+      const customer = order.customerId ? getCustomerById(order.customerId) : null
+      const manual = (order as any).manualRechnung as { name: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string } | undefined
+      let buyerName: string
+      let buyerAddress: string
+      if (manual?.name) {
+        buyerName = [manual.name, manual.firma].filter(Boolean).join(', ')
+        const adr = [manual.street, [manual.plz, manual.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')
+        const contact = [manual.email, manual.phone].filter(Boolean).join(' · ')
+        buyerAddress = [adr, contact, manual.uid].filter(Boolean).join(' · ') || '–'
+      } else {
+        buyerName = customer?.name || 'Kunde / Rechnungsempfänger'
+        buyerAddress = [customer?.email, customer?.phone].filter(Boolean).join(' · ') || '–'
+      }
+      const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+      const itemsRows = order.items.map((item: CartItem, idx: number) => {
+        const menge = 1
+        const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+        const betrag = menge * ep
+        return `<tr><td style="text-align:center">${idx + 1}</td><td>${(item.title || item.number).replace(/</g, '&lt;')}${item.artist ? ' · ' + String(item.artist).replace(/</g, '&lt;') : ''}<br><small>Seriennr. ${String(item.number).replace(/</g, '&lt;')}</small></td><td style="text-align:center">${menge}</td><td style="text-align:right">€ ${ep.toFixed(2)}</td><td style="text-align:center">inkl.</td><td style="text-align:right">€ ${betrag.toFixed(2)}</td></tr>`
+      }).join('')
+      const paymentTextRechnung = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung (Zahlung per Überweisung)'
+      const bankBlock = [
+        bankForRechnung ? `<div class="bank"><strong>Zahlung per Überweisung:</strong><br>${bankForRechnung}</div>` : '',
+        ibanDisplay ? `<div class="bank" style="margin-top:3px;"><strong>IBAN:</strong> ${ibanDisplay}</div>` : '',
+        bicDisplay ? `<div class="bank" style="margin-top:2px;"><strong>BIC:</strong> ${bicDisplay}</div>` : ''
+      ].filter(Boolean).join('')
+      const qrBlock = qrDataUrl ? `<div class="zahlung-qr" style="margin-top:4mm;"><img src="${qrDataUrl}" alt="SEPA-QR" width="180" height="180" style="display:block;" /><span style="font-size:8px;">SEPA-Überweisung scannen</span></div>` : ''
+      const rechnungHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docTitle}</title>
+<style>
+@page { size: A4; margin: 15mm; }
+* { box-sizing: border-box; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 11px; line-height: 1.4; color: #111; max-width: 210mm; margin: 0 auto; padding: 12mm 15mm; background: #fff; }
+.rechnung-header { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2mm; }
+.rechnung-sub { font-size: 10px; color: #444; margin-bottom: 8mm; }
+.two-cols { display: flex; justify-content: space-between; gap: 10mm; margin-bottom: 8mm; }
+.col { flex: 1; }
+.col h3 { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; margin: 0 0 3px; }
+.col p { margin: 0 0 2px; }
+.meta { margin-bottom: 6mm; font-size: 10px; }
+.meta span { margin-right: 12px; }
+table { width: 100%; border-collapse: collapse; margin: 4mm 0; }
+th { text-align: left; padding: 4px 6px; border-bottom: 2px solid #000; font-size: 9px; text-transform: uppercase; }
+td { padding: 6px; border-bottom: 1px solid #ddd; vertical-align: top; }
+th:first-child, td:first-child { width: 28px; }
+th:nth-child(3), td:nth-child(3) { width: 40px; text-align: center; }
+th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) { width: 70px; text-align: right; }
+th:nth-child(5), td:nth-child(5) { width: 50px; text-align: center; }
+.total-block { margin-top: 4mm; text-align: right; }
+.total-row { margin: 2px 0; }
+.gesamt { font-size: 14px; font-weight: 700; margin-top: 4px; padding-top: 4px; border-top: 2px solid #000; }
+.zahlung { margin-top: 8mm; padding-top: 4mm; border-top: 1px solid #ddd; font-size: 10px; }
+.zahlung strong { display: block; margin-bottom: 2px; }
+.zahlung-qr { display: inline-block; margin-top: 4mm; }
+.bank { margin-top: 4px; white-space: pre-wrap; word-break: break-all; font-size: 9px; }
+.footer-rechnung { margin-top: 10mm; padding-top: 4mm; border-top: 1px solid #ddd; font-size: 8px; color: #666; line-height: 1.5; }
+</style></head><body>
+<div class="rechnung-header">RECHNUNG</div>
+<div class="rechnung-sub">${sellerName}</div>
+<div class="two-cols">
+  <div class="col">
+    <h3>Rechnungssteller / Aussteller</h3>
+    <p><strong>${sellerName.replace(/</g, '&lt;')}</strong></p>
+    <p>${sellerAddress.replace(/</g, '&lt;')}</p>
+    ${sellerContact ? `<p>${sellerContact.replace(/</g, '&lt;')}</p>` : ''}
+    ${ustId ? `<p>UID: ${ustId.replace(/</g, '&lt;')}</p>` : ''}
+  </div>
+  <div class="col">
+    <h3>Rechnungsempfänger</h3>
+    <p><strong>${buyerName.replace(/</g, '&lt;')}</strong></p>
+    <p>${buyerAddress.replace(/</g, '&lt;')}</p>
+  </div>
+</div>
+<div class="meta">
+  <span><strong>Rechnungsnr.:</strong> ${nrValue}</span>
+  <span><strong>Rechnungsdatum:</strong> ${rechnungDatum}</span>
+  <span><strong>Leistungsdatum:</strong> ${rechnungDatum}</span>
+</div>
+<table>
+  <thead><tr><th>Pos.</th><th>Bezeichnung</th><th>Menge</th><th>Einheitspreis</th><th>MwSt</th><th>Betrag</th></tr></thead>
+  <tbody>${itemsRows}</tbody>
+</table>
+<div class="total-block">
+  ${order.discount > 0 ? `<div class="total-row">Zwischensumme: € ${(order.subtotal || order.total).toFixed(2)}</div><div class="total-row">Rabatt: -€ ${(order.discount || 0).toFixed(2)}</div>` : ''}
+  <div class="total-row gesamt">Gesamtbetrag: € ${order.total.toFixed(2)}</div>
+</div>
+<p style="font-size: 9px; margin-top: 4mm;">Alle Preise inkl. gesetzl. MwSt. (sofern anwendbar).</p>
+${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 UStG 1994 – keine Ausweisung der Umsatzsteuer.</p>' : ''}
+<div class="zahlung">
+  <strong>Zahlungsart:</strong> ${paymentTextRechnung}
+  <p style="margin: 2px 0;">Zahlbar innerhalb von 14 Tagen nach Rechnungsdatum ohne Abzug.</p>
+  ${bankBlock}
+  ${qrBlock}
+</div>
+<div class="footer-rechnung">
+  <strong>${sellerName.replace(/</g, '&lt;')}</strong> · ${sellerAddress.replace(/</g, '&lt;')}<br>
+  ${(g && (g as any).website) ? (g as any).website + '<br>' : ''}
+  ${PRODUCT_COPYRIGHT}
+</div>
+</body></html>`
+      printWindow.document.write(rechnungHtml)
+      printWindow.document.close()
+      setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
+      return
+    }
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Kassenbon - K2 Galerie</title>
+          <title>${docTitle}</title>
           <style>
             @media print {
               @page {
@@ -803,13 +1049,13 @@ const ShopPage = () => {
         </head>
         <body>
           <div class="header">
-            <h1>K2 GALERIE</h1>
-            <p>Kunst & Keramik</p>
+            <h1>${headerTitle}</h1>
+            <p>${headerSub}</p>
           </div>
           
           <div class="info">
             <div><strong>Datum:</strong> ${dateStr}</div>
-            <div><strong>Bon-Nr.:</strong> ${order.orderNumber}</div>
+            <div><strong>${nrLabel}</strong> ${nrValue}</div>
           </div>
           
           <div class="items">
@@ -862,7 +1108,7 @@ const ShopPage = () => {
           
           <div class="payment">
             <div style="font-weight: bold; margin-bottom: 3px; font-size: 8px;">
-              ${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Überweisung'}
+              ${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung (Überweisung)'}
             </div>
             ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div style="font-size: 7px; margin-top: 6px; text-align: left; white-space: pre-wrap; word-break: break-all;">Für Überweisung:\n${bankForReceipt}</div>` : ''}
             <div style="font-size: 7px;">Vielen Dank!</div>
@@ -871,9 +1117,9 @@ const ShopPage = () => {
           <div class="divider">━━━━━━━━━━</div>
           
           <div class="footer">
-            <div><strong>K2 Galerie</strong></div>
-            <div>Kunst & Keramik</div>
-            <div style="margin-top: 10px;">www.k2-galerie.at</div>
+            <div><strong>${sellerNameForHeader.replace(/</g, '&lt;')}</strong></div>
+            <div>${sellerTaglineA4}</div>
+            ${sellerWebsiteA4 ? `<div style="margin-top: 10px;">${sellerWebsiteA4.replace(/</g, '&lt;')}</div>` : ''}
             <div>${PRODUCT_COPYRIGHT}</div>
           </div>
         </body>
@@ -896,8 +1142,23 @@ const ShopPage = () => {
     const isAdmin = typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('k2-admin-context')
 
     let customerId: string | undefined
+    let manualRechnung: { name: string; firma?: string; street?: string; plz?: string; city?: string; email?: string; phone?: string; uid?: string } | undefined
     if (isAdmin) {
       customerId = selectedCustomerId || undefined
+      if (method === 'transfer' && !customerId && rechnungManuellCheckout.name.trim()) {
+        manualRechnung = {
+          name: rechnungManuellCheckout.name.trim(),
+          ...(rechnungManuellCheckout.typ === 'ausfuehrlich' ? {
+            firma: rechnungManuellCheckout.firma.trim() || undefined,
+            street: rechnungManuellCheckout.street.trim() || undefined,
+            plz: rechnungManuellCheckout.plz.trim() || undefined,
+            city: rechnungManuellCheckout.city.trim() || undefined,
+            email: rechnungManuellCheckout.email.trim() || undefined,
+            phone: rechnungManuellCheckout.phone.trim() || undefined,
+            uid: rechnungManuellCheckout.uid.trim() || undefined
+          } : {})
+        }
+      }
     } else {
       // Internetshop: Kundendaten erforderlich, in Kundendatei speichern
       const name = guestName.trim()
@@ -927,6 +1188,7 @@ const ShopPage = () => {
       total,
       paymentMethod: method,
       customerId,
+      ...(manualRechnung ? { manualRechnung } : {}),
       orderNumber: `O-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
     }
 
@@ -985,21 +1247,28 @@ const ShopPage = () => {
     setCart([])
     setShowCheckout(false)
     setSelectedCustomerId(null)
+    if (manualRechnung) {
+      setRechnungManuellCheckout({ typ: 'einfach', name: '', firma: '', street: '', plz: '', city: '', email: '', phone: '', uid: '' })
+    }
     if (!isAdmin) {
       setGuestName('')
       setGuestEmail('')
       setGuestPhone('')
     }
 
-    const paymentMethodText = method === 'cash' ? 'Bar' : method === 'card' ? 'Karte' : 'Überweisung'
+    const paymentMethodText = method === 'cash' ? 'Bar' : method === 'card' ? 'Karte' : 'Rechnung'
 
     if (isAdmin) {
-      // Admin: Erfolgsmeldung mit Druck-Optionen
-      const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassenbon drucken?\n\nOK = Etikettendrucker (80mm)\nAbbrechen = A4 Druck`)
-      if (printChoice) {
-        printReceipt(order)
+      // Admin: Bei Rechnung direkt A4 drucken; bei Bar/Karte Wahl zwischen Kassabon und Rechnung
+      if (method === 'transfer') {
+        printReceiptA4(order, true)
       } else {
-        printReceiptA4(order)
+        const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassabon oder Rechnung drucken?\n\nOK = Kassabon (80mm)\nAbbrechen = Rechnung (A4)`)
+        if (printChoice) {
+          printReceipt(order)
+        } else {
+          printReceiptA4(order, true)
+        }
       }
     } else {
       // Besucher: nur Bestätigung, kein Bon
@@ -1064,6 +1333,40 @@ const ShopPage = () => {
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
 
+      {/* Kurze Bestätigung „zur Auswahl hinzugefügt“ – schließt nach ~1,5 s automatisch */}
+      {addedToast && (
+        <div
+          role="alert"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.35)',
+            padding: '1rem'
+          }}
+        >
+          <div
+            style={{
+              background: s.bgCard,
+              borderRadius: s.radius,
+              padding: '1.25rem 1.5rem',
+              maxWidth: '320px',
+              boxShadow: s.shadowLg,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '0.75rem'
+            }}
+          >
+            <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: s.accentGreen, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>✓</span>
+            <p style={{ margin: 0, fontSize: '1rem', color: s.text, lineHeight: 1.4 }}>{addedToast}</p>
+          </div>
+        </div>
+      )}
+
       {/* Dunkler Top-Streifen mit Galerie-Branding */}
       <div style={{
         background: '#2a2520',
@@ -1074,7 +1377,7 @@ const ShopPage = () => {
         gap: '1rem'
       }}>
         <span style={{ fontFamily: s.fontHeading, color: '#c8a882', fontSize: '0.95rem', fontWeight: '600', letterSpacing: '0.04em' }}>
-          K2 Galerie
+          {fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'}
         </span>
         {cart.length > 0 && (
           <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>
@@ -1333,12 +1636,44 @@ const ShopPage = () => {
             >
               📷 QR-Code scannen
             </button>
+            <button
+              type="button"
+              onClick={() => setShowNummernListe((v) => !v)}
+              style={{
+                flex: 1,
+                minWidth: '120px',
+                padding: '0.8rem 1rem',
+                background: showNummernListe ? s.bgElevated : s.bgElevated,
+                color: s.text,
+                border: `1px solid ${s.accent}44`,
+                borderRadius: s.radiusSm,
+                fontSize: '0.95rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s ease',
+                boxShadow: s.shadowMd
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = s.accent
+                e.currentTarget.style.background = s.accentSoft
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = `${s.accent}44`
+                e.currentTarget.style.background = showNummernListe ? s.bgElevated : s.bgElevated
+              }}
+            >
+              📋 Nummernliste
+            </button>
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <input
               type="text"
-              placeholder="Seriennummer eingeben (z.B. K2-0001)"
+              placeholder="Nummer oder Titel (z.B. G1 oder Durch das Fenster)"
               value={serialInput}
               onChange={(e) => setSerialInput(e.target.value)}
               onKeyPress={(e) => {
@@ -1385,6 +1720,58 @@ const ShopPage = () => {
               Hinzufügen
             </button>
           </div>
+
+          {showNummernListe && (
+            <div style={{ marginTop: '1rem', borderTop: `1px solid ${s.accent}22`, paddingTop: '1rem' }}>
+              <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Werk antippen → wird zur Auswahl hinzugefügt (ohne Scanner)</p>
+              <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {allArtworks
+                  .filter((a: any) => {
+                    const priceVal = typeof a?.price === 'number' ? a.price : (parseFloat(String(a?.price ?? 0)) || 0)
+                    return a.inShop !== false && priceVal > 0
+                  })
+                  .map((a: any) => {
+                    const priceVal = typeof a?.price === 'number' ? a.price : (parseFloat(String(a?.price ?? 0)) || 0)
+                    const num = a.number || a.id || '–'
+                    const title = (a.title || num).length > 28 ? (a.title || num).slice(0, 25) + '…' : (a.title || num)
+                    return (
+                      <button
+                        key={a.id || a.number || title}
+                        type="button"
+                        onClick={() => addBySerialNumber(num)}
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          textAlign: 'left',
+                          background: s.bgElevated,
+                          border: `1px solid ${s.accent}22`,
+                          borderRadius: s.radiusSm,
+                          fontSize: '0.9rem',
+                          color: s.text,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          gap: '0.5rem'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = s.accent
+                          e.currentTarget.style.background = s.accentSoft
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = `${s.accent}22`
+                          e.currentTarget.style.background = s.bgElevated
+                        }}
+                      >
+                        <span style={{ fontWeight: '600', minWidth: '3rem' }}>{num}</span>
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
+                        <span style={{ color: s.accent, fontWeight: '600' }}>€ {priceVal.toFixed(2)}</span>
+                      </button>
+                    )
+                  })}
+              </div>
+              <button type="button" onClick={() => setShowNummernListe(false)} style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: s.muted, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Liste schließen</button>
+            </div>
+          )}
         </section>
           )}
 
@@ -1410,39 +1797,178 @@ const ShopPage = () => {
               {orders.map((order) => {
                 const dateStr = order.date ? new Date(order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–'
                 return (
-                  <button
+                  <div
                     key={order.id || order.orderNumber || order.date}
-                    onClick={() => handleReprintOrder(order)}
                     style={{
-                      padding: '0.6rem 1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      padding: '0.25rem 0.25rem 0.25rem 0',
                       background: s.bgElevated,
                       border: `1px solid ${s.accent}33`,
                       borderRadius: '10px',
-                      color: s.text,
-                      fontSize: '0.9rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.75rem',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = s.bgElevated
-                      e.currentTarget.style.borderColor = `${s.accent}88`
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = s.bgElevated
-                      e.currentTarget.style.borderColor = `${s.accent}33`
+                      overflow: 'hidden'
                     }}
                   >
-                    <span style={{ color: s.muted }}>{dateStr}</span>
-                    <span style={{ fontWeight: '600' }}>{order.orderNumber}</span>
-                    <span style={{ color: s.accent }}>€{(order.total || 0).toFixed(2)}</span>
-                    <span style={{ fontSize: '0.85rem' }}>🖨️</span>
-                  </button>
+                    <button
+                      onClick={() => handleReprintOrder(order)}
+                      style={{
+                        padding: '0.6rem 1rem',
+                        background: 'transparent',
+                        border: 'none',
+                        color: s.text,
+                        fontSize: '0.9rem',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = s.accent
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = s.text
+                      }}
+                    >
+                      <span style={{ color: s.muted }}>{dateStr}</span>
+                      <span style={{ fontWeight: '600' }}>{order.orderNumber}</span>
+                      <span style={{ color: s.accent }}>€{(order.total || 0).toFixed(2)}</span>
+                      <span style={{ fontSize: '0.85rem' }}>🖨️</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleStornoOrder(order) }}
+                      title="Verkauf stornieren – Werke wieder verfügbar"
+                      style={{
+                        padding: '0.4rem 0.6rem',
+                        marginRight: '0.25rem',
+                        background: 'transparent',
+                        border: `1px solid ${s.muted}`,
+                        borderRadius: '8px',
+                        color: s.muted,
+                        fontSize: '0.8rem',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = `${s.accent}15`
+                        e.currentTarget.style.color = s.accent
+                        e.currentTarget.style.borderColor = s.accent
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = s.muted
+                        e.currentTarget.style.borderColor = s.muted
+                      }}
+                    >
+                      Storno
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleDeleteOrderFromList(order) }}
+                      title="Eintrag nur aus Liste entfernen (Verkauf bleibt erfasst)"
+                      style={{
+                        padding: '0.4rem 0.6rem',
+                        marginRight: '0.25rem',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '8px',
+                        color: s.muted,
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = `${s.accent}20`
+                        e.currentTarget.style.color = s.accent
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = s.muted
+                      }}
+                    >
+                      🗑
+                    </button>
+                  </div>
                 )
               })}
             </div>
+          </section>
+        )}
+
+        {/* Nur für Admin: Verkaufsliste – Storno (max 15 neueste) */}
+        {isAdminContext && (
+          <section style={{
+            background: s.bgCard,
+            backdropFilter: 'blur(20px)',
+            border: `1px solid ${s.accent}22`,
+            borderRadius: '20px',
+            padding: 'clamp(1.5rem, 4vw, 2rem)',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+          }}>
+            <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', marginBottom: '1rem', color: s.text, fontWeight: '600' }}>
+              📋 Verkaufsliste – Storno
+            </h3>
+            {!showVerkaufsliste ? (
+              <button
+                type="button"
+                onClick={() => { setShowVerkaufsliste(true); loadVerkaufslisteForStorno() }}
+                style={{
+                  padding: '0.6rem 1rem',
+                  background: s.bgElevated,
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: s.radiusSm,
+                  color: s.text,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Liste öffnen (max. 15 neueste Verkäufe)
+              </button>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  {soldEntriesList.map((e, i) => (
+                    <div
+                      key={`${e.number}-${e.soldAt}-${i}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.4rem 0.6rem',
+                        background: s.bgElevated,
+                        border: `1px solid ${s.accent}22`,
+                        borderRadius: '8px',
+                        fontSize: '0.9rem'
+                      }}
+                    >
+                      <span style={{ color: s.muted, minWidth: '2.5rem' }}>{e.number}</span>
+                      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>{e.title}</span>
+                      <span style={{ color: s.muted, fontSize: '0.8rem' }}>{e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}</span>
+                      <span style={{ fontWeight: 600, color: s.accent }}>€{(e.price || 0).toFixed(2)}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStornoSingle(i)}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          fontSize: '0.8rem',
+                          background: 'transparent',
+                          border: `1px solid ${s.muted}`,
+                          borderRadius: 6,
+                          color: s.muted,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Stornieren
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {soldEntriesList.length === 0 && <p style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Verkäufe in der Liste.</p>}
+                <button type="button" onClick={() => setShowVerkaufsliste(false)} style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: s.muted, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Liste schließen</button>
+              </>
+            )}
           </section>
         )}
 
@@ -1543,15 +2069,7 @@ const ShopPage = () => {
               marginBottom: '1rem',
               color: s.text
             }}>
-              Entdecke unsere Kunstwerke und füge sie zu deiner Auswahl hinzu.
-            </p>
-            <p style={{ 
-              fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', 
-              color: s.muted, 
-              marginBottom: orders.length > 0 ? '1rem' : '2rem', 
-              fontStyle: 'italic' 
-            }}>
-              Hinweis: Nicht alle Werke sind im Online-Shop verfügbar. Werke, die nur zur Ausstellung gehören, können nicht online gekauft werden.
+              Entdecke die Galerie und füge Artikel zu deiner Auswahl hinzu.
             </p>
             {isAdminContext && orders.length > 0 && (
               <button
@@ -1568,7 +2086,7 @@ const ShopPage = () => {
                   fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
                   fontWeight: '600',
                   cursor: 'pointer',
-                  marginBottom: '1.5rem',
+                  marginBottom: '1rem',
                   transition: 'all 0.2s ease'
                 }}
                 onMouseEnter={(e) => {
@@ -1581,34 +2099,38 @@ const ShopPage = () => {
                 🖨️ Letzten Bon erneut drucken ({orders[0].orderNumber} · €{(orders[0].total || 0).toFixed(2)})
               </button>
             )}
-            <Link 
-              to={galerieLink}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(2rem, 5vw, 2.5rem)',
-                background: s.gradientAccent,
-                color: '#fff',
-                textDecoration: 'none',
-                borderRadius: '12px',
-                fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
-                fontWeight: '600',
-                transition: 'all 0.3s ease',
-                boxShadow: `0 10px 30px ${s.accent}40`
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)'
-                e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
-              }}
-            >
-              Zur Galerie
-              <span style={{ fontSize: '1.2em' }}>→</span>
-            </Link>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'center', marginBottom: '1.5rem' }}>
+              {!isAdminContext && (
+                <Link
+                  to={galerieLink}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: 'clamp(1rem, 2.5vw, 1.25rem) clamp(2rem, 5vw, 2.5rem)',
+                    background: s.gradientAccent,
+                    color: '#fff',
+                    textDecoration: 'none',
+                    borderRadius: '12px',
+                    fontSize: 'clamp(1rem, 2.5vw, 1.1rem)',
+                    fontWeight: '600',
+                    transition: 'all 0.3s ease',
+                    boxShadow: `0 10px 30px ${s.accent}40`
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-3px)'
+                    e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = `0 10px 30px ${s.accent}40`
+                  }}
+                >
+                  Zur Galerie
+                  <span style={{ fontSize: '1.2em' }}>→</span>
+                </Link>
+              )}
+            </div>
           </div>
         ) : (
           <>
@@ -1791,7 +2313,7 @@ const ShopPage = () => {
                       onClick={() => setShowCheckout(true)}
                       style={{ padding: '0.75rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: '600', fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)', cursor: 'pointer', boxShadow: s.shadow }}
                     >
-                      Zur Kasse (Karte / Überweisung)
+                      Zur Kasse (Karte / Bar / Rechnung)
                     </button>
                     {displayEmail && (
                       <a href={`mailto:${displayEmail}`} style={{ padding: '0.6rem 1rem', background: `${s.accent}40`, border: `1px solid ${s.accent}88`, borderRadius: '10px', color: '#fff', textDecoration: 'none', fontWeight: '600', fontSize: 'clamp(0.9rem, 2.2vw, 1rem)' }}>E-Mail</a>
@@ -1827,7 +2349,7 @@ const ShopPage = () => {
               </section>
             )}
 
-            {/* Nur Admin: Kassensumme & Schnellverkauf (Bar/Karte/Überweisung) */}
+            {/* Nur Admin: Kassensumme & Schnellverkauf (Bar/Karte/Rechnung) */}
             {isAdminContext && !showCheckout && (
               <section style={{
                 background: s.bgCard,
@@ -1888,7 +2410,7 @@ const ShopPage = () => {
                     {([
                       { method: 'cash' as const, icon: '💵', label: 'Bar' },
                       { method: 'card' as const, icon: '💳', label: 'Karte' },
-                      { method: 'transfer' as const, icon: '🏦', label: 'Überweisung' },
+                      { method: 'transfer' as const, icon: '📄', label: 'Rechnung' },
                     ] as { method: 'cash' | 'card' | 'transfer', icon: string, label: string }[]).map(({ method, icon, label }) => (
                       <button
                         key={method}
@@ -1957,7 +2479,7 @@ const ShopPage = () => {
               </section>
             )}
 
-            {/* Checkout für alle: Karte / Überweisung / Bar, Bankverbindung aus Stammdaten */}
+            {/* Checkout für alle: Karte / Bar / Rechnung, Bankverbindung aus Stammdaten */}
             {showCheckout && (
               <section style={{
                 background: s.bgCard,
@@ -2119,7 +2641,7 @@ const ShopPage = () => {
                       onChange={() => setPaymentMethod('transfer')}
                       style={{ width: '24px', height: '24px', cursor: 'pointer' }}
                     />
-                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'transfer' ? '600' : '400', color: s.text }}>🏦 Überweisung</span>
+                    <span style={{ fontSize: 'clamp(1rem, 3vw, 1.1rem)', fontWeight: paymentMethod === 'transfer' ? '600' : '400', color: s.text }}>📄 Rechnung</span>
                   </label>
                   {paymentMethod === 'transfer' && bankverbindung && (
                     <div style={{
@@ -2133,8 +2655,44 @@ const ShopPage = () => {
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word'
                     }}>
-                      <strong>Für Überweisung:</strong><br />
+                      <strong>Zahlung per Überweisung (steht auf der Rechnung):</strong><br />
                       {bankverbindung}
+                    </div>
+                  )}
+                  {paymentMethod === 'transfer' && isAdminContext && !selectedCustomerId && (
+                    <div style={{
+                      padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                      background: s.bgCard,
+                      borderRadius: '12px',
+                      border: `1px solid ${s.accent}33`,
+                      marginTop: '0.5rem'
+                    }}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.75rem' }}>Rechnungsempfänger (kein Kunde ausgewählt)</div>
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.75rem' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                          <input type="radio" name="rechnungManuellTyp" checked={rechnungManuellCheckout.typ === 'einfach'} onChange={() => setRechnungManuellCheckout((m) => ({ ...m, typ: 'einfach' }))} />
+                          Nur Name
+                        </label>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem' }}>
+                          <input type="radio" name="rechnungManuellTyp" checked={rechnungManuellCheckout.typ === 'ausfuehrlich'} onChange={() => setRechnungManuellCheckout((m) => ({ ...m, typ: 'ausfuehrlich' }))} />
+                          Ausführlich (Firmenkunde)
+                        </label>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>{rechnungManuellCheckout.typ === 'einfach' ? 'Name / Firma' : 'Name'}</label>
+                          <input type="text" value={rechnungManuellCheckout.name} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, name: e.target.value }))} placeholder={rechnungManuellCheckout.typ === 'einfach' ? 'Name oder Firma' : 'Name'} style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} />
+                        </div>
+                        {rechnungManuellCheckout.typ === 'ausfuehrlich' && (
+                          <>
+                            <div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>Firma (optional)</label><input type="text" value={rechnungManuellCheckout.firma} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, firma: e.target.value }))} placeholder="Firma" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '0.5rem' }}><div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>Straße</label><input type="text" value={rechnungManuellCheckout.street} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, street: e.target.value }))} placeholder="Straße, Nr." style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div><div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>PLZ</label><input type="text" value={rechnungManuellCheckout.plz} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, plz: e.target.value }))} placeholder="PLZ" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div><div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>Ort</label><input type="text" value={rechnungManuellCheckout.city} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, city: e.target.value }))} placeholder="Ort" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div></div>
+                            <div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>E-Mail (optional)</label><input type="email" value={rechnungManuellCheckout.email} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, email: e.target.value }))} placeholder="E-Mail" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div>
+                            <div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>Telefon (optional)</label><input type="text" value={rechnungManuellCheckout.phone} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, phone: e.target.value }))} placeholder="Telefon" style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div>
+                            <div><label style={{ display: 'block', fontSize: '0.8rem', color: s.muted, marginBottom: '0.2rem' }}>UID (optional)</label><input type="text" value={rechnungManuellCheckout.uid} onChange={(e) => setRechnungManuellCheckout((m) => ({ ...m, uid: e.target.value }))} placeholder="UID-Nr." style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 8, background: s.bgElevated, color: s.text }} /></div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   )}
                   <label style={{ 
@@ -2204,26 +2762,56 @@ color: s.accent
                   >
                     Zurück
                   </button>
+                  <Link
+                    to={galerieLink}
+                    style={{
+                      flex: 1,
+                      minWidth: '120px',
+                      padding: 'clamp(0.75rem, 2vw, 1rem)',
+                      background: s.bgElevated,
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${s.accent}33`,
+                      color: s.text,
+                      borderRadius: '12px',
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                      textAlign: 'center',
+                      transition: 'all 0.3s ease',
+                      boxSizing: 'border-box'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = s.bgElevated
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = s.bgCard
+                    }}
+                  >
+                    ← Zur Galerie
+                  </Link>
                   <button
                     type="button"
                     onClick={() => processOrder()}
-                    disabled={!isAdminContext && (!guestName.trim() || !guestEmail.trim())}
+                    disabled={
+                      (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ||
+                      (isAdminContext && paymentMethod === 'transfer' && !selectedCustomerId && !rechnungManuellCheckout.name.trim())
+                    }
                     style={{
                       flex: 2,
                       padding: 'clamp(0.75rem, 2vw, 1rem)',
-                      background: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? s.bgElevated : s.gradientAccent,
+                      background: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) || (isAdminContext && paymentMethod === 'transfer' && !selectedCustomerId && !rechnungManuellCheckout.name.trim()) ? s.bgElevated : s.gradientAccent,
                       color: '#fff',
                       border: 'none',
                       borderRadius: '12px',
                       fontSize: 'clamp(1rem, 3vw, 1.1rem)',
                       fontWeight: '600',
-                      cursor: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 'not-allowed' : 'pointer',
+                      cursor: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) || (isAdminContext && paymentMethod === 'transfer' && !selectedCustomerId && !rechnungManuellCheckout.name.trim()) ? 'not-allowed' : 'pointer',
                       transition: 'all 0.3s ease',
                       boxShadow: `0 10px 30px ${s.accent}40`,
-                      opacity: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) ? 0.7 : 1
+                      opacity: (!isAdminContext && (!guestName.trim() || !guestEmail.trim())) || (isAdminContext && paymentMethod === 'transfer' && !selectedCustomerId && !rechnungManuellCheckout.name.trim()) ? 0.7 : 1
                     }}
                     onMouseEnter={(e) => {
-                      if (isAdminContext || (guestName.trim() && guestEmail.trim())) {
+                      if (isAdminContext ? (paymentMethod !== 'transfer' || selectedCustomerId || rechnungManuellCheckout.name.trim()) : (guestName.trim() && guestEmail.trim())) {
                         e.currentTarget.style.transform = 'translateY(-2px)'
                         e.currentTarget.style.boxShadow = `0 15px 40px ${s.accent}66`
                       }
@@ -2241,6 +2829,109 @@ color: s.accent
           </>
         )}
         </main>
+
+      {/* Rechnungsformular: Kunde aus Kundendatenbank oder manuell, Vorschaufenster */}
+      {showRechnungForm && isAdminContext && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1.5rem',
+            boxSizing: 'border-box'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowRechnungForm(false) }}
+        >
+          <div
+            style={{
+              background: s.bgCard,
+              borderRadius: '20px',
+              boxShadow: s.shadowLg,
+              maxWidth: '720px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              padding: 'clamp(1.25rem, 3vw, 2rem)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.35rem', color: s.text, fontWeight: 700 }}>📄 Rechnung schreiben</h2>
+              <button type="button" onClick={() => setShowRechnungForm(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: s.muted, cursor: 'pointer', padding: '0.25rem', lineHeight: 1 }} aria-label="Schließen">×</button>
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: s.muted, marginBottom: '1rem' }}>Kundendaten aus der Kundendatenbank wählen oder manuell eintragen. Anschließend Artikel aus der Galerie hinzufügen.</p>
+
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                <input type="radio" name="rechnungKunde" checked={rechnungKundeTyp === 'auswahl'} onChange={() => { setRechnungKundeTyp('auswahl'); setSelectedCustomerId(null) }} />
+                Aus Kundendatenbank
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.95rem' }}>
+                <input type="radio" name="rechnungKunde" checked={rechnungKundeTyp === 'manuell'} onChange={() => { setRechnungKundeTyp('manuell'); setSelectedCustomerId(null) }} />
+                Manuell eingeben
+              </label>
+            </div>
+
+            {rechnungKundeTyp === 'auswahl' ? (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Kunde wählen</label>
+                <select
+                  value={selectedCustomerId ?? ''}
+                  onChange={(e) => setSelectedCustomerId(e.target.value || null)}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }}
+                >
+                  <option value="">— Bitte wählen —</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}{c.email ? ` · ${c.email}` : ''}</option>
+                  ))}
+                </select>
+                {customers.length === 0 && <p style={{ fontSize: '0.82rem', color: s.muted, marginTop: '0.35rem' }}>Keine Kunden in der Kundendatei. Kunden im Control-Studio unter „Kunden“ anlegen oder unten „Manuell eingeben“ wählen.</p>}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>Name</label><input type="text" value={rechnungManual.name} onChange={(e) => setRechnungManual((m) => ({ ...m, name: e.target.value }))} placeholder="Name / Firma" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>E-Mail</label><input type="email" value={rechnungManual.email} onChange={(e) => setRechnungManual((m) => ({ ...m, email: e.target.value }))} placeholder="E-Mail" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>Telefon</label><input type="text" value={rechnungManual.phone} onChange={(e) => setRechnungManual((m) => ({ ...m, phone: e.target.value }))} placeholder="Telefon" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                </div>
+                <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>Adresse</label><input type="text" value={rechnungManual.street} onChange={(e) => setRechnungManual((m) => ({ ...m, street: e.target.value }))} placeholder="Straße, Hausnummer" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '0.75rem' }}>
+                  <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>PLZ</label><input type="text" value={rechnungManual.plz} onChange={(e) => setRechnungManual((m) => ({ ...m, plz: e.target.value }))} placeholder="PLZ" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                  <div><label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.25rem' }}>Ort</label><input type="text" value={rechnungManual.city} onChange={(e) => setRechnungManual((m) => ({ ...m, city: e.target.value }))} placeholder="Ort" style={{ width: '100%', padding: '0.6rem 0.75rem', fontSize: '0.95rem', border: `1px solid ${s.accent}33`, borderRadius: s.radius, background: s.bgCard, color: s.text }} /></div>
+                </div>
+              </div>
+            )}
+
+            {/* Vorschaufenster */}
+            <div style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: s.muted, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Vorschau Rechnung</div>
+              <div style={{ fontSize: '0.95rem', color: s.text, lineHeight: 1.5 }}>
+                {rechnungKundeTyp === 'auswahl' && selectedCustomerId ? (
+                  (() => {
+                    const c = customers.find((x) => x.id === selectedCustomerId)
+                    return c ? <><strong>{c.name}</strong>{c.email && <><br />{c.email}</>}{c.phone && <><br />{c.phone}</>}</> : null
+                  })()
+                ) : rechnungKundeTyp === 'manuell' && (rechnungManual.name || rechnungManual.email) ? (
+                  <><strong>{rechnungManual.name || '—'}</strong>{rechnungManual.email && <><br />{rechnungManual.email}</>}{rechnungManual.phone && <><br />{rechnungManual.phone}</>}{(rechnungManual.street || rechnungManual.plz || rechnungManual.city) && <><br />{[rechnungManual.street, [rechnungManual.plz, rechnungManual.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</>}</>
+                ) : (
+                  <span style={{ color: s.muted }}>Kundendaten oben auswählen oder eingeben.</span>
+                )}
+              </div>
+              <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid ${s.accent}18`, fontSize: '0.9rem', color: s.muted }}>Positionen: {cart.length > 0 ? `${cart.length} Artikel · € ${cart.reduce((sum, i) => sum + i.price, 0).toFixed(2)}` : 'noch keine — unten „Artikel hinzufügen“'}</div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <Link to={galerieLink} onClick={() => setShowRechnungForm(false)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.25rem', background: s.gradientAccent, color: '#fff', textDecoration: 'none', borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600 }}>Artikel hinzufügen →</Link>
+              <button type="button" onClick={() => setShowRechnungForm(false)} style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '12px', fontSize: '0.95rem', fontWeight: 600, color: s.text, cursor: 'pointer' }}>Schließen</button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   )
