@@ -104,8 +104,8 @@ export function getKassabuchMitEingaengen(tenant: 'k2' | 'oeffentlich'): Kassabu
   }
 }
 
-/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ = volles Kassabuch */
-export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus'
+/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ / Pro++ = volles Kassabuch (Pro++ inkl. Rechnung) */
+export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus' | 'propplus'
 
 const K2_LIZENZ_STUFE_KEY = 'k2-lizenz-stufe'
 const OEF_LIZENZ_STUFE_KEY = 'k2-oeffentlich-lizenz-stufe'
@@ -114,7 +114,7 @@ export function getKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich'): Kassabuch
   try {
     const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
     const v = localStorage.getItem(key)
-    if (v === 'basic' || v === 'pro' || v === 'proplus') return v
+    if (v === 'basic' || v === 'pro' || v === 'proplus' || v === 'propplus') return v
     return 'proplus'
   } catch {
     return 'proplus'
@@ -133,9 +133,10 @@ export function hasKassa(tenant: 'k2' | 'oeffentlich'): boolean {
   return getKassabuchLizenzStufe(tenant) !== 'basic'
 }
 
-/** Volles Kassabuch (Eingänge + Ausgänge, Bar privat, Kassa an Bank, Belege) nur mit Pro+. */
+/** Volles Kassabuch (Eingänge + Ausgänge, Bar privat, Kassa an Bank, Belege) mit Pro+ oder Pro++. */
 export function hasKassabuchVoll(tenant: 'k2' | 'oeffentlich'): boolean {
-  return getKassabuchLizenzStufe(tenant) === 'proplus'
+  const stufe = getKassabuchLizenzStufe(tenant)
+  return stufe === 'proplus' || stufe === 'propplus'
 }
 
 /** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true) */

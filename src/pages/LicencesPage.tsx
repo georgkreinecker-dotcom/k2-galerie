@@ -44,16 +44,17 @@ export interface LicenceGrant {
   id: string
   name: string
   email: string
-  licenseType: 'basic' | 'pro' | 'proplus' | 'vk2'
+  licenseType: 'basic' | 'pro' | 'proplus' | 'propplus' | 'vk2'
   empfehlerId?: string
   empfehlungsRabattAngewendet?: boolean
   createdAt: string
 }
 
-const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
+const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'propplus' | 'vk2'; name: string; price: string; priceEur: number | null; summary: string; icon: string; highlight?: boolean }[] = [
   { id: 'basic',   name: LIZENZPREISE.basic.name,   price: LIZENZPREISE.basic.price,   priceEur: LIZENZPREISE.basic.priceEur,   icon: '🎨',  summary: 'Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Standard-URL' },
   { id: 'pro',     name: LIZENZPREISE.pro.name,    price: LIZENZPREISE.pro.price,     priceEur: LIZENZPREISE.pro.priceEur,     icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
-  { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)', highlight: true },
+  { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)' },
+  { id: 'propplus', name: LIZENZPREISE.propplus.name, price: LIZENZPREISE.propplus.price, priceEur: LIZENZPREISE.propplus.priceEur, icon: '📄',  summary: 'Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummerierung, Pflichtangaben, USt-Aufschlüsselung', highlight: true },
   { id: 'vk2',     name: LIZENZPREISE.vk2.name,    price: LIZENZPREISE.vk2.priceLabel ?? '', priceEur: LIZENZPREISE.vk2.priceEur, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
 ]
 
@@ -267,23 +268,23 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
             {LICENCE_TYPES.map((lt) => {
               const count = grants.filter(g => g.licenseType === lt.id).length
-              const isProPlus = lt.id === 'proplus'
+              const isHighlight = lt.highlight === true
               return (
                 <div key={lt.id} style={{
-                  background: isProPlus
+                  background: isHighlight
                     ? 'linear-gradient(135deg, rgba(251,191,36,0.12) 0%, rgba(245,158,11,0.06) 100%)'
                     : count > 0 ? 'rgba(95,251,241,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${isProPlus ? 'rgba(251,191,36,0.5)' : count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
+                  border: `1.5px solid ${isHighlight ? 'rgba(251,191,36,0.5)' : count > 0 ? 'rgba(95,251,241,0.3)' : 'rgba(255,255,255,0.1)'}`,
                   borderRadius: '10px', padding: '1rem',
                   position: 'relative'
                 }}>
-                  {isProPlus && (
+                  {isHighlight && (
                     <div style={{ position: 'absolute', top: -10, right: 12, background: 'linear-gradient(90deg, #f59e0b, #fbbf24)', color: '#1a1a00', fontSize: '0.7rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20, letterSpacing: '0.5px' }}>
                       PREMIUM
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                    <strong style={{ color: isProPlus ? '#fbbf24' : 'var(--k2-accent)', fontSize: '1rem' }}>{lt.icon} {lt.name}</strong>
+                    <strong style={{ color: isHighlight ? '#fbbf24' : 'var(--k2-accent)', fontSize: '1rem' }}>{lt.icon} {lt.name}</strong>
                     <span style={{
                       fontSize: '0.75rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: 20,
                       background: count > 0 ? 'rgba(95,251,241,0.15)' : 'rgba(255,255,255,0.06)',
@@ -292,7 +293,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
                       {count > 0 ? `✅ ${count} aktiv` : '○ keine'}
                     </span>
                   </div>
-                  <div style={{ fontSize: '0.85rem', color: isProPlus ? '#fbbf24' : 'var(--k2-accent)', fontWeight: 600, marginBottom: '0.3rem' }}>{lt.price}</div>
+                  <div style={{ fontSize: '0.85rem', color: isHighlight ? '#fbbf24' : 'var(--k2-accent)', fontWeight: 600, marginBottom: '0.3rem' }}>{lt.price}</div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', lineHeight: 1.4 }}>{lt.summary}</div>
                 </div>
               )
@@ -309,13 +310,14 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <div style={{ fontSize: '0.88rem', color: 'var(--k2-muted)', lineHeight: 1.7 }}>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>🎨 Basic</strong> – Bis 30 Werke, 1 Galerie, Events, Kasse, Etiketten, Marketing (Basis), <TermWithExplanation term="Standard-URL" />. <strong>15 €/Monat.</strong></p>
             <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>⭐ Pro</strong> – Alles aus Basic + unbegrenzte Werke, <TermWithExplanation term="Custom Domain" /> – ohne vollen Marketingbereich. <strong>35 €/Monat.</strong></p>
+            <p style={{ margin: '0 0 0.5rem' }}><strong style={{ color: 'var(--k2-text)' }}>💎 Pro+</strong> – Alles aus Pro + <strong style={{ color: 'var(--k2-text)' }}>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente. <strong>45 €/Monat.</strong></p>
             <p style={{ margin: '0 0 0.5rem', padding: '0.6rem 0.85rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8 }}>
-              <strong style={{ color: '#fbbf24' }}>💎 Pro+</strong> – Alles aus Pro + <strong style={{ color: 'var(--k2-text)' }}>gesamter Marketingbereich</strong>: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente. <strong>45 €/Monat.</strong>
+              <strong style={{ color: '#fbbf24' }}>📄 Pro++</strong> – Alles aus Pro+ + <strong style={{ color: 'var(--k2-text)' }}>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung. <strong>55 €/Monat.</strong>
             </p>
             <p style={{ margin: 0 }}><strong style={{ color: 'var(--k2-text)' }}>🏛️ Kunstvereine (VK2)</strong> – Verein nutzt Pro (35 €); ab 10 registrierten Mitgliedern für den Verein kostenfrei. Vereinsmitglieder: 50 % Rabatt. Nicht registrierte Mitglieder im System erfasst (Datenschutz beachten).</p>
           </div>
           <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.75rem', marginBottom: 0 }}>
-            Aufstufung jederzeit möglich: Basic → Pro → Pro+ → Kunstvereine (VK2). Daten bleiben erhalten.
+            Aufstufung jederzeit möglich: Basic → Pro → Pro+ → Pro++ → Kunstvereine (VK2). Daten bleiben erhalten.
           </p>
         </section>
 

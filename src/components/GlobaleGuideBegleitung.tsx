@@ -186,6 +186,7 @@ function LizenzInfo({ pfad, akzentFarbe }: { pfad: GuidePfad; akzentFarbe: strin
     { emoji: '🎨', name: LIZENZPREISE.basic.name, preis: LIZENZPREISE.basic.price, inhalt: 'Bis 30 Werke, 1 Galerie, Events, Kasse' },
     { emoji: '⭐', name: LIZENZPREISE.pro.name, preis: LIZENZPREISE.pro.price, inhalt: 'Unbegrenzte Werke, Custom Domain' },
     { emoji: '💎', name: LIZENZPREISE.proplus.name, preis: LIZENZPREISE.proplus.price, inhalt: 'Pro + Marketingbereich (Flyer, Presse, Social)' },
+    { emoji: '📄', name: LIZENZPREISE.propplus.name, preis: LIZENZPREISE.propplus.price, inhalt: 'Pro+ + Rechnung (§ 11 UStG)' },
     { emoji: '🏛️', name: LIZENZPREISE.vk2.name, preis: LIZENZPREISE.vk2.priceLabel ?? '', inhalt: 'Verein ab 10 Mitgliedern kostenfrei' },
   ]
   return (

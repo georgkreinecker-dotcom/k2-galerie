@@ -1185,7 +1185,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
-  const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
+  const [lizenzLicenceType, setLizenzLicenceType] = useState<'basic' | 'pro' | 'proplus' | 'propplus'>('pro')
   const [lizenzName, setLizenzName] = useState('')
   const [lizenzEmail, setLizenzEmail] = useState('')
   const [lizenzEmpfehlerId, setLizenzEmpfehlerId] = useState('')
@@ -15653,6 +15653,7 @@ ${name}`
                 { id: 'basic' as const, ...LIZENZPREISE.basic },
                 { id: 'pro' as const, ...LIZENZPREISE.pro },
                 { id: 'proplus' as const, ...LIZENZPREISE.proplus },
+                { id: 'propplus' as const, ...LIZENZPREISE.propplus },
               ]
               const handleLizenzSubmit = async (e: React.FormEvent) => {
                 e.preventDefault()
@@ -15716,7 +15717,7 @@ ${name}`
                     <>
                       <div style={{ marginBottom: '1rem' }}>
                         <div style={{ fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Lizenz wählen</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.6rem' }}>
                           {LIZENZ_OPTIONS.map((opt) => {
                             const selected = lizenzLicenceType === opt.id
                             return (
@@ -15893,6 +15894,17 @@ ${name}`
                       <li><strong>Gesamter Marketingbereich</strong></li>
                       <li>Events, Galeriepräsentation, Flyer, Presse</li>
                       <li>Social Media, Plakat, PR-Dokumente aus einem Guss</li>
+                    </ul>
+                  </div>
+
+                  <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro++</span>
+                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.propplus.price}</span>
+                    </div>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro+, plus:</p>
+                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                      <li><strong>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung</li>
                     </ul>
                   </div>
 

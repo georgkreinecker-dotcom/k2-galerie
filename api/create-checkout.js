@@ -1,6 +1,6 @@
 /**
  * Vercel Serverless: Stripe Checkout Session für Lizenzkauf erstellen.
- * POST Body: { licenceType: 'basic'|'pro'|'proplus', email: string, name: string, empfehlerId?: string }
+ * POST Body: { licenceType: 'basic'|'pro'|'proplus'|'propplus', email: string, name: string, empfehlerId?: string }
  * Antwort: { url: string } (Redirect zu Stripe Checkout)
  *
  * Umgebungsvariablen (Vercel): STRIPE_SECRET_KEY, VERCEL_URL (oder NEXT_PUBLIC_APP_URL) für Success/Cancel-URLs
@@ -8,9 +8,10 @@
 import Stripe from 'stripe'
 
 const PRICE_CENTS = {
-  basic: 1500,   // 15 €
-  pro: 3500,     // 35 €
-  proplus: 4500, // 45 €
+  basic: 1500,    // 15 €
+  pro: 3500,      // 35 €
+  proplus: 4500,  // 45 €
+  propplus: 5500, // 55 €
 }
 
 /** Sichere tenantId: a-z0-9-, max 64 Zeichen. Eindeutig durch Zufallssuffix. */
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
   if (!priceCents || !email || !name) {
     return res.status(400).json({
       error: 'Fehlende Angaben',
-      hint: 'licenceType (basic|pro|proplus), email und name sind Pflicht.',
+      hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
     })
   }
 
@@ -75,8 +76,8 @@ export default async function handler(req, res) {
           price_data: {
             currency: 'eur',
             product_data: {
-              name: `K2 Galerie – ${licenceType === 'basic' ? 'Basic' : licenceType === 'pro' ? 'Pro' : 'Pro+'}`,
-              description: licenceType === 'basic' ? '15 €/Monat' : licenceType === 'pro' ? '35 €/Monat' : '45 €/Monat',
+              name: `K2 Galerie – ${licenceType === 'basic' ? 'Basic' : licenceType === 'pro' ? 'Pro' : licenceType === 'proplus' ? 'Pro+' : 'Pro++'}`,
+              description: licenceType === 'basic' ? '15 €/Monat' : licenceType === 'pro' ? '35 €/Monat' : licenceType === 'proplus' ? '45 €/Monat' : '55 €/Monat',
             },
             unit_amount: priceCents,
           },

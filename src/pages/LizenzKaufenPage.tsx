@@ -14,13 +14,14 @@ const LICENCE_OPTIONS = [
   { id: 'basic' as const, ...LIZENZPREISE.basic },
   { id: 'pro' as const, ...LIZENZPREISE.pro },
   { id: 'proplus' as const, ...LIZENZPREISE.proplus },
+  { id: 'propplus' as const, ...LIZENZPREISE.propplus },
 ]
 
 export default function LizenzKaufenPage() {
   const [searchParams] = useSearchParams()
   const empfehlerFromUrl = searchParams.get('empfehler')?.trim() || ''
 
-  const [licenceType, setLicenceType] = useState<'basic' | 'pro' | 'proplus'>('pro')
+  const [licenceType, setLicenceType] = useState<'basic' | 'pro' | 'proplus' | 'propplus'>('pro')
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [empfehlerId, setEmpfehlerId] = useState(empfehlerFromUrl)
