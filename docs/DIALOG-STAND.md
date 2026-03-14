@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – (1) **Stammdaten Geschäftskunden umgesetzt:** Galerie-Stammdaten haben optional firmenname, ustIdNr, rechnungAddress/rechnungCity/rechnungCountry. Admin → Einstellungen → Galerie-Adresse + Registrierung: Block „Geschäftskunden (optional)“. Merge, Backup, Laden ziehen die Felder mit. Doku: STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md. (2) Zuvor heute: Vorschau im Modal „Neues Werk“, Plausibilität Kategorie/Unterkategorie; Badge auf Werkkarten, Werkkatalog ök2 Typ+Kategorie, Slogan „für Menschen mit Idee“. Nächster Schritt: Marketing-Strategie (AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) oder Feinschliff (Badge in Admin-Liste, ök2-Texte).
+**Letzter Stand:** 14.03.26 – (1) **Stammdaten-Überschriften angepasst:** Einstellungen → Stammdaten: Erster Block „Meine Kontaktdaten – Name, Kontakt & Adresse“ (statt Künstler:in); Galerie-Block „Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)“; Hinweise einheitlich „Adresse der Ausstellungs-Galerie“ / „Kontaktperson“. (2) Zuvor: Stammdaten Geschäftskunden; Vorschau Neues Werk, Badge Werkkarten, ök2 Typ+Kategorie. Nächster Schritt: Marketing-Strategie (AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) oder Feinschliff (Badge in Admin-Liste, ök2-Texte).
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 

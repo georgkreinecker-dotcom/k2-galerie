@@ -14594,7 +14594,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      👩‍🎨 Künstler:in – Name, Kontakt &amp; Adresse
+                      Meine Kontaktdaten – Name, Kontakt &amp; Adresse
                     </h3>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', color: s.text }}>
                       <div className="field">
@@ -14670,7 +14670,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           />
                         </div>
                       </div>
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Galerie-Adresse eingetragen ist.</p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Adresse der Ausstellungs-Galerie eingetragen ist.</p>
                       <div className="field">
                         <button type="button" onClick={() => setVitaMartinaOpen(!vitaMartinaOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                           <span>Vita (für Außenkommunikation &amp; Galerie)</span>
@@ -14787,7 +14787,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           />
                         </div>
                       </div>
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Galerie-Adresse eingetragen ist.</p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Wird nur für Impressum, Dokumente und Google Maps genutzt, wenn keine Adresse der Ausstellungs-Galerie eingetragen ist.</p>
                       <div className="field">
                         <button type="button" onClick={() => setVitaGeorgOpen(!vitaGeorgOpen)} style={{ width: '100%', textAlign: 'left', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                           <span>Vita (für Außenkommunikation &amp; Galerie)</span>
@@ -14837,7 +14837,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           textDecoration: 'underline'
                         }}
                       >
-                        🏛️ Galerie-Adresse – bei Bedarf öffnen
+                        Ausstellungs-Galerie – Adresse (bei Bedarf öffnen)
                       </button>
                     ) : (
                       <>
@@ -14850,9 +14850,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       borderBottom: `1px solid ${s.accent}22`,
                       paddingBottom: '0.5rem'
                     }}>
-                      🏛️ Galerie-Adresse (für Impressum, Dokumente, Google Maps)
+                      Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Künstler:innen verwendet.</p>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
                     <div className="admin-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', color: s.text }}>
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Galerie-Name</label>
@@ -14964,7 +14964,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <label style={{ fontSize: '0.85rem', color: s.text }}>USt-IdNr.</label>
                           <input type="text" value={galleryData.ustIdNr || ''} onChange={(e) => setGalleryData({ ...galleryData, ustIdNr: e.target.value })} placeholder="z. B. ATU12345678" style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }} />
                         </div>
-                        <p style={{ margin: '0.5rem 0 0.25rem', fontSize: '0.78rem', color: s.muted }}>Rechnungsadresse (falls abweichend von Galerie-Adresse)</p>
+                        <p style={{ margin: '0.5rem 0 0.25rem', fontSize: '0.78rem', color: s.muted }}>Rechnungsadresse (falls abweichend von Adresse der Ausstellungs-Galerie)</p>
                         <div className="field" style={{ marginBottom: '0.35rem' }}>
                           <input type="text" value={galleryData.rechnungAddress || ''} onChange={(e) => setGalleryData({ ...galleryData, rechnungAddress: e.target.value })} placeholder="Straße, Hausnr." style={{ padding: '0.5rem 0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33`, width: '100%', boxSizing: 'border-box' }} />
                         </div>
@@ -14978,7 +14978,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>
                       </div>
                     </div>
-                    <button type="button" onClick={() => setGalerieAdresseOpen(false)} style={{ marginTop: '0.75rem', padding: '0.35rem 0.75rem', background: 'none', border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>Galerie-Adresse zuklappen</button>
+                    <button type="button" onClick={() => setGalerieAdresseOpen(false)} style={{ marginTop: '0.75rem', padding: '0.35rem 0.75rem', background: 'none', border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>Adresse zuklappen</button>
                       </>
                     )}
                   </div>
