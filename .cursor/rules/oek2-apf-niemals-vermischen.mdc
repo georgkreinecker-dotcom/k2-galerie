@@ -1,0 +1,38 @@
+---
+description: "ök2 und APf strikt getrennt – keine Vermischung, eiserne Regel"
+alwaysApply: true
+---
+
+# 🔒 ök2 und APf – NIEMALS vermischen (eiserne Regel)
+
+## Grundsatz (unveränderlich)
+
+**ök2 hat nichts – aber auch schon gar nichts – mit der APf zu tun.** Die APf ist die Programmierer-/Arbeitsplattform (Mac). Vermischung mit ök2 ist **strengstens verboten**.
+
+---
+
+## Konkret
+
+| ök2 | APf |
+|-----|-----|
+| Öffentliche **Demo** für Nutzer:innen, Piloten, Lizenzinteressenten | **Arbeitsplattform** für Georg/Entwicklung (Mac): DevView, Control Studio, Mission Control, Plan, Handbuch, mök2, etc. |
+| Galerie ansehen, Erster Entwurf, Admin (Demo-Kontext) | Werkzeuge, Steuerung, Doku, Vertrieb – **nicht** für Demo-Nutzer:innen |
+| Kein Control Studio, keine APf-Begriffe, keine „Programmiererplattform“ | Control Studio, Smart Panel, Projekte – alles APf-intern |
+
+**Regel:** Im **Benutzerhandbuch** (public/benutzer-handbuch/) und überall, wo sich Texte an **Nutzer:innen der Galerie/Demo/Lizenz** richten: **Kein Zusammenhang** zwischen ök2 und APf herstellen. Keine Erwähnung von Control Studio, APf, Arbeitsplattform oder „Programmiererplattform“ in einem Atemzug mit der Demo/ök2. Kassa, Kunden, Admin – alles nur über **Admin** beschreiben, nicht über „Control Studio“ oder APf-Einstiege.
+
+---
+
+## Pflicht bei Handbuch und Nutzertexten
+
+- **Nicht:** „In der Demo können Sie auch das Control Studio nutzen“ oder „ök2 und APf …“.
+- **Nicht:** Zwei Wege anbieten (Admin **oder** Control Studio) – für Nutzer:innen nur **Admin** (Kassa, Kunden, etc.).
+- **Ja:** Alle Anleitungen für Galerie/Demo/Lizenz **nur** mit Admin, Kassa-Einstieg, Kundenadressen im Admin – **ohne** APf, ohne Control Studio.
+
+---
+
+## Kurzfassung
+
+**ök2 = Demo/Produkt. APf = Programmiererplattform. Keine Vermischung – eiserne Regel. Im Handbuch niemals einen Zusammenhang herstellen.**
+
+Verknüpfung: apf-werkzeug-vs-produkt.mdc (APf = Werkzeug, Galerie = Produkt).

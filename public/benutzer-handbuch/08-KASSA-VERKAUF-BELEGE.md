@@ -10,17 +10,11 @@ Dieses Kapitel erklärt die **Kassafunktion** Schritt für Schritt: wo Sie die K
 
 ## Wo finde ich die Kassa?
 
-Es gibt **zwei Wege** in die Kassa:
+**Im Admin:** Im Admin-Bereich finden Sie eine Karte oder einen Link **„Kassa“**. Ein Klick darauf öffnet den **Kassa-Einstieg**. Dort wählen Sie:
+- **Erhalten (Eingang)** – Verkauf erfassen und Beleg drucken → Sie landen in der **Kasse** (Shop mit Warenkorb und Zahlungsarten).
+- **Auszahlen (Kassabuch)** – nur sichtbar, wenn Ihre Lizenz das volle Kassabuch enthält (Pro+ oder Pro++). Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
 
-1. **Über den Admin (Kassa-Einstieg):**  
-   Im Admin-Bereich finden Sie eine Karte oder einen Link **„Kassa“**. Ein Klick darauf öffnet den **Kassa-Einstieg**. Dort wählen Sie:
-   - **Erhalten (Eingang)** – Verkauf erfassen und Beleg drucken → Sie landen in der **Kasse** (Shop mit Warenkorb und Zahlungsarten).
-   - **Auszahlen (Kassabuch)** – nur sichtbar, wenn Ihre Lizenz das volle Kassabuch enthält (Pro+ oder Pro++). Dort erfassen Sie Ausgaben (Bar privat, Kassa an Bank, Bar mit Beleg). Sie landen im **Kassabuch** bzw. auf der Seite „Neuer Kassausgang“.
-
-2. **Über das Control Studio:**  
-   Wenn Sie in der App das **Control Studio** nutzen (Übersicht mit Karten zu Kassa, Archiv, Kunden usw.), öffnet der Button **„Kassa öffnen“** direkt den Kassa-Einstieg. Von dort wählen Sie wie oben **Erhalten** oder **Auszahlen**.
-
-**Wichtig:** Wenn Sie die **Galerie** als Besucherin oder Besucher ansehen und von dort aus einen Link zum **Shop** nutzen, sehen Sie die **Kundenansicht** („Meine Auswahl“, Reservierung, Kontakt) – **nicht** die Kasse. Um die **Kasse** zu nutzen, müssen Sie immer **vom Admin aus** starten (Kassa-Einstieg oder Control Studio → Kassa). Wenn Sie versehentlich in der Kundenansicht landen und bereits im Admin angemeldet sind, kann ein Link **„Als Kasse öffnen“** erscheinen – ein Klick darauf schaltet in die Kassenansicht um.
+**Wichtig:** Wenn Sie die **Galerie** als Besucherin oder Besucher ansehen und von dort aus einen Link zum **Shop** nutzen, sehen Sie die **Kundenansicht** („Meine Auswahl“, Reservierung, Kontakt) – **nicht** die Kasse. Um die **Kasse** zu nutzen, müssen Sie immer **vom Admin aus** starten (Kassa-Einstieg). Wenn Sie versehentlich in der Kundenansicht landen und bereits im Admin angemeldet sind, kann ein Link **„Als Kasse öffnen“** erscheinen – ein Klick darauf schaltet in die Kassenansicht um.
 
 ---
 
@@ -121,18 +115,18 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 
 ## Kundenadressen und Verkaufsstatistik
 
-- **Kunden:** Kundendaten (Name, E-Mail, Telefon, Adresse) verwalten Sie im Bereich **Kunden** (z. B. **„Kundenadressen“** oder **„Kunden“** im Admin unter Kassa, Lager, Listen – oder im **Control Studio** unter dem Tab **Kunden**). Beim Verkauf mit Rechnung oder bei Reservierungen können Sie einen **bestehenden Kunden** auswählen oder **neu anlegen**. Die Kundendatei dient der Zuordnung „Verkauft an“ und für Rechnungen.  
+- **Kunden:** Kundendaten (Name, E-Mail, Telefon, Adresse) verwalten Sie im Bereich **Kunden** (z. B. **„Kundenadressen“** oder **„Kunden“** im Admin unter Kassa, Lager, Listen). Beim Verkauf mit Rechnung oder bei Reservierungen können Sie einen **bestehenden Kunden** auswählen oder **neu anlegen**. Die Kundendatei dient der Zuordnung „Verkauft an“ und für Rechnungen.  
 - **Verkaufs- und Lagerstatistik:** Im Admin gibt es einen Bereich **„Verkaufsstatistik“** (bzw. **„Statistik“** unter Kassa/Lager). Dort können Sie **Umsatz**, **verkaufte Werke**, **Bestand** (Galerie, Lager, Verkauft, Reserviert) einsehen und die **Verkaufs- und Lagerstatistik drucken** (A4). So behalten Sie den Überblick ohne zusätzliche Software.
 
 ---
 
 ## Kurz zusammengefasst
 
-- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg) oder Control Studio → **Kassa öffnen**. Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro+).  
+- **Kassa finden:** Admin → **Kassa** (Kassa-Einstieg). Dann **Erhalten** (Verkauf) oder **Auszahlen** (Kassabuch, nur Pro+).  
 - **Verkauf erfassen:** Werk per **QR-Code scannen**, **Seriennummer eingeben** oder aus **Liste wählen** → zur Auswahl hinzufügen. Mehrere Werke möglich.  
 - **Abschließen:** Button **Bar**, **Karte** oder **Rechnung** → Verkauf ist sofort erfasst. Oder **„Weitere Optionen“** für Rabatt/Kundendaten.  
 - **Belege:** Nach Bar/Karte: Dialog **„Kassabon oder Rechnung?“** – **OK** = Kassabon (80 mm), **Abbrechen** = Rechnung (A4). Bei Rechnung als Zahlungsart: direkt Rechnung (A4). **Bon erneut drucken** möglich (ohne Storno).  
 - **Storno:** In **„Verkaufsliste – Storno“** Verkauf auswählen → **Stornieren** (Verkauf aufheben, Werk wieder verfügbar) oder nur **Bon erneut drucken**.  
 - **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
 - **Pro++ Rechnungspflege:** Mit Pro++ = vollständige Rechnungspflege nach Rechnungslegungsnorm (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.
-- **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen bzw. Control Studio → Kunden. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.
+- **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.
