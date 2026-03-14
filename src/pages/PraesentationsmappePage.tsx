@@ -174,7 +174,7 @@ export default function PraesentationsmappePage() {
             {PRODUCT_WERBESLOGAN_2}
           </p>
           <p className="pm-lead" style={{ fontSize: '0.9rem', lineHeight: 1.45, color: '#1c1a18', marginTop: '0.75rem', maxWidth: '520px' }}>
-            {isVk2 ? leadVk2 : variant ? leadOek2 : 'Für Ateliers, Galerien und Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, VK2.'}
+            {isVk2 ? leadVk2 : variant ? leadOek2 : 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'}
           </p>
         </header>
 
@@ -208,7 +208,7 @@ export default function PraesentationsmappePage() {
             Lizenzen
           </h2>
           <p className="pm-compact">
-            <strong>Basic</strong> 15 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 35 €/Monat: plus Kassa, Kassabuch (Eingänge). <strong>Pro+</strong> 45 €/Monat: plus volles Kassabuch und gesamter Marketingbereich (Events, Flyer, Presse, Social). <strong>VK2 (Kunstvereine):</strong> ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglied 50 % Lizenz. Abschluss und Bestätigung über Stripe; ausdruckbare Lizenzbestätigung.
+            <strong>Basic</strong> 15 €/Monat: Galerie, Werke, Design; keine Kassa. <strong>Pro</strong> 35 €/Monat: plus Kassa, Kassabuch (Eingänge). <strong>Pro+</strong> 45 €/Monat: plus volles Kassabuch und gesamter Marketingbereich. <strong>Pro++</strong> 55 €/Monat: Pro+ inkl. Rechnung (§ 11 UStG). <strong>VK2 (Kunstvereine):</strong> ab 10 registrierten Mitgliedern für den Verein kostenfrei; Lizenzmitglied 50 % Lizenz. Abschluss und Bestätigung über Stripe; ausdruckbare Lizenzbestätigung.
           </p>
         </div>
         )}

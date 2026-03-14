@@ -44,7 +44,7 @@ Gemeinsame Vereinsgalerie, Mitglieder, eine Lizenz – ab 10 Mitgliedern für de
 
 10. [Demo und Lizenz](10-DEMO-LIZENZ.md)
 
-ök2 ausprobieren, von der Demo zur eigenen Galerie, Lizenzen (Basic, Pro, VK2).
+ök2 ausprobieren, von der Demo zur eigenen Galerie, Lizenzen (Basic, Pro, Pro+, Pro++, VK2).
 
 11. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
 

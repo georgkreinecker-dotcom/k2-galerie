@@ -6,7 +6,9 @@
 
 ---
 
-## Marketing-Werbelinie (verbindlich)
+## Leitbotschaft & Marketing-Werbelinie (verbindlich)
+
+**Positionierung (eine Quelle für alle Texte):** *Für die Kunst gedacht, für den Markt gemacht.* Quelle: **docs/PRODUKT-VISION.md** (Abschnitt Leitbotschaft). Gilt einheitlich in Handbuch, Präsentationsmappe, Werbetexte, mök2.
 
 **Alle Strategie- und Werbepapiere** sind auf diese Werbelinie ausgerichtet. Jede Maßnahme, die nach außen geht (Presse, Flyer, Plakat, Web, Social, Prospekt), trägt beide Slogans:
 

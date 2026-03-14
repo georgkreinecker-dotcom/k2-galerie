@@ -58,7 +58,7 @@ Reihenfolge = Lesefluss: von „was ist das“ über Nutzen und Funktionen bis z
    Für Kunstvereine: gemeinsame Galerie, Mitglieder, eine Lizenz. Bild: VK2-Galerie oder Vereins-Admin.
 
 10. **Demo und Lizenz**  
-    ök2 ausprobieren, von der Demo zur eigenen Galerie, Lizenzen (Basic, Pro, VK2). Bild: Demo-Galerie oder Lizenz-Seite.
+    ök2 ausprobieren, von der Demo zur eigenen Galerie, Lizenzen (Basic, Pro, Pro+, Pro++, VK2). Bild: Demo-Galerie oder Lizenz-Seite.
 
 11. **Kontakt und nächste Schritte**  
     Ein Satz zur Kontaktaufnahme, QR/Link zur Demo oder zur Lizenz. Optional: QR-Code abbilden.

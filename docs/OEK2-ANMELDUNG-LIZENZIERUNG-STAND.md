@@ -39,9 +39,9 @@
 | **WillkommenPage** | **Einstieg wieder aktiv (02.03.26):** Zeigt Variante A/C mit „Galerie ausprobieren“, „Lizenz anfragen“ (mailto), „Lizenz online kaufen“ (Stripe). Kein Redirect mehr zu /entdecken. |
 | **EntdeckenPage** | **Kein** „Lizenz anfragen“-Button/Link. Nur Feedback-Mail (andere E-Mail) am Ende. |
 | **GalerieVorschauPage (ök2)** | Kein expliziter CTA „Lizenz anfragen“ im sichtbaren Flow (Guide zeigt nur Preise). |
-| **GlobaleGuideBegleitung** | Lizenz-Schritt: **LizenzInfo** (Basic/Pro/Pro+/VK2) aus **LIZENZPREISE** (15/35/45 €, VK2 „ab 10 Mitgl. kostenfrei“) + Link „Lizenz anfragen →“ (mailto). |
-| **LicencesPage** (mök2) | **Intern (APf):** Lizenzstufen aus **LIZENZPREISE** (Basic 15 €, Pro 35 €, Pro+ 45 €, VK2). Formular „Lizenz vergeben“ (Name, E-Mail, Typ, optional Empfehler-ID). Speicher: **localStorage** (`k2-license-grants`). Kein Backend, keine E-Mail an Kund:in. |
-| **LicenseManager** (Komponente) | Wird in **ProjectPlanPage** eingebunden. Zeigt **dieselben** Preise wie LicencesPage (aus **src/config/licencePricing.ts**: 15/35/45 €, VK2). **Nicht** auf der öffentlichen Demo sichtbar. |
+| **GlobaleGuideBegleitung** | Lizenz-Schritt: **LizenzInfo** (Basic/Pro/Pro+/Pro++/VK2) aus **LIZENZPREISE** (15/35/45/55 €, VK2 „ab 10 Mitgl. kostenfrei“) + Link „Lizenz anfragen →“ (mailto). |
+| **LicencesPage** (mök2) | **Intern (APf):** Lizenzstufen aus **LIZENZPREISE** (Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €, VK2). Formular „Lizenz vergeben“ (Name, E-Mail, Typ, optional Empfehler-ID). Speicher: **localStorage** (`k2-license-grants`). Kein Backend, keine E-Mail an Kund:in. |
+| **LicenseManager** (Komponente) | Wird in **ProjectPlanPage** eingebunden. Zeigt **dieselben** Preise wie LicencesPage (aus **src/config/licencePricing.ts**: 15/35/45/55 €, VK2). **Nicht** auf der öffentlichen Demo sichtbar. |
 
 **Fazit Lizenzierung:**  
 - **Nach außen (Demo-Nutzer / Verein):** Einzige vorgesehene „Lizenz anfragen“-Aktion = **mailto** (E-Mail an info@kgm.at) – aber der Link steht nur in der **nicht mehr erreichbaren** WillkommenPage. Für **VK2** (Verein will Plattform nutzen) gilt dasselbe: kein sichtbarer CTA „VK2-Lizenz anfragen“ / „Verein anmelden“.  
@@ -58,7 +58,7 @@
    /willkommen zeigt nur „Weiterleitung …“ und springt zu /entdecken. Die alten Varianten (mit „Lizenz anfragen“-Link) werden nie gerendert.
 
 3. **Preise uneinheitlich**  
-   **Erledigt (02.03.26):** Eine Quelle **src/config/licencePricing.ts** (LIZENZPREISE). LicencesPage, GlobaleGuideBegleitung und LicenseManager lesen daraus – überall Basic 15 €, Pro 35 €, Pro+ 45 €, VK2 „ab 10 Mitgliedern kostenfrei“.
+   **Erledigt (02.03.26):** Eine Quelle **src/config/licencePricing.ts** (LIZENZPREISE). LicencesPage, GlobaleGuideBegleitung und LicenseManager lesen daraus – überall Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €, VK2 „ab 10 Mitgliedern kostenfrei“.
 
 4. **Kein „Nächster Schritt“ nach der Demo**  
    Doku (z. B. VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM, mök2) fordert: „klarer Nächster Schritt nach der Demo (z. B. Lizenz anfragen)“. Im aktuellen Flow fehlt genau dieser eine, sichtbare CTA.

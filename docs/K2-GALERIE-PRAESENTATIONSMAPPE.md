@@ -8,19 +8,19 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 
 ## 1. Titel / Deckblatt
 
-**K2 Galerie**  
+**K2 Galerie** – für die Kunst gedacht, für den Markt gemacht.  
 *Multifunktionale Arbeitsplattform für Künstler:innen und Galerien*
 
 - Galerie, Admin, Kassa, Events, Presse und Werbeunterlagen aus einer Hand
 - Multi-Tenant: K2 (Galerie), ök2 (Demo), VK2 (Vereinsplattform)
 - Windows, Android, macOS, iOS – Browser und PWA
-- Lizenzmodell: Basic, Pro, Pro+, Kunstvereine (VK2)
+- Lizenzmodell: Basic, Pro, Pro+, Pro++, Kunstvereine (VK2)
 
 ---
 
 ## 2. Kurzfassung (Elevator Pitch)
 
-Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. Für Künstler:innen und Kunstvereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
+**Für die Kunst gedacht, für den Markt gemacht.** Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. Für Künstler:innen und Kunstvereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
 
 ---
 
@@ -34,7 +34,7 @@ Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform*
 | **Events & Ausstellungen** | Events anlegen, Einladungen, Flyer, Presseaussendung pro Event, Social Media – aus Stammdaten und Event-Daten. |
 | **Presse & Medien** | Medienkit (Kontakt, Galerie, Kurzporträt), Presse-Vorlage, Einladung an Journalist:innen; Abgrenzung zu Event-spezifischer Presse. |
 | **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge, QR-Plakat – aus einer Quelle, Galerie-Design, druckbar. |
-| **Lizenzen** | Basic (15 €/Monat), Pro (35 €/Monat), Pro+ (45 €/Monat), VK2 (Kunstvereine, ab 10 Mitgliedern kostenfrei). Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
+| **Lizenzen** | Basic (15 €/Monat), Pro (35 €/Monat), Pro+ (45 €/Monat), Pro++ (55 €/Monat, inkl. Rechnung § 11 UStG), VK2 (Kunstvereine, ab 10 Mitgliedern kostenfrei). Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
 | **Multi-Tenant** | **K2** = echte Galerie (Stammdaten, Werke). **ök2** = öffentliche Demo (Musterwerke, Mustertexte). **VK2** = Vereinsplattform (Mitglieder, Vereinsgalerie, eigene Stammdaten). Keine Vermischung. |
 
 ---
@@ -80,6 +80,7 @@ Web-App plattformneutral; keine produktive Funktion setzt einen Mac voraus. Quel
 | Basic | 15 €/Monat | Galerie, Werke, Design; keine Kassa. |
 | Pro | 35 €/Monat | + Kassa (Verkauf erfassen), Kassabuch nur Eingänge. |
 | Pro+ | 45 €/Monat | + Volles Kassabuch (Eingänge + Ausgänge), gesamter Marketingbereich (Events, Flyer, Presse, Social). |
+| Pro++ | 55 €/Monat | Pro+ inkl. Rechnung (§ 11 UStG): fortlaufende Nummer, Pflichtangaben, USt-Aufschlüsselung. |
 | VK2 (Kunstvereine) | ab 10 Mitgliedern kostenfrei | Vereinsplattform, Mitglieder, Vereinsgalerie; Lizenzmitglied 50 % Lizenz. |
 
 Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung und Abrechnung über System (Stripe, Druck).

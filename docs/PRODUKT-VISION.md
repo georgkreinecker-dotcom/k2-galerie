@@ -1,5 +1,16 @@
 # Produkt-Vision: K2 Galerie → Vermarktbare Version
 
+## Leitbotschaft (eine Quelle für alle Texte)
+
+**Für die Kunst gedacht, für den Markt gemacht.**
+
+- **Für die Kunst gedacht:** Aus der Kunst heraus entstanden – für Künstler:innen, für Werke, Ideen und Produkte. Ein Modell, eine Galerie: Qualität und Sorgfalt in der Präsentation.
+- **Für den Markt gemacht:** Vermarktbar, professionell, skalierbar. Gleicher Stand auf allen Geräten, Lizenzen für Einstieg bis Vollausbau (Basic, Pro, Pro+, Pro++, VK2), ohne Sonderbau pro Kunde.
+
+**Verwendung:** Diese Botschaft gilt einheitlich in Handbuch, Präsentationsmappe, Werbetexte und mök2. Keine abweichende Positionierung – Sportwagenmodus.
+
+---
+
 ## Anweisung
 
 **Die persönliche K2 Galerie ist die Basis für eine vermarktbare Version.**

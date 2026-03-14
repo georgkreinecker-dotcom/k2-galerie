@@ -34,7 +34,7 @@ Wenn Sie die Demo ausprobiert haben und eine **eigene, dauerhafte Galerie** möc
 Der Lizenzabschluss läuft **vollständig in der App** – Sie müssen nichts anfragen und keine E-Mails schreiben. So funktioniert es:
 
 1. Gehen Sie im **Admin** in den Tab **„Einstellungen“** und klicken Sie dort auf **„Lizenz online kaufen“** (bzw. den Bereich Lizenzen).
-2. Sie wählen **die gewünschte Lizenz** (z. B. Basic, Pro, Pro+) per Klick aus.
+2. Sie wählen **die gewünschte Lizenz** (Basic, Pro, Pro+, Pro++ oder VK2) per Klick aus.
 3. Sie tragen **Name und E-Mail** ein und bestätigen.
 4. Sie werden zur **Zahlung** weitergeleitet (Karte, sicher über Stripe). Nach erfolgreicher Zahlung ist **Ihre Lizenz sofort aktiv**.
 5. Sie erhalten eine **Lizenzbestätigung** zum Ausdrucken – alles eigenständig, ohne Rückfragen.
