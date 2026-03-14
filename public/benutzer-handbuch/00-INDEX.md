@@ -30,7 +30,11 @@ Verein, Mitglieder, Katalog, Kassa, Etiketten.
 
 Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
-7. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+7. [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md)
+
+Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge).
+
+8. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

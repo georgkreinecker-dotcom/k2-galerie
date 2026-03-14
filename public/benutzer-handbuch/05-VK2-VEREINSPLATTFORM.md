@@ -33,7 +33,7 @@ Im Bereich **Mitglieder** (oder **Stammdaten – Mitglieder**) legen Sie die Lis
 ## Werkkatalog und Kassa
 
 - **Werkkatalog:** Unter **Werke** oder **Katalog** sehen Sie alle erfassten Werke. Sie können filtern, suchen und den Katalog drucken. So haben Sie bei Ausstellungen oder Verkäufen immer eine aktuelle Übersicht.
-- **Kassa:** Unter **Kassa** (oder **Verkauf**) erfassen Sie Verkäufe. Sie wählen das verkaufte Werk, tragen den Betrag und die Zahlungsart ein und können einen **Beleg drucken**. Der Beleg eignet sich für die Abrechnung und für die Käuferin oder den Käufer.
+- **Kassa:** Unter **Kassa** erfassen Sie Verkäufe (Werk per QR oder Seriennummer zur Auswahl, Zahlungsart Bar/Karte/Rechnung, Beleg drucken). Eine **detaillierte Anleitung** zu Kassa, Belegen und Kassabuch finden Sie im Kapitel [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md).
 
 ---
 

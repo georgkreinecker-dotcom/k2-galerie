@@ -42,7 +42,7 @@ Falls Ihre Version **Veranstaltungen** unterstützt: Unter **„Events“** lege
 
 ## Kassa und Kassabuch
 
-Unter **„Kassa“** (oder **„Kasse“**) erfassen Sie Verkäufe: verkauftes Werk, Betrag, Zahlungsart. Sie können **Belege** drucken – für die Käuferin bzw. den Käufer und für Ihre Buchführung. Wenn Ihre Lizenz **Kassabuch** umfasst, werden alle Kassaeingänge (Verkäufe) und optional **Kassausgänge** (Bar-Ausgaben, Kassa an Bank) chronologisch geführt – geeignet für den Steuerberater. In den Einstellungen bzw. im Kassa-Bereich gibt es die Option **„Kassabuch führen: Ja / Nein“**: Wer nur Verkäufe braucht, kann das Kassabuch optional abschalten. Details für Vereine stehen im Kapitel [Vereinsplattform nutzen](05-VK2-VEREINSPLATTFORM.md).
+Unter **„Kassa“** erfassen Sie Verkäufe: Werk zur Auswahl hinzufügen (z. B. per QR-Code oder Seriennummer), Zahlungsart wählen (Bar, Karte, Rechnung), Verkauf abschließen. Sie können **Kassenbon** (80 mm) oder **Rechnung (A4)** drucken. Mit **Pro** werden Verkäufe als Kassaeingänge erfasst; mit **Pro+** oder **Pro++** können Sie das **volle Kassabuch** nutzen (Eingänge und Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Eine **genaue Schritt-für-Schritt-Anleitung** – inkl. Einstieg, Scannen, Belege, Storno und Kassabuch – finden Sie im Kapitel [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md). Details für Vereine stehen im Kapitel [Vereinsplattform nutzen](05-VK2-VEREINSPLATTFORM.md).
 
 ---
 

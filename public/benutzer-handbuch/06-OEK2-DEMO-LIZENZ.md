@@ -8,6 +8,8 @@ Dieses Kapitel richtet sich an Nutzerinnen und Nutzer der **öffentlichen Demo**
 
 Die Demo ist eine voll funktionsfähige Vorschau der K2 Galerie. Sie können damit in Ruhe ausprobieren, wie eine eigene Galerie aussehen und funktionieren würde: Werke anlegen, Design anpassen, Galerie ansehen und veröffentlichen. Die Demo verwendet **Beispieldaten** – keine echten Kundendaten. Sie eignet sich ideal, um die App kennenzulernen, bevor Sie eine Lizenz erwerben.
 
+**Testphase (2 Wochen kostenlos):** Sie können die Galerie **2 Wochen kostenlos** testen. Dafür sind die erforderlichen Angaben (z. B. E-Mail) einzugeben. Wenn Sie nach Ablauf der 2 Wochen keine Lizenz abschließen, werden Ihre in der Testphase gespeicherten Daten **unverzüglich gelöscht** und die Lizenz erlischt – das ist in den **AGB** festgehalten. Der Eintritt in den Zugangsbereich setzt voraus, dass Sie die **AGB gelesen und durch Ankreuzen bestätigt** haben (wie bei der Nutzung üblich).
+
 ---
 
 ## Demo nutzen

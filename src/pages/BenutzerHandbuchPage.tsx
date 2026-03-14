@@ -20,6 +20,7 @@ const DOCUMENTS = [
   { id: '07-eventplanung', name: 'Eventplanung & Öffentlichkeitsarbeit', file: '07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md' },
   { id: '05-vk2', name: 'Vereinsplattform', file: '05-VK2-VEREINSPLATTFORM.md' },
   { id: '06-oek2', name: 'Demo und Lizenz', file: '06-OEK2-DEMO-LIZENZ.md' },
+  { id: '08-kassa', name: 'Kassafunktion – Verkauf, Belege, Kassabuch', file: '08-KASSA-VERKAUF-BELEGE.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const
 
