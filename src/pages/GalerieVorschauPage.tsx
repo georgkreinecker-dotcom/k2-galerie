@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -2769,6 +2769,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       lineHeight: '1.4'
                     }}>
                       {getCategoryLabel(artwork.category)}
+                      {artwork.subcategoryFree?.trim() && isSubcategoryPlausibleForCategory(artwork.category, artwork.subcategoryFree) && ` · ${artwork.subcategoryFree.trim()}`}
                       {artwork.artist && ` • ${artwork.artist}`}
                     </p>
                     {artwork.location && (

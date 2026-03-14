@@ -20,7 +20,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -19958,6 +19958,9 @@ ${name}`
                   {/* Vorschaufenster: So erscheint die Karte mit aktueller Auswahl */}
                   <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>Vorschau Karte</div>
+                    {artworkSubcategoryFree.trim() && !isSubcategoryPlausibleForCategory(artworkCategory, artworkSubcategoryFree) && (
+                      <div style={{ fontSize: '0.75rem', color: '#ff8c42', marginBottom: '0.5rem' }}>⚠️ Unterkategorie passt nicht zur Kategorie „{getCategoryLabel(artworkCategory)}“ – z.B. Poster, Reproduktion.</div>
+                    )}
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                       <div style={{ width: 100, minWidth: 100, height: 100, background: 'rgba(255,255,255,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', position: 'relative' }}>
                         <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{getEntryTypeLabel(artworkEntryType)}</span>
@@ -19966,6 +19969,9 @@ ${name}`
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#fff', marginBottom: 2 }}>{artworkTitle.trim() || 'Titel'}</div>
                         <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>{getCategoryLabel(artworkCategory)}</div>
+                        {artworkSubcategoryFree.trim() && isSubcategoryPlausibleForCategory(artworkCategory, artworkSubcategoryFree) && (
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{artworkSubcategoryFree.trim()}</div>
+                        )}
                         {artworkPrice !== '' && parseFloat(artworkPrice) >= 0 && (
                           <div style={{ fontSize: '0.85rem', color: '#5ffbf1', marginTop: 4 }}>€ {parseFloat(artworkPrice).toFixed(2)}</div>
                         )}
@@ -19977,6 +19983,9 @@ ${name}`
                       <div>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Unterkategorie (frei)</label>
                         <input type="text" value={artworkSubcategoryFree} onChange={(e) => setArtworkSubcategoryFree(e.target.value)} placeholder="z.B. Ölmalerei, Aquarell, Vasen" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                        {artworkSubcategoryFree.trim() && !isSubcategoryPlausibleForCategory(artworkCategory, artworkSubcategoryFree) && (
+                          <div style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: '#ff8c42' }}>⚠️ Passt nicht zur Kategorie „{getCategoryLabel(artworkCategory)}“. Z.B. bei Druck/Repro: Poster, Reproduktion.</div>
+                        )}
                       </div>
                       <div>
                         <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Künstler:in</label>

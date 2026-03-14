@@ -3,7 +3,7 @@
  * MUSTER_ARTWORKS und jede Werkkarte sollen konsistent sein.
  */
 import { describe, it, expect } from 'vitest'
-import { MUSTER_ARTWORKS, categoryBelongsToEntryType, getCategoriesForEntryType, getEntryTypeLabel, getCategoryLabel } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, categoryBelongsToEntryType, getCategoriesForEntryType, getEntryTypeLabel, getCategoryLabel, isSubcategoryPlausibleForCategory } from '../config/tenantConfig'
 
 describe('EntryType und Kategorie – Konsistenz', () => {
   it('MUSTER_ARTWORKS: Jedes Werk hat Kategorie, die zum Typ passt', () => {
@@ -32,5 +32,20 @@ describe('EntryType und Kategorie – Konsistenz', () => {
     expect(categoryBelongsToEntryType('malerei', 'product')).toBe(false)
     expect(categoryBelongsToEntryType('serie', 'artwork')).toBe(false)
     expect(categoryBelongsToEntryType('konzept', 'artwork')).toBe(false)
+  })
+
+  describe('isSubcategoryPlausibleForCategory: Unterkategorie (frei) passt zur Kategorie', () => {
+    it('Druck/Repro + "Kunst und Kunstschaffenden" ist nicht plausibel', () => {
+      expect(isSubcategoryPlausibleForCategory('druck', 'Kunst und Kunstschaffenden')).toBe(false)
+      expect(isSubcategoryPlausibleForCategory('serie', 'Kunst und Kunstschaffende')).toBe(false)
+    })
+    it('Druck/Repro + technische Unterkategorie ist plausibel', () => {
+      expect(isSubcategoryPlausibleForCategory('druck', 'Poster')).toBe(true)
+      expect(isSubcategoryPlausibleForCategory('druck', 'Reproduktion')).toBe(true)
+    })
+    it('Leere oder Kunstwerk-Kategorie ignoriert Prüfung', () => {
+      expect(isSubcategoryPlausibleForCategory('druck', '')).toBe(true)
+      expect(isSubcategoryPlausibleForCategory('malerei', 'Kunst und Kunstschaffenden')).toBe(true)
+    })
   })
 })

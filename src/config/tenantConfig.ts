@@ -767,6 +767,27 @@ export function categoryBelongsToEntryType(categoryId: string | undefined, entry
   return allowed.some((c) => c.id === categoryId)
 }
 
+/** Thematische Phrasen, die keine technische Unterkategorie sind (z. B. „Kunst und Kunstschaffenden“ passt nicht zu „Druck / Repro“). */
+const THEMATIC_SUBCATEGORY_PHRASES = [
+  'kunst und kunstschaffenden',
+  'kunst und kunstschaffende',
+  'kunstschaffenden',
+  'kunstschaffende',
+]
+
+/** Kategorien, bei denen thematische Phrasen nicht als Unterkategorie passen (Produkt-Kategorien). */
+const CATEGORIES_NO_THEMATIC_SUBCATEGORY = ['druck', 'serie', 'merchandise', 'buch', 'sonstiges_produkt']
+
+/** Prüft, ob die freie Unterkategorie zur Kategorie plausibel ist (z. B. „Kunst und Kunstschaffenden“ nicht bei „Druck / Repro“). */
+export function isSubcategoryPlausibleForCategory(categoryId: string | undefined, subcategoryFree: string): boolean {
+  const sub = (subcategoryFree || '').trim().toLowerCase()
+  if (!sub) return true
+  if (!categoryId) return true
+  if (!CATEGORIES_NO_THEMATIC_SUBCATEGORY.includes(categoryId)) return true
+  const hasThematic = THEMATIC_SUBCATEGORY_PHRASES.some((phrase) => sub.includes(phrase))
+  return !hasThematic
+}
+
 /**
  * Werktypen (Vision: Werke = Oberbegriff, Kunstwerk = Unterkategorie).
  * Ein Modell, eine Liste – Typ als Feld, konfigurierbar. Kunst = Träger der Idee; ganzer Markt hat Platz.
