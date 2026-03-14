@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – **(1) Zwei Marken + Copyright:** kgm solution = Firmen-/Plattform-Marke (Copyright, AGB, Lizenz, Demo). K2 Galerie = zweite Marke, im Netz aktiv (Google, Galerie-Seiten). tenantConfig: PRODUCT_BRAND_NAME = kgm solution, K2_GALERIE_PUBLIC_BRAND = K2 Galerie; Copyright mit „Copyright © 2026 kgm solution“. SEO: Galerie-Routen (Galerie, Shop, Vita, …) = K2 Galerie; Plattform/Rechtliches = kgm solution. .cursorrules Marken-Regel angepasst. **(2) Davor:** Leitbotschaft + Struktur überall (Produkt-Vision, Präsentationsmappe, mök2, Handbücher, Pro++). **Nächster Schritt:** Georg schaut alles durch, ggf. Weit testen, Migration 008. (Commit + Push der Brand-Änderungen erledigt 14.03.26; Marktanalyse docs/MARKTANALYSE-K2-GALERIE.md erstellt.)
+**Letzter Stand:** 14.03.26 – **(1) mök2-Integration Positionierung:** Erkenntnis „Social Media ist Masse – wir sind individuell und Klasse“ + „Eigener Ort statt Miete bei anderen“ in mök2 umgesetzt: tenantConfig PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT; MarketingOek2Page: Genaue Produktbeschreibung (hervorgehobener Absatz), 1. USPs (neuer erster USP), 7. Promotion (Positionierungsblock + in Werbelinie). Quelle zentral in tenantConfig; Marktanalyse docs/MARKTANALYSE-K2-GALERIE.md. **(2) Davor:** Zwei Marken + Copyright, Leitbotschaft + Struktur. **Nächster Schritt:** Georg schaut mök2 durch; ggf. Weit testen, Migration 008. (Commit + Push folgt.)
 
 **Was wir JETZT tun:** Struktur und Logik sind drin – eine Botschaft, eine Lizenzreihe, überall konsistent.
 

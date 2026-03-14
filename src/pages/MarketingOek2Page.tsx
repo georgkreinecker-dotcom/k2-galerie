@@ -9,7 +9,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
-import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE } from '../config/tenantConfig'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 
@@ -439,6 +439,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
           <strong>Leitbotschaft – für die Kunst gedacht, für den Markt gemacht:</strong> Die Plattform ist aus der Kunst heraus entstanden; Kunst ist der Träger der Idee. Ein Modell, eine Galerie: Kunstwerke, Produkte, Ideen – alles in einer Oberfläche, konfigurierbar, ohne Sonderbau. Vermarktbar, professionell, skalierbar. (Quelle: docs/PRODUKT-VISION.md; Doku: docs/VISION-WERKE-IDEEN-PRODUKTE.md)
         </p>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55, padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.08)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1' }}>
+          <strong>Positionierung zu Social Media:</strong> {PRODUCT_POSITIONING_SOCIAL} {PRODUCT_KERN_EIGENER_ORT} – der eine Kern, der alle Zielgruppen anspricht (Künstler:innen, Galerien, Vereine, alle mit Ideen/Produkten). Quelle: docs/MARKTANALYSE-K2-GALERIE.md
+        </p>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
           Details und USPs: siehe Sektionen „Was kann die App?“ und „1. USPs“ in diesem Kapitel. Diese Beschreibung ist die eine Quelle für Vertrieb, Presse und Partner.
         </p>
@@ -503,6 +506,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           1. USPs (Unique Selling Points)
         </h2>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Masse vs. individuell und Klasse:</strong> {PRODUCT_POSITIONING_SOCIAL} {PRODUCT_KERN_EIGENER_ORT} – eine Botschaft, die alle Zielgruppen anspricht (Künstler:innen, Galerien, Vereine, alle mit Ideen oder Produkten).</li>
           <li><strong>Nicht nur eine App – multifunktional am PC/Mac:</strong> Die K2 Galerie ist eine <strong>Arbeitsplattform am Rechner</strong> (Planung, Veröffentlichen, Werbeunterlagen, alle Geräte im Blick) plus Galerie & Kassa auf Tablet/Handy. Diese Kombination – volle Multifunktion am Desktop, gleicher Stand überall – ist in diesem Feld <strong>einzigartig</strong> und zentral für Werbung und Marketing.</li>
           <li><strong>Alles in einer Oberfläche</strong> – Eine App für Galerie-Webauftritt, Werke, Events, Marketing und Kasse; Admin am Rechner, Galerie und Kassa auf Tablet/Handy (QR, gleicher Stand).</li>
           <li><strong>Fokus gesamter Markt, Kunstmarkt = Unterkategorie</strong> – Alle, die Ideen oder Produkte professionell zeigen wollen; Kunstmarkt (Künstler:innen, Galerien, Kunstvereine) ist unser Einstieg, nicht die Grenze. Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
@@ -823,6 +827,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </p>
           <p style={{ margin: '0 0 0.25rem', fontSize: '1.05rem', lineHeight: 1.45, color: '#fff', fontWeight: 600 }}>1. {PRODUCT_WERBESLOGAN}</p>
           <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.45, color: 'rgba(255,255,255,0.95)' }}>2. {PRODUCT_WERBESLOGAN_2}</p>
+          <p style={{ margin: '0.75rem 0 0', fontSize: '1.05rem', lineHeight: 1.45, color: '#5ffbf1', fontWeight: 600 }}>Positionierung: {PRODUCT_POSITIONING_SOCIAL} {PRODUCT_KERN_EIGENER_ORT}</p>
         </div>
 
         <p style={{ marginBottom: '0.5rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
@@ -833,6 +838,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.1)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
           <strong>3. Wichtige Botschaft (Empfehlungs-Programm):</strong> {PRODUCT_BOTSCHAFT_2}
+        </p>
+        <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.12)', borderRadius: '8px', borderLeft: '4px solid #5ffbf1', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          <strong>Positionierung zu Social Media (für alle Kanäle):</strong> {PRODUCT_POSITIONING_SOCIAL} {PRODUCT_KERN_EIGENER_ORT}
         </p>
         <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(34, 197, 94, 0.12)', borderRadius: '8px', borderLeft: '4px solid #22c55e', fontSize: '1.05rem', lineHeight: 1.5 }}>
           <strong>4. Zentrale Information für Außenkommunikation (Werbung, Marketing, Presse):</strong> Es handelt sich hier <strong>nicht um eine normale App</strong>, sondern um eine <strong>multifunktionale Arbeitsplattform am PC/Mac</strong> – mit Galerie, Kassa, Veröffentlichen, Planung und Werbeunterlagen aus einer Hand. Mobil: Galerie und Kassa, gleicher Stand. In dieser Kombination sind wir in diesem Feld <strong>einzigartig</strong> – das soll in der Kommunikation nach außen klar werden.

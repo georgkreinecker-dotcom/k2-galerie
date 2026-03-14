@@ -35,6 +35,12 @@ export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung u
 export const PRODUCT_ZIELGRUPPE =
   'Fokus gesamter Markt: alle, die Ideen oder Produkte professionell zeigen und vermarkten wollen. Kunstmarkt ist unsere Unterkategorie und das Einstiegstor (Künstler:innen, Galerien, Kunstvereine).'
 
+/** Positionierung zu Social Media – eine Quelle für mök2, Presse, alle Kanäle. */
+export const PRODUCT_POSITIONING_SOCIAL = 'Social Media ist Masse – wir sind individuell und Klasse.'
+
+/** Der Kern, der alle anspricht – eigener Ort statt Miete bei anderen. */
+export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
+
 /** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
 export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 
