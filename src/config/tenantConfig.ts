@@ -647,7 +647,7 @@ export const MUSTER_TEXTE = {
     virtualTourImage: OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
     galerieCardImage: OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
   },
-  welcomeText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Bildern und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
+  welcomeText: 'Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell: Kunstwerke, Produkte, Ideen. Entdecke die Verbindung von Bildern und Skulptur in einem Raum, wo Kunst zum Leben erwacht.',
   artist1Bio: 'Lena Berg arbeitet in Malerei, Grafik und Mischtechnik. Studium der Bildenden Kunst, seit über zwanzig Jahren freischaffend. Ihre Werke – oft Landschaften und Atelierblicke – leben von kräftigen Farben und reduzierten Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
   artist2Bio: 'Paul Weber widmet sich vor allem Keramik und Skulptur. Ausbildung zum Keramiker, langjährige Erfahrung mit Aufbau und Brand. Seine Objekte und Skulpturen verbinden handwerkliche Präzision mit klaren, zeitgenössischen Formen. Regelmäßige Teilnahme an Kunstmärkten und Gruppenausstellungen.',
   gemeinsamText: 'Gemeinsam eröffnen Lena Berg und Paul Weber die Galerie Muster – ein Raum, wo Bilder und Skulptur verschmelzen und Kunst zum Leben erwacht.',
@@ -785,14 +785,14 @@ export function getCategoryPrefixLetter(cat: string | undefined): string {
   return (cat && CATEGORY_PREFIX_LETTER[cat]) || 'M'
 }
 
-/** Musterwerke für ök2 – zwei vielseitige Künstler:innen, je ein Werk pro Kategorie; mit Beschreibung und Kategoriebild. */
+/** Musterwerke für ök2 – zwei vielseitige Künstler:innen, je ein Werk pro Kategorie; mit Beschreibung und Kategoriebild. Vision: Kunstwerk / Produkt / Idee sichtbar (entryType). */
 const _musterTs = new Date().toISOString()
 export const MUSTER_ARTWORKS = [
-  { id: 'muster-1', number: 'M1', title: 'Morgenlicht über den Hügeln', category: 'malerei', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('malerei'), price: 480, description: 'Acryl auf Leinwand, 80 × 60 cm. Weite Landschaft im ersten Licht – kräftige Farben, reduzierter Stil. Aus der Serie „Tageszeiten“.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
-  { id: 'muster-2', number: 'K1', title: 'Vase „Herbstlaub“', category: 'keramik', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
-  { id: 'muster-3', number: 'G1', title: 'Durch das Fenster', category: 'grafik', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('grafik'), price: 180, description: 'Linolschnitt, Auflage 15, 30 × 40 cm. Innen und Außen – Blick aus dem Atelier. Klare Linien, starke Kontraste.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
-  { id: 'muster-4', number: 'S1', title: 'Stehende Form', category: 'skulptur', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: 1200, description: 'Keramik, oxidierend gebrannt, 45 cm. Abstrakte Figur – Balance und Bewegung. Einzelstück.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
-  { id: 'muster-5', number: 'O1', title: 'Kleines Feld', category: 'sonstiges', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs },
+  { id: 'muster-1', number: 'M1', title: 'Morgenlicht über den Hügeln', category: 'malerei', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('malerei'), price: 480, description: 'Acryl auf Leinwand, 80 × 60 cm. Weite Landschaft im ersten Licht – kräftige Farben, reduzierter Stil. Aus der Serie „Tageszeiten“.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
+  { id: 'muster-2', number: 'K1', title: 'Vase „Herbstlaub“', category: 'keramik', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'product' as const },
+  { id: 'muster-3', number: 'G1', title: 'Durch das Fenster', category: 'grafik', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('grafik'), price: 180, description: 'Linolschnitt, Auflage 15, 30 × 40 cm. Innen und Außen – Blick aus dem Atelier. Klare Linien, starke Kontraste.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
+  { id: 'muster-4', number: 'S1', title: 'Stehende Form', category: 'skulptur', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: 1200, description: 'Keramik, oxidierend gebrannt, 45 cm. Abstrakte Figur – Balance und Bewegung. Einzelstück.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
+  { id: 'muster-5', number: 'O1', title: 'Kleines Feld', category: 'sonstiges', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
 ]
 
 /** Einladung Vernissage – HTML aus MUSTER_TEXTE (Stammdaten), für Demo/ök2. */

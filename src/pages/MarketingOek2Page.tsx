@@ -436,6 +436,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
           <strong>VK2 (Vereinsplattform):</strong> Gemeinsame Vereinsgalerie und Mitglieder mit eigener Galerie; Vereinskatalog (schönste Werke aller Lizenzmitglieder, PDF, filterbar); Events und Werbung für den Verein; Mitglieder verwalten, Lizenzen, Dokumente; ab 10 Mitgliedern für den Verein kostenfrei.
         </p>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong>Vision – für Künstler:innen gedacht, für jede Idee und jedes Produkt gebaut:</strong> Die Plattform ist aus der Kunst heraus entstanden; Kunst ist der Träger der Idee. Ein Modell, eine Galerie: Kunstwerke, Produkte, Ideen – alles in einer Oberfläche, konfigurierbar, ohne Sonderbau. Der ganze Markt hat Platz. (Doku: docs/VISION-WERKE-IDEEN-PRODUKTE.md)
+        </p>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>
           Details und USPs: siehe Sektionen „Was kann die App?“ und „1. USPs“ in diesem Kapitel. Diese Beschreibung ist die eine Quelle für Vertrieb, Presse und Partner.
         </p>

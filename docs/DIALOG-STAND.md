@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – Vision Werke = Ideen & Produkte umgesetzt: Feld **entryType** (Kunstwerk/Produkt/Idee), ENTRY_TYPES + getEntryTypeLabel in tenantConfig; Admin Neues Werk/Werk bearbeiten: Dropdown „Typ“, artworkData.entryType; GalerieVorschauPage neues Werk (mobil) entryType: 'artwork'; Rückwärtskompatibel (fehlend = artwork). Doku VISION-WERKE-IDEEN-PRODUKTE.md Abschnitt 5. Tests + Build grün. Commit folgt.
+**Letzter Stand:** 14.03.26 – ök2-Umsetzung Vision „für Künstler gedacht – für jede Idee und jedes Produkt gebaut“: MUSTER_ARTWORKS mit entryType (K1=Produkt, O1=Idee, Rest Kunstwerk); MUSTER_TEXTE.welcomeText mit Botschaft; mök2 Genaue Produktbeschreibung um Absatz Vision ergänzt; SEO Meta-Beschreibung galerie-oeffentlich/galerie-oeffentlich-vorschau. Plan: docs/PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md. Tests + Build grün. Commit + Push folgen.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -31,7 +31,8 @@ Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync 
 ## Heute 14.03.26 – Vision Werke = Ideen & Produkte (entryType)
 
 - **Umsetzung:** Ein Modell „Werke“, Typ als Feld. tenantConfig: ENTRY_TYPES (artwork, product, idea), getEntryTypeLabel. Admin: State artworkEntryType, Dropdown „Typ“ in beiden Formularen (ök2 + K2/VK2), artworkData.entryType beim Speichern. GalerieVorschauPage: neues Werk (mobil) mit entryType: 'artwork'. Fehlendes entryType überall wie 'artwork' behandelt.
-- **Nächster Schritt:** Optional: Anzeige/Badge „Kunstwerk“/„Produkt“/„Idee“ auf Karten oder in Listen; MUSTER_ARTWORKS/SEED mit entryType ergänzen. Oder erst nach Georgs Feedback.
+- **ök2-Umsetzung (gleicher Tag):** MUSTER_ARTWORKS mit entryType (M1/G1/S1=artwork, K1=product, O1=idea). MUSTER_TEXTE.welcomeText: „Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell …“. mök2 Genaue Produktbeschreibung: Absatz Vision + Verweis VISION-WERKE-IDEEN-PRODUKTE.md. SEO seoPageMeta: galerie-oeffentlich und galerie-oeffentlich-vorschau mit neuer description. Plan: PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md.
+- **Nächster Schritt:** Optional: Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten (GaleriePage/GalerieVorschauPage). Oder nach Georgs Feedback.
 
 ---
 
