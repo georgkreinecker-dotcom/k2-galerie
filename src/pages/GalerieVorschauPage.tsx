@@ -70,6 +70,8 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
 
 /** localStorage: Hinweis „Icon zum Startbildschirm hinzufügen“ geschlossen – gleicher Key wie GaleriePage (einmal OK reicht) */
 const KEY_PWA_ICON_HINT_CLOSED = 'k2-pwa-icon-hint-closed'
+/** SessionStorage: Von Admin/APf zur Galerie – dann Guide nicht anzeigen (nur für Fremde) */
+const KEY_GALERIE_FROM_ADMIN = 'k2-galerie-from-admin'
 
 /** Nummern der Seed-Musterwerke (ök2) – dürfen nie in K2-Galerie oder Backup landen. */
 const MUSTER_NUMMERN = new Set(['M1', 'M2', 'M3', 'M4', 'M5', 'G1', 'S1', 'O1'])
@@ -305,6 +307,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte dein Auftritt aussehen“ */
   const showErsteAktionBanner = musterOnly && !ersteAktionDismissed
 
+  /** Guide nur für Fremde (Besucher), nicht für User/Besitzer die von Admin/APf kommen */
+  const isGalerieUser = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_GALERIE_FROM_ADMIN) === '1')
+  const isFremder = !isGalerieUser
+
   /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite. Ausnahme: Klick „Galerie betreten“ von galerie-oeffentlich (State oder Referrer). */
   useEffect(() => {
     if (!musterOnly || typeof window === 'undefined') return
@@ -525,13 +531,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   }, [applyDesignFromStorage, designStorageKey, location.state])
 
   // Admin-Kontext nur beenden, wenn Nutzer bewusst aus dem Admin „Zur Galerie“ geklickt hat (nicht bei direktem Aufruf/Mobil → Kassa bleibt nutzbar)
+  // Wenn von Admin/APf: Flag setzen, damit Galerie-Guide nur für Fremde erscheint (nicht für User/Besitzer)
   useEffect(() => {
     try {
       const fromAdmin = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true
       if (fromAdmin) {
+        sessionStorage.setItem(KEY_GALERIE_FROM_ADMIN, '1')
         sessionStorage.removeItem('k2-admin-context')
         sessionStorage.removeItem('k2-from-galerie-view')
       } else {
+        sessionStorage.removeItem(KEY_GALERIE_FROM_ADMIN)
         // Shop soll Kundenansicht zeigen, wenn von hier aus gewechselt wird (auch bei SPA-Navigation ohne Referrer)
         sessionStorage.setItem('k2-from-galerie-view', '1')
       }
@@ -2000,8 +2009,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             </div>
           </div>
         )}
-        {/* Guide-Avatar – geführter Rundgang (nur ök2, wenn mit Namen angekommen) */}
-        {musterOnly && willkommenName && !willkommenBannerDismissed && showGuideAfterDelay && (
+        {/* Guide-Avatar – nur für Fremde (Besucher mit Namen), nicht wenn User von Admin/APf kommt */}
+        {musterOnly && isFremder && willkommenName && !willkommenBannerDismissed && showGuideAfterDelay && (
           <GalerieGuide name={willkommenName} onDismiss={dismissWillkommenBanner} />
         )}
         {/* Mobile-First Admin: Neues Objekt Button (ök2: ausblenden) */}

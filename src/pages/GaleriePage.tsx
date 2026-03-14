@@ -368,6 +368,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
 
+  /** Guide nur für Fremde (Besucher), nicht für User/Besitzer die von Admin/APf kommen */
+  const isGalerieUser = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1')
+  const isFremder = !isGalerieUser
+
+  /** Beim Einstieg von Admin: Flag setzen, damit Guide nicht erscheint (nur für Fremde) */
+  useEffect(() => {
+    try {
+      if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true) sessionStorage.setItem(KEY_FROM_ADMIN, '1')
+    } catch (_) {}
+  }, [location.state])
+
   /** K2: Admin-Button immer anzeigen (eigene Galerie). ök2/VK2: nur wenn von APf oder im Kontext – Besucher von Google sollen dort keinen Admin sehen. */
   const showAdminEntryOnGalerie = (() => {
     try {
@@ -3899,8 +3910,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         </>
         )}
 
-        {/* Guide nur auf echter Galerie (K2) – in Muster/Demo-Galerie hat er nichts verloren */}
-        {!musterOnly && guideVisible && guideName && (
+        {/* Guide nur für Fremde (Besucher), nicht wenn User von Admin/APf kommt */}
+        {!musterOnly && isFremder && guideVisible && guideName && (
           <GalerieEntdeckenGuide
             name={guideName}
             onDismiss={() => {
@@ -3910,7 +3921,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           />
         )}
 
-        {!musterOnly && !guideVisible && guideName && (
+        {!musterOnly && isFremder && !guideVisible && guideName && (
           <GuideAbschlussKarte name={guideName} />
         )}
 
