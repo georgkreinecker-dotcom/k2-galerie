@@ -6,11 +6,14 @@
 
 ## Stand (wo wir stehen)
 
-### Datum: 09.03.26 – Werke 0031/0035: Bilder neu bearbeiten + Speicherproblem gelöst
+### Letzter Stand
+(DIALOG-STAND lesen)
 
-- **Stand:** Beim Bearbeiten von Werken (z. B. 0031, 0035) mit neuem Bild wurde das Bild bisher nur als große data-URL in localStorage geschrieben → Speicherproblem (Quota, evtl. Anzeige). **Umsetzung:** Beim Speichern nach Bearbeiten wird die Liste zuerst mit **prepareArtworksForStorage** vorbereitet: neues Bild (mobilePhoto) geht in **IndexedDB**, in der Liste bleibt nur **imageRef**. Danach Speichern (Supabase oder localStorage) mit der vorbereiteten Liste. Anzeige nach Speichern nutzt weiterhin loadArtworksResolvedForDisplay() → Bild kommt aus IndexedDB.
-- **Nächster Schritt:** Georg testen: Werk 0031 bzw. 0035 bearbeiten, neues Bild wählen, Speichern – Bild soll dauerhaft gespeichert und in Galerie/Werkansicht sichtbar sein; kein Speicher voll / kein Platzhalter.
-- **Wo nachlesen:** GalerieVorschauPage.tsx (Bearbeiten-Save-Block ~4398–4422; Import prepareArtworksForStorage, saveArtworksForContextWithImageStore); artworkImageStore.ts (prepareArtworksForStorage).
+### Was wir JETZT tun (aktueller Fokus)
+(noch nicht gesetzt – DIALOG-STAND prüfen)
+
+### Einordnung (bisherige Aufgaben, Gesamtprojekt, warum so)
+(in DIALOG-STAND ergänzen)
 
 ---
 
@@ -21,14 +24,15 @@
 
 ---
 
-## Nächster Schritt (Hauptaufgabe für Anke)
+## Nächster Schritt (aus DIALOG-STAND – aktuell halten)
 
-- **Marketing-Strategie erarbeiten.** Quelle: **docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md**. Daraus die Strategie erarbeiten – **Zweig 1: K2 Galerie** (weltweit, automatisierter Vertrieb), **Zweig 2: K2 Familie** (eigener Planungszweig, Raumschiff, Grundbotschaft, Datensouveränität). Output: z. B. **MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md** mit beiden Zweigen, oder separate Datei für den K2-Familie-Zweig. Auftrag ernst nehmen, direkt umsetzen.
+- (In DIALOG-STAND unter **Nächster Schritt:** eintragen. Wenn „von Georg festlegen“: auf Georg warten, nicht einen anderen Schritt unterstellen.)
 
 ---
 
 ## Proaktiv (Vorschläge)
 
+- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
 - **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.
 
 ---

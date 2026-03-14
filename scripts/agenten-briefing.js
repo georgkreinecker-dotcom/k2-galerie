@@ -21,32 +21,50 @@ function read(filePath) {
   }
 }
 
-/** Erster Datum-Block aus DIALOG-STAND (neuester Eintrag) + Nächster Schritt */
+/** Oben aus DIALOG-STAND: Letzter Stand, Was wir JETZT tun, Einordnung, Nächster Schritt */
 function extractStand(dialog) {
-  const lines = dialog.split('\n');
-  const out = [];
-  let inBlock = false;
-  let foundNext = false;
-  let nextStep = '';
-  for (let i = 0; i < lines.length; i++) {
+  const parts = { letzterStand: '', wasJetzt: '', einordnung: '', nextStep: '' };
+  const lines = dialog.split(/\r?\n/);
+  for (let i = 0; i < lines.length && i < 35; i++) {
     const line = lines[i];
-    if (/^## Datum:/.test(line)) {
-      if (inBlock) break;
-      inBlock = true;
-      out.push(line.replace(/^## /, '### '));
+    const t = line.trimStart().trimEnd();
+    const idxColon = t.indexOf(':');
+    if (idxColon === -1) continue;
+    const afterColon = t.slice(idxColon + 1).trim();
+    if (t.indexOf('**Letzter Stand**') === 0) {
+      parts.letzterStand = afterColon;
+      const nx = parts.letzterStand.indexOf('**Nächster Schritt**');
+      if (nx !== -1) {
+        const afterLabel = parts.letzterStand.indexOf(':', nx) + 1;
+        parts.nextStep = parts.letzterStand.slice(afterLabel).trim();
+      }
       continue;
     }
-    if (inBlock) {
-      if (/^---\s*$/.test(line)) break;
-      if (/^\*\*Nächster Schritt\*\*:?/.test(line)) {
-        nextStep = line.replace(/^\*\*Nächster Schritt\*\*:?\s*/, '').trim();
-        foundNext = true;
-      }
-      out.push(line);
+    if (t.indexOf('**Was wir JETZT tun**') === 0) {
+      parts.wasJetzt = afterColon;
+      continue;
     }
+    if (t.indexOf('**Einordnung**') === 0) {
+      parts.einordnung = afterColon;
+      continue;
+    }
+    if (t.indexOf('**Nächster Schritt**') === 0 && !parts.nextStep) {
+      parts.nextStep = afterColon;
+      continue;
+    }
+    if (parts.letzterStand && t.indexOf('**Vorher:**') === 0) break;
   }
-  const block = out.join('\n').trim();
-  return { block, nextStep: foundNext ? nextStep : '' };
+  const block = [
+    '### Letzter Stand',
+    parts.letzterStand || '(DIALOG-STAND lesen)',
+    '',
+    '### Was wir JETZT tun (aktueller Fokus)',
+    parts.wasJetzt || '(noch nicht gesetzt – DIALOG-STAND prüfen)',
+    '',
+    '### Einordnung (bisherige Aufgaben, Gesamtprojekt, warum so)',
+    parts.einordnung || '(in DIALOG-STAND ergänzen)'
+  ].join('\n');
+  return { block, nextStep: parts.nextStep };
 }
 
 /** Offene Wünsche aus Grafiker-Tisch (zwischen "Offene Wünsche" und "Bereits umgesetzt" oder "---") */
@@ -102,7 +120,14 @@ function georgRef() {
 }
 
 function main() {
-  const dialog = read(DIALOG);
+  let dialog = read(DIALOG);
+  if (!dialog.trim() || !dialog.includes('Letzter Stand')) {
+    const fallback = path.join(process.cwd(), 'docs', 'DIALOG-STAND.md');
+    if (fallback !== DIALOG) {
+      const d2 = read(fallback);
+      if (d2 && d2.includes('Letzter Stand')) dialog = d2;
+    }
+  }
   const grafiker = read(GRAFIKER);
   const { block: standBlock, nextStep: standNextStep } = extractStand(dialog);
   const offenBlock = extractOffen(grafiker);
@@ -135,9 +160,9 @@ ${offenBlock || '(GRAFIKER-TISCH-NOTIZEN.md → Offene Wünsche lesen)'}
 
 ---
 
-## Nächster Schritt (Hauptaufgabe für Anke)
+## Nächster Schritt (aus DIALOG-STAND – aktuell halten)
 
-- **Marketing-Strategie erarbeiten.** Quelle: **docs/AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md**. Daraus die Strategie erarbeiten – **Zweig 1: K2 Galerie** (weltweit, automatisierter Vertrieb), **Zweig 2: K2 Familie** (eigener Planungszweig, Raumschiff, Grundbotschaft, Datensouveränität). Output: z. B. **MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md** mit beiden Zweigen, oder separate Datei für den K2-Familie-Zweig. Auftrag ernst nehmen, direkt umsetzen.
+${standNextStep ? '- ' + standNextStep : '- (In DIALOG-STAND unter **Nächster Schritt:** eintragen. Wenn „von Georg festlegen“: auf Georg warten, nicht einen anderen Schritt unterstellen.)'}
 
 ---
 

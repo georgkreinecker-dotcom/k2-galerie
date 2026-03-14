@@ -1,0 +1,57 @@
+---
+description: "Agentin soll genau beobachten was wir JETZT tun und im Kontext einordnen (bisherige Aufgaben, Gesamtprojekt, warum so)"
+alwaysApply: true
+---
+
+# Agentin: Was wir JETZT tun – beobachten und einordnen
+
+## Ziel (von Georg, unveränderlich)
+
+**Die Agentin (Anke/Joe) soll immer wissen:**
+- **Was** wir gerade jetzt konkret tun
+- **Im Kontext** zu bisherigen Aufgaben und zum Gesamtprojekt
+- **Warum** wir es genau so machen, wie wir es gerade machen
+
+Damit sie nicht „woanders“ denkt (z. B. Marketing-Strategie), wenn wir seit Stunden an etwas anderem arbeiten (z. B. Stammdaten, entryType, ök2).
+
+---
+
+## Pflicht: Beobachten und einordnen
+
+### 1. Was wir JETZT tun (aktueller Fokus)
+
+- **Quelle:** `docs/DIALOG-STAND.md` – Zeilen **„Was wir JETZT tun:“** und **„Einordnung:“** (oben, direkt unter Letzter Stand).
+- **Bei Session-Start:** Diese Zeilen **immer lesen**. Sie sind die Wahrheit darüber, woran wir **gerade** arbeiten – nicht irgendein alter „Nächster Schritt“ aus einem anderen Kontext.
+- **Während der Arbeit:** Sobald sich der Fokus ändert (neue Aufgabe, Abschluss einer Aufgabe), **sofort** in DIALOG-STAND die Zeilen „Was wir JETZT tun“ und „Einordnung“ **aktualisieren**.
+
+### 2. Einordnung (Kontext)
+
+Die Agentin ordnet das aktuelle Tun immer in **zwei Richtungen** ein:
+
+| Richtung | Frage | Wo festhalten |
+|----------|--------|----------------|
+| **Bisherige Aufgaben** | Was haben wir davor gemacht? Warum bauen wir darauf auf? | DIALOG-STAND „Einordnung:“ + ggf. „Letzter Stand“ |
+| **Gesamtprojekt** | Wozu dient es? (Produkt-Vision, Skalierung, K2/ök2/VK2, Sportwagenmodus) Warum genau so? | DIALOG-STAND „Einordnung:“; Referenz: docs/PRODUKT-VISION.md, SPORTWAGEN-ROADMAP |
+
+**„Warum genau so“** = kurze Begründung: z. B. „Ein Standard pro Problem“, „Datentrennung K2/ök2“, „Georg: eine Aufgabe = ein Klick“.
+
+### 3. Session-Start (verbindlich)
+
+- **Zuerst** `npm run briefing`.
+- **Dann** **DIALOG-STAND.md immer lesen** – dort stehen **Was wir JETZT tun** und **Einordnung** (direkt unter „Letzter Stand“). Auch wenn das generierte Briefing Platzhalter zeigt: diese Zeilen in DIALOG-STAND sind die Wahrheit.
+- **Erste Antwort:** Kurz bestätigen, **woran wir gerade arbeiten** und **wozu** (Kontext), nicht einen veralteten „Nächster Schritt“ aus dem Briefing voraussetzen.
+
+### 4. Nach jeder Aufgabe / Fokuswechsel
+
+- **DIALOG-STAND aktualisieren:** „Was wir JETZT tun“ und „Einordnung“ so anpassen, dass die **nächste** Session (oder Reopen) sofort weiß: Das ist der aktuelle Fokus, das ist der Kontext.
+- **Nächster Schritt:** Wenn klar – in DIALOG-STAND eintragen. Wenn „von Georg festlegen“ – so stehen lassen; dann **nicht** im Briefing einen anderen Schritt (z. B. Marketing-Strategie) als Hauptaufgabe setzen.
+
+---
+
+## Kurzfassung
+
+**Beobachten:** Was wir JETZT tun = aus DIALOG-STAND lesen; bei Fokuswechsel sofort dort aktualisieren.  
+**Einordnen:** Bisherige Aufgaben + Gesamtprojekt + Warum so – in DIALOG-STAND unter „Einordnung:“.  
+**Session-Start:** Briefing + DIALOG-STAND lesen; erste Antwort = aktueller Fokus + Kontext, nicht veralteter Nächster Schritt.
+
+**Damit die Agentin immer weiß, was wir warum genau so machen wie wir es gerade machen.**

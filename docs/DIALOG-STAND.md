@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – (1) **Stammdaten-Überschriften angepasst:** Einstellungen → Stammdaten: Erster Block „Meine Kontaktdaten – Name, Kontakt & Adresse“ (statt Künstler:in); Galerie-Block „Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)“; Hinweise einheitlich „Adresse der Ausstellungs-Galerie“ / „Kontaktperson“. (2) Zuvor: Stammdaten Geschäftskunden; Vorschau Neues Werk, Badge Werkkarten, ök2 Typ+Kategorie. Nächster Schritt: Marketing-Strategie (AUFTRAG-MARKETING-STRATEGIE-ZWEI-ZWEIGE.md) oder Feinschliff (Badge in Admin-Liste, ök2-Texte).
+**Letzter Stand:** 14.03.26 – **Was wir seit heute früh (6 Uhr) konkret gemacht haben:** (1)–(8) wie zuvor; (9) **Typ-Badge in Admin-Werke-Liste:** Auf jeder Werkkarte (Kartenansicht „Werke verwalten“) wird oben links auf dem Bild der Typ angezeigt (Kunstwerk / Produkt / Idee) – wie auf den Galerie-Karten; auch bei Karten ohne Bild (Platzhalter). **Nächster Schritt:** Von Georg festlegen (z. B. Testen, ök2-Texte kürzen, oder Marketing-Strategie).
+
+**Was wir JETZT tun:** Typ-Badge in Admin-Werke-Liste erledigt; Nächster Schritt von Georg festlegen.
+
+**Einordnung:** Bisher heute: Vision Werke (entryType) → ök2/Überkategorien → Migration Musterwerke → Modal Vorschau → Plausibilität Kategorie → Stammdaten Geschäftskunden → Stammdaten-Überschriften. Gesamtprojekt: K2 Galerie vermarktbar (Künstler:innen, Skalierung); ök2 Demo, VK2; ein Standard pro Problem, Datentrennung. Warum so: Stammdaten neutral („Meine Kontaktdaten“, „Ausstellungs-Galerie“) = für alle Nutzer:innen passend; Geschäftskunden-Felder = Vorbereitung für spätere Lizenznehmer.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -33,7 +37,7 @@ Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync 
 - **Umsetzung:** Ein Modell „Werke“, Typ als Feld. tenantConfig: ENTRY_TYPES (artwork, product, idea), getEntryTypeLabel. Admin: State artworkEntryType, Dropdown „Typ“ in beiden Formularen (ök2 + K2/VK2), artworkData.entryType beim Speichern. GalerieVorschauPage: neues Werk (mobil) mit entryType: 'artwork'. Fehlendes entryType überall wie 'artwork' behandelt.
 - **ök2-Umsetzung (gleicher Tag):** MUSTER_ARTWORKS mit entryType (M1/G1/S1=artwork, K1=product, O1=idea). MUSTER_TEXTE.welcomeText: „Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell …“. mök2 Genaue Produktbeschreibung: Absatz Vision + Verweis VISION-WERKE-IDEEN-PRODUKTE.md. SEO seoPageMeta: galerie-oeffentlich und galerie-oeffentlich-vorschau mit neuer description. Plan: PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md.
 - **Überkategorien (gleicher Tag):** Plan wohin (PLAN-WOHIN-UEBERKATEGORIEN.md); PRODUCT/IDEA_CATEGORIES, getCategoriesForEntryType, getCategoryPrefixLetter(_, entryType); Admin + Nummernlogik (P/I/W); GalerieVorschau Filter für alle Kategorien.
-- **Nächster Schritt:** Badge auf Werkkarten erledigt (GalerieVorschauPage). Optional: gleicher Badge in Admin-Werke-Liste (Kartenansicht); oder Labels pro entryType (Künstler:in vs. Anbieter vs. Urheber) – Phase 2. Bei Stammdaten-Erweiterung: Geschäftskunden (Firma, USt-IdNr., Rechnungsadresse) mitdenken.
+- **Heute früh bis jetzt:** Wie oben im Letzter Stand; inkl. Badge Werkkarten, Stammdaten Geschäftskunden (erledigt), Stammdaten-Überschriften (erledigt). **Nächster Schritt:** Von Georg festlegen.
 
 ---
 

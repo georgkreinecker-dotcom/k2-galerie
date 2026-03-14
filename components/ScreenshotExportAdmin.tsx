@@ -12901,6 +12901,24 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             target.onerror = null
                           }}
                         />
+                        {/* Typ-Badge (Kunstwerk / Produkt / Idee) – wie auf Galerie-Karten */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '0.5rem',
+                          left: '0.5rem',
+                          background: 'rgba(0, 0, 0, 0.65)',
+                          backdropFilter: 'blur(4px)',
+                          color: '#ffffff',
+                          padding: '0.2rem 0.45rem',
+                          borderRadius: '6px',
+                          fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)',
+                          fontWeight: '500',
+                          pointerEvents: 'none',
+                          zIndex: 2,
+                          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
+                        }}>
+                          {getEntryTypeLabel(artwork.entryType)}
+                        </div>
                         {/* Nummer als Overlay auf dem Bild */}
                         {artwork.number && (
                           <div style={{
@@ -12925,6 +12943,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       </div>
                     ) : (
                       <div style={{ 
+                        position: 'relative',
                         width: '100%', 
                         height: 'clamp(180px, 30vw, 220px)', 
                         display: 'flex', 
@@ -12936,6 +12955,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         color: s.muted,
                         fontSize: 'clamp(2rem, 5vw, 3rem)'
                       }}>
+                        <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500, zIndex: 2 }}>
+                          {getEntryTypeLabel(artwork.entryType)}
+                        </span>
                         🖼️
                       </div>
                     )}
