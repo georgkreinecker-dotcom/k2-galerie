@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
-import { getCategoryLabel, ARTWORK_CATEGORIES } from '../../src/config/tenantConfig'
+import { getCategoryLabel, ARTWORK_CATEGORIES, ENTRY_TYPES, getCategoriesForEntryType, type EntryTypeId } from '../../src/config/tenantConfig'
 import { isEchteK2Werknummer } from '../../src/utils/artworksStorage'
 
 const s = WERBEUNTERLAGEN_STIL
@@ -27,6 +27,12 @@ interface WerkkatalogTabProps {
   galleryData: any
   /** Schnell umschalten: In Galerie ↔ Lager (nur bei nicht verkauften Werken). Optional. */
   onToggleInExhibition?: (artwork: any) => void
+  /** ök2: Erste Kategorisierung wie in Werke verwalten – Typ + Kategorie (eine Quelle). */
+  isOeffentlich?: boolean
+  entryTypeFilter?: 'alle' | EntryTypeId
+  setEntryTypeFilter?: (v: 'alle' | EntryTypeId) => void
+  categoryFilter?: string
+  setCategoryFilter?: (v: string) => void
 }
 
 const ALLE_SPALTEN = [
@@ -48,6 +54,11 @@ export default function WerkkatalogTab({
   setKatalogSelectedWork,
   galleryData,
   onToggleInExhibition,
+  isOeffentlich,
+  entryTypeFilter = 'alle',
+  setEntryTypeFilter,
+  categoryFilter = 'alle',
+  setCategoryFilter,
 }: WerkkatalogTabProps) {
   // Sold-Status + Reservierung aus separaten Keys holen
   const soldMap = new Map<string, any>()
@@ -79,11 +90,16 @@ export default function WerkkatalogTab({
 
   // Filter anwenden
   const filtered = enriched.filter((a: any) => {
+    if (isOeffentlich && entryTypeFilter !== 'alle') {
+      const et = (a.entryType && ENTRY_TYPES.some((t: any) => t.id === a.entryType)) ? a.entryType : 'artwork'
+      if (et !== entryTypeFilter) return false
+    }
+    if (isOeffentlich && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
+    if (!isOeffentlich && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
     if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
     if (katalogFilter.status === 'verkauft' && !a.sold) return false
     if (katalogFilter.status === 'reserviert' && !a.reserved) return false
     if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
-    if (katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
     if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
     if (katalogFilter.suchtext) {
       const q = katalogFilter.suchtext.toLowerCase()
@@ -216,6 +232,38 @@ export default function WerkkatalogTab({
             placeholder="z. B. M0042 oder Landschaft …"
             style={{ width: '100%', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', boxSizing: 'border-box' }} />
         </div>
+        {isOeffentlich && setEntryTypeFilter && (
+          <div>
+            <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Typ</div>
+            <select value={entryTypeFilter} onChange={e => { const v = e.target.value as 'alle' | EntryTypeId; setEntryTypeFilter(v); if (v !== 'alle' && setCategoryFilter) setCategoryFilter('alle') }}
+              style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+              <option value="alle">Alle</option>
+              {ENTRY_TYPES.map((t: any) => <option key={t.id} value={t.id}>{t.label}</option>)}
+            </select>
+          </div>
+        )}
+        <div>
+          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Kategorie</div>
+          {isOeffentlich && setCategoryFilter ? (
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
+              style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+              <option value="alle">Alle</option>
+              {entryTypeFilter === 'alle'
+                ? Array.from(new Set(allArtworks.map((a: any) => a?.category).filter(Boolean))).map((id: string) => (
+                    <option key={id} value={id}>{getCategoryLabel(id)}</option>
+                  ))
+                : getCategoriesForEntryType(entryTypeFilter).map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.label}</option>
+                  ))}
+            </select>
+          ) : (
+            <select value={katalogFilter.kategorie} onChange={e => setKatalogFilter(f => ({ ...f, kategorie: e.target.value }))}
+              style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+              <option value="">Alle</option>
+              {ARTWORK_CATEGORIES.map((c: any) => <option key={c.id} value={c.id}>{c.label}</option>)}
+            </select>
+          )}
+        </div>
         <div>
           <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Status</div>
           <select value={katalogFilter.status} onChange={e => setKatalogFilter(f => ({ ...f, status: e.target.value as any }))}
@@ -225,14 +273,6 @@ export default function WerkkatalogTab({
             <option value="verkauft">Verkauft</option>
             <option value="reserviert">🔶 Reserviert</option>
             <option value="lager">Nur Lager & Kassa</option>
-          </select>
-        </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Kategorie</div>
-          <select value={katalogFilter.kategorie} onChange={e => setKatalogFilter(f => ({ ...f, kategorie: e.target.value }))}
-            style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
-            <option value="">Alle</option>
-            {ARTWORK_CATEGORIES.map((c: any) => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
         <div>
@@ -255,11 +295,20 @@ export default function WerkkatalogTab({
           <input type="date" value={katalogFilter.bisDatum} onChange={e => setKatalogFilter(f => ({ ...f, bisDatum: e.target.value }))}
             style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
         </div>
-        <button type="button" onClick={() => setKatalogFilter({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })}
+        <button type="button" onClick={() => {
+          setKatalogFilter({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })
+          if (isOeffentlich && setEntryTypeFilter) setEntryTypeFilter('alle')
+          if (isOeffentlich && setCategoryFilter) setCategoryFilter('alle')
+        }}
           style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.muted, fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-end' }}>
           ✕ Zurücksetzen
         </button>
       </div>
+      {isOeffentlich && (
+        <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: -8, marginBottom: '0.75rem', fontWeight: 500 }}>
+          <strong>Typ</strong> = Art des Eintrags (Kunstwerk, Produkt oder Idee). <strong>Kategorie</strong> = Feinzuordnung dazu (z. B. Serie, Konzept, Malerei).
+        </p>
+      )}
 
       {/* Spalten-Auswahl + Drucken */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem', padding: '0.75rem', background: s.bgElevated, borderRadius: 10 }}>

@@ -20,7 +20,7 @@ Der Etikett-Druck war lange zum Laufen gebracht. Dann wurde eine Option („Etik
 ### 2. Vor Änderung an kritischen Abläufen: Doku lesen
 
 - **Vor** jeder Änderung an Code, der einen der folgenden Bereiche betrifft: **docs/KRITISCHE-ABLAEUFE.md** lesen.
-- Betroffene Bereiche: Etikett-Druck, Veröffentlichen, Laden vom Server, Werke speichern, Stand & QR, Kundendaten/localStorage geschützte Keys, Stammdaten (nicht leer überschreiben), Dokument öffnen (openDocumentInApp), Bild übernehmen (runBildUebernehmen), K2/ök2 Datentrennung, **Backup & Wiederherstellung** (siehe Abschnitte 1–11 in KRITISCHE-ABLAEUFE.md).
+- Betroffene Bereiche: Etikett-Druck, Veröffentlichen, Laden vom Server, Werke speichern, Stand & QR, Kundendaten/localStorage geschützte Keys, Stammdaten (nicht leer überschreiben), Dokument öffnen (openDocumentInApp), Bild übernehmen (runBildUebernehmen), K2/ök2 Datentrennung, Backup & Wiederherstellung, **K2 echte Galerie (eisernes Gesetz: nichts ändern ohne dezidierte Anordnung)** (siehe Abschnitte 1–12 in KRITISCHE-ABLAEUFE.md).
 
 ### 3. Pflicht-Check in der Antwort (damit es nicht „vergessen“ wird)
 

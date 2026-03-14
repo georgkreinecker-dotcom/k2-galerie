@@ -3,7 +3,7 @@
 **Zweck:** Diese Abläufe haben wir mühsam zum Laufen gebracht. Sie dürfen nicht durch „Verbesserungen“ oder neue Optionen so geändert werden, dass der **primäre Weg** ausfällt oder zum Fallback wird. Eine Quelle pro Ablauf – Referenz für Code und für die AI.
 
 **Übersicht (alle mit Absicherung/Pflicht-Check bei Änderung):**  
-1. Etikett drucken · 2. Veröffentlichen · 3. Laden vom Server · 4. Werke mit Bild speichern · 5. Stand & QR · 6. Kundendaten/geschützte Keys · 7. Stammdaten nicht leer überschreiben · 8. Dokument aus Admin öffnen · 9. Bild einfügen/übernehmen · 10. K2/ök2 Datentrennung · **11. Backup & Wiederherstellung**
+1. Etikett drucken · 2. Veröffentlichen · 3. Laden vom Server · 4. Werke mit Bild speichern · 5. Stand & QR · 6. Kundendaten/geschützte Keys · 7. Stammdaten nicht leer überschreiben · 8. Dokument aus Admin öffnen · 9. Bild einfügen/übernehmen · 10. K2/ök2 Datentrennung · 11. Backup & Wiederherstellung · **12. K2 echte Galerie = fertig (eisernes Gesetz)**
 
 ---
 
@@ -146,4 +146,20 @@
 - **Lehre Etikett:** Der Etikett-Druck wurde durch „Default = neuer Tab“ so geändert, dass der Druckdialog nicht mehr aufging – Nutzer: „keine Reaktion“. Das darf nicht wieder vorkommen.
 - **Pflicht-Check:** Bei Code-Änderungen in einem dieser Bereiche muss in derselben Antwort ein Prüfblock stehen (Regel: kritische-ablaeufe-nicht-abschnwaechen.mdc).
 
-*Angelegt: März 2026 (nach Etikett-Druck-Wiederherstellung). Erweitert: Abschnitte 5–10 (Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2), Abschnitt 11 (Backup & Wiederherstellung).*
+---
+
+## 12. K2 echte Galerie = fertig (eisernes Gesetz)
+
+| Was | Quelle |
+|-----|--------|
+| **Regel** | **K2 (echte Galerie – Kunst & Keramik) = fertig.** Nichts an Abläufen, Speichern, Anzeige, Kategorien (Bilder, Keramik, …), Nummern (M/K/G/S/O), Werke verwalten, Galerie, Veröffentlichen, Laden **ändern** – **außer Georg ordnet es ausdrücklich an.** |
+| **Doku** | .cursor/rules/k2-echte-galerie-eisernes-gesetz.mdc. |
+| **Bereich** | k2-artworks, Werke-UI für K2, Galerie/Vorschau K2, Veröffentlichen/Laden für K2, Stammdaten K2. |
+
+**NIEMALS:** K2-Kern „verbessern“, refactoren oder neue Optionen einbauen ohne **dezidierte Anordnung** von Georg. ök2/VK2/andere Projekte davon unberührt.
+
+*Eingefügt 14.03.26 (Georg: „Die ist für mich fertig, da wird nichts mehr verändert, nur wenn ich es dezidiert anordne. Eisernes Gesetz.“)*
+
+---
+
+*Angelegt: März 2026 (nach Etikett-Druck-Wiederherstellung). Erweitert: Abschnitte 5–10 (Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2), Abschnitt 11 (Backup & Wiederherstellung), Abschnitt 12 (K2 echte Galerie eisernes Gesetz).*

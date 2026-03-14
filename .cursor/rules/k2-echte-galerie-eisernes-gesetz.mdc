@@ -1,0 +1,47 @@
+---
+description: K2 echte Galerie (Kunst & Keramik) = fertig. Nichts ändern, außer Georg ordnet es ausdrücklich an. Eisernes Gesetz.
+alwaysApply: true
+---
+
+# 🔒 K2 echte Galerie – eisernes Gesetz (unveränderlich)
+
+## Georg (14.03.26)
+
+**„Die [K2 – meine Kunst und Keramik] ist für mich fertig. Da wird nichts mehr verändert, nur wenn ich es dezidiert anordne. Eisernes Gesetz.“**
+
+---
+
+## Die Regel
+
+**K2 (echte Galerie – Kunst & Keramik von Martina & Georg) = fertig.**
+
+- **Nichts** an Abläufen, Speichern, Anzeige, Kategorien (Bilder, Keramik, Grafik, Skulptur, Sonstiges), Nummern (M/K/G/S/O), Werke verwalten, Galerie, Vorschau, Veröffentlichen, Laden vom Server **darf geändert werden**, außer Georg **ordnet es ausdrücklich an**.
+- **Kein** „Verbessern“, Refactoring, „Optimieren“ oder neue Optionen für den K2-Kern (k2-artworks, Werke-UI für K2, Galerie-Anzeige K2) ohne seine **explizite Anordnung**.
+- **ök2, VK2, mök2, andere Projekte:** Davon unberührt – dort kann weiter entwickelt werden. **Nur** der K2-Bereich (echte Galerie) ist unter dieses Gesetz gestellt.
+
+---
+
+## Was „K2 echte Galerie“ umfasst
+
+| Bereich | Dazu gehört | Regel |
+|---------|--------------|--------|
+| **Werke** | k2-artworks, Werke verwalten (K2), Neues Werk / Bearbeiten (K2), Kategorien Bilder/Keramik/Grafik/Skulptur/Sonstiges, Nummern M/K/G/S/O | Nichts ändern ohne dezidierte Anordnung |
+| **Galerie** | Galerie-Seite (K2), Vorschau (K2), Anzeige der Werke, Filter, Stand | Nichts ändern ohne dezidierte Anordnung |
+| **Speichern / Sync** | Veröffentlichen, Laden vom Server, mergeServerWithLocal, preserveLocalImageData für K2 | Nichts ändern ohne dezidierte Anordnung |
+| **Stammdaten K2** | k2-stammdaten-*, Kontakt, Galerie, Willkommensbild (K2) | Nichts ändern ohne dezidierte Anordnung |
+
+---
+
+## Konsequenz für die AI
+
+- **Vor jeder Änderung**, die den K2-Bereich (echte Galerie) betrifft: **Nur umsetzen, wenn Georg es ausdrücklich anordnet.** Kein „ich habe das mal verbessert“ oder „ich habe den Ablauf angepasst“ für K2.
+- **Bei Unklarheit:** Wenn eine Aufgabe ök2, VK2 und **auch** K2 berühren könnte → **nachfragen** oder die K2-Anteile **unverändert** lassen, sofern Georg nicht explizit „auch für K2“ sagt.
+- **Neue Features** (z. B. Überkategorien Produkt/Idee) sind für **ök2** und optional für andere Kontexte – der **K2-Standard** (nur Kunstwerk, M/K/G/S/O) bleibt, bis Georg etwas anderes anordnet.
+
+---
+
+## Kurzfassung
+
+**K2 echte Galerie = fertig. Eisernes Gesetz: Nichts ändern, außer Georg ordnet es dezidiert an.**
+
+Verknüpfung: docs/KRITISCHE-ABLAEUFE.md Abschnitt 12.

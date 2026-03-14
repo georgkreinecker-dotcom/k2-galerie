@@ -19,8 +19,8 @@ export const PRODUCT_COPYRIGHT_BRAND_ONLY = '© 2026 K2 Galerie · Alle Rechte v
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
  * Eine Quelle, überall präsent.
  */
-/** Werbeslogan 1 – markante Aussage */
-export const PRODUCT_WERBESLOGAN = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen'
+/** Werbeslogan 1 – markante Aussage (Menschen mit Idee = Künstler:innen, Macher:innen, alle mit etwas zu zeigen) */
+export const PRODUCT_WERBESLOGAN = 'K2 Galerie – für Menschen mit Idee, die gesehen werden wollen'
 
 /** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 */
 export const PRODUCT_WERBESLOGAN_2 = 'Deine Kunst verdient mehr als einen Instagram-Post.'
@@ -757,6 +757,14 @@ export function getCategoriesForEntryType(entryType: string | undefined): readon
   if (entryType === 'product') return PRODUCT_CATEGORIES
   if (entryType === 'idea') return IDEA_CATEGORIES
   return ARTWORK_CATEGORIES
+}
+
+/** Prüft, ob die Kategorie zum Typ passt (für Konsistenz-Check auf Werkkarten). */
+export function categoryBelongsToEntryType(categoryId: string | undefined, entryType: string | undefined): boolean {
+  if (!categoryId) return true
+  const effectiveType = entryType && ENTRY_TYPES.some((t) => t.id === entryType) ? entryType : 'artwork'
+  const allowed = getCategoriesForEntryType(effectiveType)
+  return allowed.some((c) => c.id === categoryId)
 }
 
 /**

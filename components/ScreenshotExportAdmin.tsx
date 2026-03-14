@@ -1594,6 +1594,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [isLoadingFromServer, setIsLoadingFromServer] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
+  /** ök2: Erste Kategorisierung in der Filter-Leiste – Typ (Kunstwerk/Produkt/Idee) zuerst, dann Kategorie */
+  const [entryTypeFilter, setEntryTypeFilter] = useState<'alle' | EntryTypeId>('alle')
   const [showCameraView, setShowCameraView] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
@@ -3089,10 +3091,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
 
-  // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe)
+  // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe). ök2: nicht überschreiben – Button setzt schon Produkt/Idee-Kategorie.
   const K2_LAST_ARTWORK_CATEGORY_KEY = 'k2-last-artwork-category'
   useEffect(() => {
-    if (showAddModal && !editingArtwork) {
+    if (showAddModal && !editingArtwork && !tenant.isOeffentlich) {
       try {
         const last = localStorage.getItem(K2_LAST_ARTWORK_CATEGORY_KEY)
         if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) {
@@ -12083,6 +12085,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               setKatalogSelectedWork={setKatalogSelectedWork}
               galleryData={galleryData}
               onToggleInExhibition={handleToggleInExhibition}
+              isOeffentlich={tenant.isOeffentlich}
+              entryTypeFilter={entryTypeFilter}
+              setEntryTypeFilter={setEntryTypeFilter}
+              categoryFilter={categoryFilter}
+              setCategoryFilter={setCategoryFilter}
             />
           )}
 
@@ -12110,7 +12117,19 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
-                      onClick={() => { setEditingArtwork(null); setArtworkEntryType('artwork'); setIsInExhibition(false); setIsInShop(false); setShowAddModal(true) }}
+                      onClick={() => {
+                        setEditingArtwork(null)
+                        if (tenant.isOeffentlich) {
+                          setArtworkEntryType('product')
+                          const productCats = getCategoriesForEntryType('product')
+                          setArtworkCategory(productCats[0]?.id ?? 'serie')
+                        } else {
+                          setArtworkEntryType('artwork')
+                        }
+                        setIsInExhibition(false)
+                        setIsInShop(false)
+                        setShowAddModal(true)
+                      }}
                       style={{
                         padding: '0.85rem 1.6rem',
                         background: s.gradientAccent,
@@ -12501,6 +12520,38 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   />
                 </label>
                 {!tenant.isVk2 && (
+                <>
+                  {tenant.isOeffentlich && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Typ</span>
+                      <select
+                        value={entryTypeFilter}
+                        onChange={(e) => {
+                          const v = e.target.value as 'alle' | EntryTypeId
+                          setEntryTypeFilter(v)
+                          if (v !== 'alle') {
+                            const cats = getCategoriesForEntryType(v)
+                            if (!cats.some((c: { id: string }) => c.id === categoryFilter)) setCategoryFilter('alle')
+                          }
+                        }}
+                        style={{
+                          padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 1.5rem)',
+                          background: s.bgCard,
+                          border: `1px solid ${s.accent}33`,
+                          borderRadius: s.radius,
+                          fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                          color: s.text,
+                          outline: 'none',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
+                        {ENTRY_TYPES.map((t) => (
+                          <option key={t.id} value={t.id} style={{ background: s.bgCard, color: s.text }}>{t.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Kategorie</span>
                   <select 
@@ -12518,13 +12569,30 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
-                    {ARTWORK_CATEGORIES.map((c) => (
-                      <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
-                    ))}
+                    {tenant.isOeffentlich && entryTypeFilter !== 'alle'
+                      ? getCategoriesForEntryType(entryTypeFilter).map((c) => (
+                          <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
+                        ))
+                      : tenant.isOeffentlich
+                        ? (() => {
+                            const ids = Array.from(new Set(allArtworks.map((a: any) => a?.category).filter(Boolean)))
+                            return ids.map((id) => ({ id, label: getCategoryLabel(id) })).map((c) => (
+                              <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
+                            ))
+                          })()
+                        : ARTWORK_CATEGORIES.map((c) => (
+                            <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
+                          ))}
                   </select>
                 </label>
+                </>
                 )}
               </div>
+              {tenant.isOeffentlich && (
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
+                  <strong>Typ</strong> = Art des Eintrags (Kunstwerk, Produkt oder Idee). <strong>Kategorie</strong> = Feinzuordnung dazu (z. B. Serie, Konzept, Malerei).
+                </p>
+              )}
               {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (() => {
                 const batchWerke = allArtworks.filter((a: any) => (a?.number || a?.id) && selectedForBatchPrint.has(String(a?.number || a?.id)))
                 const totalEtiketten = batchWerke.reduce((s: number, a: any) => s + Math.max(1, Number(a?.quantity) || 1), 0)
@@ -12687,6 +12755,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 const filtered = sortArtworksNewestFirst(
                   allArtworks.filter((artwork) => {
                     if (!artwork) return false
+                    if (tenant.isOeffentlich && entryTypeFilter !== 'alle') {
+                      const et = (artwork.entryType && ENTRY_TYPES.some((t) => t.id === artwork.entryType)) ? artwork.entryType : 'artwork'
+                      if (et !== entryTypeFilter) return false
+                    }
                     if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
                     if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
                         !artwork.number?.toLowerCase().includes(searchQuery.toLowerCase())) return false
@@ -12695,23 +12767,42 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )
 
                 if (filtered.length === 0) {
+                  const previewTyp = tenant.isOeffentlich ? (entryTypeFilter === 'alle' ? 'artwork' : entryTypeFilter) : (artworkEntryType || 'artwork')
+                  const previewCategory = tenant.isOeffentlich
+                    ? (categoryFilter === 'alle' ? (getCategoriesForEntryType(previewTyp)[0]?.id ?? '') : categoryFilter)
+                    : (artworkCategory || (ARTWORK_CATEGORIES[0]?.id ?? ''))
                   return (
-                    <div style={{ 
-                      gridColumn: '1 / -1', 
-                      textAlign: 'center', 
-                      padding: 'clamp(3rem, 8vw, 5rem)',
-                      background: s.bgCard,
-                      border: `1px solid ${s.accent}22`,
-                      borderRadius: '20px',
-                      boxShadow: s.shadow
-                    }}>
-                      <p style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', color: s.text }}>
-                        Noch keine Werke vorhanden
-                      </p>
-                      <p style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', marginTop: '1rem', color: s.muted }}>
-                        Klicke auf "+ Neues Werk hinzufügen" um ein Werk anzulegen.
-                      </p>
-                    </div>
+                    <>
+                      <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
+                        <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: s.text, margin: 0 }}>
+                          Noch keine Werke vorhanden. So wird eine Karte mit deiner Auswahl aussehen:
+                        </p>
+                        <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', marginTop: '0.35rem', color: s.muted }}>
+                          Klicke auf „+ Neues Werk“, um ein Werk anzulegen.
+                        </p>
+                      </div>
+                      <div
+                        style={{
+                          background: s.bgCard,
+                          border: `1px solid ${s.accent}22`,
+                          borderRadius: '20px',
+                          padding: 'clamp(1rem, 3vw, 1.5rem)',
+                          boxShadow: s.shadow,
+                          opacity: 0.92
+                        }}
+                      >
+                        <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)', background: '#e8e6e2', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'clamp(180px, 30vw, 220px)', color: s.muted, fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>
+                          <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500 }}>
+                            {getEntryTypeLabel(previewTyp)}
+                          </span>
+                          Vorschau
+                        </div>
+                        <h3 style={{ margin: '0 0 0.5rem', fontSize: 'clamp(1rem, 3vw, 1.2rem)', color: s.text, fontWeight: '600' }}>Vorschau</h3>
+                        <p style={{ margin: '0.25rem 0', fontSize: 'clamp(0.9rem, 2.5vw, 1rem)', color: s.muted }}>
+                          {previewCategory ? getCategoryLabel(previewCategory) : '–'}
+                        </p>
+                      </div>
+                    </>
                   )
                 }
 
@@ -19863,6 +19954,23 @@ ${name}`
                         <option key={t.id} value={t.id}>{t.label}</option>
                       ))}
                     </select>
+                  </div>
+                  {/* Vorschaufenster: So erscheint die Karte mit aktueller Auswahl */}
+                  <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>Vorschau Karte</div>
+                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                      <div style={{ width: 100, minWidth: 100, height: 100, background: 'rgba(255,255,255,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', position: 'relative' }}>
+                        <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{getEntryTypeLabel(artworkEntryType)}</span>
+                        Bild
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '0.9rem', fontWeight: 600, color: '#fff', marginBottom: 2 }}>{artworkTitle.trim() || 'Titel'}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)' }}>{getCategoryLabel(artworkCategory)}</div>
+                        {artworkPrice !== '' && parseFloat(artworkPrice) >= 0 && (
+                          <div style={{ fontSize: '0.85rem', color: '#5ffbf1', marginTop: 4 }}>€ {parseFloat(artworkPrice).toFixed(2)}</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   {artworkFormVariantOek2 === 'ausfuehrlich' && (
                     <>

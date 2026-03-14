@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – Plan wohin + Überkategorien (Sportwagenprinzip) umgesetzt: docs/PLAN-WOHIN-UEBERKATEGORIEN.md. Konfiguration: PRODUCT_CATEGORIES, IDEA_CATEGORIES, getCategoriesForEntryType(entryType), getCategoryPrefixLetter(cat, entryType); getCategoryLabel prüft alle drei Mengen. MUSTER_ARTWORKS: P1/I1 + category serie/konzept. Admin: Kategorie-Dropdown + nächste Nummer abhängig von entryType (P/I/W für ök2); Bearbeiten/Duplikat/Modal-Schließen nutzen getCategoriesForEntryType. GalerieVorschauPage: Filter-Kategorien aus allen vorkommenden IDs (Kunst/Produkt/Idee). Build grün. Commit + Push folgen.
+**Letzter Stand:** 14.03.26 – (1) **Stammdaten Geschäftskunden:** Anforderung festgehalten (Georg): In Stammdaten auf Geschäftskunden vorbereitet sein (Firma, USt-IdNr., Rechnungsadresse). Doku: docs/STAMMDATEN-GESCHAEFTSKUNDEN-VORBEREITUNG.md, Verweis in PLAN-GESCHAEFTSFELDER + 00-INDEX. (2) **Technisch:** Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten (GalerieVorschauPage) – getEntryTypeLabel(artwork.entryType) als kleines Overlay oben links auf der Karte. (3) Zuvor: Werkkatalog ök2 mit Typ+Kategorie-Filter; Slogan „für Menschen mit Idee“. Build prüfen, dann Commit + Push.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -33,7 +33,7 @@ Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync 
 - **Umsetzung:** Ein Modell „Werke“, Typ als Feld. tenantConfig: ENTRY_TYPES (artwork, product, idea), getEntryTypeLabel. Admin: State artworkEntryType, Dropdown „Typ“ in beiden Formularen (ök2 + K2/VK2), artworkData.entryType beim Speichern. GalerieVorschauPage: neues Werk (mobil) mit entryType: 'artwork'. Fehlendes entryType überall wie 'artwork' behandelt.
 - **ök2-Umsetzung (gleicher Tag):** MUSTER_ARTWORKS mit entryType (M1/G1/S1=artwork, K1=product, O1=idea). MUSTER_TEXTE.welcomeText: „Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell …“. mök2 Genaue Produktbeschreibung: Absatz Vision + Verweis VISION-WERKE-IDEEN-PRODUKTE.md. SEO seoPageMeta: galerie-oeffentlich und galerie-oeffentlich-vorschau mit neuer description. Plan: PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md.
 - **Überkategorien (gleicher Tag):** Plan wohin (PLAN-WOHIN-UEBERKATEGORIEN.md); PRODUCT/IDEA_CATEGORIES, getCategoriesForEntryType, getCategoryPrefixLetter(_, entryType); Admin + Nummernlogik (P/I/W); GalerieVorschau Filter für alle Kategorien.
-- **Nächster Schritt:** Optional: Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten. Oder Labels pro entryType (Künstler:in vs. Anbieter vs. Urheber) – Phase 2. Nach Georgs Feedback.
+- **Nächster Schritt:** Badge auf Werkkarten erledigt (GalerieVorschauPage). Optional: gleicher Badge in Admin-Werke-Liste (Kartenansicht); oder Labels pro entryType (Künstler:in vs. Anbieter vs. Urheber) – Phase 2. Bei Stammdaten-Erweiterung: Geschäftskunden (Firma, USt-IdNr., Rechnungsadresse) mitdenken.
 
 ---
 

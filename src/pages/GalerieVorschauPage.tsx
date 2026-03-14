@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -2693,6 +2693,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               <span aria-hidden>★</span> Favorit
                             </div>
                           )}
+                          {/* Typ-Badge (Kunstwerk / Produkt / Idee) – Vision Werke = Oberbegriff */}
+                          <div style={{
+                            position: 'absolute',
+                            top: '0.5rem',
+                            left: '0.5rem',
+                            background: 'rgba(0, 0, 0, 0.65)',
+                            backdropFilter: 'blur(4px)',
+                            color: '#ffffff',
+                            padding: '0.2rem 0.45rem',
+                            borderRadius: '6px',
+                            fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)',
+                            fontWeight: '500',
+                            pointerEvents: 'none',
+                            zIndex: 2,
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
+                          }}>
+                            {getEntryTypeLabel(artwork.entryType)}
+                          </div>
                           {/* Nummer als Overlay auf dem Bild */}
                           {artwork.number && (
                             <div style={{
