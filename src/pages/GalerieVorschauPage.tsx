@@ -231,7 +231,8 @@ async function saveArtworks(artworks: any[]): Promise<boolean> {
   return ok
 }
 
-type Filter = 'alle' | ArtworkCategoryId
+/** Filter: alle oder eine Kategorie-ID (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab) */
+  type Filter = 'alle' | string
 
 const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
   const navigate = useNavigate()
@@ -276,15 +277,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     setArtworks(mergeWithPending(list))
   }, [musterOnly, vk2])
 
-  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen */
+  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab) */
   const categoriesWithArtworks = useMemo(() => {
     const list = artworks?.length ? artworks : (initialArtworks?.length ? initialArtworks : [])
-    const ids = new Set(
-      list.map((a: any) => a.category).filter(
-        (cat): cat is ArtworkCategoryId => Boolean(cat) && ARTWORK_CATEGORIES.some((c) => c.id === cat)
-      )
-    )
-    return ARTWORK_CATEGORIES.filter((c) => ids.has(c.id))
+    const ids = new Set(list.map((a: any) => a.category).filter(Boolean) as string[])
+    return Array.from(ids).map((id) => ({ id, label: getCategoryLabel(id) }))
   }, [artworks, initialArtworks])
 
   // Filter auf "alle" zurücksetzen, wenn gewählte Kategorie keine Werke mehr hat

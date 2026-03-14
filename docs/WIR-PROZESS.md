@@ -135,6 +135,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 06.03.26 | ro5: Doku so anlegen, dass nach Crash nicht derselbe falsche Ansatz wieder versucht wird – in WEITERARBEITEN-NACH-ABSTURZ den richtigen Fix-Weg festhalten (z. B. Auslagerung in Funktion), damit die nächste Session nicht „wie Idioten dasteht“. |
 | 07.03.26 | Handbuch in erweiterte Präsentationsmappe einbinden und für Anke in DIALOG-STAND mitdokumentieren – dann Session sauber abschließen (Test, Build, DIALOG-STAND, WIR-PROZESS, Commit+Push) gibt Georg und dem nächsten Tag Sicherheit. |
 | 08.03.26 | Bei Pause: DIALOG-STAND so schreiben, dass „beim nächsten Einstieg“ der eine konkrete nächste Schritt (007 ausführen inkl. SQL) sofort ablesbar ist – kein Rätselraten. |
+| 14.03.26 | **Erst das große Ziel kennen, dann anstrengen.** Das steht schon in den Grundsätzen (ziel-vor-anstrengung.mdc). Vor Vision/Plan/Anstrengung: zuerst Grundsätze und bestehende Ziel-Formulierungen lesen – dann handeln. Nicht neu formulieren, was schon da ist. |
 
 ---
 

@@ -20,7 +20,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -766,7 +766,7 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
         // WICHTIG: Beide Werke bleiben erhalten, bekommen aber unterschiedliche Nummern
         for (let i = 1; i < duplicates.length; i++) {
           const duplicate = duplicates[i]
-          const prefix = getCategoryPrefixLetter(duplicate.category)
+          const prefix = getCategoryPrefixLetter(duplicate.category, duplicate.entryType)
           
           // Extrahiere Basis-Nummer (z.B. "0011" aus "K2-M-0011")
           const baseNumber = number.replace(/K2-[KM]-/, '').replace(/[^0-9]/g, '')
@@ -7872,13 +7872,21 @@ ${'='.repeat(60)}
   }
 
   // Laufende Nummer generieren - WICHTIG: Finde maximale Nummer aus ALLEN artworks
-  // K2: Kategorie-basiert (M/K/G/S/O). ök2: W (Werk). VK2: VK2-M1, VK2-F1 usw. (7 Kunstbereiche)
-  const generateArtworkNumber = async (category: string = 'malerei') => {
+  // K2: Kategorie-basiert (M/K/G/S/O). ök2: W / P / I je nach entryType. VK2: VK2-M1, VK2-F1 usw.
+  const generateArtworkNumber = async (category: string = 'malerei', entryType?: string) => {
     const forVk2 = tenant.isVk2
     const forOek2 = tenant.isOeffentlich
-    const letter = getCategoryPrefixLetter(category)
-    const categoryPrefix = forVk2 ? `VK2-${letter}` : forOek2 ? 'K2-W-' : `K2-${letter}-`
-    const prefix = forOek2 ? 'W' : letter
+    const letter = getCategoryPrefixLetter(category, entryType)
+    let categoryPrefix: string
+    let prefix: string
+    if (forOek2) {
+      if (entryType === 'product') { categoryPrefix = 'P'; prefix = 'P' }
+      else if (entryType === 'idea') { categoryPrefix = 'I'; prefix = 'I' }
+      else { categoryPrefix = 'K2-W-'; prefix = 'W' }
+    } else {
+      categoryPrefix = forVk2 ? `VK2-${letter}` : `K2-${letter}-`
+      prefix = letter
+    }
 
     // Lade alle artworks ROH (lokal) – damit keine Nummer doppelt vergeben wird
     const localArtworks = loadArtworksRaw(tenant)
@@ -7952,7 +7960,7 @@ ${'='.repeat(60)}
     
     // Die nächste Nummer ist maxNumber + 1
     let nextNumber = maxNumber + 1
-    const pad = forVk2 ? (n: number) => String(n) : (n: number) => String(n).padStart(4, '0')
+    const pad = forVk2 ? (n: number) => String(n) : (forOek2 && (entryType === 'product' || entryType === 'idea')) ? (n: number) => String(n) : (n: number) => String(n).padStart(4, '0')
     let formattedNumber = `${categoryPrefix}${pad(nextNumber)}`
 
     // KRITISCH: Prüfe auf Konflikte und erhöhe bis eindeutig
@@ -8348,7 +8356,8 @@ ${'='.repeat(60)}
       }
     }
     
-    const newArtworkNumber = editingArtwork ? (editingArtwork.number || editingArtwork.id) : await generateArtworkNumber(artworkCategory)
+    const effectiveEntryType = artworkEntryType || editingArtwork?.entryType || 'artwork'
+    const newArtworkNumber = editingArtwork ? (editingArtwork.number || editingArtwork.id) : await generateArtworkNumber(artworkCategory, effectiveEntryType)
     setArtworkNumber(newArtworkNumber)
     
     // Bild komprimieren bevor es gespeichert wird (artwork = klein halten für viele Werke in localStorage)
@@ -8461,7 +8470,7 @@ ${'='.repeat(60)}
     let finalArtworkNumber = newArtworkNumber
     if (existingWithSameNumber && !editingArtwork) {
       console.warn('⚠️ Nummer bereits vorhanden:', newArtworkNumber, '- generiere neue Nummer')
-      finalArtworkNumber = await generateArtworkNumber(artworkCategory)
+      finalArtworkNumber = await generateArtworkNumber(artworkCategory, artworkEntryType || editingArtwork?.entryType || 'artwork')
     }
     
     // Optional: Werkbild in Supabase Storage hochladen → imageUrl = öffentliche URL (spart Speicher, Sync überall)
@@ -8632,8 +8641,9 @@ ${'='.repeat(60)}
         // Falls immer noch Konflikt: Verwende Timestamp-basierte Nummer
         const timestamp = Date.now().toString().slice(-6)
         const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
-        const prefix = forOek2 ? 'W' : getCategoryPrefixLetter(artworkCategory)
-        finalArtworkNumber = `K2-${prefix}-${timestamp}${random}`
+        const conflictEntryType = artworkData.entryType || 'artwork'
+        const prefix = forOek2 ? (conflictEntryType === 'product' ? 'P' : conflictEntryType === 'idea' ? 'I' : 'W') : getCategoryPrefixLetter(artworkCategory, conflictEntryType)
+        finalArtworkNumber = (forOek2 && (conflictEntryType === 'product' || conflictEntryType === 'idea')) ? `${prefix}${timestamp}${random}` : `K2-${prefix}-${timestamp}${random}`
         artworkData.number = finalArtworkNumber
         artworkData.id = finalArtworkNumber
         console.warn('⚠️ Letzter Konflikt-Fallback - neue Nummer:', finalArtworkNumber)
@@ -12943,8 +12953,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           if (tenant.isOeffentlich) {
                             setArtworkTitle(artwork.title || '')
-                            setArtworkCategory((ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei')
-                            setArtworkEntryType(ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork')
+                            const oek2EntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
+                            setArtworkEntryType(oek2EntryType)
+                            const oek2Cats = getCategoriesForEntryType(oek2EntryType)
+                            setArtworkCategory(oek2Cats.some((c) => c.id === artwork.category) ? (artwork.category || oek2Cats[0].id) : oek2Cats[0].id)
                             setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
                             setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
                             setArtworkArtist(artwork.artist || '')
@@ -12968,9 +12980,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             return
                           }
                           
-                          const category = (ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei'
+                          const editEntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
+                          setArtworkEntryType(editEntryType)
+                          const editCats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(editEntryType)
+                          const category = editCats.some((c) => c.id === artwork.category) ? (artwork.category || editCats[0].id) : editCats[0].id
                           setArtworkCategory(category)
-                          setArtworkEntryType(ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork')
                           if (!tenant.isVk2 && category === 'keramik') {
                             const subcategory = artwork.ceramicSubcategory || 'vase'
                             setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
@@ -19033,7 +19047,8 @@ ${name}`
             setArtworkEntryType('artwork')
             try {
               const last = localStorage.getItem('k2-last-artwork-category')
-              if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+              const catsForArtwork = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType('artwork')
+              if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
             } catch (_) {}
             setArtworkCeramicSubcategory('vase')
             setArtworkCeramicHeight('10')
@@ -19836,14 +19851,14 @@ ${name}`
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                     <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                      {(tenant.isVk2 ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
+                      {(tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(artworkEntryType)).map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
-                    <select value={artworkEntryType} onChange={(e) => setArtworkEntryType(e.target.value as EntryTypeId)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                    <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
                       {ENTRY_TYPES.map((t) => (
                         <option key={t.id} value={t.id}>{t.label}</option>
                       ))}
@@ -19993,7 +20008,7 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(tenant.isVk2 ? VK2_KUNSTBEREICHE : ARTWORK_CATEGORIES).map((c) => (
+                    {(tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(artworkEntryType)).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
@@ -20001,7 +20016,7 @@ ${name}`
               </div>
               <div style={{ marginTop: '0.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
-                <select value={artworkEntryType} onChange={(e) => setArtworkEntryType(e.target.value as EntryTypeId)} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
                   {ENTRY_TYPES.map((t) => (
                     <option key={t.id} value={t.id}>{t.label}</option>
                   ))}
@@ -20442,7 +20457,8 @@ ${name}`
                     setArtworkTitle('')
                     try {
                       const last = localStorage.getItem('k2-last-artwork-category')
-                      if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+                      const catsForArtwork = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType('artwork')
+                      if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
                     } catch (_) {}
                     setArtworkCeramicSubcategory('vase')
                     setArtworkCeramicHeight('10')

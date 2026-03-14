@@ -730,6 +730,35 @@ export const ARTWORK_CATEGORIES = [
 
 export type ArtworkCategoryId = typeof ARTWORK_CATEGORIES[number]['id']
 
+/** Überkategorien Produkt (Vision: typgerechte Kategorien pro entryType). Doku: docs/PLAN-WOHIN-UEBERKATEGORIEN.md */
+export const PRODUCT_CATEGORIES = [
+  { id: 'druck', label: 'Druck / Repro' },
+  { id: 'serie', label: 'Serie / Edition' },
+  { id: 'merchandise', label: 'Merchandise' },
+  { id: 'buch', label: 'Buch' },
+  { id: 'sonstiges_produkt', label: 'Sonstiges' },
+] as const
+
+export type ProductCategoryId = typeof PRODUCT_CATEGORIES[number]['id']
+
+/** Überkategorien Idee (Vision: typgerechte Kategorien pro entryType). Doku: docs/PLAN-WOHIN-UEBERKATEGORIEN.md */
+export const IDEA_CATEGORIES = [
+  { id: 'projekt', label: 'Projekt' },
+  { id: 'kooperation', label: 'Kooperation' },
+  { id: 'dienstleistung', label: 'Dienstleistung' },
+  { id: 'konzept', label: 'Konzept' },
+  { id: 'sonstiges_idee', label: 'Sonstiges' },
+] as const
+
+export type IdeaCategoryId = typeof IDEA_CATEGORIES[number]['id']
+
+/** Kategorie-Liste für den gegebenen entryType (eine Quelle für Admin, mobil, Kassa). */
+export function getCategoriesForEntryType(entryType: string | undefined): readonly { id: string; label: string }[] {
+  if (entryType === 'product') return PRODUCT_CATEGORIES
+  if (entryType === 'idea') return IDEA_CATEGORIES
+  return ARTWORK_CATEGORIES
+}
+
 /**
  * Werktypen (Vision: Werke = Oberbegriff, Kunstwerk = Unterkategorie).
  * Ein Modell, eine Liste – Typ als Feld, konfigurierbar. Kunst = Träger der Idee; ganzer Markt hat Platz.
@@ -772,16 +801,23 @@ export const SEED_VK2_ARTISTS = [
   { id: 'vk2-seed-sonstiges', number: 'VK2-O1', title: 'Sonstiges', category: 'sonstiges', description: 'Künstler:in Sonstiges.', imageUrl: OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges || OEK2_PLACEHOLDER_IMAGE, price: 0, inShop: false, inExhibition: true, createdAt: _vk2SeedTs, addedToGalleryAt: _vk2SeedTs },
 ]
 
-/** Kategorie-ID → Anzeigetext (für Kassa, History, Admin) */
+/** Kategorie-ID → Anzeigetext (für Kassa, History, Admin). Prüft ARTWORK, PRODUCT, IDEA – eine Quelle. */
 export function getCategoryLabel(categoryId: string | undefined): string {
   if (!categoryId) return ''
-  const c = ARTWORK_CATEGORIES.find((x) => x.id === categoryId)
-  return c ? c.label : categoryId
+  const fromArt = ARTWORK_CATEGORIES.find((x) => x.id === categoryId)
+  if (fromArt) return fromArt.label
+  const fromProd = PRODUCT_CATEGORIES.find((x) => x.id === categoryId)
+  if (fromProd) return fromProd.label
+  const fromIdea = IDEA_CATEGORIES.find((x) => x.id === categoryId)
+  if (fromIdea) return fromIdea.label
+  return categoryId
 }
 
-/** Kategorie-ID → Buchstabe für Werknummer (M/K/G/S/O) */
+/** Kategorie-ID → Buchstabe für Werknummer (M/K/G/S/O). Für product/idea: P bzw. I (entryType entscheidet). */
 const CATEGORY_PREFIX_LETTER: Record<string, string> = { malerei: 'M', keramik: 'K', grafik: 'G', skulptur: 'S', sonstiges: 'O' }
-export function getCategoryPrefixLetter(cat: string | undefined): string {
+export function getCategoryPrefixLetter(cat: string | undefined, entryType?: string): string {
+  if (entryType === 'product') return 'P'
+  if (entryType === 'idea') return 'I'
   return (cat && CATEGORY_PREFIX_LETTER[cat]) || 'M'
 }
 
@@ -789,10 +825,10 @@ export function getCategoryPrefixLetter(cat: string | undefined): string {
 const _musterTs = new Date().toISOString()
 export const MUSTER_ARTWORKS = [
   { id: 'muster-1', number: 'M1', title: 'Morgenlicht über den Hügeln', category: 'malerei', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('malerei'), price: 480, description: 'Acryl auf Leinwand, 80 × 60 cm. Weite Landschaft im ersten Licht – kräftige Farben, reduzierter Stil. Aus der Serie „Tageszeiten“.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
-  { id: 'muster-2', number: 'K1', title: 'Vase „Herbstlaub“', category: 'keramik', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'product' as const },
+  { id: 'muster-2', number: 'P1', title: 'Vase „Herbstlaub“', category: 'serie', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'product' as const },
   { id: 'muster-3', number: 'G1', title: 'Durch das Fenster', category: 'grafik', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('grafik'), price: 180, description: 'Linolschnitt, Auflage 15, 30 × 40 cm. Innen und Außen – Blick aus dem Atelier. Klare Linien, starke Kontraste.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
   { id: 'muster-4', number: 'S1', title: 'Stehende Form', category: 'skulptur', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: 1200, description: 'Keramik, oxidierend gebrannt, 45 cm. Abstrakte Figur – Balance und Bewegung. Einzelstück.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
-  { id: 'muster-5', number: 'O1', title: 'Kleines Feld', category: 'sonstiges', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
+  { id: 'muster-5', number: 'I1', title: 'Kleines Feld', category: 'konzept', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
 ]
 
 /** Einladung Vernissage – HTML aus MUSTER_TEXTE (Stammdaten), für Demo/ök2. */

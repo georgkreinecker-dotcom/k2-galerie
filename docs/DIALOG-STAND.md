@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – ök2-Umsetzung Vision „für Künstler gedacht – für jede Idee und jedes Produkt gebaut“: MUSTER_ARTWORKS mit entryType (K1=Produkt, O1=Idee, Rest Kunstwerk); MUSTER_TEXTE.welcomeText mit Botschaft; mök2 Genaue Produktbeschreibung um Absatz Vision ergänzt; SEO Meta-Beschreibung galerie-oeffentlich/galerie-oeffentlich-vorschau. Plan: docs/PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md. Tests + Build grün. Commit + Push folgen.
+**Letzter Stand:** 14.03.26 – Plan wohin + Überkategorien (Sportwagenprinzip) umgesetzt: docs/PLAN-WOHIN-UEBERKATEGORIEN.md. Konfiguration: PRODUCT_CATEGORIES, IDEA_CATEGORIES, getCategoriesForEntryType(entryType), getCategoryPrefixLetter(cat, entryType); getCategoryLabel prüft alle drei Mengen. MUSTER_ARTWORKS: P1/I1 + category serie/konzept. Admin: Kategorie-Dropdown + nächste Nummer abhängig von entryType (P/I/W für ök2); Bearbeiten/Duplikat/Modal-Schließen nutzen getCategoriesForEntryType. GalerieVorschauPage: Filter-Kategorien aus allen vorkommenden IDs (Kunst/Produkt/Idee). Build grün. Commit + Push folgen.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -32,7 +32,8 @@ Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync 
 
 - **Umsetzung:** Ein Modell „Werke“, Typ als Feld. tenantConfig: ENTRY_TYPES (artwork, product, idea), getEntryTypeLabel. Admin: State artworkEntryType, Dropdown „Typ“ in beiden Formularen (ök2 + K2/VK2), artworkData.entryType beim Speichern. GalerieVorschauPage: neues Werk (mobil) mit entryType: 'artwork'. Fehlendes entryType überall wie 'artwork' behandelt.
 - **ök2-Umsetzung (gleicher Tag):** MUSTER_ARTWORKS mit entryType (M1/G1/S1=artwork, K1=product, O1=idea). MUSTER_TEXTE.welcomeText: „Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. Eine Galerie, ein Modell …“. mök2 Genaue Produktbeschreibung: Absatz Vision + Verweis VISION-WERKE-IDEEN-PRODUKTE.md. SEO seoPageMeta: galerie-oeffentlich und galerie-oeffentlich-vorschau mit neuer description. Plan: PLAN-OEK2-WERKE-IDEEN-PRODUKTE-UMSETZUNG.md.
-- **Nächster Schritt:** Optional: Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten (GaleriePage/GalerieVorschauPage). Oder nach Georgs Feedback.
+- **Überkategorien (gleicher Tag):** Plan wohin (PLAN-WOHIN-UEBERKATEGORIEN.md); PRODUCT/IDEA_CATEGORIES, getCategoriesForEntryType, getCategoryPrefixLetter(_, entryType); Admin + Nummernlogik (P/I/W); GalerieVorschau Filter für alle Kategorien.
+- **Nächster Schritt:** Optional: Badge „Kunstwerk“/„Produkt“/„Idee“ auf Werkkarten. Oder Labels pro entryType (Künstler:in vs. Anbieter vs. Urheber) – Phase 2. Nach Georgs Feedback.
 
 ---
 
