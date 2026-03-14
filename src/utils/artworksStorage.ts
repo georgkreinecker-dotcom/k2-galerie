@@ -55,6 +55,33 @@ function repairOek2ArtworksIfContaminated(): boolean {
   }
 }
 
+/**
+ * Einmalige Migration: Gespeicherte alte Musterwerke (K1, O1) auf aktuelle Vorlage (P1, I1, neue Kategorien) umstellen.
+ * Nur wenn die gespeicherte Liste genau die alte Seed-Form hat (5 Einträge, davon K1 und O1).
+ */
+function migrateOek2OldMusterToNewIfNeeded(): boolean {
+  try {
+    const raw = localStorage.getItem(OEF_ARTWORKS_KEY)
+    if (raw === null || raw === undefined) return false
+    let arr: any[]
+    try {
+      const parsed = JSON.parse(raw)
+      arr = Array.isArray(parsed) ? parsed : []
+    } catch {
+      return false
+    }
+    if (arr.length !== 5) return false
+    const hasK1 = arr.some((a: any) => String(a?.number ?? '').trim() === 'K1')
+    const hasO1 = arr.some((a: any) => String(a?.number ?? '').trim() === 'O1')
+    if (!hasK1 || !hasO1) return false
+    console.log('🔄 ök2: Alte Musterwerke (K1/O1) → aktuelle Vorlage (P1/I1, Überkategorien)')
+    saveArtworksByKey(OEF_ARTWORKS_KEY, [...MUSTER_ARTWORKS], { filterK2Only: false, allowReduce: true })
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Key für Artworks je Kontext. VK2 hat keinen Artwork-Key (Regel: datentrennung-localstorage-niemals-loeschen). */
 export function getArtworksStorageKey(tenant: 'k2' | 'oeffentlich' | 'vk2'): string | null {
   if (tenant === 'vk2') return null
@@ -70,6 +97,7 @@ export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): an
   if (vk2) return [] // VK2 hat keinen Artwork-Key
   if (musterOnly) {
     if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
+    if (migrateOek2OldMusterToNewIfNeeded()) return [...MUSTER_ARTWORKS]
     const list = readArtworksRawByKey(OEF_ARTWORKS_KEY)
     // ök2: Leerer Speicher = Musterwerke anzeigen (Demo soll immer etwas zeigen)
     if (!list || list.length === 0) return [...MUSTER_ARTWORKS]
@@ -85,6 +113,7 @@ export function readArtworksRawForContext(musterOnly: boolean, vk2: boolean): an
 export function readArtworksRawForContextOrNull(musterOnly: boolean): any[] | null {
   if (!musterOnly) return readArtworksRawForContext(false, false) as any
   if (repairOek2ArtworksIfContaminated()) return [...MUSTER_ARTWORKS]
+  if (migrateOek2OldMusterToNewIfNeeded()) return [...MUSTER_ARTWORKS]
   const raw = readArtworksRawByKeyOrNull(OEF_ARTWORKS_KEY)
   // ök2: Key fehlt oder leer = Musterwerke (Demo soll immer etwas zeigen)
   if (raw === null || raw.length === 0) return [...MUSTER_ARTWORKS]
