@@ -94,3 +94,16 @@
 ---
 
 **Kurz:** Anmeldung im ök2 = bewusst **keine** (Entdecken ohne Account). Lizenzierung = **sichtbar** auf WillkommenPage (Lizenz anfragen + Lizenz online kaufen), in Entdecken und im Guide (Priorität 1–3 erledigt). Einheitliche Preise aus licencePricing.ts.
+
+---
+
+## 5. Trial 2 Wochen + AGB (Stand 14.03.26)
+
+**Vereinbartes Modell:** 2 Wochen kostenlose Testphase → danach Zahlungspflicht; wenn nicht gezahlt: Lizenz und Daten verfallen.
+
+**AGB:** In **AGBPage.tsx** ist §2 „Testphase (2 Wochen kostenlos) und Umgang mit Daten“ ergänzt:
+- Nutzer gibt erforderliche Daten (z. B. E-Mail) ein.
+- Versicherung: Daten nur für Testphase und Lizenzabwicklung; **wenn nach 2 Wochen keine Lizenz abgeschlossen wird, werden die Testdaten unverzüglich gelöscht**, Lizenz erlischt.
+- Bestätigung „AGB gelesen und akzeptiert“ wie üblich (WillkommenPage: AGB-Modal mit Checkbox vor Eintritt).
+
+**Technische Umsetzung** (Trial-Start, Ablaufprüfung, Löschung bei Verfall) steht noch aus; AGB und Bestätigungsflow sind umgesetzt.

@@ -52,14 +52,21 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>2. Leistung und Nutzung</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>2. Testphase (2 Wochen kostenlos) und Umgang mit Daten</h2>
+          <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Der Nutzer bzw. die Nutzerin kann eine <strong>Testphase von 2 Wochen</strong> kostenlos nutzen. Dafür sind die erforderlichen Angaben (z. B. E-Mail-Adresse) einzugeben. Wir versichern: Die in der Testphase eingegebenen Daten werden ausschließlich für die Durchführung der Testphase und die Abwicklung einer eventuell abgeschlossenen Lizenz verwendet. <strong>Wenn nach Ablauf der 2 Wochen keine Lizenz abgeschlossen wird, werden die in der Testphase gespeicherten Daten unverzüglich gelöscht</strong>; die Lizenz erlischt in diesem Fall. Der Eintritt in den Zugangsbereich bzw. der Start der Testphase setzt voraus, dass die AGB gelesen und durch Bestätigung (z. B. Ankreuzen) akzeptiert wurden – wie bei der Nutzung üblich.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: '1.75rem' }}>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>3. Leistung und Nutzung</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Die angebotenen Leistungen umfassen Software bzw. webbasierte Anwendungen zur Darstellung und Verwaltung von Galerie- bzw. Künstlerinhalten. Demo- und Vorschauversionen dienen der unverbindlichen Information. Ein Rechtsanspruch auf bestimmte Funktionalitäten, Verfügbarkeit oder Datenbestand besteht nicht. Die Nutzung erfolgt auf eigenes Risiko.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>3. Haftungsausschluss</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>4. Haftungsausschluss</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Soweit gesetzlich zulässig wird jede Haftung – aus welchem Rechtsgrund auch immer – für Schäden, die aus der Nutzung oder der Unmöglichkeit der Nutzung der Anwendung, aus Fehlern, Unterbrechungen, Datenverlust, Verzögerungen oder aus Handlungen Dritter entstehen, ausgeschlossen. Dies gilt insbesondere für indirekte Schäden, Folgeschäden, entgangenen Gewinn und Produkt- oder Beschwerdefälle. Die Haftung für Vorsatz und grobe Fahrlässigkeit sowie für Personenschäden bleibt im gesetzlich zulässigen Umfang unberührt.
           </p>
@@ -73,35 +80,35 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>5. Steuern und Finanzen</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>6. Steuern und Finanzen</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Die Anwendung ersetzt keine steuerliche, rechtliche oder betriebswirtschaftliche Beratung. Der Nutzer ist allein verantwortlich für die Richtigkeit seiner Angaben gegenüber Finanzämtern, Behörden und Dritten. Es wird keine Haftung für Folgen aus steuerlichen Prüfungen, Nachforderungen oder sonstigen finanziellen Konsequenzen übernommen. Bei Fragen zu Steuern und Buchführung ist eine qualifizierte Beratung (Steuerberater, Rechtsanwalt) einzuholen.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>6. Produktbeschwerden und Mängel</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>7. Produktbeschwerden und Mängel</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Für Demo- und Vorschauversionen wird keine Gewähr für Fehlerfreiheit oder Eignung für einen bestimmten Zweck übernommen. Bei kostenpflichtigen Leistungen gelten die gesetzlichen Gewährleistungsrechte; darüber hinaus wird die Haftung auf den vorhersehbaren, typischerweise eintretenden Schaden begrenzt, soweit nicht Vorsatz oder grobe Fahrlässigkeit vorliegen. Ansprüche aus Produktbeschwerden Dritter (z. B. Kunden der Nutzer) sind gegen den Anbieter ausgeschlossen; der Nutzer tritt hierfür nicht ein.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>7. Beendigung der Lizenz durch den Nutzer (Ausstieg)</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>8. Beendigung der Lizenz durch den Nutzer (Ausstieg)</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Die Lizenz kann vom Nutzer bzw. von der Nutzerin <strong>jederzeit</strong> beendet werden. Es besteht <strong>keine Mindestlaufzeit</strong> und keine Bindung. Der Ausstieg soll so einfach möglich sein wie der Einstieg – ohne Zwangsbeglückung. Die Beendigung erfolgt in der Anwendung (z. B. in den Einstellungen) oder über den gleichen Kanal wie der Lizenzabschluss; es sind keine Anrufe oder besonderen Formulare erforderlich. Bis zum Ende der Laufzeit bleibt der Zugang bestehen; vor Beendigung kann der Nutzer seine Daten exportieren bzw. sichern (Backup-Funktion in der Anwendung). Ein Anspruch auf Rückerstattung bereits gezahlter Beträge für die laufende Abrechnungsperiode besteht nur in den gesetzlich vorgesehenen Fällen.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>8. Änderungen und Beendigung durch den Anbieter</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>9. Änderungen und Beendigung durch den Anbieter</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Der Anbieter ist berechtigt, die AGB, die Anwendung und die angebotenen Leistungen zu ändern oder einzustellen. Über wesentliche Änderungen der AGB wird in angemessener Form informiert; die weitere Nutzung nach Wirksamwerden gilt als Zustimmung. Ein Anspruch auf Fortführung bestimmter Funktionen oder Zugänge besteht nicht.
           </p>
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>9. Schlussbestimmungen</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>10. Schlussbestimmungen</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Es gilt das Recht der Republik Österreich unter Ausschluss des UN-Kaufrechts. Gerichtsstand für alle Streitigkeiten ist, soweit gesetzlich zulässig, der Sitz des Anbieters. Die Unwirksamkeit einzelner Klauseln berührt die Gültigkeit der übrigen nicht. Diese AGB ersetzen alle vorherigen Vereinbarungen zum Gegenstand.
           </p>
