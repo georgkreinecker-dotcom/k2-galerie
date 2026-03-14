@@ -4086,6 +4086,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       number: newNumber,
                       title: mobileTitle,
                       category: mobileCategory,
+                      entryType: 'artwork' as const, // Vision: Werke = Oberbegriff; mobil immer Kunstwerk
                       imageUrl: mobilePhoto || PLACEHOLDER_KEIN_BILD,
                       price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                       description: mobileDescription || undefined,

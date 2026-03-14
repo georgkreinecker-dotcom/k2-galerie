@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.03.26 Ende – Eisernes Gesetz (Server = einzige Wahrheit beim Abholen), Deploy bf54da1; Lehre-Doku Design-Fehler Sync (LEHRE-DESIGN-FEHLER-SERVER-WAHRHEIT.md, BUG-037), Commit 693a539. Raum bereit für nächste Session.
+**Letzter Stand:** 14.03.26 – Vision Werke = Ideen & Produkte umgesetzt: Feld **entryType** (Kunstwerk/Produkt/Idee), ENTRY_TYPES + getEntryTypeLabel in tenantConfig; Admin Neues Werk/Werk bearbeiten: Dropdown „Typ“, artworkData.entryType; GalerieVorschauPage neues Werk (mobil) entryType: 'artwork'; Rückwärtskompatibel (fehlend = artwork). Doku VISION-WERKE-IDEEN-PRODUKTE.md Abschnitt 5. Tests + Build grün. Commit folgt.
 
 **Vorher:** 13.03.26 – ök2 Musterwerke & Musterstammdaten: Normal = drinnen; leeren nur bei expliziter Aktion. artworksStorage: leere Liste für k2-oeffentlich-artworks wird nie geschrieben. stammdatenStorage: bei leerem Speicher liefert ök2 MUSTER_TEXTE (nicht leere Felder). Test ergänzt.
 
@@ -25,6 +25,13 @@
 - **Relevante Doku:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, ein-standard-problem.mdc (Veröffentlichen / Laden), GELOESTE-BUGS (BUG-021, BUG-026, BUG-033, …).
 
 Damit die KI bei Reopen oder neuer Session weiß: Der Stand „Speichern & Sync läuft“ ist erreicht; weitere Änderungen daran nur vorsichtig und mit Blick auf diese Abläufe.
+
+---
+
+## Heute 14.03.26 – Vision Werke = Ideen & Produkte (entryType)
+
+- **Umsetzung:** Ein Modell „Werke“, Typ als Feld. tenantConfig: ENTRY_TYPES (artwork, product, idea), getEntryTypeLabel. Admin: State artworkEntryType, Dropdown „Typ“ in beiden Formularen (ök2 + K2/VK2), artworkData.entryType beim Speichern. GalerieVorschauPage: neues Werk (mobil) mit entryType: 'artwork'. Fehlendes entryType überall wie 'artwork' behandelt.
+- **Nächster Schritt:** Optional: Anzeige/Badge „Kunstwerk“/„Produkt“/„Idee“ auf Karten oder in Listen; MUSTER_ARTWORKS/SEED mit entryType ergänzen. Oder erst nach Georgs Feedback.
 
 ---
 

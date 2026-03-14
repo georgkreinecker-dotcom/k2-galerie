@@ -1,4 +1,4 @@
-# Anke – Briefing – 13.03.26
+# Anke – Briefing – 14.03.26
 
 > Ankes Briefing für Session-Start. Generiert von `npm run briefing`. Stand, Offen, Proaktiv.
 
@@ -29,7 +29,6 @@
 
 ## Proaktiv (Vorschläge)
 
-- **Uncommitted:** Es gibt noch nicht committete Änderungen – vor Session-Ende: Commit + Push?
 - **Optional:** Grafiker-Tisch hat optionale Punkte (z. B. Texte kürzen) – nur wenn du dran willst.
 
 ---

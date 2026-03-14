@@ -730,6 +730,25 @@ export const ARTWORK_CATEGORIES = [
 
 export type ArtworkCategoryId = typeof ARTWORK_CATEGORIES[number]['id']
 
+/**
+ * Werktypen (Vision: Werke = Oberbegriff, Kunstwerk = Unterkategorie).
+ * Ein Modell, eine Liste – Typ als Feld, konfigurierbar. Kunst = Träger der Idee; ganzer Markt hat Platz.
+ * Doku: docs/VISION-WERKE-IDEEN-PRODUKTE.md
+ */
+export const ENTRY_TYPES = [
+  { id: 'artwork', label: 'Kunstwerk' },
+  { id: 'product', label: 'Produkt' },
+  { id: 'idea', label: 'Idee' },
+] as const
+
+export type EntryTypeId = typeof ENTRY_TYPES[number]['id']
+
+export function getEntryTypeLabel(entryType: string | undefined): string {
+  if (!entryType) return 'Kunstwerk'
+  const t = ENTRY_TYPES.find((x) => x.id === entryType)
+  return t ? t.label : entryType
+}
+
 /** VK2: Kunstbereiche (ein „Werk“ = ein Künstler:innen-Profil im Verein) */
 export const VK2_KUNSTBEREICHE = [
   { id: 'malerei', label: 'Malerei' },

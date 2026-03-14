@@ -20,7 +20,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -1532,6 +1532,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null)
   const [artworkTitle, setArtworkTitle] = useState('')
   const [artworkCategory, setArtworkCategory] = useState<string>('malerei')
+  /** Typ des Eintrags: Kunstwerk / Produkt / Idee (Vision: Werke = Oberbegriff). Doku: docs/VISION-WERKE-IDEEN-PRODUKTE.md */
+  const [artworkEntryType, setArtworkEntryType] = useState<EntryTypeId>('artwork')
   const [artworkCeramicSubcategory, setArtworkCeramicSubcategory] = useState<'vase' | 'teller' | 'skulptur' | 'sonstig'>('vase')
   const [artworkCeramicHeight, setArtworkCeramicHeight] = useState<string>('10')
   const [artworkCeramicDiameter, setArtworkCeramicDiameter] = useState<string>('10')
@@ -8475,6 +8477,7 @@ ${'='.repeat(60)}
       number: finalArtworkNumber,
       title: (finalTitle || '').trim(),
       category: artworkCategory,
+      entryType: (artworkEntryType || editingArtwork?.entryType || 'artwork') as EntryTypeId,
       artist: artworkArtist,
       description: artworkDescription,
       technik: artworkTechnik.trim() || undefined,
@@ -8984,6 +8987,7 @@ ${'='.repeat(60)}
       setSelectedFile(null)
       setPreviewUrl(null)
       pendingImageDataUrlRef.current = null
+      setArtworkEntryType('artwork')
       setArtworkTitle('')
       setArtworkCategory(() => {
         try {
@@ -12096,7 +12100,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {!tenant.isVk2 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <button
-                      onClick={() => { setEditingArtwork(null); setIsInExhibition(false); setIsInShop(false); setShowAddModal(true) }}
+                      onClick={() => { setEditingArtwork(null); setArtworkEntryType('artwork'); setIsInExhibition(false); setIsInShop(false); setShowAddModal(true) }}
                       style={{
                         padding: '0.85rem 1.6rem',
                         background: s.gradientAccent,
@@ -12940,6 +12944,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           if (tenant.isOeffentlich) {
                             setArtworkTitle(artwork.title || '')
                             setArtworkCategory((ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei')
+                            setArtworkEntryType(ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork')
                             setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
                             setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
                             setArtworkArtist(artwork.artist || '')
@@ -12965,6 +12970,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           const category = (ARTWORK_CATEGORIES.some((c) => c.id === artwork.category) || VK2_KUNSTBEREICHE.some((c) => c.id === artwork.category)) ? (artwork.category || 'malerei') : 'malerei'
                           setArtworkCategory(category)
+                          setArtworkEntryType(ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork')
                           if (!tenant.isVk2 && category === 'keramik') {
                             const subcategory = artwork.ceramicSubcategory || 'vase'
                             setArtworkCeramicSubcategory(subcategory as 'vase' | 'teller' | 'skulptur' | 'sonstig')
@@ -19024,6 +19030,7 @@ ${name}`
             setEditingMemberIndex(null)
             pendingImageDataUrlRef.current = null
             setMemberForm({ ...EMPTY_MEMBER_FORM })
+            setArtworkEntryType('artwork')
             try {
               const last = localStorage.getItem('k2-last-artwork-category')
               if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
@@ -19096,6 +19103,7 @@ ${name}`
                   setEditingMemberIndex(null)
                   pendingImageDataUrlRef.current = null
                   setMemberForm({ ...EMPTY_MEMBER_FORM })
+                  setArtworkEntryType('artwork')
                   setArtworkTitle('')
                   try {
                     const last = localStorage.getItem('k2-last-artwork-category')
@@ -19833,6 +19841,14 @@ ${name}`
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
+                    <select value={artworkEntryType} onChange={(e) => setArtworkEntryType(e.target.value as EntryTypeId)} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                      {ENTRY_TYPES.map((t) => (
+                        <option key={t.id} value={t.id}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
                   {artworkFormVariantOek2 === 'ausfuehrlich' && (
                     <>
                       <div>
@@ -19982,6 +19998,14 @@ ${name}`
                     ))}
                   </select>
                 </div>
+              </div>
+              <div style={{ marginTop: '0.5rem' }}>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
+                <select value={artworkEntryType} onChange={(e) => setArtworkEntryType(e.target.value as EntryTypeId)} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                  {ENTRY_TYPES.map((t) => (
+                    <option key={t.id} value={t.id}>{t.label}</option>
+                  ))}
+                </select>
               </div>
               {/* Keramik-Unterkategorie (nur K2, nicht VK2) */}
               {!tenant.isVk2 && artworkCategory === 'keramik' && (
@@ -20414,6 +20438,7 @@ ${name}`
                   onClick={() => {
                     setShowAddModal(false)
                     setEditingArtwork(null)
+                    setArtworkEntryType('artwork')
                     setArtworkTitle('')
                     try {
                       const last = localStorage.getItem('k2-last-artwork-category')
