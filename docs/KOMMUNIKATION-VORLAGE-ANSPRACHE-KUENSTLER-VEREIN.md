@@ -23,7 +23,7 @@
 >
 > [Dein Name / K2 Galerie]
 
-**Platzhalter ersetzen:** [Anrede / Name] (z. B. „Liebe Maria,“ / „Hallo Thomas,“), [Dein Name / K2 Galerie] (z. B. „Martina und Georg“ oder „K2 Galerie“).
+**Platzhalter ersetzen:** [Anrede / Name] (z. B. „Liebe Maria,“ / „Hallo Thomas,“), [Dein Name / K2 Galerie] (z. B. „Georg“ oder „K2 Galerie“ – Plattform-Kommunikation macht Georg alleine).
 
 ---
 
@@ -37,7 +37,7 @@
 
 > [Anrede / Name],
 >
-> wir laden euch ein, **VK2** anzuschauen – die Plattform für Kunstvereine: alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Galerie, Kasse und Events aus einer Hand.
+> wir laden euch ein, **VK2** anzuschauen – die Plattform für alle Vereine (Kunstvereine = Einstieg): alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Galerie, Kasse und Events aus einer Hand.
 >
 > VK2-Demo: https://k2-galerie.vercel.app/projects/vk2
 >

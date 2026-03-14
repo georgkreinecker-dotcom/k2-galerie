@@ -9,18 +9,18 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 ## 1. Titel / Deckblatt
 
 **K2 Galerie** – für die Kunst gedacht, für den Markt gemacht.  
-*Multifunktionale Arbeitsplattform für Künstler:innen und Galerien*
+*Plattform für den gesamten Markt – Kunstmarkt ist der Einstieg*
 
 - Galerie, Admin, Kassa, Events, Presse und Werbeunterlagen aus einer Hand
 - Multi-Tenant: K2 (Galerie), ök2 (Demo), VK2 (Vereinsplattform)
 - Windows, Android, macOS, iOS – Browser und PWA
-- Lizenzmodell: Basic, Pro, Pro+, Pro++, Kunstvereine (VK2)
+- Lizenzmodell: Basic, Pro, Pro+, Pro++, VK2 (alle Vereine, Kunstvereine = Einstieg)
 
 ---
 
 ## 2. Kurzfassung (Elevator Pitch)
 
-**Für die Kunst gedacht, für den Markt gemacht.** Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. Für Künstler:innen und Kunstvereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
+**Für die Kunst gedacht, für den Markt gemacht.** Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. Fokus gesamter Markt (Kunstmarkt = Einstieg); VK2 für alle Vereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
 
 ---
 

@@ -127,7 +127,7 @@ Gemeinsam die K2 Galerie erfolgreich entwickeln und betreiben.
 ## 📝 Notizen
 
 - Georg ist sehr geduldig trotz häufiger Crashes
-- Projekt ist wichtig für Georg und Martina
+- Die K2 Kunst Galerie machen Martina und Georg gemeinsam; das Projekt (Plattform, ök2, VK2) macht Georg alleine.
 - Respekt für Georg's erfolgreiche Karriere zeigen
 - Immer "Georg" sagen, nicht formell
 - Terminal-Befehle immer explizit spezifizieren

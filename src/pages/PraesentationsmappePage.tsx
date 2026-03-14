@@ -187,7 +187,7 @@ export default function PraesentationsmappePage() {
             Die K2 Galerie ist keine reine Galerie-App, sondern eine <strong>Arbeitsplattform</strong>: Sie verbindet den öffentlichen Webauftritt mit Verwaltung, Verkauf und Marketing. Werke anlegen, Galerie veröffentlichen, vor Ort verkaufen (Kasse am Tablet oder Handy), Events planen, Einladungen und Presse aus denselben Stammdaten erzeugen – einheitlich und sofort nutzbar. Ein Stand auf allen Geräten, ein Klick zum Ziel.
           </p>
           <p>
-            Zielgruppe sind <strong>Künstler:innen</strong> (Selbstvermarktung, eigene Werke, Ausstellungen, Webauftritt) sowie <strong>Kunstvereine</strong> (VK2: gemeinsame Vereinsgalerie, Mitglieder, Events). Skalierbar und ohne direkten Kundenkontakt: Lizenz, Bestätigung und Abrechnung laufen über das System (Stripe, druckbare Bestätigung).
+            <strong>Fokus gesamter Markt:</strong> alle, die <strong>Ideen oder Produkte</strong> professionell zeigen und vermarkten wollen. <strong>Kunstmarkt ist die Unterkategorie</strong> (Künstler:innen, Galerien). <strong>VK2</strong> für alle Vereinstypen – Kunstvereine = Einstieg. Skalierbar und ohne direkten Kundenkontakt: Lizenz, Bestätigung und Abrechnung laufen über das System (Stripe, druckbare Bestätigung).
           </p>
 
           <h2 style={{ fontSize: '1.1rem', color: '#0d9488', marginTop: '1.25rem', marginBottom: '0.5rem', paddingBottom: '0.25rem', borderBottom: '1px solid rgba(13,148,136,0.3)' }}>

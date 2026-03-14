@@ -4,7 +4,8 @@
 
 **Für die Kunst gedacht, für den Markt gemacht.**
 
-- **Für die Kunst gedacht:** Aus der Kunst heraus entstanden – für Künstler:innen, für Werke, Ideen und Produkte. Ein Modell, eine Galerie: Qualität und Sorgfalt in der Präsentation.
+- **Fokus = gesamter Markt.** In der Kommunikation muss klar sein: Wir adressieren **alle, die Ideen oder Produkte** professionell zeigen und vermarkten wollen. Das ist der Markt. **Kunstmarkt ist die Unterkategorie** – der Einstieg, aus dem wir kommen (Künstler:innen, Galerien, Kunstvereine), nicht die Grenze.
+- **Für die Kunst gedacht:** Aus der Kunst heraus entstanden. Ein Modell, eine Galerie: Qualität und Sorgfalt in der Präsentation.
 - **Für den Markt gemacht:** Vermarktbar, professionell, skalierbar. Gleicher Stand auf allen Geräten, Lizenzen für Einstieg bis Vollausbau (Basic, Pro, Pro+, Pro++, VK2), ohne Sonderbau pro Kunde.
 
 **Verwendung:** Diese Botschaft gilt einheitlich in Handbuch, Präsentationsmappe, Werbetexte und mök2. Keine abweichende Positionierung – Sportwagenmodus.
@@ -23,8 +24,13 @@
 
 ## Zielgruppe (Priorität)
 
-1. **Künstler:innen** – Selbstvermarktung, eigene Werke, eigene Ausstellungen, eigener Webauftritt.
-2. **Galerien** – können mitgedacht werden, sind nicht die Hauptzielgruppe.
+**Fokus = gesamter Markt.** Die Kommunikation muss das klar machen. **Kunstmarkt = Unterkategorie** (Einstieg, Herkunft).
+
+1. **Gesamter Markt:** Alle, die **Ideen oder Produkte** professionell zeigen und vermarkten wollen – eine Galerie im Netz, ein Modell, eine Plattform.
+2. **Kunstmarkt (Unterkategorie):** Künstler:innen, Galerien, Kunstvereine (VK2). Unser Einstieg, aus der Kunst heraus entstanden – nicht die Grenze des Markts.
+3. **VK2 (Vereinsplattform):** Für **alle Vereinstypen** anwendbar – Vereine sind ähnlich strukturiert (Mitglieder, gemeinsamer Auftritt, Events). **Kunstvereine** sind die aktuelle Unterkategorie/Einstieg; die Plattform passt für alle Vereine. Gemeinsame Vereinsgalerie, Mitglieder mit eigener Galerie, Vereinskatalog, Events; ab 10 Mitgliedern für den Verein kostenfrei.
+
+ök2 nutzen kann der gesamte Markt (Ideen, Produkte); Kunstmarkt ist die Unterkategorie. VK2 nutzen können alle Vereine; Kunstvereine sind der aktuelle Einstieg.
 
 ---
 

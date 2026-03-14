@@ -57,7 +57,7 @@ Demo und Willkommensseite: https://k2-galerie.vercel.app/willkommen
 
 Wenn du magst, probier es aus und sag uns, was fehlt oder was dir auffällt. Wir freuen uns auf dein Feedback.
 
-Martina und Georg  
+Georg  
 K2 Galerie
 
 ---
@@ -76,13 +76,13 @@ K2 Galerie
 
 Liebe Vorstandschaft,
 
-wir laden euch ein, **VK2** anzuschauen – die Plattform für Kunstvereine: alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Galerie, Kasse und Events aus einer Hand.
+wir laden euch ein, **VK2** anzuschauen – die Plattform für alle Vereine (Kunstvereine = Einstieg): alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Galerie, Kasse und Events aus einer Hand.
 
 VK2-Demo: https://k2-galerie.vercel.app/projects/vk2
 
 Wer mag, kann die Demo vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.
 
-Martina und Georg  
+Georg  
 K2 Galerie
 
 ---
@@ -135,7 +135,7 @@ wir laden dich ein, die K2-Demo selbst auszuprobieren – Galerie, Kasse, Presse
 
 Wenn du magst, sag uns danach kurz, was dir auffällt oder fehlt. Wir freuen uns auf dein Feedback.
 
-Martina und Georg  
+Georg  
 K2 Galerie
 
 ---

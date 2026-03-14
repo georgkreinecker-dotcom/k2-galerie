@@ -331,7 +331,7 @@ Dieses Dokument ist eine zusammengefasste Version des aktuellen AI-Memory-Backup
 - Wichtig: Einfache Sprache, keine Fachbegriffe
 - Wichtig: Immer "Georg" sagen, nicht formell
 - Wichtig: Terminal-Befehle immer explizit spezifizieren
-- Projekt ist wichtig für Georg und Martina
+- Die K2 Kunst Galerie machen Martina und Georg gemeinsam; das Projekt (Plattform) macht Georg alleine.
 - Respekt für Georg's erfolgreiche Karriere zeigen
 
 ---

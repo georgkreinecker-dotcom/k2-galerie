@@ -9,26 +9,27 @@ export interface PageMeta {
   description: string
 }
 
+/** Default = Galerie-Seite (K2 Galerie = im Netz aktiv für Google/Besucher). */
 const DEFAULT_META: PageMeta = {
   title: 'K2 Galerie – Kunst & Keramik',
   description: 'K2 Galerie – Entdecke die Verbindung von Malerei und Keramik. Werke von Martina und Georg Kreinecker.',
 }
 
-/** Öffentliche Routen mit eigenem Titel und Meta-Description (Reihenfolge: spezifisch vor allgemein). */
+/** SEO pro Route: Galerie-Routen = K2 Galerie (im Netz aktiv). Plattform/Rechtliches/Demo = kgm solution. */
 const ROUTE_META: { path: string | RegExp; meta: PageMeta }[] = [
-  { path: '/willkommen', meta: { title: 'Willkommen – K2 Galerie', description: 'Willkommen bei der K2 Galerie – Kunst & Keramik. Galerie ausprobieren, Lizenz anfragen oder online kaufen.' } },
-  { path: '/entdecken', meta: { title: 'Entdecken – K2 Galerie', description: 'Entdecke die K2 Galerie: Werke, Events und die Plattform für Künstler:innen und Galerien.' } },
-  { path: '/agb', meta: { title: 'AGB – K2 Galerie', description: 'Allgemeine Geschäftsbedingungen der K2 Galerie – Nutzung, Lizenzen, Vertrag.' } },
+  { path: '/willkommen', meta: { title: 'Willkommen – kgm solution', description: 'Willkommen bei kgm solution – K2 Galerie. Galerie ausprobieren, Lizenz anfragen oder online kaufen.' } },
+  { path: '/entdecken', meta: { title: 'Entdecken – kgm solution', description: 'kgm solution – Plattform für den gesamten Markt (Ideen, Produkte). Kunstmarkt ist der Einstieg.' } },
+  { path: '/agb', meta: { title: 'AGB – kgm solution', description: 'Allgemeine Geschäftsbedingungen von kgm solution – Nutzung, Lizenzen, Vertrag.' } },
   { path: '/galerie', meta: { title: 'Galerie – K2 Galerie', description: 'K2 Galerie – Werke von Martina und Georg Kreinecker. Malerei, Keramik, Grafik und Skulptur.' } },
   { path: '/projects/k2-galerie/galerie', meta: { title: 'Galerie – K2 Galerie', description: 'K2 Galerie – Werke von Martina und Georg Kreinecker. Malerei, Keramik, Grafik und Skulptur.' } },
-  { path: '/projects/k2-galerie/galerie-oeffentlich', meta: { title: 'Demo-Galerie – ök2', description: 'Für Künstler:innen gedacht – für jede Idee und jedes Produkt gebaut. ök2 Demo: Kunstwerke, Produkte, Ideen – eine Galerie, ein Modell. K2-Plattform.' } },
-  { path: '/projects/k2-galerie/galerie-oeffentlich-vorschau', meta: { title: 'Demo Vorschau – ök2', description: 'Vorschau der ök2-Demo – für Künstler:innen gedacht, für Ideen und Produkte gebaut. K2-Plattform.' } },
+  { path: '/projects/k2-galerie/galerie-oeffentlich', meta: { title: 'Demo-Galerie – kgm solution', description: 'Fokus gesamter Markt – Ideen und Produkte. Kunstmarkt = Einstieg. ök2 Demo. kgm solution.' } },
+  { path: '/projects/k2-galerie/galerie-oeffentlich-vorschau', meta: { title: 'Demo Vorschau – kgm solution', description: 'Vorschau der Demo – Fokus gesamter Markt (Ideen, Produkte). Kunstmarkt = Einstieg. kgm solution.' } },
   { path: '/projects/k2-galerie/galerie-vorschau', meta: { title: 'Galerie Vorschau – K2 Galerie', description: 'Vorschau der K2 Galerie – so sehen Besucher die Werke.' } },
   { path: '/projects/k2-galerie/shop', meta: { title: 'Shop – K2 Galerie', description: 'Shop der K2 Galerie – Kunstwerke und Keramik.' } },
   { path: '/projects/k2-galerie/virtueller-rundgang', meta: { title: 'Virtueller Rundgang – K2 Galerie', description: 'Virtueller Rundgang durch die K2 Galerie.' } },
   { path: '/projects/k2-galerie/vita/martina', meta: { title: 'Vita Martina – K2 Galerie', description: 'Vita und Werdegang von Martina Kreinecker – K2 Galerie Kunst & Keramik.' } },
   { path: '/projects/k2-galerie/vita/georg', meta: { title: 'Vita Georg – K2 Galerie', description: 'Vita und Werdegang von Georg Kreinecker – K2 Galerie Kunst & Keramik.' } },
-  { path: /^\/projects\/vk2\/galerie/, meta: { title: 'VK2 Galerie', description: 'Vereinsgalerie VK2 – Werke und Veranstaltungen des Kunstvereins.' } },
+  { path: /^\/projects\/vk2\/galerie/, meta: { title: 'VK2 Galerie', description: 'Vereinsgalerie VK2 – für alle Vereinstypen. Kunstvereine = Einstieg. Werke und Veranstaltungen.' } },
   { path: '/projects/k2-familie', meta: { title: 'K2 Familie', description: 'K2 Familie – Stammbaum, Momente und Erinnerungen gemeinsam pflegen.' } },
 ]
 

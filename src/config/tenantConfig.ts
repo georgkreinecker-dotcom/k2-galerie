@@ -6,21 +6,24 @@
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 
-/** Markenname des Produkts – festgeschrieben, einheitlich in der gesamten App verwenden */
-export const PRODUCT_BRAND_NAME = 'K2 Galerie'
+/** Firmen-/Plattform-Marke (Copyright, Rechtliches, Lizenz, Plattform-UI). */
+export const PRODUCT_BRAND_NAME = 'kgm solution'
 
-/** Copyright-Zeile mit K2-Brand – an Footer/Impressum/AGB etc. verwenden */
-export const PRODUCT_COPYRIGHT = '© 2026 K2 Galerie · Alle Rechte vorbehalten · Design und Entwicklung: kgm solution (G. Kreinecker)'
+/** Zweite Marke – im Netz aktiv (Google, Galerie-Seiten, Besucher). Für SEO und alle Galerie-Routen. */
+export const K2_GALERIE_PUBLIC_BRAND = 'K2 Galerie'
+
+/** Copyright-Vermerk (kurz, mit „Copyright“) – für Footer, Impressum, AGB, Druck. */
+export const PRODUCT_COPYRIGHT = 'Copyright © 2026 kgm solution. Alle Rechte vorbehalten. Design und Entwicklung: kgm solution (G. Kreinecker)'
 
 /** Nur Brand + Copyright – überall außerhalb von K2 (ök2, VK2): keine K2-Daten, nur diese Zeile. */
-export const PRODUCT_COPYRIGHT_BRAND_ONLY = '© 2026 K2 Galerie · Alle Rechte vorbehalten'
+export const PRODUCT_COPYRIGHT_BRAND_ONLY = 'Copyright © 2026 kgm solution. Alle Rechte vorbehalten.'
 
 /**
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
  * Eine Quelle, überall präsent.
  */
 /** Werbeslogan 1 – markante Aussage (Menschen mit Idee = Künstler:innen, Macher:innen, alle mit etwas zu zeigen) */
-export const PRODUCT_WERBESLOGAN = 'K2 Galerie – für Menschen mit Idee, die gesehen werden wollen'
+export const PRODUCT_WERBESLOGAN = 'kgm solution – für Menschen mit Idee, die gesehen werden wollen'
 
 /** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 */
 export const PRODUCT_WERBESLOGAN_2 = 'Deine Kunst verdient mehr als einen Instagram-Post.'
@@ -28,15 +31,15 @@ export const PRODUCT_WERBESLOGAN_2 = 'Deine Kunst verdient mehr als einen Instag
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'
 
-/** Zielgruppe in einem Satz – für Werbung, mök2, alle Kanäle (eine Quelle). */
+/** Zielgruppe in einem Satz – für Werbung, mök2, alle Kanäle (eine Quelle). Fokus = gesamter Markt; Kunstmarkt = Unterkategorie. */
 export const PRODUCT_ZIELGRUPPE =
-  'Künstler:innen mit Verkauf – Atelier, Ausstellungen, Märkte – die Webauftritt, Kasse und Werbung aus einer Hand wollen.'
+  'Fokus gesamter Markt: alle, die Ideen oder Produkte professionell zeigen und vermarkten wollen. Kunstmarkt ist unsere Unterkategorie und das Einstiegstor (Künstler:innen, Galerien, Kunstvereine).'
 
 /** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
 export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 
 /** Betreff für Lizenz-Anfrage-E-Mail (kurz, erkennbar). */
-export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'K2 Galerie – Lizenz anfragen'
+export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'kgm solution – Lizenz anfragen'
 
 /** Basis-URL der App (für Presse/Links/QR – keine Importe aus navigation). */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
@@ -45,7 +48,7 @@ export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
 export const PRODUCT_FEEDBACK_EMAIL = 'georg.kreinecker@kgm.at'
 
 /** Betreff für Feedback-E-Mail */
-export const PRODUCT_FEEDBACK_BETREFF = 'K2 Galerie – Mein Wunsch / Feedback'
+export const PRODUCT_FEEDBACK_BETREFF = 'kgm solution – Mein Wunsch / Feedback'
 
 export type TenantId = 'k2' | 'demo' | 'oeffentlich' | 'vk2'
 

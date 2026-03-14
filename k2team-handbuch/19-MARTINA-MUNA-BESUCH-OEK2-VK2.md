@@ -8,15 +8,15 @@
 
 ## In einem Satz (was Martina erzählen kann)
 
-*„Georg und ich bauen an einer Plattform für Künstler:innen und kleine Galerien – Galerie im Netz, Kasse, Einladungen und Presse in einem. Heute zeige ich dir zwei Sachen: **ök2** ist die Künstler-Demo, **VK2** ist für Kunstvereine. Du kannst beides auf deinem Laptop und auf dem Handy ansehen.“*
+*„Georg und ich bauen an einer Plattform für den gesamten Markt – Galerie im Netz, Kasse, Einladungen und Presse in einem. Kunstmarkt ist unser Einstieg. Heute zeige ich dir zwei Sachen: **ök2** ist die Demo (Ideen, Produkte), **VK2** ist für alle Vereine (Kunstvereine = Einstieg). Du kannst beides auf deinem Laptop und auf dem Handy ansehen.“*
 
 ---
 
 ## Was du damit machen kannst
 
 - **Galerie ansehen:** Werke, Bilder, Infos – wie eine Ausstellung im Netz.
-- **ök2 (Künstler-Demo):** Zeigt, wie Künstler:innen ihre Galerie präsentieren – Werke durchklicken, Vita, Kontakt. Später auch Kasse, Einladungen, Presse.
-- **VK2 (Vereinsplattform):** Dasselbe für Kunstvereine – Galerie, Mitglieder, Events. Alles im Browser, keine Installation.
+- **ök2 (Demo):** Zeigt die Plattform für Ideen und Produkte – Werke durchklicken, Vita, Kontakt. Kunstmarkt = Einstieg. Später auch Kasse, Einladungen, Presse.
+- **VK2 (Vereinsplattform):** Für alle Vereinstypen – Kunstvereine = Einstieg. Galerie, Mitglieder, Events. Alles im Browser, keine Installation.
 
 ---
 

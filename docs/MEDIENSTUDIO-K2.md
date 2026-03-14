@@ -43,7 +43,7 @@
 
 **Für Medien, die eine kleine „Geschichte dahinter“ mögen – locker, mit Augenzwinkern, nicht zu ernst:**
 
-> Zwei pensionierte Unternehmer, ein Traum: Mit ihrer eigenen Galerie wollen Martina und Georg Kreinecker ihre künstlerischen Werke zeigen – Malerei und Keramik, nah an den Menschen. Nur: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fanden sie vor allem Stückwerke – dies für die Galerie, das für die Kasse, jenes für die Einladungen. Also wurde selbst gebaut: Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für Künstler:innen, VK2 für Kunstvereine). Kein Tech-Konzern, sondern zwei, die sich einen Traum erfüllen und dabei nicht auf halben Lösungen sitzen bleiben wollten. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.
+> Die K2 Kunst Galerie betreiben Martina und Georg Kreinecker gemeinsam. Die Plattform (ök2, VK2) hat Georg gebaut – am Markt fand er vor allem Stückwerke, also wurde selbst gebaut. Galerie, Kasse, Events und Presse aus einer Hand. Kein Tech-Konzern, sondern einer, der nicht auf halben Lösungen sitzen bleiben wollte.
 
 **Ablage:** Präsent in diesem Dokument (§1a). In der App: Admin → Presse & Medien (nur im K2-Admin) → Block „Story für Presse (optional)“ → kopieren, wenn du es brauchst.
 

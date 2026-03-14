@@ -266,7 +266,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
           <div className="flyer-a5" style={{ width: '148mm', maxWidth: '100%', minHeight: '210mm', background: s.gradient, borderRadius: s.radius, padding: '12mm 14mm', marginBottom: '1rem', boxShadow: s.shadow, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, right: 0, width: '80%', height: '60%', background: `radial-gradient(ellipse at 100% 0%, ${s.accentSoft}, transparent 60%)`, pointerEvents: 'none' }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
-              <p style={{ fontFamily: s.fontHeading, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: s.muted, margin: 0 }}>Die Galerie-App für Künstler:innen</p>
+              <p style={{ fontFamily: s.fontHeading, fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: s.muted, margin: 0 }}>Plattform für den gesamten Markt – Kunstmarkt ist der Einstieg</p>
               <h1 style={{ fontFamily: s.fontHeading, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 600, margin: '0.35rem 0 0.75rem', color: s.accent }}>
                 {PRODUCT_BRAND_NAME}
               </h1>

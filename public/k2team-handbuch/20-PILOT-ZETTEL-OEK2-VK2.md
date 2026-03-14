@@ -2,7 +2,7 @@
 
 **Zum Drucken:** Mission Control → „Pilot-Zettel“ → Name eintragen (optional Pilot-URL) → Zettel anzeigen → 🖨️ Drucken. Oder direkt diese Seite öffnen, Name oben ausfüllen bzw. von der URL übernommen, dann drucken.
 
-**Ein Zettel für jede:n Testpilot:in** – voller kostenloser Zugang zu ök2 (Künstler-Demo) und VK2 (Vereinsplattform). Am Laptop und auf dem Handy nutzbar. Einmal ausdrucken, übergeben, fertig.
+**Ein Zettel für jede:n Testpilot:in** – voller kostenloser Zugang zu ök2 (Demo für Ideen und Produkte) und VK2 (Vereinsplattform für alle Vereine). Am Laptop und auf dem Handy nutzbar. Einmal ausdrucken, übergeben, fertig.
 
 ---
 
@@ -14,15 +14,15 @@
 
 ## In einem Satz (was du erzählen kannst)
 
-*„Das ist eine Plattform für Künstler:innen und kleine Galerien – Galerie im Netz, Kasse, Einladungen und Presse in einem. Du hast als Testpilot:in vollen Gratis-Zugang. **ök2** ist die Künstler-Galerie, **VK2** die Vereinsplattform. Beides kannst du auf Laptop und Handy ansehen und ausprobieren.“*
+*„Das ist eine Plattform für den gesamten Markt – Galerie im Netz, Kasse, Einladungen und Presse in einem. Kunstmarkt ist unser Einstieg. Du hast als Testpilot:in vollen Gratis-Zugang. **ök2** ist die Demo (Ideen, Produkte), **VK2** die Vereinsplattform (für alle Vereine). Beides kannst du auf Laptop und Handy ansehen und ausprobieren.“*
 
 ---
 
 ## Was du damit machen kannst
 
 - **Galerie ansehen:** Werke, Bilder, Infos – wie eine Ausstellung im Netz.
-- **ök2 (Künstler-Galerie):** Deine Test-Galerie – Werke durchklicken, Vita, Kontakt. Später auch Kasse, Einladungen, Presse. Du kannst Inhalte bearbeiten und veröffentlichen.
-- **VK2 (Vereinsplattform):** Dasselbe für Kunstvereine – Galerie, Mitglieder, Events. Alles im Browser, keine Installation.
+- **ök2 (Demo):** Deine Test-Galerie – Ideen und Produkte präsentieren, Werke durchklicken, Vita, Kontakt. Kunstmarkt = Einstieg. Du kannst Inhalte bearbeiten und veröffentlichen.
+- **VK2 (Vereinsplattform):** Für alle Vereinstypen – Kunstvereine = Einstieg. Galerie, Mitglieder, Events. Alles im Browser, keine Installation.
 
 ---
 

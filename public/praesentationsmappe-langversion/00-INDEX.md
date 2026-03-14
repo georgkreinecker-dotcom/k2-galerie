@@ -40,7 +40,7 @@ Veranstaltungen, Flyer, Presse, Einladungen – aus einer Hand.
 
 9. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
-Gemeinsame Vereinsgalerie, Mitglieder, eine Lizenz – ab 10 Mitgliedern für den Verein kostenfrei.
+Für alle Vereinstypen – Kunstvereine = Einstieg. Gemeinsame Vereinsgalerie, Mitglieder, eine Lizenz – ab 10 Mitgliedern für den Verein kostenfrei.
 
 10. [Demo und Lizenz](10-DEMO-LIZENZ.md)
 

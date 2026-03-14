@@ -6,7 +6,7 @@
 
 Lieber Andreas,
 
-ich schicke dir eine persönliche Zusammenfassung unseres Projekts – damit du siehst, woran Martina und ich gerade bauen und wo wir stehen. Wenn du magst, kannst du dir die Demo-Galerie gleich am Handy oder am Rechner ansehen (Link unten).
+ich schicke dir eine persönliche Zusammenfassung des Projekts – damit du siehst, woran ich gerade baue und wo wir stehen. (Die K2 Kunst Galerie machen Martina und ich gemeinsam; die Plattform/App baue ich alleine.) Wenn du magst, kannst du dir die Demo-Galerie gleich am Handy oder am Rechner ansehen (Link unten).
 
 ---
 

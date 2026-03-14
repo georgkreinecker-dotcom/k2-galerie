@@ -17,7 +17,7 @@ Deine Kunst verdient mehr als einen Instagram-Post.
 
 **Was ist K2?**
 
-K2 Galerie ist die Plattform für Galerien, Künstler:innen und Kunstvereine: Werke präsentieren, Kasse führen, Events planen, Presse aus einer Hand. **ök2** für Künstler:innen mit eigenem Auftritt, **VK2** für Vereine – eine Oberfläche, kein Stückwerk.
+K2 Galerie ist die Plattform für den gesamten Markt: Ideen und Produkte präsentieren, Kasse führen, Events planen, Presse aus einer Hand. Kunstmarkt = Einstieg. **ök2** für alle mit Ideen oder Produkten, **VK2** für alle Vereine – eine Oberfläche, kein Stückwerk.
 
 ---
 

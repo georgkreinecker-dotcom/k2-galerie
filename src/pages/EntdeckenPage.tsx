@@ -127,7 +127,7 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
           {PRODUCT_BRAND_NAME}
         </div>
         <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '0.3rem' }}>
-          Galerie · für Künstler:innen
+          Galerie · für Ideen und Produkte
         </div>
       </div>
 
