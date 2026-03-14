@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.03.26 – **(1) mök2-Integration Positionierung:** Erkenntnis „Social Media ist Masse – wir sind individuell und Klasse“ + „Eigener Ort statt Miete bei anderen“ in mök2 umgesetzt: tenantConfig PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT; MarketingOek2Page: Genaue Produktbeschreibung (hervorgehobener Absatz), 1. USPs (neuer erster USP), 7. Promotion (Positionierungsblock + in Werbelinie). Quelle zentral in tenantConfig; Marktanalyse docs/MARKTANALYSE-K2-GALERIE.md. **(2) Davor:** Zwei Marken + Copyright, Leitbotschaft + Struktur. **Nächster Schritt:** Georg schaut mök2 durch; ggf. Weit testen, Migration 008. (Commit + Push folgt.)
+**Letzter Stand:** 14.03.26 – **(1) mök2-Integration Positionierung:** Erkenntnis „Social Media ist Masse – wir sind individuell und Klasse“ + „Eigener Ort statt Miete bei anderen“ in mök2 umgesetzt: tenantConfig PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT; MarketingOek2Page: Genaue Produktbeschreibung (hervorgehobener Absatz), 1. USPs (neuer erster USP), 7. Promotion (Positionierungsblock + in Werbelinie). Quelle zentral in tenantConfig; Marktanalyse docs/MARKTANALYSE-K2-GALERIE.md. **(2) Davor:** Zwei Marken + Copyright, Leitbotschaft + Struktur. **Nächster Schritt:** Georg schaut mök2 durch; ggf. Weit testen, Migration 008. (Commit 2082974 ✅ auf GitHub.)
 
 **Was wir JETZT tun:** Struktur und Logik sind drin – eine Botschaft, eine Lizenzreihe, überall konsistent.
 
