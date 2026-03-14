@@ -49,7 +49,7 @@
 
 **Kernunterschied:** Eine Arbeitsplattform statt „nur Webseite“ oder „nur Shop“: Galerie, Werke, Verkauf (Kasse), Kassabuch, Events, Presse/Flyer/Newsletter/Social aus denselben Stammdaten, ein Klick zum Ziel. Fokus gesamter Markt, Kunst als Einstieg.
 
-**Positionierung zu Social Media:** Wir stehen nicht in Konkurrenz zum Social-Mainstream (Instagram, Facebook, TikTok etc.). Das sind Massenplattformen – Reichweite, Algorithmus, eine Miete bei anderen. K2 ist das Gegenteil: **persönliche, individuelle Nische** – der eigene Ort im Netz, eigene URL, eigene Kontrolle, professionelle Dauerpräsenz. Wer das will (eigene Galerie, Kasse, alles aus einer Hand), sucht nicht „noch mehr Social“, sondern genau das. Nische, nicht Mainstream.
+**Positionierung zu Social Media:** Wir stehen nicht in Konkurrenz zum Social-Mainstream (Instagram, Facebook, TikTok etc.). **Social Media ist Masse – wir sind individuell und Klasse.** Massenplattformen = Reichweite, Algorithmus, Miete bei anderen. K2 = der eigene Ort im Netz, eigene URL, eigene Kontrolle, professionelle Dauerpräsenz – individuell und mit Klasse. Wer das will (eigene Galerie, Kasse, alles aus einer Hand), sucht nicht „noch mehr Social“, sondern genau das. Nische, nicht Mainstream.
 
 **Der Kern, der alle anspricht:** Genau das ist der eine Kern, der **alle** Zielgruppen trifft – Künstler:innen, Galerien, Vereine, alle mit Ideen oder Produkten: **eigener Ort statt Miete bei anderen.** Nicht Reichweite um jeden Preis, sondern: meine Präsenz, meine Kontrolle, mein professioneller Platz im Netz – dauerhaft, in einer Hand. Eine Botschaft, die für alle gilt.
 
@@ -100,7 +100,7 @@
 
 **Markt:** Künstler:innen, kleine Galerien, Kunstvereine und erweitert alle mit Ideen/Produkten; DACH; Skalierung über Lizenzen ohne direkten Kundenkontakt.
 
-**Wettbewerb:** Keine Konkurrenz zum Social-Mainstream – K2 = persönliche, individuelle Nische (eigener Ort im Netz vs. Massenplattform). Abgrenzung durch „eine Plattform für alles“, PWA, klare Lizenzen, VK2 und Empfehlungs-Programm.
+**Wettbewerb:** Social Media = Masse. Wir = individuell und Klasse. Keine Konkurrenz zum Mainstream – K2 = persönliche Nische (eigener Ort im Netz vs. Massenplattform). Abgrenzung durch „eine Plattform für alles“, PWA, klare Lizenzen, VK2 und Empfehlungs-Programm.
 
 **Nächste Schritte aus Marktsicht:** Sichtbarkeit (Demo ök2, Präsentationsmappe, Werbematerial), erste Piloten/Lizenznehmer, Feedback einholen, bei Bedarf Lizenzen oder Zielgruppen feinjustieren.
 
