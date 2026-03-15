@@ -13,6 +13,7 @@
     "check-exports": "node scripts/check-duplicate-exports.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "build": "npm run test && node scripts/write-build-info.js --inject-html && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",

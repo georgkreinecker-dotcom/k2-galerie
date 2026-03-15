@@ -5,10 +5,17 @@
  * Wenn ein Test hier fehlschlägt → KEIN Deployment erlaubt.
  *
  * Bezug: docs/GELOESTE-BUGS.md BUG-002, BUG-004
+ * VK2-Absicherungen: docs/K2-OEK2-DATENTRENNUNG.md, QS-VERGLEICH-PROFIS.md
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { getPageContentGalerie, setPageContentGalerie } from '../config/pageContentGalerie'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import {
+  getPageContentGalerie,
+  setPageContentGalerie,
+  getVk2SafeDisplayImageUrl,
+  sanitizePageContentForVk2Publish,
+  mergePageContentGalerieFromServer,
+} from '../config/pageContentGalerie'
 
 const K2_KEY = 'k2-page-content-galerie'
 const OEK2_KEY = 'k2-oeffentlich-page-content-galerie'
@@ -96,4 +103,72 @@ describe('Datentrennung: VK2-Stammdaten', () => {
     expect(localStorage.getItem('k2-vk2-artworks')).toBeNull()
   })
 
+})
+
+describe('VK2 – Keine K2-Daten (Eisernes Gesetz Seitengestaltung)', () => {
+  beforeEach(() => {
+    localStorage.removeItem(K2_KEY)
+    localStorage.removeItem(OEK2_KEY)
+    localStorage.removeItem(VK2_KEY)
+  })
+
+  it('getVk2SafeDisplayImageUrl: K2-URL liefert leer, andere URL bleibt', () => {
+    expect(getVk2SafeDisplayImageUrl('/img/k2/willkommen.jpg')).toBe('')
+    expect(getVk2SafeDisplayImageUrl('/img/vk2/willkommen.jpg')).toBe('/img/vk2/willkommen.jpg')
+    expect(getVk2SafeDisplayImageUrl('')).toBe('')
+    expect(getVk2SafeDisplayImageUrl(undefined)).toBe('')
+  })
+
+  it('sanitizePageContentForVk2Publish: K2-URLs werden entfernt', () => {
+    const input = {
+      welcomeImage: '/img/k2/w.jpg',
+      galerieCardImage: '/img/vk2/card.jpg',
+      virtualTourImage: '/img/k2/tour.jpg',
+      virtualTourVideo: '',
+    }
+    const out = sanitizePageContentForVk2Publish(input)
+    expect(out).not.toBeNull()
+    expect(out!.welcomeImage).toBe('')
+    expect(out!.galerieCardImage).toBe('/img/vk2/card.jpg')
+    expect(out!.virtualTourImage).toBe('')
+    expect(out!.virtualTourVideo).toBe('')
+  })
+
+  it('sanitizePageContentForVk2Publish: null/undefined/leeres Objekt unverändert', () => {
+    expect(sanitizePageContentForVk2Publish(null)).toBeNull()
+    expect(sanitizePageContentForVk2Publish(undefined)).toBeNull()
+    expect(sanitizePageContentForVk2Publish({})).toEqual({})
+  })
+
+  it('getPageContentGalerie(vk2) bereinigt K2-URLs und schreibt Key zurück', () => {
+    localStorage.setItem(VK2_KEY, JSON.stringify({ welcomeImage: '/img/k2/echtesbild.jpg' }))
+    const result = getPageContentGalerie('vk2')
+    expect(result.welcomeImage).toBeFalsy()
+    const stored = JSON.parse(localStorage.getItem(VK2_KEY) || '{}')
+    expect(stored.welcomeImage).toBeFalsy()
+  })
+
+  it('setPageContentGalerie(..., vk2) speichert keine K2-URL (ersetzt durch bestehenden Wert)', () => {
+    localStorage.setItem(VK2_KEY, JSON.stringify({ welcomeImage: '/img/vk2/ok.jpg' }))
+    setPageContentGalerie({ welcomeImage: '/img/k2/darf-nicht-landen.jpg' }, 'vk2')
+    const stored = JSON.parse(localStorage.getItem(VK2_KEY) || '{}')
+    expect(stored.welcomeImage).not.toContain('/img/k2/')
+    expect(stored.welcomeImage).toBe('/img/vk2/ok.jpg')
+  })
+
+  it('setPageContentGalerie(..., vk2) bei leerem bestehendem Wert: K2-URL wird zu leer', () => {
+    localStorage.setItem(VK2_KEY, JSON.stringify({}))
+    setPageContentGalerie({ welcomeImage: '/img/k2/darf-nicht-landen.jpg' }, 'vk2')
+    const stored = JSON.parse(localStorage.getItem(VK2_KEY) || '{}')
+    expect(stored.welcomeImage).not.toContain('/img/k2/')
+    expect(stored.welcomeImage).toBe('')
+  })
+
+  it('mergePageContentGalerieFromServer(..., vk2) übernimmt keine K2-URL vom Server', () => {
+    localStorage.setItem(VK2_KEY, JSON.stringify({ welcomeImage: '' }))
+    mergePageContentGalerieFromServer(JSON.stringify({ welcomeImage: '/img/k2/vom-server.jpg' }), 'vk2')
+    const result = getPageContentGalerie('vk2')
+    expect(result.welcomeImage).not.toContain('/img/k2/')
+    expect(result.welcomeImage).toBeFalsy()
+  })
 })

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
-import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten } from '../config/tenantConfig'
+import { initVk2DemoStammdatenIfEmpty, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
-import { getPageContentGalerie } from '../config/pageContentGalerie'
+import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { BUILD_LABEL } from '../buildInfo.generated'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
@@ -151,7 +151,7 @@ const Vk2GaleriePage: React.FC = () => {
   const subtext = pageTexts.welcomeSubtext?.trim() || stammdaten?.verein?.name || 'Kunstverein'
   const introText = pageTexts.welcomeIntroText?.trim() || 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
   const eventHeading = pageTexts.eventSectionHeading?.trim() || 'Vereinstermine & Events'
-  const welcomeImage = pageContent.welcomeImage || ''
+  const welcomeImage = getVk2SafeDisplayImageUrl(pageContent.welcomeImage) || ''
 
   // Events: nur zukünftige
   const today = new Date()
@@ -308,7 +308,7 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* ── EINGANGSKARTEN ── */}
       <div style={{ padding: '1.75rem clamp(1.25rem, 5vw, 3rem)', background: C.bg }}>
-        <Vk2Eingangskarten />
+        <Vk2Eingangskarten stammdaten={stammdaten} welcomeImage={welcomeImage} />
       </div>
 
       {/* ── TRENNLINIE ── */}
@@ -391,94 +391,57 @@ const Vk2GaleriePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── FOOTER ── */}
-      <footer style={{ marginTop: '3rem', padding: '2rem clamp(1.25rem, 5vw, 3rem) 2.5rem', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}>
-        <div style={{ display: 'flex', gap: '3rem', flexWrap: 'wrap', maxWidth: 860 }}>
-
-          {/* Verein */}
-          <div style={{ minWidth: 200 }}>
-            <p style={{ margin: '0 0 0.15rem', fontWeight: 700, color: C.text, fontSize: '0.92rem' }}>
-              {stammdaten?.verein?.name || 'Verein'}
-            </p>
-            {stammdaten?.verein?.vereinsnummer && (
-              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>ZVR: {stammdaten.verein.vereinsnummer}</p>
-            )}
-            {(stammdaten?.verein?.address || stammdaten?.verein?.city) && (
-              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>
-                {[stammdaten.verein.address, stammdaten.verein.city].filter(Boolean).join(', ')}
-              </p>
-            )}
-            {stammdaten?.verein?.email && (
-              <p style={{ margin: '0 0 0.1rem', fontSize: '0.82rem' }}>
-                <a href={`mailto:${stammdaten.verein.email}`} style={{ color: C.accent, textDecoration: 'none' }}>{stammdaten.verein.email}</a>
-              </p>
-            )}
-          </div>
-
-          {/* Vorstand */}
-          {stammdaten?.vorstand?.name && (
-            <div style={{ minWidth: 160 }}>
-              <p style={{ margin: '0 0 0.35rem', fontWeight: 700, color: C.text, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Vorstand</p>
-              <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>{stammdaten.vorstand.name}</p>
-              {stammdaten.vize?.name && <p style={{ margin: '0 0 0.1rem', color: C.textMid, fontSize: '0.82rem' }}>{stammdaten.vize.name}</p>}
-            </div>
-          )}
-
-          {/* Kommunikation */}
-          {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon) && (
-            <div>
-              <p style={{ margin: '0 0 0.5rem', fontWeight: 700, color: C.text, fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Kontakt</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                {stammdaten?.kommunikation?.whatsappGruppeLink && (
-                  <a href={stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none' }}>
-                    💬 WhatsApp-Gruppe
-                  </a>
-                )}
-                {stammdaten?.kommunikation?.vorstandTelefon && (
-                  <a href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 20, color: '#1a7a3c', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>
-                    📩 Vorstand schreiben
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* QR-Code */}
-          {qrDataUrl && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <img src={qrDataUrl} alt="QR" style={{ width: 72, height: 72, borderRadius: 6, background: '#fff', padding: 3, boxShadow: '0 1px 6px rgba(0,0,0,0.1)' }} />
-              <p style={{ margin: 0, color: C.textLight, fontSize: '0.78rem', maxWidth: 100, lineHeight: 1.4 }}>Mitglieder direkt aufrufen</p>
-            </div>
-          )}
-        </div>
-
-        {/* Umfragen */}
-        {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
-          <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 600 }}>
-            {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
-              const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen!`
-              return (
-                <div key={umfrage.id} style={{ padding: '0.6rem 0.9rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.text, marginBottom: '0.15rem' }}>📊 {umfrage.frage}</div>
-                    <div style={{ fontSize: '0.75rem', color: C.textLight }}>{umfrage.antworten.join(' · ')}</div>
-                  </div>
-                  <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.8rem', background: '#25d366', borderRadius: 18, color: '#fff', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}>
-                    Abstimmen ↗
-                  </a>
+      {/* Impressum – gleiche Struktur wie GaleriePage (section, grid 1fr auto, links Brand + Vereinsdaten, rechts QR) */}
+      <footer style={{ marginTop: 'clamp(2rem, 4vw, 2.5rem)', paddingTop: 'clamp(1rem, 2vw, 1.5rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ maxWidth: '1000px', margin: '0 auto', fontSize: 'clamp(0.75rem, 1.8vw, 0.85rem)', color: C.textMid, lineHeight: '1.5' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'clamp(2rem, 4vw, 3rem)', alignItems: 'flex-start' }}>
+            {/* Linke Seite: Impressum Brand + Vereinsdaten (wie GaleriePage links, mit Platz für Mandant) */}
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: '0 0 1rem', fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', fontWeight: 600, color: C.text }}>Impressum</h4>
+              <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: C.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>{PRODUCT_BRAND_NAME}</p>
+              <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, lineHeight: 1.45 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+              {/* Vereinsdaten (Platz wie ök2 für Galeriedaten) */}
+              <p style={{ margin: '1rem 0 0.25rem', fontWeight: 600, color: C.text, fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{stammdaten?.verein?.name || 'Verein'}</p>
+              {stammdaten?.verein?.vereinsnummer && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>ZVR: {stammdaten.verein.vereinsnummer}</p>}
+              {(stammdaten?.verein?.address || stammdaten?.verein?.city) && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>{[stammdaten.verein.address, stammdaten.verein.city].filter(Boolean).join(', ')}</p>}
+              {stammdaten?.verein?.email && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}><a href={`mailto:${stammdaten.verein.email}`} style={{ color: C.accent, textDecoration: 'none' }}>{stammdaten.verein.email}</a></p>}
+              {stammdaten?.vorstand?.name && <p style={{ margin: '0.5rem 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>Vorstand: {stammdaten.vorstand.name}{stammdaten.vize?.name ? `, ${stammdaten.vize.name}` : ''}</p>}
+              {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon) && (
+                <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {stammdaten?.kommunikation?.whatsappGruppeLink && <a href={stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', width: 'fit-content' }}>💬 WhatsApp-Gruppe</a>}
+                  {stammdaten?.kommunikation?.vorstandTelefon && <a href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 20, color: '#1a7a3c', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none', width: 'fit-content' }}>📩 Vorstand schreiben</a>}
                 </div>
-              )
-            })}
+              )}
+            </div>
+            {/* Rechte Seite: QR (wie GaleriePage) */}
+            {qrDataUrl && (
+              <div style={{ textAlign: 'center', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: C.text, fontWeight: 600 }}>Mitglieder direkt aufrufen</p>
+                <div style={{ background: '#fff', padding: '0.4rem', borderRadius: 8, boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                  <img src={qrDataUrl} alt="QR" style={{ width: 100, height: 100, display: 'block' }} />
+                </div>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Copyright */}
-        <p style={{ margin: '1.5rem 0 0', color: C.textLight, fontSize: '0.75rem' }}>
-          © {new Date().getFullYear()} {stammdaten?.verein?.name || 'Vereinsplattform'} · Powered by K2 Galerie
-        </p>
+          {/* Umfragen */}
+          {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
+            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 600 }}>
+              {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
+                const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen!`
+                return (
+                  <div key={umfrage.id} style={{ padding: '0.6rem 0.9rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.text, marginBottom: '0.15rem' }}>📊 {umfrage.frage}</div>
+                      <div style={{ fontSize: '0.75rem', color: C.textLight }}>{umfrage.antworten.join(' · ')}</div>
+                    </div>
+                    <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.8rem', background: '#25d366', borderRadius: 18, color: '#fff', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}>Abstimmen ↗</a>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+        </div>
       </footer>
 
       {/* Flyer-Modal: Event-Flyer anzeigen */}
@@ -551,18 +514,34 @@ function loadEingangskarten(): EingangskarteData[] {
   return DEFAULT_KARTEN
 }
 
-function Vk2Eingangskarten() {
+function Vk2Eingangskarten({ stammdaten, welcomeImage }: { stammdaten: Vk2Stammdaten | null; welcomeImage?: string }) {
   const [karten, setKarten] = React.useState<EingangskarteData[]>(loadEingangskarten)
 
   React.useEffect(() => {
     const reload = () => setKarten(loadEingangskarten())
     window.addEventListener('storage', reload)
     window.addEventListener('vk2-karten-updated', reload)
+    window.addEventListener('vk2-stammdaten-updated', reload)
     return () => {
       window.removeEventListener('storage', reload)
       window.removeEventListener('vk2-karten-updated', reload)
+      window.removeEventListener('vk2-stammdaten-updated', reload)
     }
   }, [])
+
+  // Demo (Kunstverein Muster): Karten ohne Bild mit Muster-Mitgliederdaten füllen
+  const effectiveKarten = React.useMemo(() => {
+    const base = karten.length >= 2 ? karten : loadEingangskarten()
+    const isDemo = stammdaten?.verein?.name === 'Kunstverein Muster'
+    const mitglieder = stammdaten?.mitglieder ?? []
+    if (!isDemo || mitglieder.length === 0) return base
+    const first = mitglieder[0]
+    return base.map((k, i) => {
+      if (k.imageUrl) return k
+      const imageUrl = i === 0 ? (welcomeImage || first?.imageUrl || '') : (first?.mitgliedFotoUrl || '')
+      return { ...k, imageUrl }
+    })
+  }, [karten, stammdaten, welcomeImage])
 
   return (
     <div style={{
@@ -570,7 +549,7 @@ function Vk2Eingangskarten() {
       gridTemplateColumns: 'repeat(2, 1fr)',
       gap: '1rem',
     }}>
-      {karten.map((k, i) => (
+      {effectiveKarten.map((k, i) => (
         <EingangsKarte key={i} data={k} index={i} />
       ))}
     </div>

@@ -25,7 +25,7 @@ Unter **Stammdaten** pflegen Sie die **Kontaktdaten und Angaben**, die auf Ihrer
 
 - **Verein:** Vereinsname, Vereinsnummer (z. B. ZVR), Adresse, E-Mail, Website.
 - **Vorstand, Kasse, Schriftführung:** Namen der Ansprechpartner. Sie erscheinen auf der Vereinsgalerie und auf Drucken.
-- **Kategorien / Kunstrichtungen für Mitglieder:** Hier können Sie **eigene Kategorien** festlegen (z. B. Malerei, Keramik, Aquarell, Mixed Media). Diese Kategorien erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“. Wenn Sie keine eigenen Kategorien anlegen, wird eine Standard-Liste verwendet.
+- **Kategorien / Kunstrichtungen für Mitglieder:** Das sind die **Kategorien eures Kunstvereins**. **Ablauf: 1. Verein anlegen** (oben: Vereinsname, Adresse, Vorstand) → **2. Kategorien hier definieren**. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“. **Standard:** Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt bei der Standard-Liste bleiben oder eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance). Mit „Wieder Standard nutzen“ setzt ihr auf die vorgegebene Liste zurück.
 - **Kommunikation (WhatsApp):** Optional WhatsApp-Gruppen-Link und Vorstand-Telefonnummer für direkte Nachrichten. Diese Links werden auf der Vereinsgalerie angezeigt.
 
 **Wichtig:** Stammdaten einmal korrekt eintragen und bei Änderungen aktualisieren – dann stimmen Galerie, Einladungen und Belege überall.
@@ -76,7 +76,7 @@ Details zum **Belegdruck** (Kassabon, Rechnung) stehen im Kapitel [Kassa und Buc
 
 ## Kurz zusammengefasst
 
-- **Stammdaten** = Galerie/Verein, Kontakt, Adresse, Öffnungszeiten; bei Vereinen zusätzlich Kategorien/Kunstrichtungen, Kommunikation (WhatsApp).
+- **Stammdaten** = Galerie/Verein, Kontakt, Adresse, Öffnungszeiten; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, optional Kommunikation (WhatsApp).
 - **Backup** = Vollbackup herunterladen (regelmäßig empfohlen), aus Datei oder letztem Backup wiederherstellen.
 - **Veröffentlichen** = Änderungen an den Server senden, damit sie überall sichtbar sind.
 - **Passwort** = Admin schützen; bei Vergessen Ansprechperson oder Support.

@@ -43,4 +43,61 @@
 
 ---
 
-*Stand: 25.02.26 – QS-Standard vor Commit; CI um vollen Build ergänzt (Tests + Build bei jedem Push).*
+## Qualitätssicherungsvorschläge (Profi-Perspektive)
+
+Was ein Profi zusätzlich oder als Nächstes umsetzen würde – priorisiert und konkret.
+
+### 1. Kritische Abläufe durch Tests absichern (höchste Priorität)
+
+**Lücke:** Die **VK2-Absicherungen** (Keine K2-Daten in VK2) sind im Code umgesetzt, aber **nicht durch automatisierte Tests** abgedeckt. Bei Refactorings könnte unbemerkt wieder K2 in VK2 landen.
+
+| Vorschlag | Was | Aufwand |
+|-----------|-----|--------|
+| **VK2 Seitengestaltung – Unit-Tests** | `sanitizePageContentForVk2Publish`: Eingabe mit `/img/k2/` → Ausgabe ohne K2-URLs. `getVk2SafeDisplayImageUrl`: K2-URL → `''`. `mergePageContentGalerieFromServer(serverJson, 'vk2')`: Server enthält K2-URL → wird nicht übernommen. | Klein: 1 Test-Datei, reine Funktionen. |
+| **VK2 setPageContentGalerie** | Schreiben mit `welcomeImage: '/img/k2/...'` und `tenantId: 'vk2'` → im Key steht danach **nicht** `/img/k2/` (wird ersetzt). In `datentrennung.test.ts` ergänzbar. | Klein. |
+| **createVk2Backup – Payload** | Backup-Objekt enthält `k2-vk2-page-content-galerie` und `k2-vk2-eingangskarten` ohne K2-URLs, wenn vorher welche drin waren. (Mock localStorage, createVk2Backup aufrufen, Ergebnis prüfen.) | Mittel. |
+
+**Regel:** Nach jedem großen Fix an kritischen Abläufen (Veröffentlichen, Laden, Merge, Datentrennung) einen **Flow- oder Unit-Test** dazu anlegen – siehe `.cursor/rules/tests-flow-bei-kritischen-ablaufen.mdc`.
+
+---
+
+### 2. CI um Lint erweitern
+
+| Vorschlag | Was | Aufwand |
+|-----------|-----|--------|
+| **ESLint in GitHub Action** | In `.github/workflows/tests.yml` vor oder nach `npm run build` einen Step `npm run lint` einbauen. Bei Fehlern: Job rot, Merge/Push blockiert. | Gering. |
+
+---
+
+### 3. Coverage (optional)
+
+| Vorschlag | Was | Aufwand |
+|-----------|-----|--------|
+| **Coverage-Report** | `vitest run --coverage` in CI oder lokal; keine Mindest-Schwelle, nur Sichtbarkeit: wo fehlen Tests? | Gering (Config in vitest.config.ts). |
+| **Mindest-Coverage** | Nur wenn gewollt: z. B. „mind. 80 % für utils/syncMerge.ts, pageContentGalerie.ts“ – CI schlägt sonst fehl. | Mittel, kann zu „Test nur für Coverage“ verleiten. |
+
+---
+
+### 4. E2E / manuelle Szenarien (optional)
+
+| Vorschlag | Was | Aufwand |
+|-----------|-----|--------|
+| **Dokumentierte Test-Szenarien** | Kurze Checkliste (z. B. in K2-OEK2-DATENTRENNUNG oder FEINSCHLIFF-WEIT-TESTEN): „Nach Änderung an VK2-Veröffentlichen: 1) Design speichern mit VK2-Bild, 2) Veröffentlichen, 3) Anderes Gerät / Inkognito: Laden vom Server, 4) Prüfen: kein K2-Bild sichtbar.“ So kann Georg oder jemand anderes gezielt nachklicken. | Gering (nur Doku). |
+| **E2E mit Playwright/Cypress** | Automatisiert: Browser öffnen, Admin öffnen, Design speichern, Veröffentlichen, zweiter Tab laden. | Hoch; lohnt sich bei mehr Nutzern oder vielen Regressionen. |
+
+---
+
+### 5. Reproduzierbarkeit und Doku
+
+| Vorschlag | Was | Aufwand |
+|-----------|-----|--------|
+| **Regressions-Test nach Bugfix** | Wenn ein Bug in GELOESTE-BUGS eingetragen wird: Prüfen, ob ein Test den Fix absichert. Wenn nein: einen minimalen Test ergänzen („BUG-XXX: … darf nicht wieder vorkommen“). | Pro Bug einmalig, gering. |
+| **Kritische Abläufe – eine Seite Doku** | Eine Datei (z. B. docs/KRITISCHE-ABLAEUFE.md) als Master-Liste: welche Abläufe sind kritisch, welche Tests decken sie ab, welche manuellen Checks empfohlen. | Gering, dann bei Änderungen aktuell halten. |
+
+---
+
+**Kurz:** Der größte Profi-Gewinn mit wenig Aufwand: **Tests für VK2-Seitengestaltung und createVk2Backup** (keine K2-Daten in VK2). Danach: **Lint in CI**, dann optional Coverage/Checklisten/E2E.
+
+---
+
+*Stand: 25.02.26 – QS-Standard vor Commit; CI um vollen Build ergänzt. 15.03.26 – Abschnitt „Qualitätssicherungsvorschläge (Profi-Perspektive)“ ergänzt.*

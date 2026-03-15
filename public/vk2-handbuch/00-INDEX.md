@@ -10,21 +10,41 @@ Willkommen. Dieses Handbuch richtet sich an Vereine, Vorstände und Mitglieder, 
 
 Schwerpunkt gemeinsame Interessen, Mitgliederliste, optional Galerie – Zugang per Link oder QR-Code.
 
-2. [Verein, Stammdaten und Mitglieder](02-VEREIN-STAMMDATEN-MITGLIEDER.md)
+2. [Admin im Überblick](04-ADMIN-UEBERBLICK.md)
 
-Vereinsdaten pflegen, Mitgliederliste anlegen und verwalten, drucken und für Einladungen nutzen.
+Tabs im Admin: Werke/Mitglieder in der Galerie, Design, Einstellungen, Dokumente, Events & Werbung, Kassa.
 
-3. [Mitglieder in der Galerie, Katalog und Kassa](03-GALERIE-KATALOG-KASSA.md)
+3. [Verein, Stammdaten und Mitglieder](02-VEREIN-STAMMDATEN-MITGLIEDER.md)
 
-Optionale Galerie-Profile, Katalog drucken, Verkäufe erfassen, Belege – Verweis auf Kassafunktion.
+Ablauf: Verein anlegen → Kategorien definieren → Mitglieder verwalten. Vereinsdaten, Kategorien für Mitglieder, Mitgliederliste drucken und für Einladungen nutzen.
 
-4. [Etiketten und Druck](04-ETIKETTEN-DRUCK.md)
+4. [Mitglieder in der Galerie, Katalog und Kassa](03-GALERIE-KATALOG-KASSA.md)
 
-Etiketten für Werke oder Ausstellungen, WLAN-Drucker, Anleitung im Admin.
+Optionale Galerie-Profile, Katalog drucken. Kassa: Einnahmen und Ausgaben erfassen, Bon und Rechnung drucken, Ausgabenbeleg, Storno, Buchhaltung.
 
-5. [Kurz zusammengefasst](05-KURZ-ZUSAMMENGEFASST.md)
+5. [Eventplanung & Öffentlichkeitsarbeit](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md)
 
-Überblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Etiketten.
+Veranstaltungen anlegen, Flyer und Einladungen, Presse und PR-Vorschläge aus Vereins-Stammdaten.
+
+6. [Demo und Lizenz](07-DEMO-LIZENZ.md)
+
+VK2-Demo nutzen, von der Demo zur eigenen Vereinsplattform, Vereinslizenz (VK2) und Konditionen.
+
+7. [Einstellungen](08-EINSTELLUNGEN.md)
+
+Stammdaten (Verein, Vorstand, Kategorien), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker.
+
+8. [Häufige Fragen](09-HAEUFIGE-FRAGEN.md)
+
+Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
+
+9. [Kurz zusammengefasst](05-KURZ-ZUSAMMENGEFASST.md)
+
+Überblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Events, Einstellungen.
+
+10. [Impressum](10-IMPRESSUM.md)
+
+Plattform-Betreiber (kgm solution), Copyright, Lizenzanfrage; Vereinsdaten aus Stammdaten.
 
 ---
 

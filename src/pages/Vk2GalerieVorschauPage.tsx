@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getPageContentGalerie } from '../config/pageContentGalerie'
+import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import { BUILD_LABEL } from '../buildInfo.generated'
 import { safeReload } from '../utils/env'
@@ -120,7 +120,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
   }, [])
 
   const vereinsName = stammdaten?.verein?.name || 'Vereinsplattform'
-  const welcomeImage = pageContent.welcomeImage || ''
+  const welcomeImage = getVk2SafeDisplayImageUrl(pageContent.welcomeImage) || ''
   const mitgliederHeading = pageTexts?.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'
 
   /** Vereinsfunktion aus Vorstand/Vize/Kassier/Schriftführer ableiten */

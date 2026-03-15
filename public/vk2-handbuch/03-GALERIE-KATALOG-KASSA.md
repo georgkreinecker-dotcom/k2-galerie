@@ -22,11 +22,11 @@ Wenn Ihr Verein die Galerie nutzt, können Sie pro Mitglied ein Profil (Karte) a
 
 So kann jedes Mitglied seine **bis zu 5 Einträge** (z. B. 5 Fotos mit kurzem Text) einfügen – fertig. Das Bild mit dem Zusatztext steht danach in der Galerie und, wenn „Im Vereinskatalog“ angekreuzt, im gemeinsamen Vereinskatalog. Kein Fachbegriff nötig – Foto, Text, Speichern.
 
-## Kassa – nur für Vereinsbetrieb (schlank)
+## Kassa – Vereinsbetrieb
 
-In der Vereinsplattform (VK2) gibt es **keine volle Galerie-Kassa** mit Warenkorb und Werken. Stattdessen eine **eingeschränkte Kasse nur für den Vereinsbetrieb**:
+**Kasse (Vereinsbetrieb)** im Admin öffnen – schlanke Oberfläche für Einnahmen und Ausgaben des Vereins:
 
-- **Kasse (Vereinsbetrieb)** im Admin öffnen → eine schlanke Oberfläche: **Betrag** und **Bezeichnung** (z. B. Eintritt, Spende, Mitgliedsbeitrag) eingeben, Zahlungsart wählen (Bar/Karte/Rechnung), **Einnahme erfassen & Bon drucken**. Kein Shop, keine Werke – nur das Nötige für Einnahmen des Vereins.
-- **Buchhaltung** → Einnahmen nach Zeitraum anzeigen, drucken oder als CSV herunterladen (z. B. für Steuerberater).
-
-Ausgaben (Kassabuch Ausgabe, Bar privat, Kassa an Bank) sind in VK2 bewusst nicht vorgesehen – der Verein behält nur die Einnahmen-Übersicht.
+- **Einnahme erfassen:** Betrag und Bezeichnung eingeben (z. B. Eintritt, Spende, Mitgliedsbeitrag), Zahlungsart wählen (Bar, Karte, Rechnung). Optional Bon drucken. Bei Rechnung: Rechnungsempfänger eintragen, Einnahme erfassen, danach **Rechnung drucken** (eigener Button unter „Letzte Einnahmen“).
+- **Ausgabe erfassen (Kassaausgang):** Betrag und Verwendungszweck (z. B. Material, Honorar, Miete), **Ausgabe erfassen**. Unter „Letzte Ausgaben“: **Beleg drucken** (neueste) für einen Ausgabenbeleg.
+- **Letzte Einnahmen / Letzte Ausgaben:** Bon bzw. Rechnung oder Beleg erneut drucken. **Letzte 15 Buchungen – Storno:** Einnahmen und Ausgaben gemeinsam, neueste zuerst; pro Eintrag Bon/Beleg drucken oder Storno.
+- **Kassabuch anzeigen** (Buchhaltung): Einnahmen und Ausgaben nach Zeitraum, CSV-Export für Steuerberater.

@@ -28,9 +28,21 @@ Unter **„Dokumente“** können Sie z. B. Presse-Texte, Vita, Einladungen oder
 
 ---
 
-## Events (Veranstaltungen)
+## Events & Ausstellungen (bzw. Events & Werbung)
 
-Falls Ihre Version **Veranstaltungen** unterstützt: Unter **„Events“** legen Sie Termine an (Ausstellungen, Vernissagen, Öffnungszeiten). Diese können dann auf der Galerie oder auf einer eigenen Veranstaltungsseite angezeigt werden.
+Unter **„Events & Ausstellungen“** (Galerie) bzw. **„Events & Werbung“** (Vereinsplattform) finden Sie alles für Veranstaltungen und Werbung: Termine anlegen (Vernissagen, Galerieeröffnungen, Finissagen), dazu Einladungen, Flyer, Presse und PR-Vorschläge (Newsletter, Plakat, Social Media). Der Bereich gliedert sich in **Veranstaltungen** und **Flyer & Werbematerial**. Eine **vollständige Beschreibung** steht im Kapitel [Eventplanung & Öffentlichkeitsarbeit](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md).
+
+---
+
+## Presse & Dokumente
+
+Unter **„Presse & Dokumente“** (bzw. **„Presse & Medien“**) haben Sie Zugriff auf Ihre Pressemappe, Vita und Presse-Texte – vorbefüllt mit Ihren Stammdaten, druckfertig für Galerien, Medien und Veranstalter. Presse-Einladungen und Presseaussendungen zu einzelnen Events finden Sie im Bereich **Events & Ausstellungen** → **Flyer & Werbematerial** bei der jeweiligen Veranstaltung.
+
+---
+
+## Ausstellung gestalten und texten
+
+**Ausstellung gestalten:** Das Erscheinungsbild Ihrer Galerie (Willkommen, Galerie-Ansicht, Farben, Texte) richten Sie unter **Design** ein – siehe Kapitel [Galerie gestalten, Werke anlegen](02-GALERIE-GESTALTEN.md). **Ausstellung texten:** Texte für Presse, Einladungen, Wandtexte und PR (z. B. Vernissage, Finissage) erzeugen Sie aus Ihren Stammdaten und Events unter **Events & Ausstellungen** → **Flyer & Werbematerial** (Druckversionen, PR-Vorschläge). So bleiben Galerie und Werbetexte einheitlich.
 
 ---
 
@@ -58,6 +70,8 @@ Je nach Produkt (Galerie oder Vereinsplattform) gibt es weitere Tabs – z. B. *
 - **Design** = Willkommensbild, Texte, Aussehen der Galerie.
 - **Einstellungen** = Stammdaten, Backup, Veröffentlichen, Passwort, Drucker.
 - **Dokumente** = Presse, Vita, Einladungen usw.
-- **Events** = Veranstaltungstermine (falls vorhanden).
+- **Events & Ausstellungen** (bzw. **Events & Werbung**) = Veranstaltungen anlegen, Flyer, Presse, Einladungen, PR-Vorschläge.
+- **Presse & Dokumente** = Pressemappe, Vita, Presse-Texte – druckfertig für Medien und Partner.
+- **Ausstellung gestalten und texten** = Design für Galerie und Willkommen; Texte für Presse und Einladungen unter Events → Flyer & Werbematerial.
 - **Kassa und Kassabuch** = Verkäufe erfassen, Belege drucken, Kassabuch führen (Eingänge/Ausgänge, optional).
 - **Empfehlungsprogramm** = Link teilen, Rabatt für Geworbene, Gutschrift für Sie (je nach Lizenz).

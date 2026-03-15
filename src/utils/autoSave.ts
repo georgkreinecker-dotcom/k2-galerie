@@ -16,6 +16,7 @@ import {
 } from './stammdatenStorage'
 import { loadEvents, saveEvents } from './eventsStorage'
 import { loadDocuments, saveDocuments } from './documentsStorage'
+import { sanitizePageContentForVk2Publish } from '../config/pageContentGalerie'
 
 // Auto-Save alle 5 Sekunden
 const AUTO_SAVE_INTERVAL = 5000
@@ -537,7 +538,12 @@ export function createOek2Backup(): { data: Record<string, any>; filename: strin
   return { data, filename }
 }
 
-/** VK2-Vollbackup: Vereins-Stammdaten (Vorstand + Mitglieder) + Events + Dokumente + Design */
+/** K2-Bild-URL – darf nie in VK2-Payload. */
+function isK2OriginImageUrl(url: string | undefined): boolean {
+  return typeof url === 'string' && url.includes('/img/k2/')
+}
+
+/** VK2-Vollbackup: Vereins-Stammdaten (Vorstand + Mitglieder) + Events + Dokumente + Design + Eingangskarten */
 export function createVk2Backup(): { data: Record<string, any>; filename: string } {
   const keys = [
     'k2-vk2-stammdaten',      // Verein, Vorstand, Mitglieder-Liste
@@ -546,14 +552,39 @@ export function createVk2Backup(): { data: Record<string, any>; filename: string
     'k2-vk2-design-settings',
     'k2-vk2-page-texts',
     'k2-vk2-page-content-galerie',
+    'k2-vk2-eingangskarten',  // Zwei Design-Karten (Titel, Untertitel, Bild)
     'k2-vk2-registrierung',
   ]
+  const raw = readAllKeys(keys)
+  // Eisernes Gesetz: Keine K2-Daten in VK2. Seitengestaltung vor Veröffentlichen von K2-Bild-URLs bereinigen.
+  let pc = raw['k2-vk2-page-content-galerie']
+  if (pc != null) {
+    if (typeof pc === 'string') {
+      try {
+        pc = JSON.parse(pc) as Record<string, unknown>
+      } catch {
+        pc = null
+      }
+    }
+    if (pc != null && typeof pc === 'object') {
+      raw['k2-vk2-page-content-galerie'] = sanitizePageContentForVk2Publish(pc as Record<string, unknown>)
+    }
+  }
+  // Eingangskarten: K2-Bild-URLs aus Bildern entfernen
+  const karten = raw['k2-vk2-eingangskarten']
+  if (Array.isArray(karten) && karten.length > 0) {
+    raw['k2-vk2-eingangskarten'] = karten.map((k: { titel?: string; untertitel?: string; imageUrl?: string }) =>
+      k && typeof k === 'object' && isK2OriginImageUrl(k.imageUrl)
+        ? { ...k, imageUrl: '' }
+        : k
+    )
+  }
   const data = {
     kontext: 'vk2',
     exportedAt: new Date().toISOString(),
     version: '1.0',
     label: 'VK2 Vereins-Backup – Stammdaten, Vorstand, Mitglieder, Events, Design',
-    ...readAllKeys(keys),
+    ...raw,
   }
   const filename = `vk2-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
   return { data, filename }
@@ -626,7 +657,7 @@ export function restoreVk2FromBackup(backup: Record<string, any>): { ok: boolean
   if (!backup || backup.kontext !== 'vk2') return { ok: false, restored: [] }
   const vk2Keys = [
     'k2-vk2-stammdaten', 'k2-vk2-events', 'k2-vk2-documents',
-    'k2-vk2-design-settings', 'k2-vk2-page-texts', 'k2-vk2-page-content-galerie', 'k2-vk2-registrierung',
+    'k2-vk2-design-settings', 'k2-vk2-page-texts', 'k2-vk2-page-content-galerie', 'k2-vk2-eingangskarten', 'k2-vk2-registrierung',
   ]
   for (const key of vk2Keys) {
     if (backup[key] != null) {

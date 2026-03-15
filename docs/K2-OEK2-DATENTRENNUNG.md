@@ -1,6 +1,43 @@
 # K2 vs. ök2 – strikte Datentrennung
 
-**Stand:** 14.03.26
+**Stand:** 15.03.26
+
+## Stand: Absicherungen & Reparaturen (Übersicht)
+
+**Alle unten genannten Punkte sind im Code umgesetzt.** Bei Änderungen an Veröffentlichen, Laden oder Seitengestaltung diese Liste und die Checklisten prüfen.
+
+### VK2 – Keine K2-Daten (eisernes Gesetz)
+
+| Absicherung / Reparatur | Status | Wo im Code |
+|-------------------------|--------|------------|
+| **Beim Lesen (getPageContentGalerie('vk2')):** K2-Bild-URLs aus Key entfernen, nie anzeigen/weitergeben | ✅ | `pageContentGalerie.ts` – VK2-Zweig: isK2OriginImageUrl, delete + localStorage.setItem |
+| **Beim Schreiben (setPageContentGalerie für vk2):** K2-Bild-URLs durch bestehenden VK2-Wert ersetzen | ✅ | `pageContentGalerie.ts` – setPageContentGalerie, tenantId === 'vk2' |
+| **Beim Veröffentlichen (createVk2Backup):** Seitengestaltung von K2-URLs bereinigen vor Senden | ✅ | `autoSave.ts` – sanitizePageContentForVk2Publish(pc) |
+| **Beim Veröffentlichen:** page-content als String parsen, dann sanitizen | ✅ | `autoSave.ts` – typeof pc === 'string' → JSON.parse → sanitize |
+| **Beim Veröffentlichen:** Eingangskarten imageUrl – K2-URLs auf '' setzen | ✅ | `autoSave.ts` – karten.map, isK2OriginImageUrl(k.imageUrl) |
+| **Beim Laden vom Server (mergePageContentGalerieFromServer(…, 'vk2')):** K2-URLs vom Server nicht übernehmen | ✅ | `pageContentGalerie.ts` – if (tenantId === 'vk2' && isK2OriginImageUrl(s)) s = undefined |
+| **Anzeige VK2-Galerie:** welcomeImage nur sicher (getVk2SafeDisplayImageUrl) | ✅ | `Vk2GaleriePage.tsx`, `Vk2GalerieVorschauPage.tsx` – getVk2SafeDisplayImageUrl(pageContent.welcomeImage) |
+| **Admin Design:** Kein Nachladen aus gallery-data.json für VK2 (nur K2) | ✅ | `ScreenshotExportAdmin.tsx` – if (!pc.welcomeImage && !tenant.isOeffentlich && **!tenant.isVk2**) fetch gallery-data.json |
+
+### VK2 – Veröffentlichen-Struktur (Payload & Laden)
+
+| Absicherung / Reparatur | Status | Wo im Code |
+|-------------------------|--------|------------|
+| **Payload enthält k2-vk2-eingangskarten** | ✅ | `autoSave.ts` createVk2Backup – keys inkl. 'k2-vk2-eingangskarten' |
+| **restoreVk2FromBackup enthält k2-vk2-eingangskarten** | ✅ | `autoSave.ts` restoreVk2FromBackup – vk2Keys inkl. 'k2-vk2-eingangskarten' |
+| **GaleriePage VK2-Load:** k2-vk2-eingangskarten anwenden + Event vk2-karten-updated | ✅ | `GaleriePage.tsx` – data['k2-vk2-eingangskarten'], localStorage.setItem, dispatch |
+| **GaleriePage VK2-Load:** Events/Documents auch bei leerem Array (Server = Wahrheit) | ✅ | `GaleriePage.tsx` – if (Array.isArray(data['k2-vk2-events'])) saveEvents('vk2', …) |
+
+### ök2 – Bereits zuvor umgesetzt (Referenz)
+
+| Thema | Status |
+|-------|--------|
+| getPageContentGalerie('oeffentlich') – K2-Pfade entfernen, Key bereinigen | ✅ |
+| getOek2WelcomeImageEffective, OEK2_LEGACY_WELCOME_IMAGE_PATHS | ✅ |
+| Shop/Belege fromOeffentlich, loadStammdaten('oeffentlich') | ✅ |
+| Admin-Links isOeffentlichAdminContext() → galerieOeffentlich | ✅ |
+
+---
 
 ## 🔴 EISERNES GESETZ (unumstösslich)
 
@@ -69,6 +106,12 @@ Danach: Nur noch in der **K2-Galerie** arbeiten, wenn du echte Daten änderst. I
 
 ---
 
+## Testroutine / Weit testen – gilt für ök2 und VK2
+
+**Festlegung:** Die für ök2 vereinbarte Testroutine (Checklisten, kritisches Durchklicken, Geräte, Kontexte) gilt **in gleicher Weise für VK2**. Standardsachen = immer K2, ök2 und VK2 (`.cursor/rules/standardsachen-k2-oek2-vk2.mdc`). Konkret: **docs/FEINSCHLIFF-WEIT-TESTEN.md** (Abläufe, Geräte, Kontexte) – Kontext-Tabelle enthält K2, ök2 und VK2; bei Nutzung von VK2 dieselben Prüfpunkte anwenden (Veröffentlichen, Laden vom Server, Stand/QR, keine Vermischung mit K2).
+
+---
+
 ## ök2 funktionssicher machen (Checkliste für neue Änderungen)
 
 - [ ] **Laden:** Wird `musterOnly` / `tenantId === 'oeffentlich'` beim Laden von Werken, Stammdaten, **Seitentexten** (`getPageTexts(tenantId)`) und **Seitengestaltung** (`getPageContentGalerie(tenantId)`) berücksichtigt? Nie `getPageTexts()` oder `getPageContentGalerie()` ohne Tenant auf ök2-Routen.
@@ -79,6 +122,19 @@ Danach: Nur noch in der **K2-Galerie** arbeiten, wenn du echte Daten änderst. I
 - [ ] Auto-Save / Veröffentlichen: Nur im K2-Admin, im ök2-Admin deaktiviert oder mit Hinweis.
 - [ ] **ök2 Willkommensbild:** Anzeige immer über `getOek2WelcomeImageEffective()` (GaleriePage). Default = stabile Unsplash-URL in `OEK2_WILLKOMMEN_IMAGES.welcomeImage`. Pfade in `OEK2_LEGACY_WELCOME_IMAGE_PATHS` werden nie angezeigt – so können alte/irrelevante Repo-Dateien nicht mehr als Default erscheinen.
 - [ ] Regel in jeder Session: `.cursor/rules/k2-oek2-trennung.mdc` (alwaysApply) – bei Änderungen an Galerie/Admin/Stammdaten/Seitentexten/Shop prüfen.
+
+---
+
+## VK2 funktionssicher machen (Checkliste für neue Änderungen – analog ök2)
+
+**Gilt wie die ök2-Testroutine auch für VK2** (siehe Abschnitt „Testroutine / Weit testen“ oben). Bei Änderungen, die VK2 betreffen:
+
+- [ ] **Laden:** Wird `tenantId === 'vk2'` / VK2-Kontext beim Laden von Stammdaten, **Seitentexten** (`getPageTexts('vk2')`) und **Seitengestaltung** (`getPageContentGalerie('vk2')`) berücksichtigt? Nie K2-Keys oder getPageTexts/getPageContentGalerie ohne Tenant auf VK2-Routen.
+- [ ] **Schreiben:** Schreibt der Code im VK2-Kontext nur in `k2-vk2-*` (Stammdaten, events, documents, page-texts, page-content-galerie, design-settings, eingangskarten, registrierung), nie in K2- oder ök2-Keys?
+- [ ] **Eisernes Gesetz:** Keine K2-Daten in VK2. Beim Veröffentlichen (createVk2Backup) Seitengestaltung und Eingangskarten von K2-Bild-URLs (`/img/k2/`) bereinigen; beim Laden vom Server (mergePageContentGalerieFromServer) keine K2-URLs übernehmen.
+- [ ] **Admin:** Jeder Link zu Galerie/Vorschau prüft `isVk2AdminContext()` / VK2-Kontext und nutzt dann VK2-Routen (galerieVk2, galerieVk2Vorschau), sonst galerie/galerieVorschau.
+- [ ] **Veröffentlichen:** VK2 nutzt createVk2Backup (alle Keys inkl. k2-vk2-eingangskarten); Payload vor Sendung sanitizen (siehe „VK2 Veröffentlichen – Checkliste“).
+- [ ] Regel in jeder Session: bei VK2-Änderungen diese Checkliste + `.cursor/rules/k2-oek2-trennung.mdc` prüfen.
 
 ---
 
@@ -124,15 +180,21 @@ Danach: Nur noch in der **K2-Galerie** arbeiten, wenn du echte Daten änderst. I
 
 **Umsetzung:**
 
-- **GaleriePage** lädt bei **vk2** vom Server: `GET /api/gallery-data?tenantId=vk2`. Die Antwort nutzt das Backup-Format (Keys: `k2-vk2-stammdaten`, `k2-vk2-events`, `k2-vk2-documents`, `k2-vk2-design-settings`, `k2-vk2-page-texts`, `k2-vk2-page-content-galerie`, `k2-vk2-registrierung`). Diese werden in die entsprechenden localStorage-Keys geschrieben; Events/Dokumente über `saveEvents('vk2', …)` / `saveDocuments('vk2', …)`; Seitengestaltung über `mergePageContentGalerieFromServer(…, 'vk2')`.
-- **VK2 hat keine Werke** (kein `k2-vk2-artworks`); nur Stammdaten, Events, Dokumente, Design, Seitentexte, Seitengestaltung.
+- **GaleriePage** lädt bei **vk2** vom Server: `GET /api/gallery-data?tenantId=vk2`. Die Antwort nutzt das Backup-Format (Keys: `k2-vk2-stammdaten`, `k2-vk2-events`, `k2-vk2-documents`, `k2-vk2-design-settings`, `k2-vk2-page-texts`, `k2-vk2-page-content-galerie`, `k2-vk2-eingangskarten`, `k2-vk2-registrierung`). Diese werden in die entsprechenden localStorage-Keys geschrieben; Events/Dokumente über `saveEvents('vk2', …)` / `saveDocuments('vk2', …)` (Server = Wahrheit, auch leere Arrays); Seitengestaltung über `mergePageContentGalerieFromServer(…, 'vk2')` (K2-Bild-URLs werden beim Merge nicht übernommen).
+- **VK2 hat keine Werke** (kein `k2-vk2-artworks`); nur Stammdaten, Events, Dokumente, Design, Seitentexte, Seitengestaltung, Eingangskarten.
 - **UI-Update:** Nach Anwendung werden `k2-page-content-updated`, `k2-vk2-stammdaten-updated`, `k2-vk2-data-updated` dispatched (Stammdaten- und eventDocuments-Listener aktualisieren State).
+
+**VK2 Veröffentlichen – Checkliste (createVk2Backup + GaleriePage Load):**
+
+- **Payload (createVk2Backup):** Keys: `k2-vk2-stammdaten`, `k2-vk2-events`, `k2-vk2-documents`, `k2-vk2-design-settings`, `k2-vk2-page-texts`, `k2-vk2-page-content-galerie`, `k2-vk2-eingangskarten`, `k2-vk2-registrierung`. Eisernes Gesetz: Keine K2-Daten in VK2 → vor dem Senden: `k2-vk2-page-content-galerie` (Bildfelder) und `k2-vk2-eingangskarten` (imageUrl pro Karte) von K2-URLs (`/img/k2/`) bereinigen. page-content auch als String parsen und sanitizen.
+- **Laden (GaleriePage vk2):** Alle genannten Keys anwenden; Events/Documents auch bei leerem Array (Server = Wahrheit). `mergePageContentGalerieFromServer(…, 'vk2')` übernimmt keine K2-Bild-URLs vom Server.
 
 **Prüfliste VK2-Skalierung:**
 
 - [ ] GaleriePage: Bei vk2 wird `/api/gallery-data?tenantId=vk2` aufgerufen (eigener useEffect).
 - [ ] API: `tenantId=vk2` → Blob `gallery-data-vk2.json`.
 - [ ] publishMobile (Admin): VK2 nutzt `createVk2Backup()` und sendet mit `tenantId: 'vk2'` an write-gallery-data.
+- [ ] createVk2Backup enthält `k2-vk2-eingangskarten`; restoreVk2FromBackup und GaleriePage Load wenden sie an.
 
 ---
 

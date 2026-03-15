@@ -1,6 +1,6 @@
 # Eventplanung, Werbung & Öffentlichkeitsarbeit
 
-Im Admin finden Sie unter **„Events & Ausstellungen“** (bzw. **„Events & Werbung“** bei der Vereinsplattform) alles für Veranstaltungen, Einladungen, Flyer und Presse. Der Bereich ist in zwei Teile gegliedert: **Veranstaltungen** und **Flyer & Werbematerial**.
+Im Admin finden Sie unter **„Events & Ausstellungen“** (bzw. **„Events & Werbung“** bei der Vereinsplattform) alles für Veranstaltungen, Einladungen, Flyer und Presse. Hier können Sie **Ausstellung gestalten und texten**: Termine anlegen, Werbetexte und Presse aus Ihren Stammdaten erzeugen. Der Bereich ist in zwei Teile gegliedert: **Veranstaltungen** und **Flyer & Werbematerial**.
 
 ---
 

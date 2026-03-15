@@ -1947,8 +1947,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   useEffect(() => {
     if (tenant.dynamicTenantId) return
     const pc = getPageContentGalerie(tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
-    // Wenn kein Bild im localStorage: aus gallery-data.json nachladen
-    if (!pc.welcomeImage && !tenant.isOeffentlich) {
+    // Wenn kein Bild im localStorage: nur bei K2 aus gallery-data.json nachladen (K2-Daten dürfen nie in VK2/ök2)
+    if (!pc.welcomeImage && !tenant.isOeffentlich && !tenant.isVk2) {
       fetch(`/gallery-data.json?_=${Date.now()}`)
         .then(r => r.json())
         .then(data => {
@@ -2018,7 +2018,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }, [pageContent, tenant])
 
   // Design-Vorschau = immer aktuelle gespeicherte Seite anzeigen (keine alten Daten)
-  // Beim Wechsel in den Design-Tab: Seitentexte, Seitengestaltung und Design aus Speicher nachladen
+  // Beim Wechsel in den Design-Tab ODER Mandanten (K2/ök2/VK2): Seitentexte, Seitengestaltung und Design aus dem richtigen Key nachladen – sonst landet K2-Bild in VK2 beim Speichern
+  const designTenantKey = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : 'k2'
   useEffect(() => {
     if (activeTab !== 'design') return
     const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
@@ -2048,7 +2049,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
       }
     } catch (_) {}
-  }, [activeTab])
+  }, [activeTab, designTenantKey])
 
   // URL-Parameter context (oeffentlich / vk2) in sessionStorage übernehmen
   // WICHTIG: Wenn kein context-Parameter → K2-Admin → sessionStorage löschen (verhindert "hängenbleiben" im ök2-Kontext)
@@ -3479,6 +3480,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         const { restoreVk2FromBackup } = await import('../src/utils/autoSave')
         const { ok, restored } = restoreVk2FromBackup(data as Record<string, any>)
         if (ok) {
+          setPageContent(getPageContentGalerie('vk2'))
+          setPageTextsState(getPageTexts('vk2'))
           setIsLoadingFromServer(false)
           setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
           const exportedAt = data.exportedAt ? ` (Stand: ${new Date(String(data.exportedAt)).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })})` : ''
@@ -14320,7 +14323,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     {/* ── KATEGORIEN / KUNSTRICHTUNGEN FÜR MITGLIEDER ── */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Kategorien / Kunstrichtungen für Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Diese Kategorien erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“. Standard: Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance).</p>
+                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', color: s.muted }}>Das sind die <strong>Kategorien eures Kunstvereins</strong>. Ablauf: <strong>1. Verein anlegen</strong> (oben: Vereinsname, Adresse, Vorstand) → <strong>2. Kategorien hier definieren</strong>. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“.</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Standard: Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance) oder beim Standard bleiben.</p>
                       {(vk2Stammdaten.eigeneKategorien?.length ?? 0) > 0 ? (
                         <div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>

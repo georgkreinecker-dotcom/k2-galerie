@@ -25,6 +25,9 @@ jobs:
       - name: Abhängigkeiten installieren
         run: npm ci
 
+      - name: Lint (ESLint)
+        run: npm run lint
+
       # Vollständiger QS-Lauf wie vor lokalem Commit: test + write-build-info + tsc + vite build
       - name: Tests und Build (npm run build)
         run: npm run build

@@ -74,7 +74,15 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
       } else if (tenantId === 'vk2') {
-        // VK2: virtualTourVideo blob nicht entfernen → Speichern muss in derselben Session sichtbar bleiben
+        // VK2: K2-Bild-URLs nie anzeigen/weitergeben – Key bereinigen falls korrupt
+        let changed = false
+        if (isK2OriginImageUrl(parsed.welcomeImage)) { delete parsed.welcomeImage; changed = true }
+        if (isK2OriginImageUrl(parsed.galerieCardImage)) { delete parsed.galerieCardImage; changed = true }
+        if (isK2OriginImageUrl(parsed.virtualTourImage)) { delete parsed.virtualTourImage; changed = true }
+        if (isK2OriginImageUrl(parsed.virtualTourVideo)) { delete parsed.virtualTourVideo; changed = true }
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+        }
       } else {
         // K2: virtualTourVideo blob NICHT durch Default ersetzen → sonst geht Nutzerauswahl beim Tab-Wechsel verloren, „Speichern“ wirkt nie
         // (Blob nach Reload ungültig – dann beim nächsten Laden ggf. separat behandeln)
@@ -103,8 +111,10 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
     const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'virtualTourVideoSizeBytes', 'welcomeIntroText']
     const merged: Partial<PageContentGalerie> = {}
     for (const k of keys) {
-      const l = local[k]
-      const s = server[k]
+      let l = local[k]
+      let s = server[k]
+      // Eisernes Gesetz: Keine K2-Daten in VK2. Vom Server nie K2-Bild-URLs übernehmen.
+      if (tenantId === 'vk2' && isK2OriginImageUrl(s as string)) s = undefined
       const hasLocal = l != null && String(l).trim() !== ''
       const hasServer = s != null && String(s).trim() !== ''
       if (hasLocal || hasServer) (merged as Record<string, unknown>)[k] = hasLocal ? l : s
@@ -115,12 +125,43 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
   }
 }
 
+/** K2-Bild-URL (z. B. /img/k2/…) – darf nie in VK2/ök2 gespeichert oder angezeigt werden. */
+function isK2OriginImageUrl(url: string | undefined): boolean {
+  return typeof url === 'string' && url.includes('/img/k2/')
+}
+
+/** Für VK2-Anzeige: K2-URLs nie rendern – liefert '' wenn url K2-Origin ist, sonst url. */
+export function getVk2SafeDisplayImageUrl(url: string | undefined): string {
+  if (url == null || url === '') return ''
+  return isK2OriginImageUrl(url) ? '' : url
+}
+
+/** VK2-Payload vor Veröffentlichen: K2-Bild-URLs aus Seitengestaltung entfernen, damit nie K2-Bilder veröffentlicht werden. */
+export function sanitizePageContentForVk2Publish(obj: Partial<PageContentGalerie> | null | undefined): Partial<PageContentGalerie> | null {
+  if (obj == null || typeof obj !== 'object') return obj ?? null
+  const imgFields: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo']
+  const out = { ...obj }
+  for (const k of imgFields) {
+    const v = (out as Record<string, unknown>)[k]
+    if (typeof v === 'string' && isK2OriginImageUrl(v)) (out as Record<string, unknown>)[k] = ''
+  }
+  return out
+}
+
 /** Speichert Seitengestaltung. tenantId 'oeffentlich' = ök2, 'vk2' = VK2. Gibt true zurück bei Erfolg, false bei Fehler (z. B. Quota) – Caller kann Meldung anzeigen. */
 export function setPageContentGalerie(data: Partial<PageContentGalerie>, tenantId?: 'oeffentlich' | 'vk2'): boolean {
   try {
     if (typeof window !== 'undefined') {
       const current = getPageContentGalerie(tenantId)
-      const next = { ...current, ...data }
+      let next = { ...current, ...data }
+      // Eisernes Gesetz: Keine K2-Daten in VK2. Beim Schreiben für VK2 K2-Bild-URLs durch bestehenden VK2-Wert ersetzen.
+      if (tenantId === 'vk2') {
+        const imgFields: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo']
+        for (const k of imgFields) {
+          const val = next[k]
+          if (typeof val === 'string' && isK2OriginImageUrl(val)) (next as Record<string, string | undefined>)[k] = (current[k] as string) ?? ''
+        }
+      }
       localStorage.setItem(getStorageKey(tenantId), JSON.stringify(next))
       // Events feuern damit GaleriePage (gleicher Tab) sofort aktualisiert – beide Events für K2 und ök2
       window.dispatchEvent(new CustomEvent('k2-oeffentlich-images-updated'))

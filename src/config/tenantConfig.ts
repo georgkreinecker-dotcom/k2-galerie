@@ -574,8 +574,15 @@ export function initVk2DemoStammdatenIfEmpty(): void {
       localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
       return
     }
-    // Fotos für Demo-Mitglieder nachfüllen (nur wenn Vereinsname = Demo UND Foto fehlt)
-    if (parsed.verein.name === 'Kunstverein Muster' && Array.isArray(parsed.mitglieder)) {
+    // Demo-Verein „Kunstverein Muster“: Muster-Mitglieder anzeigen (auch wenn mitglieder leer war)
+    if (parsed.verein.name === 'Kunstverein Muster') {
+      const hasMembers = Array.isArray(parsed.mitglieder) && parsed.mitglieder.length > 0
+      if (!hasMembers) {
+        // Leere oder fehlende Mitgliederliste → Muster-Mitglieder setzen, damit sie auf der Galerie sichtbar sind
+        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify({ ...parsed, mitglieder: VK2_DEMO_STAMMDATEN.mitglieder }))
+        return
+      }
+      // Fotos für bestehende Demo-Mitglieder nachfüllen (Foto/Bio/Vita fehlt)
       let changed = false
       const updated = parsed.mitglieder.map((m, i) => {
         const dm = VK2_DEMO_STAMMDATEN.mitglieder[i]

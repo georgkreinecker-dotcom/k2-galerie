@@ -28,6 +28,7 @@
 
 - **Bei jeder Fehlermeldung von Georg:** (1) **Vergangene Fehler** (oben) prüfen – GELOESTE-BUGS, ggf. CRASH-BEREITS-GEPRUEFT. (2) Dieses Protokoll lesen („Bekannte Fehlerklassen“, „Laufende Absicherungen“, letzte Einträge).
 - **Nach jeder Fehleranalyse:** Eintrag unter „Protokoll-Einträge“ (Datum, Stichwort Meldung, Ursache, getroffene Maßnahme, ggf. „Wiederholung von BUG-XXX“).
+- **Regressions-Check:** Beim Eintrag in GELOESTE-BUGS prüfen: Gibt es einen Test, der den Fix absichert (damit derselbe Fehler nicht wieder durchgeht)? Wenn **nein**: minimalen Test ergänzen (z. B. in datentrennung.test.ts, kritische-ablaeufe.test.ts oder passender Test-Datei). Siehe docs/QS-VERGLEICH-PROFIS.md „Regressions-Test nach Bugfix“.
 - **Bei Wiederholung derselben Fehlerklasse:** Absicherung verschärfen (Regel/Checkliste), im Eintrag vermerken und in „Bekannte Fehlerklassen“ den Hinweis „Wiederholung – Absicherung verschärft am …“ ergänzen.
 
 ---

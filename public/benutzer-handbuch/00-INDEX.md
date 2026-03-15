@@ -20,7 +20,7 @@ Willkommensbild, Galerie-Karte, Werke erfassen und bearbeiten, Design anpassen, 
 
 4. [Eventplanung & Öffentlichkeitsarbeit](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md)
 
-Veranstaltungen, Flyer, Presse, Einladungen, Werbematerial.
+Events & Werbung (bzw. Events & Ausstellungen), Presse, Ausstellung gestalten und texten; Veranstaltungen, Flyer, Einladungen, Werbematerial.
 
 5. [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md)
 
@@ -36,7 +36,7 @@ Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Z
 
 8. [Einstellungen](10-EINSTELLUNGEN.md)
 
-Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen Kategorien/Kunstrichtungen, Kommunikation (WhatsApp).
+Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
 
 9. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 

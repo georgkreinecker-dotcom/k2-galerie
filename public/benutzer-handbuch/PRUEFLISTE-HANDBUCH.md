@@ -22,7 +22,7 @@ Kurze Übersicht, damit du gezielt prüfen kannst. Stand: 07.03.26.
 - [ ] **02 Galerie gestalten** – Fehlt etwas Wichtiges (z. B. Virtueller Rundgang, Galerie-Karte)?
 - [ ] **03 Admin Überblick** – Sind alle Tabs/Bereiche für K2/VK2/ök2 treffend beschrieben?
 - [ ] **04 Häufige Fragen** – Fehlt eine Frage, die Nutzer oft stellen?
-- [ ] **05 VK2 Vereinsplattform** – Stimmt die Reihenfolge (Stammdaten, Mitglieder, Katalog, Kassa, Etiketten)?
+- [ ] **05 VK2 Vereinsplattform** – Stimmt die Reihenfolge (Stammdaten, Mitglieder, Katalog, Kassa)?
 - [ ] **06 ök2 Demo und Lizenz** – Passt der Weg „Demo → Lizenz online kaufen (eigenständig) → eigene Galerie“?
 
 ---

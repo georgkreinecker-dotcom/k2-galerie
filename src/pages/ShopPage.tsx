@@ -8,7 +8,7 @@ import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
-import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
@@ -648,6 +648,7 @@ const ShopPage = () => {
     }
     let bezeichnung = (vk2Bezeichnung || 'Einnahme').trim() || 'Einnahme'
     if (vk2MitgliedName.trim()) bezeichnung = bezeichnung + ' – ' + vk2MitgliedName.trim()
+    const rechnungEmpfaenger = vk2PaymentMethod === 'transfer' && (vk2RechnungEmpfaenger || '').trim() ? (vk2RechnungEmpfaenger || '').trim() : undefined
     const order = {
       id: `ORDER-VK2-${Date.now()}`,
       date: new Date().toISOString(),
@@ -656,7 +657,9 @@ const ShopPage = () => {
       discount: 0,
       total: betrag,
       paymentMethod: vk2PaymentMethod,
-      orderNumber: `O-VK2-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
+      orderNumber: `O-VK2-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`,
+      rechnungEmpfaenger: rechnungEmpfaenger,
+      rechnungsNr: undefined as string | undefined
     }
     try {
       const ordersStored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
@@ -671,9 +674,6 @@ const ShopPage = () => {
         verwendungszweck: bezeichnung
       })
       if (vk2BonDrucken) printVk2Bon(order)
-      if (vk2PaymentMethod === 'transfer' && (vk2RechnungEmpfaenger || '').trim()) {
-        printVk2Rechnung(order, (vk2RechnungEmpfaenger || '').trim())
-      }
       setVk2Betrag('')
       setVk2Bezeichnung('')
       setVk2MitgliedName('')
@@ -684,12 +684,12 @@ const ShopPage = () => {
     }
   }
 
-  // VK2: A4-Rechnung drucken (Verein = Aussteller, ein Position, Bankverbindung aus Verein falls hinterlegt)
-  const printVk2Rechnung = (order: any, empfaengerName: string) => {
+  // VK2: A4-Rechnung drucken (Verein = Aussteller, ein Position, Bankverbindung aus Verein falls hinterlegt). Gibt Rechnungsnr. zurück (für Nachdruck gleiche Nr.).
+  const printVk2Rechnung = (order: any, empfaengerName: string): string | null => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
-      return
+      return null
     }
     const vk2 = loadVk2Stammdaten()
     const verein = vk2?.verein || {} as Record<string, string>
@@ -699,17 +699,19 @@ const ShopPage = () => {
     const bankForRechnung = verein.bankverbindung && String(verein.bankverbindung).trim() ? String(verein.bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
     const ibanRaw = verein.iban && String(verein.iban).trim() ? String(verein.iban).trim() : ''
     const ibanDisplay = ibanRaw ? ibanRaw.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
-    let nrValue = order.orderNumber
-    try {
-      const key = 'k2-vk2-rechnung-counter'
-      const year = new Date().getFullYear()
-      const stored = localStorage.getItem(key)
-      const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
-      if (parsed.year !== year) { parsed.year = year; parsed.next = 1 }
-      nrValue = `RE-VK2-${year}-${String(parsed.next).padStart(4, '0')}`
-      parsed.next += 1
-      localStorage.setItem(key, JSON.stringify(parsed))
-    } catch (_) {}
+    let nrValue = order.rechnungsNr || order.orderNumber
+    if (!order.rechnungsNr) {
+      try {
+        const key = 'k2-vk2-rechnung-counter'
+        const year = new Date().getFullYear()
+        const stored = localStorage.getItem(key)
+        const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
+        if (parsed.year !== year) { parsed.year = year; parsed.next = 1 }
+        nrValue = `RE-VK2-${year}-${String(parsed.next).padStart(4, '0')}`
+        parsed.next += 1
+        localStorage.setItem(key, JSON.stringify(parsed))
+      } catch (_) {}
+    }
     const date = new Date(order.date)
     const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
     const bezeichnung = (order.items && order.items[0] && order.items[0].title) ? String(order.items[0].title).replace(/</g, '&lt;') : 'Einnahme Vereinsbetrieb'
@@ -745,6 +747,25 @@ ${bankBlock}
     printWindow.document.write(html)
     printWindow.document.close()
     setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 800) }, 300)
+    return nrValue
+  }
+
+  // VK2: Nach Klick „Rechnung drucken“ ggf. Rechnungsnr. am Order speichern (für Nachdruck gleiche Nr.)
+  const handleVk2RechnungDrucken = () => {
+    const o = orders[0]
+    if (!o || o.paymentMethod !== 'transfer' || !(o.rechnungEmpfaenger || '').trim()) {
+      alert('Nur möglich für die zuletzt erfasste Einnahme mit Zahlungsart Rechnung und Rechnungsempfänger.')
+      return
+    }
+    const nr = printVk2Rechnung(o, (o.rechnungEmpfaenger || '').trim())
+    if (nr && !o.rechnungsNr) {
+      try {
+        const stored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+        const idx = stored.findIndex((x: any) => (x.id || x.orderNumber) === (o.id || o.orderNumber))
+        if (idx !== -1) { stored[idx] = { ...stored[idx], rechnungsNr: nr }; localStorage.setItem('k2-vk2-orders', JSON.stringify(stored)) }
+        setOrders(prev => prev.map(ord => (ord.id || ord.orderNumber) === (o.id || o.orderNumber) ? { ...ord, rechnungsNr: nr } : ord))
+      } catch (_) {}
+    }
   }
 
   // VK2: Ausgabe erfassen (Kassaausgang) → nur Kassabuch, art: ausgang
@@ -770,7 +791,18 @@ ${bankBlock}
     }
   }
 
-  // VK2: Letzte 15 Buchungen – Storno (Order + Kassabuch-Eintrag entfernen)
+  // VK2: Letzte Ausgaben (aus Kassabuch) für Belegdruck und Anzeige
+  const vk2LastAusgaben = (() => {
+    if (!fromVk2) return []
+    try {
+      return loadKassabuch('vk2')
+        .filter((e: KassabuchEintrag) => e.art === 'ausgang')
+        .sort((a, b) => b.datum.localeCompare(a.datum))
+        .slice(0, 5)
+    } catch { return [] }
+  })()
+
+  // VK2: Letzte 15 Buchungen – Storno (Einnahmen + Ausgaben, neueste zuerst)
   const MAX_VK2_STORNO = 15
   const vk2OrdersForStorno = (() => {
     try {
@@ -779,6 +811,23 @@ ${bankBlock}
       if (!Array.isArray(arr)) return []
       return [...arr].sort((a: any, b: any) => (b.date || '').localeCompare(a.date || '')).slice(0, MAX_VK2_STORNO)
     } catch { return [] }
+  })()
+  const vk2AusgabenForStorno = (() => {
+    if (!fromVk2) return []
+    try {
+      return loadKassabuch('vk2')
+        .filter((e: KassabuchEintrag) => e.art === 'ausgang')
+        .sort((a, b) => b.datum.localeCompare(a.datum))
+        .slice(0, MAX_VK2_STORNO)
+    } catch { return [] }
+  })()
+  type Vk2StornoItem = { type: 'einnahme'; order: any } | { type: 'ausgabe'; eintrag: KassabuchEintrag }
+  const vk2StornoListe: Vk2StornoItem[] = (() => {
+    if (!fromVk2) return []
+    const einnahmen: Vk2StornoItem[] = vk2OrdersForStorno.map((o: any) => ({ type: 'einnahme', order: o }))
+    const ausgaben: Vk2StornoItem[] = vk2AusgabenForStorno.map(e => ({ type: 'ausgabe', eintrag: e }))
+    const sortKey = (x: Vk2StornoItem) => x.type === 'einnahme' ? x.order.date : x.eintrag.datum + 'T23:59:59'
+    return [...einnahmen, ...ausgaben].sort((a, b) => sortKey(b).localeCompare(sortKey(a))).slice(0, MAX_VK2_STORNO)
   })()
 
   const handleVk2Storno = (order: any) => {
@@ -795,6 +844,19 @@ ${bankBlock}
       setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderId))
       setShowVk2StornoList(false)
       alert('✅ Buchung storniert.')
+    } catch (_) {
+      alert('⚠️ Storno fehlgeschlagen.')
+    }
+  }
+
+  const handleVk2StornoAusgabe = (eintrag: KassabuchEintrag) => {
+    const label = (eintrag.verwendungszweck || 'Ausgabe').trim() || 'Ausgabe'
+    if (!confirm(`Ausgabe „${label}“ (€ ${eintrag.betrag.toFixed(2)}) wirklich stornieren?`)) return
+    try {
+      const kassabuch = loadKassabuch('vk2').filter((e: KassabuchEintrag) => e.id !== eintrag.id)
+      saveKassabuch('vk2', kassabuch)
+      setShowVk2StornoList(false)
+      alert('✅ Ausgabe storniert.')
     } catch (_) {
       alert('⚠️ Storno fehlgeschlagen.')
     }
@@ -836,6 +898,37 @@ ${bankBlock}
       <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
       <div class="total">Gesamtbetrag: € ${order.total.toFixed(2)}</div>
       <div class="payment"><strong>${paymentText}</strong><br>Vielen Dank!</div>
+      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
+    printWindow.document.close()
+    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
+  }
+
+  // VK2: Ausgabenbeleg drucken (80mm, wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
+  const printVk2AusgabeBeleg = (eintrag: KassabuchEintrag) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
+      return
+    }
+    const vk2 = loadVk2Stammdaten()
+    const verein = vk2?.verein || {}
+    const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
+    const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
+    const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
+    const dateStr = new Date(eintrag.datum + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
+    printWindow.document.write(`
+      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Ausgabenbeleg</title>
+      <style>@media print { @page { size: 80mm 200mm; margin: 0; } * { -webkit-print-color-adjust: exact; } body { margin: 0; padding: 0; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+      .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>
+      <div class="header"><strong>AUSGABENBELEG</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
+      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div>
+      <div class="total">Betrag: € ${eintrag.betrag.toFixed(2)}</div>
+      <div style="margin-top:4px;font-size:8px">Verwendungszweck: ${zweck}</div>
       <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
     printWindow.document.close()
     setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
@@ -1646,6 +1739,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               style={{ width: '100%', padding: '0.6rem 1rem', background: s.accent, color: '#fff', border: 'none', borderRadius: s.radiusSm, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>
               Ausgabe erfassen
             </button>
+            {vk2LastAusgaben.length > 0 && (
+              <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.border}` }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte Ausgaben</div>
+                <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: s.muted }}>
+                  {vk2LastAusgaben.map((e: KassabuchEintrag) => (
+                    <li key={e.id}>{e.datum} · € {e.betrag.toFixed(2)} {e.verwendungszweck ? ` · ${e.verwendungszweck}` : ''}</li>
+                  ))}
+                </ul>
+                <button type="button" onClick={() => { if (vk2LastAusgaben[0]) printVk2AusgabeBeleg(vk2LastAusgaben[0]) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Beleg drucken (neueste)</button>
+              </div>
+            )}
           </div>
           {orders.length > 0 && (
             <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1rem', boxShadow: s.shadow }}>
@@ -1657,7 +1761,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   </li>
                 ))}
               </ul>
-              <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
+              <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
+                {orders[0]?.paymentMethod === 'transfer' && (orders[0]?.rechnungEmpfaenger || '').trim() && (
+                  <button type="button" onClick={handleVk2RechnungDrucken} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>🖨️ Rechnung drucken</button>
+                )}
+              </div>
             </div>
           )}
           <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
@@ -1670,17 +1779,30 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             </button>
             {showVk2StornoList && (
               <div style={{ marginTop: '0.75rem', background: s.bgCard, borderRadius: s.radius, padding: '1rem', boxShadow: s.shadow, maxHeight: '40vh', overflowY: 'auto' }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte 15 Buchungen (neueste zuerst) – Storno</div>
-                {vk2OrdersForStorno.length === 0 ? (
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte 15 Buchungen (Einnahmen & Ausgaben, neueste zuerst) – Beleg drucken / Storno</div>
+                {vk2StornoListe.length === 0 ? (
                   <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Keine Buchungen vorhanden.</p>
                 ) : (
                   <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: s.muted }}>
-                    {vk2OrdersForStorno.map((o: any, i: number) => (
-                      <li key={o.id || o.date} style={{ marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span>
-                          {new Date(o.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof o.total === 'number' ? o.total.toFixed(2) : o.total} {(o.items && o.items[0] && o.items[0].title) ? ` · ${o.items[0].title}` : ''}
-                        </span>
-                        <button type="button" onClick={() => handleVk2Storno(o)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
+                    {vk2StornoListe.map((item: Vk2StornoItem) => (
+                      <li key={item.type === 'einnahme' ? (item.order.id || item.order.date) : item.eintrag.id} style={{ marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {item.type === 'einnahme' ? (
+                          <>
+                            <span>
+                              {new Date(item.order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof item.order.total === 'number' ? item.order.total.toFixed(2) : item.order.total} {(item.order.items && item.order.items[0] && item.order.items[0].title) ? ` · ${item.order.items[0].title}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Einnahme)</span>
+                            </span>
+                            <button type="button" onClick={() => { printVk2Bon(item.order) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
+                            <button type="button" onClick={() => handleVk2Storno(item.order)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
+                          </>
+                        ) : (
+                          <>
+                            <span>
+                              {item.eintrag.datum} · € {item.eintrag.betrag.toFixed(2)} {item.eintrag.verwendungszweck ? ` · ${item.eintrag.verwendungszweck}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Ausgabe)</span>
+                            </span>
+                            <button type="button" onClick={() => printVk2AusgabeBeleg(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
+                            <button type="button" onClick={() => handleVk2StornoAusgabe(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
+                          </>
+                        )}
                       </li>
                     ))}
                   </ul>

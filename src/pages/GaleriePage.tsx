@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
@@ -1984,11 +1984,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       .then(data => {
         if (!isMounted || !data) return
         try {
-          // VK2-Blob nutzt exakte localStorage-Key-Namen (createVk2Backup)
-          if (Array.isArray(data['k2-vk2-events']) && data['k2-vk2-events'].length > 0) {
+          // VK2-Blob nutzt exakte localStorage-Key-Namen (createVk2Backup). Server = Wahrheit (auch leere Arrays anwenden).
+          if (Array.isArray(data['k2-vk2-events'])) {
             saveEvents('vk2', data['k2-vk2-events'])
           }
-          if (Array.isArray(data['k2-vk2-documents']) && data['k2-vk2-documents'].length > 0) {
+          if (Array.isArray(data['k2-vk2-documents'])) {
             saveDocuments('vk2', data['k2-vk2-documents'])
           }
           if (data['k2-vk2-design-settings'] != null && typeof data['k2-vk2-design-settings'] === 'object') {
@@ -2015,6 +2015,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           if (data['k2-vk2-registrierung'] != null) {
             try {
               localStorage.setItem('k2-vk2-registrierung', typeof data['k2-vk2-registrierung'] === 'string' ? data['k2-vk2-registrierung'] : JSON.stringify(data['k2-vk2-registrierung']))
+            } catch (_) {}
+          }
+          if (Array.isArray(data['k2-vk2-eingangskarten']) && data['k2-vk2-eingangskarten'].length > 0) {
+            try {
+              localStorage.setItem('k2-vk2-eingangskarten', JSON.stringify(data['k2-vk2-eingangskarten']))
+              window.dispatchEvent(new Event('vk2-karten-updated'))
             } catch (_) {}
           }
           window.dispatchEvent(new CustomEvent('k2-vk2-data-updated'))
@@ -3653,7 +3659,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 gap: 'clamp(2rem, 4vw, 3rem)',
                 alignItems: 'flex-start'
               }}>
-              {/* Linke Seite: Vollständige Stammdaten */}
+              {/* Linke Seite: Impressum nur mit Brand-Daten */}
                 <div style={{ flex: 1 }}>
                   <h4 style={{
                     margin: '0 0 1rem',
@@ -3661,206 +3667,21 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     fontWeight: '600',
                     color: theme.text
                   }}>
-                    {vk2 ? 'Impressum' : tenantConfig.footerLine}
+                    Impressum
                   </h4>
-
-                  {/* VK2: Vereins-Impressum mit Vorstand (auch ohne Stammdaten sichtbar) */}
-                  {vk2 && (
-                    <div style={{ marginBottom: '1rem' }}>
-                      <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
-                        {vk2Stammdaten?.verein?.name || 'Verein (Name in Admin-Einstellungen eintragen)'}
-                      </p>
-                      {vk2Stammdaten?.verein?.vereinsnummer && (
-                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                          ZVR-Zahl: {vk2Stammdaten.verein.vereinsnummer}
-                        </p>
-                      )}
-                      {vk2Stammdaten && (vk2Stammdaten.verein?.address || vk2Stammdaten.verein?.city) && (
-                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                          {[vk2Stammdaten.verein.address, vk2Stammdaten.verein.city, vk2Stammdaten.verein.country].filter(Boolean).join(', ')}
-                        </p>
-                      )}
-                      {vk2Stammdaten?.verein?.email && (
-                        <p style={{ margin: '0 0 0.15rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                          ✉️ <a href={`mailto:${vk2Stammdaten.verein.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {vk2Stammdaten.verein.email}
-                          </a>
-                        </p>
-                      )}
-                      {vk2Stammdaten?.verein?.website && (
-                        <p style={{ margin: '0 0 0.75rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                          🌐 <a href={`https://${vk2Stammdaten.verein.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {vk2Stammdaten.verein.website}
-                          </a>
-                        </p>
-                      )}
-                      {vk2Stammdaten?.vorstand && (
-                        <div style={{ marginTop: '0.75rem', paddingTop: '0.75rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)` }}>
-                          <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.85rem, 2vw, 0.95rem)' }}>Vorstand</p>
-                          {vk2Stammdaten.vorstand?.name && (
-                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                              Obfrau/Obmann: <span style={{ color: theme.text }}>{vk2Stammdaten.vorstand.name}</span>
-                            </p>
-                          )}
-                          {vk2Stammdaten.vize?.name && (
-                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                              Stellvertreter:in: <span style={{ color: theme.text }}>{vk2Stammdaten.vize.name}</span>
-                            </p>
-                          )}
-                          {vk2Stammdaten.kassier?.name && (
-                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                              Kassier:in: <span style={{ color: theme.text }}>{vk2Stammdaten.kassier.name}</span>
-                            </p>
-                          )}
-                          {vk2Stammdaten.schriftfuehrer?.name && (
-                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                              Schriftführer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.schriftfuehrer.name}</span>
-                            </p>
-                          )}
-                          {vk2Stammdaten.beisitzer?.name && (
-                            <p style={{ margin: '0 0 0.2rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)' }}>
-                              Beirat/Beisitzer:in: <span style={{ color: theme.text }}>{vk2Stammdaten.beisitzer.name}</span>
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
+                    {PRODUCT_BRAND_NAME}
+                  </p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>
+                    {PRODUCT_COPYRIGHT_BRAND_ONLY}
+                  </p>
+                  {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
+                    <p style={{ margin: '0 0 0', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
+                      ✉️ <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: theme.accent, textDecoration: 'none' }}>
+                        {PRODUCT_LIZENZ_ANFRAGE_EMAIL}
+                      </a>
+                    </p>
                   )}
-                  
-                  {/* K2/ök2: Galerie-Kontakt – bei VK2 nicht anzeigen (VK2 hat eigenes Impressum oben).
-                      Impressum & Google Maps: prominente Adresse (Galerie zuerst, sonst Künstler). */}
-                  {!vk2 && (<>{/* Galerie Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.25rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {tenantConfig.galleryName}
-                    </p>
-                    {(() => {
-                      const adr = musterOnly
-                        ? [MUSTER_TEXTE.gallery.address, (MUSTER_TEXTE.gallery as any).city, (MUSTER_TEXTE.gallery as any).country].filter(Boolean).join(', ')
-                        : getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
-                      // Routenplaner: dir/?destination= öffnet Google Maps direkt mit „Route zu diesem Ziel“ (vom aktuellen Standort)
-                      const mapsDirUrl = adr ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adr)}` : ''
-                      return (adr || musterOnly) ? (
-                        <p style={{ margin: '0 0 0.15rem', color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', lineHeight: '1.4' }}>
-                          {adr && (
-                            <span style={{ color: 'inherit' }}>{adr}</span>
-                          )}
-                          {mapsDirUrl ? (
-                            <>
-                              {adr && <span style={{ color: theme.muted }}> · </span>}
-                              <a
-                                href={mapsDirUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                title="Routenplaner – Route zur Galerie"
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '0.35rem',
-                                  padding: '0.25rem 0.5rem',
-                                  background: `${theme.accent}22`,
-                                  color: theme.accent,
-                                  fontWeight: 600,
-                                  borderRadius: 8,
-                                  textDecoration: 'none',
-                                  fontSize: 'clamp(0.85rem, 1.9vw, 0.95rem)'
-                                }}
-                              >
-                                🗺️ Routenplaner
-                              </a>
-                            </>
-                          ) : null}
-                        </p>
-                      ) : null
-                    })()}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.15rem' }}>
-                      {(musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone) && (
-                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          📞 {musterOnly ? MUSTER_TEXTE.gallery.phone : galleryData.phone}
-                        </span>
-                      )}
-                      {(musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email) && (
-                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {musterOnly ? MUSTER_TEXTE.gallery.email : galleryData.email}
-                          </a>
-                        </span>
-                      )}
-                      {(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website) && (
-                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          🌐 <a href={`https://${(musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website).replace(/^https?:\/\//, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {musterOnly ? MUSTER_TEXTE.gallery.website : galleryData.website}
-                          </a>
-                        </span>
-                      )}
-                      {(musterOnly ? (MUSTER_TEXTE.gallery as any).openingHours : galleryData.openingHours) && (
-                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          🕐 {musterOnly ? (MUSTER_TEXTE.gallery as any).openingHours : galleryData.openingHours}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Martina Kontakt - Kompakt (ök2: immer aus MUSTER_TEXTE) */}
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {musterOnly ? MUSTER_TEXTE.martina.name : ((tenantId === 'k2' && (martinaData.name === 'Künstlerin Muster' || !martinaData.name)) ? tenantConfig.artist1Name : (martinaData.name || tenantConfig.artist1Name))}
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      {(musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone) && (
-                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          📞 {musterOnly ? MUSTER_TEXTE.martina.phone : martinaData.phone}
-                        </span>
-                      )}
-                      {(musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email) && (
-                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {musterOnly ? MUSTER_TEXTE.martina.email : martinaData.email}
-                          </a>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Georg Kontakt - nur K2 (ök2 = nur eine Person) */}
-                  {!musterOnly && (
-                  <div style={{ marginBottom: '0.75rem' }}>
-                    <p style={{ margin: '0 0 0.15rem', fontWeight: '500', color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.1rem)' }}>
-                      {((tenantId === 'k2' && (georgData.name === 'Künstler Muster' || !georgData.name)) ? tenantConfig.artist2Name : (georgData.name || tenantConfig.artist2Name))}
-                    </p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      {georgData.phone && (
-                        <span style={{ color: theme.muted, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          📞 {georgData.phone}
-                        </span>
-                      )}
-                      {georgData.email && (
-                        <span style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                          ✉️ <a href={`mailto:${georgData.email}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                            {georgData.email}
-                          </a>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  )}
-                  </>)}
-                  
-                  {/* Gewerbe & Haftungsausschluss – nur K2/ök2 */}
-                  {!vk2 && <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.text, lineHeight: 1.45 }}>
-                      Gewerbe: freie Kunstschaffende
-                    </p>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
-                      Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
-                    </p>
-                  </div>}
-                  {/* VK2: Haftungsausschluss für Verein */}
-                  {vk2 && <div style={{ marginTop: '1.5rem', paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 35%, transparent)` }}>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', color: theme.muted, lineHeight: 1.45 }}>
-                      Haftungsausschluss: Die Inhalte wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und Aktualität kann keine Gewähr übernommen werden.
-                    </p>
-                  </div>}
                 </div>
                 
                 {/* Rechte Seite: QR mit Bezeichnung der Seite (Kunde sieht Galeriename, kein Vercel) */}
@@ -3902,7 +3723,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   </p>
                 )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>
-                  {PRODUCT_COPYRIGHT}
+                  {PRODUCT_COPYRIGHT_BRAND_ONLY}
                 </p>
             </div>
           </section>

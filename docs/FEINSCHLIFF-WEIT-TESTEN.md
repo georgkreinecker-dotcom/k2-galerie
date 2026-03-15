@@ -4,6 +4,8 @@
 
 **Reihenfolge:** 1. Weit testen (diese Checkliste) → 2. ök2-Texte (danach).
 
+**Gilt für ök2 und VK2:** Diese Testroutine ist für ök2 festgelegt und gilt in gleicher Weise für VK2 (Standardsachen = immer K2, ök2 und VK2). Bei Nutzung von VK2 dieselben Abläufe und Kontext-Checks anwenden. Siehe auch **docs/K2-OEK2-DATENTRENNUNG.md** Abschnitt „Testroutine / Weit testen“ und „VK2 funktionssicher machen“.
+
 ---
 
 ## Was Joe (KI) abgearbeitet hat ✅
@@ -49,6 +51,20 @@
 | **K2 (echte Galerie)** | Echte Werke, Stammdaten, Veröffentlichen, Kasse – alles mit echten Daten. |
 | **ök2 (Demo)** | Musterwerke, Mustertexte, keine K2-Daten sichtbar; Shop/Links zur Demo. |
 | **VK2** | Wenn genutzt: Vereinsdaten, Mitglieder, eigene Keys – keine Vermischung mit K2. |
+
+---
+
+## Nach Änderung an VK2 oder ök2 – gezielte Prüfung (Checkliste)
+
+**Wann:** Nach Code-Änderungen, die Veröffentlichen, Laden vom Server oder Seitengestaltung für **VK2** oder **ök2** betreffen.
+
+| # | Prüfung | Kurz |
+|---|---------|------|
+| 1 | **VK2: Kein K2-Bild nach Veröffentlichen** | Admin VK2: Design mit eigenem Bild speichern → Veröffentlichen. Anderes Gerät oder Inkognito: VK2-Galerie öffnen, „Vom Server laden“ / Stand-Badge. Erwartung: VK2-Bild sichtbar, **kein** K2-Bild. |
+| 2 | **ök2: Keine K2-Daten** | Galerie öffentlich (ök2) ansehen + Shop von ök2: nur Musterwerke, Muster-Kontakt, kein K2-Telefon/K2-Adresse. |
+| 3 | **VK2: Eingangskarten** | VK2 Admin: Eingangskarten mit Bild speichern → Veröffentlichen. Nach Laden vom Server: Karten mit Bild sichtbar, kein K2-Bild in Karten. |
+
+**Automatisch:** Die Unit-Tests (datentrennung.test.ts, vk2-backup.test.ts) prüfen die Datenebene. Diese Checkliste ist für manuelles Durchklicken nach Änderungen.
 
 ---
 

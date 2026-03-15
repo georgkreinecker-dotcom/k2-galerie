@@ -6,8 +6,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { MUSTER_TEXTE, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, getProminenteAdresseFormatiert } from '../config/tenantConfig'
-import { loadStammdaten } from '../utils/stammdatenStorage'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 
 const HANDBUCH_BASE = '/benutzer-handbuch'
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -40,17 +39,6 @@ export default function BenutzerHandbuchPage() {
   const backFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const returnTo = searchParams.get('returnTo')
-
-  const tenant = (typeof window !== 'undefined' && (window.location.pathname.includes('oeffentlich') || sessionStorage.getItem('k2-admin-context') === 'oeffentlich')) ? 'oeffentlich' : 'k2'
-  const galleryRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'gallery') : ({} as Record<string, string>)
-  const gallery = (tenant === 'oeffentlich' && !(galleryRaw as Record<string, string>)?.name && !(galleryRaw as Record<string, string>)?.address) ? MUSTER_TEXTE.gallery : (galleryRaw as Record<string, string>)
-  const martinaRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'martina') : ({} as Record<string, string>)
-  const georgRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'georg') : ({} as Record<string, string>)
-  const galleryName = (gallery as Record<string, string>)?.name ?? ''
-  const impressumAddress = getProminenteAdresseFormatiert(gallery, martinaRaw, georgRaw)
-  const impressumOpeningHours = ((gallery as Record<string, string>)?.openingHours ?? '').trim()
-  const impressumMapsUrl = impressumAddress ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(impressumAddress)}` : ''
-  // Impressum & Google Maps: prominente Adresse (Galerie zuerst, sonst Künstler)
 
   const handleZurueck = () => {
     if (backFallbackRef.current) {
@@ -481,26 +469,13 @@ export default function BenutzerHandbuchPage() {
                 </section>
               ))}
               <section className="benutzer-druck-kapitel benutzer-impressum-seite">
-                <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum {tenant === 'oeffentlich' ? '(ök2)' : ''}</h2>
+                <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum</h2>
                 <div className="benutzer-druck-inhalt" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
-                  <p style={{ margin: '0 0 0.5rem' }}><strong>Medieninhaber &amp; Herausgeber:</strong> K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).</p>
-                  {(galleryName || impressumAddress) && (
-                    <p style={{ margin: '0 0 0.5rem' }}>
-                      <strong>Galerie / Anschrift:</strong>{' '}
-                      {impressumMapsUrl ? (
-                        <a href={impressumMapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1c1a18', textDecoration: 'underline' }}>
-                          {[galleryName, impressumAddress].filter(Boolean).join(' · ')} · Route planen (Google Maps)
-                        </a>
-                      ) : (
-                        [galleryName, impressumAddress].filter(Boolean).join(' · ')
-                      )}
-                    </p>
+                  <p style={{ margin: '0 0 0.5rem' }}><strong>{PRODUCT_BRAND_NAME}</strong></p>
+                  <p style={{ margin: '0 0 0.5rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+                  {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
+                    <p style={{ margin: 0 }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
                   )}
-                  {impressumOpeningHours && (
-                    <p style={{ margin: '0 0 0.5rem' }}><strong>Öffnungszeiten:</strong> {impressumOpeningHours}</p>
-                  )}
-                  <p style={{ margin: '0 0 0.5rem' }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
-                  <p style={{ margin: 0 }}>{PRODUCT_COPYRIGHT}</p>
                 </div>
               </section>
             </>

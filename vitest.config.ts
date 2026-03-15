@@ -7,5 +7,10 @@ export default defineConfig({
     setupFiles: ['./src/tests/setup.ts'],
     include: ['src/tests/**/*.test.ts'],
     reporters: ['verbose'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'html'],
+      exclude: ['node_modules/', 'dist/', 'src/tests/', '**/*.test.ts', '**/*.d.ts'],
+    },
   },
 })

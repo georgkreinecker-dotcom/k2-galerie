@@ -6,8 +6,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { MUSTER_TEXTE, PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, getProminenteAdresseFormatiert } from '../config/tenantConfig'
-import { loadStammdaten } from '../utils/stammdatenStorage'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 
 const HANDBUCH_BASE = '/vk2-handbuch'
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -15,10 +14,15 @@ const HANDBUCH_DOC_PARAM = 'doc'
 const DOCUMENTS = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '01-was-ist', name: 'Was ist die Vereinsplattform?', file: '01-WAS-IST-VEREINSPLATTFORM.md' },
+  { id: '04-admin', name: 'Admin im Überblick', file: '04-ADMIN-UEBERBLICK.md' },
   { id: '02-verein', name: 'Verein, Stammdaten und Mitglieder', file: '02-VEREIN-STAMMDATEN-MITGLIEDER.md' },
   { id: '03-galerie', name: 'Mitglieder in der Galerie, Katalog und Kassa', file: '03-GALERIE-KATALOG-KASSA.md' },
-  { id: '04-etiketten', name: 'Etiketten und Druck', file: '04-ETIKETTEN-DRUCK.md' },
+  { id: '06-eventplanung', name: 'Eventplanung & Öffentlichkeitsarbeit', file: '06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md' },
+  { id: '07-demo-lizenz', name: 'Demo und Lizenz', file: '07-DEMO-LIZENZ.md' },
+  { id: '08-einstellungen', name: 'Einstellungen', file: '08-EINSTELLUNGEN.md' },
+  { id: '09-faq', name: 'Häufige Fragen', file: '09-HAEUFIGE-FRAGEN.md' },
   { id: '05-kurz', name: 'Kurz zusammengefasst', file: '05-KURZ-ZUSAMMENGEFASST.md' },
+  { id: '10-impressum', name: 'Impressum', file: '10-IMPRESSUM.md' },
 ] as const
 
 const HANDBUCH_PATH = '/vk2-handbuch'
@@ -36,17 +40,6 @@ export default function Vk2HandbuchPage() {
   const backFallbackRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const returnTo = searchParams.get('returnTo')
-
-  const tenant = (typeof window !== 'undefined' && (window.location.pathname.includes('oeffentlich') || sessionStorage.getItem('k2-admin-context') === 'oeffentlich')) ? 'oeffentlich' : 'k2'
-  const galleryRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'gallery') : ({} as Record<string, string>)
-  const gallery = (tenant === 'oeffentlich' && !(galleryRaw as Record<string, string>)?.name && !(galleryRaw as Record<string, string>)?.address) ? MUSTER_TEXTE.gallery : (galleryRaw as Record<string, string>)
-  const martinaRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'martina') : ({} as Record<string, string>)
-  const georgRaw = typeof window !== 'undefined' ? loadStammdaten(tenant, 'georg') : ({} as Record<string, string>)
-  const galleryName = (gallery as Record<string, string>)?.name ?? ''
-  const impressumAddress = getProminenteAdresseFormatiert(gallery, martinaRaw, georgRaw)
-  const impressumOpeningHours = ((gallery as Record<string, string>)?.openingHours ?? '').trim()
-  const impressumMapsUrl = impressumAddress ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(impressumAddress)}` : ''
-  // Impressum & Google Maps: prominente Adresse (Galerie zuerst, sonst Künstler)
 
   const handleZurueck = () => {
     if (backFallbackRef.current) {
@@ -477,23 +470,7 @@ export default function Vk2HandbuchPage() {
               <section className="benutzer-druck-kapitel benutzer-impressum-seite">
                 <h2 style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: '#1c1a18', fontWeight: 700, borderBottom: '2px solid #e5e7eb', paddingBottom: '0.5rem' }}>Impressum (VK2)</h2>
                 <div className="benutzer-druck-inhalt" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
-                  <p style={{ margin: '0 0 0.5rem' }}><strong>Medieninhaber &amp; Herausgeber:</strong> K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).</p>
-                  {(galleryName || impressumAddress) && (
-                    <p style={{ margin: '0 0 0.5rem' }}>
-                      <strong>Galerie / Anschrift:</strong>{' '}
-                      {impressumMapsUrl ? (
-                        <a href={impressumMapsUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#1c1a18', textDecoration: 'underline' }}>
-                          {[galleryName, impressumAddress].filter(Boolean).join(' · ')} · Route planen (Google Maps)
-                        </a>
-                      ) : (
-                        [galleryName, impressumAddress].filter(Boolean).join(' · ')
-                      )}
-                    </p>
-                  )}
-                  {impressumOpeningHours && (
-                    <p style={{ margin: '0 0 0.5rem' }}><strong>Öffnungszeiten:</strong> {impressumOpeningHours}</p>
-                  )}
-                  <p style={{ margin: '0 0 0.5rem' }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
+                  <p style={{ margin: '0 0 0.5rem' }}><strong>Medieninhaber &amp; Herausgeber (Plattform):</strong> {PRODUCT_BRAND_NAME}</p>
                   <p style={{ margin: 0 }}>{PRODUCT_COPYRIGHT}</p>
                 </div>
               </section>
