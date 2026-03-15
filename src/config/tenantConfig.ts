@@ -267,6 +267,8 @@ export interface Vk2Stammdaten {
     /** Aktive Umfragen */
     umfragen?: Vk2Umfrage[]
   }
+  /** Eigene Kategorien/Kunstrichtungen des Vereins für Mitglieder. Wenn gesetzt und nicht leer, ersetzen sie VK2_KUNSTBEREICHE im Dropdown und überall. */
+  eigeneKategorien?: { id: string; label: string }[]
 }
 
 /** Umfrage für Vereinsmitglieder – wird per WhatsApp-Link geteilt */
@@ -831,7 +833,7 @@ export function getEntryTypeLabel(entryType: string | undefined): string {
   return t ? t.label : entryType
 }
 
-/** VK2: Kunstbereiche (ein „Werk“ = ein Künstler:innen-Profil im Verein) */
+/** VK2: Kunstbereiche (ein „Werk“ = ein Künstler:innen-Profil im Verein). Standard-Liste; kann pro Verein durch eigene Kategorien ersetzt werden. */
 export const VK2_KUNSTBEREICHE = [
   { id: 'malerei', label: 'Malerei' },
   { id: 'keramik', label: 'Keramik' },
@@ -841,6 +843,13 @@ export const VK2_KUNSTBEREICHE = [
   { id: 'textil', label: 'Textil' },
   { id: 'sonstiges', label: 'Sonstiges' },
 ] as const
+
+/** VK2: Liefert die Kunstrichtungen für den Verein – eigene Kategorien, wenn gesetzt, sonst Standard (VK2_KUNSTBEREICHE). */
+export function getVk2Kunstrichtungen(stamm: Vk2Stammdaten | null | undefined): { id: string; label: string }[] {
+  const list = stamm?.eigeneKategorien
+  if (list && list.length > 0) return list
+  return [...VK2_KUNSTBEREICHE]
+}
 
 /** VK2: Seed-Künstler:innen (ein Platzhalter pro Kunstbereich), wenn k2-vk2-artworks leer */
 const _vk2SeedTs = new Date().toISOString()

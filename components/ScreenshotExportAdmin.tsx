@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../src/config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE } from '../src/config/navigation'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
@@ -20,7 +20,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -104,9 +104,10 @@ function getAdminReturnUrl(activeTab?: string, eventplanSubTab?: string): string
   return qs ? base + '?' + qs : base
 }
 
-/** Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen. Gleicher Fenster-Name = erneuter Klick fokussiert vorhandenes Fenster. */
-function openHandbuchInFenster(returnTo: string): void {
-  const url = `${BENUTZER_HANDBUCH_ROUTE}?returnTo=${encodeURIComponent(returnTo)}`
+/** Handbuch in eigenem Fenster öffnen – VK2-Kontext → VK2-Handbuch, sonst Benutzerhandbuch (ök2/K2). */
+function openHandbuchInFenster(returnTo: string, handbuchBase?: string): void {
+  const base = handbuchBase ?? BENUTZER_HANDBUCH_ROUTE
+  const url = `${base}?returnTo=${encodeURIComponent(returnTo)}`
   window.open(url, 'k2-handbuch', 'width=960,height=720,resizable=yes,scrollbars=yes')
 }
 function escapeJsStringForDoc(s: string): string {
@@ -3122,7 +3123,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     if (showAddModal && !editingArtwork && !tenant.isOeffentlich) {
       try {
         const last = localStorage.getItem(K2_LAST_ARTWORK_CATEGORY_KEY)
-        if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) {
+        if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && getVk2Kunstrichtungen(vk2Stammdaten).some((c) => c.id === last)))) {
           setArtworkCategory(last)
         }
       } catch (_) {}
@@ -9029,7 +9030,7 @@ ${'='.repeat(60)}
       setArtworkCategory(() => {
         try {
           const last = localStorage.getItem('k2-last-artwork-category')
-          if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) return last
+          if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && getVk2Kunstrichtungen(vk2Stammdaten).some((c) => c.id === last)))) return last
         } catch (_) {}
         return 'malerei'
       })
@@ -11245,10 +11246,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           </button>
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             Du schaust dir gerade an: <strong style={{ color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-              {activeTab === 'werke' ? '🖼️ Werke hinzufügen und bearbeiten' :
+              {activeTab === 'werke' ? (tenant.isVk2 ? '🖼️ Vereinsmitglieder' : '🖼️ Werke hinzufügen und bearbeiten') :
                activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
                activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse & Medien</> :
-               activeTab === 'design' ? '✨ Galerie gestalten und texten' :
+               activeTab === 'design' ? (tenant.isVk2 ? '✨ Ausstellung gestalten und texten' : '✨ Galerie gestalten und texten') :
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
@@ -11280,14 +11281,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
-            ? { titel: 'Mitglieder in der Galerie', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. Klicke auf ein Profil zum Bearbeiten oder nutze „Neues Werk“, um ein weiteres hinzuzufügen.' }
+            ? { titel: 'Vereinsmitglieder', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. Klicke auf ein Profil zum Bearbeiten oder nutze „Neues Werk“, um ein weiteres hinzuzufügen.' }
             : { titel: 'Werke hinzufügen und bearbeiten', text: 'Hier legst du deine Werke an: Foto hochladen oder aufnehmen, Titel und Preis eintragen – schon ist das Werk in der Galerie. Du kannst jederzeit etwas ändern oder ergänzen. Einfach auf ein Werk tippen zum Bearbeiten oder „Neues Werk“ wählen.' },
           eventplan: istVerein
             ? { titel: 'Events & Ausstellungen', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellst du Einladungen, QR-Codes für Gäste und siehst, wer kommt. Alles für eure Events an einem Ort – ohne Zettelwirtschaft.' }
             : { titel: 'Events & Ausstellungen', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen und QR-Codes für deine Gäste. Du siehst auf einen Blick, was ansteht – und deine Besucher können sich einfach anmelden.' },
           presse: { titel: 'Presse & Medien', text: 'Hier findest du alles für deine Pressearbeit: Medienkit, Pressevorlagen und Texte zum Kopieren. Ein Klick – und du hast das Richtige für Zeitung, Web oder Social Media. Professionell formuliert, du musst nur noch anpassen und versenden.' },
           design: istVerein
-            ? { titel: 'Galerie gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellst du es ein. Vorschau zeigt dir sofort, wie es wirkt.' }
+            ? { titel: 'Ausstellung gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellst du es ein. Vorschau zeigt dir sofort, wie es wirkt.' }
             : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
           veroeffentlichen: { titel: 'Veröffentlichen', text: 'Damit Besucher und Geräte den aktuellen Stand sehen: Hier sendest du deine Galerie an den Server. Ein Klick auf „An Server senden“ – danach ist überall dasselbe zu sehen. Wichtig nach jeder Änderung an Werken oder Gestaltung.' },
           einstellungen: istVerein
@@ -11640,10 +11641,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
                   type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
-                    { emoji: '🖼️', name: 'Mitglieder in der Galerie', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
-                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
+                    { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -11818,11 +11819,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
-                    { emoji: '🏛️', name: 'Mitglieder in der Galerie', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
+                    { emoji: '🏛️', name: 'Vereinsmitglieder', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
-                    { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
+                    { emoji: '✨', name: 'Ausstellung gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
                   ] : [
@@ -11941,8 +11942,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
                   // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
-                    { emoji: '🖼️', name: 'Mitglieder in der Galerie', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
-                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
+                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
+                    { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
@@ -11993,7 +11994,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <span>Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.</span>
                         )}
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab))} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
+                          <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
                           <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
                         </span>
                       </p>
@@ -12075,7 +12076,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
                   {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</> : <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</>)}
-                  {activeTab === 'design' && (tenant.isVk2 ? '✨ Galerie gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
+                  {activeTab === 'design' && (tenant.isVk2 ? '✨ Ausstellung gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
                   {activeTab === 'veroeffentlichen' && '📤 Veröffentlichen – Aushängeschild sichtbar machen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
@@ -12246,7 +12247,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
               }}>
-                {tenant.isVk2 ? 'Mitglieder in der Galerie' : 'Werke verwalten'}
+                {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
               {/* Hauptakteur zuerst: + Neues Werk, daneben Etiketten – Nebenakteure (Anzeige, Sync) unter „Einstellungen & Sync“ aufklappbar */}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
@@ -13231,7 +13232,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           const editEntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
                           setArtworkEntryType(editEntryType)
-                          const editCats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(editEntryType)
+                          const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(editEntryType)
                           const category = editCats.some((c) => c.id === artwork.category) ? (artwork.category || editCats[0].id) : editCats[0].id
                           setArtworkCategory(category)
                           if (!tenant.isVk2 && category === 'keramik') {
@@ -13806,7 +13807,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </h2>
 
             <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
-              <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab))} style={{ color: s.accent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch (Hilfe)</button> – Erste Schritte, Galerie gestalten, Admin, FAQ, VK2/ök2.
+              <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch (Hilfe)</button> – Erste Schritte, Galerie gestalten, Admin, FAQ{tenant.isVk2 ? ', Vereine' : ', VK2/ök2'}.
             </p>
 
             {/* Sichtbarer Hinweis: Du bist Testpilot (ök2 oder VK2) – voller Gratis-Zugang */}
@@ -14258,6 +14259,61 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
                       </div>
+                    </div>
+                    {/* ── KATEGORIEN / KUNSTRICHTUNGEN FÜR MITGLIEDER ── */}
+                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Kategorien / Kunstrichtungen für Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Diese Kategorien erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“. Standard: Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance).</p>
+                      {(vk2Stammdaten.eigeneKategorien?.length ?? 0) > 0 ? (
+                        <div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                            {(vk2Stammdaten.eigeneKategorien || []).map((k, idx) => (
+                              <div key={k.id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8 }}>
+                                <input
+                                  type="text"
+                                  value={k.label}
+                                  onChange={(e) => {
+                                    const neu = [...(vk2Stammdaten.eigeneKategorien || [])]
+                                    neu[idx] = { ...neu[idx], label: e.target.value, id: (e.target.value || '').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || neu[idx].id }
+                                    setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: neu })
+                                  }}
+                                  placeholder="z. B. Aquarell"
+                                  style={{ width: '120px', padding: '0.35rem 0.5rem', fontSize: '0.9rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 6, color: s.text }}
+                                />
+                                <button type="button" title="Kategorie entfernen" onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: (vk2Stammdaten.eigeneKategorien || []).filter((_, i) => i !== idx) })} style={{ padding: '0.2rem 0.4rem', background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [...(vk2Stammdaten.eigeneKategorien || []), { id: `custom-${Date.now()}`, label: '' }] })}
+                              style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                              + Kategorie hinzufügen
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [] })}
+                              style={{ padding: '0.4rem 0.85rem', background: 'transparent', border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}
+                            >
+                              Wieder Standard nutzen
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>Aktuell: Standard-Kategorien (Malerei, Keramik, Grafik, …)</p>
+                          <button
+                            type="button"
+                            onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [...VK2_KUNSTBEREICHE].map((k) => ({ id: k.id, label: k.label })) })}
+                            style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                          >
+                            Eigene Kategorien festlegen
+                          </button>
+                          <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>Du kannst den Standard übernehmen und anpassen oder komplett neue Kategorien anlegen.</p>
+                        </div>
+                      )}
                     </div>
                     {/* ── KOMMUNIKATION ── */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
@@ -19368,7 +19424,7 @@ ${name}`
             setArtworkEntryType('artwork')
             try {
               const last = localStorage.getItem('k2-last-artwork-category')
-              const catsForArtwork = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType('artwork')
+              const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType('artwork')
               if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
             } catch (_) {}
             setArtworkCeramicSubcategory('vase')
@@ -19443,7 +19499,7 @@ ${name}`
                   setArtworkTitle('')
                   try {
                     const last = localStorage.getItem('k2-last-artwork-category')
-                    if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && VK2_KUNSTBEREICHE.some((c) => c.id === last)))) setArtworkCategory(last)
+                    if (last && (ARTWORK_CATEGORIES.some((c) => c.id === last) || (tenant.isVk2 && getVk2Kunstrichtungen(vk2Stammdaten).some((c) => c.id === last)))) setArtworkCategory(last)
                   } catch (_) {}
                   setArtworkCeramicSubcategory('vase')
                   setArtworkCeramicHeight('10')
@@ -19651,7 +19707,7 @@ ${name}`
                         style={{ width: '100%', padding: '0.6rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '1rem', outline: 'none', cursor: 'pointer' }}
                       >
                         <option value="">– Bitte wählen –</option>
-                        {VK2_KUNSTBEREICHE.map((k) => (
+                        {getVk2Kunstrichtungen(vk2Stammdaten).map((k) => (
                           <option key={k.id} value={k.label}>{k.label}</option>
                         ))}
                       </select>
@@ -20172,14 +20228,14 @@ ${name}`
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                     <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                      {(tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(artworkEntryType)).map((c) => (
+                      {(tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType)).map((c) => (
                         <option key={c.id} value={c.id}>{c.label}</option>
                       ))}
                     </select>
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
-                    <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                    <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
                       {ENTRY_TYPES.map((t) => (
                         <option key={t.id} value={t.id}>{t.label}</option>
                       ))}
@@ -20355,7 +20411,7 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(artworkEntryType)).map((c) => (
+                    {(tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType)).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
@@ -20363,7 +20419,7 @@ ${name}`
               </div>
               <div style={{ marginTop: '0.5rem' }}>
                 <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
-                <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
                   {ENTRY_TYPES.map((t) => (
                     <option key={t.id} value={t.id}>{t.label}</option>
                   ))}
@@ -20804,7 +20860,7 @@ ${name}`
                     setArtworkTitle('')
                     try {
                       const last = localStorage.getItem('k2-last-artwork-category')
-                      const catsForArtwork = tenant.isVk2 ? VK2_KUNSTBEREICHE : getCategoriesForEntryType('artwork')
+                      const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType('artwork')
                       if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
                     } catch (_) {}
                     setArtworkCeramicSubcategory('vase')

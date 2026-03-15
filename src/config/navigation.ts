@@ -32,8 +32,10 @@ export const MEIN_BEREICH_ROUTE = '/mein-bereich'
 /** Nur Schreiben an Michael (Begleitschreiben + Einstiegscodes) – eine URL, eine Seite, nichts anderes */
 export const PILOT_SCHREIBEN_ROUTE = '/schreiben-michael'
 
-/** Benutzerhandbuch für ök2/VK2 (Lizenznehmer:innen, Piloten, Vereine) – Erste Schritte, Galerie gestalten, Admin, FAQ */
+/** Benutzerhandbuch für ök2 (Lizenznehmer:innen, Piloten) – Erste Schritte, Galerie gestalten, Admin, FAQ */
 export const BENUTZER_HANDBUCH_ROUTE = '/benutzer-handbuch'
+/** Eigenes Handbuch für Vereine (VK2) – Mitglieder, Galerie optional, Kassa, Druck */
+export const VK2_HANDBUCH_ROUTE = '/vk2-handbuch'
 
 /** Kreativwerkstatt = K2-Markt-Arbeitsoberfläche (Leitvision, Ablauf, Studio, Tor) – kurze URL für Homepage/Link */
 export const KREATIVWERKSTATT_ROUTE = '/kreativwerkstatt'
