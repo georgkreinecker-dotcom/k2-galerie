@@ -80,9 +80,12 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
-          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>6. Steuern und Finanzen</h2>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>6. Steuern, Buchhaltung und Finanzen</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Die Anwendung ersetzt keine steuerliche, rechtliche oder betriebswirtschaftliche Beratung. Der Nutzer ist allein verantwortlich für die Richtigkeit seiner Angaben gegenüber Finanzämtern, Behörden und Dritten. Es wird keine Haftung für Folgen aus steuerlichen Prüfungen, Nachforderungen oder sonstigen finanziellen Konsequenzen übernommen. Bei Fragen zu Steuern und Buchführung ist eine qualifizierte Beratung (Steuerberater, Rechtsanwalt) einzuholen.
+          </p>
+          <p style={{ margin: '1rem 0 0', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            <strong>Buchhaltung:</strong> Für die in der Anwendung angebotenen Buchhaltungsfunktionen (Kassabuch, Exporte, Belege, Summen, Zeiträume) übernimmt der Anbieter <strong>keine Haftung</strong>. Die Funktionen dienen der Vorarbeit für Steuerberater bzw. Behörden; sie ersetzen weder eine ordnungsgemäße Buchführung noch die Prüfung durch einen Steuerberater. Der Nutzer ist für die Vollständigkeit, Richtigkeit und rechtzeitige Weitergabe seiner Unterlagen selbst verantwortlich.
           </p>
         </section>
 
