@@ -18,31 +18,35 @@ Tabs im Admin: Werke/Mitglieder in der Galerie, Design, Einstellungen, Dokumente
 
 Ablauf: Verein anlegen → Kategorien definieren → Mitglieder verwalten. Vereinsdaten, Kategorien für Mitglieder, Mitgliederliste drucken und für Einladungen nutzen.
 
-4. [Mitglieder in der Galerie, Katalog und Kassa](03-GALERIE-KATALOG-KASSA.md)
+4. [Vereinsmitglieder anlegen – Schritt für Schritt](11-VEREINSMITGLIEDER-ANLEGEN.md)
+
+Wo anlegen, „+ Profil anlegen“, „User übernehmen“, CSV-Import, nur Name (ohne Profil), Bearbeiten, PIN vergeben, Login für Mitglieder. Klarer Ablauf: Vereinsmitglied erwirbt ök2-Lizenz bzw. hat schon Lizenz – Infos vice versa (Mitglied → Verein, Verein trägt Link zur eigenen Galerie ein).
+
+5. [Mitglieder in der Galerie, Katalog und Kassa](03-GALERIE-KATALOG-KASSA.md)
 
 Optionale Galerie-Profile, Katalog drucken. Kassa: Einnahmen und Ausgaben erfassen, Bon und Rechnung drucken, Ausgabenbeleg, Storno, Buchhaltung.
 
-5. [Eventplanung & Öffentlichkeitsarbeit](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md)
+6. [Eventplanung & Öffentlichkeitsarbeit](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md)
 
 Veranstaltungen anlegen, Flyer und Einladungen, Presse und PR-Vorschläge aus Vereins-Stammdaten.
 
-6. [Demo und Lizenz](07-DEMO-LIZENZ.md)
+7. [Demo und Lizenz](07-DEMO-LIZENZ.md)
 
 VK2-Demo nutzen, von der Demo zur eigenen Vereinsplattform, Vereinslizenz (VK2) und Konditionen.
 
-7. [Einstellungen](08-EINSTELLUNGEN.md)
+8. [Einstellungen](08-EINSTELLUNGEN.md)
 
 Stammdaten (Verein, Vorstand, Kategorien), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker.
 
-8. [Häufige Fragen](09-HAEUFIGE-FRAGEN.md)
+9. [Häufige Fragen](09-HAEUFIGE-FRAGEN.md)
 
 Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
 
-9. [Kurz zusammengefasst](05-KURZ-ZUSAMMENGEFASST.md)
+10. [Kurz zusammengefasst](05-KURZ-ZUSAMMENGEFASST.md)
 
 Überblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Events, Einstellungen.
 
-10. [Impressum](10-IMPRESSUM.md)
+11. [Impressum](10-IMPRESSUM.md)
 
 Plattform-Betreiber (kgm solution), Copyright, Lizenzanfrage; Vereinsdaten aus Stammdaten.
 

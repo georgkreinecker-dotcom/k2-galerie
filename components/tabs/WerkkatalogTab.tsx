@@ -48,8 +48,8 @@ const ALLE_SPALTEN = [
   { id: 'verkauftam', label: 'Verkauft am' }, { id: 'stueck', label: 'Stück' }, { id: 'standort', label: 'Standort' },
 ]
 
-/** VK2: Nur für Präsentation – keine Verkaufs-Spalten. */
-const VK2_SPALTEN_IDS = ['nummer', 'titel', 'typ', 'kategorie', 'kuenstler', 'masse', 'technik', 'beschreibung', 'datum']
+/** VK2: Nur Präsentation – keine Verkaufs-Spalten, keine Typ/Kategorie (stehen in Stammdaten/Werkkarten). */
+const VK2_SPALTEN_IDS = ['nummer', 'titel', 'kuenstler', 'masse', 'technik', 'beschreibung', 'datum']
 
 export default function WerkkatalogTab({
   allArtworks,
@@ -68,8 +68,8 @@ export default function WerkkatalogTab({
   setCategoryFilter,
   isVk2 = false,
 }: WerkkatalogTabProps) {
-  /** Typ-Filter + dynamische Kategorie: ök2 und VK2 (K2 unverändert, bis Georg es anordnet). */
-  const showTypAndCategory = !!isOeffentlich || !!isVk2
+  /** Typ-/Kategorie-Filter nur ök2; VK2 = nur Katalog der Mitgliederwerke (Kategorisierung in Stammdaten/Werkkarten). */
+  const showTypAndCategory = !!isOeffentlich && !isVk2
 
   // Sold-Status + Reservierung aus separaten Keys holen
   const soldMap = new Map<string, any>()
@@ -128,9 +128,9 @@ export default function WerkkatalogTab({
     return true
   })
 
-  /** VK2: nur Präsentations-Spalten anzeigen. Fallback wenn keine gewählt. */
+  /** VK2: nur Präsentations-Spalten anzeigen (ohne Typ/Kategorie). Fallback wenn keine gewählt. */
   const effectiveSpalten = isVk2
-    ? (() => { const v = katalogSpalten.filter((c) => VK2_SPALTEN_IDS.includes(c)); return v.length > 0 ? v : ['nummer', 'titel', 'typ', 'kategorie', 'kuenstler'] })()
+    ? (() => { const v = katalogSpalten.filter((c) => VK2_SPALTEN_IDS.includes(c)); return v.length > 0 ? v : ['nummer', 'titel', 'kuenstler', 'masse', 'technik', 'beschreibung', 'datum'] })()
     : katalogSpalten
   const spaltenFuerAuswahl = isVk2 ? ALLE_SPALTEN.filter((col) => VK2_SPALTEN_IDS.includes(col.id)) : ALLE_SPALTEN
 
@@ -304,6 +304,7 @@ export default function WerkkatalogTab({
             </select>
           </div>
         )}
+        {!isVk2 && (
         <div>
           <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Kategorie</div>
           {showTypAndCategory && setCategoryFilter ? (
@@ -326,6 +327,7 @@ export default function WerkkatalogTab({
             </select>
           )}
         </div>
+        )}
         {!isVk2 && (
           <>
             <div>
@@ -376,7 +378,7 @@ export default function WerkkatalogTab({
         </p>
       )}
 
-      {/* Spalten-Auswahl + Drucken (VK2: nur Präsentations-Spalten) */}
+      {/* Spalten-Auswahl + Drucken (VK2: nur Katalog-Spalten, keine Typ/Kategorie) */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem', padding: '0.75rem', background: s.bgElevated, borderRadius: 10 }}>
         <span style={{ fontSize: '0.82rem', color: s.muted, marginRight: 4 }}>Spalten:</span>
         {spaltenFuerAuswahl.map(col => (

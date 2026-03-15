@@ -16,6 +16,7 @@ const DOCUMENTS = [
   { id: '01-was-ist', name: 'Was ist die Vereinsplattform?', file: '01-WAS-IST-VEREINSPLATTFORM.md' },
   { id: '04-admin', name: 'Admin im Überblick', file: '04-ADMIN-UEBERBLICK.md' },
   { id: '02-verein', name: 'Verein, Stammdaten und Mitglieder', file: '02-VEREIN-STAMMDATEN-MITGLIEDER.md' },
+  { id: '11-mitglieder-anlegen', name: 'Vereinsmitglieder anlegen – Schritt für Schritt', file: '11-VEREINSMITGLIEDER-ANLEGEN.md' },
   { id: '03-galerie', name: 'Mitglieder in der Galerie, Katalog und Kassa', file: '03-GALERIE-KATALOG-KASSA.md' },
   { id: '06-eventplanung', name: 'Eventplanung & Öffentlichkeitsarbeit', file: '06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md' },
   { id: '07-demo-lizenz', name: 'Demo und Lizenz', file: '07-DEMO-LIZENZ.md' },

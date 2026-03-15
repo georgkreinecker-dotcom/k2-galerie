@@ -32,16 +32,11 @@ interface KatalogWork {
   paintingWidth?: string | number
   paintingHeight?: string | number
   price?: number | string
-  verkaufsstatus?: 'verfuegbar' | 'reserviert' | 'verkauft'
   description?: string
   category?: string
   mitgliedName?: string
-}
-
-const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  verfuegbar:  { label: 'Verfügbar',  color: '#22c55e' },
-  reserviert:  { label: 'Reserviert', color: '#f59e0b' },
-  verkauft:    { label: 'Verkauft',   color: '#ef4444' },
+  /** Nur bei Lizenznehmern (Mitglied mit ök2-Lizenz) – Link zur Galerie/Homepage des Künstlers */
+  lizenzGalerieUrl?: string
 }
 
 const s = {
@@ -57,7 +52,6 @@ export const Vk2KatalogPage: React.FC = () => {
   const [works, setWorks]         = useState<KatalogWork[]>([])
   const [loading, setLoading]     = useState(true)
   const [filterArtist, setFilterArtist] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'alle' | 'verfuegbar' | 'reserviert' | 'verkauft'>('alle')
   const [filterCategory, setFilterCategory] = useState('')
 
   // Werke sammeln: aus lizenzGalerieUrl (fetch) + lokale Fallbacks
@@ -95,9 +89,10 @@ export const Vk2KatalogPage: React.FC = () => {
             if (!res.ok) return []
             const data = await res.json()
             const artworks = Array.isArray(data.artworks) ? data.artworks : []
+            const galerieUrl = m.lizenzGalerieUrl?.trim() || undefined
             return artworks
               .filter((w: any) => w?.imVereinskatalog && !isEchteK2Werknummer(String(w?.number ?? w?.id ?? '')))
-              .map((w: any) => ({ ...w, mitgliedName: m.name, artist: w.artist || m.name }))
+              .map((w: any) => ({ ...w, mitgliedName: m.name, artist: w.artist || m.name, lizenzGalerieUrl: galerieUrl }))
           } catch {
             return []
           }
@@ -123,10 +118,9 @@ export const Vk2KatalogPage: React.FC = () => {
 
   const filtered = useMemo(() => works.filter(w => {
     if (filterArtist   && (w.artist || w.mitgliedName) !== filterArtist) return false
-    if (filterStatus !== 'alle' && (w.verkaufsstatus || 'verfuegbar') !== filterStatus) return false
     if (filterCategory && (w.category || '') !== filterCategory) return false
     return true
-  }), [works, filterArtist, filterStatus, filterCategory])
+  }), [works, filterArtist, filterCategory])
 
   const handlePrint = () => window.print()
 
@@ -168,15 +162,8 @@ export const Vk2KatalogPage: React.FC = () => {
         )}
       </header>
 
-      {/* Filter-Bar */}
+      {/* Filter-Bar: nur Künstler:in und Kategorie – keine Verkaufsstatus (reine Präsentation, Kauf in ök2-Galerie) */}
       <div className="no-print" style={{ padding: '0.9rem 1.5rem', borderBottom: `1px solid ${s.border}`, display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* Status-Filter */}
-        {(['alle','verfuegbar','reserviert','verkauft'] as const).map(st => (
-          <button key={st} onClick={() => setFilterStatus(st)} style={{ padding: '0.3rem 0.8rem', borderRadius: 20, border: `1px solid ${filterStatus === st ? s.accent : s.border}`, background: filterStatus === st ? 'rgba(251,191,36,0.15)' : 'transparent', color: filterStatus === st ? s.accent : s.muted, fontSize: '0.8rem', cursor: 'pointer', fontWeight: filterStatus === st ? 700 : 400 }}>
-            {st === 'alle' ? 'Alle' : STATUS_LABEL[st].label}
-          </button>
-        ))}
-
         {artists.length > 0 && (
           <select value={filterArtist} onChange={e => setFilterArtist(e.target.value)} style={{ padding: '0.3rem 0.7rem', borderRadius: 8, border: `1px solid ${s.border}`, background: '#1a2333', color: s.text, fontSize: '0.8rem', outline: 'none' }}>
             <option value="">Alle Künstler:innen</option>
@@ -230,8 +217,6 @@ export const Vk2KatalogPage: React.FC = () => {
 }
 
 const KatalogKarte: React.FC<{ work: KatalogWork }> = ({ work }) => {
-  const status = work.verkaufsstatus || 'verfuegbar'
-  const { label: statusLabel, color: statusColor } = STATUS_LABEL[status] || STATUS_LABEL.verfuegbar
   const masse = (work.paintingWidth && work.paintingHeight)
     ? `${work.paintingWidth} × ${work.paintingHeight} cm`
     : null
@@ -245,16 +230,25 @@ const KatalogKarte: React.FC<{ work: KatalogWork }> = ({ work }) => {
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', opacity: 0.3 }}>🖼️</div>
         )}
-        {/* Verkaufsstatus-Badge */}
-        <span style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', padding: '0.2rem 0.55rem', borderRadius: 20, background: `rgba(0,0,0,0.65)`, border: `1px solid ${statusColor}`, color: statusColor, fontSize: '0.7rem', fontWeight: 700 }}>
-          {statusLabel}
-        </span>
       </div>
 
       {/* Info */}
       <div style={{ padding: '0.9rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
         <div style={{ fontWeight: 700, fontSize: '1rem', color: s.text }}>{work.title}</div>
-        <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 600 }}>{work.artist || work.mitgliedName}</div>
+        <div style={{ fontSize: '0.8rem', color: s.accent, fontWeight: 600 }}>
+          {work.artist || work.mitgliedName}
+          {work.lizenzGalerieUrl && (
+            <a
+              href={work.lizenzGalerieUrl.startsWith('http') ? work.lizenzGalerieUrl : `https://${work.lizenzGalerieUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: s.accent, textDecoration: 'underline', fontWeight: 500 }}
+              title="Zur Galerie des Lizenznehmers"
+            >
+              Zur Galerie →
+            </a>
+          )}
+        </div>
 
         {(work.technik || work.year) && (
           <div style={{ fontSize: '0.76rem', color: s.muted }}>
@@ -269,9 +263,9 @@ const KatalogKarte: React.FC<{ work: KatalogWork }> = ({ work }) => {
           </div>
         )}
 
-        {/* Preis */}
+        {/* Preis (nur Anzeige; Kauf in ök2-Galerie des Lizenznehmers) */}
         <div style={{ marginTop: 'auto', paddingTop: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: status === 'verkauft' ? s.muted : s.text }}>
+          <span style={{ fontSize: '1.05rem', fontWeight: 800, color: s.text }}>
             {work.price ? `€ ${Number(work.price).toLocaleString('de-AT')}` : '–'}
           </span>
           {work.category && (

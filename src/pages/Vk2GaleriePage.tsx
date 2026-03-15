@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { initVk2DemoStammdatenIfEmpty, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, type Vk2Stammdaten } from '../config/tenantConfig'
@@ -314,41 +314,11 @@ const Vk2GaleriePage: React.FC = () => {
       {/* ── TRENNLINIE ── */}
       <div style={{ height: 1, background: C.border, margin: '0 clamp(1.25rem, 5vw, 3rem)' }} />
 
-      {/* ── INTRO + BUTTONS ── */}
-      <div style={{ padding: '2rem clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}>
-        <p style={{ margin: '0 0 1.75rem', color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
+      {/* Kurzer Intro-Text – Einstieg nur über die Karten (ein Klick pro Ziel) */}
+      <div style={{ padding: '0 clamp(1.25rem, 5vw, 3rem)', maxWidth: 720 }}>
+        <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
           {introText}
         </p>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <Link
-            to={PROJECT_ROUTES.vk2.galerieVorschau}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-              padding: '0.85rem 1.9rem',
-              background: C.accent,
-              color: '#fff', textDecoration: 'none', borderRadius: 10,
-              fontSize: '0.95rem', fontWeight: 700, fontFamily: 'system-ui, sans-serif',
-              boxShadow: '0 3px 14px rgba(192,86,42,0.28)',
-              letterSpacing: '0.01em',
-            }}
-          >
-            👥 {pageTexts.kunstschaffendeHeading?.trim() || 'Unsere Mitglieder'} ansehen →
-          </Link>
-          <Link
-            to={PROJECT_ROUTES.vk2.katalog}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.45rem',
-              padding: '0.85rem 1.9rem',
-              background: C.goldBg,
-              border: `1.5px solid ${C.gold}`,
-              color: C.gold, textDecoration: 'none', borderRadius: 10,
-              fontSize: '0.95rem', fontWeight: 700, fontFamily: 'system-ui, sans-serif',
-              letterSpacing: '0.01em',
-            }}
-          >
-            🏆 Vereinskatalog →
-          </Link>
-        </div>
       </div>
 
       {/* ── EVENTS ── */}
@@ -398,10 +368,8 @@ const Vk2GaleriePage: React.FC = () => {
             {/* Linke Seite: Impressum Brand + Vereinsdaten (wie GaleriePage links, mit Platz für Mandant) */}
             <div style={{ flex: 1 }}>
               <h4 style={{ margin: '0 0 1rem', fontSize: 'clamp(1rem, 2.5vw, 1.25rem)', fontWeight: 600, color: C.text }}>Impressum</h4>
-              <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: C.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>{PRODUCT_BRAND_NAME}</p>
-              <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, lineHeight: 1.45 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-              {/* Vereinsdaten (Platz wie ök2 für Galeriedaten) */}
-              <p style={{ margin: '1rem 0 0.25rem', fontWeight: 600, color: C.text, fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{stammdaten?.verein?.name || 'Verein'}</p>
+              {/* Vereinsdaten (kgm solution / Copyright nur unten im Footer) */}
+              <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: C.text, fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>{stammdaten?.verein?.name || 'Verein'}</p>
               {stammdaten?.verein?.vereinsnummer && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>ZVR: {stammdaten.verein.vereinsnummer}</p>}
               {(stammdaten?.verein?.address || stammdaten?.verein?.city) && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>{[stammdaten.verein.address, stammdaten.verein.city].filter(Boolean).join(', ')}</p>}
               {stammdaten?.verein?.email && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}><a href={`mailto:${stammdaten.verein.email}`} style={{ color: C.accent, textDecoration: 'none' }}>{stammdaten.verein.email}</a></p>}
@@ -514,7 +482,11 @@ function loadEingangskarten(): EingangskarteData[] {
   return DEFAULT_KARTEN
 }
 
+/** Ziel-Route pro Karte: 0 = Vereinskatalog, 1 = Mitglieder & Künstler:innen – ein Einstieg pro Karte, keine Doppel-Buttons */
+const KARTEN_ZIEL: (keyof typeof PROJECT_ROUTES.vk2)[] = ['katalog', 'galerieVorschau']
+
 function Vk2Eingangskarten({ stammdaten, welcomeImage }: { stammdaten: Vk2Stammdaten | null; welcomeImage?: string }) {
+  const navigate = useNavigate()
   const [karten, setKarten] = React.useState<EingangskarteData[]>(loadEingangskarten)
 
   React.useEffect(() => {
@@ -550,13 +522,24 @@ function Vk2Eingangskarten({ stammdaten, welcomeImage }: { stammdaten: Vk2Stammd
       gap: '1rem',
     }}>
       {effectiveKarten.map((k, i) => (
-        <EingangsKarte key={i} data={k} index={i} />
+        <EingangsKarte
+          key={i}
+          data={k}
+          index={i}
+          onClick={() => {
+            const route = KARTEN_ZIEL[i] && PROJECT_ROUTES.vk2[KARTEN_ZIEL[i]]
+            if (route) {
+              const state = route === PROJECT_ROUTES.vk2.galerieVorschau ? { fromVk2Galerie: true } : undefined
+              navigate(route, state ? { state } : undefined)
+            }
+          }}
+        />
       ))}
     </div>
   )
 }
 
-function EingangsKarte({ data, index }: { data: EingangskarteData; index: number }) {
+function EingangsKarte({ data, index, onClick }: { data: EingangskarteData; index: number; onClick?: () => void }) {
   const dummyGradients = [
     'linear-gradient(135deg, #e8d5c4 0%, #c8a888 100%)',
     'linear-gradient(135deg, #d8e4d0 0%, #a8c498 100%)',
@@ -565,7 +548,12 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
   const hasBild = !!data.imageUrl
 
   return (
-    <div style={{
+    <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      style={{
       position: 'relative',
       borderRadius: 14,
       overflow: 'hidden',
@@ -574,7 +562,7 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
       background: hasBild ? '#e8e2da' : dummyGradients[index % 2],
       border: '1px solid #e0d8cf',
       boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
-      cursor: 'pointer',
+      cursor: onClick ? 'pointer' : 'default',
     }}>
       {/* Bild */}
       {hasBild && (

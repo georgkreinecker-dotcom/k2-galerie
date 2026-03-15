@@ -25,7 +25,7 @@ function loadEingangskarten(): EingangskarteData[] {
   return DEFAULT_KARTEN
 }
 
-function EingangsKarte({ data, index }: { data: EingangskarteData; index: number }) {
+function EingangsKarte({ data, index, onClick }: { data: EingangskarteData; index: number; onClick?: () => void }) {
   const dummyGradients = [
     'linear-gradient(135deg, #e8d5c4 0%, #c8a888 100%)',
     'linear-gradient(135deg, #d8e4d0 0%, #a8c498 100%)',
@@ -33,7 +33,22 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
   const dummyIcons = ['🖼️', '👥']
   const hasBild = !!data.imageUrl
   return (
-    <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '4/3', minHeight: 160, background: hasBild ? '#e8e2da' : dummyGradients[index % 2], border: '1px solid #e0d8cf', boxShadow: '0 4px 20px rgba(0,0,0,0.10)' }}>
+    <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
+      style={{
+        position: 'relative',
+        borderRadius: 14,
+        overflow: 'hidden',
+        aspectRatio: '4/3',
+        minHeight: 160,
+        background: hasBild ? '#e8e2da' : dummyGradients[index % 2],
+        border: '1px solid #e0d8cf',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
+        cursor: onClick ? 'pointer' : 'default',
+      }}>
       {hasBild && <img src={data.imageUrl} alt={data.titel} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
       {!hasBild && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -53,10 +68,18 @@ function EingangsKarte({ data, index }: { data: EingangskarteData; index: number
 function loadVk2Mitglieder(): Vk2Mitglied[] {
   try {
     initVk2DemoStammdatenIfEmpty()
-    const raw = localStorage.getItem('k2-vk2-stammdaten')
+    let raw = localStorage.getItem('k2-vk2-stammdaten')
     if (!raw) return []
     const parsed = JSON.parse(raw) as Vk2Stammdaten
-    const mitglieder = Array.isArray(parsed?.mitglieder) ? parsed.mitglieder : []
+    let mitglieder = Array.isArray(parsed?.mitglieder) ? parsed.mitglieder : []
+    if (mitglieder.length === 0 && parsed?.verein?.name === 'Kunstverein Muster') {
+      initVk2DemoStammdatenIfEmpty()
+      raw = localStorage.getItem('k2-vk2-stammdaten')
+      if (raw) {
+        const retry = JSON.parse(raw) as Vk2Stammdaten
+        mitglieder = Array.isArray(retry?.mitglieder) ? retry.mitglieder : []
+      }
+    }
     return mitglieder.filter(m => m?.name && m?.oeffentlichSichtbar !== false)
   } catch { return [] }
 }
@@ -88,16 +111,19 @@ const Vk2GalerieVorschauPage: React.FC = () => {
     setKarten(loadEingangskarten())
   }, [])
 
-  /** Fremde: Direktaufruf der VK2-Vorschau → zuerst VK2-Galerie (Willkommensseite) */
+  /** Nur bei echtem Direktaufruf (ohne vorherige VK2-Seite) zur Willkommensseite – nicht bei Klick von der Galerie (State) oder Referrer */
   useEffect(() => {
     if (typeof window === 'undefined') return
     try {
       if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      const state = location.state as { fromVk2Galerie?: boolean } | null
+      if (state?.fromVk2Galerie) return
       const ref = typeof document !== 'undefined' ? document.referrer : ''
-      if (ref && (ref.includes('/projects/vk2/galerie') || ref.includes('/entdecken'))) return
+      const vonVk2 = ref && (ref.includes('/projects/vk2') || ref.includes('/entdecken'))
+      if (vonVk2) return
       navigate(PROJECT_ROUTES.vk2.galerie, { replace: true })
     } catch (_) {}
-  }, [navigate])
+  }, [navigate, location.state])
 
   useEffect(() => {
     const reload = () => {
@@ -191,10 +217,17 @@ const Vk2GalerieVorschauPage: React.FC = () => {
       {/* Hauptinhalt */}
       <div style={{ padding: 'clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 5vw, 3rem)', maxWidth: 900, margin: '0 auto' }}>
 
-        {/* Eingangskarten */}
+        {/* Eingangskarten: erste Karte „Unsere Galerie“ → Vereinskatalog, zweite = aktuelle Seite (Mitglieder) */}
         {karten.length >= 2 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
-            {karten.map((k, i) => <EingangsKarte key={i} data={k} index={i} />)}
+            {karten.map((k, i) => (
+              <EingangsKarte
+                key={i}
+                data={k}
+                index={i}
+                onClick={i === 0 ? () => navigate(PROJECT_ROUTES.vk2.katalog) : undefined}
+              />
+            ))}
           </div>
         )}
 

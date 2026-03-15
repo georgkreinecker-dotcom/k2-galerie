@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2 Musterdaten entfernen:** Im VK2-Admin (Einstellungen, nur bei „Kunstverein Muster“) gibt es den Button **„Musterdaten entfernen“**. Ein Klick → Bestätigung → Mitgliederliste leer, Demo-Werke (karl-vorlage, eva-entwurf, josef-skizze) aus localStorage entfernt → Stammdaten gespeichert, Event gefeuert. Handbuch 07-DEMO-LIZENZ: Musterdaten mit einem Klick entfernbar dokumentiert.
+**Letzter Stand:** 15.03.26 – **VK2-Handbuch: klares Prozedere Vereinsmitglied ↔ ök2-Lizenz.** In 11-VEREINSMITGLIEDER-ANLEGEN.md neuer Abschnitt „Vereinsmitglied und ök2-Lizenz – klarer Ablauf“: Weg A (Mitglied kauft ök2 → gibt Galerie-Link an Verein → Vorstand trägt „Link zur eigenen Galerie“ ein), Weg B (hat schon Lizenz, wird Mitglied → Verein trägt Link ein). Vice versa: keine automatische Sync – Infos immer über klare Handlung (Mitglied teilt mit, Verein trägt ein). 00-INDEX Beschreibung angepasst; Abschnitt 4 „nur Name (ohne Profil)“ vereinheitlicht.
 
-**Was wir JETZT tun:** Abgeschlossen: Musterdaten für User einfach entfernbar (Button + Doku). Nächster Schritt von Georg.
+**Was wir JETZT tun:** Session-Ende. Nächster Schritt von Georg.
 
 **Nächster Schritt:** Von Georg festlegen.
 

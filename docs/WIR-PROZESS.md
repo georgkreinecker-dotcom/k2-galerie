@@ -138,6 +138,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 08.03.26 | Bei Pause: DIALOG-STAND so schreiben, dass „beim nächsten Einstieg“ der eine konkrete nächste Schritt (007 ausführen inkl. SQL) sofort ablesbar ist – kein Rätselraten. |
 | 14.03.26 | **Erst das große Ziel kennen, dann anstrengen.** Das steht schon in den Grundsätzen (ziel-vor-anstrengung.mdc). Vor Vision/Plan/Anstrengung: zuerst Grundsätze und bestehende Ziel-Formulierungen lesen – dann handeln. Nicht neu formulieren, was schon da ist. |
 | 14.03.26 | **Georg denkt in größeren Sprüngen, dann vertieft er sich ins Detail.** Das ist seine Art – erst Weite, dann Tiefe. Ich muss das mitlernen und mitdenken (nicht nur Einzelaufgaben abarbeiten). In WIR-PROZESS unter Persönlichkeit & Arbeitsweise ergänzt. |
+| 15.03.26 | **Klar kommunizieren reicht oft.** Abläufe (Vereinsmitglied erwirbt ök2 / hat schon Lizenz) im Handbuch festhalten – dann muss niemand raten; „vice versa“ explizit machen (keine Auto-Sync, klare Handlung). |
 
 ---
 

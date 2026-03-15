@@ -11726,7 +11726,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
                   type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
-                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Vereinsmitglieder neu anlegen oder ändern', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
@@ -11904,7 +11904,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
-                    { emoji: '🏛️', name: 'Vereinsmitglieder', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
+                    { emoji: '🏛️', name: 'Vereinsmitglieder neu anlegen oder ändern', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
@@ -12027,7 +12027,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
                   // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
-                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Vereinsmitglieder neu anlegen oder ändern', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
                     { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                   ] : [
@@ -12381,6 +12381,32 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )}
                 {tenant.isVk2 ? (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setEditingMemberIndex(null); setMemberForm({ ...EMPTY_MEMBER_FORM }); setShowAddModal(true) }}
+                        style={{ padding: '0.85rem 1.6rem', background: s.gradientAccent, color: '#ffffff', border: 'none', borderRadius: '12px', fontSize: '1.05rem', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 12px rgba(181,74,30,0.22)', transition: 'all 0.2s' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(181,74,30,0.22)' }}
+                      >
+                        + Profil anlegen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const bestehend = vk2Stammdaten.mitglieder || []
+                          const namenBereits = new Set(bestehend.map(m => m.name))
+                          const neue = USER_LISTE_FUER_MITGLIEDER.filter(u => !namenBereits.has(u.name))
+                          const merged = [...bestehend, ...neue]
+                          setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged })
+                          try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: merged }) } catch (_) {}
+                        }}
+                        style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: '10px', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+                      >
+                        👥 User übernehmen
+                      </button>
+                      <span style={{ fontSize: '0.78rem', color: s.muted }}>Neue Mitglieder hier anlegen. Nur Name (ohne Profil): Einstellungen → Stammdaten.</span>
+                    </div>
                     <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                       <button
                         type="button"
@@ -14382,8 +14408,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </div>
                     {/* ── KATEGORIEN / KUNSTRICHTUNGEN FÜR MITGLIEDER ── */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Kategorien / Kunstrichtungen für Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', color: s.muted }}>Das sind die <strong>Kategorien eures Kunstvereins</strong>. Ablauf: <strong>1. Verein anlegen</strong> (oben: Vereinsname, Adresse, Vorstand) → <strong>2. Kategorien hier definieren</strong>. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“.</p>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Kategorien für Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', color: s.muted }}>Das sind die <strong>Kategorien eures Kunstvereins</strong>. Ablauf: <strong>1. Verein anlegen</strong> (oben: Vereinsname, Adresse, Vorstand) → <strong>2. Kategorien hier definieren</strong>. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kategorie“.</p>
                       <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Standard: Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance) oder beim Standard bleiben.</p>
                       {(vk2Stammdaten.eigeneKategorien?.length ?? 0) > 0 ? (
                         <div>
@@ -14618,30 +14644,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       </div>
                     </div>
-                    {/* Registrierte Mitglieder – eine Wartung: Profil anlegen, User übernehmen, Bearbeiten (Unsere Mitglieder). */}
+                    {/* Mitgliederliste – Übersicht, Bearbeiten, nur Name (ohne Profil). Neue Profile: Tab Vereinsmitglieder. */}
                     <div style={{ marginBottom: '1rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Registrierte Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Profile für die Karte „Unsere Mitglieder“. Ab 10 Mitgliedern: Verein kostenfrei. <strong>Hakerl = auf Karte sichtbar</strong>, kein Hakerl = nicht sichtbar.</p>
+                      <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Mitgliederliste</h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Übersicht aller Mitglieder. Neue Profile: Tab „Vereinsmitglieder“. Hier: Bearbeiten, Hakerl, nur Name hinzufügen (ohne Profil).</p>
                       <div style={{ marginBottom: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => { setEditingMemberIndex(null); setMemberForm(EMPTY_MEMBER_FORM); setShowAddModal(true) }}
-                          style={{ padding: '0.55rem 1.1rem', fontSize: '0.95rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontWeight: 700, cursor: 'pointer', boxShadow: s.shadow }}
-                        >
-                          + Profil anlegen
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const bestehend = vk2Stammdaten.mitglieder || []
-                            const namenBereits = new Set(bestehend.map(m => m.name))
-                            const neue = USER_LISTE_FUER_MITGLIEDER.filter(u => !namenBereits.has(u.name))
-                            setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: [...bestehend, ...neue] })
-                          }}
-                          style={{ padding: '0.45rem 0.9rem', fontSize: '0.85rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.accent, fontWeight: 600, cursor: 'pointer' }}
-                        >
-                          👥 User übernehmen
-                        </button>
                         <span style={{ fontSize: '0.78rem', color: s.muted }}>Export & Druck:</span>
                         <button
                           type="button"
@@ -14677,7 +14684,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             const mitglieder = vk2Stammdaten.mitglieder || []
                             const vereinName = vk2Stammdaten.verein?.name || 'Verein'
                             const rows = mitglieder.map((m, i) => `<tr><td>${i+1}</td><td>${m.name||''}</td><td>${m.email||''}</td><td>${m.typ||''}</td><td>${m.eintrittsdatum||m.seit||''}</td><td>${m.ort||''}</td><td>${m.rolle==='vorstand'?'👑 Vorstand':'Mitglied'}</td></tr>`).join('')
-                            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mitgliederliste</title><style>body{font-family:system-ui;padding:2rem}h1{font-size:1.3rem;margin-bottom:0.5rem}table{width:100%;border-collapse:collapse;font-size:0.88rem}th,td{padding:0.4rem 0.6rem;border:1px solid #ccc;text-align:left}th{background:#f0f0f0;font-weight:700}@media print{body{padding:1rem}}</style></head><body><h1>Mitgliederliste – ${vereinName}</h1><p style="margin:0 0 0.75rem;color:#666;font-size:0.82rem">${new Date().toLocaleDateString('de-AT')} · ${mitglieder.length} Mitglieder</p><table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kunstrichtung</th><th>Eintritt</th><th>Ort</th><th>Rolle</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
+                            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Mitgliederliste</title><style>body{font-family:system-ui;padding:2rem}h1{font-size:1.3rem;margin-bottom:0.5rem}table{width:100%;border-collapse:collapse;font-size:0.88rem}th,td{padding:0.4rem 0.6rem;border:1px solid #ccc;text-align:left}th{background:#f0f0f0;font-weight:700}@media print{body{padding:1rem}}</style></head><body><h1>Mitgliederliste – ${vereinName}</h1><p style="margin:0 0 0.75rem;color:#666;font-size:0.82rem">${new Date().toLocaleDateString('de-AT')} · ${mitglieder.length} Mitglieder</p><table><thead><tr><th>#</th><th>Name</th><th>E-Mail</th><th>Kategorie</th><th>Eintritt</th><th>Ort</th><th>Rolle</th></tr></thead><tbody>${rows}</tbody></table></body></html>`
                             const w = window.open('', '_blank')
                             if (w) { try { w.focus() } catch (_) { }; w.document.write(html); w.document.close(); w.print() }
                           }}
@@ -14778,11 +14785,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <span style={{ color: s.accent, fontWeight: 600 }}>Datei hierher ziehen oder klicken</span>
                           <span style={{ color: s.muted, fontSize: '0.85rem' }}> (CSV/Tabelle, erste Zeile = Kopfzeile, Komma oder Semikolon)</span>
                         </label>
-                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: s.muted }}>Spalten z. B.: Name, E-Mail, Straße, PLZ, Ort, Land, Geburtsdatum, Eintrittsdatum, Kunstrichtung, Telefon, Website.</p>
+                        <p style={{ margin: '0.5rem 0 0', fontSize: '0.78rem', color: s.muted }}>Spalten z. B.: Name, E-Mail, Straße, PLZ, Ort, Land, Geburtsdatum, Eintrittsdatum, Kategorie, Telefon, Website.</p>
                       </div>
                         </div>
                       </details>
-                      <div style={{ overflowX: 'auto' }}>
+                      <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'min(60vh, 480px)' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                           <thead>
                             <tr style={{ borderBottom: `2px solid ${s.accent}44` }}>
@@ -14791,8 +14798,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                               <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Name</th>
                               <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Rolle</th>
                               <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>E-Mail</th>
-                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Lizenz</th>
-                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Kunstrichtung</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Unterscheidung</th>
+                              <th style={{ textAlign: 'left', padding: '0.5rem 0.75rem', color: s.accent }}>Kategorie</th>
                               <th style={{ width: 60 }}></th>
                             </tr>
                           </thead>
@@ -14844,25 +14851,32 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   <button type="button" onClick={() => { const neu = (vk2Stammdaten.mitglieder || []).filter((_, j) => j !== i); setVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder: neu }) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
                                 </td>
                               </tr>
-                            ); })) }
+                            ); }))}
+                            {((vk2Stammdaten.mitgliederNichtRegistriert ?? [])).map((name, idx) => (
+                              <tr key={`nr-${idx}`} style={{ borderBottom: `1px solid ${s.accent}22` }}>
+                                <td style={{ padding: '0.5rem 0.75rem', verticalAlign: 'middle' }}><span style={{ color: s.muted }}>👤</span></td>
+                                <td style={{ padding: '0.5rem 0.75rem', verticalAlign: 'middle', textAlign: 'center' }}><span style={{ color: s.muted }}>–</span></td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{name}</td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.muted }}>–</td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.muted }}>–</td>
+                                <td style={{ padding: '0.5rem 0.75rem', fontFamily: 'monospace', color: s.muted }}>nur Name</td>
+                                <td style={{ padding: '0.5rem 0.75rem', color: s.muted }}>–</td>
+                                <td style={{ padding: '0.5rem' }}>
+                                  <button type="button" onClick={() => { const nr = vk2Stammdaten.mitgliederNichtRegistriert ?? []; const neu = nr.filter((_, j) => j !== idx); setVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }) } catch (_) {} }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '1.1rem' }} title="Entfernen">×</button>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
-                        {(vk2Stammdaten.mitglieder?.length ?? 0) === 0 && (
-                          <p style={{ padding: '1rem', color: s.muted, fontSize: '0.9rem' }}>Noch keine registrierten Mitglieder. „+ Profil anlegen“ oder „User aus „Meine User“ übernehmen“.</p>
+                        {(vk2Stammdaten.mitglieder?.length ?? 0) === 0 && (vk2Stammdaten.mitgliederNichtRegistriert?.length ?? 0) === 0 && (
+                          <p style={{ padding: '1rem', color: s.muted, fontSize: '0.9rem' }}>Noch keine Mitglieder. „+ Profil anlegen“, „User übernehmen“ oder unten nur Name hinzufügen.</p>
                         )}
+                        <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted }}>
+                          Nur Name hinzufügen (ohne Profil):{' '}
+                          <input type="text" placeholder="Name" id="vk2-add-nr-name" style={{ padding: '0.4rem 0.6rem', fontSize: '0.9rem', width: 200, marginRight: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 6 }} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const el = document.getElementById('vk2-add-nr-name') as HTMLInputElement; const name = (el?.value ?? '').trim(); if (name) { const neu = [...(vk2Stammdaten.mitgliederNichtRegistriert ?? []), name]; setVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }) } catch (_) {}; if (el) el.value = '' } } }} />
+                          <button type="button" onClick={() => { const el = document.getElementById('vk2-add-nr-name') as HTMLInputElement; const name = (el?.value ?? '').trim(); if (name) { const neu = [...(vk2Stammdaten.mitgliederNichtRegistriert ?? []), name]; setVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }); try { saveVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: neu }) } catch (_) {}; if (el) el.value = '' } }} style={{ padding: '0.4rem 0.75rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 6, color: s.accent, fontSize: '0.85rem', cursor: 'pointer' }}>Hinzufügen</button>
+                        </p>
                       </div>
-                    </div>
-                    {/* Nicht registrierte Mitglieder – im System erfasst (Datenschutz) */}
-                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>📋 Nicht registrierte Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>Mitglieder ohne K2-Account – Aufnahme obliegt dem Verein. Ein Name pro Zeile. <strong>Werden im System erfasst</strong> (Datenschutz/Dokumentation).</p>
-                      <textarea
-                        value={(vk2Stammdaten.mitgliederNichtRegistriert ?? []).join('\n')}
-                        onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, mitgliederNichtRegistriert: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) })}
-                        placeholder="Name ohne K2-Account&#10;…"
-                        rows={4}
-                        style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit' }}
-                      />
                     </div>
                     <button className="btn-primary" onClick={saveStammdaten} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
                       💾 Stammdaten speichern
@@ -19821,7 +19835,7 @@ ${name}`
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>Kunstrichtung / Kategorie</label>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem', color: ms.muted, fontWeight: 600 }}>Kategorie</label>
                       <select
                         value={memberForm.typ}
                         onChange={(e) => setMemberForm(f => ({ ...f, typ: e.target.value }))}

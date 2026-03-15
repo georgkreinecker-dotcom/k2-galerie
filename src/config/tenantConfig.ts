@@ -23,7 +23,7 @@ export const PRODUCT_COPYRIGHT_BRAND_ONLY = 'Copyright © 2026 kgm solution. All
  * Eine Quelle, überall präsent.
  */
 /** Werbeslogan 1 – markante Aussage (Menschen mit Idee = Künstler:innen, Macher:innen, alle mit etwas zu zeigen) */
-export const PRODUCT_WERBESLOGAN = 'kgm solution – für Menschen mit Idee, die gesehen werden wollen'
+export const PRODUCT_WERBESLOGAN = 'kgm solution – für Menschen mit Ideen, die gesehen werden wollen'
 
 /** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 (Ideen + Werke = alle entryTypes) */
 export const PRODUCT_WERBESLOGAN_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
