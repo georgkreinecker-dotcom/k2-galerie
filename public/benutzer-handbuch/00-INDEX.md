@@ -24,7 +24,7 @@ Veranstaltungen, Flyer, Presse, Einladungen, Werbematerial.
 
 5. [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md)
 
-Verein, Mitglieder, Katalog, Kassa, Etiketten.
+Kurzfassung – ausführliches Handbuch für Vereine separat (VK2-Handbuch).
 
 6. [Demo und Lizenz](06-OEK2-DEMO-LIZENZ.md)
 

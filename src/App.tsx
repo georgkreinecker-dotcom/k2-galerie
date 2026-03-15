@@ -21,6 +21,7 @@ import K2MarktOberflaechePage from './pages/K2MarktOberflaechePage'
 import K2MarktSchichtPage from './pages/K2MarktSchichtPage'
 import K2MarktTorPage from './pages/K2MarktTorPage'
 import BenutzerHandbuchPage from './pages/BenutzerHandbuchPage'
+import Vk2HandbuchPage from './pages/Vk2HandbuchPage'
 import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
@@ -603,6 +604,7 @@ function App() {
       <Route path="/zettel-pilot-form" element={<ZettelPilotFormPage />} />
       <Route path="/k2-galerie-handbuch" element={<K2GalerieHandbuchPage />} />
       <Route path="/benutzer-handbuch" element={<BenutzerHandbuchPage />} />
+      <Route path="/vk2-handbuch" element={<Vk2HandbuchPage />} />
       
       {/* Legacy-Routen (Redirect für bestehende Links) */}
       <Route path="/key" element={<Navigate to={PLATFORM_ROUTES.key} replace />} />
