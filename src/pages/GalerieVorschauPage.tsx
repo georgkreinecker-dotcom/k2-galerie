@@ -148,9 +148,9 @@ function loadVk2Mitglieder(): any[] {
         category: m.typ?.toLowerCase() || 'sonstiges',
         description: m.typ ? `${m.typ}${m.ort ? ' · ' + m.ort : ''}` : '',
         bio: m.bio || '',
-        // Link: eigene K2-Galerie (galerieLinkUrl) hat Vorrang, sonst externe website
-        linkUrl: m.galerieLinkUrl || m.website || '',
-        isK2Lizenz: !!(m.lizenz && m.lizenz.trim()),
+        // Link: Lizenz-Galerie (ök2/K2) = alle Werke & Preise; sonst Galerie-Link oder Website
+        linkUrl: (m.lizenzGalerieUrl && m.lizenzGalerieUrl.trim()) ? m.lizenzGalerieUrl.trim() : (m.galerieLinkUrl || m.website || ''),
+        isK2Lizenz: !!(m.lizenzGalerieUrl && m.lizenzGalerieUrl.trim()),
         imageUrl: m.mitgliedFotoUrl || m.imageUrl || '',
         price: 0,
         inShop: false,
@@ -1772,7 +1772,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       {hasLink && (
                         <div style={{ marginTop: 'auto', paddingTop: '0.5rem', borderTop: `1px solid ${vk2Accent}22` }}>
                           <span style={{ fontSize: '0.8rem', color: vk2AccentLight, fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            {m.isK2Lizenz ? '🎨 Zur K2-Galerie' : '🌐 Zur Website'} →
+                            {m.isK2Lizenz ? '🖼️ Zur Galerie (Werke & Preise)' : '🌐 Zur Website'} →
                           </span>
                         </div>
                       )}

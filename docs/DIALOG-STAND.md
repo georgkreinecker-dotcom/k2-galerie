@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2 Kassaausgang:** In der VK2-Kasse Block „Ausgabe erfassen (Kassaausgang)“: Betrag + Verwendungszweck (Schnellwahl: Material, Honorar, Miete, Getränke/Verpflegung, Sonstiges oder frei) → Kassabuch art: ausgang. Kassabuch/Buchhaltung für VK2 zeigen Ausgaben mit; Link „Kassabuch anzeigen“ auf der Kassa-Seite. Davor: VK2 Rechnung (A4).
+**Letzter Stand:** 15.03.26 – **VK2 Lizenzmitglieder – direkter Galerie-Link:** In der Vereinsgalerie (GalerieVorschauPage + Vk2GalerieVorschauPage) erscheint für Mitglieder mit **Lizenz-Galerie URL** ein direkter Link zu ihrer ök2/K2-Galerie („Zur Galerie – Werke & Preise“). Vorteil für Lizenzmitglieder sichtbar. Handbuch VK2 (03-GALERIE-KATALOG-KASSA, 02-VEREIN-STAMMDATEN-MITGLIEDER) ergänzt.
 
-**Was wir JETZT tun:** VK2 Kassa hat Einnahme + Ausgabe; Kassabuch/Buchhaltung listen beide.
+**Was wir JETZT tun:** Abgeschlossen: Galerie-Link für Lizenzmitglieder + Handbuch. Nächster Schritt von Georg.
 
-**Nächster Schritt:** Commit + Push. Georg kann Ausgaben in der VK2-Kasse erfassen und unter Kassabuch anzeigen prüfen.
+**Nächster Schritt:** Von Georg festlegen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

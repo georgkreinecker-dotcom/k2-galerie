@@ -215,8 +215,10 @@ const Vk2GalerieVorschauPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {mitglieder.map((m, idx) => {
               const istOffen = offenIdx === idx
+              const galerieUrl = (m.lizenzGalerieUrl && m.lizenzGalerieUrl.trim()) ? m.lizenzGalerieUrl.trim() : ''
               const homepageUrl = m.galerieLinkUrl || m.website || ''
-              const hasHomepage = !!homepageUrl
+              const hasGalerie = !!galerieUrl
+              const hasHomepage = !!homepageUrl && homepageUrl !== galerieUrl
               const hasVita = !!(m.vita || m.bio)
               return (
                 <div key={m.email || m.name || idx} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${istOffen ? C.accent : C.border}`, background: C.bgCard, boxShadow: '0 2px 10px rgba(0,0,0,0.04)', transition: 'all 0.15s' }}>
@@ -243,6 +245,10 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                       </div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                      {hasGalerie && (
+                        <button type="button" title="Zur Galerie – Werke & Preise" onClick={() => { const url = galerieUrl.startsWith('http') ? galerieUrl : `https://${galerieUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
+                          style={{ width: 32, height: 32, borderRadius: 8, background: C.accent, border: `1px solid ${C.accent}`, color: '#fff', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🖼️</button>
+                      )}
                       {hasHomepage && (
                         <button type="button" title="Homepage" onClick={() => { const url = homepageUrl.startsWith('http') ? homepageUrl : `https://${homepageUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
                           style={{ width: 32, height: 32, borderRadius: 8, background: C.bg, border: `1px solid ${C.border}`, color: C.accent, fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🌐</button>
@@ -280,9 +286,15 @@ const Vk2GalerieVorschauPage: React.FC = () => {
                       {!m.vita && m.bio && (
                         <p style={{ margin: 0, color: C.textMid, fontSize: '0.9rem', lineHeight: 1.65, fontFamily: 'system-ui, sans-serif' }}>{m.bio}</p>
                       )}
+                      {hasGalerie && (
+                        <button type="button" onClick={() => { const url = galerieUrl.startsWith('http') ? galerieUrl : `https://${galerieUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
+                          style={{ alignSelf: 'flex-start', padding: '0.45rem 1rem', background: C.accent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
+                          🖼️ Zur Galerie – alle Werke & Preise
+                        </button>
+                      )}
                       {hasHomepage && (
                         <button type="button" onClick={() => { const url = homepageUrl.startsWith('http') ? homepageUrl : `https://${homepageUrl}`; window.open(url, '_blank', 'noopener,noreferrer') }}
-                          style={{ alignSelf: 'flex-start', padding: '0.45rem 1rem', background: C.accent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}>
+                          style={{ alignSelf: 'flex-start', padding: '0.45rem 1rem', background: C.bg, border: `1px solid ${C.border}`, color: C.accent, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'system-ui, sans-serif', borderRadius: 8 }}>
                           🌐 Homepage besuchen
                         </button>
                       )}

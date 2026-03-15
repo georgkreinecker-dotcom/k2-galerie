@@ -4,6 +4,10 @@
 
 Wenn Ihr Verein die Galerie nutzt, können Sie pro Mitglied ein Profil (Karte) anlegen („In Galerie anzeigen“). Unter **Werke** bzw. **Mitglieder in der Galerie** sehen Sie dann alle erfassten Profile/Werke, können filtern, suchen und den Katalog drucken.
 
+### Vorteil für Lizenzmitglieder (eigene K2/ök2-Galerie)
+
+Mitglieder, die eine **eigene K2- oder ök2-Galerie** haben (Lizenz), können im Admin ihre **Lizenz-Galerie URL** eintragen. In der Vereinsgalerie erscheint dann ein **direkter Link zu ihrer Galerie** – mit der Beschriftung „Zur Galerie (Werke & Preise)“ bzw. „Zur Galerie – alle Werke & Preise“. Besucher der Vereinsgalerie kommen so mit einem Klick zur vollständigen Galerie des Mitglieds inklusive aller Werke und Preise. Das ist der sichtbare Vorteil für Lizenzmitglieder im Verein.
+
 ---
 
 ## Ein Bild mit kurzem Text einstellen – in einfachen Schritten
