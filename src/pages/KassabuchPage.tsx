@@ -27,9 +27,11 @@ const s = {
   shadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
 }
 
-function getTenant(location: ReturnType<typeof useLocation>): 'k2' | 'oeffentlich' {
-  const state = location.state as { fromOeffentlich?: boolean } | null
+function getTenant(location: ReturnType<typeof useLocation>): 'k2' | 'oeffentlich' | 'vk2' {
+  const state = location.state as { fromOeffentlich?: boolean; fromVk2?: boolean } | null
+  if (state?.fromVk2 === true) return 'vk2'
   if (state?.fromOeffentlich === true) return 'oeffentlich'
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2') return 'vk2'
   if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich') return 'oeffentlich'
   return 'k2'
 }
@@ -47,9 +49,9 @@ export default function KassabuchPage() {
 
   const sortedEntries = useMemo(() => {
     let list = [...entries]
-    if (!kassabuchVoll || !aktiv) list = list.filter(e => e.art === 'eingang')
+    if (!kassabuchVoll || !aktiv) list = list.filter(e => e.art === 'eingang' || (tenant === 'vk2' && e.art === 'ausgang'))
     return list.sort((a, b) => a.datum.localeCompare(b.datum) || 0)
-  }, [entries, aktiv, kassabuchVoll])
+  }, [entries, aktiv, kassabuchVoll, tenant])
 
   /** Gefilterte Einträge nach Zeitraum (wie in der Tabelle). */
   const filteredByPeriod = useMemo(() => {

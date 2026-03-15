@@ -104,11 +104,11 @@ export default function BuchhaltungPage() {
   const [orders] = useState<OrderRow[]>(() => loadOrders(tenant))
 
   const filteredEntries = useMemo(() => {
-    let list = kassabuchVoll && aktiv ? entries : entries.filter(e => e.art === 'eingang')
+    let list = kassabuchVoll && aktiv ? entries : entries.filter(e => e.art === 'eingang' || (tenant === 'vk2' && e.art === 'ausgang'))
     if (von) list = list.filter(e => e.datum >= von)
     if (bis) list = list.filter(e => e.datum <= bis)
     return list.sort((a, b) => a.datum.localeCompare(b.datum) || 0)
-  }, [entries, von, bis, kassabuchVoll, aktiv])
+  }, [entries, von, bis, kassabuchVoll, aktiv, tenant])
 
   /** Einfache Summen für den Zeitraum – gute Basis für den Start. */
   const { summeEinnahmen, summeAusgaben, saldo } = useMemo(() => {

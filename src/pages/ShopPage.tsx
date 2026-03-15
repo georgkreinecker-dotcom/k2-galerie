@@ -113,7 +113,11 @@ const ShopPage = () => {
   const [vk2RechnungEmpfaenger, setVk2RechnungEmpfaenger] = useState('') // bei Zahlungsart Rechnung: Name/Firma für A4-Rechnung
   const [vk2BonDrucken, setVk2BonDrucken] = useState(true)
   const [showVk2StornoList, setShowVk2StornoList] = useState(false)
+  // VK2 Kassaausgang: Ausgabe erfassen (Betrag + Verwendungszweck → Kassabuch art: ausgang)
+  const [vk2AusgangBetrag, setVk2AusgangBetrag] = useState('')
+  const [vk2AusgangZweck, setVk2AusgangZweck] = useState('')
   const VK2_BEZEICHNUNG_OPTIONEN = ['Eintritt', 'Spende', 'Mitgliedsbeitrag', 'Verpflegung / Getränke', 'Sonstiges'] as const
+  const VK2_AUSGANG_OPTIONEN = ['Material', 'Honorar', 'Miete', 'Getränke / Verpflegung', 'Sonstiges'] as const
 
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
   const fromOeffentlich = isOeffentlichDisplayContext(location.state)
@@ -741,6 +745,29 @@ ${bankBlock}
     printWindow.document.write(html)
     printWindow.document.close()
     setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 800) }, 300)
+  }
+
+  // VK2: Ausgabe erfassen (Kassaausgang) → nur Kassabuch, art: ausgang
+  const handleVk2Ausgabe = () => {
+    const b = parseFloat((vk2AusgangBetrag || '0').replace(',', '.'))
+    if (isNaN(b) || b <= 0) {
+      alert('Bitte gültigen Betrag eingeben.')
+      return
+    }
+    const zweck = (vk2AusgangZweck || '').trim()
+    const ok = addKassabuchEintrag('vk2', {
+      datum: new Date().toISOString().slice(0, 10),
+      betrag: b,
+      art: 'ausgang',
+      verwendungszweck: zweck || undefined,
+    })
+    if (ok) {
+      setVk2AusgangBetrag('')
+      setVk2AusgangZweck('')
+      alert('✅ Ausgabe erfasst.')
+    } else {
+      alert('Speichern fehlgeschlagen. Bitte erneut versuchen.')
+    }
   }
 
   // VK2: Letzte 15 Buchungen – Storno (Order + Kassabuch-Eintrag entfernen)
@@ -1539,7 +1566,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             <Link to={adminLink} style={{ fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>← Zurück</Link>
           </div>
           <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.95rem' }}>
-            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag) – Bon drucken.
+            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag) – Bon drucken. Ausgabe erfassen für Kassaausgänge (Material, Honorar, …).
           </p>
           <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1.25rem', marginBottom: '1rem', boxShadow: s.shadow }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Betrag (€)</label>
@@ -1598,6 +1625,28 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               Einnahme erfassen{vk2BonDrucken ? ' & Bon drucken' : ''}
             </button>
           </div>
+          {/* VK2 Kassaausgang: Ausgabe erfassen */}
+          <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1.25rem', marginBottom: '1rem', boxShadow: s.shadow, borderLeft: `4px solid ${s.accent}` }}>
+            <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', fontWeight: 700, color: s.text }}>📤 Ausgabe erfassen (Kassaausgang)</h2>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Betrag (€)</label>
+            <input type="number" step="0.01" min="0" value={vk2AusgangBetrag} onChange={e => setVk2AusgangBetrag(e.target.value)} placeholder="0,00"
+              style={{ width: '100%', padding: '0.6rem', fontSize: '1rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, marginBottom: '0.75rem', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Verwendungszweck</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+              {VK2_AUSGANG_OPTIONEN.map(opt => (
+                <button key={opt} type="button" onClick={() => setVk2AusgangZweck(opt)}
+                  style={{ padding: '0.4rem 0.65rem', border: `2px solid ${vk2AusgangZweck === opt ? s.accent : s.border}`, borderRadius: s.radiusSm, background: vk2AusgangZweck === opt ? s.accentSoft : 'transparent', color: s.text, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <input type="text" value={vk2AusgangZweck} onChange={e => setVk2AusgangZweck(e.target.value)} placeholder="z. B. Material, Honorar, Miete …"
+              style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, marginBottom: '0.75rem', boxSizing: 'border-box' }} />
+            <button type="button" onClick={handleVk2Ausgabe}
+              style={{ width: '100%', padding: '0.6rem 1rem', background: s.accent, color: '#fff', border: 'none', borderRadius: s.radiusSm, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}>
+              Ausgabe erfassen
+            </button>
+          </div>
           {orders.length > 0 && (
             <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1rem', boxShadow: s.shadow }}>
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte Einnahmen</div>
@@ -1611,7 +1660,10 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
             </div>
           )}
-          <div style={{ marginTop: '1rem' }}>
+          <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
+            <Link to={PROJECT_ROUTES['k2-galerie'].buchhaltung} state={{ fromVk2: true }} style={{ color: s.accent, textDecoration: 'none' }}>Kassabuch anzeigen</Link> (Einnahmen & Ausgaben)
+          </p>
+          <div style={{ marginTop: '0.5rem' }}>
             <button type="button" onClick={() => setShowVk2StornoList(prev => !prev)}
               style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: s.text, background: showVk2StornoList ? s.accentSoft : 'transparent', border: `2px solid ${s.border}`, borderRadius: s.radiusSm, cursor: 'pointer' }}>
               {showVk2StornoList ? 'Storno-Liste schließen' : 'Letzte 15 Buchungen – Storno'}

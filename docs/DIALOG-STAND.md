@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2 Kassa Rechnung:** Bei Zahlungsart „Rechnung“ in der VK2-Kasse: Pflichtfeld „Rechnungsempfänger (Name oder Firma)“; nach Einnahme erfassen wird zusätzlich zum Bon eine A4-Rechnung gedruckt (Verein = Aussteller, Rechnungsnr. aus k2-vk2-rechnung-counter, eine Position, „Zahlbar 14 Tage“, Bankverbindung/IBAN wenn in Stammdaten). Verein-Stammdaten um optionale Felder „Bankverbindung“ und „IBAN“ (für Rechnungen) erweitert – Admin Einstellungen → Stammdaten. Davor: VK2 offene Kategorien (Kunstrichtung).
+**Letzter Stand:** 15.03.26 – **VK2 Kassaausgang:** In der VK2-Kasse Block „Ausgabe erfassen (Kassaausgang)“: Betrag + Verwendungszweck (Schnellwahl: Material, Honorar, Miete, Getränke/Verpflegung, Sonstiges oder frei) → Kassabuch art: ausgang. Kassabuch/Buchhaltung für VK2 zeigen Ausgaben mit; Link „Kassabuch anzeigen“ auf der Kassa-Seite. Davor: VK2 Rechnung (A4).
 
-**Was wir JETZT tun:** VK2 Rechnung (A4) implementiert – Kasse → Rechnung wählen → Rechnungsempfänger eintragen → Einnahme erfassen → Bon + A4-Rechnung drucken.
+**Was wir JETZT tun:** VK2 Kassa hat Einnahme + Ausgabe; Kassabuch/Buchhaltung listen beide.
 
-**Nächster Schritt:** Commit + Push. Georg kann in der VK2-Kasse „Rechnung“ wählen, Namen eintragen und Rechnung drucken testen.
+**Nächster Schritt:** Commit + Push. Georg kann Ausgaben in der VK2-Kasse erfassen und unter Kassabuch anzeigen prüfen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
