@@ -354,12 +354,14 @@ function _mkWerk(i: number, titel: string, typ: string): string {
   return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)))
 }
 
+/** Ort für Mitgliederkarte (Untertitel). */
 const _dm = [
   {
     name: 'Maria Mustermann',
     email: 'maria@muster.at',
     lizenz: 'VP-001',
     typ: 'Malerei',
+    ort: 'Wien',
     bio: 'Malerei mit Öl und Acryl – Landschaften und Portraits.',
     kurzVita: 'Maria Mustermann arbeitet mit Öl und Acryl; Schwerpunkte Landschaften und Portraits. Studium der Bildenden Kunst, seit 2019 im Verein.',
     vita: 'Maria Mustermann\nMalerei · Öl, Acryl\n\nGeboren in Wien. Studium der Bildenden Kunst, Schwerpunkt Malerei.\n\nSeit 2019 Mitglied im Kunstverein Muster. Landschaften und Portraits in kräftigen Farben; Ausstellungen im In- und Ausland. Arbeiten in privaten Sammlungen.',
@@ -370,6 +372,7 @@ const _dm = [
     email: 'hans@muster.at',
     lizenz: 'VP-002',
     typ: 'Skulptur',
+    ort: 'Graz',
     bio: 'Bildhauer mit Fokus auf moderne Metall- und Holzskulpturen.',
     kurzVita: 'Hans Beispiel ist Bildhauer mit Fokus auf Metall und Holz. Zahlreiche Symposien und Ausstellungen, seit 2020 im Verein.',
     vita: 'Hans Beispiel\nSkulptur · Metall, Holz\n\nGeboren in Graz. Ausbildung in Bildhauerei und Metallgestaltung.\n\nSeit 2020 Mitglied im Kunstverein Muster. Moderne Skulpturen im öffentlichen Raum und in Galerien. Teilnahme an Bildhauer-Symposien in Österreich und Deutschland.',
@@ -380,6 +383,7 @@ const _dm = [
     email: 'anna@muster.at',
     lizenz: 'VP-003',
     typ: 'Fotografie',
+    ort: 'Linz',
     bio: 'Dokumentarfotografie und künstlerische Porträts.',
     kurzVita: 'Anna Probst widmet sich Dokumentarfotografie und künstlerischen Porträts. Preise und Stipendien, seit 2018 im Verein.',
     vita: 'Anna Probst\nFotografie · Dokumentar, Porträt\n\nGeboren in Linz. Studium der Fotografie und visuellen Medien.\n\nSeit 2018 Mitglied im Kunstverein Muster. Dokumentarische Reihen und künstlerische Porträts; Ausstellungen und Publikationen. Stipendien und Preise im Inland.',
@@ -390,6 +394,7 @@ const _dm = [
     email: 'karl@muster.at',
     lizenz: 'VP-004',
     typ: 'Grafik',
+    ort: 'Salzburg',
     bio: 'Illustration und digitale Grafik für Print und Web.',
     kurzVita: 'Karl Vorlage arbeitet in Illustration und digitaler Grafik für Print und Web. Seit 2021 Mitglied im Kunstverein Muster.',
     vita: 'Karl Vorlage\nGrafik · Illustration, Digital\n\nGeboren in Salzburg. Ausbildung in Grafikdesign und Illustration.\n\nSeit 2021 Mitglied im Kunstverein Muster. Illustrationen für Verlage und digitale Formate; freie Arbeiten in Siebdruck und Digital Print. Gruppenausstellungen.',
@@ -400,6 +405,7 @@ const _dm = [
     email: 'eva@muster.at',
     lizenz: 'VP-005',
     typ: 'Keramik',
+    ort: 'Innsbruck',
     bio: 'Töpferei und handgefertigte Keramikobjekte.',
     kurzVita: 'Eva Entwurf fertigt handgearbeitete Keramik und Objekte. Langjährige Werkstattpraxis, seit 2017 im Verein.',
     vita: 'Eva Entwurf\nKeramik · Objekt, Gebrauch\n\nGeboren in Innsbruck. Lehre und Werkstattpraxis in Keramik.\n\nSeit 2017 Mitglied im Kunstverein Muster. Handgefertigte Gefäße und Objekte; oxidierender und reduzierender Brand. Regelmäßige Teilnahme an Kunstmärkten und Ausstellungen.',
@@ -410,6 +416,7 @@ const _dm = [
     email: 'josef@muster.at',
     lizenz: 'VB-006',
     typ: 'Textil',
+    ort: 'Klagenfurt',
     bio: 'Textile Kunst und experimentelle Stoffarbeiten.',
     kurzVita: 'Josef Skizze arbeitet mit textiler Kunst und experimentellen Stoffen. Seit 2022 Mitglied im Kunstverein Muster.',
     vita: 'Josef Skizze\nTextil · Experimentell, Objekt\n\nGeboren in Klagenfurt. Auseinandersetzung mit Textil und Material.\n\nSeit 2022 Mitglied im Kunstverein Muster. Experimentelle Stoffarbeiten und Objekte; Ausstellungen im Bereich Textilkunst und angewandte Kunst.',
@@ -438,6 +445,8 @@ export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
     oeffentlichSichtbar: true,
     mitgliedFotoUrl: _mkPortrait(i, m.name.split(' ').map(w => w[0]).join('').slice(0, 2)),
     imageUrl: _mkWerk(i, m.name.split(' ')[0], m.typ),
+    // Erste 3 = imaginäre ök2-Lizenznehmer: direkter Link zur Demo-Galerie (Werke & Preise)
+    lizenzGalerieUrl: i < 3 ? `${BASE_APP_URL}/projects/k2-galerie/galerie-oeffentlich` : undefined,
   })),
   mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
 }
@@ -559,27 +568,63 @@ export function initVk2DemoEventAndDocumentsIfEmpty(): void {
   } catch (_) {}
 }
 
+/** Für Demo „Kunstverein Muster“: ein Dummy-Werk pro einfachem Mitglied (ohne Lizenz-Galerie) im Vereinskatalog. */
+function _seedVk2DemoArtworksIfEmpty(stammdaten: Vk2Stammdaten): void {
+  const mitglieder = Array.isArray(stammdaten.mitglieder) ? stammdaten.mitglieder : []
+  const demo = VK2_DEMO_STAMMDATEN.mitglieder
+  for (let i = 3; i < Math.min(6, mitglieder.length); i++) {
+    const m = mitglieder[i]
+    if (!m?.name || (m as Vk2Mitglied).lizenzGalerieUrl) continue
+    const key = `k2-vk2-artworks-${m.name.replace(/\s+/g, '-').toLowerCase()}`
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const arr = JSON.parse(raw)
+        if (Array.isArray(arr) && arr.length > 0) continue
+      }
+    } catch { /* ignore */ }
+    const dm = demo[i] as (Vk2Mitglied & { imageUrl?: string }) | undefined
+    const oneWerk = {
+      id: `vk2-demo-werk-${i}`,
+      number: `VK2-${(m.typ || 'O').slice(0, 1)}${i + 1}`,
+      title: `${m.typ || 'Werk'} – ${m.name.split(' ')[0]}`,
+      category: ((m.typ || 'sonstiges') as string).toLowerCase(),
+      description: m.bio || '',
+      imageUrl: dm?.imageUrl || OEK2_PLACEHOLDER_IMAGE,
+      imVereinskatalog: true,
+      price: 0,
+      inShop: false,
+      inExhibition: true,
+    }
+    localStorage.setItem(key, JSON.stringify([oneWerk]))
+  }
+}
+
 /** Initialisiert VK2-Stammdaten mit Demo-Daten falls noch nichts gespeichert ist.
- *  Füllt auch fehlende Demo-Fotos nach (mitgliedFotoUrl / imageUrl) ohne echte Daten zu überschreiben. */
+ *  Füllt auch fehlende Demo-Fotos nach (mitgliedFotoUrl / imageUrl) ohne echte Daten zu überschreiben.
+ *  Für Demo-Verein: je ein Dummy-Werk pro einfachem Mitglied im Vereinskatalog. */
 export function initVk2DemoStammdatenIfEmpty(): void {
   if (typeof window === 'undefined') return
   try {
     const raw = localStorage.getItem('k2-vk2-stammdaten')
     if (!raw) {
       localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
     }
     const parsed = JSON.parse(raw) as Vk2Stammdaten
     if (!parsed?.verein?.name) {
       localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(VK2_DEMO_STAMMDATEN))
+      _seedVk2DemoArtworksIfEmpty(VK2_DEMO_STAMMDATEN)
       return
     }
     // Demo-Verein „Kunstverein Muster“: Muster-Mitglieder anzeigen (auch wenn mitglieder leer war)
     if (parsed.verein.name === 'Kunstverein Muster') {
       const hasMembers = Array.isArray(parsed.mitglieder) && parsed.mitglieder.length > 0
       if (!hasMembers) {
-        // Leere oder fehlende Mitgliederliste → Muster-Mitglieder setzen, damit sie auf der Galerie sichtbar sind
-        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify({ ...parsed, mitglieder: VK2_DEMO_STAMMDATEN.mitglieder }))
+        const data = { ...parsed, mitglieder: VK2_DEMO_STAMMDATEN.mitglieder }
+        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
+        _seedVk2DemoArtworksIfEmpty(data)
         return
       }
       // Fotos für bestehende Demo-Mitglieder nachfüllen (Foto/Bio/Vita fehlt)
@@ -594,10 +639,16 @@ export function initVk2DemoStammdatenIfEmpty(): void {
         if (!m.kurzVita && (dm as Partial<Vk2Mitglied>).kurzVita) { patch.kurzVita = (dm as Partial<Vk2Mitglied>).kurzVita; changed = true }
         if (!m.vita && (dm as Partial<Vk2Mitglied>).vita) { patch.vita = (dm as Partial<Vk2Mitglied>).vita; changed = true }
         if (!m.seit && dm.seit) { patch.seit = dm.seit; changed = true }
+        if (!m.ort && dm.ort) { patch.ort = dm.ort; changed = true }
+        if (!m.lizenzGalerieUrl && dm.lizenzGalerieUrl) { patch.lizenzGalerieUrl = dm.lizenzGalerieUrl; changed = true }
         return Object.keys(patch).length > 0 ? { ...m, ...patch } : m
       })
       if (changed) {
-        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify({ ...parsed, mitglieder: updated }))
+        const data = { ...parsed, mitglieder: updated }
+        localStorage.setItem('k2-vk2-stammdaten', JSON.stringify(data))
+        _seedVk2DemoArtworksIfEmpty(data)
+      } else {
+        _seedVk2DemoArtworksIfEmpty(parsed)
       }
     }
   } catch (_) {}

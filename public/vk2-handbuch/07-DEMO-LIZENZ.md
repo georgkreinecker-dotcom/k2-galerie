@@ -16,6 +16,7 @@ Die Demo ist eine voll funktionsfähige Vorschau der Vereinsplattform. Sie könn
 
 - **Vereinsgalerie ansehen:** Über den Link oder QR-Code zur Demo gelangen Sie auf die Galerie-Ansicht. Dort sehen Sie Muster-Mitglieder und -inhalte.
 - **Bearbeiten:** Mit dem Admin-Passwort (falls abgefragt) gelangen Sie in den Bearbeitungsbereich. Dort können Sie Verein, Kategorien, Mitglieder, Events und Kassa ausprobieren.
+- **Musterdaten entfernen:** Wenn Sie mit Ihren eigenen Daten starten wollen, können Sie die Demo-Mitglieder und -Werke **mit einem Klick** entfernen: Im Admin unter **Einstellungen** (VK2-Bereich) erscheint der Button **„Musterdaten entfernen“** – nur beim Demo-Verein „Kunstverein Muster“. Danach ist die Mitgliederliste leer; Vereinsname und Kategorien bleiben erhalten.
 - **Veröffentlichen:** Änderungen in der Demo bleiben in der Demo-Umgebung; für eine dauerhafte Nutzung benötigen Sie eine Lizenz.
 
 ---

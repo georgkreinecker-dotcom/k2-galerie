@@ -509,6 +509,10 @@ const USER_LISTE_FUER_MITGLIEDER: Vk2Mitglied[] = [
   { name: 'Test Nutzer', email: 'test@beispiel.at', lizenz: 'KF-2026-1005', typ: 'Fotografie', mitgliedFotoUrl: MUSTER_MITGLIEDER_BILDER[4], imageUrl: MUSTER_WERKFOTO_BILDER[4], phone: '+43 699 000 9999', website: '', strasse: 'Testweg 99', plz: '6020', ort: 'Innsbruck', land: 'Österreich', geburtsdatum: '20.12.1982', eintrittsdatum: '12.02.2026', seit: '12.02.2026' }
 ]
 const EMPTY_MEMBER_FORM = { name: '', email: '', lizenz: '', typ: '', strasse: '', plz: '', ort: '', land: '', geburtsdatum: '', eintrittsdatum: '', phone: '', website: '', galerieLinkUrl: '', lizenzGalerieUrl: '', bio: '', vita: '', mitgliedFotoUrl: '', imageUrl: '', rolle: 'mitglied' as 'vorstand' | 'mitglied', pin: '' }
+/** VK2: localStorage-Key für Werke eines Mitglieds (einfaches Mitglied, keine Lizenz-Galerie-URL) */
+function getVk2MemberArtworksKey(memberName: string): string {
+  return `k2-vk2-artworks-${(memberName || '').trim().replace(/\s+/g, '-').toLowerCase()}`
+}
 function memberToForm(m: Vk2Mitglied) {
   return { name: m.name ?? '', email: m.email ?? '', lizenz: m.lizenz ?? '', typ: m.typ ?? '', strasse: m.strasse ?? '', plz: m.plz ?? '', ort: m.ort ?? '', land: m.land ?? '', geburtsdatum: m.geburtsdatum ?? '', eintrittsdatum: m.eintrittsdatum ?? m.seit ?? '', phone: m.phone ?? '', website: m.website ?? '', galerieLinkUrl: m.galerieLinkUrl ?? '', lizenzGalerieUrl: m.lizenzGalerieUrl ?? '', bio: m.bio ?? '', vita: m.vita ?? '', mitgliedFotoUrl: m.mitgliedFotoUrl ?? '', imageUrl: m.imageUrl ?? '', rolle: m.rolle ?? 'mitglied', pin: m.pin ?? '' }
 }
@@ -1519,6 +1523,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [editingMemberIndex, setEditingMemberIndex] = useState<number | null>(null)
   /** VK2: Vollständige Mitglieder-Stammdaten im Modal */
   const [memberForm, setMemberForm] = useState<{ name: string; email: string; lizenz: string; typ: string; strasse: string; plz: string; ort: string; land: string; geburtsdatum: string; eintrittsdatum: string; phone: string; website: string; galerieLinkUrl: string; lizenzGalerieUrl: string; bio: string; vita: string; mitgliedFotoUrl: string; imageUrl: string; rolle: 'vorstand' | 'mitglied'; pin: string }>({ ...EMPTY_MEMBER_FORM })
+  /** VK2: Werke für Vereinskatalog (einfaches Mitglied, max 5) – nur im Mitglieder-Modal */
+  const [memberVereinskatalogWerke, setMemberVereinskatalogWerke] = useState<any[]>([])
+  /** VK2: Index des Werks das gerade bearbeitet wird (null = neues Werk hinzufügen) */
+  const [editingVk2WerkIndex, setEditingVk2WerkIndex] = useState<number | null>(null)
+  /** VK2: Formular für ein Vereinskatalog-Werk (Titel, Beschreibung, Technik, Bild, Maße, Jahr) */
+  const [vk2WerkForm, setVk2WerkForm] = useState<{ title: string; description: string; technik: string; imageUrl: string; dimensions: string; year: string }>({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' })
   /** VK2: Drag-over für CSV-Import */
   const [csvDragOver, setCsvDragOver] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -2412,6 +2422,29 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }, 200)
     return () => { isMounted = false; clearTimeout(t) }
   }, [])
+
+  // VK2: Beim Öffnen des Mitglieder-Modals Vereinskatalog-Werke laden (einfaches Mitglied)
+  useEffect(() => {
+    if (!showAddModal || !tenant.isVk2) return
+    if (editingMemberIndex === null) {
+      setMemberVereinskatalogWerke([])
+      setEditingVk2WerkIndex(null)
+      setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' })
+      return
+    }
+    const m = vk2Stammdaten.mitglieder?.[editingMemberIndex]
+    if (!m?.name?.trim()) return
+    const key = getVk2MemberArtworksKey(m.name)
+    try {
+      const raw = localStorage.getItem(key)
+      const list = raw ? JSON.parse(raw) : []
+      setMemberVereinskatalogWerke(Array.isArray(list) ? list : [])
+    } catch {
+      setMemberVereinskatalogWerke([])
+    }
+    setEditingVk2WerkIndex(null)
+    setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' })
+  }, [showAddModal, tenant.isVk2, editingMemberIndex])
 
   const saveRegistrierungConfig = () => {
     let cfg = { ...registrierungConfig }
@@ -12275,6 +12308,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               galleryData={galleryData}
               onToggleInExhibition={handleToggleInExhibition}
               isOeffentlich={tenant.isOeffentlich}
+              isVk2={tenant.isVk2}
               entryTypeFilter={entryTypeFilter}
               setEntryTypeFilter={setEntryTypeFilter}
               categoryFilter={categoryFilter}
@@ -12441,6 +12475,32 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       >
                         📥 CSV-Export
                       </button>
+                      {/* Musterdaten nur bei Demo-Verein „Kunstverein Muster“ – ein Klick = leere Mitgliederliste + Demo-Werke weg */}
+                      {(vk2Stammdaten.verein?.name || '').trim() === 'Kunstverein Muster' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!confirm('Musterdaten (Demo-Mitglieder und -Werke) entfernen? Danach ist die Mitgliederliste leer – du trägst deine eigenen Daten ein. Vereinsname und Kategorien bleiben.')) return
+                            const neu = { ...vk2Stammdaten, mitglieder: [] }
+                            setVk2Stammdaten(neu)
+                            try {
+                              saveVk2Stammdaten(neu)
+                              ;['karl-vorlage', 'eva-entwurf', 'josef-skizze'].forEach(suffix => {
+                                try { localStorage.removeItem(`k2-vk2-artworks-${suffix}`) } catch (_) {}
+                              })
+                              if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('vk2-stammdaten-updated'))
+                              alert('✅ Musterdaten entfernt. Mitgliederliste ist leer – trage jetzt deine eigenen Mitglieder ein.')
+                            } catch (e) {
+                              console.warn('Musterdaten entfernen:', e)
+                              alert('Speichern fehlgeschlagen – bitte erneut versuchen.')
+                            }
+                          }}
+                          style={{ padding: '0.6rem 1.1rem', background: 'rgba(220,38,38,0.1)', color: '#b54a1e', border: '1px solid rgba(181,74,30,0.5)', borderRadius: '10px', fontSize: '0.86rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' as const }}
+                          title="Demo-Mitglieder und Dummy-Werke im Vereinskatalog löschen – danach leere Liste für eigene Einträge"
+                        >
+                          🗑️ Musterdaten entfernen
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -19623,7 +19683,7 @@ ${name}`
               {tenant.isVk2 ? (
                 <>
                   {(() => {
-                    const ms = { text: '#f0f6ff', muted: 'rgba(255,255,255,0.88)', accent: s.accent, bgElevated: 'rgba(255,255,255,0.1)', gradientAccent: s.gradientAccent, shadow: s.shadow }
+                    const ms = { text: '#f0f6ff', muted: 'rgba(255,255,255,0.88)', accent: s.accent, bgCard: 'rgba(255,255,255,0.08)', bgElevated: 'rgba(255,255,255,0.1)', gradientAccent: s.gradientAccent, shadow: s.shadow }
                     return (
                 <>
                   <p style={{ margin: 0, fontSize: '1rem', color: ms.muted }}>Profil für die Mitglieder-Galerie – Foto, Werk und Vita separat bearbeitbar.</p>
@@ -19808,6 +19868,56 @@ ${name}`
                         Wenn das Mitglied eine eigene K2-Lizenzgalerie hat – der Katalog holt sich die markierten Werke von dort.
                       </p>
                     </div>
+
+                    {/* ── Werke für Vereinskatalog (einfaches Mitglied, max 5) ── */}
+                    <div style={{ borderTop: `1px solid ${ms.accent}22`, paddingTop: '0.75rem', marginTop: '0.5rem' }}>
+                      <div style={{ fontSize: '0.95rem', color: ms.accent, fontWeight: 600, marginBottom: '0.35rem' }}>🏆 Werke für Vereinskatalog</div>
+                      {memberForm.lizenzGalerieUrl?.trim() ? (
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: ms.muted }}>Werke werden von der Lizenz-Galerie geholt. Hier keine Eingabe nötig.</p>
+                      ) : (
+                        <>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: ms.muted }}>Bis zu 5 Werke für die Präsentation im Vereinskatalog (nur für Mitglieder ohne Lizenz-Galerie-URL).</p>
+                          {memberVereinskatalogWerke.length > 0 && (
+                            <ul style={{ margin: '0 0 0.5rem', paddingLeft: '1.25rem', fontSize: '0.9rem', color: ms.text }}>
+                              {memberVereinskatalogWerke.map((w, idx) => (
+                                <li key={w.id || idx} style={{ marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                  {w.imageUrl && <img src={w.imageUrl} alt="" style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                  <span style={{ flex: 1, minWidth: 0 }}>{w.title || 'Ohne Titel'}</span>
+                                  <button type="button" onClick={() => { setEditingVk2WerkIndex(idx); setVk2WerkForm({ title: w.title || '', description: w.description || '', technik: w.technik || '', imageUrl: w.imageUrl || '', dimensions: w.dimensions || '', year: w.year || '' }) }} style={{ padding: '0.2rem 0.5rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.accent, fontSize: '0.8rem', cursor: 'pointer' }}>Bearbeiten</button>
+                                  <button type="button" onClick={() => { setMemberVereinskatalogWerke(prev => prev.filter((_, i) => i !== idx)); setEditingVk2WerkIndex(null); setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' }) }} style={{ padding: '0.2rem 0.5rem', background: 'transparent', border: 'none', color: ms.muted, fontSize: '0.9rem', cursor: 'pointer' }}>×</button>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {editingVk2WerkIndex !== null ? (
+                            <div style={{ padding: '0.6rem', background: ms.bgElevated, borderRadius: 8, border: `1px solid ${ms.accent}33`, marginBottom: '0.5rem' }}>
+                              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: ms.text, marginBottom: '0.4rem' }}>{editingVk2WerkIndex >= 0 ? 'Werk bearbeiten' : 'Neues Werk'}</div>
+                              <div style={{ display: 'grid', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                                <input type="text" value={vk2WerkForm.title} onChange={e => setVk2WerkForm(f => ({ ...f, title: e.target.value }))} placeholder="Titel" style={{ padding: '0.4rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.9rem' }} />
+                                <textarea value={vk2WerkForm.description} onChange={e => setVk2WerkForm(f => ({ ...f, description: e.target.value }))} placeholder="Beschreibung (optional)" rows={2} style={{ padding: '0.4rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.9rem', resize: 'vertical' }} />
+                                <input type="text" value={vk2WerkForm.technik} onChange={e => setVk2WerkForm(f => ({ ...f, technik: e.target.value }))} placeholder="Technik / Material (optional)" style={{ padding: '0.4rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.9rem' }} />
+                                <input type="text" value={vk2WerkForm.dimensions} onChange={e => setVk2WerkForm(f => ({ ...f, dimensions: e.target.value }))} placeholder="Maße (optional)" style={{ padding: '0.4rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.9rem' }} />
+                                <input type="text" value={vk2WerkForm.year} onChange={e => setVk2WerkForm(f => ({ ...f, year: e.target.value }))} placeholder="Jahr (optional)" style={{ padding: '0.4rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.9rem' }} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                  {vk2WerkForm.imageUrl ? <img src={vk2WerkForm.imageUrl} alt="" style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }} /> : null}
+                                  <label style={{ padding: '0.35rem 0.6rem', background: `${ms.accent}22`, border: `1px solid ${ms.accent}55`, borderRadius: 6, color: ms.accent, fontSize: '0.85rem', cursor: 'pointer' }}>
+                                    {vk2WerkForm.imageUrl ? 'Bild ändern' : 'Bild wählen'}
+                                    <input type="file" accept="image/*" className="sr-only" onChange={e => { const f = e.target.files?.[0]; if (f) { const r = new FileReader(); r.onload = () => setVk2WerkForm(prev => ({ ...prev, imageUrl: (r.result as string) || '' })); r.readAsDataURL(f) } }} />
+                                  </label>
+                                  {vk2WerkForm.imageUrl && <button type="button" onClick={() => setVk2WerkForm(f => ({ ...f, imageUrl: '' }))} style={{ padding: '0.2rem 0.4rem', background: 'none', border: 'none', color: ms.muted, fontSize: '0.85rem', cursor: 'pointer' }}>Bild entfernen</button>}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                <button type="button" onClick={() => { setEditingVk2WerkIndex(null); setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' }) }} style={{ padding: '0.35rem 0.6rem', background: ms.bgCard, border: `1px solid ${ms.accent}44`, borderRadius: 6, color: ms.text, fontSize: '0.85rem', cursor: 'pointer' }}>Abbrechen</button>
+                                <button type="button" onClick={() => { const w = { id: editingVk2WerkIndex >= 0 ? memberVereinskatalogWerke[editingVk2WerkIndex].id : 'vk2-' + Date.now(), title: vk2WerkForm.title.trim() || 'Ohne Titel', description: vk2WerkForm.description.trim() || undefined, technik: vk2WerkForm.technik.trim() || undefined, imageUrl: vk2WerkForm.imageUrl.trim() || undefined, dimensions: vk2WerkForm.dimensions.trim() || undefined, year: vk2WerkForm.year.trim() || undefined, imVereinskatalog: true as const }; if (editingVk2WerkIndex >= 0) setMemberVereinskatalogWerke(prev => prev.map((x, i) => i === editingVk2WerkIndex ? w : x)); else setMemberVereinskatalogWerke(prev => prev.length < 5 ? [...prev, w] : prev); setEditingVk2WerkIndex(null); setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' }) }} style={{ padding: '0.35rem 0.6rem', background: ms.gradientAccent, border: 'none', borderRadius: 6, color: '#fff', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Speichern</button>
+                              </div>
+                            </div>
+                          ) : memberVereinskatalogWerke.length < 5 ? (
+                            <button type="button" onClick={() => { setEditingVk2WerkIndex(-1); setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' }) }} style={{ padding: '0.4rem 0.75rem', background: `${ms.accent}22`, border: `1px solid ${ms.accent}55`, borderRadius: 8, color: ms.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>+ Werk hinzufügen</button>
+                          ) : null}
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* ── ZUGANGSBERECHTIGUNG ── */}
@@ -19863,7 +19973,7 @@ ${name}`
                   <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: `1px solid ${ms.accent}22` }}>
                     <button
                       type="button"
-                      onClick={() => { setShowAddModal(false); setEditingMemberIndex(null); setMemberForm({ ...EMPTY_MEMBER_FORM }) }}
+                      onClick={() => { setShowAddModal(false); setEditingMemberIndex(null); setMemberForm({ ...EMPTY_MEMBER_FORM }); setMemberVereinskatalogWerke([]); setEditingVk2WerkIndex(null); setVk2WerkForm({ title: '', description: '', technik: '', imageUrl: '', dimensions: '', year: '' }) }}
                       style={{ padding: '0.6rem 1.25rem', background: ms.bgElevated, border: `1px solid ${ms.accent}44`, borderRadius: '8px', color: ms.text, fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
                     >
                       Abbrechen
@@ -19905,9 +20015,26 @@ ${name}`
                         }
                         setVk2Stammdaten({ ...vk2Stammdaten, mitglieder })
                         try { saveVk2Stammdaten({ ...vk2Stammdaten, mitglieder }) } catch (_) {}
+                        // VK2: Vereinskatalog-Werke speichern (k2-vk2-artworks-${name}); bei Namensänderung migrieren
+                        const newName = memberForm.name.trim()
+                        const keyNew = getVk2MemberArtworksKey(newName)
+                        if (editingMemberIndex !== null) {
+                          const oldName = vk2Stammdaten.mitglieder?.[editingMemberIndex]?.name?.trim()
+                          if (oldName && oldName !== newName) {
+                            const keyOld = getVk2MemberArtworksKey(oldName)
+                            try {
+                              const raw = localStorage.getItem(keyOld)
+                              if (raw) { localStorage.setItem(keyNew, raw); localStorage.removeItem(keyOld) }
+                            } catch (_) {}
+                          }
+                        }
+                        const toSave = memberVereinskatalogWerke.filter(w => w && (w.title || w.imageUrl)).map(w => ({ ...w, imVereinskatalog: true, artist: newName }))
+                        try { localStorage.setItem(keyNew, JSON.stringify(toSave)) } catch (_) {}
                         setShowAddModal(false)
                         setEditingMemberIndex(null)
                         setMemberForm({ ...EMPTY_MEMBER_FORM })
+                        setMemberVereinskatalogWerke([])
+                        setEditingVk2WerkIndex(null)
                       }}
                       style={{ padding: '0.6rem 1.25rem', background: ms.gradientAccent, border: 'none', borderRadius: '8px', color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', boxShadow: ms.shadow }}
                     >

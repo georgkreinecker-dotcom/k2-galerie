@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2 Lizenzmitglieder – direkter Galerie-Link:** In der Vereinsgalerie (GalerieVorschauPage + Vk2GalerieVorschauPage) erscheint für Mitglieder mit **Lizenz-Galerie URL** ein direkter Link zu ihrer ök2/K2-Galerie („Zur Galerie – Werke & Preise“). Vorteil für Lizenzmitglieder sichtbar. Handbuch VK2 (03-GALERIE-KATALOG-KASSA, 02-VEREIN-STAMMDATEN-MITGLIEDER) ergänzt.
+**Letzter Stand:** 15.03.26 – **VK2 Musterdaten entfernen:** Im VK2-Admin (Einstellungen, nur bei „Kunstverein Muster“) gibt es den Button **„Musterdaten entfernen“**. Ein Klick → Bestätigung → Mitgliederliste leer, Demo-Werke (karl-vorlage, eva-entwurf, josef-skizze) aus localStorage entfernt → Stammdaten gespeichert, Event gefeuert. Handbuch 07-DEMO-LIZENZ: Musterdaten mit einem Klick entfernbar dokumentiert.
 
-**Was wir JETZT tun:** Abgeschlossen: Galerie-Link für Lizenzmitglieder + Handbuch. Nächster Schritt von Georg.
+**Was wir JETZT tun:** Abgeschlossen: Musterdaten für User einfach entfernbar (Button + Doku). Nächster Schritt von Georg.
 
 **Nächster Schritt:** Von Georg festlegen.
 

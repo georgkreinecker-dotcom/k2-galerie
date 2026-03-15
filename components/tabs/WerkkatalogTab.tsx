@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
-import { getCategoryLabel, ARTWORK_CATEGORIES, ENTRY_TYPES, getCategoriesForEntryType, type EntryTypeId } from '../../src/config/tenantConfig'
+import { getCategoryLabel, getEntryTypeLabel, ARTWORK_CATEGORIES, ENTRY_TYPES, getCategoriesForEntryType, type EntryTypeId } from '../../src/config/tenantConfig'
 import { isEchteK2Werknummer } from '../../src/utils/artworksStorage'
 
 const s = WERBEUNTERLAGEN_STIL
@@ -27,8 +27,10 @@ interface WerkkatalogTabProps {
   galleryData: any
   /** Schnell umschalten: In Galerie ↔ Lager (nur bei nicht verkauften Werken). Optional. */
   onToggleInExhibition?: (artwork: any) => void
-  /** ök2: Erste Kategorisierung wie in Werke verwalten – Typ + Kategorie (eine Quelle). */
+  /** ök2/VK2: Erste Kategorisierung wie in Werke verwalten – Typ + Kategorie (eine Quelle). */
   isOeffentlich?: boolean
+  /** VK2: Gleiche Typ-/Kategorie-Filter und Spalte „Typ“ wie ök2 (einmal im VK2 umsetzen, K2 optional später). */
+  isVk2?: boolean
   entryTypeFilter?: 'alle' | EntryTypeId
   setEntryTypeFilter?: (v: 'alle' | EntryTypeId) => void
   categoryFilter?: string
@@ -37,12 +39,17 @@ interface WerkkatalogTabProps {
 
 const ALLE_SPALTEN = [
   { id: 'nummer', label: 'Nr.' }, { id: 'titel', label: 'Titel' },
+  { id: 'typ', label: 'Typ' },
   { id: 'kategorie', label: 'Kategorie' }, { id: 'kuenstler', label: 'Künstler:in' },
   { id: 'masse', label: 'Maße' }, { id: 'technik', label: 'Technik/Material' },
+  { id: 'beschreibung', label: 'Beschreibung' },
   { id: 'preis', label: 'Preis' }, { id: 'status', label: 'Status' },
   { id: 'datum', label: 'Erstellt' }, { id: 'kaeufer', label: 'Käufer:in' },
   { id: 'verkauftam', label: 'Verkauft am' }, { id: 'stueck', label: 'Stück' }, { id: 'standort', label: 'Standort' },
 ]
+
+/** VK2: Nur für Präsentation – keine Verkaufs-Spalten. */
+const VK2_SPALTEN_IDS = ['nummer', 'titel', 'typ', 'kategorie', 'kuenstler', 'masse', 'technik', 'beschreibung', 'datum']
 
 export default function WerkkatalogTab({
   allArtworks,
@@ -59,7 +66,11 @@ export default function WerkkatalogTab({
   setEntryTypeFilter,
   categoryFilter = 'alle',
   setCategoryFilter,
+  isVk2 = false,
 }: WerkkatalogTabProps) {
+  /** Typ-Filter + dynamische Kategorie: ök2 und VK2 (K2 unverändert, bis Georg es anordnet). */
+  const showTypAndCategory = !!isOeffentlich || !!isVk2
+
   // Sold-Status + Reservierung aus separaten Keys holen
   const soldMap = new Map<string, any>()
   try {
@@ -88,47 +99,59 @@ export default function WerkkatalogTab({
     }
   })
 
-  // Filter anwenden
+  // Filter anwenden (VK2: keine Verkaufs-/Status-/Preis-/Datumsfilter)
   const filtered = enriched.filter((a: any) => {
-    if (isOeffentlich && entryTypeFilter !== 'alle') {
+    if (showTypAndCategory && entryTypeFilter !== 'alle') {
       const et = (a.entryType && ENTRY_TYPES.some((t: any) => t.id === a.entryType)) ? a.entryType : 'artwork'
       if (et !== entryTypeFilter) return false
     }
-    if (isOeffentlich && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
-    if (!isOeffentlich && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
-    if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
-    if (katalogFilter.status === 'verkauft' && !a.sold) return false
-    if (katalogFilter.status === 'reserviert' && !a.reserved) return false
-    if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
+    if (showTypAndCategory && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
+    if (!isOeffentlich && !isVk2 && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
+    if (!isVk2) {
+      if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
+      if (katalogFilter.status === 'verkauft' && !a.sold) return false
+      if (katalogFilter.status === 'reserviert' && !a.reserved) return false
+      if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
+    }
     if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
     if (katalogFilter.suchtext) {
       const q = katalogFilter.suchtext.toLowerCase()
       const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''}`.toLowerCase()
       if (!hay.includes(q)) return false
     }
-    if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
-    if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
-    if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
-    if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
+    if (!isVk2) {
+      if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
+      if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
+      if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
+      if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
+    }
     return true
   })
+
+  /** VK2: nur Präsentations-Spalten anzeigen. Fallback wenn keine gewählt. */
+  const effectiveSpalten = isVk2
+    ? (() => { const v = katalogSpalten.filter((c) => VK2_SPALTEN_IDS.includes(c)); return v.length > 0 ? v : ['nummer', 'titel', 'typ', 'kategorie', 'kuenstler'] })()
+    : katalogSpalten
+  const spaltenFuerAuswahl = isVk2 ? ALLE_SPALTEN.filter((col) => VK2_SPALTEN_IDS.includes(col.id)) : ALLE_SPALTEN
 
   const druckeKatalog = () => {
     const pw = window.open('', '_blank')
     if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
-    const statusLabel = katalogFilter.status === 'galerie' ? 'In Online-Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Nur Lager & Kassa' : 'Alle'
-    const cols = katalogSpalten
+    const statusLabel = isVk2 ? 'Präsentation' : (katalogFilter.status === 'galerie' ? 'In Online-Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Nur Lager & Kassa' : 'Alle')
+    const cols = isVk2 ? effectiveSpalten : katalogSpalten
     const rows = filtered.map((a: any) => {
       const cells = cols.map(col => {
         switch (col) {
           case 'nummer': return `<td>${a.number || a.id || '–'}</td>`
           case 'titel': return `<td><strong>${a.title || '–'}</strong></td>`
+          case 'typ': return `<td>${getEntryTypeLabel(a.entryType)}</td>`
           case 'kategorie': return `<td>${getCategoryLabel(a.category)}</td>`
           case 'kuenstler': return `<td>${a.artist || '–'}</td>`
           case 'masse': return `<td>${a.dimensions || '–'}</td>`
           case 'technik': return `<td>${a.technik || '–'}</td>`
+          case 'beschreibung': return `<td>${(a.description || '–').toString().slice(0, 200)}${(a.description || '').length > 200 ? '…' : ''}</td>`
           case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
           case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Online-Galerie</span>' : 'Lager'}</td>`
           case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
@@ -142,9 +165,9 @@ export default function WerkkatalogTab({
       return `<tr>${cells}</tr>`
     }).join('')
     const colHeaders: Record<string, string> = {
-      nummer: 'Nr.', titel: 'Titel', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
-      masse: 'Maße', technik: 'Technik/Material', preis: 'Preis', status: 'Status',
-      datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
+      nummer: 'Nr.', titel: 'Titel', typ: 'Typ', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
+      masse: 'Maße', technik: 'Technik/Material', beschreibung: 'Beschreibung',
+      preis: 'Preis', status: 'Status', datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
     }
     const thead = cols.map(c => `<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`).join('')
     pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -177,7 +200,41 @@ export default function WerkkatalogTab({
     if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
-    pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    if (isVk2) {
+      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>${w.title || w.number || 'Werk'} – ${galName}</title>
+      <style>
+        @media print { @page { size: A5; margin: 10mm; } }
+        body { font-family: Georgia, serif; color: #111; margin: 0; padding: 20px; max-width: 148mm; }
+        .header { border-bottom: 3px solid #8b6914; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header h1 { margin: 0; font-size: 14px; color: #8b6914; font-family: Arial, sans-serif; }
+        .header .nr { font-size: 22px; font-weight: bold; color: #111; font-family: Arial, sans-serif; }
+        .werk-img { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; margin-bottom: 14px; background: #f5f0e8; }
+        .titel { font-size: 22px; font-weight: bold; margin: 0 0 4px; color: #111; }
+        .kuenstler { font-size: 13px; color: #555; margin: 0 0 14px; font-style: italic; }
+        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 12px; margin-bottom: 14px; }
+        .meta-item label { color: #888; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
+        .meta-item span { color: #111; font-weight: 500; }
+        .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
+        .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+      </style></head><body>
+      <div class="header"><h1>${galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
+      ${w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${w.title || ''}" />` : ''}
+      <div class="titel">${w.title || '–'}</div>
+      <div class="kuenstler">${w.artist || ''}</div>
+      <div class="meta">
+        ${showTypAndCategory ? `<div class="meta-item"><label>Typ</label><span>${getEntryTypeLabel(w.entryType)}</span></div>` : ''}
+        ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
+        ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
+        ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
+        ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
+      </div>
+      ${w.description ? `<div class="beschreibung">${w.description}</div>` : ''}
+      <div class="footer"><span>${galName}</span><span>Vereinskatalog · ${datum}</span></div>
+      <script>window.onload=()=>window.print()</script>
+      </body></html>`)
+    } else {
+      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Werkkarte – ${w.number || w.id}</title>
       <style>
         @media print { @page { size: A5; margin: 10mm; } }
@@ -195,10 +252,7 @@ export default function WerkkatalogTab({
         .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
         .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
       </style></head><body>
-      <div class="header">
-        <h1>${galName}</h1>
-        <div class="nr">${w.number || w.id || ''}</div>
-      </div>
+      <div class="header"><h1>${galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
       ${w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${w.title || ''}" />` : ''}
       <div class="titel">${w.title || '–'}</div>
       <div class="kuenstler">${w.artist || ''}</div>
@@ -217,12 +271,20 @@ export default function WerkkatalogTab({
       ${w.description ? `<div class="beschreibung">${w.description}</div>` : ''}
       <div class="footer"><span>${galName}</span><span>Werkkarte · ${datum}</span></div>
       <script>window.onload=()=>window.print()</script>
-    </body></html>`)
+      </body></html>`)
+    }
     pw.document.close()
   }
 
   return (
     <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 24, padding: 'clamp(1.5rem, 4vw, 2.5rem)', marginBottom: '2rem' }}>
+
+      {/* VK2: Klarstellung – Katalog nur zur Präsentation der Mitglieder, nicht zum Verkaufen */}
+      {isVk2 && (
+        <div style={{ marginBottom: '1.25rem', padding: '0.85rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: 12, fontSize: '0.9rem', color: s.text }}>
+          <strong>Vereinskatalog</strong> – ausschließlich zur <strong>Präsentation der Mitglieder</strong> und ihrer Werke (jede Sache mit Beschreibung). Nicht zum Verkaufen.
+        </div>
+      )}
 
       {/* Filter-Zeile */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', marginBottom: '1.25rem', alignItems: 'flex-end' }}>
@@ -232,7 +294,7 @@ export default function WerkkatalogTab({
             placeholder="z. B. M0042 oder Landschaft …"
             style={{ width: '100%', padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', boxSizing: 'border-box' }} />
         </div>
-        {isOeffentlich && setEntryTypeFilter && (
+        {showTypAndCategory && setEntryTypeFilter && (
           <div>
             <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Typ</div>
             <select value={entryTypeFilter} onChange={e => { const v = e.target.value as 'alle' | EntryTypeId; setEntryTypeFilter(v); if (v !== 'alle' && setCategoryFilter) setCategoryFilter('alle') }}
@@ -244,7 +306,7 @@ export default function WerkkatalogTab({
         )}
         <div>
           <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Kategorie</div>
-          {isOeffentlich && setCategoryFilter ? (
+          {showTypAndCategory && setCategoryFilter ? (
             <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}
               style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
               <option value="alle">Alle</option>
@@ -264,59 +326,70 @@ export default function WerkkatalogTab({
             </select>
           )}
         </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Status</div>
-          <select value={katalogFilter.status} onChange={e => setKatalogFilter(f => ({ ...f, status: e.target.value as any }))}
-            style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
-            <option value="alle">Alle</option>
-            <option value="galerie">In Online-Galerie</option>
-            <option value="verkauft">Verkauft</option>
-            <option value="reserviert">🔶 Reserviert</option>
-            <option value="lager">Nur Lager & Kassa</option>
-          </select>
-        </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Preis von</div>
-          <input type="number" value={katalogFilter.vonPreis} onChange={e => setKatalogFilter(f => ({ ...f, vonPreis: e.target.value }))}
-            placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
-        </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
-          <input type="number" value={katalogFilter.bisPreis} onChange={e => setKatalogFilter(f => ({ ...f, bisPreis: e.target.value }))}
-            placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
-        </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Erstellt von</div>
-          <input type="date" value={katalogFilter.vonDatum} onChange={e => setKatalogFilter(f => ({ ...f, vonDatum: e.target.value }))}
-            style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
-        </div>
-        <div>
-          <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
-          <input type="date" value={katalogFilter.bisDatum} onChange={e => setKatalogFilter(f => ({ ...f, bisDatum: e.target.value }))}
-            style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
-        </div>
+        {!isVk2 && (
+          <>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Status</div>
+              <select value={katalogFilter.status} onChange={e => setKatalogFilter(f => ({ ...f, status: e.target.value as any }))}
+                style={{ padding: '0.5rem 0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }}>
+                <option value="alle">Alle</option>
+                <option value="galerie">In Online-Galerie</option>
+                <option value="verkauft">Verkauft</option>
+                <option value="reserviert">🔶 Reserviert</option>
+                <option value="lager">Nur Lager & Kassa</option>
+              </select>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Preis von</div>
+              <input type="number" value={katalogFilter.vonPreis} onChange={e => setKatalogFilter(f => ({ ...f, vonPreis: e.target.value }))}
+                placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
+              <input type="number" value={katalogFilter.bisPreis} onChange={e => setKatalogFilter(f => ({ ...f, bisPreis: e.target.value }))}
+                placeholder="€" style={{ width: 80, padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>Erstellt von</div>
+              <input type="date" value={katalogFilter.vonDatum} onChange={e => setKatalogFilter(f => ({ ...f, vonDatum: e.target.value }))}
+                style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+            </div>
+            <div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, marginBottom: 3 }}>bis</div>
+              <input type="date" value={katalogFilter.bisDatum} onChange={e => setKatalogFilter(f => ({ ...f, bisDatum: e.target.value }))}
+                style={{ padding: '0.5rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem' }} />
+            </div>
+          </>
+        )}
         <button type="button" onClick={() => {
           setKatalogFilter({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })
-          if (isOeffentlich && setEntryTypeFilter) setEntryTypeFilter('alle')
-          if (isOeffentlich && setCategoryFilter) setCategoryFilter('alle')
+          if (showTypAndCategory && setEntryTypeFilter) setEntryTypeFilter('alle')
+          if (showTypAndCategory && setCategoryFilter) setCategoryFilter('alle')
         }}
           style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.muted, fontSize: '0.9rem', cursor: 'pointer', alignSelf: 'flex-end' }}>
           ✕ Zurücksetzen
         </button>
       </div>
-      {isOeffentlich && (
+      {showTypAndCategory && (
         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: -8, marginBottom: '0.75rem', fontWeight: 500 }}>
           <strong>Typ</strong> = Art des Eintrags (Kunstwerk, Produkt oder Idee). <strong>Kategorie</strong> = Feinzuordnung dazu (z. B. Serie, Konzept, Malerei).
         </p>
       )}
 
-      {/* Spalten-Auswahl + Drucken */}
+      {/* Spalten-Auswahl + Drucken (VK2: nur Präsentations-Spalten) */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem', padding: '0.75rem', background: s.bgElevated, borderRadius: 10 }}>
         <span style={{ fontSize: '0.82rem', color: s.muted, marginRight: 4 }}>Spalten:</span>
-        {ALLE_SPALTEN.map(col => (
+        {spaltenFuerAuswahl.map(col => (
           <label key={col.id} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.82rem', color: katalogSpalten.includes(col.id) ? s.text : s.muted, cursor: 'pointer' }}>
             <input type="checkbox" checked={katalogSpalten.includes(col.id)}
-              onChange={e => setKatalogSpalten(prev => e.target.checked ? [...prev, col.id] : prev.filter(c => c !== col.id))}
+              onChange={e => {
+                if (isVk2) {
+                  const base = katalogSpalten.filter((c) => VK2_SPALTEN_IDS.includes(c))
+                  setKatalogSpalten(e.target.checked ? [...base, col.id] : base.filter((c) => c !== col.id))
+                } else {
+                  setKatalogSpalten(prev => e.target.checked ? [...prev, col.id] : prev.filter(c => c !== col.id))
+                }
+              }}
               style={{ accentColor: s.accent }} />
             {col.label}
           </label>
@@ -338,19 +411,21 @@ export default function WerkkatalogTab({
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
             <thead>
               <tr style={{ background: s.bgElevated }}>
-                {katalogSpalten.includes('nummer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Nr.</th>}
-                {katalogSpalten.includes('titel') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Titel</th>}
-                {katalogSpalten.includes('kategorie') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Kategorie</th>}
-                {katalogSpalten.includes('kuenstler') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Künstler:in</th>}
-                {katalogSpalten.includes('masse') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Maße</th>}
-                {katalogSpalten.includes('technik') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Technik</th>}
-                {katalogSpalten.includes('preis') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Preis</th>}
-                {katalogSpalten.includes('status') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Status</th>}
-                {katalogSpalten.includes('datum') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Erstellt</th>}
-                {katalogSpalten.includes('kaeufer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Käufer:in</th>}
-                {katalogSpalten.includes('verkauftam') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Verkauft am</th>}
-                {katalogSpalten.includes('stueck') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Stück</th>}
-                {katalogSpalten.includes('standort') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Standort</th>}
+                {effectiveSpalten.includes('nummer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Nr.</th>}
+                {effectiveSpalten.includes('titel') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Titel</th>}
+                {effectiveSpalten.includes('typ') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Typ</th>}
+                {effectiveSpalten.includes('kategorie') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Kategorie</th>}
+                {effectiveSpalten.includes('kuenstler') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Künstler:in</th>}
+                {effectiveSpalten.includes('masse') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Maße</th>}
+                {effectiveSpalten.includes('technik') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Technik</th>}
+                {effectiveSpalten.includes('beschreibung') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Beschreibung</th>}
+                {effectiveSpalten.includes('preis') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Preis</th>}
+                {effectiveSpalten.includes('status') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Status</th>}
+                {effectiveSpalten.includes('datum') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Erstellt</th>}
+                {effectiveSpalten.includes('kaeufer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Käufer:in</th>}
+                {effectiveSpalten.includes('verkauftam') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Verkauft am</th>}
+                {effectiveSpalten.includes('stueck') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Stück</th>}
+                {effectiveSpalten.includes('standort') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Standort</th>}
               </tr>
             </thead>
             <tbody>
@@ -361,14 +436,16 @@ export default function WerkkatalogTab({
                   onMouseEnter={e => (e.currentTarget.style.background = `${s.accent}14`)}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : `${s.accent}06`)}
                 >
-                  {katalogSpalten.includes('nummer') && <td style={{ padding: '7px 10px', color: s.accent, fontWeight: 700, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.number || a.id || '–'}</td>}
-                  {katalogSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
-                  {katalogSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
-                  {katalogSpalten.includes('kuenstler') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.artist || '–'}</td>}
-                  {katalogSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
-                  {katalogSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
-                  {katalogSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
-                  {katalogSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }} onClick={e => e.stopPropagation()}>
+                  {effectiveSpalten.includes('nummer') && <td style={{ padding: '7px 10px', color: s.accent, fontWeight: 700, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.number || a.id || '–'}</td>}
+                  {effectiveSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
+                  {effectiveSpalten.includes('typ') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getEntryTypeLabel(a.entryType)}</td>}
+                  {effectiveSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
+                  {effectiveSpalten.includes('kuenstler') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.artist || '–'}</td>}
+                  {effectiveSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
+                  {effectiveSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
+                  {effectiveSpalten.includes('beschreibung') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }} title={a.description || ''}>{(a.description || '–').toString().slice(0, 80)}{(a.description || '').length > 80 ? '…' : ''}</td>}
+                  {effectiveSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
+                  {effectiveSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }} onClick={e => e.stopPropagation()}>
                     {a.sold ? <span style={{ color: '#b91c1c', fontWeight: 700, fontSize: '0.82rem' }}>● Verkauft</span>
                       : a.reserved ? <span style={{ color: '#d97706', fontWeight: 700, fontSize: '0.82rem' }} title={a.reservedFor ? `Reserviert für ${a.reservedFor}` : ''}>🔶 Reserviert{a.reservedFor ? ` – ${a.reservedFor}` : ''}</span>
                       : onToggleInExhibition ? (
@@ -394,11 +471,11 @@ export default function WerkkatalogTab({
                         ) : a.inExhibition ? <span style={{ color: '#15803d', fontWeight: 600, fontSize: '0.82rem' }}>● Online-Galerie</span>
                         : <span style={{ color: s.muted, fontSize: '0.82rem' }}>○ Nur Lager/Kassa</span>}
                   </td>}
-                  {katalogSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
-                  {katalogSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}
-                  {katalogSpalten.includes('verkauftam') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>}
-                  {katalogSpalten.includes('stueck') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', fontWeight: a.quantity > 1 ? 700 : 400, borderBottom: `1px solid ${s.accent}18` }}>{a.quantity ?? 1}</td>}
-                  {katalogSpalten.includes('standort') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.location || '–'}</td>}
+                  {effectiveSpalten.includes('datum') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>}
+                  {effectiveSpalten.includes('kaeufer') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.buyer || '–'}</td>}
+                  {effectiveSpalten.includes('verkauftam') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>}
+                  {effectiveSpalten.includes('stueck') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', fontWeight: a.quantity > 1 ? 700 : 400, borderBottom: `1px solid ${s.accent}18` }}>{a.quantity ?? 1}</td>}
+                  {effectiveSpalten.includes('standort') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.location || '–'}</td>}
                 </tr>
               ))}
             </tbody>
@@ -433,18 +510,21 @@ export default function WerkkatalogTab({
             )}
             <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.text, marginBottom: 4 }}>{w.title || '–'}</div>
             {w.artist && <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{w.artist}</div>}
-            <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
-              {statusLabel}
-            </div>
+            {!isVk2 && (
+              <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
+                {statusLabel}
+              </div>
+            )}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              {isVk2 && showTypAndCategory && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Typ</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{getEntryTypeLabel(w.entryType)}</div></div>}
               {w.dimensions && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Maße</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.dimensions}</div></div>}
               {w.technik && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Technik / Material</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.technik}</div></div>}
-              {w.price ? <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Preis</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>€ {Number(w.price).toFixed(2)}</div></div> : null}
+              {!isVk2 && w.price ? <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Preis</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>€ {Number(w.price).toFixed(2)}</div></div> : null}
               {w.category && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Kategorie</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{getCategoryLabel(w.category)}</div></div>}
               {w.createdAt && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Erstellt</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{new Date(w.createdAt).toLocaleDateString('de-DE')}</div></div>}
-              {w.soldAt && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Verkauft am</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#b91c1c' }}>{new Date(w.soldAt).toLocaleDateString('de-DE')}</div></div>}
-              {w.quantity != null && Number(w.quantity) > 1 && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Stückzahl</div><div style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text }}>{w.quantity} Exemplare</div></div>}
-              {w.buyer && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem', gridColumn: 'span 2' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Käufer:in</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.buyer}</div></div>}
+              {!isVk2 && w.soldAt && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Verkauft am</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#b91c1c' }}>{new Date(w.soldAt).toLocaleDateString('de-DE')}</div></div>}
+              {!isVk2 && w.quantity != null && Number(w.quantity) > 1 && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Stückzahl</div><div style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text }}>{w.quantity} Exemplare</div></div>}
+              {!isVk2 && w.buyer && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem', gridColumn: 'span 2' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Käufer:in</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.buyer}</div></div>}
             </div>
             {w.description && <div style={{ fontSize: '0.9rem', color: s.muted, lineHeight: 1.7, borderTop: `1px solid ${s.accent}22`, paddingTop: '0.85rem', marginBottom: '1.25rem' }}>{w.description}</div>}
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
@@ -461,14 +541,14 @@ export default function WerkkatalogTab({
         </div>
       )}
 
-      {/* ─── Vereinskatalog-Vorschau: 5 ausgesuchte Werke der Mitglieder ─── */}
-      <VereinskatalogVorschau />
+      {/* ─── Vereinskatalog-Vorschau: 5 ausgesuchte Werke der Mitglieder (nur bei VK2, ohne Verkaufshinweise) ─── */}
+      {isVk2 && <VereinskatalogVorschau nurPraesentation />}
 
     </section>
   )
 }
 
-function VereinskatalogVorschau() {
+function VereinskatalogVorschau({ nurPraesentation = false }: { nurPraesentation?: boolean }) {
   // VK2-Datentrennung: Nur k2-vk2-artworks-* lesen; echte K2-Nummern (0030, K2-K-0030) nicht anzeigen.
   const vereinsWerke = useMemo(() => {
     const result: any[] = []
@@ -501,38 +581,41 @@ function VereinskatalogVorschau() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: '0.75rem' }}>
-        {vereinsWerke.map((w: any) => {
-          const status = w.verkaufsstatus || 'verfuegbar'
-          const statusColor = status === 'verkauft' ? '#ef4444' : status === 'reserviert' ? '#f59e0b' : '#22c55e'
-          const statusLabel = status === 'verkauft' ? 'Verkauft' : status === 'reserviert' ? 'Reserviert' : 'Verfügbar'
-          return (
-            <div key={w.id} style={{ background: s.bgElevated, borderRadius: 12, overflow: 'hidden', border: `1px solid rgba(251,191,36,0.15)` }}>
-              {/* Bild */}
-              <div style={{ aspectRatio: '4/3', background: '#e8e4dc', position: 'relative', overflow: 'hidden' }}>
-                {w.imageUrl
-                  ? <img src={w.imageUrl} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.4 }}>🖼️</div>
-                }
-                <span style={{ position: 'absolute', top: '0.35rem', right: '0.35rem', padding: '0.1rem 0.4rem', borderRadius: 10, background: 'rgba(255,255,255,0.85)', color: statusColor, fontSize: '0.65rem', fontWeight: 700 }}>
-                  {statusLabel}
-                </span>
-              </div>
-              {/* Info */}
-              <div style={{ padding: '0.6rem 0.75rem' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.88rem', color: s.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.title || '–'}</div>
-                <div style={{ fontSize: '0.75rem', color: 'rgba(180,130,20,0.9)', fontWeight: 600, marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.artist || '–'}</div>
-                {(w.technik || w.year) && (
-                  <div style={{ fontSize: '0.7rem', color: s.muted, marginTop: '0.15rem' }}>{[w.technik, w.year].filter(Boolean).join(' · ')}</div>
-                )}
-                {w.price && (
-                  <div style={{ fontSize: '0.85rem', fontWeight: 800, color: status === 'verkauft' ? s.muted : s.text, marginTop: '0.3rem' }}>
-                    € {Number(w.price).toLocaleString('de-AT')}
-                  </div>
-                )}
-              </div>
+        {vereinsWerke.map((w: any) => (
+          <div key={w.id} style={{ background: s.bgElevated, borderRadius: 12, overflow: 'hidden', border: `1px solid rgba(251,191,36,0.15)` }}>
+            <div style={{ aspectRatio: '4/3', background: '#e8e4dc', position: 'relative', overflow: 'hidden' }}>
+              {w.imageUrl
+                ? <img src={w.imageUrl} alt={w.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', opacity: 0.4 }}>🖼️</div>
+              }
+              {!nurPraesentation && (() => {
+                const status = w.verkaufsstatus || 'verfuegbar'
+                const statusColor = status === 'verkauft' ? '#ef4444' : status === 'reserviert' ? '#f59e0b' : '#22c55e'
+                const statusLabel = status === 'verkauft' ? 'Verkauft' : status === 'reserviert' ? 'Reserviert' : 'Verfügbar'
+                return (
+                  <span style={{ position: 'absolute', top: '0.35rem', right: '0.35rem', padding: '0.1rem 0.4rem', borderRadius: 10, background: 'rgba(255,255,255,0.85)', color: statusColor, fontSize: '0.65rem', fontWeight: 700 }}>
+                    {statusLabel}
+                  </span>
+                )
+              })()}
             </div>
-          )
-        })}
+            <div style={{ padding: '0.6rem 0.75rem' }}>
+              <div style={{ fontWeight: 700, fontSize: '0.88rem', color: s.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.title || '–'}</div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(180,130,20,0.9)', fontWeight: 600, marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{w.artist || '–'}</div>
+              {(w.technik || w.year) && (
+                <div style={{ fontSize: '0.7rem', color: s.muted, marginTop: '0.15rem' }}>{[w.technik, w.year].filter(Boolean).join(' · ')}</div>
+              )}
+              {w.description && (
+                <div style={{ fontSize: '0.72rem', color: s.muted, marginTop: '0.25rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any, overflow: 'hidden' }}>{w.description}</div>
+              )}
+              {!nurPraesentation && w.price && (
+                <div style={{ fontSize: '0.85rem', fontWeight: 800, color: s.text, marginTop: '0.3rem' }}>
+                  € {Number(w.price).toLocaleString('de-AT')}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

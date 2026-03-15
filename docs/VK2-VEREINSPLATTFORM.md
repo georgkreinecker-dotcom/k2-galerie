@@ -75,6 +75,14 @@ Siehe Implementierung: `src/components/SmartPanel.tsx` – VK2-Block mit diesen 
 
 ---
 
+## Datenfluss: Mitglieder → Werkkatalog → Galerie
+
+**Wo werden Daten eingegeben? Wie kommen Werke in den Katalog?** Dafür gibt es eine eigene, kurze Doku:
+
+- **VK2-DATENFLUSS-MITGLIEDER-WERKKATALOG.md** – Lizenzmitglied (eigene Galerie-URL) vs. einfaches Mitglied; Eingabeort (Admin → Einstellungen → Stammdaten); Werke aus Lizenz-Galerie (fetch) vs. lokale Werke (k2-vk2-artworks-*); aktuelle Lücke bei einfachen Mitgliedern.
+
+---
+
 ## Kurzfassung
 
 - **VK2** = Vereinsplattform für **alle Vereine** (Kunstvereine = Einstieg). Schwerpunkt: **gemeinsame Interessen**, eine **Mitgliederliste**, Vereinsauftritt, Events. Künstler-Präsentation **optional** („In Galerie anzeigen“).
