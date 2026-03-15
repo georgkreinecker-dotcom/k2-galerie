@@ -36,6 +36,10 @@ export default function KassaEinstiegPage() {
     navigate(PROJECT_ROUTES['k2-galerie'].kassabuchAusgang, { state: { fromOeffentlich: fromOeffentlich || undefined } })
   }
 
+  const toBuchhaltung = () => {
+    navigate(PROJECT_ROUTES['k2-galerie'].buchhaltung, { state: { fromOeffentlich: fromOeffentlich || undefined } })
+  }
+
   if (!kassaVerfuegbar) {
     return (
       <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
@@ -112,6 +116,31 @@ export default function KassaEinstiegPage() {
           </div>
         </button>
         )}
+        <button
+          type="button"
+          onClick={toBuchhaltung}
+          style={{
+            padding: '1.25rem 1.5rem',
+            background: '#1a5f7a',
+            color: '#fff',
+            border: 'none',
+            borderRadius: s.radius,
+            fontSize: '1.1rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: s.shadow,
+            textAlign: 'left',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+          }}
+        >
+          <span style={{ fontSize: '1.75rem' }}>📁</span>
+          <div>
+            <div>Buchhaltung</div>
+            <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Drucken oder Zeitraum an Steuerberater senden</div>
+          </div>
+        </button>
       </div>
       <Link to="/admin" style={{ marginTop: '2rem', fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>
         ← Zurück zum Admin

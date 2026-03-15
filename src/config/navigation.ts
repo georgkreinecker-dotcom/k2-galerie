@@ -66,6 +66,8 @@ export const PROJECT_ROUTES = {
     kassabuch: '/projects/k2-galerie/kassabuch',
     /** Neuer Kassausgang: Bar privat, Bar an Bank, Bar mit Beleg */
     kassabuchAusgang: '/projects/k2-galerie/kassabuch/ausgang',
+    /** Buchhaltung – alle buchhaltungsrelevanten Dateien, Zeitraum drucken/versenden */
+    buchhaltung: '/projects/k2-galerie/buchhaltung',
     virtuellerRundgang: '/projects/k2-galerie/virtueller-rundgang',
     controlStudio: '/projects/k2-galerie/control-studio',
     kunden: '/projects/k2-galerie/kunden',

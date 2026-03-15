@@ -63,6 +63,7 @@ import SecondMacPage from './pages/SecondMacPage'
 import KassaEinstiegPage from './pages/KassaEinstiegPage'
 import KassabuchPage from './pages/KassabuchPage'
 import KassausgangPage from './pages/KassausgangPage'
+import BuchhaltungPage from './pages/BuchhaltungPage'
 const AdminRoute = lazy(() => import('./components/AdminRoute'))
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
 import DevViewPage from './pages/DevViewPage'
@@ -571,6 +572,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].kassa} element={<KassaEinstiegPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kassabuch} element={<KassabuchPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kassabuchAusgang} element={<KassausgangPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].buchhaltung} element={<BuchhaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].virtuellerRundgang} element={<VirtuellerRundgangPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].seitengestaltung} element={<SeitengestaltungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].controlStudio} element={<ControlStudioPage />} />

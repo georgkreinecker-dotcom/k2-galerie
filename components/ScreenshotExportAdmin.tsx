@@ -11460,28 +11460,53 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
               {/* Kasse – primäre Aktion, deutlich hervorgehoben */}
               {!tenant.isVk2 && (
-                <Link
-                  to={PROJECT_ROUTES['k2-galerie'].shop}
-                  state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined }}
-                  style={{
-                    padding: '0.55rem 1.1rem',
-                    background: s.gradientAccent,
-                    color: '#ffffff',
-                    textDecoration: 'none',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem',
-                    fontWeight: 700,
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.4rem',
-                    boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
-                >
-                  💰 Kasse öffnen
-                </Link>
+                <>
+                  <Link
+                    to={PROJECT_ROUTES['k2-galerie'].shop}
+                    state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    style={{
+                      padding: '0.55rem 1.1rem',
+                      background: s.gradientAccent,
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      boxShadow: '0 2px 8px rgba(181,74,30,0.18)',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(181,74,30,0.28)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(181,74,30,0.18)' }}
+                  >
+                    💰 Kasse öffnen
+                  </Link>
+                  <Link
+                    to={PROJECT_ROUTES['k2-galerie'].buchhaltung}
+                    state={{ fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    style={{
+                      padding: '0.55rem 1.1rem',
+                      background: '#1a5f7a',
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      boxShadow: '0 2px 8px rgba(26,95,122,0.25)',
+                      transition: 'all 0.2s',
+                      marginLeft: '0.5rem'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(26,95,122,0.35)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(26,95,122,0.25)' }}
+                  >
+                    📁 Buchhaltung
+                  </Link>
+                </>
               )}
 
               {/* Reservieren – nur K2, nicht VK2/ök2 */}

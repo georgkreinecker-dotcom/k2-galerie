@@ -342,9 +342,14 @@ const ControlStudioPage = () => {
                 {hasKassa('k2') ? (
                   <>
                     <p className="meta">Verkauf erfassen (Eingang) oder Kassabuch (Ausgaben: Bar privat, Bar an Bank, Bar mit Beleg).</p>
-                    <Link to={PROJECT_ROUTES['k2-galerie'].kassa} className="btn" style={{ marginTop: '0.75rem', display: 'inline-block' }}>
-                      Kassa öffnen
-                    </Link>
+                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                      <Link to={PROJECT_ROUTES['k2-galerie'].kassa} className="btn" style={{ display: 'inline-block' }}>
+                        Kassa öffnen
+                      </Link>
+                      <Link to={PROJECT_ROUTES['k2-galerie'].buchhaltung} className="btn" style={{ display: 'inline-block', background: '#1a5f7a' }}>
+                        Buchhaltung
+                      </Link>
+                    </div>
                   </>
                 ) : (
                   <>

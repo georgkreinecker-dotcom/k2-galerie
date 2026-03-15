@@ -51,6 +51,18 @@ export default function KassabuchPage() {
     return list.sort((a, b) => a.datum.localeCompare(b.datum) || 0)
   }, [entries, aktiv, kassabuchVoll])
 
+  /** Gefilterte Einträge nach Zeitraum (wie in der Tabelle). */
+  const filteredByPeriod = useMemo(() => {
+    return sortedEntries.filter(e => (!von || e.datum >= von) && (!bis || e.datum <= bis))
+  }, [sortedEntries, von, bis])
+
+  /** Einfache Summen – Einnahmen, Ausgaben, Saldo für den gewählten Zeitraum. */
+  const { summeEinnahmen, summeAusgaben, saldo } = useMemo(() => {
+    const einnahmen = filteredByPeriod.filter(e => e.art === 'eingang' || e.art === 'bank_an_kassa').reduce((s, e) => s + e.betrag, 0)
+    const ausgaben = filteredByPeriod.filter(e => ['ausgang', 'bar_privat', 'bar_beleg', 'kassa_an_bank'].includes(e.art)).reduce((s, e) => s + e.betrag, 0)
+    return { summeEinnahmen: einnahmen, summeAusgaben: ausgaben, saldo: einnahmen - ausgaben }
+  }, [filteredByPeriod])
+
   const refresh = () => {
     setEntries(getKassabuchMitEingaengen(tenant))
     setAktiv(isKassabuchAktiv(tenant))
@@ -105,6 +117,9 @@ export default function KassabuchPage() {
     <div className="kassabuch-nav no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
       <Link to={PROJECT_ROUTES['k2-galerie'].kassa} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
         ← Kassa
+      </Link>
+      <Link to={PROJECT_ROUTES['k2-galerie'].buchhaltung} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
+        Buchhaltung
       </Link>
       <Link to="/admin" style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}>
         Admin
@@ -183,6 +198,22 @@ export default function KassabuchPage() {
           <input type="date" value={von} onChange={e => setVon(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
           <label style={{ color: s.muted, fontSize: '0.9rem' }}>Bis</label>
           <input type="date" value={bis} onChange={e => setBis(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
+        </div>
+
+        {/* Summen für den Zeitraum – einfach, für jeden verständlich */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ background: '#e8f5e9', padding: '1rem', borderRadius: s.radius, border: '1px solid #2d7a3a33', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.25rem' }}>Einnahmen</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#1b5e20' }}>{summeEinnahmen.toFixed(2)} €</div>
+          </div>
+          <div style={{ background: '#ffebee', padding: '1rem', borderRadius: s.radius, border: '1px solid #c6282833', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.25rem' }}>Ausgaben</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: '#b71c1c' }}>{summeAusgaben.toFixed(2)} €</div>
+          </div>
+          <div style={{ background: saldo >= 0 ? '#e3f2fd' : '#fff3e0', padding: '1rem', borderRadius: s.radius, border: `1px solid ${saldo >= 0 ? '#1565c033' : '#e6510033'}`, textAlign: 'center' }}>
+            <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.25rem' }}>Saldo</div>
+            <div style={{ fontSize: '1.35rem', fontWeight: 700, color: saldo >= 0 ? '#0d47a1' : '#e65100' }}>{saldo.toFixed(2)} €</div>
+          </div>
         </div>
 
         <div style={{ background: s.card, borderRadius: s.radius, boxShadow: s.shadow, overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', maxWidth: '100%' }}>
