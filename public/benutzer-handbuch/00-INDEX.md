@@ -34,7 +34,11 @@ Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
 Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge).
 
-8. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+8. [Buchhaltung – Vorarbeit für Steuerberater](09-BUCHHALTUNG-STEUERBERATER.md)
+
+Zeitraum wählen, Kassabuch- und Verkäufe-CSV, Belege als PDF, Pro++ vollständige Buchhaltung, 7 Jahre Aufbewahrung, AGB § 6.
+
+9. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

@@ -11280,7 +11280,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
-            ? { titel: 'Werke & Mitglieder', text: 'Hier siehst und verwaltest du alle Werke eures Vereins – Fotos, Preise, Beschreibungen. Jedes Mitglied kann eigene Werke anlegen. Klicke auf ein Werk zum Bearbeiten oder nutze „Neues Werk“, um etwas hinzuzufügen. Alles bleibt übersichtlich an einem Ort.' }
+            ? { titel: 'Mitglieder in der Galerie', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. Klicke auf ein Profil zum Bearbeiten oder nutze „Neues Werk“, um ein weiteres hinzuzufügen.' }
             : { titel: 'Werke hinzufügen und bearbeiten', text: 'Hier legst du deine Werke an: Foto hochladen oder aufnehmen, Titel und Preis eintragen – schon ist das Werk in der Galerie. Du kannst jederzeit etwas ändern oder ergänzen. Einfach auf ein Werk tippen zum Bearbeiten oder „Neues Werk“ wählen.' },
           eventplan: istVerein
             ? { titel: 'Events & Ausstellungen', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellst du Einladungen, QR-Codes für Gäste und siehst, wer kommt. Alles für eure Events an einem Ort – ohne Zettelwirtschaft.' }
@@ -11640,7 +11640,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
                   type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
-                    { emoji: '🖼️', name: 'Werke & Mitglieder', beschreibung: 'Alle Werke aller Mitglieder – Fotos, Preise, Profile.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Mitglieder in der Galerie', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
                     { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
@@ -11818,7 +11818,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
-                    { emoji: '🏛️', name: 'Gemeinschafts-Galerie', text: 'Alle Werke aller Mitglieder unter einem Dach – jede:r mit eigenem Profil', tab: 'werke' },
+                    { emoji: '🏛️', name: 'Mitglieder in der Galerie', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
                     { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
@@ -11941,7 +11941,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
                   // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
-                    { emoji: '🖼️', name: 'Vereinsmitglieder', beschreibung: 'Mitglieder hinzufügen, bearbeiten, verwalten – Fotos, Profile.', tab: 'werke' },
+                    { emoji: '🖼️', name: 'Mitglieder in der Galerie', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie nach euren Wünschen.', tab: 'design' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                   ] : [
@@ -12246,7 +12246,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
               }}>
-                {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
+                {tenant.isVk2 ? 'Mitglieder in der Galerie' : 'Werke verwalten'}
               </h2>
               {/* Hauptakteur zuerst: + Neues Werk, daneben Etiketten – Nebenakteure (Anzeige, Sync) unter „Einstellungen & Sync“ aufklappbar */}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>

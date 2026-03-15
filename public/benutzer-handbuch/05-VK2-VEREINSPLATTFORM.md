@@ -6,13 +6,14 @@ Dieses Kapitel richtet sich an Nutzerinnen und Nutzer der **Vereinsplattform** (
 
 ## Was ist die Vereinsplattform?
 
-Die Vereinsplattform ist eine eigene Oberfläche für Ihren Verein. Sie können damit:
+Die Vereinsplattform ist eine Oberfläche für Ihren Verein – mit **Schwerpunkt auf gemeinsamen Interessen** und einer **Mitgliederliste**. Sie können damit:
 
-- **Werke** des Vereins oder der Mitglieder verwalten und in einem Katalog anzeigen,
-- **Mitglieder** erfassen (Name, Kontakt, optional Foto),
+- **Mitglieder** erfassen (Name, Kontakt, optional Foto) – die **Mitgliederliste** ist die zentrale Übersicht,
+- **Vereinsauftritt** und **Events** pflegen,
+- **Optional:** Werke oder **Mitglieder in der Galerie** (Profile/Karten) verwalten und in einem Katalog anzeigen,
 - **Verkäufe** erfassen und **Kassenbelege** drucken,
 - **Dokumente** und **Einladungen** erstellen und drucken,
-- **Etiketten** für Werke drucken (z. B. für Ausstellungen).
+- **Etiketten** für Werke drucken (z. B. für Ausstellungen), falls Sie die Galerie nutzen.
 
 Der Zugang erfolgt über einen Link oder QR-Code, den Ihr Verein bereitstellt. Mit dem Admin-Passwort gelangen Sie in den Bearbeitungsbereich.
 
@@ -30,9 +31,9 @@ Im Bereich **Mitglieder** (oder **Stammdaten – Mitglieder**) legen Sie die Lis
 
 ---
 
-## Werkkatalog und Kassa
+## Mitglieder in der Galerie (optional), Katalog und Kassa
 
-- **Werkkatalog:** Unter **Werke** oder **Katalog** sehen Sie alle erfassten Werke. Sie können filtern, suchen und den Katalog drucken. So haben Sie bei Ausstellungen oder Verkäufen immer eine aktuelle Übersicht.
+- **Mitglieder in der Galerie:** Wenn Ihr Verein die Galerie nutzt, können Sie pro Mitglied ein Profil (Karte) anlegen („In Galerie anzeigen“). Unter **Werke** bzw. **Katalog** sehen Sie dann alle erfassten Profile/Werke, können filtern, suchen und den Katalog drucken.
 - **Kassa:** Unter **Kassa** erfassen Sie Verkäufe (Werk per QR oder Seriennummer zur Auswahl, Zahlungsart Bar/Karte/Rechnung, Beleg drucken). Eine **detaillierte Anleitung** zu Kassa, Belegen und Kassabuch finden Sie im Kapitel [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md).
 
 ---
@@ -45,8 +46,8 @@ Für Ausstellungen oder die Lagerhaltung können Sie **Etiketten** drucken – z
 
 ## Kurz zusammengefasst
 
-- **Vereinsplattform** = Galerie und Verwaltung für Ihren Verein (Werke, Mitglieder, Kassa, Druck).
+- **Vereinsplattform** = Mitgliederliste, Vereinsauftritt, Events; optional Galerie (Mitglieder in der Galerie), Kassa, Druck.
 - **Stammdaten** = Vereinsname, Kontakt, Adresse einmal pflegen.
-- **Mitglieder** = Liste führen, drucken, für Einladungen nutzen.
-- **Katalog und Kassa** = Werke verwalten, Verkäufe erfassen, Belege drucken.
-- **Etiketten** = Ausgewählte Werke als Etiketten drucken (z. B. für Ausstellungen).
+- **Mitglieder** = Liste führen, drucken, für Einladungen nutzen; optional „In Galerie anzeigen“ (Profil/Karte).
+- **Katalog und Kassa** = Bei Nutzung der Galerie: Profile/Werke verwalten, Verkäufe erfassen, Belege drucken.
+- **Etiketten** = Bei Nutzung der Galerie: ausgewählte Werke als Etiketten drucken (z. B. für Ausstellungen).

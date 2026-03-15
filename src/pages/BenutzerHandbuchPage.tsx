@@ -21,6 +21,7 @@ const DOCUMENTS = [
   { id: '05-vk2', name: 'Vereinsplattform', file: '05-VK2-VEREINSPLATTFORM.md' },
   { id: '06-oek2', name: 'Demo und Lizenz', file: '06-OEK2-DEMO-LIZENZ.md' },
   { id: '08-kassa', name: 'Kassafunktion – Verkauf, Belege, Kassabuch', file: '08-KASSA-VERKAUF-BELEGE.md' },
+  { id: '09-buchhaltung', name: 'Buchhaltung – Vorarbeit für Steuerberater', file: '09-BUCHHALTUNG-STEUERBERATER.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const
 

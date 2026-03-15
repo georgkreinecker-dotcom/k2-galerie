@@ -24,7 +24,7 @@
   - **VK2:** Logo „VK2 Vereinsplattform“ + Badge **„VK2 ADMIN“**
   - **ök2:** „ök2“ + „Muster-Galerie“ (bereits umgesetzt)
 - **Links und Aktionen:** Im VK2-Admin führen „Zur Galerie“, „Zurück“, Dokumente-Öffnen und „Zurück“ aus Dokumenten **immer** in den VK2-Kontext (inkl. `?context=vk2`). Kein Link führt unbeabsichtigt in die K2-Galerie oder den K2-Admin.
-- **Tabs/Karten:** Im VK2 werden nur Bereiche angezeigt, die für den Verein gelten (Events & Werbung, Design, Einstellungen, Mitglieder, Assistent). Kassa, Werkkatalog, Zertifikat, Newsletter-Tab, Pressemappe = nur K2/ök2, nicht VK2.
+- **Tabs/Karten:** Im VK2 werden nur Bereiche angezeigt, die für den Verein gelten (Events & Werbung, Design, Einstellungen, Mitglieder, Assistent). Kassa, Werkkatalog, Zertifikat, Newsletter-Tab, Pressemappe = derzeit nur K2/ök2. **Vereinskassa und Buchhaltung sind vorgesehen** (Doku: VK2-VEREINSPLATTFORM.md); technische Freischaltung (eigene Keys, Kassa-Tab im VK2-Admin) folgt.
 
 ---
 

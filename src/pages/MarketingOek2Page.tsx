@@ -434,7 +434,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <strong>ök2 (Lizenz für den gesamten Markt):</strong> Fokus: alle, die Ideen oder Produkte professionell zeigen wollen. Kunstmarkt ist die Unterkategorie und das Einstiegstor (Künstler:innen, Galerien, Kunstvereine). Eigene Galerie im Netz mit Werken, Vita und Shop; Events planen, Einladungen und Flyer aus der App; Kasse und Etiketten (Verkauf vor Ort, WLAN-Drucker); Marketing aus einem Guss (Newsletter, Presse, Social); ein Stand auf allen Geräten.
         </p>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          <strong>VK2 (Vereinsplattform):</strong> Für **alle Vereinstypen** anwendbar – Vereine sind ähnlich strukturiert. Kunstvereine sind die aktuelle Unterkategorie. Gemeinsame Vereinsgalerie, Mitglieder mit eigener Galerie; Vereinskatalog (PDF, filterbar); Events und Werbung für den Verein; Mitglieder verwalten, Lizenzen, Dokumente; ab 10 Mitgliedern für den Verein kostenfrei.
+          <strong>VK2 (Vereinsplattform):</strong> Für **alle Vereinstypen** – Schwerpunkt **gemeinsame Interessen**, eine **Mitgliederliste**, Vereinsauftritt, Events. Kunstvereine = Einstieg. Wer sich in der Galerie präsentieren will, erhält optional ein Profil („Mitglieder in der Galerie“). Vereinskatalog (PDF), Events und Werbung; Vereinskassa und Buchhaltung vorgesehen. **Ab 10 eingetragenen Mitgliedern** für den Verein kostenfrei.
         </p>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
           <strong>Leitbotschaft – für die Kunst gedacht, für den Markt gemacht:</strong> Die Plattform ist aus der Kunst heraus entstanden; Kunst ist der Träger der Idee. Ein Modell, eine Galerie: Kunstwerke, Produkte, Ideen – alles in einer Oberfläche, konfigurierbar, ohne Sonderbau. Vermarktbar, professionell, skalierbar. (Quelle: docs/PRODUKT-VISION.md; Doku: docs/VISION-WERKE-IDEEN-PRODUKTE.md)
@@ -518,7 +518,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Mobile und Stand</strong> – Ein Stand überall nach Deploy; Galerie-Assistent für neue Nutzer.</li>
           <li><strong>Datensouveränität und Backup</strong> – Lokale Speicherung, Backup & Wiederherstellung; K2 vs. Demo (ök2) strikt getrennt; keine Datenverluste durch Merge-Logik.</li>
           <li><strong>Professioneller Auftritt</strong> – Deutsche UI, anpassbares Design (Farben, Willkommensbild, Vita, Platzanordnung, Shop).</li>
-          <li><strong>Vereinsfähig – Plattform für alle Vereinstypen (VK2):</strong> VK2 ist für <strong>alle Vereine</strong> anwendbar – ähnlich strukturiert (Mitglieder, gemeinsamer Auftritt, Events). <strong>Kunstvereine</strong> sind die aktuelle Unterkategorie. Gemeinsame Vereinsgalerie, jedes Mitglied kann eigene Galerie zeigen, Vereinskatalog (PDF, filterbar). Events und Werbung einheitlich für den Verein. Ab 10 registrierten Mitgliedern für den Verein kostenfrei. <em>Ein Verein entscheidet – viele werden sichtbar.</em></li>
+          <li><strong>Vereinsfähig – Plattform für alle Vereinstypen (VK2):</strong> VK2 für <strong>alle Vereine</strong> – Schwerpunkt <strong>gemeinsame Interessen</strong>, eine <strong>Mitgliederliste</strong>, Vereinsauftritt, Events. Kunstvereine = Einstieg. Wer sich in der Galerie präsentieren will, erhält optional „Mitglieder in der Galerie“ (Profil/Karte). Vereinskatalog (PDF), Events und Werbung; Vereinskassa und Buchhaltung vorgesehen. <strong>Ab 10 eingetragenen Mitgliedern</strong> für den Verein kostenfrei. <em>Ein Verein entscheidet – viele werden sichtbar.</em></li>
           <li><strong>Empfehlungsprogramm – einzigartig:</strong> Nutzer:innen werben mit persönlicher Empfehler-ID; 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler. Vertrieb durch die Community – in dieser Branche (Galerie/Künstler:innen) kaum vergleichbar. Ein Klick: ID kopieren, Link teilen, Geworbene nutzt beim Lizenzabschluss – fertig.</li>
           <li><strong>Aus Österreich – kein Fernost-Produkt:</strong> Entwicklung und Betrieb aus Österreich. EU-Datenschutz (DSGVO), österreichisches Recht, Daten nicht in China oder Indien. Erreichbar, gleiche Zeitzone, deutsche Sprache – Vertrauen und Nähe statt anonymem Cloud-Anbieter.</li>
         </ul>
@@ -545,11 +545,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>ök2 / K2 Galerie (eine Lösung)</h3>
         <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem' }}>
           <li><strong>Eine Oberfläche, eine Datenbasis:</strong> Galerie, Werke, Kasse, Lager, Events, Marketing, Etiketten – alles in einer App. Einmal erfassen, überall nutzen.</li>
-          <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
+          <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Pro++: vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung). Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
           <li><strong>Ein Stand auf allen Geräten:</strong> Admin am Rechner, Galerie und Kassa auf Tablet/Handy – gleicher Stand per QR, keine Medienbrüche.</li>
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Vita, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
           <li><strong>Branche:</strong> Künstler:innen und kleine Galerien sind mit „Webauftritt + Kasse + Events + Marketing aus einer Hand“ <strong>unterversorgt</strong>. Reine Kassensysteme oder reine Website-Baukästen decken den Bedarf nicht ab – ök2 füllt diese Lücke.</li>
-          <li><strong>Vereinsfähig (VK2):</strong> <strong>Plattform für alle Vereinstypen.</strong> Vereine sind ähnlich strukturiert; Kunstvereine sind der aktuelle Einstieg. Gemeinsame Vereinsgalerie + Mitglieder mit eigener Galerie, Vereinskatalog (PDF), einheitliche Events und Werbung. Ab 10 Mitgliedern für den Verein kostenfrei.</li>
+          <li><strong>Vereinsfähig (VK2):</strong> <strong>Plattform für alle Vereine</strong> – Schwerpunkt gemeinsame Interessen, eine Mitgliederliste, Vereinsauftritt, Events. Kunstvereine = Einstieg. Optional „Mitglieder in der Galerie“ (Profil pro Person). Vereinskatalog (PDF), Events; Vereinskassa und Buchhaltung vorgesehen. Ab 10 eingetragenen Mitgliedern für den Verein kostenfrei.</li>
           <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – persönliche Empfehler-ID, 10 % Rabatt für Geworbene, 10 % Gutschrift für Empfehler. In dieser Branche einzigartig; ein Klick zum Teilen, keine komplexen Partner-Portale.</li>
           <li><strong>Made in Austria:</strong> Entwicklung und Betrieb aus Österreich – EU-Datenschutz, Rechtssicherheit, erreichbar. Nicht aus China oder Indien; Vertrauen und Nähe für Künstler:innen und Galerien.</li>
         </ul>
@@ -569,7 +569,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </h2>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
           <li>Klare Nische: Künstler:innen und kleine Galerien (Webauftritt + Events + Kasse + Marketing aus einer Hand) sind unterversorgt.</li>
-          <li><strong>Vereinsfähig als Alleinstellungsmerkmal:</strong> VK2 für alle Vereinstypen – ähnlich strukturiert. Kunstvereine = aktueller Einstieg. Gemeinsame Galerie, Vereinskatalog, ab 10 Mitgliedern für den Verein kostenfrei. Ein Verein entscheidet – viele werden sichtbar.</li>
+          <li><strong>Vereinsfähig als Alleinstellungsmerkmal:</strong> VK2 für alle Vereine – Schwerpunkt gemeinsame Interessen, eine Mitgliederliste, Vereinsauftritt. Kunstvereine = Einstieg. Optional Mitglieder in der Galerie (Profil). Ab 10 eingetragenen Mitgliedern für den Verein kostenfrei. Ein Verein entscheidet – viele werden sichtbar.</li>
           <li><strong>Empfehlungsprogramm als Alleinstellungsmerkmal:</strong> Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, ein Klick zum Teilen. In der Galerie-/Künstler:innen-Branche einzigartig; kein vergleichbares „Empfehlen und profitieren“ aus einer App.</li>
           <li>PWA + plattformneutral: Keine App-Stores nötig; Nutzung auf Windows und Android ohne Mac.</li>
           <li>Produktvision und Konfiguration: Codebasis und Doku auf Mehrfachnutzung und Lizenz-Versionen vorbereitet.</li>
@@ -865,7 +865,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
           <li><strong>Für breite Vermarktung:</strong> Alle produktiven Funktionen laufen ohne Mac; Entwickler-Tools (APf) bleiben optional am Rechner. Technische Details und Skalierung stehen in der Produkt-Doku.</li>
           <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>
-          <li><strong>Vereinsfähig (VK2):</strong> Für alle Vereinstypen – ähnlich strukturiert. Kunstvereine = Einstieg. Gemeinsame Vereinsgalerie, Vereinskatalog, ab 10 Mitgliedern für den Verein kostenfrei.</li>
+          <li><strong>Vereinsfähig (VK2):</strong> Für alle Vereine – gemeinsame Interessen, eine Mitgliederliste, Vereinsauftritt, Events. Kunstvereine = Einstieg. Ab 10 eingetragenen Mitgliedern für den Verein kostenfrei.</li>
           <li><strong>Empfehlungsprogramm:</strong> Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, Link teilen. In dieser Branche einzigartig.</li>
         </ul>
         <p style={{ marginTop: '0.5rem', fontSize: '0.88rem' }}>
@@ -1087,7 +1087,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro++</td>
               <td style={{ padding: '0.5rem 0.6rem' }}><strong>55 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater; Aufbewahrung 7 Jahre. Keine Haftung für Buchführung/Steuern (AGB § 6).</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
@@ -1097,7 +1097,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </tbody>
         </table>
         <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', marginBottom: '1rem', lineHeight: 1.5 }}>
-          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), Pro++ <strong>55 €/Monat</strong> (inkl. Rechnung § 11 UStG), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
+          <strong>Fazit (Stand Start):</strong> Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong> (mit vollem Marketingbereich), Pro++ <strong>55 €/Monat</strong> (inkl. Rechnung § 11 UStG und vollständiger Buchhaltung), VK2 wie Pro – ab 10 Mitgliedern für den Verein kostenfrei. Damit ist die Preisgestaltung für den Start entschieden und wird in der Kommunikation überall einheitlich genutzt.
         </p>
 
         <h4 style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.9)', marginTop: '1rem', marginBottom: '0.5rem' }}>Erlöspotenzial (Beispielrechnung bei diesen Gebühren)</h4>
@@ -1188,7 +1188,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>Pro++</td>
-              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummer, Pflichtangaben, USt-Aufschlüsselung</td>
+              <td style={{ padding: '0.5rem 0.75rem' }}>Alles aus Pro+ + Rechnung (§ 11 UStG) + vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege-PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung)</td>
               <td style={{ padding: '0.5rem 0.75rem' }}>55 €/Monat</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -1212,7 +1212,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Lizenzstruktur VK2 (Vereinsplattform)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          <strong>VK2</strong> = Plattform für <strong>alle Vereinstypen</strong> – Vereine sind ähnlich strukturiert (Mitglieder, gemeinsamer Auftritt, Events). <strong>Kunstvereine</strong> sind die aktuelle Unterkategorie/Einstieg. Dritte Lizenzvariante neben Einzelkünstler und (später) größere Galerie.
+          <strong>VK2</strong> = Plattform für <strong>alle Vereinstypen</strong> – Vereine sind ähnlich strukturiert (Mitglieder, gemeinsamer Auftritt, Events). <strong>Kunstvereine</strong> sind die aktuelle Unterkategorie/Einstieg. Dritte Lizenzvariante neben Einzelkünstler und (später) größere Galerie. <strong>Vereinskassa und Buchhaltung vorgesehen:</strong> Der Verein kann seine Vereinskassa und Buchhaltung in derselben App führen (Verkäufe, Kassabuch, CSVs, Belege-PDF – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung); technische Freischaltung folgt.
         </p>
         <ul style={{ marginBottom: '1rem', paddingLeft: '1.5em', lineHeight: 1.7 }}>
           <li>Der <strong>Verein</strong> muss die <strong>Pro-Version</strong> erwerben und wird <strong>ab 10 registrierten Mitgliedern</strong> kostenfrei gestellt.</li>
@@ -1465,10 +1465,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       <section id="mok2-14" style={{ marginTop: '2.5rem', paddingTop: '2rem', borderTop: '1px solid rgba(251,191,36,0.4)', pageBreakInside: 'avoid' as const }}>
         <h2 style={{ fontSize: '1.25rem', color: '#fbbf24', marginBottom: '0.5rem', borderBottom: '1px solid rgba(251,191,36,0.4)', paddingBottom: '0.35rem' }}>
-          14. 💎 Pro+ & Pro++ – Marketingbereich & Rechnung (§ 11 UStG)
+          14. 💎 Pro+ & Pro++ – Marketingbereich, Rechnung & Buchhaltung
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.
+          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; dazu Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre. Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB § 6).
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
