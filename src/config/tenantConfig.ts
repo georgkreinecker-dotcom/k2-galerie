@@ -248,6 +248,9 @@ export interface Vk2Stammdaten {
     vereinsnummer: string
     email: string
     website: string
+    /** Für Rechnungen (Vereins-Kasse): Bankverbindung und IBAN – optional */
+    bankverbindung?: string
+    iban?: string
   }
   vorstand: { name: string }
   vize: { name: string }
@@ -318,6 +321,8 @@ export const VK2_STAMMDATEN_DEFAULTS: Vk2Stammdaten = {
     vereinsnummer: '',
     email: '',
     website: '',
+    bankverbindung: '',
+    iban: '',
   },
   vorstand: { name: '' },
   vize: { name: '' },

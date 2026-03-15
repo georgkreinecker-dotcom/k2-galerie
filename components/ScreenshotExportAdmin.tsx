@@ -14307,6 +14307,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
                           <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
+                        <div className="field" style={{ gridColumn: '1 / -1' }}>
+                          <label style={{ fontSize: '0.85rem' }}>Bankverbindung (für Rechnungen, optional)</label>
+                          <input type="text" value={(vk2Stammdaten.verein as { bankverbindung?: string }).bankverbindung ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, bankverbindung: e.target.value } })} placeholder="z. B. Sparkasse Musterstadt, BLZ 12345" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field">
+                          <label style={{ fontSize: '0.85rem' }}>IBAN (für Rechnungen, optional)</label>
+                          <input type="text" value={(vk2Stammdaten.verein as { iban?: string }).iban ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, iban: e.target.value } })} placeholder="AT00 0000 0000 0000 0000" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
                       </div>
                     </div>
                     {/* ── KATEGORIEN / KUNSTRICHTUNGEN FÜR MITGLIEDER ── */}

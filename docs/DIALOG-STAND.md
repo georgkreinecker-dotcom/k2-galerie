@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2 offene Kategorien (Kunstrichtung):** Vereine können in Einstellungen → Stammdaten eigene Kategorien festlegen; diese erscheinen im Mitglieder-Modal und überall (Werke, Export). Davor: VK2 Schwerpunkt „gemeinsame Interessen“ – schrittweise umgestellt. (1) **docs/VK2-VEREINSPLATTFORM.md:** Idee (Kern) auf Vereinsplattform für alle Vereine, Schwerpunkt Mitgliederliste + gemeinsame Interessen, „Mitglieder in der Galerie“ optional; Lizenzlogik-Tabelle: 10 eingetragene Mitglieder, Mitglied/Lizenzmitglied; Nächste Schritte angepasst. (2) **mök2 (MarketingOek2Page.tsx):** Alle VK2-Stellen: Schwerpunkt gemeinsame Interessen, eine Mitgliederliste, „ab 10 eingetragenen Mitgliedern“ (statt registriert), Künstler-Präsentation optional. (3) **Benutzerhandbuch 05-VK2:** Was ist VK2 = Mitgliederliste zuerst, Galerie optional; Kurz zusammengefasst und Werkkatalog-Abschnitt auf „Mitglieder in der Galerie (optional)“ umgestellt. (4) **Admin (ScreenshotExportAdmin):** Einheitliche Begriffe – Tab/Sidebar „Mitglieder in der Galerie“ (statt Vereinsmitglieder/Werke & Mitglieder); Hilfetexte angepasst. **(Davor)** Buchhaltung/Kassabuch Summenzeile; 14.03.26 ök2 ≠ APf, Pro++ Rechnungspflege, Trial 2 Wochen, Flyer ohne K2-Daten.
+**Letzter Stand:** 15.03.26 – **VK2 Kassa Rechnung:** Bei Zahlungsart „Rechnung“ in der VK2-Kasse: Pflichtfeld „Rechnungsempfänger (Name oder Firma)“; nach Einnahme erfassen wird zusätzlich zum Bon eine A4-Rechnung gedruckt (Verein = Aussteller, Rechnungsnr. aus k2-vk2-rechnung-counter, eine Position, „Zahlbar 14 Tage“, Bankverbindung/IBAN wenn in Stammdaten). Verein-Stammdaten um optionale Felder „Bankverbindung“ und „IBAN“ (für Rechnungen) erweitert – Admin Einstellungen → Stammdaten. Davor: VK2 offene Kategorien (Kunstrichtung).
 
-**Was wir JETZT tun:** VK2 offene Kategorien (Kunstrichtung) implementiert – Einstellungen → Stammdaten „Kategorien / Kunstrichtungen für Mitglieder“, getVk2Kunstrichtungen(stamm) überall.
+**Was wir JETZT tun:** VK2 Rechnung (A4) implementiert – Kasse → Rechnung wählen → Rechnungsempfänger eintragen → Einnahme erfassen → Bon + A4-Rechnung drucken.
 
-**Nächster Schritt:** Commit + Push. Georg kann im VK2-Admin unter Einstellungen → Stammdaten „Eigene Kategorien festlegen“ testen.
+**Nächster Schritt:** Commit + Push. Georg kann in der VK2-Kasse „Rechnung“ wählen, Namen eintragen und Rechnung drucken testen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

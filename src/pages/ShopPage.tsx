@@ -8,7 +8,7 @@ import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
-import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
@@ -110,7 +110,9 @@ const ShopPage = () => {
   const [vk2Bezeichnung, setVk2Bezeichnung] = useState('')
   const [vk2MitgliedName, setVk2MitgliedName] = useState('') // bei Spende/Mitgliedsbeitrag: aus kurzem Mitgliederverzeichnis
   const [vk2PaymentMethod, setVk2PaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash')
+  const [vk2RechnungEmpfaenger, setVk2RechnungEmpfaenger] = useState('') // bei Zahlungsart Rechnung: Name/Firma für A4-Rechnung
   const [vk2BonDrucken, setVk2BonDrucken] = useState(true)
+  const [showVk2StornoList, setShowVk2StornoList] = useState(false)
   const VK2_BEZEICHNUNG_OPTIONEN = ['Eintritt', 'Spende', 'Mitgliedsbeitrag', 'Verpflegung / Getränke', 'Sonstiges'] as const
 
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
@@ -629,8 +631,12 @@ const ShopPage = () => {
     processOrder(method)
   }
 
-  // VK2: Einnahme erfassen (Betrag + Bezeichnung) → Order speichern, Kassabuch, Bon drucken
+  // VK2: Einnahme erfassen (Betrag + Bezeichnung) → Order speichern, Kassabuch, Bon/Rechnung drucken
   const handleVk2Einnahme = () => {
+    if (vk2PaymentMethod === 'transfer' && !(vk2RechnungEmpfaenger || '').trim()) {
+      alert('Bei Zahlungsart Rechnung bitte Rechnungsempfänger (Name oder Firma) eintragen.')
+      return
+    }
     const betrag = parseFloat((vk2Betrag || '0').replace(',', '.'))
     if (!Number.isFinite(betrag) || betrag <= 0) {
       alert('Bitte einen gültigen Betrag eingeben.')
@@ -661,12 +667,109 @@ const ShopPage = () => {
         verwendungszweck: bezeichnung
       })
       if (vk2BonDrucken) printVk2Bon(order)
+      if (vk2PaymentMethod === 'transfer' && (vk2RechnungEmpfaenger || '').trim()) {
+        printVk2Rechnung(order, (vk2RechnungEmpfaenger || '').trim())
+      }
       setVk2Betrag('')
       setVk2Bezeichnung('')
       setVk2MitgliedName('')
+      setVk2RechnungEmpfaenger('')
     } catch (e) {
       console.error(e)
       alert('Speichern fehlgeschlagen. Bitte erneut versuchen.')
+    }
+  }
+
+  // VK2: A4-Rechnung drucken (Verein = Aussteller, ein Position, Bankverbindung aus Verein falls hinterlegt)
+  const printVk2Rechnung = (order: any, empfaengerName: string) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
+      return
+    }
+    const vk2 = loadVk2Stammdaten()
+    const verein = vk2?.verein || {} as Record<string, string>
+    const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
+    const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
+    const sellerContact = [verein.email, verein.phone].filter(Boolean).join(' · ') || ''
+    const bankForRechnung = verein.bankverbindung && String(verein.bankverbindung).trim() ? String(verein.bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+    const ibanRaw = verein.iban && String(verein.iban).trim() ? String(verein.iban).trim() : ''
+    const ibanDisplay = ibanRaw ? ibanRaw.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
+    let nrValue = order.orderNumber
+    try {
+      const key = 'k2-vk2-rechnung-counter'
+      const year = new Date().getFullYear()
+      const stored = localStorage.getItem(key)
+      const parsed = stored ? JSON.parse(stored) : { year, next: 1 }
+      if (parsed.year !== year) { parsed.year = year; parsed.next = 1 }
+      nrValue = `RE-VK2-${year}-${String(parsed.next).padStart(4, '0')}`
+      parsed.next += 1
+      localStorage.setItem(key, JSON.stringify(parsed))
+    } catch (_) {}
+    const date = new Date(order.date)
+    const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
+    const bezeichnung = (order.items && order.items[0] && order.items[0].title) ? String(order.items[0].title).replace(/</g, '&lt;') : 'Einnahme Vereinsbetrieb'
+    const total = typeof order.total === 'number' ? order.total : parseFloat(String(order.total)) || 0
+    const bankBlock = [
+      bankForRechnung ? `<p style="margin:6px 0 0;font-size:10px;"><strong>Zahlung per Überweisung:</strong><br>${bankForRechnung}</p>` : '',
+      ibanDisplay ? `<p style="margin:4px 0 0;font-size:10px;"><strong>IBAN:</strong> ${ibanDisplay}</p>` : ''
+    ].filter(Boolean).join('')
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Rechnung – ${sellerName}</title>
+<style>body{font-family:Georgia,serif;font-size:11px;line-height:1.4;max-width:600px;margin:12mm auto;padding:0 8mm;color:#111;}
+.rechnung-header{font-size:20px;font-weight:700;margin-bottom:2mm;}
+.two-cols{display:flex;justify-content:space-between;gap:12mm;margin:8mm 0;}
+.col p{margin:2px 0;}
+table{width:100%;border-collapse:collapse;margin:8mm 0;}
+th,td{padding:4px 6px;text-align:left;border-bottom:1px solid #ddd;}
+th{font-size:9px;text-transform:uppercase;}
+.total{font-weight:700;font-size:12px;margin-top:6px;}
+.footer{margin-top:10mm;padding-top:4px;border-top:1px solid #ddd;font-size:9px;color:#666;}
+</style></head><body>
+<div class="rechnung-header">RECHNUNG</div>
+<div class="two-cols">
+  <div class="col"><p><strong>Aussteller</strong></p><p>${sellerName.replace(/</g, '&lt;')}</p>${sellerAddress ? '<p>' + sellerAddress.replace(/</g, '&lt;') + '</p>' : ''}${sellerContact ? '<p>' + sellerContact.replace(/</g, '&lt;') + '</p>' : ''}</div>
+  <div class="col"><p><strong>Rechnungsempfänger</strong></p><p>${empfaengerName.replace(/</g, '&lt;')}</p></div>
+</div>
+<p><strong>Rechnungsnr.:</strong> ${nrValue} &nbsp; <strong>Datum:</strong> ${rechnungDatum}</p>
+<table><thead><tr><th>Pos</th><th>Bezeichnung</th><th>Menge</th><th style="text-align:right">Betrag</th></tr></thead>
+<tbody><tr><td>1</td><td>${bezeichnung}</td><td>1</td><td style="text-align:right">€ ${total.toFixed(2)}</td></tr></tbody></table>
+<div class="total">Gesamtbetrag: € ${total.toFixed(2)}</div>
+<p style="margin-top:8px;">Zahlbar innerhalb von 14 Tagen nach Rechnungsdatum ohne Abzug.</p>
+${bankBlock}
+<div class="footer">${sellerName.replace(/</g, '&lt;')}${sellerAddress ? ' · ' + sellerAddress.replace(/</g, '&lt;') : ''} · Vereinsbetrieb</div>
+</body></html>`
+    printWindow.document.write(html)
+    printWindow.document.close()
+    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 800) }, 300)
+  }
+
+  // VK2: Letzte 15 Buchungen – Storno (Order + Kassabuch-Eintrag entfernen)
+  const MAX_VK2_STORNO = 15
+  const vk2OrdersForStorno = (() => {
+    try {
+      const raw = localStorage.getItem('k2-vk2-orders')
+      const arr = JSON.parse(raw || '[]')
+      if (!Array.isArray(arr)) return []
+      return [...arr].sort((a: any, b: any) => (b.date || '').localeCompare(a.date || '')).slice(0, MAX_VK2_STORNO)
+    } catch { return [] }
+  })()
+
+  const handleVk2Storno = (order: any) => {
+    const label = (order.items && order.items[0] && order.items[0].title) ? order.items[0].title : 'Einnahme'
+    if (!confirm(`Buchung „${label}“ (€ ${typeof order.total === 'number' ? order.total.toFixed(2) : order.total}) wirklich stornieren?`)) return
+    try {
+      const orderId = order.id || `${order.orderNumber}-${order.date}`
+      const stored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+      if (!Array.isArray(stored)) return
+      const filtered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderId)
+      localStorage.setItem('k2-vk2-orders', JSON.stringify(filtered))
+      const kassabuch = loadKassabuch('vk2').filter((e: { verkaufId?: string }) => e.verkaufId !== order.id)
+      saveKassabuch('vk2', kassabuch)
+      setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderId))
+      setShowVk2StornoList(false)
+      alert('✅ Buchung storniert.')
+    } catch (_) {
+      alert('⚠️ Storno fehlgeschlagen.')
     }
   }
 
@@ -1478,6 +1581,14 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 </button>
               ))}
             </div>
+            {vk2PaymentMethod === 'transfer' && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Rechnungsempfänger (Name oder Firma)</label>
+                <input type="text" value={vk2RechnungEmpfaenger} onChange={e => setVk2RechnungEmpfaenger(e.target.value)}
+                  placeholder="z. B. Max Mustermann oder Firma XY"
+                  style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, boxSizing: 'border-box', background: s.bgCard, color: s.text }} />
+              </div>
+            )}
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', cursor: 'pointer', fontSize: '0.9rem', color: s.text }}>
               <input type="checkbox" checked={vk2BonDrucken} onChange={e => setVk2BonDrucken(e.target.checked)} style={{ width: '1.1rem', height: '1.1rem' }} />
               Bon drucken
@@ -1500,6 +1611,31 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
             </div>
           )}
+          <div style={{ marginTop: '1rem' }}>
+            <button type="button" onClick={() => setShowVk2StornoList(prev => !prev)}
+              style={{ padding: '0.5rem 0.75rem', fontSize: '0.85rem', color: s.text, background: showVk2StornoList ? s.accentSoft : 'transparent', border: `2px solid ${s.border}`, borderRadius: s.radiusSm, cursor: 'pointer' }}>
+              {showVk2StornoList ? 'Storno-Liste schließen' : 'Letzte 15 Buchungen – Storno'}
+            </button>
+            {showVk2StornoList && (
+              <div style={{ marginTop: '0.75rem', background: s.bgCard, borderRadius: s.radius, padding: '1rem', boxShadow: s.shadow, maxHeight: '40vh', overflowY: 'auto' }}>
+                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte 15 Buchungen (neueste zuerst) – Storno</div>
+                {vk2OrdersForStorno.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.muted }}>Keine Buchungen vorhanden.</p>
+                ) : (
+                  <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: s.muted }}>
+                    {vk2OrdersForStorno.map((o: any, i: number) => (
+                      <li key={o.id || o.date} style={{ marginBottom: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <span>
+                          {new Date(o.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof o.total === 'number' ? o.total.toFixed(2) : o.total} {(o.items && o.items[0] && o.items[0].title) ? ` · ${o.items[0].title}` : ''}
+                        </span>
+                        <button type="button" onClick={() => handleVk2Storno(o)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     )
