@@ -120,9 +120,43 @@ export default function BuchhaltungPage() {
     return list.sort((a, b) => (b.date || b.soldAt || '').localeCompare(a.date || a.soldAt || ''))
   }, [orders, von, bis])
 
+  /** Einträge mit Beleg (Foto oder QR) – für PDF an Steuerberater. Pro++ = vollständige Buchhaltung inkl. Belege. */
+  const entriesWithBeleg = useMemo(
+    () => filteredEntries.filter(e => e.belegImage || e.belegQrText),
+    [filteredEntries]
+  )
+
   const refresh = () => setEntries(getKassabuchMitEingaengen(tenant))
 
   const handlePrint = () => window.print()
+
+  /** Belege des Zeitraums in neuem Fenster drucken → Nutzer wählt „Als PDF speichern“. */
+  const handleBelegePdf = () => {
+    if (entriesWithBeleg.length === 0) return
+    const base = typeof window !== 'undefined' ? window.location.origin : ''
+    const imgSrc = (src: string) => (src.startsWith('data:') || src.startsWith('http') ? src : base + (src.startsWith('/') ? src : '/' + src))
+    const title = `Belege Buchhaltung ${von || 'Start'} – ${bis || 'Ende'}`
+    const blocks = entriesWithBeleg.map(e => {
+      const imgHtml = e.belegImage ? `<img src="${imgSrc(e.belegImage)}" alt="Beleg" style="max-width:100%; max-height:280px; display:block; margin-top:0.5rem;" />` : ''
+      const qrHtml = e.belegQrText ? `<pre style="font-size:0.75rem; white-space:pre-wrap; word-break:break-all; margin:0.5rem 0 0 0; padding:0.5rem; background:#f5f4f2; border-radius:6px;">${e.belegQrText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>` : ''
+      return `<section style="break-inside:avoid; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid #eee;">
+        <div style="font-size:0.9rem;"><strong>${e.datum}</strong> ${getKassabuchArtLabel(e.art)} · ${e.betrag.toFixed(2)} €</div>
+        ${e.verwendungszweck ? `<div style="color:#5c5650; font-size:0.85rem;">${(e.verwendungszweck || '').replace(/</g, '&lt;')}</div>` : ''}
+        ${imgHtml}
+        ${qrHtml}
+      </section>`
+    }).join('')
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title>
+      <style>body{font-family:system-ui,sans-serif;padding:1rem;max-width:800px;margin:0 auto;color:#1c1a17;} h1{font-size:1.25rem;} @media print{body{padding:0;}}</style>
+    </head><body><h1>${title}</h1><p style="color:#7a6f66;font-size:0.9rem;">Zum Speichern als PDF: Drucken → „Als PDF speichern“ wählen.</p>${blocks}</body></html>`
+    const w = window.open('', '_blank', 'noopener')
+    if (w) {
+      w.document.write(html)
+      w.document.close()
+      w.focus()
+      w.onload = () => setTimeout(() => w.print(), 300)
+    }
+  }
 
   const handleKassabuchCsv = () => {
     const csv = exportKassabuchCsv(entries, von || undefined, bis || undefined)
@@ -214,10 +248,26 @@ export default function BuchhaltungPage() {
           <button type="button" onClick={handleZeitraumVersenden} style={{ padding: '0.75rem 1.25rem', background: s.accent, color: '#fff', border: 'none', borderRadius: s.radius, cursor: 'pointer', fontWeight: 600 }}>
             Zeitraum herunterladen (beide CSVs)
           </button>
+          <button
+            type="button"
+            onClick={handleBelegePdf}
+            disabled={entriesWithBeleg.length === 0}
+            title={entriesWithBeleg.length === 0 ? 'Keine Belege im gewählten Zeitraum' : 'Belege drucken oder als PDF speichern – an Steuerberater sendbar'}
+            style={{
+              padding: '0.75rem 1.25rem',
+              background: entriesWithBeleg.length === 0 ? s.muted : '#5d4037',
+              color: '#fff',
+              border: 'none',
+              borderRadius: s.radius,
+              cursor: entriesWithBeleg.length === 0 ? 'default' : 'pointer',
+            }}
+          >
+            📄 Belege als PDF ({entriesWithBeleg.length})
+          </button>
         </div>
 
         <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '1rem' }}>
-          Die heruntergeladenen CSV-Dateien können Sie per E-Mail an Ihren Steuerberater senden. Ohne Zeitraum = alle Daten.
+          Die heruntergeladenen CSV-Dateien können Sie per E-Mail an Ihren Steuerberater senden. <strong>Belege als PDF</strong>: Öffnet alle Belege (Fotos/QR) des Zeitraums zum Drucken – „Als PDF speichern“ wählen und mitsenden. Ohne Zeitraum = alle Daten.
         </p>
 
         {/* Summen für den Zeitraum – einfach, für jeden verständlich */}

@@ -83,6 +83,8 @@ Mit der Lizenzstufe **Pro++** erhalten Sie **vollständige Rechnungspflege** nac
 
 **Für wen ist Pro++ gedacht?** Für alle, die **rechtssicher rechnen** müssen – z. B. bei Geschäftskunden, bei Abrechnung mit dem Finanzamt oder wenn Sie Rechnungen mit USt-Aufschlüsselung ausstellen müssen. Mit **Basic, Pro oder Pro+** können Sie ebenfalls Rechnungen (A4) drucken; die **vollständige Rechnungspflege nach Rechnungslegungsnorm** (fortlaufende Nummer, alle Pflichtangaben, USt-Aufschlüsselung) ist jedoch **nur mit Pro++** enthalten.
 
+**Pro++ = vollständige Buchhaltung, nicht nur Rechnungen.** In der **Buchhaltung** (Kassa → Buchhaltung) können Sie für einen gewählten Zeitraum neben Kassabuch- und Verkäufe-CSV auch **Belege als PDF** erzeugen: Alle erfassten Belege (Fotos, QR-Texte) des Zeitraums werden in einem druckbaren Fenster angezeigt – Sie wählen „Drucken“ und „Als PDF speichern“ und können die PDF-Datei an Ihren Steuerberater senden. So haben Sie in einer App die komplette Buchhaltung inklusive Belegen.
+
 ---
 
 **Bon erneut drucken:** Wenn Sie einen **bereits abgeschlossenen Verkauf** noch einmal belegen möchten, gibt es in der Kasse (wenn die Auswahl leer ist und Sie zuletzt Verkäufe hatten) einen Button **„Letzten Bon erneut drucken“**. Außerdem können Sie in der **Verkaufsstatistik** bzw. im Bereich **„Verkaufsliste – Storno“** bei einzelnen Verkäufen **„Bon erneut drucken“** wählen – dann wird nur der Beleg erneut ausgegeben, der Verkauf bleibt erfasst. **„Stornieren“** hebt den Verkauf auf (siehe unten).
@@ -128,5 +130,5 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 - **Belege:** Nach Bar/Karte: Dialog **„Kassabon oder Rechnung?“** – **OK** = Kassabon (80 mm), **Abbrechen** = Rechnung (A4). Bei Rechnung als Zahlungsart: direkt Rechnung (A4). **Bon erneut drucken** möglich (ohne Storno).  
 - **Storno:** In **„Verkaufsliste – Storno“** Verkauf auswählen → **Stornieren** (Verkauf aufheben, Werk wieder verfügbar) oder nur **Bon erneut drucken**.  
 - **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
-- **Pro++ Rechnungspflege:** Mit Pro++ = vollständige Rechnungspflege nach Rechnungslegungsnorm (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung.
+- **Pro++ = vollständige Buchhaltung:** Rechnungspflege (§ 11 UStG) + in der Buchhaltung **Belege als PDF** (Zeitraum wählen → Belege drucken/als PDF speichern → an Steuerberater senden). Nicht nur Rechnungen, sondern komplette Buchhaltung in einer App.
 - **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.
