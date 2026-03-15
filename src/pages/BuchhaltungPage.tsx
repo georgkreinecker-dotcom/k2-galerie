@@ -225,11 +225,27 @@ export default function BuchhaltungPage() {
           Alle buchhaltungsrelevanten Daten für einen Zeitraum – drucken oder als CSV herunterladen und an den Steuerberater senden (z. B. per E-Mail).
         </p>
 
-        <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ marginBottom: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <label style={{ color: s.muted, fontSize: '0.9rem' }}>Von</label>
           <input type="date" value={von} onChange={e => setVon(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
           <label style={{ color: s.muted, fontSize: '0.9rem' }}>Bis</label>
           <input type="date" value={bis} onChange={e => setBis(e.target.value)} style={{ padding: '0.35rem 0.5rem', borderRadius: 6, border: `1px solid ${s.muted}` }} />
+        </div>
+        <div className="no-print" style={{ marginBottom: '1rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ color: s.muted, fontSize: '0.85rem' }}>Schnellauswahl:</span>
+          {[0, 1, 2].map(offset => {
+            const y = new Date().getFullYear() - offset
+            return (
+              <button
+                key={y}
+                type="button"
+                onClick={() => { setVon(`${y}-01-01`); setBis(`${y}-12-31`) }}
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem', background: s.card, color: s.text, border: `1px solid ${s.muted}`, borderRadius: 6, cursor: 'pointer' }}
+              >
+                Jahr {y}
+              </button>
+            )
+          })}
         </div>
 
         <div className="no-print" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
@@ -266,8 +282,11 @@ export default function BuchhaltungPage() {
           </button>
         </div>
 
-        <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '1rem' }}>
+        <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>
           Die heruntergeladenen CSV-Dateien können Sie per E-Mail an Ihren Steuerberater senden. <strong>Belege als PDF</strong>: Öffnet alle Belege (Fotos/QR) des Zeitraums zum Drucken – „Als PDF speichern“ wählen und mitsenden. Ohne Zeitraum = alle Daten.
+        </p>
+        <p style={{ color: s.muted, fontSize: '0.8rem', marginBottom: '1rem' }}>
+          <strong>Vorarbeit hier, Rest beim Steuerberater:</strong> Für UStVA/EO geben Sie Daten und Belege an Ihren Steuerberater – die aufwändige Vorarbeit erledigen Sie hier praktisch kostenlos. Buchungsunterlagen und Belege <strong>7 Jahre</strong> aufbewahren (Österreich).
         </p>
 
         {/* Summen für den Zeitraum – einfach, für jeden verständlich */}

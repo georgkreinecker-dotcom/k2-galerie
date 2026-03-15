@@ -113,6 +113,8 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 
 **Kassabuch öffnen:** Vom **Kassa-Einstieg** aus wählen Sie **„Auszahlen (Kassabuch)“** – dann gelangen Sie zur **Kassabuch-Seite**. Dort sehen Sie alle Buchungen **chronologisch** (Datum, Art, Betrag, ggf. Notiz). Das Kassabuch können Sie **drucken** und als **CSV exportieren** (z. B. für den Steuerberater). Ein Button **„Neuer Kassausgang“** führt Sie zur Erfassung von Bar privat, Kassa an Bank usw.
 
+**Buchhaltung (Kassa → Buchhaltung):** Ein Ort für alle Unterlagen pro Zeitraum: Schnellauswahl **Jahr** (z. B. Jahr 2025), Kassabuch-CSV, Verkäufe-CSV, **Belege als PDF**. Sie übergeben Daten und Belege an Ihren Steuerberater – die **Vorarbeit erledigen Sie hier praktisch kostenlos**; UStVA/EO etc. macht der Steuerberater. **Buchungsunterlagen und Belege 7 Jahre aufbewahren** (Österreich).
+
 ---
 
 ## Kundenadressen und Verkaufsstatistik
@@ -131,4 +133,5 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 - **Storno:** In **„Verkaufsliste – Storno“** Verkauf auswählen → **Stornieren** (Verkauf aufheben, Werk wieder verfügbar) oder nur **Bon erneut drucken**.  
 - **Kassabuch:** Pro = nur Eingänge (Verkäufe). Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Kassabuch drucken und CSV-Export für Steuerberater.
 - **Pro++ = vollständige Buchhaltung:** Rechnungspflege (§ 11 UStG) + in der Buchhaltung **Belege als PDF** (Zeitraum wählen → Belege drucken/als PDF speichern → an Steuerberater senden). Nicht nur Rechnungen, sondern komplette Buchhaltung in einer App.
+- **Buchhaltung & Steuerberater:** Schnellauswahl Jahr, CSVs + Belege-PDF → Vorarbeit hier kostenlos; UStVA/EO beim Steuerberater. Unterlagen **7 Jahre** aufbewahren.
 - **Kunden & Statistik:** Kunden unter Kassa/Lager → Kundenadressen. Verkaufs- und Lagerstatistik drucken im Bereich Statistik.
