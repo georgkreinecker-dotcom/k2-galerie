@@ -30,13 +30,13 @@ Kurzfassung – ausführliches Handbuch für Vereine separat (VK2-Handbuch).
 
 Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
-7. [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md)
+7. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
 
-Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge).
+Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
 
-8. [Buchhaltung – Vorarbeit für Steuerberater](09-BUCHHALTUNG-STEUERBERATER.md)
+8. [Einstellungen](10-EINSTELLUNGEN.md)
 
-Zeitraum wählen, Kassabuch- und Verkäufe-CSV, Belege als PDF, Pro++ vollständige Buchhaltung, 7 Jahre Aufbewahrung, AGB § 6.
+Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen Kategorien/Kunstrichtungen, Kommunikation (WhatsApp).
 
 9. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 

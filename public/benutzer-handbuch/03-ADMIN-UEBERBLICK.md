@@ -18,13 +18,7 @@ Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willk
 
 ## Einstellungen
 
-Unter **„Einstellungen“** finden Sie unter anderem:
-
-- **Stammdaten:** Name der Galerie oder des Vereins, Kontakt (E-Mail, Telefon), Adresse, Öffnungszeiten. Diese Angaben werden z. B. auf der Galerie oder auf Drucken (Flyer, Einladungen) verwendet.
-- **Backup:** Möglichkeit, Ihre Daten zu sichern oder wiederherzustellen. Wir empfehlen, in Ruhe die Hinweise auf der Seite zu lesen und bei Unsicherheit eine Kopie (Export) zu speichern.
-- **Veröffentlichen:** Der Button zum Veröffentlichen steht oft hier oder in der oberen Leiste. Ein Klick überträgt Ihre Änderungen, sodass sie für alle sichtbar werden.
-- **Passwort:** Der Admin-Zugang wird mit einem Passwort geschützt. Wer das Passwort vergessen hat, wendet sich an die Person, die den Zugang eingerichtet hat (z. B. Galerie-Inhaberin, Vereinsvorstand). Ein Selbst-Zurücksetzen ist aus Sicherheitsgründen nicht vorgesehen.
-- **Drucker:** Falls Sie einen Etikettendrucker (z. B. für Werke) oder Belegdruck nutzen: Unter Einstellungen können Sie – je nach Lizenz – den Drucker einrichten (z. B. WLAN-Adresse). Der Drucker muss im gleichen Netzwerk erreichbar sein.
+Unter **„Einstellungen“** finden Sie Stammdaten, Backup, Veröffentlichen, Passwort und Drucker. Eine **vollständige Beschreibung** aller Bereiche steht im Kapitel [Einstellungen](10-EINSTELLUNGEN.md).
 
 ---
 
@@ -42,7 +36,7 @@ Falls Ihre Version **Veranstaltungen** unterstützt: Unter **„Events“** lege
 
 ## Kassa und Kassabuch
 
-Unter **„Kassa“** erfassen Sie Verkäufe: Werk zur Auswahl hinzufügen (z. B. per QR-Code oder Seriennummer), Zahlungsart wählen (Bar, Karte, Rechnung), Verkauf abschließen. Sie können **Kassenbon** (80 mm) oder **Rechnung (A4)** drucken. Mit **Pro** werden Verkäufe als Kassaeingänge erfasst; mit **Pro+** oder **Pro++** können Sie das **volle Kassabuch** nutzen (Eingänge und Ausgänge: Bar privat, Kassa an Bank, Bar mit Beleg). Eine **genaue Schritt-für-Schritt-Anleitung** – inkl. Einstieg, Scannen, Belege, Storno und Kassabuch – finden Sie im Kapitel [Kassafunktion – Verkauf, Belege, Kassabuch](08-KASSA-VERKAUF-BELEGE.md). Details für Vereine stehen im Kapitel [Vereinsplattform nutzen](05-VK2-VEREINSPLATTFORM.md).
+Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
 
 ---
 

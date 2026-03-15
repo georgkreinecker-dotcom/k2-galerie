@@ -72,7 +72,7 @@ Unter **„Design“** können Sie neben dem Willkommensbild oft auch Texte, Far
 
 Damit Ihre Änderungen (neue Werke, neues Willkommensbild, neues Design) für alle sichtbar werden, müssen Sie **veröffentlichen**.
 
-1. Im Admin finden Sie einen Button **„Veröffentlichen“** (oft im Bereich „Einstellungen“ oder oben in der Leiste).
+1. Im Admin finden Sie einen Button **„Veröffentlichen“** (im Tab **Einstellungen** oder oben in der Leiste). Details: [Einstellungen](10-EINSTELLUNGEN.md).
 2. Klicken Sie darauf. Die App überträgt die aktuellen Daten.
 3. Wenn die Meldung erscheint, dass die Veröffentlichung erfolgreich war, sehen Besucherinnen und Besucher beim nächsten Aufruf der Galerie den neuesten Stand.
 

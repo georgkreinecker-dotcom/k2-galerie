@@ -1,10 +1,13 @@
 /**
- * Kassabuch – eine Quelle pro Kontext (K2 | ök2).
- * Keys: k2-kassabuch, k2-oeffentlich-kassabuch. VK2 hat keine Kassa.
+ * Kassabuch – eine Quelle pro Kontext (K2 | ök2 | VK2).
+ * Keys: k2-kassabuch, k2-oeffentlich-kassabuch, k2-vk2-kassabuch.
+ * VK2 = eingeschränkte Kassa nur für Vereinsbetrieb (Einnahmen, Bon – kein Shop, keine Ausgaben).
  * Steuerberatergeeignet: chronologisch, Beleg (QR/Foto), separat druckbar/exportierbar.
  */
 
 export type KassabuchArt = 'eingang' | 'ausgang' | 'bar_privat' | 'bar_beleg' | 'kassa_an_bank' | 'bank_an_kassa'
+
+export type KassabuchTenant = 'k2' | 'oeffentlich' | 'vk2'
 
 export interface KassabuchEintrag {
   id: string
@@ -21,12 +24,15 @@ export interface KassabuchEintrag {
 
 const K2_KASSABUCH_KEY = 'k2-kassabuch'
 const OEF_KASSABUCH_KEY = 'k2-oeffentlich-kassabuch'
+const VK2_KASSABUCH_KEY = 'k2-vk2-kassabuch'
 
-export function getKassabuchKey(tenant: 'k2' | 'oeffentlich'): string {
-  return tenant === 'oeffentlich' ? OEF_KASSABUCH_KEY : K2_KASSABUCH_KEY
+export function getKassabuchKey(tenant: KassabuchTenant): string {
+  if (tenant === 'oeffentlich') return OEF_KASSABUCH_KEY
+  if (tenant === 'vk2') return VK2_KASSABUCH_KEY
+  return K2_KASSABUCH_KEY
 }
 
-export function loadKassabuch(tenant: 'k2' | 'oeffentlich'): KassabuchEintrag[] {
+export function loadKassabuch(tenant: KassabuchTenant): KassabuchEintrag[] {
   try {
     const key = getKassabuchKey(tenant)
     const raw = localStorage.getItem(key)
@@ -37,7 +43,7 @@ export function loadKassabuch(tenant: 'k2' | 'oeffentlich'): KassabuchEintrag[] 
   }
 }
 
-export function saveKassabuch(tenant: 'k2' | 'oeffentlich', entries: KassabuchEintrag[]): boolean {
+export function saveKassabuch(tenant: KassabuchTenant, entries: KassabuchEintrag[]): boolean {
   try {
     const key = getKassabuchKey(tenant)
     localStorage.setItem(key, JSON.stringify(entries))
@@ -47,7 +53,7 @@ export function saveKassabuch(tenant: 'k2' | 'oeffentlich', entries: KassabuchEi
   }
 }
 
-export function addKassabuchEintrag(tenant: 'k2' | 'oeffentlich', eintrag: Omit<KassabuchEintrag, 'id'>): boolean {
+export function addKassabuchEintrag(tenant: KassabuchTenant, eintrag: Omit<KassabuchEintrag, 'id'>): boolean {
   const list = loadKassabuch(tenant)
   const id = `kb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   list.push({ ...eintrag, id })
@@ -71,13 +77,16 @@ export function getKassabuchArtLabel(art: KassabuchArt): string {
 /** Verkäufe (Orders) als Kassabuch-Eingänge laden – eine Quelle pro Kontext */
 const K2_ORDERS_KEY = 'k2-orders'
 const OEF_ORDERS_KEY = 'k2-oeffentlich-orders'
+const VK2_ORDERS_KEY = 'k2-vk2-orders'
 
-function loadOrdersKey(tenant: 'k2' | 'oeffentlich'): string {
-  return tenant === 'oeffentlich' ? OEF_ORDERS_KEY : K2_ORDERS_KEY
+function loadOrdersKey(tenant: KassabuchTenant): string {
+  if (tenant === 'oeffentlich') return OEF_ORDERS_KEY
+  if (tenant === 'vk2') return VK2_ORDERS_KEY
+  return K2_ORDERS_KEY
 }
 
 /** Gibt alle Kassabuch-Einträge inkl. Kassaeingänge (Verkäufe) zurück – chronologisch sortiert. */
-export function getKassabuchMitEingaengen(tenant: 'k2' | 'oeffentlich'): KassabuchEintrag[] {
+export function getKassabuchMitEingaengen(tenant: KassabuchTenant): KassabuchEintrag[] {
   const ausgaenge = loadKassabuch(tenant)
   try {
     const ordersKey = loadOrdersKey(tenant)
@@ -104,13 +113,21 @@ export function getKassabuchMitEingaengen(tenant: 'k2' | 'oeffentlich'): Kassabu
   }
 }
 
-/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ / Pro++ = volles Kassabuch (Pro++ inkl. Rechnung) */
+/** Lizenzstufe für Kassa/Kassabuch: Basic = keine Kassa, Pro = Kassa ohne volles Kassabuch, Pro+ / Pro++ = volles Kassabuch (Pro++ inkl. Rechnung). VK2 = immer Pro (eingeschränkte Vereins-Kassa). */
 export type KassabuchLizenzStufe = 'basic' | 'pro' | 'proplus' | 'propplus'
 
 const K2_LIZENZ_STUFE_KEY = 'k2-lizenz-stufe'
 const OEF_LIZENZ_STUFE_KEY = 'k2-oeffentlich-lizenz-stufe'
+const VK2_LIZENZ_STUFE_KEY = 'k2-vk2-lizenz-stufe'
 
-export function getKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich'): KassabuchLizenzStufe {
+export function getKassabuchLizenzStufe(tenant: KassabuchTenant): KassabuchLizenzStufe {
+  if (tenant === 'vk2') {
+    try {
+      const v = localStorage.getItem(VK2_LIZENZ_STUFE_KEY)
+      if (v === 'basic' || v === 'pro' || v === 'proplus' || v === 'propplus') return v
+    } catch {}
+    return 'pro' // VK2 = immer mindestens Pro (Vereins-Kassa)
+  }
   try {
     const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
     const v = localStorage.getItem(key)
@@ -121,31 +138,33 @@ export function getKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich'): Kassabuch
   }
 }
 
-export function setKassabuchLizenzStufe(tenant: 'k2' | 'oeffentlich', stufe: KassabuchLizenzStufe): void {
+export function setKassabuchLizenzStufe(tenant: KassabuchTenant, stufe: KassabuchLizenzStufe): void {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
+    const key = tenant === 'oeffentlich' ? OEF_LIZENZ_STUFE_KEY : tenant === 'vk2' ? VK2_LIZENZ_STUFE_KEY : K2_LIZENZ_STUFE_KEY
     localStorage.setItem(key, stufe)
   } catch {}
 }
 
-/** Kassa (Verkauf erfassen) nur ab Pro. Basic = keine Kassa. */
-export function hasKassa(tenant: 'k2' | 'oeffentlich'): boolean {
+/** Kassa (Verkauf erfassen): ab Pro. VK2 = immer true (eingeschränkte Vereins-Kassa). */
+export function hasKassa(tenant: KassabuchTenant): boolean {
   return getKassabuchLizenzStufe(tenant) !== 'basic'
 }
 
-/** Volles Kassabuch (Eingänge + Ausgänge, Bar privat, Kassa an Bank, Belege) mit Pro+ oder Pro++. */
-export function hasKassabuchVoll(tenant: 'k2' | 'oeffentlich'): boolean {
+/** Volles Kassabuch (Eingänge + Ausgänge, Bar, Belege). VK2 = false (nur Einnahmen, schlank). */
+export function hasKassabuchVoll(tenant: KassabuchTenant): boolean {
+  if (tenant === 'vk2') return false
   const stufe = getKassabuchLizenzStufe(tenant)
   return stufe === 'proplus' || stufe === 'propplus'
 }
 
-/** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true) */
+/** Kassabuch führen Ja/Nein – Einstellung pro Kontext (default: true). VK2 = nur Einnahmen. */
 const K2_KASSABUCH_AKTIV_KEY = 'k2-kassabuch-aktiv'
 const OEF_KASSABUCH_AKTIV_KEY = 'k2-oeffentlich-kassabuch-aktiv'
+const VK2_KASSABUCH_AKTIV_KEY = 'k2-vk2-kassabuch-aktiv'
 
-export function isKassabuchAktiv(tenant: 'k2' | 'oeffentlich'): boolean {
+export function isKassabuchAktiv(tenant: KassabuchTenant): boolean {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
+    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : tenant === 'vk2' ? VK2_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
     const v = localStorage.getItem(key)
     if (v === '0' || v === 'false') return false
     return true
@@ -154,9 +173,9 @@ export function isKassabuchAktiv(tenant: 'k2' | 'oeffentlich'): boolean {
   }
 }
 
-export function setKassabuchAktiv(tenant: 'k2' | 'oeffentlich', aktiv: boolean): void {
+export function setKassabuchAktiv(tenant: KassabuchTenant, aktiv: boolean): void {
   try {
-    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
+    const key = tenant === 'oeffentlich' ? OEF_KASSABUCH_AKTIV_KEY : tenant === 'vk2' ? VK2_KASSABUCH_AKTIV_KEY : K2_KASSABUCH_AKTIV_KEY
     localStorage.setItem(key, aktiv ? '1' : '0')
   } catch {}
 }

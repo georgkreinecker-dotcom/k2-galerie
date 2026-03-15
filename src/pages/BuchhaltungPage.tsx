@@ -14,6 +14,7 @@ import {
   hasKassabuchVoll,
   isKassabuchAktiv,
   type KassabuchEintrag,
+  type KassabuchTenant,
 } from '../utils/kassabuchStorage'
 
 const s = {
@@ -26,16 +27,19 @@ const s = {
   shadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
 }
 
-function getTenant(location: ReturnType<typeof useLocation>): 'k2' | 'oeffentlich' {
-  const state = location.state as { fromOeffentlich?: boolean } | null
+function getTenant(location: ReturnType<typeof useLocation>): KassabuchTenant {
+  const state = location.state as { fromOeffentlich?: boolean; fromVk2?: boolean } | null
+  if (state?.fromVk2 === true) return 'vk2'
   if (state?.fromOeffentlich === true) return 'oeffentlich'
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2') return 'vk2'
   if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich') return 'oeffentlich'
   return 'k2'
 }
 
-const ORDERS_KEY: Record<'k2' | 'oeffentlich', string> = {
+const ORDERS_KEY: Record<KassabuchTenant, string> = {
   k2: 'k2-orders',
   oeffentlich: 'k2-oeffentlich-orders',
+  vk2: 'k2-vk2-orders',
 }
 
 interface OrderRow {
@@ -47,7 +51,7 @@ interface OrderRow {
   paymentMethod?: string
 }
 
-function loadOrders(tenant: 'k2' | 'oeffentlich'): OrderRow[] {
+function loadOrders(tenant: KassabuchTenant): OrderRow[] {
   try {
     const raw = localStorage.getItem(ORDERS_KEY[tenant])
     const list = raw ? JSON.parse(raw) : []
@@ -195,16 +199,22 @@ export default function BuchhaltungPage() {
     )
   }
 
+  const adminLink = tenant === 'vk2' ? '/admin?context=vk2' : '/admin'
+  const kassaTo = tenant === 'vk2'
+    ? { pathname: PROJECT_ROUTES['k2-galerie'].shop, state: { openAsKasse: true, fromVk2: true } }
+    : tenant === 'oeffentlich'
+      ? { pathname: PROJECT_ROUTES['k2-galerie'].kassa, state: { fromOeffentlich: true } }
+      : PROJECT_ROUTES['k2-galerie'].kassa
   const navLinks = (
     <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
       <Link
-        to={PROJECT_ROUTES['k2-galerie'].kassa}
+        to={kassaTo}
         style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}
       >
-        ← Kassa
+        ← {tenant === 'vk2' ? 'Kasse (Vereinsbetrieb)' : 'Kassa'}
       </Link>
       <Link
-        to="/admin"
+        to={adminLink}
         style={{ color: s.text, textDecoration: 'none', fontSize: '0.95rem', fontWeight: 600, padding: '0.5rem 0.75rem', background: s.card, border: `1px solid ${s.muted}`, borderRadius: 8 }}
       >
         Admin

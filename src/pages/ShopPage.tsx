@@ -4,11 +4,11 @@ import jsQR from 'jsqr'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getCategoryLabel, MUSTER_TEXTE, MUSTER_ARTWORKS, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
-import { loadStammdaten } from '../utils/stammdatenStorage'
+import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
-import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import '../App.css'
 
@@ -105,10 +105,26 @@ const ShopPage = () => {
     phone: string
     uid: string
   }>({ typ: 'einfach', name: '', firma: '', street: '', plz: '', city: '', email: '', phone: '', uid: '' })
+  // VK2 Vereins-Kasse (schlank): Betrag, Bezeichnung (5 Optionen), bei Spende/Mitgliedsbeitrag optional Name aus Mitgliederliste, Bon optional
+  const [vk2Betrag, setVk2Betrag] = useState('')
+  const [vk2Bezeichnung, setVk2Bezeichnung] = useState('')
+  const [vk2MitgliedName, setVk2MitgliedName] = useState('') // bei Spende/Mitgliedsbeitrag: aus kurzem Mitgliederverzeichnis
+  const [vk2PaymentMethod, setVk2PaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash')
+  const [vk2BonDrucken, setVk2BonDrucken] = useState(true)
+  const VK2_BEZEICHNUNG_OPTIONEN = ['Eintritt', 'Spende', 'Mitgliedsbeitrag', 'Verpflegung / Getränke', 'Sonstiges'] as const
 
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
   const fromOeffentlich = isOeffentlichDisplayContext(location.state)
-  const galerieLink = fromOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau : PROJECT_ROUTES['k2-galerie'].galerieVorschau
+  const fromVk2 =
+    (location.state as { fromVk2?: boolean } | null)?.fromVk2 === true ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2')
+  const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
+  const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
+  const galerieLink = fromOeffentlich
+    ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
+    : fromVk2
+      ? PROJECT_ROUTES.vk2.galerie
+      : PROJECT_ROUTES['k2-galerie'].galerieVorschau
 
   // Galerie-Stammdaten: Kontext getrennt – K2 = echte Daten, ök2 = nur oeffentlich/Muster
   const [internetShopNotSetUp, setInternetShopNotSetUp] = useState(true)
@@ -165,13 +181,17 @@ const ShopPage = () => {
     }
   }, [fromGalerieView, location.state, location.pathname, navigate])
 
-  // Admin: openAsKasse → direkt Kasse öffnen. Bei ök2-Admin: Kontext + fromOeffentlich setzen, damit „Zur Galerie“ und Kontakt ök2 bleiben.
+  // Admin: openAsKasse → direkt Kasse öffnen. Bei ök2/VK2: Kontext setzen.
   useEffect(() => {
-    const state = location.state as { openAsKasse?: boolean; fromOeffentlich?: boolean } | null
+    const state = location.state as { openAsKasse?: boolean; fromOeffentlich?: boolean; fromVk2?: boolean } | null
     if (state?.openAsKasse) {
       try {
-        sessionStorage.setItem('k2-admin-context', state.fromOeffentlich ? 'oeffentlich' : 'k2')
-        if (state.fromOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+        if (state.fromVk2) {
+          sessionStorage.setItem('k2-admin-context', 'vk2')
+        } else {
+          sessionStorage.setItem('k2-admin-context', state.fromOeffentlich ? 'oeffentlich' : 'k2')
+          if (state.fromOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
+        }
       } catch (_) {}
       setForceKasseOpen(true)
     }
@@ -243,10 +263,11 @@ const ShopPage = () => {
     return () => window.removeEventListener('artworks-updated', loadArtworks)
   }, [fromOeffentlich])
 
-  // Bestellungen laden (für Bon erneut drucken)
+  // Bestellungen laden (für Bon erneut drucken) – K2/ök2: k2-orders, VK2: k2-vk2-orders
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('k2-orders')
+      const key = fromVk2 ? 'k2-vk2-orders' : 'k2-orders'
+      const stored = localStorage.getItem(key)
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed)) {
@@ -254,7 +275,7 @@ const ShopPage = () => {
         }
       }
     } catch (_) {}
-  }, [])
+  }, [fromVk2])
 
   // Kunden für Zuordnung beim Verkauf
   useEffect(() => {
@@ -606,6 +627,88 @@ const ShopPage = () => {
       return
     }
     processOrder(method)
+  }
+
+  // VK2: Einnahme erfassen (Betrag + Bezeichnung) → Order speichern, Kassabuch, Bon drucken
+  const handleVk2Einnahme = () => {
+    const betrag = parseFloat((vk2Betrag || '0').replace(',', '.'))
+    if (!Number.isFinite(betrag) || betrag <= 0) {
+      alert('Bitte einen gültigen Betrag eingeben.')
+      return
+    }
+    let bezeichnung = (vk2Bezeichnung || 'Einnahme').trim() || 'Einnahme'
+    if (vk2MitgliedName.trim()) bezeichnung = bezeichnung + ' – ' + vk2MitgliedName.trim()
+    const order = {
+      id: `ORDER-VK2-${Date.now()}`,
+      date: new Date().toISOString(),
+      items: [{ title: bezeichnung, price: betrag, number: '', category: '' }],
+      subtotal: betrag,
+      discount: 0,
+      total: betrag,
+      paymentMethod: vk2PaymentMethod,
+      orderNumber: `O-VK2-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
+    }
+    try {
+      const ordersStored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+      ordersStored.push(order)
+      localStorage.setItem('k2-vk2-orders', JSON.stringify(ordersStored))
+      setOrders(prev => [order, ...prev.slice(0, 19)])
+      addKassabuchEintrag('vk2', {
+        datum: order.date.slice(0, 10),
+        betrag: order.total,
+        art: 'eingang',
+        verkaufId: order.id,
+        verwendungszweck: bezeichnung
+      })
+      if (vk2BonDrucken) printVk2Bon(order)
+      setVk2Betrag('')
+      setVk2Bezeichnung('')
+      setVk2MitgliedName('')
+    } catch (e) {
+      console.error(e)
+      alert('Speichern fehlgeschlagen. Bitte erneut versuchen.')
+    }
+  }
+
+  // Kassenbon für VK2 (Vereins-Stammdaten)
+  const printVk2Bon = (order: any) => {
+    const printWindow = window.open('', '_blank')
+    if (!printWindow) {
+      alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
+      return
+    }
+    const vk2 = loadVk2Stammdaten()
+    const verein = vk2?.verein || {}
+    const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
+    const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
+    const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
+    const date = new Date(order.date)
+    const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const itemsRows = (order.items || []).map((item: any, idx: number) => {
+      const title = (item.title || 'Einnahme').replace(/</g, '&lt;')
+      const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}</td><td style="text-align:center;font-size:8px">1</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td></tr>`
+    }).join('')
+    const paymentText = order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
+    printWindow.document.write(`
+      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Kassenbon</title>
+      <style>@media print { @page { size: 80mm 400mm; margin: 0; } * { -webkit-print-color-adjust: exact; } body { margin: 0; padding: 0; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+      table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
+      td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
+      .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
+      .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>
+      <div class="header"><strong>KASSENBON</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
+      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div><div style="font-size:8px">Bon-Nr.: ${order.orderNumber}</div>
+      <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
+      <div class="total">Gesamtbetrag: € ${order.total.toFixed(2)}</div>
+      <div class="payment"><strong>${paymentText}</strong><br>Vielen Dank!</div>
+      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
+    printWindow.document.close()
+    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
   }
 
   // Kassenbon drucken (80mm Breite, EU-normgerechter Beleg) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
@@ -1320,6 +1423,86 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     } catch (_) {}
     window.dispatchEvent(new CustomEvent('cart-updated'))
     alert(`✅ Reservierung aufgenommen!\n\nWir melden uns bei dir.`)
+  }
+
+  // VK2: nur schlanke Kasse für Vereinsbetrieb (Einnahme erfassen + Bon)
+  if (fromVk2) {
+    return (
+      <div style={{ minHeight: '100vh', background: s.bgDark, color: s.text, fontFamily: s.fontBody, padding: '1.5rem' }}>
+        <link rel="stylesheet" href={PROMO_FONTS_URL} />
+        <div style={{ maxWidth: '420px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: s.accent }}>💰 Kasse – Vereinsbetrieb</h1>
+            <Link to={adminLink} style={{ fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>← Zurück</Link>
+          </div>
+          <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.95rem' }}>
+            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag) – Bon drucken.
+          </p>
+          <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1.25rem', marginBottom: '1rem', boxShadow: s.shadow }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Betrag (€)</label>
+            <input type="number" step="0.01" min="0" value={vk2Betrag} onChange={e => setVk2Betrag(e.target.value)} placeholder="0,00"
+              style={{ width: '100%', padding: '0.6rem', fontSize: '1.1rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, marginBottom: '1rem', boxSizing: 'border-box' }} />
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Bezeichnung (optional)</label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+              {VK2_BEZEICHNUNG_OPTIONEN.map(opt => (
+                <button key={opt} type="button" onClick={() => {
+                  const next = vk2Bezeichnung === opt ? '' : opt
+                  setVk2Bezeichnung(next)
+                  if (next !== 'Spende' && next !== 'Mitgliedsbeitrag') setVk2MitgliedName('')
+                }}
+                  style={{ padding: '0.4rem 0.65rem', border: `2px solid ${vk2Bezeichnung === opt ? s.accent : s.border}`, borderRadius: s.radiusSm, background: vk2Bezeichnung === opt ? s.accentSoft : 'transparent', color: s.text, fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+            <input type="text" value={vk2Bezeichnung} onChange={e => { setVk2Bezeichnung(e.target.value); if (e.target.value !== 'Spende' && e.target.value !== 'Mitgliedsbeitrag') setVk2MitgliedName('') }} placeholder="oder frei eingeben"
+              style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, marginBottom: '1rem', boxSizing: 'border-box' }} />
+            {showVk2Mitglieder && (
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Name (laut Mitgliederverzeichnis, optional)</label>
+                <select value={vk2MitgliedName} onChange={e => setVk2MitgliedName(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, boxSizing: 'border-box', background: s.bgCard, color: s.text }}>
+                  <option value="">– kein Name –</option>
+                  {vk2Mitglieder.map((m: { name: string }) => (
+                    <option key={m.name} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Zahlungsart</label>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              {(['cash', 'card', 'transfer'] as const).map(m => (
+                <button key={m} type="button" onClick={() => setVk2PaymentMethod(m)}
+                  style={{ flex: 1, padding: '0.5rem', border: `2px solid ${vk2PaymentMethod === m ? s.accent : s.border}`, borderRadius: s.radiusSm, background: vk2PaymentMethod === m ? s.accentSoft : 'transparent', color: s.text, fontSize: '0.85rem', cursor: 'pointer' }}>
+                  {m === 'cash' ? 'Bar' : m === 'card' ? 'Karte' : 'Rechnung'}
+                </button>
+              ))}
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', cursor: 'pointer', fontSize: '0.9rem', color: s.text }}>
+              <input type="checkbox" checked={vk2BonDrucken} onChange={e => setVk2BonDrucken(e.target.checked)} style={{ width: '1.1rem', height: '1.1rem' }} />
+              Bon drucken
+            </label>
+            <button type="button" onClick={handleVk2Einnahme}
+              style={{ width: '100%', padding: '0.75rem 1rem', background: s.gradientGreen, color: '#fff', border: 'none', borderRadius: s.radius, fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
+              Einnahme erfassen{vk2BonDrucken ? ' & Bon drucken' : ''}
+            </button>
+          </div>
+          {orders.length > 0 && (
+            <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1rem', boxShadow: s.shadow }}>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: s.text, marginBottom: '0.5rem' }}>Letzte Einnahmen</div>
+              <ul style={{ margin: 0, paddingLeft: '1.25rem', fontSize: '0.9rem', color: s.muted }}>
+                {orders.slice(0, 5).map((o: any) => (
+                  <li key={o.id || o.date}>
+                    {new Date(o.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof o.total === 'number' ? o.total.toFixed(2) : o.total} {(o.items && o.items[0] && o.items[0].title) ? ` · ${o.items[0].title}` : ''}
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
+            </div>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
