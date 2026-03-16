@@ -56,7 +56,7 @@ import { ImageProcessingOptions, type ImageProcessingMode } from '../src/compone
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
 import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
-import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
+import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, getPlakatDesignPrDocCss, designToPlakatVars, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
 /** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
@@ -4682,7 +4682,7 @@ ${'='.repeat(60)}
     let presseDocId: string | null = null
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
     const g = galleryData || {}
     const galleryName = g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     const galleryAddress = g.address || ''
@@ -4883,7 +4883,7 @@ ${'='.repeat(60)}
     let socialDocId: string | null = null
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
     const galleryName = (() => {
       if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       const g = galleryData || {}
@@ -5303,7 +5303,7 @@ ${'='.repeat(60)}
   const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
     const galleryName = (() => {
       if (isVk2) {
         try {
@@ -5476,7 +5476,7 @@ ${'='.repeat(60)}
   const generateEditablePRSuggestionsPDF = (suggestions: any, event: any) => {
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getWerbeliniePrDocCss('k2-pr-doc')
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
     const galleryName = (() => {
       if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
       const g = galleryData || {}
@@ -5892,6 +5892,7 @@ ${'='.repeat(60)}
     const socialContent = eventSuggestion?.socialMedia || generateSocialMediaContent(event)
     const instagramPost = socialContent.instagram
     const facebookPost = socialContent.facebook
+    const sd = designToPlakatVars(designSettings)
 
     const html = `
 <!DOCTYPE html>
@@ -5902,9 +5903,9 @@ ${'='.repeat(60)}
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
-      color: #f4f7ff;
+      font-family: ${sd.font};
+      background: ${sd.bodyBg};
+      color: ${sd.text};
       padding: 2rem;
       min-height: 100vh;
     }
@@ -5914,13 +5915,13 @@ ${'='.repeat(60)}
     }
     h1 {
       font-size: 2rem;
-      color: #5ffbf1;
+      color: ${sd.accent};
       margin-bottom: 2rem;
       text-align: center;
     }
     .post {
-      background: linear-gradient(145deg, rgba(18, 22, 35, 0.95), rgba(12, 16, 28, 0.92));
-      border: 1px solid rgba(95, 251, 241, 0.12);
+      background: ${sd.pageBg};
+      border: 1px solid ${sd.border};
       border-radius: 20px;
       padding: 2rem;
       margin-bottom: 2rem;
@@ -5929,25 +5930,25 @@ ${'='.repeat(60)}
     .platform {
       font-size: 1.5rem;
       font-weight: 600;
-      color: #5ffbf1;
+      color: ${sd.accent};
       margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
     .post-content {
-      background: rgba(255, 255, 255, 0.05);
+      background: ${sd.inputBg};
       border-radius: 12px;
       padding: 1.5rem;
       margin: 1rem 0;
       white-space: pre-wrap;
       font-size: 1.1rem;
       line-height: 1.8;
-      color: #b8c5e0;
+      color: ${sd.muted};
       font-family: inherit;
     }
     button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: ${sd.btnPrimary};
       color: white;
       border: none;
       padding: 0.75rem 1.5rem;
@@ -5956,12 +5957,12 @@ ${'='.repeat(60)}
       font-weight: 600;
       cursor: pointer;
       margin-top: 1rem;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px ${sd.inputBorder};
       transition: all 0.3s ease;
     }
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 15px 40px ${sd.inputBorder};
     }
   </style>
 </head>
@@ -6037,6 +6038,7 @@ ${'='.repeat(60)}
     
     const flyerContent = eventSuggestion?.flyer || generateFlyerContent(event)
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(flyerContent.qrCode)}`
+    const fd = designToPlakatVars(designSettings)
     
     const html = `
 <!DOCTYPE html>
@@ -6053,20 +6055,20 @@ ${'='.repeat(60)}
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
-      color: #f4f7ff;
+      font-family: ${fd.font};
+      background: ${fd.bodyBg};
+      color: ${fd.text};
       padding: 2rem;
       min-height: 100vh;
     }
     .flyer {
-      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      background: ${fd.pageBg};
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto;
       padding: 3rem;
       box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(95, 251, 241, 0.12);
+      border: 1px solid ${fd.border};
       border-radius: 24px;
       display: flex;
       flex-direction: column;
@@ -6075,9 +6077,9 @@ ${'='.repeat(60)}
     h1 {
       font-size: 3rem;
       margin: 0 0 2rem 0;
-      color: #5ffbf1;
+      color: ${fd.accent};
       letter-spacing: 0.02em;
-      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      background: ${fd.accentGradient};
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -6086,22 +6088,22 @@ ${'='.repeat(60)}
       font-size: 1.3rem;
       margin: 2rem 0;
       line-height: 2;
-      color: #b8c5e0;
+      color: ${fd.muted};
     }
     .event-info strong {
-      color: #5ffbf1;
+      color: ${fd.accent};
     }
     .description {
       margin: 2rem 0;
       line-height: 1.8;
       font-size: 1.1rem;
-      color: #b8c5e0;
+      color: ${fd.muted};
     }
     .qr-code {
       text-align: center;
       margin: 2rem 0;
       padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.05);
+      background: ${fd.inputBg};
       border-radius: 16px;
     }
     .qr-code img {
@@ -6112,16 +6114,16 @@ ${'='.repeat(60)}
     .contact {
       margin-top: auto;
       font-size: 1rem;
-      color: #8fa0c9;
-      border-top: 1px solid rgba(95, 251, 241, 0.2);
+      color: ${fd.muted2};
+      border-top: 1px solid ${fd.accentRgba20};
       padding-top: 1.5rem;
     }
     .contact strong {
-      color: #5ffbf1;
+      color: ${fd.accent};
       font-size: 1.2rem;
     }
     button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: ${fd.btnPrimary};
       color: white;
       border: none;
       padding: 1rem 2rem;
@@ -6130,7 +6132,7 @@ ${'='.repeat(60)}
       font-weight: 600;
       cursor: pointer;
       margin: 1rem;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px ${fd.inputBorder};
     }
   </style>
 </head>
@@ -6143,7 +6145,7 @@ ${'='.repeat(60)}
     <div>
       <h1>${flyerContent.headline}</h1>
       
-      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: #8fa0c9; margin-bottom: 1rem;">${flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'}</p>` : ''}
+      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: ${fd.muted2}; margin-bottom: 1rem;">${flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'}</p>` : ''}
       
       <div class="event-info">
         <p><strong>📅 Termindaten:</strong></p>
@@ -6492,6 +6494,8 @@ ${'='.repeat(60)}
       console.log('Event:', event)
       console.log('QR Code URL:', qrCodeUrl)
       console.log('Aktuelle Galerie-Daten:', currentGalleryData)
+
+      const pd = designToPlakatVars(designSettings)
     
       const html = `
 <!DOCTYPE html>
@@ -6511,20 +6515,20 @@ ${'='.repeat(60)}
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #03040a 0%, #0d1426 55%, #111c33 100%);
-      color: #f4f7ff;
+      font-family: ${pd.font};
+      background: ${pd.bodyBg};
+      color: ${pd.text};
       padding: 2rem;
       min-height: 100vh;
     }
     .plakat {
-      background: linear-gradient(145deg, rgba(18, 22, 35, 0.98), rgba(12, 16, 28, 0.98));
+      background: ${pd.pageBg};
       width: 297mm;
       min-height: 420mm;
       margin: 0 auto;
       padding: 4rem;
       box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(95, 251, 241, 0.12);
+      border: 1px solid ${pd.border};
       border-radius: 24px;
       display: flex;
       flex-direction: column;
@@ -6534,10 +6538,10 @@ ${'='.repeat(60)}
     h1 {
       font-size: 5rem;
       margin: 0 0 3rem 0;
-      color: #5ffbf1;
+      color: ${pd.accent};
       text-align: center;
       letter-spacing: 0.02em;
-      background: linear-gradient(135deg, #5ffbf1 0%, #33a1ff 100%);
+      background: ${pd.accentGradient};
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -6548,17 +6552,17 @@ ${'='.repeat(60)}
       text-align: center;
       margin: 2rem 0;
       line-height: 2.5;
-      color: #b8c5e0;
+      color: ${pd.muted};
     }
     .event-info strong {
-      color: #5ffbf1;
+      color: ${pd.accent};
       font-size: 2.2rem;
     }
     .qr-code {
       text-align: center;
       margin: 3rem 0;
       padding: 2rem;
-      background: rgba(255, 255, 255, 0.05);
+      background: ${pd.inputBg};
       border-radius: 20px;
     }
     .qr-code img {
@@ -6569,25 +6573,25 @@ ${'='.repeat(60)}
     .qr-code p {
       font-size: 1.2rem;
       margin-top: 1rem;
-      color: #8fa0c9;
+      color: ${pd.muted2};
     }
     .contact {
       text-align: center;
       font-size: 1.5rem;
-      color: #8fa0c9;
+      color: ${pd.muted2};
       margin-top: auto;
       width: 100%;
       padding-top: 2rem;
-      border-top: 2px solid rgba(95, 251, 241, 0.2);
+      border-top: 2px solid ${pd.accentRgba20};
     }
     .contact strong {
-      color: #5ffbf1;
+      color: ${pd.accent};
       font-size: 1.8rem;
       display: block;
       margin-bottom: 0.5rem;
     }
     button {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: ${pd.btnPrimary};
       color: white;
       border: none;
       padding: 1rem 2rem;
@@ -6596,20 +6600,20 @@ ${'='.repeat(60)}
       font-weight: 600;
       cursor: pointer;
       margin: 1rem;
-      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 10px 30px ${pd.inputBorder};
     }
   </style>
 </head>
 <body>
   <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
-    <button onclick="goBack(); return false;" style="background: #6b7280; margin-right: 8px; cursor: pointer;">← Zurück</button>
+    <button onclick="goBack(); return false;" style="background: ${pd.btnSecondary}; margin-right: 8px; cursor: pointer;">← Zurück</button>
     <button onclick="window.print(); return false;">🖨️ Drucken (A3)</button>
   </div>
   
   <div class="plakat">
     <h1>${String(plakatContent.title || 'Event').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
     
-    ${plakatContent.type ? `<p style="font-size: 2rem; color: #8fa0c9; margin-bottom: 2rem; text-align: center;">${String(plakatContent.type).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+    ${plakatContent.type ? `<p style="font-size: 2rem; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${String(plakatContent.type).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
     
     <div class="event-info">
       <p><strong>Termindaten:</strong></p>
@@ -6617,7 +6621,7 @@ ${'='.repeat(60)}
       
       ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${String(plakatContent.location).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
       
-      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: #b8c5e0;">${String(plakatContent.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>` : ''}
+      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: ${pd.muted};">${String(plakatContent.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>` : ''}
     </div>
     
     <div class="qr-code">

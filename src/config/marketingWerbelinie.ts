@@ -221,6 +221,231 @@ export function getWerbeliniePrDocCss(className: string): string {
   `
 }
 
+/** Design wie Homepage (Design-Tab) – gleiche Felder wie k2-design-settings. Fallback = K2 Terracotta. */
+export type HomepageDesign = Record<string, string> & {
+  backgroundColor1?: string
+  backgroundColor2?: string
+  backgroundColor3?: string
+  accentColor?: string
+  textColor?: string
+  mutedColor?: string
+  cardBg1?: string
+  cardBg2?: string
+}
+
+/** Standard wenn kein Design gesetzt (Terracotta = Homepage-Default). */
+export const DEFAULT_HOMEPAGE_DESIGN: HomepageDesign = {
+  backgroundColor1: '#1c1210',
+  backgroundColor2: '#2a1e1a',
+  backgroundColor3: '#3d2c26',
+  textColor: '#fdf6f2',
+  mutedColor: '#c49a88',
+  accentColor: '#d97a50',
+  cardBg1: 'rgba(45, 34, 30, 0.95)',
+  cardBg2: 'rgba(28, 20, 18, 0.92)',
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace(/^#/, '')
+  if (h.length !== 6 && h.length !== 3) return `rgba(217, 122, 80, ${alpha})`
+  const r = h.length === 6 ? parseInt(h.slice(0, 2), 16) : parseInt(h[0] + h[0], 16)
+  const g = h.length === 6 ? parseInt(h.slice(2, 4), 16) : parseInt(h[1] + h[1], 16)
+  const b = h.length === 6 ? parseInt(h.slice(4, 6), 16) : parseInt(h[2] + h[2], 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+/**
+ * Baut aus Homepage-Design die Farbwerte für Werbemittel-CSS (eine Quelle = Design-Tab).
+ * Exportiert für Plakat-/Flyer-HTML im Admin.
+ */
+export function designToPlakatVars(design: HomepageDesign | null | undefined): {
+  bodyBg: string
+  pageBg: string
+  border: string
+  accentRgba25: string
+  accentRgba20: string
+  accent: string
+  accentGradient: string
+  text: string
+  muted: string
+  muted2: string
+  inputBg: string
+  inputBorder: string
+  font: string
+  btnPrimary: string
+  btnSecondary: string
+} {
+  const d = design && (design.accentColor || design.backgroundColor1) ? design : DEFAULT_HOMEPAGE_DESIGN
+  const bg1 = d.backgroundColor1 || DEFAULT_HOMEPAGE_DESIGN.backgroundColor1!
+  const bg2 = d.backgroundColor2 || DEFAULT_HOMEPAGE_DESIGN.backgroundColor2!
+  const bg3 = d.backgroundColor3 || DEFAULT_HOMEPAGE_DESIGN.backgroundColor3!
+  const card1 = d.cardBg1 || 'rgba(45, 34, 30, 0.95)'
+  const card2 = d.cardBg2 || 'rgba(28, 20, 18, 0.92)'
+  const accent = d.accentColor || DEFAULT_HOMEPAGE_DESIGN.accentColor!
+  return {
+    bodyBg: `linear-gradient(135deg, ${bg1} 0%, ${bg2} 55%, ${bg3} 100%)`,
+    pageBg: `linear-gradient(145deg, ${card1}, ${card2})`,
+    border: hexToRgba(accent, 0.2),
+    accentRgba25: hexToRgba(accent, 0.25),
+    accentRgba20: hexToRgba(accent, 0.2),
+    accent,
+    accentGradient: `linear-gradient(135deg, ${accent} 0%, ${accent}dd 100%)`,
+    text: d.textColor || DEFAULT_HOMEPAGE_DESIGN.textColor!,
+    muted: d.mutedColor || DEFAULT_HOMEPAGE_DESIGN.mutedColor!,
+    muted2: d.mutedColor || DEFAULT_HOMEPAGE_DESIGN.mutedColor!,
+    inputBg: 'rgba(255, 255, 255, 0.05)',
+    inputBorder: hexToRgba(accent, 0.35),
+    font: "'Space Grotesk', 'Segoe UI', system-ui, sans-serif",
+    btnPrimary: `linear-gradient(135deg, ${accent} 0%, ${accent}cc 100%)`,
+    btnSecondary: '#6b7280',
+  }
+}
+
+/**
+ * CSS für alle bearbeitbaren Drucksorten und Aussendungen (Presse, Newsletter, Social Media, kombinierte PR-Vorschläge)
+ * – abgestimmt auf das Homepage-Design (Design-Tab). Wenn du die Homepage-Farben änderst, ändern sich die Werbemittel mit.
+ * @param design Design aus k2-design-settings / k2-oeffentlich-design-settings (oder null = Default Terracotta).
+ */
+export function getPlakatDesignPrDocCss(className: string, design?: HomepageDesign | null): string {
+  const p = designToPlakatVars(design)
+  return `
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: ${p.font};
+    background: ${p.bodyBg};
+    color: ${p.text};
+    padding: 20px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  body.format-a4 .page { width: 210mm; min-height: 297mm; max-width: 100%; }
+  body.format-a3 .page { width: 297mm; min-height: 420mm; max-width: 100%; }
+  body.format-a5 .page { width: 148mm; min-height: 210mm; max-width: 100%; }
+  .page {
+    margin: 0 auto 24px;
+    padding: 12mm 14mm;
+    background: ${p.pageBg};
+    color: ${p.text};
+    border: 1px solid ${p.border};
+    border-radius: 24px;
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+    position: relative;
+    overflow: hidden;
+  }
+  .page .content { position: relative; z-index: 1; }
+  .header {
+    border-bottom: 2px solid ${p.accentRgba25};
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }
+  .header h1 {
+    font-size: clamp(1.5rem, 4vw, 2.2rem);
+    color: ${p.accent};
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: ${p.accentGradient};
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header-info { font-size: 0.9rem; color: ${p.muted2}; line-height: 1.5; }
+  h1, h2 {
+    font-family: ${p.font};
+    color: ${p.accent};
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid ${p.accentRgba20};
+  }
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.2rem; margin-top: 20px; color: ${p.muted}; }
+  .field-group { margin-bottom: 20px; }
+  label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: ${p.accent};
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  textarea, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid ${p.inputBorder};
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    background: ${p.inputBg};
+    color: ${p.text};
+  }
+  textarea:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: ${p.accent};
+    box-shadow: 0 0 0 2px ${p.accentRgba20};
+  }
+  textarea { min-height: 120px; }
+  .no-print {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid ${p.border};
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  .no-print p { color: ${p.muted2}; margin-top: 8px; font-size: 0.85rem; }
+  .no-print button {
+    background: ${p.btnPrimary};
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 4px 8px 0;
+    font-family: inherit;
+    box-shadow: 0 10px 30px ${hexToRgba(p.accent, 0.35)};
+  }
+  .no-print button:hover { filter: brightness(1.1); }
+  .no-print button.secondary { background: ${p.btnSecondary}; }
+  .info-box {
+    background: ${p.inputBg};
+    border-left: 4px solid ${p.accent};
+    padding: 10px 12px;
+    margin: 12px 0;
+    border-radius: 0 12px 12px 0;
+    font-size: 0.9rem;
+    color: ${p.text};
+  }
+  @media print {
+    @page { margin: 10mm; size: A4; }
+    body { margin: 0 !important; background: white !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; color: #1a1f3a !important; }
+    .no-print { display: none !important; }
+    .page {
+      box-shadow: none !important;
+      margin: 0 !important;
+      padding: 8mm 10mm !important;
+      page-break-after: always;
+      background: white !important;
+      color: #1a1f3a !important;
+      border: 1px solid #ddd !important;
+      border-radius: 0 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .page .header h1, .page h1, .page h2 { color: #1a1f3a !important; -webkit-text-fill-color: #1a1f3a; background: none !important; }
+    .page .header-info, .page label { color: #5c5650 !important; }
+    .page textarea, .page input[type="text"] { background: #f9f9f9 !important; color: #1a1f3a !important; border-color: #ccc !important; }
+    body.format-a4 .page { width: 210mm !important; min-height: 297mm !important; }
+    body.format-a3 .page { width: 297mm !important; min-height: 420mm !important; }
+    body.format-a5 .page { width: 148mm !important; min-height: 210mm !important; }
+  }
+  `
+}
+
 /**
  * CSS für PR-Dokumente im VK2-Kontext – hell wie VK2/Admin (WERBEUNTERLAGEN_STIL), nicht dunkles K2-Design.
  */
