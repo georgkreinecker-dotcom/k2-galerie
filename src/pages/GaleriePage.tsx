@@ -6,7 +6,7 @@ import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
-import { getPageTexts, type GaleriePageTexts } from '../config/pageTexts'
+import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
@@ -309,7 +309,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const isVorschauModusEarly = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
   // K2/ök2/VK2: Immer mit Tenant – nie K2-Texte auf ök2 oder VK2
   const pageTextsTenant = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : undefined
-  const defaultGalerieTexts = useMemo(() => getPageTexts(pageTextsTenant).galerie, [pageTextsTenant])
+  const defaultGalerieTexts = useMemo(() => {
+    if (pageTextsTenant === undefined) cleanK2PageTextsFromVk2()
+    return getPageTexts(pageTextsTenant).galerie
+  }, [pageTextsTenant])
   const [vorschauGalerieTexts, setVorschauGalerieTexts] = useState<GaleriePageTexts | null>(null)
   useEffect(() => {
     if (isVorschauModusEarly) setVorschauGalerieTexts(getPageTexts(pageTextsTenant).galerie)

@@ -167,6 +167,45 @@ function getSafeDefaults(tenantId?: PageTextsTenantId): PageTextsConfig {
   return base
 }
 
+/** K2-Seitentexte von VK2-Verunreinigung bereinigen (Datenvermischung). Wird vor dem ersten Lesen der K2-Galerie aufgerufen. */
+export function cleanK2PageTextsFromVk2(): void {
+  if (typeof window === 'undefined') return
+  try {
+    const key = STORAGE_KEY
+    const raw = localStorage.getItem(key)
+    if (!raw || raw.length >= 100000) return
+    const saved = JSON.parse(raw) as Partial<PageTextsConfig>
+    if (!saved?.galerie) return
+    const k2Galerie = defaults.galerie
+    let dirty = false
+    if (saved.galerie.welcomeSubtext === 'Kunstverein') {
+      saved.galerie.welcomeSubtext = k2Galerie.welcomeSubtext
+      dirty = true
+    }
+    if (saved.galerie.virtualTourButtonText === 'Vereinsräume') {
+      saved.galerie.virtualTourButtonText = k2Galerie.virtualTourButtonText
+      dirty = true
+    }
+    if (saved.galerie.welcomeIntroText && saved.galerie.welcomeIntroText.includes('Mitglieder unseres Vereins')) {
+      saved.galerie.welcomeIntroText = k2Galerie.welcomeIntroText
+      dirty = true
+    }
+    if (saved.galerie.eventSectionHeading === 'Vereinstermine & Events') {
+      saved.galerie.eventSectionHeading = k2Galerie.eventSectionHeading
+      dirty = true
+    }
+    if (saved.galerie.kunstschaffendeHeading === 'Unsere Mitglieder') {
+      saved.galerie.kunstschaffendeHeading = k2Galerie.kunstschaffendeHeading
+      dirty = true
+    }
+    if (saved.galerie.galerieButtonText === 'Unsere Mitglieder') {
+      saved.galerie.galerieButtonText = k2Galerie.galerieButtonText
+      dirty = true
+    }
+    if (dirty) localStorage.setItem(key, JSON.stringify(saved))
+  } catch (_) {}
+}
+
 /** Liest Seitentexte. tenantId 'oeffentlich' = ök2 (k2-oeffentlich-page-texts); 'vk2' = VK2. */
 export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
   const key = getStorageKey(tenantId)
