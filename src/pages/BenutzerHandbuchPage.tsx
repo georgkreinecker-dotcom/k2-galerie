@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 
 const HANDBUCH_BASE = '/benutzer-handbuch'
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -473,6 +473,7 @@ export default function BenutzerHandbuchPage() {
                 <div className="benutzer-druck-inhalt" style={{ fontSize: '10pt', lineHeight: 1.6, color: '#1c1a18' }}>
                   <p style={{ margin: '0 0 0.5rem' }}><strong>{PRODUCT_BRAND_NAME}</strong></p>
                   <p style={{ margin: '0 0 0.5rem' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+                  <p style={{ margin: '0 0 0.5rem', fontSize: '9pt' }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
                   {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
                     <p style={{ margin: 0 }}><strong>Kontakt:</strong> <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: '#1c1a18', textDecoration: 'underline' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a></p>
                   )}

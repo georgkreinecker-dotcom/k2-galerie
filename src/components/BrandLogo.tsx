@@ -42,8 +42,8 @@ export default function BrandLogo() {
       }}
       title="In die ök2-Welt eintauchen – in 5 Minuten deine eigene Galerie aufbauen"
     >
-      <span style={{ fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-        {PRODUCT_BRAND_NAME}
+      <span style={{ fontSize: 14, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+        {PRODUCT_BRAND_NAME} <span style={{ fontSize: 11, opacity: 0.9 }}>©</span>
       </span>
       <span style={{
         fontSize: 11,

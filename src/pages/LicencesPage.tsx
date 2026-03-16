@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
@@ -534,6 +535,10 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           </section>
         )}
       </div>
+      <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', fontSize: '0.75rem', color: 'var(--k2-muted)' }}>
+        <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+        <div style={{ marginTop: '0.35rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+      </footer>
     </div>
   )
 }

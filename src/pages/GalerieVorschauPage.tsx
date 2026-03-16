@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -2950,6 +2950,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           )
         })()}
         </main>
+        {/* Fusszeile – eiserne Regel: Copyright wie definiert (K2/ök2/VK2) */}
+        <footer style={{ padding: '1rem clamp(1rem, 3vw, 2rem)', borderTop: '1px solid color-mix(in srgb, var(--k2-muted, #c49a88) 25%, transparent)', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'var(--k2-muted, #c49a88)', letterSpacing: '0.01em', textAlign: 'center' }}>
+          <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+          <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+        </footer>
       </div>
 
       {/* Bildschirmfüllende Lightbox für Bilder - auf Mobile ganzer Bildschirm (100dvh) */}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
-import { initVk2DemoStammdatenIfEmpty, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, type Vk2Stammdaten } from '../config/tenantConfig'
+import { initVk2DemoStammdatenIfEmpty, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type Vk2Stammdaten } from '../config/tenantConfig'
 import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
@@ -409,6 +409,7 @@ const Vk2GaleriePage: React.FC = () => {
             </div>
           )}
           <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </footer>
 

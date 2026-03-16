@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
-import { PRODUCT_BRAND_NAME, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
@@ -801,7 +801,7 @@ export default function EntdeckenPage() {
         </div>
       )}
 
-      {/* Fußzeile – nicht auf erster Seite (Hero), damit klare Botschaft ohne Ablenkung */}
+      {/* Fußzeile – eiserne Regel: Copyright wie definiert (K2/ök2/VK2); nicht auf Hero/Result */}
       {step !== 'result' && step !== 'hero' && (
         <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
           <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
@@ -809,6 +809,8 @@ export default function EntdeckenPage() {
           {PRODUCT_BRAND_NAME}
           {' · '}
           <span>Kein Erwerb nötig</span>
+          <div style={{ marginTop: '0.5rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+          <div style={{ marginTop: '0.2rem', fontSize: '0.65rem', opacity: 0.9 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
         </div>
       )}
 

@@ -21,6 +21,9 @@ export const PRODUCT_COPYRIGHT = `Copyright © ${COPYRIGHT_YEAR} kgm solution. A
 /** Nur Brand + Copyright – überall außerhalb von K2 (ök2, VK2): keine K2-Daten, nur diese Zeile. */
 export const PRODUCT_COPYRIGHT_BRAND_ONLY = `Copyright © ${COPYRIGHT_YEAR} kgm solution. Alle Rechte vorbehalten.`
 
+/** Zweite Zeile Fusszeile: Urheberschaft Anwendung (Name gebunden) – eiserne Regel: jede Oberflächen-Seite K2/ök2/VK2. */
+export const PRODUCT_URHEBER_ANWENDUNG = 'Konzept, Design und technische Umsetzung: kgm solution (G. Kreinecker). Alle Rechte vorbehalten.'
+
 /**
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
  * Eine Quelle, überall präsent.

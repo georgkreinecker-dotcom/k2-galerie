@@ -5,7 +5,7 @@
  */
 
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WILLKOMMEN_ROUTE, MOK2_ROUTE } from '../config/navigation'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -108,6 +108,13 @@ export default function AGBPage() {
         </section>
 
         <section style={{ marginBottom: '1.75rem' }}>
+          <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>5. Urheberrecht an der Anwendung</h2>
+          <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
+            Die Anwendung (Software, Konzept, Design und technische Umsetzung) ist urheberrechtlich geschützt. Alle Rechte liegen bei <strong>{PRODUCT_BRAND_NAME}</strong> (G. Kreinecker). Alle Rechte vorbehalten. Die Nutzung ist nur im Rahmen dieser AGB und der vereinbarten Lizenz gestattet.
+          </p>
+        </section>
+
+        <section style={{ marginBottom: '1.75rem' }}>
           <h2 style={{ fontFamily: s.fontHeading, fontSize: '1.15rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 600 }}>6. Steuern, Buchhaltung und Finanzen</h2>
           <p style={{ margin: 0, lineHeight: 1.7, fontSize: '0.95rem' }}>
             Die Anwendung ersetzt keine steuerliche, rechtliche oder betriebswirtschaftliche Beratung. Der Nutzer ist allein verantwortlich für die Richtigkeit seiner Angaben gegenüber Finanzämtern, Behörden und Dritten. Es wird keine Haftung für Folgen aus steuerlichen Prüfungen, Nachforderungen oder sonstigen finanziellen Konsequenzen übernommen. Bei Fragen zu Steuern und Buchführung ist eine qualifizierte Beratung (Steuerberater, Rechtsanwalt) einzuholen.
@@ -174,7 +181,10 @@ export default function AGBPage() {
           <Link to={WILLKOMMEN_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>Willkommensseite</Link>
         </p>
         <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: s.muted }}>
-          {PRODUCT_COPYRIGHT}
+          {PRODUCT_COPYRIGHT_BRAND_ONLY}
+        </p>
+        <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: s.muted, opacity: 0.95 }}>
+          {PRODUCT_URHEBER_ANWENDUNG}
         </p>
       </div>
     </div>

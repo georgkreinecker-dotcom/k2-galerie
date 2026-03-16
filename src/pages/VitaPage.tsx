@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { MUSTER_TEXTE } from '../config/tenantConfig'
+import { MUSTER_TEXTE, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { loadStammdaten, saveStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import '../App.css'
@@ -145,6 +145,10 @@ export default function VitaPage() {
         </button>
         {saved && <span style={{ color: 'var(--k2-accent)', fontSize: '0.9rem' }}>Gespeichert.</span>}
       </div>
+      <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.15)', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+        <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+        <div style={{ marginTop: '0.35rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
+      </footer>
     </div>
   )
 }

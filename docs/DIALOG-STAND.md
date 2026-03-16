@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – **K2/VK2-Vermischung behoben (eiserne Absicherungen).** Ursache: Auto-Save schrieb beim Tab-Wechsel VK2→K2 noch **VK2-State** in k2-events/k2-documents. **Fixes:** (1) **eventsStorage:** saveEvents('k2') filtert VK2-IDs raus; schreibt nie, wenn nur VK2 übrig bliebe (K2 würde sonst geleert). (2) **autoSave:** Schreibt Events/Dokumente nur, wenn Daten nicht wie VK2 aussehen (alle IDs in VK2 → Skip). (3) **documentsStorage:** saveDocuments('k2') bricht ab, wenn Inhalt exakt k2-vk2-documents ist. (4) **Admin:** Events bei Kontextwechsel **sofort** laden (0 ms, kein 400-ms-Delay). Regel: **.cursor/rules/k2-events-documents-niemals-vk2-schreiben.mdc**. Wiederherstellung verlorener Daten nur aus Vollbackup/backupmicro (EVENTPLANUNG-24-26-04-WIEDERHERSTELLUNG.md). Tests 194/194.
+**Letzter Stand:** 16.03.26 – **Eiserne Regel Copyright:** Jede Oberflächen-Seite K2/ök2/VK2 mit definiertem Copyright (zwei Zeilen) in der UI. **Umsetzung:** GalerieVorschauPage, EntdeckenPage, WillkommenPage (beide Varianten), AGBPage, VitaPage, BenutzerHandbuchPage (Impressum), LicencesPage – alle mit PRODUCT_COPYRIGHT_BRAND_ONLY + PRODUCT_URHEBER_ANWENDUNG (tenantConfig). Regel: **.cursor/rules/copyright-jede-seite-k2-oek2-vk2.mdc** (alwaysApply). Tests 212, Build grün.
 
-**Was wir JETZT tun:** Commit + Push. Georg: Optional Backup-Datei suchen und wiederherstellen; danach K2-Galerie prüfen.
+**Was wir JETZT tun:** Commit + Push.
 
-**Nächster Schritt:** Nach Push: K2-Eventplanung testen; Vermischung darf nicht mehr vorkommen.
+**Nächster Schritt:** Von Georg festlegen (z. B. K2-Eventplanung testen, Copyright-Fusszeilen sichten).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { initVk2DemoStammdatenIfEmpty, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
+import { initVk2DemoStammdatenIfEmpty, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
@@ -340,10 +340,12 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         )}
       </div>
 
-      {/* Footer */}
+      {/* Footer – eiserne Regel: Copyright wie definiert (K2/ök2/VK2) */}
       <footer style={{ marginTop: '2rem', padding: '1.5rem clamp(1.25rem, 5vw, 3rem)', borderTop: `1px solid ${C.border}`, background: '#f2ede6', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
         <div style={{ fontWeight: 600, fontSize: '0.82rem', color: C.textMid, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>K2 Galerie</div>
-        <div style={{ color: C.textLight, fontSize: '0.78rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
+        <div style={{ color: C.textLight, fontSize: '0.78rem', marginBottom: '0.5rem' }}>© {new Date().getFullYear()} {vereinsName} · Powered by K2 Galerie</div>
+        <div style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
+        <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
       </footer>
 
       {/* Stand-Badge – im iframe (Cursor Preview) kein Reload */}

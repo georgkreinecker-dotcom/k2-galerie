@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
-import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 const AGB_ACCEPTED_KEY = 'k2-agb-accepted'
@@ -217,10 +217,11 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             {' · '}
             <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
-            {PRODUCT_COPYRIGHT}
+            {PRODUCT_COPYRIGHT_BRAND_ONLY}
             {' · '}
             <Link to={MOK2_ROUTE} style={{ color: muted, textDecoration: 'none' }}>mök2</Link>
           </p>
+          <p style={{ textAlign: 'center', marginTop: '0.25rem', fontSize: '0.7rem', color: muted, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </div>
 
@@ -318,10 +319,11 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
             {' · '}
             <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
-            {PRODUCT_COPYRIGHT}
+            {PRODUCT_COPYRIGHT_BRAND_ONLY}
             {' · '}
             <Link to={MOK2_ROUTE} style={{ color: muted, textDecoration: 'none' }}>mök2</Link>
           </p>
+          <p style={{ textAlign: 'center', marginTop: '0.25rem', fontSize: '0.7rem', color: muted, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </div>
 

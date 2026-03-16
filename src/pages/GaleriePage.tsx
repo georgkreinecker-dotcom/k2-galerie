@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
@@ -2440,14 +2440,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }}
         >
           <div style={{
-            fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
-            fontWeight: '600',
+            fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
+            fontWeight: '500',
             color: 'var(--k2-text)',
             letterSpacing: '0.02em',
             lineHeight: 1.25,
-            textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)'
+            textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
+            opacity: 0.92
           }}>
-            {vk2 ? displayGalleryName : PRODUCT_BRAND_NAME}
+            {vk2 ? displayGalleryName : <>{PRODUCT_BRAND_NAME} <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span></>}
           </div>
         </div>
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
@@ -3790,6 +3791,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>
                   {PRODUCT_COPYRIGHT_BRAND_ONLY}
+                </p>
+                <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: theme.muted, opacity: 0.95 }}>
+                  {PRODUCT_URHEBER_ANWENDUNG}
                 </p>
             </div>
           </section>

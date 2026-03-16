@@ -1,0 +1,35 @@
+---
+description: Eiserne Regel – Jede Oberflächen-Seite K2/ök2/VK2 mit definiertem Copyright (zwei Zeilen) in der UI.
+alwaysApply: true
+---
+
+# 🔒 Eiserne Regel: Copyright auf jeder Oberflächen-Seite (K2, ök2, VK2)
+
+## Regel (unveränderlich)
+
+**Jede Oberflächen-Seite von K2, ök2 und VK2 ist an der Oberfläche mit dem wie jetzt definierten Copyright zu versehen.**
+
+- **Zwei Zeilen, überall gleich:**
+  1. **Zeile 1:** `PRODUCT_COPYRIGHT_BRAND_ONLY` → „Copyright © [Jahr] kgm solution. Alle Rechte vorbehalten.“
+  2. **Zeile 2:** `PRODUCT_URHEBER_ANWENDUNG` → „Konzept, Design und technische Umsetzung: kgm solution (G. Kreinecker). Alle Rechte vorbehalten.“
+
+- **Quelle:** Beide Konstanten in **`src/config/tenantConfig.ts`**. Keine eigenen Texte erfinden – immer diese Konstanten verwenden.
+
+## Betroffene Seiten (Beispiele – nicht abschließend)
+
+- GaleriePage, GalerieVorschauPage
+- Vk2GaleriePage, Vk2GalerieVorschauPage
+- WillkommenPage, EntdeckenPage, VitaPage, AGBPage
+- BenutzerHandbuchPage (Impressum/Druck + ggf. Fusszeile)
+- LicencesPage
+
+**Neue Seiten:** Wenn eine neue Oberflächen-Seite hinzukommt, die Besucher oder Nutzer von K2/ök2/VK2 sehen: Footer bzw. Fusszeile mit beiden Zeilen ergänzen.
+
+## Checkliste vor „Fertig“ (wenn neue Seite oder großer Refactor)
+
+- [ ] Hat jede sichtbare Seite (K2/ök2/VK2) einen Bereich mit `PRODUCT_COPYRIGHT_BRAND_ONLY` und `PRODUCT_URHEBER_ANWENDUNG`?
+- [ ] Werden die Konstanten aus tenantConfig importiert (kein Hardcoding)?
+
+## Kurzfassung
+
+**Copyright = zwei Zeilen, eine Quelle (tenantConfig). Jede Oberflächen-Seite K2/ök2/VK2 muss sie in der UI anzeigen.**
