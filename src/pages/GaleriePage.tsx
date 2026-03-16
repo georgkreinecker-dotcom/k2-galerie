@@ -2359,6 +2359,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }
 
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
+  const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
 
   return (
     <div style={{ 
@@ -2373,8 +2374,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       overflowX: 'hidden',
       overflowY: 'visible'
     }}>
-      {/* Gelbe Leiste: auf jeder Seite oben – gespeicherte Änderungen sichtbar, Veröffentlichen-Hinweis */}
-      {isVorschauModus && (
+      {/* Gelbe Leiste nur, wenn Aufruf vom Admin (fromAdminTab) – für User verboten, zur APf zu führen */}
+      {isVorschauModus && fromAdmin && (
         <div style={{
           position: 'sticky',
           top: 0,

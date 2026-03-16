@@ -1715,7 +1715,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               {mitglieder.length > 0 ? `${mitglieder.length} Mitglieder` : 'Mitglieder-Galerie'}
             </p>
           </div>
-          <button type="button" onClick={() => navigate(-1)}
+          <button type="button" onClick={() => (location.state as { fromAdminTab?: string } | null)?.fromAdminTab != null ? navigate(-1) : navigate(PROJECT_ROUTES.vk2.galerie)}
             style={{ padding: '0.5rem 1.2rem', background: 'transparent', border: `1px solid ${vk2Accent}66`, color: vk2AccentLight, borderRadius: '8px', cursor: 'pointer', fontSize: '0.88rem', fontWeight: 600 }}>
             ← Zurück
           </button>
@@ -1795,8 +1795,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
 
   return (
     <>
-      {/* Gelbe Leiste: auf jeder Seite oben – gespeicherte Änderungen sichtbar, Veröffentlichen-Hinweis */}
-      {isVorschauModus && (
+      {/* Gelbe Leiste nur, wenn Aufruf vom Admin (fromAdminTab) – für User verboten, zur APf zu führen */}
+      {isVorschauModus && (location.state as { fromAdminTab?: string } | null)?.fromAdminTab != null && (
         <div style={{
           position: 'sticky',
           top: 0,

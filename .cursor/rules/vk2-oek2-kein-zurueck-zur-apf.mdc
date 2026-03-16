@@ -1,0 +1,32 @@
+---
+description: VK2/ök2 – Für User verboten, Buttons/Links zur APf oder K2; Zurück/Admin nur bei fromAdminTab.
+alwaysApply: true
+---
+
+# 🔒 VK2 & ök2 – Kein Zurück/Link zur APf oder K2 für User
+
+## Regel (unveränderlich)
+
+**Buttons oder Links, die von VK2- oder ök2-Oberflächen zurück zur APf (Admin, mein-bereich, Mission Control, /) oder zu K2 führen, sind für normale Nutzer verboten.**
+
+- **User** (Vereinsbesucher, Demo-Nutzer) dürfen **keine** sichtbaren Wege zur APf oder zu K2 haben.
+- **Admin-Kontext:** Nur wenn der Aufruf **vom Admin** kommt (`location.state?.fromAdminTab` gesetzt), dürfen „Zurück zu Einstellungen“, „← Zurück“ (zur App-Root) oder „Admin“ / „Mit mir in den Admin“ angezeigt werden.
+
+## Umsetzung
+
+| Seite | Erlaubt | Verboten für User |
+|-------|---------|--------------------|
+| **Vk2GalerieVorschauPage** | Keine gelbe Leiste, keine Nav-Buttons „Zurück“/„Startseite“ | Kein Link zu /admin, kein Zurück zu Einstellungen |
+| **Vk2GaleriePage** | „← Zurück“, „Admin“, „Mit mir in den Admin“ nur wenn `fromAdminTab` im state | Ohne fromAdminTab: keine Links zu /, /admin, /mein-bereich |
+| **GalerieVorschauPage** (ök2/K2/VK2) | Gelbe Leiste „Zurück zu Einstellungen“ nur wenn `fromAdminTab` gesetzt | Ohne fromAdminTab: keine gelbe Leiste |
+| **GaleriePage** (ök2/VK2/K2) | Wie oben: gelbe Leiste nur bei `fromAdminTab` | Sonst keine Zurück-zu-Admin-Buttons |
+| **VK2-Mitglieder-Block** (in GalerieVorschauPage) | „← Zurück“: bei fromAdminTab → navigate(-1), sonst → PROJECT_ROUTES.vk2.galerie | navigate(-1) könnte sonst zur APf führen |
+
+## Checkliste bei neuen VK2/ök2-Seiten
+
+- [ ] Gibt es einen „Zurück“- oder „Admin“-Button? → Nur anzeigen, wenn `location.state?.fromAdminTab` gesetzt.
+- [ ] Führt ein Link zu `/`, `/admin`, `/mein-bereich`, Mission Control oder K2-Galerie? → Für User ausblenden oder durch sichere Zielroute ersetzen.
+
+## Kurzfassung
+
+**User in VK2/ök2 sehen keine Wege zur APf oder zu K2. fromAdminTab = Aufruf vom Admin → dann Zurück/Admin-Buttons erlaubt.**
