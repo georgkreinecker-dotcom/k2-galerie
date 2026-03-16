@@ -190,6 +190,36 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
           try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
         }
       }
+      // K2 (tenantId undefined): VK2-Texte die durch Kontext-Bug hereingekommen sind → mit K2-Defaults bereinigen (Datenvermischung No-Go)
+      if (tenantId === undefined && saved.galerie) {
+        const k2Galerie = defaults.galerie
+        let dirty = false
+        if (saved.galerie.welcomeSubtext === 'Kunstverein') {
+          saved.galerie.welcomeSubtext = k2Galerie.welcomeSubtext
+          dirty = true
+        }
+        if (saved.galerie.virtualTourButtonText === 'Vereinsräume') {
+          saved.galerie.virtualTourButtonText = k2Galerie.virtualTourButtonText
+          dirty = true
+        }
+        if (saved.galerie.welcomeIntroText && saved.galerie.welcomeIntroText.includes('Mitglieder unseres Vereins')) {
+          saved.galerie.welcomeIntroText = k2Galerie.welcomeIntroText
+          dirty = true
+        }
+        if (saved.galerie.eventSectionHeading === 'Vereinstermine & Events') {
+          saved.galerie.eventSectionHeading = k2Galerie.eventSectionHeading
+          dirty = true
+        }
+        if (saved.galerie.kunstschaffendeHeading === 'Unsere Mitglieder') {
+          saved.galerie.kunstschaffendeHeading = k2Galerie.kunstschaffendeHeading
+          dirty = true
+        }
+        if (saved.galerie.galerieButtonText === 'Unsere Mitglieder') {
+          saved.galerie.galerieButtonText = k2Galerie.galerieButtonText
+          dirty = true
+        }
+        if (dirty) try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
+      }
       // VK2: K2-Daten die durch Kontext-Bug hereingekommen sind → mit VK2-Defaults bereinigen
       if (tenantId === 'vk2' && saved.galerie) {
         const k2Defaults = ['K2 Galerie', 'Kunst & Keramik – Martina und Georg Kreinecker', 'Martina Kreinecker', 'Georg Kreinecker']

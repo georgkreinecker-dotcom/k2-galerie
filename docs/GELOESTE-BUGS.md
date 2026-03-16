@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-038 · K2 Galerie-Startseite zeigte VK2-Texte (Datenvermischung, gelöst 16.03.26)
+
+**Symptom:** Auf der K2 Galerie Startseite (Kunst & Keramik) erschienen Vereins-Inhalte: „Kunstverein“, „Die Mitglieder unseres Vereins“, „VEREINSTERMINE & EVENTS“, „Vereinsräume“ (rechte Tür). Datenvermischung = eisernes No-Go.
+
+**Ursache:** (1) localStorage `k2-page-texts` (K2) konnte durch Kontext-Wechsel mit VK2-Texten verunreinigt sein. (2) In GaleriePage wurden für K2/ök2 keine defensiven Overrides genutzt – einmal gespeicherte VK2-Texte wurden angezeigt.
+
+**Lösung:** (1) **pageTexts.ts:** Beim Lesen von K2 (tenantId undefined) VK2-Marker in saved.galerie erkennen (Kunstverein, Vereinsräume, Mitglieder unseres Vereins, Vereinstermine & Events, Unsere Mitglieder) und mit K2-Defaults überschreiben + zurück in localStorage schreiben. (2) **GaleriePage.tsx:** Bei !vk2 niemals VK2-Texte anzeigen: welcomeSubtext „Kunstverein“ → tenantConfig.tagline; welcomeIntroText mit „Mitglieder unseres Vereins“ → K2-Intro; eventSectionHeading „Vereinstermine & Events“ → „Aktuelles aus den Eventplanungen“; virtualTourButtonText „Vereinsräume“ → „Virtueller Rundgang“.
+
+**Betroffene Dateien:** src/config/pageTexts.ts (K2-Bereinigung in getPageTexts), src/pages/GaleriePage.tsx (Anzeige-Overrides bei !vk2).
+
+**Status:** ✅ Behoben (16.03.26).
+
+---
+
 ## BUG-037 · Design-Fehler Sync: Lokal überschrieb Server beim „Vom Server laden“ (gelöst 13.03.26)
 
 **Symptom:** Nach „An Server senden“ (vom iPad) und „Aktuellen Stand holen“ (Mac/Handy) waren Daten und Fotos nicht zu 100 % gleich – lokale Versionen konnten den gerade gesendeten Server-Stand wieder überschreiben. Viele Stunden Frust.

@@ -2413,7 +2413,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
             marginBottom: '1rem'
           }}>
-            <span>{displayGalleryName} – {galerieTexts.kunstschaffendeHeading || 'Unsere Mitglieder'}</span>
+            <span>{displayGalleryName} – {(galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' && !vk2 ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || (vk2 ? 'Unsere Mitglieder' : 'Die Kunstschaffenden')}</span>
           </div>
         )}
         {/* Galerie teilen (Web Share) oder Link kopieren – für alle sichtbar. */}
@@ -2997,7 +2997,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   color: musterOnly ? 'var(--k2-accent)' : 'rgba(255,255,255,0.75)',
                   letterSpacing: '0.02em',
                 }}>
-                  {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
+                  {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext === 'Kunstverein' ? '' : (galerieTexts.welcomeSubtext ?? '').trim()) || tenantConfig.tagline)}
                 </p>
               </div>
             </div>
@@ -3045,7 +3045,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 letterSpacing: '0.02em',
                 fontStyle: 'italic',
               }}>
-                {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext ?? '').trim() || tenantConfig.tagline)}
+                {musterOnly ? tenantConfig.tagline : ((galerieTexts.welcomeSubtext === 'Kunstverein' ? '' : (galerieTexts.welcomeSubtext ?? '').trim()) || tenantConfig.tagline)}
               </p>
               <p style={{
                 margin: 0,
@@ -3057,13 +3057,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               }}>
                 {(() => {
                   if (musterOnly) return MUSTER_TEXTE.welcomeText
-                  const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft'
+                  const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
                   const intro = galerieTexts.welcomeIntroText?.trim() || ''
                   // VK2: K2-Standardtext nie anzeigen – immer eigenen VK2-Text
-                  if (vk2 && (!intro || intro.startsWith(k2DefaultIntro))) {
+                  if (vk2 && (!intro || intro.startsWith('Ein Neuanfang mit Leidenschaft'))) {
                     return 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
                   }
-                  return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
+                  // K2/ök2: Niemals VK2-Text (Datenvermischung No-Go)
+                  if (!vk2 && intro && intro.includes('Mitglieder unseres Vereins')) return k2DefaultIntro
+                  return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : k2DefaultIntro)
                 })()}
               </p>
             </div>
@@ -3084,12 +3086,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             }}>
               {(() => {
                 if (musterOnly) return MUSTER_TEXTE.welcomeText
-                const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft'
+                const k2DefaultIntro = 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
                 const intro = galerieTexts.welcomeIntroText?.trim() || ''
-                if (vk2 && (!intro || intro.startsWith(k2DefaultIntro))) {
+                if (vk2 && (!intro || intro.startsWith('Ein Neuanfang mit Leidenschaft'))) {
                   return 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
                 }
-                return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
+                if (!vk2 && intro && intro.includes('Mitglieder unseres Vereins')) return k2DefaultIntro
+                return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : k2DefaultIntro)
               })()}
             </p>
           </section>
@@ -3174,7 +3177,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               borderLeft: musterOnly ? '4px solid #6b9080' : vk2 ? '4px solid var(--k2-accent)' : '4px solid rgba(184, 184, 255, 0.6)'
             }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
-                {galerieTexts.eventSectionHeading || 'Demnächst bei uns'}
+                {(galerieTexts.eventSectionHeading === 'Vereinstermine & Events' ? 'Aktuelles aus den Eventplanungen' : galerieTexts.eventSectionHeading) || 'Demnächst bei uns'}
               </p>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
                 {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => {
@@ -3247,7 +3250,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               textAlign: 'center',
               letterSpacing: '-0.02em'
             }}>
-              {musterOnly ? 'Künstler:in' : (galerieTexts.kunstschaffendeHeading || 'Die Kunstschaffenden')}
+              {musterOnly ? 'Künstler:in' : (galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || 'Die Kunstschaffenden'}
             </h3>
             
             <div style={{
@@ -3577,7 +3580,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   color: musterOnly ? theme.text : 'rgba(255, 255, 255, 0.95)',
                   marginBottom: 'clamp(0.35rem, 1vw, 0.5rem)'
                 }}>
-                  {galerieTexts.virtualTourButtonText || 'Virtueller Rundgang'}
+                  {(galerieTexts.virtualTourButtonText === 'Vereinsräume' ? 'Virtueller Rundgang' : galerieTexts.virtualTourButtonText) || 'Virtueller Rundgang'}
                 </h3>
                 {!(musterOnly ? displayImages.virtualTourVideo : (displayImages.virtualTourVideo || '/img/k2/virtual-tour.mp4')) && (
                   <p style={{
