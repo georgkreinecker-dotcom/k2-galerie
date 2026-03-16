@@ -123,6 +123,15 @@ function escapeJsStringForDoc(s: string): string {
   return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r')
 }
 
+/** Text in HTML umwandeln: URLs werden als klickbare Links gerendert, Rest escaped. Für Vorschau und Druck. */
+function textToHtmlWithLinks(text: string): string {
+  if (!text || typeof text !== 'string') return ''
+  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  const urlRe = /(https?:\/\/[^\s<>"']+)/g
+  const parts = text.split(urlRe)
+  return parts.map((part) => (/^https?:\/\//.test(part) ? `<a href="${esc(part)}" target="_blank" rel="noopener noreferrer">${esc(part)}</a>` : esc(part))).join('')
+}
+
 /** Einheitliche „← Zurück“-Leiste für alle geöffneten Dokumente (K2, ök2, VK2) – immer sichtbar, gleicher Tab/Kontext. */
 function getDocumentBackBarHtml(returnUrl: string): string {
   const url = escapeJsStringForDoc(returnUrl)
@@ -1196,6 +1205,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       return p.get('openModal') === '1' && p.get('tab') === 'eventplan' && p.get('eventplan') === 'öffentlichkeitsarbeit'
     } catch { return false }
   })
+  /** Event, für das gerade „Texte redigieren“ offen ist – null = Modal zu */
+  const [redactionEvent, setRedactionEvent] = useState<any>(null)
+  const [redactionPresseTitle, setRedactionPresseTitle] = useState('')
+  const [redactionPresseContent, setRedactionPresseContent] = useState('')
+  const [redactionPresseImageUrl, setRedactionPresseImageUrl] = useState('')
+  const [redactionPresseQrShow, setRedactionPresseQrShow] = useState(false)
+  const [redactionPresseQrUrl, setRedactionPresseQrUrl] = useState('')
+  const [redactionPresseQrDataUrl, setRedactionPresseQrDataUrl] = useState('')
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
@@ -4010,6 +4027,42 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
   }
 
+  // Öffnen des Redaktions-Modals: Texte aus Vorschlag oder generiert laden
+  const openRedaction = (event: any) => {
+    try {
+      const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
+      const list = JSON.parse(raw)
+      const sug = list.find((s: any) => s.eventId === event.id)
+      const presse = sug?.presseaussendung || generatePresseaussendungContent(event)
+      setRedactionPresseTitle(presse?.title ?? '')
+      setRedactionPresseContent(presse?.content ?? '')
+      setRedactionPresseImageUrl(presse?.imageUrl ?? '')
+      setRedactionPresseQrShow(!!presse?.qrShow)
+      setRedactionPresseQrUrl(presse?.qrUrl ?? (BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)))
+      setRedactionEvent(event)
+    } catch {
+      setRedactionPresseTitle('')
+      setRedactionPresseContent('')
+      setRedactionPresseImageUrl('')
+      setRedactionPresseQrShow(false)
+      setRedactionPresseQrUrl(BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie))
+      setRedactionEvent(event)
+    }
+  }
+
+  // QR-Vorschau für Redaktions-Modal generieren, wenn QR aktiv und URL gesetzt
+  React.useEffect(() => {
+    if (!redactionEvent || !redactionPresseQrShow || !redactionPresseQrUrl) {
+      setRedactionPresseQrDataUrl('')
+      return
+    }
+    let cancelled = false
+    QRCode.toDataURL(redactionPresseQrUrl, { width: 120, margin: 1 })
+      .then((dataUrl) => { if (!cancelled) setRedactionPresseQrDataUrl(dataUrl) })
+      .catch(() => { if (!cancelled) setRedactionPresseQrDataUrl('') })
+    return () => { cancelled = true }
+  }, [redactionEvent, redactionPresseQrShow, redactionPresseQrUrl])
+
   // Hilfsfunktion: Alle Termindaten formatieren
   const formatEventDates = (event: any): string => {
     if (!event || !event.date) {
@@ -4677,7 +4730,7 @@ ${'='.repeat(60)}
     })
   }
 
-  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, nameSuffix?: string) => {
+  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, nameSuffix?: string, qrDataUrl?: string) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
     let presseDocId: string | null = null
     const isVk2 = tenant.isVk2
@@ -4688,7 +4741,9 @@ ${'='.repeat(60)}
     const galleryAddress = g.address || ''
     const galleryPhone = g.phone || ''
     const galleryEmail = g.email || ''
-    
+    const imageUrl = presseaussendung?.imageUrl || ''
+    const imageBlock = imageUrl ? `<div class="field-group presse-image-block"><label>Bild</label><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
+    const qrBlock = qrDataUrl ? `<div class="field-group presse-qr-block" style="text-align: center;"><label>QR-Code</label><img src="${qrDataUrl.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 160px; height: 160px;" /><p style="font-size: 0.85rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
     const html = `
 <!DOCTYPE html>
 <html>
@@ -4697,7 +4752,9 @@ ${'='.repeat(60)}
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
+  <style>.presse-body-print a { color: inherit; text-decoration: underline; }</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
+  <style id="print-hide">@media print { .field-group.presse-edit-row { display: none !important; } .presse-body-print { display: block !important; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -4708,7 +4765,7 @@ ${'='.repeat(60)}
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
     <button onclick="saveChanges(); return false;">💾 Speichern</button>
-    <p>Galerie-Design, druckbar als A4 / A3 / A5. Format wählen, dann drucken.</p>
+    <p>Galerie-Design, druckbar als A4 / A3 / A5. Beim Drucken erscheinen Links klickbar.</p>
   </div>
 
   <div class="page">
@@ -4726,21 +4783,36 @@ ${'='.repeat(60)}
     
     <h1>Presseaussendung</h1>
     
-    <div class="field-group">
+    <div class="field-group presse-edit-row">
       <label>Titel der Presseaussendung</label>
       <input type="text" id="presse-title" value="${(presseaussendung?.title || '').replace(/"/g, '&quot;')}" />
     </div>
-    
-    <div class="field-group">
-      <label>Inhalt der Presseaussendung</label>
+    ${imageBlock}
+    <div class="field-group presse-edit-row">
+      <label>Inhalt (URLs werden beim Drucken als Links dargestellt)</label>
       <textarea id="presse-content" rows="30">${(presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
     </div>
+    <div class="presse-body-print" id="content-preview" style="display: none; white-space: pre-wrap; margin-top: 0.5rem;"></div>
+    ${qrBlock}
     </div>
   </div>
 
   <script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
+    function textToHtmlWithLinks(text) {
+      if (!text) return '';
+      var esc = function(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); };
+      var parts = text.split(/(https?:\\/\\/[^\\s<>"']+)/g);
+      return parts.map(function(part) { return /^https?:\\/\\//.test(part) ? '<a href="' + esc(part) + '" target="_blank" rel="noopener noreferrer">' + esc(part) + '</a>' : esc(part); }).join('');
+    }
+    function updatePreview() {
+      var ta = document.getElementById('presse-content');
+      var div = document.getElementById('content-preview');
+      if (ta && div) div.innerHTML = textToHtmlWithLinks(ta.value);
+    }
+    document.getElementById('presse-content').addEventListener('input', updatePreview);
+    updatePreview();
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
@@ -18787,18 +18859,30 @@ ${name}`
                                 erstellenVarianten: [
                                   {
                                     label: 'Neutral (ohne Personendaten)',
-                                    onErstellen: () => {
+                                    onErstellen: async () => {
                                       const ev = events.find((e: any) => e.id === event.id)
                                       if (!ev) return
-                                      generateEditablePresseaussendungPDF(generatePresseaussendungContent(ev, 'neutral'), ev, ' (neutral)')
+                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                      const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'neutral')
+                                      let qrDataUrl: string | undefined
+                                      if (presse?.qrShow && presse?.qrUrl) {
+                                        qrDataUrl = await QRCode.toDataURL(presse.qrUrl, { width: 200, margin: 1 })
+                                      }
+                                      generateEditablePresseaussendungPDF(presse, ev, ' (neutral)', qrDataUrl)
                                     }
                                   },
                                   {
                                     label: 'Lokal (mit Personenstory)',
-                                    onErstellen: () => {
+                                    onErstellen: async () => {
                                       const ev = events.find((e: any) => e.id === event.id)
                                       if (!ev) return
-                                      generateEditablePresseaussendungPDF(generatePresseaussendungContent(ev, 'lokal'), ev, ' (lokal)')
+                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                      const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'lokal')
+                                      let qrDataUrl: string | undefined
+                                      if (presse?.qrShow && presse?.qrUrl) {
+                                        qrDataUrl = await QRCode.toDataURL(presse.qrUrl, { width: 200, margin: 1 })
+                                      }
+                                      generateEditablePresseaussendungPDF(presse, ev, ' (lokal)', qrDataUrl)
                                     }
                                   }
                                 ]
@@ -18849,23 +18933,41 @@ ${name}`
                                       {event.type && <span>🏷️ {event.type === 'galerieeröffnung' ? 'Galerieeröffnung' : event.type === 'vernissage' ? 'Vernissage' : event.type === 'finissage' ? 'Finissage' : event.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Sonstiges'}</span>}
                                     </div>
                                   </div>
-                                  <button
-                                    onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
-                                    style={{
-                                      padding: '0.4rem 0.75rem',
-                                      background: 'transparent',
-                                      border: `1px solid ${s.accent}44`,
-                                      borderRadius: '8px',
-                                      color: s.accent,
-                                      cursor: 'pointer',
-                                      fontSize: '0.8rem',
-                                      fontWeight: 500,
-                                      whiteSpace: 'nowrap',
-                                      flexShrink: 0
-                                    }}
-                                  >
-                                    Event bearbeiten
-                                  </button>
+                                  <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => openRedaction(event)}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        background: `${s.accent}14`,
+                                        border: `1px solid ${s.accent}44`,
+                                        borderRadius: '8px',
+                                        color: s.accent,
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 500,
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      ✏️ Texte redigieren
+                                    </button>
+                                    <button
+                                      onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        background: 'transparent',
+                                        border: `1px solid ${s.accent}44`,
+                                        borderRadius: '8px',
+                                        color: s.accent,
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 500,
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      Event bearbeiten
+                                    </button>
+                                  </div>
                                 </div>
 
                                 {/* Fortschritt: eine Zeile, klare Aussage */}
@@ -18933,22 +19035,7 @@ ${name}`
 
                                         {istPraesentationsmappen ? (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                                            {/* Muster im Stil der Präsentationsmappe – mit Bildern, Kachel bleibt */}
-                                            <div style={{
-                                              background: '#fffefb',
-                                              border: '1px solid rgba(13,148,136,0.25)',
-                                              borderRadius: '8px',
-                                              padding: '0.5rem 0.6rem',
-                                              boxShadow: '0 2px 6px rgba(13,148,136,0.08)'
-                                            }}>
-                                              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: '#0d9488', marginBottom: '0.35rem' }}>Muster – Stil deiner Mappe</div>
-                                              <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: 'linear-gradient(145deg, #1a0f0a 0%, #2d1a14 100%)', flexShrink: 0 }} title="Deckblatt" />
-                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)', flexShrink: 0 }} title="Titel" />
-                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: '#e5e2dd', flexShrink: 0 }} title="Seite" />
-                                                <div style={{ width: 32, height: 32, borderRadius: 6, background: '#f0fdfa', border: '1px solid #99f6e4', flexShrink: 0 }} title="Inhalt" />
-                                              </div>
-                                            </div>
+                                            {/* Präsentationsmappe wie andere Werbemittel: Stil aus Design-Tab, keine eigene Auswahl */}
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                               <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Präsentationsmappe
@@ -19335,6 +19422,212 @@ ${name}`
 
         </main>
       </div>
+
+      {/* Redaktions-Modal: Texte redigieren mit Live-Vorschau, Bild, Links, QR */}
+      {redactionEvent && (() => {
+        const isVk2 = tenant.isVk2
+        const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+        const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+        const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
+        const eventDateStr = redactionEvent?.date ? new Date(redactionEvent.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+        const escapeHtml = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        const contentWithLinks = textToHtmlWithLinks(redactionPresseContent)
+        const imageBlock = redactionPresseImageUrl ? `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
+        const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
+        const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style><style>.presse-body a { color: inherit; text-decoration: underline; }</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${escapeHtml(galleryName)}</h1><div class="header-info">${redactionEvent?.title ? '<strong>Event:</strong> ' + escapeHtml(redactionEvent.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + eventDateStr : ''}</div></div><h1>Presseaussendung</h1><div class="presse-headline">${escapeHtml(redactionPresseTitle)}</div>${imageBlock}<div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>${qrBlock}</div></div></body></html>`
+        const saveRedaction = () => {
+          try {
+            const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
+            const list: any[] = JSON.parse(raw)
+            const idx = list.findIndex((s: any) => s.eventId === redactionEvent.id)
+            const presseaussendung = {
+              title: redactionPresseTitle,
+              content: redactionPresseContent,
+              imageUrl: redactionPresseImageUrl || undefined,
+              qrShow: redactionPresseQrShow || undefined,
+              qrUrl: redactionPresseQrShow ? redactionPresseQrUrl : undefined
+            }
+            if (idx >= 0) {
+              list[idx] = { ...list[idx], presseaussendung }
+            } else {
+              list.push({
+                eventId: redactionEvent.id,
+                eventTitle: redactionEvent.title,
+                generatedAt: new Date().toISOString(),
+                presseaussendung,
+                socialMedia: generateSocialMediaContent(redactionEvent),
+                flyer: generateFlyerContent(redactionEvent),
+                newsletter: generateNewsletterContent(redactionEvent),
+                plakat: generatePlakatContent(redactionEvent)
+              })
+            }
+            localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+            setRedactionEvent(null)
+          } catch (e) {
+            alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        const handleImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const file = e.target.files?.[0]
+          if (!file || !file.type.startsWith('image/')) return
+          const reader = new FileReader()
+          reader.onloadend = () => setRedactionPresseImageUrl(String(reader.result ?? ''))
+          reader.readAsDataURL(file)
+          e.target.value = ''
+        }
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99998,
+              background: (s?.bgDark) ?? '#0f1419',
+              overflow: 'auto',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Texte redigieren – {redactionEvent?.title ?? 'Event'}</strong>
+              <button
+                type="button"
+                onClick={() => setRedactionEvent(null)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: (s?.accent) ?? '#0d9488',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                × Schließen
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Titel der Presseaussendung</label>
+                  <input
+                    type="text"
+                    value={redactionPresseTitle}
+                    onChange={(e) => setRedactionPresseTitle(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.95rem'
+                    }}
+                    placeholder="Titel eingeben …"
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 200 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Inhalt (URLs werden als klickbare Links angezeigt)</label>
+                  <textarea
+                    value={redactionPresseContent}
+                    onChange={(e) => setRedactionPresseContent(e.target.value)}
+                    placeholder="Text eingeben – URLs werden in der Vorschau und im Dokument klickbar."
+                    style={{
+                      flex: 1,
+                      minHeight: 200,
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Bild (URL oder Datei)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <input
+                      type="text"
+                      value={redactionPresseImageUrl}
+                      onChange={(e) => setRedactionPresseImageUrl(e.target.value)}
+                      placeholder="https://… oder Datei wählen"
+                      style={{
+                        flex: 1,
+                        minWidth: 120,
+                        padding: '0.5rem 0.6rem',
+                        borderRadius: '8px',
+                        border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                        background: s?.bgCard ?? '#fff',
+                        color: s?.text ?? '#1c1a18',
+                        fontSize: '0.9rem'
+                      }}
+                    />
+                    <label style={{ padding: '0.5rem 0.75rem', background: `${(s?.accent ?? '#0d9488')}22`, border: `1px solid ${(s?.accent ?? '#0d9488')}44`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', color: s?.accent ?? '#0d9488' }}>
+                      Datei wählen
+                      <input type="file" accept="image/*" onChange={handleImageFile} style={{ display: 'none' }} />
+                    </label>
+                    {redactionPresseImageUrl ? <button type="button" onClick={() => setRedactionPresseImageUrl('')} style={{ padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem' }}>Bild entfernen</button> : null}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.9rem', color: s?.text ?? '#f0f6ff' }}>
+                    <input type="checkbox" checked={redactionPresseQrShow} onChange={(e) => setRedactionPresseQrShow(e.target.checked)} />
+                    QR-Code im Dokument anzeigen
+                  </label>
+                  {redactionPresseQrShow && (
+                    <input
+                      type="text"
+                      value={redactionPresseQrUrl}
+                      onChange={(e) => setRedactionPresseQrUrl(e.target.value)}
+                      placeholder="Link für QR-Code (z. B. Galerie-URL)"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.6rem',
+                        borderRadius: '8px',
+                        border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                        background: s?.bgCard ?? '#fff',
+                        color: s?.text ?? '#1c1a18',
+                        fontSize: '0.85rem'
+                      }}
+                    />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={saveRedaction}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: '#16a34a',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    alignSelf: 'flex-start'
+                  }}
+                >
+                  💾 Speichern – Texte übernehmen
+                </button>
+              </div>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Vorschau – so kommt der Text im Dokument an (Links klickbar, Bild & QR wenn gesetzt)
+                </div>
+                <iframe
+                  title="Presse-Vorschau"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Kamera-Vollbild-Ansicht */}
       {showCameraView && (
