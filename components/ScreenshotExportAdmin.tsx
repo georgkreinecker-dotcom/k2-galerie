@@ -178,6 +178,12 @@ function getMedienspiegelStorageKey(tenant: { isOeffentlich?: boolean; isVk2?: b
   return 'k2-medienspiegel'
 }
 
+/** Verteilerblock (z. B. Newsletter): Key pro Kontext + Block-ID */
+function getVerteilerBlockStorageKey(tenant: { isOeffentlich?: boolean; isVk2?: boolean }, blockId: string): string {
+  const prefix = tenant.isOeffentlich ? 'k2-oeffentlich' : tenant.isVk2 ? 'k2-vk2' : 'k2'
+  return `${prefix}-verteiler-${blockId}`
+}
+
 /** Wichtige österreichische Medien – vordefiniert zum Einfügen (Print, TV, Radio). E-Mail = typische Presse-/Redaktionsadresse; Nutzer kann anpassen. */
 const ÖSTERREICH_MEDIEN = {
   print: [
@@ -1147,6 +1153,22 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch { setMedienspiegel([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
+  // Verteilerblock „Newsletter-Empfänger“ aus localStorage laden, wenn Kontext wechselt
+  React.useEffect(() => {
+    try {
+      const key = getVerteilerBlockStorageKey(tenant, 'newsletter')
+      const raw = localStorage.getItem(key)
+      if (!raw) { setVerteilerNewsletter([]); setVerteilerNewsletterSelectedIds(new Set()); return }
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const list = parsed.filter((e: unknown) => e && typeof e === 'object' && 'id' in e && 'email' in e && typeof (e as any).email === 'string')
+          .map((e: any) => ({ id: String(e.id), name: String(e.name ?? '').trim(), email: String(e.email ?? '').trim() }))
+        setVerteilerNewsletter(list)
+        setVerteilerNewsletterSelectedIds(new Set())
+      } else setVerteilerNewsletter([])
+    } catch { setVerteilerNewsletter([]) }
+  }, [tenant.isOeffentlich, tenant.isVk2])
+
   // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
   const guideVorname = (() => {
     try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
@@ -1213,6 +1235,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [redactionPresseQrShow, setRedactionPresseQrShow] = useState(false)
   const [redactionPresseQrUrl, setRedactionPresseQrUrl] = useState('')
   const [redactionPresseQrDataUrl, setRedactionPresseQrDataUrl] = useState('')
+  /** Social-Media-Redaktion: zweigeteilte Ansicht (links bearbeiten, rechts Vorschau) wie beim Presse-Text */
+  const [socialRedactionEvent, setSocialRedactionEvent] = useState<any>(null)
+  const [socialRedactionDocument, setSocialRedactionDocument] = useState<any>(null)
+  const [socialRedactionInstagram, setSocialRedactionInstagram] = useState('')
+  const [socialRedactionFacebook, setSocialRedactionFacebook] = useState('')
+  const [socialRedactionWhatsApp, setSocialRedactionWhatsApp] = useState('')
+  const [socialRedactionImageUrl, setSocialRedactionImageUrl] = useState('')
+  /** Newsletter-Redaktion: links bearbeiten, rechts Vorschau */
+  const [newsletterRedactionEvent, setNewsletterRedactionEvent] = useState<any>(null)
+  const [newsletterRedactionDocument, setNewsletterRedactionDocument] = useState<any>(null)
+  const [newsletterRedactionSubject, setNewsletterRedactionSubject] = useState('')
+  const [newsletterRedactionBody, setNewsletterRedactionBody] = useState('')
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
@@ -1254,6 +1288,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [medienspiegelKategorieFilter, setMedienspiegelKategorieFilter] = useState<'alle' | 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur'>('alle')
   /** Medienspiegel: Land/Markt für Standard-Listen (alle deutschsprachigen Länder) */
   const [medienspiegelLand, setMedienspiegelLand] = useState<'at' | 'de' | 'ch' | 'li' | 'lu'>('at')
+  // Verteilerblock „Newsletter-Empfänger“ (wie Medienspiegel: Liste Name + E-Mail, auswählen, kopieren)
+  const [verteilerNewsletter, setVerteilerNewsletter] = useState<{ id: string; name: string; email: string }[]>([])
+  const [verteilerNewsletterSelectedIds, setVerteilerNewsletterSelectedIds] = useState<Set<string>>(new Set())
+  const [verteilerNewsletterAddName, setVerteilerNewsletterAddName] = useState('')
+  const [verteilerNewsletterAddEmail, setVerteilerNewsletterAddEmail] = useState('')
+  const [verteilerNewsletterPasteText, setVerteilerNewsletterPasteText] = useState('')
   /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig) */
   const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
@@ -3850,6 +3890,57 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [location.search])
 
+  // Speichern aus geöffnetem Social-Media-Dokument (postMessage vom Kind-Fenster)
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.data?.type !== 'k2-save-social-doc') return
+      const payload = e.data.payload
+      if (!payload?.docId) return
+      try {
+        const docs = loadDocuments()
+        const idx = docs.findIndex((d: any) => d.id === payload.docId)
+        if (idx < 0) return
+        const isVk2 = tenant.isVk2
+        const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+        const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+        const galleryName = (() => {
+          if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+          const g = galleryData || {}
+          return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+        })()
+        const html = buildSocialMediaEditableHtml({
+          socialMedia: {
+            instagram: payload.instagram ?? '',
+            facebook: payload.facebook ?? '',
+            whatsapp: payload.whatsapp ?? ''
+          },
+          eventLike: { title: payload.eventTitle ?? '', date: payload.eventDate },
+          imageDataUrl: payload.imageDataUrl || undefined,
+          options: {
+            socialDocId: payload.docId,
+            adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab),
+            prDocClass,
+            prDocCss,
+            galleryName
+          }
+        })
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const current = loadDocuments()
+          const updated = current.map((d: any) => d.id === payload.docId ? { ...d, data: reader.result as string } : d)
+          saveDocuments(updated)
+          setDocuments(updated)
+        }
+        reader.readAsDataURL(blob)
+      } catch (err) {
+        console.error('Fehler beim Speichern des Social-Media-Dokuments:', err)
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [activeTab, eventplanSubTab, tenant.dynamicTenantId, designSettings, galleryData, vk2Stammdaten])
+
   // Events aus localStorage laden – bei Kontextwechsel SOFORT (0 ms), damit Auto-Save nie mit VK2-State in K2 schreibt
   useEffect(() => {
     if (tenant.dynamicTenantId) return
@@ -4048,6 +4139,24 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setRedactionPresseQrUrl(BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie))
       setRedactionEvent(event)
     }
+  }
+
+  /** Social-Media-Redaktion öffnen (zweigeteilte Ansicht: links bearbeiten, rechts Vorschau). eventLike = Event oder { id, title, date }; doc = bestehendes Dokument oder null. */
+  const openSocialRedaction = (eventLike: any, doc: any, socialContent: { instagram?: string; facebook?: string; whatsapp?: string; imageDataUrl?: string }) => {
+    setSocialRedactionEvent(eventLike)
+    setSocialRedactionDocument(doc ?? null)
+    setSocialRedactionInstagram(socialContent?.instagram ?? '')
+    setSocialRedactionFacebook(socialContent?.facebook ?? '')
+    setSocialRedactionWhatsApp(socialContent?.whatsapp ?? '')
+    setSocialRedactionImageUrl(socialContent?.imageDataUrl ?? '')
+  }
+
+  /** Newsletter-Redaktion öffnen (zweigeteilte Ansicht). */
+  const openNewsletterRedaction = (eventLike: any, doc: any, content: { subject?: string; body?: string }) => {
+    setNewsletterRedactionEvent(eventLike)
+    setNewsletterRedactionDocument(doc ?? null)
+    setNewsletterRedactionSubject(content?.subject ?? '')
+    setNewsletterRedactionBody(content?.body ?? '')
   }
 
   // QR-Vorschau für Redaktions-Modal generieren, wenn QR aktiv und URL gesetzt
@@ -4742,8 +4851,10 @@ ${'='.repeat(60)}
     const galleryPhone = g.phone || ''
     const galleryEmail = g.email || ''
     const imageUrl = presseaussendung?.imageUrl || ''
-    const imageBlock = imageUrl ? `<div class="field-group presse-image-block"><label>Bild</label><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
-    const qrBlock = qrDataUrl ? `<div class="field-group presse-qr-block" style="text-align: center;"><label>QR-Code</label><img src="${qrDataUrl.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 160px; height: 160px;" /><p style="font-size: 0.85rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
+    const imageBlock = imageUrl ? `<div style="margin: 0.75rem 0;"><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
+    const qrBlock = qrDataUrl ? `<div style="margin: 0.75rem 0; text-align: center;"><img src="${qrDataUrl.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 160px; height: 160px;" /><p style="font-size: 0.85rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
+    const presseTitleEsc = (presseaussendung?.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const presseContentWithLinks = textToHtmlWithLinks(presseaussendung?.content || '')
     const html = `
 <!DOCTYPE html>
 <html>
@@ -4752,9 +4863,8 @@ ${'='.repeat(60)}
   <title>Presseaussendung - ${event?.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
   <style>${prDocCss}</style>
-  <style>.presse-body-print a { color: inherit; text-decoration: underline; }</style>
+  <style>.presse-body a { color: inherit; text-decoration: underline; }</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
-  <style id="print-hide">@media print { .field-group.presse-edit-row { display: none !important; } .presse-body-print { display: block !important; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
   <div class="no-print">
@@ -4764,7 +4874,6 @@ ${'='.repeat(60)}
     <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Speichern</button>
     <p>Galerie-Design, druckbar als A4 / A3 / A5. Beim Drucken erscheinen Links klickbar.</p>
   </div>
 
@@ -4780,19 +4889,10 @@ ${'='.repeat(60)}
         ${event?.title ? `<strong>Event:</strong> ${event.title}` : ''}
       </div>
     </div>
-    
     <h1>Presseaussendung</h1>
-    
-    <div class="field-group presse-edit-row">
-      <label>Titel der Presseaussendung</label>
-      <input type="text" id="presse-title" value="${(presseaussendung?.title || '').replace(/"/g, '&quot;')}" />
-    </div>
+    <div class="presse-headline">${presseTitleEsc}</div>
     ${imageBlock}
-    <div class="field-group presse-edit-row">
-      <label>Inhalt (URLs werden beim Drucken als Links dargestellt)</label>
-      <textarea id="presse-content" rows="30">${(presseaussendung?.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-    </div>
-    <div class="presse-body-print" id="content-preview" style="display: none; white-space: pre-wrap; margin-top: 0.5rem;"></div>
+    <div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${presseContentWithLinks}</div>
     ${qrBlock}
     </div>
   </div>
@@ -4800,19 +4900,6 @@ ${'='.repeat(60)}
   <script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
-    function textToHtmlWithLinks(text) {
-      if (!text) return '';
-      var esc = function(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;'); };
-      var parts = text.split(/(https?:\\/\\/[^\\s<>"']+)/g);
-      return parts.map(function(part) { return /^https?:\\/\\//.test(part) ? '<a href="' + esc(part) + '" target="_blank" rel="noopener noreferrer">' + esc(part) + '</a>' : esc(part); }).join('');
-    }
-    function updatePreview() {
-      var ta = document.getElementById('presse-content');
-      var div = document.getElementById('content-preview');
-      if (ta && div) div.innerHTML = textToHtmlWithLinks(ta.value);
-    }
-    document.getElementById('presse-content').addEventListener('input', updatePreview);
-    updatePreview();
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
@@ -4826,57 +4913,19 @@ ${'='.repeat(60)}
         try {
           window.opener.location.href = adminUrl
           window.opener.focus()
-          setTimeout(function() {
-            try {
-              window.close()
-            } catch (e) {
-              // Ignorieren
-            }
-          }, 100)
+          setTimeout(function() { try { window.close(); } catch (e) {} }, 100)
           return
-        } catch (e) {
-          // Falls Fehler, navigiere direkt
-        }
+        } catch (e) {}
       }
       window.location.href = adminUrl
     }
-    
-    function saveChanges() {
-      var changes = {
-        presseaussendung: {
-          title: document.getElementById('presse-title').value,
-          content: document.getElementById('presse-content').value
-        }
-      }
-      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      }).catch(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      })
-    }
-    
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
     var autoCloseTimeout = null
     function handleAfterPrint() {
       window.removeEventListener('afterprint', handleAfterPrint)
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
-      setTimeout(function() {
-        goBack()
-      }, 1000)
+      setTimeout(function() { goBack(); }, 1000)
     }
     window.addEventListener('afterprint', handleAfterPrint)
-    
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
     function cleanup() {
       window.removeEventListener('afterprint', handleAfterPrint)
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
@@ -4950,29 +4999,30 @@ ${'='.repeat(60)}
     }
   }
 
-  const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
-    let blob: Blob | null = null
-    let socialDocId: string | null = null
-    const isVk2 = tenant.isVk2
-    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
-    const galleryName = (() => {
-      if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
-      const g = galleryData || {}
-      return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
-    })()
-    
-    const html = `
-<!DOCTYPE html>
+  /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). */
+  const buildSocialMediaEditableHtml = (params: {
+    socialMedia: { instagram: string; facebook: string; whatsapp: string }
+    eventLike: { title: string; date?: string }
+    imageDataUrl?: string
+    options: { socialDocId: string; adminReturnUrl: string; prDocClass: string; prDocCss: string; galleryName: string }
+  }): string => {
+    const { socialMedia, eventLike, imageDataUrl, options } = params
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
+    const eventDateStr = eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+    const imageBlock = imageDataUrl
+      ? `<div style="margin-bottom:0.75rem;"><img src="${imageDataUrl.replace(/"/g, '&quot;')}" alt="" style="max-width:100%;height:auto;border-radius:8px;" /></div>`
+      : ''
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Social Media - ${event?.title || 'Event'}</title>
+  <title>Social Media - ${eventLike.title || 'Event'}</title>
   <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${prDocCss}</style>
+  <style>${options.prDocCss}</style>
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
-<body class="${prDocClass} format-a4">
+<body class="${options.prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -4980,45 +5030,31 @@ ${'='.repeat(60)}
     <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Speichern</button>
     <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
 
   <div class="page">
     <div class="content">
     <div class="header">
-      <h1>${galleryName}</h1>
+      <h1>${options.galleryName}</h1>
       <div class="header-info">
-        ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
-        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+        ${eventLike.title ? `<strong>Event:</strong> ${eventLike.title}<br>` : ''}
+        ${eventDateStr ? `<strong>Datum:</strong> ${eventDateStr}` : ''}
       </div>
     </div>
-    
     <h1>Social Media Posts</h1>
-    
+    ${imageBlock}
     <h2>Instagram Post</h2>
-    <div class="field-group">
-      <label>Instagram Text</label>
-      <textarea id="instagram-post" rows="18">${((socialMedia?.instagram || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-    </div>
-    
+    <div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.instagram)}</div>
     <h2>Facebook Post</h2>
-    <div class="field-group">
-      <label>Facebook Text</label>
-      <textarea id="facebook-post" rows="18">${((socialMedia?.facebook || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-    </div>
-    
+    <div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.facebook)}</div>
     <h2>WhatsApp / Kurznachricht</h2>
-    <div class="field-group">
-      <label>WhatsApp Text (kompakt, mit Emojis)</label>
-      <textarea id="whatsapp-post" rows="10">${((socialMedia?.whatsapp || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-    </div>
+    <div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div>
     </div>
   </div>
-
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
-    var prDocClass = '${prDocClass}';
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(options.adminReturnUrl)}';
+    var prDocClass = '${options.prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
@@ -5030,74 +5066,85 @@ ${'='.repeat(60)}
         : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
         try {
-          window.opener.location.href = adminUrl
-          window.opener.focus()
-          setTimeout(function() {
-            try {
-              window.close()
-            } catch (e) {
-              // Ignorieren
-            }
-          }, 100)
-          return
-        } catch (e) {
-          // Falls Fehler, navigiere direkt
-        }
+          window.opener.location.href = adminUrl;
+          window.opener.focus();
+          setTimeout(function() { try { window.close(); } catch (e) {} }, 100);
+          return;
+        } catch (e) {}
       }
-      window.location.href = adminUrl
+      window.location.href = adminUrl;
     }
-    
-    function saveChanges() {
-      var changes = {
-        socialMedia: {
-          instagram: document.getElementById('instagram-post').value,
-          facebook: document.getElementById('facebook-post').value
-        }
-      }
-      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      }).catch(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      })
-    }
-    
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    var autoCloseTimeout = null
+    var autoCloseTimeout = null;
     function handleAfterPrint() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
-      setTimeout(function() {
-        goBack()
-      }, 1000)
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+      setTimeout(function() { goBack(); }, 1000);
     }
-    window.addEventListener('afterprint', handleAfterPrint)
-    
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    window.addEventListener('afterprint', handleAfterPrint);
     function cleanup() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
     }
-    window.addEventListener('beforeunload', cleanup)
-    window.addEventListener('unload', cleanup)
-  </script>
+    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('unload', cleanup);
+  <\/script>
 </body>
-</html>
-    `
+</html>`
+  }
+
+  /** HTML nur für Live-Vorschau (Modal rechte Spalte) – gleiches Layout wie Dokument, ohne Formulare/Skript. */
+  const buildSocialMediaPreviewHtml = (params: {
+    socialMedia: { instagram: string; facebook: string; whatsapp: string }
+    eventLike: { title: string; date?: string }
+    imageDataUrl?: string
+    prDocClass: string
+    prDocCss: string
+    galleryName: string
+  }): string => {
+    const { socialMedia, eventLike, imageDataUrl, prDocClass, prDocCss, galleryName } = params
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
+    const eventDateStr = eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+    const imageBlock = imageDataUrl
+      ? `<div class="field-group" style="margin-bottom:0.75rem;"><img src="${imageDataUrl.replace(/"/g, '&quot;')}" alt="" style="max-width:100%;height:auto;border-radius:8px;" /></div>`
+      : ''
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${esc(galleryName)}</h1><div class="header-info">${eventLike.title ? '<strong>Event:</strong> ' + esc(eventLike.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + eventDateStr : ''}</div></div><h1>Social Media Posts</h1>${imageBlock}<h2>Instagram Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.instagram)}</div><h2>Facebook Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.facebook)}</div><h2>WhatsApp / Kurznachricht</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div></div></div></body></html>`
+  }
+
+  const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+    let blob: Blob | null = null
+    let socialDocId: string | null = null
+    const isVk2 = tenant.isVk2
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+    const galleryName = (() => {
+      if (isVk2) return vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      const g = galleryData || {}
+      return g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    })()
+    const eventLike = { title: event?.title || 'Event', date: event?.date }
+    const socialDocIdForHtml = `pr-editable-socialmedia-${event?.id || 'unknown'}-${Date.now()}`
+    const html = buildSocialMediaEditableHtml({
+      socialMedia: {
+        instagram: socialMedia?.instagram || '',
+        facebook: socialMedia?.facebook || '',
+        whatsapp: socialMedia?.whatsapp || ''
+      },
+      eventLike,
+      imageDataUrl: undefined,
+      options: {
+        socialDocId: socialDocIdForHtml,
+        adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab),
+        prDocClass,
+        prDocCss,
+        galleryName
+      }
+    })
+    socialDocId = socialDocIdForHtml
     try {
       blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const eid = event?.id || 'unknown'
       const etitle = event?.title || 'Event'
-      socialDocId = `pr-editable-socialmedia-${eid}-${Date.now()}`
       const socialPlaceholder = {
         id: socialDocId,
         name: getNextWerbematerialVorschlagName(eid, etitle, 'social', 'Social Media (bearbeitbar)'),
@@ -5372,7 +5419,8 @@ ${'='.repeat(60)}
     }
   }
 
-  const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
+  /** Baut Newsletter-HTML nur zur Ansicht/Druck (Bearbeitung im Modal). */
+  const buildNewsletterViewHtml = (newsletter: { subject?: string; body?: string }, event: any) => {
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
@@ -5385,8 +5433,9 @@ ${'='.repeat(60)}
       }
       return (galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
     })()
-    const html = `
-<!DOCTYPE html>
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -5400,13 +5449,11 @@ ${'='.repeat(60)}
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
     <button onclick="setFormat('a4'); return false;">A4</button>
-    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button onclick="setFormat('a3'); return false;">A3</button>
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <button onclick="saveChanges(); return false;">💾 Speichern</button>
     <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
-
   <div class="page">
     <div class="content">
     <div class="header">
@@ -5416,21 +5463,11 @@ ${'='.repeat(60)}
         ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
       </div>
     </div>
-    
     <h1>E-Mail Newsletter</h1>
-    
-    <div class="field-group">
-      <label>E-Mail Betreff</label>
-      <input type="text" id="newsletter-subject" value="${(newsletter?.subject || '').replace(/"/g, '&quot;')}" />
-    </div>
-    
-    <div class="field-group">
-      <label>Newsletter Inhalt</label>
-      <textarea id="newsletter-body" rows="30">${((newsletter?.body || '')).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
-    </div>
+    <div class="newsletter-subject-line" style="font-weight:600;margin-bottom:0.75rem;">${esc(newsletter?.subject ?? '')}</div>
+    <div class="presse-body" style="white-space:pre-wrap;">${nl2br(newsletter?.body ?? '')}</div>
     </div>
   </div>
-
   <script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
@@ -5441,107 +5478,32 @@ ${'='.repeat(60)}
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
-        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin');
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || '')) : (window.location.origin + '/admin');
       if (window.opener && !window.opener.closed) {
-        try {
-          window.opener.location.href = adminUrl
-          window.opener.focus()
-          setTimeout(function() {
-            try {
-              window.close()
-            } catch (e) {
-              // Ignorieren
-            }
-          }, 100)
-          return
-        } catch (e) {
-          // Falls Fehler, navigiere direkt
-        }
+        try { window.opener.location.href = adminUrl; window.opener.focus(); setTimeout(function() { try { window.close(); } catch (e) {} }, 100); return; } catch (e) {}
       }
-      window.location.href = adminUrl
+      window.location.href = adminUrl;
     }
-    
-    function saveChanges() {
-      var changes = {
-        newsletter: {
-          subject: document.getElementById('newsletter-subject').value,
-          body: document.getElementById('newsletter-body').value
-        }
-      }
-      navigator.clipboard.writeText(JSON.stringify(changes, null, 2)).then(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      }).catch(function() {
-        var btn = event.target
-        btn.textContent = '✅ Gespeichert'
-        btn.style.background = '#10b981'
-        setTimeout(function() {
-          goBack()
-        }, 1500)
-      })
-    }
-    
-    // Nach Drucken automatisch zurücknavigieren - mit Cleanup
-    var autoCloseTimeout = null
+    var autoCloseTimeout = null;
     function handleAfterPrint() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
-      setTimeout(function() {
-        goBack()
-      }, 1000)
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+      setTimeout(function() { goBack(); }, 1000);
     }
-    window.addEventListener('afterprint', handleAfterPrint)
-    
-    // Cleanup beim Schließen - KRITISCH für Crash-Prävention
+    window.addEventListener('afterprint', handleAfterPrint);
     function cleanup() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
     }
-    window.addEventListener('beforeunload', cleanup)
-    window.addEventListener('unload', cleanup)
-  </script>
+    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('unload', cleanup);
+  <\/script>
 </body>
-</html>
-    `
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    // Immer im gleichen Tab öffnen – kein neuer Tab, der „oben im Browser-Balken hängt“; sofort sichtbar mit Zurück/Format/PDF/Speichern.
-    const eid = event?.id || 'unknown'
-    const etitle = event?.title || 'Event'
-    const docId = `pr-editable-newsletter-${eid}-${Date.now()}`
-    const docName = getNextWerbematerialVorschlagName(eid, etitle, 'newsletter', 'Newsletter (bearbeitbar)')
-    const documentDataPlaceholder = {
-      id: docId,
-      name: docName,
-      type: 'text/html',
-      size: blob.size,
-      data: '',
-      fileName: `newsletter-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-      uploadedAt: new Date().toISOString(),
-      isPDF: false,
-      isPlaceholder: false,
-      category: 'pr-dokumente',
-      eventId: eid,
-      eventTitle: etitle,
-      werbematerialTyp: 'newsletter'
-    }
-    const existingDocs = loadDocuments()
-    saveDocuments([...existingDocs, documentDataPlaceholder])
-    setDocuments([...existingDocs, documentDataPlaceholder])
-    setInAppDocumentViewer({ html, title: 'Newsletter – ' + (event?.title || 'Event') })
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const documentData = { ...documentDataPlaceholder, data: reader.result as string }
-      const current = loadDocuments()
-      const updated = current.map((d: any) => d.id === docId ? documentData : d)
-      saveDocuments(updated)
-      setDocuments(updated)
-    }
-    reader.readAsDataURL(blob)
+</html>`
+  }
+
+  const generateEditableNewsletterPDF = (newsletter: any, event: any) => {
+    openNewsletterRedaction(event, null, { subject: newsletter?.subject ?? '', body: newsletter?.body ?? '' })
   }
 
   // Bearbeitbare PR-Vorschläge als PDF generieren
@@ -7718,6 +7680,35 @@ ${'='.repeat(60)}
         try {
           const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
           const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
+          // Social-Media-Dokument: immer mit neuer Vorlage (Dokument bearbeiten, Bild einfügen) öffnen, Inhalte aus gespeichertem HTML übernehmen
+          if (document.werbematerialTyp === 'social' && document.id) {
+            const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+            const fromDiv = (m: RegExpMatchArray | null) => m && m[1] ? unesc(m[1].replace(/<br\s*\/?>/gi, '\n')) : ''
+            const instagramMatch = htmlDecoded.match(/id="instagram-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Instagram Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+            const facebookMatch = htmlDecoded.match(/id="facebook-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Facebook Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+            const whatsappMatch = htmlDecoded.match(/id="whatsapp-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>WhatsApp[^<]*<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+            const imgMatch = htmlDecoded.match(/<img[^>]+src="(data:image[^"]+)"[^>]*(?:alt=""|Post-Vorschau)/i) || htmlDecoded.match(/Bild \(Post-Vorschau\)[\s\S]*?<img[^>]+src="(data:image[^"]+)"/i)
+            const eventTitle = event?.title ?? document.eventTitle ?? 'Event'
+            const eventDate = event?.date ?? document.eventDate ?? ''
+            const eventLike = event ?? { id: document.eventId, title: eventTitle, date: eventDate }
+            const instagram = (instagramMatch && instagramMatch[1]) ? (instagramMatch[0].includes('textarea') ? unesc(instagramMatch[1]) : fromDiv(instagramMatch)) : ''
+            const facebook = (facebookMatch && facebookMatch[1]) ? (facebookMatch[0].includes('textarea') ? unesc(facebookMatch[1]) : fromDiv(facebookMatch)) : ''
+            const whatsapp = (whatsappMatch && whatsappMatch[1]) ? (whatsappMatch[0].includes('textarea') ? unesc(whatsappMatch[1]) : fromDiv(whatsappMatch)) : ''
+            const imageDataUrl = (imgMatch && imgMatch[1]) ? imgMatch[1] : ''
+            openSocialRedaction(eventLike, document, { instagram, facebook, whatsapp, imageDataUrl })
+            return
+          }
+          // Newsletter-Dokument: Modal öffnen, Betreff/Inhalt aus View-HTML parsen
+          if (document.werbematerialTyp === 'newsletter' && document.id) {
+            const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+            const subjectMatch = htmlDecoded.match(/class="newsletter-subject-line"[^>]*>([\s\S]*?)<\/div>/i)
+            const bodyMatch = htmlDecoded.match(/class="presse-body"[^>]*style="[^"]*white-space:pre-wrap[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
+            const subject = subjectMatch && subjectMatch[1] ? unesc(subjectMatch[1].trim()) : ''
+            const body = bodyMatch && bodyMatch[1] ? unesc(bodyMatch[1].replace(/<br\s*\/?>/gi, '\n').trim()) : ''
+            const eventLike = event ?? { id: document.eventId, title: document.eventTitle ?? 'Event', date: document.eventDate }
+            openNewsletterRedaction(eventLike, document, { subject, body })
+            return
+          }
           const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
           openDocumentInApp(html, docTitle)
           return
@@ -7746,7 +7737,7 @@ ${'='.repeat(60)}
           generateEditablePresseaussendungPDF(evSug?.presseaussendung || generatePresseaussendungContent(ev), ev)
           return
         case 'social':
-          generateEditableSocialMediaPDF(evSug?.socialMedia || generateSocialMediaContent(ev), ev)
+          openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
         default:
           break
@@ -17143,6 +17134,94 @@ ${name}`
                 {medienspiegel.length === 0 && <p style={{ fontSize: '0.85rem', color: s.muted }}>Noch keine Medien. Füge welche hinzu oder füge eine Liste ein.</p>}
               </div>
 
+              {/* Verteilerblock: Newsletter-Empfänger (wie Medienspiegel – Liste, auswählen, E-Mails kopieren) */}
+              <div style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📧 Newsletter-Empfänger</h3>
+                <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
+                  Verteiler für Newsletter und Einladungen. <strong style={{ color: s.text }}>Häkchen setzen, dann E-Mail-Adressen kopieren</strong> (z. B. für BCC im E-Mail-Programm).
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
+                  <input type="text" value={verteilerNewsletterAddName} onChange={e => setVerteilerNewsletterAddName(e.target.value)} placeholder="Name (z. B. Galerie-Interessent)" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
+                  <input type="text" value={verteilerNewsletterAddEmail} onChange={e => setVerteilerNewsletterAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
+                  <button type="button" onClick={() => {
+                    const email = verteilerNewsletterAddEmail.trim()
+                    if (!email) return
+                    const name = verteilerNewsletterAddName.trim() || email
+                    const next = [...verteilerNewsletter, { id: `vn-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
+                    setVerteilerNewsletter(next)
+                    setVerteilerNewsletterAddName(''); setVerteilerNewsletterAddEmail('')
+                    try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
+                  }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                    Hinzufügen
+                  </button>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.35rem' }}>Aus Liste einfügen (eine Zeile pro Empfänger: „Name, E-Mail“ oder nur E-Mail)</label>
+                  <textarea value={verteilerNewsletterPasteText} onChange={e => setVerteilerNewsletterPasteText(e.target.value)} placeholder={'z. B.:\nMax Mustermann, max@beispiel.at\nanna@beispiel.at'} rows={3} style={{ width: '100%', maxWidth: '500px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }} />
+                  <button type="button" onClick={() => {
+                    const lines = verteilerNewsletterPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
+                    const added: { id: string; name: string; email: string }[] = []
+                    const baseId = Date.now()
+                    lines.forEach((line, i) => {
+                      const match = line.match(emailRe)
+                      if (!match) return
+                      const email = match[0]
+                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
+                      added.push({ id: `vn-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
+                    })
+                    if (added.length === 0) { setVerteilerNewsletterPasteText(''); return }
+                    const next = [...verteilerNewsletter, ...added]
+                    setVerteilerNewsletter(next)
+                    setVerteilerNewsletterPasteText('')
+                    try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
+                  }} style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    Einfügen
+                  </button>
+                </div>
+                {verteilerNewsletter.length > 0 && (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.85rem', color: s.text }}>Empfänger auswählen, dann E-Mail-Adressen kopieren:</span>
+                      <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set(verteilerNewsletter.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
+                      <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
+                      {verteilerNewsletter.map(m => (
+                        <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
+                          <input type="checkbox" checked={verteilerNewsletterSelectedIds.has(m.id)} onChange={() => {
+                            const next = new Set(verteilerNewsletterSelectedIds)
+                            if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
+                            setVerteilerNewsletterSelectedIds(next)
+                          }} />
+                          <span style={{ flex: 1, fontSize: '0.9rem', color: s.text }}>{m.name}</span>
+                          <span style={{ fontSize: '0.8rem', color: s.muted }}>{m.email}</span>
+                          <button type="button" onClick={() => {
+                            const next = verteilerNewsletter.filter(x => x.id !== m.id)
+                            setVerteilerNewsletter(next)
+                            const sel = new Set(verteilerNewsletterSelectedIds); sel.delete(m.id); setVerteilerNewsletterSelectedIds(sel)
+                            try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
+                          }} style={{ padding: '0.2rem 0.5rem', background: 'transparent', border: `1px solid ${s.muted}66`, borderRadius: '6px', fontSize: '0.75rem', color: s.muted, cursor: 'pointer' }}>Löschen</button>
+                        </li>
+                      ))}
+                    </ul>
+                    {(() => {
+                      const selected = verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
+                      const count = selected.length
+                      return (
+                        <button type="button" disabled={count === 0} onClick={() => {
+                          const emails = selected.map(m => m.email).join(', ')
+                          navigator.clipboard.writeText(emails).then(() => alert(`✅ E-Mail-Adressen von ${count} ${count === 1 ? 'Empfänger' : 'Empfängern'} in die Zwischenablage kopiert.\n\nIm E-Mail-Programm bei BCC einfügen.`)).catch(() => alert('Kopieren fehlgeschlagen.'))
+                        }} style={{ padding: '0.6rem 1.2rem', background: count > 0 ? s.gradientAccent : s.bgElevated, color: count > 0 ? '#fff' : s.muted, border: 'none', borderRadius: '10px', fontWeight: 600, cursor: count > 0 ? 'pointer' : 'not-allowed', fontSize: '0.95rem' }}>
+                          {count === 0 ? 'E-Mail-Adressen kopieren (zuerst Empfänger auswählen)' : `E-Mail-Adressen kopieren (${count} ${count === 1 ? 'Empfänger' : 'Empfänger'})`}
+                        </button>
+                      )
+                    })()}
+                  </>
+                )}
+                {verteilerNewsletter.length === 0 && <p style={{ fontSize: '0.85rem', color: s.muted }}>Noch keine Empfänger. Füge welche hinzu oder füge eine Liste ein.</p>}
+              </div>
+
               {/* Produkt-Story (K2 & VK2) – für alle Kontexte, neutrale Story für Medien */}
               <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
                 <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📖 Produkt-Story (K2 & VK2)</h3>
@@ -18899,7 +18978,7 @@ ${name}`
                                   const ev = events.find((e: any) => e.id === event.id)
                                   if (!ev) return
                                   const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                  generateEditableSocialMediaPDF(evSug?.socialMedia || generateSocialMediaContent(ev), ev)
+                                  openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
                                 }
                               },
                               {
@@ -19619,6 +19698,364 @@ ${name}`
                 </div>
                 <iframe
                   title="Presse-Vorschau"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Social-Media-Redaktions-Modal: links bearbeiten, rechts Live-Vorschau (wie Presse-Text) */}
+      {socialRedactionEvent && (() => {
+        const isVk2 = tenant.isVk2
+        const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+        const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+        const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
+        const previewHtml = buildSocialMediaPreviewHtml({
+          socialMedia: { instagram: socialRedactionInstagram, facebook: socialRedactionFacebook, whatsapp: socialRedactionWhatsApp },
+          eventLike: { title: socialRedactionEvent?.title || 'Event', date: socialRedactionEvent?.date },
+          imageDataUrl: socialRedactionImageUrl || undefined,
+          prDocClass,
+          prDocCss,
+          galleryName
+        })
+        const saveSocialRedaction = () => {
+          try {
+            const event = events.find((e: any) => e.id === socialRedactionEvent?.id) || socialRedactionEvent
+            const socialMedia = { instagram: socialRedactionInstagram, facebook: socialRedactionFacebook, whatsapp: socialRedactionWhatsApp }
+            const socialDocId = socialRedactionDocument?.id || `pr-editable-socialmedia-${event?.id || 'unknown'}-${Date.now()}`
+            const adminReturnUrl = getAdminReturnUrl(activeTab, eventplanSubTab)
+            const html = buildSocialMediaEditableHtml({
+              socialMedia,
+              eventLike: { title: event?.title || 'Event', date: event?.date },
+              imageDataUrl: socialRedactionImageUrl || undefined,
+              options: { socialDocId, adminReturnUrl, prDocClass, prDocCss, galleryName }
+            })
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              const data = reader.result as string
+              const current = loadDocuments()
+              const existing = current.find((d: any) => d.id === socialDocId)
+              const docPayload = {
+                id: socialDocId,
+                name: socialRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'social', 'Social Media'),
+                type: 'text/html',
+                size: blob.size,
+                data,
+                fileName: socialRedactionDocument?.fileName || `social-media-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                uploadedAt: new Date().toISOString(),
+                isPDF: false,
+                isPlaceholder: false,
+                category: 'pr-dokumente',
+                eventId: event?.id,
+                eventTitle: event?.title,
+                werbematerialTyp: 'social'
+              }
+              const updated = existing ? current.map((d: any) => d.id === socialDocId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+              saveDocuments(updated)
+              setDocuments(updated)
+            }
+            reader.readAsDataURL(blob)
+            setSocialRedactionEvent(null)
+            setSocialRedactionDocument(null)
+          } catch (e) {
+            alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        const openSocialDocInWindow = () => {
+          const event = events.find((e: any) => e.id === socialRedactionEvent?.id) || socialRedactionEvent
+          const socialDocId = socialRedactionDocument?.id || `pr-editable-socialmedia-${event?.id || 'unknown'}-${Date.now()}`
+          const html = buildSocialMediaEditableHtml({
+            socialMedia: { instagram: socialRedactionInstagram, facebook: socialRedactionFacebook, whatsapp: socialRedactionWhatsApp },
+            eventLike: { title: event?.title || 'Event', date: event?.date },
+            imageDataUrl: socialRedactionImageUrl || undefined,
+            options: { socialDocId, adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab), prDocClass, prDocCss, galleryName }
+          })
+          openDocumentInApp(html, 'Social Media – ' + (event?.title || 'Event'))
+        }
+        const handleSocialImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+          const file = e.target.files?.[0]
+          if (!file || !file.type.startsWith('image/')) return
+          const reader = new FileReader()
+          reader.onloadend = () => setSocialRedactionImageUrl(String(reader.result ?? ''))
+          reader.readAsDataURL(file)
+          e.target.value = ''
+        }
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99998,
+              background: (s?.bgDark) ?? '#0f1419',
+              overflow: 'auto',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Social-Media-Posts – {socialRedactionEvent?.title ?? 'Event'}</strong>
+              <button
+                type="button"
+                onClick={() => { setSocialRedactionEvent(null); setSocialRedactionDocument(null) }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: (s?.accent) ?? '#0d9488',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                × Schließen
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 200 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Instagram Post</label>
+                  <textarea
+                    value={socialRedactionInstagram}
+                    onChange={(e) => setSocialRedactionInstagram(e.target.value)}
+                    placeholder="Text für Instagram …"
+                    style={{
+                      flex: 1,
+                      minHeight: 120,
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 200 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Facebook Post</label>
+                  <textarea
+                    value={socialRedactionFacebook}
+                    onChange={(e) => setSocialRedactionFacebook(e.target.value)}
+                    placeholder="Text für Facebook …"
+                    style={{
+                      flex: 1,
+                      minHeight: 120,
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 120 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>WhatsApp / Kurznachricht</label>
+                  <textarea
+                    value={socialRedactionWhatsApp}
+                    onChange={(e) => setSocialRedactionWhatsApp(e.target.value)}
+                    placeholder="Kompakter Text mit Emojis …"
+                    style={{
+                      flex: 1,
+                      minHeight: 80,
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Bild (Post-Vorschau)</label>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <label style={{ padding: '0.5rem 0.75rem', background: `${(s?.accent ?? '#0d9488')}22`, border: `1px solid ${(s?.accent ?? '#0d9488')}44`, borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', color: s?.accent ?? '#0d9488' }}>
+                      Datei wählen
+                      <input type="file" accept="image/*" onChange={handleSocialImageFile} style={{ display: 'none' }} />
+                    </label>
+                    {socialRedactionImageUrl ? <button type="button" onClick={() => setSocialRedactionImageUrl('')} style={{ padding: '0.5rem 0.6rem', background: 'transparent', border: '1px solid #94a3b8', borderRadius: '8px', color: '#94a3b8', cursor: 'pointer', fontSize: '0.85rem' }}>Bild entfernen</button> : null}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={saveSocialRedaction} style={{ padding: '0.6rem 1.25rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    💾 Speichern – Texte übernehmen
+                  </button>
+                  <button type="button" onClick={openSocialDocInWindow} style={{ padding: '0.6rem 1.25rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    📄 Dokument öffnen (Drucken)
+                  </button>
+                </div>
+              </div>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Vorschau – so kommt der Post im Dokument an
+                </div>
+                <iframe
+                  title="Social-Media-Vorschau"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  sandbox="allow-same-origin"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Newsletter-Redaktions-Modal: links Betreff + Inhalt, rechts Live-Vorschau */}
+      {newsletterRedactionEvent && (() => {
+        const event = events.find((e: any) => e.id === newsletterRedactionEvent?.id) || newsletterRedactionEvent
+        const previewHtml = buildNewsletterViewHtml(
+          { subject: newsletterRedactionSubject, body: newsletterRedactionBody },
+          event
+        )
+        const saveNewsletterRedaction = () => {
+          try {
+            const docId = newsletterRedactionDocument?.id || `pr-editable-newsletter-${event?.id || 'unknown'}-${Date.now()}`
+            const html = buildNewsletterViewHtml(
+              { subject: newsletterRedactionSubject, body: newsletterRedactionBody },
+              event
+            )
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              const data = reader.result as string
+              const current = loadDocuments()
+              const existing = current.find((d: any) => d.id === docId)
+              const docPayload = {
+                id: docId,
+                name: newsletterRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'newsletter', 'Newsletter'),
+                type: 'text/html',
+                size: blob.size,
+                data,
+                fileName: newsletterRedactionDocument?.fileName || `newsletter-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                uploadedAt: new Date().toISOString(),
+                isPDF: false,
+                isPlaceholder: false,
+                category: 'pr-dokumente',
+                eventId: event?.id,
+                eventTitle: event?.title,
+                werbematerialTyp: 'newsletter'
+              }
+              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+              saveDocuments(updated)
+              setDocuments(updated)
+            }
+            reader.readAsDataURL(blob)
+            setNewsletterRedactionEvent(null)
+            setNewsletterRedactionDocument(null)
+          } catch (e) {
+            alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        const openNewsletterDocInWindow = () => {
+          const html = buildNewsletterViewHtml(
+            { subject: newsletterRedactionSubject, body: newsletterRedactionBody },
+            event
+          )
+          openDocumentInApp(html, 'Newsletter – ' + (event?.title || 'Event'))
+        }
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99998,
+              background: (s?.bgDark) ?? '#0f1419',
+              overflow: 'auto',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Newsletter – {newsletterRedactionEvent?.title ?? 'Event'}</strong>
+              <button
+                type="button"
+                onClick={() => { setNewsletterRedactionEvent(null); setNewsletterRedactionDocument(null) }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: (s?.accent) ?? '#0d9488',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                × Schließen
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>E-Mail Betreff</label>
+                  <input
+                    type="text"
+                    value={newsletterRedactionSubject}
+                    onChange={(e) => setNewsletterRedactionSubject(e.target.value)}
+                    placeholder="Betreff …"
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 200 }}>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Newsletter Inhalt</label>
+                  <textarea
+                    value={newsletterRedactionBody}
+                    onChange={(e) => setNewsletterRedactionBody(e.target.value)}
+                    placeholder="Inhalt der E-Mail …"
+                    style={{
+                      flex: 1,
+                      minHeight: 200,
+                      width: '100%',
+                      padding: '0.5rem 0.6rem',
+                      borderRadius: '8px',
+                      border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+                      background: s?.bgCard ?? '#fff',
+                      color: s?.text ?? '#1c1a18',
+                      fontSize: '0.9rem',
+                      lineHeight: 1.5,
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={saveNewsletterRedaction} style={{ padding: '0.6rem 1.25rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    💾 Speichern – Newsletter übernehmen
+                  </button>
+                  <button type="button" onClick={openNewsletterDocInWindow} style={{ padding: '0.6rem 1.25rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    📄 Dokument öffnen (Drucken)
+                  </button>
+                </div>
+              </div>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Vorschau – so kommt der Newsletter im Dokument an
+                </div>
+                <iframe
+                  title="Newsletter-Vorschau"
                   srcDoc={previewHtml}
                   style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
                   sandbox="allow-same-origin"

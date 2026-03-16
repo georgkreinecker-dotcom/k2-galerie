@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – **Eiserne Regel Copyright:** Jede Oberflächen-Seite K2/ök2/VK2 mit definiertem Copyright (zwei Zeilen) in der UI. **Umsetzung:** GalerieVorschauPage, EntdeckenPage, WillkommenPage (beide Varianten), AGBPage, VitaPage, BenutzerHandbuchPage (Impressum), LicencesPage – alle mit PRODUCT_COPYRIGHT_BRAND_ONLY + PRODUCT_URHEBER_ANWENDUNG (tenantConfig). Regel: **.cursor/rules/copyright-jede-seite-k2-oek2-vk2.mdc** (alwaysApply). Tests 212, Build grün.
+**Letzter Stand:** 16.03.26 – **Verteilerblocks (wie Pressespiegel):** Neuer Block „Newsletter-Empfänger“ im Tab Presse & Medien (unter Medienspiegel). Gleiches Muster: Name + E-Mail, „Aus Liste einfügen“, Checkboxen, „E-Mail-Adressen kopieren“. Speicher pro Kontext: getVerteilerBlockStorageKey(tenant, 'newsletter'). Weitere Verteilerblocks (z. B. Einladungen) nach Bedarf möglich. Build grün.
 
-**Was wir JETZT tun:** Commit + Push.
+**Was wir JETZT tun:** Session Ende – Raum bereit.
 
-**Nächster Schritt:** Von Georg festlegen (z. B. K2-Eventplanung testen, Copyright-Fusszeilen sichten).
+**Nächster Schritt:** Von Georg festlegen (z. B. weitere Verteilerblocks, K2-Eventplanung, Copyright sichten).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
