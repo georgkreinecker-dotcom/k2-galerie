@@ -84,8 +84,48 @@ export function getPageContentGalerie(tenantId?: 'oeffentlich' | 'vk2'): PageCon
           try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
         }
       } else {
-        // K2: virtualTourVideo blob NICHT durch Default ersetzen → sonst geht Nutzerauswahl beim Tab-Wechsel verloren, „Speichern“ wirkt nie
-        // (Blob nach Reload ungültig – dann beim nächsten Laden ggf. separat behandeln)
+        // K2: VK2-Verunreinigung entfernen (Datenvermischung No-Go – BUG-038)
+        let changed = false
+        if (parsed.welcomeIntroText && (parsed.welcomeIntroText.includes('Mitglieder unseres Vereins') || parsed.welcomeIntroText.includes('Verein'))) {
+          delete parsed.welcomeIntroText
+          changed = true
+        }
+        try {
+          const vk2Raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY_VK2) : null
+          if (vk2Raw && vk2Raw.length > 0) {
+            const vk2Content = JSON.parse(vk2Raw) as Partial<PageContentGalerie>
+            const imgFields: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo']
+            for (const k of imgFields) {
+              const pv = parsed[k]
+              const vv = vk2Content[k]
+              if (typeof pv === 'string' && pv.trim() !== '' && pv === vv) {
+                delete parsed[k]
+                changed = true
+              }
+            }
+          }
+        } catch (_) {}
+        // K2-Reparatur: Leere Bildfelder aus Stammdaten auffüllen (Willkommensbild etc.)
+        try {
+          const gallery = loadStammdaten('k2', 'gallery') as Record<string, unknown> | null
+          if (gallery && typeof gallery === 'object') {
+            if (!(parsed.welcomeImage && String(parsed.welcomeImage).trim()) && gallery.welcomeImage) {
+              parsed.welcomeImage = gallery.welcomeImage as string
+              changed = true
+            }
+            if (!(parsed.galerieCardImage && String(parsed.galerieCardImage).trim()) && gallery.galerieCardImage) {
+              parsed.galerieCardImage = gallery.galerieCardImage as string
+              changed = true
+            }
+            if (!(parsed.virtualTourImage && String(parsed.virtualTourImage).trim()) && gallery.virtualTourImage) {
+              parsed.virtualTourImage = gallery.virtualTourImage as string
+              changed = true
+            }
+          }
+        } catch (_) {}
+        if (changed) {
+          try { localStorage.setItem(key, JSON.stringify({ ...parsed })) } catch (_) {}
+        }
       }
       return { ...defaults, ...parsed }
     }

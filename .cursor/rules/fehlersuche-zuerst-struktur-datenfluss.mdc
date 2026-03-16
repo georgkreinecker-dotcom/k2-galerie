@@ -1,0 +1,51 @@
+---
+description: Bei Fehlersuche zuerst Struktur und Datenfluss analysieren – nicht sofort reparieren (sonst Sumpf).
+alwaysApply: true
+---
+
+# Fehlersuche: Zuerst Struktur und Datenfluss (verbindlich)
+
+## Das Problem (Lehre 15.03.26)
+
+Wenn die KI bei einem Fehler **sofort anfängt zu reparieren** (Oberfläche sanieren, Texte ersetzen, Bereinigung beim Lesen), ohne zu klären, **woher die Daten kommen** und **wer wohin schreibt**, gerät sie immer tiefer in einen Sumpf: Es werden viele Stellen „gefixt“, aber die **Ursache** (z. B. falscher Schreibpfad, falscher Kontext) bleibt. Der Fehler tritt wieder auf oder verschiebt sich.
+
+**Beispiel:** K2-Galerie zeigte VK2-Inhalte. Erste Reaktion war, an der Anzeige zu sanieren (Texte beim Lesen bereinigen). Die **echte Ursache** war: Auto-Save schrieb bei VK2-Kontext in K2-Keys. Fix an der **Quelle** (Auto-Save nur bei K2) löst das dauerhaft.
+
+---
+
+## Unveränderliche Regel
+
+**Bei der Suche nach Fehlern:**
+
+1. **Zuerst: Struktur und Datenfluss verstehen**
+   - Woher kommen die betroffenen Daten? (welche Quelle, welcher Key, welcher Kontext?)
+   - Wer **liest** sie? Wer **schreibt** sie?
+   - Gibt es einen Ablauf, der **unabhängig vom Kontext** in einen festen Key schreibt? (z. B. Auto-Save immer in K2-Keys → muss nur bei K2 laufen.)
+2. **Dann: Ursache eingrenzen**
+   - Wird im richtigen Kontext gelesen/geschrieben?
+   - Liegt der Fehler an der **Quelle** (Schreiben in falschen Key / falscher Kontext) oder an der **Anzeige** (falscher Key gelesen)?
+3. **Erst danach: Reparieren**
+   - Reparatur **an der Quelle** (Schreibpfad, Kontext, Bedingung), nicht nur an der Oberfläche.
+   - Oberflächen-Sanierung (Bereinigung beim Lesen, Overrides) nur als **zweite Verteidigungslinie** für bereits korrupte Daten – nicht als Ersatz für die Quellen-Reparatur.
+
+**Nicht:** Sofort an der Oberfläche reparieren und dabei Schreibpfad/Kontext ungeprüft lassen.
+
+---
+
+## Konkret bei Galerie-/Stammdaten-/Kontext-Themen
+
+- **Doku zuerst lesen:** **docs/DATENFLUSS-GALERIE-STRUKTUR.md** – zwei Quellen (Stammdaten, Galerie gestalten/Texte), Keys pro Kontext, wer schreibt wohin.
+- **Fragen:** Woher kommen die angezeigten Daten? Welcher Key? Wer schreibt in diesen Key und unter welcher Bedingung (Kontext)?
+- **Verdacht „falsche Daten angezeigt“:** Immer prüfen: Wurde in **diesen** Key aus dem **falschen Kontext** geschrieben? (z. B. Auto-Save bei VK2 → K2-Keys.) Dann an der **Schreibstelle** fixen.
+
+---
+
+## Verknüpfung
+
+- **docs/DATENFLUSS-GALERIE-STRUKTUR.md** – verbindliche Struktur und Ablauf bei Fehlersuche.
+- **docs/FEHLERANALYSEPROTOKOLL.md** – Quellen, bekannte Fehlerklassen; dort ist „Struktur/Datenfluss zuerst“ in die Ablauflogik eingebunden.
+- **.cursor/rules/qualitaet-bei-fehlermeldung.mdc** – Fehleranalyseprozess; Schritt „Struktur und Datenfluss“ vor Analyse/Fix.
+
+## Kurzfassung
+
+**Fehlersuche = zuerst Struktur und Datenfluss, dann Ursache eingrenzen, dann an der Quelle reparieren. Nie sofort an der Oberfläche reparieren – sonst Sumpf.**

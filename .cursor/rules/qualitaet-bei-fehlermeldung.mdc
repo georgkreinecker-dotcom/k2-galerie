@@ -11,16 +11,17 @@ alwaysApply: true
 
 **Bei jeder Fehlermeldung von Georg** („funktioniert nicht“, „kommt nichts an“, „stürzt ab“, „zum x-ten Mal“, Kritik am Ablauf) gilt:
 
-0. **Funktionierende Muster zuerst:** Wo im Projekt gibt es **dasselbe oder fast dasselbe, das bereits funktioniert?** (z. B. gleicher Link-Typ, gleicher Ablauf.) → **Genau dieses Muster 1:1 anwenden**, nicht neu erfinden oder herumexperimentieren. Siehe funktionierende-muster-zuerst-nutzen.mdc.
-1. **Vergangene Fehler prüfen:** **docs/GELOESTE-BUGS.md** (und bei Absturz/Code 5: **docs/CRASH-BEREITS-GEPRUEFT.md**) lesen – ob **gleicher oder ähnlicher Fehler** schon vorkam (BUG-NNN, Crash-Liste). Bei Treffer: bestehende Lösung/Regel anwenden, im Protokoll als „Wiederholung von BUG-XXX“ vermerken.
-2. **Orientierung:** **docs/FEHLERANALYSEPROTOKOLL.md** lesen – Abschnitt „Vergangene Fehler – Quellen“, „Bekannte Fehlerklassen“, „Laufende Absicherungen“, letzte Protokoll-Einträge.
-3. **Analyse:** Nicht nur die eine Stelle fixen. Klären: Welche **Regel** wurde verletzt? Welche **Annahme** war falsch? Ist es eine **Wiederholung** einer bekannten Fehlerklasse?
+0. **Struktur und Datenfluss zuerst (niemals sofort reparieren):** Bei Fehlern zu Anzeige, Galerie-Daten, Stammdaten, Kontext (K2/ök2/VK2): **zuerst** klären: Woher kommen die Daten? Wer schreibt wohin? Erst **danach** reparieren – und **an der Quelle**, nicht nur an der Oberfläche. Sonst gerät man in den Sumpf. Siehe **.cursor/rules/fehlersuche-zuerst-struktur-datenfluss.mdc** und **docs/DATENFLUSS-GALERIE-STRUKTUR.md**.
+1. **Funktionierende Muster zuerst:** Wo im Projekt gibt es **dasselbe oder fast dasselbe, das bereits funktioniert?** (z. B. gleicher Link-Typ, gleicher Ablauf.) → **Genau dieses Muster 1:1 anwenden**, nicht neu erfinden oder herumexperimentieren. Siehe funktionierende-muster-zuerst-nutzen.mdc.
+2. **Vergangene Fehler prüfen:** **docs/GELOESTE-BUGS.md** (und bei Absturz/Code 5: **docs/CRASH-BEREITS-GEPRUEFT.md**) lesen – ob **gleicher oder ähnlicher Fehler** schon vorkam (BUG-NNN, Crash-Liste). Bei Treffer: bestehende Lösung/Regel anwenden, im Protokoll als „Wiederholung von BUG-XXX“ vermerken.
+3. **Orientierung:** **docs/FEHLERANALYSEPROTOKOLL.md** lesen – Abschnitt „Vergangene Fehler – Quellen“, „Bekannte Fehlerklassen“, „Laufende Absicherungen“, letzte Protokoll-Einträge.
+4. **Analyse:** Nicht nur die eine Stelle fixen. Klären: Welche **Regel** wurde verletzt? Welche **Annahme** war falsch? Ist es eine **Wiederholung** einer bekannten Fehlerklasse?
 5. **Fix + Absicherung:** Bug beheben **und** dauerhaft absichern (Regel schärfen, Checkliste, Doku, so dass dieselbe Fehlerart nicht wieder durchgeht). Fix = wo möglich **bestehende funktionierende Lösung** im Projekt übernehmen, nicht neue Wege bauen.
 6. **Dokumentation:** In **FEHLERANALYSEPROTOKOLL.md** einen Eintrag unter „Protokoll-Einträge“ (Datum, Stichwort, Ursache, Maßnahme). Bei Wiederholung: in „Bekannte Fehlerklassen“ den Hinweis „Wiederholung – Absicherung verschärft am …“ ergänzen.
 7. **Bei Wiederholung:** Prüfen, warum die bestehende Absicherung nicht gegriffen hat. Absicherung **verschärfen** (z. B. Regel alwaysApply, Pflicht-Check vor „Fertig“, explizite Wiederholungs-Warnung in Doku).
 
 ## Kurzfassung
 
-**Fehlermeldung von Georg = Protokoll lesen → analysieren → fixen + absichern → im Protokoll eintragen. Wiederholung = Absicherung verschärfen und vermerken.**
+**Fehlermeldung von Georg = (0) Bei Galerie/Stammdaten/Kontext: Struktur und Datenfluss zuerst, dann (1) Protokoll lesen → analysieren → an der Quelle fixen + absichern → im Protokoll eintragen. Wiederholung = Absicherung verschärfen und vermerken.**
 
 Die KI führt damit ein Fehleranalyseprotokoll, an dem sie sich bei Fehlern orientieren und das sie nach jeder Analyse aktualisieren **muss**.

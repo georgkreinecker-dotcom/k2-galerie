@@ -202,6 +202,10 @@ export function cleanK2PageTextsFromVk2(): void {
       saved.galerie.galerieButtonText = k2Galerie.galerieButtonText
       dirty = true
     }
+    if (saved.galerie.heroTitle && (saved.galerie.heroTitle.includes('Verein') || saved.galerie.heroTitle === 'Vereinsplattform')) {
+      saved.galerie.heroTitle = k2Galerie.heroTitle
+      dirty = true
+    }
     if (dirty) localStorage.setItem(key, JSON.stringify(saved))
   } catch (_) {}
 }
@@ -255,6 +259,10 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
         }
         if (saved.galerie.galerieButtonText === 'Unsere Mitglieder') {
           saved.galerie.galerieButtonText = k2Galerie.galerieButtonText
+          dirty = true
+        }
+        if (saved.galerie.heroTitle && (saved.galerie.heroTitle.includes('Verein') || saved.galerie.heroTitle === 'Vereinsplattform')) {
+          saved.galerie.heroTitle = k2Galerie.heroTitle
           dirty = true
         }
         if (dirty) try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}

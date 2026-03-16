@@ -10,6 +10,24 @@
 
 ---
 
+## BUG-039 · K2-Galerie zeigte VK2-Inhalte – Ursache: Auto-Save schrieb bei VK2-Kontext in K2-Keys (gelöst 15.03.26)
+
+**Symptom:** Auf der K2-Galerie-Seite waren „oberer Text und Bild“, Impressum und „Aktuelles aus Eventplanung“ falsch bzw. von VK2 (Verein). Korrekt waren bereits „Die Kunstschaffenden“, „In die Galerie“, „Virtueller Rundgang“.
+
+**Ursache (Datenquelle):** Galerie-Daten kommen aus genau zwei Quellen: (1) Stammdaten (k2-stammdaten-galerie etc.), (2) Galerie gestalten / Texte (k2-page-content-galerie, k2-page-texts). Der Fehler lag **nicht** an der Anzeige, sondern am **Schreiben**: **Auto-Save** (autoSave.ts) schreibt immer in **K2-Keys** (k2-page-texts, k2-stammdaten-*, k2-events, …). Der Admin startete Auto-Save aber auch bei **VK2-Kontext** (`!tenant.isOeffentlich` reichte – VK2 ist auch nicht oeffentlich). Dadurch wurde alle 5 Sekunden der aktuelle **VK2-State** (VK2-Texte, VK2-Stammdaten) in die **K2-Keys** geschrieben → K2-Galerie zeigte VK2-Inhalte.
+
+**Lösung (an der Quelle):** Auto-Save nur starten, wenn Kontext **K2** ist. In ScreenshotExportAdmin: `startAutoSave` und `setupBeforeUnloadSave` nur aufrufen, wenn `!tenant.isOeffentlich && !tenant.isVk2`. Dependency-Array des Effects um `tenant.tenantId`, `tenant.isOeffentlich`, `tenant.isVk2` ergänzt, damit bei Kontextwechsel Auto-Save gestoppt/neu gestartet wird.
+
+**Zusätzlich (zweite Verteidigungslinie für bereits verunreinigte Daten):** Bereinigung beim Lesen bleibt erhalten (pageContentGalerie K2 von VK2-Text/Bild, pageTexts heroTitle, GaleriePage Event-Überschrift), damit einmal korrupte Keys beim nächsten Laden bereinigt werden.
+
+**Zusätzliche Fixes (16.03.26, Problem bestand weiter):** (1) **TenantContext:** `?context=` wird **case-insensitive** ausgewertet (`VK2`/`vk2`, `Oeffentlich`/`oeffentlich`). Vorher: `?context=VK2` fiel auf getTenantFromStorage() → evtl. tenantId = 'k2' → Auto-Save lief trotz VK2-URL. (2) **Zweite Absicherung im Admin:** Auto-Save startet nur, wenn **weder** tenant.isOeffentlich/isVk2 **noch** die URL `context=oeffentlich` oder `context=vk2` enthält (location.search, case-insensitive). So wird auch bei falschem tenant nie in K2 geschrieben, wenn die URL klar VK2/ök2 anzeigt.
+
+**Betroffene Dateien:** components/ScreenshotExportAdmin.tsx (Auto-Save nur bei K2 + URL-Check), src/context/TenantContext.tsx (deriveTenantId + syncStorageFromUrl case-insensitive), src/utils/autoSave.ts (unverändert).
+
+**Status:** ✅ Behoben (15.03.26, Absicherung verschärft 16.03.26).
+
+---
+
 ## BUG-038 · K2 Galerie-Startseite zeigte VK2-Texte (Datenvermischung, gelöst 16.03.26)
 
 **Symptom:** Auf der K2 Galerie Startseite (Kunst & Keramik) erschienen Vereins-Inhalte: „Kunstverein“, „Die Mitglieder unseres Vereins“, „VEREINSTERMINE & EVENTS“, „Vereinsräume“ (rechte Tür). Datenvermischung = eisernes No-Go.

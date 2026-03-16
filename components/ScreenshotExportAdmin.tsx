@@ -3860,10 +3860,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       pageTexts: pageTexts
     })
     
-    // KRITISCH: Auto-Save nur in K2 – in ök2 niemals in K2-Keys schreiben. Dynamischer Mandant: nur über API speichern, kein Auto-Save in localStorage.
+    // KRITISCH: Auto-Save nur in K2 – in ök2/VK2 niemals in K2-Keys schreiben (Datenquelle eine pro Kontext).
+    // Wenn Auto-Save bei VK2 liefe, würde VK2-State (pageTexts, Stammdaten) in k2-page-texts / k2-stammdaten-* landen → K2-Galerie zeigt VK2-Inhalte.
+    // Zweite Absicherung: URL direkt prüfen (case-insensitive), falls tenant aus sessionStorage/Reihenfolge mal falsch wäre.
+    const search = typeof location !== 'undefined' ? (location.search || '').toLowerCase() : ''
+    const urlSaysOeffentlich = search.includes('context=oeffentlich')
+    const urlSaysVk2 = search.includes('context=vk2')
     if (tenant.dynamicTenantId) {
       // Kein Auto-Save – Speichern nur über „Veröffentlichen“ → write-gallery-data
-    } else if (!tenant.isOeffentlich) {
+    } else if (!tenant.isOeffentlich && !tenant.isVk2 && !urlSaysOeffentlich && !urlSaysVk2) {
       startAutoSave(getAllData)
       setupBeforeUnloadSave(getAllData)
     }
@@ -3872,7 +3877,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       isMounted = false
       stopAutoSave()
     }
-  }, [martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
+  }, [tenant.tenantId, tenant.isOeffentlich, tenant.isVk2, martinaData, georgData, galleryData, allArtworks, events, documents, designSettings, pageTexts])
 
   // Event hinzufügen/bearbeiten
   const handleSaveEvent = () => {

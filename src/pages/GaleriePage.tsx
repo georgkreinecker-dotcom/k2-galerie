@@ -3180,7 +3180,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               borderLeft: musterOnly ? '4px solid #6b9080' : vk2 ? '4px solid var(--k2-accent)' : '4px solid rgba(184, 184, 255, 0.6)'
             }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
-                {(galerieTexts.eventSectionHeading === 'Vereinstermine & Events' ? 'Aktuelles aus den Eventplanungen' : galerieTexts.eventSectionHeading) || 'Demnächst bei uns'}
+                {(() => {
+                  const h = galerieTexts.eventSectionHeading ?? ''
+                  if (!vk2 && (h === 'Vereinstermine & Events' || h.includes('Verein'))) return 'Aktuelles aus den Eventplanungen'
+                  if (vk2) return h || 'Termine & Events'
+                  return h || 'Demnächst bei uns'
+                })()}
               </p>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
                 {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => {
@@ -3665,7 +3670,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 gap: 'clamp(2rem, 4vw, 3rem)',
                 alignItems: 'flex-start'
               }}>
-              {/* Linke Seite: Impressum nur mit Brand-Daten */}
+              {/* Linke Seite: Impressum – Brand + K2-Stammdaten (Adresse/Kontakt aus Admin) */}
                 <div style={{ flex: 1 }}>
                   <h4 style={{
                     margin: '0 0 1rem',
@@ -3681,6 +3686,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>
                     {PRODUCT_COPYRIGHT_BRAND_ONLY}
                   </p>
+                  {/* K2: Adresse/Kontakt ausschließlich aus Stammdaten (Admin → Meine Daten) */}
+                  {!musterOnly && (() => {
+                    const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
+                    const tel = galleryData?.phone?.trim() || martinaData?.phone?.trim() || georgData?.phone?.trim()
+                    const email = galleryData?.email?.trim() || martinaData?.email?.trim() || georgData?.email?.trim()
+                    if (!adresse && !tel && !email) return null
+                    return (
+                      <>
+                        {adresse && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>📍 {adresse}</p>}
+                        {tel && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>📞 {tel}</p>}
+                        {email && <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>✉️ <a href={`mailto:${email}`} style={{ color: theme.accent, textDecoration: 'none' }}>{email}</a></p>}
+                      </>
+                    )
+                  })()}
                   {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
                     <p style={{ margin: '0 0 0', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
                       ✉️ <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: theme.accent, textDecoration: 'none' }}>

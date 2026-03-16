@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.03.26 – **VK2-Handbuch: klares Prozedere Vereinsmitglied ↔ ök2-Lizenz.** In 11-VEREINSMITGLIEDER-ANLEGEN.md neuer Abschnitt „Vereinsmitglied und ök2-Lizenz – klarer Ablauf“: Weg A (Mitglied kauft ök2 → gibt Galerie-Link an Verein → Vorstand trägt „Link zur eigenen Galerie“ ein), Weg B (hat schon Lizenz, wird Mitglied → Verein trägt Link ein). Vice versa: keine automatische Sync – Infos immer über klare Handlung (Mitglied teilt mit, Verein trägt ein). 00-INDEX Beschreibung angepasst; Abschnitt 4 „nur Name (ohne Profil)“ vereinheitlicht.
+**Letzter Stand:** 16.03.26 – **K2-Reparatur: Events, Willkommensbild, Impressum.** (1) **k2-events:** Beim Laden werden VK2-Einträge aus k2-events entfernt (gleiche id oder title+date), bereinigte Liste wird zurückgeschrieben – K2-Galerie zeigt wieder nur K2-Veranstaltungen (z. B. Eröffnung 24.–26.04.). (2) **Willkommensbild K2:** In getPageContentGalerie (K2) werden leere Bildfelder (welcomeImage, galerieCardImage, virtualTourImage) aus Stammdaten (loadStammdaten('k2','gallery')) aufgefüllt und gespeichert. (3) **Impressum K2:** Impressum-Block auf der Galerie zeigt für K2 zusätzlich Adresse/Kontakt ausschließlich aus Stammdaten (getProminenteAdresseFormatiert, Telefon, E-Mail aus galleryData/martinaData/georgData). Tests 194/194, Build ✅.
 
-**Was wir JETZT tun:** Session-Ende. Nächster Schritt von Georg.
+**Was wir JETZT tun:** Commit + Push. Georg: K2-Galerie prüfen (Events, Willkommensbild, Impressum).
 
-**Nächster Schritt:** Von Georg festlegen.
+**Nächster Schritt:** Nach Push: Georg testet K2-Galerie; falls „Eröffnung 24.04.–26.04.“ im localStorage k2-events fehlt (weil früher überschrieben), im Admin unter Eventplanung neu anlegen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
