@@ -155,6 +155,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **PLATZHALTER-BILDER-WIEDERBEKOMMEN.md** – 10 Platzhalter am Mac / Bilder weg nach iPad-Rescan: Ursache, Lösung A (Handy veröffentlichen → Mac/iPad laden), Lösung B (Vollbackup).
 - **STAND-QR-SO-BLEIBT-ES.md** – Stand & QR richtig halten.
 - **LINKS-QR-CODES-UEBERSICHT.md** – **Links & QR-Codes:** Zentrale Quelle (navigation.ts), wo Links/QR vorkommen, Pflicht buildQrUrlWithBust für Vercel-URLs; Einbauorte (APf, Werbeunterlagen, Zettel, Pilot, Etikett). Regel: stand-qr-niemals-zurueck.mdc.
+- **QR-URL-STRUKTUR.md** – **QR & URLs – Struktur-Check:** Zwei Fälle (Scan = Server-Bust; Werbemittel = immer Produktion). Fallback FALLBACK_GALERIE_URL_WERBEMITTEL, nie localhost in Druck/PDF. Checkliste und alle Stellen in ScreenshotExportAdmin. (16.03.26)
 - **VERCEL-BENACHRICHTIGUNGEN.md** – Vercel-Benachrichtigungen.
 - **VEROEFFENTLICHEN-VOLLSTAENDIG.md** – Vollständig veröffentlichen.
 

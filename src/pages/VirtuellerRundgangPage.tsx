@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getGalerieImages } from '../config/pageContentGalerie'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey } from '../utils/artworksStorage'
 import '../App.css'
 
@@ -9,8 +11,31 @@ function loadArtworks(): any[] {
   return readArtworksRawByKey('k2-artworks')
 }
 
+/** URL nur nutzen, wenn sie auf diesem Gerät laden kann (kein blob:/data:, die auf anderem Gerät leer sind). Fallback = Datei vom Server. */
+const DEFAULT_VIDEO = '/img/k2/virtual-tour.mp4'
+const DEFAULT_IMAGE = '/img/k2/virtual-tour.jpg'
+function useableMediaUrl(url: string | undefined, fallback: string): string {
+  if (!url || !url.trim()) return fallback
+  const u = url.trim()
+  if (u.startsWith('blob:') || u.startsWith('data:')) return fallback
+  return u
+}
+
 const VirtuellerRundgangPage = () => {
   const navigate = useNavigate()
+  /** Video/Bild aus Design → Seitengestaltung. blob:/data: ersetzen wir durch Server-Fallback, damit per QR geöffnet immer ein sichtbares Video/Bild kommt. */
+  const [displayMedia, setDisplayMedia] = useState<{ virtualTourVideo: string; virtualTourImage: string }>(() => {
+    try {
+      const stamm = loadStammdaten('k2', 'gallery') as { virtualTourImage?: string } | null
+      const raw = getGalerieImages(stamm ?? undefined)
+      return {
+        virtualTourVideo: useableMediaUrl(raw.virtualTourVideo, DEFAULT_VIDEO),
+        virtualTourImage: useableMediaUrl(raw.virtualTourImage, DEFAULT_IMAGE)
+      }
+    } catch {
+      return { virtualTourVideo: DEFAULT_VIDEO, virtualTourImage: DEFAULT_IMAGE }
+    }
+  })
   const [artworks, setArtworks] = useState<any[]>([])
   const [lightboxImage, setLightboxImage] = useState<{ src: string; title: string; artwork: any } | null>(null)
   const [imageZoom, setImageZoom] = useState(1)
@@ -142,6 +167,28 @@ const VirtuellerRundgangPage = () => {
     }
   }, [])
 
+  // Video/Bild aus Seitengestaltung aktualisieren (z. B. nach Änderung in Design)
+  useEffect(() => {
+    const updateMedia = () => {
+      try {
+        const stamm = loadStammdaten('k2', 'gallery') as { virtualTourImage?: string } | null
+        const raw = getGalerieImages(stamm ?? undefined)
+        setDisplayMedia({
+          virtualTourVideo: useableMediaUrl(raw.virtualTourVideo, DEFAULT_VIDEO),
+          virtualTourImage: useableMediaUrl(raw.virtualTourImage, DEFAULT_IMAGE)
+        })
+      } catch {
+        setDisplayMedia({ virtualTourVideo: DEFAULT_VIDEO, virtualTourImage: DEFAULT_IMAGE })
+      }
+    }
+    updateMedia()
+    window.addEventListener('storage', updateMedia)
+    return () => window.removeEventListener('storage', updateMedia)
+  }, [])
+
+  const hasVideo = !!displayMedia.virtualTourVideo
+  const hasImage = !!displayMedia.virtualTourImage
+
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
@@ -238,6 +285,48 @@ const VirtuellerRundgangPage = () => {
           maxWidth: '1400px',
           margin: '0 auto'
         }}>
+          {/* Rundgang-Video oder -Bild (aus Design → Seitengestaltung) – Hauptinhalt, wie auf der Willkommensseite */}
+          <div style={{
+            width: '100%',
+            maxWidth: '100%',
+            aspectRatio: '16/9',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            marginBottom: 'clamp(2rem, 5vw, 3rem)',
+            background: 'rgba(0, 0, 0, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxSizing: 'border-box'
+          }}>
+            {hasVideo ? (
+              <video
+                key={displayMedia.virtualTourVideo}
+                src={displayMedia.virtualTourVideo}
+                controls
+                playsInline
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', boxSizing: 'border-box' }}
+                title="Virtueller Rundgang"
+              />
+            ) : hasImage ? (
+              <img
+                src={displayMedia.virtualTourImage}
+                alt="Virtueller Rundgang"
+                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', boxSizing: 'border-box' }}
+              />
+            ) : (
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'rgba(255, 255, 255, 0.4)',
+                fontSize: 'clamp(2rem, 6vw, 4rem)'
+              }}>
+                📹 Video oder Bild unter Design → Seitengestaltung einbinden
+              </div>
+            )}
+          </div>
+
           {/* Info-Banner */}
           <div style={{
             background: 'rgba(255, 255, 255, 0.05)',
@@ -260,7 +349,7 @@ const VirtuellerRundgangPage = () => {
               color: '#ffffff',
               marginBottom: '1rem'
             }}>
-              Willkommen zum virtuellen Rundgang
+              Virtueller Rundgang
             </h2>
             <p style={{
               fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
@@ -269,7 +358,7 @@ const VirtuellerRundgangPage = () => {
               maxWidth: '700px',
               margin: '0 auto'
             }}>
-              Scanne den QR-Code an unseren Fenstern oder Türen, um die Galerie auch außerhalb der Öffnungszeiten zu erkunden. Entdecke unsere aktuellen Werke und lass dich von der Kunst inspirieren.
+              Erkunde die Galerie in deinem Tempo. Oben siehst du das Rundgang-Video, darunter die aktuellen Werke der Ausstellung.
             </p>
           </div>
 

@@ -4,14 +4,23 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE } from '../src/config/navigation'
+import { APP_BASE_URL } from '../src/config/externalUrls'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
 import StatistikTab from './tabs/StatistikTab'
 import WerkkatalogTab from './tabs/WerkkatalogTab'
 
-/** Feste Galerie-URL für Etiketten-QR (unabhängig vom Router/WLAN) – gleiche Basis wie Mobile Connect */
-const GALERIE_QR_BASE = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+/** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
+function isProductionLikeUrl(url: string | undefined): boolean {
+  if (!url || typeof url !== 'string') return false
+  const u = url.trim()
+  return u.length > 0 && u.startsWith('https://') && !u.toLowerCase().includes('localhost')
+}
+/** Feste Galerie-URL für Etiketten-QR (APP_BASE_URL = Vercel oder VITE_APP_BASE_URL) */
+const GALERIE_QR_BASE = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
+/** Fallback für QR/Links in Werbemitteln (Flyer, Plakat, Newsletter) – immer Produktion, nie localhost */
+const FALLBACK_GALERIE_URL_WERBEMITTEL = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
 /** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
 const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
 /** API: gallery-data an Vercel senden (Blob + optional GitHub-Backup) – eine URL für alle Geräte */
@@ -4372,7 +4381,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         location: event.location || adr || '',
         description: event.description || '',
         type: event.type,
-        qrCode: v?.website || window.location.origin,
+        qrCode: v?.website || FALLBACK_GALERIE_URL_WERBEMITTEL,
         contact: { phone: (v as any)?.phone || '', email: v?.email || '', address: adr || '' }
       }
     }
@@ -4387,7 +4396,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       location: event.location || prominenteAdresse || '',
       description: flyerDesc,
       type: event.type,
-      qrCode: galleryData.website || window.location.origin,
+      qrCode: (galleryData.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL,
       contact: {
         phone: galleryData.phone || '',
         email: galleryData.email || '',
@@ -4504,7 +4513,7 @@ ${adresse ? `Adresse: ${adresse}` : ''}
         date: formatEventDates(event) || 'Datum folgt',
         location: event.location || adr || '',
         description: event.description || '',
-        qrCode: g.website || window.location.origin,
+        qrCode: (g.website && isProductionLikeUrl(g.website)) ? g.website : FALLBACK_GALERIE_URL_WERBEMITTEL,
         contact: { phone: g.phone || '', email: g.email || '', address: adr || '' }
       }
     }
@@ -4518,7 +4527,7 @@ ${adresse ? `Adresse: ${adresse}` : ''}
       date: formatEventDates(event) || 'Datum folgt',
       location: event.location || prominenteAdresse || '',
       description: plakatDesc,
-      qrCode: g.website || window.location.origin,
+      qrCode: (g.website && isProductionLikeUrl(g.website)) ? g.website : FALLBACK_GALERIE_URL_WERBEMITTEL,
       contact: {
         phone: g.phone || '',
         email: g.email || '',
@@ -6366,7 +6375,7 @@ ${'='.repeat(60)}
         ${newsletterContent.body.replace(/\n/g, '<br>')}
       </div>
       
-      <a href="${galleryData.website || window.location.origin}" class="button">Mehr erfahren →</a>
+      <a href="${(galleryData.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL}" class="button">Mehr erfahren →</a>
       
       <div class="footer">
         <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
@@ -6460,8 +6469,8 @@ ${'='.repeat(60)}
       plakatContent.location = event.location || plakatContent.location || freshGalleryData.address || ''
       plakatContent.description = event.description || plakatContent.description || ''
       
-      // QR-Code: Verwende Website-URL oder Homepage-URL
-      const websiteUrl = freshGalleryData.website || window.location.origin
+      // QR-Code: Nur gültige Produktions-URL (https, kein localhost), sonst Fallback – gedrucktes Plakat muss von überall funktionieren
+      const websiteUrl = (freshGalleryData.website && isProductionLikeUrl(freshGalleryData.website)) ? freshGalleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
       plakatContent.qrCode = websiteUrl
       
       // Event-Typ aktualisieren
@@ -9713,9 +9722,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
   }
 
   // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API). Optional event für Zuordnung zur Rubrik.
+  // Beide QRs müssen dieselbe Basis-URL nutzen (Homepage + Rundgang gleiche Domain), sonst öffnet z. B. Rundgang „nichts“, wenn Nutzer nur Custom-Domain kennt.
   const printQRCodePlakat = async (event?: any) => {
-    const homepageUrl = `${window.location.origin}/projects/k2-galerie/galerie`
-    const rundgangUrl = `${window.location.origin}/projects/k2-galerie/virtueller-rundgang`
+    const homepageUrl = (galleryData?.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
+    const baseForRundgang = (galleryData?.website && isProductionLikeUrl(galleryData.website))
+      ? (() => { try { return new URL(galleryData.website).origin } catch { return APP_BASE_URL } })()
+      : APP_BASE_URL
+    const rundgangUrl = baseForRundgang + PROJECT_ROUTES['k2-galerie'].virtuellerRundgang
     const [homepageQRUrl, rundgangQRUrl] = await Promise.all([
       QRCode.toDataURL(homepageUrl, { width: 300, margin: 1 }),
       QRCode.toDataURL(rundgangUrl, { width: 300, margin: 1 })
@@ -11460,8 +11473,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <button
                 type="button"
                 onClick={() => {
-                  adminTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                  if (activeTab === 'werke') {
+                    const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                    navigate(galeriePath, { state: { fromAdmin: true } })
+                  } else {
+                    setActiveTab('werke')
+                    adminTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }
                 }}
                 style={{
                   flexShrink: 0,
@@ -11479,8 +11498,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   fontFamily: 'inherit',
                   whiteSpace: 'nowrap',
                 }}
+                title={activeTab === 'werke' ? 'Zur Galerie (öffentliche Ansicht)' : 'Zurück zur Übersicht (Werke, Events, Kassa, …)'}
               >
-                ← Zurück in den Admin-Bereich
+                {activeTab === 'werke' ? '← Zurück zur Galerie' : '← Zurück in den Admin-Bereich'}
               </button>
             </div>
           </div>
@@ -12660,6 +12680,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       {selectedForBatchPrint.size === 0 && (
                         <span style={{ fontSize: '0.72rem', color: s.muted }}>→ Hakerl bei Werken setzen, dann hier drucken</span>
                       )}
+                      {/* Gleiche Einstellung wie in Einstellungen → Drucker, hier im Arbeitsablauf sichtbar */}
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginTop: '0.5rem', fontSize: '0.8rem', color: s.text }}>
+                        <input
+                          type="checkbox"
+                          checked={!!loadPrinterSettingsForTenant(getCurrentTenantId()).openEtikettAfterSave}
+                          onChange={(e) => {
+                            const v = e.target.checked ? '1' : '0'
+                            const tid = getCurrentTenantId()
+                            savePrinterSetting(tid, 'openEtikettAfterSave', v)
+                            if (printerSettingsForTenant === tid) setPrinterSettings(prev => ({ ...prev, openEtikettAfterSave: e.target.checked }))
+                          }}
+                          style={{ width: '1rem', height: '1rem', accentColor: s.accent, flexShrink: 0 }}
+                        />
+                        <span>Etikett gleich nach Speichern drucken (sonst später per Klick am Werk)</span>
+                      </label>
                     </div>
                   </div>
                   {/* Einstellungen & Sync unter Aufklapp-Button */}
@@ -16507,7 +16542,7 @@ ${name}`
                         </p>
                       </div>
 
-                      {/* Auch auf dem Handy sichtbar: gleiche Option wie am Mac – nach Speichern automatisch Etikett-Fenster öffnen */}
+                      {/* Arbeitsablauf: Etikett gleich nach Speichern oder später durch Anklicken */}
                       <div className="field" style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', flexWrap: 'wrap', padding: '0.75rem', background: `${s.accent}0c`, borderRadius: '10px', border: `1px solid ${s.accent}22` }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flex: '1 1 auto' }}>
                           <input
@@ -16520,10 +16555,10 @@ ${name}`
                             }}
                             style={{ width: '1.2rem', height: '1.2rem', accentColor: s.accent, flexShrink: 0 }}
                           />
-                          <span style={{ fontSize: '0.95rem', color: s.text, fontWeight: 600 }}>Etikett-Fenster nach Speichern automatisch öffnen</span>
+                          <span style={{ fontSize: '0.95rem', color: s.text, fontWeight: 600 }}>Etikett gleich nach Speichern drucken</span>
                         </label>
                         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: '0.25rem', marginBottom: 0, flex: '1 1 100%' }}>
-                          Mac &amp; Handy: Wenn aktiviert, öffnet sich nach dem Speichern eines Werks automatisch das Etikett-Fenster – ein Tipp zum Drucken. Mit <strong>Standarddrucker</strong> auf Normalpapier; mit <strong>Etikettendrucker</strong> wie gewohnt.
+                          <strong>An:</strong> Nach jedem gespeicherten Werk (neu oder bearbeitet) öffnet sich das Etikett-Fenster zum Drucken – bei vielen Werken praktisch. <strong>Aus:</strong> Etikett später bei jedem Werk per Klick auf „🖨️ Etikett drucken“ in der Werkliste. Mac &amp; Handy.
                         </p>
                       </div>
 
