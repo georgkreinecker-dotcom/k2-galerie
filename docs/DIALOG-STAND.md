@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – **K2-Reparatur: Events, Willkommensbild, Impressum.** (1) **k2-events:** Beim Laden werden VK2-Einträge aus k2-events entfernt (gleiche id oder title+date), bereinigte Liste wird zurückgeschrieben – K2-Galerie zeigt wieder nur K2-Veranstaltungen (z. B. Eröffnung 24.–26.04.). (2) **Willkommensbild K2:** In getPageContentGalerie (K2) werden leere Bildfelder (welcomeImage, galerieCardImage, virtualTourImage) aus Stammdaten (loadStammdaten('k2','gallery')) aufgefüllt und gespeichert. (3) **Impressum K2:** Impressum-Block auf der Galerie zeigt für K2 zusätzlich Adresse/Kontakt ausschließlich aus Stammdaten (getProminenteAdresseFormatiert, Telefon, E-Mail aus galleryData/martinaData/georgData). Tests 194/194, Build ✅.
+**Letzter Stand:** 16.03.26 – **K2/VK2-Vermischung behoben (eiserne Absicherungen).** Ursache: Auto-Save schrieb beim Tab-Wechsel VK2→K2 noch **VK2-State** in k2-events/k2-documents. **Fixes:** (1) **eventsStorage:** saveEvents('k2') filtert VK2-IDs raus; schreibt nie, wenn nur VK2 übrig bliebe (K2 würde sonst geleert). (2) **autoSave:** Schreibt Events/Dokumente nur, wenn Daten nicht wie VK2 aussehen (alle IDs in VK2 → Skip). (3) **documentsStorage:** saveDocuments('k2') bricht ab, wenn Inhalt exakt k2-vk2-documents ist. (4) **Admin:** Events bei Kontextwechsel **sofort** laden (0 ms, kein 400-ms-Delay). Regel: **.cursor/rules/k2-events-documents-niemals-vk2-schreiben.mdc**. Wiederherstellung verlorener Daten nur aus Vollbackup/backupmicro (EVENTPLANUNG-24-26-04-WIEDERHERSTELLUNG.md). Tests 194/194.
 
-**Was wir JETZT tun:** Commit + Push. Georg: K2-Galerie prüfen (Events, Willkommensbild, Impressum).
+**Was wir JETZT tun:** Commit + Push. Georg: Optional Backup-Datei suchen und wiederherstellen; danach K2-Galerie prüfen.
 
-**Nächster Schritt:** Nach Push: Georg testet K2-Galerie; falls „Eröffnung 24.04.–26.04.“ im localStorage k2-events fehlt (weil früher überschrieben), im Admin unter Eventplanung neu anlegen.
+**Nächster Schritt:** Nach Push: K2-Eventplanung testen; Vermischung darf nicht mehr vorkommen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

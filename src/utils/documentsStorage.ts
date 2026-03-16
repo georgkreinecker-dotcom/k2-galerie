@@ -28,10 +28,28 @@ export function loadDocuments(tenantId: DocumentsTenantId): any[] {
   }
 }
 
+/** EISERN: K2 darf nicht mit exakt den VK2-Dokumenten überschrieben werden (Vermischung). */
+function isSameAsVk2Documents(list: any[]): boolean {
+  if (!Array.isArray(list) || list.length === 0) return false
+  try {
+    const vk2Raw = typeof window !== 'undefined' ? localStorage.getItem(DOCUMENTS_KEYS.vk2) : null
+    const vk2 = (vk2Raw && vk2Raw.trim() ? JSON.parse(vk2Raw) : []) || []
+    if (!Array.isArray(vk2) || vk2.length !== list.length) return false
+    return JSON.stringify(list) === JSON.stringify(vk2)
+  } catch {
+    return false
+  }
+}
+
 export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): void {
   try {
     const key = getDocumentsKey(tenantId)
     const list = Array.isArray(documents) ? documents : []
+    // EISERN: k2-documents darf nicht mit VK2-Daten überschrieben werden
+    if (tenantId === 'k2' && typeof window !== 'undefined' && list.length > 0 && isSameAsVk2Documents(list)) {
+      console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – VK2-Dokumente würden K2 überschreiben')
+      return
+    }
     const json = JSON.stringify(list)
     if (json.length > 10_000_000) {
       console.error('❌ documentsStorage: Daten zu groß')

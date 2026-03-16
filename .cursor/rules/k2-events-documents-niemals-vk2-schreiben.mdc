@@ -1,0 +1,33 @@
+---
+description: K2-Events/Dokumente – niemals mit VK2-Daten überschreiben (eiserne Absicherung)
+alwaysApply: true
+---
+
+# 🔴 K2-Events & K2-Dokumente – NIEMALS VK2 reinschreiben
+
+## Was passiert ist (16.03.26)
+
+Trotz strengster Regeln (keine Datenvermischung, Löschverbot) wurden **K2-Eventplanung und Öffentlichkeitsarbeit** (z. B. Eröffnung 24.04.–26.04., hunderte Stunden) durch **VK2-Daten** überschrieben. Ursache: **Auto-Save** und **Tab-Wechsel**: Beim Wechsel von VK2-Tab auf K2-Tab war der **State** (events, documents) noch der VK2-State; Auto-Save schrieb alle 5 Sekunden in **k2-events** und **k2-documents** – mit VK2-Inhalten. K2-Daten waren weg.
+
+## Eiserne Absicherungen (unveränderlich)
+
+### 1. eventsStorage.ts – saveEvents('k2', …)
+
+- **Vor dem Schreiben:** Alle Events, deren **id** in `k2-vk2-events` vorkommt, werden aus der Liste **entfernt**. Es wird **niemals** ein VK2-Event in `k2-events` gespeichert.
+- **Wenn nach Filter keine K2-Events übrig sind**, aber der Aufrufer eine nicht-leere Liste geschickt hat: **Nicht schreiben** (sonst würde K2 geleert). Schreibvorgang abbrechen + console.warn.
+
+### 2. autoSave.ts – saveEvents('k2', data.events) / saveDocuments('k2', data.documents)
+
+- **Vor dem Aufruf:** Prüfen, ob `data.events` / `data.documents` **wie VK2-Daten aussehen** (alle Event-IDs in VK2-Liste, bzw. Dokumente identisch mit k2-vk2-documents). Wenn ja: **Nicht aufrufen**, nur console.warn. So wird ein Race (Tab-Wechsel, State noch VK2) nie in K2 persistiert.
+
+### 3. documentsStorage.ts – saveDocuments('k2', …)
+
+- **Vor dem Schreiben:** Wenn die übergebene Liste **exakt** der Inhalt von `k2-vk2-documents` ist (gleiche Länge, gleicher JSON): **Nicht schreiben**, Schreibvorgang abbrechen + console.warn.
+
+### 4. Admin – Events bei Kontextwechsel
+
+- **Events** werden bei Kontextwechsel (K2/VK2/ök2) **sofort** (0 ms) aus dem richtigen Key geladen – **kein** 400-ms-Delay. So ist der State korrekt, bevor der nächste Auto-Save-Tick läuft.
+
+## Kurzfassung
+
+**K2-events und k2-documents dürfen niemals mit VK2-Daten gefüllt werden.** Drei Ebenen: (1) eventsStorage/documentsStorage lehnen VK2-Daten beim Schreiben ab; (2) autoSave schickt sie erst gar nicht; (3) Admin lädt bei Tab-Wechsel sofort den richtigen Kontext. Diese Absicherungen **niemals** entfernen oder abschwächen.

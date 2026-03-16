@@ -3824,24 +3824,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [location.search])
 
-  // Events aus localStorage laden – bei Kontextwechsel (K2/VK2/ök2) neu laden, sonst vermischt sich VK2-Event in K2
+  // Events aus localStorage laden – bei Kontextwechsel SOFORT (0 ms), damit Auto-Save nie mit VK2-State in K2 schreibt
   useEffect(() => {
     if (tenant.dynamicTenantId) return
     let isMounted = true
-    const timeoutId = setTimeout(() => {
-      if (!isMounted) return
-      try {
-        const loadedEvents = loadEvents(tenant)
-        if (isMounted) setEvents(loadedEvents)
-      } catch (error) {
-        console.error('Fehler beim Laden der Events:', error)
-        if (isMounted) setEvents([])
-      }
-    }, 400)
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
+    try {
+      const loadedEvents = loadEvents(tenant)
+      if (isMounted) setEvents(loadedEvents)
+    } catch (error) {
+      console.error('Fehler beim Laden der Events:', error)
+      if (isMounted) setEvents([])
     }
+    return () => { isMounted = false }
   }, [location.search])
   
   // AUTO-SAVE: Speichere alle Daten automatisch alle 5 Sekunden - VERHINDERT DATENVERLUST BEI CRASHES

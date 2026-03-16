@@ -93,20 +93,37 @@ export function startAutoSave(getData: () => AutoSaveData) {
       }
       if (data.events) {
         try {
+          const incoming = Array.isArray(data.events) ? data.events : []
           const existingArr = loadEvents('k2')
           const hasExisting = existingArr.length > 0
-          const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
-          if (!hasExisting || !incomingEmpty) saveEvents('k2', data.events)
+          const incomingEmpty = incoming.length === 0
+          // EISERN: Niemals K2 mit VK2-Daten überschreiben (z. B. Race beim Tab-Wechsel VK2→K2)
+          const vk2List = loadEvents('vk2')
+          const vk2Ids = new Set((vk2List || []).map((e: any) => e?.id).filter(Boolean))
+          const allIdsAreVk2 = !incomingEmpty && incoming.every((e: any) => e?.id && vk2Ids.has(e.id))
+          if (allIdsAreVk2) {
+            console.warn('⚠️ Auto-Save: Events nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
+          } else if (!hasExisting || !incomingEmpty) {
+            saveEvents('k2', incoming)
+          }
         } catch (e) {
           console.warn('⚠️ Events zu groß für Auto-Save')
         }
       }
       if (data.documents) {
         try {
+          const incoming = Array.isArray(data.documents) ? data.documents : []
           const existingArr = loadDocuments('k2')
           const hasExisting = existingArr.length > 0
-          const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
-          if (!hasExisting || !incomingEmpty) saveDocuments('k2', data.documents)
+          const incomingEmpty = incoming.length === 0
+          // EISERN: K2 nie mit VK2-Dokumenten überschreiben (Race beim Tab-Wechsel)
+          const vk2Docs = loadDocuments('vk2')
+          const looksLikeVk2 = incoming.length > 0 && vk2Docs.length === incoming.length && JSON.stringify(incoming) === JSON.stringify(vk2Docs)
+          if (looksLikeVk2) {
+            console.warn('⚠️ Auto-Save: Dokumente nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
+          } else if (!hasExisting || !incomingEmpty) {
+            saveDocuments('k2', incoming)
+          }
         } catch (e) {
           console.warn('⚠️ Documents zu groß für Auto-Save')
         }
@@ -166,23 +183,38 @@ export async function saveNow(getData: () => AutoSaveData) {
         console.warn('⚠️ Artworks zu groß für Sofort-Save')
       }
     }
-    // KRITISCH: Niemals vorhandene Events/Dokumente mit leerem State überschreiben (verhindert Datenverlust beim Tab-Wechsel/Reload)
+    // KRITISCH: Niemals vorhandene Events/Dokumente mit leerem State überschreiben; niemals K2 mit VK2-Daten
     if (data.events) {
       try {
+        const incoming = Array.isArray(data.events) ? data.events : []
         const existing = loadEvents('k2')
         const hasExisting = existing.length > 0
-        const incomingEmpty = !Array.isArray(data.events) || data.events.length === 0
-        if (!hasExisting || !incomingEmpty) saveEvents('k2', data.events)
+        const incomingEmpty = incoming.length === 0
+        const vk2List = loadEvents('vk2')
+        const vk2Ids = new Set((vk2List || []).map((e: any) => e?.id).filter(Boolean))
+        const allIdsAreVk2 = incoming.length > 0 && incoming.every((e: any) => e?.id && vk2Ids.has(e.id))
+        if (allIdsAreVk2) {
+          console.warn('⚠️ saveNow: Events nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
+        } else if (!hasExisting || !incomingEmpty) {
+          saveEvents('k2', incoming)
+        }
       } catch (e) {
         console.warn('⚠️ Events zu groß für Sofort-Save')
       }
     }
     if (data.documents) {
       try {
+        const incoming = Array.isArray(data.documents) ? data.documents : []
         const existing = loadDocuments('k2')
         const hasExisting = existing.length > 0
-        const incomingEmpty = !Array.isArray(data.documents) || data.documents.length === 0
-        if (!hasExisting || !incomingEmpty) saveDocuments('k2', data.documents)
+        const incomingEmpty = incoming.length === 0
+        const vk2Docs = loadDocuments('vk2')
+        const looksLikeVk2 = incoming.length > 0 && vk2Docs.length === incoming.length && JSON.stringify(incoming) === JSON.stringify(vk2Docs)
+        if (looksLikeVk2) {
+          console.warn('⚠️ saveNow: Dokumente nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
+        } else if (!hasExisting || !incomingEmpty) {
+          saveDocuments('k2', incoming)
+        }
       } catch (e) {
         console.warn('⚠️ Documents zu groß für Sofort-Save')
       }
