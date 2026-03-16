@@ -1,0 +1,50 @@
+---
+description: Kontext-Schutz (K2/ök2/VK2) gilt in allen genannten Bereichen – keine Ausnahmen
+alwaysApply: true
+---
+
+# 🔴 Schutzmechanismen – alle Bereiche, keine Ausnahmen
+
+## Regel (unveränderlich)
+
+**Die gleichen Schutzmechanismen** (Kontext-Trennung K2 / ök2 / VK2, kein Überschreiben mit leer bei 2+ Einträgen wo anwendbar, keine fremden Kontext-Daten in einen anderen Kontext schreiben) **gelten in allen folgenden Bereichen. Es gibt keine Ausnahmen.**
+
+| Bereich | Was geschützt ist |
+|--------|--------------------|
+| **Werke hinzufügen und bearbeiten** | Immer richtiger Key/Kontext (k2-artworks, k2-oeffentlich-artworks, VK2-Stammdaten); keine Vermischung; ImageStore/Prepare-Standard; kein Leer-Überschreiben. |
+| **Kassa** | Stammdaten/Kontakt aus aktuellem Kontext (fromOeffentlich → MUSTER/K2); Bestellungen/Verkäufe in kontexteigenen Keys (k2-orders / k2-oeffentlich-orders / k2-vk2-orders; k2-sold-artworks / k2-oeffentlich-sold-artworks / k2-vk2-sold-artworks); Belege/Rechnungen nur mit Kontext-Daten; keine K2-Daten in ök2-Kasse. |
+| **Lager** | Daten nur aus dem richtigen Kontext; Schreiben nur in Kontext-Key; keine Listen-Filter die Kundendaten löschen. |
+| **Listen** | Lade/Schreib-Key immer kontextbezogen; kein Überschreiben mit leer wenn 2+ Einträge (wo anwendbar); keine fremden Kontext-Daten. |
+| **Werkkatalog** | Werke/Keys pro Kontext; Anzeige und Speicherung strikt getrennt (K2/ök2/VK2). |
+| **Presse** | Events/Dokumente/Stammdaten aus aktuellem Kontext; Generatoren nur mit Kontext-Quelle (dokumente-kontext-eine-quelle.mdc). |
+| **Buchhaltung** | Belege, Stammdaten, Konten – nur Kontext-Daten; keine K2-Daten in ök2/VK2 und umgekehrt. |
+| **Galerie gestalten** | getPageTexts/getPageContentGalerie immer mit Tenant; Seitengestaltung nur in Kontext-Key; Design-Settings pro Kontext. |
+| **Einstellungen** | Backup, Stammdaten, Drucker, alle Einstellungen – Lesen/Schreiben nur für aktuellen Kontext; bei Kontextwechsel sofort richtige Daten laden. |
+
+## Konkret: Was überall gilt
+
+1. **Kontext eindeutig:** Jeder Bereich muss den aktuellen Kontext (K2 / ök2 / VK2) kennen und **nur** die zugehörigen Keys lesen/schreiben.
+2. **Kein Leer-Überschreiben:** Wo Listen/Collections gespeichert werden: Nicht mit leerer Liste überschreiben, wenn bereits 2+ Einträge vorhanden sind (außer explizite User-Aktion „alles löschen“).
+3. **Keine fremden Kontext-Daten:** Niemals Daten, die aus einem anderen Kontext stammen (z. B. K2-IDs, ök2-Stammdaten), in einen anderen Kontext-Key schreiben.
+4. **Bei Kontextwechsel:** State sofort aus dem richtigen Key laden (kein Delay), damit Auto-Save oder nächste Aktion nicht versehentlich den alten Kontext persistieren.
+
+## Pflicht bei Änderungen
+
+**Vor jeder Code-Änderung** in einem der genannten Bereiche prüfen:
+
+- [ ] Wird der **richtige Kontext/Key** für Lese- und Schreibzugriffe verwendet?
+- [ ] Kann ein **Kontextwechsel** (Tab/Route) dazu führen, dass falsche Daten geschrieben werden? → State sofort laden, Guards wie bei Events/Documents.
+- [ ] Wird irgendwo mit **leerer Liste/leeren Daten** überschrieben, obwohl 2+ Einträge existieren könnten? → Schutz einbauen oder bestätigen, dass nur nach User-Aktion.
+- [ ] Kommen **Stammdaten/Kontakt/Belege** aus der richtigen Quelle (K2 vs ök2 vs VK2)? → dokumente-kontext-eine-quelle.mdc, k2-oek2-eisernes-gesetz-keine-daten.mdc.
+
+## Verknüpfung
+
+- **Überblick & Lücken:** docs/DATENSICHERHEIT-ABSICHERUNG.md (Checkliste, Shop/Kassa-Keys, Backup).
+- **Events/Dokumente (konkret umgesetzt):** .cursor/rules/k2-events-documents-niemals-vk2-schreiben.mdc, docs/KRITISCHE-ABLAEUFE.md Abschnitt 13.
+- **K2/ök2 Datentrennung:** .cursor/rules/k2-oek2-eisernes-gesetz-keine-daten.mdc, k2-oek2-trennung.mdc.
+- **Dokumente/Stammdaten eine Quelle pro Kontext:** dokumente-kontext-eine-quelle.mdc.
+- **Kundendaten nie löschen:** niemals-kundendaten-loeschen.mdc.
+
+## Kurzfassung
+
+**Werke, Kassa, Lager, Listen, Werkkatalog, Presse, Buchhaltung, Galerie gestalten, Einstellungen:** Überall dieselben Schutzmechanismen (Kontext-Trennung, kein Leer-Überschreiben bei 2+, keine fremden Kontext-Daten). Keine Ausnahmen.

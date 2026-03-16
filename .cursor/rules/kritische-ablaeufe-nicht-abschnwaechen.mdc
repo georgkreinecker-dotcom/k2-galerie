@@ -20,7 +20,7 @@ Der Etikett-Druck war lange zum Laufen gebracht. Dann wurde eine Option („Etik
 ### 2. Vor Änderung an kritischen Abläufen: Doku lesen
 
 - **Vor** jeder Änderung an Code, der einen der folgenden Bereiche betrifft: **docs/KRITISCHE-ABLAEUFE.md** lesen.
-- Betroffene Bereiche: Etikett-Druck, Veröffentlichen, Laden vom Server, Werke speichern, Stand & QR, Kundendaten/localStorage geschützte Keys, Stammdaten (nicht leer überschreiben), Dokument öffnen (openDocumentInApp), Bild übernehmen (runBildUebernehmen), K2/ök2 Datentrennung, Backup & Wiederherstellung, **K2 echte Galerie (eisernes Gesetz: nichts ändern ohne dezidierte Anordnung)** (siehe Abschnitte 1–12 in KRITISCHE-ABLAEUFE.md).
+- Betroffene Bereiche: Etikett-Druck, Veröffentlichen, Laden vom Server, Werke speichern, Stand & QR, Kundendaten/localStorage geschützte Keys, Stammdaten (nicht leer überschreiben), Dokument öffnen (openDocumentInApp), Bild übernehmen (runBildUebernehmen), K2/ök2 Datentrennung, Backup & Wiederherstellung, **K2-Events/K2-Dokumente (niemals VK2 reinschreiben)**, **K2 echte Galerie (eisernes Gesetz)**, **Schutzmechanismen alle Bereiche (Werke, Kassa, Lager, Listen, Werkkatalog, Presse, Buchhaltung, Galerie gestalten, Einstellungen – keine Ausnahmen)** (siehe Abschnitte 1–14 in KRITISCHE-ABLAEUFE.md).
 
 ### 3. Pflicht-Check in der Antwort (damit es nicht „vergessen“ wird)
 
@@ -38,6 +38,9 @@ Der Etikett-Druck war lange zum Laufen gebracht. Dann wurde eine Option („Etik
 - Bild übernehmen: `runBildUebernehmen` in ScreenshotExportAdmin, alle ImageProcessingOptions-/„Bild übernehmen“-Stellen.  
 - K2/ök2: GaleriePage/GalerieVorschauPage (musterOnly, getPageTexts, getPageContentGalerie), ShopPage (fromOeffentlich, galerieLink, displayPhone/Email), ScreenshotExportAdmin (Galerie/Vorschau-Links mit Kontext-Check).  
 - Backup & Wiederherstellung: `src/utils/autoSave.ts` (restoreFromBackup, restoreFromBackupFile, createK2Backup/createOek2Backup/createVk2Backup, downloadBackupAsFile, restoreK2FromBackup/…), ScreenshotExportAdmin (Einstellungen → Backup & Wiederherstellung: „Vollbackup herunterladen“, „Aus Backup-Datei wiederherstellen“, „Aus letztem Backup wiederherstellen“).
+- **K2-Events/K2-Dokumente (niemals VK2):** `src/utils/eventsStorage.ts` (saveEvents für k2), `src/utils/documentsStorage.ts` (saveDocuments für k2), `src/utils/autoSave.ts` (Guards vor saveEvents/saveDocuments K2), ScreenshotExportAdmin (Events bei Kontextwechsel sofort laden).
+- **Schutzmechanismen alle Bereiche (Abschnitt 14):** Werke hinzufügen/bearbeiten, Kassa, Lager, Listen, Werkkatalog, Presse, Buchhaltung, Galerie gestalten, Einstellungen – bei Änderungen prüfen: Kontext-Trennung (K2/ök2/VK2) eingehalten? Richtiger Key/Kontext? Kein Leer-Überschreiben bei 2+ Einträgen? Regel: schutzmechanismen-alle-bereiche-keine-ausnahmen.mdc.
+- **VK2-Refactors / K2-Kern (Abschnitt 15):** Bei VK2-Änderungen prüfen: Admin bleibt eine Tür (kein E-Mail/Passwort-Gate)? K2-Impressum zeigt Stammdaten + Routenplaner (Quelle impressumStammdatenK2)? Stammdaten beim Laden nur gemerged, nie mit Leer überschrieben? Doku: docs/KRITISCHE-ABLAEUFE.md Abschnitt 15.
 
 **Format des Prüfblocks (wörtlich oder sinngleich):**
 
@@ -58,6 +61,6 @@ Kritische Abläufe – Prüfung:
 
 - **Primärer Weg = Standard.** Nicht durch Option oder Default ersetzen.
 - **Vor Änderung:** KRITISCHE-ABLAEUFE.md (und ggf. spezifische Doku) lesen.
-- **Nach Änderung an einem der 11 Bereiche (Etikett, Publish, Load, Werke-Speichern, Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2, Backup):** Prüfblock in der Antwort ausgeben (Primäre Aktion = … Stimmt mit Doku? Ja/Nein). Ohne Ja keine „Fertig“-Meldung für die Regel.
+- **Nach Änderung an einem der 15 Bereiche (Etikett, Publish, Load, Werke-Speichern, Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2, Backup, K2-Events/K2-Dokumente, Schutzmechanismen alle Bereiche, VK2-Refactors/K2-Kern):** Prüfblock in der Antwort ausgeben (Primäre Aktion = … / Kontext-Trennung eingehalten? Stimmt mit Doku? Ja/Nein). Ohne Ja keine „Fertig“-Meldung für die Regel.
 
 Verknüpfung: verbindlich-zuverlaessig-nicht-hoffnung.mdc, ein-standard-problem.mdc, funktionierende-muster-zuerst-nutzen.mdc, gemeinsamer-arbeitsraum.mdc (Bewährtes nicht anfassen).

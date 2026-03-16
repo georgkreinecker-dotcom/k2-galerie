@@ -8,6 +8,18 @@
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
+**🔒 To-dos – Sicherheit vor Go-Live (4–6 Wochen)** – Details: docs/SICHERHEIT-VOR-GO-LIVE.md  
+**Priorität 1 – System:**  
+- [ ] Vercel: `WRITE_GALLERY_API_KEY` + `VITE_WRITE_GALLERY_API_KEY` setzen (gleicher Wert), danach „An Server senden“ testen  
+- [ ] Supabase: Admin-User anlegen (z. B. georg.kreinecker@kgm.at), Passwort setzen/merken  
+- [ ] Supabase: Migration 002 ausführen (SQL Editor → `supabase/migrations/002_artworks_rls_authenticated_only.sql`)  
+- [ ] Vercel: `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` prüfen (dann Admin-Login online aktiv)  
+- [ ] Terminal: `npm audit` – kritische/hohe Meldungen beheben  
+- [ ] Vercel/Supabase: alle nötigen Env-Variablen prüfen, keine Secrets im Repo  
+**Priorität 2 – Userdaten:**  
+- [ ] AGB / Datenschutz / Impressum für Live-Betrieb prüfen (Verantwortlicher, Kontakt, Speicherdauer)  
+- [ ] Einmal Vollbackup (Admin → Einstellungen) anlegen und Wiederherstellung testen  
+
 **Einordnung:** Bisher heute: Vision Werke (entryType) → ök2/Überkategorien → Migration Musterwerke → Modal Vorschau → Plausibilität Kategorie → Stammdaten Geschäftskunden → Stammdaten-Überschriften. Gesamtprojekt: K2 Galerie vermarktbar (Künstler:innen, Skalierung); ök2 Demo, VK2; ein Standard pro Problem, Datentrennung. Warum so: Stammdaten neutral („Meine Kontaktdaten“, „Ausstellungs-Galerie“) = für alle Nutzer:innen passend; Geschäftskunden-Felder = Vorbereitung für spätere Lizenznehmer.
 
 **Vorher:** 15.03.26 – QS bis (ohne) E2E: VK2-Unit-Tests (datentrennung + vk2-backup), Lint in CI, Coverage (npm run test:coverage), Test-Szenarien-Checkliste (FEINSCHLIFF-WEIT-TESTEN), Regressions-Check (FEHLERANALYSEPROTOKOLL). 194 Tests, Build grün.

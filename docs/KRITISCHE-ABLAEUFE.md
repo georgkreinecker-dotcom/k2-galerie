@@ -3,7 +3,7 @@
 **Zweck:** Diese Abläufe haben wir mühsam zum Laufen gebracht. Sie dürfen nicht durch „Verbesserungen“ oder neue Optionen so geändert werden, dass der **primäre Weg** ausfällt oder zum Fallback wird. Eine Quelle pro Ablauf – Referenz für Code und für die AI.
 
 **Übersicht (alle mit Absicherung/Pflicht-Check bei Änderung):**  
-1. Etikett drucken · 2. Veröffentlichen · 3. Laden vom Server · 4. Werke mit Bild speichern · 5. Stand & QR · 6. Kundendaten/geschützte Keys · 7. Stammdaten nicht leer überschreiben · 8. Dokument aus Admin öffnen · 9. Bild einfügen/übernehmen · 10. K2/ök2 Datentrennung · 11. Backup & Wiederherstellung · **12. K2 echte Galerie = fertig (eisernes Gesetz)**
+1. Etikett drucken · 2. Veröffentlichen · 3. Laden vom Server · 4. Werke mit Bild speichern · 5. Stand & QR · 6. Kundendaten/geschützte Keys · 7. Stammdaten nicht leer überschreiben · 8. Dokument aus Admin öffnen · 9. Bild einfügen/übernehmen · 10. K2/ök2 Datentrennung · 11. Backup & Wiederherstellung · 12. K2 echte Galerie = fertig (eisernes Gesetz) · 13. Events/Dokumente – Kontext-Trennung K2/ök2/VK2 (100 % symmetrisch) · 14. Schutzmechanismen – alle Bereiche – keine Ausnahmen · **15. VK2-Refactors – K2-Kern unberührt (Admin, Impressum, Stammdaten)**
 
 ---
 
@@ -141,7 +141,7 @@
 
 ## Warum diese Datei
 
-- **Eine Quelle:** Wer (Mensch oder AI) an diesen Abläufen (1–10) arbeitet, prüft **hier**, was der erlaubte primäre Weg ist.
+- **Eine Quelle:** Wer (Mensch oder AI) an diesen Abläufen (1–13) arbeitet, prüft **hier**, was der erlaubte primäre Weg ist.
 - **Kein Abschwächen:** Neue Optionen (z. B. „In neuem Tab“) dürfen den primären Weg **nicht** als Default ersetzen. Fallback = nur, wenn der primäre Weg technisch scheitert (z. B. Popup blockiert).
 - **Lehre Etikett:** Der Etikett-Druck wurde durch „Default = neuer Tab“ so geändert, dass der Druckdialog nicht mehr aufging – Nutzer: „keine Reaktion“. Das darf nicht wieder vorkommen.
 - **Pflicht-Check:** Bei Code-Änderungen in einem dieser Bereiche muss in derselben Antwort ein Prüfblock stehen (Regel: kritische-ablaeufe-nicht-abschnwaechen.mdc).
@@ -162,4 +162,44 @@
 
 ---
 
-*Angelegt: März 2026 (nach Etikett-Druck-Wiederherstellung). Erweitert: Abschnitte 5–10 (Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2), Abschnitt 11 (Backup & Wiederherstellung), Abschnitt 12 (K2 echte Galerie eisernes Gesetz).*
+## 13. Events/Dokumente – Kontext-Trennung (K2, ök2, VK2) – 100 % symmetrisch
+
+| Was | Quelle |
+|-----|--------|
+| **Primäre Aktion** | **Jeder Kontext** (K2, ök2, VK2) ist geschützt: (1) **Keine leere Liste** überschreibt, wenn 2+ Einträge vorhanden (Schutz vor Löschung von außen). (2) **Keine fremden Kontext-Daten:** K2 nimmt keine VK2-Daten; ök2 nimmt keine K2- und keine VK2-Daten; VK2 nimmt keine K2- und keine ök2-Daten. Beim Tab-Wechsel darf Auto-Save nie den noch alten State eines anderen Kontexts in den aktuellen Key schreiben. |
+| **Doku** | .cursor/rules/k2-events-documents-niemals-vk2-schreiben.mdc, docs/EVENTPLANUNG-24-26-04-WIEDERHERSTELLUNG.md. |
+| **Code** | **eventsStorage.ts:** saveEvents(tenantId): Leere-Liste-Schutz für alle drei; K2 filtert VK2-IDs, bricht ab wenn nur VK2 übrig; ök2 filtert K2/VK2-IDs, bricht ab wenn nur Fremddaten; VK2 filtert K2/ök2-IDs, bricht ab wenn nur Fremddaten. **documentsStorage.ts:** saveDocuments(tenantId): Leere-Liste-Schutz für alle drei; K2 bricht ab wenn Liste = k2-vk2-documents; ök2 bricht ab wenn Liste = K2 oder VK2; VK2 bricht ab wenn Liste = K2 oder ök2. **autoSave.ts:** Guards für K2 (Daten nicht wie reine VK2). **ScreenshotExportAdmin:** Events bei Kontextwechsel sofort (0 ms) laden. |
+
+**NIEMALS:** Kontext-Erkennung oder Abbruch beim Schreiben entfernen; Schutz „leere Liste überschreibt nicht bei 2+ Einträgen“ nicht abschwächen (gilt für K2, ök2, VK2); kein Delay beim Events-Laden; Auto-Save nicht ohne Guards in K2 schreiben.
+
+*Eingefügt 16.03.26 (Lehre: Auto-Save beim Tab-Wechsel VK2→K2 hatte VK2-State in K2-Keys geschrieben → K2-Eventplanung weg). Erweitert: Schutz vice versa für ök2 und VK2 (100 % symmetrisch).*
+
+---
+
+## 14. Schutzmechanismen – alle Bereiche, keine Ausnahmen
+
+| Was | Quelle |
+|-----|--------|
+| **Primäre Aktion** | Dieselben Schutzmechanismen (Kontext-Trennung K2/ök2/VK2, kein Leer-Überschreiben bei 2+ Einträgen wo anwendbar, keine fremden Kontext-Daten) gelten **in allen folgenden Bereichen. Es gibt keine Ausnahmen:** Werke hinzufügen und bearbeiten, Kassa, Lager, Listen, Werkkatalog, Presse, Buchhaltung, Galerie gestalten, Einstellungen. |
+| **Doku** | .cursor/rules/schutzmechanismen-alle-bereiche-keine-ausnahmen.mdc (alwaysApply). |
+| **Bereiche** | Werke hinzufügen/bearbeiten, Kassa, Lager, Listen, Werkkatalog, Presse, Buchhaltung, Galerie gestalten, Einstellungen. |
+
+**NIEMALS:** In einem dieser Bereiche Kontext vermischen, mit leer überschreiben wo 2+ Einträge existieren (ohne User-Aktion), oder fremde Kontext-Daten in einen anderen Kontext schreiben. Vor Änderungen in einem der Bereiche: Checkliste in der Regel-Datei durchgehen.
+
+---
+
+## 15. VK2-Überarbeitung / VK2-Refactors – K2-Kern unberührt
+
+| Was | Quelle |
+|-----|--------|
+| **Regel** | **VK2-Änderungen dürfen K2-Kern nicht beeinträchtigen.** Nach der VK2-Überarbeitung traten u. a. auf: Admin wieder mit E-Mail/Passwort-Login, K2-Impressum ohne Stammdaten, Routenplaner-Link weg. Diese Abläufe müssen auch nach VK2-Refactors weiter funktionieren. |
+| **K2-Kern (unberührt lassen)** | (1) **Admin:** Eine Tür, kein E-Mail/Passwort-Gate (APf = Admin ohne Hürden). (2) **K2-Impressum:** Stammdaten (Adresse, Telefon, E-Mail) und **Routenplaner (Google)**-Link immer sichtbar; Quelle = State + localStorage + K2_STAMMDATEN_DEFAULTS (GaleriePage: impressumStammdatenK2). (3) **Stammdaten-Anzeige:** Kein Leer-Überschreiben durch Server/Load; Merge mit bestehendem. |
+| **Code** | AdminRoute.tsx (nur ScreenshotExportAdmin, kein AdminLoginForm). GaleriePage: impressumStammdatenK2 (useMemo), Impressum-Block nutzt diese Quelle; handleRefresh: Stammdaten nur mergen (setX(prev => …)). |
+
+**NIEMALS:** Bei VK2-Refactors Admin-Login-Gate wieder einbauen; K2-Impressum nur aus State speisen (wenn State leer → Fallback localStorage + Repo-Defaults); Stammdaten aus Server-Response ohne Merge in State schreiben.
+
+*Eingefügt 16.03.26 (Lehre: Mit VK2-Überarbeitung begannen hier u. a. Admin-Login wieder da, Impressum K2 ohne Stammdaten/Routenplaner).*
+
+---
+
+*Angelegt: März 2026 (nach Etikett-Druck-Wiederherstellung). Erweitert: Abschnitte 5–10 (Stand/QR, Kundendaten, Stammdaten, Dokument öffnen, Bild übernehmen, K2/ök2), Abschnitt 11 (Backup & Wiederherstellung), Abschnitt 12 (K2 echte Galerie eisernes Gesetz), Abschnitt 13 (Events/Dokumente Kontext-Trennung K2/ök2/VK2 – 100 % symmetrisch), Abschnitt 14 (Schutzmechanismen alle Bereiche keine Ausnahmen), Abschnitt 15 (VK2-Refactors – K2-Kern unberührt).*

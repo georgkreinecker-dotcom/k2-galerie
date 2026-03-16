@@ -28,6 +28,7 @@ export default function K2TeamHandbuchPage() {
     { id: '16-zentrale-themen', name: 'Zentrale Themen für Nutzer', file: '16-ZENTRALE-THEMEN-FUER-NUTZER.md', stand: '20.02.2026' },
     { id: '19-martina-muna', name: 'Martina & Muna (Archiv)', file: '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' },
     { id: '20-pilot-zettel', name: 'Pilot-Zettel – Drucken', file: '20-PILOT-ZETTEL-OEK2-VK2.md' },
+    { id: '23-notfall', name: 'Notfall-Checkliste (Cursor, Dialog, Parallelstrukturen)', file: '23-NOTFALL-CHECKLISTE.md' },
   ]
 
   useEffect(() => {
@@ -65,24 +66,35 @@ export default function K2TeamHandbuchPage() {
     }
   }
 
-  // Inline **fett** und *kursiv* in Fließtext
+  // Inline **fett**, *kursiv* und [Text](URL) in Fließtext
   const renderInline = (s: string): ReactNode => {
     const parts: ReactNode[] = []
     let rest = s
     let key = 0
     while (rest.length > 0) {
+      const link = rest.match(/^\[([^\]]*)\]\((#[^)]*|[^)]+)\)/)
       const bold = rest.match(/^\*\*([^*]+)\*\*/)
       const em = rest.match(/^\*([^*]+)\*/)
-      if (bold) {
+      if (link) {
+        const href = link[2]
+        const isExternal = href.startsWith('http://') || href.startsWith('https://')
+        parts.push(
+          <a key={key++} href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noopener noreferrer' : undefined} className="handbuch-link" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>
+            {link[1]}
+          </a>
+        )
+        rest = rest.slice(link[0].length)
+      } else if (bold) {
         parts.push(<strong key={key++}>{bold[1]}</strong>)
         rest = rest.slice(bold[0].length)
       } else if (em) {
         parts.push(<em key={key++}>{em[1]}</em>)
         rest = rest.slice(em[0].length)
       } else {
+        const nextLink = rest.search(/\[[^\]]*\]\(/)
         const nextB = rest.indexOf('**')
         const nextE = rest.indexOf('*')
-        const next = nextB >= 0 && (nextE < 0 || nextB <= nextE) ? nextB : nextE
+        const next = nextLink >= 0 ? nextLink : (nextB >= 0 && (nextE < 0 || nextB <= nextE) ? nextB : nextE)
         if (next < 0) {
           parts.push(rest)
           break
@@ -166,7 +178,7 @@ export default function K2TeamHandbuchPage() {
       if (line.startsWith('- ') || line.startsWith('* ')) {
         const items: React.ReactNode[] = []
         while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
-          items.push(<li key={items.length} className="handbuch-li">{lines[i].substring(2).trim()}</li>)
+          items.push(<li key={items.length} className="handbuch-li">{renderInline(lines[i].substring(2).trim())}</li>)
           i++
         }
         out.push(<ul key={key()} className="handbuch-ul">{items}</ul>)
@@ -252,6 +264,7 @@ export default function K2TeamHandbuchPage() {
       .mission-wrapper .handbuch-table th, .mission-wrapper .handbuch-table td { padding: 0.35rem 0.5rem !important; border-color: #ccc !important; color: #1c1a18 !important; }
       .mission-wrapper .handbuch-table th { background: #f0f0f0 !important; color: #1c1a18 !important; }
       .mission-wrapper .handbuch-table code { color: #333 !important; }
+      .mission-wrapper .handbuch-link { color: #1c1a18 !important; text-decoration: underline !important; }
       .mission-wrapper .seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 0.65rem; color: #666; padding: 0.2rem 0; }
       .mission-wrapper .seitenfuss::after { content: "Seite " counter(page); }
       @page { margin: 12mm 14mm 10mm 14mm; size: A4; }

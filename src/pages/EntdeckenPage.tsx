@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
@@ -569,6 +569,7 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
 
 export default function EntdeckenPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   /** Beim Betreten Entdecken: Flag zurücksetzen, damit Direktaufrufer von galerie-oeffentlich wieder hierher umgeleitet werden. */
   useEffect(() => {
     try { sessionStorage.removeItem('k2-from-entdecken') } catch (_) {}
@@ -803,7 +804,7 @@ export default function EntdeckenPage() {
       {/* Fußzeile – nicht auf erster Seite (Hero), damit klare Botschaft ohne Ablenkung */}
       {step !== 'result' && step !== 'hero' && (
         <div style={{ textAlign: 'center', padding: '0.75rem 1rem', fontSize: '0.72rem', color: muted, borderTop: '1px solid #e8ddd0', background: bgCard }}>
-          <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
+          <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
           {' · '}
           {PRODUCT_BRAND_NAME}
           {' · '}

@@ -254,7 +254,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform – K2-Familie)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
             <li><Link to={WILLKOMMEN_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Willkommensseite</strong> (Zugangsbereich, AGB-Bestätigung)</Link></li>
-            <li><Link to={AGB_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
+            <li><Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. K2 Softwareentwicklung</strong> (Sicherheit, Vor Veröffentlichung, Auth, RLS)</Link></li>
             <li><a href="#mok2-12" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>12. Musterbilder für die ök2-Galerie</strong> (zum Einfügen)</a></li>
             <li><a href="#mok2-13" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>13. Werkkatalog &amp; Werkkarte</strong> – USP &amp; Verkaufsargumente</a></li>
@@ -356,6 +356,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </Link>
             <Link
               to={AGB_ROUTE}
+              state={{ returnTo: location.pathname }}
               style={{
                 padding: '0.75rem 1rem',
                 background: 'rgba(95,251,241,0.08)',
@@ -702,6 +703,33 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)' }}>
           Checkliste 2 Wochen: Kernbotschaft, Lounge-Text, Einladung, Presse, Social, Kanäle, Bildmaterial, QR/Link – siehe Doku.
         </p>
+      </section>
+      {/* Muster pro Werbetyp (Eröffnung) – ein Muster pro Öffentlichkeitsarbeit-Eintrag */}
+      <section id="mok2-muster-werbetyp-eroeffnung" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Muster pro Werbetyp (Eröffnung)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Auf Basis der mök2-Marketingstrategie und der Musterstorys (§1a / §1b aus Medienstudio K2) gibt es für <strong>jeden Eintrag</strong> in der Öffentlichkeitsarbeit (Admin → Eventplanung → Öffentlichkeitsarbeit) ein fertiges Muster: QR-Plakat, Newsletter, Plakat, Event-Flyer, Presse (neutral + lokal), Social Media, Präsentationsmappen.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Vollständige Mustersammlung (Copy-Paste, Platzhalter ersetzen):</strong>{' '}
+          <code style={{ fontSize: '0.85em', color: '#5ffbf1' }}>docs/MOK2-MUSTER-PRO-WERBETYP-EROEFFNUNG.md</code>
+        </p>
+        <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.2)', marginTop: '0.5rem', fontSize: '0.88rem' }}>
+          <p style={{ margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 600 }}>Übersicht – ein Muster pro Eintrag</p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
+            <li><strong>QR-Code Plakat</strong> – Headline, Unterzeile, Links</li>
+            <li><strong>Newsletter</strong> – Betreff, Body (Eröffnung, Lounge, Kontakt)</li>
+            <li><strong>Plakat</strong> – Titel, Datum, Ort, Kurztext (A3/A2)</li>
+            <li><strong>Event-Flyer</strong> – Headline, Datum, Ort, Beschreibung</li>
+            <li><strong>Presse neutral</strong> – ohne Personendaten (§1b, Kontakt „über Galerie“)</li>
+            <li><strong>Presse lokal</strong> – mit §1a + §1b, Kontaktblock</li>
+            <li><strong>Social Media</strong> – Instagram, Facebook, WhatsApp</li>
+            <li><strong>Präsentationsmappen</strong> – Links; Varianten in der App wählen</li>
+          </ul>
+          <p style={{ margin: '0.75rem 0 0', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}>Quellen: MARKETING-EROEFFNUNG-K2-OEK2.md, MEDIENSTUDIO-K2.md (§1a, §1b), MEDIENVERTEILER-EROEFFNUNG.md.</p>
+        </div>
       </section>
       {/* 4a. Kanäle 2026 – kurze Liste zum Ausfüllen und Prüfen */}
       <section id="mok2-kanale-2026" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>

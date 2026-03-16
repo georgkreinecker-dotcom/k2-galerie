@@ -5,6 +5,8 @@ Damit nichts vergessen wird: Diese Datei vor dem Veröffentlichen durchgehen.
 
 **→ Was genau noch offen ist (minimal):** **docs/START-NUR-NOCH-OFFEN.md** – dort steht: nur die 3 Stripe-Schritte (+ optional AGB/npm audit); alles andere ist startbereit.
 
+**→ Sicherheit vor Go-Live (4–6 Wochen):** **docs/SICHERHEIT-VOR-GO-LIVE.md** – Priorität 1 Systemsicherheit, Priorität 2 Userdaten; konkrete Checklisten und Zeitplan.
+
 ---
 
 ## ✅ Erster Durchgang (26.02.26) – Stand für Georg

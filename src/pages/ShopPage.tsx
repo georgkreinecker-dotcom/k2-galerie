@@ -7,6 +7,7 @@ import { getCategoryLabel, MUSTER_TEXTE, MUSTER_ARTWORKS, PRODUCT_COPYRIGHT } fr
 import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
+import { getShopStorageKeys } from '../utils/shopContextKeys'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -124,6 +125,8 @@ const ShopPage = () => {
   const fromVk2 =
     (location.state as { fromVk2?: boolean } | null)?.fromVk2 === true ||
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2')
+  // Kontexteigene Keys (Datensicherheit: keine K2-Daten in ök2/VK2 und umgekehrt)
+  const { ordersKey, soldArtworksKey } = getShopStorageKeys(fromOeffentlich, fromVk2)
   const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
   const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
   const galerieLink = fromOeffentlich
@@ -269,11 +272,10 @@ const ShopPage = () => {
     return () => window.removeEventListener('artworks-updated', loadArtworks)
   }, [fromOeffentlich])
 
-  // Bestellungen laden (für Bon erneut drucken) – K2/ök2: k2-orders, VK2: k2-vk2-orders
+  // Bestellungen laden (für Bon erneut drucken) – kontexteigener Key (Datensicherheit)
   useEffect(() => {
     try {
-      const key = fromVk2 ? 'k2-vk2-orders' : 'k2-orders'
-      const stored = localStorage.getItem(key)
+      const stored = localStorage.getItem(ordersKey)
       if (stored) {
         const parsed = JSON.parse(stored)
         if (Array.isArray(parsed)) {
@@ -281,7 +283,7 @@ const ShopPage = () => {
         }
       }
     } catch (_) {}
-  }, [fromVk2])
+  }, [ordersKey])
 
   // Kunden für Zuordnung beim Verkauf
   useEffect(() => {
@@ -302,30 +304,30 @@ const ShopPage = () => {
     }
   }
 
-  // Eintrag aus „Bon erneut drucken“-Liste entfernen (nur Anzeige, Verkauf bleibt in k2-sold-artworks)
+  // Eintrag aus „Bon erneut drucken“-Liste entfernen (nur Anzeige, Verkauf bleibt in sold-artworks)
   const handleDeleteOrderFromList = (order: any) => {
     if (!confirm(`Eintrag ${order.orderNumber} (€${(order.total || 0).toFixed(2)}) aus der Liste entfernen?`)) return
     try {
-      const stored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+      const stored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
       if (!Array.isArray(stored)) return
       const key = order.id || `${order.orderNumber}-${order.date}`
       const filtered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== key)
-      localStorage.setItem('k2-orders', JSON.stringify(filtered))
+      localStorage.setItem(ordersKey, JSON.stringify(filtered))
       setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== key))
     } catch (_) {}
   }
 
-  // Verkauf stornieren: Eintrag aus Liste + aus k2-sold-artworks entfernen, Stückzahl pro Werk +1
+  // Verkauf stornieren: Eintrag aus Liste + aus sold-artworks entfernen, Stückzahl pro Werk +1
   const handleStornoOrder = (order: any) => {
     if (!confirm(`Verkauf ${order.orderNumber} (€${(order.total || 0).toFixed(2)}) wirklich stornieren? Die Werke gelten wieder als verfügbar.`)) return
     try {
       const orderKey = order.id || `${order.orderNumber}-${order.date}`
-      const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+      const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
       const filtered = Array.isArray(soldArtworks)
         ? soldArtworks.filter((e: any) => e.orderId !== order.id)
         : []
       if (filtered.length < (soldArtworks?.length ?? 0)) {
-        localStorage.setItem('k2-sold-artworks', JSON.stringify(filtered))
+        localStorage.setItem(soldArtworksKey, JSON.stringify(filtered))
       }
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
       const artworks = readArtworksRawByKey(artworkKey)
@@ -344,10 +346,10 @@ const ShopPage = () => {
           saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
         }
       }
-      const stored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+      const stored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
       if (Array.isArray(stored)) {
         const ordersFiltered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderKey)
-        localStorage.setItem('k2-orders', JSON.stringify(ordersFiltered))
+        localStorage.setItem(ordersKey, JSON.stringify(ordersFiltered))
         setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderKey))
       }
       window.dispatchEvent(new CustomEvent('artworks-updated'))
@@ -367,7 +369,7 @@ const ShopPage = () => {
   // Verkaufsliste für Storno laden (max 15 neueste)
   const loadVerkaufslisteForStorno = () => {
     try {
-      const raw = localStorage.getItem('k2-sold-artworks')
+      const raw = localStorage.getItem(soldArtworksKey)
       const arr = JSON.parse(raw || '[]')
       if (!Array.isArray(arr)) {
         setSoldEntriesList([])
@@ -395,7 +397,7 @@ const ShopPage = () => {
     const entry = soldEntriesList[index]
     if (!entry || !confirm(`Verkauf „${entry.title}“ (Nr. ${entry.number}) stornieren? Das Werk gilt wieder als verfügbar.`)) return
     try {
-      const raw = localStorage.getItem('k2-sold-artworks')
+      const raw = localStorage.getItem(soldArtworksKey)
       const arr = JSON.parse(raw || '[]')
       if (!Array.isArray(arr)) return
       const sorted = [...arr].sort((a: any, b: any) => (b.soldAt || '').localeCompare(a.soldAt || ''))
@@ -404,7 +406,7 @@ const ShopPage = () => {
       const removeIdx = arr.findIndex((e: any) => e.number === removed.number && (e.soldAt || '') === (removed.soldAt || ''))
       if (removeIdx === -1) return
       arr.splice(removeIdx, 1)
-      localStorage.setItem('k2-sold-artworks', JSON.stringify(arr))
+      localStorage.setItem(soldArtworksKey, JSON.stringify(arr))
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
       const artworks = readArtworksRawByKey(artworkKey)
       const idx = artworks.findIndex((a: any) => (a.number || a.id) === removed.number)
@@ -454,7 +456,7 @@ const ShopPage = () => {
 
     // Prüfe ob bereits verkauft
     try {
-      const soldData = localStorage.getItem('k2-sold-artworks')
+      const soldData = localStorage.getItem(soldArtworksKey)
       if (soldData) {
         const soldArtworks = JSON.parse(soldData)
         if (Array.isArray(soldArtworks)) {
@@ -662,9 +664,9 @@ const ShopPage = () => {
       rechnungsNr: undefined as string | undefined
     }
     try {
-      const ordersStored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+      const ordersStored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
       ordersStored.push(order)
-      localStorage.setItem('k2-vk2-orders', JSON.stringify(ordersStored))
+      localStorage.setItem(ordersKey, JSON.stringify(ordersStored))
       setOrders(prev => [order, ...prev.slice(0, 19)])
       addKassabuchEintrag('vk2', {
         datum: order.date.slice(0, 10),
@@ -760,9 +762,9 @@ ${bankBlock}
     const nr = printVk2Rechnung(o, (o.rechnungEmpfaenger || '').trim())
     if (nr && !o.rechnungsNr) {
       try {
-        const stored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+        const stored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
         const idx = stored.findIndex((x: any) => (x.id || x.orderNumber) === (o.id || o.orderNumber))
-        if (idx !== -1) { stored[idx] = { ...stored[idx], rechnungsNr: nr }; localStorage.setItem('k2-vk2-orders', JSON.stringify(stored)) }
+        if (idx !== -1) { stored[idx] = { ...stored[idx], rechnungsNr: nr }; localStorage.setItem(ordersKey, JSON.stringify(stored)) }
         setOrders(prev => prev.map(ord => (ord.id || ord.orderNumber) === (o.id || o.orderNumber) ? { ...ord, rechnungsNr: nr } : ord))
       } catch (_) {}
     }
@@ -806,7 +808,7 @@ ${bankBlock}
   const MAX_VK2_STORNO = 15
   const vk2OrdersForStorno = (() => {
     try {
-      const raw = localStorage.getItem('k2-vk2-orders')
+      const raw = localStorage.getItem(ordersKey)
       const arr = JSON.parse(raw || '[]')
       if (!Array.isArray(arr)) return []
       return [...arr].sort((a: any, b: any) => (b.date || '').localeCompare(a.date || '')).slice(0, MAX_VK2_STORNO)
@@ -835,10 +837,10 @@ ${bankBlock}
     if (!confirm(`Buchung „${label}“ (€ ${typeof order.total === 'number' ? order.total.toFixed(2) : order.total}) wirklich stornieren?`)) return
     try {
       const orderId = order.id || `${order.orderNumber}-${order.date}`
-      const stored = JSON.parse(localStorage.getItem('k2-vk2-orders') || '[]')
+      const stored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
       if (!Array.isArray(stored)) return
       const filtered = stored.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderId)
-      localStorage.setItem('k2-vk2-orders', JSON.stringify(filtered))
+      localStorage.setItem(ordersKey, JSON.stringify(filtered))
       const kassabuch = loadKassabuch('vk2').filter((e: { verkaufId?: string }) => e.verkaufId !== order.id)
       saveKassabuch('vk2', kassabuch)
       setOrders(prev => prev.filter((o: any) => (o.id || `${o.orderNumber}-${o.date}`) !== orderId))
@@ -1518,15 +1520,15 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       orderNumber: `O-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
     }
 
-    // Bestellungen speichern
-    const ordersStored = JSON.parse(localStorage.getItem('k2-orders') || '[]')
+    // Bestellungen speichern (kontexteigener Key – Datensicherheit)
+    const ordersStored = JSON.parse(localStorage.getItem(ordersKey) || '[]')
     ordersStored.push(order)
-    localStorage.setItem('k2-orders', JSON.stringify(ordersStored))
+    localStorage.setItem(ordersKey, JSON.stringify(ordersStored))
     setOrders(prev => [order, ...prev.slice(0, 19)])
 
     // Werke als verkauft markieren (mit optionaler Kundenzuordnung)
     cart.forEach(item => {
-      const soldArtworks = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]')
+      const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
       if (!soldArtworks.find((a: any) => a.number === item.number)) {
         soldArtworks.push({
           number: item.number,
@@ -1534,14 +1536,14 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           orderId: order.id,
           ...(customerId ? { customerId } : {})
         })
-        localStorage.setItem('k2-sold-artworks', JSON.stringify(soldArtworks))
+        localStorage.setItem(soldArtworksKey, JSON.stringify(soldArtworks))
       }
     })
 
-    // Stückzahl pro verkauftem Werk um 1 verringern (Kasse nutzt k2-artworks)
+    // Stückzahl pro verkauftem Werk um 1 verringern (kontexteigener Artwork-Key)
+    const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
     try {
-      const key = 'k2-artworks'
-      const raw = localStorage.getItem(key)
+      const raw = localStorage.getItem(artworkKey)
       if (raw) {
         const artworks = JSON.parse(raw)
         if (Array.isArray(artworks)) {
@@ -1561,7 +1563,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             }
           })
           if (changed) {
-            localStorage.setItem(key, JSON.stringify(artworks))
+            saveArtworksByKey(artworkKey, artworks, { filterK2Only: artworkKey === 'k2-artworks', allowReduce: true })
           }
         }
       }

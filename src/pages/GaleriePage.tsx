@@ -12,7 +12,7 @@ import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from 
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
-import { saveStammdaten } from '../utils/stammdatenStorage'
+import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
@@ -755,6 +755,61 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }, [musterOnly, galleryData, pageContentVersion])
 
+  // K2 Impressum: Stammdaten immer anzeigen – Quelle State, sonst localStorage, sonst Repo-Defaults (VK2-Überarbeitung darf K2-Impressum nicht leeren)
+  const impressumStammdatenK2 = React.useMemo(() => {
+    if (musterOnly || vk2) return null
+    try {
+      const defG = K2_STAMMDATEN_DEFAULTS.gallery
+      const defM = K2_STAMMDATEN_DEFAULTS.martina
+      const defGe = K2_STAMMDATEN_DEFAULTS.georg
+      let g: typeof defG & Record<string, unknown> = { ...defG }
+      let m: { name: string; email: string; phone: string; website: string } = { ...defM }
+      let ge: { name: string; email: string; phone: string; website: string } = { ...defGe }
+      try {
+        const rawG = localStorage.getItem('k2-stammdaten-galerie')
+        if (rawG) g = { ...g, ...JSON.parse(rawG) }
+      } catch (_) {}
+      try {
+        const rawM = localStorage.getItem('k2-stammdaten-martina')
+        if (rawM) m = { ...m, ...JSON.parse(rawM) }
+      } catch (_) {}
+      try {
+        const rawGe = localStorage.getItem('k2-stammdaten-georg')
+        if (rawGe) ge = { ...ge, ...JSON.parse(rawGe) }
+      } catch (_) {}
+      // State nur wo befüllt übernehmen (leerer State nach VK2-Refactor überschreibt nicht)
+      if (galleryData?.address?.trim()) g.address = galleryData.address.trim()
+      if (galleryData?.city?.trim()) g.city = galleryData.city.trim()
+      if (galleryData?.country?.trim()) g.country = galleryData.country.trim()
+      if (galleryData?.phone?.trim()) (g as any).phone = galleryData.phone.trim()
+      if (galleryData?.email?.trim()) (g as any).email = galleryData.email.trim()
+      if (martinaData?.phone?.trim()) m.phone = martinaData.phone.trim()
+      if (martinaData?.email?.trim()) m.email = martinaData.email.trim()
+      if (georgData?.phone?.trim()) ge.phone = georgData.phone.trim()
+      if (georgData?.email?.trim()) ge.email = georgData.email.trim()
+      return { gallery: g, martina: m, georg: ge }
+    } catch (_) {
+      return {
+        gallery: K2_STAMMDATEN_DEFAULTS.gallery,
+        martina: K2_STAMMDATEN_DEFAULTS.martina,
+        georg: K2_STAMMDATEN_DEFAULTS.georg
+      }
+    }
+  }, [musterOnly, vk2, galleryData, martinaData, georgData])
+
+  // ök2 Impressum: Stammdaten aus loadStammdaten('oeffentlich', …) = localStorage oder MUSTER_TEXTE (Adresse, Routenplaner, Kontakt)
+  const impressumStammdatenOek2 = React.useMemo(() => {
+    if (!musterOnly) return null
+    try {
+      const gallery = loadStammdaten('oeffentlich', 'gallery') as { address?: string; city?: string; country?: string; phone?: string; email?: string }
+      const martina = loadStammdaten('oeffentlich', 'martina') as { name?: string; phone?: string; email?: string }
+      const georg = loadStammdaten('oeffentlich', 'georg') as { name?: string; phone?: string; email?: string }
+      return { gallery, martina, georg }
+    } catch (_) {
+      return { gallery: MUSTER_TEXTE.gallery, martina: MUSTER_TEXTE.martina, georg: MUSTER_TEXTE.georg }
+    }
+  }, [musterOnly])
+
   // ök2: Bei Ladefehler Willkommensbild Fallback anzeigen (kein blaues Fragezeichen)
   const [welcomeImageFailed, setWelcomeImageFailed] = useState(false)
   useEffect(() => {
@@ -1030,38 +1085,38 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           artworks: data.artworks?.length || 0
         })
         
-        // Setze Daten neu
+        // Stammdaten: Merge mit bestehendem State – leere Server-Felder überschreiben vorhandene Daten NICHT (kein-datenverlust)
         if (data.martina) {
-          setMartinaData({
-            name: data.martina.name || 'Martina Kreinecker',
-            email: data.martina.email || '',
-            phone: data.martina.phone || '',
-            website: data.martina.website || ''
-          })
+          setMartinaData((prev) => ({
+            name: (data.martina.name && String(data.martina.name).trim()) || prev.name,
+            email: (data.martina.email && String(data.martina.email).trim()) || prev.email,
+            phone: (data.martina.phone && String(data.martina.phone).trim()) || prev.phone,
+            website: (data.martina.website && String(data.martina.website).trim()) || prev.website || ''
+          }))
         }
         if (data.georg) {
-          setGeorgData({
-            name: data.georg.name || 'Georg Kreinecker',
-            email: data.georg.email || '',
-            phone: data.georg.phone || '',
-            website: data.georg.website || ''
-          })
+          setGeorgData((prev) => ({
+            name: (data.georg.name && String(data.georg.name).trim()) || prev.name,
+            email: (data.georg.email && String(data.georg.email).trim()) || prev.email,
+            phone: (data.georg.phone && String(data.georg.phone).trim()) || prev.phone,
+            website: (data.georg.website && String(data.georg.website).trim()) || prev.website || ''
+          }))
         }
         if (data.gallery) {
-          setGalleryData({
-            address: data.gallery.address || '',
-            city: data.gallery.city || '',
-            country: data.gallery.country || '',
-            phone: data.gallery.phone || '',
-            email: data.gallery.email || '',
-            website: data.gallery.website || 'www.k2-galerie.at',
-            internetadresse: data.gallery.internetadresse || data.gallery.website || '',
-            openingHours: (data.gallery as any).openingHours || '',
-            adminPassword: data.gallery.adminPassword || '',
-            welcomeImage: data.gallery.welcomeImage || '',
-            virtualTourImage: data.gallery.virtualTourImage || '',
-            galerieCardImage: data.gallery.galerieCardImage || ''
-          })
+          setGalleryData((prev) => ({
+            address: (data.gallery.address != null && String(data.gallery.address).trim()) ? data.gallery.address : prev.address,
+            city: (data.gallery.city != null && String(data.gallery.city).trim()) ? data.gallery.city : prev.city,
+            country: (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : prev.country,
+            phone: (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : prev.phone,
+            email: (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : prev.email,
+            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
+            internetadresse: (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim()) ? data.gallery.internetadresse : (data.gallery.website || prev.internetadresse || ''),
+            openingHours: (data.gallery as any).openingHours ?? prev.openingHours ?? '',
+            adminPassword: data.gallery.adminPassword ?? prev.adminPassword ?? '',
+            welcomeImage: (data.gallery.welcomeImage && String(data.gallery.welcomeImage).trim()) ? data.gallery.welcomeImage : prev.welcomeImage,
+            virtualTourImage: (data.gallery.virtualTourImage && String(data.gallery.virtualTourImage).trim()) ? data.gallery.virtualTourImage : prev.virtualTourImage,
+            galerieCardImage: (data.gallery.galerieCardImage && String(data.gallery.galerieCardImage).trim()) ? data.gallery.galerieCardImage : prev.galerieCardImage
+          }))
           setAdminPassword(data.gallery.adminPassword || '')
         }
         
@@ -2522,33 +2577,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         </button>
         )}
 
-        {/* Am Mac: „Vom Server laden“ – nur wenn Admin-Zugang sichtbar (nicht für öffentliche Besucher) */}
-        {showAdminEntryOnGalerie && !musterOnly && !vk2 && !(isMobileDevice || isMobile) && (
-          <button
-            type="button"
-            onClick={() => handleRefresh()}
-            disabled={isRefreshing}
-            title="Lädt Werke und Daten neu von Vercel (z. B. nach Speichern am iPad)"
-            style={{
-              position: 'fixed',
-              bottom: '1rem',
-              right: '4.5rem',
-              padding: '0.5rem 0.75rem',
-              fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)',
-              fontWeight: 600,
-              background: isRefreshing ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              borderRadius: 8,
-              color: theme.text,
-              cursor: isRefreshing ? 'wait' : 'pointer',
-              zIndex: 1000,
-              minHeight: '44px'
-            }}
-          >
-            {isRefreshing ? 'Lade vom Server…' : 'Bilder vom Server laden'}
-          </button>
-        )}
-
         {/* Admin Login Modal – auch von ök2-Willkommensseite erreichbar */}
         {showAdminModal && (
           <div
@@ -3680,33 +3708,51 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                   }}>
                     Impressum
                   </h4>
-                  <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
-                    {PRODUCT_BRAND_NAME}
+                  <p style={{ margin: '0 0 0.75rem', fontWeight: 600, color: theme.text, fontSize: 'clamp(0.95rem, 2.2vw, 1.05rem)' }}>
+                    {tenantConfig.galleryName}
                   </p>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>
-                    {PRODUCT_COPYRIGHT_BRAND_ONLY}
-                  </p>
-                  {/* K2: Adresse/Kontakt ausschließlich aus Stammdaten (Admin → Meine Daten) */}
-                  {!musterOnly && (() => {
-                    const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
-                    const tel = galleryData?.phone?.trim() || martinaData?.phone?.trim() || georgData?.phone?.trim()
-                    const email = galleryData?.email?.trim() || martinaData?.email?.trim() || georgData?.email?.trim()
-                    if (!adresse && !tel && !email) return null
+                  {/* Adresse + Routenplaner mit Icon, Namen + je eine Tel., eine E-Mail. Copyright steht in der Fusszeile. */}
+                  {((!musterOnly && impressumStammdatenK2) || (musterOnly && impressumStammdatenOek2)) && (() => {
+                    const stamm = !musterOnly ? impressumStammdatenK2! : impressumStammdatenOek2!
+                    const { gallery, martina, georg } = stamm
+                    const adresse = getProminenteAdresseFormatiert(gallery, martina, georg)
+                    const martinaName = (martina as any)?.name?.trim()
+                    const martinaTel = (martina as any)?.phone?.trim()
+                    const georgName = (georg as any)?.name?.trim()
+                    const georgTel = (georg as any)?.phone?.trim()
+                    const email = (gallery as any)?.email?.trim() || (martina as any)?.email?.trim() || (georg as any)?.email?.trim()
+                    const hasAny = adresse || martinaName || martinaTel || georgName || georgTel || email
+                    if (!hasAny) return null
+                    const googleMapsSearch = adresse ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(adresse)}` : ''
+                    const googleMapsDir = adresse ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(adresse)}` : ''
                     return (
                       <>
-                        {adresse && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>📍 {adresse}</p>}
-                        {tel && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>📞 {tel}</p>}
+                        {adresse && (
+                          <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, lineHeight: 1.45 }}>
+                            📍 <a href={googleMapsSearch} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent, textDecoration: 'none' }}>{adresse}</a>
+                            {googleMapsDir && (
+                              <>
+                                {' · '}
+                                <a
+                                  href={googleMapsDir}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => { e.preventDefault(); window.open(googleMapsDir, '_blank', 'noopener,noreferrer'); }}
+                                  style={{ color: theme.accent, textDecoration: 'none', fontSize: '0.9em', cursor: 'pointer', position: 'relative', zIndex: 1 }}
+                                  title="Routenplaner öffnen"
+                                >
+                                  🗺️ Routenplaner (Google)
+                                </a>
+                              </>
+                            )}
+                          </p>
+                        )}
+                        {martinaName && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>{martinaName}{martinaTel ? ` · 📞 ${martinaTel}` : ''}</p>}
+                        {georgName && <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted }}>{georgName}{georgTel ? ` · 📞 ${georgTel}` : ''}</p>}
                         {email && <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>✉️ <a href={`mailto:${email}`} style={{ color: theme.accent, textDecoration: 'none' }}>{email}</a></p>}
                       </>
                     )
                   })()}
-                  {PRODUCT_LIZENZ_ANFRAGE_EMAIL && (
-                    <p style={{ margin: '0 0 0', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}>
-                      ✉️ <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: theme.accent, textDecoration: 'none' }}>
-                        {PRODUCT_LIZENZ_ANFRAGE_EMAIL}
-                      </a>
-                    </p>
-                  )}
                 </div>
                 
                 {/* Rechte Seite: QR mit Bezeichnung der Seite (Kunde sieht Galeriename, kein Vercel) */}
@@ -3740,11 +3786,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                 {dataStandLabel && !musterOnly && (
                   <p style={{ margin: '0.5rem 0 0', fontSize: 'clamp(0.65rem, 1.4vw, 0.75rem)', color: theme.muted, opacity: 0.9 }}>
                     Daten: {dataStandLabel} (Werke vom letzten Veröffentlichen)
-                  </p>
-                )}
-                {!musterOnly && (
-                  <p style={{ margin: '0.35rem 0 0', fontSize: 'clamp(0.6rem, 1.2vw, 0.7rem)', color: theme.muted, opacity: 0.85, maxWidth: 280 }}>
-                    Damit das Handy aktuelle Werke sieht: im Admin «Jetzt an Server senden», dann hier <strong>«QR neu erzeugen»</strong> tippen und danach den neuen QR scannen.
                   </p>
                 )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>

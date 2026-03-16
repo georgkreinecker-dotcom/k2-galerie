@@ -89,6 +89,12 @@ SAFE_TO_DELETE.forEach(k => localStorage.removeItem(k))
 | `k2-artworks-backup` | Backup echte Werke | 🔴 ABSOLUT GESCHÜTZT |
 | `k2-events` | Echte Events | 🔴 ABSOLUT GESCHÜTZT |
 | `k2-documents` | Echte Dokumente | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-orders` | K2-Bestellungen/Kassa | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-sold-artworks` | K2-Verkaufsliste | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-oeffentlich-orders` | ök2-Bestellungen/Kassa | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-oeffentlich-sold-artworks` | ök2-Verkaufsliste | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-vk2-orders` | VK2-Bestellungen/Kassa | 🔴 ABSOLUT GESCHÜTZT |
+| `k2-vk2-sold-artworks` | VK2-Verkaufsliste | 🔴 ABSOLUT GESCHÜTZT |
 
 ---
 

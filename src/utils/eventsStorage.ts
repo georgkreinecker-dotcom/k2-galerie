@@ -73,19 +73,82 @@ function filterVk2FromK2Events(events: any[]): any[] {
   }
 }
 
+/** IDs aus einem Event-Key lesen (für Kreuz-Check). */
+function getEventIdsFromKey(otherTenantId: EventsTenantId): Set<string> {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem(EVENTS_KEYS[otherTenantId]) : null
+    const list = (raw && raw.trim() ? JSON.parse(raw) : []) || []
+    if (!Array.isArray(list)) return new Set()
+    return new Set((list as any[]).map((e: any) => e?.id).filter(Boolean))
+  } catch {
+    return new Set()
+  }
+}
+
+/** EISERN: Beim Schreiben in ök2/VK2 keine Events aus dem anderen Kontext (K2/VK2 bzw. K2/ök2) durchlassen. */
+function filterOtherContextFromEvents(events: any[], targetTenantId: EventsTenantId): { list: any[]; allFiltered: boolean } {
+  if (!Array.isArray(events) || events.length === 0) return { list: events, allFiltered: false }
+  try {
+    const k2Ids = getEventIdsFromKey('k2')
+    const oeffentlichIds = getEventIdsFromKey('oeffentlich')
+    const vk2Ids = getEventIdsFromKey('vk2')
+    const otherIds = targetTenantId === 'oeffentlich'
+      ? new Set([...k2Ids, ...vk2Ids])
+      : targetTenantId === 'vk2'
+        ? new Set([...k2Ids, ...oeffentlichIds])
+        : new Set<string>()
+    if (otherIds.size === 0) return { list: events, allFiltered: false }
+    const filtered = events.filter((e: any) => !e?.id || !otherIds.has(e.id))
+    const allFiltered = events.length > 0 && filtered.length === 0
+    if (filtered.length < events.length) {
+      console.warn(`⚠️ eventsStorage: Fremde Events aus ${targetTenantId}-Schreibvorgang entfernt (Datenvermischung verhindert)`)
+    }
+    return { list: filtered, allFiltered }
+  } catch {
+    return { list: events, allFiltered: false }
+  }
+}
+
 export function saveEvents(tenantId: EventsTenantId, events: any[]): void {
   try {
     const key = getEventsKey(tenantId)
     let list = Array.isArray(events) ? events : []
-    // EISERN: k2-events darf niemals VK2-Daten erhalten – auch nicht durch falschen Aufrufer
-    if (tenantId === 'k2' && typeof window !== 'undefined') {
-      const filtered = filterVk2FromK2Events(list)
-      // Niemals K2 mit leerer Liste überschreiben wenn der Aufrufer VK2-Daten geschickt hat (würde K2 löschen)
-      if (list.length > 0 && filtered.length === 0) {
-        console.warn('⚠️ eventsStorage: Schreibvorgang abgebrochen – nur VK2-Events übergeben, K2 würde geleert')
-        return
+    if (typeof window !== 'undefined') {
+      // EISERN (alle Kontexte): Nicht mit leerer Liste überschreiben, wenn 2+ Einträge vorhanden (Schutz vor Löschung von außen). Ausnahme: Nutzer löscht letztes Event.
+      if (list.length === 0) {
+        const current = loadEvents(tenantId)
+        if (current.length > 1) {
+          console.warn(`⚠️ eventsStorage: Schreibvorgang abgebrochen – ${tenantId}-Events nicht mit leerer Liste überschreiben (Schutz)`)
+          return
+        }
       }
-      list = filtered
+      // EISERN: K2 – keine VK2-Daten
+      if (tenantId === 'k2') {
+        const filtered = filterVk2FromK2Events(list)
+        if (list.length > 0 && filtered.length === 0) {
+          console.warn('⚠️ eventsStorage: Schreibvorgang abgebrochen – nur VK2-Events übergeben, K2 würde geleert')
+          return
+        }
+        list = filtered
+      }
+      // EISERN: ök2 – keine K2- und keine VK2-Daten (vice versa)
+      if (tenantId === 'oeffentlich' && list.length > 0) {
+        const { list: filtered, allFiltered } = filterOtherContextFromEvents(list, 'oeffentlich')
+        if (allFiltered) {
+          console.warn('⚠️ eventsStorage: Schreibvorgang abgebrochen – nur K2/VK2-Events übergeben, ök2 würde überschrieben')
+          return
+        }
+        list = filtered
+      }
+      // EISERN: VK2 – keine K2- und keine ök2-Daten (vice versa)
+      if (tenantId === 'vk2' && list.length > 0) {
+        const { list: filtered, allFiltered } = filterOtherContextFromEvents(list, 'vk2')
+        if (allFiltered) {
+          console.warn('⚠️ eventsStorage: Schreibvorgang abgebrochen – nur K2/ök2-Events übergeben, VK2 würde überschrieben')
+          return
+        }
+        list = filtered
+      }
     }
     const json = JSON.stringify(list)
     if (json.length > 10_000_000) {

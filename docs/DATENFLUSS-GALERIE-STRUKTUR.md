@@ -62,6 +62,31 @@ Die Galerie-Seite **liest** immer den Key, der zum aktuellen Kontext gehört. Si
 
 ---
 
+## Wo die K2-Stammdaten liegen – und wieso sie „weg“ sein können
+
+**Adresse, Telefon, E-Mail im Impressum** kommen ausschließlich aus den **Stammdaten**. Gespeichert werden sie **nur im Browser** (localStorage), pro Gerät getrennt.
+
+| Was | Wo gespeichert |
+|-----|-----------------|
+| **K2 Stammdaten** (Galerie, Martina, Georg: Adresse, Kontakt, …) | **localStorage** im selben Browser: `k2-stammdaten-galerie`, `k2-stammdaten-martina`, `k2-stammdaten-georg` |
+| **Änderungen** | Im **Admin → Meine Daten** (Stammdaten) eintragen und speichern → schreibt in diese Keys. |
+| **Backup** | Admin → Einstellungen → Backup & Wiederherstellung: Vollbackup enthält diese Keys. |
+
+**Mögliche Gründe, warum „die alten Daten weg“ sind:**
+
+1. **Anderes Gerät / anderer Browser** – localStorage ist **pro Gerät und pro Browser**. Am Mac sind andere Daten als auf dem Handy, wenn dort nie Stammdaten gespeichert wurden.
+2. **Browser-Daten gelöscht** – „Website-Daten löschen“, Cache leeren oder „Daten für diese Website entfernen“ löscht auch die Stammdaten-Keys.
+3. **Falsche Seite** – Du schaust **ök2** (`/galerie-oeffentlich`) statt **K2** (`/galerie`): Dann werden Mustertexte angezeigt, nicht die echten K2-Stammdaten.
+4. **Wiederherstellung aus Backup** – Ein **älteres** Backup wiederhergestellt → die Keys wurden mit dem Stand von damals überschrieben.
+5. **Früherer Bug (bereits behoben)** – BUG-039: Auto-Save lief im VK2-Admin und hat VK2-Daten in K2-Keys geschrieben. Ist abgestellt (Auto-Save nur bei K2).
+
+**Was du tun kannst:**
+
+- **Aktuell machen:** Im **Admin (K2)** → **Meine Daten** (Stammdaten) Adresse, Telefon, E-Mail eintragen und **Speichern**. Dann zeigt das Impressum wieder diese Daten (auf diesem Gerät/Browser).
+- **Wiederherstellen:** Wenn du ein **Vollbackup** von einem Zeitpunkt hast, als die Daten noch stimmten: Admin → Einstellungen → **Aus Backup-Datei wiederherstellen** (bzw. „Aus letztem Backup“). Enthält die Datei die Stammdaten, kommen sie zurück.
+
+---
+
 ## Referenzen
 
 - **GELOESTE-BUGS.md:** BUG-039 (Auto-Save bei VK2 schrieb in K2-Keys), BUG-038 (K2 zeigte VK2-Texte).

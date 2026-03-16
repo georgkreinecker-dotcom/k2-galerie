@@ -109,6 +109,11 @@ export async function publishGalleryDataToServer(
   const writeUrl = `${GALLERY_DATA_BASE_URL}/api/write-gallery-data`
   const timeoutMs = 60000 // 60 s pro Request
 
+  // Systemsicherheit: API-Key mitschicken, wenn gesetzt (Vercel WRITE_GALLERY_API_KEY + VITE_WRITE_GALLERY_API_KEY)
+  const apiKey = typeof import.meta.env.VITE_WRITE_GALLERY_API_KEY === 'string' ? String(import.meta.env.VITE_WRITE_GALLERY_API_KEY).trim() : ''
+  const writeHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (apiKey) writeHeaders['X-API-Key'] = apiKey
+
   // Kleinere Häppchen: wenn Gesamt-Payload zu groß, in Chunks unter 1 MB senden
   if (json.length > CHUNKED_THRESHOLD_BYTES) {
     const artworks = (data as any).artworks || []
@@ -148,7 +153,7 @@ export async function publishGalleryDataToServer(
       try {
         const response = await fetch(writeUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: writeHeaders,
           body,
           signal: controller.signal
         })
@@ -204,7 +209,7 @@ export async function publishGalleryDataToServer(
   try {
     const response = await fetch(writeUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: writeHeaders,
       body: json,
       signal: controller.signal
     })

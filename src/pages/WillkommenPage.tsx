@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -29,6 +29,7 @@ type PendingAction = 'ansicht' | 'entwurf' | null
 
 export default function WillkommenPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const variant = searchParams.get('variant') === 'a' ? 'a' : 'c'
@@ -214,7 +215,7 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
             <Link to={BENUTZER_HANDBUCH_ROUTE} style={{ color: muted, textDecoration: 'none' }}>Handbuch</Link>
             {' · '}
-            <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
+            <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
             {PRODUCT_COPYRIGHT}
             {' · '}
@@ -315,7 +316,7 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
             <Link to={BENUTZER_HANDBUCH_ROUTE} style={{ color: muted, textDecoration: 'none' }}>Handbuch</Link>
             {' · '}
-            <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
+            <Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: muted, textDecoration: 'none' }}>AGB</Link>
             {' · '}
             {PRODUCT_COPYRIGHT}
             {' · '}

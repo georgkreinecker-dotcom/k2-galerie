@@ -188,6 +188,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
         </Link>
         <Link
           to={AGB_ROUTE}
+          state={{ returnTo: location.pathname }}
           style={{
             padding: '0.4rem 0.8rem',
             background: isAgb ? 'var(--k2-accent, #5ffbf1)' : '#444',
@@ -374,6 +375,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
             </Link>
             <Link
               to={AGB_ROUTE}
+              state={{ returnTo: location.pathname }}
               style={{
                 marginTop: '0.4rem',
                 padding: '0.5rem 0.75rem',

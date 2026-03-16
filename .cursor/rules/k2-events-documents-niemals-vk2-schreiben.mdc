@@ -28,6 +28,24 @@ Trotz strengster Regeln (keine Datenvermischung, Löschverbot) wurden **K2-Event
 
 - **Events** werden bei Kontextwechsel (K2/VK2/ök2) **sofort** (0 ms) aus dem richtigen Key geladen – **kein** 400-ms-Delay. So ist der State korrekt, bevor der nächste Auto-Save-Tick läuft.
 
+### 5. Vice versa – ök2 und VK2 (100 % symmetrisch)
+
+- **Gleiche Schutzmechanismen für alle drei Kontexte:** (1) **Leere Liste:** Kein Überschreiben mit `[]`, wenn im jeweiligen Kontext bereits 2+ Events/Dokumente liegen (K2, ök2, VK2). (2) **Keine fremden Kontext-Daten:** K2 nimmt keine VK2-Daten; **ök2** nimmt keine K2- und keine VK2-Daten (Events: IDs gefiltert, Abbruch wenn nur Fremddaten; Dokumente: Abbruch wenn Liste = K2 oder VK2); **VK2** nimmt keine K2- und keine ök2-Daten (analog). eventsStorage.ts und documentsStorage.ts implementieren diese Regeln für alle drei tenantIds.
+
+## Wie sichergestellt wird, dass es nicht wieder passiert
+
+1. **Regel (alwaysApply):** Diese Datei wird bei jeder Session geladen – Absicherung ist immer im Kontext.
+2. **KRITISCHE-ABLAEUFE.md Abschnitt 13:** Jede Änderung an eventsStorage, documentsStorage, autoSave oder Admin-Events-Laden muss dort den primären Weg einhalten; Pflicht-Check vor „Fertig“ (kritische-ablaeufe-nicht-abschnwaechen.mdc).
+3. **Automatische Tests:** `src/tests/datentrennung.test.ts` – Describe „K2-Events / K2-Dokumente – niemals VK2 reinschreiben“ und „Schutzmechanismen vice versa – ök2 und VK2“. Wenn jemand die Guards entfernt oder abschwächt, werden die Tests rot → kein Deployment ohne Fix.
+4. **Checkliste vor Änderungen** an eventsStorage.ts, documentsStorage.ts, autoSave.ts oder am Events-Laden bei Kontextwechsel in ScreenshotExportAdmin:
+   - [ ] saveEvents('k2') filtert weiter VK2-IDs und bricht ab, wenn nur VK2 übrig bliebe?
+   - [ ] saveEvents('oeffentlich'/'vk2') Leere-Liste-Schutz + Filter/Abbrüche für fremde Kontext-Daten?
+   - [ ] saveDocuments('k2') bricht weiter ab, wenn Liste exakt k2-vk2-documents ist?
+   - [ ] saveDocuments('oeffentlich'/'vk2') Leere-Liste-Schutz + Abbrüche wenn Liste = anderer Kontext?
+   - [ ] autoSave ruft saveEvents/saveDocuments für K2 nur auf, wenn Daten nicht wie reine VK2 aussehen?
+   - [ ] Events werden bei Kontextwechsel sofort (0 ms) geladen, kein Delay?
+   - [ ] `npm run test` (inkl. datentrennung.test.ts) grün?
+
 ## Kurzfassung
 
-**K2-events und k2-documents dürfen niemals mit VK2-Daten gefüllt werden.** Drei Ebenen: (1) eventsStorage/documentsStorage lehnen VK2-Daten beim Schreiben ab; (2) autoSave schickt sie erst gar nicht; (3) Admin lädt bei Tab-Wechsel sofort den richtigen Kontext. Diese Absicherungen **niemals** entfernen oder abschwächen.
+**K2-events und k2-document(s) dürfen niemals mit VK2-Daten gefüllt werden. Vice versa: ök2 und VK2 dürfen niemals mit K2- oder untereinander mit fremden Kontext-Daten gefüllt werden (100 % symmetrisch).** Leere-Liste-Schutz (2+ Einträge) und Kontext-Filter/Abbrüche gelten für alle drei. Vier Ebenen: (1) eventsStorage/documentsStorage lehnen fremde Daten ab (pro Kontext); (2) autoSave Guards für K2; (3) Admin lädt bei Tab-Wechsel sofort den richtigen Kontext; (4) Regel + KRITISCHE-ABLAEUFE + Tests. Diese Absicherungen **niemals** entfernen oder abschwächen.

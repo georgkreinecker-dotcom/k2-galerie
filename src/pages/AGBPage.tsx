@@ -1,9 +1,10 @@
 /**
  * Allgemeine Geschäftsbedingungen (AGB) – rechtliche Absicherung für Nutzung, Demo, Datenschutz, Steuern.
  * Bei Eintritt über die Willkommensseite muss die Bestätigung erfolgen (üblich).
+ * Eiserne Regel: Zurück führt dorthin, woher der Nutzer gekommen ist (returnTo oder Browser-Zurück).
  */
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WILLKOMMEN_ROUTE, MOK2_ROUTE } from '../config/navigation'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -11,6 +12,17 @@ import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbel
 const s = WERBEUNTERLAGEN_STIL
 
 export default function AGBPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const returnTo = typeof (location.state as { returnTo?: string })?.returnTo === 'string'
+    ? (location.state as { returnTo: string }).returnTo
+    : null
+
+  const handleBack = () => {
+    if (returnTo) navigate(returnTo)
+    else navigate(-1)
+  }
+
   return (
     <div
       style={{
@@ -25,7 +37,23 @@ export default function AGBPage() {
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
       <div style={{ maxWidth: 720, margin: '0 auto', width: '100%', padding: '0 0.25rem' }}>
         <p style={{ margin: '0 0 1rem', fontSize: '0.9rem' }}>
-          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>← mök2</Link>
+          <button
+            type="button"
+            onClick={handleBack}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: s.accent,
+              textDecoration: 'none',
+              font: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            ← Zurück
+          </button>
+          {' · '}
+          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>mök2</Link>
           {' · '}
           <Link to={WILLKOMMEN_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>Willkommensseite</Link>
         </p>
@@ -125,7 +153,23 @@ export default function AGBPage() {
         </section>
 
         <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: s.muted }}>
-          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>← mök2</Link>
+          <button
+            type="button"
+            onClick={handleBack}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: s.accent,
+              textDecoration: 'none',
+              font: 'inherit',
+              cursor: 'pointer',
+            }}
+          >
+            ← Zurück
+          </button>
+          {' · '}
+          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>mök2</Link>
           {' · '}
           <Link to={WILLKOMMEN_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>Willkommensseite</Link>
         </p>

@@ -12,11 +12,14 @@ export const PRODUCT_BRAND_NAME = 'kgm solution'
 /** Zweite Marke – im Netz aktiv (Google, Galerie-Seiten, Besucher). Für SEO und alle Galerie-Routen. */
 export const K2_GALERIE_PUBLIC_BRAND = 'K2 Galerie'
 
+/** Aktuelles Jahr für Copyright – immer aktuell (Impressum, Footer, AGB, Druck). */
+const COPYRIGHT_YEAR = new Date().getFullYear()
+
 /** Copyright-Vermerk (kurz, mit „Copyright“) – für Footer, Impressum, AGB, Druck. */
-export const PRODUCT_COPYRIGHT = 'Copyright © 2026 kgm solution. Alle Rechte vorbehalten. Design und Entwicklung: kgm solution (G. Kreinecker)'
+export const PRODUCT_COPYRIGHT = `Copyright © ${COPYRIGHT_YEAR} kgm solution. Alle Rechte vorbehalten. Design und Entwicklung: kgm solution (G. Kreinecker)`
 
 /** Nur Brand + Copyright – überall außerhalb von K2 (ök2, VK2): keine K2-Daten, nur diese Zeile. */
-export const PRODUCT_COPYRIGHT_BRAND_ONLY = 'Copyright © 2026 kgm solution. Alle Rechte vorbehalten.'
+export const PRODUCT_COPYRIGHT_BRAND_ONLY = `Copyright © ${COPYRIGHT_YEAR} kgm solution. Alle Rechte vorbehalten.`
 
 /**
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).

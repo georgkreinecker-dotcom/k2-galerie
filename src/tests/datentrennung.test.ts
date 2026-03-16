@@ -16,6 +16,9 @@ import {
   sanitizePageContentForVk2Publish,
   mergePageContentGalerieFromServer,
 } from '../config/pageContentGalerie'
+import { loadEvents, saveEvents } from '../utils/eventsStorage'
+import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
+import { getShopOrdersKey, getShopSoldArtworksKey, getShopStorageKeys } from '../utils/shopContextKeys'
 
 const K2_KEY = 'k2-page-content-galerie'
 const OEK2_KEY = 'k2-oeffentlich-page-content-galerie'
@@ -170,5 +173,219 @@ describe('VK2 – Keine K2-Daten (Eisernes Gesetz Seitengestaltung)', () => {
     const result = getPageContentGalerie('vk2')
     expect(result.welcomeImage).not.toContain('/img/k2/')
     expect(result.welcomeImage).toBeFalsy()
+  })
+})
+
+/**
+ * K2-Events / K2-Dokumente – NIEMALS VK2 reinschreiben (16.03.26)
+ * Absicherung gegen Auto-Save beim Tab-Wechsel VK2→K2.
+ * Siehe: .cursor/rules/k2-events-documents-niemals-vk2-schreiben.mdc, KRITISCHE-ABLAEUFE.md Abschnitt 13.
+ */
+describe('K2-Events / K2-Dokumente – niemals VK2 reinschreiben', () => {
+  it('saveEvents(k2, nur VK2-Events) überschreibt K2 nicht – K2 bleibt unverändert', () => {
+    const k2Event = { id: 'k2-eröffnung', title: 'Eröffnung K2', date: '2024-04-24' }
+    const vk2Event = { id: 'vk2-versammlung', title: 'VK2 Versammlung', date: '2024-05-01' }
+    localStorage.setItem('k2-events', JSON.stringify([k2Event]))
+    localStorage.setItem('k2-vk2-events', JSON.stringify([vk2Event]))
+    saveEvents('k2', [vk2Event])
+    const k2After = loadEvents('k2')
+    expect(k2After).toHaveLength(1)
+    expect(k2After[0].id).toBe('k2-eröffnung')
+  })
+
+  it('saveEvents(k2, gemischt K2+VK2) speichert nur K2-Events', () => {
+    const k2Event = { id: 'k2-1', title: 'K2 Event' }
+    const vk2Event = { id: 'vk2-1', title: 'VK2 Event' }
+    localStorage.setItem('k2-vk2-events', JSON.stringify([vk2Event]))
+    saveEvents('k2', [k2Event, vk2Event])
+    const k2After = loadEvents('k2')
+    expect(k2After).toHaveLength(1)
+    expect(k2After[0].id).toBe('k2-1')
+  })
+
+  it('saveDocuments(k2, exakt VK2-Inhalt) überschreibt K2 nicht', () => {
+    const k2Doc = { id: 'k2-flyer', title: 'K2 Flyer' }
+    const vk2Doc = { id: 'vk2-flyer', title: 'VK2 Flyer' }
+    localStorage.setItem('k2-documents', JSON.stringify([k2Doc]))
+    localStorage.setItem('k2-vk2-documents', JSON.stringify([vk2Doc]))
+    saveDocuments('k2', [vk2Doc])
+    const k2After = loadDocuments('k2')
+    expect(k2After).toHaveLength(1)
+    expect(k2After[0].id).toBe('k2-flyer')
+  })
+
+  it('saveEvents(k2, []) überschreibt K2 nicht wenn 2+ Events vorhanden (Schutz vor Löschung von außen)', () => {
+    const k2Events = [
+      { id: 'k2-1', title: 'Eröffnung', date: '2026-04-24' },
+      { id: 'k2-2', title: 'Vernissage', date: '2026-05-01' }
+    ]
+    localStorage.setItem('k2-events', JSON.stringify(k2Events))
+    saveEvents('k2', [])
+    const k2After = loadEvents('k2')
+    expect(k2After).toHaveLength(2)
+    expect(k2After[0].id).toBe('k2-1')
+  })
+
+  it('saveDocuments(k2, []) überschreibt K2 nicht wenn 2+ Dokumente vorhanden (Schutz vor Löschung von außen)', () => {
+    const k2Docs = [
+      { id: 'k2-doc-1', name: 'Flyer' },
+      { id: 'k2-doc-2', name: 'Presse' }
+    ]
+    localStorage.setItem('k2-documents', JSON.stringify(k2Docs))
+    saveDocuments('k2', [])
+    const k2After = loadDocuments('k2')
+    expect(k2After).toHaveLength(2)
+    expect(k2After[0].id).toBe('k2-doc-1')
+  })
+})
+
+/**
+ * Schutzmechanismen vice versa – ök2 und VK2 (100 % symmetrisch zu K2).
+ * Leere Liste überschreibt nicht bei 2+ Einträgen; fremde Kontext-Daten überschreiben nicht.
+ */
+describe('Schutzmechanismen vice versa – ök2 und VK2', () => {
+  beforeEach(() => {
+    localStorage.removeItem('k2-events')
+    localStorage.removeItem('k2-oeffentlich-events')
+    localStorage.removeItem('k2-vk2-events')
+    localStorage.removeItem('k2-documents')
+    localStorage.removeItem('k2-oeffentlich-documents')
+    localStorage.removeItem('k2-vk2-documents')
+  })
+
+  it('saveEvents(oeffentlich, []) überschreibt ök2 nicht wenn 2+ Events vorhanden', () => {
+    const oek2Events = [
+      { id: 'oek2-1', title: 'Demo Event 1' },
+      { id: 'oek2-2', title: 'Demo Event 2' }
+    ]
+    localStorage.setItem('k2-oeffentlich-events', JSON.stringify(oek2Events))
+    saveEvents('oeffentlich', [])
+    const after = loadEvents('oeffentlich')
+    expect(after).toHaveLength(2)
+    expect(after[0].id).toBe('oek2-1')
+  })
+
+  it('saveEvents(vk2, []) überschreibt VK2 nicht wenn 2+ Events vorhanden', () => {
+    const vk2Events = [
+      { id: 'vk2-e1', title: 'Verein 1' },
+      { id: 'vk2-e2', title: 'Verein 2' }
+    ]
+    localStorage.setItem('k2-vk2-events', JSON.stringify(vk2Events))
+    saveEvents('vk2', [])
+    const after = loadEvents('vk2')
+    expect(after).toHaveLength(2)
+    expect(after[0].id).toBe('vk2-e1')
+  })
+
+  it('saveDocuments(oeffentlich, []) überschreibt ök2 nicht wenn 2+ Dokumente vorhanden', () => {
+    const oek2Docs = [
+      { id: 'oek2-d1', name: 'Flyer' },
+      { id: 'oek2-d2', name: 'Presse' }
+    ]
+    localStorage.setItem('k2-oeffentlich-documents', JSON.stringify(oek2Docs))
+    saveDocuments('oeffentlich', [])
+    const after = loadDocuments('oeffentlich')
+    expect(after).toHaveLength(2)
+    expect(after[0].id).toBe('oek2-d1')
+  })
+
+  it('saveDocuments(vk2, []) überschreibt VK2 nicht wenn 2+ Dokumente vorhanden', () => {
+    const vk2Docs = [
+      { id: 'vk2-d1', name: 'Flyer' },
+      { id: 'vk2-d2', name: 'Presse' }
+    ]
+    localStorage.setItem('k2-vk2-documents', JSON.stringify(vk2Docs))
+    saveDocuments('vk2', [])
+    const after = loadDocuments('vk2')
+    expect(after).toHaveLength(2)
+    expect(after[0].id).toBe('vk2-d1')
+  })
+
+  it('saveEvents(oeffentlich, nur K2-IDs) überschreibt ök2 nicht – K2-Events werden gefiltert', () => {
+    const oek2Event = { id: 'oek2-only', title: 'ök2 Event' }
+    const k2Event = { id: 'k2-only', title: 'K2 Event' }
+    localStorage.setItem('k2-oeffentlich-events', JSON.stringify([oek2Event]))
+    localStorage.setItem('k2-events', JSON.stringify([k2Event]))
+    saveEvents('oeffentlich', [k2Event])
+    const after = loadEvents('oeffentlich')
+    expect(after).toHaveLength(1)
+    expect(after[0].id).toBe('oek2-only')
+  })
+
+  it('saveEvents(vk2, nur K2-IDs) überschreibt VK2 nicht – K2-Events werden gefiltert', () => {
+    const vk2Event = { id: 'vk2-only', title: 'VK2 Event' }
+    const k2Event = { id: 'k2-only', title: 'K2 Event' }
+    localStorage.setItem('k2-vk2-events', JSON.stringify([vk2Event]))
+    localStorage.setItem('k2-events', JSON.stringify([k2Event]))
+    saveEvents('vk2', [k2Event])
+    const after = loadEvents('vk2')
+    expect(after).toHaveLength(1)
+    expect(after[0].id).toBe('vk2-only')
+  })
+
+  it('saveDocuments(oeffentlich, exakt K2-Inhalt) überschreibt ök2 nicht', () => {
+    const oek2Doc = { id: 'oek2-doc', name: 'ök2 Flyer' }
+    const k2Doc = { id: 'k2-doc', name: 'K2 Flyer' }
+    localStorage.setItem('k2-oeffentlich-documents', JSON.stringify([oek2Doc]))
+    localStorage.setItem('k2-documents', JSON.stringify([k2Doc]))
+    saveDocuments('oeffentlich', [k2Doc])
+    const after = loadDocuments('oeffentlich')
+    expect(after).toHaveLength(1)
+    expect(after[0].id).toBe('oek2-doc')
+  })
+
+  it('saveDocuments(vk2, exakt K2-Inhalt) überschreibt VK2 nicht', () => {
+    const vk2Doc = { id: 'vk2-doc', name: 'VK2 Flyer' }
+    const k2Doc = { id: 'k2-doc', name: 'K2 Flyer' }
+    localStorage.setItem('k2-vk2-documents', JSON.stringify([vk2Doc]))
+    localStorage.setItem('k2-documents', JSON.stringify([k2Doc]))
+    saveDocuments('vk2', [k2Doc])
+    const after = loadDocuments('vk2')
+    expect(after).toHaveLength(1)
+    expect(after[0].id).toBe('vk2-doc')
+  })
+})
+
+describe('Shop/Kassa – kontexteigene Keys (Datensicherheit)', () => {
+  it('K2-Kontext nutzt k2-orders und k2-sold-artworks', () => {
+    expect(getShopOrdersKey(false, false)).toBe('k2-orders')
+    expect(getShopSoldArtworksKey(false, false)).toBe('k2-sold-artworks')
+    const keys = getShopStorageKeys(false, false)
+    expect(keys.ordersKey).toBe('k2-orders')
+    expect(keys.soldArtworksKey).toBe('k2-sold-artworks')
+  })
+
+  it('ök2-Kontext nutzt k2-oeffentlich-orders und k2-oeffentlich-sold-artworks', () => {
+    expect(getShopOrdersKey(true, false)).toBe('k2-oeffentlich-orders')
+    expect(getShopSoldArtworksKey(true, false)).toBe('k2-oeffentlich-sold-artworks')
+    const keys = getShopStorageKeys(true, false)
+    expect(keys.ordersKey).toBe('k2-oeffentlich-orders')
+    expect(keys.soldArtworksKey).toBe('k2-oeffentlich-sold-artworks')
+  })
+
+  it('VK2-Kontext nutzt k2-vk2-orders und k2-vk2-sold-artworks', () => {
+    expect(getShopOrdersKey(false, true)).toBe('k2-vk2-orders')
+    expect(getShopSoldArtworksKey(false, true)).toBe('k2-vk2-sold-artworks')
+    const keys = getShopStorageKeys(false, true)
+    expect(keys.ordersKey).toBe('k2-vk2-orders')
+    expect(keys.soldArtworksKey).toBe('k2-vk2-sold-artworks')
+  })
+
+  it('VK2 hat Vorrang vor ök2 (fromVk2=true → VK2-Keys)', () => {
+    const keys = getShopStorageKeys(true, true)
+    expect(keys.ordersKey).toBe('k2-vk2-orders')
+    expect(keys.soldArtworksKey).toBe('k2-vk2-sold-artworks')
+  })
+
+  it('Keys sind pro Kontext getrennt – keine Überschneidung', () => {
+    const k2 = getShopStorageKeys(false, false)
+    const oek2 = getShopStorageKeys(true, false)
+    const vk2 = getShopStorageKeys(false, true)
+    expect(k2.ordersKey).not.toBe(oek2.ordersKey)
+    expect(k2.ordersKey).not.toBe(vk2.ordersKey)
+    expect(oek2.ordersKey).not.toBe(vk2.ordersKey)
+    expect(k2.soldArtworksKey).not.toBe(oek2.soldArtworksKey)
+    expect(k2.soldArtworksKey).not.toBe(vk2.soldArtworksKey)
+    expect(oek2.soldArtworksKey).not.toBe(vk2.soldArtworksKey)
   })
 })

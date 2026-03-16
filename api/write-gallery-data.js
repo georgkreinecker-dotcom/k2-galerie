@@ -28,14 +28,26 @@ function getBlobPath(tenantId) {
   return 'gallery-data.json'
 }
 
+const API_KEY_HEADER = 'x-api-key'
+const AUTH_HEADER = 'authorization'
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Nur POST erlaubt' })
+  }
+
+  // Systemsicherheit: optionaler API-Key (Vercel WRITE_GALLERY_API_KEY); wenn gesetzt, nur mit gültigem Key
+  const expectedKey = process.env.WRITE_GALLERY_API_KEY
+  if (expectedKey && typeof expectedKey === 'string' && expectedKey.length > 0) {
+    const apiKey = req.headers[API_KEY_HEADER] || (req.headers[AUTH_HEADER] || '').replace(/^Bearer\s+/i, '').trim()
+    if (apiKey !== expectedKey) {
+      return res.status(401).json({ error: 'Nicht autorisiert', hint: 'API-Key fehlt oder ist ungültig.' })
+    }
   }
 
   let body = ''

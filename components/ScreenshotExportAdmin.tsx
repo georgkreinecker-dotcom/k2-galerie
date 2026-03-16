@@ -4075,6 +4075,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const STORY_1B_PRODUKT_PRESSE =
     'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
 
+  // Eröffnung 24.–26.04. – Muster aus docs/MOK2-MUSTER-PRO-WERBETYP-EROEFFNUNG.md („Jetzt erstellen“ füllt Karte mit Strategie)
+  const EROEFFNUNG_KERNBOTSCHAFT =
+    'Wir eröffnen die K2 Galerie – und laden Sie ein, die Galerie und die Plattform kennenzulernen, mit der wir und andere Künstler:innen, Galerien und Kunstvereine arbeiten.'
+  const EROEFFNUNG_LOUNGE_TEXT =
+    'Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie zusätzlich erleben, womit wir arbeiten: die K2-Plattform (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren, Veranstaltungen planen und sich vernetzen.'
+  const EROEFFNUNG_LOUNGE_KURZ =
+    'Werke, Raum, Begegnung. In unserer gemeinsamen Lounge: Einblick in K2 · ök2 · VK2.'
+  const EROEFFNUNG_WERBELINIE_1 = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen.'
+  const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
+  const EROEFFNUNG_PRESSE_LEAD_PREFIX = 'eröffnet am'
+  const EROEFFNUNG_PLAKAT_KURZTEXT =
+    'Kunst & Keramik · Malerei, Grafik, Skulptur\nGemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.\n\nEintritt frei.'
+
   // Content-Generatoren im App-Design-Stil – je Kontext nur eigene Daten (K2 / ök2 / VK2)
   // variant: 'neutral' = ohne Personendaten/Kontakt (für neutrale Information), 'lokal' = mit Personenstory und Kontakt
   const generatePresseaussendungContent = (event: any, variant: 'neutral' | 'lokal' = 'lokal') => {
@@ -4123,7 +4136,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
 
     const ort = event.location || getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
-    const desc = event.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
+    const isGalerieeroeffnung = event.type === 'galerieeröffnung'
+    const desc = isGalerieeroeffnung ? EROEFFNUNG_LOUNGE_TEXT : (event.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.')
     const mName = martinaData?.name || 'Martina Kreinecker'
     const pName = georgData?.name || 'Georg Kreinecker'
     const mBio = martinaData?.bio || 'Malerei und Grafik – großformatige Arbeiten zwischen Abstraktion und Figuration.'
@@ -4173,6 +4187,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       ? [STORY_1A_HUMAN_PRESSE, ``, STORY_1B_PRODUKT_PRESSE, ``]
       : [STORY_1B_PRODUKT_PRESSE, ``]
 
+    // Bei Galerieeröffnung neutral: Lead aus Muster (docs/MOK2-MUSTER-PRO-WERBETYP-EROEFFNUNG.md §5)
+    const eroeffnungLead =
+      isGalerieeroeffnung && variant === 'neutral'
+        ? `Die ${gName} ${EROEFFNUNG_PRESSE_LEAD_PREFIX} ${evDate} mit einer Ausstellung von ${mName} und ${pName}. Zur Eröffnung lädt das Galerie-Team in die Räume ein und gibt in einer gemeinsamen Lounge Einblick in die K2-Plattform für Künstler:innen, Galerien und Kunstvereine (K2 · ök2 · VK2).`
+        : null
+
     return {
       title: `PRESSEAUSSENDUNG – ${event.title} | ${gName}`,
       content: [
@@ -4192,9 +4212,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         `ZUR AUSSTELLUNG`,
         `───────────────────────────────────────`,
         ``,
-        desc,
-        ``,
-        ...storyBlock,
+        ...(eroeffnungLead ? [eroeffnungLead, ``, STORY_1B_PRODUKT_PRESSE, ``] : [desc, ``, ...storyBlock]),
         ...kuenstlerBlock,
         `───────────────────────────────────────`,
         `KONTAKT & BILDMATERIAL`,
@@ -4253,6 +4271,47 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const pName = georgData?.name || 'Georg Kreinecker'
     const gName = galleryData.name || 'K2 Galerie'
     const baseHashtags = `#K2Galerie #KunstInÖsterreich #Malerei #Keramik`
+    if (event.type === 'galerieeröffnung') {
+      return {
+        instagram: [
+          `✦ Eröffnung der K2 Galerie`,
+          ``,
+          `Zur Eröffnung laden wir euch in unsere Galerie ein – Werke, Raum, Begegnung. In unserer gemeinsamen Lounge gibt es Einblick in die K2-Plattform (K2 · ök2 · VK2).`,
+          ``,
+          `📅 ${datesFormatted}`,
+          ort ? `📍 ${ort}` : '',
+          ``,
+          `Martina trifft Georg – Malerei, Grafik & Keramik in einem Raum.`,
+          `Eintritt frei. Wir freuen uns auf euch! 🎨`,
+          ``,
+          `${hashtags} ${baseHashtags} #Kunstliebe`,
+        ].filter(Boolean).join('\n'),
+        facebook: [
+          `🎨 Eröffnung der K2 Galerie – Galerieeröffnung in der ${gName}`,
+          ``,
+          `Wir laden herzlich ein!`,
+          ``,
+          `Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie erleben, womit wir arbeiten: die K2-Plattform für Künstler:innen, Galerien und Kunstvereine (K2 · ök2 · VK2).`,
+          ``,
+          `📅 ${datesFormatted}`,
+          ort ? `📍 ${ort}` : '',
+          galleryData.openingHours ? `🕒 ${galleryData.openingHours}` : '',
+          ``,
+          `Eintritt frei. Wir freuen uns auf euren Besuch! 💚`,
+          galleryData.email ? `✉ ${galleryData.email}` : '',
+          galleryData.phone ? `☎ ${galleryData.phone}` : '',
+        ].filter(Boolean).join('\n'),
+        whatsapp: [
+          `✦ Eröffnung der K2 Galerie`,
+          `📅 ${datesFormatted}`,
+          ort ? `📍 ${ort}` : '',
+          ``,
+          `Werke, Raum, Begegnung – und Einblick in die K2-Plattform (K2 · ök2 · VK2). Gemeinsame Lounge: Galerie erleben, Plattform entdecken.`,
+          ``,
+          [gName, galleryData.email ? `✉ ${galleryData.email}` : '', '👉 www.k2-galerie.at'].filter(Boolean).join(' · '),
+        ].filter(Boolean).join('\n'),
+      }
+    }
     return {
       instagram: [
         `✦ ${event.title}`,
@@ -4318,11 +4377,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
     }
     const prominenteAdresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
+    const flyerDesc =
+      event.type === 'galerieeröffnung'
+        ? `${EROEFFNUNG_KERNBOTSCHAFT}\n\n${EROEFFNUNG_LOUNGE_KURZ}\n\n${EROEFFNUNG_WERBELINIE_1}`
+        : (event.description || '')
     return {
       headline: event.title,
       date: formatEventDates(event),
       location: event.location || prominenteAdresse || '',
-      description: event.description || '',
+      description: flyerDesc,
       type: event.type,
       qrCode: galleryData.website || window.location.origin,
       contact: {
@@ -4369,6 +4432,37 @@ ${adr ? `Adresse: ${adr}` : ''}
         }
       } catch (_) {}
     }
+    const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
+    const gName = galleryData.name || 'K2 Galerie'
+    if (event.type === 'galerieeröffnung') {
+      return {
+        subject: `Einladung: Eröffnung der K2 Galerie – ${formatEventDates(event)}`,
+        greeting: 'Liebe Kunstfreunde, sehr geehrte Damen und Herren,',
+        body: `
+wir laden Sie herzlich ein zur Eröffnung der K2 Galerie!
+
+TERMINDATEN:
+📅 ${formatEventDates(event)} [ggf. Uhrzeiten ergänzen]
+
+ORT:
+📍 ${ort || adresse}
+
+BESCHREIBUNG:
+${EROEFFNUNG_LOUNGE_TEXT}
+
+${EROEFFNUNG_WERBELINIE_1}
+${EROEFFNUNG_WERBELINIE_2}
+
+KONTAKT:
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+${adresse ? `Adresse: ${adresse}` : ''}
+
+Wir freuen uns auf Sie!
+${gName} · Martina & Georg
+        `.trim()
+      }
+    }
     return {
       subject: `Einladung: ${event.title}`,
       greeting: 'Liebe Kunstfreunde,',
@@ -4379,7 +4473,7 @@ TERMINDATEN:
 📅 ${formatEventDates(event)}
 
 ORT:
-📍 ${ort || getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''}
+📍 ${ort || adresse}
 
 BESCHREIBUNG:
 ${event.description || 'Wir freuen uns auf deinen Besuch!'}
@@ -4387,7 +4481,7 @@ ${event.description || 'Wir freuen uns auf deinen Besuch!'}
 KONTAKT:
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
 ${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
-${(() => { const a = getProminenteAdresseFormatiert(galleryData, martinaData, georgData); return a ? `Adresse: ${a}` : '' })()}
+${adresse ? `Adresse: ${adresse}` : ''}
       `.trim()
     }
   }
@@ -4416,12 +4510,14 @@ ${(() => { const a = getProminenteAdresseFormatiert(galleryData, martinaData, ge
     }
     const prominenteAdresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
     const g = galleryData || {}
+    const plakatDesc =
+      event.type === 'galerieeröffnung' ? EROEFFNUNG_PLAKAT_KURZTEXT : (event.description || '')
     return {
       title: event.title || 'Event',
       type: eventTypeNames[event.type] || 'Veranstaltung',
       date: formatEventDates(event) || 'Datum folgt',
       location: event.location || prominenteAdresse || '',
-      description: event.description || '',
+      description: plakatDesc,
       qrCode: g.website || window.location.origin,
       contact: {
         phone: g.phone || '',
@@ -7553,7 +7649,7 @@ ${'='.repeat(60)}
       const typ = document.werbematerialTyp || document.typ
       switch (typ) {
         case 'newsletter':
-          generateEditableNewsletterPDF(evSug?.newsletter || generateEmailNewsletterContent(ev), ev)
+          generateEditableNewsletterPDF(evSug?.newsletter || generateNewsletterContent(ev), ev)
           return
         case 'plakat':
           if (ev) generatePlakatForEvent(ev)
@@ -18534,11 +18630,15 @@ ${name}`
                         const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
                         const hiddenIds = event.hiddenDocIds || []
                         const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
-                        // eventId/event.id typensicher vergleichen (JSON kann Zahl→String ändern), damit vorhandene Docs grün werden
+                        // eventId/event.id typensicher vergleichen; Fallback: Dokumente ohne passende Event-ID per Event-Titel zuordnen (damit nach Neuladen/ID-Änderung „vorhanden“ bleibt)
                         const eventIdStr = event.id != null ? String(event.id) : ''
-                        const prDocsForEvent = (documents || []).filter((d: any) =>
-                          d.category === 'pr-dokumente' && d.eventId != null && String(d.eventId) === eventIdStr
-                        )
+                        const allEventIds = new Set((upcomingEvents || []).map((e: any) => e.id != null ? String(e.id) : ''))
+                        const prDocsForEvent = (documents || []).filter((d: any) => {
+                          if (!d || d.category !== 'pr-dokumente') return false
+                          if (d.eventId != null && String(d.eventId) === eventIdStr) return true
+                          if (d.eventTitle === event.title && (d.eventId == null || !allEventIds.has(String(d.eventId)))) return true
+                          return false
+                        })
                         const WERBEMATERIAL_TYPEN = ['qr-plakat', 'newsletter', 'plakat', 'event-flyer', 'presse', 'social'] as const
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
@@ -18606,7 +18706,7 @@ ${name}`
                                   const ev = events.find((e: any) => e.id === event.id)
                                   if (!ev) return
                                   const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                  generateEditableNewsletterPDF(evSug?.newsletter || generateEmailNewsletterContent(ev), ev)
+                                  generateEditableNewsletterPDF(evSug?.newsletter || generateNewsletterContent(ev), ev)
                                 }
                               },
                               {

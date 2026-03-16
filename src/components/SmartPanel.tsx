@@ -142,6 +142,15 @@ function saveMappenOpen(open: Record<string, boolean>) {
 
 /** Deine To-dos – Feinschliff (step by step). Links führen direkt zur Stelle. */
 const MEINE_TODOS = [
+  // Sicherheit vor Go-Live (4–6 Wochen) – Details: docs/SICHERHEIT-VOR-GO-LIVE.md
+  { text: '🔒 Vercel: WRITE_GALLERY_API_KEY + VITE_WRITE_GALLERY_API_KEY setzen, „An Server senden“ testen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 Supabase: Admin-User anlegen (z. B. georg.kreinecker@kgm.at), Passwort setzen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 Supabase: Migration 002 ausführen (RLS – nur eingeloggt schreiben)', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 Vercel: VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY prüfen (Admin-Login online)', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 Terminal: npm audit – kritische/hohe Meldungen beheben', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 AGB / Datenschutz / Impressum für Live-Betrieb prüfen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  { text: '🔒 Einmal Vollbackup anlegen und Wiederherstellung testen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
+  // Feinschliff & Testen
   { text: 'Weit testen: Abläufe (Veröffentlichen, Laden, Stand, Werke, K2/ök2, Etikett, Dokument, Backup)', href: PROJECT_ROUTES['k2-galerie'].galerieVorschau },
   { text: 'Weit testen: Geräte (Mac, iPad, Handy – Stand, Sync)', href: PROJECT_ROUTES['k2-galerie'].mobileConnect },
   { text: 'Weit testen: Kontexte (K2, ök2, VK2 prüfen)', href: PROJECT_ROUTES['k2-galerie'].galerie },
@@ -628,6 +637,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                       <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
                     )}
                     <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
+                    <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=23-NOTFALL-CHECKLISTE.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', marginTop: '0.35rem', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '6px', color: '#fca5a5', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>🚨 Notfall-Checkliste</button>
                     <button
                       type="button"
                       onClick={() => {
