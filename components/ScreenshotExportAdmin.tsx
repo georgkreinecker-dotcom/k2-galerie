@@ -10328,6 +10328,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
   const isMitgliedRoute = tenant.isVk2 && typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mitglied') === '1'
   // Programmierer-Bypass: ?dev=k2dev2026 → Login-Screen überspringen
   const devBypass = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('dev') === 'k2dev2026'
+  // Immer berechnen (vor jedem Return), damit Hook-Reihenfolge nie wechselt („Rendered fewer hooks“ vermeiden)
+  const devBypassName = devBypass
+    ? ((vk2Stammdaten.mitglieder || []).find(m => m.rolle === 'vorstand')?.name
+        || (vk2Stammdaten.mitglieder || [])[0]?.name
+        || null)
+    : null
+  const vk2MitgliedProfilAktiv = isMitgliedRoute && (vk2EingeloggtMitglied || devBypassName)
+  const aktiverName = vk2MitgliedProfilAktiv ? (vk2EingeloggtMitglied || devBypassName || '') : ''
+  const mitglied = vk2MitgliedProfilAktiv ? (vk2Stammdaten.mitglieder || []).find(m => m.name === aktiverName) : undefined
+  const mitgliedIdx = vk2MitgliedProfilAktiv ? (vk2Stammdaten.mitglieder || []).findIndex(m => m.name === aktiverName) : -1
+  const istVorstand = mitglied?.rolle === 'vorstand'
+  useEffect(() => {
+    if (istVorstand && !devBypass && typeof window !== 'undefined' && window.self === window.top) {
+      window.location.href = '/admin?context=vk2'
+    }
+  }, [istVorstand, devBypass])
 
   if (isMitgliedRoute && !vk2EingeloggtMitglied && !devBypass) {
     const mitgliedListe = (vk2Stammdaten.mitglieder || []).filter(m => m.pin)
@@ -10408,27 +10424,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     )
   }
 
-  // Bei Bypass: als erstes Vorstandsmitglied einloggen (für Profil-Ansicht)
-  const devBypassName = devBypass
-    ? ((vk2Stammdaten.mitglieder || []).find(m => m.rolle === 'vorstand')?.name
-        || (vk2Stammdaten.mitglieder || [])[0]?.name
-        || null)
-    : null
+  // Vorstand ohne Bypass: Weiterleitung (useEffect oben setzt location.href); kein null-Return (Hook-Reihenfolge)
+  if (istVorstand && !devBypass) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0f1c2e', color: '#f0f6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui, sans-serif' }}>
+        Weiterleitung…
+      </div>
+    )
+  }
 
-  if (isMitgliedRoute && (vk2EingeloggtMitglied || devBypassName)) {
-    const aktiverName = vk2EingeloggtMitglied || devBypassName || ''
-    const mitglied = (vk2Stammdaten.mitglieder || []).find(m => m.name === aktiverName)
-    const mitgliedIdx = (vk2Stammdaten.mitglieder || []).findIndex(m => m.name === aktiverName)
-    const istVorstand = mitglied?.rolle === 'vorstand'
-
-    if (istVorstand && !devBypass) {
-      // Vorstand → normaler Admin (URL ohne mitglied=1 öffnen); im iframe (Cursor Preview) kein Redirect
-      if (typeof window !== 'undefined' && window.self === window.top) {
-        window.location.href = '/admin?context=vk2'
-      }
-      return null
-    }
-
+  if (vk2MitgliedProfilAktiv) {
     return (
       <div style={{ minHeight: '100vh', background: '#0f1c2e', color: '#f0f6ff', fontFamily: 'system-ui, sans-serif' }}>
         {/* Header */}
