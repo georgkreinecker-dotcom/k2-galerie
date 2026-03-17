@@ -34,7 +34,7 @@
 | **Startpunkt-Entscheidung:** „Wo beginnt deine Familie?“ – Bei mir / Bei meinen Eltern / Bei meinen Großeltern. | STARTPUNKT-AKTIV-PASSIV | ✅ Umgesetzt (16.03.26): Einstellungen `k2-familie-{tenantId}-einstellungen` mit startpunktTyp; UI auf Home („Wo beginnt deine Familie?“) + Anzeige auf Sicherung. |
 | **Aktiver Teil** = den ich pflege (z. B. mein Zweig); **passiver Teil** = Vorfahren, Gedenkort, nur lesen + Gaben. | STARTPUNKT-AKTIV-PASSIV | 🔲 Mit Phase 4.0 (Rechte) umsetzbar. |
 | **„Mein Bereich“** vs. **„Stammbaum“** (ganzer Baum) vs. **„Gedenkort“** in der Navigation klar. | STARTPUNKT-AKTIV-PASSIV | Teilweise: Gedenkort ✅; „Mein Bereich“ vs. Stammbaum noch eine Idee. |
-| **Partnerschaft:** „Meine Herkunft“ / „Herkunft [Partner]“ – zwei Zweige in der History, die in „uns“ zusammentreffen. | STARTPUNKT-AKTIV-PASSIV | 🔲 Idee, UI noch nicht. |
+| **Partnerschaft / Familie des Partners gleichrangig:** „Meine Herkunft“ / „Herkunft [Partner]“ – zwei Zweige in der History, die in „uns“ zusammentreffen; beide Herkünfte gleichwertig dargestellt (Stammbaum, Navigation, Gedenkort). | STARTPUNKT-AKTIV-PASSIV, Georg 16.03.26 | 🔲 Idee; Konzept Abschnitt 11. |
 | **Stammbaum-Ausdruck:** Standpunkt wählen (Ich / Wir / Eltern / Großeltern) + Zeitlicher Ausschnitt („Nur das Jetzt“ vs. „Auch die Vergangenheit“). | STARTPUNKT-AKTIV-PASSIV | 🔲 Idee für Ausdruck/Plakat/PDF. |
 
 ---
@@ -102,7 +102,32 @@
 
 ---
 
-## 10. Kurz: Was als Nächstes?
+## 10. Events → zusammengefasste Geschichte (ab Zeitpunkt)
+
+| Idee / Punkt | Status |
+|--------------|--------|
+| **Events in der History** ab einem wählbaren Zeitpunkt als **zusammenfassende, redigierte Geschichte** darstellen (nicht nur Timeline-Liste). | 🔲 Idee; Konzept unten. |
+| **„Ab Zeitpunkt“:** Nutzer wählt z. B. „Ab unserer Hochzeit“ / „Ab 1990“ – alles danach fließt in die Geschichte ein. | 🔲 Konzept. |
+| **Redigierbar:** Der entstandene Text (Automatik-Vorschlag aus Events + Momente) kann bearbeitet werden – eine Art „Unsere Geschichte“-Seite. | 🔲 Konzept. |
+
+**Konzept-Idee:** Events + Momente nach Datum sortiert ab Zeitpunkt X → entweder (A) automatisch generierter Fließtext-Vorschlag (z. B. „1990: … 1995: …“) oder (B) Timeline mit „Als Geschichte zusammenfassen“-Button; Ergebnis = ein editierbarer Text (neuer Inhaltstyp oder Sektion), der als „Familien-Geschichte“ ab Zeitpunkt X gespeichert und angezeigt wird. Quelle: Georg 16.03.26.
+
+---
+
+## 11. Partner-Familie gleichrangig (Konzept)
+
+| Ziel | Konzept |
+|------|--------|
+| **Gleichrangig** | Beide Herkünfte („meine“ und „Partner“) haben dieselbe Sichtbarkeit: zwei Zweige, kein „Hauptzweig“ vs. „dazu“. |
+| **Zwei Zweige in der History** | Stammbaum/Navigation: z. B. „Meine Herkunft“ und „Herkunft [Name Partner]“, die in „uns“ (Partnerschaft/Kinder) zusammentreffen. |
+| **Umsetzungsideen** | (1) Zweiter Startpunkt oder Zweig-Typ „Partner-Herkunft“; (2) Anzeige: zwei Wurzeln oder klare Zweig-Trennung in Baum/History; (3) Gedenkort/Beiträge für beide Zweige gleichermaßen. |
+| **Datenmodell** | Bereits Partner-Beziehung vorhanden; erweitern um „Herkunfts-Zweig“ pro Person oder „Zweig = Meine Herkunft / Herkunft Partner“; UI dann beide Zweige gleichwertig anzeigen. |
+
+*Quelle: Georg 16.03.26 – „Familie des Partners gleichrangig behandeln“.*
+
+---
+
+## 12. Kurz: Was als Nächstes?
 
 - ~~**Gedenkort:** Gaben-UI (Blume, Kerze, Text, Foto) mit privat/öffentlich.~~ ✅ Erledigt.
 - ~~**Beiträge:** Datenmodell + UI „Was unsere Familie dazu weiß“.~~ ✅ Erledigt (16.03.26).
@@ -110,7 +135,8 @@
 - ~~**Rechte & Zweige (4.0):** Option C + Datenmodell (Zweig) + minimal UI.~~ ✅ Erledigt (16.03.26).
 - ~~**Zugang für mehrere:** Export/Import + Merge.~~ ✅ Merge aus Datei auf Sicherung (16.03.26).
 - ~~**GEDCOM:** Export einplanen + minimal umsetzen.~~ ✅ Plan-Doku + GEDCOM-Export (16.03.26).
+- **Offene Ideen (Konzept):** Partner-Familie gleichrangig (Abschn. 11); Events als zusammenfassende Geschichte ab Zeitpunkt (Abschn. 10).
 
 ---
 
-*Stand: 16.03.26 – aus bestehenden K2-Familie-Docs zusammengezogen.*
+*Stand: 16.03.26 – aus bestehenden K2-Familie-Docs zusammengezogen; 16.03.26 Abschn. 10+11 ergänzt (Events-Geschichte, Partner gleichrangig).*
