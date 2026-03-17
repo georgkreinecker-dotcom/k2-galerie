@@ -14,6 +14,7 @@ const FAMILIE_NAV = [
   { to: PROJECT_ROUTES['k2-familie'].stammbaum, label: 'Stammbaum' },
   { to: PROJECT_ROUTES['k2-familie'].events, label: 'Events' },
   { to: PROJECT_ROUTES['k2-familie'].kalender, label: 'Kalender' },
+  { to: PROJECT_ROUTES['k2-familie'].geschichte, label: 'Geschichte' },
   { to: PROJECT_ROUTES['k2-familie'].gedenkort, label: 'Gedenkort' },
   { to: PROJECT_ROUTES['k2-familie'].handbuch, label: 'Handbuch' },
   { to: PROJECT_ROUTES['k2-familie'].sicherung, label: 'Sicherung' },

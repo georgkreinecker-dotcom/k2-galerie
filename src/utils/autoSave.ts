@@ -790,7 +790,7 @@ export function mergeK2FamilieFromBackup(backup: Record<string, any>): { ok: boo
   if (!backup || backup.kontext !== 'k2-familie') return { ok: false, merged: [] }
 
   const tenantListKey = 'k2-familie-tenant-list'
-  const suffixes = ['personen', 'momente', 'events', 'gaben', 'beitraege', 'einstellungen', 'zweige'] as const
+  const suffixes = ['personen', 'momente', 'events', 'gaben', 'beitraege', 'einstellungen', 'zweige', 'geschichten'] as const
 
   let backupTenantIds: string[] = []
   try {
@@ -834,7 +834,7 @@ export function mergeK2FamilieFromBackup(backup: Record<string, any>): { ok: boo
           if (curRaw) try { cur = JSON.parse(curRaw) } catch (_) {}
           const fromFile = typeof fileVal === 'string' ? JSON.parse(fileVal) : fileVal
           newVal = JSON.stringify(mergeObjects(cur, fromFile || {}))
-        } else if (suffix === 'zweige' || suffix === 'personen' || suffix === 'momente' || suffix === 'events' || suffix === 'gaben' || suffix === 'beitraege') {
+        } else if (suffix === 'zweige' || suffix === 'personen' || suffix === 'momente' || suffix === 'events' || suffix === 'gaben' || suffix === 'beitraege' || suffix === 'geschichten') {
           const curRaw = localStorage.getItem(key)
           let cur: any[] = []
           if (curRaw) try { cur = JSON.parse(curRaw); if (!Array.isArray(cur)) cur = [] } catch (_) {}

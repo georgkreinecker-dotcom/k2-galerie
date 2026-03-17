@@ -6,8 +6,8 @@
  * Siehe docs/K2-FAMILIE-DATENMODELL.md, Regel niemals-kundendaten-loeschen.
  */
 
-import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig } from '../types/k2Familie'
-import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey } from '../types/k2Familie'
+import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig, K2FamilieGeschichte } from '../types/k2Familie'
+import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey, getK2FamilieGeschichtenKey } from '../types/k2Familie'
 import { isSupabaseConfigured } from './supabaseClient'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
@@ -324,6 +324,41 @@ export function saveZweige(tenantId: string, list: K2FamilieZweig[]): boolean {
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben (Zweige)', e)
+    return false
+  }
+}
+
+/**
+ * Lädt Geschichten (zusammenfassende Geschichte ab Zeitpunkt) für einen Tenant.
+ */
+export function loadGeschichten(tenantId: string): K2FamilieGeschichte[] {
+  const key = getK2FamilieGeschichtenKey(tenantId)
+  try {
+    const stored = localStorage.getItem(key)
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Speichert Geschichten für einen Tenant.
+ */
+export function saveGeschichten(tenantId: string, list: K2FamilieGeschichte[]): boolean {
+  const key = getK2FamilieGeschichtenKey(tenantId)
+  const arr = Array.isArray(list) ? list : []
+  try {
+    const json = JSON.stringify(arr)
+    if (json.length > MAX_JSON_SIZE) {
+      console.error('❌ familieStorage: Geschichten-Daten zu groß')
+      return false
+    }
+    localStorage.setItem(key, json)
+    return true
+  } catch (e) {
+    console.error('❌ familieStorage: Fehler beim Schreiben (Geschichten)', e)
     return false
   }
 }

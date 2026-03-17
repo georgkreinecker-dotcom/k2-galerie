@@ -111,6 +111,8 @@ export interface K2FamilieEinstellungen {
   startpunktTyp?: K2FamilieStartpunktTyp
   /** Optional: konkrete Person als Wurzel (überschreibt Typ). */
   startpunktPersonId?: string
+  /** Optional: Person, deren Herkunft als zweiter Zweig gleichrangig dargestellt wird („Herkunft [Partner]“). */
+  partnerHerkunftPersonId?: string
 }
 
 /** Storage-Key für Einstellungen pro Tenant. */
@@ -134,4 +136,25 @@ export interface K2FamilieZweig {
 /** Storage-Key für Zweige pro Tenant. */
 export function getK2FamilieZweigeKey(tenantId: string): string {
   return `k2-familie-${tenantId}-zweige`
+}
+
+/**
+ * Zusammenfassende Geschichte ab Zeitpunkt (Events + Momente → redigierbarer Text).
+ * Ab Datum werden Events und Momente einbezogen; Inhalt kann automatisch vorgeschlagen und danach bearbeitet werden.
+ */
+export interface K2FamilieGeschichte {
+  id: string
+  /** Optionaler Titel, z. B. „Unsere Geschichte ab 1990“. */
+  title?: string
+  /** Ab diesem Datum (ISO) fließen Events/Momente ein (für Vorschlag). */
+  abDatum: string
+  /** Redigierter Fließtext (zusammenfassende Geschichte). */
+  content: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** Storage-Key für Geschichten pro Tenant. */
+export function getK2FamilieGeschichtenKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-geschichten`
 }

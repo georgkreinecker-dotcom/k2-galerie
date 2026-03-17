@@ -60,6 +60,7 @@ export default function FamilyTreeGraph({
   noPhotos = false,
   printMode = false,
   scale = 1,
+  partnerHerkunftPersonId,
 }: {
   personen: K2FamiliePerson[]
   personPathPrefix?: string
@@ -69,6 +70,8 @@ export default function FamilyTreeGraph({
   printMode?: boolean
   /** Skalierung (z. B. 1.2 für Poster) */
   scale?: number
+  /** Optional: Person, deren Herkunft als zweiter Zweig gleichrangig gilt (Anzeige/Logik später erweiterbar) */
+  partnerHerkunftPersonId?: string
 }) {
   const { levelMap, rows, width, height, nodePos, connectors, partnerLinks } = useMemo(() => {
     if (personen.length === 0) {

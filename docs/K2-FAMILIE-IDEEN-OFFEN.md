@@ -34,7 +34,7 @@
 | **Startpunkt-Entscheidung:** „Wo beginnt deine Familie?“ – Bei mir / Bei meinen Eltern / Bei meinen Großeltern. | STARTPUNKT-AKTIV-PASSIV | ✅ Umgesetzt (16.03.26): Einstellungen `k2-familie-{tenantId}-einstellungen` mit startpunktTyp; UI auf Home („Wo beginnt deine Familie?“) + Anzeige auf Sicherung. |
 | **Aktiver Teil** = den ich pflege (z. B. mein Zweig); **passiver Teil** = Vorfahren, Gedenkort, nur lesen + Gaben. | STARTPUNKT-AKTIV-PASSIV | 🔲 Mit Phase 4.0 (Rechte) umsetzbar. |
 | **„Mein Bereich“** vs. **„Stammbaum“** (ganzer Baum) vs. **„Gedenkort“** in der Navigation klar. | STARTPUNKT-AKTIV-PASSIV | Teilweise: Gedenkort ✅; „Mein Bereich“ vs. Stammbaum noch eine Idee. |
-| **Partnerschaft / Familie des Partners gleichrangig:** „Meine Herkunft“ / „Herkunft [Partner]“ – zwei Zweige in der History, die in „uns“ zusammentreffen; beide Herkünfte gleichwertig dargestellt (Stammbaum, Navigation, Gedenkort). | STARTPUNKT-AKTIV-PASSIV, Georg 16.03.26 | 🔲 Idee; Konzept Abschnitt 11. |
+| **Partnerschaft / Familie des Partners gleichrangig:** „Meine Herkunft“ / „Herkunft [Partner]“ – zwei Zweige in der History, die in „uns“ zusammentreffen; beide Herkünfte gleichwertig dargestellt (Stammbaum, Navigation, Gedenkort). | STARTPUNKT-AKTIV-PASSIV, Georg 16.03.26 | ✅ Umgesetzt (16.03.26): Einstellungen partnerHerkunftPersonId, Home „Familie des Partners gleichrangig?“ + Dropdown, Stammbaum zeigt „Zwei Zweige: Meine Herkunft · Herkunft [Name]“; FamilyTreeGraph nimmt partnerHerkunftPersonId entgegen (Layout zwei Wurzeln optional später). |
 | **Stammbaum-Ausdruck:** Standpunkt wählen (Ich / Wir / Eltern / Großeltern) + Zeitlicher Ausschnitt („Nur das Jetzt“ vs. „Auch die Vergangenheit“). | STARTPUNKT-AKTIV-PASSIV | 🔲 Idee für Ausdruck/Plakat/PDF. |
 
 ---
@@ -135,7 +135,8 @@
 - ~~**Rechte & Zweige (4.0):** Option C + Datenmodell (Zweig) + minimal UI.~~ ✅ Erledigt (16.03.26).
 - ~~**Zugang für mehrere:** Export/Import + Merge.~~ ✅ Merge aus Datei auf Sicherung (16.03.26).
 - ~~**GEDCOM:** Export einplanen + minimal umsetzen.~~ ✅ Plan-Doku + GEDCOM-Export (16.03.26).
-- **Offene Ideen (Konzept):** Partner-Familie gleichrangig (Abschn. 11); Events als zusammenfassende Geschichte ab Zeitpunkt (Abschn. 10).
+- ~~**Partner-Familie gleichrangig** (Abschn. 11).~~ ✅ Umgesetzt (16.03.26).
+- ~~**Events als zusammenfassende Geschichte ab Zeitpunkt** (Abschn. 10).~~ ✅ Umgesetzt (16.03.26).
 
 ---
 

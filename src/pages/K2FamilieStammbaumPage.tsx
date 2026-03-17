@@ -7,7 +7,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useMemo, useEffect, useCallback, useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { loadPersonen, savePersonen, loadEinstellungen } from '../utils/familieStorage'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
@@ -35,6 +35,11 @@ export default function K2FamilieStammbaumPage() {
     loadFamilieFromSupabase(currentTenantId).then(() => setSynced(true))
   }, [currentTenantId])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, synced])
+  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId])
+  const partnerHerkunftPerson = useMemo(() => {
+    const id = einstellungen.partnerHerkunftPersonId
+    return id ? personen.find((p) => p.id === id) : null
+  }, [einstellungen.partnerHerkunftPersonId, personen])
 
   const druck = searchParams.get('druck') === '1'
   const formatFromUrl = (searchParams.get('format') as PrintFormat) || 'a4'
@@ -84,6 +89,7 @@ export default function K2FamilieStammbaumPage() {
           printMode
           noPhotos={fotos === '0'}
           scale={printScale}
+          partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
         />
       </div>
     )
@@ -120,6 +126,9 @@ export default function K2FamilieStammbaumPage() {
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
             </div>
             <h1>Stammbaum</h1>
+            {partnerHerkunftPerson && (
+              <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
+            )}
             <div className="meta">Grafik der Familienstruktur – Klick auf eine Person öffnet ihre Seite. Darunter: alle Personen als Kacheln.</div>
           </div>
         </header>
@@ -128,7 +137,7 @@ export default function K2FamilieStammbaumPage() {
         <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible' }}>
           <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
           {personen.length > 0 ? (
-            <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
+            <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId} />
           ) : (
             <p className="meta" style={{ margin: 0, padding: '1.5rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind. Unten „Person hinzufügen“ nutzen.</p>
           )}

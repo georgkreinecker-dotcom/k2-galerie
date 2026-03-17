@@ -10,7 +10,7 @@ import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
-import { loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
+import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import { getFamilieTenantDisplayName, seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { useMemo, useState, useEffect } from 'react'
@@ -38,18 +38,30 @@ export default function K2FamilieHomePage() {
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
+  const [partnerHerkunftId, setPartnerHerkunftId] = useState<string>('')
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
   const welcomeImage = content.welcomeImage || ''
 
   useEffect(() => {
-    setStartpunkt(loadEinstellungen(currentTenantId).startpunktTyp)
+    const einst = loadEinstellungen(currentTenantId)
+    setStartpunkt(einst.startpunktTyp)
+    setPartnerHerkunftId(einst.partnerHerkunftPersonId ?? '')
   }, [currentTenantId])
 
   const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
     const einst = loadEinstellungen(currentTenantId)
     if (saveEinstellungen(currentTenantId, { ...einst, startpunktTyp: typ })) {
       setStartpunkt(typ)
+    }
+  }
+
+  const setPartnerHerkunft = (personId: string) => {
+    const einst = loadEinstellungen(currentTenantId)
+    const nextId = personId.trim() || undefined
+    if (saveEinstellungen(currentTenantId, { ...einst, partnerHerkunftPersonId: nextId })) {
+      setPartnerHerkunftId(personId)
     }
   }
 
@@ -132,6 +144,30 @@ export default function K2FamilieHomePage() {
                 </div>
               </>
             )}
+          </div>
+
+          <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid rgba(234,88,12,0.5)' }}>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Familie des Partners gleichrangig?</h2>
+            <p className="meta" style={{ margin: '0 0 0.5rem' }}>Optional: Partner für zweiten Herkunfts-Zweig wählen – „Meine Herkunft“ und „Herkunft [Partner]“ werden gleichwertig dargestellt.</p>
+            <select
+              value={partnerHerkunftId ?? ''}
+              onChange={(e) => setPartnerHerkunft(e.target.value)}
+              style={{
+                background: 'rgba(0,0,0,0.25)',
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                color: C.text,
+                padding: '0.4rem 0.6rem',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+                minWidth: 200,
+              }}
+            >
+              <option value="">Keiner (nur ein Zweig)</option>
+              {personen.map((p) => (
+                <option key={p.id} value={p.id}>Herkunft {p.name}</option>
+              ))}
+            </select>
           </div>
 
           <div className="k2-familie-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>

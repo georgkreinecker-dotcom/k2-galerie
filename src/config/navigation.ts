@@ -179,6 +179,7 @@ export const PROJECT_ROUTES = {
     personen: '/projects/k2-familie/personen',
     events: '/projects/k2-familie/events',
     kalender: '/projects/k2-familie/kalender',
+    geschichte: '/projects/k2-familie/geschichte',
     gedenkort: '/projects/k2-familie/gedenkort',
     handbuch: '/projects/k2-familie/handbuch',
     sicherung: '/projects/k2-familie/sicherung',

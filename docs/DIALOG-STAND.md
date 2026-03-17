@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – K2 Familie Ideen 2–6 eigenständig fertig (Sportwagenmodus, Raumschiffqualität): Beiträge (Datenmodell + UI „Was unsere Familie dazu weiß“), Startpunkt („Wo beginnt deine Familie?“ auf Home + Einstellungen), Rechte & Zweige (Option C, Datenmodell + minimal UI auf Sicherung), Zugang für mehrere (Merge aus Datei auf Sicherung), GEDCOM (Plan-Doku + minimaler Export). Build grün. Commit + Push folgen.
+**Letzter Stand:** 16.03.26 – K2 Familie Umsetzung Sportwagen + Raumschiff: (1) **Events → zusammengefasste Geschichte:** Typ K2FamilieGeschichte, load/saveGeschichten, buildGeschichteVorschlag (Events+Momente ab Datum), Seite „Geschichte“ (Nav), Merge/Backup inkl. geschichten. (2) **Partner-Familie gleichrangig:** Einstellungen partnerHerkunftPersonId, Home „Familie des Partners gleichrangig?“ + Dropdown, Stammbaum „Zwei Zweige: Meine Herkunft · Herkunft [Name]“, FamilyTreeGraph nimmt partnerHerkunftPersonId entgegen. Doku IDEEN-OFFEN aktualisiert.
 
-**Was wir JETZT tun:** Raum bereit – K2-Familie-Offene-Ideen abgearbeitet; nächster Schritt von Georg.
+**Was wir JETZT tun:** Commit + Push; danach Raum bereit – nächster Schritt von Georg.
 
-**Vorher (17.03.26):** Vollbackup vorläufig letzte Version (2e073a2), Tag vorlaeufig-letzte-version-2026-03-16.
+**Vorher (17.03.26):** K2 Familie Ideen 2–6 (Beiträge, Startpunkt, Zweige, Merge, GEDCOM). Vollbackup vorläufig (2e073a2).
 
-**Nächster Schritt:** Von Georg festlegen (z. B. Test K2 Familie, weitere Projekte).
+**Nächster Schritt:** Commit + Push; dann von Georg (z. B. Test K2 Familie, weitere Projekte). Hinweis: upload-download-simulation.test.ts hatte bereits 49/50 Download-Tests (1 fehlgeschlagen) – unabhängig von diesen Änderungen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
