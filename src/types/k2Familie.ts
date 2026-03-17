@@ -19,6 +19,10 @@ export interface K2FamiliePerson {
   name: string
   photo?: string
   shortText?: string
+  /** Verstorben – für Gedenkort (Phase 5). */
+  verstorben?: boolean
+  /** Sterbedatum (ISO-String), optional. */
+  verstorbenAm?: string
   parentIds: string[]
   childIds: string[]
   partners: K2FamiliePartnerRef[]
@@ -26,6 +30,18 @@ export interface K2FamiliePerson {
   wahlfamilieIds: string[]
   createdAt?: string
   updatedAt?: string
+}
+
+/** Gabe am Gedenkort (Phase 5) – Blume, Kerze, Text, Foto. */
+export interface K2FamilieGabe {
+  id: string
+  personId: string
+  type: 'blume' | 'kerze' | 'text' | 'foto'
+  content?: string
+  imageUrl?: string
+  createdBy?: string
+  createdAt: string
+  sichtbarkeit: 'privat' | 'oeffentlich'
 }
 
 /** Ein Moment (Phase 3) – wie ein Werk: Bild + Titel + Datum + Text. */
@@ -64,4 +80,58 @@ export function getK2FamilieMomenteKey(tenantId: string): string {
 /** Storage-Key für Events pro Tenant (Phase 3.2). */
 export function getK2FamilieEventsKey(tenantId: string): string {
   return `k2-familie-${tenantId}-events`
+}
+
+/** Storage-Key für Gaben (Gedenkort) pro Tenant (Phase 5). */
+export function getK2FamilieGabenKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-gaben`
+}
+
+/** Beitrag „Was unsere Familie dazu weiß“ – Erinnerung, Korrektur, Foto, Geschichte, Datum. */
+export interface K2FamilieBeitrag {
+  id: string
+  personId: string
+  art: 'erinnerung' | 'korrektur' | 'foto' | 'geschichte' | 'datum'
+  inhalt: string
+  /** Optionaler Anzeigename („von wem“). */
+  vonWem?: string
+  createdAt: string
+}
+
+/** Storage-Key für Beiträge pro Tenant. */
+export function getK2FamilieBeitraegeKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-beitraege`
+}
+
+/** Startpunkt „Wo beginnt deine Familie?“ – Anker für Stammbaum/Home. */
+export type K2FamilieStartpunktTyp = 'ich' | 'eltern' | 'grosseltern'
+
+/** Einstellungen pro Tenant (Startpunkt, optional später Zweige). */
+export interface K2FamilieEinstellungen {
+  startpunktTyp?: K2FamilieStartpunktTyp
+  /** Optional: konkrete Person als Wurzel (überschreibt Typ). */
+  startpunktPersonId?: string
+}
+
+/** Storage-Key für Einstellungen pro Tenant. */
+export function getK2FamilieEinstellungenKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-einstellungen`
+}
+
+/**
+ * Zweig (Option C / Option 3): Ein Tenant, Zweig = verwalteter Bereich.
+ * Zweig = Liste von Personen-IDs (oder Wurzel + Nachkommen), pro Zweig optional Verwalter.
+ */
+export interface K2FamilieZweig {
+  id: string
+  name?: string
+  /** Personen-IDs die zu diesem Zweig gehören (z. B. Wurzel + Nachkommen). */
+  personIds: string[]
+  /** Optional: Verwalter-IDs (später für Rechte). */
+  verwalterIds?: string[]
+}
+
+/** Storage-Key für Zweige pro Tenant. */
+export function getK2FamilieZweigeKey(tenantId: string): string {
+  return `k2-familie-${tenantId}-zweige`
 }

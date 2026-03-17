@@ -38,9 +38,22 @@ Damit eine Vertrauensperson (Familie, Partnerin, Nachfolge) Zugriff hat:
 
 ---
 
+## Wo Backups in der App aufrufen (für Anke/KI)
+
+| Was | Wo in der App |
+|-----|----------------|
+| **Sicherungskopie herunterladen** | **Admin** (Tab K2, ök2 oder VK2 wählen) → links **Einstellungen** → Bereich **„💾 Deine Daten sichern und zurückholen“** → Button **„💾 Sicherungskopie herunterladen (K2)“** bzw. **(ök2)** oder **(VK2)**. Je Tab wird das passende Backup erzeugt (getrennt für K2, ök2, VK2). |
+| **Aus Backup-Datei wiederherstellen** | Gleicher Bereich → **„📂 Aus Backup-Datei wiederherstellen“** → Datei wählen (k2-backup-*.json / oek2-backup-*.json / vk2-backup-*.json). |
+| **K2 Familie (eigener Bereich)** | **Projekte → K2 Familie** → in der Nav **Sicherung** → dort „Sicherungskopie herunterladen (K2 Familie)“ und „Aus Backup-Datei wiederherstellen“. Getrennt von K2 Galerie, ök2, VK2. |
+| **Wo die heruntergeladene Datei landet** | Im **Browser-Download-Ordner** (z. B. ~/Downloads). Nicht automatisch auf backupmicro – Nutzer kopiert sie dorthin oder legt sie in `backup/k2-vollbackup-latest.json` ab (dann nimmt das Hard-Backup-Skript sie mit). |
+
+**Kurz für Anke:** Backups aufrufen = Admin → Einstellungen → „Sicherungskopie herunterladen“ (Button zeigt K2/ök2/VK2). **K2 Familie** = Projekte → K2 Familie → Sicherung. Ablage = backupmicro (Ordner KL2-Galerie-Backups bzw. K2-Galerie-Backups, versionierte Unterordner v001, v002, …) oder vom Nutzer gespeicherter Ort.
+
+---
+
 ## Regelmäßige Sicherung (damit das Backup aktuell bleibt)
 
-- **Vollbackup aus der App:** Admin → Einstellungen → Backup & Wiederherstellung → **„Vollbackup herunterladen“** → Datei sicher aufbewahren (z. B. auf backupmicro oder in `backup/k2-vollbackup-latest.json` im Projekt).
+- **Vollbackup aus der App:** Admin → Einstellungen → Backup & Wiederherstellung → **„Sicherungskopie herunterladen (K2)“** bzw. **(ök2)** oder **(VK2)** (je nach Tab) → Datei sicher aufbewahren (z. B. auf backupmicro oder in `backup/k2-vollbackup-latest.json` im Projekt für K2).
 - **Hard-Backup auf backupmicro (mit Versionsnummer):**  
   backupmicro anstecken → im Terminal am Mac (im Projektordner):  
   `bash scripts/hard-backup-to-backupmicro.sh`  

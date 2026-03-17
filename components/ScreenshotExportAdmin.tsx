@@ -15921,6 +15921,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           const raw = reader.result as string
                           const backup = JSON.parse(raw)
                           const kontext = detectBackupKontext(backup)
+                          if (kontext === 'k2-familie') {
+                            setRestoreProgress('idle')
+                            alert('Diese Sicherungsdatei ist von K2 Familie. Bitte in K2 Familie wiederherstellen: Projekte → K2 Familie → Sicherung → „Aus Backup-Datei wiederherstellen“.')
+                            return
+                          }
                           if (kontext !== 'k2' && kontext !== 'unbekannt') {
                             const kontextName = kontext === 'vk2' ? 'VK2 Verein' : 'ök2 Demo'
                             if (!confirm(`Hinweis: Diese Sicherungsdatei stammt von „${kontextName}“, du bist aber in der K2 Galerie.\n\nTrotzdem wiederherstellen? Dann werden die Daten aus dieser Datei hier eingespielt.`)) {

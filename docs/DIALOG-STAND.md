@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – **Vollbackup vorläufig letzte Version:** Commit 2e073a2 (Admin-Regel, eiserne Regeln Backup/VK2/Chaos, Übersicht), Tag **vorlaeufig-letzte-version-2026-03-16** auf GitHub. Hard-Backup **v006** auf backupmicro (KL2-Galerie-Backups). Optional: Im Admin einmal „Vollbackup herunterladen“ (Einstellungen → Backup & Wiederherstellung) und Datei sicher ablegen.
+**Letzter Stand:** 17.03.26 – K2 Familie Ideen 2–6 eigenständig fertig (Sportwagenmodus, Raumschiffqualität): Beiträge (Datenmodell + UI „Was unsere Familie dazu weiß“), Startpunkt („Wo beginnt deine Familie?“ auf Home + Einstellungen), Rechte & Zweige (Option C, Datenmodell + minimal UI auf Sicherung), Zugang für mehrere (Merge aus Datei auf Sicherung), GEDCOM (Plan-Doku + minimaler Export). Build grün. Commit + Push folgen.
 
-**Was wir JETZT tun:** Raum bereit – Vollbackup-Punkt gesetzt; nächster Schritt von Georg.
+**Was wir JETZT tun:** Raum bereit – K2-Familie-Offene-Ideen abgearbeitet; nächster Schritt von Georg.
 
-**Vorher (16.03.26):** Öffentlichkeitsarbeit-Ablauf umgesetzt + Feinschliff (documentsStorage, Speichern-Button Presse-Fenster, „✓ Gespeichert“, fileData, 0 ms Dokumente-Laden, Absenden-Anleitung).
+**Vorher (17.03.26):** Vollbackup vorläufig letzte Version (2e073a2), Tag vorlaeufig-letzte-version-2026-03-16.
 
-**Nächster Schritt:** Von Georg festlegen (z. B. Commit + Push, weitere Verteilerblocks, K2-Eventplanung).
+**Nächster Schritt:** Von Georg festlegen (z. B. Test K2 Familie, weitere Projekte).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

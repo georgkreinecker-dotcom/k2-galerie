@@ -124,12 +124,18 @@ export default function K2FamilieStammbaumPage() {
           </div>
         </header>
 
+        {/* Visualisierter Stammbaum (Grafik) – immer sichtbar, bei 0 Personen Platzhalter */}
+        <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible' }}>
+          <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
+          {personen.length > 0 ? (
+            <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
+          ) : (
+            <p className="meta" style={{ margin: 0, padding: '1.5rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind. Unten „Person hinzufügen“ nutzen.</p>
+          )}
+        </div>
+
         {personen.length > 0 && (
           <>
-            <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'hidden' }}>
-              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
-              <FamilyTreeGraph personen={personen} personPathPrefix={PROJECT_ROUTES['k2-familie'].personen} />
-            </div>
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als Plakat drucken</h2>
               <p className="meta" style={{ marginBottom: '1rem' }}>Format und Darstellung wählen, dann Drucken – die Grafik öffnet sich druckoptimiert.</p>

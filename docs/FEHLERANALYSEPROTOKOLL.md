@@ -69,6 +69,7 @@
 
 ## Laufende Absicherungen (Checklisten / Regeln)
 
+- **K2 Familie – Lehren aus K2 Galerie:** docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md; .cursor/rules/k2-familie-lehren-galeria-anwenden.mdc. Bei jeder Änderung an K2 Familie und bei Fehlermeldungen zu K2 Familie: diese Lehren anwenden, damit dieselben Fehlerklassen nicht ein zweites Mal auftreten.
 - **Veröffentlichen & Laden:** docs/PROZESS-VEROEFFENTLICHEN-LADEN.md; .cursor/rules/prozesssicherheit-veroeffentlichen-laden.mdc.
 - **Vor „Fertig“ bei Sync/Publish/Load:** Kein stilles Überschreiben; Nutzer sieht immer Erfolg oder Fehler; eine Quelle für Senden und Laden.
 - **Qualitätsprozess:** .cursor/rules/qualitaet-bei-fehlermeldung.mdc (bei Fehlermeldung: Protokoll lesen → analysieren → fixen + absichern → hier eintragen).

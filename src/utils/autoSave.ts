@@ -622,6 +622,35 @@ export function createVk2Backup(): { data: Record<string, any>; filename: string
   return { data, filename }
 }
 
+const K2_FAMILIE_PREFIX = 'k2-familie-'
+
+/** Sammelt alle localStorage-Keys die mit k2-familie- beginnen (für Backup). */
+function getK2FamilieStorageKeys(): string[] {
+  const keys: string[] = []
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith(K2_FAMILIE_PREFIX)) keys.push(key)
+    }
+  } catch (_) {}
+  return keys
+}
+
+/** K2-Familie-Vollbackup: alle k2-familie-* Keys (Tenant-Liste, pro Familie: Personen, Momente, Events, Seitentexte). */
+export function createK2FamilieBackup(): { data: Record<string, any>; filename: string } {
+  const keys = getK2FamilieStorageKeys()
+  const raw = readAllKeys(keys)
+  const data = {
+    kontext: 'k2-familie',
+    exportedAt: new Date().toISOString(),
+    version: '1.0',
+    label: 'K2 Familie – Backup (alle Familien, Personen, Momente, Events)',
+    ...raw,
+  }
+  const filename = `k2-familie-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
+  return { data, filename }
+}
+
 /** Hilfsfunktion: Backup-Objekt als JSON-Datei herunterladen */
 export function downloadBackupAsFile(data: Record<string, any>, filename: string): void {
   const json = JSON.stringify(data, null, 2)
@@ -703,16 +732,153 @@ export function restoreVk2FromBackup(backup: Record<string, any>): { ok: boolean
   return { ok: restored.length > 0, restored }
 }
 
-/** Erkennt automatisch den Kontext einer Backup-Datei (k2 / oeffentlich / vk2 / unbekannt) */
-export function detectBackupKontext(backup: Record<string, any>): 'k2' | 'oeffentlich' | 'vk2' | 'unbekannt' {
+/** K2-Familie-Backup wiederherstellen – schreibt alle k2-familie-* Keys aus der Backup-Datei zurück.
+ * Tenant-Liste wird gemerged: Familien, die lokal noch Daten haben (z. B. Musterfamilie huber), bleiben in der Liste,
+ * damit sie nicht „verschwinden“, wenn das Backup von vor dem Anlegen der Musterfamilie stammt. */
+export function restoreK2FamilieFromBackup(backup: Record<string, any>): { ok: boolean; restored: string[] } {
+  const restored: string[] = []
+  if (!backup || backup.kontext !== 'k2-familie') return { ok: false, restored: [] }
+  const tenantListKey = 'k2-familie-tenant-list'
+  let currentTenantList: string[] = []
+  try {
+    const raw = localStorage.getItem(tenantListKey)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      currentTenantList = Array.isArray(parsed) ? parsed : []
+    }
+  } catch (_) {}
+
+  const metaKeys = ['kontext', 'exportedAt', 'version', 'label']
+  for (const key of Object.keys(backup)) {
+    if (metaKeys.includes(key) || !key.startsWith(K2_FAMILIE_PREFIX)) continue
+    try {
+      let val = typeof backup[key] === 'string' ? backup[key] : JSON.stringify(backup[key])
+      if (key === tenantListKey) {
+        const backupList: string[] = (() => {
+          try {
+            const p = typeof backup[key] === 'string' ? JSON.parse(backup[key]) : backup[key]
+            return Array.isArray(p) ? p : []
+          } catch {
+            return []
+          }
+        })()
+        const merged = [...backupList]
+        for (const id of currentTenantList) {
+          if (merged.includes(id)) continue
+          try {
+            const personenRaw = localStorage.getItem(`${K2_FAMILIE_PREFIX}${id}-personen`)
+            const personen = personenRaw ? JSON.parse(personenRaw) : []
+            if (Array.isArray(personen) && personen.length > 0) merged.push(id)
+          } catch (_) {}
+        }
+        val = JSON.stringify(merged)
+      }
+      localStorage.setItem(key, val)
+      restored.push(key)
+    } catch (_) {}
+  }
+  return { ok: restored.length > 0, restored }
+}
+
+/**
+ * K2-Familie Merge: Daten aus einer Backup-Datei in die bestehende Familie mergen (kein Ersetzen).
+ * Personen, Momente, Events, Gaben, Beiträge: nach ID mergen (aus Datei ergänzen/aktualisieren).
+ * Einstellungen/Zweige: Objekt- bzw. Array-Merge. Tenant-Liste: Vereinigung.
+ */
+export function mergeK2FamilieFromBackup(backup: Record<string, any>): { ok: boolean; merged: string[] } {
+  const merged: string[] = []
+  if (!backup || backup.kontext !== 'k2-familie') return { ok: false, merged: [] }
+
+  const tenantListKey = 'k2-familie-tenant-list'
+  const suffixes = ['personen', 'momente', 'events', 'gaben', 'beitraege', 'einstellungen', 'zweige'] as const
+
+  let backupTenantIds: string[] = []
+  try {
+    const raw = backup[tenantListKey]
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
+    backupTenantIds = Array.isArray(parsed) ? parsed : []
+  } catch (_) {}
+  if (backupTenantIds.length === 0) {
+    const seen = new Set<string>()
+    for (const key of Object.keys(backup)) {
+      const m = key.match(/^k2-familie-(.+)-personen$/)
+      if (m) seen.add(m[1])
+    }
+    backupTenantIds = [...seen]
+  }
+
+  const mergeArrayById = (current: any[], fromFile: any[]): any[] => {
+    if (!Array.isArray(fromFile)) return current
+    const byId = new Map<string, any>()
+    for (const item of current) if (item && item.id) byId.set(item.id, item)
+    for (const item of fromFile) if (item && item.id) byId.set(item.id, item)
+    return [...byId.values()]
+  }
+
+  const mergeObjects = (current: Record<string, any>, fromFile: Record<string, any>): Record<string, any> => {
+    if (!fromFile || typeof fromFile !== 'object') return current
+    return { ...current, ...fromFile }
+  }
+
+  for (const tenantId of backupTenantIds) {
+    for (const suffix of suffixes) {
+      const key = `${K2_FAMILIE_PREFIX}${tenantId}-${suffix}`
+      const fileVal = backup[key]
+      if (fileVal === undefined) continue
+
+      try {
+        let newVal: string
+        if (suffix === 'einstellungen') {
+          const curRaw = localStorage.getItem(key)
+          let cur: Record<string, any> = {}
+          if (curRaw) try { cur = JSON.parse(curRaw) } catch (_) {}
+          const fromFile = typeof fileVal === 'string' ? JSON.parse(fileVal) : fileVal
+          newVal = JSON.stringify(mergeObjects(cur, fromFile || {}))
+        } else if (suffix === 'zweige' || suffix === 'personen' || suffix === 'momente' || suffix === 'events' || suffix === 'gaben' || suffix === 'beitraege') {
+          const curRaw = localStorage.getItem(key)
+          let cur: any[] = []
+          if (curRaw) try { cur = JSON.parse(curRaw); if (!Array.isArray(cur)) cur = [] } catch (_) {}
+          const fromFile = typeof fileVal === 'string' ? JSON.parse(fileVal) : fileVal
+          const arr = Array.isArray(fromFile) ? fromFile : []
+          newVal = JSON.stringify(mergeArrayById(cur, arr))
+        } else {
+          newVal = typeof fileVal === 'string' ? fileVal : JSON.stringify(fileVal)
+        }
+        localStorage.setItem(key, newVal)
+        if (!merged.includes(key)) merged.push(key)
+      } catch (_) {}
+    }
+  }
+
+  const currentListRaw = localStorage.getItem(tenantListKey)
+  let currentList: string[] = []
+  if (currentListRaw) try { currentList = JSON.parse(currentListRaw) } catch (_) {}
+  const combined = [...currentList]
+  for (const id of backupTenantIds) {
+    if (!combined.includes(id)) combined.push(id)
+  }
+  if (combined.length > 0) {
+    try {
+      localStorage.setItem(tenantListKey, JSON.stringify(combined))
+      if (!merged.includes(tenantListKey)) merged.push(tenantListKey)
+    } catch (_) {}
+  }
+
+  return { ok: merged.length > 0, merged }
+}
+
+/** Erkennt automatisch den Kontext einer Backup-Datei (k2 / oeffentlich / vk2 / k2-familie / unbekannt) */
+export function detectBackupKontext(backup: Record<string, any>): 'k2' | 'oeffentlich' | 'vk2' | 'k2-familie' | 'unbekannt' {
   if (!backup || typeof backup !== 'object') return 'unbekannt'
   if (backup.kontext === 'k2') return 'k2'
   if (backup.kontext === 'oeffentlich') return 'oeffentlich'
   if (backup.kontext === 'vk2') return 'vk2'
-  // Altes Format erkennen: hat k2-artworks oder martina/georg/gallery
+  if (backup.kontext === 'k2-familie') return 'k2-familie'
+  // Altes Format erkennen
   if (backup['k2-artworks'] || backup.artworks || backup.martina) return 'k2'
   if (backup['k2-vk2-stammdaten']) return 'vk2'
   if (backup['k2-oeffentlich-artworks']) return 'oeffentlich'
+  if (backup['k2-familie-tenant-list']) return 'k2-familie'
   return 'unbekannt'
 }
 

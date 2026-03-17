@@ -1,0 +1,36 @@
+---
+description: K2 Familie – Lehren aus K2 Galerie anwenden, damit dieselben Fehler nicht ein zweites Mal gemacht werden.
+alwaysApply: true
+---
+
+# K2 Familie – Lehren aus K2 Galerie anwenden (nicht zweimal machen)
+
+## Regel (unveränderlich)
+
+**Bei jeder Arbeit an K2 Familie** (Code, Routen, Speicher, Backup, UI, Fehlersuche) gelten die **gleichen Lehren und Fehlerklassen** wie in K2 Galerie. Was dort als Bug und Regel festgehalten wurde, wird in K2 Familie **von vornherein** eingehalten – nicht erst nach dem zweiten Fehler.
+
+## Verbindliche Quelle
+
+**docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md** – dort steht pro Fehlerklasse: „In K2 Galerie passiert“ und „In K2 Familie:“ (konkret was zu tun ist). Vor Änderungen an K2 Familie und bei Fehlermeldungen zu K2 Familie diese Doku lesen und die Checkliste anwenden.
+
+## Kurz – was in K2 Familie immer gilt
+
+| Thema | In K2 Familie |
+|-------|----------------|
+| **Keys / Kontext** | Nur `k2-familie-*` lesen/schreiben. Nie in K2/ök2/VK2-Keys schreiben; K2/ök2/VK2 nie in k2-familie-* schreiben. |
+| **Kein stilles Löschen** | Kein Filter + setItem, kein Überschreiben mit leer/weniger ohne explizite User-Aktion. Familien-Daten = Kundendaten (niemals-kundendaten-loeschen sinngemäß). |
+| **Fehlersuche** | Struktur und Datenfluss zuerst (wer schreibt wohin?), dann Ursache, dann an der **Quelle** reparieren. |
+| **Sync/Stand** | Falls K2 Familie Sync bekommt: Grundregel „wer ist Wahrheit“ zuerst klären, dann eine konsistente Logik (z. B. serverAsSoleTruth). |
+| **Hooks** | Router-Hooks und alle in Dependencies genutzten Variablen am Anfang der Komponente (variable-vor-verwendung-hooks.mdc). |
+| **Routen/Links** | Neue K2-Familie-Routen vor `/projects/:projectId`; Links mit korrektem path. |
+| **Bilder/Datenmenge** | Kein Base64 dauerhaft in localStorage; Komprimierung; Export/Backup ohne große Binärdaten im JSON. |
+| **Fehleranalyse** | GELOESTE-BUGS + FEHLERANALYSEPROTOKOLL prüfen; an der Quelle fixen; Protokoll eintragen. |
+
+## Pflicht bei Änderungen an K2 Familie
+
+- **Vor der Änderung:** Checkliste in K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md durchgehen (richtiger Kontext? stilles Überschreiben? Routen? Hooks?).
+- **Bei Fehlermeldung zu K2 Familie:** Zuerst Lehren-Doku + GELOESTE-BUGS (gleiche Fehlerklasse?), dann Struktur/Datenfluss, dann Fix an der Quelle, dann Protokoll aktualisieren.
+
+## Kurzfassung
+
+**K2 Galerie gemachte Fehler = in K2 Familie nicht wiederholen. Eine Quelle: docs/K2-FAMILIE-LEHREN-AUS-K2-GALERIE.md. Bei jeder K2-Familie-Arbeit anwenden.**

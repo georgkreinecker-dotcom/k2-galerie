@@ -7,11 +7,11 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, loadMomente, saveMomente } from '../utils/familieStorage'
+import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege } from '../utils/familieStorage'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import type { K2FamiliePerson, K2FamilieMoment } from '../types/k2Familie'
+import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
 
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
@@ -21,21 +21,30 @@ export default function K2FamiliePersonPage() {
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
   const [shortText, setShortText] = useState('')
+  const [verstorben, setVerstorben] = useState(false)
+  const [verstorbenAm, setVerstorbenAm] = useState('')
   const [editingMomentId, setEditingMomentId] = useState<string | 'new' | null>(null)
   const [momentTitle, setMomentTitle] = useState('')
   const [momentDate, setMomentDate] = useState('')
   const [momentImage, setMomentImage] = useState('')
   const [momentText, setMomentText] = useState('')
+  const [beitraege, setBeitraege] = useState<K2FamilieBeitrag[]>(() => loadBeitraege(currentTenantId))
+  const [beitragModal, setBeitragModal] = useState(false)
+  const [beitragArt, setBeitragArt] = useState<K2FamilieBeitrag['art']>('erinnerung')
+  const [beitragInhalt, setBeitragInhalt] = useState('')
+  const [beitragVonWem, setBeitragVonWem] = useState('')
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
       setPersonen(loadPersonen(currentTenantId))
       setMomente(loadMomente(currentTenantId))
+      setBeitraege(loadBeitraege(currentTenantId))
       return
     }
     loadFamilieFromSupabase(currentTenantId).then((d) => {
       setPersonen(d.personen)
       setMomente(d.momente)
+      setBeitraege(loadBeitraege(currentTenantId))
     })
   }, [id, currentTenantId])
 
@@ -45,6 +54,8 @@ export default function K2FamiliePersonPage() {
     if (person) {
       setName(person.name)
       setShortText(person.shortText ?? '')
+      setVerstorben(person.verstorben === true)
+      setVerstorbenAm(person.verstorbenAm ?? '')
     }
   }, [person])
 
@@ -54,6 +65,8 @@ export default function K2FamiliePersonPage() {
       ...person,
       name: name.trim() || person.name,
       shortText: shortText.trim() || undefined,
+      verstorben: verstorben || undefined,
+      verstorbenAm: verstorben && verstorbenAm.trim() ? verstorbenAm.trim() : undefined,
       updatedAt: new Date().toISOString(),
     }
     const next = personen.map((p) => (p.id === id ? updated : p))
@@ -247,6 +260,41 @@ export default function K2FamiliePersonPage() {
     if (editingMomentId === momentId) setEditingMomentId(null)
   }
 
+  const personBeitraege = id ? beitraege.filter((b) => b.personId === id) : []
+  const openBeitragModal = () => {
+    setBeitragArt('erinnerung')
+    setBeitragInhalt('')
+    setBeitragVonWem('')
+    setBeitragModal(true)
+  }
+  const saveBeitrag = () => {
+    if (!id || !beitragInhalt.trim()) return
+    const newB: K2FamilieBeitrag = {
+      id: 'beitrag-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+      personId: id,
+      art: beitragArt,
+      inhalt: beitragInhalt.trim(),
+      vonWem: beitragVonWem.trim() || undefined,
+      createdAt: new Date().toISOString(),
+    }
+    const next = [...beitraege, newB]
+    if (saveBeitraege(currentTenantId, next)) {
+      setBeitraege(next)
+      setBeitragModal(false)
+    }
+  }
+  const deleteBeitrag = (beitragId: string) => {
+    const next = beitraege.filter((b) => b.id !== beitragId)
+    if (saveBeitraege(currentTenantId, next)) setBeitraege(next)
+  }
+  const artLabel: Record<K2FamilieBeitrag['art'], string> = {
+    erinnerung: 'Erinnerung',
+    korrektur: 'Korrektur',
+    foto: 'Foto',
+    geschichte: 'Geschichte',
+    datum: 'Datum',
+  }
+
   if (!id) {
     return (
       <div className="mission-wrapper">
@@ -299,6 +347,7 @@ export default function K2FamiliePersonPage() {
           <div>
             <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link>
             <h1 style={{ marginTop: '0.5rem' }}>{person.name}</h1>
+            {person.verstorben && <div className="meta" style={{ marginTop: '0.25rem' }}>† {person.verstorbenAm || '–'}</div>}
             {person.shortText && <div className="meta" style={{ marginTop: '0.25rem' }}>{person.shortText}</div>}
           </div>
         </header>
@@ -314,9 +363,19 @@ export default function K2FamiliePersonPage() {
               <>
                 <div className="field"><label className="meta">Name</label><input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" /></div>
                 <div className="field" style={{ marginTop: '0.75rem' }}><label className="meta">Kurztext</label><textarea value={shortText} onChange={(e) => setShortText(e.target.value)} style={{ minHeight: 80 }} placeholder="Kurz beschreiben (optional)" /></div>
+                <div className="field" style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input type="checkbox" id="verstorben" checked={verstorben} onChange={(e) => setVerstorben(e.target.checked)} />
+                  <label htmlFor="verstorben" className="meta">Verstorben (erscheint am Gedenkort)</label>
+                </div>
+                {verstorben && (
+                  <div className="field" style={{ marginTop: '0.5rem' }}>
+                    <label className="meta">Verstorben am (Datum)</label>
+                    <input type="date" value={verstorbenAm} onChange={(e) => setVerstorbenAm(e.target.value)} placeholder="JJJJ-MM-TT" />
+                  </div>
+                )}
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="button" className="btn" onClick={save}>Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setShortText(person.shortText ?? ''); }}>Abbrechen</button>
+                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm ?? ''); }}>Abbrechen</button>
                 </div>
               </>
             ) : (
@@ -391,6 +450,54 @@ export default function K2FamiliePersonPage() {
             </div>
           ) : (
             <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
+          )}
+        </div>
+
+        <div className="card" style={{ marginTop: '1rem' }}>
+          <h2>Was unsere Familie dazu weiß</h2>
+          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Erinnerungen, Korrekturen, Geschichten, Fotos oder Daten – von dir oder anderen.</p>
+          {personBeitraege.length > 0 && (
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
+              {personBeitraege.map((b) => (
+                <li key={b.id} className="card" style={{ marginBottom: '0.75rem', padding: '0.9rem', borderRadius: 12 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-start' }}>
+                    <span className="meta" style={{ fontSize: '0.8rem', background: 'rgba(13,148,136,0.2)', padding: '0.2rem 0.5rem', borderRadius: 6 }}>{artLabel[b.art]}</span>
+                    {b.vonWem && <span className="meta" style={{ fontSize: '0.85rem' }}>von {b.vonWem}</span>}
+                    <span className="meta" style={{ fontSize: '0.8rem' }}>{new Date(b.createdAt).toLocaleDateString('de-AT')}</span>
+                  </div>
+                  <p style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap' }}>{b.inhalt}</p>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          {beitragModal ? (
+            <div className="card" style={{ padding: '1rem', marginTop: '0.5rem' }}>
+              <div className="field">
+                <label className="meta">Art</label>
+                <select value={beitragArt} onChange={(e) => setBeitragArt(e.target.value as K2FamilieBeitrag['art'])} style={{ padding: '0.35rem 0.5rem' }}>
+                  {(['erinnerung', 'korrektur', 'foto', 'geschichte', 'datum'] as const).map((a) => (
+                    <option key={a} value={a}>{artLabel[a]}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="field" style={{ marginTop: '0.5rem' }}>
+                <label className="meta">Inhalt</label>
+                <textarea value={beitragInhalt} onChange={(e) => setBeitragInhalt(e.target.value)} style={{ minHeight: 80 }} placeholder="Was weißt du dazu?" />
+              </div>
+              <div className="field" style={{ marginTop: '0.5rem' }}>
+                <label className="meta">Von wem (optional)</label>
+                <input value={beitragVonWem} onChange={(e) => setBeitragVonWem(e.target.value)} placeholder="z. B. dein Name oder anonym" />
+              </div>
+              <div className="card-actions" style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                <button type="button" className="btn" onClick={saveBeitrag}>Speichern</button>
+                <button type="button" className="btn-outline" onClick={() => setBeitragModal(false)}>Abbrechen</button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
           )}
         </div>
       </div>

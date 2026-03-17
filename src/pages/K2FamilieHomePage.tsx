@@ -10,9 +10,10 @@ import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
-import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
-import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
-import { useMemo } from 'react'
+import { loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
+import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
+import { getFamilieTenantDisplayName, seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { useMemo, useState, useEffect } from 'react'
 
 const C = {
   text: '#f0f6ff',
@@ -27,11 +28,30 @@ const C = {
   btnKalender: 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)',
 }
 
+const STARTPUNKT_LABELS: Record<K2FamilieStartpunktTyp, string> = {
+  ich: 'Bei mir',
+  eltern: 'Bei meinen Eltern',
+  grosseltern: 'Bei meinen Großeltern',
+}
+
 export default function K2FamilieHomePage() {
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
+  const [musterLoaded, setMusterLoaded] = useState(false)
+  const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
   const welcomeImage = content.welcomeImage || ''
+
+  useEffect(() => {
+    setStartpunkt(loadEinstellungen(currentTenantId).startpunktTyp)
+  }, [currentTenantId])
+
+  const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
+    const einst = loadEinstellungen(currentTenantId)
+    if (saveEinstellungen(currentTenantId, { ...einst, startpunktTyp: typ })) {
+      setStartpunkt(typ)
+    }
+  }
 
   return (
     <div className="mission-wrapper">
@@ -92,6 +112,28 @@ export default function K2FamilieHomePage() {
           <p style={{ margin: '0 0 1.5rem', fontSize: '1.05rem', lineHeight: 1.65, color: C.textSoft }}>
             {texts.introText}
           </p>
+
+          <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid rgba(20,184,166,0.5)' }}>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Wo beginnt deine Familie?</h2>
+            {startpunkt ? (
+              <p style={{ margin: 0, color: C.textSoft }}>
+                <strong>{STARTPUNKT_LABELS[startpunkt]}</strong>
+                <button type="button" className="btn-outline" onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent }}>Ändern</button>
+              </p>
+            ) : (
+              <>
+                <p className="meta" style={{ margin: '0 0 0.75rem' }}>Wähle den Anker für Stammbaum und Übersicht.</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {(['ich', 'eltern', 'grosseltern'] as const).map((typ) => (
+                    <button key={typ} type="button" className="btn" onClick={() => setStartpunktTyp(typ)} style={{ background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent }}>
+                      {STARTPUNKT_LABELS[typ]}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
           <div className="k2-familie-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <Link
               to={PROJECT_ROUTES['k2-familie'].stammbaum}
@@ -150,7 +192,49 @@ export default function K2FamilieHomePage() {
             >
               📆 {texts.buttonKalender}
             </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-familie'].gedenkort}
+              className="btn k2-familie-action-btn"
+              style={{
+                padding: '1.1rem 1.25rem',
+                background: 'rgba(100,116,139,0.5)',
+                border: 'none',
+                borderRadius: 20,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1rem',
+                textAlign: 'center',
+                textDecoration: 'none',
+                display: 'block',
+                boxShadow: '0 8px 28px rgba(71,85,105,0.35)',
+              }}
+            >
+              🕯️ Gedenkort
+            </Link>
           </div>
+
+          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && (
+            <div className="card" style={{ marginTop: '1.5rem', borderLeft: '4px solid rgba(20,184,166,0.6)' }}>
+              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Musterfamilie Huber</h2>
+              <p className="meta" style={{ margin: 0 }}>Demo-Familie mit 16 Personen, Stammbaum und Events – zum Anschauen und Ausprobieren.</p>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  if (seedFamilieHuber()) {
+                    refreshFromStorage()
+                    setCurrentTenantId(FAMILIE_HUBER_TENANT_ID)
+                    setMusterLoaded(true)
+                  }
+                }}
+                style={{ marginTop: '0.75rem', background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent }}
+              >
+                → Musterfamilie laden und anzeigen
+              </button>
+              {musterLoaded && <p className="meta" style={{ marginTop: '0.5rem', color: C.accent }}>Familie Huber geladen. Im Dropdown oben kannst du sie auswählen.</p>}
+            </div>
+          )}
+
           <p className="meta" style={{ marginTop: '1.5rem' }}>
             <Link to={PROJECT_ROUTES['k2-familie'].uebersicht} style={{ color: C.textSoft, textDecoration: 'none', transition: 'color 0.2s' }}>Leitbild & Vision →</Link>
           </p>
