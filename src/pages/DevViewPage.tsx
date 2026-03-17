@@ -147,19 +147,17 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
 
   // Standardmäßig Desktop-Ansicht für optimale Arbeitsansicht
   const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'desktop')
-  // Beim Zurückkehren zur APf: leerer Desktop (wie Mac-Desktop). Nur wenn ?page= gesetzt ist, direkt öffnen.
+  // Beim Öffnen der APf: zuletzt geöffnete Seite wiederherstellen, damit die Seite an der gearbeitet wird (nicht immer ök2).
   const [currentPage, setCurrentPage] = useState(() => {
     if (pageFromUrl) return pageFromUrl
-    // Kein automatisches Wiederherstellen der letzten Seite – Desktop startet leer
+    try {
+      const last = typeof window !== 'undefined' ? localStorage.getItem(APF_LAST_PAGE_KEY) : null
+      if (last && last.trim() && last !== 'desktop-leer') return last
+    } catch (_) { /* ignore */ }
     return defaultPage || 'desktop-leer'
   })
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
-
-  // Alten gespeicherten Wert beim ersten Laden löschen → Desktop startet immer leer
-  useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.removeItem(APF_LAST_PAGE_KEY)
-  }, []) // nur einmal beim Mount
 
   // Aktuelle Seite in localStorage merken – desktop-leer NICHT speichern
   useEffect(() => {
@@ -216,7 +214,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [galerieFilter, setGalerieFilter] = useState<'alle' | 'malerei' | 'keramik'>('alle')
   const [galerieSection, setGalerieSection] = useState<string>('willkommen')
 
-  // Grafiker-Tisch: aktive Seite → iframe-URL
+  // Grafiker-Tisch: aktive Seite → iframe-URL (default = aktuelle Seite, nicht immer ök2)
   const getGrafikerUrl = (): string => {
     switch (currentPage) {
       case 'galerie': return PROJECT_ROUTES['k2-galerie'].galerie
@@ -224,7 +222,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'galerie-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieVorschau
       case 'galerie-oeffentlich-vorschau': return PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
       case 'willkommen': return '/willkommen'
-      default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      default: return getPathForPage(currentPage)
     }
   }
 
