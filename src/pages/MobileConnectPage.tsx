@@ -55,7 +55,7 @@ const MobileConnectPage = () => {
         <header>
           <div>
             <h1>Handy mit Mac verbinden</h1>
-            <div className="meta">Derselbe QR wie damals – feste Vercel-URL, mit aktuellem Stand (Scan = immer aktuelle Version).</div>
+            <div className="meta">Derselbe QR wie damals – feste Vercel-URL. Scan = immer aktuelle Version.</div>
           </div>
           <ProjectNavButton projectId="k2-galerie" />
         </header>

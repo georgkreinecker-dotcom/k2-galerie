@@ -4,8 +4,6 @@ import { initVk2DemoStammdatenIfEmpty, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URH
 import { PROJECT_ROUTES } from '../config/navigation'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
-import { BUILD_LABEL } from '../buildInfo.generated'
-import { safeReload } from '../utils/env'
 import '../App.css'
 
 // ─── Eingangskarten (gleiche Logik wie Vk2GaleriePage) ───────────────────────
@@ -325,12 +323,6 @@ const Vk2GalerieVorschauPage: React.FC = () => {
         <div style={{ marginTop: '0.35rem', fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>
       </footer>
 
-      {/* Stand-Badge – im iframe (Cursor Preview) kein Reload */}
-      <div style={{ position: 'fixed', bottom: 8, left: 8, fontSize: '0.65rem', color: 'rgba(0,0,0,0.25)', cursor: 'pointer', zIndex: 50, fontFamily: 'system-ui, sans-serif' }}
-        onClick={safeReload}
-        title="Tippen für Cache-Bypass">
-        Stand: {BUILD_LABEL}
-      </div>
     </div>
   )
 }

@@ -41,7 +41,8 @@ function isSameAsOtherKey(list: any[], otherTenantId: DocumentsTenantId): boolea
   }
 }
 
-export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): void {
+/** Gibt true zurück wenn geschrieben wurde, false wenn Schutz gegriffen hat oder Fehler. */
+export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): boolean {
   try {
     const key = getDocumentsKey(tenantId)
     const list = Array.isArray(documents) ? documents : []
@@ -51,44 +52,46 @@ export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): vo
         const current = loadDocuments(tenantId)
         if (current.length > 1) {
           console.warn(`⚠️ documentsStorage: Schreibvorgang abgebrochen – ${tenantId}-Dokumente nicht mit leerer Liste überschreiben (Schutz)`)
-          return
+          return false
         }
       }
       // EISERN: K2 darf nicht mit VK2-Daten überschrieben werden
       if (tenantId === 'k2' && list.length > 0 && isSameAsOtherKey(list, 'vk2')) {
         console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – VK2-Dokumente würden K2 überschreiben')
-        return
+        return false
       }
       // EISERN: ök2 darf nicht mit K2- oder VK2-Daten überschrieben werden (vice versa)
       if (tenantId === 'oeffentlich' && list.length > 0) {
         if (isSameAsOtherKey(list, 'k2')) {
           console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – K2-Dokumente würden ök2 überschreiben')
-          return
+          return false
         }
         if (isSameAsOtherKey(list, 'vk2')) {
           console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – VK2-Dokumente würden ök2 überschreiben')
-          return
+          return false
         }
       }
       // EISERN: VK2 darf nicht mit K2- oder ök2-Daten überschrieben werden (vice versa)
       if (tenantId === 'vk2' && list.length > 0) {
         if (isSameAsOtherKey(list, 'k2')) {
           console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – K2-Dokumente würden VK2 überschreiben')
-          return
+          return false
         }
         if (isSameAsOtherKey(list, 'oeffentlich')) {
           console.warn('⚠️ documentsStorage: Schreibvorgang abgebrochen – ök2-Dokumente würden VK2 überschreiben')
-          return
+          return false
         }
       }
     }
     const json = JSON.stringify(list)
     if (json.length > 10_000_000) {
       console.error('❌ documentsStorage: Daten zu groß')
-      return
+      return false
     }
     if (typeof window !== 'undefined') localStorage.setItem(key, json)
+    return true
   } catch (e) {
     console.error('❌ documentsStorage save:', e)
+    return false
   }
 }

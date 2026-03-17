@@ -1883,6 +1883,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   }
 
   const [designSaveFeedback, setDesignSaveFeedback] = useState<'ok' | null>(null)
+  /** Kurze Bestätigung nach Speichern eines PR-Dokuments (postMessage, afterprint, Redaktions-Modal). */
+  const [documentSaveFeedback, setDocumentSaveFeedback] = useState<'ok' | null>(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<string | null>(null)
   const pendingWelcomeFileRef = React.useRef<File | null>(null)
   /** Ein Tool für alle: Bildverarbeitung (Original | Freistellen) – pending bis „Bild übernehmen“. */
@@ -2541,7 +2543,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           await saveArtworksByKeyWithImageStore(tenant.getArtworksKey()!, allArtworks, { filterK2Only: tenant.tenantId === 'k2', allowReduce: true })
         }
         localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
-        localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(documents))
+        saveDocumentsToStorage(tenant.tenantId, documents)
         setPageTexts(pageTexts, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
         setPageContentGalerie(pageContent, tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined)
       } catch (e) {
@@ -3870,24 +3872,18 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return num === 1 ? `${baseName} – ${eventTitle}` : `${baseName} – ${eventTitle} (Vorschlag ${num})`
   }
 
-  // Dokumente aus localStorage laden – bei Kontextwechsel neu laden (getDocumentsKey hängt von context ab)
+  // Dokumente aus localStorage laden – bei Kontextwechsel sofort (0 ms), damit richtiger Key/Kontext vor jedem Speichern gilt
   useEffect(() => {
     if (tenant.dynamicTenantId) return
     let isMounted = true
-    const timeoutId = setTimeout(() => {
-      if (!isMounted) return
-      try {
-        const docs = loadDocuments()
-        if (isMounted) setDocuments(docs)
-      } catch (error) {
-        console.error('Fehler beim Laden der Dokumente:', error)
-        if (isMounted) setDocuments([])
-      }
-    }, 300)
-    return () => {
-      isMounted = false
-      clearTimeout(timeoutId)
+    try {
+      const docs = loadDocuments()
+      if (isMounted) setDocuments(docs)
+    } catch (error) {
+      console.error('Fehler beim Laden der Dokumente:', error)
+      if (isMounted) setDocuments([])
     }
+    return () => { isMounted = false }
   }, [location.search])
 
   // Speichern aus geöffnetem Social-Media-Dokument (postMessage vom Kind-Fenster)
@@ -3928,7 +3924,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         const reader = new FileReader()
         reader.onloadend = () => {
           const current = loadDocuments()
-          const updated = current.map((d: any) => d.id === payload.docId ? { ...d, data: reader.result as string } : d)
+          const updated = current.map((d: any) => d.id === payload.docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
           saveDocuments(updated)
           setDocuments(updated)
         }
@@ -3940,6 +3936,32 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
   }, [activeTab, eventplanSubTab, tenant.dynamicTenantId, designSettings, galleryData, vk2Stammdaten])
+
+  // Speichern aus geöffnetem Presse/Plakat/Flyer-Fenster (postMessage mit HTML)
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin || e.data?.type !== 'k2-save-doc-html') return
+      const payload = e.data.payload
+      if (!payload?.docId || typeof payload?.html !== 'string') return
+      try {
+        const blob = new Blob([payload.html], { type: 'text/html;charset=utf-8' })
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          const current = loadDocuments()
+          const updated = current.map((d: any) => d.id === payload.docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
+          saveDocuments(updated)
+          setDocuments(updated)
+          setDocumentSaveFeedback('ok')
+          setTimeout(() => setDocumentSaveFeedback(null), 3000)
+        }
+        reader.readAsDataURL(blob)
+      } catch (err) {
+        console.error('Fehler beim Speichern des Dokuments (k2-save-doc-html):', err)
+      }
+    }
+    window.addEventListener('message', handler)
+    return () => window.removeEventListener('message', handler)
+  }, [])
 
   // Events aus localStorage laden – bei Kontextwechsel SOFORT (0 ms), damit Auto-Save nie mit VK2-State in K2 schreibt
   useEffect(() => {
@@ -4841,6 +4863,8 @@ ${'='.repeat(60)}
 
   const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, nameSuffix?: string, qrDataUrl?: string) => {
     let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
+    const eid = event?.id || 'unknown'
+    const presseDocIdComputed = `pr-editable-presseaussendung-${eid}-${Date.now()}`
     let presseDocId: string | null = null
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
@@ -4869,6 +4893,7 @@ ${'='.repeat(60)}
 <body class="${prDocClass} format-a4">
   <div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <button onclick="typeof saveDoc === 'function' && saveDoc(); return false;" style="margin-left: 8px; background: #2d5a2d; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer;">Speichern</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
     <button onclick="setFormat('a4'); return false;">A4</button>
     <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
@@ -4900,6 +4925,13 @@ ${'='.repeat(60)}
   <script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
+    var K2_DOC_ID = '${escapeJsStringForDoc(presseDocIdComputed)}';
+    function saveDoc() {
+      var html = document.documentElement.outerHTML;
+      if (window.opener && !window.opener.closed) {
+        try { window.opener.postMessage({ type: 'k2-save-doc-html', payload: { docId: K2_DOC_ID, html: html } }, '*'); } catch (e) {}
+      }
+    }
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
@@ -4938,9 +4970,8 @@ ${'='.repeat(60)}
     `
     try {
       blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      const eid = event?.id || 'unknown'
+      presseDocId = presseDocIdComputed
       const etitle = event?.title || 'Event'
-      presseDocId = `pr-editable-presseaussendung-${eid}-${Date.now()}`
       const pressePlaceholder = {
         id: presseDocId,
         name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung' + (nameSuffix || '') + ' (bearbeitbar)'),
@@ -4991,7 +5022,7 @@ ${'='.repeat(60)}
       const reader = new FileReader()
       reader.onloadend = () => {
         const current = loadDocuments()
-        const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
+        const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
         saveDocuments(updated)
         setDocuments(updated)
       }
@@ -5190,7 +5221,7 @@ ${'='.repeat(60)}
         const reader = new FileReader()
         reader.onloadend = () => {
           const current = loadDocuments()
-          const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
+          const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
           saveDocuments(updated)
           setDocuments(updated)
         }
@@ -5727,7 +5758,7 @@ ${'='.repeat(60)}
     openDocumentInApp(html, 'Presseaussendung')
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = { ...prAllePlaceholder, data: reader.result as string }
+      const documentData = { ...prAllePlaceholder, fileData: reader.result as string, data: reader.result as string }
       const current = loadDocuments()
       const updated = current.map((d: any) => d.id === prAlleDocId ? documentData : d)
       saveDocuments(updated)
@@ -5888,7 +5919,7 @@ ${'='.repeat(60)}
     openDocumentInApp(html, 'Presseaussendung')
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = { ...pressePlaceholder, data: reader.result as string }
+      const documentData = { ...pressePlaceholder, fileData: reader.result as string, data: reader.result as string }
       const current = loadDocuments()
       const updated = current.map((d: any) => d.id === presseDocId ? documentData : d)
       saveDocuments(updated)
@@ -6043,7 +6074,7 @@ ${'='.repeat(60)}
     openDocumentInApp(html, 'Presseaussendung')
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = { ...socialPlaceholder, data: reader.result as string }
+      const documentData = { ...socialPlaceholder, fileData: reader.result as string, data: reader.result as string }
       const current = loadDocuments()
       const updated = current.map((d: any) => d.id === socialDocId ? documentData : d)
       saveDocuments(updated)
@@ -6274,7 +6305,7 @@ ${'='.repeat(60)}
     openDocumentInApp(html, 'Event-Flyer – ' + (event?.title || 'Event'))
     const reader = new FileReader()
     reader.onloadend = () => {
-      const documentData = { ...documentDataPlaceholder, data: reader.result as string }
+      const documentData = { ...documentDataPlaceholder, fileData: reader.result as string, data: reader.result as string }
       const current = loadDocuments()
       const updated = current.map((d: any) => d.id === docId ? documentData : d)
       saveDocuments(updated)
@@ -6436,6 +6467,7 @@ ${'='.repeat(60)}
         name: getNextWerbematerialVorschlagName(event.id, event.title, 'newsletter', 'Newsletter'),
         type: 'text/html',
         size: blob.size,
+        fileData: reader.result as string,
         data: reader.result as string,
         fileName: `newsletter-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
@@ -6735,7 +6767,7 @@ ${'='.repeat(60)}
       const reader = new FileReader()
       reader.onloadend = () => {
         const current = loadDocuments()
-        const updated = current.map((d: any) => d.id === docId ? { ...d, data: reader.result as string } : d)
+        const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
         saveDocuments(updated)
         setDocuments(updated)
       }
@@ -7232,6 +7264,7 @@ ${'='.repeat(60)}
         name: `Website-Content - ${event.title}`,
         type: 'text/html',
         size: blob.size,
+        fileData: reader.result as string,
         data: reader.result as string,
         fileName: `website-content-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
@@ -7470,6 +7503,7 @@ ${'='.repeat(60)}
         name: `Katalog - ${galleryData.name || 'K2 Galerie'}`,
         type: 'text/html',
         size: blob.size,
+        fileData: reader.result as string,
         data: reader.result as string,
         fileName: `katalog-${(galleryData.name || 'k2-galerie').replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
@@ -7909,19 +7943,24 @@ ${'='.repeat(60)}
     alert('✅ Stammdaten übernommen (komplette Adresse + ggf. Kontakt in Beschreibung)!')
   }
 
-  // Dokumente speichern (Key abhängig von K2 vs. ök2 – K2-Daten werden in ök2 nie überschrieben)
+  // Dokumente speichern – immer über documentsStorage (ein Schreibweg, alle Schutzmechanismen)
   const saveDocuments = (docs: any[]) => {
     try {
-      localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(docs))
-      setDocuments(docs)
+      const ok = saveDocumentsToStorage(tenant.tenantId, docs)
+      if (ok) {
+        setDocuments(docs)
+        setDocumentSaveFeedback('ok')
+        setTimeout(() => setDocumentSaveFeedback(null), 3000)
+      } else setDocuments(loadDocumentsFromStorage(tenant.tenantId))
     } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
       if (error?.name === 'QuotaExceededError') {
         const freed = tryFreeLocalStorageSpace()
         if (freed > 0) {
           try {
-            localStorage.setItem(tenant.getDocumentsKey(), JSON.stringify(docs))
-            setDocuments(docs)
+            const ok2 = saveDocumentsToStorage(tenant.tenantId, docs)
+            if (ok2) setDocuments(docs)
+            else setDocuments(loadDocumentsFromStorage(tenant.tenantId))
             return
           } catch (_) {}
         }
@@ -11413,6 +11452,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}
             >Drucken</button>
             <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', flex: 1 }}>{inAppDocumentViewer.title}</span>
+            {documentSaveFeedback === 'ok' && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
           </div>
           <iframe
             ref={inAppViewerIframeRef}
@@ -18760,6 +18800,9 @@ ${name}`
                 </button>
               </div>
             )}
+            {documentSaveFeedback === 'ok' && (
+              <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</div>
+            )}
             <h2 style={{
               fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
               fontWeight: '700',
@@ -18781,10 +18824,13 @@ ${name}`
             <p style={{
               fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
               color: s.muted,
-              marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
+              marginBottom: '0.5rem',
               lineHeight: 1.5
             }}>
               Pro Rubrik: Druckversionen (Flyer, Presse-Einladung), eigene Dokumente, PR-Vorschläge (Newsletter, Plakat, Presse, Social Media) – aus deinen Stammdaten erzeugt, direkt nutzbar oder als PDF.
+            </p>
+            <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', fontStyle: 'italic' }}>
+              Presse absenden: In Zwischenablage → Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.
             </p>
 
             {/* Alle Events: zuerst aktuell/geplant, dann Ordner „Veranstaltungen der Vergangenheit“ (Dokumente als Muster) */}

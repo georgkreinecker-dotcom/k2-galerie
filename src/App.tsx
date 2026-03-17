@@ -284,10 +284,22 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
 }
 
 
+/** Stand-Anzeige nur auf erster Galerieseite und im Impressum (Georg: sonst überall entfernt, auch bei QR). */
+const STAND_BADGE_PATHNAMES = [
+  '/projects/k2-galerie/galerie',
+  '/projects/k2-galerie/galerie-oeffentlich',
+  '/projects/vk2/galerie',
+  AGB_ROUTE
+]
+
 function StandBadgeSync() {
+  const location = useLocation()
+  const pathname = location?.pathname ?? ''
+  const showHere = STAND_BADGE_PATHNAMES.some((p) => pathname === p)
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
+  if (!showHere) return null
 
   // Auf Vercel/Produktion: Stand vom Server holen → Badge zeigt immer aktuellen Stand (auch auf Mac bei gecachtem Bundle)
   const mountedRef = useRef(true)

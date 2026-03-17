@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – **Verteilerblocks (wie Pressespiegel):** Neuer Block „Newsletter-Empfänger“ im Tab Presse & Medien (unter Medienspiegel). Gleiches Muster: Name + E-Mail, „Aus Liste einfügen“, Checkboxen, „E-Mail-Adressen kopieren“. Speicher pro Kontext: getVerteilerBlockStorageKey(tenant, 'newsletter'). Weitere Verteilerblocks (z. B. Einladungen) nach Bedarf möglich. Build grün.
+**Letzter Stand:** 16.03.26 – **Öffentlichkeitsarbeit-Ablauf umgesetzt + Feinschliff:** (1) Ein Schreibweg: Admin nutzt documentsStorage überall. (2) Speichern-Button im Presse-Fenster (neues Fenster): postMessage k2-save-doc-html, Admin speichert HTML. (3) Sichtbare Bestätigung „✓ Gespeichert“ (Viewer-Leiste + Öffentlichkeitsarbeit-Bereich). (4) fileData überall beim Speichern; Lesen fileData || data. (5) 300-ms-Delay beim Dokumente-Laden entfernt (0 ms). (6) Kurze Absenden-Anleitung im UI: „Presse absenden: In Zwischenablage → Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.“ Doku: ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT-VERBESSERUNGSPOTENZIALE.md Abschnitt 9. Tests grün, Build grün.
 
 **Was wir JETZT tun:** Session Ende – Raum bereit.
 
-**Nächster Schritt:** Von Georg festlegen (z. B. weitere Verteilerblocks, K2-Eventplanung, Copyright sichten).
+**Nächster Schritt:** Von Georg festlegen (z. B. Commit + Push, weitere Verteilerblocks, K2-Eventplanung).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

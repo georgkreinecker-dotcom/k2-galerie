@@ -3771,8 +3771,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                         📱 QR scannen → öffnet diese Galerie auf dem Handy
                       </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                        {serverLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 2 }}>App: {serverLabel}</div>}
-                        {dataStandLabel && <div style={{ fontSize: 10, color: '#666', marginBottom: 4 }}>Daten: {dataStandLabel}</div>}
                         <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                           <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
                           {!musterOnly && <button type="button" onClick={handleQrNeuErzeugen} title="QR mit neuer URL erzeugen – danach scannen liefert garantiert aktuellen Stand (kein Cache)" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>QR neu erzeugen</button>}
@@ -3785,11 +3783,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     </div>
                 )}
               </div>
-                {dataStandLabel && !musterOnly && (
-                  <p style={{ margin: '0.5rem 0 0', fontSize: 'clamp(0.65rem, 1.4vw, 0.75rem)', color: theme.muted, opacity: 0.9 }}>
-                    Daten: {dataStandLabel} (Werke vom letzten Veröffentlichen)
-                  </p>
-                )}
                 <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid color-mix(in srgb, ${theme.muted} 25%, transparent)`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: theme.muted, letterSpacing: '0.01em' }}>
                   {PRODUCT_COPYRIGHT_BRAND_ONLY}
                 </p>

@@ -426,13 +426,8 @@ export default function PlatformStartPage() {
             }}>
               📱 Galerie auf Mobile testen
             </div>
-            {serverLabel && (
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.8)', marginBottom: '0.5rem' }}>
-                Vercel liefert gerade: <strong>{serverLabel}</strong> – Scan zeigt diesen Stand. Steht hier noch 13.26 → im Vercel-Dashboard prüfen (Deployment Ready?).
-              </div>
-            )}
             <div style={{ marginBottom: '1rem' }}>
-              <button type="button" onClick={() => refetchQr()} title="QR mit aktuellem Stand von Vercel neu laden" style={{ marginBottom: 8, padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}>QR mit aktuellem Stand</button>
+              <button type="button" onClick={() => refetchQr()} title="QR von Vercel neu laden" style={{ marginBottom: 8, padding: '6px 12px', fontSize: 12, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: '#fff', cursor: 'pointer' }}>QR neu laden</button>
               <img 
                 src={galerieQrUrl} 
                 alt="Galerie QR Code" 
