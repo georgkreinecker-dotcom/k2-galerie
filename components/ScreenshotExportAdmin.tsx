@@ -15894,12 +15894,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Passwort speichern
                   </button>
                 </div>
-                {/* Backup & Wiederherstellung – nur K2 (ök2 lädt immer aktuellen Stand; bei Bedarf hier) */}
-                {!tenant.isOeffentlich && (
+                {/* Backup & Wiederherstellung – K2, ök2 und VK2 getrennt; je Kontext eigenes Backup */}
                 <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
                   <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
-                    Alle deine Inhalte (Werke, Stammdaten, Events, Dokumente) liegen in dieser App. Damit bei Gerätewechsel, Browser-Löschung oder Panne nichts verloren geht, kannst du hier jederzeit eine Sicherungskopie herunterladen und bei Bedarf wieder einspielen. Wir empfehlen: regelmäßig eine Backup-Datei an einem sicheren Ort speichern (z. B. PC, USB-Stick, Festplatte).
+                    {tenant.isOeffentlich
+                      ? 'ök2 Demo: Hier kannst du eine Sicherung der Demo-Daten (Musterwerke, Demo-Stammdaten, Events, Design) herunterladen – getrennt von K2 und VK2.'
+                      : tenant.isVk2
+                        ? 'VK2 Verein: Hier kannst du eine Sicherung der Vereinsdaten (Vorstand, Mitglieder, Events, Dokumente, Design, Eingangskarten) herunterladen – getrennt von K2 und ök2.'
+                        : 'K2 Galerie: Hier kannst du eine Sicherung aller deiner Daten (Werke, Stammdaten, Events, Dokumente, Design) herunterladen – getrennt von ök2 und VK2.'}
+                    {' '}Damit bei Gerätewechsel oder Panne nichts verloren geht: Backup-Datei an sicherem Ort speichern (z. B. PC, USB-Stick, backupmicro).
                   </p>
                   <input
                     ref={backupFileInputRef}
@@ -15964,19 +15968,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <button
                         onClick={() => {
                           try {
-                            const result = createK2Backup()
+                            const result = tenant.isOeffentlich
+                              ? createOek2Backup()
+                              : tenant.isVk2
+                                ? createVk2Backup()
+                                : createK2Backup()
                             downloadBackupAsFile(result.data, result.filename)
-                            const artworks = readArtworksRawByKey('k2-artworks')
-                            alert(`✅ Sicherungskopie ist heruntergeladen.\n\nIn der Datei sind: Stammdaten, ${Array.isArray(artworks) ? artworks.length : 0} Werke, Events, Dokumente, Design.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick). Bei Datenverlust kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
+                            const kontextLabel = tenant.isOeffentlich ? 'ök2 Demo' : tenant.isVk2 ? 'VK2 Verein' : 'K2 Galerie'
+                            const detail = tenant.isVk2
+                              ? 'Vereins-Stammdaten, Mitglieder, Events, Dokumente, Design, Eingangskarten.'
+                              : tenant.isOeffentlich
+                                ? 'Demo-Stammdaten, Musterwerke, Events, Design.'
+                                : (() => { const a = readArtworksRawByKey('k2-artworks'); return `Stammdaten, ${Array.isArray(a) ? a.length : 0} Werke, Events, Dokumente, Design.` })()
+                            alert(`✅ ${kontextLabel}-Sicherung ist heruntergeladen.\n\nIn der Datei: ${detail}\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick, backupmicro). Bei Datenverlust kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.`)
                           } catch (e) {
                             alert('Beim Erstellen der Sicherungskopie ist etwas schiefgelaufen. Bitte erneut versuchen.')
                           }
                         }}
                         style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
                       >
-                        💾 Sicherungskopie herunterladen
+                        💾 Sicherungskopie herunterladen {tenant.isOeffentlich ? '(ök2)' : tenant.isVk2 ? '(VK2)' : '(K2)'}
                       </button>
-                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Lädt eine Datei mit allen deinen Daten. Diese Datei bei dir speichern – dann hast du eine echte Sicherung gegen Datenverlust.</p>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Lädt eine Datei mit allen Daten dieses Bereichs (K2 / ök2 / VK2 getrennt). Datei sicher speichern – dann hast du eine echte Sicherung gegen Datenverlust.</p>
                     </div>
                     <div>
                       <button
@@ -16137,7 +16150,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </div>
                   </div>
                 </div>
-                )}
               </div>
             )}
 
