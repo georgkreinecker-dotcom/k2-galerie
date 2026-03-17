@@ -1,8 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – **Öffentlichkeitsarbeit-Ablauf umgesetzt + Feinschliff:** (1) Ein Schreibweg: Admin nutzt documentsStorage überall. (2) Speichern-Button im Presse-Fenster (neues Fenster): postMessage k2-save-doc-html, Admin speichert HTML. (3) Sichtbare Bestätigung „✓ Gespeichert“ (Viewer-Leiste + Öffentlichkeitsarbeit-Bereich). (4) fileData überall beim Speichern; Lesen fileData || data. (5) 300-ms-Delay beim Dokumente-Laden entfernt (0 ms). (6) Kurze Absenden-Anleitung im UI: „Presse absenden: In Zwischenablage → Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.“ Doku: ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT-VERBESSERUNGSPOTENZIALE.md Abschnitt 9. Tests grün, Build grün.
+**Letzter Stand:** 17.03.26 – **App-Fehler „Rendered fewer hooks“ behoben:** In ScreenshotExportAdmin VK2-Mitglied-Block: Alle Variablen (devBypassName, aktiverName, mitglied, mitgliedIdx, istVorstand) und ein useEffect für Vorstand-Redirect **vor** den ersten Return verschoben; kein bedingter Code mehr vor Returns. Vorstand-Fall: „return null“ durch „return <div>Weiterleitung…</div>“ + Redirect im useEffect ersetzt. Commit ddce82f, gepusht. Tests 212 grün, Build grün.
 
-**Was wir JETZT tun:** Session Ende – Raum bereit.
+**Was wir JETZT tun:** Raum bereit – Buttons sollten wieder reagieren.
+
+**Vorher (16.03.26):** Öffentlichkeitsarbeit-Ablauf umgesetzt + Feinschliff (documentsStorage, Speichern-Button Presse-Fenster, „✓ Gespeichert“, fileData, 0 ms Dokumente-Laden, Absenden-Anleitung).
 
 **Nächster Schritt:** Von Georg festlegen (z. B. Commit + Push, weitere Verteilerblocks, K2-Eventplanung).
 

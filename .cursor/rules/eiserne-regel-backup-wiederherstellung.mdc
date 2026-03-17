@@ -1,0 +1,42 @@
+---
+description: Backup & Wiederherstellung – NIEMALS abschwächen oder entfernen (eiserne Regel). Überlebenswichtig für Kundendaten.
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL: Backup & Wiederherstellung – NIEMALS abschwächen (unveränderlich)
+
+## Warum
+
+Backup und Wiederherstellung sind **überlebenswichtig**. Ohne sie sind Datenverluste (Werke, Stammdaten, Events, Dokumente) endgültig. Dieser Ablauf wurde bewusst in KRITISCHE-ABLAEUFE (§11) aufgenommen – er darf nicht durch Refactors, „Aufräumen“ oder neue Optionen ausgehebelt werden.
+
+## Regel (unveränderlich)
+
+**Der Weg zu Backup & Wiederherstellung bleibt ein einziger, verbindlicher Hauptweg. Er wird nicht entfernt, nicht versteckt und nicht so umgestellt, dass er nur noch als Fallback oder Zusatz existiert.**
+
+- **Vollbackup herunterladen:** Admin → Einstellungen → Backup & Wiederherstellung → Button „Vollbackup herunterladen“ erzeugt JSON-Datei (Stammdaten, Werke, Events, Dokumente, Design). Spiegelung auf backupmicro empfohlen.
+- **Aus Backup-Datei wiederherstellen:** Gleicher Ort → „Aus Backup-Datei wiederherstellen“ → Datei wählen → Bestätigung → Daten werden aus der Datei wiederhergestellt.
+- **Aus letztem Backup wiederherstellen:** Optional, wo implementiert – kein Ersatz für die Datei-Wiederherstellung als Hauptweg.
+
+## NIEMALS
+
+- „Vollbackup herunterladen“ oder „Aus Backup-Datei wiederherstellen“ **entfernen** oder aus den Einstellungen **auslagern/verstecken**.
+- Den Ablauf so umstellen, dass Wiederherstellung **ohne Nutzer-Bestätigung** (Dateiauswahl, Bestätigungsdialog) läuft.
+- Das **Backup-Format** so ändern, dass **bestehende Backup-Dateien** nicht mehr lesbar sind (Abwärtskompatibilität wahren).
+- Den **Bereich Backup & Wiederherstellung** in den Einstellungen entfernen oder nur noch „für Experten“ verstecken.
+
+## Betroffene Stellen
+
+- `src/utils/autoSave.ts`: restoreFromBackup, restoreFromBackupFile, createK2Backup/createOek2Backup/createVk2Backup, downloadBackupAsFile, restoreK2FromBackup/…
+- `components/ScreenshotExportAdmin.tsx`: Einstellungen → Backup & Wiederherstellung („Vollbackup herunterladen“, „Aus Backup-Datei wiederherstellen“, „Aus letztem Backup wiederherstellen“).
+
+## Bei Änderungen
+
+- [ ] Bleiben alle drei Einstiege (Vollbackup herunterladen, Aus Datei wiederherstellen, Aus letztem Backup) erreichbar und als Hauptweg nutzbar?
+- [ ] Erfordert Wiederherstellung weiterhin Nutzer-Bestätigung (Dateiauswahl/Dialog)?
+- [ ] Werden bestehende Backup-Dateien weiterhin gelesen (Format nicht brechen)?
+
+## Kurzfassung
+
+**Backup & Wiederherstellung = ein verbindlicher Hauptweg in den Einstellungen. NIEMALS entfernen, abschwächen oder Format brechen.**
+
+Verknüpfung: docs/KRITISCHE-ABLAEUFE.md §11, kritische-ablaeufe-nicht-abschnwaechen.mdc.

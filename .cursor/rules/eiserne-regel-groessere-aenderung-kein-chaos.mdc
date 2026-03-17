@@ -1,0 +1,77 @@
+---
+description: Bei jeder größeren Änderung Pflicht-Checks – damit nicht wieder Chaos entsteht und wir reparieren müssen (eiserne Regel).
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL: Größere Änderung = kein Chaos (unveränderlich)
+
+## Was immer wieder passiert
+
+**Größere Änderungen** (Refactor, neues Feature, „Aufräumen“, Anpassung an mehreren Stellen) haben **wiederholt Chaos verursacht**. Danach mussten wir mühsam reparieren: Admin fehlte, falscher Kontext, Bilder weg, Link öffnet APf („10.mal“), Merge überschreibt Falsches, K2 zeigte VK2, etc.
+
+**Übersicht wo wir schon reparieren mussten:** docs/BERICHT-CHAOS-NACH-GROESSEREN-AENDERUNGEN.md
+
+Diese Regel stellt sicher, dass **vor, während und nach** einer größeren Änderung verbindliche Schritte laufen – damit dasselbe Muster nicht weitergeht.
+
+---
+
+## Was „größere Änderung“ bedeutet
+
+- **Mehrere Dateien** oder **mehrere Bereiche** (z. B. Admin + Kontext, oder Sync + GaleriePage + Admin).
+- **Refactor / Umstellung** (z. B. einen Ablauf anders machen, neue Route, neue Quelle für Daten).
+- **„Aufräumen“ / Bereinigung** (Code entfernen, vereinheitlichen, Sektionen zusammenführen).
+- **Neues Feature**, das **bestehende Abläufe** berührt (Speichern, Laden, Kontext, Routen).
+
+**Kleine Änderung** = eine klar abgegrenzte Stelle, eine Datei, ein Bugfix mit bekannter Ursache und ohne Nebenwirkungen auf Kontext/Sync/Keys.
+
+---
+
+## PFLICHT VOR der größeren Änderung
+
+1. **Bericht lesen:** docs/BERICHT-CHAOS-NACH-GROESSEREN-AENDERUNGEN.md – welche Bereiche sind riskant, wo haben wir schon repariert?
+2. **Betroffene Bugs/Regeln:** In docs/GELOESTE-BUGS.md und docs/FEHLERANALYSEPROTOKOLL.md (Bekannte Fehlerklassen) prüfen: Berührt meine Änderung **Admin, Kontext, Sync/Merge, Werke/Bilder, Keys/Stammdaten, Routen/Links, Stand/QR**? Wenn ja → zugehörige Einträge und Regeln lesen.
+3. **Struktur/Datenfluss (wenn Daten/Anzeige):** Wenn die Änderung **Daten** schreibt oder liest (Werke, Stammdaten, Kontext, Galerie): docs/DATENFLUSS-GALERIE-STRUKTUR.md + .cursor/rules/fehlersuche-zuerst-struktur-datenfluss.mdc – woher kommen die Daten, wer schreibt wohin?
+4. **Ein Standard:** Gibt es für die betroffene Problemstellung schon einen Standard? .cursor/rules/ein-standard-problem.mdc (Tabelle) – dieselbe Lösung nutzen, keine zweite erfinden.
+
+**Nicht** mit der Änderung beginnen, bevor diese Schritte erledigt sind.
+
+---
+
+## PFLICHT WÄHREND der Änderung
+
+1. **Nur das Nötige ändern** – keine „nebenbei“ Bereinigung in anderen Bereichen (mök2, VK2-Lizenzen, andere Kontexte), es sei denn, die Aufgabe verlangt es ausdrücklich.
+2. **Bestehende Standards nutzen** – gleiche Problemstellung = dieselbe Funktion, derselbe Ablauf (openDocumentInApp, runBildUebernehmen, mergeServerWithLocal + preserveLocalImageData, etc.). Siehe ein-standard-problem.mdc.
+3. **Keine neuen „eigenen“ Wege** – z. B. kein eigener Fetch zu write-gallery-data, kein eigener Merge ohne serverAsSoleTruth/preserveLocalImageData, keine zweite Route für dieselbe Unterseite.
+4. **Kontext/Key immer mitdenken** – bei jedem Lesen/Schreiben: K2 vs. ök2 vs. VK2; richtiger Key; Auto-Save/Listen nur im passenden Kontext.
+
+---
+
+## PFLICHT NACH der Änderung
+
+1. **Alle betroffenen Pfade prüfen** – nicht nur die eine Stelle. Wenn du einen Schreib-/Lade-Pfad änderst: Gibt es andere Stellen mit demselben Muster? (standard-verstoss-alle-stellen-nachziehen.mdc)
+2. **Tests:** `npm run test` – grün. Bei kritischen Abläufen: Flow-Test oder bestehende Tests müssen weiterhin bestehen.
+3. **Build:** `npm run build` – erfolgreich. Kein „Fertig“ ohne grünen Build.
+4. **Neue Fehlerklasse?** Wenn bei der Änderung ein Bug aufgetreten ist oder eine neue Fehlerart: GELOESTE-BUGS.md + FEHLERANALYSEPROTOKOLL (Eintrag, ggf. Fehlerklasse) ergänzen; Absicherung (Regel/Checkliste) damit es nicht wieder vorkommt.
+
+**Nicht** „das richten wir später ein“ – Verifizierung und Absicherung gehören zur gleichen Änderung.
+
+---
+
+## Checkliste (vor „Fertig“ bei größerer Änderung)
+
+- [ ] BERICHT-CHAOS-NACH-GROESSEREN-AENDERUNGEN.md gelesen (betroffene Bereiche)?
+- [ ] GELOESTE-BUGS + FEHLERANALYSEPROTOKOLL (betroffene Fehlerklassen) gelesen?
+- [ ] Bei Daten/Anzeige: Struktur/Datenfluss geklärt (Quelle, Schreibpfad)?
+- [ ] Ein Standard pro Problemstellung eingehalten (kein zweiter Weg)?
+- [ ] Nur das nötige geändert (kein versehentliches Löschen/Überschreiben anderer Bereiche)?
+- [ ] Alle betroffenen Pfade/Stellen geprüft (nicht nur eine)?
+- [ ] Tests grün, Build grün?
+- [ ] Bei neuem Bug/Fehlerart: Protokoll/Doku/Regel ergänzt?
+
+---
+
+## Kurzfassung
+
+**Größere Änderung = vorher Bericht + Bugs/Regeln + Datenfluss, während Standard + nur Nötiges, nachher alle Pfade + Tests + Build + ggf. Protokoll. Keine Ausnahme – sonst wieder Chaos und Reparatur.**
+
+Verknüpfung: BERICHT-CHAOS-NACH-GROESSEREN-AENDERUNGEN.md, GELOESTE-BUGS.md, FEHLERANALYSEPROTOKOLL.md, qualitaet-bei-fehlermeldung.mdc, ein-standard-problem.mdc, fehlersuche-zuerst-struktur-datenfluss.mdc.

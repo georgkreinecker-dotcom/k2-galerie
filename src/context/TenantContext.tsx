@@ -34,14 +34,17 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
   }
 }
 
-/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. Case-insensitive (VK2/vk2). */
+/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. Case-insensitive (VK2/vk2). Ohne ?context= = immer K2 (echte Galerie). */
 function deriveTenantId(pathname: string, search: string): AdminTenantId {
   const params = new URLSearchParams(search || '')
   const raw = params.get('context')
   const urlContext = raw != null ? raw.toLowerCase().trim() : null
-  if (pathname === '/admin' && urlContext === 'oeffentlich') return 'oeffentlich'
-  if (pathname === '/admin' && urlContext === 'vk2') return 'vk2'
-  if (pathname === '/admin' && urlContext === 'k2') return 'k2'
+  if (pathname === '/admin') {
+    if (urlContext === 'oeffentlich') return 'oeffentlich'
+    if (urlContext === 'vk2') return 'vk2'
+    if (urlContext === 'k2') return 'k2'
+    return 'k2' // Kein context in URL = immer K2 (Admin-Bereich für echte Galerie)
+  }
   return getTenantFromStorage()
 }
 
@@ -55,7 +58,7 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
     else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
     else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
-    else sessionStorage.removeItem(ADMIN_CONTEXT_KEY)
+    else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2') // Kein context in URL = K2 merken
   } catch (_) {}
 }
 

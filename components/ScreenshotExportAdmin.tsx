@@ -11532,8 +11532,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* Oberer Rand des Admin-Bereichs (Anker für „Zurück in den Admin-Bereich“); Spacer wenn Zurück-Banner sichtbar */}
       <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
 
-      {/* Guide-Balken: pro Aktion/Tab ein Text, der den Interessenten an der Hand nimmt und erklärt – grün, ök2-Admin */}
-      {tenant.isOeffentlich && (() => {
+      {/* Grüner Guide-Balken aus: Admin immer wie im Bild (sauberer Hub). Guide nur als GlobaleGuideBegleitung. */}
+      {false && tenant.isOeffentlich && guideFlowAktiv && (() => {
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
@@ -11934,8 +11934,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {activeTab === 'werke' && (
               <div>
 
-                {/* Großer Willkommens-Hub wenn Guide-Flow aktiv */}
-                {guideFlowAktiv && tenant.isOeffentlich && !guideBannerClosed && (() => {
+                {/* Guide-Panel aus: ök2 soll denselben Hub wie K2/VK2 zeigen („Was möchtest du heute tun?“). Guide nur als GlobaleGuideBegleitung. */}
+                {false && guideFlowAktiv && tenant.isOeffentlich && !guideBannerClosed && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
                   const akzent = istVerein ? '#1e5cb5' : '#b54a1e'
                   const akzentHell = istVerein ? '#42a4ff' : '#ff8c42'
@@ -12126,8 +12126,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   )
                 })()}
 
-                {/* Guide-Willkommensbanner – nur wenn kein globaler Guide-Flow aktiv */}
-                {guideVorname && tenant.isOeffentlich && !guideBannerClosed && !guideFlowAktiv && (() => {
+                {/* Zweites Guide-Panel aus: ök2 = gleicher Hub wie K2/VK2 */}
+                {false && guideVorname && tenant.isOeffentlich && !guideBannerClosed && !guideFlowAktiv && (() => {
                   const istVerein = guidePfad === 'gemeinschaft'
                   type BannerBereich = { emoji: string; name: string; text: string; tab: string }
                   const bereiche: BannerBereich[] = istVerein ? [
@@ -12247,8 +12247,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   )
                 })()}
 
-                {/* Hub-Layout (wie Entdecken): nur wenn kein Guide aktiv – 3 Spalten, zielsicher, eine Hauptaktion */}
-                {!(guideVorname && tenant.isOeffentlich && !guideBannerClosed) && !guideFlowAktiv && (() => {
+                {/* EINHEITLICHER ADMIN-HUB (Regel: admin-einheitliches-layout.mdc, docs/ADMIN-LAYOUT-REGEL.md). K2, VK2, ök2 = ein Layout: „Was möchtest du heute tun?“ + Kacheln. Kein zweites UI (Guide-Balken/Panels) – die mit false && deaktivierten Blöcke nicht reaktivieren. */}
+                {(() => {
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
                   type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }

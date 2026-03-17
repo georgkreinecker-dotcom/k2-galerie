@@ -8,6 +8,8 @@ import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { isAdminUnlocked } from '../utils/adminUnlockStorage'
+import { speichereGuideFlow } from '../components/GlobaleGuideBegleitung'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -196,9 +198,10 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Keine gelbe Leiste mit „Zurück zu Einstellungen“ – für User verboten, zur APf zu führen */}
 
-      {/* Nav: „Zurück“ und „Admin“ nur anzeigen, wenn Aufruf vom Admin kommt (fromAdminTab); sonst keine Links zur APf */}
+      {/* Nav: „Zurück“ und „Admin“ anzeigen, wenn Aufruf vom Admin (fromAdminTab) oder Admin bereits freigeschaltet – Zugang wiederherstellbar */}
       {(() => {
         const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
+        const showAdminEntry = fromAdmin || isAdminUnlocked()
         return (
           <nav style={{
             position: 'sticky', top: 0, zIndex: 100,
@@ -230,7 +233,7 @@ const Vk2GaleriePage: React.FC = () => {
               >
                 🔑 Mitglied
               </button>
-              {fromAdmin && (
+              {showAdminEntry && (
                 <button
                   onClick={() => navigate('/mein-bereich?context=vk2')}
                   style={{ background: 'transparent', color: C.textLight, border: `1px solid ${C.border}`, borderRadius: 8, padding: '0.28rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'system-ui, sans-serif' }}
@@ -243,11 +246,23 @@ const Vk2GaleriePage: React.FC = () => {
         )
       })()}
 
-      {/* VK2 Willkommens-Banner – ohne „Mit mir in den Admin“-Button (führt zur APf; nur im Admin-Kontext sichtbar) */}
+      {/* VK2 Willkommens-Banner – wie ök2: Guide-Flow starten, dann in Admin (nahtlose Begleitung) */}
       {(() => {
-        const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
         const showVorschau = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') !== '1'
         if (!showVorschau) return null
+        // Wie ök2: Guide-Flow starten, damit GlobaleGuideBegleitung auf allen Seiten weiterläuft
+        const handleAdminKlick = () => {
+          speichereGuideFlow({
+            aktiv: true,
+            name: 'Verein',
+            pfad: 'gemeinschaft',
+            schritt: 'start',
+            erledigte: [],
+            context: 'vk2',
+          })
+          window.dispatchEvent(new CustomEvent('guide-flow-update'))
+          navigate('/mein-bereich?context=vk2&vorname=Verein&pfad=gemeinschaft')
+        }
         return (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)',
@@ -261,28 +276,47 @@ const Vk2GaleriePage: React.FC = () => {
             gap: '1rem',
             flexWrap: 'wrap',
           }}>
-            <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px' }}>
-              So könnte eure Vereinsgalerie aussehen. Schau dich um{fromAdmin ? ' – danach gehst du mit mir in den Admin und siehst, wie ihr eure Galerie gestaltet.' : '.'}
-            </span>
-            {fromAdmin && (
+            <span style={{ color: C.text, fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.35rem' }}>
+              So könnte eure Vereinsgalerie aussehen. Schau dich um.
               <button
                 type="button"
-                onClick={() => navigate('/mein-bereich?context=vk2')}
+                onClick={handleAdminKlick}
                 style={{
-                  padding: '0.5rem 1rem',
-                  background: '#1e5cb5',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '10px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  padding: '0.25rem 0.5rem',
+                  background: 'transparent',
+                  color: '#1e5cb5',
+                  border: '1px solid rgba(30, 92, 181, 0.5)',
+                  borderRadius: '8px',
                   fontWeight: 600,
-                  fontSize: '0.9rem',
+                  fontSize: 'inherit',
                   cursor: 'pointer',
                   fontFamily: 'inherit',
                 }}
+                title="In den Admin-Bereich"
               >
-                Mit mir in den Admin →
+                ⚙️ In den Admin
               </button>
-            )}
+            </span>
+            <button
+              type="button"
+              onClick={handleAdminKlick}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#1e5cb5',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '10px',
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              Mit mir in den Admin →
+            </button>
           </div>
         )
       })()}

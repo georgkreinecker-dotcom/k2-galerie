@@ -299,9 +299,7 @@ function StandBadgeSync() {
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
-  if (!showHere) return null
-
-  // Auf Vercel/Produktion: Stand vom Server holen → Badge zeigt immer aktuellen Stand (auch auf Mac bei gecachtem Bundle)
+  // Alle Hooks VOR jedem Return – sonst „Rendered fewer hooks“ beim Wechsel der Route (K2/ök2/Vorschau/Admin)
   const mountedRef = useRef(true)
   const reloadForStand = isLocal ? safeReload : safeReloadWithCacheBypass
   useEffect(() => {
@@ -321,6 +319,8 @@ function StandBadgeSync() {
       })
       .catch(() => {})
   }, [isLocal])
+
+  if (!showHere) return null
 
   // KEIN automatischer Reload bei serverNewer – verursacht in Cursor Preview Reload-Loop (Server neuer → Reload → wieder Server neuer → wieder Reload → Code-5-Crash). Nur Badge anzeigen, Nutzer tippt selbst.
   // KEIN Auto-Reload bei serverNewer (nur Badge, Nutzer tippt) – verhindert Reload-Loop in Cursor Preview.

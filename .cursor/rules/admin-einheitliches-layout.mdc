@@ -1,0 +1,52 @@
+---
+description: Admin Startseite = ein einheitliches Layout für K2, ök2, VK2. Kein kontextabhängiges Ersetzen durch Guide-Panels oder Banner.
+alwaysApply: true
+---
+
+# 🔒 Admin = ein einheitliches Layout (kategorisch)
+
+## Was passiert ist (März 2026)
+
+- **Admin „fehlte“ in K2/VK2:** Kontext kam aus sessionStorage → nach ök2-Besuch zeigte /admin Demo statt K2; Hub wurde nur bei `!guideFlowAktiv` gerendert → bei aktivem Guide war der Hub leer.
+- **ök2 „falsch“:** Statt derselben Startseite wie K2/VK2 zeigten sich grüner „Dein Galerie-Guide“-Balken und zwei verschiedene Guide-Panels (Willkommens-Hub, Willkommens-Banner) – abhängig von guideFlowAktiv/guideVorname.
+- **Folge:** Drei verschiedene „Admins“, Verwirrung, „so wie am Bild muss er sein“.
+
+## Regel (unveränderlich)
+
+**Die Admin-Startseite (Tab Werke = Hub) ist für K2, ök2 und VK2 ein einheitliches Layout.**
+
+- **Ein Layout:** „Was möchtest du heute tun?“ + Kacheln (Werke, Galerie gestalten, Kassa/Lager/Listen, Events, Einstellungen, Presse, …). Dasselbe in allen drei Kontexten – nur Texte/Beschreibungen pro Kontext angepasst (z. B. „Vereinsmitglieder“ bei VK2), **nicht** die Struktur oder ein anderes UI.
+- **Kein zweites UI im Admin:** Kein grüner Guide-Balken, kein mittleres „GALERIE-GUIDE“-Panel, kein Willkommens-Hub mit anderem Aufbau. Guide für neue Besucher = **nur** GlobaleGuideBegleitung (schwarzer Dialog), nicht in der Admin-Seite.
+- **TenantContext:** `/admin` ohne `?context=` = **immer K2**. Kontext nicht aus sessionStorage ableiten, wenn URL keinen context hat. Siehe TenantContext.tsx.
+
+## Konkret
+
+| Nicht | Sondern |
+|-------|---------|
+| Verschiedene Hub- oder Guide-Panels je Kontext (K2/ök2/VK2) | Ein Hub-Layout, eine Quelle (ScreenshotExportAdmin, Tab werke). |
+| Grüner „Dein Galerie-Guide“-Balken oder mittleres Guide-Panel im Admin | Kein Guide-UI im Admin; Guide nur GlobaleGuideBegleitung. |
+| Hub nur anzeigen wenn `!guideFlowAktiv` oder `!guideVorname` | Hub **immer** anzeigen (K2, VK2, ök2). |
+| `/admin` ohne context → Kontext aus sessionStorage | `/admin` ohne `?context=` → immer K2 (deriveTenantId). |
+
+## Pflicht-Checkliste bei Änderungen
+
+Wenn du **TenantContext**, **Admin-Route**, **ScreenshotExportAdmin** (Hub, Guide-Balken, Guide-Panels) oder **GlobaleGuideBegleitung** änderst:
+
+- [ ] Zeigt `/admin` ohne `?context=` weiterhin K2? (TenantContext: Default K2.)
+- [ ] Ist die Admin-Startseite (Hub) für K2, ök2 und VK2 **dasselbe** Layout („Was möchtest du heute tun?“ + Kacheln)?
+- [ ] Wird **nirgends** ein anderes Layout für einen Kontext eingebaut (kein Guide-Balken, kein Guide-Panel im Admin)?
+- [ ] Guide für neue Besucher = nur GlobaleGuideBegleitung; Ende = beendeGuideFlow() wenn User „ID anlegt“ (fertigStellen).
+
+## Tote Code-Blöcke (nicht reaktivieren)
+
+In ScreenshotExportAdmin sind mit `false &&` dauerhaft deaktiviert:
+
+- Grüner Guide-Balken („Dein Galerie-Guide“).
+- Erstes Guide-Panel (großer Willkommens-Hub mit Kacheln links/rechts + „… öffnen →“).
+- Zweites Guide-Panel („Willkommen, [Name]! Das ist deine Galerie-Zentrale“ + Bereichs-Karten).
+
+**Diese Blöcke nicht wieder aktivieren** – sie brechen das einheitliche Layout. Referenz: docs/ADMIN-LAYOUT-REGEL.md.
+
+## Kurzfassung
+
+**Admin = ein Layout für alle. Kein Guide-UI im Admin. /admin ohne context = K2. Checkliste vor Änderungen – tote Blöcke nicht reaktivieren.**

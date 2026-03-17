@@ -4554,6 +4554,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
           pfad: (neu.pfad ?? '') as import('../components/GlobaleGuideBegleitung').GuidePfad,
           schritt: 'start',
           erledigte: [],
+          context: 'oeffentlich',
         })
         window.dispatchEvent(new CustomEvent('guide-flow-update'))
         const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
@@ -4574,13 +4575,14 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
   const geheZuAdmin = (assistent = false) => {
     setSichtbar(false)
-    // Globalen Guide-Flow starten – Dialog begleitet auf jeder Seite weiter
+    // Globalen Guide-Flow starten – Dialog begleitet auf jeder Seite weiter (ök2-Kontext)
     speichereGuideFlow({
       aktiv: true,
       name: name ?? '',
       pfad: (antworten.pfad ?? '') as import('../components/GlobaleGuideBegleitung').GuidePfad,
       schritt: 'start',
       erledigte: [],
+      context: 'oeffentlich',
     })
     window.dispatchEvent(new CustomEvent('guide-flow-update'))
     const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''

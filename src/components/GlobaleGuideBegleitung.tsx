@@ -15,12 +15,16 @@ import { LIZENZPREISE } from '../config/licencePricing'
 
 export type GuidePfad = 'kuenstlerin' | 'gemeinschaft' | 'atelier' | 'entdecker' | ''
 
+export type GuideContext = 'oeffentlich' | 'vk2'
+
 export interface GuideFlowState {
   aktiv: boolean
   name: string
   pfad: GuidePfad
   schritt: string
   erledigte: string[]
+  /** Kontext wie in ök2: oeffentlich = Demo-Galerie, vk2 = Vereinsgalerie – steuert Admin-URLs und fertigStellen */
+  context?: GuideContext
 }
 
 const FLOW_KEY = 'k2-guide-flow'
@@ -31,6 +35,7 @@ export function ladeGuideFlow(): GuideFlowState | null {
     if (!v) return null
     const f = JSON.parse(v) as GuideFlowState
     if (!f.aktiv) return null
+    if (f.context !== 'vk2' && f.context !== 'oeffentlich') f.context = 'oeffentlich'
     return f
   } catch { return null }
 }
@@ -39,6 +44,7 @@ export function speichereGuideFlow(f: GuideFlowState) {
   try { localStorage.setItem(FLOW_KEY, JSON.stringify(f)) } catch { /* ignore */ }
 }
 
+/** Guide ist für neue Besucher. Verschwindet, wenn der User eine ID anlegt („Jetzt starten“ / fertigStellen). */
 export function beendeGuideFlow() {
   try {
     const v = localStorage.getItem(FLOW_KEY)
@@ -63,9 +69,10 @@ interface TourSchritt {
   adminSubTab?: string
 }
 
-function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
+function baueSchritte(pfad: GuidePfad, name: string, context: GuideContext = 'oeffentlich'): TourSchritt[] {
   const vorname = encodeURIComponent(name)
   const istVerein = pfad === 'gemeinschaft'
+  const ctx = context === 'vk2' ? 'vk2' : 'oeffentlich'
 
   if (istVerein) {
     return [
@@ -74,7 +81,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
         emoji: '🖼️',
         titel: 'Werke & Mitglieder',
         beschreibung: 'Hier verwaltet ihr alle Werke – wer hat was, Preise, Fotos. Jede:r Künstler:in hat ihr eigenes Profil.',
-        route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
+        route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
         adminTab: 'werke',
       },
       {
@@ -82,7 +89,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
         emoji: '🎟️',
         titel: 'Ausstellungen & Events',
         beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes für Besucher – alles an einem Ort.',
-        route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=eventplan`,
+        route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=eventplan`,
         adminTab: 'eventplan',
       },
       {
@@ -104,7 +111,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
         emoji: '💎',
         titel: 'Lizenz wählen',
         beschreibung: 'Basis kostenlos · Pro € 9 · VK2/Verein € 19 – jederzeit wechselbar, keine Bindung.',
-        route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen`,
+        route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen`,
         adminTab: 'einstellungen',
       },
       {
@@ -112,7 +119,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
         emoji: '🚀',
         titel: 'Jetzt starten',
         beschreibung: 'Name, Adresse, Kontakt eintragen – dann ist eure Vereinsgalerie live. Keine Kreditkarte nötig.',
-        route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
+        route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
         adminTab: 'einstellungen',
         adminSubTab: 'stammdaten',
       },
@@ -125,7 +132,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       emoji: '🖼️',
       titel: 'Meine Werke',
       beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist in der Galerie. So einfach.',
-      route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
+      route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
       adminTab: 'werke',
     },
     {
@@ -133,7 +140,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       emoji: '🎟️',
       titel: 'Events & Ausstellungen',
       beschreibung: 'Vernissage geplant? Hier erstellst du Einladungen, QR-Codes und siehst wer kommt.',
-      route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=eventplan`,
+      route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=eventplan`,
       adminTab: 'eventplan',
     },
     {
@@ -155,7 +162,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       emoji: '👥',
       titel: 'Kunden & Kontakt',
       beschreibung: 'Wer hat sich für deine Werke interessiert? Hier siehst du alle Nachrichten und kannst antworten.',
-      route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
+      route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=werke`,
       adminTab: 'werke',
     },
     {
@@ -163,7 +170,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       emoji: '💎',
       titel: 'Was kostet das?',
       beschreibung: 'Basis kostenlos · Pro € 9 / Monat · Studio € 19 / Monat\nJederzeit wechselbar, keine Bindung.',
-      route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen`,
+      route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen`,
       adminTab: 'einstellungen',
     },
     {
@@ -171,7 +178,7 @@ function baueSchritte(pfad: GuidePfad, name: string): TourSchritt[] {
       emoji: '🚀',
       titel: 'Jetzt starten',
       beschreibung: 'Trag deinen Namen und Kontakt ein – dann ist deine Galerie sofort live. Keine Kreditkarte nötig.',
-      route: `/admin?context=oeffentlich&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
+      route: `/admin?context=${ctx}&vorname=${vorname}&pfad=${pfad}&guidetab=einstellungen&guidesubtab=stammdaten&assistent=1`,
       adminTab: 'einstellungen',
       adminSubTab: 'stammdaten',
     },
@@ -341,22 +348,13 @@ export function GlobaleGuideBegleitung() {
 
   if (!flow || !flow.aktiv || geschlossen) return null
 
-  // Auf Galerie-Seiten und Admin: nicht zeigen (Admin hat eigenen inline-Hub)
-  const ausgeblendetAuf = [
-    '/projects/k2-galerie/galerie-oeffentlich',
-    '/projects/k2-galerie/galerie',
-    '/projects/vk2/galerie',
-    '/galerie-oeffentlich',
-    '/galerie-home',
-    '/galerie',
-    '/galerie/',
-    '/admin',
-    '/mein-bereich',
-  ]
-  if (ausgeblendetAuf.includes(location.pathname)) return null
+  // Guide-Overlay nirgends mehr anzeigen (war auf Kassa, Shop und anderen Seiten störend – komplett ausgeblendet)
+  const guideOverlayAnzeigen = false
+  if (!guideOverlayAnzeigen) return null
 
-  const { name, pfad } = flow
-  const schritte = baueSchritte(pfad, name)
+  const { name, pfad, context: flowContext } = flow
+  const ctx: GuideContext = flowContext === 'vk2' ? 'vk2' : 'oeffentlich'
+  const schritte = baueSchritte(pfad, name, ctx)
   const istVerein = pfad === 'gemeinschaft'
   const akzentFarbe = istVerein ? '#42a4ff' : '#ff8c42'
   const akzentGrad = istVerein
@@ -374,11 +372,11 @@ export function GlobaleGuideBegleitung() {
     setBesuchtSet(prev => new Set(prev).add(aktuellerIdx))
   }
 
-  // Guide führt immer in ök2 – Vita/Shop mit fromOeffentlich, damit Demo-Inhalt angezeigt wird
+  // Guide führt in Kontext (ök2 oder VK2) – Vita/Shop mit passendem State
   const navigateToStation = (route: string) => {
     const isVitaOrShop = route.includes('/vita') || route.includes('/shop')
     if (isVitaOrShop) {
-      navigate(route, { state: { fromOeffentlich: true } })
+      navigate(route, { state: ctx === 'vk2' ? { fromVk2: true } : { fromOeffentlich: true } })
     } else {
       navigate(route)
     }
@@ -401,7 +399,8 @@ export function GlobaleGuideBegleitung() {
   const fertigStellen = () => {
     beendeGuideFlow()
     setGeschlossen(true)
-    navigate(`/mein-bereich?context=oeffentlich&assistent=1&vorname=${encodeURIComponent(name)}&pfad=${pfad}`)
+    const contextParam = ctx === 'vk2' ? 'vk2' : 'oeffentlich'
+    navigate(`/mein-bereich?context=${contextParam}&assistent=1&vorname=${encodeURIComponent(name)}&pfad=${pfad}`)
   }
 
   const erklaerungText = aktuellerSchritt.beschreibung.split('\n').map((z, i, arr) => (

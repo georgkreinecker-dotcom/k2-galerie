@@ -1,0 +1,39 @@
+---
+description: Bei VK2-Refactors K2-Kern unberührt lassen – Admin eine Tür, K2-Impressum mit Stammdaten und Routenplaner (eiserne Regel).
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL: VK2-Refactors – K2-Kern unberührt (unveränderlich)
+
+## Was passiert ist (16.03.26)
+
+Bei der VK2-Überarbeitung traten u. a. auf: **Admin** wieder mit E-Mail/Passwort-Login („zweite Tür“), **K2-Impressum** ohne Stammdaten und ohne Routenplaner-Link, **Stammdaten** beim Laden mit Server-Response überschrieben statt gemerged. Diese Abläufe müssen auch nach VK2-Refactors weiter funktionieren.
+
+## Regel (unveränderlich)
+
+**VK2-Änderungen dürfen den K2-Kern nicht beeinträchtigen.** Der K2-Kern bleibt unberührt – außer Georg ordnet ausdrücklich eine Änderung an.
+
+### K2-Kern (bei VK2-Refactors unberührt lassen)
+
+| Bereich | Was unberührt bleibt | NIEMALS |
+|---------|----------------------|---------|
+| **Admin-Zugang** | **Eine Tür** – kein E-Mail/Passwort-Gate. APf = Admin ohne Hürden (georg-apf-admin-ohne-huerden.mdc). | Bei VK2-Refactors AdminLoginForm oder Supabase-Login wieder einbauen; AdminRoute so ändern, dass „normale“ Nutzer blockiert werden. |
+| **K2-Impressum** | Stammdaten (Adresse, Telefon, E-Mail) und **Routenplaner (Google)**-Link immer sichtbar. Quelle = **impressumStammdatenK2** (useMemo aus State + localStorage + K2_STAMMDATEN_DEFAULTS). | K2-Impressum nur aus State speisen ohne Fallback; Routenplaner-Link entfernen; Stammdaten-Block aus GaleriePage entfernen. |
+| **Stammdaten beim Laden** | Beim „Vom Server laden“ / handleRefresh: Stammdaten **nur mergen** (bestehende Werte erhalten wenn Server leer), **nie** mit Server-Response komplett ersetzen (setX(prev => merge…)). | Stammdaten aus Server-Response ohne Merge in State schreiben; Leer-Überschreiben. |
+
+## Betroffene Stellen
+
+- **AdminRoute.tsx:** Rendert nur ScreenshotExportAdmin, **kein** AdminLoginForm / Supabase-Session-Check.
+- **GaleriePage.tsx:** impressumStammdatenK2 (useMemo) als Quelle für Impressum-Block; handleRefresh: Stammdaten nur mergen (setGalleryData/setMartinaData/setGeorgData mit prev => …).
+
+## Checkliste bei VK2-Änderungen
+
+- [ ] Admin bleibt **eine Tür** (kein E-Mail/Passwort-Gate)?
+- [ ] K2-Impressum zeigt weiter **Stammdaten + Routenplaner** (Quelle impressumStammdatenK2)?
+- [ ] Stammdaten werden beim Laden **nur gemerged**, nie mit Leer oder Server-Response überschrieben?
+
+## Kurzfassung
+
+**VK2-Refactors = K2-Kern unberührt. Admin eine Tür, K2-Impressum mit Stammdaten und Routenplaner, Stammdaten nur mergen.**
+
+Verknüpfung: docs/KRITISCHE-ABLAEUFE.md §15, k2-echte-galerie-eisernes-gesetz.mdc, kein-datenverlust.mdc, georg-apf-admin-ohne-huerden.mdc.
