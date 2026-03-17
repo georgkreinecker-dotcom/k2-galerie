@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – **App-Fehler „Rendered fewer hooks“ behoben:** In ScreenshotExportAdmin VK2-Mitglied-Block: Alle Variablen (devBypassName, aktiverName, mitglied, mitgliedIdx, istVorstand) und ein useEffect für Vorstand-Redirect **vor** den ersten Return verschoben; kein bedingter Code mehr vor Returns. Vorstand-Fall: „return null“ durch „return <div>Weiterleitung…</div>“ + Redirect im useEffect ersetzt. Commit ddce82f, gepusht. Tests 212 grün, Build grün.
+**Letzter Stand:** 17.03.26 – **Vollbackup vorläufig letzte Version:** Commit 2e073a2 (Admin-Regel, eiserne Regeln Backup/VK2/Chaos, Übersicht), Tag **vorlaeufig-letzte-version-2026-03-16** auf GitHub. Hard-Backup **v006** auf backupmicro (KL2-Galerie-Backups). Optional: Im Admin einmal „Vollbackup herunterladen“ (Einstellungen → Backup & Wiederherstellung) und Datei sicher ablegen.
 
-**Was wir JETZT tun:** Raum bereit – Buttons sollten wieder reagieren.
+**Was wir JETZT tun:** Raum bereit – Vollbackup-Punkt gesetzt; nächster Schritt von Georg.
 
 **Vorher (16.03.26):** Öffentlichkeitsarbeit-Ablauf umgesetzt + Feinschliff (documentsStorage, Speichern-Button Presse-Fenster, „✓ Gespeichert“, fileData, 0 ms Dokumente-Laden, Absenden-Anleitung).
 
