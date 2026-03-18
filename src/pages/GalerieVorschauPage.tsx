@@ -554,7 +554,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [likedArtworks, setLikedArtworks] = useState<Set<string>>(new Set())
-  const [shareLinkCopied, setShareLinkCopied] = useState(false)
   const hasOpenedFromHash = useRef(false)
 
   // Beim Laden: Wenn URL-Hash #werk=XXX vorhanden, Lightbox auf dieses Werk öffnen (einmalig)
@@ -3093,109 +3092,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               </button>
             )}
 
-            {/* Teilen – WhatsApp, Link kopieren, System (direkter Link zu diesem Werk) */}
-            {lightboxImage.artwork && (() => {
-              const art = lightboxImage.artwork
-              const idOrNum = art.number ?? art.id ?? ''
-              const url = `${window.location.origin}${window.location.pathname}#werk=${encodeURIComponent(String(idOrNum))}`
-              const shareTitle = (art.title || `Werk ${idOrNum}`).trim()
-              const shareText = [shareTitle, art.price ? `Preis: € ${art.price}` : ''].filter(Boolean).join(' · ')
-              const fullShareText = shareText + ' ' + url
-              const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-              const handleShare = async () => {
-                if (!canShare) return
-                try {
-                  await navigator.share({ title: shareTitle, text: shareText, url })
-                } catch (err) {
-                  if ((err as Error)?.name !== 'AbortError') {
-                    try { navigator.clipboard.writeText(url) } catch (_) {}
-                  }
-                }
-              }
-              const handleCopyLink = () => {
-                navigator.clipboard.writeText(url).then(() => {
-                  setShareLinkCopied(true)
-                  setTimeout(() => setShareLinkCopied(false), 2500)
-                }).catch(() => {
-                  try {
-                    const ta = document.createElement('textarea')
-                    ta.value = url
-                    document.body.appendChild(ta)
-                    ta.select()
-                    document.execCommand('copy')
-                    document.body.removeChild(ta)
-                    setShareLinkCopied(true)
-                    setTimeout(() => setShareLinkCopied(false), 2500)
-                  } catch (_) {}
-                })
-              }
-              return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); window.open('https://wa.me/?text=' + encodeURIComponent(fullShareText), '_blank', 'noopener,noreferrer') }}
-                    title="Per WhatsApp teilen"
-                    style={{
-                      background: 'rgba(37, 211, 102, 0.25)',
-                      border: '1px solid rgba(37, 211, 102, 0.5)',
-                      color: '#ffffff',
-                      fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      fontWeight: 600,
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    💬 WhatsApp
-                  </button>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleCopyLink() }}
-                    title="Link zu diesem Werk kopieren"
-                    style={{
-                      background: shareLinkCopied ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)',
-                      color: '#ffffff',
-                      fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-                      padding: '0.5rem 0.75rem',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.35rem',
-                      fontWeight: 600,
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
-                  </button>
-                  {canShare && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleShare() }}
-                      title="System teilen (Mail, AirDrop, …)"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        color: '#ffffff',
-                        fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        fontWeight: 600,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      📤 System teilen
-                    </button>
-                  )}
-                </div>
-              )
-            })()}
+            {/* Teilen-Icons beim Werk entfernt – stören die Werkpräsentation (Georg). Galerie teilen bleibt oben. */}
 
             {/* Bild bearbeiten: nur auf Desktop (auf Mobil ausblenden – Bild nur im Admin ändern) */}
             {!musterOnly && showMobileAdmin && lightboxImage.artwork && !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768) && (
