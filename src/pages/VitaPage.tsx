@@ -4,6 +4,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { MUSTER_TEXTE, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { loadStammdaten, saveStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
+import { mayEditContent } from '../utils/visitorContext'
 import '../App.css'
 
 // K2: Stammdaten nur über Schicht (Phase 5.3). ök2: Vita-eigene Keys (Inhalt nur hier).
@@ -102,6 +103,7 @@ export default function VitaPage() {
 
   const title = id === 'martina' ? 'Vita – Martina' : 'Vita – Georg'
   const backTo = isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
+  const canEdit = mayEditContent(location.state)
 
   if (!loaded) {
     return (
@@ -119,32 +121,47 @@ export default function VitaPage() {
         </Link>
       </div>
       <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '1rem' }}>{title}</h1>
-      <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '1rem' }}>
-        Vita als Dokument – in den Einstellungen (Stammdaten) gespeichert. Bearbeite den Text und klicke auf Speichern.
-      </p>
-      <textarea
-        value={vita}
-        onChange={(e) => setVita(e.target.value)}
-        placeholder="Vita-Text …"
-        style={{
-          width: '100%',
-          minHeight: '320px',
-          padding: '1rem',
-          borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.2)',
-          background: 'rgba(0,0,0,0.2)',
-          color: '#fff',
-          fontSize: '1rem',
-          lineHeight: '1.6',
-          resize: 'vertical',
-        }}
-      />
-      <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <button type="button" className="btn-primary" onClick={save}>
-          Speichern
-        </button>
-        {saved && <span style={{ color: 'var(--k2-accent)', fontSize: '0.9rem' }}>Gespeichert.</span>}
-      </div>
+      {canEdit ? (
+        <>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '1rem' }}>
+            Vita als Dokument – in den Einstellungen (Stammdaten) gespeichert. Bearbeite den Text und klicke auf Speichern.
+          </p>
+          <textarea
+            value={vita}
+            onChange={(e) => setVita(e.target.value)}
+            placeholder="Vita-Text …"
+            style={{
+              width: '100%',
+              minHeight: '320px',
+              padding: '1rem',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'rgba(0,0,0,0.2)',
+              color: '#fff',
+              fontSize: '1rem',
+              lineHeight: '1.6',
+              resize: 'vertical',
+            }}
+          />
+          <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button type="button" className="btn-primary" onClick={save}>
+              Speichern
+            </button>
+            {saved && <span style={{ color: 'var(--k2-accent)', fontSize: '0.9rem' }}>Gespeichert.</span>}
+          </div>
+        </>
+      ) : (
+        <div
+          style={{
+            whiteSpace: 'pre-wrap',
+            lineHeight: 1.6,
+            color: 'rgba(255,255,255,0.9)',
+            fontSize: '1rem',
+          }}
+        >
+          {vita || 'Keine Vita hinterlegt.'}
+        </div>
+      )}
       <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.15)', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
         <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
         <div style={{ marginTop: '0.35rem', fontSize: '0.7rem', opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</div>

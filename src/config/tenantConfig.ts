@@ -56,6 +56,32 @@ export const PRODUCT_LIZENZ_ANFRAGE_BETREFF = 'kgm solution – Lizenz anfragen'
 /** Basis-URL der App (für Presse/Links/QR – keine Importe aus navigation). */
 export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
 
+/**
+ * Eiserne Regel: Nur auf der Plattform-Instanz (kgm) existieren ök2 und VK2.
+ * Lizenznehmer erhalten einen Clone der App – ohne Zugriff auf ök2/VK2-Struktur.
+ * Hostnamen, auf denen die volle Plattform (inkl. Demo ök2, Vereinsplattform VK2) läuft.
+ * Alle anderen Hostnamen = Lizenznehmer-Instanz → ök2/VK2 nie verfügbar.
+ * Doku: docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
+ */
+export const PLATFORM_HOSTNAMES = [
+  'localhost',
+  '127.0.0.1',
+  'k2-galerie.vercel.app',
+  'www.kgm.at',
+  'kgm.at',
+]
+
+/** Gibt true zurück, wenn die App auf einer Plattform-Instanz (kgm) läuft. Nur dann sind ök2 und VK2 erlaubt. */
+export function isPlatformInstance(): boolean {
+  try {
+    if (typeof window === 'undefined' || !window.location?.hostname) return false
+    const host = window.location.hostname.toLowerCase()
+    return PLATFORM_HOSTNAMES.some((h) => h.toLowerCase() === host)
+  } catch {
+    return false
+  }
+}
+
 /** E-Mail für Nutzer-Feedback / Verbesserungswünsche – nicht im UI anzeigen */
 export const PRODUCT_FEEDBACK_EMAIL = 'georg.kreinecker@kgm.at'
 

@@ -2,10 +2,14 @@
  * Phase 1.1 Sportwagen: Eine Quelle für den aktuellen Mandanten (K2 | ök2 | VK2).
  * Alle Key- und Kontext-Abfragen laufen darüber – keine Duplikation von
  * isOeffentlichAdminContext() / getArtworksKey() an vielen Stellen.
+ *
+ * Eiserne Regel: ök2 und VK2 nur auf der Plattform-Instanz (kgm). Lizenznehmer-Clone
+ * erhalten niemals Zugriff – auch nicht per URL-Manipulation (?context=oeffentlich/vk2).
  */
 
 import React, { createContext, useContext, useMemo, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { isPlatformInstance } from '../config/tenantConfig'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
 
@@ -14,6 +18,7 @@ export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 function getTenantFromStorage(): AdminTenantId {
   try {
     if (typeof sessionStorage === 'undefined') return 'k2'
+    if (!isPlatformInstance()) return 'k2'
     const s = sessionStorage.getItem(ADMIN_CONTEXT_KEY)
     if (s === 'oeffentlich' || s === 'vk2' || s === 'k2') return s
   } catch (_) {}
@@ -34,31 +39,42 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
   }
 }
 
-/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. Case-insensitive (VK2/vk2). Ohne ?context= = immer K2 (echte Galerie). */
+/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. Nur auf Plattform-Instanz werden oeffentlich/vk2 akzeptiert – sonst immer K2 (Hacker-/Lizenznehmer-Schutz). */
 function deriveTenantId(pathname: string, search: string): AdminTenantId {
+  const onPlatform = isPlatformInstance()
   const params = new URLSearchParams(search || '')
   const raw = params.get('context')
   const urlContext = raw != null ? raw.toLowerCase().trim() : null
   if (pathname === '/admin') {
+    if (!onPlatform) {
+      if (urlContext === 'oeffentlich' || urlContext === 'vk2') return 'k2'
+      if (urlContext === 'k2') return 'k2'
+      return 'k2'
+    }
     if (urlContext === 'oeffentlich') return 'oeffentlich'
     if (urlContext === 'vk2') return 'vk2'
     if (urlContext === 'k2') return 'k2'
-    return 'k2' // Kein context in URL = immer K2 (Admin-Bereich für echte Galerie)
+    return 'k2'
   }
   return getTenantFromStorage()
 }
 
-/** Sync: Wenn wir auf /admin sind und URL hat ?context=, in sessionStorage schreiben. Case-insensitive. */
+/** Sync: Wenn wir auf /admin sind und URL hat ?context=, in sessionStorage schreiben. Auf Lizenznehmer-Instanz niemals oeffentlich/vk2 schreiben. */
 function syncStorageFromUrl(pathname: string, search: string): void {
   try {
     if (pathname !== '/admin' || typeof sessionStorage === 'undefined') return
+    if (!isPlatformInstance()) {
+      const s = sessionStorage.getItem(ADMIN_CONTEXT_KEY)
+      if (s === 'oeffentlich' || s === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      return
+    }
     const params = new URLSearchParams(search || '')
     const raw = params.get('context')
     const ctx = raw != null ? raw.toLowerCase().trim() : null
     if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
     else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
     else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
-    else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2') // Kein context in URL = K2 merken
+    else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
   } catch (_) {}
 }
 

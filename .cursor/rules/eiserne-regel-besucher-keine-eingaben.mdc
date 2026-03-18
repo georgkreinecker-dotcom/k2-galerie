@@ -1,0 +1,47 @@
+---
+description: Eiserne Sperre – Besucher dürfen nirgends Eingaben (außer Shop). mayEditContent prüfen.
+alwaysApply: true
+---
+
+# 🔒 Eiserne Sperre: Besucher – keine Eingaben auf der gesamten App
+
+## Regel (unveränderlich)
+
+**Auf der gesamten App gilt: Besucher dürfen nirgends Eingaben vornehmen, die gemeinsame Daten (Galerie, Design, Werke, Events, Dokumente, Stammdaten, Vita, …) verändern.**
+
+- **Besucher** = Nutzer auf einer öffentlichen Seite (ök2 Galerie/Vorschau, VK2 Galerie/Katalog, Vita, Entdecken, AGB, …), **ohne** dass er vom Admin oder von der APf kommt oder (bei VK2) eingeloggt ist.
+- **Erlaubte Ausnahme:** Nur Kunden-Eingaben im Shop (Warenkorb, Bestellung, Kontakt zum Zweck der Bestellung).
+- **Alle anderen Bereiche:** Keine Bearbeitungs-UI (keine Eingabefelder, keine Speichern-Buttons) für Besucher. Nur Lesen/Anzeige.
+
+## Wo gilt die Sperre
+
+| Bereich | Besucher = nur Lesen | Bearbeiten nur wenn |
+|--------|----------------------|----------------------|
+| Galerie gestalten (Texte, Bilder, Design) | ✅ | Admin / APf / von Admin kommend |
+| Werke (Anzeige, Hinzufügen, Bearbeiten) | ✅ | Admin / Vorschau mit fromAdminTab |
+| Vita | ✅ | Admin / APf / von Admin kommend |
+| Events, Dokumente, Stammdaten | ✅ | Admin / APf / VK2 (je Kontext) |
+| Shop (Warenkorb, Bestellung) | Ausnahme: Kunde darf bestellen | – |
+| Entdecken (Notizen) | Optional: nur lokale Notizen erlauben oder ausblenden | Nach Projekt-Entscheidung |
+
+## Technische Umsetzung
+
+- **Hilfsfunktion:** `mayEditContent(location.state)` bzw. `isVisitorContext(location.state)` aus `src/utils/visitorContext.ts`.
+- **Auf jeder Seite mit Bearbeitungsmöglichkeit:** Nur dann Textarea/Formulare/Speichern-Buttons anzeigen, wenn `mayEditContent(location.state)` true ist. Sonst nur Anzeige (read-only).
+- **Admin / APf / VK2-Login:** Setzen die nötigen Signale (sessionStorage, location.state), sodass `mayEditContent` true wird.
+
+## Checkliste bei neuen Features
+
+- [ ] Ermöglicht die Seite Eingaben, die Galerie-/Stammdaten-/Design-/Werke-Daten ändern?
+- [ ] Wenn ja: Ist die Seite nur aus Admin/APf/VK2 erreichbar, oder kann ein Besucher die URL aufrufen?
+- [ ] Wenn Besucher erreichbar: Bearbeitungs-UI nur anzeigen, wenn `mayEditContent(location.state)` true; sonst read-only.
+
+## Verknüpfung
+
+- **Doku:** docs/SICHERHEIT-BESUCHER-KEINE-EINGABEN.md (Liste aller Bereiche, Prüfliste).
+- **Galerie gestalten:** docs/SICHERHEIT-GALERIE-GESTALTEN-OEK2-VK2.md.
+- **Implementierung:** src/utils/visitorContext.ts.
+
+## Kurzfassung
+
+**Besucher = nirgends Eingaben außer Shop. Überall wo Bearbeitung möglich ist: mayEditContent prüfen, sonst read-only.**

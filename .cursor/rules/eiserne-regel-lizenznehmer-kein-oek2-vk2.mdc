@@ -1,0 +1,56 @@
+---
+description: Lizenznehmer erhalten nur einen Clone der App – niemals Zugriff auf ök2/VK2. 100 % abgesichert, auch gegen Hackerangriffe.
+alwaysApply: true
+---
+
+# 🔒 Eiserne Regel: Lizenznehmer – kein Zugriff auf ök2/VK2 (100 % abgesichert)
+
+## Grundsatz (unveränderlich)
+
+**Erst durch die Lizenzerteilung erhält der Nutzer einen Clone der App, den er verwenden kann – aber niemals Zugriff auf die ök2- oder VK2-Struktur.** Das muss 100 % abgesichert sein. Auch Hackerangriffe von Userseite sind durch eiserne Regeln zu verhindern.
+
+---
+
+## Was gilt
+
+| Wer | Was erhält | Was er nie erhält |
+|-----|------------|-------------------|
+| **Plattform (kgm)** | Volle App inkl. Demo ök2, Vereinsplattform VK2, Admin, APf | – |
+| **Lizenznehmer** | Clone der App (eigene Galerie, eigener Mandant) | Kein Zugriff auf ök2, kein Zugriff auf VK2, keine Routen/Links dorthin, keine Keys/Speicher |
+
+---
+
+## Technische Absicherung
+
+1. **Plattform-Instanz-Erkennung:** Nur auf Hostnamen aus `PLATFORM_HOSTNAMES` (tenantConfig.ts) laufen ök2 und VK2. Alle anderen Hostnamen = Lizenznehmer-Instanz.
+2. **TenantContext:** Auf Nicht-Plattform wird `?context=oeffentlich` und `?context=vk2` ignoriert – immer K2. sessionStorage wird nie mit oeffentlich/vk2 beschrieben.
+3. **Routen:** `galerie-oeffentlich`, `galerie-oeffentlich-vorschau`, alle `/projects/vk2/*` und VK2-Login sind mit `PlatformOnlyRoute` gewrappt – auf Nicht-Plattform Redirect auf Start.
+4. **URL-Parameter:** Kein Vertrauen in User-Input für Kontext. `tenantId` aus URL: nur a-z0-9-, 1–64 Zeichen, niemals k2/oeffentlich/vk2.
+
+---
+
+## Hacker-Abwehr (von Userseite)
+
+- **Kein Vertrauen in URL/Parameter für ök2/VK2:** Kontext oeffentlich/vk2 wird nur auf Plattform-Instanz aus URL übernommen; sonst immer K2.
+- **Kein eval() / keine dynamische Code-Ausführung** aus User-Eingaben.
+- **Eingaben validieren:** Wo User-Daten in Speicher oder API gehen (Namen, IDs, Texte) – Länge, Zeichensatz, keine Skript-Injection.
+- **localStorage/Keys:** Lizenznehmer-Instanz schreibt nie in k2-oeffentlich-* oder k2-vk2-* (weil Kontext dort nie oeffentlich/vk2 ist).
+
+---
+
+## Checkliste bei Änderungen
+
+- [ ] Wird eine neue Route oder ein Link zu ök2/VK2 eingeführt? → Nur innerhalb von PlatformOnlyRoute oder nur auf Plattform anzeigen.
+- [ ] Wird Kontext aus URL/sessionStorage gelesen? → TenantContext nutzen; auf Nicht-Plattform liefert er nie oeffentlich/vk2.
+- [ ] Neue User-Eingabe (Formular, URL-Param)? → Validierung (Länge, Zeichensatz), kein eval.
+
+---
+
+## Verknüpfung
+
+- **Doku:** docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
+- **Code:** src/config/tenantConfig.ts (isPlatformInstance, PLATFORM_HOSTNAMES), src/context/TenantContext.tsx, src/components/PlatformOnlyRoute.tsx
+
+## Kurzfassung
+
+**Lizenznehmer = Clone ohne ök2/VK2. Nur Plattform-Hostnamen haben ök2/VK2. URL-Manipulation und Hackerangriffe werden durch Hostname-Check und Kontext-Ignoranz abgeblockt.**

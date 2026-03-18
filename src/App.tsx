@@ -71,6 +71,7 @@ import KassausgangPage from './pages/KassausgangPage'
 import BuchhaltungPage from './pages/BuchhaltungPage'
 const AdminRoute = lazy(() => import('./components/AdminRoute'))
 import { Ok2ThemeWrapper } from './components/Ok2ThemeWrapper'
+import { PlatformOnlyRoute } from './components/PlatformOnlyRoute'
 import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import MissionControlPage from './pages/MissionControlPage'
@@ -561,17 +562,17 @@ function App() {
       <Route path="/projects/k2-galerie/k2-markt-tor" element={<Navigate to={PROJECT_ROUTES['k2-markt'].tor} replace />} />
       <Route path="/projects/k2-galerie/k2-markt" element={<Navigate to={PROJECT_ROUTES['k2-markt'].mappe} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper>} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieVorschau} element={<GalerieVorschauPage />} />
-      {/* VK2 Vereinsplattform – muss vor /projects/:projectId stehen */}
-      <Route path={PROJECT_ROUTES.vk2.home} element={<Navigate to={PROJECT_ROUTES.vk2.galerie} replace />} />
-      <Route path={PROJECT_ROUTES.vk2.galerie} element={<Vk2GaleriePage />} />
-      <Route path={PROJECT_ROUTES.vk2.katalog} element={<Vk2KatalogPage />} />
-      <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<Vk2GalerieVorschauPage />} />
-      <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<Vk2MitgliedLoginPage />} />
-      <Route path={PROJECT_ROUTES.vk2.kunden} element={<KundenPage vk2 />} />
-      <Route path={PROJECT_ROUTES.vk2.vollversion} element={<Navigate to="/admin?context=vk2" replace />} />
+      {/* VK2 Vereinsplattform – nur auf Plattform-Instanz (Lizenznehmer haben keinen Zugriff) */}
+      <Route path={PROJECT_ROUTES.vk2.home} element={<PlatformOnlyRoute><Navigate to={PROJECT_ROUTES.vk2.galerie} replace /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.galerie} element={<PlatformOnlyRoute><Vk2GaleriePage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.katalog} element={<PlatformOnlyRoute><Vk2KatalogPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.galerieVorschau} element={<PlatformOnlyRoute><Vk2GalerieVorschauPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.mitgliedLogin} element={<PlatformOnlyRoute><Vk2MitgliedLoginPage /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.kunden} element={<PlatformOnlyRoute><KundenPage vk2 /></PlatformOnlyRoute>} />
+      <Route path={PROJECT_ROUTES.vk2.vollversion} element={<PlatformOnlyRoute><Navigate to="/admin?context=vk2" replace /></PlatformOnlyRoute>} />
       {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
       <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
