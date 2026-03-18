@@ -307,7 +307,7 @@ function applyDesignToDocument(design: Record<string, string> | null | undefined
   } catch (_) {}
 }
 
-const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scrollToSection?: string; musterOnly?: boolean; vk2?: boolean }) => {
+const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf = false }: { scrollToSection?: string; musterOnly?: boolean; vk2?: boolean; fromApf?: boolean }) => {
   const navigate = useNavigate()
   const location = useLocation()
   // K2 / ök2 / VK2: Werke nur über Artworks-Schicht (Phase 5.2) getrennte Daten, keine Vermischung
@@ -377,6 +377,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   }, [musterOnly])
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
+  const KEY_OEK2_FROM_APF = 'k2-oek2-from-apf'
 
   /** Guide nur für Fremde (Besucher), nicht für User/Besitzer die von Admin/APf kommen */
   const isGalerieUser = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1')
@@ -395,9 +396,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       if (!musterOnly && !vk2) return true
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return true
       if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
       const ctx = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('k2-admin-context') : null
       if (ctx === 'oeffentlich' || ctx === 'vk2') return true
+      if (musterOnly && fromApf) return true
       const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       if (!ref.startsWith(origin)) return false
@@ -480,6 +483,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
   const closeFullscreen = () => { setFullscreenMedia(null); setFullscreenZoom(1) }
   // PWA-Icon-Hinweis: Nur auf Mobile, wenn noch nicht als „App“ am Startbildschirm – Nutzer muss Icon aktiv hinzufügen
   const [showPwaIconHint, setShowPwaIconHint] = useState(false)
+  const [sharePopoverOpen, setSharePopoverOpen] = useState(false)
+  const [shareLinkCopied, setShareLinkCopied] = useState(false)
+  const sharePopoverContainerRef = React.useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!sharePopoverOpen) return
+    const close = (e: MouseEvent | TouchEvent) => {
+      const el = sharePopoverContainerRef.current
+      if (el && e.target instanceof Node && !el.contains(e.target)) setSharePopoverOpen(false)
+    }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('touchstart', close, { passive: true })
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('touchstart', close) }
+  }, [sharePopoverOpen])
   useEffect(() => {
     if (typeof window === 'undefined') return
     const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768
@@ -2251,7 +2267,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     }
   }
 
-  // Künstler-Einstieg: immer zu /mein-bereich (dort Passwort wenn nötig, dann Admin). embedded=1 mitnehmen, damit Admin in APf-iPhone-iframe bleibt.
+  // Künstler-Einstieg: VK2 → mein-bereich. ök2 von APf → direkt Admin ohne Guide; ök2 als Fremder → mein-bereich (Guide). K2 → mein-bereich.
   const handleAdminButtonClick = () => {
     const embedded = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1' ? '&embedded=1' : ''
     if (vk2) {
@@ -2259,6 +2275,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
       return
     }
     if (musterOnly) {
+      if (showAdminEntryOnGalerie) {
+        try {
+          sessionStorage.setItem('k2-admin-context', 'oeffentlich')
+          sessionStorage.setItem(KEY_OEK2_FROM_APF, '1')
+        } catch (_) {}
+        navigate(`/admin?context=oeffentlich${embedded}`)
+        return
+      }
       navigate(`/mein-bereich?context=oeffentlich${embedded}`)
       return
     }
@@ -2266,22 +2290,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return
   }
 
-  const handleGalerieTeilen = async () => {
-    if (typeof navigator === 'undefined') return
-    const url = window.location.origin + window.location.pathname + window.location.search
-    const text = (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ title: displayGalleryName || 'Galerie', text, url })
-      } catch (err) {
-        if ((err as Error)?.name !== 'AbortError') {
-          try { await navigator.clipboard.writeText(url) } catch (_) {}
-        }
-      }
-    } else {
-      try {
+  const getShareUrl = () => typeof window !== 'undefined' ? window.location.origin + window.location.pathname + window.location.search : ''
+  const getShareText = () => (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
+
+  const handleCopyLink = async () => {
+    const url = getShareUrl()
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(url)
-      } catch (_) {
+      } else {
         const ta = document.createElement('textarea')
         ta.value = url
         document.body.appendChild(ta)
@@ -2289,8 +2306,37 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         document.execCommand('copy')
         document.body.removeChild(ta)
       }
+      setShareLinkCopied(true)
+      setTimeout(() => setShareLinkCopied(false), 2500)
+      setSharePopoverOpen(false)
+    } catch (_) {}
+  }
+
+  const handleWhatsAppShare = () => {
+    const url = getShareUrl()
+    const text = getShareText()
+    const full = text + ' ' + url
+    window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener,noreferrer')
+    setSharePopoverOpen(false)
+  }
+
+  const handleSystemShare = async () => {
+    if (typeof navigator === 'undefined') return
+    const url = getShareUrl()
+    const text = getShareText()
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: displayGalleryName || 'Galerie', text, url })
+        setSharePopoverOpen(false)
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError') void handleCopyLink()
+      }
+    } else {
+      void handleCopyLink()
     }
   }
+
+  const handleGalerieTeilen = () => setSharePopoverOpen((v) => !v)
 
   // Legacy: setFirstVisitNow / grantAdminAccess / Modal nur noch für Fallback (z. B. deep link). Normaler Einstieg = /mein-bereich.
   const _legacyAdminUnlock = () => {
@@ -2523,35 +2569,73 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {(galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' && !vk2 ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || (vk2 ? 'Unsere Mitglieder' : 'Die Kunstschaffenden')}</span>
           </div>
         )}
-        {/* Galerie teilen (fixed) – nur K2/VK2; ök2 nutzt das Banner, damit kein Overlap. */}
-        {typeof navigator !== 'undefined' && !musterOnly && (
+        {/* Galerie teilen (fixed) – K2, VK2, ök2: Popover mit WhatsApp, Link kopieren, System teilen */}
+        {typeof navigator !== 'undefined' && (
+        <div ref={sharePopoverContainerRef} style={{ position: 'relative' }}>
         <button
           type="button"
           onClick={handleGalerieTeilen}
-          title={typeof navigator.share === 'function' ? 'Galerie teilen (WhatsApp, Mail, Social …)' : 'Link zur Galerie kopieren'}
+          title="Galerie teilen – deine eigene genauso einfach in den Verteiler (WhatsApp, Link, überall)"
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: showAdminEntryOnGalerie ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
-            background: vk2 ? 'rgba(255, 140, 66, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-            border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
-            color: vk2 ? '#fff' : '#fff',
+            right: showAdminEntryOnGalerie && !musterOnly ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
+            background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
+            color: '#fff',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
             borderRadius: '10px',
             fontSize: 'clamp(0.78rem, 1.8vw, 0.9rem)',
             fontWeight: 600,
             cursor: 'pointer',
-            zIndex: 1000,
+            zIndex: 1001,
             display: 'flex',
             alignItems: 'center',
             gap: '0.35rem'
           }}
         >
-          {typeof navigator.share === 'function' ? '📤 Galerie teilen' : '🔗 Link kopieren'}
+          📤 Galerie teilen
         </button>
+        {sharePopoverOpen && (
+          <div
+            role="dialog"
+            aria-label="Teilen"
+            style={{
+              position: 'fixed',
+              top: 'max(clamp(3.5rem, 8vw, 4.5rem), calc(env(safe-area-inset-top, 0px) + 3.5rem))',
+              right: showAdminEntryOnGalerie && !musterOnly ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
+              zIndex: 1002,
+              background: 'rgba(26, 15, 10, 0.98)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              padding: '0.5rem',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.25rem',
+              minWidth: '200px'
+            }}
+          >
+            <button type="button" onClick={handleWhatsAppShare} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.9rem', background: 'rgba(37, 211, 102, 0.2)', border: '1px solid rgba(37, 211, 102, 0.5)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              💬 WhatsApp teilen
+            </button>
+            <button type="button" onClick={handleCopyLink} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+              {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
+            </button>
+            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+              <button type="button" onClick={handleSystemShare} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
+                📤 System teilen (Mail, AirDrop, …)
+              </button>
+            )}
+            <p style={{ margin: '0.5rem 0 0', padding: '0 0.25rem', fontSize: '0.75rem', lineHeight: 1.4, color: 'rgba(255,255,255,0.75)' }}>
+              Deine eigene Galerie bringst du so in den Verteiler – überall.
+            </p>
+          </div>
         )}
-        {/* Admin-Button (fixed) – nur K2/VK2; ök2 nutzt das Banner. */}
-        {showAdminEntryOnGalerie && !musterOnly && (
+        </div>
+        )}
+        {/* Admin-Button (fixed) – K2 immer; ök2/VK2 wenn von APf/Kontext (Fremde sehen nur das Guide-Banner). */}
+        {showAdminEntryOnGalerie && (
         <button
           onClick={handleAdminButtonClick}
           style={{
@@ -2946,8 +3030,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </header>
         ) : (
         <>
-        {/* ök2: Ein klares Willkommens-Banner – Text + zwei Aktionen in einer Zeile, kein Overlap mit fixed-Elementen */}
-        {musterOnly && (
+        {/* ök2: Willkommens-Banner nur für Fremde; von APf aus zeigen wir den festen Admin-Button statt Guide. */}
+        {musterOnly && !showAdminEntryOnGalerie && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
             padding: 'clamp(0.75rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem)',
@@ -2964,14 +3048,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du jedes Produkt oder jede Idee präsentieren. Schau dich um, dann gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
+              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du jedes Produkt oder jede Idee präsentieren. Deine eigene Galerie bringst du genauso einfach in den Verteiler (WhatsApp, Link, überall). Schau dich um, dann gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
               {typeof navigator !== 'undefined' && (
                 <button
                   type="button"
-                  onClick={handleGalerieTeilen}
-                  title={typeof navigator.share === 'function' ? 'Galerie teilen' : 'Link kopieren'}
+                  onClick={() => setSharePopoverOpen(true)}
+                  title="Galerie teilen – deine eigene genauso einfach in den Verteiler"
                   style={{
                     padding: '0.5rem 0.9rem',
                     background: 'rgba(107, 144, 128, 0.2)',
@@ -2984,7 +3068,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
                     fontFamily: 'inherit',
                   }}
                 >
-                  {typeof navigator.share === 'function' ? '📤 Galerie teilen' : '🔗 Link kopieren'}
+                  📤 Galerie teilen
                 </button>
               )}
               <button

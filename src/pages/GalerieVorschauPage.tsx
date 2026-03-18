@@ -3093,13 +3093,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               </button>
             )}
 
-            {/* Teilen (Web Share) und Link kopieren – direkter Link zu diesem Werk */}
+            {/* Teilen – WhatsApp, Link kopieren, System (direkter Link zu diesem Werk) */}
             {lightboxImage.artwork && (() => {
               const art = lightboxImage.artwork
               const idOrNum = art.number ?? art.id ?? ''
               const url = `${window.location.origin}${window.location.pathname}#werk=${encodeURIComponent(String(idOrNum))}`
               const shareTitle = (art.title || `Werk ${idOrNum}`).trim()
               const shareText = [shareTitle, art.price ? `Preis: € ${art.price}` : ''].filter(Boolean).join(' · ')
+              const fullShareText = shareText + ' ' + url
               const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
               const handleShare = async () => {
                 if (!canShare) return
@@ -3130,31 +3131,29 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               }
               return (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {canShare && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleShare() }}
-                      title="Teilen (WhatsApp, Mail, Social …)"
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.2)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        color: '#ffffff',
-                        fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
-                        padding: '0.5rem 0.75rem',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                        fontWeight: 600,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      📤 Teilen
-                    </button>
-                  )}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); window.open('https://wa.me/?text=' + encodeURIComponent(fullShareText), '_blank', 'noopener,noreferrer') }}
+                    title="Per WhatsApp teilen"
+                    style={{
+                      background: 'rgba(37, 211, 102, 0.25)',
+                      border: '1px solid rgba(37, 211, 102, 0.5)',
+                      color: '#ffffff',
+                      fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.35rem',
+                      fontWeight: 600,
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    💬 WhatsApp
+                  </button>
                   <button
                     onClick={(e) => { e.stopPropagation(); handleCopyLink() }}
-                    title="Link zu diesem Werk kopieren (zum Teilen per Mail, Social, Flyer)"
+                    title="Link zu diesem Werk kopieren"
                     style={{
                       background: shareLinkCopied ? 'rgba(34, 197, 94, 0.4)' : 'rgba(255, 255, 255, 0.2)',
                       border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -3172,6 +3171,28 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   >
                     {shareLinkCopied ? '✓ Link kopiert!' : '🔗 Link kopieren'}
                   </button>
+                  {canShare && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleShare() }}
+                      title="System teilen (Mail, AirDrop, …)"
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        color: '#ffffff',
+                        fontSize: 'clamp(0.8rem, 2vw, 0.95rem)',
+                        padding: '0.5rem 0.75rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        fontWeight: 600,
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      📤 System teilen
+                    </button>
+                  )}
                 </div>
               )
             })()}

@@ -883,7 +883,7 @@ end tell`
           </div>
         )
       }
-      return <GaleriePage key={componentKey} musterOnly={true} />
+      return <GaleriePage key={componentKey} musterOnly={true} fromApf />
     }
     if (pageToRender === 'galerie-vorschau') {
       return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
@@ -1358,6 +1358,23 @@ end tell`
         >
           ↗️ Vollbild
         </Link>
+        {(currentPageData.id === 'galerie-oeffentlich' || currentPageData.id === 'galerie-oeffentlich-vorschau') && (
+          <Link
+            to="/admin?context=oeffentlich&fromApf=1"
+            style={{
+              padding: '0.5rem 1rem',
+              background: 'var(--k2-accent)',
+              color: '#fff',
+              textDecoration: 'none',
+              borderRadius: '6px',
+              fontSize: '0.9rem',
+              fontWeight: 600,
+            }}
+            title="ök2 Demo direkt im Admin bearbeiten – ohne Guide"
+          >
+            Demo bearbeiten
+          </Link>
+        )}
         <button
           onClick={() => {
             publishMobile()

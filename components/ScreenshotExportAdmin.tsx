@@ -35,6 +35,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
+import { speichereGuideFlow } from '../src/components/GlobaleGuideBegleitung'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1180,15 +1181,54 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const guidePfad = (() => {
     try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
   })()
-  // Wenn globaler Guide-Flow aktiv: Banner komplett ausblenden – Dialog führt alleine
-  const guideFlowAktiv = (() => {
+  // Guide-Flow reaktiv: bei 'guide-flow-update' neu lesen, damit grüner Balken erscheint sobald Flow startet
+  const [guideFlowAktiv, setGuideFlowAktiv] = useState(() => {
     try {
       const v = localStorage.getItem('k2-guide-flow')
       if (!v) return false
       const f = JSON.parse(v)
       return f?.aktiv === true
     } catch { return false }
-  })()
+  })
+  React.useEffect(() => {
+    const onUpdate = () => {
+      try {
+        const v = localStorage.getItem('k2-guide-flow')
+        if (!v) { setGuideFlowAktiv(false); return }
+        const f = JSON.parse(v)
+        setGuideFlowAktiv(f?.aktiv === true)
+      } catch { setGuideFlowAktiv(false) }
+    }
+    window.addEventListener('guide-flow-update', onUpdate)
+    return () => window.removeEventListener('guide-flow-update', onUpdate)
+  }, [])
+
+  // Direktaufruf Admin (ök2/VK2): Wenn noch kein Guide-Flow aktiv ist, einmal starten – außer Einstieg von APf (dann keinen Guide)
+  React.useEffect(() => {
+    if (!(tenant.isOeffentlich || tenant.isVk2)) return
+    try {
+      if (tenant.isOeffentlich) {
+        const fromApf = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-oek2-from-apf') === '1'
+        const fromApfUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search || '').get('fromApf') === '1'
+        if (fromApfUrl) sessionStorage.setItem('k2-oek2-from-apf', '1')
+        if (fromApf || fromApfUrl) return
+      }
+      const v = localStorage.getItem('k2-guide-flow')
+      const f = v ? JSON.parse(v) : {}
+      if (f?.aktiv === true) return
+      const params = new URLSearchParams(window.location.search || '')
+      speichereGuideFlow({
+        aktiv: true,
+        name: f?.name ?? params.get('vorname') ?? '',
+        pfad: (f?.pfad ?? params.get('pfad') ?? '') as import('../src/components/GlobaleGuideBegleitung').GuidePfad,
+        schritt: f?.schritt ?? 'start',
+        erledigte: Array.isArray(f?.erledigte) ? f.erledigte : [],
+        context: tenant.isVk2 ? 'vk2' : 'oeffentlich',
+      })
+      window.dispatchEvent(new CustomEvent('guide-flow-update'))
+      setGuideFlowAktiv(true)
+    } catch { /* ignore */ }
+  }, [tenant.isOeffentlich, tenant.isVk2])
 
   // Vom Hub gekommen? → Zurück-Button anzeigen
   const fromHub = (() => {
@@ -11536,13 +11576,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* Oberer Rand des Admin-Bereichs (Anker für „Zurück in den Admin-Bereich“); Spacer wenn Zurück-Banner sichtbar */}
       <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
 
-      {/* Grüner Guide-Balken aus: Admin immer wie im Bild (sauberer Hub). Guide nur als GlobaleGuideBegleitung. */}
-      {false && tenant.isOeffentlich && guideFlowAktiv && (() => {
+      {/* Grüner Guide-Balken: Orientierung für Besucher im Guide (ök2 + VK2). Zeigt aktuellen Bereich + Zurück. */}
+      {(tenant.isOeffentlich || tenant.isVk2) && guideFlowAktiv && (() => {
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
-            ? { titel: 'Vereinsmitglieder', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. Klicke auf ein Profil zum Bearbeiten oder nutze „Neues Werk“, um ein weiteres hinzuzufügen.' }
-            : { titel: 'Werke hinzufügen und bearbeiten', text: 'Hier legst du deine Werke an: Foto hochladen oder aufnehmen, Titel und Preis eintragen – schon ist das Werk in der Galerie. Du kannst jederzeit etwas ändern oder ergänzen. Einfach auf ein Werk tippen zum Bearbeiten oder „Neues Werk“ wählen.' },
+            ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' }
+            : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' },
           eventplan: istVerein
             ? { titel: 'Events & Ausstellungen', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellst du Einladungen, QR-Codes für Gäste und siehst, wer kommt. Alles für eure Events an einem Ort – ohne Zettelwirtschaft.' }
             : { titel: 'Events & Ausstellungen', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen und QR-Codes für deine Gäste. Du siehst auf einen Blick, was ansteht – und deine Besucher können sich einfach anmelden.' },
@@ -11579,7 +11619,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
-                  Dein Galerie-Guide
+                  {istVerein ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'}
                 </div>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{aktuell.titel}</div>
                 <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.98)', maxWidth: '52rem' }}>
@@ -11718,6 +11758,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].shop}
                     state={{ openAsKasse: true, fromVk2: true }}
+                    title="Guide: Öffnet die Vereins-Kasse – Einnahmen erfassen, Belege drucken, Überblick behalten."
                     style={{
                       padding: '0.55rem 1.1rem',
                       background: s.gradientAccent,
@@ -11740,6 +11781,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].buchhaltung}
                     state={{ fromVk2: true }}
+                    title="Guide: Führt zur Buchhaltung – Verkäufe, Belege, Lager und Listen an einem Ort."
                     style={{
                       padding: '0.55rem 1.1rem',
                       background: '#1a5f7a',
@@ -11767,6 +11809,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].shop}
                     state={{ openAsKasse: true, fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    title="Guide: Öffnet die Kasse – hier nimmst du Verkäufe auf, druckst Belege und behältst den Überblick."
                     style={{
                       padding: '0.55rem 1.1rem',
                       background: s.gradientAccent,
@@ -11789,6 +11832,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <Link
                     to={PROJECT_ROUTES['k2-galerie'].buchhaltung}
                     state={{ fromOeffentlich: tenant.isOeffentlich || undefined }}
+                    title="Guide: Führt zur Buchhaltung – Verkäufe, Belege, Lager und Listen an einem Ort."
                     style={{
                       padding: '0.55rem 1.1rem',
                       background: '#1a5f7a',
@@ -11826,7 +11870,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   alignItems: 'center',
                   gap: '0.4rem'
                 }}
-                title={typeof besucherCount === 'number' ? `Hompage-Besucher: ${besucherCount}` : 'Besucherzahl wird geladen…'}
+                title={typeof besucherCount === 'number'
+                  ? `Guide: Zeigt, wie viele Besucher deine Galerie-Seite aufgerufen haben (aktuell: ${besucherCount}).`
+                  : 'Guide: Besucherzahl – so viele Besucher haben deine Galerie-Seite in diesem Zeitraum aufgerufen. Wird geladen…'}
               >
                 👁 {typeof besucherCount === 'number' ? besucherCount : '–'}
               </span>
@@ -11835,7 +11881,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <button
                 type="button"
                 onClick={() => { setWunschModalOpen(true); setWunschText(''); setWunschError(null); setWunschSuccess(false) }}
-                title="Idee oder Wunsch notieren – erscheint im Smart Panel unter Wünsche"
+                title="Guide: Notier hier Ideen oder Wünsche – sie erscheinen in deiner Wunschliste im Smart Panel und du vergisst nichts."
                 style={{
                   padding: '0.4rem 0.75rem',
                   background: s.bgCard,
@@ -14095,17 +14141,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
             )}
 
-            {/* Link zu deiner Galerie – kopieren und teilen (Social, Mail) */}
+            {/* Link zu deiner Galerie – kopieren und teilen (WhatsApp, Link, System) */}
             <div style={{ marginTop: '1.75rem', padding: '1rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}28`, borderRadius: '12px' }}>
               <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>🔗 Link zu deiner Galerie</div>
-              <p style={{ fontSize: '0.85rem', color: s.muted, margin: '0 0 0.75rem', lineHeight: 1.5 }}>Diesen Link kannst du teilen (Social Media, E-Mail, Flyer). Ein Klick – Kopieren oder Teilen.</p>
+              <p style={{ fontSize: '0.85rem', color: s.muted, margin: '0 0 0.75rem', lineHeight: 1.5 }}>Deine Galerie bringst du genauso einfach in den Verteiler: WhatsApp, Mail, Social Media, Flyer. Ein Klick – Kopieren oder direkt teilen.</p>
               {(() => {
                 const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie
                 const galerieUrl = BASE_APP_URL + galeriePath
+                const shareText = 'Schau dir meine Galerie an ' + galerieUrl
                 const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
                 return (
                   <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
                     <code style={{ flex: '1 1 200px', minWidth: 0, fontSize: '0.8rem', padding: '0.4rem 0.6rem', background: 'rgba(0,0,0,0.06)', borderRadius: '8px', wordBreak: 'break-all', color: s.text }}>{galerieUrl}</code>
+                    <button
+                      type="button"
+                      onClick={() => window.open('https://wa.me/?text=' + encodeURIComponent(shareText), '_blank', 'noopener,noreferrer')}
+                      style={{ padding: '0.5rem 0.9rem', background: 'rgba(37, 211, 102, 0.2)', border: '1px solid rgba(37, 211, 102, 0.5)', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: '#25d366', cursor: 'pointer' }}
+                    >
+                      💬 WhatsApp
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
@@ -14124,7 +14178,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       }}
                       style={{ padding: '0.5rem 0.9rem', background: s.accent + '22', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: s.accent, cursor: 'pointer' }}
                     >
-                      Kopieren
+                      🔗 Kopieren
                     </button>
                     {canShare && (
                       <button
@@ -14140,7 +14194,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         }}
                         style={{ padding: '0.5rem 0.9rem', background: s.accent + '22', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, color: s.accent, cursor: 'pointer' }}
                       >
-                        📤 Teilen
+                        📤 System teilen
                       </button>
                     )}
                   </div>
