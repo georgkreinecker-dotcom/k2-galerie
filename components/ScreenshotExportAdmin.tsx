@@ -42,6 +42,7 @@ import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
+import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { apiPost, apiGet } from '../src/utils/apiClient'
@@ -2212,8 +2213,29 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const fromStorage = loadArtworks(tenant)
       const withRefs = preserveStorageImageRefs(artworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
       setAllArtworksSafe(withRefs)
-      setEvents(Array.isArray(data.events) ? data.events : [])
-      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (!tenant.isOeffentlich && !tenant.isVk2) {
+        const localDesignRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
+        const localDesign = localDesignRaw ? (() => { try { return JSON.parse(localDesignRaw) } catch { return null } })() : null
+        const localPageTextsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-page-texts') : null
+        const localPageTexts = localPageTextsRaw ? (() => { try { return JSON.parse(localPageTextsRaw) } catch { return null } })() : null
+        const toApply = applyServerPayloadK2(data, {
+          events: loadEventsFromStorage('k2'),
+          documents: loadDocumentsFromStorage('k2'),
+          designSettings: localDesign,
+          pageTexts: localPageTexts
+        })
+        setEvents(toApply.events != null ? toApply.events : loadEventsFromStorage('k2'))
+        setDocuments(toApply.documents != null ? toApply.documents : loadDocumentsFromStorage('k2'))
+        if (toApply.designSettings != null) setDesignSettings({ ...K2_ORANGE_DESIGN, ...toApply.designSettings } as any)
+        else if (localDesign) setDesignSettings({ ...K2_ORANGE_DESIGN, ...localDesign } as any)
+        if (toApply.pageTexts != null) setPageTextsState({ ...defaultPageTexts, ...toApply.pageTexts } as any)
+        else if (localPageTexts) setPageTextsState({ ...defaultPageTexts, ...localPageTexts } as any)
+      } else {
+        setEvents(Array.isArray(data.events) ? data.events : [])
+        setDocuments(Array.isArray(data.documents) ? data.documents : [])
+        if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
+        if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
+      }
       if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
       else setMartinaData(K2_STAMMDATEN_DEFAULTS.martina as any)
       if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
@@ -2225,8 +2247,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
         if (typeof parsed === 'object') setPageContent({ welcomeImage: '', galerieCardImage: '', virtualTourImage: '', virtualTourVideo: '', virtualTourVideoSizeBytes: 0, ...parsed })
       }
-      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings({ ...K2_ORANGE_DESIGN, ...data.designSettings } as any)
-      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState({ ...defaultPageTexts, ...data.pageTexts } as any)
     }).catch(() => {
       if (isMounted) setDynamicTenantLoading(false)
     })
@@ -3530,8 +3550,27 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const fromStorage = loadArtworks(tenant)
       const withRefs = preserveStorageImageRefs(apiArtworks, fromStorage, (x: any) => String(x?.number ?? x?.id ?? '').trim())
       setAllArtworksSafe(withRefs)
-      setEvents(Array.isArray(data.events) ? data.events : [])
-      setDocuments(Array.isArray(data.documents) ? data.documents : [])
+      if (!tenant.isOeffentlich && !tenant.isVk2) {
+        const localDesignRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-design-settings') : null
+        const localDesign = localDesignRaw ? (() => { try { return JSON.parse(localDesignRaw) } catch { return null } })() : null
+        const localPageTextsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('k2-page-texts') : null
+        const localPageTexts = localPageTextsRaw ? (() => { try { return JSON.parse(localPageTextsRaw) } catch { return null } })() : null
+        const toApply = applyServerPayloadK2(data, {
+          events: loadEventsFromStorage('k2'),
+          documents: loadDocumentsFromStorage('k2'),
+          designSettings: localDesign,
+          pageTexts: localPageTexts
+        })
+        setEvents(toApply.events != null ? toApply.events : loadEventsFromStorage('k2'))
+        setDocuments(toApply.documents != null ? toApply.documents : loadDocumentsFromStorage('k2'))
+        if (toApply.designSettings != null) setDesignSettings(prev => ({ ...prev, ...toApply.designSettings } as any))
+        if (toApply.pageTexts != null) setPageTextsState(prev => ({ ...prev, ...toApply.pageTexts } as any))
+      } else {
+        setEvents(Array.isArray(data.events) ? data.events : [])
+        setDocuments(Array.isArray(data.documents) ? data.documents : [])
+        if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
+        if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
+      }
       if (data.martina && typeof data.martina === 'object') setMartinaData({ ...K2_STAMMDATEN_DEFAULTS.martina, ...data.martina } as any)
       if (data.georg && typeof data.georg === 'object') setGeorgData({ ...K2_STAMMDATEN_DEFAULTS.georg, ...data.georg } as any)
       if (data.gallery && typeof data.gallery === 'object') setGalleryData({ ...K2_STAMMDATEN_DEFAULTS.gallery, ...data.gallery })
@@ -3540,8 +3579,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         const parsed = typeof pc === 'string' ? (() => { try { return JSON.parse(pc) } catch { return {} } })() : pc
         if (typeof parsed === 'object') setPageContent(prev => ({ ...prev, ...parsed }))
       }
-      if (data.designSettings && typeof data.designSettings === 'object') setDesignSettings(prev => ({ ...prev, ...(data.designSettings as object) } as any))
-      if (data.pageTexts && typeof data.pageTexts === 'object') setPageTextsState(prev => ({ ...prev, ...(data.pageTexts as object) } as any))
       setSyncStatusBar({ phase: 'success', message: 'Geladen.' })
       return
     }
@@ -4342,20 +4379,21 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
 
   // Eröffnung 24.–26.04. – Muster aus docs/MOK2-MUSTER-PRO-WERBETYP-EROEFFNUNG.md („Jetzt erstellen“ füllt Karte mit Strategie)
+  // Phase 1: Erst Ausstellung Martina & Georg, zweitens Plattform (Lounge). Presse-Story (Lead + lokal) passt dazu.
   const EROEFFNUNG_KERNBOTSCHAFT =
     'Wir eröffnen die K2 Galerie – und laden Sie ein, die Galerie und die Plattform kennenzulernen, mit der wir und andere Künstler:innen, Galerien und Kunstvereine arbeiten.'
   const EROEFFNUNG_LOUNGE_TEXT =
-    'Zur Eröffnung laden wir Sie herzlich ein: Werke, Raum, Begegnung. In unserer Lounge erleben Sie die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
+    'Zur Eröffnung laden wir Sie herzlich ein: Erstens unsere Ausstellung – Werke von Martina und mir, Raum und Begegnung. Zweitens erleben Sie in unserer Lounge die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
   const EROEFFNUNG_LOUNGE_TEXT_DU =
-    'Zur Eröffnung laden wir dich herzlich ein: Werke, Raum, Begegnung. In unserer Lounge erlebst du die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
+    'Zur Eröffnung laden wir dich herzlich ein: Erstens unsere Ausstellung – Werke von Martina und mir, Raum und Begegnung. Zweitens erlebst du in unserer Lounge die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
   const EROEFFNUNG_LOUNGE_KURZ =
-    'Werke, Raum, Begegnung. In unserer gemeinsamen Lounge: Einblick in K2 · ök2 · VK2.'
+    'Ausstellung von Martina und mir – Werke, Raum, Begegnung. In unserer gemeinsamen Lounge: Einblick in K2 · ök2 · VK2.'
   const EROEFFNUNG_WERBELINIE_1 = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen.'
   const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
   const EROEFFNUNG_WERBELINIE_2_SIE = 'Ihre Ideen, Ihre Werke verdienen mehr als einen Instagram-Post.'
   const EROEFFNUNG_PRESSE_LEAD_PREFIX = 'eröffnet am'
   const EROEFFNUNG_PLAKAT_KURZTEXT =
-    'Kunst & Keramik · Malerei, Grafik, Skulptur\nGemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.'
+    'Kunst & Keramik · Ausstellung Martina & Georg\nGemeinsame Lounge: Plattform (K2 · ök2 · VK2) entdecken.'
 
   /** Bei jeder Information/Aussendung: Hinweis Link/QR → vorab K2, ök2, VK2 ansehen → konkrete Fragen beantworten. */
   const HINWEIS_LINK_QR_VORAB_SIE =
@@ -4876,7 +4914,7 @@ ${'='.repeat(60)}
 PRESSEAUSSENDUNG
 
 Event: ${event?.title || 'Nicht angegeben'}
-Datum: ${event?.date ? new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Nicht angegeben'}
+Datum: ${formatEventDates(event) || 'Nicht angegeben'}
 
 ${tenant.isVk2 ? (g.address ? `Adresse: ${g.address}` : '') : (adresseK2 ? `Adresse: ${adresseK2}` : '')}
 ${g.phone ? `Telefon: ${g.phone}` : ''}
@@ -5011,6 +5049,7 @@ ${'='.repeat(60)}
     const qrBlock = qrDataUrl ? `<div style="margin: 0.75rem 0; text-align: center;"><img src="${qrDataUrl.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 160px; height: 160px;" /><p style="font-size: 0.85rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
     const presseTitleEsc = (presseaussendung?.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const presseContentWithLinks = textToHtmlWithLinks(presseaussendung?.content || '')
+    const eventDateEsc = event ? (formatEventDates(event) || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>') : ''
     const html = `
 <!DOCTYPE html>
 <html>
@@ -5042,7 +5081,7 @@ ${'='.repeat(60)}
         ${galleryAddress ? `<strong>Adresse:</strong> ${galleryAddress}<br>` : ''}
         ${galleryPhone ? `<strong>Telefon:</strong> ${galleryPhone}<br>` : ''}
         ${galleryEmail ? `<strong>E-Mail:</strong> ${galleryEmail}<br>` : ''}
-        ${event?.date ? `<strong>Event-Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}<br>` : ''}
+        ${eventDateEsc ? `<strong>Event-Datum:</strong> ${eventDateEsc}<br>` : ''}
         ${event?.title ? `<strong>Event:</strong> ${event.title}` : ''}
       </div>
     </div>
@@ -5168,11 +5207,13 @@ ${'='.repeat(60)}
     eventLike: { title: string; date?: string }
     imageDataUrl?: string
     options: { socialDocId: string; adminReturnUrl: string; prDocClass: string; prDocCss: string; galleryName: string }
+    event?: any
   }): string => {
-    const { socialMedia, eventLike, imageDataUrl, options } = params
+    const { socialMedia, eventLike, imageDataUrl, options, event } = params
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
-    const eventDateStr = eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+    const eventDateStr = event ? formatEventDates(event) : (eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
+    const eventDateStrEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
     const imageBlock = imageDataUrl
       ? `<div style="margin-bottom:0.75rem;"><img src="${imageDataUrl.replace(/"/g, '&quot;')}" alt="" style="max-width:100%;height:auto;border-radius:8px;" /></div>`
       : ''
@@ -5202,7 +5243,7 @@ ${'='.repeat(60)}
       <h1>${options.galleryName}</h1>
       <div class="header-info">
         ${eventLike.title ? `<strong>Event:</strong> ${eventLike.title}<br>` : ''}
-        ${eventDateStr ? `<strong>Datum:</strong> ${eventDateStr}` : ''}
+        ${eventDateStrEsc ? `<strong>Datum:</strong> ${eventDateStrEsc}` : ''}
       </div>
     </div>
     <h1>Social Media Posts</h1>
@@ -5263,15 +5304,17 @@ ${'='.repeat(60)}
     prDocClass: string
     prDocCss: string
     galleryName: string
+    event?: any
   }): string => {
-    const { socialMedia, eventLike, imageDataUrl, prDocClass, prDocCss, galleryName } = params
+    const { socialMedia, eventLike, imageDataUrl, prDocClass, prDocCss, galleryName, event } = params
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
-    const eventDateStr = eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+    const eventDateStr = event ? formatEventDates(event) : (eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
+    const eventDateStrEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
     const imageBlock = imageDataUrl
       ? `<div class="field-group" style="margin-bottom:0.75rem;"><img src="${imageDataUrl.replace(/"/g, '&quot;')}" alt="" style="max-width:100%;height:auto;border-radius:8px;" /></div>`
       : ''
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${esc(galleryName)}</h1><div class="header-info">${eventLike.title ? '<strong>Event:</strong> ' + esc(eventLike.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + eventDateStr : ''}</div></div><h1>Social Media Posts</h1>${imageBlock}<h2>Instagram Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.instagram)}</div><h2>Facebook Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.facebook)}</div><h2>WhatsApp / Kurznachricht</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div></div></div></body></html>`
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${esc(galleryName)}</h1><div class="header-info">${eventLike.title ? '<strong>Event:</strong> ' + esc(eventLike.title) + '<br>' : ''}${eventDateStrEsc ? '<strong>Datum:</strong> ' + eventDateStrEsc : ''}</div></div><h1>Social Media Posts</h1>${imageBlock}<h2>Instagram Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.instagram)}</div><h2>Facebook Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.facebook)}</div><h2>WhatsApp / Kurznachricht</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div></div></div></body></html>`
   }
 
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
@@ -5301,7 +5344,8 @@ ${'='.repeat(60)}
         prDocClass,
         prDocCss,
         galleryName
-      }
+      },
+      event
     })
     socialDocId = socialDocIdForHtml
     try {
@@ -5369,7 +5413,7 @@ ${'='.repeat(60)}
   }
 
   const generateEventFlyerContent = (event: any): { subject?: string; body?: string } => {
-    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const eventDate = formatEventDates(event) || 'Termin folgt'
     const title = event?.title || 'Vernissage'
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einem außergewöhnlichen Galerieraum.'
 
@@ -5488,7 +5532,7 @@ ${'='.repeat(60)}
   }
 
   const generateEmailNewsletterContent = (event: any): { subject?: string; body?: string } => {
-    const eventDate = event?.date ? new Date(event.date).toLocaleDateString('de-AT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ` · ${event.startTime} Uhr` : ', 18 Uhr') : 'Termin folgt'
+    const eventDate = formatEventDates(event) || 'Termin folgt'
     const title = event?.title || 'Vernissage'
     const desc = event?.description || 'Malerei, Keramik und Skulptur in einer einzigartigen Galerieatmosphäre.'
 
@@ -5602,6 +5646,7 @@ ${'='.repeat(60)}
     })()
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
+    const eventDateEsc = event ? (formatEventDates(event) || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>') : ''
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -5627,7 +5672,7 @@ ${'='.repeat(60)}
       <h1>${galleryName}</h1>
       <div class="header-info">
         ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
-        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+        ${eventDateEsc ? `<strong>Datum:</strong> ${eventDateEsc}` : ''}
       </div>
     </div>
     <h1>E-Mail Newsletter</h1>
@@ -5713,7 +5758,7 @@ ${'='.repeat(60)}
       <h1>${galleryName}</h1>
       <div class="header-info">
         ${suggestions.eventTitle ? `<strong>Event:</strong> ${suggestions.eventTitle}<br>` : ''}
-        ${event?.date ? `<strong>Datum:</strong> ${new Date(event.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}
+        ${event ? (() => { const d = formatEventDates(event); return d ? `<strong>Datum:</strong> ${d.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>')}` : ''; })() : ''}
       </div>
     </div>
     
@@ -7814,7 +7859,7 @@ ${'='.repeat(60)}
     }
     const fileType = document.fileType || document.type || ''
     const eventTitle = event?.title || 'Vernissage – Neue Arbeiten'
-    const eventDate = (event?.date ? new Date(event.date).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + (event?.startTime ? ', ' + event.startTime + ' Uhr' : ', 18 Uhr') : 'Samstag, 15. März 2026, 18 Uhr')
+    const eventDate = event ? formatEventDates(event) : 'Samstag, 15. März 2026, 18 Uhr'
     const isEinladung = document.name && String(document.name).toLowerCase().includes('einladung')
     const isPresse = document.name && String(document.name).toLowerCase().includes('presse')
     const isFlyer = document.name && String(document.name).toLowerCase().includes('flyer')
@@ -19654,12 +19699,12 @@ ${name}`
         const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
         const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
         const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
-        const eventDateStr = redactionEvent?.date ? new Date(redactionEvent.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+        const eventDateStr = redactionEvent ? formatEventDates(redactionEvent) : ''
         const escapeHtml = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
         const contentWithLinks = textToHtmlWithLinks(redactionPresseContent)
         const imageBlock = redactionPresseImageUrl ? `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
         const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
-        const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style><style>.presse-body a { color: inherit; text-decoration: underline; }</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${escapeHtml(galleryName)}</h1><div class="header-info">${redactionEvent?.title ? '<strong>Event:</strong> ' + escapeHtml(redactionEvent.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + eventDateStr : ''}</div></div><h1>Presseaussendung</h1><div class="presse-headline">${escapeHtml(redactionPresseTitle)}</div>${imageBlock}<div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>${qrBlock}</div></div></body></html>`
+        const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style><style>.presse-body a { color: inherit; text-decoration: underline; }</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${escapeHtml(galleryName)}</h1><div class="header-info">${redactionEvent?.title ? '<strong>Event:</strong> ' + escapeHtml(redactionEvent.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + escapeHtml(eventDateStr).replace(/\n/g, '<br>') : ''}</div></div><h1>Presseaussendung</h1><div class="presse-headline">${escapeHtml(redactionPresseTitle)}</div>${imageBlock}<div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>${qrBlock}</div></div></body></html>`
         const saveRedaction = () => {
           try {
             const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
@@ -19866,7 +19911,8 @@ ${name}`
           imageDataUrl: socialRedactionImageUrl || undefined,
           prDocClass,
           prDocCss,
-          galleryName
+          galleryName,
+          event: socialRedactionEvent
         })
         const saveSocialRedaction = () => {
           try {
@@ -19878,7 +19924,8 @@ ${name}`
               socialMedia,
               eventLike: { title: event?.title || 'Event', date: event?.date },
               imageDataUrl: socialRedactionImageUrl || undefined,
-              options: { socialDocId, adminReturnUrl, prDocClass, prDocCss, galleryName }
+              options: { socialDocId, adminReturnUrl, prDocClass, prDocCss, galleryName },
+              event
             })
             const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
             const reader = new FileReader()
@@ -19919,7 +19966,8 @@ ${name}`
             socialMedia: { instagram: socialRedactionInstagram, facebook: socialRedactionFacebook, whatsapp: socialRedactionWhatsApp },
             eventLike: { title: event?.title || 'Event', date: event?.date },
             imageDataUrl: socialRedactionImageUrl || undefined,
-            options: { socialDocId, adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab), prDocClass, prDocCss, galleryName }
+            options: { socialDocId, adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab), prDocClass, prDocCss, galleryName },
+            event
           })
           openDocumentInApp(html, 'Social Media – ' + (event?.title || 'Event'))
         }

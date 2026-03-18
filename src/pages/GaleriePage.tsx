@@ -12,6 +12,7 @@ import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from 
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
+import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
@@ -1250,52 +1251,37 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           }
         }
         
-        if (data.events && Array.isArray(data.events)) {
-          try {
-            const localEvents = loadEvents('k2')
-            if (data.events.length >= localEvents.length) {
-              saveEvents('k2', data.events)
-              window.dispatchEvent(new CustomEvent('k2-events-updated'))
-              console.log('✅ Events aktualisiert:', data.events.length)
-            } else {
-              console.warn('⚠️ Server hat weniger Events als lokal – behalte lokale (K2). Server:', data.events.length, 'lokal:', localEvents.length)
-            }
-          } catch (e) {
-            console.warn('⚠️ Events zu groß für localStorage')
+        // Einzige Schicht: Kein Überschreiben ohne Merge – applyServerDataToLocal.ts
+        try {
+          const localDesignRaw = localStorage.getItem('k2-design-settings')
+          const localDesign = localDesignRaw ? (JSON.parse(localDesignRaw) as Record<string, string>) : null
+          const localPageTextsRaw = localStorage.getItem('k2-page-texts')
+          const localPageTexts = localPageTextsRaw ? JSON.parse(localPageTextsRaw) : null
+          const toApply = applyServerPayloadK2(data, {
+            events: loadEvents('k2'),
+            documents: loadDocuments('k2'),
+            designSettings: localDesign,
+            pageTexts: localPageTexts
+          })
+          if (toApply.events != null) {
+            saveEvents('k2', toApply.events)
+            window.dispatchEvent(new CustomEvent('k2-events-updated'))
+            console.log('✅ Events aktualisiert:', toApply.events.length)
           }
-        }
-        if (data.documents && Array.isArray(data.documents)) {
-          try {
-            const localDocs = loadDocuments('k2')
-            if (data.documents.length >= localDocs.length) {
-              saveDocuments('k2', data.documents)
-              console.log('✅ Dokumente aktualisiert:', data.documents.length)
-            } else {
-              console.warn('⚠️ Server hat weniger Dokumente als lokal – behalte lokale (K2). Server:', data.documents.length, 'lokal:', localDocs.length)
-            }
-          } catch (e) {
-            console.warn('⚠️ Dokumente zu groß für localStorage')
+          if (toApply.documents != null) {
+            saveDocuments('k2', toApply.documents)
+            console.log('✅ Dokumente aktualisiert:', toApply.documents.length)
           }
-        }
-        if (data.pageTexts != null) {
-          try {
-            localStorage.setItem('k2-page-texts', JSON.stringify(data.pageTexts))
+          if (toApply.pageTexts != null) {
+            localStorage.setItem('k2-page-texts', JSON.stringify(toApply.pageTexts))
             console.log('✅ Seitentexte aktualisiert')
-          } catch (e) {
-            console.warn('⚠️ Seitentexte zu groß für localStorage')
           }
-        }
-        // Design nur vom Server übernehmen, wenn lokal noch kein sinnvolles Design gesetzt ist (sonst bleibt deine Wahl erhalten)
-        if (hasMeaningfulDesign(data.designSettings)) {
-          try {
-            const localRaw = localStorage.getItem('k2-design-settings')
-            const localDesign = localRaw ? (JSON.parse(localRaw) as Record<string, string>) : null
-            if (!hasMeaningfulDesign(localDesign)) {
-              const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
-              localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
-              applyDesignToDocument(designToUse)
-            }
-          } catch (_) {}
+          if (toApply.designSettings != null) {
+            localStorage.setItem('k2-design-settings', JSON.stringify(toApply.designSettings))
+            applyDesignToDocument(toApply.designSettings)
+          }
+        } catch (e) {
+          console.warn('⚠️ Server-Daten anwenden (Events/Docs/Design/PageTexts):', e)
         }
 
         // Speichere Timestamp für nächsten Vergleich
@@ -1690,40 +1676,29 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             }
           }
           
-          if (data.events && Array.isArray(data.events)) {
-            try {
-              const localEvents = loadEvents('k2')
-              if (data.events.length >= localEvents.length) {
-                saveEvents('k2', data.events)
-                window.dispatchEvent(new CustomEvent('k2-events-updated'))
-              }
-            } catch (_) {}
-          }
-          if (data.documents && Array.isArray(data.documents)) {
-            try {
-              const localDocs = loadDocuments('k2')
-              if (data.documents.length >= localDocs.length) {
-                saveDocuments('k2', data.documents)
-              }
-            } catch (_) {}
-          }
-          if (data.pageTexts != null) {
-            try {
-              localStorage.setItem('k2-page-texts', JSON.stringify(data.pageTexts))
-            } catch (_) {}
-          }
-          // Design nur vom Server übernehmen, wenn lokal noch kein sinnvolles Design gesetzt ist
-          if (hasMeaningfulDesign(data.designSettings)) {
-            try {
-              const localRaw = localStorage.getItem('k2-design-settings')
-              const localDesign = localRaw ? (JSON.parse(localRaw) as Record<string, string>) : null
-              if (!hasMeaningfulDesign(localDesign)) {
-                const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
-                localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
-                applyDesignToDocument(designToUse)
-              }
-            } catch (_) {}
-          }
+          // Einzige Schicht: Kein Überschreiben ohne Merge – applyServerDataToLocal.ts
+          try {
+            const localDesignRaw = localStorage.getItem('k2-design-settings')
+            const localDesign = localDesignRaw ? (JSON.parse(localDesignRaw) as Record<string, string>) : null
+            const localPageTextsRaw = localStorage.getItem('k2-page-texts')
+            const localPageTexts = localPageTextsRaw ? JSON.parse(localPageTextsRaw) : null
+            const toApply = applyServerPayloadK2(data, {
+              events: loadEvents('k2'),
+              documents: loadDocuments('k2'),
+              designSettings: localDesign,
+              pageTexts: localPageTexts
+            })
+            if (toApply.events != null) {
+              saveEvents('k2', toApply.events)
+              window.dispatchEvent(new CustomEvent('k2-events-updated'))
+            }
+            if (toApply.documents != null) saveDocuments('k2', toApply.documents)
+            if (toApply.pageTexts != null) localStorage.setItem('k2-page-texts', JSON.stringify(toApply.pageTexts))
+            if (toApply.designSettings != null) {
+              localStorage.setItem('k2-design-settings', JSON.stringify(toApply.designSettings))
+              applyDesignToDocument(toApply.designSettings)
+            }
+          } catch (_) {}
           // Seitengestaltung: Merge nur wenn Server-String – lokales Video/Bild geht immer vor (siehe mergePageContentGalerieFromServer)
           if (!musterOnly && !vk2 && data.pageContentGalerie != null && typeof data.pageContentGalerie === 'string' && data.pageContentGalerie.length > 0 && data.pageContentGalerie.length < 6 * 1024 * 1024) {
             try {

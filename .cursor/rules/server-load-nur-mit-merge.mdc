@@ -1,0 +1,22 @@
+# Server-Load: Nur mit Merge-Schicht (Events, Docs, Design, PageTexts)
+
+## Regel
+
+**Beim „Aktuellen Stand holen“ / „Vom Server laden“ dürfen Events, Dokumente, Design und PageTexts (K2) nirgends direkt überschrieben werden.** Es gibt **eine** zentrale Schicht: **applyServerPayloadK2** in `src/utils/applyServerDataToLocal.ts`.
+
+- **Events:** Nur anwenden wenn Server mindestens so viele hat wie lokal; Event-Zeiten (startTime, endTime, dailyTimes) aus lokal erhalten.
+- **Dokumente:** Nur anwenden wenn Server mindestens so viele hat wie lokal; pro Dokument lokale reichere Felder (documentUrl, content) erhalten wenn Server leer.
+- **Design:** Nur übernehmen wenn Server ein sinnvolles Design hat **und** lokal keins hat.
+- **PageTexts:** Nur übernehmen wenn Server sinnvolle PageTexts hat; sonst Merge (nicht mit leerem Server überschreiben).
+
+## Pflicht
+
+- **GaleriePage** (handleRefresh, loadData): Events/Documents/Design/PageTexts **nur** über `applyServerPayloadK2(data, local)` → toApply; dann nur bei toApply.* != null speichern.
+- **ScreenshotExportAdmin** (Tenant-Load, handleLoadFromServer für K2): Dasselbe – **nur** über applyServerPayloadK2, State/localStorage nur aus toApply befüllen; bei null lokale Daten behalten.
+
+**NIEMALS:** saveEvents/saveDocuments/localStorage.setItem('k2-design-settings'|'k2-page-texts') mit Roh-Server-Daten ohne vorherigen Aufruf von applyServerPayloadK2.
+
+## Verknüpfung
+
+- **Code:** src/utils/applyServerDataToLocal.ts
+- **Doku:** docs/KRITISCHE-ABLAEUFE.md §3, docs/PROZESS-VEROEFFENTLICHEN-LADEN.md

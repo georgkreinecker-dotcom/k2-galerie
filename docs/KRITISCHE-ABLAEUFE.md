@@ -35,13 +35,13 @@
 
 | Was | Quelle |
 |-----|--------|
-| **Primäre Aktion** | Immer **mergeServerWithLocal** + **preserveLocalImageData** (in dieser Reihenfolge). |
-| **Doku** | docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, ein-standard-problem.mdc. |
-| **Code** | src/utils/syncMerge.ts. Aufrufer: GaleriePage loadData, GalerieVorschauPage handleRefresh. |
+| **Primäre Aktion** | **Werke:** Immer **mergeServerWithLocal** + **preserveLocalImageData** (syncMerge.ts). **Events, Dokumente, Design, PageTexts:** Immer **applyServerPayloadK2** aus **src/utils/applyServerDataToLocal.ts** – einzige Schicht, keine direkten Überschreibungen. |
+| **Doku** | docs/PROZESS-VEROEFFENTLICHEN-LADEN.md, .cursor/rules/server-load-nur-mit-merge.mdc. |
+| **Code** | syncMerge.ts (Werke); applyServerDataToLocal.ts (Events, Docs, Design, PageTexts). Aufrufer: GaleriePage handleRefresh/loadData, ScreenshotExportAdmin (Tenant-Load, handleLoadFromServer). |
 
-**NIEMALS:** Server-Daten direkt in localStorage schreiben ohne Merge; keinen zweiten Lade-Pfad ohne preserveLocalImageData.
+**NIEMALS:** Server-Daten direkt in localStorage schreiben ohne Merge; keinen zweiten Lade-Pfad ohne preserveLocalImageData (Werke) bzw. ohne applyServerPayloadK2 (Events/Docs/Design/PageTexts).
 
-**K2-Dokumente und K2-Events:** Beim Übernehmen aus der Server-Antwort (GaleriePage handleRefresh/loadData) **nur überschreiben, wenn der Server mindestens so viele Einträge hat wie lokal** (sonst stiller Datenverlust – BUG-040). Design nur bei hasMeaningfulDesign(server) übernehmen.
+**Zentrale Schicht applyServerDataToLocal.ts:** Events/Documents nur anwenden wenn Server ≥ lokal; Event-Zeiten aus lokal erhalten; Design nur wenn Server sinnvoll und lokal nicht; PageTexts nur wenn Server sinnvoll, sonst Merge. Kein saveEvents/saveDocuments/setItem für diese Daten mit Roh-Server-Daten außer über diese Schicht.
 
 ---
 

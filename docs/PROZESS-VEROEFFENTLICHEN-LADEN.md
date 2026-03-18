@@ -43,6 +43,8 @@
 
 **Aufrufer:** GaleriePage (loadData, handleRefresh), GalerieVorschauPage (über Supabase/API), **Admin „Aktuellen Stand holen“** (handleLoadFromServer), Supabase loadArtworksFromSupabase. **Alle** übergeben beim Laden vom Server **serverAsSoleTruth: true**. Kein eigener Merge-Pfad ohne diese Option.
 
+**Events, Dokumente, Design, PageTexts (K2):** Beim Übernehmen aus der Server-Antwort **nur** über **applyServerPayloadK2** in `src/utils/applyServerDataToLocal.ts`. Kein direktes saveEvents/saveDocuments/localStorage.setItem für diese Daten mit Roh-Server-Daten. Regeln: Events/Documents nur anwenden wenn Server ≥ lokal; Event-Zeiten aus lokal erhalten; Design nur wenn Server sinnvoll und lokal nicht; PageTexts nur wenn Server sinnvoll, sonst Merge. Aufrufer: GaleriePage handleRefresh/loadData, ScreenshotExportAdmin (Tenant-Load, handleLoadFromServer für K2).
+
 ---
 
 ## 2a. Kette: Bild anlegen → Speicherung → zurück (Überblick)

@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – **Promotion-Sportwagen-Strategie.** Alle Themen unter „7. Promotion“ (mök2) zusammengefasst; Strategie für den gesamten Promotion-Prozess erstellt: eine Quelle, One-Click, Muster, nichts zweimal. Doku: docs/STRATEGIE-PROMOTION-SPORTWAGEN.md (Quellen, One-Click-Ideen, priorisierte Schritte). 00-INDEX ergänzt.
+**Letzter Stand:** 17.03.26 – **Server-Load: eine zentrale Merge-Schicht (Überschreibungen generell verhindert).** applyServerDataToLocal.ts: applyServerPayloadK2 für Events, Dokumente, Design, PageTexts (K2). Regeln: nie mit weniger überschreiben; Event-Zeiten aus lokal; Design nur wenn Server sinnvoll und lokal nicht; PageTexts nur wenn Server sinnvoll. GaleriePage (handleRefresh + loadData) und ScreenshotExportAdmin (Tenant-Load + handleLoadFromServer) nutzen nur noch diese Schicht. Doku: KRITISCHE-ABLAEUFE §3, PROZESS-VEROEFFENTLICHEN-LADEN; Regel: .cursor/rules/server-load-nur-mit-merge.mdc.
 
-**Was wir JETZT tun:** Strategie steht; Umsetzung der priorisierten Schritte (z. B. Presse-Paket kopieren, Absenden-Anleitung) optional von Georg festlegen.
+**Was wir JETZT tun:** Nächster Schritt von Georg (z. B. Promotion umsetzen oder anderes).
 
-**Vorher:** Stammbaum horizontale Ansicht; K2 Familie – Beziehungen nur aus den Karten; ro5.
+**Einordnung:** Überschreibungen bei neuem Stand mehrfach aufgetreten – jetzt eine einzige Schicht, keine versteckten direkten saveEvents/saveDocuments/setItem mit Server-Rohdaten mehr.
 
-**Nächster Schritt:** Von Georg festlegen (z. B. erste One-Click-Maßnahme umsetzen, oder anderes).
+**Nächster Schritt:** Von Georg festlegen.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 
