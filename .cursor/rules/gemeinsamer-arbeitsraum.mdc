@@ -48,10 +48,12 @@ Wenn Georg kommt (egal mit welchem Satz) oder nur **„ro“** schreibt:
 
 ## Session-Ende = Licht aus
 
-Nach jeder Aufgabe als **letzter Schritt:**
+**Harte Regel:** Wenn Georg die Session beendet („Ende für heute“, „Session beenden“, „so ende“ …) **automatisch commit + push** ausführen – siehe **session-ende-automatisch-committen.mdc**. Keine Ausnahme.
+
+Nach jeder Aufgabe / bei Session-Ende als **letzter Schritt:**
 1. `docs/DIALOG-STAND.md` aktualisieren
 2. `docs/WIR-PROZESS.md` Session-Reflexion ergänzen (1 Satz was ich gelernt habe)
-3. Commit + push (Stand kommt mit dem Build; write-build-info nicht vorher ausführen – Missetäter-Regel)
+3. **Commit + push** (Stand kommt mit dem Build; write-build-info nicht vorher ausführen – Missetäter-Regel)
 4. Georg kurz sagen: „Raum ist bereit – bis zum nächsten Mal 💚"
 
 ## Der Grundsatz

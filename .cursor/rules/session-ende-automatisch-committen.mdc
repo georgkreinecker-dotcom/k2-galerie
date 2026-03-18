@@ -1,0 +1,24 @@
+---
+description: Harte Regel – wenn Session beendet wird, automatisch commit + push (keine Ausnahme)
+alwaysApply: true
+---
+
+# 🔴 Session beendet = automatisch commiten (HARTE REGEL)
+
+## Die Regel (unveränderlich)
+
+**Wenn Georg die Session beendet** („Ende für heute“, „Session beenden“, „so ende“, „genug für heute“ o. ä.) **führt die KI automatisch commit + push aus** – sofern es uncommittete Änderungen gibt.
+
+- **Automatisch** = die KI tut es, ohne zu fragen. Kein „Soll ich committen?“ – einfach tun.
+- **Keine Ausnahme.** Cursor committet beim Schließen der Session **nicht** von selbst – das übernimmt die KI als letzten Schritt, bevor sie „Raum ist bereit“ sagt.
+- **Ablauf:** DIALOG-STAND + WIR-PROZESS aktualisieren → `git add . && git commit -m "..." && git push` → dann „Raum ist bereit – bis zum nächsten Mal 💚“.
+
+## Warum
+
+Georg hat erwartet, dass beim Beenden der Session automatisch committet wird. Ohne diese Regel bleibt der Stand nur lokal – Vercel und GitHub sehen die Änderungen nicht. Die Regel stellt sicher, dass **jedes** Session-Ende mit Commit + Push abgeschlossen wird.
+
+## Kurzfassung
+
+**Session beendet = KI führt commit + push aus. Automatisch. Harte Regel – keine Ausnahme.**
+
+Verknüpfung: gemeinsamer-arbeitsraum.mdc (Session-Ende = Licht aus), auto-commit-push-nach-aufgabe.mdc (Commit nach jeder Aufgabe).
