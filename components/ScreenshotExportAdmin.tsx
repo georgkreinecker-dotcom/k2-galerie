@@ -29,7 +29,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -4309,7 +4309,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const STORY_1A_HUMAN_PRESSE =
     'Die K2 Kunst Galerie betreiben Martina und Georg Kreinecker gemeinsam – Malerei und Keramik, nah an den Menschen. Die Plattform (ök2, VK2) hat Georg gebaut: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fand er vor allem Stückwerke – also wurde selbst gebaut. Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für den gesamten Markt, Kunstmarkt = Einstieg; VK2 für alle Vereine, Kunstvereine = Einstieg). Kein Tech-Konzern, sondern einer, der nicht auf halben Lösungen sitzen bleiben wollte. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
   const STORY_1B_PRODUKT_PRESSE =
-    'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+    'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
 
   // Eröffnung 24.–26.04. – Muster aus docs/MOK2-MUSTER-PRO-WERBETYP-EROEFFNUNG.md („Jetzt erstellen“ füllt Karte mit Strategie)
   const EROEFFNUNG_KERNBOTSCHAFT =
@@ -16947,7 +16947,7 @@ ${name}`
           const STORY_1A_HUMAN =
             'Die K2 Kunst Galerie betreiben Martina und Georg Kreinecker gemeinsam – Malerei und Keramik, nah an den Menschen. Die Plattform (ök2, VK2) hat Georg gebaut: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fand er vor allem Stückwerke – also wurde selbst gebaut. Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für den gesamten Markt, Kunstmarkt = Einstieg; VK2 für alle Vereine, Kunstvereine = Einstieg). Kein Tech-Konzern, sondern einer, der nicht auf halben Lösungen sitzen bleiben wollte. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
           const STORY_1B_PRODUKT =
-            'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+            'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
           const presseHeader = [
             `Presseinformation – ${presseAnlass || '[Anlass]'}`,
             '',
@@ -17204,10 +17204,10 @@ ${name}`
                   Neutrale Story für Presse – Plattform, Künstler:innen, Kunstvereine. Interessant, ohne in den persönlichen Bereich zu gehen.
                 </p>
                 <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
-                  {`Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.`}
+                  {`Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.`}
                 </pre>
                 <button type="button" onClick={() => {
-                  const t = 'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
+                  const t = 'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
                   try { navigator.clipboard.writeText(t); alert('✅ Produkt-Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
                 }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
                   📋 Produkt-Story kopieren
@@ -17307,6 +17307,32 @@ ${name}`
                 }} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
                   📋 In Zwischenablage
                 </button>
+                <button type="button" onClick={() => {
+                  try {
+                    const betreff = `Presseinformation – ${presseAnlass || '[Anlass]'}, ${presseDatum || '[Datum]'}, ${presseOrt || '[Ort]'}`
+                    const paket = `Betreff: ${betreff}\n\n${presseVorlageText}`
+                    navigator.clipboard.writeText(paket)
+                    alert('✅ Presse-Paket (Betreff + Text) in Zwischenablage kopiert.\n\nIn E-Mail: Betreff-Zeile übernehmen, Text in den Körper einfügen.')
+                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                }} style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, color: s.text, border: `2px solid ${s.accent}66`, borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  📦 Presse-Paket kopieren
+                </button>
+                <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: s.muted }}>
+                  Tipp: E-Mail-Adressen für BCC oben unter Medienspiegel (Häkchen setzen → E-Mail-Adressen kopieren).
+                </p>
+                <div style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
+                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>Kernbotschaften (für Pitch, Web, Social)</h3>
+                  <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Slogan, Zielgruppe und Positionierung aus einer Quelle – ein Klick kopiert alles.</p>
+                  <button type="button" onClick={() => {
+                    try {
+                      const text = `1. ${PRODUCT_WERBESLOGAN}\n2. ${PRODUCT_WERBESLOGAN_2}\n\nZielgruppe: ${PRODUCT_ZIELGRUPPE}\n\nPositionierung: ${PRODUCT_POSITIONING_SWEET_SPOT}`
+                      navigator.clipboard.writeText(text)
+                      alert('✅ Kernbotschaften in Zwischenablage kopiert.')
+                    } catch (_) { alert('Kopieren fehlgeschlagen.') }
+                  }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', color: s.text }}>
+                    📋 Kernbotschaften kopieren
+                  </button>
+                </div>
               </div>
             </section>
           )
@@ -18774,7 +18800,7 @@ ${name}`
               Pro Rubrik: Druckversionen (Flyer, Presse-Einladung), eigene Dokumente, PR-Vorschläge (Newsletter, Plakat, Presse, Social Media) – aus deinen Stammdaten erzeugt, direkt nutzbar oder als PDF.
             </p>
             <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', fontStyle: 'italic' }}>
-              Presse absenden: In Zwischenablage → Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.
+              Tipp: Presse absenden = In Zwischenablage kopieren → Eventplanung Tab „Presse & Medien“: Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.
             </p>
 
             {/* Alle Events: zuerst aktuell/geplant, dann Ordner „Veranstaltungen der Vergangenheit“ (Dokumente als Muster) */}

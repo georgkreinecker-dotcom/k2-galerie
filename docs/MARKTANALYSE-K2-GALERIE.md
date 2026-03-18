@@ -86,6 +86,12 @@
 
 ---
 
+## 6a. Sweet-Spot am Markt (verbindliche Erkenntnis)
+
+**Für die Großen ist der Markt zu klein** (DACH grob 10–35 Mio. €/Jahr, 300–500k Einheiten) – kein Fokus für Konzerne. **Für die Kleinen ist der Entwicklungsaufwand zu groß** – eine vollständige Plattform (Galerie, Kassa, Events, Presse, VK2, PWA, Sync) können Einzelne nicht stemmen. **Folge: Eine Lücke – genau unser Platz.** Wir haben das Produkt und die Domäne; Kunst zuerst, VK2 für alle Vereine. Quelle für alle Öffentlichkeitsarbeit: **docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md**.
+
+---
+
 ## 7. Bedrohungen (Markt)
 
 - **Große Anbieter** – Können Galerie-/Shop-Module nachziehen; Differenzierung über Nische (Galerie/Atelier/Verein), Einfachheit und lokale Kasse wichtig.
@@ -101,6 +107,8 @@
 **Markt:** Künstler:innen, kleine Galerien, Kunstvereine und erweitert alle mit Ideen/Produkten; DACH; Skalierung über Lizenzen ohne direkten Kundenkontakt.
 
 **Wettbewerb:** Social Media = Masse. Wir = individuell und Klasse. Keine Konkurrenz zum Mainstream – K2 = persönliche Nische (eigener Ort im Netz vs. Massenplattform). Abgrenzung durch „eine Plattform für alles“, PWA, klare Lizenzen, VK2 und Empfehlungs-Programm.
+
+**Sweet-Spot:** Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz. Formulierung einheitlich in docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md.
 
 **Nächste Schritte aus Marktsicht:** Sichtbarkeit (Demo ök2, Präsentationsmappe, Werbematerial), erste Piloten/Lizenznehmer, Feedback einholen, bei Bedarf Lizenzen oder Zielgruppen feinjustieren.
 

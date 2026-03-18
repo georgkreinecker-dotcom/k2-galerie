@@ -20,7 +20,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 
 ## 2. Kurzfassung (Elevator Pitch)
 
-**Für die Kunst gedacht, für den Markt gemacht.** Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. Fokus gesamter Markt (Kunstmarkt = Einstieg); VK2 für alle Vereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
+**Für die Kunst gedacht, für den Markt gemacht.** Die **K2 Galerie** ist keine reine Galerie-App, sondern eine **Arbeitsplattform**: Werke verwalten, Galerie öffentlich zeigen, Verkauf vor Ort (Kasse), Kassabuch, Events planen, Presse und Werbematerial (Flyer, Newsletter, Plakat, Social) aus denselben Stammdaten – einheitlich, sofort nutzbar. Ein Klick zum Ziel. **Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz:** Der Markt für „Galerie, Kassa und Events aus einer Hand“ lohnt für Konzerne nicht; Einzelne können ihn nicht bauen. Wir haben das Produkt und die Domäne. Fokus gesamter Markt (Kunstmarkt = Einstieg); VK2 für alle Vereine; skalierbar, ohne direkten Kundenkontakt (Lizenz, Bestätigung, Abrechnung über System). Technisch: Sportwagen-Standard – eine Quelle pro Thema, klare Schichten, Kundendaten geschützt, 38 Tests, Stand und QR zuverlässig.
 
 ---
 

@@ -47,6 +47,9 @@ export const PRODUCT_POSITIONING_SOCIAL = 'Social Media ist Masse – wir sind i
 /** Der Kern, der alle anspricht – eigener Ort statt Miete bei anderen. */
 export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
 
+/** Positionierung Sweet-Spot – eine Quelle für Öffentlichkeitsarbeit, Prospekt, Presse. */
+export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz.'
+
 /** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
 export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 

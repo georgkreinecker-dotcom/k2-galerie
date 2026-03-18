@@ -9,7 +9,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
-import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT } from '../config/tenantConfig'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 
@@ -244,6 +244,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
             <li><a href="#mok2-3" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Herausforderungen</strong></a></li>
             <li><a href="#mok2-4" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Fazit & nächste Schritte</strong></a></li>
+            <li><a href="#mok2-maerkte-kunst-fokus" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Märkte Kunst-Fokus</strong> (Feature-Kombination)</a></li>
+            <li><a href="#mok2-maerkte-ohne-kunst" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Chancen ohne Kunst</strong> (dieselbe Technik)</a></li>
+            <li><a href="#mok2-sweet-spot" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Positionierung Sweet-Spot</strong> (Öffentlichkeitsarbeit)</a></li>
             <li><a href="#mok2-5" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Weitere Ideen & Konzepte</strong></a></li>
             <li><a href="#mok2-6" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungs-Programm</strong> (Vertrieb durch Nutzer:innen)</a></li>
             <li><a href="#mok2-7" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Promotion für alle Medien</strong></a></li>
@@ -511,6 +514,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Nicht nur eine App – multifunktional am PC/Mac:</strong> Die K2 Galerie ist eine <strong>Arbeitsplattform am Rechner</strong> (Planung, Veröffentlichen, Werbeunterlagen, alle Geräte im Blick) plus Galerie & Kassa auf Tablet/Handy. Diese Kombination – volle Multifunktion am Desktop, gleicher Stand überall – ist in diesem Feld <strong>einzigartig</strong> und zentral für Werbung und Marketing.</li>
           <li><strong>Alles in einer Oberfläche</strong> – Eine App für Galerie-Webauftritt, Werke, Events, Marketing und Kasse; Admin am Rechner, Galerie und Kassa auf Tablet/Handy (QR, gleicher Stand).</li>
           <li><strong>Fokus gesamter Markt, Kunstmarkt = Unterkategorie</strong> – Alle, die Ideen oder Produkte professionell zeigen wollen; Kunstmarkt (Künstler:innen, Galerien, Kunstvereine) ist unser Einstieg, nicht die Grenze. Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
+          <li><strong>Positionierung Sweet-Spot:</strong> {PRODUCT_POSITIONING_SWEET_SPOT} Der Markt für „Galerie, Kassa, Events aus einer Hand“ lohnt für Große nicht; für Kleine ist der Aufwand zu groß – genau dort liegen wir. Quelle: docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md.</li>
           <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
           <li><strong>Technik ohne Vendor-Lock-in</strong> – Plattformneutral (Windows, Android, macOS, iOS, Browser/PWA); moderner Web-Stack; Konfiguration statt Festverdrahtung.</li>
           <li><strong>Kassafunktion & Etiketten</strong> – Kasse/Shop für Verkauf vor Ort (z. B. iPad/Handy); Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR-Code, WLAN-fähig; Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft.</li>
@@ -602,6 +606,74 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </ul>
       </section>
 
+      {/* Märkte Kunst-Fokus – aus Feature-Kombination (beide Apps) */}
+      <section id="mok2-maerkte-kunst-fokus" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Märkte Kunst-Fokus (Feature-Kombination)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          Aus der <strong>Kombination</strong> von Galerie-/Admin-Produkt (Werke, Kassa, Events, Presse, Etiketten, Shop) und Plattform (ök2, VK2) erschließen sich mit Fokus <strong>Kunst</strong> folgende Märkte.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem' }}>
+          <li><strong>Einzelkünstler:innen / Ateliers</strong> – Galerie, Werke, Kassa, Etiketten, Events, Presse, Fotostudio in einer App (Hauptzielgruppe).</li>
+          <li><strong>Kleine Galerien</strong> – wie K2: alles in einer Oberfläche (Hauptzielgruppe).</li>
+          <li><strong>Kunstvereine (VK2)</strong> – Vereinsplattform, gemeinsame Galerie, Events, ab 10 Mitgliedern für Verein kostenfrei (Hauptzielgruppe).</li>
+          <li><strong>Kunst- und Kreativmärkte / Messen</strong> – Kassa am Stand, Etiketten, Galerie auf Tablet, Flyer mit QR (stark).</li>
+          <li><strong>Kunsthandel / Galerien mit Shop</strong> – Galerie, Shop, Kassa, Belege, Werkkatalog (stark).</li>
+          <li><strong>Kuratoren / Agent:innen</strong> – Portfolio, Events, Presse (mittel).</li>
+          <li><strong>Kunstschulen / Atelier-Verbünde</strong> – VK2 oder gemeinsame Galerie (mittel).</li>
+          <li><strong>Kleine Museen / Ausstellungshäuser</strong> – Events, Presse, optional Kassa/Shop (Nische).</li>
+        </ul>
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+          <strong>Vollständige Analyse:</strong> <code style={{ color: '#5ffbf1' }}>docs/MAERKTE-KUNST-FOKUS-ANALYSE.md</code>
+        </p>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Marktgröße DACH:</strong> <code style={{ color: '#5ffbf1' }}>docs/MARKTGROESSE-DACH-SCHAETZUNG.md</code>
+        </p>
+      </section>
+
+      {/* Chancen ohne Kunst – dieselbe Feature-Kombination */}
+      <section id="mok2-maerkte-ohne-kunst" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Chancen ohne Kunst (dieselbe Technik)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong>Kunst beiseite:</strong> Dieselbe Kombination (Präsentation, Katalog, Kassa, Events, Presse, Etiketten, VK2) eröffnet weitere Märkte – andere Begriffe, gleiche Funktionen.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 1rem' }}>
+          <li><strong>Handwerk & Manufaktur</strong> – Produktkatalog, Kassa, Etiketten, Events (hoch).</li>
+          <li><strong>Design & Möbel</strong> – Showroom, Kassa, Events (hoch).</li>
+          <li><strong>Mode & Kleinserien</strong> – Kollektion, Märkte, Events (hoch).</li>
+          <li><strong>Food & Genuss</strong> (limitierte Produkte) – Katalog, Verkauf, Events (mittel).</li>
+          <li><strong>Messen & Märkte</strong> (beliebige Sparte) – Kassa am Stand, Etiketten, Flyer/QR (hoch).</li>
+          <li><strong>Vereine (alle Typen, VK2)</strong> – gemeinsamer Auftritt, Mitglieder, Events (hoch).</li>
+          <li><strong>Dienstleister Portfolio</strong> – Referenzen, Events, Presse (mittel).</li>
+          <li><strong>Pop-up-Stores, Kleinserien, Bildung/Workshops</strong> (mittel).</li>
+        </ul>
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>
+          <strong>Vollständige Analyse:</strong> <code style={{ color: '#5ffbf1' }}>docs/MAERKTE-OHNE-KUNST-CHANCEN.md</code>
+        </p>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Marktgröße DACH (Schätzung):</strong> <code style={{ color: '#5ffbf1' }}>docs/MARKTGROESSE-DACH-SCHAETZUNG.md</code>
+        </p>
+      </section>
+
+      {/* Positionierung Sweet-Spot – eine Quelle für alle Öffentlichkeitsarbeit */}
+      <section id="mok2-sweet-spot" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Positionierung Sweet-Spot (Öffentlichkeitsarbeit)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
+          <strong style={{ color: '#5ffbf1' }}>{PRODUCT_POSITIONING_SWEET_SPOT}</strong>
+        </p>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.6 }}>
+          Der Markt für „Galerie, Katalog, Kassa und Events aus einer Hand“ ist für große Anbieter zu klein – und für kleine zu aufwendig zu bauen. Genau in dieser Lücke liegt die K2 Galerie: gemacht für Künstler:innen, Galerien und Vereine, die genau das brauchen.
+        </p>
+        <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>Eine Quelle für Presse, Prospekt, Flyer:</strong> <code style={{ color: '#5ffbf1' }}>docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md</code>
+        </p>
+      </section>
+
       {/* Kapitel: Vertrieb – Kanäle, Empfehlung, Werbung */}
       <Mok2ChapterPage title={mok2Groups[1].chapterTitle} />
       {/* Sichtbarkeit Suchmaschinen & Werbung – Konzept (ohne / mit Kosten) */}
@@ -650,7 +722,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.05)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.18)', marginTop: '0.5rem' }}>
           <h4 style={{ fontSize: '0.95rem', color: '#fbbf24', margin: '0 0 0.35rem' }}>1b – Produkt-Story (K2 &amp; VK2, neutral)</h4>
           <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)', fontStyle: 'italic' }}>
-            Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die <strong>K2 Galerie</strong> ist aus genau dieser Lücke entstanden: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: <strong>ök2</strong> für Künstler:innen mit eigenem Auftritt, <strong>VK2</strong> für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.
+            Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die <strong>K2 Galerie</strong> ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: <strong>ök2</strong> für Künstler:innen mit eigenem Auftritt, <strong>VK2</strong> für Kunstvereine – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.
           </p>
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'rgba(255,255,255,0.65)' }}>Einsatz: Neutrale Plattform-Story für Presse – ohne persönliche Details, für K2, ök2 und VK2.</p>
         </div>
@@ -730,6 +802,41 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </ul>
           <p style={{ margin: '0.75rem 0 0', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}>Quellen: MARKETING-EROEFFNUNG-K2-OEK2.md, MEDIENSTUDIO-K2.md (§1a, §1b), MEDIENVERTEILER-EROEFFNUNG.md.</p>
         </div>
+      </section>
+      {/* Entwürfe Öffentlichkeitsarbeit – Feinschliff: Taschen, Flyer, großer Markt, QR (zum Ausfüllen in den Modals) */}
+      <section id="mok2-entwuerfe-oeffentlichkeitsarbeit" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Entwürfe Öffentlichkeitsarbeit (Feinschliff)
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55 }}>
+          Diese Entwürfe kannst du in den einzelnen Modals der <strong>Öffentlichkeitsarbeit K2</strong> (Admin → Eventplanung → Öffentlichkeitsarbeit) nutzen: Copy-Paste, anpassen, mit QR/Bild ergänzen. Lokale Öffentlichkeit + Freundeskreis (K2 + ök2) und großer Markt (nur ök2) getrennt.
+        </p>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>1. Papiertaschen (beidseitig)</h3>
+        <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}><strong>Seite 1 – K2 (Galerie Eröffnung):</strong></p>
+        <div style={{ padding: '0.6rem 0.9rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', borderLeft: '3px solid #5ffbf1', marginBottom: '0.75rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}>K2 Galerie Kunst &amp; Keramik · Eröffnung [Datum] · Schlossergasse 4, 4070 Eferding · [QR-Code → Galerie/Willkommen] · Öffnungszeiten, Kontakt, kurzer Einladungstext.</p>
+        </div>
+        <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}><strong>Seite 2 – ök2 (für den Markt):</strong></p>
+        <div style={{ padding: '0.6rem 0.9rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', borderLeft: '3px solid #5ffbf1', marginBottom: '0.5rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}>ök2 – für die Kunst gemacht, für den Markt. Deine Galerie im Netz, eine Plattform für Künstler:innen und Galerien. [QR-Code → Demo/Entdecken] · [Bild/Logo] · Slogan, 2–3 Zeilen USP.</p>
+        </div>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>2. Flyer (beidseitig)</h3>
+        <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>Gleiche Logik wie Taschen: <strong>Seite 1</strong> = K2 (Eröffnung, Adresse, QR Galerie), <strong>Seite 2</strong> = ök2 (Plattform, Demo, QR Entdecken). In den Admin-Modals (Flyer, Presse, Plakat) die Texte pro Seite eintragen bzw. als „Seite 1“ / „Seite 2“ in der Vorlage führen.</p>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>3. Großer Markt (nur ök2)</h3>
+        <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>Für den großen Markt zählt nur ök2 – keine Erwähnung Eferding/Galerie vor Ort.</p>
+        <div style={{ padding: '0.6rem 0.9rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', borderLeft: '3px solid #5ffbf1', marginBottom: '0.5rem', fontSize: '0.88rem', lineHeight: 1.5 }}>
+          <p style={{ margin: 0 }}><strong>Kernbotschaft:</strong> ök2 – für die Kunst gemacht, für den Markt. Plattform für Künstler:innen, Galerien und Kunstvereine: eigene Galerie, Werke, Events, Einladungen und Presse aus einer Hand. [QR → Demo/Willkommensseite] · Zielgruppe: Künstler:innen, kleine Galerien, Kunstvereine – nicht „Besucher vor Ort“.</p>
+        </div>
+
+        <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>4. QR-Strategie</h3>
+        <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.88rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
+          <li><strong>Lokal (Tasche/Flyer K2-Seite):</strong> QR → K2 Galerie / Willkommen / Eröffnung ({URL_K2_GALERIE}).</li>
+          <li><strong>Großer Markt (ök2-Seite oder reine ök2-Flyer):</strong> QR → nur Demo / Entdecken ({URL_MUSTER_WILLKOMMEN}) – kein Link zur physischen Galerie.</li>
+        </ul>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>Diese Entwürfe in den Modals (Presse, Flyer, Plakat, Social) verwenden: Abschnitt kopieren, in das jeweilige Modal einfügen, QR und Bilder aus der App ergänzen.</p>
       </section>
       {/* 4a. Kanäle 2026 – kurze Liste zum Ausfüllen und Prüfen */}
       <section id="mok2-kanale-2026" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>

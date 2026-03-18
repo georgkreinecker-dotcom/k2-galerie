@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – **Stammbaum: horizontale Ansicht.** K2 Familie Stammbaum kann neben Vertikal (Wurzeln oben) jetzt auch **Horizontal** (Wurzeln links) angezeigt werden. FamilyTreeGraph: Prop `orientation: 'vertical' | 'horizontal'`; Koordinaten/ViewBox/Pan für Horizontal; Stammbaum-Seite: Buttons „Vertikal“ / „Horizontal“. Session-Ende für heute.
+**Letzter Stand:** 17.03.26 – **Promotion-Sportwagen-Strategie.** Alle Themen unter „7. Promotion“ (mök2) zusammengefasst; Strategie für den gesamten Promotion-Prozess erstellt: eine Quelle, One-Click, Muster, nichts zweimal. Doku: docs/STRATEGIE-PROMOTION-SPORTWAGEN.md (Quellen, One-Click-Ideen, priorisierte Schritte). 00-INDEX ergänzt.
 
-**Was wir JETZT tun:** Pause; Raum bereit für morgen.
+**Was wir JETZT tun:** Strategie steht; Umsetzung der priorisierten Schritte (z. B. Presse-Paket kopieren, Absenden-Anleitung) optional von Georg festlegen.
 
-**Vorher:** K2 Familie – Beziehungen nur aus den Karten (getBeziehungenFromKarten, Regel k2-familie-beziehungen-nur-aus-karten.mdc). ro5 – check the crash (CRASH-BEREITS-GEPRUEFT gelesen, orientiert).
+**Vorher:** Stammbaum horizontale Ansicht; K2 Familie – Beziehungen nur aus den Karten; ro5.
 
-**Nächster Schritt:** Von Georg festlegen (z. B. Stammbaum horizontal testen, oder anderes).
+**Nächster Schritt:** Von Georg festlegen (z. B. erste One-Click-Maßnahme umsetzen, oder anderes).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

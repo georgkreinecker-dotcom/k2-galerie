@@ -7,7 +7,7 @@
 
 ## Regel
 
-**Jede Presseaussendung (Eröffnung, Vernissage, Event, Meldung) läuft über denselben Ablauf.** Nur die Variablen ändern sich: Anlass, Datum, Ort, Kontakt. Vorlage und Verteiler bleiben gleich.
+**Jede Presseaussendung (Eröffnung, Vernissage, Event, Meldung) läuft über denselben Ablauf.** Nur die Variablen ändern sich: Anlass, Datum, Ort, Kontakt. Vorlage und Verteiler bleiben gleich. **Bei Produkt-/Plattform-Thema:** Sweet-Spot-Formulierung einbeziehen („Zu klein für die Großen, zu komplex für die Kleinen“) – eine Quelle: docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md.
 
 ---
 

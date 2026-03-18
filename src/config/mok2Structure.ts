@@ -28,6 +28,9 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-2', label: '2. Marktchancen – Stärken' },
       { id: 'mok2-3', label: '3. Marktchancen – Herausforderungen' },
       { id: 'mok2-4', label: '4. Fazit & nächste Schritte' },
+      { id: 'mok2-maerkte-kunst-fokus', label: 'Märkte Kunst-Fokus (Feature-Kombination)' },
+      { id: 'mok2-maerkte-ohne-kunst', label: 'Chancen ohne Kunst (dieselbe Technik)' },
+      { id: 'mok2-sweet-spot', label: 'Positionierung Sweet-Spot (Öffentlichkeitsarbeit)' },
     ],
   },
   {
@@ -36,6 +39,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-sichtbarkeit-werbung', label: 'Sichtbarkeit & Werbung (Suchmaschinen, Verbreitung)' },
       { id: 'mok2-eroeffnung-k2-oek2', label: 'Eröffnung K2 + ök2 + VK2 (Marketinglinie)' },
       { id: 'mok2-muster-werbetyp-eroeffnung', label: 'Muster pro Werbetyp (Eröffnung)' },
+      { id: 'mok2-entwuerfe-oeffentlichkeitsarbeit', label: 'Entwürfe Öffentlichkeitsarbeit (Feinschliff)' },
       { id: 'mok2-kanale-2026', label: 'Kanäle 2026' },
       { id: 'mok2-verbesserungen', label: 'Was wir gemeinsam verbessern' },
       { id: 'mok2-5', label: '5. Weitere Ideen & Konzepte' },
