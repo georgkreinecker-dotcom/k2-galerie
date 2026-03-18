@@ -161,7 +161,7 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
         <p style={{ fontFamily: fontHeading, fontSize: '0.8rem', letterSpacing: '0.25em', textTransform: 'uppercase', color: '#d4a574', margin: '0 0 0.75rem', position: 'relative' }}>
           Herzlich willkommen
         </p>
-        <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2.2rem, 6vw, 3.5rem)', fontWeight: 600, color: '#fff5ee', margin: '0 0 1rem', lineHeight: 1.15, position: 'relative', letterSpacing: '-0.01em' }}>
+        <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 600, color: '#fff5ee', margin: '0 0 1rem', lineHeight: 1.15, position: 'relative', letterSpacing: '-0.01em' }}>
           {PRODUCT_BRAND_NAME}
         </h1>
         <div style={{ width: 60, height: 3, background: `linear-gradient(90deg, ${accent}, ${accentLight})`, borderRadius: 2, marginBottom: '1.25rem', position: 'relative' }} />
@@ -264,7 +264,7 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
           <div style={{ display: 'inline-block', padding: '0.3rem 0.9rem', background: `${accent}28`, border: `1px solid ${accent}55`, borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600, color: accent, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '1.25rem' }}>
             Jetzt kostenlos ausprobieren
           </div>
-          <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(2.4rem, 6vw, 3.8rem)', fontWeight: 700, color: textLight, margin: '0 0 1rem', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, color: textLight, margin: '0 0 1rem', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
             {PRODUCT_BRAND_NAME}
           </h1>
           <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.2rem)', color: '#d4a574', lineHeight: 1.65, margin: 0, maxWidth: 440, marginLeft: 'auto', marginRight: 'auto' }}>

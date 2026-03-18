@@ -3,7 +3,7 @@
  * Zeigt entweder ein Bild (logoSrc) oder das Text-Logo (Markenname + „Admin“).
  */
 
-import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL } from '../config/marketingWerbelinie'
 
 const s = WERBEUNTERLAGEN_STIL
@@ -36,11 +36,11 @@ export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin', title }: Ad
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.15rem' }}>
       <span
         style={{
           fontFamily: s.fontHeading,
-          fontSize: 'clamp(2rem, 6vw, 3rem)',
+          fontSize: 'clamp(1.15rem, 3vw, 1.5rem)',
           fontWeight: 700,
           color: s.accent,
           letterSpacing: '-0.02em',
@@ -51,10 +51,8 @@ export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin', title }: Ad
       </span>
       <span
         style={{
-          marginTop: '0.35rem',
-          display: 'block',
           color: s.muted,
-          fontSize: 'clamp(0.8rem, 2.2vw, 1rem)',
+          fontSize: 'clamp(0.7rem, 1.8vw, 0.8rem)',
           fontWeight: 500,
           letterSpacing: '0.08em',
           textTransform: 'uppercase',
@@ -62,20 +60,6 @@ export default function AdminBrandLogo({ logoSrc, logoAlt = 'Admin', title }: Ad
         }}
       >
         Admin
-      </span>
-      <span
-        style={{
-          marginTop: '0.25rem',
-          display: 'block',
-          color: s.muted,
-          fontSize: 'clamp(0.7rem, 1.8vw, 0.85rem)',
-          fontWeight: 400,
-          fontFamily: s.fontBody,
-          lineHeight: 1.3,
-          maxWidth: '22rem',
-        }}
-      >
-        {PRODUCT_WERBESLOGAN}<br />{PRODUCT_WERBESLOGAN_2}
       </span>
     </div>
   )

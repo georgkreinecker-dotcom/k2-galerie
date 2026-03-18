@@ -10,6 +10,22 @@
 
 ---
 
+## BUG-040 · Dokumente/Events/Design beim „Laden vom Server“ überschrieben → Öffentlichkeitsarbeit, Newsletter, Design weg (gelöst 17.03.26)
+
+**Symptom:** Nach „Aktuellen Stand holen“ / Laden vom Server waren K2-Dokumente (Öffentlichkeitsarbeit, Newsletter) und Design/Farben wieder alt oder weg – obwohl sie lokal gespeichert und mehrfach genutzt worden waren.
+
+**Ursache:** Beim Laden vom Server (handleRefresh, loadData in GaleriePage) wurden **Dokumente** und **Events** überschrieben, sobald der Server irgendwelche Daten lieferte (`data.documents.length > 0 || !localHasDocs`). Hatte der Server einen **älteren** Stand (z. B. weil Veröffentlichen fehlgeschlagen war), ersetzte die App die **neuere** lokale Liste durch die ältere → Datenverlust. Design wurde bei leerem/fehlendem Server-Design ebenfalls überschrieben (bereits mit hasMeaningfulDesign abgesichert).
+
+**Lösung:** (1) **Dokumente/Events (K2):** Nur überschreiben, wenn der Server **mindestens so viele** Einträge hat wie lokal (`data.documents.length >= localDocs.length` bzw. `data.events.length >= localEvents.length`). Sonst lokale Daten behalten und in der Konsole warnen. (2) **Design:** Bereits zuvor: Nur bei `hasMeaningfulDesign(data.designSettings)` überschreiben.
+
+**Betroffene Dateien:** src/pages/GaleriePage.tsx (handleRefresh und loadData – beide Stellen für events/documents).
+
+**Regel:** Beim „Laden vom Server“ niemals lokale Listen (Dokumente, Events) durch **weniger** Server-Daten ersetzen – sonst stiller Datenverlust.
+
+**Status:** ✅ Behoben (17.03.26).
+
+---
+
 ## BUG-039 · K2-Galerie zeigte VK2-Inhalte – Ursache: Auto-Save schrieb bei VK2-Kontext in K2-Keys (gelöst 15.03.26)
 
 **Symptom:** Auf der K2-Galerie-Seite waren „oberer Text und Bild“, Impressum und „Aktuelles aus Eventplanung“ falsch bzw. von VK2 (Verein). Korrekt waren bereits „Die Kunstschaffenden“, „In die Galerie“, „Virtueller Rundgang“.

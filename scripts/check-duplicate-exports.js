@@ -50,40 +50,32 @@ function checkDuplicateExports(filePath) {
   return duplicateExports
 }
 
-// Prüfe alle TypeScript/JavaScript Dateien
+// Verzeichnisse die ignoriert werden sollen (niemals betreten – vermeidet ENOENT in dist/ etc.)
+const IGNORE_DIRS = new Set(['node_modules', 'dist', '.git', 'build', '.next', 'coverage'])
+
+// Prüfe alle TypeScript/JavaScript Dateien (manueller Walk – dist/ wird nie betreten)
 function checkAllFiles(dir) {
-  const files = fs.readdirSync(dir, { recursive: true })
   const issues = []
-  
-  // Verzeichnisse die ignoriert werden sollen
-  const ignoreDirs = ['node_modules', 'dist', '.git', 'build', '.next', 'coverage']
-  
-  files.forEach(file => {
-    // Prüfe ob Datei in ignoriertem Verzeichnis ist
-    const fileParts = file.split(path.sep)
-    const shouldIgnore = fileParts.some(part => ignoreDirs.includes(part))
-    
-    if (shouldIgnore) return
-    
-    if (file.endsWith('.ts') || file.endsWith('.tsx') || file.endsWith('.js') || file.endsWith('.jsx')) {
-      const filePath = path.join(dir, file)
+  let entries
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true })
+  } catch (e) {
+    return issues
+  }
+  for (const ent of entries) {
+    const full = path.join(dir, ent.name)
+    if (ent.isDirectory()) {
+      if (IGNORE_DIRS.has(ent.name)) continue
+      issues.push(...checkAllFiles(full))
+    } else if (ent.isFile() && /\.(ts|tsx|js|jsx)$/.test(ent.name)) {
       try {
-        // Prüfe ob Datei existiert (kann bei rekursivem readdirSync anders sein)
-        if (!fs.existsSync(filePath)) return
-        
-        const duplicates = checkDuplicateExports(filePath)
+        const duplicates = checkDuplicateExports(full)
         if (duplicates.length > 0) {
-          issues.push({
-            file: filePath,
-            duplicates
-          })
+          issues.push({ file: full, duplicates })
         }
-      } catch (e) {
-        // Ignoriere Fehler beim Lesen
-      }
+      } catch (_) {}
     }
-  })
-  
+  }
   return issues
 }
 

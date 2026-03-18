@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getEntryTypeLabel, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -113,6 +113,7 @@ function loadOeffentlichArtworks(): any[] | null {
     const parsed = readArtworksRawForContextOrNull(true)
     if (parsed === null) return null
     if (!Array.isArray(parsed) || parsed.length === 0) return []
+    const isMuster = (x: any) => String(x?.id ?? '').startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1'].includes(String(x?.number ?? '').trim().toUpperCase())
     return parsed.map((a: any) => {
       const out = { ...a }
       if (out.imageUrl && out.previewUrl) {
@@ -120,7 +121,7 @@ function loadOeffentlichArtworks(): any[] | null {
       } else if (out.previewUrl) {
         out.imageUrl = out.previewUrl
       }
-      if (!out.imageUrl || isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      if (isMuster(out) || !out.imageUrl || isPlaceholderImageUrl(out.imageUrl)) out.imageUrl = getOek2DefaultArtworkImage(out.category)
       return out
     })
   } catch {
@@ -2610,9 +2611,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       justifyContent: 'center'
                     }}>
                       {(() => {
+                        const isMuster = (x: any) => String(x?.id ?? '').startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1'].includes(String(x?.number ?? '').trim().toUpperCase())
                         let rawSrc = artwork.imageUrl || artwork.previewUrl || ''
-                        // blob:-URLs (iPad/Handy-Kamera) anzeigen – onError zeigt bei Fehlschlag Platzhalter
-                        const displaySrc = musterOnly && (!rawSrc || isPlaceholderImageUrl(rawSrc))
+                        // ök2-Musterwerke: immer Kategorie-Bild (gespeicherte Unsplash-URLs oft kaputt)
+                        const displaySrc = musterOnly && (isMuster(artwork) || !rawSrc || isPlaceholderImageUrl(rawSrc))
                           ? getOek2DefaultArtworkImage(artwork.category)
                           : rawSrc
                         // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
@@ -2702,24 +2704,6 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                               <span aria-hidden>★</span> Favorit
                             </div>
                           )}
-                          {/* Typ-Badge (Kunstwerk / Produkt / Idee) – Vision Werke = Oberbegriff */}
-                          <div style={{
-                            position: 'absolute',
-                            top: '0.5rem',
-                            left: '0.5rem',
-                            background: 'rgba(0, 0, 0, 0.65)',
-                            backdropFilter: 'blur(4px)',
-                            color: '#ffffff',
-                            padding: '0.2rem 0.45rem',
-                            borderRadius: '6px',
-                            fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)',
-                            fontWeight: '500',
-                            pointerEvents: 'none',
-                            zIndex: 2,
-                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
-                          }}>
-                            {getEntryTypeLabel(artwork.entryType)}
-                          </div>
                           {/* Nummer als Overlay auf dem Bild */}
                           {artwork.number && (
                             <div style={{

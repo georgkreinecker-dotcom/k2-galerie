@@ -41,6 +41,8 @@
 
 **NIEMALS:** Server-Daten direkt in localStorage schreiben ohne Merge; keinen zweiten Lade-Pfad ohne preserveLocalImageData.
 
+**K2-Dokumente und K2-Events:** Beim Übernehmen aus der Server-Antwort (GaleriePage handleRefresh/loadData) **nur überschreiben, wenn der Server mindestens so viele Einträge hat wie lokal** (sonst stiller Datenverlust – BUG-040). Design nur bei hasMeaningfulDesign(server) übernehmen.
+
 ---
 
 ## 4. Werke mit Bild speichern

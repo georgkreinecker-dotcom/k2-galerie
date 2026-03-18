@@ -155,8 +155,28 @@ export function saveEvents(tenantId: EventsTenantId, events: any[]): void {
       console.error('❌ eventsStorage: Daten zu groß')
       return
     }
-    if (typeof window !== 'undefined') localStorage.setItem(key, json)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, json)
+      // Zusätzliche Sicherheit K2: Lokale Sicherungskopie inkl. event.documents (wird nie vom Server überschrieben)
+      if (tenantId === 'k2' && list.length > 0) {
+        try {
+          localStorage.setItem('k2-events-backup', json)
+        } catch (_) {}
+      }
+    }
   } catch (e) {
     console.error('❌ eventsStorage save:', e)
+  }
+}
+
+/** Liest die K2-Sicherungskopie (Events inkl. event.documents). Nur für Wiederherstellung. */
+export function loadK2EventsBackup(): any[] {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-events-backup') : null
+    if (!raw || !raw.trim()) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
   }
 }

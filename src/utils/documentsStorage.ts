@@ -88,10 +88,30 @@ export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): bo
       console.error('❌ documentsStorage: Daten zu groß')
       return false
     }
-    if (typeof window !== 'undefined') localStorage.setItem(key, json)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, json)
+      // Zusätzliche Sicherheit K2: Lokale Sicherungskopie (wird nie vom Server überschrieben)
+      if (tenantId === 'k2' && list.length > 0) {
+        try {
+          localStorage.setItem('k2-documents-backup', json)
+        } catch (_) {}
+      }
+    }
     return true
   } catch (e) {
     console.error('❌ documentsStorage save:', e)
     return false
+  }
+}
+
+/** Liest die K2-Sicherungskopie (Öffentlichkeitsarbeit, Newsletter, etc.). Nur für Wiederherstellung. */
+export function loadK2DocumentsBackup(): any[] {
+  try {
+    const raw = typeof window !== 'undefined' ? localStorage.getItem('k2-documents-backup') : null
+    if (!raw || !raw.trim()) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
   }
 }

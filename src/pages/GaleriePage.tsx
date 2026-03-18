@@ -264,6 +264,13 @@ function isOldBlueTheme(design: Record<string, string>): boolean {
   return false
 }
 
+/** Server-Design nur übernehmen wenn es ein echtes Design ist (nicht leer). Sonst lokales Design behalten – verhindert Zurücksetzen nach fehlgeschlagenem Publish oder altem Server-Stand. */
+function hasMeaningfulDesign(design: unknown): design is Record<string, string> {
+  if (!design || typeof design !== 'object') return false
+  const d = design as Record<string, string>
+  return Boolean((d.accentColor && d.accentColor.trim()) || (d.backgroundColor1 && d.backgroundColor1.trim()))
+}
+
 /** Prüft ob die aktuell gesetzte Akzentfarbe blau/cyan ist – Fallback für Cache/ältere Daten */
 function isDocumentStillBlue(): boolean {
   try {
@@ -1216,11 +1223,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         if (data.events && Array.isArray(data.events)) {
           try {
             const localEvents = loadEvents('k2')
-            const localHasEvents = localEvents.length > 0
-            if (data.events.length > 0 || !localHasEvents) {
+            if (data.events.length >= localEvents.length) {
               saveEvents('k2', data.events)
               window.dispatchEvent(new CustomEvent('k2-events-updated'))
               console.log('✅ Events aktualisiert:', data.events.length)
+            } else {
+              console.warn('⚠️ Server hat weniger Events als lokal – behalte lokale (K2). Server:', data.events.length, 'lokal:', localEvents.length)
             }
           } catch (e) {
             console.warn('⚠️ Events zu groß für localStorage')
@@ -1229,10 +1237,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
         if (data.documents && Array.isArray(data.documents)) {
           try {
             const localDocs = loadDocuments('k2')
-            const localHasDocs = localDocs.length > 0
-            if (data.documents.length > 0 || !localHasDocs) {
+            if (data.documents.length >= localDocs.length) {
               saveDocuments('k2', data.documents)
               console.log('✅ Dokumente aktualisiert:', data.documents.length)
+            } else {
+              console.warn('⚠️ Server hat weniger Dokumente als lokal – behalte lokale (K2). Server:', data.documents.length, 'lokal:', localDocs.length)
             }
           } catch (e) {
             console.warn('⚠️ Dokumente zu groß für localStorage')
@@ -1246,14 +1255,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             console.warn('⚠️ Seitentexte zu groß für localStorage')
           }
         }
-        if (data.designSettings != null && typeof data.designSettings === 'object') {
+        // Design nur vom Server übernehmen, wenn lokal noch kein sinnvolles Design gesetzt ist (sonst bleibt deine Wahl erhalten)
+        if (hasMeaningfulDesign(data.designSettings)) {
           try {
-            const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
-            localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
-            applyDesignToDocument(designToUse)
+            const localRaw = localStorage.getItem('k2-design-settings')
+            const localDesign = localRaw ? (JSON.parse(localRaw) as Record<string, string>) : null
+            if (!hasMeaningfulDesign(localDesign)) {
+              const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
+              localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
+              applyDesignToDocument(designToUse)
+            }
           } catch (_) {}
         }
-        
+
         // Speichere Timestamp für nächsten Vergleich
         if (currentTimestamp) {
           localStorage.setItem('k2-last-loaded-timestamp', currentTimestamp)
@@ -1649,7 +1663,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           if (data.events && Array.isArray(data.events)) {
             try {
               const localEvents = loadEvents('k2')
-              if (data.events.length > 0 || localEvents.length === 0) {
+              if (data.events.length >= localEvents.length) {
                 saveEvents('k2', data.events)
                 window.dispatchEvent(new CustomEvent('k2-events-updated'))
               }
@@ -1658,7 +1672,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           if (data.documents && Array.isArray(data.documents)) {
             try {
               const localDocs = loadDocuments('k2')
-              if (data.documents.length > 0 || localDocs.length === 0) {
+              if (data.documents.length >= localDocs.length) {
                 saveDocuments('k2', data.documents)
               }
             } catch (_) {}
@@ -1668,11 +1682,16 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
               localStorage.setItem('k2-page-texts', JSON.stringify(data.pageTexts))
             } catch (_) {}
           }
-          if (data.designSettings != null && typeof data.designSettings === 'object') {
+          // Design nur vom Server übernehmen, wenn lokal noch kein sinnvolles Design gesetzt ist
+          if (hasMeaningfulDesign(data.designSettings)) {
             try {
-              const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
-              localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
-              applyDesignToDocument(designToUse)
+              const localRaw = localStorage.getItem('k2-design-settings')
+              const localDesign = localRaw ? (JSON.parse(localRaw) as Record<string, string>) : null
+              if (!hasMeaningfulDesign(localDesign)) {
+                const designToUse = isOldBlueTheme(data.designSettings) ? K2_ORANGE : data.designSettings
+                localStorage.setItem('k2-design-settings', JSON.stringify(designToUse))
+                applyDesignToDocument(designToUse)
+              }
             } catch (_) {}
           }
           // Seitengestaltung: Merge nur wenn Server-String – lokales Video/Bild geht immer vor (siehe mergePageContentGalerieFromServer)
@@ -2247,6 +2266,32 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
     return
   }
 
+  const handleGalerieTeilen = async () => {
+    if (typeof navigator === 'undefined') return
+    const url = window.location.origin + window.location.pathname + window.location.search
+    const text = (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: displayGalleryName || 'Galerie', text, url })
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError') {
+          try { await navigator.clipboard.writeText(url) } catch (_) {}
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+      } catch (_) {
+        const ta = document.createElement('textarea')
+        ta.value = url
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+      }
+    }
+  }
+
   // Legacy: setFirstVisitNow / grantAdminAccess / Modal nur noch für Fallback (z. B. deep link). Normaler Einstieg = /mein-bereich.
   const _legacyAdminUnlock = () => {
     setFirstVisitNow()
@@ -2440,6 +2485,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             pointerEvents: 'none'
           }}
         >
+          {(!musterOnly || vk2) && (
           <div style={{
             fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
             fontWeight: '500',
@@ -2451,6 +2497,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           }}>
             {vk2 ? displayGalleryName : <>{PRODUCT_BRAND_NAME} <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span></>}
           </div>
+          )}
         </div>
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
         {vk2 && (
@@ -2476,42 +2523,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             <span>{displayGalleryName} – {(galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' && !vk2 ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || (vk2 ? 'Unsere Mitglieder' : 'Die Kunstschaffenden')}</span>
           </div>
         )}
-        {/* Galerie teilen (Web Share) oder Link kopieren – für alle sichtbar. */}
-        {typeof navigator !== 'undefined' && (
+        {/* Galerie teilen (fixed) – nur K2/VK2; ök2 nutzt das Banner, damit kein Overlap. */}
+        {typeof navigator !== 'undefined' && !musterOnly && (
         <button
           type="button"
-          onClick={async () => {
-            const url = window.location.origin + window.location.pathname + window.location.search
-            const text = (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
-            if (typeof navigator.share === 'function') {
-              try {
-                await navigator.share({ title: displayGalleryName || 'Galerie', text, url })
-              } catch (err) {
-                if ((err as Error)?.name !== 'AbortError') {
-                  try { await navigator.clipboard.writeText(url) } catch (_) {}
-                }
-              }
-            } else {
-              try {
-                await navigator.clipboard.writeText(url)
-              } catch (_) {
-                const ta = document.createElement('textarea')
-                ta.value = url
-                document.body.appendChild(ta)
-                ta.select()
-                document.execCommand('copy')
-                document.body.removeChild(ta)
-              }
-            }
-          }}
+          onClick={handleGalerieTeilen}
           title={typeof navigator.share === 'function' ? 'Galerie teilen (WhatsApp, Mail, Social …)' : 'Link zur Galerie kopieren'}
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
             right: showAdminEntryOnGalerie ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
-            background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-            border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
-            color: vk2 ? '#fff' : musterOnly ? 'var(--k2-text)' : '#fff',
+            background: vk2 ? 'rgba(255, 140, 66, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+            border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
+            color: vk2 ? '#fff' : '#fff',
             padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
             borderRadius: '10px',
             fontSize: 'clamp(0.78rem, 1.8vw, 0.9rem)',
@@ -2526,8 +2550,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           {typeof navigator.share === 'function' ? '📤 Galerie teilen' : '🔗 Link kopieren'}
         </button>
         )}
-        {/* Admin-Button nur anzeigen, wenn von APf/freigeschaltet – Besucher von Google (öffentliche Galerie) sehen keinen Admin. */}
-        {showAdminEntryOnGalerie && (
+        {/* Admin-Button (fixed) – nur K2/VK2; ök2 nutzt das Banner. */}
+        {showAdminEntryOnGalerie && !musterOnly && (
         <button
           onClick={handleAdminButtonClick}
           style={{
@@ -2922,13 +2946,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
           </header>
         ) : (
         <>
-        {/* ök2: Banner oben – So könnte dein Auftritt aussehen (Galerie = Beispiel), dann mit mir in den Admin */}
+        {/* ök2: Ein klares Willkommens-Banner – Text + zwei Aktionen in einer Zeile, kein Overlap mit fixed-Elementen */}
         {musterOnly && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
-            padding: 'clamp(0.65rem, 1.5vw, 0.9rem) clamp(1rem, 2.5vw, 1.25rem)',
-            background: 'rgba(107, 144, 128, 0.15)',
-            border: '1px solid rgba(107, 144, 128, 0.4)',
+            padding: 'clamp(0.75rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem)',
+            background: 'rgba(107, 144, 128, 0.12)',
+            border: '1px solid rgba(107, 144, 128, 0.35)',
             borderRadius: '12px',
             display: 'flex',
             alignItems: 'center',
@@ -2939,26 +2963,48 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false }: { scr
             marginLeft: 'auto',
             marginRight: 'auto',
           }}>
-            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 260px' }}>
-              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du aber jedes Produkt oder jede Idee präsentieren. Schau dich um – danach gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
+            <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
+              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du jedes Produkt oder jede Idee präsentieren. Schau dich um, dann gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
             </span>
-            <button
-              type="button"
-              onClick={handleAdminButtonClick}
-              style={{
-                padding: '0.5rem 1rem',
-                background: 'var(--k2-accent)',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '10px',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
-            >
-              Mit mir in den Admin →
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+              {typeof navigator !== 'undefined' && (
+                <button
+                  type="button"
+                  onClick={handleGalerieTeilen}
+                  title={typeof navigator.share === 'function' ? 'Galerie teilen' : 'Link kopieren'}
+                  style={{
+                    padding: '0.5rem 0.9rem',
+                    background: 'rgba(107, 144, 128, 0.2)',
+                    border: '1px solid rgba(107, 144, 128, 0.5)',
+                    color: 'var(--k2-text)',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {typeof navigator.share === 'function' ? '📤 Galerie teilen' : '🔗 Link kopieren'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleAdminButtonClick}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'var(--k2-accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Mit mir in den Admin →
+              </button>
+            </div>
           </div>
         )}
         {/* Hero Section (K2 / ök2) – Bild zuerst, dann Titel: sofortiger visueller Eindruck */}

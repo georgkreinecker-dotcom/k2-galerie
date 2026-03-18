@@ -123,7 +123,7 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
     }}>
       {/* ── Brand-Logo ── */}
       <div style={{ marginBottom: 'clamp(2rem, 5vw, 3rem)', textAlign: 'center' }}>
-        <div style={{ fontFamily: fontHeading, fontSize: 'clamp(2.2rem, 6vw, 3.2rem)', fontWeight: 700, color: accentGlow, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+        <div style={{ fontFamily: fontHeading, fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 700, color: accentGlow, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
           {PRODUCT_BRAND_NAME}
         </div>
         <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: '0.3rem' }}>
@@ -687,15 +687,11 @@ export default function EntdeckenPage() {
             }}>
               <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '60%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
               <div style={{ position: 'relative' }}>
-                <div style={{ fontFamily: fontHeading, fontSize: '1rem', color: accentGlow, fontWeight: 700, marginBottom: '1.5rem', letterSpacing: '-0.01em' }}>
-                  {PRODUCT_BRAND_NAME}
-                </div>
-                <div style={{ display: 'inline-block', padding: '0.3rem 1rem', background: `${accentGlow}22`, border: `1px solid ${accentGlow}44`, borderRadius: '20px', fontSize: '0.72rem', fontWeight: 600, color: accentGlow, letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: '1.25rem' }}>
+                <div style={{ fontFamily: fontHeading, fontSize: 'clamp(1.1rem, 2.8vw, 1.5rem)', fontWeight: 700, color: textLight, marginBottom: '1.25rem', lineHeight: 1.35, letterSpacing: '-0.02em', maxWidth: 480 }}>
                   {T.heroTag}
-                </div>
-                <h1 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 700, color: textLight, margin: '0 0 1.25rem', lineHeight: 1.15, letterSpacing: '-0.02em', maxWidth: 480 }}>
+                  <br />
                   {T.heroTitle}
-                </h1>
+                </div>
                 <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '0.75rem' }}>
                   {T.heroSub}
                 </p>

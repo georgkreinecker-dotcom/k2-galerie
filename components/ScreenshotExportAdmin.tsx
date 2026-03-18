@@ -38,8 +38,8 @@ import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawBy
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
-import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage } from '../src/utils/eventsStorage'
-import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage } from '../src/utils/documentsStorage'
+import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup } from '../src/utils/eventsStorage'
+import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { apiPost, apiGet } from '../src/utils/apiClient'
@@ -749,11 +749,14 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
     if (artworks.length < before) {
       console.warn(`⚠️ ök2: ${before - artworks.length} K2-Galerie-Werke in Anzeige ausgeblendet (nur Anzeige gefiltert, localStorage unverändert)`)
     }
-    // ök2: Für Anzeige fehlende/Platzhalter-Bilder durch Kategorie-Standardbild ersetzen (wie GalerieVorschauPage loadOeffentlichArtworks)
+    // ök2: Musterwerke (muster-* / M1,P1,G1,S1,I1) immer mit Kategorie-Bild – gespeicherte Unsplash/URLs oft kaputt.
     artworks = artworks.map((a: any) => {
       const out = { ...a }
+      const id = String(a?.id ?? '').trim()
+      const num = String(a?.number ?? a?.id ?? '').trim().toUpperCase()
+      const isMuster = id.startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1'].includes(num)
       const u = out.imageUrl || out.previewUrl
-      if (!u || (typeof u === 'string' && u.startsWith('data:image/svg+xml'))) out.imageUrl = getOek2DefaultArtworkImage(out.category)
+      if (isMuster || !u || (typeof u === 'string' && u.startsWith('data:image/svg+xml'))) out.imageUrl = getOek2DefaultArtworkImage(out.category)
       return out
     })
   }
@@ -1326,8 +1329,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
-  const [entlastenInProgress, setEntlastenInProgress] = useState(false)
-  const [clearImages0030_0039InProgress, setClearImages0030_0039InProgress] = useState(false)
   const [backupPanelMinimized, setBackupPanelMinimized] = useState(true)
   const backupFileInputRef = useRef<HTMLInputElement>(null)
   const [adminNewPw, setAdminNewPw] = useState('')
@@ -4276,7 +4277,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const EROEFFNUNG_LOUNGE_KURZ =
     'Werke, Raum, Begegnung. In unserer gemeinsamen Lounge: Einblick in K2 · ök2 · VK2.'
   const EROEFFNUNG_WERBELINIE_1 = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen.'
-  const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
+  const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen und Werke verdienen mehr als einen Instagram-Post.'
   const EROEFFNUNG_PRESSE_LEAD_PREFIX = 'eröffnet am'
   const EROEFFNUNG_PLAKAT_KURZTEXT =
     'Kunst & Keramik · Malerei, Grafik, Skulptur\nGemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.\n\nEintritt frei.'
@@ -11634,35 +11635,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             flexWrap: 'wrap',
             gap: '1rem'
           }}>
-            {/* Logo + Admin-Badge */}
+            {/* Logo + Admin-Badge – einheitlich für K2, ök2 (Demo), VK2; Arbeitsname ök2 nicht sichtbar */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {tenant.isOeffentlich ? (
-                // ök2: Kein K2-Logo – nur Kontext-Badge damit klar ist wo man ist
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                  <span style={{ fontFamily: s.fontHeading, fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 700, color: s.accent, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
-                    ök2
-                  </span>
-                  <span style={{ marginTop: '0.2rem', display: 'block', color: s.muted, fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                    Muster-Galerie
-                  </span>
-                </div>
-              ) : (
-                <AdminBrandLogo title={tenant.isVk2 ? 'VK2 Vereinsplattform' : undefined} />
-              )}
-              {!tenant.isOeffentlich && (
-                <span style={{
-                  padding: '0.25rem 0.65rem',
-                  background: `${s.accent}18`,
-                  border: `1px solid ${s.accent}33`,
-                  borderRadius: '20px',
-                  fontSize: '0.75rem',
-                  color: s.accent,
-                  fontWeight: 600,
-                  letterSpacing: '0.03em'
-                }}>
-                  {tenant.isVk2 ? 'VK2 ADMIN' : 'K2 ADMIN'}
-                </span>
-              )}
+              <AdminBrandLogo title={tenant.isVk2 ? 'VK2 Vereinsplattform' : undefined} />
+              <span style={{
+                padding: '0.25rem 0.65rem',
+                background: `${s.accent}18`,
+                border: `1px solid ${s.accent}33`,
+                borderRadius: '20px',
+                fontSize: '0.75rem',
+                color: s.accent,
+                fontWeight: 600,
+                letterSpacing: '0.03em'
+              }}>
+                {tenant.isVk2 ? 'VK2 ADMIN' : tenant.isOeffentlich ? 'Demo' : 'K2 ADMIN'}
+              </span>
             </div>
 
             {/* Schnell-Aktionen – das was man täglich braucht */}
@@ -11820,17 +11807,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     📁 Buchhaltung
                   </Link>
                 </>
-              )}
-
-              {/* Reservieren – nur K2, nicht VK2/ök2 */}
-              {!tenant.isOeffentlich && !tenant.isVk2 && (
-                <button type="button" onClick={() => setShowReserveModal(true)}
-                  style={{ padding: '0.5rem 1rem', background: s.bgCard, border: `1px solid #d9770688`, color: '#d97706', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = '#fef3c7' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = s.bgCard }}
-                >
-                  🔶 Reservieren
-                </button>
               )}
 
               {/* Besucher-Ticker – nur die Zahl der Hompage-Besucher für diesen Kontext */}
@@ -13337,22 +13313,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 const isOek2MusterNummer = (a: { number?: string; id?: string }) => {
                   const num = String(a?.number ?? a?.id ?? '').trim().toUpperCase()
                   const id = String(a?.id ?? '').trim()
-                  return id.startsWith('muster-') || ['M1', 'M2', 'M3', 'M4', 'M5', 'K1', 'G1', 'S1', 'O1'].includes(num)
+                  return id.startsWith('muster-') || ['M1', 'P1', 'G1', 'S1', 'I1', 'M2', 'M3', 'M4', 'M5', 'K1', 'O1'].includes(num)
                 }
                 return filtered.map((artwork) => {
-                  let rawSrc = artwork.imageUrl || artwork.previewUrl
-                  // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
-                  if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
-                  // 30–39: Alte Repo-URL nicht anzeigen (gelöschte Dateien)
-                  if (isArtwork30to39(artwork) && rawSrc && typeof rawSrc === 'string' && rawSrc.includes('/img/k2/werk-')) rawSrc = ''
-                  // Fallback: Vercel /img/k2/werk-{Nummer}.jpg. Nicht für 30–39; nicht für ök2-Musterwerke (M1/K1/G1 → getOek2DefaultArtworkImage).
-                  if (!rawSrc && (artwork.number || artwork.id) && !isArtwork30to39(artwork) && !(tenant.isOeffentlich && isOek2MusterNummer(artwork))) {
-                    const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
-                    if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+                  // ök2-Musterwerke: Immer Kategorie-Bild aus tenantConfig (Inline-SVG) – nie gespeicherte Unsplash/URLs, die oft 403 oder kaputt sind.
+                  const useOek2MusterBild = tenant.isOeffentlich && isOek2MusterNummer(artwork)
+                  let rawSrc = useOek2MusterBild ? '' : (artwork.imageUrl || artwork.previewUrl)
+                  if (!useOek2MusterBild) {
+                    // imageRef als URL (Supabase/GitHub) nutzen wenn imageUrl leer
+                    if (!rawSrc && artwork.imageRef && typeof artwork.imageRef === 'string' && (artwork.imageRef.startsWith('http://') || artwork.imageRef.startsWith('https://'))) rawSrc = artwork.imageRef
+                    // 30–39: Alte Repo-URL nicht anzeigen (gelöschte Dateien)
+                    if (isArtwork30to39(artwork) && rawSrc && typeof rawSrc === 'string' && rawSrc.includes('/img/k2/werk-')) rawSrc = ''
+                    // Fallback: Vercel /img/k2/werk-{Nummer}.jpg. Nicht für 30–39; nicht für ök2-Musterwerke.
+                    if (!rawSrc && (artwork.number || artwork.id) && !isArtwork30to39(artwork)) {
+                      const id = String(artwork.number || artwork.id).trim().replace(/[^a-zA-Z0-9-]/g, '-')
+                      if (id) rawSrc = `${VERCEL_IMG_BASE}/img/k2/werk-${id}.jpg`
+                    }
                   }
-                  // blob:-URLs in derselben Session anzeigen (z. B. nach data:→blob in iframe). Nach Reload sind sie ungültig → onError zeigt Platzhalter.
                   const isPlaceholder = !rawSrc || (typeof rawSrc === 'string' && rawSrc.startsWith('data:image/svg'))
-                  const imageSrc = (tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc)
+                  const imageSrc = useOek2MusterBild ? getOek2DefaultArtworkImage(artwork.category) : ((tenant.isOeffentlich && isPlaceholder) ? getOek2DefaultArtworkImage(artwork.category) : (isPlaceholder ? PLACEHOLDER_KEIN_BILD : rawSrc))
                   // Cache-Bust für https-URLs (iPhone/Safari zeigt sonst alte Bilder trotz „Vom Server laden“)
                   const imageSrcBust = imageUrlWithCacheBust(imageSrc, artwork)
                   return (
@@ -14369,7 +14348,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>💾</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Bilder</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherung, Speicher entlasten, Bilder 0030–0039 bereinigen</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherungskopie und Wiederherstellung</div>
               </button>
               )}
               {/* Kassabuch führen – nur ök2 (K2: immer Ja, keine Kachel nötig) */}
@@ -14412,7 +14391,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div ref={settingsContentRef} style={{ marginTop: '1rem' }}>
                 <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: s.text }}>💾 Backup & Bilder</h3>
                 <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
-                  Sicherungskopie, Speicher entlasten und Bilder 0030–0039 bereinigen.
+                  Sicherungskopie herunterladen und aus Backup-Datei wiederherstellen.
                 </p>
                 <input
                   ref={backupFileInputRef}
@@ -14486,6 +14465,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     >
                       💾 Sicherungskopie herunterladen
                     </button>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Speichert eine Kopie aller deiner Daten (Werke, Stammdaten, Events, …) in eine Datei. Die Datei am besten auf dem PC oder einem USB-Stick aufbewahren – dann hast du eine echte Sicherung, falls mal etwas verloren geht.</p>
                   </div>
                   <div>
                     <button
@@ -14496,102 +14476,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     >
                       📂 Aus Backup-Datei wiederherstellen
                     </button>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      disabled={entlastenInProgress || restoreProgress !== 'idle'}
-                      onClick={async () => {
-                        if (entlastenInProgress) return
-                        setEntlastenInProgress(true)
-                        try {
-                          const result = await compressAllArtworkImages('k2-artworks')
-                          if (result.error && !result.ok) {
-                            alert('⚠️ Speicher entlasten fehlgeschlagen: ' + result.error)
-                            return
-                          }
-                          if (result.count > 0) {
-                            const mb = (result.savedBytes / 1024 / 1024).toFixed(2)
-                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
-                            alert(`✅ Speicher entlastet. ${result.count} Bilder verkleinert, ca. ${mb} MB frei.`)
-                          } else {
-                            alert('✅ Keine großen Bilder zum Verkleinern gefunden.')
-                          }
-                        } finally {
-                          setEntlastenInProgress(false)
-                        }
-                      }}
-                      style={{ padding: '0.75rem 1.25rem', background: entlastenInProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: entlastenInProgress ? 'wait' : 'pointer' }}
-                    >
-                      {entlastenInProgress ? '⏳ Verkleinere…' : '🗜️ Speicher entlasten'}
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <button
-                      type="button"
-                      disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
-                      onClick={async () => {
-                        if (!confirm('Nur lokal (dieser Mac): Bilder 0030–0039 löschen. Titel und Nummern bleiben. Fortfahren?')) return
-                        setClearImages0030_0039InProgress(true)
-                        try {
-                          const artworks = readArtworksRawByKey('k2-artworks')
-                          const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                          await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
-                          lastSavedArtworkImageRef.current = null
-                          const resolved = await resolveArtworkImages(updated)
-                          setAllArtworksSafe(resolved)
-                          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
-                          alert(`✅ Nur lokal bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB. Die Ansicht hier ist aktualisiert – 0030–0039 haben keine Bilder mehr.`)
-                        } catch (e) {
-                          alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
-                        } finally {
-                          setClearImages0030_0039InProgress(false)
-                        }
-                      }}
-                      style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
-                    >
-                      🖼️ Nur lokal (Mac) – 0030–0039
-                    </button>
-                    <button
-                      type="button"
-                      disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
-                      onClick={async () => {
-                        if (!confirm('Überall: Bilder 0030–0039 löschen – lokal, Supabase, Vercel/GitHub und Galerie veröffentlichen. Fortfahren?')) return
-                        setClearImages0030_0039InProgress(true)
-                        try {
-                          const artworks = readArtworksRawByKey('k2-artworks')
-                          const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                          await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
-                          if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
-                          lastSavedArtworkImageRef.current = null
-                          const resolved = await resolveArtworkImages(updated)
-                          setAllArtworksSafe(resolved)
-                          if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
-                          let supabaseMsg = ''
-                          const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
-                          if (supabaseResult.error) supabaseMsg = `\nSupabase Storage: ${supabaseResult.error}`
-                          else if (supabaseResult.deleted.length > 0) supabaseMsg = `\nSupabase Storage: ${supabaseResult.deleted.length} Bild(er) gelöscht.`
-                          else supabaseMsg = '\nSupabase Storage: keine Treffer.'
-                          let githubMsg = ''
-                          const githubResult = await deleteArtworkImagesFromGitHubForNumberRange(30, 39)
-                          if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht.`
-                          else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
-                          else githubMsg = '\nVercel/GitHub: keine Treffer.'
-                          const toPublishResolved = await resolveArtworkImages(readArtworksRawByKey('k2-artworks'))
-                          const publishResult = await publishGalleryDataToServer(toPublishResolved)
-                          const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
-                          alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
-                        } catch (e) {
-                          alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
-                        } finally {
-                          setClearImages0030_0039InProgress(false)
-                        }
-                      }}
-                      style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
-                    >
-                      🖼️ Überall – lokal + Supabase + Vercel + Galerie
-                    </button>
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Oben: nur dieser Mac. Unten: auch Netz und Galerie. Danach neue Bilder einstellen.</p>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Wenn du Daten verloren hast oder auf einem anderen Gerät weitermachen willst: Hier wählst du eine zuvor heruntergeladene Sicherungsdatei aus. Die App wird mit dem Stand aus dieser Datei gefüllt. Achtung: Was du aktuell in der App hast, wird dabei ersetzt.</p>
                   </div>
                 </div>
               </div>
@@ -16018,105 +15903,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       </button>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Holt den letzten Stand deiner Werke von unserem Server. Wenn du schon einmal auf „Aktualisieren“ geklickt hast, liegt dort ein Stand – damit kannst du deine Werke ohne Backup-Datei zurückholen.</p>
                     </div>
-                    <div>
-                      <button
-                        type="button"
-                        disabled={entlastenInProgress || restoreProgress !== 'idle'}
-                        onClick={async () => {
-                          if (entlastenInProgress) return
-                          setEntlastenInProgress(true)
-                          try {
-                            const result = await compressAllArtworkImages('k2-artworks')
-                            if (result.error && !result.ok) {
-                              alert('⚠️ Speicher entlasten fehlgeschlagen: ' + result.error)
-                              return
-                            }
-                            if (result.count > 0) {
-                              const mb = (result.savedBytes / 1024 / 1024).toFixed(2)
-                              if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated'))
-                              alert(`✅ Speicher entlastet.\n\n${result.count} Werkbilder verkleinert, ca. ${mb} MB frei geworden. Du kannst weiter Werke eingeben.`)
-                            } else {
-                              alert('✅ Keine großen Bilder zum Verkleinern gefunden – deine Werkbilder sind bereits kompakt.')
-                            }
-                          } finally {
-                            setEntlastenInProgress(false)
-                          }
-                        }}
-                        style={{ padding: '0.75rem 1.25rem', background: entlastenInProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: entlastenInProgress ? 'wait' : 'pointer' }}
-                      >
-                        {entlastenInProgress ? '⏳ Verkleinere…' : '🗜️ Speicher entlasten – Werkbilder verkleinern'}
-                      </button>
-                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Verkleinert alle Werkbilder im Speicher (ohne etwas zu löschen). Hilft, wenn „Speicher voll“ erscheint – danach hast du wieder Platz für weitere Werke.</p>
-                    </div>
-                    {!tenant.isOeffentlich && !tenant.isVk2 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <button
-                        type="button"
-                        disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
-                        onClick={async () => {
-                          if (!confirm('Nur lokal (dieser Mac): Bilder 0030–0039 löschen. Titel und Nummern bleiben. Fortfahren?')) return
-                          setClearImages0030_0039InProgress(true)
-                          try {
-                            const artworks = readArtworksRawByKey('k2-artworks')
-                            const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                            await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
-                            lastSavedArtworkImageRef.current = null
-                            const resolved = await resolveArtworkImages(updated)
-                            setAllArtworksSafe(resolved)
-                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
-                            alert(`✅ Nur lokal bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB. Die Ansicht hier ist aktualisiert – 0030–0039 haben keine Bilder mehr.`)
-                          } catch (e) {
-                            alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
-                          } finally {
-                            setClearImages0030_0039InProgress(false)
-                          }
-                        }}
-                        style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
-                      >
-                        🖼️ Nur lokal (Mac) – 0030–0039
-                      </button>
-                      <button
-                        type="button"
-                        disabled={clearImages0030_0039InProgress || restoreProgress !== 'idle'}
-                        onClick={async () => {
-                          if (!confirm('Überall: Bilder 0030–0039 löschen – lokal, Supabase, Vercel/GitHub und Galerie veröffentlichen. Fortfahren?')) return
-                          setClearImages0030_0039InProgress(true)
-                          try {
-                            const artworks = readArtworksRawByKey('k2-artworks')
-                            const { updated, clearedCount, idbDeletedCount } = await clearArtworkImagesForNumberRange(artworks, 30, 39)
-                            await saveArtworksByKeyWithImageStore('k2-artworks', updated, { filterK2Only: true, allowReduce: false })
-                            if (isSupabaseConfigured()) await saveArtworksToSupabase(updated)
-                            lastSavedArtworkImageRef.current = null
-                            const resolved = await resolveArtworkImages(updated)
-                            setAllArtworksSafe(resolved)
-                            if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromBereinigung: true } }))
-                            let supabaseMsg = ''
-                            const supabaseResult = await deleteArtworkImagesInStorageForNumberRange(30, 39)
-                            if (supabaseResult.error) supabaseMsg = `\nSupabase Storage: ${supabaseResult.error}`
-                            else if (supabaseResult.deleted.length > 0) supabaseMsg = `\nSupabase Storage: ${supabaseResult.deleted.length} Bild(er) gelöscht.`
-                            else supabaseMsg = '\nSupabase Storage: keine Treffer (oder nicht konfiguriert).'
-                            let githubMsg = ''
-                            const githubResult = await deleteArtworkImagesFromGitHubForNumberRange(30, 39)
-                            if (githubResult.deleted.length > 0) githubMsg = `\nVercel/GitHub: ${githubResult.deleted.length} Datei(en) gelöscht (${githubResult.deleted.join(', ')}).`
-                            else if (githubResult.skipped) githubMsg = `\nVercel/GitHub: ${githubResult.skipped}`
-                            else githubMsg = '\nVercel/GitHub: keine Treffer.'
-                            const toPublishResolved = await resolveArtworkImages(readArtworksRawByKey('k2-artworks'))
-                            const publishResult = await publishGalleryDataToServer(toPublishResolved)
-                            const publishMsg = publishResult.success ? '\n\nGalerie veröffentlicht.' : (publishResult.error ? `\n\nVeröffentlichen: ${publishResult.error}` : '')
-                            alert(`✅ Überall bereinigt.\n\n${clearedCount} Werke, ${idbDeletedCount} IndexedDB.${supabaseMsg}${githubMsg}${publishMsg}\n\nAuf anderen Geräten: Seite neu laden oder Stand-Badge tippen.`)
-                          } catch (e) {
-                            alert('⚠️ Bereinigung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
-                          } finally {
-                            setClearImages0030_0039InProgress(false)
-                          }
-                        }}
-                        style={{ padding: '0.75rem 1.25rem', background: clearImages0030_0039InProgress ? s.muted + '22' : s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: clearImages0030_0039InProgress ? 'wait' : 'pointer' }}
-                      >
-                        🖼️ Überall – lokal + Supabase + Vercel + Galerie
-                      </button>
-                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Oben: nur dieser Mac. Unten: auch Netz und Galerie. Danach neue Bilder einstellen.</p>
-                    </div>
-                    )}
                     {hasBackup() && (
                     <div>
                       <button
@@ -16137,6 +15923,36 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         {getBackupTimestamp() && <span style={{ display: 'block', fontSize: '0.75rem', opacity: 0.9, marginTop: '0.2rem' }}>Stand: {new Date(getBackupTimestamp()!).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })}</span>}
                       </button>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Stellt den Stand wieder her, den die App automatisch in diesem Browser gespeichert hat. Gilt nur auf diesem Gerät.</p>
+                    </div>
+                    )}
+                    {!tenant.isOeffentlich && !tenant.isVk2 && (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const docsBackup = loadK2DocumentsBackup()
+                          const eventsBackup = loadK2EventsBackup()
+                          if (docsBackup.length === 0 && eventsBackup.length === 0) {
+                            alert('Keine lokale Sicherung von Dokumenten oder Events vorhanden.\n\nDie Sicherung wird automatisch erstellt, sobald du im Bereich Events & Öffentlichkeitsarbeit etwas speicherst (z. B. ein Dokument hinzufügen oder ein Event bearbeiten).')
+                            return
+                          }
+                          const msg = `Dokumente & Events aus der lokalen Sicherung wiederherstellen?\n\nDokumente: ${docsBackup.length}\nEvents (inkl. hochgeladene Dokumente): ${eventsBackup.length}\n\nDeine aktuellen Daten in diesen Bereichen werden ersetzt.`
+                          if (!confirm(msg)) return
+                          try {
+                            if (docsBackup.length > 0) saveDocumentsToStorage('k2', docsBackup)
+                            if (eventsBackup.length > 0) saveEventsToStorage('k2', eventsBackup)
+                            if (docsBackup.length > 0) setDocuments(docsBackup)
+                            if (eventsBackup.length > 0) { setEvents(eventsBackup); window.dispatchEvent(new CustomEvent('k2-events-updated')) }
+                            alert(`✅ Wiederhergestellt.\n\nDokumente: ${docsBackup.length}, Events: ${eventsBackup.length}.`)
+                          } catch (e) {
+                            alert('Wiederherstellung fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: '1px solid ' + s.accent + '44', borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        📄 Dokumente & Events aus lokaler Sicherung
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Stellt nur Öffentlichkeitsarbeit, Newsletter und Event-Dokumente aus der automatischen Sicherungskopie wieder her (unabhängig vom Server). Wird bei jedem Speichern in diesem Bereich aktualisiert.</p>
                     </div>
                     )}
                     <div>
@@ -18557,9 +18373,13 @@ ${name}`
           </div>
         )}
 
-        {/* Dokumente Modal */}
-        {showDocumentModal && selectedEventForDocument && (
+        {/* Dokumente Modal – per Portal in document.body, damit es garantiert sichtbar öffnet */}
+        {showDocumentModal && selectedEventForDocument && typeof document !== 'undefined' && document.body ? createPortal(
+          (
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="document-modal-title"
             onClick={() => {
               setShowDocumentModal(false)
               setSelectedEventForDocument(null)
@@ -18593,15 +18413,18 @@ ${name}`
                 boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)'
               }}
             >
-              <h2 style={{
+              <h2 id="document-modal-title" style={{
                 fontSize: 'clamp(1.5rem, 4vw, 2rem)',
                 fontWeight: '700',
                 color: '#ffffff',
                 marginTop: 0,
-                marginBottom: 'clamp(1.5rem, 4vw, 2rem)'
+                marginBottom: '0.5rem'
               }}>
                 📎 Dokument hinzufügen
               </h2>
+              <p style={{ margin: '0 0 clamp(1rem, 3vw, 1.5rem)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
+                Datei wählen und Namen eingeben – das Dokument wird diesem Event zugeordnet und gespeichert. Zusätzlich wird automatisch eine lokale Sicherungskopie angelegt (unabhängig vom Server).
+              </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
@@ -18788,7 +18611,9 @@ ${name}`
               </div>
             </div>
           </div>
-        )}
+          ),
+          document.body
+        ) : null}
 
         {/* Eventplanung: Öffentlichkeitsarbeit (Marketingabteilung) – gleicher Inhalt im Tab und im Vollbild-Modal */}
         {((activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') || showOeffentlichkeitsarbeitModal) && (() => {
@@ -19296,15 +19121,21 @@ ${name}`
                                         {karte.typ === 'druckversion' && (
                                           <button
                                             type="button"
-                                            onClick={() => { setSelectedEventForDocument(event.id); setShowDocumentModal(true) }}
+                                            onClick={(e) => {
+                                              e.preventDefault()
+                                              e.stopPropagation()
+                                              setSelectedEventForDocument(event.id)
+                                              setShowDocumentModal(true)
+                                            }}
                                             style={{
                                               padding: '0.35rem 0',
                                               background: 'none',
                                               border: 'none',
                                               cursor: 'pointer',
                                               fontSize: '0.75rem',
-                                              color: s.muted,
-                                              textDecoration: 'underline'
+                                              color: s.accent,
+                                              textDecoration: 'underline',
+                                              fontWeight: 500
                                             }}
                                           >
                                             + Weiteres Dokument hinzufügen

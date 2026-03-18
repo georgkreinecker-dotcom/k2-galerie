@@ -28,11 +28,11 @@ export const PRODUCT_URHEBER_ANWENDUNG = 'Konzept, Design und technische Umsetzu
  * Verbindliche Werbelinie – auf allen Werbemaßnahmen (Presse, Flyer, Plakat, Web, Social).
  * Eine Quelle, überall präsent.
  */
-/** Werbeslogan 1 – markante Aussage (Menschen mit Idee = Künstler:innen, Macher:innen, alle mit etwas zu zeigen) */
-export const PRODUCT_WERBESLOGAN = 'kgm solution – für Menschen mit Ideen, die gesehen werden wollen'
+/** Werbeslogan Zeile 1 – K2 Galerie (Non-Breaking-Spaces damit „werden wollen“ nicht umbricht) */
+export const PRODUCT_WERBESLOGAN = 'K2 Galerie – für Menschen mit Ideen, die gesehen werden\u00A0wollen.'
 
-/** Werbeslogan 2 – zweiter Satz, immer zusammen mit Slogan 1 (Ideen + Werke = alle entryTypes) */
-export const PRODUCT_WERBESLOGAN_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
+/** Werbeslogan Zeile 2 – Non-Breaking-Space damit „Instagram-Post“ nicht umbricht */
+export const PRODUCT_WERBESLOGAN_2 = 'Deine Ideen und Werke verdienen mehr als einen\u00A0Instagram-Post.'
 
 /** Zweite Kernbotschaft: Empfehlungs-Programm – kostenlose Nutzung und Einkommen durch Weiterempfehlung */
 export const PRODUCT_BOTSCHAFT_2 = 'Durch Weiterempfehlung: kostenlose Nutzung und Einkommen erzielen'
@@ -664,15 +664,17 @@ export function initVk2DemoStammdatenIfEmpty(): void {
 export const OEK2_PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5NdXN0ZXI8L3RleHQ+PC9zdmc+'
 const MUSTER_PLACEHOLDER_IMAGE = OEK2_PLACEHOLDER_IMAGE
 
-/** ök2: Ein Bild pro Kategorie für Musterwerke. M1/G1: Unsplash (wie Willkommensbild); übrige Kategorien: Inline-SVG, damit immer etwas angezeigt wird. */
+/** ök2: Ein Bild pro Kategorie für Musterwerke. Nur Inline-SVGs – keine externen URLs (Unsplash o. ä.), damit nie kaputte Bilder (403, CORS, geänderte Links). */
 export const OEK2_DEFAULT_ARTWORK_IMAGES: Record<string, string> = {
-  /** M1 „Morgenlicht über den Hügeln“ – Landschaft, erstes Licht (Unsplash, lizenzfrei). */
-  malerei: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=85',
+  malerei: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1hbGVyZWk8L3RleHQ+PC9zdmc+',
   keramik: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktlcmFtaWs8L3RleHQ+PC9zdmc+',
-  /** G1 „Durch das Fenster“ – Blick durch Fenster, klare Linien (Unsplash, lizenzfrei). */
-  grafik: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=85',
+  grafik: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdyYWZpazwvdGV4dD48L3N2Zz4=',
   skulptur: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNrdWxwdHVyPC90ZXh0Pjwvc3ZnPg==',
   sonstiges: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNvbnN0aWdlczwvdGV4dD48L3N2Zz4=',
+  /** P1 „Vase Herbstlaub“ – Produkt/Kategorie Serie. */
+  serie: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNlcmllPC90ZXh0Pjwvc3ZnPg==',
+  /** I1 „Kleines Feld“ – Idee/Kategorie Konzept. */
+  konzept: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktvbnplcHQ8L3RleHQ+PC9zdmc+',
 }
 
 /** ök2: Default-Bilder für Willkommen/Galerie-Karte/Virtual-Tour.
