@@ -390,10 +390,24 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     } catch (_) {}
   }, [location.state])
 
-  /** K2: Admin-Button immer anzeigen (eigene Galerie). ök2/VK2: nur wenn von APf oder im Kontext – Besucher von Google sollen dort keinen Admin sehen. */
+  /** K2: Admin nur anzeigen wenn von APf/Admin kommend oder entsperrt – nicht bei geteiltem Link (WhatsApp etc.). ök2/VK2: nur wenn von APf oder im Kontext. */
   const showAdminEntryOnGalerie = (() => {
     try {
-      if (!musterOnly && !vk2) return true
+      if (!musterOnly && !vk2) {
+        if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context')) return true
+        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return true
+        const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
+        const origin = typeof window !== 'undefined' ? window.location.origin : ''
+        if (ref.startsWith(origin)) {
+          const path = ref.slice(origin.length) || '/'
+          if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
+          if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return true
+        }
+        return false
+      }
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return true
@@ -1108,31 +1122,31 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           artworks: data.artworks?.length || 0
         })
         
-        // Stammdaten: Merge mit bestehendem State – leere Server-Felder überschreiben vorhandene Daten NICHT (kein-datenverlust)
+        // Stammdaten: BESTEHENDE (prev/local) haben Vorrang – Server überschreibt nicht, was du schon korrigiert hast (kein-datenverlust)
         if (data.martina) {
           setMartinaData((prev) => ({
-            name: (data.martina.name && String(data.martina.name).trim()) || prev.name,
-            email: (data.martina.email && String(data.martina.email).trim()) || prev.email,
-            phone: (data.martina.phone && String(data.martina.phone).trim()) || prev.phone,
-            website: (data.martina.website && String(data.martina.website).trim()) || prev.website || ''
+            name: (prev.name && String(prev.name).trim()) || (data.martina.name && String(data.martina.name).trim()) || '',
+            email: (prev.email && String(prev.email).trim()) || (data.martina.email && String(data.martina.email).trim()) || '',
+            phone: (prev.phone && String(prev.phone).trim()) || (data.martina.phone && String(data.martina.phone).trim()) || '',
+            website: (prev.website && String(prev.website).trim()) || (data.martina.website && String(data.martina.website).trim()) || ''
           }))
         }
         if (data.georg) {
           setGeorgData((prev) => ({
-            name: (data.georg.name && String(data.georg.name).trim()) || prev.name,
-            email: (data.georg.email && String(data.georg.email).trim()) || prev.email,
-            phone: (data.georg.phone && String(data.georg.phone).trim()) || prev.phone,
-            website: (data.georg.website && String(data.georg.website).trim()) || prev.website || ''
+            name: (prev.name && String(prev.name).trim()) || (data.georg.name && String(data.georg.name).trim()) || '',
+            email: (prev.email && String(prev.email).trim()) || (data.georg.email && String(data.georg.email).trim()) || '',
+            phone: (prev.phone && String(prev.phone).trim()) || (data.georg.phone && String(data.georg.phone).trim()) || '',
+            website: (prev.website && String(prev.website).trim()) || (data.georg.website && String(data.georg.website).trim()) || ''
           }))
         }
         if (data.gallery) {
           setGalleryData((prev) => ({
-            address: (data.gallery.address != null && String(data.gallery.address).trim()) ? data.gallery.address : prev.address,
-            city: (data.gallery.city != null && String(data.gallery.city).trim()) ? data.gallery.city : prev.city,
-            country: (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : prev.country,
-            phone: (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : prev.phone,
-            email: (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : prev.email,
-            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
+            address: (prev.address != null && String(prev.address).trim()) ? prev.address : (data.gallery.address != null && String(data.gallery.address).trim()) ? data.gallery.address : '',
+            city: (prev.city != null && String(prev.city).trim()) ? prev.city : (data.gallery.city != null && String(data.gallery.city).trim()) ? data.gallery.city : '',
+            country: (prev.country != null && String(prev.country).trim()) ? prev.country : (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : '',
+            phone: (prev.phone && String(prev.phone).trim()) ? prev.phone : (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : '',
+            email: (prev.email && String(prev.email).trim()) ? prev.email : (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : '',
+            website: (prev.website != null && String(prev.website).trim()) ? prev.website : (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
             internetadresse: (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim()) ? data.gallery.internetadresse : (data.gallery.website || prev.internetadresse || ''),
             openingHours: (data.gallery as any).openingHours ?? prev.openingHours ?? '',
             adminPassword: data.gallery.adminPassword ?? prev.adminPassword ?? '',

@@ -79,6 +79,7 @@ Die Galerie-Seite **liest** immer den Key, der zum aktuellen Kontext gehört. Si
 3. **Falsche Seite** – Du schaust **ök2** (`/galerie-oeffentlich`) statt **K2** (`/galerie`): Dann werden Mustertexte angezeigt, nicht die echten K2-Stammdaten.
 4. **Wiederherstellung aus Backup** – Ein **älteres** Backup wiederhergestellt → die Keys wurden mit dem Stand von damals überschrieben.
 5. **Früherer Bug (bereits behoben)** – BUG-039: Auto-Save lief im VK2-Admin und hat VK2-Daten in K2-Keys geschrieben. Ist abgestellt (Auto-Save nur bei K2).
+6. **handleRefresh überschrieb Stammdaten (behoben 18.03.26)** – Beim „Bilder vom Server laden“ / Stand-Badge hatten **Server-Daten Vorrang** vor deinen lokalen Korrekturen. Folge: Telefonnummer (und andere Kontaktfelder) sprangen immer wieder auf den alten Wert aus gallery-data.json zurück. **Fix:** In handleRefresh haben jetzt **bestehende (prev) Kontaktdaten Vorrang**; Server wird nur genutzt, wenn lokal leer ist.
 
 **Was du tun kannst:**
 
