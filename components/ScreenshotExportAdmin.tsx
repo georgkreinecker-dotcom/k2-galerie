@@ -34,6 +34,7 @@ import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
+import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1268,7 +1269,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [lizenzBeendenErledigt, setLizenzBeendenErledigt] = useState(false)
   const [lizenzBeendenDatenGeloescht, setLizenzBeendenDatenGeloescht] = useState(false)
   const [lizenzBeendenLoading, setLizenzBeendenLoading] = useState(false)
-  const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben'>('vorschau')
+  const [designSubTab, setDesignSubTab] = useState<'vorschau' | 'farben' | 'eingangsseite'>('vorschau')
+  const [entdeckenForm, setEntdeckenForm] = useState<PageContentEntdecken>(() => getPageContentEntdecken())
   const [designPreviewEdit, setDesignPreviewEdit] = useState<string | null>(null) // z. B. 'p1-title' | 'p2-martinaBio' – alles auf der Seite klickbar
   const [previewContainerWidth, setPreviewContainerWidth] = useState(412) // für bildausfüllende Skalierung
   const [previewFullscreenPage, setPreviewFullscreenPage] = useState<1 | 2>(1) // welche Seite in der Vorschau (immer nur eine)
@@ -10681,6 +10683,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {/* Schritt 3: Speichern */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
+                <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: 10, color: '#5ffbf1', cursor: 'pointer' }}>🚪 Eingangsseite</button>
                 {designSaveFeedback === 'ok'
                   ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
                   : <button type="button" className="btn-primary" onClick={async () => {
@@ -13861,6 +13864,46 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Vorschau – wie in K2: Seite 1 / Seite 2 / Farben, für K2 und ök2 gleich */}
             {designSubTab === 'vorschau' && renderDesignVorschau()}
 
+            {designSubTab === 'eingangsseite' && (() => {
+              const ec = entdeckenForm
+              const fText = '#1c1a18'
+              const fMuted = '#5c5650'
+              const fAccent = '#b54a1e'
+              return (
+                <>
+                  <div style={{ position: 'sticky', top: 0, zIndex: 20, background: s.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.5rem 1rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, cursor: 'pointer', fontWeight: 600 }}>← Vorschau</button>
+                    <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Eingangsseite für alle, die zum ersten Mal kommen (ök2 + VK2) – Bild in Vorschau wählen, Texte hier; Farben = K2-Design</span>
+                    <button type="button" className="btn-primary" onClick={() => { setPageContentEntdecken(entdeckenForm); setDesignSaveFeedback('ok'); setTimeout(() => setDesignSaveFeedback(null), 3000) }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
+                    {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
+                  </div>
+                  <h2 style={{ fontSize: 'clamp(1.3rem, 3vw, 1.6rem)', fontWeight: 700, color: fText, marginBottom: '0.5rem' }}>🚪 Eingangsseite (Entdecken)</h2>
+                  <p style={{ color: fMuted, marginBottom: '1.5rem', fontSize: '0.9rem' }}>Diese Seite sehen alle neuen Besucher. Bild oben in der Vorschau-Leiste wählen. Farben kommen automatisch aus dem K2-Design („Farbe ändern“). Hier nur Texte anpassen.</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem' }}>
+                    <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <h3 style={{ fontSize: '1rem', color: fAccent, marginBottom: '0.25rem' }}>Texte</h3>
+                      {([
+                        { key: 'heroTag' as const, label: 'Überschrift Zeile 1 (Slogan)' },
+                        { key: 'heroTitle' as const, label: 'Überschrift Zeile 2' },
+                        { key: 'heroSub' as const, label: 'Untertitel' },
+                        { key: 'heroDeviceHint' as const, label: 'Hinweis (Tablet/PC)' },
+                        { key: 'cta' as const, label: 'Button-Text' },
+                        { key: 'ctaSub' as const, label: 'Unter dem Button' },
+                      ]).map(({ key, label }) => (
+                        <div key={key}>
+                          <label style={{ display: 'block', fontSize: '0.85rem', color: fText, marginBottom: '0.25rem' }}>{label}</label>
+                          <input type="text" value={ec[key] ?? ''} onChange={e => setEntdeckenForm(prev => ({ ...prev, [key]: e.target.value }))} style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${fMuted}`, borderRadius: 8, background: s.bgCard, color: fText }} />
+                        </div>
+                      ))}
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: fText, marginBottom: '0.25rem' }}>Hero-Bild (URL, leer = Standard entdecken-hero.jpg)</label>
+                        <input type="text" value={ec.heroImageUrl ?? ''} onChange={e => setEntdeckenForm(prev => ({ ...prev, heroImageUrl: e.target.value }))} placeholder="/img/oeffentlich/entdecken-hero.jpg" style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${fMuted}`, borderRadius: 8, background: s.bgCard, color: fText }} />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
 
             {designSubTab === 'farben' && (() => {
               const simpleKeys = ['accentColor', 'backgroundColor1', 'textColor'] as const

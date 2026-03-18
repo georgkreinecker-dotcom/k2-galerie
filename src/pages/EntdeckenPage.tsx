@@ -13,6 +13,7 @@ import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
+import { getPageContentEntdecken, getEntdeckenColorsFromK2Design } from '../config/pageContentEntdecken'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
 export const ERKUNDUNGS_NOTIZEN_KEY = 'k2-erkundungs-notizen'
@@ -43,8 +44,8 @@ function speichereNotiz(text: string, step: string) {
   try { localStorage.setItem(ERKUNDUNGS_NOTIZEN_KEY, JSON.stringify(notizen)) } catch (_) {}
 }
 
-// ─── Texte (hier zentral, später leicht übersetzbar) ─────────────────────────
-const T = {
+// ─── Texte (hier zentral; Hero-Texte überschreibbar aus Admin → Design → Eingangsseite) ─────────────────────────
+const T_DEFAULTS = {
   heroTag: PRODUCT_WERBESLOGAN,
   heroTitle: PRODUCT_WERBESLOGAN_2,
   heroSub: 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
@@ -72,6 +73,8 @@ const T = {
 
   footNote: 'Keine E-Mail, kein Passwort, kein Vertrag.',
 }
+// T für Hero kommt aus getPageContentEntdecken() mit Fallback auf T_DEFAULTS; Rest wie T_DEFAULTS
+const T = T_DEFAULTS
 
 // q2 entfällt – der Guide auf der Galerie-Seite übernimmt die Tiefenanalyse
 type Step = 'hero' | 'q1' | 'hub' | 'result'
@@ -593,17 +596,35 @@ export default function EntdeckenPage() {
   const [answers, setAnswers] = useState<Answers>({ q1: initialQ1, q2: '', q3: '' })
   /** Hero-Bild: primary → SVG-Fallback → kein Bild (nie Fragezeichen-Icon) */
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
+  /** Eingangsseite-Design aus Admin (Design → Eingangsseite); bei Update neu laden */
+  const [entdeckenContent, setEntdeckenContent] = useState(() => getPageContentEntdecken())
+  useEffect(() => {
+    const onUpdate = () => setEntdeckenContent(getPageContentEntdecken())
+    window.addEventListener('k2-page-content-entdecken-updated', onUpdate)
+    return () => window.removeEventListener('k2-page-content-entdecken-updated', onUpdate)
+  }, [])
 
-  const accent = '#b54a1e'
-  const accentLight = '#d4622a'
-  const accentGlow = '#ff8c42'
-  const bgDark = '#120a06'
-  const bgMid = '#1e1008'
+  /** Farben immer aus K2-Design (Farbe ändern im Admin) – keine eigenen Eingangsseiten-Farben */
+  const k2Colors = getEntdeckenColorsFromK2Design()
+  const accent = k2Colors.accent
+  const accentLight = k2Colors.accentLight
+  const accentGlow = k2Colors.accentGlow
+  const bgDark = k2Colors.bgDark
+  const bgMid = k2Colors.bgMid
   const bgLight = '#f9f5ef'
   const bgCard = '#fffefb'
   const text = '#2a1f14'
-  const textLight = '#fff8f0'
+  const textLight = k2Colors.textLight
   const muted = '#7a6a58'
+  const heroImageUrl = entdeckenContent.heroImageUrl?.trim() || '/img/oeffentlich/entdecken-hero.jpg'
+  const T_hero = {
+    heroTag: entdeckenContent.heroTag?.trim() || T_DEFAULTS.heroTag,
+    heroTitle: entdeckenContent.heroTitle?.trim() || T_DEFAULTS.heroTitle,
+    heroSub: entdeckenContent.heroSub?.trim() || T_DEFAULTS.heroSub,
+    heroDeviceHint: entdeckenContent.heroDeviceHint?.trim() || T_DEFAULTS.heroDeviceHint,
+    cta: entdeckenContent.cta?.trim() || T_DEFAULTS.cta,
+    ctaSub: entdeckenContent.ctaSub?.trim() || T_DEFAULTS.ctaSub,
+  }
   const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
   const fontBody = WERBEUNTERLAGEN_STIL.fontBody
 
@@ -688,23 +709,23 @@ export default function EntdeckenPage() {
               <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '60%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
               <div style={{ position: 'relative' }}>
                 <div style={{ fontFamily: fontHeading, fontSize: 'clamp(1.1rem, 2.8vw, 1.5rem)', fontWeight: 700, color: textLight, marginBottom: '1.25rem', lineHeight: 1.35, letterSpacing: '-0.02em', maxWidth: 480 }}>
-                  {T.heroTag}
+                  {T_hero.heroTag}
                   <br />
-                  {T.heroTitle}
+                  {T_hero.heroTitle}
                 </div>
                 <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '0.75rem' }}>
-                  {T.heroSub}
+                  {T_hero.heroSub}
                 </p>
                 <p style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'rgba(212,165,116,0.85)', lineHeight: 1.5, maxWidth: 420, marginBottom: '2.5rem' }}>
-                  {T.heroDeviceHint}
+                  {T_hero.heroDeviceHint}
                 </p>
                 <button type="button" onClick={() => setStep('q1')}
                   style={{ display: 'inline-block', padding: 'clamp(0.85rem, 2vw, 1.05rem) clamp(2rem, 4vw, 2.75rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
                   onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)' }}>
-                  {T.cta}
+                  {T_hero.cta}
                 </button>
-                <p style={{ marginTop: '0.9rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>{T.ctaSub}</p>
+                <p style={{ marginTop: '0.9rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>{T_hero.ctaSub}</p>
               </div>
             </div>
 
@@ -714,7 +735,7 @@ export default function EntdeckenPage() {
             }}>
               {heroImageSrc === 'primary' && (
                 <img
-                  src="/img/oeffentlich/entdecken-hero.jpg"
+                  src={heroImageUrl}
                   alt="Galerie Vorschau"
                   style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.75 }}
                   onError={() => setHeroImageSrc('svg')}
@@ -730,7 +751,7 @@ export default function EntdeckenPage() {
               )}
               {heroImageSrc === 'none' && (
                 <div style={{ position: 'absolute', inset: 0, background: `${bgDark}ee`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>
-                  Bild in Admin → Design wählen
+                  Bild in Admin → Design → Eingangsseite wählen
                 </div>
               )}
               {/* Gradient-Übergang links zum Text */}

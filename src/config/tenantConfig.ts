@@ -664,17 +664,17 @@ export function initVk2DemoStammdatenIfEmpty(): void {
 export const OEK2_PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzMzMzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM5OTk5OTkiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5NdXN0ZXI8L3RleHQ+PC9zdmc+'
 const MUSTER_PLACEHOLDER_IMAGE = OEK2_PLACEHOLDER_IMAGE
 
-/** ök2: Ein Bild pro Kategorie für Musterwerke. Nur Inline-SVGs – keine externen URLs (Unsplash o. ä.), damit nie kaputte Bilder (403, CORS, geänderte Links). */
+/** ök2: Ein Bild pro Kategorie für Musterwerke. Dummy-SVGs im Repo (public/img/muster/) – stabil, keine externen URLs. */
 export const OEK2_DEFAULT_ARTWORK_IMAGES: Record<string, string> = {
-  malerei: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk1hbGVyZWk8L3RleHQ+PC9zdmc+',
-  keramik: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktlcmFtaWs8L3RleHQ+PC9zdmc+',
-  grafik: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkdyYWZpazwvdGV4dD48L3N2Zz4=',
-  skulptur: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNrdWxwdHVyPC90ZXh0Pjwvc3ZnPg==',
-  sonstiges: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNvbnN0aWdlczwvdGV4dD48L3N2Zz4=',
+  malerei: '/img/muster/malerei.svg',
+  keramik: '/img/muster/keramik.svg',
+  grafik: '/img/muster/grafik.svg',
+  skulptur: '/img/muster/skulptur.svg',
+  sonstiges: '/img/muster/sonstiges.svg',
   /** P1 „Vase Herbstlaub“ – Produkt/Kategorie Serie. */
-  serie: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPlNlcmllPC90ZXh0Pjwvc3ZnPg==',
+  serie: '/img/muster/serie.svg',
   /** I1 „Kleines Feld“ – Idee/Kategorie Konzept. */
-  konzept: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzJkMzc0OCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2EwYWVjMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPktvbnplcHQ8L3RleHQ+PC9zdmc+',
+  konzept: '/img/muster/konzept.svg',
 }
 
 /** ök2: Default-Bilder für Willkommen/Galerie-Karte/Virtual-Tour.
@@ -961,7 +961,7 @@ export const MUSTER_ARTWORKS = [
   { id: 'muster-2', number: 'P1', title: 'Vase „Herbstlaub“', category: 'serie', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('keramik'), price: 320, description: 'Steingut, handgeformt, Engobe in Erdtönen, 28 cm hoch. Inspiriert von herbstlichen Wäldern – matt glasiert, haptisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'product' as const },
   { id: 'muster-3', number: 'G1', title: 'Durch das Fenster', category: 'grafik', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('grafik'), price: 180, description: 'Linolschnitt, Auflage 15, 30 × 40 cm. Innen und Außen – Blick aus dem Atelier. Klare Linien, starke Kontraste.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
   { id: 'muster-4', number: 'S1', title: 'Stehende Form', category: 'skulptur', artist: 'Paul Weber', imageUrl: getOek2DefaultArtworkImage('skulptur'), price: 1200, description: 'Keramik, oxidierend gebrannt, 45 cm. Abstrakte Figur – Balance und Bewegung. Einzelstück.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'artwork' as const },
-  { id: 'muster-5', number: 'I1', title: 'Kleines Feld', category: 'konzept', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('sonstiges'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
+  { id: 'muster-5', number: 'I1', title: 'Kleines Feld', category: 'konzept', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('konzept'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
 ]
 
 /** Einladung Vernissage – HTML aus MUSTER_TEXTE (Stammdaten), für Demo/ök2. */

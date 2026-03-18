@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#f5f0e8"/><stop offset="100%" style="stop-color:#e8e0d5"/></linearGradient>
+    <linearGradient id="vase" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" style="stop-color:#8B6914"/><stop offset="40%" style="stop-color:#A08020"/><stop offset="100%" style="stop-color:#C4A030"/></linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <path d="M160 120 L180 320 Q200 360 220 320 L240 120 Q200 80 160 120Z" fill="url(#vase)" stroke="#6B5B2E" stroke-width="2"/>
+  <ellipse cx="200" cy="118" rx="42" ry="12" fill="#B89830"/>
+</svg>
