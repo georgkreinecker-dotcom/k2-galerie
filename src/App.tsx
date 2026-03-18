@@ -41,6 +41,7 @@ import Vk2MitgliedLoginPage from './pages/Vk2MitgliedLoginPage'
 import K2FamilieStartPage from './pages/K2FamilieStartPage'
 import K2FamilieHomePage from './pages/K2FamilieHomePage'
 import K2FamilieStammbaumPage from './pages/K2FamilieStammbaumPage'
+import K2FamilieGrundstrukturPage from './pages/K2FamilieGrundstrukturPage'
 import K2FamiliePersonPage from './pages/K2FamiliePersonPage'
 import K2FamilieEventsPage from './pages/K2FamilieEventsPage'
 import K2FamilieKalenderPage from './pages/K2FamilieKalenderPage'
@@ -577,6 +578,7 @@ function App() {
         <Route index element={<K2FamilieHomePage />} />
         <Route path="uebersicht" element={<K2FamilieStartPage />} />
         <Route path="stammbaum" element={<K2FamilieStammbaumPage />} />
+        <Route path="grundstruktur" element={<K2FamilieGrundstrukturPage />} />
         <Route path="events" element={<K2FamilieEventsPage />} />
         <Route path="kalender" element={<K2FamilieKalenderPage />} />
         <Route path="geschichte" element={<K2FamilieGeschichtePage />} />

@@ -1,0 +1,36 @@
+---
+description: K2 Familie – Beziehungen haben nur EINE Quelle (die Karten). Keine Annahme, keine zweite Wahrheit. Fundament für die ganze K2 Familie.
+alwaysApply: true
+---
+
+# K2 Familie – Beziehungen nur aus den Karten (eiserne Regel)
+
+## Das Fundament
+
+**Wer ist Mutter, Vater, Kind, Geschwister, Partner? → Antwort nur aus den Karten.**
+
+Ohne diese Regel gibt es keine verlässliche Basis – „da können wir gleich zusperren“ (Georg, 17.03.26).
+
+---
+
+## Quelle der Wahrheit
+
+- **Daten:** `loadPersonen(tenantId)` → jede Person mit `parentIds`, `childIds`, `siblingIds`, `partners`.
+- **Ableitung:** Beziehungen **nur** aus diesen Feldern. Eine Person A hat parentIds = [B, C] → B und C sind Eltern von A. childIds = [D] → D ist Kind. siblingIds, partners analog.
+- **Keine zweite Quelle:** Keine Namenssuche („wer heißt Gisela?“), keine Konversationserinnerung, keine Vermutung. Immer nur die gespeicherten Ids in den Karten.
+
+---
+
+## Technische Pflicht
+
+1. **Eine Funktion:** `getBeziehungenFromKarten(personen, personId)` in `src/utils/familieBeziehungen.ts`. Liefert `{ eltern, kinder, geschwister, partner }` – ausschließlich durch Nachschlagen der Ids in der Personenkarte.
+2. **Überall nutzen:** Stammbaum, Linien, Texte („Eltern von Du“), jede Anzeige „Wer ist X zu Y?“ → immer diese Ableitung, nie eigener Ablauf oder Namenslogik.
+3. **KI/Agent:** Darf **nie** eine Beziehungsaussage („X ist dein Y“) aus Gedächtnis oder Vermutung treffen. Nur: „Das steht in deinen Karten – in der App unter Beziehungen / Stammbaum siehst du, wer aus den gespeicherten Daten als Eltern/Kinder/Geschwister/Partner geführt wird.“
+
+---
+
+## Kurzfassung
+
+**Beziehungen = nur aus den Karten. Eine Quelle. Kein „falsche Daten genommen“. Fundament – ohne das K2 Familie auf Sand steht.**
+
+Verknüpfung: docs/K2-FAMILIE-BEZIEHUNGEN-QUELLE-WAHRHEIT.md

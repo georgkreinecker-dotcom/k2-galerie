@@ -39,6 +39,7 @@ export default function K2FamilieHomePage() {
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
   const [partnerHerkunftId, setPartnerHerkunftId] = useState<string>('')
+  const [ichBinPersonId, setIchBinPersonIdState] = useState<string>('')
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
@@ -62,6 +63,14 @@ export default function K2FamilieHomePage() {
     const nextId = personId.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, partnerHerkunftPersonId: nextId })) {
       setPartnerHerkunftId(personId)
+    }
+  }
+
+  const setIchBinPerson = (personId: string) => {
+    const einst = loadEinstellungen(currentTenantId)
+    const nextId = personId.trim() || undefined
+    if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: nextId })) {
+      setIchBinPersonIdState(personId)
     }
   }
 
@@ -166,6 +175,30 @@ export default function K2FamilieHomePage() {
               <option value="">Keiner (nur ein Zweig)</option>
               {personen.map((p) => (
                 <option key={p.id} value={p.id}>Herkunft {p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="card" style={{ marginBottom: '1.5rem', borderLeft: '4px solid rgba(5,150,105,0.6)' }}>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Dein Platz im Stammbaum</h2>
+            <p className="meta" style={{ margin: '0 0 0.5rem' }}>Wer bist du in dieser Familie? Im Stammbaum wird diese Person als „Du“ hervorgehoben (z. B. Stefan in Familie Hube).</p>
+            <select
+              value={ichBinPersonId ?? ''}
+              onChange={(e) => setIchBinPerson(e.target.value)}
+              style={{
+                background: 'rgba(0,0,0,0.25)',
+                border: `1px solid ${C.border}`,
+                borderRadius: 8,
+                color: C.text,
+                padding: '0.4rem 0.6rem',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+                minWidth: 200,
+              }}
+            >
+              <option value="">Nicht festgelegt</option>
+              {personen.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>

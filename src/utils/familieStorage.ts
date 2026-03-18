@@ -362,3 +362,53 @@ export function saveGeschichten(tenantId: string, list: K2FamilieGeschichte[]): 
     return false
   }
 }
+
+/**
+ * Person endgültig löschen (nur nach expliziter User-Aktion).
+ * Entfernt die Person und alle Referenzen in anderen Personen, Momenten, Beiträgen, Events;
+ * setzt Einstellungen zurück, wenn sie auf diese Person zeigten.
+ * Returns true wenn alles gespeichert wurde.
+ */
+export function deletePersonWithCleanup(tenantId: string, personId: string): boolean {
+  const personen = loadPersonen(tenantId).filter((p) => p.id !== personId)
+  if (personen.length === loadPersonen(tenantId).length) return false // Person war nicht vorhanden
+
+  const cleaned = personen.map((p) => ({
+    ...p,
+    parentIds: p.parentIds.filter((id) => id !== personId),
+    childIds: p.childIds.filter((id) => id !== personId),
+    partners: p.partners.filter((pr) => pr.personId !== personId),
+    siblingIds: p.siblingIds.filter((id) => id !== personId),
+    wahlfamilieIds: p.wahlfamilieIds.filter((id) => id !== personId),
+  }))
+
+  if (!savePersonen(tenantId, cleaned, { allowReduce: true })) return false
+
+  const momente = loadMomente(tenantId).filter((m) => m.personId !== personId)
+  if (!saveMomente(tenantId, momente, { allowReduce: true })) return false
+
+  const beitraege = loadBeitraege(tenantId).filter((b) => b.personId !== personId)
+  if (!saveBeitraege(tenantId, beitraege)) return false
+
+  const events = loadEvents(tenantId).map((ev) => ({
+    ...ev,
+    participantIds: ev.participantIds.filter((id) => id !== personId),
+  }))
+  if (!saveEvents(tenantId, events, { allowReduce: true })) return false
+
+  const einst = loadEinstellungen(tenantId)
+  const needEinst =
+    einst.ichBinPersonId === personId ||
+    einst.partnerHerkunftPersonId === personId ||
+    einst.startpunktPersonId === personId
+  if (needEinst) {
+    saveEinstellungen(tenantId, {
+      ...einst,
+      ...(einst.ichBinPersonId === personId ? { ichBinPersonId: undefined, ichBinPositionAmongSiblings: undefined } : {}),
+      ...(einst.partnerHerkunftPersonId === personId ? { partnerHerkunftPersonId: undefined } : {}),
+      ...(einst.startpunktPersonId === personId ? { startpunktPersonId: undefined } : {}),
+    })
+  }
+
+  return true
+}

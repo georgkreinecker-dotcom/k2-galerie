@@ -1,0 +1,69 @@
+# K2 Familie – Stammbaum: Kleinfamilien-Muster (verbindlich)
+
+**Zweck:** Eine klare, wiederholbare Struktur für die Darstellung von Kernfamilien (Paar + Kinder + ggf. Partner der Kinder). Die Grafik folgt diesem Muster, damit es nicht zu „Martina oben links“ oder falschen Partner-Positionen kommt.
+
+---
+
+## 1. Grundregel pro Zeile (Generation)
+
+- **Reihenfolge in der Zeile:** Zuerst die „Hauptperson“ eines Paars, **sofort daneben (rechts)** deren Partner.
+- **Partner-Platzierung:** Partner steht **rechts** von der Person, mit der er/sie ein Paar bildet, und **einen halben Icon (NODE_H/2) darunter** – so wirkt das Paar nebeneinander, Partner leicht tiefer.
+- **„Du“ (ichBinPersonId):** Wenn in einer Zeile „Du“ und dessen Partner vorkommen, kommt **immer zuerst Du**, dann der Partner (z. B. Georg, dann Martina). So steht Martina rechts neben Georg, einen halben Icon darunter.
+
+---
+
+## 2. Kleinfamilie – typisches Bild
+
+```
+     [Eltern-Paar: z. B. Vater | Mutter (Partner halber Icon darunter)]
+                          |
+     [Georg Du]  [Martina]     ← Georg links, Martina rechts, Martina halber Icon darunter
+          \___________/
+                 |
+     [Kind1] [Kind2] [Kind3] [Kind4]     ← unsere 4 Kinder
+        |       |       |       |
+     [P1]    [P2]    [P3]    [P4]        ← Partner der Kinder (falls vorhanden), je halber Icon darunter
+```
+
+- **Zeile Kernpaar:** Georg (Du), Martina (Partner) – Martina **rechts** von Georg, **halber Icon darunter**.
+- **Zeile Kinder:** Die 4 Kinder in fester Reihenfolge (positionAmongSiblings). Pro Kind, das einen Partner hat: Partner **rechts daneben**, **halber Icon darunter**.
+
+---
+
+## 3. Umsetzung im Code (FamilyTreeGraph)
+
+1. **Pivot in der Zeile (z. B. Elternzeile):** Wenn in einer Zeile **eine Person 2 oder mehr Partner** hat (z. B. Vater mit Anna und Mathilde), wird diese Person **zuerst** gesetzt → steht **ganz oben**; die Partner (Frauen) stehen rechts daneben und **einen halben Icon darunter**. So steht der Vater oben, links und rechts die Frauen versetzt.
+2. **Reihenfolge in der Zeile (ohne Pivot):** Wenn in der Zeile **Du** und ein Partner von Du vorkommen, wird **zuerst Du** ausgegeben, dann alle Partner in dieser Zeile. Sonst: Person mit Kindern vor Partner ohne Kinder.
+3. **Partner-Versatz Y:** Nur der **Zweite im Paar** (direkt hinter der Person in der Zeile) bekommt `baseY + NODE_H/2`; die erste Person der Zeile (bzw. der Pivot) bleibt auf `baseY`.
+4. **Partner immer rechts:** Partner werden „direkt hinter“ die Person in der Ausgabe-Liste eingefügt, also rechts daneben.
+5. **Kinder-Linien:** Die Linie Eltern → Kind geht von der **Mitte aller in parentIds des Kindes** genannten Elternteile zum Kind. Damit **beide** Elternteile (z. B. Anna und Georg) sichtbar sind, müssen die Kinder **beide** in `parentIds` haben; sonst geht die Linie nur von einem Elternteil.
+
+---
+
+## 4. Kinder-Reihenfolge
+
+- Die 4 Kinder in der richtigen Reihenfolge: **positionAmongSiblings** (1, 2, 3, 4) an den Personen oder „Du“-Position für das eine Kind, das Du bist. Fehlt die Position, Fallback nach Name/Id (kann falsch wirken).
+- Pro Kind mit Partner: Partner **rechts daneben**, **halber Icon darunter** – gleiches Muster wie beim Kernpaar.
+
+---
+
+## 5. Elternzeile (z. B. Anna, Georg, Mathilde)
+
+- **Pivot in der Mitte:** Wer in der Zeile **zwei oder mehr Partner** hat (z. B. der Vater), steht **in der Mitte** – **links** die erste Partnerin (Reihenfolge wie in den Karten, z. B. Anna = Mutter von Rupert, Burgie, Anna, Maria), **rechts** die zweite (z. B. Mathilde = Mutter der anderen Kinder). Reihenfolge kommt aus der `partners`-Liste der Pivot-Person (erster Eintrag = links, zweiter = rechts).
+- **Versatz:** Nur der Pivot (Georg) steht **ganz oben**; **beide** Partnerinnen (Anna und Mathilde) **einen halben Icon darunter**.
+- **„Anna Mutter der ersten 4“:** Damit die Linie von **beiden** Elternteilen zu den Kindern geht, müssen die 4 Geschwister **Anna und Georg** in ihren **parentIds** haben. Fehlt Anna bei den Kindern, geht die Linie nur vom Vater; in der Person bearbeiten → Elternteil Anna hinzufügen.
+
+## 6. Übersicht bei vielen Geschwistern (Unterzeilen)
+
+- **Lange Zeilen werden aufgeteilt:** Hat eine Generation viele Personen (z. B. 10+), wird sie in **Blöcke** (Geschwister + deren Partner) zerlegt. Ab **3 Blöcken** wird jeder Block eine **eigene kurze Zeile** (Unterzeile).
+- **SUB_ROW_H:** Unterzeilen derselben Generation haben geringeren Abstand; zwischen Generationen bleibt ROW_H. So bleibt die Grafik übersichtlich statt einer langen Kette.
+- **Quelle nur Karten:** Wer ein Block ist, leitet sich aus `partners` ab; keine zusätzliche Logik.
+
+## 7. Kurzfassung
+
+- **Pivot (2+ Partner in Zeile) zuerst** → steht oben; Partner versetzt. **Du zuerst, dann Partner** in der eigenen Zeile.
+- **Kinder** in fester Reihenfolge (positionAmongSiblings); **deren Partner** rechts daneben, halber Icon darunter.
+- **Kinder-Linien:** Beide Eltern in parentIds der Kinder eintragen, damit die Verbindung von beiden sichtbar ist.
+- **Viele Geschwister:** Ab 3 Blöcken → Unterzeilen pro Block (eine kurze Zeile pro Paar/Einheit).
+
+Stand: 17.03.26

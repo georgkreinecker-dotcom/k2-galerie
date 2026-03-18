@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 16.03.26 – K2 Familie Umsetzung Sportwagen + Raumschiff: (1) **Events → zusammengefasste Geschichte:** Typ K2FamilieGeschichte, load/saveGeschichten, buildGeschichteVorschlag (Events+Momente ab Datum), Seite „Geschichte“ (Nav), Merge/Backup inkl. geschichten. (2) **Partner-Familie gleichrangig:** Einstellungen partnerHerkunftPersonId, Home „Familie des Partners gleichrangig?“ + Dropdown, Stammbaum „Zwei Zweige: Meine Herkunft · Herkunft [Name]“, FamilyTreeGraph nimmt partnerHerkunftPersonId entgegen. Doku IDEEN-OFFEN aktualisiert.
+**Letzter Stand:** 17.03.26 – **Stammbaum: horizontale Ansicht.** K2 Familie Stammbaum kann neben Vertikal (Wurzeln oben) jetzt auch **Horizontal** (Wurzeln links) angezeigt werden. FamilyTreeGraph: Prop `orientation: 'vertical' | 'horizontal'`; Koordinaten/ViewBox/Pan für Horizontal; Stammbaum-Seite: Buttons „Vertikal“ / „Horizontal“. Session-Ende für heute.
 
-**Was wir JETZT tun:** Commit + Push; danach Raum bereit – nächster Schritt von Georg.
+**Was wir JETZT tun:** Pause; Raum bereit für morgen.
 
-**Vorher (17.03.26):** K2 Familie Ideen 2–6 (Beiträge, Startpunkt, Zweige, Merge, GEDCOM). Vollbackup vorläufig (2e073a2).
+**Vorher:** K2 Familie – Beziehungen nur aus den Karten (getBeziehungenFromKarten, Regel k2-familie-beziehungen-nur-aus-karten.mdc). ro5 – check the crash (CRASH-BEREITS-GEPRUEFT gelesen, orientiert).
 
-**Nächster Schritt:** Commit + Push; dann von Georg (z. B. Test K2 Familie, weitere Projekte). Hinweis: upload-download-simulation.test.ts hatte bereits 49/50 Download-Tests (1 fehlgeschlagen) – unabhängig von diesen Änderungen.
+**Nächster Schritt:** Von Georg festlegen (z. B. Stammbaum horizontal testen, oder anderes).
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

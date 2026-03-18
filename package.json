@@ -28,12 +28,15 @@
     "@imgly/background-removal": "^1.7.0",
     "@supabase/supabase-js": "^2.95.3",
     "@vercel/blob": "^2.3.0",
+    "@xyflow/react": "^12.10.1",
+    "dagre": "^0.8.5",
     "ipp": "^1.1.0",
     "jsqr": "^1.4.0",
     "onnxruntime-web": "^1.21.0",
     "png-dpi-reader-writer": "^0.2.4",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
+    "react-d3-tree": "^3.6.6",
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.30.3",
     "stripe": "^20.4.0"
@@ -41,6 +44,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@testing-library/jest-dom": "^6.9.1",
+    "@types/dagre": "^0.7.54",
     "@types/node": "^24.10.1",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.5",

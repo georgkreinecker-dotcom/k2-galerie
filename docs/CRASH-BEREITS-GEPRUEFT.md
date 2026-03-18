@@ -19,6 +19,7 @@
 | 11.03.26 | ro5 – Totalabsturz, Mac musste neu hochgefahren werden; dokumentiert, orientiert. |
 | 13.03.26 | ro crash – Reopen nach Crash; Briefing + DIALOG-STAND gelesen, orientiert. |
 | 16.03.26 | ro5 – check the crash: CRASH-BEREITS-GEPRUEFT + CRASH-LETZTER-KONTEXT gelesen, orientiert. |
+| 17.03.26 | ro5 – check the crash: Kontext + bereits geprüft gelesen, orientiert. |
 
 ---
 

@@ -28,6 +28,8 @@ export interface K2FamiliePerson {
   partners: K2FamiliePartnerRef[]
   siblingIds: string[]
   wahlfamilieIds: string[]
+  /** Position unter Geschwistern (1-basiert) für Sortierung im Stammbaum – z. B. 7 = 7. von 13. */
+  positionAmongSiblings?: number
   createdAt?: string
   updatedAt?: string
 }
@@ -108,11 +110,17 @@ export type K2FamilieStartpunktTyp = 'ich' | 'eltern' | 'grosseltern'
 
 /** Einstellungen pro Tenant (Startpunkt, optional später Zweige). */
 export interface K2FamilieEinstellungen {
+  /** Anzeigename dieser Familie (z. B. „Familie Kreinecker“ statt Nummer/ID). */
+  familyDisplayName?: string
   startpunktTyp?: K2FamilieStartpunktTyp
   /** Optional: konkrete Person als Wurzel (überschreibt Typ). */
   startpunktPersonId?: string
   /** Optional: Person, deren Herkunft als zweiter Zweig gleichrangig dargestellt wird („Herkunft [Partner]“). */
   partnerHerkunftPersonId?: string
+  /** Optional: „Ich bin diese Person“ – im Stammbaum als „Du“ hervorgehoben (z. B. Stefan in Familie Hube). */
+  ichBinPersonId?: string
+  /** Optional: Position von „Du“ unter den Geschwister (1-basiert), für Sortierung 1…N (z. B. 7 = 6 vor mir, 6 hinter mir). */
+  ichBinPositionAmongSiblings?: number
 }
 
 /** Storage-Key für Einstellungen pro Tenant. */

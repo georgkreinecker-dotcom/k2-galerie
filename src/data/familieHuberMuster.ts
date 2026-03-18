@@ -6,14 +6,16 @@
  */
 
 import type { K2FamiliePerson, K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
-import { savePersonen, saveEvents, saveMomente } from '../utils/familieStorage'
+import { savePersonen, saveEvents, saveMomente, loadEinstellungen } from '../utils/familieStorage'
 import { setFamilyPageTexts } from '../config/pageTextsFamilie'
 import { setFamilyPageContent } from '../config/pageContentFamilie'
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber'
 
-/** Anzeigename für Tenant im Dropdown (z. B. "Familie Huber" für huber). */
+/** Anzeigename für Tenant im Dropdown. Gespeicherter Name (Einstellungen) hat Priorität, sonst Muster/Default/ID. */
 export function getFamilieTenantDisplayName(tenantId: string, defaultLabel: string = 'Standard'): string {
+  const stored = loadEinstellungen(tenantId).familyDisplayName?.trim()
+  if (stored) return stored
   if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Familie Huber'
   if (tenantId === 'default') return defaultLabel
   return tenantId
