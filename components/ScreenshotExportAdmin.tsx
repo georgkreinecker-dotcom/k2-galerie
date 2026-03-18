@@ -4164,6 +4164,33 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return days
   }
 
+  /** Anmeldung per WhatsApp – Text zum Kopieren oder wa.me-Link („Komme Fr/Sa, So leider nicht“). */
+  const getWhatsAppAnmeldungForEvent = (event: any): { text: string; waUrl: string | null } => {
+    if (!event?.title) return { text: '', waUrl: null }
+    const days = getEventDays(event.date || '', event.endDate || event.date || '')
+    const dayLines = days.length > 0
+      ? days.map((d: string) => {
+          const dd = new Date(d)
+          const label = dd.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' })
+          return `[ ] ${label}`
+        })
+      : [event.date ? `[ ] ${new Date(event.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}` : '[ ] Datum']
+    const text = [
+      `${event.title} – Anmeldung`,
+      '',
+      'Ich komme:',
+      ...dayLines,
+      '[ ] Leider nicht',
+      '',
+      'Name: ___'
+    ].join('\n')
+    const rawPhone = (galleryData?.phone || martinaData?.phone || georgData?.phone || '').replace(/\s/g, '')
+    const digits = rawPhone.replace(/\D/g, '')
+    const normalized = digits.startsWith('0') ? '43' + digits.slice(1) : digits.length >= 9 ? (digits.startsWith('43') ? digits : '43' + digits) : ''
+    const waUrl = normalized.length >= 10 ? `https://wa.me/${normalized}?text=${encodeURIComponent(text)}` : null
+    return { text, waUrl }
+  }
+
   // Automatische Vorschläge für neues Event generieren
   const generateAutomaticSuggestions = (event: any) => {
     // Speichere Vorschläge in localStorage
@@ -4216,12 +4243,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setSocialRedactionImageUrl(socialContent?.imageDataUrl ?? '')
   }
 
-  /** Newsletter-Redaktion öffnen (zweigeteilte Ansicht). */
+  /** Newsletter-Redaktion öffnen (zweigeteilte Ansicht). Bei Eröffnung immer frischen Inhalt (starker Text, Termine aus Event). */
   const openNewsletterRedaction = (eventLike: any, doc: any, content: { subject?: string; body?: string }) => {
     setNewsletterRedactionEvent(eventLike)
     setNewsletterRedactionDocument(doc ?? null)
-    setNewsletterRedactionSubject(content?.subject ?? '')
-    setNewsletterRedactionBody(content?.body ?? '')
+    const useContent = eventLike?.type === 'galerieeröffnung'
+      ? generateNewsletterContent(eventLike)
+      : content
+    setNewsletterRedactionSubject(useContent?.subject ?? '')
+    setNewsletterRedactionBody(useContent?.body ?? '')
   }
 
   // QR-Vorschau für Redaktions-Modal generieren, wenn QR aktiv und URL gesetzt
@@ -4315,14 +4345,23 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const EROEFFNUNG_KERNBOTSCHAFT =
     'Wir eröffnen die K2 Galerie – und laden Sie ein, die Galerie und die Plattform kennenzulernen, mit der wir und andere Künstler:innen, Galerien und Kunstvereine arbeiten.'
   const EROEFFNUNG_LOUNGE_TEXT =
-    'Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie zusätzlich erleben, womit wir arbeiten: die K2-Plattform (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren, Veranstaltungen planen und sich vernetzen.'
+    'Zur Eröffnung laden wir Sie herzlich ein: Werke, Raum, Begegnung. In unserer Lounge erleben Sie die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
+  const EROEFFNUNG_LOUNGE_TEXT_DU =
+    'Zur Eröffnung laden wir dich herzlich ein: Werke, Raum, Begegnung. In unserer Lounge erlebst du die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.'
   const EROEFFNUNG_LOUNGE_KURZ =
     'Werke, Raum, Begegnung. In unserer gemeinsamen Lounge: Einblick in K2 · ök2 · VK2.'
   const EROEFFNUNG_WERBELINIE_1 = 'K2 Galerie – für Künstler:innen, die gesehen werden wollen.'
-  const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen und Werke verdienen mehr als einen Instagram-Post.'
+  const EROEFFNUNG_WERBELINIE_2 = 'Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.'
+  const EROEFFNUNG_WERBELINIE_2_SIE = 'Ihre Ideen, Ihre Werke verdienen mehr als einen Instagram-Post.'
   const EROEFFNUNG_PRESSE_LEAD_PREFIX = 'eröffnet am'
   const EROEFFNUNG_PLAKAT_KURZTEXT =
-    'Kunst & Keramik · Malerei, Grafik, Skulptur\nGemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.\n\nEintritt frei.'
+    'Kunst & Keramik · Malerei, Grafik, Skulptur\nGemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.'
+
+  /** Bei jeder Information/Aussendung: Hinweis Link/QR → vorab K2, ök2, VK2 ansehen → konkrete Fragen beantworten. */
+  const HINWEIS_LINK_QR_VORAB_SIE =
+    'Hinweis: Über Link oder QR-Code können Sie sich vorab ein Bild von K2, ök2 und VK2 machen – dann können wir bei Ihrem Besuch konkrete Fragen beantworten.'
+  const HINWEIS_LINK_QR_VORAB_DU =
+    'Hinweis: Über Link oder QR-Code kannst du dir vorab ein Bild von K2, ök2 und VK2 machen – dann können wir bei deinem Besuch konkrete Fragen beantworten.'
 
   // Content-Generatoren im App-Design-Stil – je Kontext nur eigene Daten (K2 / ök2 / VK2)
   // variant: 'neutral' = ohne Personendaten/Kontakt (für neutrale Information), 'lokal' = mit Personenstory und Kontakt
@@ -4359,11 +4398,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`,
           `${event.title.toUpperCase()}`, `${evType} · ${gName}`,
           `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`, ``,
-          `TERMIN:   ${evDate}`, `ORT:      ${ort || adresse}`, `EINTRITT: frei`, ``,
+          `TERMIN:   ${evDate}`, `ORT:      ${ort || adresse}`, ``,
           `───────────────────────────────────────`, `ZUR AUSSTELLUNG`, `───────────────────────────────────────`, ``,
           desc, ``,
           `${kuenstlerListe} zeigen aktuelle Werke – ein Querschnitt durch das Schaffen des Vereins.`, ``,
           STORY_1B_PRODUKT_PRESSE, ``,
+          `───────────────────────────────────────`, `HINWEIS`, `───────────────────────────────────────`, ``,
+          HINWEIS_LINK_QR_VORAB_SIE, ``,
           `───────────────────────────────────────`, `KONTAKT & BILDMATERIAL`, `───────────────────────────────────────`, ``,
           ...kontaktBlock,
           `– Ende der Presseaussendung –`,
@@ -4442,7 +4483,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         ``,
         `TERMIN:   ${evDate}`,
         `ORT:      ${ort || adresse}`,
-        `EINTRITT: frei`,
         ``,
         `───────────────────────────────────────`,
         `ZUR AUSSTELLUNG`,
@@ -4450,6 +4490,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         ``,
         ...(eroeffnungLead ? [eroeffnungLead, ``, STORY_1B_PRODUKT_PRESSE, ``] : [desc, ``, ...storyBlock]),
         ...kuenstlerBlock,
+        `───────────────────────────────────────`,
+        `HINWEIS`,
+        `───────────────────────────────────────`,
+        ``,
+        HINWEIS_LINK_QR_VORAB_SIE,
+        ``,
         `───────────────────────────────────────`,
         `KONTAKT & BILDMATERIAL`,
         `───────────────────────────────────────`,
@@ -4487,7 +4533,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         instagram: [
           `✦ ${event.title}`, ``, `${desc}`, ``, `📅 ${datesFormatted}`,
           ort ? `📍 ${ort}` : '', ``, `${gName} – aktuelle Werke der Vereinsmitglieder.`, ``,
-          `Eintritt frei. Wir freuen uns auf euch! 🎨`, ``, `${hashtags} ${baseHashtags}`,
+          `Wir freuen uns auf euch! 🎨`, ``, `${hashtags} ${baseHashtags}`,
         ].filter(Boolean).join('\n'),
         facebook: [
           `🎨 ${event.title} – ${typeName} beim ${gName}`, ``, `Wir laden herzlich ein!`, ``, desc, ``,
@@ -4518,7 +4564,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           ort ? `📍 ${ort}` : '',
           ``,
           `Martina trifft Georg – Malerei, Grafik & Keramik in einem Raum.`,
-          `Eintritt frei. Wir freuen uns auf euch! 🎨`,
+          ``,
+          `🔗 Link/QR: Vorab K2, ök2 & VK2 ansehen – dann können wir konkrete Fragen beantworten.`,
+          ``,
+          `Wir freuen uns auf euch! 🎨`,
           ``,
           `${hashtags} ${baseHashtags} #Kunstliebe`,
         ].filter(Boolean).join('\n'),
@@ -4527,13 +4576,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           ``,
           `Wir laden herzlich ein!`,
           ``,
-          `Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie erleben, womit wir arbeiten: die K2-Plattform für Künstler:innen, Galerien und Kunstvereine (K2 · ök2 · VK2).`,
+          EROEFFNUNG_LOUNGE_TEXT_DU,
           ``,
           `📅 ${datesFormatted}`,
           ort ? `📍 ${ort}` : '',
           galleryData.openingHours ? `🕒 ${galleryData.openingHours}` : '',
           ``,
-          `Eintritt frei. Wir freuen uns auf euren Besuch! 💚`,
+          `🔗 Link oder QR-Code nutzen und vorab K2, ök2 & VK2 ansehen – dann können wir konkrete Fragen beantworten.`,
+          ``,
+          `Wir freuen uns auf euren Besuch! 💚`,
           galleryData.email ? `✉ ${galleryData.email}` : '',
           galleryData.phone ? `☎ ${galleryData.phone}` : '',
         ].filter(Boolean).join('\n'),
@@ -4542,7 +4593,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           `📅 ${datesFormatted}`,
           ort ? `📍 ${ort}` : '',
           ``,
-          `Werke, Raum, Begegnung – und Einblick in die K2-Plattform (K2 · ök2 · VK2). Gemeinsame Lounge: Galerie erleben, Plattform entdecken.`,
+          `Werke, Raum, Begegnung – in unserer Lounge erlebst du die K2-Plattform (K2 · ök2 · VK2) live. Galerie erleben, Plattform entdecken.`,
+          ``,
+          `🔗 Link/QR: Vorab K2, ök2 & VK2 ansehen – dann können wir konkrete Fragen beantworten.`,
           ``,
           [gName, galleryData.email ? `✉ ${galleryData.email}` : '', '👉 www.k2-galerie.at'].filter(Boolean).join(' · '),
         ].filter(Boolean).join('\n'),
@@ -4560,7 +4613,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         `${mName} trifft ${pName} –`,
         `Malerei, Grafik & Keramik in einem Raum.`,
         ``,
-        `Eintritt frei. Wir freuen uns auf euch! 🎨`,
+        `Wir freuen uns auf euch! 🎨`,
         ``,
         `${hashtags} ${baseHashtags} #Vernissage #Kunstliebe`,
       ].filter(Boolean).join('\n'),
@@ -4578,7 +4631,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         ort ? `📍 ${ort}` : '',
         galleryData.openingHours ? `🕒 ${galleryData.openingHours}` : '',
         ``,
-        `Eintritt frei. Bitte meldet euch gerne an:`,
+        `Bitte meldet euch gerne an:`,
         galleryData.email ? `✉ ${galleryData.email}` : '',
         galleryData.phone ? `☎ ${galleryData.phone}` : '',
         ``,
@@ -4671,14 +4724,13 @@ ${adr ? `Adresse: ${adr}` : ''}
     const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData) || ''
     const gName = galleryData.name || 'K2 Galerie'
     if (event.type === 'galerieeröffnung') {
-      return {
-        subject: `Einladung: Eröffnung der K2 Galerie – ${formatEventDates(event)}`,
-        greeting: 'Liebe Kunstfreunde, sehr geehrte Damen und Herren,',
-        body: `
+      const hasZeiten = !!(event.startTime || event.endTime || event.time || (event.dailyTimes && Object.keys(event.dailyTimes).length > 0))
+      const termBlock = `${formatEventDates(event)}${hasZeiten ? '' : '\n[ggf. Uhrzeiten ergänzen]'}`
+      const bodySie = `
 wir laden Sie herzlich ein zur Eröffnung der K2 Galerie!
 
 TERMINDATEN:
-📅 ${formatEventDates(event)} [ggf. Uhrzeiten ergänzen]
+📅 ${termBlock}
 
 ORT:
 📍 ${ort || adresse}
@@ -4687,7 +4739,9 @@ BESCHREIBUNG:
 ${EROEFFNUNG_LOUNGE_TEXT}
 
 ${EROEFFNUNG_WERBELINIE_1}
-${EROEFFNUNG_WERBELINIE_2}
+${EROEFFNUNG_WERBELINIE_2_SIE}
+
+${HINWEIS_LINK_QR_VORAB_SIE}
 
 KONTAKT:
 ${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
@@ -4696,7 +4750,40 @@ ${adresse ? `Adresse: ${adresse}` : ''}
 
 Wir freuen uns auf Sie!
 ${gName} · Martina & Georg
-        `.trim()
+      `.trim()
+      const bodyDu = `
+wir laden dich herzlich ein zur Eröffnung der K2 Galerie!
+
+TERMINDATEN:
+📅 ${termBlock}
+
+ORT:
+📍 ${ort || adresse}
+
+BESCHREIBUNG:
+${EROEFFNUNG_LOUNGE_TEXT_DU}
+
+${EROEFFNUNG_WERBELINIE_1}
+${EROEFFNUNG_WERBELINIE_2}
+
+${HINWEIS_LINK_QR_VORAB_DU}
+
+KONTAKT:
+${galleryData.phone ? `Tel: ${galleryData.phone}` : ''}
+${galleryData.email ? `E-Mail: ${galleryData.email}` : ''}
+${adresse ? `Adresse: ${adresse}` : ''}
+
+Wir freuen uns auf dich!
+${gName} · Martina & Georg
+      `.trim()
+      return {
+        subject: `Einladung: Eröffnung der K2 Galerie – ${formatEventDates(event)}`,
+        greeting: 'Liebe Kunstfreunde, sehr geehrte Damen und Herren,',
+        body: `${bodySie}
+
+——— Du-Variante (z. B. für Liebe Kunstfreunde,) ———
+
+${bodyDu}`,
       }
     }
     return {
@@ -4807,6 +4894,7 @@ ${presseaussendung?.content || ''}
 
 ${'-'.repeat(60)}
 WEITERVERBREITEN: Bitte teilen Sie diese Presseinformation in Ihren Netzwerken (Facebook, Instagram, X, …). Link zur Galerie: ${galerieUrl}
+Hinweis: Über Link oder QR-Code können sich Interessierte vorab ein Bild von K2, ök2 und VK2 machen – dann können wir konkrete Fragen beantworten.
 ${'-'.repeat(60)}
 
 ${'='.repeat(60)}
@@ -4886,6 +4974,7 @@ ${newsletter?.body || ''}
 
 ${'-'.repeat(60)}
 WEITERVERBREITEN: Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link zur Galerie: ${galerieUrl}
+Hinweis: Über Link oder QR-Code können sich Interessierte vorab ein Bild von K2, ök2 und VK2 machen – dann können wir konkrete Fragen beantworten.
 ${'-'.repeat(60)}
 
 ${'='.repeat(60)}
@@ -5334,6 +5423,7 @@ ${'='.repeat(60)}
           `───────────────────────────────────────`,
           `TEILEN: Bitte verbreiten Sie diese Einladung in Ihren Netzwerken.`,
           `Link zur Galerie: ${BASE_APP_URL}${PROJECT_ROUTES.vk2.galerie}`,
+          HINWEIS_LINK_QR_VORAB_SIE,
           `───────────────────────────────────────`,
         ].filter(line => line !== null && line !== undefined).join('\n')
       }
@@ -5389,6 +5479,7 @@ ${'='.repeat(60)}
         `───────────────────────────────────────`,
         `TEILEN: Bitte verbreiten Sie diese Einladung in Ihren Netzwerken.`,
         `Link zur Galerie: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
+        HINWEIS_LINK_QR_VORAB_SIE,
         `───────────────────────────────────────`,
         ``,
         `www.k2-galerie.at`,
@@ -5433,6 +5524,7 @@ ${'='.repeat(60)}
           `─────────────────────────────────────────`,
           ``,
           `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${BASE_APP_URL}${PROJECT_ROUTES.vk2.galerie}`,
+          HINWEIS_LINK_QR_VORAB_SIE,
           ``,
           verein.email ? `Anmeldung erwünscht: ${verein.email}` : '',
           ``,
@@ -5478,6 +5570,7 @@ ${'='.repeat(60)}
         `─────────────────────────────────────────`,
         ``,
         `Bitte teilen Sie diese Einladung in Ihren Netzwerken. Link: ${BASE_APP_URL}${tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie}`,
+        HINWEIS_LINK_QR_VORAB_SIE,
         ``,
         g.openingHours ? `Öffnungszeiten: ${g.openingHours}` : '',
         g.email ? `Anmeldung erwünscht: ${g.email}` : '',
@@ -7661,7 +7754,7 @@ ${'='.repeat(60)}
     const muted = d.mutedColor || '#5c5c57'
     const imgBlock = imageUrl ? `<div style="margin-bottom:1.5rem;"><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="width:100%; max-width:560px; height:auto; display:block; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12);" /></div>` : ''
     if (docKind === 'einladung') {
-      return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung zur Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.6rem;border-bottom:3px solid ${accent};padding-bottom:.5rem;margin-top:0}p{margin:.75rem 0}.meta{color:${muted};font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Einladung zur Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">${esc(eventDate)}</p><p>${esc(adresse)}</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zur Eröffnung unserer Ausstellung ein. ${esc(m)} und ${esc(p)} präsentieren neue Arbeiten aus allen Sparten: Malerei und Grafik, Keramik und Skulptur. Die Vernissage bietet Gelegenheit, die Künstler:innen kennenzulernen und die Werke in entspannter Atmosphäre zu entdecken.</p><p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch und anregende Gespräche.</p><p>Um Anmeldung wird gebeten: ${esc(g.email || '')}</p><p class="meta" style="margin-top:2rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p><p class="meta">Mit freundlichen Grüßen<br>${esc(g.name || 'Galerie Muster')}</p></body></html>`
+      return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung zur Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.6rem;border-bottom:3px solid ${accent};padding-bottom:.5rem;margin-top:0}p{margin:.75rem 0}.meta{color:${muted};font-size:.95rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Einladung zur Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">${esc(eventDate)}</p><p>${esc(adresse)}</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zur Eröffnung unserer Ausstellung ein. ${esc(m)} und ${esc(p)} präsentieren neue Arbeiten aus allen Sparten: Malerei und Grafik, Keramik und Skulptur. Die Vernissage bietet Gelegenheit, die Künstler:innen kennenzulernen und die Werke in entspannter Atmosphäre zu entdecken.</p><p>Zu einem kleinen Umtrunk und Häppchen laden wir Sie herzlich ein. Wir freuen uns auf Ihren Besuch und anregende Gespräche.</p><p>Um Anmeldung wird gebeten: ${esc(g.email || '')}</p><p class="meta" style="margin-top:2rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p><p class="meta">Mit freundlichen Grüßen<br>${esc(g.name || 'Galerie Muster')}</p></body></html>`
     }
     return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseinformation</title><style>body{font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:2rem 1.5rem;line-height:1.65;color:${text};background:${bg}}h1{font-size:1.4rem;border-bottom:3px solid ${accent};padding-bottom:.4rem;margin-top:0}p{margin:.6rem 0}.meta{color:${muted};font-size:.9rem}@media print{body{background:#fff;color:#111}h1{border-color:#333}.meta{color:#555}}</style></head><body>${imgBlock}<h1>Presseinformation – Vernissage</h1><p><strong>${esc(g.name || 'Galerie Muster')}</strong> lädt zur Eröffnung der Ausstellung ein.</p><p class="meta">${esc(eventDate)}<br>${esc(adresse)}</p><p>${esc(m)} (Malerei, Grafik) und ${esc(p)} (Keramik, Skulptur) zeigen aktuelle Werke in einer gemeinsamen Schau. Die Ausstellung spannt einen Bogen von großformatigen Bildern über grafische Arbeiten bis zu keramischen Objekten und Skulptur – ein Querschnitt durch das aktuelle Schaffen beider Künstler:innen.</p><p>Die Vernissage am Eröffnungsabend bietet Presse und Gästen die Möglichkeit, die Werke in Anwesenheit der Künstler:innen zu sehen und mit ihnen ins Gespräch zu kommen. Im Anschluss ist die Ausstellung zu den regulären Öffnungszeiten der Galerie zugänglich.</p><p>Für Rückfragen, Bildmaterial oder Interviewwünsche stehen wir gern zur Verfügung.</p><p>Kontakt: ${esc(g.email || '')}${g.phone ? ', ' + esc(g.phone) : ''}</p><p class="meta" style="margin-top:1.5rem;">Öffnungszeiten: ${esc(g.openingHours || '')}</p></body></html>`
   }
@@ -7686,7 +7779,7 @@ ${'='.repeat(60)}
     const bodyEnd = '</body></html>'
     if (docKind === 'einladung') {
       const kurzBlock = kuenstlerBlock ? '<h2>Die Künstler:innen</h2>' + kuenstlerBlock : ''
-      return headStart + 'Einladung – ' + esc(eventTitle) + headEnd + '<h1>Einladung zur Vernissage</h1><p><strong>' + esc(vName) + '</strong></p><p class="meta">' + esc(eventDate) + '</p><p>' + esc(adresse) + '</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zu unserer Gemeinschaftsausstellung ein. ' + esc(kuenstlerListe) + ' präsentieren ihre Werke – Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst unter einem Dach.</p>' + kurzBlock + '<p>Für Getränke und einen kleinen Imbiss ist gesorgt. Wir freuen uns auf Ihren Besuch.</p><p>Um Anmeldung wird gebeten: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:2rem;">Mit freundlichen Grüßen<br>' + esc(vName) + '</p>' + bodyEnd
+      return headStart + 'Einladung – ' + esc(eventTitle) + headEnd + '<h1>Einladung zur Vernissage</h1><p><strong>' + esc(vName) + '</strong></p><p class="meta">' + esc(eventDate) + '</p><p>' + esc(adresse) + '</p><p>Sehr geehrte Damen und Herren,</p><p>wir laden Sie herzlich zu unserer Gemeinschaftsausstellung ein. ' + esc(kuenstlerListe) + ' präsentieren ihre Werke – Malerei, Skulptur, Fotografie, Grafik, Keramik und Textilkunst unter einem Dach.</p>' + kurzBlock + '<p>Zu einem kleinen Umtrunk und Häppchen laden wir Sie herzlich ein. Wir freuen uns auf Ihren Besuch.</p><p>Um Anmeldung wird gebeten: ' + esc(verein.email || '') + '</p><p class="meta" style="margin-top:2rem;">Mit freundlichen Grüßen<br>' + esc(vName) + '</p>' + bodyEnd
     }
     if (docKind === 'presse') {
       const kurzBlock = kuenstlerBlock ? '<h2>Die Künstler:innen</h2>' + kuenstlerBlock : ''
@@ -7694,7 +7787,7 @@ ${'='.repeat(60)}
     }
     const flyerStyle = commonStyle + '.flyer-title{font-size:1.8rem;text-align:center;margin:1.5rem 0}.flyer-sub{text-align:center;color:' + muted + ';margin-bottom:1.5rem}.flyer-kuenstler{margin-top:1rem;text-align:left}'
     const flyerKurzBlock = kuenstlerBlock ? '<h2 style="text-align:center;margin-top:1.5rem;">Die Künstler:innen</h2><div class="flyer-kuenstler">' + kuenstlerBlock + '</div>' : ''
-    return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Eintritt frei. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
+    return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Zu einem kleinen Umtrunk und Häppchen laden wir Sie herzlich ein. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
   // Ein Standard für alle Dokumente: immer im In-App-Viewer (gleicher Tab, gleiche Leiste, gleiches Verhalten). Mit Druck-Fußzeile (Ersteller, Datum, Seitenzahl).
@@ -19079,6 +19172,37 @@ ${name}`
                                     <div style={{ width: `${progressPct}%`, height: '100%', background: fertigAnzahl === gesamtAnzahl ? '#16a34a' : s.accent, borderRadius: 3, transition: 'width 0.25s ease' }} />
                                   </div>
                                 </div>
+
+                                {/* Anmeldung per WhatsApp – tageweise Zusage/Absage („Komme Fr/Sa, So leider nicht“) */}
+                                {(() => {
+                                  const wa = getWhatsAppAnmeldungForEvent(event)
+                                  if (!wa.text) return null
+                                  return (
+                                    <div style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem', background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 8, fontSize: '0.8rem' }}>
+                                      <div style={{ fontWeight: 600, color: s.text, marginBottom: '0.4rem' }}>📱 Anmeldung per WhatsApp</div>
+                                      <pre style={{ whiteSpace: 'pre-wrap', margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, fontFamily: 'inherit' }}>{wa.text}</pre>
+                                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => { navigator.clipboard.writeText(wa.text); alert('✅ Text kopiert – in WhatsApp einfügen und an Galerie-Nummer senden.') }}
+                                          style={{ padding: '0.35rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 6, color: s.accent, cursor: 'pointer', fontSize: '0.75rem' }}
+                                        >
+                                          Text kopieren
+                                        </button>
+                                        {wa.waUrl && (
+                                          <a
+                                            href={wa.waUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{ padding: '0.35rem 0.6rem', background: 'rgba(37,211,102,0.15)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 6, color: '#16a34a', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'none' }}
+                                          >
+                                            Per WhatsApp senden
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )
+                                })()}
 
                                 {tenant.isVk2 && (
                                   <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.78rem', color: s.muted }}>
