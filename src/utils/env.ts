@@ -40,6 +40,18 @@ export function safeReloadWithCacheBypass(): void {
   const search = window.location.search || ''
   const hash = window.location.hash || ''
   const returnPath = pathname + search + hash
-  const params = new URLSearchParams([['t', String(t)], ['return', returnPath]])
+  const params = new URLSearchParams([['t', String(t)], ['r', String(Math.random())], ['return', returnPath]])
   window.location.replace(origin + REFRESH_HTML_PATH + '?' + params.toString())
+}
+
+/** URL für refresh.html mit Cache-Bust (z. B. für Anzeige im Fehlerfall). */
+export function getRefreshUrl(): string {
+  if (typeof window === 'undefined') return ''
+  const origin = window.location.origin
+  const pathname = window.location.pathname || '/'
+  const search = window.location.search || ''
+  const hash = window.location.hash || ''
+  const returnPath = pathname + search + hash
+  const params = new URLSearchParams([['t', String(Date.now())], ['return', returnPath]])
+  return origin + REFRESH_HTML_PATH + '?' + params.toString()
 }

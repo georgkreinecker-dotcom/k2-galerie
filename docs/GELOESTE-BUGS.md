@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-041 · Event-Zeiten (startTime, endTime, dailyTimes) gingen beim „Aktuellen Stand holen“ verloren (gelöst 18.03.26)
+
+**Symptom:** Nutzer: „wieso veränderst du die zeiten im event immer wieder“ – die im Admin eingetragenen Uhrzeiten (startTime, endTime, tägliche Zeiten) verschwanden oder wurden zurückgesetzt.
+
+**Ursache:** Beim „Aktuellen Stand holen“ (GaleriePage handleRefresh/loadData, Admin handleLoadFromServer) wurden die Events **komplett** durch die Server-Daten ersetzt. Enthielt die gallery-data.json (z. B. älterer Stand oder ein Publish ohne Zeiten) keine startTime/endTime/dailyTimes, überschrieb der Ladevorgang die lokalen Zeiten mit leeren Werten.
+
+**Lösung:** Neue Funktion **mergeEventTimesFromLocal(serverEvents, localEvents)** in eventsStorage.ts: Für jedes Server-Event mit gleicher id wird geprüft, ob das lokale Event Zeiten hat und das Server-Event nicht. Wenn ja, werden startTime, endTime und dailyTimes vom lokalen Event in das zu speichernde Event übernommen. Angewendet in: (1) GaleriePage beim handleRefresh und loadData (beide Stellen), (2) ScreenshotExportAdmin beim Setzen von Events aus Server-Daten (dynamisches Tenant-Laden und „Aktuellen Stand holen“). So gehen Zeiten beim Laden vom Server nicht mehr verloren.
+
+**Betroffene Dateien:** src/utils/eventsStorage.ts (mergeEventTimesFromLocal), src/pages/GaleriePage.tsx, components/ScreenshotExportAdmin.tsx.
+
+**Status:** ✅ Behoben (18.03.26).
+
+---
+
 ## BUG-040 · Dokumente/Events/Design beim „Laden vom Server“ überschrieben → Öffentlichkeitsarbeit, Newsletter, Design weg (gelöst 17.03.26)
 
 **Symptom:** Nach „Aktuellen Stand holen“ / Laden vom Server waren K2-Dokumente (Öffentlichkeitsarbeit, Newsletter) und Design/Farben wieder alt oder weg – obwohl sie lokal gespeichert und mehrfach genutzt worden waren.

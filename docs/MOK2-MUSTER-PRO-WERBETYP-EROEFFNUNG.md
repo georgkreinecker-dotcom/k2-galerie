@@ -6,11 +6,13 @@
 1. K2 Galerie – für Künstler:innen, die gesehen werden wollen.
 2. Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.
 
+**Phase 1:** Erst die Ausstellung von Martina & Georg, zweitens die Plattform (Lounge). Presse-Story (Lead + lokal) folgt derselben Reihenfolge.
+
 **Kernbotschaft (ein Satz):**  
 „Wir eröffnen die K2 Galerie – und laden Sie ein, die Galerie und die Plattform kennenzulernen, mit der wir und andere Künstler:innen, Galerien und Kunstvereine arbeiten.“
 
-**Lounge-Text (2–3 Sätze):**  
-Zur Eröffnung laden wir Sie in unsere **Galerie** ein – Werke, Raum, Begegnung. In einer **gemeinsamen Lounge** können Sie zusätzlich erleben, womit wir arbeiten: die **K2-Plattform** (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren, Veranstaltungen planen und sich vernetzen. Wer mag, kann die Musterseiten (ök2) und die Vereinsplattform (VK2) am Bildschirm oder am eigenen Gerät ansehen und mit uns ins Gespräch kommen.
+**Lounge-Text (Phase 1 – 2 Punkte):**  
+Zur Eröffnung laden wir Sie herzlich ein: **Erstens** unsere Ausstellung – Werke von Martina und mir, Raum und Begegnung. **Zweitens** erleben Sie in unserer Lounge die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.
 
 ---
 
@@ -49,7 +51,7 @@ ORT:
 📍 [Adresse], [Ort]
 
 BESCHREIBUNG:
-Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie zusätzlich erleben, womit wir arbeiten: die K2-Plattform (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren, Veranstaltungen planen und sich vernetzen.
+Zur Eröffnung laden wir Sie herzlich ein: Erstens unsere Ausstellung – Werke von Martina und mir, Raum und Begegnung. Zweitens erleben Sie in unserer Lounge die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.
 
 K2 Galerie – für Künstler:innen, die gesehen werden wollen.
 Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.
@@ -77,10 +79,9 @@ Wir freuen uns auf Sie!
 
 **Kurztext (für Plakatfläche):**
 ```
-Kunst & Keramik · Malerei, Grafik, Skulptur
-Gemeinsame Lounge: Galerie erleben, Plattform (K2 · ök2 · VK2) entdecken.
+Kunst & Keramik · Ausstellung Martina & Georg
+Gemeinsame Lounge: Plattform (K2 · ök2 · VK2) entdecken.
 
-Eintritt frei.
 [Galeriename] · [E-Mail] · [Telefon]
 ```
 **QR:** Link zur Galerie (siehe Abschnitt Links oben).
@@ -159,7 +160,7 @@ Zur Eröffnung laden wir euch in unsere Galerie ein – Werke, Raum, Begegnung. 
 📍 [Ort / Adresse]
 
 Martina trifft Georg – Malerei, Grafik & Keramik in einem Raum.
-Eintritt frei. Wir freuen uns auf euch! 🎨
+Wir freuen uns auf euch! 🎨
 
 #K2Galerie #Galerieeröffnung #KunstInÖsterreich #Malerei #Keramik #Kunstliebe
 ```
@@ -170,13 +171,13 @@ Eintritt frei. Wir freuen uns auf euch! 🎨
 
 Wir laden herzlich ein!
 
-Zur Eröffnung laden wir Sie in unsere Galerie ein – Werke, Raum, Begegnung. In einer gemeinsamen Lounge können Sie erleben, womit wir arbeiten: die K2-Plattform für Künstler:innen, Galerien und Kunstvereine (K2 · ök2 · VK2).
+Zur Eröffnung laden wir Sie herzlich ein: Werke, Raum, Begegnung. In unserer Lounge erleben Sie die K2-Plattform (K2 · ök2 · VK2) live – eine Oberfläche für Galerie, Kasse, Events und Presse aus einer Hand. Für Künstler:innen, Galerien und Kunstvereine, die sichtbar werden wollen.
 
 📅 24.–26. April 2026
 📍 [Ort / Adresse]
 🕒 [Öffnungszeiten falls vorhanden]
 
-Eintritt frei. Wir freuen uns auf euren Besuch! 💚
+Wir freuen uns auf euren Besuch! 💚
 ✉ [E-Mail] · ☎ [Telefon]
 ```
 

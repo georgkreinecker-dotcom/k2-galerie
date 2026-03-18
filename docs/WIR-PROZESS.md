@@ -141,6 +141,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 15.03.26 | **Klar kommunizieren reicht oft.** Abläufe (Vereinsmitglied erwirbt ök2 / hat schon Lizenz) im Handbuch festhalten – dann muss niemand raten; „vice versa“ explizit machen (keine Auto-Sync, klare Handlung). |
 | 16.03.26 | Verteilerblocks wie Medienspiegel: ein Muster (Storage-Key pro Kontext, State, Laden/Speichern, UI) – weitere Blöcke (Newsletter, Einladungen) nach gleichem Muster ergänzbar, ohne neuen Ablauf zu erfinden. |
 | 17.03.26 | Stammbaum horizontal: gleiche Grafik-Logik, nur Orientierung (x↔y, ViewBox, Pan) – eine Komponente, zwei Ansichten; Session-Ende = DIALOG-STAND + Commit+Push, dann „Raum bereit“. |
+| 18.03.26 | Brand-Bereich überall gleich kräftig (ein Teal-Wert #0c5c55 für Deckblatt/Cover); Kurzvariante und Prospekt nutzen dieselbe QR-Logik – Kontrolle bestätigt, keine Änderung nötig. |
 
 ---
 

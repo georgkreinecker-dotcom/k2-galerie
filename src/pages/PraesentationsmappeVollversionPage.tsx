@@ -8,7 +8,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, K2_GALERIE_PUBLIC_BRAND } from '../config/tenantConfig'
 
 const BASE = '/praesentationsmappe-vollversion'
 const DOC_PARAM = 'doc'
@@ -45,6 +45,7 @@ export default function PraesentationsmappeVollversionPage() {
   const [fullPrintView, setFullPrintView] = useState(false)
   const [allDocContents, setAllDocContents] = useState<string[]>([])
   const [loadingFullPrint, setLoadingFullPrint] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const returnTo = searchParams.get('returnTo')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
@@ -52,12 +53,21 @@ export default function PraesentationsmappeVollversionPage() {
   const pageSubtitle = 'Handbuch-Struktur, Marketing-Stil, Texte aus mök2. Screenshots unter /img/oeffentlich/.'
 
   useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  useEffect(() => {
+    if (isMobile) return
     const docFromUrl = searchParams.get(DOC_PARAM)
     const fileToLoad = docFromUrl && DOCUMENTS.some((d) => d.file === docFromUrl)
       ? docFromUrl
       : DOCUMENTS[0].file
     loadDocument(fileToLoad)
-  }, [searchParams])
+  }, [searchParams, isMobile])
 
   useEffect(() => {
     const needQr = selectedDoc === '13-KONTAKT.md' || fullPrintView
@@ -93,7 +103,7 @@ export default function PraesentationsmappeVollversionPage() {
     }
   }
 
-  const loadAllDocumentsForPrint = async () => {
+  const loadAllDocuments = async (forPrint: boolean) => {
     setLoadingFullPrint(true)
     try {
       const contents: string[] = []
@@ -103,13 +113,20 @@ export default function PraesentationsmappeVollversionPage() {
         contents.push(text)
       }
       setAllDocContents(contents)
-      setFullPrintView(true)
+      if (forPrint) setFullPrintView(true)
     } catch {
       setAllDocContents([])
     } finally {
       setLoadingFullPrint(false)
     }
   }
+
+  const loadAllDocumentsForPrint = () => loadAllDocuments(true)
+
+  useEffect(() => {
+    if (!isMobile || allDocContents.length > 0) return
+    loadAllDocuments(false)
+  }, [isMobile, allDocContents.length])
 
   const renderInline = (s: string): ReactNode => {
     const parts: ReactNode[] = []
@@ -219,12 +236,7 @@ export default function PraesentationsmappeVollversionPage() {
         const [, num, title, path] = numLinkMatch
         const isInternalDoc = path.endsWith('.md') && !path.startsWith('http')
         if (isInternalDoc && onDocLink) {
-          out.push(
-            <p key={key()} className="pmv-p">
-              {num}{' '}
-              <a href="#" className="pmv-link" onClick={(e) => { e.preventDefault(); onDocLink(path) }}>{title}</a>
-            </p>
-          )
+          out.push(<p key={key()} className="pmv-p">{num}{' '}<a href="#" className="pmv-link" onClick={(e) => { e.preventDefault(); onDocLink(path) }}>{title}</a></p>)
         } else {
           const href = path.startsWith('http') ? path : `${BASE}/${path}`
           out.push(<p key={key()} className="pmv-p">{num} <a href={href} className="pmv-link" target={path.startsWith('http') ? '_blank' : undefined} rel={path.startsWith('http') ? 'noopener noreferrer' : undefined}>{title}</a></p>)
@@ -237,11 +249,7 @@ export default function PraesentationsmappeVollversionPage() {
           const path = match[2]
           const isInternalDoc = path.endsWith('.md') && !path.startsWith('http')
           if (isInternalDoc && onDocLink) {
-            out.push(
-              <p key={key()} className="pmv-p">
-                <a href="#" className="pmv-link" onClick={(e) => { e.preventDefault(); onDocLink(path) }}>{match[1]}</a>
-              </p>
-            )
+            out.push(<p key={key()} className="pmv-p"><a href="#" className="pmv-link" onClick={(e) => { e.preventDefault(); onDocLink(path) }}>{match[1]}</a></p>)
           } else {
             const href = path.startsWith('http') ? path : `${BASE}/${path}`
             out.push(<p key={key()} className="pmv-p"><a href={href} className="pmv-link" target={path.startsWith('http') ? '_blank' : undefined} rel={path.startsWith('http') ? 'noopener noreferrer' : undefined}>{match[1]}</a></p>)
@@ -269,12 +277,15 @@ export default function PraesentationsmappeVollversionPage() {
     navigate(FALLBACK_ROUTE)
   }
 
-  /** Deckblatt außen: Brand + Slogan + Foto Willkommensseite – eine schöne Mappe */
+  /** Deckblatt außen: K2 Galerie groß, Slogans, kgm solution dezent als Copyright. Header-Höhe inhaltabhängig, kein Abschneiden. */
   const renderDeckblattCover = () => (
     <div className="pmv-deckblatt-cover" lang="de">
-      <h1 className="pmv-cover-brand">{PRODUCT_BRAND_NAME}</h1>
-      <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
-      <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
+      <div className="pmv-deckblatt-header">
+        <h1 className="pmv-cover-title">{K2_GALERIE_PUBLIC_BRAND}</h1>
+        <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
+        <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
+        <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
+      </div>
       <div className="pmv-cover-img-wrap">
         <img src={DECKBLATT_WILLKOMMENSBILD} alt="Willkommensseite der K2 Galerie" className="pmv-cover-img" />
       </div>
@@ -282,7 +293,7 @@ export default function PraesentationsmappeVollversionPage() {
   )
 
   const styles = `
-    .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; }
     .pmv-wrap .pmv-h1 { font-size: 1.75rem; margin: 1.5rem 0 0.75rem; color: #1c1a18; font-weight: 600; }
     .pmv-wrap .pmv-h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; color: #0d9488; font-weight: 600; }
     .pmv-wrap .pmv-h3 { font-size: 1.15rem; margin: 1rem 0 0.4rem; color: #4b5563; }
@@ -299,17 +310,40 @@ export default function PraesentationsmappeVollversionPage() {
     .pmv-seitenfuss { display: none; }
     .pmv-chapter-block { margin-bottom: 2rem; }
     .pmv-chapter-block.pmv-chapter-first { margin-top: 0; }
-    .pmv-deckblatt-cover { text-align: center; padding: 2rem 1.5rem 2.5rem; background: linear-gradient(180deg, #0f766e 0%, #0d9488 18%, #fff 18%); color: #fff; border-radius: 12px; margin-bottom: 2rem; }
-    .pmv-deckblatt-cover .pmv-cover-brand { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: 0.02em; color: #fff; }
+    .pmv-deckblatt-cover { text-align: center; padding: 0 1.5rem 2.5rem; background: #fff; color: #1c1a18; border-radius: 12px; margin-bottom: 2rem; }
+    .pmv-deckblatt-cover .pmv-deckblatt-header { background: linear-gradient(180deg, #0c5c55 0%, #0f766e 100%); color: #fff; padding: 2rem 1rem 2rem; margin: 0 -1.5rem 0; border-radius: 12px 12px 0 0; min-height: 8rem; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: visible; }
+    @media (max-width: 768px) {
+      .pmv-wrap { padding-left: 1rem !important; padding-right: 1rem !important; font-size: 16px; }
+      .pmv-wrap .pmv-h1 { font-size: 1.5rem; margin: 1.25rem 0 0.6rem; }
+      .pmv-wrap .pmv-h2 { font-size: 1.25rem; margin: 1rem 0 0.45rem; }
+      .pmv-wrap .pmv-h3 { font-size: 1.1rem; margin: 0.9rem 0 0.35rem; }
+      .pmv-wrap .pmv-p { font-size: 1rem; line-height: 1.65; margin-bottom: 0.75rem; }
+      .pmv-wrap .pmv-li { font-size: 1rem; line-height: 1.6; margin-bottom: 0.4rem; }
+      .pmv-wrap .pmv-ul { margin-left: 1.25rem; padding-left: 0.5rem; }
+      .pmv-deckblatt-cover { padding: 0 1rem 2rem; }
+      .pmv-deckblatt-cover .pmv-deckblatt-header { padding: 1.5rem 0.75rem 1.5rem; margin: 0 -1rem 0; min-height: 9rem; }
+      .pmv-deckblatt-cover .pmv-cover-title { font-size: 1.75rem; }
+      .pmv-deckblatt-cover .pmv-cover-copyright { font-size: 0.75rem; }
+      .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 1rem; }
+      .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 0.95rem; }
+      .pmv-mobile-stack { display: flex !important; flex-direction: column !important; }
+      .pmv-mobile-stack .pmv-nav { position: static !important; order: 0; }
+      .pmv-mobile-stack .pmv-article { order: 1; padding: 1rem !important; min-height: auto !important; }
+      .pmv-scroll-mobile { min-height: 0; overflow: visible !important; }
+    }
+    .pmv-deckblatt-cover .pmv-cover-title { font-size: 2.5rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: 0.02em; color: #fff; }
     .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0.25rem; color: #fff; opacity: 0.98; }
-    .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 1rem; margin: 0 0 1.5rem; color: #e0f2f1; }
-    .pmv-deckblatt-cover .pmv-cover-img-wrap { margin: 0 auto; max-width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+    .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 1rem; margin: 0 0 0.25rem; color: #fff; opacity: 0.95; }
+    .pmv-deckblatt-cover .pmv-cover-copyright { font-size: 0.8rem; margin: 0.5rem 0 0; color: #fff; opacity: 0.85; font-weight: 400; }
+    .pmv-deckblatt-cover .pmv-cover-img-wrap { margin: 1.5rem auto 0; max-width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     .pmv-deckblatt-cover .pmv-cover-img { width: 100%; height: auto; display: block; vertical-align: top; }
     @media print {
-      .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: always !important; padding: 12mm 15mm 15mm !important; background: linear-gradient(180deg, #0f766e 0%, #0d9488 22%, #fff 22%) !important; min-height: 240mm; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
-      .pmv-deckblatt-cover .pmv-cover-brand { font-size: 22pt !important; margin-bottom: 0.35em !important; }
-      .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 12pt !important; margin-bottom: 0.15em !important; }
-      .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 11pt !important; margin-bottom: 1.2em !important; }
+      .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: always !important; padding: 12mm 15mm 15mm !important; background: #fff !important; min-height: 240mm; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
+      .pmv-deckblatt-cover .pmv-deckblatt-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #0c5c55 !important; min-height: auto; padding: 10mm 12mm 12mm !important; margin: -12mm -15mm 12mm -15mm !important; border-radius: 0 !important; }
+      .pmv-deckblatt-cover .pmv-cover-title { font-size: 24pt !important; margin-bottom: 0.35em !important; color: #fff !important; font-weight: 700 !important; }
+      .pmv-deckblatt-cover .pmv-cover-copyright { font-size: 8pt !important; margin-top: 0.4em !important; color: #fff !important; }
+      .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 12pt !important; margin-bottom: 0.15em !important; color: #fff !important; font-weight: 600 !important; }
+      .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 11pt !important; margin-bottom: 0 !important; color: #fff !important; }
       .pmv-deckblatt-cover .pmv-cover-img-wrap { flex: 1; max-width: 95%; min-height: 0; }
       .pmv-deckblatt-cover .pmv-cover-img { max-height: 180mm; width: auto; margin: 0 auto; object-fit: contain; }
       /* Kein erzwungener Umbruch pro Kapitel – Inhalt fließt, weniger Leerseiten */
@@ -320,7 +354,7 @@ export default function PraesentationsmappeVollversionPage() {
       .pmv-wrap .pmv-seitenumbruch { page-break-before: always !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; }
       /* Lesbare Setzung: 10pt, ausreichend Zeilenabstand, Silbentrennung */
       .pmv-wrap .pmv-h1 { font-size: 12pt !important; margin: 1.2em 0 0.4em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
-      .pmv-wrap .pmv-h2 { font-size: 11pt !important; margin: 1em 0 0.35em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-h2 { font-size: 11pt !important; margin: 1em 0 0.35em !important; color: #0f766e !important; font-weight: 700 !important; page-break-after: avoid !important; }
       .pmv-wrap .pmv-h3 { font-size: 10pt !important; margin: 0.8em 0 0.3em !important; color: #1c1a18 !important; page-break-after: avoid !important; }
       .pmv-wrap .pmv-p { margin: 0 0 0.5em !important; line-height: 1.45 !important; font-size: 10pt !important; color: #1c1a18 !important; text-align: justify !important; hyphens: auto !important; -webkit-hyphens: auto !important; hyphenate-limit-chars: 6 4 2 !important; orphans: 2 !important; widows: 2 !important; }
       .pmv-wrap .pmv-ul { margin: 0.4em 0 0.6em 1.25em !important; padding-left: 0.4em !important; }
@@ -350,7 +384,9 @@ export default function PraesentationsmappeVollversionPage() {
       <header className="pmv-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1c1a18', fontWeight: 600 }}>📁 {pageTitle}</h1>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>{fullPrintView ? 'Alle Kapitel mit Bildern – zum Drucken' : pageSubtitle}</p>
+          <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
+          {fullPrintView ? 'Alle Kapitel mit Bildern – zum Drucken' : (isMobile && allDocContents.length > 0) ? 'Alle Kapitel – durchscrollen bis zur letzten Seite' : pageSubtitle}
+        </p>
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           {fullPrintView ? (
@@ -364,9 +400,11 @@ export default function PraesentationsmappeVollversionPage() {
             </>
           ) : (
             <>
-              <button type="button" onClick={loadAllDocumentsForPrint} disabled={loadingFullPrint} style={{ padding: '0.5rem 1rem', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, cursor: loadingFullPrint ? 'wait' : 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
-                {loadingFullPrint ? 'Lade…' : '📄 Gesamte Mappe drucken'}
-              </button>
+              {!isMobile && (
+                <button type="button" onClick={loadAllDocumentsForPrint} disabled={loadingFullPrint} style={{ padding: '0.5rem 1rem', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, cursor: loadingFullPrint ? 'wait' : 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
+                  {loadingFullPrint ? 'Lade…' : '📄 Gesamte Mappe drucken'}
+                </button>
+              )}
               <button type="button" onClick={() => window.print()} style={{ padding: '0.5rem 1rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
                 🖨️ Drucken
               </button>
@@ -378,8 +416,8 @@ export default function PraesentationsmappeVollversionPage() {
         </div>
       </header>
 
-      {fullPrintView ? (
-        <article style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb' }}>
+      {(fullPrintView || (isMobile && allDocContents.length > 0)) ? (
+        <article className="pmv-scroll-mobile" style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'visible' }}>
           {allDocContents.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Keine Kapitel geladen.</div>
           ) : (
@@ -397,9 +435,11 @@ export default function PraesentationsmappeVollversionPage() {
             ))
           )}
         </article>
+      ) : isMobile && loadingFullPrint ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Mappe wird geladen…</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
-          <nav className="pmv-no-print" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
+        <div className="pmv-mobile-stack" style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
+          <nav className="pmv-no-print pmv-nav" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
             <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               {DOCUMENTS.map((doc, index) => (
@@ -425,7 +465,7 @@ export default function PraesentationsmappeVollversionPage() {
             </div>
           </nav>
 
-          <article style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', minHeight: 400 }}>
+          <article className="pmv-article" style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', minHeight: 400 }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
             ) : (

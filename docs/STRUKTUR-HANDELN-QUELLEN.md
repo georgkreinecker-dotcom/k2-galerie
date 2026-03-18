@@ -22,6 +22,7 @@ Damit alle Informationen **jederzeit aktuell und hier verfügbar** sind, gilt di
 | **Leitbotschaft / Positionierung** | **docs/PRODUKT-VISION.md** – Abschnitt „Leitbotschaft (eine Quelle für alle Texte)“: *Für die Kunst gedacht, für den Markt gemacht.* **Fokus = gesamter Markt** (Ideen, Produkte); **Kunstmarkt = Unterkategorie** (Einstieg); **VK2 = alle Vereine** (Kunstvereine = Einstieg). Abschnitt „Zielgruppe“. | Einheitlich in Handbuch, Präsentationsmappe, Werbetexte, mök2. Keine abweichende Positionierung – Sportwagenmodus. |
 | **Marketing-Werbelinie (verbindlich)** | **src/config/tenantConfig.ts** (PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2). **mök2** → Sektion 7 „Promotion für alle Medien“. **docs/MARKETING-EROEFFNUNG-K2-OEK2.md**, **k2team-handbuch/04-VISION-STRATEGIE.md** (jeweils Werbelinie-Abschnitt). | Eine Quelle für beide Slogans; alle Werbemaßnahmen und Strategiepapiere darauf ausgerichtet. SPORTWAGEN-ROADMAP Phase 6.4. |
 | **Promotion-Prozess (Strategie Sportwagen)** | **docs/STRATEGIE-PROMOTION-SPORTWAGEN.md**. | Eine Quelle, One-Click, Muster, nichts zweimal – bei neuen Promotion-Features hier prüfen. |
+| **Öffentlichkeitsarbeit Phase 1 (alle Dokumente)** | **docs/oeffentlichkeitsarbeit/00-INDEX.md**. | Schnellstart, Checkliste, Presse-Vorlage, Ablauf, Medienverteiler-Kurz; Verweise auf alle ausführlichen Quellen (Presse-Standard, Medienstudio, Verteiler, Sichtbarkeit, QR-Regel). |
 
 ---
 

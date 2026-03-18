@@ -325,24 +325,16 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             5. Präsentationsmappen – Links zum Mitsenden
           </h2>
           <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Kurzversion (1 Seite) zum schnellen Weiterleiten, Langversion mit allen Details. Als Link in E-Mail, Chat oder Werbedokument einfügen.
+            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel). Als Link in E-Mail, Chat oder Werbedokument einfügen.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>ök2 – Kurz (1 Seite)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz}</a>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe (Kurzvariante)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappe}</a>
             </div>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>ök2 – Lang (alle Details)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang}</a>
-            </div>
-            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>VK2 – Kurz (1 Seite)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz}</a>
-            </div>
-            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
-              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>VK2 – Lang (alle Details)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang}</a>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe (Vollversion)</p>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}</a>
             </div>
           </div>
         </section>

@@ -1,12 +1,16 @@
 # Dialog-Stand
 
-**Letzter Stand:** 17.03.26 – **Server-Load: eine zentrale Merge-Schicht (Überschreibungen generell verhindert).** applyServerDataToLocal.ts: applyServerPayloadK2 für Events, Dokumente, Design, PageTexts (K2). Regeln: nie mit weniger überschreiben; Event-Zeiten aus lokal; Design nur wenn Server sinnvoll und lokal nicht; PageTexts nur wenn Server sinnvoll. GaleriePage (handleRefresh + loadData) und ScreenshotExportAdmin (Tenant-Load + handleLoadFromServer) nutzen nur noch diese Schicht. Doku: KRITISCHE-ABLAEUFE §3, PROZESS-VEROEFFENTLICHEN-LADEN; Regel: .cursor/rules/server-load-nur-mit-merge.mdc.
+**Letzter Stand:** 18.03.26 – **Präsentationsmappen: Brand-Bereich kräftiger (Teal #0c5c55)** in Kurzvariante, Prospekt, Vollversion, Flyer (Bildschirm + Druck). QR-Kontrolle Kurzvariante: bereits aktuell wie Prospekt (buildQrUrlWithBust + useQrVersionTimestamp). Session-Ende: Commit + Push.
 
-**Was wir JETZT tun:** Nächster Schritt von Georg (z. B. Promotion umsetzen oder anderes).
+**Was wir JETZT tun:** Nächster Schritt von Georg.
 
-**Einordnung:** Überschreibungen bei neuem Stand mehrfach aufgetreten – jetzt eine einzige Schicht, keine versteckten direkten saveEvents/saveDocuments/setItem mit Server-Rohdaten mehr.
+**Einordnung:** Werbeunterlagen einheitlich lesbar; Stand/QR-Regel eingehalten.
 
 **Nächster Schritt:** Von Georg festlegen.
+
+---
+
+**Vorher:** 17.03.26 – **Server-Load: eine zentrale Merge-Schicht (Überschreibungen generell verhindert).** applyServerDataToLocal.ts: applyServerPayloadK2 für Events, Dokumente, Design, PageTexts (K2). Regeln: nie mit weniger überschreiben; Event-Zeiten aus lokal; Design nur wenn Server sinnvoll und lokal nicht; PageTexts nur wenn Server sinnvoll. GaleriePage (handleRefresh + loadData) und ScreenshotExportAdmin (Tenant-Load + handleLoadFromServer) nutzen nur noch diese Schicht. Doku: KRITISCHE-ABLAEUFE §3, PROZESS-VEROEFFENTLICHEN-LADEN; Regel: .cursor/rules/server-load-nur-mit-merge.mdc.
 
 **📌 Erinnerung – Pro++ (später / vor Go-live):** (1) Migration 008 auf Supabase ausführen. (2) Pro++ manuell testen (Checkout → Lizenz in Supabase). Details: Abschnitt „Pro++“ oben.
 

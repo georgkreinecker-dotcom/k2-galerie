@@ -166,6 +166,14 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }, [currentPage])
 
+  // Admin-Chunk (ScreenshotExportAdmin) im Hintergrund vorladen, damit Öffentlichkeitsarbeit/Admin-Panel zuverlässig öffnet
+  useEffect(() => {
+    const t = setTimeout(() => {
+      import('../../components/ScreenshotExportAdmin').catch(() => {})
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [])
+
   // Update currentPage NUR wenn explizit ein ?page= Parameter gesetzt ist
   // Nicht bei leerem pageFromUrl – sonst wird die zuletzt gemerkte Seite überschrieben
   useEffect(() => {
@@ -1678,7 +1686,7 @@ end tell`
         <div style={{
           position: 'fixed',
           top: 0,
-          left: panelMinimized ? '-380px' : '0',
+          left: panelMinimized ? '-420px' : '0', // Vollständig ausblenden – 400px Breite + 20px Puffer, sonst überlappt rechter Rand (z. B. „Öffentlichkeitsarbeit (K2)“) den Content
           width: '400px',
           height: '100vh',
           background: 'linear-gradient(180deg, #2d1a14, #1a0f0a)',

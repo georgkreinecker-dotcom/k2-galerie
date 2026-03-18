@@ -23,6 +23,30 @@ function isEventIdInVk2List(event: { id?: string }, vk2List: any[]): boolean {
   return vk2List.some((v) => v && v.id === id)
 }
 
+/**
+ * Beim Laden vom Server: Zeiten (startTime, endTime, dailyTimes) aus lokalen Events
+ * in die Server-Events übernehmen, wenn sie dort fehlen. Verhindert, dass „Aktuellen Stand holen“
+ * die im Admin gepflegten Zeiten überschreibt (z. B. wenn gallery-data.json älter ist).
+ */
+export function mergeEventTimesFromLocal(serverEvents: any[], localEvents: any[]): any[] {
+  if (!Array.isArray(serverEvents) || !Array.isArray(localEvents)) return serverEvents
+  const localById = new Map<string, any>()
+  localEvents.forEach((e: any) => { if (e?.id) localById.set(String(e.id), e) })
+  return serverEvents.map((se: any) => {
+    const local = se?.id ? localById.get(String(se.id)) : null
+    if (!local) return se
+    const hasLocalTimes = !!(local.startTime || local.endTime || (local.dailyTimes && Object.keys(local.dailyTimes || {}).length > 0))
+    const serverMissingTimes = !se.startTime && !se.endTime && (!se.dailyTimes || Object.keys(se.dailyTimes || {}).length === 0)
+    if (!hasLocalTimes || !serverMissingTimes) return se
+    return {
+      ...se,
+      startTime: se.startTime || local.startTime || '',
+      endTime: se.endTime || local.endTime || '',
+      dailyTimes: (se.dailyTimes && Object.keys(se.dailyTimes).length > 0) ? se.dailyTimes : (local.dailyTimes || {})
+    }
+  })
+}
+
 export function loadEvents(tenantId: EventsTenantId): any[] {
   try {
     const key = getEventsKey(tenantId)

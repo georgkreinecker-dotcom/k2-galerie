@@ -14356,26 +14356,30 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               📁 Präsentationsmappen
             </h2>
             <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Links zum Mitsenden (E-Mail, Chat, Werbung) – Kurz- und Langversion für ök2 und VK2. Ein Klick öffnet die Mappe in neuem Tab.
+              Kurzvariante (1 Seite, Teal/Weiß), Vollversion (große Mappe) und Prospekt/Flyer (1 A4, gleiches Design). Ein Klick öffnet die Mappe.
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
-              <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                Präsentationsmappe
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Kurzvariante
               </Link>
-              {[
-                { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
-                { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
-                { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
-                { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
-                { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
-              ].map(({ label, path }) => (
-                <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                  {label}
-                </a>
-              ))}
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Kurzvariante (neuer Tab)
+              </a>
+              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Vollversion
+              </Link>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Vollversion (neuer Tab)
+              </a>
+              <Link to="/prospekt-k2-galerie" state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Prospekt/Flyer
+              </Link>
+              <a href={BASE_APP_URL + '/prospekt-k2-galerie'} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                Prospekt/Flyer (neuer Tab)
+              </a>
             </div>
             <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
-              Eine Mappe, 13 Kapitel – Handbuch-Struktur, Marketing-Stil. Drucken für PDF.
+              Als PDF drucken für Weitergabe.
             </p>
           </section>
         )}
@@ -19299,22 +19303,22 @@ ${name}`
 
                                         {istPraesentationsmappen ? (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                                            {/* Präsentationsmappe wie andere Werbemittel: Stil aus Design-Tab, keine eigene Auswahl */}
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                              <Link to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}&returnTo=${encodeURIComponent(location.pathname + location.search)}`} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                Präsentationsmappe
+                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                Kurzvariante
                                               </Link>
-                                              {[
-                                                { label: 'Kombiniert', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappe },
-                                                { label: 'ök2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Kurz },
-                                                { label: 'ök2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeOek2Lang },
-                                                { label: 'VK2 Kurz', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Kurz },
-                                                { label: 'VK2 Lang', path: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVk2Lang },
-                                              ].map(({ label, path }) => (
-                                                <a key={path} href={BASE_APP_URL + path} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                  {label}
-                                                </a>
-                                              ))}
+                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                Vollversion
+                                              </Link>
+                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                In neuem Tab
+                                              </a>
+                                              <Link to="/prospekt-k2-galerie" state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                Prospekt/Flyer
+                                              </Link>
+                                              <a href={BASE_APP_URL + '/prospekt-k2-galerie'} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                Prospekt/Flyer (neuer Tab)
+                                              </a>
                                             </div>
                                           </div>
                                         ) : hatDokumente && (

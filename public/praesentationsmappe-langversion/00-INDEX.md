@@ -1,7 +1,5 @@
 # Präsentationsmappe – K2 Galerie
 
-Marketing-Dokument mit Struktur wie ein Handbuch: Kapitel, Texte aus mök2, interne Screenshots der App. Zum Überzeugen und Mitgeben.
-
 ---
 
 ## Inhaltsverzeichnis – Kurzanleitung

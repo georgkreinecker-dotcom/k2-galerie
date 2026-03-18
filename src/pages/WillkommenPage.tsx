@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_FROM_KEY, AGB_ROUTE, ENTDECKEN_ROUTE, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
@@ -34,7 +34,6 @@ export default function WillkommenPage() {
 
   const variant = searchParams.get('variant') === 'a' ? 'a' : 'c'
   const slogan = loadSlogan()
-  const [name, setName] = useState('')
   const [agbAccepted, setAgbAccepted] = useState(getAgbAccepted)
   const [showAgbModal, setShowAgbModal] = useState(false)
   const [pendingAction, setPendingAction] = useState<PendingAction>(null)
@@ -52,13 +51,6 @@ export default function WillkommenPage() {
     setAgbCheckbox(false)
     if (action === 'ansicht') navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlich)
     else if (action === 'entwurf') {
-      const n = name.trim()
-      if (n) {
-        try {
-          sessionStorage.setItem(WILLKOMMEN_NAME_KEY, n)
-          sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
-        } catch (_) {}
-      }
       navigate(PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau)
     }
   }
@@ -73,8 +65,6 @@ export default function WillkommenPage() {
   }
 
   const props: VariantProps = {
-    name,
-    setName,
     slogan,
     startEntry,
     showAgbModal,
@@ -90,8 +80,6 @@ export default function WillkommenPage() {
 
 // ─── Gemeinsame Props ──────────────────────────────────────────────────────────
 interface VariantProps {
-  name: string
-  setName: (v: string) => void
   slogan: string
   startEntry: (a: PendingAction) => void
   showAgbModal: boolean
@@ -137,7 +125,7 @@ function AgbModal({ agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction
 // VARIANTE A – Warm & einladend wie ein Atelier
 // Holzwarme Töne, große Headline, Bild-Andeutung, Herzlichkeit
 // ═══════════════════════════════════════════════════════════════════════════════
-function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
+function VariantA({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
   const accent = '#b54a1e'       // warmes Terrakotta
   const accentLight = '#d4622a'
   const bg = '#faf7f2'           // cremiges Leinen
@@ -174,37 +162,8 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ maxWidth: 520, width: '100%' }}>
 
-          {/* Einladungstext – neuer Interessent: nur eine klare Aktion */}
-          <p style={{ fontSize: '1.05rem', color: muted, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.7 }}>
-            Gib deinen Namen ein – und sieh sofort, wie deine eigene Galerie aussehen würde.
-          </p>
-
-          {/* Nur: Meine Galerie ausprobieren („Galerie ansehen“ / „Erwerben“ nicht hier – würden nur verwirren) */}
-          <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '14px', padding: '1.5rem', boxShadow: '0 4px 20px rgba(181,74,30,0.10)', marginBottom: '1.5rem' }}>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '1.1rem' }}>
-              <span style={{ width: 52, height: 52, borderRadius: '12px', background: `${accent}15`, border: `1px solid ${accent}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>✏️</span>
-              <span>
-                <span style={{ display: 'block', fontWeight: 700, fontSize: '1.05rem', color: text, marginBottom: '0.2rem' }}>Meine Galerie ausprobieren</span>
-                <span style={{ fontSize: '0.85rem', color: muted, lineHeight: 1.5 }}>Gib deinen Namen ein – und sieh sofort, wie deine eigene Galerie aussehen würde.</span>
-              </span>
-            </div>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') startEntry('entwurf') }}
-              placeholder="Dein Künstler- oder Galeriename"
-              style={{ width: '100%', padding: '0.8rem 1rem', border: `1px solid #e0d5c5`, borderRadius: '10px', fontFamily: fontBody, fontSize: '0.98rem', background: bgWarm, color: text, marginBottom: '0.9rem', boxSizing: 'border-box', outline: 'none' }}
-              onFocus={e => { e.currentTarget.style.borderColor = accent }}
-              onBlur={e => { e.currentTarget.style.borderColor = '#e0d5c5' }}
-            />
-            <button type="button" onClick={() => startEntry('entwurf')} style={{ width: '100%', padding: '0.9rem 1rem', background: `linear-gradient(135deg, ${accent} 0%, ${accentLight} 100%)`, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1rem', letterSpacing: '0.01em' }}>
-              {name.trim() ? `„${name.trim()}" – Galerie starten →` : 'Galerie starten →'}
-            </button>
-          </div>
-
-          {/* Weitere Optionen nur dezent – Lizenz nur in Einstellungen (Admin), nicht auf Willkommen */}
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8rem', color: muted }}>
+          {/* Einstieg: Galerie ansehen oder entdecken */}
+          <p style={{ textAlign: 'center', marginBottom: '1rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
@@ -234,7 +193,7 @@ function VariantA({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
 // VARIANTE C – Modern & lebendig: sofortiger Eindruck, Farbe, Energie
 // Dunkler Hero-Bereich mit Akzentfarbe, klare visuelle Hierarchie
 // ═══════════════════════════════════════════════════════════════════════════════
-function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
+function VariantC({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckbox, setAgbCheckbox, pendingAction, setPendingAction, doNavigate }: VariantProps) {
   const accent = '#ff8c42'        // K2-Orange
   const accentDeep = '#b54a1e'
   const bgDark = '#1a0f0a'
@@ -277,36 +236,8 @@ function VariantC({ name, setName, slogan, startEntry, showAgbModal, setShowAgbM
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 'clamp(2rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem)' }}>
         <div style={{ maxWidth: 520, width: '100%' }}>
 
-          {/* Haupt-CTA: Name eingeben + starten */}
-          <div style={{ background: bgCard, border: `2px solid ${accent}`, borderRadius: '16px', padding: 'clamp(1.5rem, 4vw, 2rem)', boxShadow: `0 8px 32px ${accent}22`, marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
-              <span style={{ width: 36, height: 36, borderRadius: '50%', background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>✏️</span>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '1.05rem', color: text }}>Meine Galerie ausprobieren</div>
-                <div style={{ fontSize: '0.82rem', color: muted }}>Name eingeben – sofort deine Galerie sehen</div>
-              </div>
-            </div>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') startEntry('entwurf') }}
-              placeholder="Dein Künstler- oder Galeriename"
-              style={{ width: '100%', padding: '0.85rem 1rem', border: `1.5px solid ${accent}44`, borderRadius: '10px', fontFamily: fontBody, fontSize: '1rem', background: bgLight, color: text, marginBottom: '0.85rem', boxSizing: 'border-box', outline: 'none', transition: 'border-color 0.2s' }}
-              onFocus={e => { e.currentTarget.style.borderColor = accent }}
-              onBlur={e => { e.currentTarget.style.borderColor = `${accent}44` }}
-            />
-            <button type="button" onClick={() => startEntry('entwurf')}
-              style={{ width: '100%', padding: '1rem 1rem', background: `linear-gradient(135deg, ${accent} 0%, ${accentDeep} 100%)`, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: '1.05rem', letterSpacing: '0.01em', boxShadow: `0 4px 16px ${accent}44`, transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = `0 8px 24px ${accent}55` }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = `0 4px 16px ${accent}44` }}
-            >
-              {name.trim() ? `„${name.trim()}" – Galerie starten →` : 'Galerie starten →'}
-            </button>
-          </div>
-
-          {/* Weitere Optionen dezent – Lizenz nur in Einstellungen (Admin), nicht auf Willkommen */}
-          <p style={{ textAlign: 'center', marginTop: '0.5rem', marginBottom: '0.5rem', fontSize: '0.8rem', color: muted }}>
+          {/* Einstieg: Galerie ansehen oder entdecken */}
+          <p style={{ textAlign: 'center', marginBottom: '0.5rem', fontSize: '0.8rem', color: muted }}>
             <button type="button" onClick={() => startEntry('ansicht')} style={{ background: 'none', border: 'none', color: muted, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}>Nur Galerie ansehen</button>
             {' · '}
             <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>

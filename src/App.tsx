@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, lazy, Suspense } from 'react'
-import { safeReload, safeReloadWithCacheBypass } from './utils/env'
+import { safeReload, safeReloadWithCacheBypass, getRefreshUrl } from './utils/env'
 import { K2_ADMIN_UNLOCKED_KEY, clearAdminUnlockIfExpired } from './utils/adminUnlockStorage'
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
@@ -26,6 +26,7 @@ import MobileConnectPage from './pages/MobileConnectPage'
 import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
 import PraesentationsmappePage from './pages/PraesentationsmappePage'
+import PraesentationsmappeVollversionPage from './pages/PraesentationsmappeVollversionPage'
 import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage'
 import PilotStartPage from './pages/PilotStartPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
@@ -76,6 +77,7 @@ import DevViewPage from './pages/DevViewPage'
 import PlatformStartPage from './pages/PlatformStartPage'
 import MissionControlPage from './pages/MissionControlPage'
 import FlyerK2GaleriePage from './pages/FlyerK2GaleriePage'
+import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
@@ -112,7 +114,9 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
     if (this.state.hasError) {
       const errorMessage = this.state.error?.message || 'Unbekannter Fehler'
       const errorStack = this.state.error?.stack || ''
-      
+      const isModuleScriptError = /Importing a module script failed|Laden eines Modul-Skripts|module script/i.test(errorMessage)
+      const isLocalhost = typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.origin || '')
+
       return (
         <div style={{
           minHeight: '100vh',
@@ -148,10 +152,25 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
             )}
           </div>
           <p style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#aaa' }}>
-            {errorMessage.includes('Importing a module script failed')
-              ? 'Das passiert oft nach einem neuen Deploy oder Drucken/Teilen – der Browser hat noch alte Skripte. Einmal „Reset & neu laden“ holt die neueste Version (über refresh.html).'
+            {isModuleScriptError
+              ? (isLocalhost
+                ? 'Auf localhost: Im Cursor-Terminal „npm run dev“ starten, dann den Link unten öffnen (http://localhost:5177). Alte localhost-Tabs schließen.'
+                : 'Das passiert oft nach einem neuen Deploy – der Browser hat noch alte Skripte. „Reset & neu laden“ holt die neueste Version. Falls der Fehler bleibt: den Link unten in der gleichen Registerkarte öffnen.')
               : 'Wenn die K2-Seite nach Drucken/Teilen nicht mehr lädt: „Reset &amp; neu laden“ versuchen.'}
           </p>
+          {isModuleScriptError && typeof window !== 'undefined' && (
+            <p style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
+              {isLocalhost ? (
+                <a href="http://localhost:5177" target="_top" rel="noopener noreferrer" style={{ color: '#ff8c42', wordBreak: 'break-all' }}>
+                  http://localhost:5177
+                </a>
+              ) : (
+                <a href={getRefreshUrl()} target="_top" rel="noopener noreferrer" style={{ color: '#ff8c42', wordBreak: 'break-all' }}>
+                  {window.location.origin}/refresh.html
+                </a>
+              )}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button
               onClick={() => {
@@ -169,8 +188,12 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { hasError: bo
                   sessionStorage.clear()
                 } catch (_) {}
                 // Bei Modul-Import-Fehler: stärkerer Cache-Bypass (frisches HTML), sonst normaler Reload
-                if (errorMessage.includes('Importing a module script failed')) {
-                  safeReloadWithCacheBypass()
+                if (isModuleScriptError) {
+                  if (isLocalhost) {
+                    window.location.href = 'http://localhost:5177'
+                  } else {
+                    safeReloadWithCacheBypass()
+                  }
                 } else {
                   safeReload()
                 }
@@ -504,6 +527,14 @@ function App() {
     restoreAdminSessionIfNeeded()
   }, [])
 
+  // Admin-Chunk im Hintergrund vorladen, damit Direktlinks (z. B. Öffentlichkeitsarbeit) den Chunk oft schon haben
+  useEffect(() => {
+    const t = setTimeout(() => {
+      import('./components/AdminRoute').catch(() => {})
+    }, 2000)
+    return () => clearTimeout(t)
+  }, [])
+
   return (
     <TenantProvider>
     <AppErrorBoundary>
@@ -523,9 +554,10 @@ function App() {
       {/* Galerie als separate Route */}
       <Route path="/galerie-home" element={<GaleriePage />} />
       <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
+      <Route path="/prospekt-k2-galerie" element={<ProspektK2GaleriePage />} />
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
-      {/* Präsentationsmappe: eine Route, alle Varianten per ?variant= (Kombiniert, ök2, VK2, Vollversion) – wie bei den anderen 4. Legacy-URL → Redirect. */}
-      <Route path="/projects/k2-galerie/praesentationsmappe-vollversion" element={<Navigate to="/projects/k2-galerie/praesentationsmappe?variant=vollversion" replace />} />
+      {/* Präsentationsmappe: Kurzvariante (Teal/Weiß) + Vollversion (große Mappe, viele Kapitel). */}
+      <Route path="/projects/k2-galerie/praesentationsmappe-vollversion" element={<PraesentationsmappeVollversionPage />} />
       <Route path="/projects/k2-galerie/praesentationsmappe" element={<PraesentationsmappePage />} />
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
