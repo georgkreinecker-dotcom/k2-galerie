@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlackt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746. Neuer UI-Fix: „Ausstellungs-Galerie – Adresse“ ist jetzt immer sichtbar (kein auf-/zuklappen mehr). Commit: 9f51041.
+**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlankt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746. Neuer UI-Fix: „Ausstellungs-Galerie – Adresse“ ist jetzt immer sichtbar (kein auf-/zuklappen mehr). Commit: 9f51041. Dazu: ök2 Muster-PR jetzt zuverlässig sichtbar (Upcoming-Filter greift bei Muster-Event auch wenn Datum „in der Vergangenheit“ liegt). Commit: 5862217.
 
 **Was wir JETZT tun:** Nächster UI-Check von Georg.
 
 **Einordnung:** Sparten Schritt für Schritt: Richtung → story → Presse/PR. Kunst bleibt Vita/Bio; andere Sparten nutzen die eine Story-Quelle für alle PR-Ausgaben.
 
-**Nächster Schritt:** Georg testet im ök2 Admin: Meine Richtung (z. B. Food) setzen, Story eintragen, „Pressemappe“ drucken/Preview prüfen – und prüft zusätzlich, dass „Ausstellungs-Galerie – Adresse“ immer sichtbar ist.
+**Nächster Schritt:** Georg testet im ök2 Kontext: (1) Events/PR-Dokumente kommen aus den Mustern (nicht nur ein alter Event), (2) „Pressemappe“ drucken/Preview prüfen, (3) „Ausstellungs-Galerie – Adresse“ immer sichtbar.
 
 ---
 
