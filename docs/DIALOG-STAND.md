@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 18.03.26 – **Stammdaten „Meine Richtung“ (nur ök2):** Block im **Stammdaten-Tab** in der Sektion „Ausstellungs-Galerie – Adresse“ (aufklappen). ök2: Einstellungen → Stammdaten → „Ausstellungs-Galerie – Adresse (bei Bedarf öffnen)“ → „Wofür nutzt du deine Galerie?“ mit 6 Checkboxen. K2 unverändert. Doku: KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md.
+**Letzter Stand:** 19.03.26 – **ök2: Typ und Kategorie aus Stammdaten-Richtung.** Wenn in Stammdaten „Meine Richtung“ gespeichert ist: In **Werke verwalten** passen sich Filter (Typ/Kategorie) und beim **Neues Werk** die Vorausfüllung (Typ/Kategorie) automatisch an. Zwei useEffects in ScreenshotExportAdmin; Hilfsfunktionen getDefaultEntryTypeForFocusDirections / getDefaultCategoryForFocusDirections aus tenantConfig.
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 
-**Einordnung:** Einstieg ök2/Lizenznehmer: Richtung festlegen → spätere Werke-Defaults/Presse vorbereitet. K2 = Kunst fest, keine zusätzliche UI.
+**Einordnung:** Stammdaten-Richtung (ök2) → Werke-Defaults sichtbar: Filter und Neues-Werk-Modal nutzen die gespeicherte Richtung. K2 unverändert.
 
 **Nächster Schritt:** Von Georg festlegen.
 

@@ -29,7 +29,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getDefaultCategoryForFocusDirections, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -3285,7 +3285,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [artworkCategory]) // NUR Kategorie - verhindert Render-Loop!
 
-  // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe). ök2: nicht überschreiben – Button setzt schon Produkt/Idee-Kategorie.
+  // Letzte Kategorie merken: beim Öffnen „Neues Werk“ wiederherstellen (Serien-Eingabe). ök2: nicht überschreiben – Richtung setzt Defaults.
   const K2_LAST_ARTWORK_CATEGORY_KEY = 'k2-last-artwork-category'
   useEffect(() => {
     if (showAddModal && !editingArtwork && !tenant.isOeffentlich) {
@@ -3297,6 +3297,28 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       } catch (_) {}
     }
   }, [showAddModal, editingArtwork])
+
+  // ök2: Nach Speichern der Richtung in Stammdaten – Filter „Typ“ und „Kategorie“ in Werke verwalten anpassen.
+  useEffect(() => {
+    if (!tenant.isOeffentlich) return
+    const dirs = galleryData?.focusDirections
+    if (!Array.isArray(dirs) || dirs.length === 0) return
+    const typ = getDefaultEntryTypeForFocusDirections(dirs)
+    const cat = getDefaultCategoryForFocusDirections(dirs, typ)
+    setEntryTypeFilter(typ)
+    setCategoryFilter(cat)
+  }, [tenant.isOeffentlich, galleryData?.focusDirections])
+
+  // ök2: Beim Öffnen „Neues Werk“ Typ und Kategorie aus gespeicherter Richtung vorausfüllen.
+  useEffect(() => {
+    if (!showAddModal || editingArtwork || !tenant.isOeffentlich) return
+    const dirs = galleryData?.focusDirections
+    if (!Array.isArray(dirs) || dirs.length === 0) return
+    const typ = getDefaultEntryTypeForFocusDirections(dirs)
+    const cat = getDefaultCategoryForFocusDirections(dirs, typ)
+    setArtworkEntryType(typ)
+    setArtworkCategory(cat)
+  }, [showAddModal, editingArtwork, tenant.isOeffentlich, galleryData?.focusDirections])
 
   /** In Cursor Preview (iframe) keine schweren Base64-Bilder im State halten → weniger Speicher, weniger Code-5-Crashes */
   const inIframe = typeof window !== 'undefined' && window.self !== window.top
