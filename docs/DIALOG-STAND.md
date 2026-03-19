@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 18.03.26 – **Präsentationsmappen: Brand-Bereich kräftiger (Teal #0c5c55)** in Kurzvariante, Prospekt, Vollversion, Flyer (Bildschirm + Druck). QR-Kontrolle Kurzvariante: bereits aktuell wie Prospekt (buildQrUrlWithBust + useQrVersionTimestamp). Session-Ende: Commit + Push.
+**Letzter Stand:** 18.03.26 – **Stammdaten „Meine Richtung“ (nur ök2):** FOCUS_DIRECTIONS in tenantConfig, focusDirections in Galerie-Stammdaten (Merge/Speicher); Admin Einstellungen Block „Wofür nutzt du deine Galerie?“ mit 6 Checkboxen nur bei ök2. K2 unverändert (alles auf Kunst). Doku: KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md.
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 
-**Einordnung:** Werbeunterlagen einheitlich lesbar; Stand/QR-Regel eingehalten.
+**Einordnung:** Einstieg ök2/Lizenznehmer: Richtung festlegen → spätere Werke-Defaults/Presse vorbereitet. K2 = Kunst fest, keine zusätzliche UI.
 
 **Nächster Schritt:** Von Georg festlegen.
 

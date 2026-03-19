@@ -159,6 +159,8 @@ export const K2_STAMMDATEN_DEFAULTS = {
     rechnungAddress: '',
     rechnungCity: '',
     rechnungCountry: '',
+    /** Meine Richtung (ök2/Lizenznehmer): Kunst + 5 weitere – für Werke-Defaults und weitere Schritte. */
+    focusDirections: [] as string[],
   },
 }
 
@@ -912,6 +914,37 @@ export function isSubcategoryPlausibleForCategory(categoryId: string | undefined
   if (!CATEGORIES_NO_THEMATIC_SUBCATEGORY.includes(categoryId)) return true
   const hasThematic = THEMATIC_SUBCATEGORY_PHRASES.some((phrase) => sub.includes(phrase))
   return !hasThematic
+}
+
+/**
+ * Richtungen für Stammdaten „Meine Richtung“ (ök2 / Lizenznehmer).
+ * User legt beim Einstieg fest, wofür er die Galerie nutzt → Defaults für Werke und weitere Schritte.
+ * Doku: docs/KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md, docs/MARKTANALYSE-K2-GALERIE.md
+ */
+export const FOCUS_DIRECTIONS = [
+  { id: 'kunst', label: 'Kunst & Galerie' },
+  { id: 'handwerk', label: 'Handwerk & Manufaktur' },
+  { id: 'design', label: 'Design & Möbel' },
+  { id: 'mode', label: 'Mode & Kleinserien' },
+  { id: 'food', label: 'Food & Genuss' },
+  { id: 'dienstleister', label: 'Dienstleister & Portfolio' },
+] as const
+
+export type FocusDirectionId = typeof FOCUS_DIRECTIONS[number]['id']
+
+/** Default entryType für Werke aus gewählter Richtung (erste Richtung entscheidet, sonst artwork). */
+export function getDefaultEntryTypeForFocusDirections(directionIds: string[] | undefined): 'artwork' | 'product' | 'idea' {
+  const first = directionIds?.[0]
+  if (first === 'dienstleister') return 'idea'
+  if (['handwerk', 'design', 'mode', 'food'].includes(first ?? '')) return 'product'
+  return 'artwork'
+}
+
+/** Default-Kategorie für „Neues Werk“ aus gewählter Richtung (erste Richtung). */
+export function getDefaultCategoryForFocusDirections(directionIds: string[] | undefined, entryType: 'artwork' | 'product' | 'idea'): string {
+  if (entryType === 'product') return 'serie'
+  if (entryType === 'idea') return 'konzept'
+  return 'malerei'
 }
 
 /**

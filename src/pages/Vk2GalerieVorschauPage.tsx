@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { initVk2DemoStammdatenIfEmpty, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type Vk2Stammdaten, type Vk2Mitglied } from '../config/tenantConfig'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, ENTDECKEN_ROUTE } from '../config/navigation'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import '../App.css'
@@ -313,6 +313,31 @@ const Vk2GalerieVorschauPage: React.FC = () => {
             })}
           </div>
         )}
+      </div>
+
+      {/* Einladung: Eigene Galerie mit K2 (für Mitglieder & Vorstand) */}
+      <div style={{ padding: '1rem clamp(1.25rem, 5vw, 3rem)', maxWidth: 720, margin: '0 auto' }}>
+        <Link
+          to={ENTDECKEN_ROUTE}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            padding: '0.9rem 1.25rem',
+            background: 'linear-gradient(135deg, rgba(30, 92, 181, 0.06) 0%, rgba(30, 92, 181, 0.1) 100%)',
+            border: `1px solid rgba(30, 92, 181, 0.3)`,
+            borderRadius: 12,
+            textDecoration: 'none',
+            color: 'inherit',
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', color: C.textMid, lineHeight: 1.4 }}>
+            Deine eigene Präsentation? <strong style={{ color: C.text }}>K2 Galerie entdecken</strong>
+          </span>
+          <span style={{ flexShrink: 0, color: C.accent, fontWeight: 600, fontSize: '0.9rem' }}>→</span>
+        </Link>
       </div>
 
       {/* Footer – eiserne Regel: Copyright wie definiert (K2/ök2/VK2) */}

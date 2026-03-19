@@ -29,7 +29,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -2427,7 +2427,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             rechnungAddress: (data.rechnungAddress != null && String(data.rechnungAddress).trim()) ? data.rechnungAddress : ((g as any).rechnungAddress ?? (data as any).rechnungAddress ?? ''),
             rechnungCity: (data.rechnungCity != null && String(data.rechnungCity).trim()) ? data.rechnungCity : ((g as any).rechnungCity ?? (data as any).rechnungCity ?? ''),
             rechnungCountry: (data.rechnungCountry != null && String(data.rechnungCountry).trim()) ? data.rechnungCountry : ((g as any).rechnungCountry ?? (data as any).rechnungCountry ?? ''),
-            soldArtworksDisplayDays: typeof data.soldArtworksDisplayDays === 'number' ? data.soldArtworksDisplayDays : 30
+            soldArtworksDisplayDays: typeof data.soldArtworksDisplayDays === 'number' ? data.soldArtworksDisplayDays : 30,
+            focusDirections: Array.isArray((data as any).focusDirections) ? (data as any).focusDirections : []
           }
         } else {
           mergedGallery = {
@@ -2453,7 +2454,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             welcomeImage: '',
             virtualTourImage: '',
             galerieCardImage: '',
-            internetShopNotSetUp: true
+            internetShopNotSetUp: true,
+            focusDirections: Array.isArray((g as any).focusDirections) ? (g as any).focusDirections : []
           }
         }
         if (isMounted) {
@@ -2482,7 +2484,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               ustIdNr: mergedGallery.ustIdNr ?? '',
               rechnungAddress: mergedGallery.rechnungAddress ?? '',
               rechnungCity: mergedGallery.rechnungCity ?? '',
-              rechnungCountry: mergedGallery.rechnungCountry ?? ''
+              rechnungCountry: mergedGallery.rechnungCountry ?? '',
+              focusDirections: Array.isArray((mergedGallery as any).focusDirections) ? (mergedGallery as any).focusDirections : []
             }
             persistStammdaten('k2', 'gallery', toWrite)
           } catch (_) {}
@@ -2624,7 +2627,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
       name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', iban: '', bic: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
-      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true
+      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [] as string[]
     }
     setMartinaData(emptyPerson1)
     setGeorgData(emptyPerson2)
@@ -12717,8 +12720,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               marginBottom: 'clamp(2rem, 5vw, 3rem)'
             }}>
               <h2 style={{
-                fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-                fontWeight: '700',
+                fontSize: 'clamp(1.25rem, 3vw, 1.5rem)',
+                fontWeight: '600',
                 color: s.text,
                 marginBottom: 'clamp(1.5rem, 4vw, 2rem)',
                 letterSpacing: '-0.01em'
@@ -13268,6 +13271,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </>
                 )}
               </div>
+              {tenant.isOeffentlich && entryTypeFilter === 'idea' && (
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
+                  Was möchtest du präsentieren?
+                </p>
+              )}
               {tenant.isOeffentlich && (
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
                   <strong>Typ</strong> = Art des Eintrags (Kunstwerk, Produkt oder Idee). <strong>Kategorie</strong> = Feinzuordnung dazu (z. B. Serie, Konzept, Malerei).
@@ -14486,7 +14494,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     try {
                       persistStammdaten('oeffentlich', 'martina', martinaMuster, { merge: false })
                       persistStammdaten('oeffentlich', 'georg', georgMuster, { merge: false })
-                      persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery }, { merge: false })
+                      persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery, focusDirections: [] }, { merge: false })
                       setMartinaData(loadStammdaten('oeffentlich', 'martina') as any)
                       setGeorgData(loadStammdaten('oeffentlich', 'georg') as any)
                       setGalleryData(loadStammdaten('oeffentlich', 'gallery') as any)
@@ -15883,6 +15891,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>🏛️ Galerie / Atelier</h4>
+                      {/* Nur ök2: Meine Richtung – wofür nutzt du deine Galerie? K2 = Kunst bereits fest. */}
+                      {tenant.isOeffentlich && (
+                        <div style={{ marginBottom: '1rem' }}>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: s.text }}>Wofür nutzt du deine Galerie? (Mehrfachauswahl)</p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+                            {FOCUS_DIRECTIONS.map(({ id, label }) => {
+                              const selected = Array.isArray(galleryData.focusDirections) && galleryData.focusDirections.includes(id)
+                              return (
+                                <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={!!selected}
+                                    onChange={() => {
+                                      const next = selected ? (galleryData.focusDirections || []).filter((x: string) => x !== id) : [...(galleryData.focusDirections || []), id]
+                                      const nextData = { ...galleryData, focusDirections: next }
+                                      setGalleryData(nextData)
+                                      try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
+                                    }}
+                                    style={{ accentColor: s.accent }}
+                                  />
+                                  {label}
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Name</label>

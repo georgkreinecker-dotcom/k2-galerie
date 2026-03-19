@@ -77,6 +77,7 @@ export function mergeStammdatenGallery(
     welcomeImage: (incoming?.welcomeImage && String(incoming.welcomeImage).trim()) ? incoming.welcomeImage : (e.welcomeImage ?? ''),
     virtualTourImage: (incoming?.virtualTourImage && String(incoming.virtualTourImage).trim()) ? incoming.virtualTourImage : (e.virtualTourImage ?? ''),
     galerieCardImage: (incoming?.galerieCardImage && String(incoming.galerieCardImage).trim()) ? incoming.galerieCardImage : (e.galerieCardImage ?? ''),
+    focusDirections: Array.isArray(incoming?.focusDirections) ? incoming.focusDirections.filter((id: unknown) => typeof id === 'string') : (Array.isArray((e as any)?.focusDirections) ? (e as any).focusDirections : []),
   }
 }
 
@@ -107,6 +108,7 @@ function getEmptyOeffentlich(type: StammdatenType): any {
     welcomeImage: '',
     virtualTourImage: '',
     galerieCardImage: '',
+    focusDirections: [],
   }
 }
 
