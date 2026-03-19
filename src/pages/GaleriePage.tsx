@@ -112,17 +112,26 @@ function getUpcomingEventsOeffentlich(): any[] {
         end.setHours(23, 59, 59, 999)
         return end >= today
       })
-      upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-      return upcoming.slice(0, 5)
+
+      // Wenn es echte kommende Events gibt, nutze die (max 5) wie bisher.
+      if (upcoming.length > 0) {
+        upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        return upcoming.slice(0, 5)
+      }
     }
-    const fromMuster = MUSTER_EVENTS.filter((e: any) => {
+
+    // Fallback: Muster-Event(e) sollen die PR-Dokumente zuverlässig befüllen,
+    // auch wenn die Demo-Event-Daten zeitlich „in der Vergangenheit“ liegen.
+    const musterUpcoming = MUSTER_EVENTS.filter((e: any) => {
       if (!e || !e.date) return false
       const end = e.endDate ? new Date(e.endDate) : new Date(e.date)
       end.setHours(23, 59, 59, 999)
       return end >= today
     })
-    fromMuster.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    return fromMuster.slice(0, 5)
+
+    const result = musterUpcoming.length > 0 ? musterUpcoming : MUSTER_EVENTS
+    result.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    return result.slice(0, 5)
   } catch {
     return MUSTER_EVENTS.slice(0, 5)
   }
