@@ -1620,8 +1620,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   /** Einstellungen: Vita-Bereich Person 1/2 erst auf Klick aufklappen (Handy-freundlich). */
   const [vitaMartinaOpen, setVitaMartinaOpen] = useState(false)
   const [vitaGeorgOpen, setVitaGeorgOpen] = useState(false)
-  /** Einstellungen: Galerie-Adresse (optional) – nur Link zum Öffnen, wird kaum gebraucht. */
-  const [galerieAdresseOpen, setGalerieAdresseOpen] = useState(false)
+  /** Einstellungen: Ausstellungs-Galerie – Adresse bleibt immer sichtbar (wichtige Funktion). */
   /** VK2 Mitglied-Login Modal */
   const [showMitgliedLogin, setShowMitgliedLogin] = useState(false)
   const [mitgliedLoginName, setMitgliedLoginName] = useState('')
@@ -2493,8 +2492,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
         if (isMounted) {
           setGalleryData(mergedGallery)
-          // K2: Galerie-Karte standardmäßig geöffnet, damit der Bereich nicht „leer“ wirkt
-          if (!tenant.isOeffentlich && !tenant.isVk2) setGalerieAdresseOpen(true)
+          // Ausstellungs-Galerie – Adresse ist immer sichtbar, kein Toggle nötig.
         }
         // Nur Kontakt/Name reparieren – niemals welcomeImage, virtualTourImage, Adresse etc. überschreiben. Schicht: saveStammdaten.
         if (data && typeof data === 'object') {
@@ -15561,7 +15559,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                   )}
 
-                  {/* Galerie – optional, nur Link zum Öffnen (wird kaum gebraucht) */}
+                  {/* Ausstellungs-Galerie – Adresse (wichtige Funktion) */}
                   <div style={{
                     background: s.bgCard,
                     border: `1px solid ${s.accent}22`,
@@ -15569,27 +15567,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     borderRadius: '16px',
                     boxShadow: s.shadow
                   }}>
-                    {!galerieAdresseOpen ? (
-                      <button
-                        type="button"
-                        onClick={() => setGalerieAdresseOpen(true)}
-                        style={{
-                          margin: 0,
-                          padding: 0,
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          fontSize: 'clamp(1rem, 2.5vw, 1.15rem)',
-                          fontWeight: '600',
-                          color: s.accent,
-                          textAlign: 'left',
-                          textDecoration: 'underline'
-                        }}
-                      >
-                        Ausstellungs-Galerie – Adresse (bei Bedarf öffnen)
-                      </button>
-                    ) : (
-                      <>
+                    <>
                     <h3 style={{
                       marginTop: 0,
                       marginBottom: '0.5rem',
@@ -15792,9 +15770,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <Link to={AGB_ROUTE} target="_blank" rel="noopener noreferrer" style={{ color: s.accent, textDecoration: 'underline', fontSize: '0.9rem' }}>AGB-Seite im Volltext anzeigen →</Link>
                       </div>
                     </div>
-                    <button type="button" onClick={() => setGalerieAdresseOpen(false)} style={{ marginTop: '0.75rem', padding: '0.35rem 0.75rem', background: 'none', border: `1px solid ${s.accent}44`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}>Adresse zuklappen</button>
                       </>
-                    )}
                   </div>
                 </div>
 
