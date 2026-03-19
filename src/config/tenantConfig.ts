@@ -947,6 +947,23 @@ export function getDefaultCategoryForFocusDirections(directionIds: string[] | un
   return 'malerei'
 }
 
+/** Default Willkommenstext (Intro) je Richtung – für Galerie gestalten (ök2). Eine Quelle für Platzhalter/Vorschlag. */
+export const FOCUS_DIRECTION_WELCOME_INTRO: Record<string, string> = {
+  kunst: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
+  handwerk: 'Willkommen in meiner Werkstatt. Hier entstehen Unikate und Kleinserien mit Hand und Herz.',
+  design: 'Willkommen in meinem Showroom. Design und Handwerk – Möbel, Leuchten und Objekte mit Charakter.',
+  mode: 'Willkommen in meiner Welt. Kollektionen und Kleinserien – Mode mit Seele.',
+  food: 'Willkommen bei Genuss von hier. Manufaktur und Direktvermarktung – ehrliche Produkte mit Geschichte.',
+  dienstleister: 'Willkommen in meinem Portfolio. Referenzen, Projekte und Ideen – wofür ich stehe.',
+}
+
+/** Liefert den passenden Intro-Vorschlag für die gewählte Richtung (erste Richtung). Für ök2 Galerie gestalten. */
+export function getWelcomeIntroForFocusDirections(directionIds: string[] | undefined): string {
+  const first = directionIds?.[0]
+  if (first && first in FOCUS_DIRECTION_WELCOME_INTRO) return FOCUS_DIRECTION_WELCOME_INTRO[first]
+  return FOCUS_DIRECTION_WELCOME_INTRO.kunst
+}
+
 /**
  * Werktypen (Vision: Werke = Oberbegriff, Kunstwerk = Unterkategorie).
  * Ein Modell, eine Liste – Typ als Feld, konfigurierbar. Kunst = Träger der Idee; ganzer Markt hat Platz.

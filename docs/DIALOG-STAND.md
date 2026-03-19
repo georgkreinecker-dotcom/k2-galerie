@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2: Typ und Kategorie aus Stammdaten-Richtung.** Wenn in Stammdaten „Meine Richtung“ gespeichert ist: In **Werke verwalten** passen sich Filter (Typ/Kategorie) und beim **Neues Werk** die Vorausfüllung (Typ/Kategorie) automatisch an. Zwei useEffects in ScreenshotExportAdmin; Hilfsfunktionen getDefaultEntryTypeForFocusDirections / getDefaultCategoryForFocusDirections aus tenantConfig.
+**Letzter Stand:** 19.03.26 – **ök2: Willkommenstext/Intro je Sparte.** In **Galerie gestalten** (Design) ist der Platzhalter/Vorschlag für den Intro-Text abhängig von der gespeicherten Richtung: Kunst, Handwerk, Design, Mode, Food, Dienstleister – je ein passender Satz (tenantConfig FOCUS_DIRECTION_WELCOME_INTRO, getWelcomeIntroForFocusDirections). Zwei Stellen in ScreenshotExportAdmin (Design-Vorschau + Vorschau Kundengröße).
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 
-**Einordnung:** Stammdaten-Richtung (ök2) → Werke-Defaults sichtbar: Filter und Neues-Werk-Modal nutzen die gespeicherte Richtung. K2 unverändert.
+**Einordnung:** Sparten Schritt für Schritt: Richtung → Werke (Typ/Kategorie) ✅, jetzt Willkommenstext ✅; danach optional Presse/Events, Begriffe.
 
 **Nächster Schritt:** Von Georg festlegen.
 
