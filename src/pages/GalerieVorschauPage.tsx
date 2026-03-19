@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -19,6 +19,7 @@ import { prepareArtworksForStorage, isStaticFallbackAllowed, imageUrlWithCacheBu
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -269,6 +270,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [artworks, setArtworks] = useState<any[]>(initialArtworks)
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
+  /** ök2: Sparte aus Stammdaten (eine) – für Kategorie-Dropdown und entryType beim mobilen Neues Werk; oben wegen useMemo categoriesWithArtworks */
+  const [oeffentlichFocusDirection, setOeffentlichFocusDirection] = useState<string>('food')
 
   /** K2: Anzeige-Liste = Hauptliste + Pending (neu gespeicherte Werke bleiben sichtbar, auch wenn etwas überschreibt). */
   const setArtworksDisplay = useCallback((list: any[]) => {
@@ -280,12 +283,24 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     setArtworks(mergeWithPending(list))
   }, [musterOnly, vk2])
 
-  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab) */
+  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab). ök2: Reihenfolge nach Stammdaten-Sparte. */
   const categoriesWithArtworks = useMemo(() => {
     const list = artworks?.length ? artworks : (initialArtworks?.length ? initialArtworks : [])
     const ids = new Set(list.map((a: any) => a.category).filter(Boolean) as string[])
-    return Array.from(ids).map((id) => ({ id, label: getCategoryLabel(id) }))
-  }, [artworks, initialArtworks])
+    const arr = Array.from(ids).map((id) => ({ id, label: getCategoryLabel(id) }))
+    if (musterOnly && oeffentlichFocusDirection) {
+      const order = getCategoriesForDirection(oeffentlichFocusDirection)
+      return arr.slice().sort((a, b) => {
+        const i = order.findIndex((c) => c.id === a.id)
+        const j = order.findIndex((c) => c.id === b.id)
+        if (i === -1 && j === -1) return 0
+        if (i === -1) return 1
+        if (j === -1) return -1
+        return i - j
+      })
+    }
+    return arr
+  }, [artworks, initialArtworks, musterOnly, oeffentlichFocusDirection])
 
   // Filter auf "alle" zurücksetzen, wenn gewählte Kategorie keine Werke mehr hat
   useEffect(() => {
@@ -381,6 +396,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       setArtworks(oef === null ? [...MUSTER_ARTWORKS] : oef)
     }
   }, [musterOnly, vk2])
+
+  // ök2: Sparte aus Stammdaten laden (eine) – für Kategorie-Dropdown und entryType beim mobilen Neues Werk
+  useEffect(() => {
+    if (!musterOnly) return
+    try {
+      const g = loadStammdaten('oeffentlich', 'gallery') as { focusDirections?: string[] } | null
+      const fd = Array.isArray(g?.focusDirections) ? g.focusDirections : []
+      if (fd.length > 0) setOeffentlichFocusDirection(fd[0])
+    } catch (_) {}
+  }, [musterOnly])
 
   // K2: Direkt nach Mount einmal aus localStorage + IndexedDB (aufgelöste Bilder) + Pending nachziehen
   useEffect(() => {
@@ -709,17 +734,28 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     console.log('✅ Modal geöffnet im Bearbeitungs-Modus, editingArtwork:', artworkToEdit.number || artworkToEdit.id)
   }
   
-  // Öffne Modal für neues Objekt – letzte Kategorie beibehalten (nicht Standard „Bild“)
+  // Öffne Modal für neues Objekt – letzte Kategorie beibehalten (nicht Standard „Bild“); ök2: Kategorien aus Stammdaten-Sparte
   const openNewModal = () => {
     setEditingArtwork(null)
     setIsEditingMode(false) // Explizit auf "Neues Objekt" Modus setzen
     setMobilePhoto(null)
     setMobileTitle('')
-    try {
-      const last = localStorage.getItem('k2-last-artwork-category')
-      setMobileCategory(last && ARTWORK_CATEGORIES.some((c) => c.id === last) ? (last as ArtworkCategoryId) : 'malerei')
-    } catch (_) {
-      setMobileCategory('malerei')
+    if (musterOnly) {
+      const cats = getCategoriesForDirection(oeffentlichFocusDirection)
+      try {
+        const last = localStorage.getItem('k2-last-artwork-category')
+        const ok = last && cats.some((c) => c.id === last)
+        setMobileCategory((ok ? last : (cats[0]?.id ?? 'malerei')) as ArtworkCategoryId)
+      } catch (_) {
+        setMobileCategory((cats[0]?.id ?? 'malerei') as ArtworkCategoryId)
+      }
+    } else {
+      try {
+        const last = localStorage.getItem('k2-last-artwork-category')
+        setMobileCategory(last && ARTWORK_CATEGORIES.some((c) => c.id === last) ? (last as ArtworkCategoryId) : 'malerei')
+      } catch (_) {
+        setMobileCategory('malerei')
+      }
     }
     setMobilePrice('')
     setMobileDescription('')
@@ -2426,7 +2462,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 marginTop: '1rem',
                 color: galerieTheme.muted
               }}>
-                Füge im Admin-Bereich neue Werke hinzu und markiere sie als "Teil der Ausstellung".
+                {musterOnly ? 'Deine Sparte steht in den Stammdaten (Meine Richtung). Hier siehst du nur Werke dieser Sparte. Füge im Admin neue Werke hinzu und markiere sie als "Teil der Ausstellung".' : 'Füge im Admin-Bereich neue Werke hinzu und markiere sie als "Teil der Ausstellung".'}
               </p>
             </div>
           ) : (
@@ -3454,7 +3490,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   setIsEditingMode(false)
                   setMobilePhoto(null)
                   setMobileTitle('')
-                  setMobileCategory('malerei')
+                  setMobileCategory(musterOnly && getCategoriesForDirection(oeffentlichFocusDirection).length > 0 ? (getCategoriesForDirection(oeffentlichFocusDirection)[0].id as ArtworkCategoryId) : 'malerei')
                   setMobilePrice('')
                   setMobileDescription('')
                   setMobileLocationType('')
@@ -3539,6 +3575,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#fff', fontWeight: '600' }}>
                 Kategorie *
               </label>
+              {musterOnly ? (
+                <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Deine Sparte kommt aus den Stammdaten.</p>
+              ) : null}
               <select
                 value={mobileCategory}
                 onChange={(e) => setMobileCategory(e.target.value as ArtworkCategoryId)}
@@ -3552,7 +3591,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   fontSize: '1rem'
                 }}
               >
-                {ARTWORK_CATEGORIES.map((c) => (
+                {(musterOnly ? getCategoriesForDirection(oeffentlichFocusDirection) : ARTWORK_CATEGORIES).map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
               </select>
@@ -3933,8 +3972,9 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   } else {
                     // NEU: Erstelle neues Objekt – Basis immer aus localStorage (State kann auf Handy nur Teilmenge sein)
                     const currentFromStorageForNew = loadArtworks()
-                    // WICHTIG: Finde maximale Nummer aus ALLEN Werken der GLEICHEN Kategorie (localStorage + ggf. Supabase)
-                    const prefix = getCategoryPrefixLetter(mobileCategory)
+                    // WICHTIG: Finde maximale Nummer aus ALLEN Werken der GLEICHEN Kategorie (localStorage + ggf. Supabase). ök2: entryType aus Sparte für P/I.
+                    const entryTypeForNew = musterOnly ? getEntryTypeForDirection(oeffentlichFocusDirection) : 'artwork'
+                    const prefix = getCategoryPrefixLetter(mobileCategory, entryTypeForNew)
                     const categoryPrefix = `K2-${prefix}-`
                     
                     let maxNumber = 0
@@ -4018,7 +4058,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                       number: newNumber,
                       title: mobileTitle,
                       category: mobileCategory,
-                      entryType: 'artwork' as const, // Vision: Werke = Oberbegriff; mobil immer Kunstwerk
+                      entryType: (musterOnly ? getEntryTypeForDirection(oeffentlichFocusDirection) : 'artwork') as 'artwork' | 'product' | 'idea', // ök2: aus Stammdaten-Sparte
                       imageUrl: mobilePhoto || PLACEHOLDER_KEIN_BILD,
                       price: mobilePrice ? parseFloat(mobilePrice) : undefined,
                       description: mobileDescription || undefined,
@@ -4198,7 +4238,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   setIsEditingMode(false)
                   setMobilePhoto(null)
                   setMobileTitle('')
-                  setMobileCategory('malerei')
+                  setMobileCategory(musterOnly && getCategoriesForDirection(oeffentlichFocusDirection).length > 0 ? (getCategoriesForDirection(oeffentlichFocusDirection)[0].id as ArtworkCategoryId) : 'malerei')
                   setMobilePrice('')
                   setMobileDescription('')
                   setMobileLocationType('')

@@ -29,7 +29,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getDefaultCategoryForFocusDirections, getWelcomeIntroForFocusDirections, type TenantId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getDefaultCategoryForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
@@ -1719,6 +1719,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
   /** ök2: Erste Kategorisierung in der Filter-Leiste – Typ (Kunstwerk/Produkt/Idee) zuerst, dann Kategorie */
   const [entryTypeFilter, setEntryTypeFilter] = useState<'alle' | EntryTypeId>('alle')
+  /** ök2: Im Neues-Werk/Bearbeiten-Modal gewählte Sparte (Richtung) – Typ = Sparte aus Stammdaten, Kategorie darunter wählbar */
+  const [artworkDirection, setArtworkDirection] = useState<string>('food')
   const [showCameraView, setShowCameraView] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
@@ -2304,8 +2306,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     try {
       const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
       const g = (K2_STAMMDATEN_DEFAULTS.gallery as any) || {}
+      const rawFd = data && typeof data === 'object' && Array.isArray((data as any).focusDirections) ? (data as any).focusDirections : []
       const merged = data && typeof data === 'object'
-        ? { ...g, ...data, focusDirections: Array.isArray((data as any).focusDirections) ? (data as any).focusDirections : [] }
+        ? { ...g, ...data, focusDirections: rawFd.length > 0 ? [rawFd[0]] : [] }
         : { ...g, focusDirections: [] }
       setGalleryData(merged)
     } catch (_) {}
@@ -2318,9 +2321,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
       if (data && typeof data === 'object' && Array.isArray((data as any).focusDirections)) {
         const fd = (data as any).focusDirections
+        const one = fd.length > 0 ? [fd[0]] : []
         setGalleryData((prev: any) => {
-          if (prev && JSON.stringify(prev.focusDirections) === JSON.stringify(fd)) return prev
-          return { ...(prev || {}), ...data, focusDirections: fd }
+          if (prev && JSON.stringify(prev.focusDirections) === JSON.stringify(one)) return prev
+          return { ...(prev || {}), ...data, focusDirections: one }
         })
       }
     } catch (_) {}
@@ -2483,7 +2487,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             virtualTourImage: '',
             galerieCardImage: '',
             internetShopNotSetUp: true,
-            focusDirections: Array.isArray((g as any).focusDirections) ? (g as any).focusDirections : []
+            focusDirections: (() => { const fd = Array.isArray((g as any).focusDirections) ? (g as any).focusDirections : []; return fd.length > 0 ? [fd[0]] : []; })()
           }
         }
         if (isMounted) {
@@ -3345,15 +3349,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setCategoryFilter(cat)
   }, [tenant.isOeffentlich, galleryData?.focusDirections])
 
-  // ök2: Beim Öffnen „Neues Werk“ Typ und Kategorie aus gespeicherter Richtung vorausfüllen.
+  // ök2: Beim Öffnen „Neues Werk“ Sparte (Typ) und Kategorie aus gespeicherter Richtung vorausfüllen.
   useEffect(() => {
     if (!showAddModal || editingArtwork || !tenant.isOeffentlich) return
     const dirs = galleryData?.focusDirections
-    if (!Array.isArray(dirs) || dirs.length === 0) return
-    const typ = getDefaultEntryTypeForFocusDirections(dirs)
-    const cat = getDefaultCategoryForFocusDirections(dirs, typ)
-    setArtworkEntryType(typ)
-    setArtworkCategory(cat)
+    const dir = Array.isArray(dirs) && dirs.length > 0 ? dirs[0] : 'food'
+    setArtworkDirection(dir)
+    setArtworkEntryType(getEntryTypeForDirection(dir))
+    const cats = getCategoriesForDirection(dir)
+    setArtworkCategory(cats[0]?.id ?? 'malerei')
   }, [showAddModal, editingArtwork, tenant.isOeffentlich, galleryData?.focusDirections])
 
   /** In Cursor Preview (iframe) keine schweren Base64-Bilder im State halten → weniger Speicher, weniger Code-5-Crashes */
@@ -9002,7 +9006,7 @@ ${'='.repeat(60)}
       number: finalArtworkNumber,
       title: (finalTitle || '').trim(),
       category: artworkCategory,
-      entryType: (artworkEntryType || editingArtwork?.entryType || 'artwork') as EntryTypeId,
+      entryType: (tenant.isOeffentlich ? getEntryTypeForDirection(artworkDirection) : (artworkEntryType || editingArtwork?.entryType || 'artwork')) as EntryTypeId,
       artist: artworkArtist,
       description: artworkDescription,
       technik: artworkTechnik.trim() || undefined,
@@ -12797,7 +12801,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         setEditingArtwork(null)
                         if (tenant.isOeffentlich) {
                           setArtworkEntryType('product')
-                          const productCats = getCategoriesForEntryType('product')
+                          const productCats = tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('product', galleryData.focusDirections) : getCategoriesForEntryType('product')
                           setArtworkCategory(productCats[0]?.id ?? 'serie')
                         } else {
                           setArtworkEntryType('artwork')
@@ -13264,37 +13268,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </label>
                 {!tenant.isVk2 && (
                 <>
-                  {tenant.isOeffentlich && (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Typ</span>
-                      <select
-                        value={entryTypeFilter}
-                        onChange={(e) => {
-                          const v = e.target.value as 'alle' | EntryTypeId
-                          setEntryTypeFilter(v)
-                          if (v !== 'alle') {
-                            const cats = getCategoriesForEntryType(v)
-                            if (!cats.some((c: { id: string }) => c.id === categoryFilter)) setCategoryFilter('alle')
-                          }
-                        }}
-                        style={{
-                          padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 1.5rem)',
-                          background: s.bgCard,
-                          border: `1px solid ${s.accent}33`,
-                          borderRadius: s.radius,
-                          fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
-                          color: s.text,
-                          outline: 'none',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
-                        {ENTRY_TYPES.map((t) => (
-                          <option key={t.id} value={t.id} style={{ background: s.bgCard, color: s.text }}>{t.label}</option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
+                {tenant.isOeffentlich && galleryData?.focusDirections?.[0] && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Typ</span>
+                    <span style={{
+                      padding: 'clamp(0.75rem, 2vw, 1rem) clamp(1.25rem, 3vw, 1.5rem)',
+                      background: s.bgElevated,
+                      border: `1px solid ${s.accent}33`,
+                      borderRadius: s.radius,
+                      fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)',
+                      color: s.text
+                    }}>
+                      {FOCUS_DIRECTIONS.find((d) => d.id === galleryData.focusDirections[0])?.label ?? galleryData.focusDirections[0]}
+                    </span>
+                  </label>
+                )}
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span style={{ fontSize: 'clamp(0.9rem, 2.2vw, 1rem)', color: s.muted, whiteSpace: 'nowrap' }}>Kategorie</span>
                   <select 
@@ -13312,33 +13300,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     <option value="alle" style={{ background: s.bgCard, color: s.text }}>Alle</option>
-                    {tenant.isOeffentlich && entryTypeFilter !== 'alle'
-                      ? getCategoriesForEntryType(entryTypeFilter).map((c) => (
+                    {tenant.isOeffentlich
+                      ? getCategoriesForDirection(galleryData?.focusDirections?.[0]).map((c) => (
                           <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
                         ))
-                      : tenant.isOeffentlich
-                        ? (() => {
-                            const ids = Array.from(new Set(allArtworks.map((a: any) => a?.category).filter(Boolean)))
-                            return ids.map((id) => ({ id, label: getCategoryLabel(id) })).map((c) => (
-                              <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
-                            ))
-                          })()
-                        : ARTWORK_CATEGORIES.map((c) => (
-                            <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
-                          ))}
+                      : ARTWORK_CATEGORIES.map((c) => (
+                          <option key={c.id} value={c.id} style={{ background: s.bgCard, color: s.text }}>{c.label}</option>
+                        ))}
                   </select>
                 </label>
                 </>
                 )}
               </div>
-              {tenant.isOeffentlich && entryTypeFilter === 'idea' && (
+              {tenant.isOeffentlich && galleryData?.focusDirections?.[0] === 'dienstleister' && (
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
                   Was möchtest du präsentieren?
                 </p>
               )}
               {tenant.isOeffentlich && (
                 <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: s.text, lineHeight: 1.45, fontWeight: 500 }}>
-                  <strong>Typ</strong> = Art des Eintrags (Kunstwerk, Produkt oder Idee). <strong>Kategorie</strong> = Feinzuordnung dazu (z. B. Serie, Konzept, Malerei).
+                  Deine Sparte kommt aus den Stammdaten. <strong>Kategorie</strong> = Feinzuordnung (z. B. Speise, Getränk, Malerei).
                 </p>
               )}
               {!tenant.isVk2 && selectedForBatchPrint.size > 0 && (() => {
@@ -13503,9 +13484,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 const filtered = sortArtworksNewestFirst(
                   allArtworks.filter((artwork) => {
                     if (!artwork) return false
-                    if (tenant.isOeffentlich && entryTypeFilter !== 'alle') {
-                      const et = (artwork.entryType && ENTRY_TYPES.some((t) => t.id === artwork.entryType)) ? artwork.entryType : 'artwork'
-                      if (et !== entryTypeFilter) return false
+                    if (tenant.isOeffentlich && galleryData?.focusDirections?.[0]) {
+                      if (getEffectiveDirectionFromWork(artwork) !== galleryData.focusDirections[0]) return false
                     }
                     if (categoryFilter !== 'alle' && artwork.category !== categoryFilter) return false
                     if (searchQuery && !artwork.title?.toLowerCase().includes(searchQuery.toLowerCase()) && 
@@ -13515,16 +13495,24 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )
 
                 if (filtered.length === 0) {
-                  const previewTyp = tenant.isOeffentlich ? (entryTypeFilter === 'alle' ? 'artwork' : entryTypeFilter) : (artworkEntryType || 'artwork')
+                  const fixedDir = tenant.isOeffentlich ? (galleryData?.focusDirections?.[0] ?? 'food') : null
                   const previewCategory = tenant.isOeffentlich
-                    ? (categoryFilter === 'alle' ? (getCategoriesForEntryType(previewTyp)[0]?.id ?? '') : categoryFilter)
+                    ? (categoryFilter === 'alle' ? (getCategoriesForDirection(fixedDir)[0]?.id ?? '') : categoryFilter)
                     : (artworkCategory || (ARTWORK_CATEGORIES[0]?.id ?? ''))
+                  const previewTypLabel = tenant.isOeffentlich && fixedDir
+                    ? (FOCUS_DIRECTIONS.find((d) => d.id === fixedDir)?.label ?? 'Kunst & Galerie')
+                    : getEntryTypeLabel(artworkEntryType || 'artwork')
                   return (
                     <>
                       <div style={{ gridColumn: '1 / -1', marginBottom: '0.5rem' }}>
                         <p style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: s.text, margin: 0 }}>
                           Noch keine Werke vorhanden. So wird eine Karte mit deiner Auswahl aussehen:
                         </p>
+                        {tenant.isOeffentlich && (
+                          <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', marginTop: '0.35rem', color: s.muted }}>
+                            Deine Sparte steht in den Stammdaten (Meine Richtung). Hier siehst du nur Werke dieser Sparte.
+                          </p>
+                        )}
                         <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', marginTop: '0.35rem', color: s.muted }}>
                           Klicke auf „+ Neues Werk“, um ein Werk anzulegen.
                         </p>
@@ -13541,7 +13529,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       >
                         <div style={{ position: 'relative', width: '100%', marginBottom: 'clamp(0.75rem, 2vw, 1rem)', background: '#e8e6e2', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 'clamp(180px, 30vw, 220px)', color: s.muted, fontSize: 'clamp(0.9rem, 2.5vw, 1rem)' }}>
                           <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500 }}>
-                            {getEntryTypeLabel(previewTyp)}
+                            {previewTypLabel}
                           </span>
                           Vorschau
                         </div>
@@ -13637,7 +13625,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             target.onerror = null
                           }}
                         />
-                        {/* Typ-Badge (Kunstwerk / Produkt / Idee) – wie auf Galerie-Karten */}
+                        {/* Typ-Badge: ök2 = Sparte (Richtung), sonst Kunstwerk/Produkt/Idee */}
                         <div style={{
                           position: 'absolute',
                           top: '0.5rem',
@@ -13653,7 +13641,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           zIndex: 2,
                           boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)'
                         }}>
-                          {getEntryTypeLabel(artwork.entryType)}
+                          {tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </div>
                         {/* Nummer als Overlay auf dem Bild */}
                         {artwork.number && (
@@ -13692,7 +13680,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         fontSize: 'clamp(2rem, 5vw, 3rem)'
                       }}>
                         <span style={{ position: 'absolute', top: '0.5rem', left: '0.5rem', background: 'rgba(0,0,0,0.65)', color: '#fff', padding: '0.2rem 0.45rem', borderRadius: 6, fontSize: 'clamp(0.65rem, 1.8vw, 0.78rem)', fontWeight: 500, zIndex: 2 }}>
-                          {getEntryTypeLabel(artwork.entryType)}
+                          {tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)) : getEntryTypeLabel(artwork.entryType)}
                         </span>
                         🖼️
                       </div>
@@ -13705,12 +13693,23 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}>
                       {artwork.title || artwork.number}
                     </h3>
+                    {tenant.isOeffentlich && (
+                      <p style={{ margin: '0.2rem 0', fontSize: 'clamp(0.8rem, 2.2vw, 0.9rem)', color: s.muted }}>
+                        <span style={{ fontWeight: 600, color: s.text }}>Typ:</span> {FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(artwork))?.label ?? getEntryTypeLabel(artwork.entryType)}
+                      </p>
+                    )}
                     <p style={{
                       margin: '0.25rem 0',
                       fontSize: 'clamp(0.9rem, 2.5vw, 1rem)',
                       color: s.muted
                     }}>
-                      {getCategoryLabel(artwork.category)}
+                      {tenant.isOeffentlich ? (
+                        <>
+                          <span style={{ fontWeight: 600, color: s.text }}>Kategorie:</span> {getCategoryLabel(artwork.category)}
+                        </>
+                      ) : (
+                        getCategoryLabel(artwork.category)
+                      )}
                     </p>
                     {artwork.artist && (
                       <p style={{ 
@@ -13817,9 +13816,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           if (tenant.isOeffentlich) {
                             setArtworkTitle(artwork.title || '')
-                            const oek2EntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
-                            setArtworkEntryType(oek2EntryType)
-                            const oek2Cats = getCategoriesForEntryType(oek2EntryType)
+                            const dir = getEffectiveDirectionFromWork(artwork)
+                            setArtworkDirection(dir)
+                            setArtworkEntryType(getEntryTypeForDirection(dir))
+                            const oek2Cats = getCategoriesForDirection(dir)
                             setArtworkCategory(oek2Cats.some((c) => c.id === artwork.category) ? (artwork.category || oek2Cats[0].id) : oek2Cats[0].id)
                             setArtworkSubcategoryFree(artwork.subcategoryFree || artwork.ceramicSubcategory || '')
                             setArtworkDimensionsFree(artwork.dimensionsFree || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth} × ${artwork.paintingHeight} cm` : '') || '')
@@ -13846,7 +13846,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           
                           const editEntryType = ENTRY_TYPES.some((t) => t.id === artwork.entryType) ? (artwork.entryType as EntryTypeId) : 'artwork'
                           setArtworkEntryType(editEntryType)
-                          const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(editEntryType)
+                          const editCats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection(editEntryType, galleryData.focusDirections) : getCategoriesForEntryType(editEntryType))
                           const category = editCats.some((c) => c.id === artwork.category) ? (artwork.category || editCats[0].id) : editCats[0].id
                           setArtworkCategory(category)
                           if (!tenant.isVk2 && category === 'keramik') {
@@ -15623,21 +15623,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
-                    {/* Nur ök2: Meine Richtung – hier sichtbar im Stammdaten-Tab (K2 sieht diesen Block nicht). */}
+                    {/* Nur ök2: Meine Richtung – eine Sparte, fix aus Stammdaten (kommt in Werke verwalten automatisch). */}
                     {tenant.isOeffentlich && (
                       <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
-                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Wofür nutzt du deine Galerie? (Mehrfachauswahl)</p>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Wofür nutzt du deine Galerie?</p>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Eine Sparte – Typ und Kategorien in „Werke verwalten“ kommen daraus.</p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
                           {FOCUS_DIRECTIONS.map(({ id, label }) => {
-                            const selected = Array.isArray(galleryData.focusDirections) && galleryData.focusDirections.includes(id)
+                            const selected = Array.isArray(galleryData.focusDirections) && galleryData.focusDirections[0] === id
                             return (
                               <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
                                 <input
-                                  type="checkbox"
+                                  type="radio"
+                                  name="focusDirection"
                                   checked={!!selected}
                                   onChange={() => {
-                                    const next = selected ? (galleryData.focusDirections || []).filter((x: string) => x !== id) : [...(galleryData.focusDirections || []), id]
-                                    const nextData = { ...galleryData, focusDirections: next }
+                                    const nextData = { ...galleryData, focusDirections: [id] }
                                     setGalleryData(nextData)
                                     try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
                                   }}
@@ -20722,7 +20723,7 @@ ${name}`
             setArtworkEntryType('artwork')
             try {
               const last = localStorage.getItem('k2-last-artwork-category')
-              const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType('artwork')
+              const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
               if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
             } catch (_) {}
             setArtworkCeramicSubcategory('vase')
@@ -21590,6 +21591,18 @@ ${name}`
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Titel *</label>
                     <input type="text" value={artworkTitle} onChange={(e) => setArtworkTitle(e.target.value)} placeholder="z.B. Frühlingslandschaft" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
                   </div>
+                  {tenant.isOeffentlich ? (
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
+                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)' }}>Deine Sparte (z. B. Food & Genuss) kommt aus den Stammdaten.</p>
+                      <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                        {getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? 'food').map((c) => (
+                          <option key={c.id} value={c.id}>{c.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                     <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
@@ -21606,6 +21619,8 @@ ${name}`
                       ))}
                     </select>
                   </div>
+                    </>
+                  )}
                   {/* Vorschaufenster: So erscheint die Karte mit aktueller Auswahl */}
                   <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginBottom: '0.5rem' }}>Vorschau Karte</div>
@@ -21614,7 +21629,7 @@ ${name}`
                     )}
                     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
                       <div style={{ width: 100, minWidth: 100, height: 100, background: 'rgba(255,255,255,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.7rem', position: 'relative' }}>
-                        <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{getEntryTypeLabel(artworkEntryType)}</span>
+                        <span style={{ position: 'absolute', top: 4, left: 4, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '2px 6px', borderRadius: 4, fontSize: '0.65rem' }}>{tenant.isOeffentlich ? (FOCUS_DIRECTIONS.find((d) => d.id === artworkDirection)?.label ?? getEntryTypeLabel(artworkEntryType)) : getEntryTypeLabel(artworkEntryType)}</span>
                         Bild
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -21776,19 +21791,30 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType)).map((c) => (
+                    {(tenant.isOeffentlich ? getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? 'food') : (tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType))).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
               <div style={{ marginTop: '0.5rem' }}>
-                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Typ</label>
-                <select value={artworkEntryType} onChange={(e) => { const newType = e.target.value as EntryTypeId; setArtworkEntryType(newType); const cats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(newType); if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei') }} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                  {ENTRY_TYPES.map((t) => (
-                    <option key={t.id} value={t.id}>{t.label}</option>
-                  ))}
-                </select>
+                <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>{tenant.isOeffentlich ? 'Typ (Sparte)' : 'Typ'}</label>
+                {tenant.isOeffentlich ? (
+                  <span style={{ display: 'inline-block', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem' }}>
+                    {FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? 'food'))?.label ?? 'Kunst & Galerie'}
+                  </span>
+                ) : (
+                  <select value={artworkEntryType} onChange={(e) => {
+                    const newType = e.target.value as EntryTypeId
+                    setArtworkEntryType(newType)
+                    const cats = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(newType)
+                    if (!cats.some((c: { id: string }) => c.id === artworkCategory)) setArtworkCategory(cats[0]?.id ?? 'malerei')
+                  }} style={{ width: '100%', maxWidth: '180px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
+                    {ENTRY_TYPES.map((t) => (
+                      <option key={t.id} value={t.id}>{t.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               {/* Keramik-Unterkategorie (nur K2, nicht VK2) */}
               {!tenant.isVk2 && artworkCategory === 'keramik' && (
@@ -22225,7 +22251,7 @@ ${name}`
                     setArtworkTitle('')
                     try {
                       const last = localStorage.getItem('k2-last-artwork-category')
-                      const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType('artwork')
+                      const catsForArtwork = tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : (tenant.isOeffentlich && galleryData?.focusDirections?.length ? getCategoriesForEntryTypeAndDirection('artwork', galleryData.focusDirections) : getCategoriesForEntryType('artwork'))
                       if (last && catsForArtwork.some((c: { id: string }) => c.id === last)) setArtworkCategory(last)
                     } catch (_) {}
                     setArtworkCeramicSubcategory('vase')

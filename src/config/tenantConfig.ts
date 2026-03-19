@@ -932,18 +932,93 @@ export const FOCUS_DIRECTIONS = [
 
 export type FocusDirectionId = typeof FOCUS_DIRECTIONS[number]['id']
 
-/** Default entryType für Werke aus gewählter Richtung (erste Richtung entscheidet, sonst artwork). */
-export function getDefaultEntryTypeForFocusDirections(directionIds: string[] | undefined): 'artwork' | 'product' | 'idea' {
-  const first = directionIds?.[0]
-  if (first === 'dienstleister') return 'idea'
-  if (['handwerk', 'design', 'mode', 'food'].includes(first ?? '')) return 'product'
+/** Kategorien je Richtung (ök2) – Typ/Kategorie-Dropdowns und Neues Werk. Erste Richtung entscheidet. */
+export const FOCUS_DIRECTION_PRODUCT_CATEGORIES: Record<string, readonly { id: string; label: string }[]> = {
+  food: [
+    { id: 'speise', label: 'Speise' },
+    { id: 'getraenk', label: 'Getränk' },
+    { id: 'manufaktur', label: 'Manufaktur' },
+    { id: 'direktvermarktung', label: 'Direktvermarktung' },
+    { id: 'sonstiges_produkt', label: 'Sonstiges' },
+  ],
+  handwerk: [
+    { id: 'moebel', label: 'Möbel' },
+    { id: 'schmuck', label: 'Schmuck' },
+    { id: 'textil', label: 'Textil' },
+    { id: 'keramik_gebrauch', label: 'Keramik (Gebrauch)' },
+    { id: 'sonstiges_produkt', label: 'Sonstiges' },
+  ],
+  design: [
+    { id: 'moebel', label: 'Möbel' },
+    { id: 'leuchten', label: 'Leuchten' },
+    { id: 'accessoires', label: 'Accessoires' },
+    { id: 'sonstiges_produkt', label: 'Sonstiges' },
+  ],
+  mode: [
+    { id: 'kollektion', label: 'Kollektion' },
+    { id: 'kleinserie', label: 'Kleinserie' },
+    { id: 'accessoires', label: 'Accessoires' },
+    { id: 'sonstiges_produkt', label: 'Sonstiges' },
+  ],
+}
+
+/** Kategorien für eine Sparte (Richtung) – für ök2 „Typ = Sparte, Kategorie = Feinzuordnung“. Eine Quelle. */
+export function getCategoriesForDirection(directionId: string | undefined): readonly { id: string; label: string }[] {
+  if (!directionId) return ARTWORK_CATEGORIES
+  if (directionId === 'kunst') return ARTWORK_CATEGORIES
+  if (directionId === 'dienstleister') return IDEA_CATEGORIES
+  if (directionId in FOCUS_DIRECTION_PRODUCT_CATEGORIES) return FOCUS_DIRECTION_PRODUCT_CATEGORIES[directionId]
+  return ARTWORK_CATEGORIES
+}
+
+/** Ermittelt die Sparte (Richtung) eines Werks aus entryType + category – für Filter und Anzeige in ök2. */
+export function getEffectiveDirectionFromWork(work: { entryType?: string; category?: string } | null | undefined): FocusDirectionId {
+  if (!work) return 'kunst'
+  if (work.entryType === 'artwork') return 'kunst'
+  if (work.entryType === 'idea') return 'dienstleister'
+  if (work.entryType === 'product' && work.category) {
+    for (const [dirId, list] of Object.entries(FOCUS_DIRECTION_PRODUCT_CATEGORIES)) {
+      if (list.some((c) => c.id === work.category)) return dirId as FocusDirectionId
+    }
+  }
+  return 'kunst'
+}
+
+/** entryType aus einer Sparte (Richtung) – für Speichern in ök2 wenn Typ = Sparte gewählt wurde. */
+export function getEntryTypeForDirection(directionId: string | undefined): 'artwork' | 'product' | 'idea' {
+  if (directionId === 'dienstleister') return 'idea'
+  if (['handwerk', 'design', 'mode', 'food'].includes(directionId ?? '')) return 'product'
   return 'artwork'
 }
 
-/** Default-Kategorie für „Neues Werk“ aus gewählter Richtung (erste Richtung). */
+/** Default entryType für Werke aus gewählter Richtung (erste Richtung entscheidet, sonst artwork). */
+export function getDefaultEntryTypeForFocusDirections(directionIds: string[] | undefined): 'artwork' | 'product' | 'idea' {
+  return getEntryTypeForDirection(directionIds?.[0])
+}
+
+/** Kategorien für entryType + Richtung (ök2). Erste Richtung wählt die Liste; ohne Richtung = bisherige Listen. */
+export function getCategoriesForEntryTypeAndDirection(
+  entryType: string | undefined,
+  directionIds: string[] | undefined
+): readonly { id: string; label: string }[] {
+  const first = directionIds?.[0]
+  if (entryType === 'product' && first && first in FOCUS_DIRECTION_PRODUCT_CATEGORIES) {
+    return FOCUS_DIRECTION_PRODUCT_CATEGORIES[first]
+  }
+  if (entryType === 'idea') return IDEA_CATEGORIES
+  if (entryType === 'product') return PRODUCT_CATEGORIES
+  return ARTWORK_CATEGORIES
+}
+
+/** Default-Kategorie für „Neues Werk“ aus gewählter Richtung (erste Kategorie der Richtungsliste). */
 export function getDefaultCategoryForFocusDirections(directionIds: string[] | undefined, entryType: 'artwork' | 'product' | 'idea'): string {
-  if (entryType === 'product') return 'serie'
+  const first = directionIds?.[0]
+  if (entryType === 'product' && first && first in FOCUS_DIRECTION_PRODUCT_CATEGORIES) {
+    const list = FOCUS_DIRECTION_PRODUCT_CATEGORIES[first]
+    return list.length > 0 ? list[0].id : 'sonstiges_produkt'
+  }
   if (entryType === 'idea') return 'konzept'
+  if (entryType === 'product') return 'serie'
   return 'malerei'
 }
 
@@ -1022,6 +1097,10 @@ export function getCategoryLabel(categoryId: string | undefined): string {
   if (fromProd) return fromProd.label
   const fromIdea = IDEA_CATEGORIES.find((x) => x.id === categoryId)
   if (fromIdea) return fromIdea.label
+  for (const list of Object.values(FOCUS_DIRECTION_PRODUCT_CATEGORIES)) {
+    const found = list.find((x) => x.id === categoryId)
+    if (found) return found.label
+  }
   return categoryId
 }
 

@@ -117,6 +117,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **Genaue Produktbeschreibung** – **In der App:** APf → Projekte → K2 Galerie → **Marketing ök2 (mök2)** → Sektion „Genaue Produktbeschreibung“. Detaillierte Produktbeschreibung für ök2 und VK2 (eine Quelle für Vertrieb, Presse, Partner); Details siehe „Was kann die App?“ und „1. USPs“.
 - **WARUM-EVENTS-DOKUMENTE-WEG-WAREN.md** – Erklärung zu Events/Dokumenten.
 - **OEK2-ANMELDUNG-LIZENZIERUNG-STAND.md** – **ök2 Anmeldung & Lizenzierung – State of the Art:** Was es gibt (Entdecken, Guide, Willkommen-Redirect, LicencesPage, mailto), was fehlt (sichtbarer CTA „Lizenz anfragen“, einheitliche Preise), nächste Schritte; Code-Stellen.
+- **OEK2-SPARTE-KATEGORIE-ANALYSE-ABLAUF.md** – **ök2 Sparte & Kategorie:** Ablauf (eine Sparte in Stammdaten, Typ fix, nur Kategorie wählbar), was umgesetzt ist, was noch anzupassen ist für maximalen Nutzen (Bearbeiten-Modal, directionFilter, mobil Neues Werk, Filter-Reihenfolge).
 - **UEBERSICHT-BESUCHER-EMPFEHLER-LIZENZNEHMER.md** – **Überblick für Georg:** Wo Besucher (K2/ök2/VK2), Empfehler, ganze Lizenznehmer-Geschichte? Ist-Stand + Pro-Board-Ansatz (optik wie K2 Familie). **Umsetzung:** Übersicht-Board unter `/projects/k2-galerie/uebersicht` – 4 Kacheln, ein Klick zu Details.
 
 ## Produkt & Vision
