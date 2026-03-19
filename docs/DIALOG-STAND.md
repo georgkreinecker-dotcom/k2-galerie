@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 18.03.26 – **Stammdaten „Meine Richtung“ (nur ök2):** FOCUS_DIRECTIONS in tenantConfig, focusDirections in Galerie-Stammdaten (Merge/Speicher); Admin Einstellungen Block „Wofür nutzt du deine Galerie?“ mit 6 Checkboxen nur bei ök2. K2 unverändert (alles auf Kunst). Doku: KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md.
+**Letzter Stand:** 18.03.26 – **Stammdaten „Meine Richtung“ (nur ök2):** Block im **Stammdaten-Tab** in der Sektion „Ausstellungs-Galerie – Adresse“ (aufklappen). ök2: Einstellungen → Stammdaten → „Ausstellungs-Galerie – Adresse (bei Bedarf öffnen)“ → „Wofür nutzt du deine Galerie?“ mit 6 Checkboxen. K2 unverändert. Doku: KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md.
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 

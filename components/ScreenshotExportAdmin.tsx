@@ -15561,6 +15561,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
+                    {/* Nur ök2: Meine Richtung – hier sichtbar im Stammdaten-Tab (K2 sieht diesen Block nicht). */}
+                    {tenant.isOeffentlich && (
+                      <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Wofür nutzt du deine Galerie? (Mehrfachauswahl)</p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
+                          {FOCUS_DIRECTIONS.map(({ id, label }) => {
+                            const selected = Array.isArray(galleryData.focusDirections) && galleryData.focusDirections.includes(id)
+                            return (
+                              <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={!!selected}
+                                  onChange={() => {
+                                    const next = selected ? (galleryData.focusDirections || []).filter((x: string) => x !== id) : [...(galleryData.focusDirections || []), id]
+                                    const nextData = { ...galleryData, focusDirections: next }
+                                    setGalleryData(nextData)
+                                    try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
+                                  }}
+                                  style={{ accentColor: s.accent }}
+                                />
+                                {label}
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
                     <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.text, lineHeight: 1.5 }}>
                       <strong style={{ color: s.accent }}>Vorteile sauber ausgefüllter Stammdaten</strong>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.82rem' }}>Eine Quelle – überall korrekt: Rechnung (Aussteller, IBAN, SEPA-QR), Kassenbon, Werbemittel, Flyer, Presse-Einladung, Impressum und alle Dokumente beziehen Namen, Adresse, Kontakt und Bankdaten aus diesen Feldern. Je vollständiger du sie pflegst, desto professioneller wirken Rechnungen und Werbemittel ohne Nacharbeit.</p>
@@ -15891,33 +15918,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>🏛️ Galerie / Atelier</h4>
-                      {/* Nur ök2: Meine Richtung – wofür nutzt du deine Galerie? K2 = Kunst bereits fest. */}
-                      {tenant.isOeffentlich && (
-                        <div style={{ marginBottom: '1rem' }}>
-                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', color: s.text }}>Wofür nutzt du deine Galerie? (Mehrfachauswahl)</p>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem 1rem' }}>
-                            {FOCUS_DIRECTIONS.map(({ id, label }) => {
-                              const selected = Array.isArray(galleryData.focusDirections) && galleryData.focusDirections.includes(id)
-                              return (
-                                <label key={id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
-                                  <input
-                                    type="checkbox"
-                                    checked={!!selected}
-                                    onChange={() => {
-                                      const next = selected ? (galleryData.focusDirections || []).filter((x: string) => x !== id) : [...(galleryData.focusDirections || []), id]
-                                      const nextData = { ...galleryData, focusDirections: next }
-                                      setGalleryData(nextData)
-                                      try { persistStammdaten('oeffentlich', 'gallery', nextData) } catch (_) {}
-                                    }}
-                                    style={{ accentColor: s.accent }}
-                                  />
-                                  {label}
-                                </label>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Name</label>
