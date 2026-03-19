@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2: Willkommenstext/Intro je Sparte.** In **Galerie gestalten** (Design) ist der Platzhalter/Vorschlag für den Intro-Text abhängig von der gespeicherten Richtung: Kunst, Handwerk, Design, Mode, Food, Dienstleister – je ein passender Satz (tenantConfig FOCUS_DIRECTION_WELCOME_INTRO, getWelcomeIntroForFocusDirections). Zwei Stellen in ScreenshotExportAdmin (Design-Vorschau + Vorschau Kundengröße).
+**Letzter Stand:** 19.03.26 – **ök2 Werke verwalten: Typ/Kategorie aus Richtung.** Beim Wechsel auf Tab „Öffentliche Galerie K2“ wurden ök2-Galerie-Stammdaten nicht geladen → focusDirections fehlte → Filter und „Neues Werk“ blieben auf Kunst-Standard. Fix: neuer useEffect lädt bei tenant.isOeffentlich loadStammdaten('oeffentlich','gallery') und setzt setGalleryData mit focusDirections; bestehende useEffects setzen dann entryTypeFilter, categoryFilter und artworkEntryType/artworkCategory aus galleryData.focusDirections.
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 
-**Einordnung:** Sparten Schritt für Schritt: Richtung → Werke (Typ/Kategorie) ✅, jetzt Willkommenstext ✅; danach optional Presse/Events, Begriffe.
+**Einordnung:** Sparten Schritt für Schritt: Richtung → Werke (Typ/Kategorie) ✅ (inkl. Stammdaten beim Tab-Wechsel), Willkommenstext ✅; danach optional Presse/Events, Begriffe.
 
 **Nächster Schritt:** Von Georg festlegen.
 

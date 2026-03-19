@@ -2298,6 +2298,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch (_) {}
   }, [])
 
+  // ök2: Beim Wechsel in Kontext „Öffentliche Galerie“ Galerie-Stammdaten laden (inkl. focusDirections für Filter/Neues Werk)
+  useEffect(() => {
+    if (!tenant.isOeffentlich) return
+    try {
+      const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
+      const g = (K2_STAMMDATEN_DEFAULTS.gallery as any) || {}
+      const merged = data && typeof data === 'object'
+        ? { ...g, ...data, focusDirections: Array.isArray((data as any).focusDirections) ? (data as any).focusDirections : [] }
+        : { ...g, focusDirections: [] }
+      setGalleryData(merged)
+    } catch (_) {}
+  }, [tenant.isOeffentlich])
+
   // K2: Verkaufte-Werke-Anzeige (Tage) aus k2-stammdaten-galerie laden (bei Werke-Tab) – isMounted gegen setState nach Unmount (HMR/Code 5)
   useEffect(() => {
     if (tenant.isOeffentlich || tenant.isVk2) return
