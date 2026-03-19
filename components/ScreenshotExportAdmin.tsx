@@ -19025,20 +19025,35 @@ ${name}`
               const eventsSorted = [...events].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
               const upcomingEvents = eventsSorted.filter((e: any) => getEventEnd(e) >= todayStart)
               const pastEvents = eventsSorted.filter((e: any) => getEventEnd(e) < todayStart)
+              // ök2: Liegt das Muster-Event nur noch in der Vergangenheit, wäre der Hauptbereich leer (nur Ordner „Vergangenheit“).
+              // Dann Muster-Event trotzdem mit vollem Werbemittel-Katalog anzeigen – alle PR-Muster (loadDocuments) hängen an muster-event-1.
+              const oek2FlyerFallbackMuster =
+                tenant.isOeffentlich && upcomingEvents.length === 0
+                  ? eventsSorted.find((e: any) => e && String(e.id) === 'muster-event-1')
+                  : null
+              const flyerTabUpcomingList =
+                upcomingEvents.length > 0 ? upcomingEvents : oek2FlyerFallbackMuster ? [oek2FlyerFallbackMuster] : []
 
               if (eventsSorted.length > 0) {
                 return (
                   <div style={{
                     marginBottom: 'clamp(2rem, 5vw, 3rem)'
                   }}>
-                    {/* Aktuelle und geplante Veranstaltungen */}
-                    {upcomingEvents.length > 0 && (
+                    {/* Aktuelle und geplante Veranstaltungen (ök2: bei nur vergangenen Events = Muster-Rubrik) */}
+                    {flyerTabUpcomingList.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
                         <h3 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1rem' }}>
-                          📅 Aktuelle und geplante Veranstaltungen
+                          {oek2FlyerFallbackMuster
+                            ? '📋 Demo – Muster-Veranstaltung (alle Werbemittel)'
+                            : '📅 Aktuelle und geplante Veranstaltungen'}
                         </h3>
+                        {oek2FlyerFallbackMuster && (
+                          <p style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: s.muted, marginTop: '-0.5rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+                            Das Muster-Datum liegt in der Vergangenheit – hier siehst du trotzdem Newsletter, Plakat, Event-Flyer, Presse und Social wie bei einem aktiven Event. Unten unter „Veranstaltungen der Vergangenheit“ bleiben Einladung und Presseinfo als kompakte Liste.
+                          </p>
+                        )}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                      {upcomingEvents.map((event: any) => {
+                      {flyerTabUpcomingList.map((event: any) => {
                         const suggestion = suggestions.find((s: any) => s.eventId === event.id)
                         const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', documentUrl: '/flyer-k2-galerie' } : null
                         const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
@@ -19046,7 +19061,7 @@ ${name}`
                         const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
                         // eventId/event.id typensicher vergleichen; Fallback: Dokumente ohne passende Event-ID per Event-Titel zuordnen (damit nach Neuladen/ID-Änderung „vorhanden“ bleibt)
                         const eventIdStr = event.id != null ? String(event.id) : ''
-                        const allEventIds = new Set((upcomingEvents || []).map((e: any) => e.id != null ? String(e.id) : ''))
+                        const allEventIds = new Set((flyerTabUpcomingList || []).map((e: any) => e.id != null ? String(e.id) : ''))
                         const prDocsForEvent = (documents || []).filter((d: any) => {
                           if (!d || d.category !== 'pr-dokumente') return false
                           if (d.eventId != null && String(d.eventId) === eventIdStr) return true
