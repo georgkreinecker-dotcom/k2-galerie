@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlankt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746. Neuer UI-Fix: „Ausstellungs-Galerie – Adresse“ ist jetzt immer sichtbar (kein auf-/zuklappen mehr). Commit: 9f51041. Dazu: ök2 Muster-PR jetzt zuverlässig sichtbar (Upcoming-Filter greift bei Muster-Event auch wenn Datum „in der Vergangenheit“ liegt). Commit: 5862217.
+**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlankt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746. Neuer UI-Fix: „Ausstellungs-Galerie – Adresse“ ist jetzt immer sichtbar (kein auf-/zuklappen mehr). Commit: 9f51041. Dazu: ök2 Muster-PR jetzt zuverlässig sichtbar (Upcoming-Filter greift bei Muster-Event auch wenn Datum „in der Vergangenheit“ liegt). Commit: 5862217. Zusätzlich: Admin „Flyer & Werbedokumente“ zeigt bei ök2 jetzt auch dann den vollen PR-Tool-Katalog, wenn der Muster-Event nur in der Vergangenheit existiert. Commit: 64a2150.
 
-**Was wir JETZT tun:** Nächster UI-Check von Georg.
+**Was wir JETZT tun:** Für heute Schluss. Schwerpunkt morgen: „alte PR-Dokumente als Vorlagen wiederverwenden“ – UX festlegen (insb. Presse/Einladung) und dann in den richtigen Flow einbauen.
 
 **Einordnung:** Sparten Schritt für Schritt: Richtung → story → Presse/PR. Kunst bleibt Vita/Bio; andere Sparten nutzen die eine Story-Quelle für alle PR-Ausgaben.
 
-**Nächster Schritt:** Georg testet im ök2 Kontext: (1) Events/PR-Dokumente kommen aus den Mustern (nicht nur ein alter Event), (2) „Pressemappe“ drucken/Preview prüfen, (3) „Ausstellungs-Galerie – Adresse“ immer sichtbar.
+**Nächster Schritt:** Georg testet morgen im ök2 Kontext: (1) Muster-Werkzeuge/PR-Dokumente erscheinen wie erwartet, (2) alte Dokumente sind als „Vorlagen-Nutzung“ eindeutig nutzbar, (3) „Ausstellungs-Galerie – Adresse“ bleibt immer sichtbar.
 
 ---
 
