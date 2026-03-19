@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2: Food/Richtung speichern + Werke verwalten sichtbar.** (1) Beim Wechsel zum Tab „Werke“ wird focusDirections aus localStorage nachgezogen, damit Typ/Kategorie (Produkt/Serie bei Food) immer zur gespeicherten Richtung passen. (2) „Stammdaten speichern“ im ök2-Kontext speichert jetzt die Demo-Stammdaten (inkl. Meine Richtung) in k2-oeffentlich-stammdaten-* statt nur Alert – Richtung bleibt nach Klick auf Speichern erhalten.
+**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlackt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746.
 
-**Was wir JETZT tun:** Nächster Schritt von Georg.
+**Was wir JETZT tun:** Nächster UI-Check von Georg.
 
-**Einordnung:** Sparten Schritt für Schritt: Richtung → Werke (Typ/Kategorie) ✅ (inkl. Stammdaten beim Tab-Wechsel), Willkommenstext ✅; danach optional Presse/Events, Begriffe.
+**Einordnung:** Sparten Schritt für Schritt: Richtung → story → Presse/PR. Kunst bleibt Vita/Bio; andere Sparten nutzen die eine Story-Quelle für alle PR-Ausgaben.
 
-**Nächster Schritt:** Von Georg festlegen.
+**Nächster Schritt:** Georg testet im ök2 Admin: Meine Richtung (z. B. Food) setzen, Story eintragen, „Pressemappe“ drucken/Preview prüfen.
 
 ---
 
