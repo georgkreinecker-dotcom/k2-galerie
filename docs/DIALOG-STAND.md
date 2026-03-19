@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2 Werke verwalten: Typ/Kategorie aus Richtung.** Beim Wechsel auf Tab „Öffentliche Galerie K2“ wurden ök2-Galerie-Stammdaten nicht geladen → focusDirections fehlte → Filter und „Neues Werk“ blieben auf Kunst-Standard. Fix: neuer useEffect lädt bei tenant.isOeffentlich loadStammdaten('oeffentlich','gallery') und setzt setGalleryData mit focusDirections; bestehende useEffects setzen dann entryTypeFilter, categoryFilter und artworkEntryType/artworkCategory aus galleryData.focusDirections.
+**Letzter Stand:** 19.03.26 – **ök2: Food/Richtung speichern + Werke verwalten sichtbar.** (1) Beim Wechsel zum Tab „Werke“ wird focusDirections aus localStorage nachgezogen, damit Typ/Kategorie (Produkt/Serie bei Food) immer zur gespeicherten Richtung passen. (2) „Stammdaten speichern“ im ök2-Kontext speichert jetzt die Demo-Stammdaten (inkl. Meine Richtung) in k2-oeffentlich-stammdaten-* statt nur Alert – Richtung bleibt nach Klick auf Speichern erhalten.
 
 **Was wir JETZT tun:** Nächster Schritt von Georg.
 

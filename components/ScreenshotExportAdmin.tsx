@@ -2311,6 +2311,21 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch (_) {}
   }, [tenant.isOeffentlich])
 
+  // ök2: Beim Wechsel zum Tab „Werke“ focusDirections aus localStorage nachziehen, damit Typ/Kategorie zur gespeicherten Richtung passen
+  useEffect(() => {
+    if (activeTab !== 'werke' || !tenant.isOeffentlich) return
+    try {
+      const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
+      if (data && typeof data === 'object' && Array.isArray((data as any).focusDirections)) {
+        const fd = (data as any).focusDirections
+        setGalleryData((prev: any) => {
+          if (prev && JSON.stringify(prev.focusDirections) === JSON.stringify(fd)) return prev
+          return { ...(prev || {}), ...data, focusDirections: fd }
+        })
+      }
+    } catch (_) {}
+  }, [activeTab, tenant.isOeffentlich])
+
   // K2: Verkaufte-Werke-Anzeige (Tage) aus k2-stammdaten-galerie laden (bei Werke-Tab) – isMounted gegen setState nach Unmount (HMR/Code 5)
   useEffect(() => {
     if (tenant.isOeffentlich || tenant.isVk2) return
@@ -2656,11 +2671,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  // Stammdaten speichern - bei ök2-Kontext nicht in echte K2-Daten schreiben; bei VK2 in k2-vk2-stammdaten
+  // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Meine Richtung) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; K2: echte Stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
       if (tenant.isOeffentlich) {
-        alert('Demo-Modus (ök2): Es werden keine echten Daten gespeichert. Wechsle zur K2-Galerie für echte Stammdaten.')
+        try {
+          const { welcomeImage: _w, galerieCardImage: _c, virtualTourImage: _v, ...galleryStammdaten } = galleryData
+          persistStammdaten('oeffentlich', 'martina', martinaData)
+          persistStammdaten('oeffentlich', 'georg', georgData)
+          persistStammdaten('oeffentlich', 'gallery', { ...galleryStammdaten } as any)
+        } catch (e) {
+          reject(e)
+          return
+        }
         resolve()
         return
       }
