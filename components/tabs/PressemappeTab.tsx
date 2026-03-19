@@ -5,9 +5,11 @@ const s = WERBEUNTERLAGEN_STIL
 
 interface PressemappeTabProps {
   onBack: () => void
+  /** Wenn gesetzt (z. B. ök2 mit getStoryForPr): wird für Vita/Story-Block genutzt. Sonst: personStammdaten.vita/bio. */
+  storyForPr?: string
 }
 
-export default function PressemappeTab({ onBack }: PressemappeTabProps) {
+export default function PressemappeTab({ onBack, storyForPr }: PressemappeTabProps) {
   const galStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch (_) { return {} } })()
   const personStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch (_) { return {} } })()
   const allArtworks: any[] = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch (_) { return [] } })()
@@ -20,7 +22,7 @@ export default function PressemappeTab({ onBack }: PressemappeTabProps) {
   const gWebsite = galStammdaten.website || ''
   const gHours = galStammdaten.openingHours || ''
   const artistName = personStammdaten.name || 'Martina Kreinecker'
-  const vita = personStammdaten.vita || personStammdaten.bio || ''
+  const vita = storyForPr != null ? storyForPr : (personStammdaten.vita || personStammdaten.bio || '')
 
   const defaultWerkeIds = allArtworks.slice(0, 5).map((a: any) => a.id || a.number)
   const [werkeIds, setWerkeIds] = useState<string[]>(defaultWerkeIds)

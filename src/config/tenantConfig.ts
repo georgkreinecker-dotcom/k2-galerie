@@ -161,6 +161,8 @@ export const K2_STAMMDATEN_DEFAULTS = {
     rechnungCountry: '',
     /** Meine Richtung (ök2/Lizenznehmer): Kunst + 5 weitere – für Werke-Defaults und weitere Schritte. */
     focusDirections: [] as string[],
+    /** Produktstory / Idee-Story für Presse & PR (ök2 andere Sparten); bei Kunst = Vita. */
+    story: '',
   },
 }
 
@@ -774,6 +776,7 @@ export const MUSTER_TEXTE = {
     welcomeImage: OEK2_WILLKOMMEN_IMAGES.welcomeImage,
     virtualTourImage: OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
     galerieCardImage: OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+    story: '',
   },
   welcomeText: 'Für Künstler:innen – eine Galerie für Werke, Ideen und Produkte. Ein Modell: Bilder und Skulptur in einem Raum.',
   artist1Bio: 'Lena Berg: Malerei, Grafik, Mischtechnik. Studium Bildende Kunst, seit über zwanzig Jahren freischaffend. Landschaften und Atelierblicke – kräftige Farben, reduzierte Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',

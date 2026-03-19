@@ -78,6 +78,8 @@ export function mergeStammdatenGallery(
     virtualTourImage: (incoming?.virtualTourImage && String(incoming.virtualTourImage).trim()) ? incoming.virtualTourImage : (e.virtualTourImage ?? ''),
     galerieCardImage: (incoming?.galerieCardImage && String(incoming.galerieCardImage).trim()) ? incoming.galerieCardImage : (e.galerieCardImage ?? ''),
     focusDirections: (() => { const arr = Array.isArray(incoming?.focusDirections) ? incoming.focusDirections.filter((id: unknown) => typeof id === 'string') : (Array.isArray((e as any)?.focusDirections) ? (e as any).focusDirections : []); return arr.length > 0 ? [arr[0]] : []; })(),
+    /** Produktstory / Idee-Story für Presse & PR (ök2 andere Sparten); bei Kunst ungenutzt. Kein Leer überschreiben (kein-datenverlust). */
+    story: (incoming?.story != null && String(incoming.story).trim()) ? String(incoming.story).trim() : ((e as any)?.story ?? ''),
   }
 }
 
@@ -109,6 +111,7 @@ function getEmptyOeffentlich(type: StammdatenType): any {
     virtualTourImage: '',
     galerieCardImage: '',
     focusDirections: [],
+    story: '',
   }
 }
 

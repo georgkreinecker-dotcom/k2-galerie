@@ -31,6 +31,7 @@ const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
 import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getDefaultCategoryForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
+import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
@@ -2659,7 +2660,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
       name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', iban: '', bic: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
-      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [] as string[]
+      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [] as string[], story: ''
     }
     setMartinaData(emptyPerson1)
     setGeorgData(emptyPerson2)
@@ -12748,7 +12749,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
           {/* ===== PRESSEMAPPE ===== */}
           {activeTab === 'pressemappe' && (
-            <PressemappeTab onBack={() => setActiveTab('werke')} />
+            <PressemappeTab
+              onBack={() => setActiveTab('werke')}
+              storyForPr={tenant.isOeffentlich ? getStoryForPr(tenant, galleryData, martinaData, georgData) : undefined}
+            />
           )}
 
 
@@ -14496,31 +14500,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
             )}
 
-            {/* ök2: Musterdaten löschen nur anzeigen, wenn noch Musterwerke vorhanden (nach einmal Löschen nicht mehr nötig) */}
-            {tenant.isOeffentlich && (() => {
-              const hasMuster = allArtworks.some((a: any) => (a as any)._isMuster || String(a.id || '').startsWith('muster-'))
-              if (!hasMuster) return null
-              return (
-                <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
-                  <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Musterwerke in der Demo vorhanden – zum Entfernen:</span>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const existing = readArtworksRawByKey('k2-oeffentlich-artworks')
-                      const ohne = existing.filter((a: any) => !String(a.id || '').startsWith('muster-') && !(a as any)._isMuster)
-                      if (ohne.length === existing.length) { alert('Keine Musterdaten gefunden – nichts zu löschen.'); return }
-                      await saveArtworksByKeyWithImageStore('k2-oeffentlich-artworks', ohne, { filterK2Only: false, allowReduce: true })
-                      setAllArtworksSafe(ohne)
-                      alert('✅ Musterdaten entfernt. Eigene Werke sind unberührt.')
-                    }}
-                    style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: '#f87171', border: '1px solid #f87171', borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
-                  >
-                    🗑️ Musterdaten löschen
-                  </button>
-                </div>
-              )
-            })()}
-
             {/* ök2: Musterwerke zurücksetzen – Demo wieder auf Standard bringen (wenn z. B. versehentlich K2-Daten reingekommen sind) */}
             {tenant.isOeffentlich && (
               <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
@@ -15649,6 +15628,19 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             )
                           })}
                         </div>
+                      </div>
+                    )}
+                    {tenant.isOeffentlich && galleryData?.focusDirections?.[0] && galleryData.focusDirections[0] !== 'kunst' && (
+                      <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Deine Story für Presse &amp; PR</p>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Story z.&nbsp;B. in ChatGPT schreiben lassen, hier einfügen und Speichern – dann nutzen Presse, Flyer und Social diese Quelle.</p>
+                        <textarea
+                          value={galleryData.story ?? ''}
+                          onChange={(e) => setGalleryData({ ...galleryData, story: e.target.value })}
+                          placeholder="Produktstory / Idee-Story einfügen …"
+                          rows={5}
+                          style={{ width: '100%', boxSizing: 'border-box', padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 8 }}
+                        />
                       </div>
                     )}
                     <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.text, lineHeight: 1.5 }}>
