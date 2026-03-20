@@ -41,6 +41,9 @@
 | Admin → **Design** (Galerie gestalten), nur **ök2/VK2** | Gleiche Bildsprache (Hero-SVG) + **Fortschritt X/4**: Willkommensbild, Galerie-Karte, Virtueller Rundgang (Bild/Video), Texte vs. **Baseline** (`getGaleriePageTextsBaseline`) – nur Lesen/Anzeige |
 | Admin → **Werke** (Tab), **ök2** | Hero + **X/4**: Werke vorhanden; jedes Werk Bild; Preis &gt; 0; Titel – nur aus `allArtworks` |
 | Admin → **Werke** (Tab), **VK2** | Hero + **X/4**: Mitglieder mit Namen; Kunstbereich; Foto; E-Mail oder Telefon – nur aus `vk2Stammdaten.mitglieder` (kein `k2-artworks` bei VK2) |
+| Eventplan → Unter-Tab **Events**, **ök2/VK2** | Hero + **X/4** (Events, Titel, Datum, kommendes Event) + Karte **Nächstes Event** – nur Lesen (`ScreenshotExportAdmin`) |
+| Tab **Newsletter & Einladungen**, **ök2/VK2** | Hero + **Empfänger-Zahl** + **X/4** (Liste wachsen, Kategorien) – `NewsletterTab`; kein neuer Versandweg |
+| Tab **Veröffentlichen**, **ök2/VK2** | Hinweis-Karte **Stand & sichtbare Galerie** (Stand-Badge antippen bei Bedarf) – **kein** Auto-Reload, keine build-info-Abfrage |
 
 Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Phasen und nur wenn [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md)-Checkliste grün ist.
 
@@ -87,11 +90,15 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 | Priorität | Bereich | Hinweis |
 |-----------|---------|---------|
-| **1** | **Events** (Tab): Checkliste / „Nächstes Event“-Karte | Nur Hinweise; kein Blockieren von Speichern. |
-| **2** | **Newsletter-Tab** | Erfolgsanzeige (z. B. Empfänger-Zahl), kein neuer Versandweg in der App. |
-| **3** | **Veröffentlichen / Stand** | Nur **Badge/Hinweis** „Stand passt“ – **kein** automatischer Reload (Regel Stand/QR bleibt). |
+| **1** | **Events** (Tab): Checkliste / „Nächstes Event“-Karte | Nur Hinweise; kein Blockieren von Speichern. **Umgesetzt:** Eventplan → Events, nur **ök2/VK2** (`ScreenshotExportAdmin`). |
+| **2** | **Newsletter-Tab** | Erfolgsanzeige (z. B. Empfänger-Zahl), kein neuer Versandweg in der App. **Umgesetzt:** `NewsletterTab` mit Props `isOeffentlich` / `isVk2`. |
+| **3** | **Veröffentlichen / Stand** | Nur **Badge/Hinweis** „Stand passt“ – **kein** automatischer Reload (Regel Stand/QR bleibt). **Umgesetzt:** Hinweis-Karte Stand-Badge (ök2/VK2), ohne Fetch/Auto-Reload. |
 
-**Definition of Done:** wie Phase 1, plus: keine neuen Abhängigkeiten zu Stripe/Lizenzen ohne extra Review.
+**Definition of Done (Phase 2)**  
+- [x] Wie Phase 1 (Schicht B optional, K2-Kern ohne diese Blöcke).  
+- [x] Kein Auto-Reload, keine heimliche build-info-Schleife ([stand-qr-niemals-zurueck.mdc](../.cursor/rules/stand-qr-niemals-zurueck.mdc), [code-5-crash-kein-auto-reload.mdc](../.cursor/rules/code-5-crash-kein-auto-reload.mdc)).  
+- [x] Kontrast heller Admin-Hintergrund ([ui-kontrast-leserbarkeit.mdc](../.cursor/rules/ui-kontrast-leserbarkeit.mdc)).  
+- [x] Keine neuen Abhängigkeiten zu Stripe/Lizenzen.
 
 ---
 
@@ -122,7 +129,7 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 | **Plan B** | Nur **absolute Notlösung:** Schicht B aus / Revert – Kern bleibt bedienbar. |
 | **Phase 0** | Bis Markt: **vorsichtig** bauen, **nicht** einfrieren. |
 | **Phase 1** | Zusätzlich: Guide → Galerie gestalten → Werke-Ampel (**nur Anzeige**) |
-| **Phase 2** | Wenn Phase 1 gut läuft: Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) |
+| **Phase 2** | Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) – **umgesetzt** (nur ök2/VK2) |
 | **Phase 3** | Optional: VK2, Demo-Kassa, Backup-Info, mök2 |
 
 **Mut voran – mit Sorgfalt, Plan B nur im Notfall.** 💚

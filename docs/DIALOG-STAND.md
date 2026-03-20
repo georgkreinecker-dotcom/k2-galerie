@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. Phase 2 bewusst noch nicht gestartet. **Commit:** 946ba4a ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Phase 2 umgesetzt (ök2/VK2):** Eventplan → **Events** = X/4 + **Nächstes Event**; Tab **Newsletter** = Empfänger-Zahl + X/4 (`NewsletterTab`); **Veröffentlichen** = Hinweis Stand-Badge (ohne Auto-Reload/Fetch). Doku Plan + **GAMIFICATION-OEK2** §5.2. **K2** ohne diese Blöcke.
+
+**Vorher:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. **Commit:** 946ba4a ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 1 – „Werke verwalten“:** Admin → **Werke**: **ök2** = X/4 aus `allArtworks` (Menge, Bild, Preis, Titel); **VK2** = X/4 aus `vk2Stammdaten.mitglieder` (keine Werke-Liste im VK2-Speicher). **K2** ohne Block. **Commit:** 3be6a8d ✅ auf GitHub
 
@@ -54,11 +56,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** **Phase 1** in Doku **abgeschlossen** (DoD + Abnahme in `GAMIFICATION-PLAN-OEK2-PHASEN.md`, §5.1 in `GAMIFICATION-OEK2.md`). **Phase 2** (Events, Newsletter, Stand-Hinweis) **noch nicht** starten – erst kurz im Alltag beobachten oder **Georg** gibt frei.
+**Was wir JETZT tun:** Phase 2 **live** – im Alltag **ök2/VK2** kurz testen (Events, Newsletter, Veröffentlichen-Hinweis). **Phase 3** nur nach Erfahrung / Georg.
 
-**Einordnung:** Gamification Phase 1 (Öffentlichkeitsarbeit, Presse, Design, Werke ök2/VK2) komplett; K2-Kern unberührt.
+**Einordnung:** Gamification Phase 1 + 2 für Demo/Verein; K2-Kern ohne Ampeln.
 
-**Nächster Schritt:** Phase 2 aus **GAMIFICATION-PLAN-OEK2-PHASEN** vorbereiten / starten **nur** bei grünem Stand + Freigabe.
+**Nächster Schritt:** Beobachten oder **Phase 3** (optional, Plan) bei Bedarf.
 
 ---
 

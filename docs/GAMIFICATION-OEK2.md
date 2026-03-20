@@ -74,6 +74,10 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 
 Die umgesetzten Bausteine (siehe [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Baseline + Phase 1 DoD) wurden gegen §4 und §5 geprüft: **nur Schicht B**, **K2-Kern** ohne Gamification-Zwang, **kein** Blockieren kritischer Abläufe, **Vereinheitlichung** (kein schwarzer Global-Guide; Tab-Heroes + grüner Admin-Balken koordiniert). Die **Checkliste oben** bleibt bei **jeder neuen** Gamification-Änderung Pflicht.
 
+### Phase 2 – Abnahme (20.03.26)
+
+**Events** (Unter-Tab im Eventplan), **Newsletter**, **Veröffentlichen** (Stand-Hinweis): nur **ök2/VK2**; nur Anzeige bzw. statischer Hinweis; **kein** Auto-Reload am Veröffentlichen-Tab. Details und DoD: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Phase 2.
+
 ---
 
 ## 6. Verknüpfungen

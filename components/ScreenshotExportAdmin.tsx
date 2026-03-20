@@ -13037,7 +13037,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
           {/* ===== NEWSLETTER & EINLADUNGEN ===== */}
           {activeTab === 'newsletter' && (
-            <NewsletterTab onBack={() => setActiveTab('werke')} />
+            <NewsletterTab onBack={() => setActiveTab('werke')} isOeffentlich={!!tenant.isOeffentlich} isVk2={!!tenant.isVk2} />
           )}
 
 
@@ -14929,6 +14929,46 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <br />
               <strong style={{ color: s.text }}>Veröffentlichen</strong> = das Aushängeschild der Galerie sichtbar machen. Besucher und andere Geräte sehen dann den aktuellen Stand.
             </p>
+            {/* Gamification Phase 2: Stand-Hinweis nur ök2/VK2 – kein Auto-Reload, keine Server-Abfrage */}
+            {(tenant.isOeffentlich || tenant.isVk2) && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'stretch',
+                  gap: 'clamp(1rem, 3vw, 1.5rem)',
+                  marginBottom: '1.5rem',
+                  padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                  borderRadius: '16px',
+                  border: `1px solid ${s.accent}33`,
+                  background: s.bgElevated,
+                  boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                  maxWidth: '48rem',
+                }}
+              >
+                <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 200px)' }}>
+                  <img
+                    src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                    alt=""
+                    width={200}
+                    height={123}
+                    style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                  />
+                </div>
+                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                    Stand &amp; sichtbare Galerie
+                  </div>
+                  <h3 style={{ fontSize: 'clamp(1.1rem, 2.8vw, 1.4rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+                    Nach dem Veröffentlichen wirkt etwas alt?
+                  </h3>
+                  <p style={{ margin: 0, fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.55 }}>
+                    Am Handy oder Tablet: <strong style={{ color: '#1c1a18' }}>Stand-Badge</strong> unten links <strong style={{ color: '#1c1a18' }}>antippen</strong> – dann lädt die Seite bewusst neu (kein automatisches Neuladen im Hintergrund).
+                    Wenn alles passt, musst du nichts tun.
+                  </p>
+                </div>
+              </div>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 <button
@@ -18015,6 +18055,150 @@ ${name}`
             </div>
             {eventplanSubTab === 'events' && (
             <>
+            {/* Gamification Phase 2: Events – nur ök2/VK2, nur Anzeige */}
+            {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+              const todayStart = new Date()
+              todayStart.setHours(0, 0, 0, 0)
+              const getEventEnd = (e: any) => {
+                const d = e.endDate ? new Date(e.endDate) : new Date(e.date)
+                d.setHours(23, 59, 59, 999)
+                return d
+              }
+              const list = Array.isArray(events) ? events : []
+              const anyE = list.length >= 1
+              const hasDate = (e: any) => !!(e?.date && String(e.date).trim())
+              const hasTitle = (e: any) => String(e?.title ?? '').trim().length > 0
+              const upcoming = list.filter((e: any) => getEventEnd(e) >= todayStart)
+              const sortedUp = [...upcoming].sort((a: any, b: any) => {
+                const ta = new Date(a.date).getTime()
+                const tb = new Date(b.date).getTime()
+                return ta - tb
+              })
+              const nextEv = sortedUp[0]
+              const milestones = [
+                { id: 'ev1', label: 'Mind. ein Event', done: anyE, hint: 'Termine in der Liste' },
+                { id: 'ev2', label: 'Jedes Event mit Titel', done: anyE && list.every(hasTitle), hint: 'Titel in der Bearbeitung' },
+                { id: 'ev3', label: 'Jedes Event mit Datum', done: anyE && list.every(hasDate), hint: 'Startdatum je Event' },
+                { id: 'ev4', label: 'Mind. ein kommendes Event', done: upcoming.length >= 1, hint: 'Noch nicht vorbei (Kalender)' },
+              ]
+              const doneCt = milestones.filter(m => m.done).length
+              const fmtNext = (e: any) => {
+                try {
+                  const d = new Date(e.date)
+                  return d.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+                } catch (_) {
+                  return String(e?.date ?? '')
+                }
+              }
+              return (
+                <div style={{ marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'stretch',
+                      gap: 'clamp(1rem, 3vw, 1.5rem)',
+                      marginBottom: '1rem',
+                      padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                      borderRadius: '16px',
+                      border: `1px solid ${s.accent}33`,
+                      background: s.bgElevated,
+                      boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                    }}
+                  >
+                    <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                      <img
+                        src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                        alt=""
+                        width={240}
+                        height={147}
+                        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                        Events
+                      </div>
+                      <h3 style={{ fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+                        Eventplan vollständig?
+                      </h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                        Nur Übersicht – Speichern und Bearbeiten wie gewohnt. Unten: nächster Termin.
+                      </p>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{doneCt} / {milestones.length}</span>
+                        </div>
+                        <div
+                          role="progressbar"
+                          aria-valuenow={doneCt}
+                          aria-valuemin={0}
+                          aria-valuemax={milestones.length}
+                          style={{ height: 10, borderRadius: 999, background: `${s.accent}18`, overflow: 'hidden', border: `1px solid ${s.accent}30` }}
+                        >
+                          <div
+                            style={{
+                              width: `${Math.round((100 * doneCt) / Math.max(1, milestones.length))}%`,
+                              height: '100%',
+                              borderRadius: 999,
+                              background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                              transition: 'width 0.35s ease-out',
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                        {milestones.map(m => (
+                          <li key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.8rem', color: m.done ? '#1c1a18' : '#5c5650' }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                flexShrink: 0,
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                background: m.done ? '#10b981' : 'transparent',
+                                color: m.done ? '#fff' : '#5c5650',
+                                border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                              }}
+                            >
+                              {m.done ? '✓' : '○'}
+                            </span>
+                            <span>
+                              <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                              <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  {nextEv && (
+                    <div
+                      style={{
+                        padding: '1rem 1.25rem',
+                        borderRadius: '14px',
+                        border: `1px solid ${s.accent}28`,
+                        background: s.bgCard,
+                        maxWidth: '42rem',
+                      }}
+                    >
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                        Nächstes Event
+                      </div>
+                      <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#1c1a18' }}>{String(nextEv.title || 'Ohne Titel')}</div>
+                      <div style={{ fontSize: '0.88rem', color: '#5c5650', marginTop: '0.25rem' }}>{fmtNext(nextEv)}</div>
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',

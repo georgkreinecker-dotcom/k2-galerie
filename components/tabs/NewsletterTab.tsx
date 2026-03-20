@@ -15,9 +15,12 @@ function saveKontakte(list: any[]) {
 
 interface NewsletterTabProps {
   onBack: () => void
+  /** Gamification Phase 2: nur ök2/VK2 */
+  isOeffentlich?: boolean
+  isVk2?: boolean
 }
 
-export default function NewsletterTab({ onBack }: NewsletterTabProps) {
+export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = false }: NewsletterTabProps) {
   const [kontakte, setKontakte] = useState<any[]>(loadKontakte)
   const [nlName, setNlName] = useState('')
   const [nlEmail, setNlEmail] = useState('')
@@ -77,6 +80,20 @@ export default function NewsletterTab({ onBack }: NewsletterTabProps) {
     win.document.close()
   }
 
+  const showGamification = isOeffentlich || isVk2
+  const n = kontakte.length
+  const cats = new Set(kontakte.map((k: any) => String(k.kategorie || 'allgemein')))
+  const hasPresseOrVernissage = kontakte.some((k: any) => k.kategorie === 'presse' || k.kategorie === 'vernissage')
+  const nlMilestones = showGamification
+    ? [
+        { id: 'nl1', label: 'Mind. ein Empfänger', done: n >= 1, hint: 'Ersten Kontakt erfassen' },
+        { id: 'nl2', label: 'Liste wächst (mind. 3)', done: n >= 3, hint: 'Für sinnvollen Versand / Einladung' },
+        { id: 'nl3', label: 'Presse oder Vernissage', done: n >= 1 && hasPresseOrVernissage, hint: 'Mind. ein Kontakt mit passender Kategorie' },
+        { id: 'nl4', label: 'Mehrere Kategorien', done: cats.size >= 2, hint: 'Vielfalt in der Liste' },
+      ]
+    : []
+  const nlDone = nlMilestones.filter(m => m.done).length
+
   return (
     <section style={{ padding: 'clamp(1rem, 3vw, 2rem)' }}>
       <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12 }}>
@@ -85,6 +102,100 @@ export default function NewsletterTab({ onBack }: NewsletterTabProps) {
           Als CSV exportieren oder Adressliste drucken.
         </p>
       </div>
+
+      {/* Gamification Phase 2: Einladungsliste – nur ök2/VK2, nur Anzeige */}
+      {showGamification && (
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'stretch',
+            gap: 'clamp(1rem, 3vw, 1.5rem)',
+            marginBottom: '1.5rem',
+            padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+            borderRadius: '16px',
+            border: `1px solid ${s.accent}33`,
+            background: s.bgElevated,
+            boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+          }}
+        >
+          <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+            <img
+              src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+              alt=""
+              width={240}
+              height={147}
+              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+            />
+          </div>
+          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+              Einladungsliste
+            </div>
+            <h3 style={{ fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+              Empfänger:innen – Überblick
+            </h3>
+            <p style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', fontWeight: 800, color: '#1c1a18' }}>
+              Aktuell <span style={{ color: s.accent }}>{n}</span> {n === 1 ? 'Kontakt' : 'Kontakte'} in der Liste
+            </p>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+              Kein neuer Versandweg – nur Orientierung. CSV/Druck wie bisher.
+            </p>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{nlDone} / {nlMilestones.length}</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-valuenow={nlDone}
+                aria-valuemin={0}
+                aria-valuemax={nlMilestones.length}
+                style={{ height: 10, borderRadius: 999, background: `${s.accent}18`, overflow: 'hidden', border: `1px solid ${s.accent}30` }}
+              >
+                <div
+                  style={{
+                    width: `${Math.round((100 * nlDone) / Math.max(1, nlMilestones.length))}%`,
+                    height: '100%',
+                    borderRadius: 999,
+                    background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                    transition: 'width 0.35s ease-out',
+                  }}
+                />
+              </div>
+            </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+              {nlMilestones.map(m => (
+                <li key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.8rem', color: m.done ? '#1c1a18' : '#5c5650' }}>
+                  <span
+                    aria-hidden
+                    style={{
+                      flexShrink: 0,
+                      width: 22,
+                      height: 22,
+                      borderRadius: '50%',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: 800,
+                      background: m.done ? '#10b981' : 'transparent',
+                      color: m.done ? '#fff' : '#5c5650',
+                      border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                    }}
+                  >
+                    {m.done ? '✓' : '○'}
+                  </span>
+                  <span>
+                    <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                    <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Neuer Kontakt */}
       <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 12, padding: '1.25rem', marginBottom: '1.5rem' }}>
