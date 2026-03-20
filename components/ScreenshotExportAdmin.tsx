@@ -1265,6 +1265,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   })()
   const [eventplanSubTab, setEventplanSubTab] = useState<'events' | 'öffentlichkeitsarbeit'>(initialEventplanSubTab)
   const [pastEventsExpanded, setPastEventsExpanded] = useState(false) // kleine Leiste „Vergangenheit“, bei Klick aufklappen
+  /** Vorlage aus Vergangenheit → geplantes Event übernehmen (Modal inkl. Ziel-Event) */
+  const [pastDocTemplateModal, setPastDocTemplateModal] = useState<{ sourceDoc: any; sourceEvent: any; targetEventId: string } | null>(null)
   // Öffentlichkeitsarbeit im Vollbild-Modal (zum Testen direkt aus K2) – öffnet sich bei openModal=1 in der URL oder forceOeffentlichkeitsarbeitModal
   const [showOeffentlichkeitsarbeitModal, setShowOeffentlichkeitsarbeitModal] = useState(() => {
     if (forceOeffentlichkeitsarbeitModal === true) return true
@@ -7928,7 +7930,7 @@ ${'='.repeat(60)}
     const isPresse = document.name && String(document.name).toLowerCase().includes('presse')
     const isFlyer = document.name && String(document.name).toLowerCase().includes('flyer')
 
-    if (tenant.isVk2 && (isEinladung || isPresse || isFlyer)) {
+    if (tenant.isVk2 && (isEinladung || isPresse || isFlyer) && !fileDataOrUrl) {
       try {
         const raw = loadVk2Stammdaten()
         const stamm = raw && typeof raw === 'object' ? (raw as Vk2Stammdaten) : null
@@ -7945,7 +7947,8 @@ ${'='.repeat(60)}
       return
     }
 
-    if (isEinladung || isPresse) {
+    // Gespeicherte Einladung/Presse (HTML) hat Vorrang – nicht durch Vorlagen-HTML ersetzen
+    if ((isEinladung || isPresse) && !fileDataOrUrl) {
       const htmlRaw = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
       const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
       openDocumentInApp(html, docTitle)
@@ -8214,6 +8217,142 @@ ${'='.repeat(60)}
         alert('Fehler beim Speichern. Möglicherweise ist der Speicher voll.')
       }
     }
+  }
+
+  /** Vorlage aus „Veranstaltungen der Vergangenheit“ in ein geplantes Event kopieren (Event-Dokument oder PR-Dokument). */
+  const applyPastDocumentTemplateToEvent = (sourceDoc: any, sourceEvent: any, targetEventId: string) => {
+    const targetEvent = events.find((e: any) => e.id === targetEventId)
+    if (!targetEvent) {
+      alert('Ziel-Event nicht gefunden.')
+      return
+    }
+    const fileDataOrUrl = sourceDoc.fileData || sourceDoc.data
+    if (sourceDoc.documentUrl && !fileDataOrUrl) {
+      alert('Diese Druckversion ist nur als feste Seite verlinkt. Bitte im Ziel-Event dieselbe Rubrik öffnen und dort neu erzeugen.')
+      return
+    }
+    const isGlobalPr = sourceDoc.category === 'pr-dokumente' || !!sourceDoc.werbematerialTyp
+    const newId = `${isGlobalPr ? 'pr' : 'doc'}-vorlage-${Date.now()}`
+    const baseName = String(sourceDoc.name || 'Dokument').replace(/\s*\(Vorlage\)\s*$/i, '').trim()
+    const newDoc: any = {
+      ...sourceDoc,
+      id: newId,
+      name: `${baseName} (Vorlage)`,
+      eventId: targetEvent.id,
+      eventTitle: targetEvent.title,
+      eventDate: targetEvent.date,
+      copiedFromEventId: sourceEvent?.id,
+      copiedAt: new Date().toISOString()
+    }
+    if (isGlobalPr) {
+      const others = documents.filter((d: any) => d.id !== newId)
+      saveDocuments([...others, newDoc])
+    } else {
+      const updatedEvents = events.map((event) => {
+        if (event.id !== targetEventId) return event
+        return { ...event, documents: [...(event.documents || []), newDoc] }
+      })
+      setEvents(updatedEvents)
+      saveEvents(tenant, updatedEvents)
+    }
+    if (isGlobalPr && fileDataOrUrl && String(fileDataOrUrl).startsWith('data:')) {
+      try {
+        const base64 = String(fileDataOrUrl).replace(/^data:[^;]+;base64,/, '')
+        const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))
+        const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
+        const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+        if (sourceDoc.werbematerialTyp === 'newsletter') {
+          const subjectMatch = htmlDecoded.match(/class="newsletter-subject-line"[^>]*>([\s\S]*?)<\/div>/i)
+          const bodyMatch = htmlDecoded.match(/class="presse-body"[^>]*style="[^"]*white-space:pre-wrap[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
+          const subject = subjectMatch && subjectMatch[1] ? unesc(subjectMatch[1].trim()) : ''
+          const body = bodyMatch && bodyMatch[1] ? unesc(bodyMatch[1].replace(/<br\s*\/?>/gi, '\n').trim()) : ''
+          const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
+          const list: any[] = JSON.parse(raw)
+          const idx = list.findIndex((s: any) => s.eventId === targetEventId)
+          const base = generateNewsletterContent(targetEvent)
+          const mergedNewsletter = { ...base, subject: subject || base.subject, body: body || base.body }
+          if (idx >= 0) {
+            list[idx] = { ...list[idx], newsletter: mergedNewsletter }
+          } else {
+            list.push({
+              eventId: targetEvent.id,
+              eventTitle: targetEvent.title,
+              generatedAt: new Date().toISOString(),
+              newsletter: mergedNewsletter,
+              presseaussendung: generatePresseaussendungContent(targetEvent),
+              socialMedia: generateSocialMediaContent(targetEvent),
+              flyer: generateFlyerContent(targetEvent),
+              plakat: generatePlakatContent(targetEvent)
+            })
+          }
+          localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+        }
+        if (sourceDoc.werbematerialTyp === 'social') {
+          const fromDiv = (m: RegExpMatchArray | null) => (m && m[1] ? unesc(m[1].replace(/<br\s*\/?>/gi, '\n')) : '')
+          const instagramMatch = htmlDecoded.match(/id="instagram-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Instagram Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+          const facebookMatch = htmlDecoded.match(/id="facebook-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Facebook Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+          const whatsappMatch = htmlDecoded.match(/id="whatsapp-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>WhatsApp[^<]*<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+          const imgMatch = htmlDecoded.match(/<img[^>]+src="(data:image[^"]+)"[^>]*(?:alt=""|Post-Vorschau)/i) || htmlDecoded.match(/Bild \(Post-Vorschau\)[\s\S]*?<img[^>]+src="(data:image[^"]+)"/i)
+          const instagram = instagramMatch && instagramMatch[1] ? (instagramMatch[0].includes('textarea') ? unesc(instagramMatch[1]) : fromDiv(instagramMatch)) : ''
+          const facebook = facebookMatch && facebookMatch[1] ? (facebookMatch[0].includes('textarea') ? unesc(facebookMatch[1]) : fromDiv(facebookMatch)) : ''
+          const whatsapp = whatsappMatch && whatsappMatch[1] ? (whatsappMatch[0].includes('textarea') ? unesc(whatsappMatch[1]) : fromDiv(whatsappMatch)) : ''
+          const imageDataUrl = imgMatch && imgMatch[1] ? imgMatch[1] : ''
+          const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
+          const list: any[] = JSON.parse(raw)
+          const idx = list.findIndex((s: any) => s.eventId === targetEventId)
+          const baseSm = generateSocialMediaContent(targetEvent)
+          const mergedSm = {
+            ...baseSm,
+            instagram: instagram || baseSm.instagram,
+            facebook: facebook || baseSm.facebook,
+            whatsapp: whatsapp || baseSm.whatsapp,
+            ...(imageDataUrl ? { imageDataUrl } : {})
+          }
+          if (idx >= 0) {
+            list[idx] = { ...list[idx], socialMedia: mergedSm }
+          } else {
+            list.push({
+              eventId: targetEvent.id,
+              eventTitle: targetEvent.title,
+              generatedAt: new Date().toISOString(),
+              newsletter: generateNewsletterContent(targetEvent),
+              presseaussendung: generatePresseaussendungContent(targetEvent),
+              socialMedia: mergedSm,
+              flyer: generateFlyerContent(targetEvent),
+              plakat: generatePlakatContent(targetEvent)
+            })
+          }
+          localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+        }
+      } catch (e) {
+        console.warn('Vorlage: k2-pr-suggestions Merge', e)
+      }
+    }
+    setPrSuggestionsRefresh((r: number) => r + 1)
+    setPastDocTemplateModal(null)
+    alert(`✅ Vorlage wurde in „${targetEvent.title}“ übernommen. Unter der Rubrik dieses Events findest du den Eintrag – ggf. Texte anpassen.`)
+  }
+
+  const openPastTemplateModal = (sourceDoc: any, sourceEvent: any) => {
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const getEventEnd = (e: any) => {
+      const d = e.endDate ? new Date(e.endDate) : new Date(e.date)
+      d.setHours(23, 59, 59, 999)
+      return d
+    }
+    const upcoming = events
+      .filter((e: any) => getEventEnd(e) >= todayStart)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    if (upcoming.length === 0) {
+      alert('Lege zuerst ein geplantes Event in der Eventplanung an – dann kannst du die Vorlage dort übernehmen.')
+      return
+    }
+    setPastDocTemplateModal({
+      sourceDoc,
+      sourceEvent,
+      targetEventId: String(upcoming[0].id)
+    })
   }
 
   // Dokument hochladen
@@ -19608,6 +19747,12 @@ ${name}`
                                 const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
                                 const hiddenIds = event.hiddenDocIds || []
                                 const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
+                                const eventIdStrPast = event.id != null ? String(event.id) : ''
+                                const prDocsForPastEvent = (documents || []).filter((d: any) => {
+                                  if (!d || d.category !== 'pr-dokumente') return false
+                                  return String(d.eventId) === eventIdStrPast
+                                })
+                                const combinedPastDocs = [...docList, ...prDocsForPastEvent]
                                 return (
                                   <div
                                     key={event.id}
@@ -19629,30 +19774,69 @@ ${name}`
                                       </div>
                                     </div>
                                     <div style={{ fontSize: 'clamp(0.75rem, 1.6vw, 0.85rem)', color: s.muted, marginBottom: '0.5rem' }}>
-                                      Dokumente (anklicken = ansehen / als Vorlage nutzen):
+                                      Dokumente: <strong style={{ color: s.text }}>Ansehen</strong> oder <strong style={{ color: s.text }}>In Event übernehmen</strong> (geplante Veranstaltung).
                                     </div>
                                     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                      {docList.map((doc: any) => (
+                                      {combinedPastDocs.map((doc: any, docIdx: number) => (
                                         <li
-                                          key={doc.id || doc.name}
-                                          onClick={() => handleViewEventDocument(doc, event)}
+                                          key={doc.id || `past-doc-${docIdx}-${doc.name || ''}`}
                                           style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            alignItems: 'center',
+                                            justifyContent: 'space-between',
+                                            gap: '0.5rem',
                                             padding: '0.5rem 0.75rem',
                                             background: s.bgElevated,
                                             border: `1px solid ${s.accent}22`,
                                             borderRadius: '8px',
-                                            cursor: 'pointer',
                                             fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-                                            color: doc.documentUrl ? s.accent : s.text,
-                                            transition: 'background 0.2s, color 0.2s'
+                                            color: s.text
                                           }}
-                                          onMouseEnter={(e) => { e.currentTarget.style.background = `${s.accent}18`; e.currentTarget.style.color = s.accent }}
-                                          onMouseLeave={(e) => { e.currentTarget.style.background = s.bgElevated; e.currentTarget.style.color = doc.documentUrl ? s.accent : s.text }}
                                         >
-                                          {doc.documentUrl ? '🖨️ ' : '📎 '}{doc.name || doc.fileName || 'Dokument'}
+                                          <span style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                            {doc.documentUrl ? '🖨️ ' : '📎 '}{doc.name || doc.fileName || 'Dokument'}
+                                            {doc.werbematerialTyp ? (
+                                              <span style={{ color: s.muted, fontSize: '0.8rem' }}> ({doc.werbematerialTyp})</span>
+                                            ) : null}
+                                          </span>
+                                          <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleViewEventDocument(doc, event)}
+                                              style={{
+                                                padding: '0.35rem 0.65rem',
+                                                background: `${s.accent}18`,
+                                                border: `1px solid ${s.accent}44`,
+                                                borderRadius: '6px',
+                                                color: '#1c1a18',
+                                                cursor: 'pointer',
+                                                fontSize: 'inherit',
+                                                fontWeight: 600
+                                              }}
+                                            >
+                                              Ansehen
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => openPastTemplateModal(doc, event)}
+                                              style={{
+                                                padding: '0.35rem 0.65rem',
+                                                background: '#b54a1e',
+                                                border: '1px solid #b54a1e',
+                                                borderRadius: '6px',
+                                                color: '#fff',
+                                                cursor: 'pointer',
+                                                fontSize: 'inherit',
+                                                fontWeight: 600
+                                              }}
+                                            >
+                                              → Event übernehmen
+                                            </button>
+                                          </span>
                                         </li>
                                       ))}
-                                      {docList.length === 0 && (
+                                      {combinedPastDocs.length === 0 && (
                                         <li style={{ padding: '0.5rem', color: s.muted, fontSize: '0.9rem' }}>Keine Dokumente zu dieser Veranstaltung.</li>
                                       )}
                                     </ul>
@@ -19777,6 +19961,124 @@ ${name}`
 
         </main>
       </div>
+
+      {/* Vorlage aus Vergangenheit → geplantes Event (Modal) */}
+      {pastDocTemplateModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99996,
+            background: 'rgba(15, 20, 25, 0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem'
+          }}
+          onClick={() => setPastDocTemplateModal(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '26rem',
+              background: WERBEUNTERLAGEN_STIL.bgCard,
+              border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
+              borderRadius: '12px',
+              padding: '1.25rem',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#1c1a18', fontWeight: 700 }}>Vorlage übernehmen</h3>
+            <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#5c5650', lineHeight: 1.45 }}>
+              <strong style={{ color: '#1c1a18' }}>{pastDocTemplateModal.sourceDoc?.name || 'Dokument'}</strong>
+              {' '}von „{pastDocTemplateModal.sourceEvent?.title || 'Event'}“ wird kopiert nach:
+            </p>
+            {(() => {
+              const todayStart = new Date()
+              todayStart.setHours(0, 0, 0, 0)
+              const getEventEnd = (e: any) => {
+                const d = e.endDate ? new Date(e.endDate) : new Date(e.date)
+                d.setHours(23, 59, 59, 999)
+                return d
+              }
+              const upcoming = events
+                .filter((e: any) => getEventEnd(e) >= todayStart)
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+              return (
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#5c5650', marginBottom: '0.35rem' }}>
+                  Geplantes Ziel-Event
+                  <select
+                    value={pastDocTemplateModal.targetEventId}
+                    onChange={(e) =>
+                      setPastDocTemplateModal({
+                        ...pastDocTemplateModal,
+                        targetEventId: e.target.value
+                      })
+                    }
+                    style={{
+                      width: '100%',
+                      marginTop: '0.35rem',
+                      padding: '0.5rem 0.65rem',
+                      borderRadius: '8px',
+                      border: '1px solid #b54a1e44',
+                      background: '#fffefb',
+                      color: '#1c1a18',
+                      fontSize: '0.95rem'
+                    }}
+                  >
+                    {upcoming.map((ev: any) => (
+                      <option key={String(ev.id)} value={String(ev.id)}>
+                        {ev.title} – {new Date(ev.date).toLocaleDateString('de-DE')}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )
+            })()}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setPastDocTemplateModal(null)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'transparent',
+                  border: '1px solid #b54a1e66',
+                  borderRadius: '8px',
+                  color: '#1c1a18',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  applyPastDocumentTemplateToEvent(
+                    pastDocTemplateModal.sourceDoc,
+                    pastDocTemplateModal.sourceEvent,
+                    pastDocTemplateModal.targetEventId
+                  )
+                }
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#b54a1e',
+                  border: '1px solid #b54a1e',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontWeight: 600,
+                  cursor: 'pointer'
+                }}
+              >
+                Übernehmen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Redaktions-Modal: Texte redigieren mit Live-Vorschau, Bild, Links, QR */}
       {redactionEvent && (() => {

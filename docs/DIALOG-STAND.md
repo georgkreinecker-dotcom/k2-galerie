@@ -1,12 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 19.03.26 – **ök2:** Produktstory/Ideen-Story als `gallery.story` für Presse/PR eingeführt (getStoryForPr). Admin UI: Block „Deine Story für Presse & PR“ bei Meine Richtung != Kunst. Zusätzlich: UI entschlankt (Button „🗑️ Musterdaten löschen“ entfernt). Commit: a5ef746. Neuer UI-Fix: „Ausstellungs-Galerie – Adresse“ ist jetzt immer sichtbar (kein auf-/zuklappen mehr). Commit: 9f51041. Dazu: ök2 Muster-PR jetzt zuverlässig sichtbar (Upcoming-Filter greift bei Muster-Event auch wenn Datum „in der Vergangenheit“ liegt). Commit: 5862217. Zusätzlich: Admin „Flyer & Werbedokumente“ zeigt bei ök2 jetzt auch dann den vollen PR-Tool-Katalog, wenn der Muster-Event nur in der Vergangenheit existiert. Commit: 64a2150.
+**Letzter Stand:** 20.03.26 – **Vorlagen aus Vergangenheit:** Unter „Flyer & Werbedokumente“ → „Veranstaltungen der Vergangenheit“ gibt es pro Dokument **Ansehen** und **→ Event übernehmen** (Modal: Ziel-Event wählen). Gespeicherte Einladung/Presse mit HTML werden beim Ansehen nicht mehr durch die Standard-Vorlage ersetzt (Bugfix in `handleViewEventDocument`). PR-Dokumente der Vergangenheit erscheinen in der Liste mit; Newsletter/Social-Vorlagen mergen bei Übernahme zusätzlich `k2-pr-suggestions` fürs Ziel-Event. Commit: b260c31 ✅ auf GitHub (nach Push).
 
-**Was wir JETZT tun:** Für heute Schluss. Schwerpunkt morgen: „alte PR-Dokumente als Vorlagen wiederverwenden“ – UX festlegen (insb. Presse/Einladung) und dann in den richtigen Flow einbauen.
+**Was wir JETZT tun:** Georg kann im ök2-Admin testen: Vergangenheit aufklappen → Vorlage übernehmen → Rubrik des Ziel-Events prüfen.
 
-**Einordnung:** Sparten Schritt für Schritt: Richtung → story → Presse/PR. Kunst bleibt Vita/Bio; andere Sparten nutzen die eine Story-Quelle für alle PR-Ausgaben.
+**Einordnung:** Ein Standard: `openDocumentInApp` / bestehende Speicherwege (`saveDocuments`, `saveEvents`); keine K2-Daten in ök2 verletzt.
 
-**Nächster Schritt:** Georg testet morgen im ök2 Kontext: (1) Muster-Werkzeuge/PR-Dokumente erscheinen wie erwartet, (2) alte Dokumente sind als „Vorlagen-Nutzung“ eindeutig nutzbar, (3) „Ausstellungs-Galerie – Adresse“ bleibt immer sichtbar.
+**Nächster Schritt:** Kurz testen; bei Bedarf Feintuning Texte/Modal.
 
 ---
 
