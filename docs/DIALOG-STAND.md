@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** (folgt nach Push) ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** 9d228d0 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 4:** `VITE_OEK2_GAMIFICATION_LAYER_B` + `isGamificationLayerBEnabled()`; Heroes/Lesepfade; mök2 standalone. Doku Phase 4; Test `gamificationLayer.test.ts`. **Commit:** c3eef23 ✅ auf GitHub
 
