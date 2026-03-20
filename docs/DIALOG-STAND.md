@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Multi-User / Datentrennung (Klärung + Absicherung):** Antwort an Georg: Fremde sehen sich nicht gegenseitig im Browser (localStorage pro Gerät). Öffentlich für alle nur **K2**-Veröffentlichung (`gallery-data.json`). **Handy-Werk am Mac:** sehr wahrscheinlich **K2-Pfad** (z. B. K2-Vorschau/Admin) oder **Supabase** (ein gemeinsamer Werk-Speicher → Mac lädt nach). **Fix:** GalerieVorschau Mobile-Speichern-Button blockiert bei **ök2/VK2**, damit nie fälschlich K2/Supabase aus Demo-Kontext beschrieben wird (Modal war ohnehin UI-mäßig versteckt). **Commit:** 750e3ff ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** siehe letzter `git log -1`
+
+**Vorher:** 20.03.26 – **ök2 Handy: überlappende Buttons oben rechts behoben:** „Galerie teilen“ und Admin „Einstellungen“ nutzten bei **musterOnly** dieselbe `right`-Position, sobald `showAdminEntryOnGalerie` true war – **Ursache:** Bedingung `showAdminEntryOnGalerie && !musterOnly` für den Versatz. **Fix:** `galerieTeilenFixedRight` in **GaleriePage.tsx** – Versatz gilt auch für ök2; mobil ök2 **8.5rem**, K2/VK2 weiter **7rem**. **Commit:** 2d0c724 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Multi-User / Datentrennung (Klärung + Absicherung):** Antwort an Georg: Fremde sehen sich nicht gegenseitig im Browser (localStorage pro Gerät). Öffentlich für alle nur **K2**-Veröffentlichung (`gallery-data.json`). **Handy-Werk am Mac:** sehr wahrscheinlich **K2-Pfad** (z. B. K2-Vorschau/Admin) oder **Supabase** (ein gemeinsamer Werk-Speicher → Mac lädt nach). **Fix:** GalerieVorschau Mobile-Speichern-Button blockiert bei **ök2/VK2**, damit nie fälschlich K2/Supabase aus Demo-Kontext beschrieben wird (Modal war ohnehin UI-mäßig versteckt). **Commit:** 750e3ff ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** fa026ba ✅ auf GitHub
 
@@ -32,11 +36,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Multi-User-Thema verstanden; optional **Supabase**-Nutzung im Kopf behalten (ein Speicher → Geräte sehen dasselbe bei K2-Sync).
+**Was wir JETZT tun:** Gamification weiter **nur ök2** planen nach **GAMIFICATION-OEK2.md**; optional Handy-Check Teilen/Admin nach Deploy.
 
-**Einordnung:** Datentrennung K2/ök2; Vorschau-Mobile-Modal darf nie K2 beschreiben wenn Kontext ök2/VK2.
+**Einordnung:** Produkt/UX-Doku; kein Code-Zwang – später Schicht B per Config abschaltbar halten.
 
-**Nächster Schritt:** Bei Bedarf: ök2-Admin-Flyer/Event erneut testen; wenn „Werk am Mac“ wieder auftritt → notieren: **welche URL** (galerie vs galerie-oeffentlich vs Vorschau) und ob Supabase aktiv.
+**Nächster Schritt:** Bei neuer Gamification-UI in ök2: Checkliste in GAMIFICATION-OEK2.md abarbeiten; K2-Kern nicht anfassen ohne Anordnung.
 
 ---
 

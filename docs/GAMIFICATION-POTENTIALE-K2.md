@@ -1,5 +1,8 @@
 # Gamification – Potenziale in der K2-Galerie-App
 
+**Verbindlich für ök2 (Demo):** Architektur **Kern vs. optional einschaltbare Schicht**, alles ohne Gamification gleich nutzbar – siehe **[GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md)**.  
+**K2 (echte Galerie):** Gamification **nicht** vorgesehen; Kern unangetastet.
+
 **Stand:** 20.03.26 · **Ausgang (Georg):** Neue Generation braucht **Spaß, klare Ziele, Fortschritt** – nicht kindisch, sondern **smart**. Erster Baustein: **Admin → Eventplanung → Öffentlichkeitsarbeit** (Hero + Meilensteine).
 
 **Begriff:** *Gamification* = Belohnung, Fortschritt, sichtbare Ziele, kleine Triumphe – **ohne** Pflicht zu „spielen“.
@@ -44,5 +47,6 @@
 
 ## Verknüpfung
 
+- **ök2 – Leitlinien (abschaltbare Schicht):** **docs/GAMIFICATION-OEK2.md**
 - Medienstudio-Roadmap: **docs/MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md**
 - Produkt-Vision: **docs/PRODUKT-VISION.md**

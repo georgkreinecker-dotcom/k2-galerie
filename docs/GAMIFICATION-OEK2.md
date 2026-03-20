@@ -1,0 +1,67 @@
+# Gamification – nur ök2 (Demo), verbindliche Leitlinien
+
+**Stand:** 20.03.26 · **Entscheid Georg:** Gamification soll **K2 (echte Galerie) nicht** betreffen. Für **ök2** (öffentliche Demo, `context=oeffentlich` / `musterOnly`) ist sie sinnvoll – aber **nur als zusätzliche Schicht**, die man **theoretisch abschalten** kann, **ohne** dass sich Abläufe oder Erreichbarkeit von Funktionen ändern.
+
+---
+
+## 1. Geltungsbereich
+
+| Gilt | Gilt nicht |
+|------|------------|
+| **ök2** – öffentliche Galerie, Demo-Admin, Besucher- und Pilot:innen-Journey | **K2** – echte Galerie Martina & Georg: **keine** Gamification-Pflicht, **keine** UX-Experimente am Kern ohne dezidierte Anordnung (Regel: `k2-echte-galerie-eisernes-gesetz.mdc`) |
+| Optional: **VK2** nur, wenn ihr das später **explizit** so beschließt – dann eigener Abschnitt | Gamification **ersetzt** keine kritischen Abläufe (Veröffentlichen, Laden, Backup, Etikett, … siehe `docs/KRITISCHE-ABLAEUFE.md`) |
+
+---
+
+## 2. Kernprinzip: zwei Schichten
+
+**Schicht A – Kern (immer)**  
+Buttons, Formulare, Speichern, Tabs, Navigation: **genau so** wie ohne Gamification. Jede Funktion muss **vollständig nutzbar** sein, wenn **kein** Fortschrittsbalken, **kein** Hero, **kein** „X von Y“ sichtbar ist.
+
+**Schicht B – Gamification (optional, einschaltbar)**  
+Nur **Anreicherung**: sichtbarer Fortschritt, Meilensteine, ermutigende Labels, kleine Triumphe – **ohne** neue Pflichtklicks und **ohne** andere Buttons zu verstecken oder zu verschieben, die zum Kern gehören.
+
+**Merksatz:** Gamification **dazuschalten** = mehr Hinweise und Freude; **wegschalten** = dieselbe App, nur nüchterner – **derselbe Weg** zum Ziel.
+
+---
+
+## 3. Was „an- und abschaltbar“ technisch bedeutet
+
+- **Konzeptionell:** Kein Feature darf **nur** über einen Gamification-Pfad erreichbar sein (z. B. keine „Quest“ als einziger Einstieg in Presse oder Veröffentlichen).
+- **Umsetzung (Richtung):** Eine zentrale Stelle pro Mandant, z. B. Konstante oder Config nur für ök2 (`TENANT_CONFIGS.oeffentlich` oder `import.meta.env.VITE_…`), die **nur** die **Darstellung** von Schicht B steuert. Schicht A (Logik, Routen, Speicher) bleibt unverändert.
+- **Ausgeschaltet:** UI-Elemente von Schicht B werden nicht gerendert; **keine** Änderung an Datenflüssen, Keys, APIs oder Pflichtvalidierungen.
+
+Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in Schicht B so bauen, dass es **ohne** diese Teile weiter funktioniert.
+
+---
+
+## 4. Regeln für neue Gamification in ök2
+
+1. **Keine Funktion verschlechtern:** Speichern, Laden, Merge, Backup, Kontext K2/ök2/VK2 – unberührt lassen.
+2. **Kein Druck:** Keine Dark Patterns, keine künstliche Verlustangst.
+3. **Kein stilles Löschen** von Nutzerdaten wegen „Quest“ oder Meilenstein (Regel: `niemals-kundendaten-loeschen.mdc`).
+4. **Kontrast:** Auf hellem Admin-Hintergrund nur lesbare Farben (`ui-kontrast-leserbarkeit.mdc`).
+5. **Ein Standard:** Gleiche Art von Fortschrittsanzeige überall in ök2, wo ihr sie nutzt – nicht pro Tab ein neues Spiel (Sportwagenmodus: `ein-standard-problem.mdc`).
+
+---
+
+## 5. Checkliste vor jeder ök2-Gamification-Änderung (Entwicklung / KI)
+
+- [ ] Erreicht man alle bisherigen Aktionen noch mit **denselben** Klicks, wenn Fortschritt/Hero **ausgeblendet** wäre?
+- [ ] Wird **irgendein** kritischer Ablauf (siehe KRITISCHE-ABLAEUFE) nur in Schicht B versteckt oder erschwert? → **Nein** erforderlich.
+- [ ] Liegt die Änderung **nur** in ök2-Kontext / `musterOnly` / `oeffentlich`-Keys – **nicht** am K2-Kern?
+- [ ] Sind Texte und Elemente **optional** (kein Blocker für „nur schnell erledigen“)?
+
+---
+
+## 6. Verknüpfungen
+
+- **Ideen & weiterer Potenzial-Katalog (App-weit, historisch „K2“ im Dateinamen):** [GAMIFICATION-POTENTIALE-K2.md](./GAMIFICATION-POTENTIALE-K2.md) – für ök2 gilt **diese** Datei (GAMIFICATION-OEK2) als **verbindliche Architektur**; die Potenzial-Datei bleibt Ideensammlung, nicht Gegenteil zu „abschaltbar“.
+- Medienstudio / Ton: [MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md](./MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md), [PRODUKT-VISION.md](./PRODUKT-VISION.md)
+- Datentrennung ök2: [K2-OEK2-DATENTRENNUNG.md](./K2-OEK2-DATENTRENNUNG.md)
+
+---
+
+## Kurzfassung
+
+**Nur ök2.** Gamification = **Schicht B** über dem **unveränderten Kern**. **Alles muss ohne Schicht B** gleich funktionieren – **an- und abschaltbar**, ohne den Ablauf zu merken. **K2** braucht das nicht; dort kein Druck zur Gamification.
