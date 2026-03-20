@@ -12,7 +12,7 @@ import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
-import { isGamificationLayerBEnabled } from '../utils/gamificationLayer'
+import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
@@ -108,6 +108,7 @@ interface MarketingOek2PageProps {
 
 export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek2PageProps) {
   const location = useLocation()
+  const { showChecklists: showGamificationChecklists } = useGamificationChecklistsUi()
   const [slogan, setSlogan] = useState(getStoredSlogan)
   const [botschaft, setBotschaft] = useState(getStoredBotschaft)
   const [oefWelcome, setOefWelcome] = useState(getStoredOefImage(OEF_WELCOME_KEY))
@@ -210,7 +211,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', maxWidth: '520px' }}>
               2. {botschaft}
             </p>
-            {isGamificationLayerBEnabled() && (
+            {showGamificationChecklists && (
               <p
                 style={{
                   margin: '0.75rem 0 0',
@@ -287,7 +288,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#5ffbf1' }}>Marketing ök2 (mök2)</h2>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>{slogan}</p>
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>2. {botschaft}</p>
-          {isGamificationLayerBEnabled() && (
+          {showGamificationChecklists && (
             <p
               style={{
                 margin: '0.75rem 0 0',

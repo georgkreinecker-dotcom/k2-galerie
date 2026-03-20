@@ -15,3 +15,33 @@ export function isGamificationLayerBEnabled(): boolean {
   }
   return true
 }
+
+/** Profi-Modus: Nutzer blendet Checklisten/Fortschritts-Hinweise im Admin aus (pro Gerät, localStorage). */
+export const GAMIFICATION_CHECKLISTS_USER_HIDE_KEY = 'k2-admin-hide-gamification-checklists'
+
+export const GAMIFICATION_CHECKLISTS_PREF_EVENT = 'k2-gamification-checklists-pref'
+
+export function isGamificationChecklistsHiddenByUser(): boolean {
+  try {
+    return localStorage.getItem(GAMIFICATION_CHECKLISTS_USER_HIDE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+export function setGamificationChecklistsHidden(hidden: boolean): void {
+  try {
+    if (hidden) localStorage.setItem(GAMIFICATION_CHECKLISTS_USER_HIDE_KEY, '1')
+    else localStorage.removeItem(GAMIFICATION_CHECKLISTS_USER_HIDE_KEY)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(GAMIFICATION_CHECKLISTS_PREF_EVENT))
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Schicht B an **und** Nutzer hat Profi-Ausblendung nicht gewählt. */
+export function shouldShowGamificationChecklists(): boolean {
+  return isGamificationLayerBEnabled() && !isGamificationChecklistsHiddenByUser()
+}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
-import { isGamificationLayerBEnabled } from '../../src/utils/gamificationLayer'
+import { useGamificationChecklistsUi } from '../../src/hooks/useGamificationChecklistsUi'
 
 const s = WERBEUNTERLAGEN_STIL
 const NEWSLETTER_KEY = 'k2-newsletter-kontakte'
@@ -22,6 +22,7 @@ interface NewsletterTabProps {
 }
 
 export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = false }: NewsletterTabProps) {
+  const { showChecklists: showGamificationChecklists } = useGamificationChecklistsUi()
   const [kontakte, setKontakte] = useState<any[]>(loadKontakte)
   const [nlName, setNlName] = useState('')
   const [nlEmail, setNlEmail] = useState('')
@@ -105,7 +106,7 @@ export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = f
       </div>
 
       {/* Gamification Phase 2: Einladungsliste – nur ök2/VK2, nur Anzeige */}
-      {showGamification && isGamificationLayerBEnabled() && (
+      {showGamification && showGamificationChecklists && (
         <div
           style={{
             display: 'flex',

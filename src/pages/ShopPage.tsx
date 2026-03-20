@@ -11,7 +11,7 @@ import { getShopStorageKeys } from '../utils/shopContextKeys'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import { isGamificationLayerBEnabled } from '../utils/gamificationLayer'
+import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import '../App.css'
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
@@ -59,6 +59,7 @@ interface CartItem {
 const ShopPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const { showChecklists: showGamificationChecklists } = useGamificationChecklistsUi()
   const [cart, setCart] = useState<CartItem[]>([])
   const [showCheckout, setShowCheckout] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'transfer'>('card')
@@ -2049,7 +2050,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         <div style={{ borderBottom: `2px solid ${s.accent}15`, maxWidth: '960px', margin: '0 auto 1.5rem' }} />
 
         {/* Gamification Phase 3: Demo-Kasse – nur Lesepfad (ök2, Admin, nicht VK2) */}
-        {fromOeffentlich && isAdminContext && !fromVk2 && isGamificationLayerBEnabled() && (() => {
+        {fromOeffentlich && isAdminContext && !fromVk2 && showGamificationChecklists && (() => {
           const demoSteps = [
             { id: 'dk1', done: allArtworks.length > 0, label: 'Werke geladen', hint: 'Sortiment für die Kasse' },
             { id: 'dk2', done: cart.length > 0, label: 'Warenkorb', hint: 'Artikel ausgewählt' },

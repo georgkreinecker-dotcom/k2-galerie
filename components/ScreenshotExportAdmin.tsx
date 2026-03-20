@@ -73,7 +73,7 @@ import {
   WERBEUNTERLAGEN_STIL,
   PROMO_FONTS_URL,
 } from '../src/config/marketingWerbelinie'
-import { isGamificationLayerBEnabled } from '../src/utils/gamificationLayer'
+import { useGamificationChecklistsUi } from '../src/hooks/useGamificationChecklistsUi'
 import '../src/App.css'
 
 /** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
@@ -1713,6 +1713,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   } | null>(null)
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
+  const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
   const adminTopRef = useRef<HTMLDivElement>(null)
@@ -13092,7 +13093,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
               {/* Gamification: Werke (nur ök2) / Mitglieder (nur VK2) – nur Anzeige, kein Schreiben */}
-              {tenant.isOeffentlich && isGamificationLayerBEnabled() && (() => {
+              {tenant.isOeffentlich && showGamificationChecklists && (() => {
                 const list = Array.isArray(allArtworks) ? allArtworks : []
                 const hasArtImg = (a: any) => {
                   const u = (a?.imageUrl || a?.imageRef || a?.previewUrl || '').toString().trim()
@@ -13201,7 +13202,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                 )
               })()}
-              {tenant.isVk2 && isGamificationLayerBEnabled() && (() => {
+              {tenant.isVk2 && showGamificationChecklists && (() => {
                 const ml = (vk2Stammdaten?.mitglieder || []).filter((m: any) => String(m?.name || '').trim())
                 const mAny = ml.length >= 1
                 const hasFoto = (m: any) => String(m?.mitgliedFotoUrl || m?.imageUrl || '').trim().length > 0
@@ -14594,7 +14595,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             overflow: 'visible'
           }}>
             {/* Gamification: Galerie gestalten (nur ök2/VK2) – nur Anzeige aus State, kein neuer Speicherpfad */}
-            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
+            {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (() => {
               const designTenantId = tenant.isOeffentlich ? 'oeffentlich' : 'vk2'
               const baselineGalerie = getGaleriePageTextsBaseline(designTenantId)
               const pg = pageContent
@@ -14931,7 +14932,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <strong style={{ color: s.text }}>Veröffentlichen</strong> = das Aushängeschild der Galerie sichtbar machen. Besucher und andere Geräte sehen dann den aktuellen Stand.
             </p>
             {/* Gamification Phase 2: Stand-Hinweis nur ök2/VK2 – kein Auto-Reload, keine Server-Abfrage */}
-            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (
+            {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (
               <div
                 style={{
                   display: 'flex',
@@ -15162,6 +15163,46 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted }}>
               <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', padding: 0 }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch (Hilfe)</button> – Erste Schritte, Galerie gestalten, Admin, FAQ{tenant.isVk2 ? ', Vereine' : ', VK2/ök2'}.
             </p>
+
+            {/* Profi: Fortschritts-Hinweise & Checklisten (X/4, Lesepfade) ein Klick ausblenden */}
+            <div
+              style={{
+                marginBottom: '1.25rem',
+                padding: '1rem 1.15rem',
+                background: s.bgElevated,
+                border: `1px solid ${s.accent}33`,
+                borderRadius: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem', marginBottom: '0.25rem' }}>🎯 Profi-Modus</div>
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: s.muted, lineHeight: 1.5 }}>
+                    Fortschritts-Hinweise und Checklisten im Admin ausblenden – wenn du das System schon gut kennst. Jederzeit hier wieder einschalten.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={profiGamificationChecklistsHidden}
+                  onClick={() => setProfiGamificationChecklistsHidden(!profiGamificationChecklistsHidden)}
+                  style={{
+                    flexShrink: 0,
+                    padding: '0.55rem 1.1rem',
+                    borderRadius: '10px',
+                    border: `2px solid ${profiGamificationChecklistsHidden ? s.accent : `${s.accent}44`}`,
+                    background: profiGamificationChecklistsHidden ? `${s.accent}22` : s.bgCard,
+                    color: '#1c1a18',
+                    fontWeight: 700,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  {profiGamificationChecklistsHidden ? '✅ Checklisten aus – wieder anzeigen' : 'Checklisten ausblenden (Profi)'}
+                </button>
+              </div>
+            </div>
 
             {/* Sichtbarer Hinweis: Du bist Testpilot (ök2 oder VK2) – voller Gratis-Zugang */}
             {(tenant.isOeffentlich || tenant.isVk2) && (
@@ -15461,7 +15502,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <strong>VK2 Stammdaten:</strong> Verein mit Adresse, Vorstand und Mitgliedern. Alle Felder optional – nur Name ausfüllen wo bekannt.
                     </div>
                     {/* Gamification Phase 3: Vereinsprofil – nur Anzeige (vk2Stammdaten) */}
-                    {isGamificationLayerBEnabled() && (() => {
+                    {showGamificationChecklists && (() => {
                       const v = vk2Stammdaten?.verein
                       const n1 = !!(v?.name || '').trim()
                       const n2 = !!(v?.address || '').trim() && !!(v?.city || '').trim()
@@ -16844,7 +16885,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Backup & Wiederherstellung – K2, ök2 und VK2 getrennt; je Kontext eigenes Backup */}
                 <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
-                  {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
+                  {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (() => {
                     const raw = getLastBackupDownloadExported(tenant.isOeffentlich ? 'oeffentlich' : 'vk2')
                     const label = raw
                       ? new Date(raw).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
@@ -17965,7 +18006,7 @@ ${name}`
               )}
 
               {/* Gamification: Presse & Medien – gleiche Bildsprache wie Öffentlichkeitsarbeit (eine SVG-Quelle) */}
-              {isGamificationLayerBEnabled() && (
+              {showGamificationChecklists && (
               <div
                 style={{
                   display: 'flex',
@@ -18149,7 +18190,7 @@ ${name}`
             {eventplanSubTab === 'events' && (
             <>
             {/* Gamification Phase 2: Events – nur ök2/VK2, nur Anzeige */}
-            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
+            {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (() => {
               const todayStart = new Date()
               todayStart.setHours(0, 0, 0, 0)
               const getEventEnd = (e: any) => {
@@ -19693,7 +19734,7 @@ ${name}`
               </div>
             )}
             {/* Gamification-Baustein: visueller Einstieg + Fortschritt (neue Generation, ohne Videospiel-Feeling) */}
-            {isGamificationLayerBEnabled() && (
+            {showGamificationChecklists && (
             <div
               style={{
                 display: 'flex',
