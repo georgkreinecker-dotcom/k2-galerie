@@ -31,7 +31,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getDefaultCategoryForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -3359,16 +3359,31 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
   }, [showAddModal, editingArtwork])
 
-  // ök2: Nach Speichern der Richtung in Stammdaten – Filter „Typ“ und „Kategorie“ in Werke verwalten anpassen.
+  // ök2: Nach Speichern der Richtung in Stammdaten – nur „Typ“ für Werkkatalog; Kategorie bleibt Nutzerwahl nicht aus Stammdaten überschreiben (Grund: siehe Reset bei Tab/Modal).
   useEffect(() => {
     if (!tenant.isOeffentlich) return
     const dirs = galleryData?.focusDirections
     if (!Array.isArray(dirs) || dirs.length === 0) return
     const typ = getDefaultEntryTypeForFocusDirections(dirs)
-    const cat = getDefaultCategoryForFocusDirections(dirs, typ)
     setEntryTypeFilter(typ)
-    setCategoryFilter(cat)
   }, [tenant.isOeffentlich, galleryData?.focusDirections])
+
+  /** Werke verwalten: Kategorie-Filter immer wieder „Alle“, wenn man zur Listenansicht zurückkommt – sonst wirkt es wie „Werke weg“. */
+  const prevActiveTabForCategoryRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (activeTab === 'werke' && prevActiveTabForCategoryRef.current != null && prevActiveTabForCategoryRef.current !== 'werke') {
+      setCategoryFilter('alle')
+    }
+    prevActiveTabForCategoryRef.current = activeTab
+  }, [activeTab])
+
+  const prevShowAddModalForCategoryRef = useRef(showAddModal)
+  useEffect(() => {
+    if (prevShowAddModalForCategoryRef.current && !showAddModal) {
+      setCategoryFilter('alle')
+    }
+    prevShowAddModalForCategoryRef.current = showAddModal
+  }, [showAddModal])
 
   // ök2: Beim Öffnen „Neues Werk“ Sparte (Typ) und Kategorie aus gespeicherter Richtung vorausfüllen.
   useEffect(() => {
@@ -9572,10 +9587,8 @@ ${'='.repeat(60)}
         }
       }
       
-      // KRITISCH: Setze Filter auf 'alle' damit das neue Werk sichtbar ist
-      if (categoryFilter !== 'alle' && categoryFilter !== artworkData.category) {
-        setCategoryFilter(artworkData.category)
-      }
+      // Nach Speichern: Kategorie-Filter auf „Alle“ – volle Liste sichtbar (kein Eindruck „Werk fehlt“ durch aktiven Filter)
+      setCategoryFilter('alle')
       
       if (searchQuery) setSearchQuery('')
       
@@ -14633,7 +14646,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               📁 Präsentationsmappen
             </h2>
             <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              <strong style={{ color: s.text }}>Vorschau &amp; Druck</strong> – Kurzvariante, Vollversion und Prospekt/Flyer (gleiches Design). Kein Bearbeitungswerkzeug in der App: öffnen, ansehen, als PDF drucken.
+              Kurzvariante, Vollversion und Prospekt/Flyer (gleiches Design): Links öffnen, im Browser als PDF drucken. Vorschau, kein Bearbeiten in der App.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
@@ -14655,9 +14668,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 Prospekt/Flyer (neuer Tab)
               </a>
             </div>
-            <p style={{ marginTop: '1rem', fontSize: '0.85rem', color: s.muted }}>
-              Als PDF drucken für Weitergabe.
-            </p>
           </section>
           )
         })()}
@@ -19431,7 +19441,7 @@ ${name}`
                                 typ: 'praesentationsmappen' as const,
                                 icon: '📁',
                                 titel: 'Präsentationsmappen',
-                                beschreibung: 'Vorschau-Vorlagen (Kurz/Vollversion/Prospekt) – nicht wie Flyer oder Presse in der App erzeugbar',
+                                beschreibung: 'Vorschau: Kurzvariante, Vollversion und Prospekt/Flyer über die Links öffnen, im Browser als PDF drucken. Nicht wie Flyer oder Presse in der App erzeugbar; keine Inhaltsbearbeitung hier.',
                                 docs: byTyp['praesentationsmappe-kurz'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -19589,9 +19599,6 @@ ${name}`
 
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', lineHeight: 1.45, color: '#5c5650', padding: '0.55rem 0.65rem', background: 'rgba(181,74,30,0.06)', border: '1px solid rgba(181,74,30,0.2)', borderRadius: 8 }}>
-                                              <strong style={{ color: '#1c1a18' }}>Hinweis:</strong> Kein „Jetzt erstellen“ wie bei Flyer oder Presse. Die Mappen sind <strong>Vorschau-Vorlagen</strong> – öffnen, ansehen, im Browser als PDF drucken. Eine freie Bearbeitung der Inhalte in der App gibt es dafür nicht.
-                                            </p>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                               <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Kurzvariante
