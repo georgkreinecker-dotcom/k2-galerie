@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF sauber:** `renderStyledPdfBlobFromHtmlString` blendet **`.no-print`** für html2canvas aus (keine Format-Leiste im PDF). **Plakat:** PDF-Seite **A3**, breiteres Iframe, höhere canvas-Scale; bei Vorschau-HTML (`min(100%, 760px)`) **Export-Overrides** auf Druckgrößen (297×420 mm, große Typo/QR). Tests + Build grün – **Commit:** (nach Push eintragen) ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF sauber:** `renderStyledPdfBlobFromHtmlString` blendet **`.no-print`** für html2canvas aus (keine Format-Leiste im PDF). **Plakat:** PDF-Seite **A3**, breiteres Iframe, höhere canvas-Scale; bei Vorschau-HTML (`min(100%, 760px)`) **Export-Overrides** auf Druckgrößen (297×420 mm, große Typo/QR). Tests + Build grün – **Commit:** b504209 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF zuerst (html2pdf → Blob), Web Share, sonst mailto + Download – **Commit:** 8a85c2b
 
