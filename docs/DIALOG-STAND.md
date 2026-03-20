@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** e700042 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification ök2 – Phasenplan (Georg):** **docs/GAMIFICATION-PLAN-OEK2-PHASEN.md** – Phase **0** = bis Markt stabil **kein** neuer Gamification-Code; Phase **1–3** mit Reihenfolge (Guide → Galerie gestalten → Werke-Ampel nur Anzeige …), Risiko-Stufen, **DoD**, Umkehr kleiner Commits. Verknüpfungen in **GAMIFICATION-OEK2.md**, **GAMIFICATION-POTENTIALE-K2.md**, **docs/00-INDEX.md**. **Commit:** COMMITHASH_PLACEHOLDER ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** e700042 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **ök2 Handy: überlappende Buttons oben rechts behoben:** „Galerie teilen“ und Admin „Einstellungen“ nutzten bei **musterOnly** dieselbe `right`-Position, sobald `showAdminEntryOnGalerie` true war – **Ursache:** Bedingung `showAdminEntryOnGalerie && !musterOnly` für den Versatz. **Fix:** `galerieTeilenFixedRight` in **GaleriePage.tsx** – Versatz gilt auch für ök2; mobil ök2 **8.5rem**, K2/VK2 weiter **7rem**. **Commit:** 2d0c724 ✅ auf GitHub
 
@@ -36,11 +38,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Gamification weiter **nur ök2** planen nach **GAMIFICATION-OEK2.md**; optional Handy-Check Teilen/Admin nach Deploy.
+**Was wir JETZT tun:** **Phase 0** einhalten (kein neuer Gamification-Code bis Freigabe); Plan liegt in **GAMIFICATION-PLAN-OEK2-PHASEN.md**.
 
-**Einordnung:** Produkt/UX-Doku; kein Code-Zwang – später Schicht B per Config abschaltbar halten.
+**Einordnung:** Mut mit Sorgfalt; Umkehr = revert / kleine PRs.
 
-**Nächster Schritt:** Bei neuer Gamification-UI in ök2: Checkliste in GAMIFICATION-OEK2.md abarbeiten; K2-Kern nicht anfassen ohne Anordnung.
+**Nächster Schritt:** Nach Markt-Freigabe Phase 1 starten laut Phasenplan; vorher nur **GAMIFICATION-OEK2.md**-Checkliste bei jedem Eingriff.
 
 ---
 

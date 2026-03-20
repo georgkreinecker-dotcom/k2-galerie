@@ -56,6 +56,7 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 
 ## 6. Verknüpfungen
 
+- **Phasenplan (Reihenfolge, Risiko, Umkehr):** [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md)
 - **Ideen & weiterer Potenzial-Katalog (App-weit, historisch „K2“ im Dateinamen):** [GAMIFICATION-POTENTIALE-K2.md](./GAMIFICATION-POTENTIALE-K2.md) – für ök2 gilt **diese** Datei (GAMIFICATION-OEK2) als **verbindliche Architektur**; die Potenzial-Datei bleibt Ideensammlung, nicht Gegenteil zu „abschaltbar“.
 - Medienstudio / Ton: [MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md](./MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md), [PRODUKT-VISION.md](./PRODUKT-VISION.md)
 - Datentrennung ök2: [K2-OEK2-DATENTRENNUNG.md](./K2-OEK2-DATENTRENNUNG.md)
