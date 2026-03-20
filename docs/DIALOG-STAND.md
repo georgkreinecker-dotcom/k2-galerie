@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **QR-Code-Plakat entfernt** (Admin Eventplan → Öffentlichkeitsarbeit): Funktion `printQRCodePlakat`, Karte und Typ `qr-plakat` raus – zu verwirrend für Nutzer; QR bleiben in Plakat, Flyer, Newsletter. Doku/mök2/Regeln angepasst. **Commit:** 1975114 ✅
+**Letzter Stand:** 20.03.26 – **Presse 1 Klick + Presse & Medien:** Nach „An Medien – 1 Klick“ zusätzlich `setActiveTab('presse')` + Scroll zu `#admin-medienspiegel-bcc`; Hinweis in der Meldung: zuerst Mail-Text einfügen, dann BCC kopieren. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** 588252e ✅
 
-**Vorher:** 20.03.26 – Werbemittel Split-Ansicht Presse/Social/Newsletter/Plakat/Flyer; **Commit: 9c4c412**
+**Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
 
-**Was wir JETZT tun:** Nach Push: Vercel „Ready“, Admin Öffentlichkeitsarbeit kurz prüfen (keine QR-Plakat-Karte).
+**Was wir JETZT tun:** Nach Push: Vercel „Ready“; Admin → Event → Öffentlichkeitsarbeit → Presseaussendung: „An Medien – 1 Klick“ kurz testen.
 
-**Einordnung:** Weniger parallele Wege; einheitliche Werbemittel über Plakat/Flyer/Newsletter.
+**Einordnung:** Ein Standard / eine Hauptaktion für Medienversand (Georg: Sportwagenprinzip); Viewer bleibt für Kontrolle.
 
-**Nächster Schritt:** Deployment prüfen; alte gespeicherte Dokumente `werbematerialTyp: qr-plakat` ggf. in Dokumentenliste ignorieren oder manuell löschen.
+**Nächster Schritt:** Deployment prüfen; bei Bedarf PRESSEARBEIT-STANDARD.md um denselben Hinweis ergänzen.
 
 ---
 

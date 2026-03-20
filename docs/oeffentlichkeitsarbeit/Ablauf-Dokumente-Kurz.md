@@ -1,6 +1,6 @@
 # Ablauf Dokumente – Kurzfassung (Phase 1)
 
-**Stand:** 17.03.26 · **Zweck:** In einer Seite verstehen: von der Generierung bis zum Absenden.
+**Stand:** 20.03.26 · **Zweck:** In einer Seite verstehen: von der Generierung bis zum Absenden.
 
 **Ausführliche Quelle:** [../ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT.md](../ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT.md).
 
@@ -19,13 +19,15 @@
 ## 3. Anzeigen & Bearbeiten
 
 - **Öffnen:** Klick auf das Dokument → In-App-Viewer oder Druckansicht.
-- **Anpassen:** Datum, Ort, Kontakt prüfen; bei Presse „Presse-Paket kopieren“ (Betreff + Text in Zwischenablage).
+- **Presse (Sportwagen):** **„An Medien – 1 Klick“** unter dem Event → Presse-Text in die Zwischenablage **und** Wechsel zum Tab **Presse & Medien** mit Sprung zum **Medienspiegel** (nächster Schritt: BCC-Adressen kopieren). **Reihenfolge:** Zuerst Text in der Mail einfügen, **danach** „E-Mail-Adressen kopieren“ – sonst überschreibt der zweite Klick die Zwischenablage. **„Ansehen“** = nur Viewer.
+- **Tab Presse & Medien:** weiterhin „Presse-Paket kopieren“ aus Vorlage/Variablen.
+- **Anpassen:** Datum, Ort, Kontakt prüfen; nach Änderung speichern, dann erneut „An Medien – 1 Klick“.
 - **Speichern:** Änderungen werden in der Dokumenten-Liste gespeichert.
 
 ## 4. Absenden (außerhalb der App)
 
 - **Kein E-Mail-Versand aus der App.** Du kopierst oder druckst und versendest selbst.
-- **Presse:** „Presse-Paket kopieren“ → in E-Mail einfügen. Medienspiegel (Eventplanung → Presse & Medien): E-Mail-Adressen kopieren → BCC.
+- **Presse:** „An Medien – 1 Klick“ oder „Presse-Paket kopieren“ → Text in Mail; Medienspiegel → E-Mail-Adressen kopieren → BCC.
 - **Newsletter / Flyer / Plakat:** In Zwischenablage oder „Als PDF drucken“ → dann versenden oder auslegen.
 
 ---
@@ -36,5 +38,5 @@
 |-------|-----|
 | Generierung | Event + Stammdaten → Content (Presse, Newsletter, …) |
 | Anlegen | Klick auf PR-Vorschlag → Eintrag in Dokumenten-Liste |
-| Bearbeiten | Dokument öffnen, anpassen, „Presse-Paket kopieren“ o. Ä. |
+| Bearbeiten | Presse: „An Medien – 1 Klick“ oder Ansehen; sonst Dokument öffnen, anpassen |
 | Absenden | Kopieren/Drucken → E-Mail-Programm / Versand selbst |

@@ -183,6 +183,47 @@ function decodeHtmlDataUrl(fileData: string): string | null {
   }
 }
 
+/** Klartext aus HTML für E-Mail/Zwischenablage (Presseaussendung). */
+function htmlToPlainTextForClipboard(html: string): string {
+  if (!html || typeof html !== 'string') return ''
+  try {
+    if (typeof document !== 'undefined') {
+      const parsed = new DOMParser().parseFromString(html, 'text/html')
+      const text = parsed.body?.innerText ?? ''
+      if (text.trim()) return text.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
+    }
+  } catch {
+    /* Fallback unten */
+  }
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n\s+/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim()
+}
+
+/** Betreff-Zeile aus gespeichertem Presse-HTML (h1/title) oder Fallback. */
+function extractPresseBetreffFromHtml(html: string, fallbackBetreff: string): string {
+  const m = html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i)
+  if (m?.[1]) {
+    const plain = m[1].replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()
+    if (plain.length > 3) return plain
+  }
+  const t = html.match(/<title>([\s\S]*?)<\/title>/i)
+  if (t?.[1]) {
+    const plain = t[1].replace(/<[^>]+>/g, ' ').trim()
+    if (plain.length > 3) return plain
+  }
+  return fallbackBetreff
+}
+
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
@@ -7950,6 +7991,57 @@ ${'='.repeat(60)}
     } catch (err) {
       console.error('Dokument öffnen (Handler):', err)
       alert('Beim Öffnen ist ein Fehler aufgetreten: ' + (err instanceof Error ? err.message : String(err)) + '\n\nBitte in der Browser-Konsole (F12) nachsehen.')
+    }
+  }
+
+  /** Sportwagen: ein Klick – Betreff + Presse-Text in die Zwischenablage (gespeichertes HTML oder Vorschlag/Event-Text). */
+  const copyPressePaketForMedien = async (prDoc: any, ev: any) => {
+    try {
+      const fileData = prDoc?.fileData || prDoc?.data
+      const fileType = String(prDoc?.fileType || prDoc?.type || '')
+      const ort = (ev?.location || '').trim() || '[Ort]'
+      const fallbackBetreff = `Presseinformation – ${ev?.title || 'Veranstaltung'}, ${formatEventDates(ev)}, ${ort}`
+
+      let plainBody = ''
+      let betreff = fallbackBetreff
+
+      if (fileData && typeof fileData === 'string' && fileData.startsWith('data:') && fileType.includes('html')) {
+        const htmlDecoded = decodeHtmlDataUrl(fileData)
+        if (htmlDecoded) {
+          betreff = extractPresseBetreffFromHtml(htmlDecoded, fallbackBetreff)
+          plainBody = htmlToPlainTextForClipboard(htmlDecoded)
+        }
+      }
+
+      if (!plainBody.trim() && ev?.id) {
+        const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+        const evSug = suggestionsList.find((sg: any) => sg.eventId === ev.id)
+        const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
+        const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
+        plainBody = (presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim()
+      }
+
+      if (!plainBody.trim()) {
+        alert('Kein Text zum Kopieren.\n\nBitte Presseaussendung speichern oder über „Neu erstellen“ anlegen – danach erneut „An Medien – 1 Klick“.')
+        return
+      }
+
+      const paket = `Betreff: ${betreff}\n\n${plainBody}`
+      await navigator.clipboard.writeText(paket)
+      setActiveTab('presse')
+      window.scrollTo({ top: 200, behavior: 'smooth' })
+      window.setTimeout(() => {
+        document.getElementById('admin-medienspiegel-bcc')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 150)
+      alert(
+        '✅ Presse-Text ist in der Zwischenablage.\n\n' +
+          'Du bist jetzt bei Presse & Medien (Medienspiegel).\n\n' +
+          '1) E-Mail-Programm öffnen – Betreff und Text einfügen (einmal Einfügen).\n' +
+          '2) Dann hier: Medien auswählen → „E-Mail-Adressen kopieren“ für BCC (zweiter Klick – sonst würde die Zwischenablage überschrieben, bevor du den Text eingefügt hast).'
+      )
+    } catch (e) {
+      console.error('copyPressePaketForMedien', e)
+      alert('Kopieren ist fehlgeschlagen. Bitte „Ansehen“ öffnen und Text markieren – oder erneut versuchen.')
     }
   }
 
@@ -16900,8 +16992,8 @@ ${name}`
                 <strong style={{ color: s.text }}>Presseaussendung zu einem konkreten Event?</strong> (Vernissage, Eröffnung, Lesung …) → <button type="button" onClick={() => setActiveTab('eventplan')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}>Events & Ausstellungen</button> → Event wählen → Presseaussendung. Hier nur Medienkit und allgemeine Vorlage (ohne Event).
               </p>
 
-              {/* Medienspiegel: eigene Medienliste, Auswahl, ein Klick → E-Mail-Adressen kopieren (BCC) */}
-              <div style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+              {/* Medienspiegel: eigene Medienliste, Auswahl, ein Klick → E-Mail-Adressen kopieren (BCC). id = Sprung von Event „An Medien – 1 Klick“. */}
+              <div id="admin-medienspiegel-bcc" style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
                 <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📋 Medienspiegel</h3>
                 <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
                   Lege deine Presse-Empfänger an (einzeln oder aus einer Liste). <strong style={{ color: s.text }}>Häkchen setzen, welche Medien du kontaktieren willst – ein Klick kopiert alle E-Mail-Adressen</strong> (z. B. für BCC in deinem E-Mail-Programm).
@@ -19079,47 +19171,115 @@ ${name}`
                                         {hatDokumente && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                             {karte.docs.map((doc: any) => (
-                                              <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => karte.onOpen(doc)}
-                                                  style={{
-                                                    flex: 1,
-                                                    textAlign: 'left',
-                                                    padding: '0.45rem 0.6rem',
-                                                    background: '#fff',
-                                                    border: '1px solid rgba(34,197,94,0.25)',
-                                                    borderRadius: '6px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.82rem',
-                                                    color: '#15803d',
-                                                    fontWeight: 500,
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap'
-                                                  }}
-                                                  title={doc.name || doc.fileName}
-                                                >
-                                                  {doc.name?.length > 38 ? doc.name.slice(0, 35) + '…' : (doc.name || doc.fileName || 'Öffnen')}
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  onClick={() => karte.onDelete(doc)}
-                                                  style={{
-                                                    padding: '0.45rem 0.55rem',
-                                                    background: 'transparent',
-                                                    border: '1px solid rgba(220,38,38,0.2)',
-                                                    borderRadius: '6px',
-                                                    color: '#dc2626',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.9rem',
-                                                    lineHeight: 1,
-                                                    flexShrink: 0
-                                                  }}
-                                                  title="Dokument entfernen"
-                                                >
-                                                  ×
-                                                </button>
+                                              <div key={doc.id || doc.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                {karte.typ === 'presse' ? (
+                                                  <>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => void copyPressePaketForMedien(doc, event)}
+                                                      style={{
+                                                        width: '100%',
+                                                        textAlign: 'center',
+                                                        padding: '0.5rem 0.65rem',
+                                                        background: '#15803d',
+                                                        border: '1px solid rgba(21,128,61,0.35)',
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.84rem',
+                                                        color: '#fff',
+                                                        fontWeight: 600
+                                                      }}
+                                                      title="Betreff und Text in die Zwischenablage – für E-Mail an Medien"
+                                                    >
+                                                      📧 An Medien – 1 Klick
+                                                    </button>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => karte.onOpen(doc)}
+                                                        style={{
+                                                          flex: 1,
+                                                          textAlign: 'left',
+                                                          padding: '0.4rem 0.55rem',
+                                                          background: '#fff',
+                                                          border: '1px solid rgba(34,197,94,0.2)',
+                                                          borderRadius: '6px',
+                                                          cursor: 'pointer',
+                                                          fontSize: '0.78rem',
+                                                          color: '#166534',
+                                                          fontWeight: 500,
+                                                          overflow: 'hidden',
+                                                          textOverflow: 'ellipsis',
+                                                          whiteSpace: 'nowrap'
+                                                        }}
+                                                        title={doc.name || doc.fileName}
+                                                      >
+                                                        Ansehen: {doc.name?.length > 32 ? doc.name.slice(0, 29) + '…' : (doc.name || doc.fileName || 'Dokument')}
+                                                      </button>
+                                                      <button
+                                                        type="button"
+                                                        onClick={() => karte.onDelete(doc)}
+                                                        style={{
+                                                          padding: '0.45rem 0.55rem',
+                                                          background: 'transparent',
+                                                          border: '1px solid rgba(220,38,38,0.2)',
+                                                          borderRadius: '6px',
+                                                          color: '#dc2626',
+                                                          cursor: 'pointer',
+                                                          fontSize: '0.9rem',
+                                                          lineHeight: 1,
+                                                          flexShrink: 0
+                                                        }}
+                                                        title="Dokument entfernen"
+                                                      >
+                                                        ×
+                                                      </button>
+                                                    </div>
+                                                  </>
+                                                ) : (
+                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => karte.onOpen(doc)}
+                                                      style={{
+                                                        flex: 1,
+                                                        textAlign: 'left',
+                                                        padding: '0.45rem 0.6rem',
+                                                        background: '#fff',
+                                                        border: '1px solid rgba(34,197,94,0.25)',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.82rem',
+                                                        color: '#15803d',
+                                                        fontWeight: 500,
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                      }}
+                                                      title={doc.name || doc.fileName}
+                                                    >
+                                                      {doc.name?.length > 38 ? doc.name.slice(0, 35) + '…' : (doc.name || doc.fileName || 'Öffnen')}
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => karte.onDelete(doc)}
+                                                      style={{
+                                                        padding: '0.45rem 0.55rem',
+                                                        background: 'transparent',
+                                                        border: '1px solid rgba(220,38,38,0.2)',
+                                                        borderRadius: '6px',
+                                                        color: '#dc2626',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.9rem',
+                                                        lineHeight: 1,
+                                                        flexShrink: 0
+                                                      }}
+                                                      title="Dokument entfernen"
+                                                    >
+                                                      ×
+                                                    </button>
+                                                  </div>
+                                                )}
                                               </div>
                                             ))}
                                           </div>
