@@ -183,6 +183,159 @@ function decodeHtmlDataUrl(fileData: string): string | null {
   }
 }
 
+const HTML2PDF_WERBEMITTEL_OPTS = {
+  margin: [6, 6, 6, 6] as [number, number, number, number],
+  image: { type: 'jpeg' as const, quality: 0.96 },
+  html2canvas: {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    logging: false,
+    letterRendering: true,
+    backgroundColor: '#ffffff',
+  },
+  jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
+  pagebreak: { mode: ['css', 'legacy'] as ('css' | 'legacy')[] },
+}
+
+type Html2PdfWorker = {
+  set: (o: object) => {
+    from: (el: HTMLElement) => {
+      save: () => Promise<void>
+      outputPdf: (type: string) => Promise<Blob | string>
+    }
+  }
+}
+
+/**
+ * PDF mit Layout, Farben (html2canvas → jsPDF) als Blob – für Web Share / Download.
+ */
+async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | null> {
+  const safeHtml = String(html || '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
+  const trimmed = safeHtml.trim()
+  const fullDoc =
+    /^<!DOCTYPE/i.test(trimmed) || /<html[\s>]/i.test(trimmed)
+      ? safeHtml
+      : `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}</style></head><body>${safeHtml}</body></html>`
+
+  const iframe = document.createElement('iframe')
+  iframe.setAttribute('title', 'pdf-export')
+  iframe.setAttribute('sandbox', 'allow-same-origin')
+  iframe.style.cssText =
+    'position:fixed;left:-14000px;top:0;width:794px;min-height:1123px;border:none;margin:0;padding:0;background:#fff;'
+  document.body.appendChild(iframe)
+
+  try {
+    iframe.srcdoc = fullDoc
+    await new Promise<void>((resolve, reject) => {
+      const t = window.setTimeout(() => resolve(), 10000)
+      iframe.onload = () => {
+        window.clearTimeout(t)
+        resolve()
+      }
+      iframe.onerror = () => {
+        window.clearTimeout(t)
+        reject(new Error('iframe onerror'))
+      }
+    })
+    await new Promise<void>(r => window.setTimeout(r, 250))
+    const idoc = iframe.contentDocument
+    const root = idoc?.body
+    if (!root || !root.innerHTML.trim()) return null
+
+    try {
+      root.style.setProperty('-webkit-print-color-adjust', 'exact')
+      root.style.setProperty('print-color-adjust', 'exact')
+      root.style.setProperty('color-adjust', 'exact')
+    } catch {
+      /* ignore */
+    }
+
+    const html2pdfMod = await import('html2pdf.js')
+    const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
+    if (typeof html2pdfRaw !== 'function') return null
+    const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
+
+    const out = await worker
+      .set({ ...HTML2PDF_WERBEMITTEL_OPTS, filename: 'werbemittel.pdf' })
+      .from(root)
+      .outputPdf('blob')
+
+    return out instanceof Blob ? out : null
+  } catch (e) {
+    console.warn('renderStyledPdfBlobFromHtmlString', e)
+    return null
+  } finally {
+    iframe.remove()
+  }
+}
+
+/** PDF speichern (Downloads) – nutzt dieselbe Render-Pipeline wie Share. */
+async function saveStyledPdfFromHtmlString(html: string, filename: string): Promise<boolean> {
+  const blob = await renderStyledPdfBlobFromHtmlString(html)
+  if (!blob) return false
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500)
+  return true
+}
+
+/**
+ * Ein Klick bis zum Ziel: wo der Browser mitspielt, PDF per Teilen-Menü (z. B. direkt in Mail mit Anhang).
+ * Abbruch / nicht unterstützt → false (Caller macht mailto + Download).
+ */
+async function tryShareWerbemittelPdf(
+  blob: Blob,
+  fileName: string,
+  title: string,
+  bodyText: string,
+  fullPacketForClipboard: string
+): Promise<boolean> {
+  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function') return false
+  try {
+    const file = new File([blob], fileName, { type: 'application/pdf' })
+    const textShort =
+      bodyText.length > 2800 ? `${bodyText.slice(0, 2800)}…\n\n[Volltext in Zwischenablage nach Teilen]` : bodyText
+    const data: ShareData = { title, text: textShort, files: [file] }
+    if (typeof navigator.canShare === 'function') {
+      try {
+        if (!navigator.canShare(data)) return false
+      } catch {
+        return false
+      }
+    }
+    await navigator.share(data)
+  } catch (e: unknown) {
+    const name = e && typeof e === 'object' && 'name' in e ? String((e as { name: string }).name) : ''
+    if (name === 'AbortError') return false
+    console.warn('tryShareWerbemittelPdf', e)
+    return false
+  }
+  void navigator.clipboard?.writeText(fullPacketForClipboard)
+  alert(
+    '✅ Teilen war erfolgreich.\n\nIn vielen Mail-Apps ist die PDF schon als Anhang dabei. Betreff, Empfänger (BCC) und voller Text liegen zusätzlich in der Zwischenablage – bei Bedarf einfügen.'
+  )
+  return true
+}
+
+function downloadBlobAsFile(blob: Blob, fileName: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1500)
+}
+
 /** Klartext aus HTML für E-Mail/Zwischenablage (Presseaussendung). */
 function htmlToPlainTextForClipboard(html: string): string {
   if (!html || typeof html !== 'string') return ''
@@ -8206,6 +8359,17 @@ ${'='.repeat(60)}
           if (preferPdf && mime.includes('html')) {
             const htmlDecoded = decodeHtmlDataUrl(rawData)
             if (htmlDecoded) {
+              const pdfName = `${baseName || 'werbemittel'}.pdf`
+              // 1) Layout + Farben (html2canvas) – wie in der Vorschau
+              try {
+                const styledOk = await saveStyledPdfFromHtmlString(htmlDecoded, pdfName)
+                if (styledOk) {
+                  return { label: pdfName, readyToAttach: true }
+                }
+              } catch (styledErr) {
+                console.warn('HTML-Layout-PDF fehlgeschlagen', styledErr)
+              }
+              // 2) Nur-Text-PDF (klein, ohne Design) – letzter PDF-Versuch
               try {
                 const plainFromHtml = htmlToPlainTextForClipboard(htmlDecoded).trim()
                 const fallbackPlain = String(plainBody || '').trim()
@@ -8229,11 +8393,10 @@ ${'='.repeat(60)}
                   pdf.text(String(line), 12, y)
                   y += 5.5
                 }
-                const pdfName = `${baseName || 'werbemittel'}.pdf`
-                pdf.save(pdfName)
+                const jb = pdf.output('blob') as Blob
+                downloadBlobAsFile(jb, pdfName)
                 return { label: pdfName, readyToAttach: true }
               } catch (pdfErr) {
-                // Fallback: Wenn PDF-Generator fehlschlägt, HTML-Datei herunterladen statt Abbruch.
                 console.warn('jspdf/PDF fehlgeschlagen, Fallback HTML-Download', pdfErr)
               }
             }
@@ -8270,7 +8433,7 @@ ${'='.repeat(60)}
       const shouldPreparePdf = typ === 'plakat' || typ === 'event-flyer' || typ === 'newsletter' || typ === 'presse'
       // mailto: kann keine Dateianhänge setzen – ehrlicher Hinweis im Fließtext (vorher war attachmentInfo immer null → irreführende „Vorschau anhängen“-Texte).
       const pdfMailHinweis = shouldPreparePdf
-        ? 'Hinweis: Gleich wird eine druckfertige PDF-Datei in den Ordner „Downloads" gelegt (es erscheint ein kurzer Dialog mit dem Dateinamen). Bitte diese Datei in die geöffnete E-Mail als Anhang einfügen – automatische Anhänge sind bei mailto aus technischen Gründen nicht möglich.'
+        ? 'Hinweis: Unterstützt dein Gerät „Teilen“ mit Datei (z. B. iPhone/iPad), kann die PDF direkt in die Mail – sonst legen wir die PDF in „Downloads" und die E-Mail-App öffnet sich separat (mailto kann keinen Anhang setzen).'
         : ''
 
       if (ev && typ === 'newsletter') {
@@ -8406,6 +8569,106 @@ ${'='.repeat(60)}
       // mailto-Links werden je nach Client früh abgeschnitten.
       // Deshalb: bei langem Link sicherer Fallback ohne BCC/Body, alles liegt im Clipboard.
       const isLikelyTooLong = mailtoPrimary.length > 1800
+
+      // Ein Klick bis zum Ziel: PDF zuerst bauen, dann Web Share mit Datei (Anhang in vielen Mail-Apps) – kein Halbweg.
+      let werbemittelPdfPack: { blob: Blob; fileName: string } | null = null
+      if (shouldPreparePdf) {
+        try {
+          werbemittelPdfPack = await (async (): Promise<{ blob: Blob; fileName: string } | null> => {
+            let attachmentSource = doc
+            if ((!attachmentSource?.fileData && !attachmentSource?.data) && plainBody.trim()) {
+              const safeTitle = String(betreff || 'Werbemittel').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              const safeBody = String(plainBody || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+              const htmlFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title></head><body style="font-family:Arial,sans-serif;padding:24px;white-space:pre-wrap;line-height:1.5;">${safeBody}</body></html>`
+              attachmentSource = {
+                ...(doc || {}),
+                fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
+                fileType: 'text/html',
+                fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+              }
+            }
+            const rawData = attachmentSource?.fileData || attachmentSource?.data
+            const rawType = String(attachmentSource?.fileType || attachmentSource?.type || '')
+            const rawBaseName = String(attachmentSource?.fileName || attachmentSource?.name || 'werbemittel')
+            const baseName = rawBaseName
+              .replace(/\.[a-z0-9]{2,5}$/i, '')
+              .replace(/[^\w\-]+/g, '_')
+            if (!rawData || typeof rawData !== 'string' || !rawData.startsWith('data:')) return null
+            const commaIdx = rawData.indexOf(',')
+            if (commaIdx < 0) return null
+            const header = rawData.slice(0, commaIdx)
+            const payload = rawData.slice(commaIdx + 1)
+            const mimeFromData = header.slice(5).split(';')[0] || ''
+            const mime = (rawType || mimeFromData || 'application/octet-stream').toLowerCase()
+            const isBase64 = /;base64/i.test(header)
+            const pdfName = `${baseName || 'werbemittel'}.pdf`
+
+            if (mime.includes('pdf')) {
+              let binBlob: Blob
+              if (isBase64) {
+                const binary = atob(payload)
+                const bytes = new Uint8Array(binary.length)
+                for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+                binBlob = new Blob([bytes], { type: 'application/pdf' })
+              } else {
+                binBlob = new Blob([decodeURIComponent(payload)], { type: 'application/pdf' })
+              }
+              return { blob: binBlob, fileName: pdfName }
+            }
+
+            if (!mime.includes('html')) return null
+            const htmlDecoded = decodeHtmlDataUrl(rawData)
+            if (!htmlDecoded) return null
+
+            const styled = await renderStyledPdfBlobFromHtmlString(htmlDecoded)
+            if (styled && styled.size > 0) return { blob: styled, fileName: pdfName }
+
+            try {
+              const plainFromHtml = htmlToPlainTextForClipboard(htmlDecoded).trim()
+              const fallbackPlain = String(plainBody || '').trim()
+              const safeText = plainFromHtml || fallbackPlain || 'Dokument'
+              const safeTitle = String(betreff || baseName || 'Werbemittel')
+              const jspdfModule = await import('jspdf')
+              const JsPdfCtor = (jspdfModule.jsPDF || (jspdfModule as any).default) as any
+              const pdf = new JsPdfCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+              pdf.setFont('helvetica', 'normal')
+              pdf.setFontSize(15)
+              pdf.text(safeTitle, 12, 14)
+              pdf.setFontSize(11)
+              const lines = pdf.splitTextToSize(safeText, 185)
+              let y = 24
+              const pageHeight = 287
+              for (const line of lines) {
+                if (y > pageHeight) {
+                  pdf.addPage()
+                  y = 14
+                }
+                pdf.text(String(line), 12, y)
+                y += 5.5
+              }
+              const jb = pdf.output('blob') as Blob
+              if (jb && jb.size > 0) return { blob: jb, fileName: pdfName }
+            } catch {
+              /* ignore */
+            }
+            return null
+          })()
+        } catch (e) {
+          console.warn('werbemittelPdfPack', e)
+        }
+      }
+
+      if (werbemittelPdfPack) {
+        const shared = await tryShareWerbemittelPdf(
+          werbemittelPdfPack.blob,
+          werbemittelPdfPack.fileName,
+          betreff,
+          plainBody,
+          fullPacket
+        )
+        if (shared) return
+      }
+
       triggerMailClient(isLikelyTooLong ? mailtoSubjectOnly : mailtoPrimary)
 
       // Clipboard bewusst nach dem Mail-Start schreiben (blockiert so den Öffnen-Klick nicht).
@@ -8413,35 +8676,42 @@ ${'='.repeat(60)}
         navigator.clipboard.writeText(fullPacket).catch(() => {})
       }, 0)
 
-      // PDF/Datei erst nach dem Mail-Start vorbereiten (stabilerer 1-Klick-Flow).
-      window.setTimeout(async () => {
-        if (!shouldPreparePdf) return
-        let attachmentSource = doc
-        if ((!attachmentSource?.fileData && !attachmentSource?.data) && plainBody.trim()) {
-          const safeTitle = String(betreff || 'Werbemittel').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          const safeBody = String(plainBody || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-          const htmlFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title></head><body style="font-family:Arial,sans-serif;padding:24px;white-space:pre-wrap;line-height:1.5;">${safeBody}</body></html>`
-          attachmentSource = {
-            ...(doc || {}),
-            fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
-            fileType: 'text/html',
-            fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-          }
-        }
-
-        const prepared = await prepareDocumentAttachment(attachmentSource, true)
-        if (prepared?.readyToAttach) {
+      if (werbemittelPdfPack) {
+        downloadBlobAsFile(werbemittelPdfPack.blob, werbemittelPdfPack.fileName)
+        window.setTimeout(() => {
           alert(
-            `✅ PDF gespeichert: ${prepared.label}\n\nOrdner: Downloads.\nBitte die Datei in die geöffnete Mail ziehen (Anhang). Ein automatischer Anhang geht mit mailto nicht.`
+            `✅ PDF: ${werbemittelPdfPack.fileName}\n\nOrdner: Downloads.\nBitte in die geöffnete Mail ziehen. Tipp: Am Handy/iPad oft „Teilen“ nutzen – dann ist die PDF direkt als Anhang möglich.`
           )
-          return
-        }
-        if (prepared?.label) {
-          alert(`ℹ️ Dokument-Link erkannt:\n${prepared.label}\n\nDiesen Link in der Mail verwenden oder Datei manuell anhängen.`)
-          return
-        }
-        alert('⚠️ PDF konnte nicht automatisch vorbereitet werden. Bitte Dokument in der Vorschau öffnen und als PDF drucken.')
-      }, 300)
+        }, 400)
+      } else if (shouldPreparePdf) {
+        window.setTimeout(async () => {
+          let attachmentSource = doc
+          if ((!attachmentSource?.fileData && !attachmentSource?.data) && plainBody.trim()) {
+            const safeTitle = String(betreff || 'Werbemittel').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            const safeBody = String(plainBody || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            const htmlFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title></head><body style="font-family:Arial,sans-serif;padding:24px;white-space:pre-wrap;line-height:1.5;">${safeBody}</body></html>`
+            attachmentSource = {
+              ...(doc || {}),
+              fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
+              fileType: 'text/html',
+              fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+            }
+          }
+
+          const prepared = await prepareDocumentAttachment(attachmentSource, true)
+          if (prepared?.readyToAttach) {
+            alert(
+              `✅ PDF: ${prepared.label}\n\nOrdner: Downloads.\nBitte in die geöffnete Mail ziehen (Anhang).`
+            )
+            return
+          }
+          if (prepared?.label) {
+            alert(`ℹ️ Dokument-Link erkannt:\n${prepared.label}\n\nDiesen Link in der Mail verwenden oder Datei manuell anhängen.`)
+            return
+          }
+          alert('⚠️ PDF konnte nicht automatisch vorbereitet werden. Bitte Dokument in der Vorschau öffnen und als PDF drucken.')
+        }, 300)
+      }
 
       if (isLikelyTooLong || plainBody.length > 2500) {
         alert(
