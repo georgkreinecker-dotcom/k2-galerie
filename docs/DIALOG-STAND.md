@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit: 9c4c412** ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit: 9c4c412** ✅ auf GitHub
 
 **Vorher:** ök2 Eventplan WhatsApp-Block ausgeblendet (2fa0b8d); QR-Plakat eine Meldung (28830da).
 
-**Was wir JETZT tun:** Kurz im Admin testen: Plakat/Flyer öffnen → Vorschau Format-Leiste; Speichern.
+**Was wir JETZT tun:** Optional: Vercel „Ready“ abwarten, dann im Admin Plakat/Flyer kurz testen.
 
 **Einordnung:** Gleicher UX-Standard wie Newsletter-Screenshot für alle PR-Dokumente inkl. Plakat.
 
-**Nächster Schritt:** `git push` → Vercel Ready → am Mac prüfen.
+**Nächster Schritt:** Nach Deployment am Mac prüfen (Format-Leiste, Speichern, „Dokument öffnen“).
 
 ---
 
