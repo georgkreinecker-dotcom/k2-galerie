@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **1-Klick-Mail für alle Werbemittel:** Zentraler Versand-Handler öffnet Mailprogramm mit BCC+Betreff+Text. Mapping: Presse/Social → Medienspiegel; Newsletter/Event-Flyer/Plakat → Newsletter-Empfänger (auch Druckerei). Karten haben jetzt je Typ 1‑Klick-Senden. Bei langem Text: Kurztext in Mail, Volltext in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** (nach Push eintragen) ✅
+**Letzter Stand:** 20.03.26 – **1-Klick-Mail für alle Werbemittel:** Zentraler Versand-Handler öffnet Mailprogramm mit BCC+Betreff+Text. Mapping: Presse/Social → Medienspiegel; Newsletter/Event-Flyer/Plakat → Newsletter-Empfänger (auch Druckerei). Karten haben jetzt je Typ 1‑Klick-Senden. Bei langem Text: Kurztext in Mail, Volltext in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** 3b44845 ✅
 
 **Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
 
