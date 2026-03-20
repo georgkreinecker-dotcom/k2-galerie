@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. Phase 2 bewusst noch nicht gestartet. **Commit:** deffc6d ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. Phase 2 bewusst noch nicht gestartet. **Commit:** 946ba4a ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 1 – „Werke verwalten“:** Admin → **Werke**: **ök2** = X/4 aus `allArtworks` (Menge, Bild, Preis, Titel); **VK2** = X/4 aus `vk2Stammdaten.mitglieder` (keine Werke-Liste im VK2-Speicher). **K2** ohne Block. **Commit:** 3be6a8d ✅ auf GitHub
 
