@@ -87,7 +87,6 @@ import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
-import { beendeGuideFlow } from './components/GlobaleGuideBegleitung'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { PRODUCT_BRAND_NAME } from './config/tenantConfig'
@@ -535,10 +534,7 @@ function App() {
     return () => clearTimeout(t)
   }, [])
 
-  // Globaler Guide aus: einmal alten Flow deaktivieren (kein schwarzer Dialog / kein „aktiv“ mehr)
-  useEffect(() => {
-    beendeGuideFlow()
-  }, [])
+  // Schwarzer GlobaleGuideBegleitung-Dialog: aus (Komponente rendert null). k2-guide-flow bleibt für den grünen Admin-Balken (ök2/VK2).
 
   return (
     <TenantProvider>

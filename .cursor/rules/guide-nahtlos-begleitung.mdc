@@ -9,9 +9,8 @@ alwaysApply: true
 
 **Der globale schwarze Hub-Guide (`GlobaleGuideBegleitung`) ist abgeschaltet.** Er soll **nicht** wieder auftauchen – er hat in der APf (u. a. iframe + gemeinsamer Speicher) zu **Doppel-Anzeige** und **Durcheinander** geführt.
 
-- **`App.tsx`:** rendert **keine** `GlobaleGuideBegleitung` mehr.
-- **`beendeGuideFlow()`** beim App-Start: setzt `k2-guide-flow` auf inaktiv.
-- **Admin:** kein grüner „Galerie-Guide“-Balken mehr; kein Auto-Start des Flows in **ScreenshotExportAdmin** / **MeinBereich** / **Vk2GaleriePage**.
+- **`App.tsx`:** rendert **keine** `GlobaleGuideBegleitung` mehr; ruft **`beendeGuideFlow()` nicht** beim Start auf (sonst wäre `k2-guide-flow` tot → grüner Admin-Balken fehlt).
+- **Admin (ök2/VK2):** **grüner Orientierungs-Balken** oben wieder **erlaubt** (`guideFlowAktiv` + Auto-Start in ScreenshotExportAdmin wie zuvor) – **kein** schwarzer Dialog.
 
 ## Was weiterhin existiert (bewusst getrennt)
 
@@ -26,4 +25,4 @@ alwaysApply: true
 
 ## Kurzfassung (aktualisiert)
 
-**Globaler schwarzer Guide = aus. Onboarding nur noch klar abgegrenzt pro Kontext – nicht wieder „überall“ ohne Anordnung.**
+**Globaler schwarzer Guide = aus. Grüner Admin-Balken (ök2/VK2) = Orientierung ok. Onboarding sonst klar abgegrenzt pro Kontext – nicht wieder „überall“ ohne Anordnung.**

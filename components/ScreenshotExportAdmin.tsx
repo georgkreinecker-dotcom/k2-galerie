@@ -37,6 +37,7 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
+import { speichereGuideFlow } from '../src/components/GlobaleGuideBegleitung'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1571,7 +1572,60 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch { setVerteilerNewsletter([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
-  // Globaler Guide / grüner Guide-Balken: abgeschaltet (20.03.26) – kein k2-guide-flow Auto-Start mehr
+  // Grüner Guide-Balken (ök2/VK2): Orientierung im Admin – unabhängig vom schwarzen GlobaleGuideBegleitung-Dialog (der bleibt aus).
+  const guideVorname = (() => {
+    try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
+  })()
+  const guidePfad = (() => {
+    try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
+  })()
+  const [guideFlowAktiv, setGuideFlowAktiv] = useState(() => {
+    try {
+      const v = localStorage.getItem('k2-guide-flow')
+      if (!v) return false
+      const f = JSON.parse(v)
+      return f?.aktiv === true
+    } catch { return false }
+  })
+  React.useEffect(() => {
+    const onUpdate = () => {
+      try {
+        const v = localStorage.getItem('k2-guide-flow')
+        if (!v) { setGuideFlowAktiv(false); return }
+        const f = JSON.parse(v)
+        setGuideFlowAktiv(f?.aktiv === true)
+      } catch { setGuideFlowAktiv(false) }
+    }
+    window.addEventListener('guide-flow-update', onUpdate)
+    return () => window.removeEventListener('guide-flow-update', onUpdate)
+  }, [])
+
+  // Direktaufruf Admin (ök2/VK2): Wenn noch kein Guide-Flow aktiv ist, einmal starten – außer Einstieg von APf (dann keinen Flow)
+  React.useEffect(() => {
+    if (!(tenant.isOeffentlich || tenant.isVk2)) return
+    try {
+      if (tenant.isOeffentlich) {
+        const fromApf = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-oek2-from-apf') === '1'
+        const fromApfUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search || '').get('fromApf') === '1'
+        if (fromApfUrl) sessionStorage.setItem('k2-oek2-from-apf', '1')
+        if (fromApf || fromApfUrl) return
+      }
+      const v = localStorage.getItem('k2-guide-flow')
+      const f = v ? JSON.parse(v) : {}
+      if (f?.aktiv === true) return
+      const params = new URLSearchParams(window.location.search || '')
+      speichereGuideFlow({
+        aktiv: true,
+        name: f?.name ?? params.get('vorname') ?? '',
+        pfad: (f?.pfad ?? params.get('pfad') ?? '') as import('../src/components/GlobaleGuideBegleitung').GuidePfad,
+        schritt: f?.schritt ?? 'start',
+        erledigte: Array.isArray(f?.erledigte) ? f.erledigte : [],
+        context: tenant.isVk2 ? 'vk2' : 'oeffentlich',
+      })
+      window.dispatchEvent(new CustomEvent('guide-flow-update'))
+      setGuideFlowAktiv(true)
+    } catch { /* ignore */ }
+  }, [tenant.isOeffentlich, tenant.isVk2])
 
   // Vom Hub gekommen? → Zurück-Button anzeigen
   const fromHub = (() => {
@@ -12331,6 +12385,93 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* Oberer Rand des Admin-Bereichs (Anker für „Zurück in den Admin-Bereich“); Spacer wenn Zurück-Banner sichtbar */}
       <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
 
+      {/* Grüner Guide-Balken: Orientierung für Besucher im Guide (ök2 + VK2). Kein schwarzer Dialog – nur dieser Balken. */}
+      {(tenant.isOeffentlich || tenant.isVk2) && guideFlowAktiv && (() => {
+        const istVerein = guidePfad === 'gemeinschaft'
+        const guideTexte: Record<string, { titel: string; text: string }> = {
+          werke: istVerein
+            ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' }
+            : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' },
+          eventplan: istVerein
+            ? { titel: 'Event- und Medienplanung', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellt ihr Einladungen, QR-Codes, Werbedokumente und nutzt den Verteiler direkt im gleichen Ablauf.' }
+            : { titel: 'Event- und Medienplanung', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen, Werbedokumente und nutzt den Verteiler in einem Schritt.' },
+          presse: { titel: 'Event- und Medienplanung', text: 'Der Bereich ist jetzt ein gemeinsamer Ablauf: Event planen, Werbematerial erzeugen und an Medien oder Newsletter-Empfänger senden.' },
+          design: istVerein
+            ? { titel: 'Ausstellung gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellt ihr es ein. Vorschau zeigt euch sofort, wie es wirkt.' }
+            : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
+          veroeffentlichen: { titel: 'Veröffentlichen', text: 'Damit Besucher und Geräte den aktuellen Stand sehen: Hier sendest du deine Galerie an den Server. Ein Klick auf „An Server senden“ – danach ist überall dasselbe zu sehen. Wichtig nach jeder Änderung an Werken oder Gestaltung.' },
+          einstellungen: istVerein
+            ? { titel: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Adresse – hier pflegt ihr alles, was auf der Galerie und in Einladungen erscheint. Unter „Stammdaten“ tragt ihr Namen und Kontakt ein. So sind eure Daten immer aktuell.' }
+            : { titel: 'Einstellungen', text: 'Dein Name, deine Adresse, Öffnungszeiten – hier trägst du alles ein, was Besucher sehen sollen. Unter „Stammdaten“ findest du die Felder. Einmal ausfüllen, dann stimmt es überall.' },
+          katalog: { titel: 'Werkkatalog', text: 'Alle Werke auf einen Blick: filtern, suchen, als Liste oder für den Druck. Hier behältst du die Übersicht – ob für dich selbst oder für Kunden. Export und PDF möglich.' },
+          statistik: { titel: 'Kassa, Lager & Listen', text: 'Verkäufe erfassen, Belege drucken, Lager und Verkaufsstatistik im Blick. Hier läuft alles rund um Verkauf und Übersicht – auch vom Handy aus bei der Ausstellung.' },
+        }
+        const allgemein = {
+          titel: 'Admin – deine Zentrale',
+          text: 'Wir sind jetzt im Admin angelangt. Hier kannst du alle deine Arbeiten erledigen. Wenn du auf eine Aufgabe tippst, gehe ich mit dir dort hinein und erkläre dir, was du dort machen kannst.',
+        }
+        const aktuell = guideTexte[activeTab] ?? allgemein
+        return (
+          <div
+            style={{
+              position: 'sticky',
+              top: fromHub ? 44 : 0,
+              zIndex: 99998,
+              padding: '0.85rem clamp(1rem, 3vw, 1.5rem)',
+              background: 'linear-gradient(135deg, #15803d, #22c55e)',
+              borderBottom: '2px solid #15803d',
+              marginBottom: 0,
+              color: '#fff',
+              boxShadow: '0 2px 12px rgba(21,128,61,0.35)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
+                  {istVerein ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'}
+                </div>
+                <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{aktuell.titel}</div>
+                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.98)', maxWidth: '52rem' }}>
+                  {aktuell.text}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (activeTab === 'werke') {
+                    const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+                    navigate(galeriePath, { state: { fromAdmin: true } })
+                  } else {
+                    setActiveTab('werke')
+                    adminTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }
+                }}
+                style={{
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  padding: '0.45rem 0.85rem',
+                  background: 'rgba(255,255,255,0.2)',
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  borderRadius: 8,
+                  color: '#fff',
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                }}
+                title={activeTab === 'werke' ? 'Zur Galerie (öffentliche Ansicht)' : 'Zurück zur Übersicht (Werke, Events, Kassa, …)'}
+              >
+                {activeTab === 'werke' ? '← Zurück zur Galerie' : '← Zurück in den Admin-Bereich'}
+              </button>
+            </div>
+          </div>
+        )
+      })()}
+
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
@@ -12627,7 +12768,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {activeTab === 'werke' && (
               <div>
 
-                {/* EINHEITLICHER ADMIN-HUB (Regel: admin-einheitliches-layout.mdc, docs/ADMIN-LAYOUT-REGEL.md). K2, VK2, ök2 = ein Layout: „Was möchtest du heute tun?“ + Kacheln. Globaler Guide abgeschaltet (20.03.26). */}
+                {/* EINHEITLICHER ADMIN-HUB (Regel: admin-einheitliches-layout.mdc). K2, VK2, ök2 = ein Layout: „Was möchtest du heute tun?“ + Kacheln. Schwarzer Globaler Guide aus; grüner Balken oben ist nur Orientierung (ök2/VK2). */}
                 {(() => {
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
