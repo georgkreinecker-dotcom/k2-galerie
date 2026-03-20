@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Präsentationsmappen (ök2 vs. K2):** Tab „Präsentationsmappen“ im Admin: IIFE korrekt geschlossen (`})()}`). Deckblatt/Kurz-HTML: Galerienamen aus **`MUSTER_TEXTE.gallery.firmenname`** bzw. **`TENANT_CONFIGS.oeffentlich.galleryName`** (nicht `.name` – TS/Modell). K2-Zweig: `name`/`firmenname` aus geladenen Stammdaten + Default. `PraesentationsmappePage`: ungenutzten `PROJECT_ROUTES`-Import entfernt. Tests + Build grün (ohne Sandbox). **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 20.03.26 – **Präsentationsmappen (ök2 vs. K2):** Tab „Präsentationsmappen“ im Admin: IIFE korrekt geschlossen (`})()}`). Deckblatt/Kurz-HTML: Galerienamen aus **`MUSTER_TEXTE.gallery.firmenname`** bzw. **`TENANT_CONFIGS.oeffentlich.galleryName`** (nicht `.name` – TS/Modell). K2-Zweig: `name`/`firmenname` aus geladenen Stammdaten + Default. `PraesentationsmappePage`: ungenutzten `PROJECT_ROUTES`-Import entfernt. Tests + Build grün. **Commit: db661b0** ✅ auf GitHub
 
 **Vorher gleicher Tag:** Plakat ök2 (Speichern/Merge, decodeHtmlDataUrl, ein Zurück) – Commit 3d50158.
 
