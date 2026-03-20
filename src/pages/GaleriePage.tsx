@@ -510,6 +510,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const [sharePopoverOpen, setSharePopoverOpen] = useState(false)
   const [shareLinkCopied, setShareLinkCopied] = useState(false)
   const sharePopoverContainerRef = React.useRef<HTMLDivElement>(null)
+  /** Wenn Admin-Button fixed rechts steht: „Galerie teilen“ weiter nach links – gilt auch für ök2 (musterOnly). Vorher: !musterOnly → beide bei ~1rem → Überlappung am Handy. */
+  const galerieTeilenFixedRight = showAdminEntryOnGalerie
+    ? (isMobileDevice || isMobile
+        ? (musterOnly ? '8.5rem' : '7rem')
+        : 'clamp(12rem, 30vw, 18rem)')
+    : 'clamp(1rem, 2vw, 1.5rem)'
   useEffect(() => {
     if (!sharePopoverOpen) return
     const close = (e: MouseEvent | TouchEvent) => {
@@ -2577,7 +2583,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           style={{
             position: 'fixed',
             top: 'max(clamp(1rem, 2vw, 1.5rem), calc(env(safe-area-inset-top, 0px) + 1rem))',
-            right: showAdminEntryOnGalerie && !musterOnly ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
+            right: galerieTeilenFixedRight,
             background: vk2 ? 'rgba(255, 140, 66, 0.25)' : musterOnly ? 'rgba(107, 144, 128, 0.25)' : 'rgba(255, 255, 255, 0.15)',
             border: vk2 ? '1px solid rgba(255, 140, 66, 0.5)' : musterOnly ? '1px solid rgba(107, 144, 128, 0.5)' : '1px solid rgba(255, 255, 255, 0.3)',
             color: '#fff',
@@ -2601,7 +2607,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             style={{
               position: 'fixed',
               top: 'max(clamp(3.5rem, 8vw, 4.5rem), calc(env(safe-area-inset-top, 0px) + 3.5rem))',
-              right: showAdminEntryOnGalerie && !musterOnly ? (isMobileDevice || isMobile ? '7rem' : 'clamp(12rem, 30vw, 18rem)') : 'clamp(1rem, 2vw, 1.5rem)',
+              right: galerieTeilenFixedRight,
               zIndex: 1002,
               background: 'rgba(26, 15, 10, 0.98)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
