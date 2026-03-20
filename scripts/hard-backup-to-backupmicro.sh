@@ -91,10 +91,16 @@ fi
 ARTWORKS_COUNT=0
 EVENTS_COUNT=0
 DOCS_COUNT=0
+GALLERY_BYTES=$(wc -c < "$GALLERY_JSON" | tr -d ' ' || echo "0")
 if command -v node >/dev/null 2>&1; then
   ARTWORKS_COUNT=$(node -e "try { const fs=require('fs'); const d=JSON.parse(fs.readFileSync('${GALLERY_JSON}','utf8')); console.log(Array.isArray(d.artworks)?d.artworks.length:0) } catch(e){ console.log(0) }" 2>/dev/null || echo "0")
   EVENTS_COUNT=$(node -e "try { const fs=require('fs'); const d=JSON.parse(fs.readFileSync('${GALLERY_JSON}','utf8')); console.log(Array.isArray(d.events)?d.events.length:0) } catch(e){ console.log(0) }" 2>/dev/null || echo "0")
   DOCS_COUNT=$(node -e "try { const fs=require('fs'); const d=JSON.parse(fs.readFileSync('${GALLERY_JSON}','utf8')); console.log(Array.isArray(d.documents)?d.documents.length:0) } catch(e){ console.log(0) }" 2>/dev/null || echo "0")
+fi
+VOLLBACKUP_HINWEIS="(nicht dabei – siehe unten „Mehr Daten“)"
+if [ -f "$VOLLBACKUP_OPTIONAL" ]; then
+  VOLL_BYTES=$(wc -c < "$VOLLBACKUP_OPTIONAL" | tr -d ' ' || echo "0")
+  VOLLBACKUP_HINWEIS="ja, ${VOLL_BYTES} Bytes als k2-vollbackup.json"
 fi
 
 FIRST_VERSION_NOTE=""
@@ -102,26 +108,47 @@ FIRST_VERSION_NOTE=""
 ► Erste vollständige Version K2 Galerie (Vollbackup)"
 
 cat > "${BACKUP_DIR}/MANIFEST.txt" << EOF
-K2 Galerie – Hard-Backup (Vollbackup)
+K2 Galerie – Hard-Backup (Versionsordner auf backupmicro)
 Version: ${VERSION_LABEL}
 Datum:   $(date +%Y-%m-%d\ %H:%M)
 Speicher: backupmicro (extern)
 ${FIRST_VERSION_NOTE}
 
-Inhalt:
-  gallery-data.json (Stammdaten, Werke, Events, Dokumente, Design, Seitentexte)
-  $( [ -f "$VOLLBACKUP_OPTIONAL" ] && echo "  k2-vollbackup.json (App-Vollbackup)" )
-  Werke: ${ARTWORKS_COUNT}
-  Events: ${EVENTS_COUNT}
-  Dokumente: ${DOCS_COUNT}
+Dateien in diesem Ordner:
+  gallery-data.json  (${GALLERY_BYTES} Bytes) = veröffentlichter Stand wie für Vercel
+  $( [ -f "$VOLLBACKUP_OPTIONAL" ] && echo "k2-vollbackup.json  = App-Vollbackup (localStorage K2, aus Admin exportiert)" || echo "(kein k2-vollbackup.json – nur wenn du backup/k2-vollbackup-latest.json im Projekt legst)" )
+  MANIFEST.txt       = diese Erklärung
 
-Wiederherstellung: Im Admin → Einstellungen → Backup & Wiederherstellung
-oder gallery-data.json ins Projekt public/ kopieren und erneut veröffentlichen.
+Inhalt gallery-data (Auszug):
+  Werke: ${ARTWORKS_COUNT}   Events: ${EVENTS_COUNT}   Dokumente: ${DOCS_COUNT}
+
+Warum die JSON oft „klein“ wirkt (z. B. unter 100 KB):
+  Beim Veröffentlichen werden Bilder nicht als riesige Base64 mitgeschickt, sondern
+  meist als Pfade (/img/k2/…). Das ist gewollt – gleicher Stand wie online, wenig MB.
+
+App-Vollbackup dazu (${VOLLBACKUP_HINWEIS}):
+  Admin → Einstellungen → Backup → „Vollbackup herunterladen“ → die Datei im Projekt als
+  backup/k2-vollbackup-latest.json speichern → Hard-Backup erneut ausführen → dann liegt
+  k2-vollbackup.json zusätzlich in diesem Versionsordner.
+
+Programmcode separat (ganzes Repo mit .git):
+  Im Projekt: bash scripts/backup-code-to-backupmicro.sh
+  (eigener Ordner K2-Galerie-Code-Backups auf backupmicro)
+
+Wiederherstellung Galerie-Daten:
+  Admin → Backup & Wiederherstellung  oder  gallery-data.json nach public/ und veröffentlichen.
 EOF
 
 echo "$NEXT" > "$VERSION_FILE"
 echo "✅ Hard-Backup erstellt: ${VERSION_LABEL}"
 echo "   Speicherort: ${BACKUP_DIR}"
+echo "   gallery-data.json: ${GALLERY_BYTES} Bytes (veröffentlichter Stand – klein ist normal)"
 echo "   (nur auf backupmicro, nicht auf dem Mac)"
+if [ ! -f "$VOLLBACKUP_OPTIONAL" ]; then
+  echo ""
+  echo "ℹ️  Mehr Daten auf backupmicro:"
+  echo "   • App-Vollbackup: Admin → Vollbackup laden → als backup/k2-vollbackup-latest.json ins Projekt → Skript nochmal."
+  echo "   • Code: bash scripts/backup-code-to-backupmicro.sh"
+fi
 echo ""
 echo "Nächste Version wird: v$(printf '%03d' $((NEXT + 1)))"
