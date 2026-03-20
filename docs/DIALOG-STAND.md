@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Fullbackup auf backupmicro:** `hard-backup-to-backupmicro.sh` → **v007** (`gallery-data.json` + MANIFEST). Code-Spiegelung → `KL2-Galerie-Backups /K2-Galerie-Code-Backups/k2-galerie-code--2026-03-20--19-57`. **Skript-Fix:** `backup-code-to-backupmicro.sh` legt Code-Backups **im gleichen Ordner** wie die v00x-Versionen ab (Volume-Root war nicht beschreibbar). **Commit:** PLACEHOLDER_HASH ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Fullbackup auf backupmicro:** `hard-backup-to-backupmicro.sh` → **v007** (`gallery-data.json` + MANIFEST). Code-Spiegelung → `KL2-Galerie-Backups /K2-Galerie-Code-Backups/k2-galerie-code--2026-03-20--19-57`. **Skript-Fix:** `backup-code-to-backupmicro.sh` legt Code-Backups **im gleichen Ordner** wie die v00x-Versionen ab (Volume-Root war nicht beschreibbar). **Commit:** 980db3c ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** 7d307c2 ✅ auf GitHub
 
