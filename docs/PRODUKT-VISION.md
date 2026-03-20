@@ -13,6 +13,7 @@
 - **Erfolgsschlüssel am Markt:** Mit dem **Medientool** (Öffentlichkeitsarbeit, Werbemittel, Kanäle) geben wir Nutzer:innen etwas, womit sie sich **von anderen abheben** – **schneller und professioneller** kommunizieren als ohne dieses Werkzeug.
 - **Kommunikation ist der Hebel:** Der messbare Vorteil für Kund:innen liegt oft nicht in einer einzelnen Funktion, sondern in **besserer, konsistenter Außenkommunikation**. Daran orientieren wir Prioritäten und Qualität.
 - **Zukunftsfähigkeit:** **Aktuelle Medientechnik und KI** gehören dort hinein, wo sie den Ablauf **wirklich verbessern** (Tempo, Varianten, Lesbarkeit, Kanäle) – nicht als Selbstzweck, sondern damit das Angebot **am Markt bestehen kann**.
+- **Erlebnis für Nutzer:innen:** Medientool **sehr simpel und smart** – wenig Hürden, schnelle sichtbare Erfolge, **Freude** am Arbeiten (zieht hinein). **Horizont öffnen:** optional kleine Impulse („Das könntest du auch noch …“), ohne zu überfordern. Details: docs/MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md (Abschnitt Prinzipien).
 
 **Verwendung:** Diese Botschaft gilt einheitlich in Handbuch, Präsentationsmappe, Werbetexte und mök2. Keine abweichende Positionierung – Sportwagenmodus.
 

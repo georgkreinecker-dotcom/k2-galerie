@@ -5,6 +5,46 @@
 
 ---
 
+## Prinzipien: simpel, smart, mit Freude – Horizont öffnen
+
+**Technische Power darf sich nicht wie Arbeit anfühlen.** Alles, was wir einbauen, wird an diesen Maßstäben gemessen:
+
+| Prinzip | Was das heißt | Nicht |
+|--------|------------------|--------|
+| **Sehr simpel** | Wenige klare Schritte, eine sichtbare nächste Aktion, kein „Pressestudium“ nötig. | Lange Formulare, Fachbegriffe ohne Nutzen, versteckte Wege. |
+| **Smart** | Das System **denkt mit**: Stammdaten, Event und Werke sind schon da – Nutzer:innen **ergänzen**, nicht von Null tippen. | Leere Seiten, doppelte Eingaben, „mach du mal alles selbst“. |
+| **Spaß / Hineinziehen** | Kleine Erfolge sofort sichtbar (Vorschau, fertiger Satz, schönes PDF), freundlicher Ton, **kein Schulmeister**. | Trockene Buchhaltungs-Optik, nur Warnungen, endloses Klicken ohne Ergebnis. |
+| **Horizont öffnen** | **Sanfte Vorschläge**, die zeigen, was möglich ist: zweiter Kanal, Presse-Idee, Bild für Social – **optional**, nie überfordernd. | Überladung mit Optionen auf einmal; Pflicht, alles zu verstehen. |
+
+**Kurz:** Nutzer:innen sollen **Lust** bekommen weiterzumachen – und dabei **mehr sehen**, was Außenkommunikation kann, **ohne** überfordert zu werden. Das ist dieselbe Logik wie „eine Aufgabe = ein Klick“ und Nutzer-Logik zuerst (siehe .cursor/rules).
+
+### Spielerisches Gefühl – ohne Videospiel (Georg)
+
+**Nicht** „Gamification“ mit Punkten und Leveln. **Sondern** dieselbe **emotionale Klarheit**, die gute Spiele haben: *Ich weiß, was als Nächstes kommt – und es lohnt sich.*
+
+| Element | Wirkung | Umsetzung (Richtung) |
+|--------|---------|----------------------|
+| **Ziel sichtbar** | Ruhe statt Rätselraten | z. B. „3 Schritte bis versandfertig“ oder Ampel: Text → Bild → Versand |
+| **Kleiner Triumph** | Dopamin light | Vorschau springt an, PDF ist da, „✅ fertig zum Teilen“ **ohne** nervige Doppel-Alerts |
+| **Fortschritt** | Nicht im Nebel arbeiten | Balken oder Häkchen pro Kanal (Presse / Social / Einladung), optional |
+| **Rückmeldung** | Nicht ins Leere klicken | Kurze, freundliche Bestätigung (auch nur visuell: Häkchen, sanfte Animation) |
+
+### Bildsprache – wo es heute noch fehlt (Georg: „mir fehlen die Bilder“)
+
+Der Medienbereich wirkt oft **sehr textlastig**. **Bilder und visuelle Anker** ziehen hinein und erklären ohne Handbuch:
+
+| Lücke | Idee |
+|-------|------|
+| **Einstieg Öffentlichkeitsarbeit** | Eine **ruhige Illustration** oder **Foto-Stimmungsbild** (Galerie/Kunst/Kommunikation) – nicht bunt wie Spielzeug, **warm und einladend** |
+| **Leere Zustände** | Statt grauer Fläche: kleines Bild + ein Satz („Wähle ein Event – dann entstehen Flyer & Presse“) |
+| **Kanäle** | Pro Typ ein **klares Icon** + Mini-Vorschau (Flyer-Thumbnails, Social-Zeichen) – schon in der Übersicht |
+| **Erfolg** | Nach PDF/Teilen: **Miniatur des Dokuments** oder Check-Illustration statt nur Text |
+| **Handbuch / mök2** | 2–3 **Schlüsselscreens** oder Storyboard-Grafik („So fühlt sich der Ablauf an“) für Nutzer:innen, die sich das **vorstellen** wollen |
+
+**Technik:** Bilder aus `public/` (z. B. `public/img/medienstudio/…`), **eine** Bildsprache für K2/ök2/VK2, **maximale Komprimierung** (Regel Komprimierung). Keine Lizenz-Fallen – eigene Fotos, Unsplash mit fester URL, oder schlichte SVG-Illustrationen.
+
+---
+
 ## 1. Was ihr heute schon habt (Ist-Stand)
 
 | Bereich | Inhalt |
