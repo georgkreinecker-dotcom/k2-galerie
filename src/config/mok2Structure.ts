@@ -24,6 +24,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },
       { id: 'mok2-prospekt-galerieeroeffnung', label: 'Prospekt Galerieeröffnung K2' },
       { id: 'mok2-1', label: '1. USPs' },
+      { id: 'mok2-cd-corporate-design', label: 'Corporate Design – eine Linie' },
       { id: 'mok2-produkt-branchenvergleich', label: 'Produkt- & Branchenvergleich (Vorteile)' },
       { id: 'mok2-2', label: '2. Marktchancen – Stärken' },
       { id: 'mok2-3', label: '3. Marktchancen – Herausforderungen' },

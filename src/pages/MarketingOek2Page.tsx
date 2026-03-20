@@ -547,6 +547,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Fokus gesamter Markt, Kunstmarkt = Unterkategorie</strong> – Alle, die Ideen oder Produkte professionell zeigen wollen; Kunstmarkt (Künstler:innen, Galerien, Kunstvereine) ist unser Einstieg, nicht die Grenze. Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
           <li><strong>Positionierung Sweet-Spot:</strong> {PRODUCT_POSITIONING_SWEET_SPOT} Der Markt für „Galerie, Kassa, Events aus einer Hand“ lohnt für Große nicht; für Kleine ist der Aufwand zu groß – genau dort liegen wir. Quelle: docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md.</li>
           <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
+          <li><strong>Corporate Design (CD) – eine Linie:</strong> Farben und Akzente aus <strong>Galerie gestalten</strong> ziehen durch bis Willkommensseite, Galerie, Plakat, Flyer und Presse-PDF – ein erkennbares Erscheinungsbild statt zerstückelter Tool-Optik. Ausführlich im Abschnitt <em>Corporate Design – eine Linie</em> direkt unterhalb der USPs.</li>
           <li><strong>Technik ohne Vendor-Lock-in</strong> – Plattformneutral (Windows, Android, macOS, iOS, Browser/PWA); moderner Web-Stack; Konfiguration statt Festverdrahtung.</li>
           <li><strong>Kassafunktion & Etiketten</strong> – Kasse/Shop für Verkauf vor Ort (z. B. iPad/Handy); Etikettendruck (z. B. Brother QL) mit Werk-Nummer, Titel, QR-Code, WLAN-fähig; Kundenverwaltung (Kunden-Tab) für Erfassung und Tagesgeschäft.</li>
           <li><strong>Einfache Kassa & Lagerhaltung</strong> – Verkauf erfassen, Kassenbeleg drucken (Etikett oder A4); Verkaufs- und Lagerstatistik (Werke gesamt, Bestand, Galerie, Reserviert, Umsatz) drucken; Werkkatalog mit Status Galerie/Lager/Verkauft; Stückzahl und Storno geplant – alles für Tagesgeschäft und Übersicht ohne Zusatz-Software.</li>
@@ -558,6 +559,29 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Empfehlungsprogramm – einzigartig:</strong> Nutzer:innen werben mit persönlicher Empfehler-ID; 10 % Rabatt für den Geworbenen, 10 % Gutschrift für den Empfehler. Vertrieb durch die Community – in dieser Branche (Galerie/Künstler:innen) kaum vergleichbar. Ein Klick: ID kopieren, Link teilen, Geworbene nutzt beim Lizenzabschluss – fertig.</li>
           <li><strong>Aus Österreich – kein Fernost-Produkt:</strong> Entwicklung und Betrieb aus Österreich. EU-Datenschutz (DSGVO), österreichisches Recht, Daten nicht in China oder Indien. Erreichbar, gleiche Zeitzone, deutsche Sprache – Vertrauen und Nähe statt anonymem Cloud-Anbieter.</li>
         </ul>
+      </section>
+
+      {/* Corporate Design – Marketing-Botschaft & Kommunikation */}
+      <section id="mok2-cd-corporate-design" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Corporate Design – eine Linie (Kommunikation &amp; Markt)
+        </h2>
+        <p style={{ marginBottom: '0.85rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          <strong>Corporate Design (CD)</strong> heißt: dieselbe visuelle Sprache überall, wo die Galerie nach außen tritt. Nicht pro Medium eine andere Farbwelt – sondern <strong>eine Handschrift</strong>, die man wiedererkennt. Das ist kein Luxus, sondern <strong>Vertrauen und Professionalität</strong> in der Kommunikation mit Besucher:innen, Käufer:innen und Medien.
+        </p>
+        <p style={{ marginBottom: '0.85rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          In der <strong>K2 Galerie</strong> legt der Betreiber die Handschrift im Bereich <strong>Galerie gestalten</strong> fest: Farben, Kontraste, Bildsprache, Texte. Diese Entscheidungen sind die <strong>Quelle</strong> fürs Erscheinungsbild – <strong>Sportwagenprinzip:</strong> eine definierte Ausgabe, viele Kanäle (Willkommen, Galerie-Ansicht, Plakat, Flyer, Pressemappe, PDFs). So entsteht ein <strong>durchgängiger Auftritt</strong> ohne Redaktion in fünf verschiedenen Programmen.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 0.85rem 0', fontSize: '0.92rem', color: 'rgba(255,255,255,0.92)' }}>
+          <li><strong>Für Piloten und Lizenznehmer:innen:</strong> „So sieht <em>meine</em> Galerie aus“ – von der ersten Seite bis zum Aushang im Schaufenster.</li>
+          <li><strong>Für Gespräche und Prospekte:</strong> CD als Argument: nicht nur „alles in einer App“, sondern <strong>ein Auftritt, der zusammenpasst</strong> – wichtig für Künstler:innen und kleine Galerien, die sich von Baukasten-Standard abheben wollen.</li>
+          <li><strong>Für Öffentlichkeitsarbeit:</strong> Presse und Social profitieren, wenn Materialien nicht wie „hingeklatscht“ wirken, sondern zur identischen Marke gehören.</li>
+        </ul>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 10 }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
+            <strong>Kurzform fürs Marketing:</strong> <em>Eine Galerie – ein Design – alle Kanäle.</em> CD ist bei uns kein Extra-Modul, sondern <strong>Teil des Produkts</strong>: wer gestaltet, definiert gleichzeitig die Linie für Web und Druck.
+          </p>
+        </div>
       </section>
 
       {/* Produkt- und Branchenvergleich – Vorteile von ök2 klar herausarbeiten */}
@@ -581,6 +605,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h3 style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)', marginTop: '1rem', marginBottom: '0.5rem' }}>ök2 / K2 Galerie (eine Lösung)</h3>
         <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', marginBottom: '1rem', fontSize: '0.9rem' }}>
           <li><strong>Eine Oberfläche, eine Datenbasis:</strong> Galerie, Werke, Kasse, Lager, Events, Marketing, Etiketten – alles in einer App. Einmal erfassen, überall nutzen.</li>
+          <li><strong>Corporate Design aus einer Quelle:</strong> Farben und Akzente aus <strong>Galerie gestalten</strong> ziehen durch Web und Werbemittel – kein Medienbruch zwischen Homepage und Druck. Argument für Gespräche und Prospekte: mök2 → „Corporate Design – eine Linie“.</li>
           <li><strong>Kasse &amp; Lagerhaltung integriert:</strong> Verkauf erfassen, Beleg drucken (Etikett oder A4), Verkaufs- und Lagerstatistik, Storno, CSV für Buchhaltung, Umsatz heute. Pro++: vollständige Buchhaltung (Kassabuch-/Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung). Werkkatalog mit Status Galerie/Lager/Verkauft. Kein separates Kassensystem nötig.</li>
           <li><strong>Ein Stand auf allen Geräten:</strong> Admin am Rechner, Galerie und Kassa auf Tablet/Handy – gleicher Stand per QR, keine Medienbrüche.</li>
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Vita, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** html2canvas nutzt kein `@media print`; Capture-CSS jetzt für **`body.vk2-pr-doc`** (VK2-Palette, lesbar) und **K2** mit **Homepage-Design** (`designToPlakatVars` → Akzent/Fließtext/Muted auf weißem PDF). `WerbemittelPdfCaptureOptions`, `sendWerbemittelPerMail` übergibt `prDocDesign` (K2/ök2). Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 5f636bf ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **mök2: Corporate Design als Marketing-Thema:** Neue Sektion **„Corporate Design – eine Linie“** (`mok2-cd-corporate-design`) in **MarketingOek2Page** + Sidebar **mok2Structure**; USP-Bullet + **Produkt- & Branchenvergleich**-Bullet; **docs/00-INDEX.md** + **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** (Tabelle). Inhalt: CD = durchgängige Linie Galerie gestalten → Web/Druck, Sportwagenprinzip, Argument für Piloten/PR. **Commit:** _(nach Push)_
+
+**Vorher:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** Capture-CSS `vk2-pr-doc` + K2-Design `prDocDesign`; Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 5f636bf ✅ auf GitHub (Doku-Hash-Fix a523bfd)
 
 **Vorher:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** 9d228d0 ✅ auf GitHub
 
@@ -64,11 +66,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Kurz **Presse/Newsletter/Flyer-PDF** am Mac prüfen (K2, ök2, VK2): Text gut lesbar, **Akzentfarbe** wie in der Vorschau.
+**Was wir JETZT tun:** mök2 im Browser öffnen → Sidebar **„Corporate Design – eine Linie“**; bei Bedarf **Als PDF drucken** für Gespräche.
 
-**Einordnung:** Werbelinie = sichtbar im PDF (nicht nur Screen); html2canvas brauchte explizites Capture-CSS + VK2-Klasse.
+**Einordnung:** CD ergänzt **Slogans/Werbelinie** um das **visuelle** Einheitsargument; eine Quelle (Galerie gestalten) – Sportwagenmodus.
 
-**Nächster Schritt:** Bei OK nichts; sonst konkretes Beispiel (welches Dokument, welcher Kontext) melden.
+**Nächster Schritt:** PDF-Kontrast weiter beobachten; CD-Text bei Pilot-Feedback nachschärfen.
 
 ---
 
