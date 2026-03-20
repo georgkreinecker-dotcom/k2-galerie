@@ -167,6 +167,11 @@ function getSafeDefaults(tenantId?: PageTextsTenantId): PageTextsConfig {
   return base
 }
 
+/** Galerie-Texte-Baseline ohne localStorage (für Gamification-Vergleich ök2/VK2). */
+export function getGaleriePageTextsBaseline(tenantId?: PageTextsTenantId): GaleriePageTexts {
+  return getSafeDefaults(tenantId).galerie
+}
+
 /** K2-Seitentexte von VK2-Verunreinigung bereinigen (Datenvermischung). Wird vor dem ersten Lesen der K2-Galerie aufgerufen. */
 export function cleanK2PageTextsFromVk2(): void {
   if (typeof window === 'undefined') return

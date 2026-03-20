@@ -34,10 +34,10 @@ import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUST
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
-import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
+import { getPageTexts, setPageTexts, defaultPageTexts, getGaleriePageTextsBaseline, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
-import { speichereGuideFlow } from '../src/components/GlobaleGuideBegleitung'
+import { speichereGuideFlow, type GuidePfad } from '../src/utils/k2GuideFlowStorage'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1572,7 +1572,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch { setVerteilerNewsletter([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
-  // Grüner Guide-Balken (ök2/VK2): Orientierung im Admin – unabhängig vom schwarzen GlobaleGuideBegleitung-Dialog (der bleibt aus).
+  // Grüner Guide-Balken (ök2/VK2): Flow in k2GuideFlowStorage – kein schwarzer Vollbild-Guide.
   const guideVorname = (() => {
     try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
   })()
@@ -1617,7 +1617,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       speichereGuideFlow({
         aktiv: true,
         name: f?.name ?? params.get('vorname') ?? '',
-        pfad: (f?.pfad ?? params.get('pfad') ?? '') as import('../src/components/GlobaleGuideBegleitung').GuidePfad,
+        pfad: (f?.pfad ?? params.get('pfad') ?? '') as GuidePfad,
         schritt: f?.schritt ?? 'start',
         erledigte: Array.isArray(f?.erledigte) ? f.erledigte : [],
         context: tenant.isVk2 ? 'vk2' : 'oeffentlich',
@@ -14379,6 +14379,139 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             marginBottom: 'clamp(2rem, 5vw, 3rem)',
             overflow: 'visible'
           }}>
+            {/* Gamification: Galerie gestalten (nur ök2/VK2) – nur Anzeige aus State, kein neuer Speicherpfad */}
+            {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+              const designTenantId = tenant.isOeffentlich ? 'oeffentlich' : 'vk2'
+              const baselineGalerie = getGaleriePageTextsBaseline(designTenantId)
+              const pg = pageContent
+              const hasImg = (u?: string | null) => !!(u && String(u).trim().length > 0)
+              const textsPersonalized = (() => {
+                const g = pageTexts.galerie
+                if (!g) return false
+                return (Object.keys(baselineGalerie) as (keyof typeof baselineGalerie)[]).some(
+                  k => String(g[k] ?? '').trim() !== String(baselineGalerie[k] ?? '').trim()
+                )
+              })()
+              const designGamificationMilestones = [
+                { id: 'w', label: 'Willkommensbild', done: hasImg(pg.welcomeImage), hint: 'Vorschau Seite 1 – Bild wählen' },
+                { id: 'g', label: 'Galerie-Karte / zweite Seite', done: hasImg(pg.galerieCardImage), hint: 'Vorschau Seite 2 – Karte mit Bild' },
+                { id: 'v', label: 'Virtueller Rundgang', done: hasImg(pg.virtualTourImage) || hasImg(pg.virtualTourVideo), hint: 'Bild oder Video für den Rundgang' },
+                { id: 't', label: 'Texte oder Titel angepasst', done: textsPersonalized, hint: 'In der Vorschau auf Text klicken und anpassen' },
+              ]
+              const designGamificationDone = designGamificationMilestones.filter(m => m.done).length
+              return (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'stretch',
+                    gap: 'clamp(1rem, 3vw, 1.5rem)',
+                    marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+                    padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                    borderRadius: '16px',
+                    border: `1px solid ${s.accent}33`,
+                    background: s.bgElevated,
+                    boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                  }}
+                >
+                  <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                    <img
+                      src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                      alt=""
+                      width={240}
+                      height={147}
+                      style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                    />
+                  </div>
+                  <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                      Galerie gestalten
+                    </div>
+                    <h3
+                      style={{
+                        fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)',
+                        fontWeight: 800,
+                        color: '#1c1a18',
+                        margin: '0 0 0.5rem',
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      Deine Galerie sichtbar machen
+                    </h3>
+                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                      Grün = Besucher sehen etwas Konkretes; grau = noch Platzhalter. Nur Orientierung – keine Punkte, kein neuer Speicherweg.
+                    </p>
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{designGamificationDone} / {designGamificationMilestones.length}</span>
+                      </div>
+                      <div
+                        role="progressbar"
+                        aria-valuenow={designGamificationDone}
+                        aria-valuemin={0}
+                        aria-valuemax={designGamificationMilestones.length}
+                        style={{
+                          height: 10,
+                          borderRadius: 999,
+                          background: `${s.accent}18`,
+                          overflow: 'hidden',
+                          border: `1px solid ${s.accent}30`,
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${Math.round((100 * designGamificationDone) / Math.max(1, designGamificationMilestones.length))}%`,
+                            height: '100%',
+                            borderRadius: 999,
+                            background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                            transition: 'width 0.35s ease-out',
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                      {designGamificationMilestones.map(m => (
+                        <li
+                          key={m.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '0.5rem',
+                            fontSize: '0.8rem',
+                            color: m.done ? '#1c1a18' : '#5c5650',
+                          }}
+                        >
+                          <span
+                            aria-hidden
+                            style={{
+                              flexShrink: 0,
+                              width: 22,
+                              height: 22,
+                              borderRadius: '50%',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '0.75rem',
+                              fontWeight: 800,
+                              background: m.done ? '#10b981' : 'transparent',
+                              color: m.done ? '#fff' : '#5c5650',
+                              border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                            }}
+                          >
+                            {m.done ? '✓' : '○'}
+                          </span>
+                          <span>
+                            <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                            <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )
+            })()}
             <div style={designDraftCssVars}>
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
@@ -24086,7 +24219,7 @@ ${name}`
 
       {/* ─── Nahtloser Guide-Begleiter im Admin ─────────────────────────────── */}
       {/* Erscheint wenn User über Guide-Flow hereinkam – begleitet bis Schritt 1 erledigt */}
-      {/* Globaler Guide (GlobaleGuideBegleitung) abgeschaltet 20.03.26 – kein zweiter Begleiter im Admin */}
+      {/* Schwarzer Vollbild-Guide abgeschaltet – nur k2GuideFlowStorage + grüner Balken oben */}
 
     </div>
   )
