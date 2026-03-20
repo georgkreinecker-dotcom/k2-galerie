@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** fa026ba ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Multi-User / Datentrennung (Klärung + Absicherung):** Antwort an Georg: Fremde sehen sich nicht gegenseitig im Browser (localStorage pro Gerät). Öffentlich für alle nur **K2**-Veröffentlichung (`gallery-data.json`). **Handy-Werk am Mac:** sehr wahrscheinlich **K2-Pfad** (z. B. K2-Vorschau/Admin) oder **Supabase** (ein gemeinsamer Werk-Speicher → Mac lädt nach). **Fix:** GalerieVorschau Mobile-Speichern-Button blockiert bei **ök2/VK2**, damit nie fälschlich K2/Supabase aus Demo-Kontext beschrieben wird (Modal war ohnehin UI-mäßig versteckt). **Commit:** 7418e1e ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** fa026ba ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Baustein 2:** Admin → **Presse & Medien** – dasselbe Hero-SVG + Fortschritt **X/4** (Medienkit-Kernangaben, Presse-Story, Anlass/Datum/Ort, Medienspiegel). Doku **GAMIFICATION-POTENTIALE-K2.md** aktualisiert. **Commit:** a6e2620 ✅ auf GitHub
 
@@ -30,11 +32,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Nach Push **ök2** Admin – Event anlegen, Reload – Event muss **bleiben**; Flyer erneut testen.
+**Was wir JETZT tun:** Georg: Multi-User-Thema verstanden; optional **Supabase**-Nutzung im Kopf behalten (ein Speicher → Geräte sehen dasselbe bei K2-Sync).
 
-**Einordnung:** ök2 = Demo, aber **Speicher** (`k2-oeffentlich-events`) war schon da – Admin lud ihn fälschlich nicht (nur Muster). Jetzt wie **Dokumente**: Muster + gespeicherte Einträge.
+**Einordnung:** Datentrennung K2/ök2; Vorschau-Mobile-Modal darf nie K2 beschreiben wenn Kontext ök2/VK2.
 
-**Nächster Schritt:** Wenn Flyer nach Fix noch hakt → melden (docId / Fenster).
+**Nächster Schritt:** Bei Bedarf: ök2-Admin-Flyer/Event erneut testen; wenn „Werk am Mac“ wieder auftritt → notieren: **welche URL** (galerie vs galerie-oeffentlich vs Vorschau) und ob Supabase aktiv.
 
 ---
 

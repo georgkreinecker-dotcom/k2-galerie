@@ -3772,6 +3772,15 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   alert('Bitte Foto und Titel eingeben!')
                   return
                 }
+                // 🔒 ök2/VK2: Dieses Modal schreibt sonst in K2-Pfade (loadArtworks/saveArtworks/Supabase) – eisernes Gesetz / Datenfluss
+                if (musterOnly) {
+                  alert('In der ök2-Demo werden Werke nicht über diese Vorschau gespeichert. Bitte im Admin im Demo-Kontext („öffentlich“) anlegen.')
+                  return
+                }
+                if (vk2) {
+                  alert('VK2 hat keine Werke-Liste wie K2. Bitte Mitglieder im Admin pflegen.')
+                  return
+                }
                 
                 setIsSaving(true)
                 
