@@ -8,15 +8,34 @@ cd "$(dirname "$0")/.."
 PROJECT_ROOT="$(pwd)"
 
 BACKUPMICRO="${BACKUPMICRO:-/Volumes/BACKUPMICRO}"
-# Ordner auf backupmicro: K2-Galerie-Code-Backups / Unterordner mit Datum
-CODE_BASE="${BACKUPMICRO}/K2-Galerie-Code-Backups"
-if [ -n "$1" ]; then
-  CODE_BASE="${BACKUPMICRO}/$1"
-fi
 
 if [ ! -d "$BACKUPMICRO" ]; then
   echo "❌ BACKUPMICRO nicht gefunden: $BACKUPMICRO"
   echo "   Externen Speicher anstecken, dann erneut ausführen."
+  exit 1
+fi
+
+# Wie hard-backup-to-backupmicro.sh: beschreibbarer Ordner (Volume-Root ist oft root-only → mkdir dort scheitert)
+if [ -n "$1" ]; then
+  CODE_BASE="${BACKUPMICRO}/$1"
+else
+  if [ -d "${BACKUPMICRO}/KL2-Galerie-Backups" ]; then
+    BACKUP_BASE="${BACKUPMICRO}/KL2-Galerie-Backups"
+  elif [ -d "${BACKUPMICRO}/KL2-Galerie-Backups " ]; then
+    BACKUP_BASE="${BACKUPMICRO}/KL2-Galerie-Backups "
+  elif [ -d "${BACKUPMICRO}/K2-Galerie-Backups" ]; then
+    BACKUP_BASE="${BACKUPMICRO}/K2-Galerie-Backups"
+  elif [ -d "${BACKUPMICRO}/Neuer Ordner" ]; then
+    BACKUP_BASE="${BACKUPMICRO}/Neuer Ordner"
+  else
+    BACKUP_BASE="${BACKUPMICRO}/K2-Galerie-Backups"
+  fi
+  CODE_BASE="${BACKUP_BASE}/K2-Galerie-Code-Backups"
+fi
+
+if [ -z "$1" ] && [ ! -d "$BACKUP_BASE" ]; then
+  echo "❌ Kein Galerie-Backup-Ordner auf $BACKUPMICRO (wie bei hard-backup)."
+  echo "   Ordner anlegen oder: bash scripts/backup-code-to-backupmicro.sh MeinUnterordner"
   exit 1
 fi
 

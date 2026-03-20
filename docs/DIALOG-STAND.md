@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** 7d307c2 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Fullbackup auf backupmicro:** `hard-backup-to-backupmicro.sh` → **v007** (`gallery-data.json` + MANIFEST). Code-Spiegelung → `KL2-Galerie-Backups /K2-Galerie-Code-Backups/k2-galerie-code--2026-03-20--19-57`. **Skript-Fix:** `backup-code-to-backupmicro.sh` legt Code-Backups **im gleichen Ordner** wie die v00x-Versionen ab (Volume-Root war nicht beschreibbar). **Commit:** PLACEHOLDER_HASH ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** 7d307c2 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **mök2: Corporate Design als Marketing-Thema:** Neue Sektion **„Corporate Design – eine Linie“** (`mok2-cd-corporate-design`) in **MarketingOek2Page** + Sidebar **mok2Structure**; USP-Bullet + **Produkt- & Branchenvergleich**-Bullet; **docs/00-INDEX.md** + **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** (Tabelle). Inhalt: CD = durchgängige Linie Galerie gestalten → Web/Druck, Sportwagenprinzip, Argument für Piloten/PR. **Commit:** 27e38fe ✅ auf GitHub
 
@@ -68,11 +70,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Newsletter/Werbemittel **PDF** (Teilen/Mail) prüfen: soll wie **Vorschau** aussehen (dunkle Karte, Galerie-Farben).
+**Was wir JETZT tun:** Session-Ende / Ruhe nach vielen Änderungen; Stand liegt auf **GitHub + backupmicro**.
 
-**Einordnung:** PDF-Raster = **dieselbe CD** wie Bildschirm; Druck im Browser (`@media print`) kann weiter weißes Papier simulieren – getrennt vom html2canvas-Pfad.
+**Einordnung:** Daten-Spiegel (gallery-data) + Code-Spiegel (.git, src, …) auf externem Medium – wie in Doku/Hausregel backupmicro.
 
-**Nächster Schritt:** Georg: einmal **An Empfänger – 1 Klick** testen; bei Wunsch **Safari-Druck** ebenfalls auf CD umstellen (eigene Entscheidung).
+**Nächster Schritt:** Bei nächster Session: PDF-1-Klick testen; optional im Browser **Admin → Vollbackup herunterladen** (localStorage nur dort, nicht im Hard-Backup).
 
 ---
 
