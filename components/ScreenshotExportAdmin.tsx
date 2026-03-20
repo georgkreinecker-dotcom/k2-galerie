@@ -4,6 +4,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE } from '../src/config/navigation'
+import { buildQrUrlWithBust } from '../src/hooks/useServerBuildTimestamp'
+import { fetchQrVersionTs } from '../src/utils/praesentationsmappeKurzHtml'
 import { APP_BASE_URL } from '../src/config/externalUrls'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
@@ -10215,16 +10217,85 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
   }
 
   // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API). Optional event für Zuordnung zur Rubrik.
-  // Beide QRs müssen dieselbe Basis-URL nutzen (Homepage + Rundgang gleiche Domain), sonst öffnet z. B. Rundgang „nichts“, wenn Nutzer nur Custom-Domain kennt.
+  // K2: Homepage + virtueller Rundgang (gleiche Domain-Logik wie bisher). ök2: nur Muster + Demo-URLs – keine K2-Stammdaten (eisernes Gesetz).
+  // QR-URLs: Server-Stand + Cache-Bust (buildQrUrlWithBust), wie Galerie-QR.
   const printQRCodePlakat = async (event?: any) => {
-    const homepageUrl = (galleryData?.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
-    const baseForRundgang = (galleryData?.website && isProductionLikeUrl(galleryData.website))
-      ? (() => { try { return new URL(galleryData.website).origin } catch { return APP_BASE_URL } })()
-      : APP_BASE_URL
-    const rundgangUrl = baseForRundgang + PROJECT_ROUTES['k2-galerie'].virtuellerRundgang
-    const [homepageQRUrl, rundgangQRUrl] = await Promise.all([
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const qrVersionTs = await fetchQrVersionTs()
+    let homepageUrl: string
+    let secondUrl: string
+    let qr1Label: string
+    let qr1Desc: string
+    let qr2Label: string
+    let qr2Desc: string
+    let docTitle: string
+    let h1Text: string
+    let h2Text: string
+    let subtitleText: string
+    let blockIntro: string
+    let highlightInner: string
+    let howtoBlock: string
+    let footerLines: string
+
+    if (tenant.isOeffentlich) {
+      const g = MUSTER_TEXTE.gallery
+      const demoName = (g.firmenname || TENANT_CONFIGS.oeffentlich.galleryName).trim() || 'Galerie Muster'
+      homepageUrl = buildQrUrlWithBust(APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, qrVersionTs)
+      secondUrl = buildQrUrlWithBust(APP_BASE_URL + WILLKOMMEN_ROUTE, qrVersionTs)
+      qr1Label = 'Demo-Galerie (ök2)'
+      qr1Desc = 'Musterwerke und Vorschau – keine echten K2-Daten'
+      qr2Label = 'Willkommen'
+      qr2Desc = 'Einstieg und Überblick zur Plattform'
+      docTitle = `QR-Codes – ${demoName} (Demo)`
+      h1Text = demoName.toUpperCase()
+      h2Text = 'Besuch uns online'
+      subtitleText = `${TENANT_CONFIGS.oeffentlich.tagline} · Demo`
+      blockIntro = `<p><strong>Entdecke die öffentliche Demo-Galerie – jederzeit verfügbar.</strong></p>
+                <p>Die Plattform im Überblick: Mustertexte und Beispielwerke zum Ausprobieren. Die Demo nutzt erfundene Namen und Kontakte; keine Daten der echten K2 Galerie.</p>`
+      highlightInner = `🎨 Demo &amp; Ideen<br>
+                📱 QR scannen – aktueller Stand vom Server<br>
+                🌐 Windows, Android, macOS, iOS · Browser &amp; PWA`
+      howtoBlock = `<p><strong>So funktioniert's:</strong></p>
+                <p>1. Kamera-App öffnen<br>
+                2. Einen QR-Code scannen<br>
+                3. Demo-Galerie oder Willkommen erkunden</p>
+                <p style="margin-top: 15px;">Lizenzen und mehr: ${esc(PRODUCT_BRAND_NAME)} · ${esc(PRODUCT_WERBESLOGAN)}</p>`
+      footerLines = `<p><strong>${esc(demoName)}</strong> (Demo ök2)<br>
+                ${esc(g.email || 'info@galerie-muster.example')}<br>
+                Nur Mustertexte – keine K2-Stammdaten</p>`
+    } else {
+      const rawHomeRaw = (galleryData?.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
+      homepageUrl = buildQrUrlWithBust(rawHomeRaw, qrVersionTs)
+      const baseForRundgang = (galleryData?.website && isProductionLikeUrl(galleryData.website))
+        ? (() => { try { return new URL(galleryData.website).origin } catch { return APP_BASE_URL } })()
+        : APP_BASE_URL
+      secondUrl = buildQrUrlWithBust(baseForRundgang + PROJECT_ROUTES['k2-galerie'].virtuellerRundgang, qrVersionTs)
+      qr1Label = 'Homepage'
+      qr1Desc = 'Besuch unsere Galerie-Website'
+      qr2Label = 'Virtueller Rundgang'
+      qr2Desc = 'Erkunde die Ausstellung'
+      docTitle = 'QR-Codes – K2 Galerie'
+      h1Text = 'K2 GALERIE'
+      h2Text = 'Besuch uns online'
+      subtitleText = 'Kunst & Keramik • Jederzeit verfügbar'
+      blockIntro = `<p><strong>Entdecke die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
+                <p>Die K2 Galerie öffnet ihre Türen für dich – jederzeit und überall. Erlebe die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>`
+      highlightInner = `🎨 Malerei & Keramik<br>
+                📱 Einfach QR-Code scannen<br>
+                🌐 Sofort verfügbar, jederzeit`
+      howtoBlock = `<p><strong>So funktioniert's:</strong></p>
+                <p>1. Öffne die Kamera-App auf deinem Smartphone<br>
+                2. Scanne einen der QR-Codes<br>
+                3. Erkunde unsere Galerie in Ruhe</p>
+                <p style="margin-top: 15px;">Lass dich von der Vielfalt unserer Kunstwerke inspirieren und entdecke die einzigartige Verbindung von Malerei und Keramik.</p>`
+      footerLines = `<p><strong>K2 Galerie</strong><br>
+                Martina & Georg Kreinecker<br>
+                Kunst & Keramik</p>`
+    }
+
+    const [homepageQRUrl, secondQRUrl] = await Promise.all([
       QRCode.toDataURL(homepageUrl, { width: 300, margin: 1 }),
-      QRCode.toDataURL(rundgangUrl, { width: 300, margin: 1 })
+      QRCode.toDataURL(secondUrl, { width: 300, margin: 1 })
     ])
 
     const date = new Date().toLocaleDateString('de-DE', { 
@@ -10237,7 +10308,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR-Codes - K2 Galerie</title>
+          <title>${esc(docTitle)}</title>
           <style>
             @media print {
               @page {
@@ -10400,46 +10471,37 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           <div class="plakat">
             <div class="content">
               <div class="icon">🏛️</div>
-              <h1>K2 GALERIE</h1>
-              <h2>Besuch uns online</h2>
-              <p class="subtitle">Kunst & Keramik • Jederzeit verfügbar</p>
+              <h1>${esc(h1Text)}</h1>
+              <h2>${esc(h2Text)}</h2>
+              <p class="subtitle">${esc(subtitleText)}</p>
               
               <div class="text-block">
-                <p><strong>Entdecke die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
-                <p>Die K2 Galerie öffnet ihre Türen für dich – jederzeit und überall. Erlebe die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>
+                ${blockIntro}
               </div>
 
               <div class="highlight-box">
-                <p>🎨 Malerei & Keramik<br>
-                📱 Einfach QR-Code scannen<br>
-                🌐 Sofort verfügbar, jederzeit</p>
+                <p>${highlightInner}</p>
               </div>
 
               <div class="qr-grid">
                 <div class="qr-container">
-                  <img src="${homepageQRUrl}" alt="QR-Code für Homepage" class="qr-code" />
-                  <div class="qr-label">Homepage</div>
-                  <div class="qr-description">Besuch unsere Galerie-Website</div>
+                  <img src="${homepageQRUrl}" alt="QR ${esc(qr1Label)}" class="qr-code" />
+                  <div class="qr-label">${esc(qr1Label)}</div>
+                  <div class="qr-description">${esc(qr1Desc)}</div>
                 </div>
                 <div class="qr-container">
-                  <img src="${rundgangQRUrl}" alt="QR-Code für virtuellen Rundgang" class="qr-code" />
-                  <div class="qr-label">Virtueller Rundgang</div>
-                  <div class="qr-description">Erkunde die Ausstellung</div>
+                  <img src="${secondQRUrl}" alt="QR ${esc(qr2Label)}" class="qr-code" />
+                  <div class="qr-label">${esc(qr2Label)}</div>
+                  <div class="qr-description">${esc(qr2Desc)}</div>
                 </div>
               </div>
 
               <div class="text-block">
-                <p><strong>So funktioniert's:</strong></p>
-                <p>1. Öffne die Kamera-App auf deinem Smartphone<br>
-                2. Scanne einen der QR-Codes<br>
-                3. Erkunde unsere Galerie in Ruhe</p>
-                <p style="margin-top: 15px;">Lass dich von der Vielfalt unserer Kunstwerke inspirieren und entdecke die einzigartige Verbindung von Malerei und Keramik.</p>
+                ${howtoBlock}
               </div>
 
               <div class="footer">
-                <p><strong>K2 Galerie</strong><br>
-                Martina & Georg Kreinecker<br>
-                Kunst & Keramik</p>
+                ${footerLines}
                 <p style="margin-top: 12px;">Erstellt am: ${date}</p>
               </div>
             </div>

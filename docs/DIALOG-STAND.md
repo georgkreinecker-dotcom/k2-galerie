@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Präsentationsmappen (ök2 vs. K2):** Tab „Präsentationsmappen“ im Admin: IIFE korrekt geschlossen (`})()}`). Deckblatt/Kurz-HTML: Galerienamen aus **`MUSTER_TEXTE.gallery.firmenname`** bzw. **`TENANT_CONFIGS.oeffentlich.galleryName`** (nicht `.name` – TS/Modell). K2-Zweig: `name`/`firmenname` aus geladenen Stammdaten + Default. `PraesentationsmappePage`: ungenutzten `PROJECT_ROUTES`-Import entfernt. Tests + Build grün. **Commit: db661b0** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **QR-Code Plakat ök2:** `printQRCodePlakat` war fest auf K2 (Text Martina/Georg, QR auf K2-Galerie + Rundgang). **Jetzt:** `tenant.isOeffentlich` → Mustertexte, Demo-Galerie-URL + Willkommen, **`buildQrUrlWithBust` + `fetchQrVersionTs`** (wie Galerie-QR). K2-Zweig: unveränderte Texte, QRs jetzt ebenfalls mit Bust. `fetchQrVersionTs` aus `praesentationsmappeKurzHtml.ts` exportiert. **Commit:** _(nach Push)_
+
+**Vorher:** Präsentationsmappen / db661b0.
 
 **Vorher gleicher Tag:** Plakat ök2 (Speichern/Merge, decodeHtmlDataUrl, ein Zurück) – Commit 3d50158.
 

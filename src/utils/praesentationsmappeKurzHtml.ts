@@ -19,7 +19,8 @@ function escapeHtml(s: string): string {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-async function fetchQrVersionTs(): Promise<number> {
+/** Für Admin-Werbemittel (QR-Plakat, …) – gleicher Stand wie Galerie-QR. */
+export async function fetchQrVersionTs(): Promise<number> {
   try {
     const r = await fetch('/api/build-info', { cache: 'no-store' })
     if (r.ok) {
