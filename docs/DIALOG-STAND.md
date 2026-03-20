@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Admin „Werke verwalten“:** Kategorie-Filter **standardmäßig immer „Alle“** wenn man wieder in die Listenansicht kommt (anderen Tab verlassen und zurück, Modal schließen, nach Speichern) – damit kein Eindruck „Werke fehlen“. ök2: kein automatisches Setzen der Kategorie aus Stammdaten-Fokus mehr. Ungenutzten Import entfernt. **Commit: eebd3c2** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **QR-Code Plakat „Neu erstellen“:** Keine **zwei** Meldungen mehr (Pop-up-Blocker + Erfolg). **Ursache:** `FileReader` async, `window.open` sofort – falsche Reihenfolge. **Jetzt:** `await` Speichern, dann Vorschau; bei offenem Tab **kein** Erfolgs-Alert; nur bei **blockiertem** Pop-up **eine** Meldung (gespeichert + Hinweis Dokumente). **Commit: 28830da** ✅ auf GitHub
 
-**Vorher:** Präsentationsmappen Eventplan (a610509); QR-Code Plakat ök2 (c177d9f).
+**Vorher:** Werke Kategorie „Alle“ (eebd3c2); Präsentationsmappen (a610509).
 
-**Was wir JETZT tun:** Kurz im Admin testen: Werke → Kategorie einschränken → anderer Tab → zurück: **Alle**; Modal öffnen/schließen: **Alle**.
+**Was wir JETZT tun:** Optional: QR-Plakat „Neu erstellen“ – ein Tab ODER eine Meldung bei Blocker.
 
-**Einordnung:** Nutzer-Logik (Ampel/kein „verloren“); Admin-UX, keine K2-Kern-Datenlogik.
+**Einordnung:** Admin Marketing/Dokumente; kein Publish/Load geändert.
 
-**Nächster Schritt:** Vercel „Ready“ – ggf. smoke-test Werke-Liste.
+**Nächster Schritt:** Vercel „Ready“ – kurz QR-Plakat testen.
 
 ---
 
