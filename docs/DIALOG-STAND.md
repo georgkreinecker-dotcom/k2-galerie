@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 2 umgesetzt (ök2/VK2):** Eventplan → **Events** = X/4 + **Nächstes Event**; Tab **Newsletter** = Empfänger-Zahl + X/4 (`NewsletterTab`); **Veröffentlichen** = Hinweis Stand-Badge (ohne Auto-Reload/Fetch). Doku Plan + **GAMIFICATION-OEK2** §5.2. **K2** ohne diese Blöcke.
+**Letzter Stand:** 20.03.26 – **Gamification Phase 2 umgesetzt (ök2/VK2):** Eventplan → **Events** = X/4 + **Nächstes Event**; Tab **Newsletter** = Empfänger-Zahl + X/4 (`NewsletterTab`); **Veröffentlichen** = Hinweis Stand-Badge (ohne Auto-Reload/Fetch). Doku Plan + **GAMIFICATION-OEK2** §5.2. **K2** ohne diese Blöcke. **Commit:** 2b19f77 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. **Commit:** 946ba4a ✅ auf GitHub
 
