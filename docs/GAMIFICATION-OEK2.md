@@ -2,6 +2,8 @@
 
 **Stand:** 20.03.26 · **Entscheid Georg:** Gamification soll **K2 (echte Galerie) nicht** betreffen. Für **ök2** (öffentliche Demo, `context=oeffentlich` / `musterOnly`) ist sie sinnvoll – aber **nur als zusätzliche Schicht**, die man **theoretisch abschalten** kann, **ohne** dass sich Abläufe oder Erreichbarkeit von Funktionen ändern.
 
+**Sportwagenmodus:** Gilt **für diesen ganzen Bereich** – nicht nur „schöne UI“, sondern: **bestehende Standards** nutzen, **keine** zweiten Wege erfinden (`.cursorrules` Sportwagenmodus, `ein-standard-problem.mdc`). Gamification baut **auf** dem Kern auf, ersetzt ihn nicht.
+
 ---
 
 ## 1. Geltungsbereich

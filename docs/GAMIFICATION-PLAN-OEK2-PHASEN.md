@@ -4,6 +4,8 @@
 
 **Ziel dieses Plans:** Klare **Reihenfolge**, **Risiko-Stufen** und **Umkehr** (kein großer Knopf ohne Rückweg). **Klarstellung Georg:** Es heißt **nicht** „Stopp“ – ihr macht **weiter**, nur **vorsichtig**. **Zum Markteintritt** soll Gamification in ök2 **schon drin sein** (mindestens die **Baseline** unten; plus was ihr für den Start festlegt). **Plan B ohne sichtbare Gamification** ist nur die **absolute Notlösung**, kein normaler Plan.
 
+**Sportwagenmodus (verbindlich):** Der **gesamte** Weg bis Markt – und danach – läuft im **Sportwagenmodus**: **eine** Problemstellung = **eine** Lösung im Projekt, vorhandene Abläufe und Tabellen in `ein-standard-problem.mdc` / kritische Abläufe **nicht** umgehen oder duplizieren. Gamification ist **Schicht B** auf dem **bestehenden** Kern, kein zweiter Parallel-App-Bau.
+
 ---
 
 ## Vorsicht – aber weiter
