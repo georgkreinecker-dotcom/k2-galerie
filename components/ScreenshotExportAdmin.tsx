@@ -304,18 +304,57 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
     if (head) {
       const captureStyle = idoc.createElement('style')
       captureStyle.setAttribute('id', 'k2-werbemittel-pdf-capture')
+      /**
+       * Plakat: Titel = Gradient-Text (-webkit-text-fill-color: transparent). html2canvas füllt den Rest mit
+       * backgroundColor #fff → Titel „verschwindet“. Helle muted-Farben auf weiß = kaum lesbar.
+       * Hier: feste Kontraste wie @media print im Plakat-HTML + volle A3-Kachel + Flex-Verteilung.
+       */
+      const plakatReadableForRaster =
+        pdfFormat === 'a3'
+          ? `
+        .plakat {
+          width: 297mm !important;
+          max-width: none !important;
+          min-height: 420mm !important;
+          padding: 4rem !important;
+          margin: 0 auto !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          background: #ffffff !important;
+          background-image: none !important;
+          color: #1c1a18 !important;
+          box-shadow: none !important;
+          border: 1px solid #e5e2dc !important;
+          border-radius: 24px !important;
+        }
+        .plakat h1 {
+          color: #b54a1e !important;
+          background: none !important;
+          background-image: none !important;
+          -webkit-text-fill-color: #b54a1e !important;
+          background-clip: border-box !important;
+          -webkit-background-clip: border-box !important;
+        }
+        .plakat > h1 + p { color: #5c5650 !important; }
+        .plakat .event-info,
+        .plakat .event-info p { color: #333333 !important; }
+        .plakat .event-info strong { color: #b54a1e !important; }
+        .plakat .qr-code {
+          background: #f6f4f0 !important;
+        }
+        .plakat .qr-code p { color: #444444 !important; }
+        .plakat .contact,
+        .plakat .contact p { color: #333333 !important; }
+        .plakat .contact strong { color: #b54a1e !important; }
+      `
+          : ''
       let extraPlakat = ''
       if (/width:\s*min\(100%,\s*760px\)/i.test(safeHtml) || /plakatWidth:\s*['"]min\(100%,\s*760px\)/i.test(safeHtml)) {
         extraPlakat = `
           body { padding: 0.5rem !important; }
-          .plakat {
-            width: 297mm !important;
-            max-width: none !important;
-            min-height: 420mm !important;
-            padding: 4rem !important;
-            border-radius: 24px !important;
-            margin: 0 auto !important;
-          }
           .plakat h1 { font-size: 5rem !important; margin-bottom: 3rem !important; }
           .plakat > h1 + p { font-size: 2rem !important; }
           .plakat .event-info { font-size: 2rem !important; margin: 2rem 0 !important; }
@@ -337,6 +376,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
           background: #ffffff !important;
           min-height: auto !important;
         }
+        ${plakatReadableForRaster}
         ${extraPlakat}
       `
       head.appendChild(captureStyle)
@@ -373,6 +413,17 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
             clonedDoc.querySelectorAll('.no-print').forEach(n => {
               ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
             })
+            if (pdfFormat === 'a3') {
+              clonedDoc.querySelectorAll('.plakat h1').forEach(n => {
+                const h = n as HTMLElement
+                h.style.setProperty('color', '#b54a1e', 'important')
+                h.style.setProperty('-webkit-text-fill-color', '#b54a1e', 'important')
+                h.style.setProperty('background', 'none', 'important')
+                h.style.setProperty('background-image', 'none', 'important')
+                h.style.setProperty('background-clip', 'border-box', 'important')
+                h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
+              })
+            }
           } catch {
             /* ignore */
           }
