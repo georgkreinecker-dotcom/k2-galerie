@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Sportwagenmodus Werbemittel (keine Plakat-Einzellösung im Admin):** Plakat-`@media print` + html2pdf-Capture + onclone in **marketingWerbelinie.ts** gebündelt: `getPlakatPosterPrintCss`, `getWerbemittelHtml2canvasCaptureCss`, `applyWerbemittelCaptureToClone` (baut auf `getK2PrDocHtml2canvasCaptureCss` auf). **ScreenshotExportAdmin** ruft nur noch diese API auf. Tests erweitert in **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** (nach Push eintragen) ✅
+**Letzter Stand:** 20.03.26 – **Sportwagenmodus Werbemittel (keine Plakat-Einzellösung im Admin):** Plakat-`@media print` + html2pdf-Capture + onclone in **marketingWerbelinie.ts** gebündelt: `getPlakatPosterPrintCss`, `getWerbemittelHtml2canvasCaptureCss`, `applyWerbemittelCaptureToClone` (baut auf `getK2PrDocHtml2canvasCaptureCss` auf). **ScreenshotExportAdmin** ruft nur noch diese API auf. Tests erweitert in **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 53ce780 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Newsletter/Presse-PDF (k2-pr-doc) lesbar:** html2canvas wertet `@media print` nicht aus → bisher fast weiße Schrift auf weiß. **Fix:** `getK2PrDocHtml2canvasCaptureCss()` in **marketingWerbelinie.ts** (sinngleich Druck-Regeln: weiße `.page`, Text `#1a1f3a`, Gradient-Titel entfernt); **renderStyledPdfBlobFromHtmlString** injiziert das bei A4 + `k2-pr-doc` + **onclone**-Absicherung. Test: **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 85a00ab ✅ auf GitHub
 
