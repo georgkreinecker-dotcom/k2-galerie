@@ -70,6 +70,10 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 - [ ] Sind Texte und Elemente **optional** (kein Blocker für „nur schnell erledigen“)?
 - [ ] **Ein Erlebnis:** Keine **zwei** getrennten, sich störenden Elemente – Guide/Begleitung und Status/Fortschritt **vereinheitlicht** bzw. koordiniert (§2 „Vereinheitlichung“)?
 
+### Phase 1 – Abnahme (20.03.26)
+
+Die umgesetzten Bausteine (siehe [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Baseline + Phase 1 DoD) wurden gegen §4 und §5 geprüft: **nur Schicht B**, **K2-Kern** ohne Gamification-Zwang, **kein** Blockieren kritischer Abläufe, **Vereinheitlichung** (kein schwarzer Global-Guide; Tab-Heroes + grüner Admin-Balken koordiniert). Die **Checkliste oben** bleibt bei **jeder neuen** Gamification-Änderung Pflicht.
+
 ---
 
 ## 6. Verknüpfungen

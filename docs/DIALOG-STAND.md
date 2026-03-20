@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 1 – „Werke verwalten“:** Admin → **Werke**: **ök2** = X/4 aus `allArtworks` (Menge, Bild, Preis, Titel); **VK2** = X/4 aus `vk2Stammdaten.mitglieder` (keine Werke-Liste im VK2-Speicher). **K2** ohne Block. **Commit:** 3be6a8d ✅ auf GitHub (nach Rebase; DIALOG-Hash 904f61d)
+**Letzter Stand:** 20.03.26 – **Gamification Phase 1 abgeschlossen (Doku):** DoD-Checkboxen + Abnahme in **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **§5.1 Abnahme** in **GAMIFICATION-OEK2.md**. Phase 2 bewusst noch nicht gestartet. **Commit:** deffc6d ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification Phase 1 – „Werke verwalten“:** Admin → **Werke**: **ök2** = X/4 aus `allArtworks` (Menge, Bild, Preis, Titel); **VK2** = X/4 aus `vk2Stammdaten.mitglieder` (keine Werke-Liste im VK2-Speicher). **K2** ohne Block. **Commit:** 3be6a8d ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 1 – „Galerie gestalten“:** Admin → **Design** (nur **ök2/VK2**): Hero-SVG wie Presse/Öffentlichkeitsarbeit + **X/4** (Willkommensbild, Galerie-Karte, Virtueller Rundgang, Texte vs. Baseline). Export **`getGaleriePageTextsBaseline`** in `pageTexts.ts`. **K2-Design-Tab** unverändert (kein Block). Doku **GAMIFICATION-PLAN-OEK2-PHASEN** Baseline + Phase-1-Zeile. **Commit:** 67f8098 ✅ auf GitHub
 
@@ -52,11 +54,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Phase-1-**DoD** und **GAMIFICATION-OEK2.md**-Checkliste durchgehen; optional nächste Schritte aus **Phase 2** nur bei grünem Stand.
+**Was wir JETZT tun:** **Phase 1** in Doku **abgeschlossen** (DoD + Abnahme in `GAMIFICATION-PLAN-OEK2-PHASEN.md`, §5.1 in `GAMIFICATION-OEK2.md`). **Phase 2** (Events, Newsletter, Stand-Hinweis) **noch nicht** starten – erst kurz im Alltag beobachten oder **Georg** gibt frei.
 
-**Einordnung:** „Galerie gestalten“ + „Werke verwalten“ (Ampeln) umgesetzt; K2-Kern unberührt.
+**Einordnung:** Gamification Phase 1 (Öffentlichkeitsarbeit, Presse, Design, Werke ök2/VK2) komplett; K2-Kern unberührt.
 
-**Nächster Schritt:** Phase 1 abschließen (Doku/DoD) oder – nach Georg – vorsichtig **Phase 2** öffnen.
+**Nächster Schritt:** Phase 2 aus **GAMIFICATION-PLAN-OEK2-PHASEN** vorbereiten / starten **nur** bei grünem Stand + Freigabe.
 
 ---
 

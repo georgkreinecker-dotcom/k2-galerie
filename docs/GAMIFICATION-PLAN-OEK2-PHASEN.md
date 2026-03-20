@@ -70,12 +70,14 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 | **3** | **Werke verwalten** (Ampel nur **Anzeige**: fehlendes Bild/Preis) | Hoher Nutzen in der Demo; technisch nur UI über bestehende Liste – **niemals** automatisch bereinigen oder schreiben. **Umgesetzt:** Werke-Tab ök2 + VK2-Mitglieder-Variante (`ScreenshotExportAdmin`), siehe Baseline-Tabelle. |
 
 **Definition of Done (Phase 1)**  
-- [ ] Ohne Schicht B: alle Aktionen wie heute erreichbar.  
-- [ ] Nur `musterOnly` / ök2-Admin / öffentliche Keys – **K2-Kern** unberührt.  
-- [ ] Kein Auto-Reload, kein Druck-Text ([code-5-crash-kein-auto-reload.mdc](../.cursor/rules/code-5-crash-kein-auto-reload.mdc)).  
-- [ ] Kontrast heller Admin-Hintergrund ok ([ui-kontrast-leserbarkeit.mdc](../.cursor/rules/ui-kontrast-leserbarkeit.mdc)).  
-- [ ] **Ein Erlebnis:** Guide/Begleitung und Fortschritt **nicht** als zwei konkurrierende Haupt-Elemente; **Vereinheitlichung** nach [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §2.  
-- [ ] Ein Baustein = ein PR; bei Problemen **revert** möglich.
+- [x] Ohne Schicht B: alle Aktionen wie heute erreichbar.  
+- [x] Nur `musterOnly` / ök2-Admin / öffentliche Keys – **K2-Kern** unberührt.  
+- [x] Kein Auto-Reload, kein Druck-Text ([code-5-crash-kein-auto-reload.mdc](../.cursor/rules/code-5-crash-kein-auto-reload.mdc)).  
+- [x] Kontrast heller Admin-Hintergrund ok ([ui-kontrast-leserbarkeit.mdc](../.cursor/rules/ui-kontrast-leserbarkeit.mdc)).  
+- [x] **Ein Erlebnis:** Guide/Begleitung und Fortschritt **nicht** als zwei konkurrierende Haupt-Elemente; **Vereinheitlichung** nach [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §2.  
+- [x] Ein Baustein = ein PR; bei Problemen **revert** möglich. *(Umsetzung: kleine, thematische Commits pro Baustein – nachvollziehbar revertierbar.)*
+
+**Abnahme Phase 1 (20.03.26):** Prio 1–3 (Guide-Strategie + grüner Balken, Design **Galerie gestalten**, Werke/Mitglieder-Ampel ök2/VK2) sind umgesetzt. Nächster sinnvoller Schritt: **Phase 2** erst nach kurzer Beobachtung im Alltag bzw. nach Georg – siehe Abschnitt „Phase 2“ unten.
 
 ---
 
