@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-Mail ehrlich + technisch sauber:** `sendWerbemittelPerMail`: Mailtext erklärt, dass **mailto keinen Anhang** kann – PDF landet in **Downloads** und muss manuell angehängt werden (vorher: `attachmentInfo` war immer `null` → Text „aus Vorschau anhängen“ war irreführend). **Ein** Empfänger → `mailto:adresse@…` (**An** gefüllt); mehrere → weiter **BCC**. **`jspdf`** als Dependency (PDF aus HTML). **Commit:** 396755f ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel-Mail ehrlich + technisch sauber:** `sendWerbemittelPerMail`: Mailtext erklärt, dass **mailto keinen Anhang** kann – PDF landet in **Downloads** und muss manuell angehängt werden (vorher: `attachmentInfo` war immer `null` → Text „aus Vorschau anhängen“ war irreführend). **Ein** Empfänger → `mailto:adresse@…` (**An** gefüllt); mehrere → weiter **BCC**. **`jspdf`** als Dependency (PDF aus HTML). **Commit:** 396755f (Feature), 05a03f7 (DIALOG-STAND) ✅
 
 **Vorher:** 20.03.26 – **1-Klick-Mail für alle Werbemittel** – **Commit:** 3b44845
 
