@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** a0a1bb7 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** 7d307c2 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **mök2: Corporate Design als Marketing-Thema:** Neue Sektion **„Corporate Design – eine Linie“** (`mok2-cd-corporate-design`) in **MarketingOek2Page** + Sidebar **mok2Structure**; USP-Bullet + **Produkt- & Branchenvergleich**-Bullet; **docs/00-INDEX.md** + **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** (Tabelle). Inhalt: CD = durchgängige Linie Galerie gestalten → Web/Druck, Sportwagenprinzip, Argument für Piloten/PR. **Commit:** 27e38fe ✅ auf GitHub
 
