@@ -435,6 +435,28 @@ export function getBackupTimestamps(): string[] {
     return []
   }
 }
+
+/** Nur Metadaten: Zeitpunkt des letzten „Sicherungskopie herunterladen“ (ök2/VK2) – kein Ersatz für Vollbackup-Buttons */
+const LAST_EXPORT_OEK2_KEY = 'k2-oeffentlich-last-backup-export-at'
+const LAST_EXPORT_VK2_KEY = 'k2-vk2-last-backup-export-at'
+
+export function recordLastBackupDownloadExported(tenant: 'oeffentlich' | 'vk2'): void {
+  try {
+    const iso = new Date().toISOString()
+    localStorage.setItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : LAST_EXPORT_VK2_KEY, iso)
+  } catch {
+    /* ignore */
+  }
+}
+
+export function getLastBackupDownloadExported(tenant: 'oeffentlich' | 'vk2'): string | null {
+  try {
+    const raw = localStorage.getItem(tenant === 'oeffentlich' ? LAST_EXPORT_OEK2_KEY : LAST_EXPORT_VK2_KEY)
+    return raw && raw.trim() ? raw.trim() : null
+  } catch {
+    return null
+  }
+}
 /**
  * Setzt K2- und ök2-Stammdaten auf den Repo-Stand (Zustand vor Tom/VK2-Überschreibung).
  * Schreibt k2-stammdaten-* und k2-oeffentlich-stammdaten-* mit allen Feldern (Öffnungszeiten etc.).

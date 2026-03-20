@@ -106,10 +106,15 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 | Bereich | Hinweis |
 |---------|---------|
-| **VK2** „Vereinsprofil komplett“ | Nur nach **expliziter** Entscheidung Georg; eigener Kontext, [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §1. |
-| **Kassa / Shop (Demo)** | Nur ök2-Übungsszenario, **nicht** K2-Echtbetrieb nerven. |
-| **Einstellungen / Backup** | Status „letztes Backup“ als **Info**, kein Ersatz für die drei Backup-Buttons ([KRITISCHE-ABLAEUFE.md](./KRITISCHE-ABLAEUFE.md) §11). |
-| **mök2** | Lesepfade für Piloten, **kein** Spiel-Mechanik. |
+| **VK2** „Vereinsprofil komplett“ | Nur **Anzeige** aus `vk2Stammdaten` (X/4), Tab **Einstellungen → Meine Daten** (`ScreenshotExportAdmin`). **Umgesetzt.** |
+| **Kassa / Shop (Demo)** | Nur **ök2** + Admin-Kontext, **nicht** VK2: Lesepfad **X/4** (Werke, Warenkorb, Checkout, Verkauf) in **ShopPage**. **Umgesetzt.** |
+| **Einstellungen / Backup** | „Letztes Herunterladen einer Sicherungskopie“ nach erfolgreichem Download-Klick + Hinweis auf die drei Backup-Wege; **kein** Ersatz für die Buttons ([KRITISCHE-ABLAEUFE.md](./KRITISCHE-ABLAEUFE.md) §11). **Umgesetzt** (`autoSave.ts`, `ScreenshotExportAdmin`). |
+| **mök2** | Kurzer Pilot-Hinweis im **embedded**-Header: Lesepfade = Orientierung, **keine** Spielmechanik (**MarketingOek2Page**). **Umgesetzt.** |
+
+**Definition of Done (Phase 3)**  
+- [x] Wie Phase 1/2: nur Schicht B, K2-Kern ohne diese Blöcke.  
+- [x] Backup: keine Buttons entfernt oder verdrängt.  
+- [x] Shop-Demo nur `fromOeffentlich && isAdminContext && !fromVk2`.  
 
 ---
 
@@ -130,6 +135,6 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 | **Phase 0** | Bis Markt: **vorsichtig** bauen, **nicht** einfrieren. |
 | **Phase 1** | Zusätzlich: Guide → Galerie gestalten → Werke-Ampel (**nur Anzeige**) |
 | **Phase 2** | Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) – **umgesetzt** (nur ök2/VK2) |
-| **Phase 3** | Optional: VK2, Demo-Kassa, Backup-Info, mök2 |
+| **Phase 3** | VK2 Vereinsprofil, Demo-Kassa (Shop), Backup-Info, mök2-Pilot-Hinweis – **umgesetzt** (nur Anzeige/Lesepfade) |
 
 **Mut voran – mit Sorgfalt, Plan B nur im Notfall.** 💚

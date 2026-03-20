@@ -968,7 +968,7 @@ const OEF_DESIGN_DEFAULT = {
   cardBg2: 'rgba(246, 244, 240, 0.9)'
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
-import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -15459,6 +15459,80 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: s.radius, color: s.text, fontSize: '0.9rem' }}>
                       <strong>VK2 Stammdaten:</strong> Verein mit Adresse, Vorstand und Mitgliedern. Alle Felder optional – nur Name ausfüllen wo bekannt.
                     </div>
+                    {/* Gamification Phase 3: Vereinsprofil – nur Anzeige (vk2Stammdaten) */}
+                    {(() => {
+                      const v = vk2Stammdaten?.verein
+                      const n1 = !!(v?.name || '').trim()
+                      const n2 = !!(v?.address || '').trim() && !!(v?.city || '').trim()
+                      const n3 = !!(v?.email || '').trim() || !!(v?.website || '').trim()
+                      const n4 =
+                        !!(vk2Stammdaten?.vorstand?.name || '').trim() ||
+                        (vk2Stammdaten?.mitglieder || []).some((m: { name?: string }) => !!(m?.name || '').trim())
+                      const steps = [
+                        { id: 'vk2p1', done: n1, label: 'Vereinsname', hint: 'Name des Vereins' },
+                        { id: 'vk2p2', done: n2, label: 'Adresse & Ort', hint: 'Straße und PLZ/Ort' },
+                        { id: 'vk2p3', done: n3, label: 'Erreichbarkeit', hint: 'E-Mail oder Website' },
+                        { id: 'vk2p4', done: n4, label: 'Ansprechperson', hint: 'Vorstand oder Mitglied mit Namen' },
+                      ]
+                      const doneCount = steps.filter((x) => x.done).length
+                      return (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            alignItems: 'stretch',
+                            gap: 'clamp(1rem, 2.5vw, 1.25rem)',
+                            marginBottom: '1.25rem',
+                            padding: 'clamp(1rem, 2.5vw, 1.25rem)',
+                            borderRadius: '16px',
+                            border: `1px solid ${s.accent}33`,
+                            background: s.bgElevated,
+                            boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                          }}
+                        >
+                          <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 200px)' }}>
+                            <img
+                              src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                              alt=""
+                              width={200}
+                              height={123}
+                              style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                            />
+                          </div>
+                          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                            <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                              Vereinsprofil
+                            </div>
+                            <h3 style={{ fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+                              Wie vollständig ist euer Vereinsauftritt?
+                            </h3>
+                            <p style={{ margin: '0 0 0.65rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.55 }}>
+                              <strong style={{ color: '#1c1a18' }}>{doneCount}/4</strong> – nur Hinweise, kein Muss. Unten im Formular ausfüllen, wo es für euch passt.
+                            </p>
+                            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                              {steps.map((st) => (
+                                <li
+                                  key={st.id}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '0.5rem',
+                                    fontSize: '0.82rem',
+                                    color: st.done ? '#1c1a18' : '#5c5650',
+                                  }}
+                                >
+                                  <span style={{ flexShrink: 0, fontWeight: 800, color: st.done ? '#15803d' : s.muted }}>{st.done ? '✓' : '○'}</span>
+                                  <span>
+                                    <strong style={{ color: '#1c1a18' }}>{st.label}</strong>
+                                    <span style={{ color: s.muted }}> – {st.hint}</span>
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      )
+                    })()}
                     {/* Verein */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏛️ Verein</h3>
@@ -16769,6 +16843,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Backup & Wiederherstellung – K2, ök2 und VK2 getrennt; je Kontext eigenes Backup */}
                 <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
+                  {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+                    const raw = getLastBackupDownloadExported(tenant.isOeffentlich ? 'oeffentlich' : 'vk2')
+                    const label = raw
+                      ? new Date(raw).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
+                      : '– noch kein Download auf diesem Gerät'
+                    return (
+                      <p style={{ color: '#5c5650', fontSize: '0.82rem', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+                        <strong style={{ color: '#1c1a18' }}>Letztes Herunterladen einer Sicherungskopie:</strong> {label}
+                        <span style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.78rem', color: s.muted }}>
+                          Nur zur Orientierung – die drei Buttons darunter bleiben der verbindliche Weg (Vollbackup, Datei wiederherstellen, ggf. letzter Stand).
+                        </span>
+                      </p>
+                    )
+                  })()}
                   <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
                     {tenant.isOeffentlich
                       ? 'ök2 Demo: Hier kannst du eine Sicherung der Demo-Daten (Musterwerke, Demo-Stammdaten, Events, Design) herunterladen – getrennt von K2 und VK2.'
@@ -16851,6 +16939,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                 ? createVk2Backup()
                                 : createK2Backup()
                             downloadBackupAsFile(result.data, result.filename)
+                            if (tenant.isOeffentlich) recordLastBackupDownloadExported('oeffentlich')
+                            else if (tenant.isVk2) recordLastBackupDownloadExported('vk2')
                             const kontextLabel = tenant.isOeffentlich ? 'ök2 Demo' : tenant.isVk2 ? 'VK2 Verein' : 'K2 Galerie'
                             const detail = tenant.isVk2
                               ? 'Vereins-Stammdaten, Mitglieder, Events, Dokumente, Design, Eingangskarten.'

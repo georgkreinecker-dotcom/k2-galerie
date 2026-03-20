@@ -2047,6 +2047,48 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         {/* Trennlinie unter Header */}
         <div style={{ borderBottom: `2px solid ${s.accent}15`, maxWidth: '960px', margin: '0 auto 1.5rem' }} />
 
+        {/* Gamification Phase 3: Demo-Kasse – nur Lesepfad (ök2, Admin, nicht VK2) */}
+        {fromOeffentlich && isAdminContext && !fromVk2 && (() => {
+          const demoSteps = [
+            { id: 'dk1', done: allArtworks.length > 0, label: 'Werke geladen', hint: 'Sortiment für die Kasse' },
+            { id: 'dk2', done: cart.length > 0, label: 'Warenkorb', hint: 'Artikel ausgewählt' },
+            { id: 'dk3', done: showCheckout, label: 'Checkout', hint: 'Kassiervorgang gestartet' },
+            { id: 'dk4', done: orders.length > 0, label: 'Verkauf / Bestellung', hint: 'mindestens ein Eintrag' },
+          ]
+          const doneDemo = demoSteps.filter((x) => x.done).length
+          return (
+            <div
+              style={{
+                maxWidth: '960px',
+                margin: '0 auto 1.25rem',
+                padding: '0.85rem 1rem',
+                background: s.bgElevated,
+                border: `1px solid ${s.accent}22`,
+                borderRadius: s.radiusSm,
+                borderLeft: `4px solid ${s.accent}`,
+              }}
+            >
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.05em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                Demo-Kasse (Lesepfad)
+              </div>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', color: s.text, lineHeight: 1.45 }}>
+                <strong>{doneDemo}/4</strong> – nur Orientierung in der Muster-Galerie, kein Muss. Unten wie gewohnt kassieren.
+              </p>
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {demoSteps.map((st) => (
+                  <li key={st.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.45rem', fontSize: '0.82rem', color: st.done ? s.text : s.muted }}>
+                    <span style={{ flexShrink: 0, fontWeight: 800, color: st.done ? s.accentGreen : s.muted }}>{st.done ? '✓' : '○'}</span>
+                    <span>
+                      <strong style={{ color: s.text }}>{st.label}</strong>
+                      <span style={{ color: s.muted }}> – {st.hint}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        })()}
+
         <main style={{
           padding: '0 clamp(1.5rem, 4vw, 3rem)',
           paddingBottom: 'clamp(4rem, 10vw, 6rem)',

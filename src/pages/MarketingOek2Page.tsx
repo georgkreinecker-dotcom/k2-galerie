@@ -271,6 +271,18 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <h2 style={{ fontSize: '1.25rem', margin: 0, color: '#5ffbf1' }}>Marketing ök2 (mök2)</h2>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>{slogan}</p>
           <p style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>2. {botschaft}</p>
+          <p
+            style={{
+              margin: '0.75rem 0 0',
+              fontSize: '0.82rem',
+              color: 'rgba(255,255,255,0.72)',
+              lineHeight: 1.55,
+              borderLeft: '3px solid rgba(95,251,241,0.45)',
+              paddingLeft: '0.75rem',
+            }}
+          >
+            <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Pilot:innen:</strong> In der Demo-App gibt es kleine Lesepfade zur Orientierung (z.&nbsp;B. Fortschritt in Bereichen) – das ist keine Spielmechanik und keine Punkte.
+          </p>
         </div>
       )}
 

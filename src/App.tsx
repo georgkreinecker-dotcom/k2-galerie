@@ -534,7 +534,7 @@ function App() {
     return () => clearTimeout(t)
   }, [])
 
-  // Schwarzer GlobaleGuideBegleitung-Dialog: aus (Komponente rendert null). k2-guide-flow bleibt für den grünen Admin-Balken (ök2/VK2).
+  // Schwarzer Vollbild-Guide: aus (GlobaleGuideBegleitung = Stub). Flow: src/utils/k2GuideFlowStorage.ts (grüner Admin-Balken ök2/VK2).
 
   return (
     <TenantProvider>

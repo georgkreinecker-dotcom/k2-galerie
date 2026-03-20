@@ -78,6 +78,10 @@ Die umgesetzten Bausteine (siehe [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATI
 
 **Events** (Unter-Tab im Eventplan), **Newsletter**, **Veröffentlichen** (Stand-Hinweis): nur **ök2/VK2**; nur Anzeige bzw. statischer Hinweis; **kein** Auto-Reload am Veröffentlichen-Tab. Details und DoD: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Phase 2.
 
+### Phase 3 – Abnahme (20.03.26)
+
+**VK2** Vereinsprofil (X/4, nur Lesen), **Shop** Demo-Kassen-Lesepfad (nur ök2-Admin, nicht VK2), **Backup** Zeitstempel nach Download + Infozeile (drei Wege unverändert), **mök2** Pilot-Hinweis (Lesepfade ≠ Spiel). Details: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Phase 3.
+
 ---
 
 ## 6. Verknüpfungen
