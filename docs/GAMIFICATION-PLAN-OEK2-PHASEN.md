@@ -62,7 +62,7 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 | Priorität | Bereich | Warum diese Reihenfolge |
 |-----------|---------|---------------------------|
-| **1** | **Guide / Onboarding** (GlobaleGuideBegleitung, ök2-Einstieg) | Entspricht „**vom ersten Zugang an**“ – größter Orientierungsgewinn, Kern bleibt parallel nutzbar. **Umgesetzt (20.03.26):** Overlay wieder aktiv für **aktiven** Flow in **ök2/VK2** + Session `k2-admin-context` passend; **aus** auf **Shop/Kasse**; ök2 **/mein-bereich** startet Flow (ohne APf-Flag), Stations-Fortschritt im **selben** Dialog wie die Begleitung. |
+| **1** | **Guide / Onboarding** (kontextgebunden, kein globaler schwarzer Dialog) | „**Vom ersten Zugang an**“: **Ist-Stand ab 20.03.26** – schwarzer Vollbild-`GlobaleGuideBegleitung` ist **aus** (Stub); Orientierung läuft über **grünen Admin-Balken** (ök2/VK2, `guideFlowAktiv` + `k2-guide-flow` in `k2GuideFlowStorage.ts`), **ohne** zweites Hub-UI. Shop/Kasse ohne diesen Flow; **/mein-bereich** kann den Flow starten. *Hinweis:* Frühere Planzeile „Overlay wieder aktiv / selber Dialog“ bezog sich auf den schwarzen Global-Guide – **veraltet**, Strategie siehe `guide-nahtlos-begleitung.mdc`. |
 | **2** | **Galerie gestalten** (Schritte / Häkchen aus vorhandenen Keys) | Nutzer sehen „was fehlt noch“, ohne neuen Workflow. |
 | **3** | **Werke verwalten** (Ampel nur **Anzeige**: fehlendes Bild/Preis) | Hoher Nutzen in der Demo; technisch nur UI über bestehende Liste – **niemals** automatisch bereinigen oder schreiben. |
 

@@ -15,7 +15,7 @@ alwaysApply: true
 ## Was weiterhin existiert (bewusst getrennt)
 
 - **`GalerieEntdeckenGuide`** auf der **öffentlichen Galerie** (Fremde, `!musterOnly` K2-Kontext): **eigenes** Onboarding auf der Galerie-Seite – **nicht** der globale Dialog über alle Routen.
-- **Datei `GlobaleGuideBegleitung.tsx`:** enthält nur noch **Typen** + **Helfer** (`beendeGuideFlow`, `ladeGuideFlow`, `speichereGuideFlow`) und eine **leere** Komponente `return null` (falls noch importiert).
+- **Datei `GlobaleGuideBegleitung.tsx`:** nur noch **leere** Komponente `return null`. **Helfer** (`beendeGuideFlow`, `ladeGuideFlow`, …) liegen in **`src/utils/k2GuideFlowStorage.ts`**.
 
 ## Regel bei Änderungen an Guide / Onboarding
 

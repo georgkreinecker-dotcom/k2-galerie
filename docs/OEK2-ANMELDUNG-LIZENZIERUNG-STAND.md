@@ -1,6 +1,8 @@
 # ök2 und VK2 – Anmeldung und Lizenzierung: State of the Art
 
-**Stand:** 02.03.26 · **Zweck:** Klarer Istzustand Anmeldung/Lizenzierung für **ök2 (Demo)** und **VK2 (Vereinsplattform)** – was gibt es, was fehlt, was ist state of the art.
+**Stand Haupttext:** 02.03.26 · **Zweck:** Klarer Istzustand Anmeldung/Lizenzierung für **ök2 (Demo)** und **VK2 (Vereinsplattform)** – was gibt es, was fehlt, was ist state of the art.
+
+> **⚠️ Aktualisierung März 2026 (Guide):** Die frühere **`GlobaleGuideBegleitung`** (schwarzer Dialog auf jeder Seite) ist **abgeschaltet** – Komponente ist ein Stub. **Lizenz-Preise und mailto** sind weiterhin über **WillkommenPage, EntdeckenPage, LicencesPage, LicenseManager** (`licencePricing.ts`) abgedeckt – nicht über den alten globalen Guide. Die Tabellenzeilen unten, die noch „Guide auf jeder Seite“ / „GlobaleGuideBegleitung: LizenzInfo“ beschreiben, sind **historisch**; fachliche Quelle für den aktuellen Guide-Umfang: **`guide-nahtlos-begleitung.mdc`** + **`k2GuideFlowStorage.ts`** + grüner Balken in **ScreenshotExportAdmin**.
 
 ---
 
@@ -12,7 +14,7 @@
 |--------|-----------|
 | **/willkommen** | Leitet sofort auf **/entdecken** weiter (Redirect). Kein Formular, keine Anmeldung. |
 | **/entdecken** | **Landingpage für neue Künstler:innen.** 3-Fragen-Flow (Hero → Weg Solo/Verein → Name → Hub). Am Ende: „Meine Galerie zeigen“ → führt in **ök2-Vorschau** (galerieOeffentlichVorschau) oder **VK2-Vorschau**. Kein E-Mail-, kein Passwort-, kein Registrierungsformular. |
-| **Guide (GlobaleGuideBegleitung)** | Läuft auf jeder Seite weiter. Zeigt Schritte (Werke, Events, Dokumente, Kassa, **„Was kostet das?“ / „Lizenz wählen“**, Jetzt starten). Beim Lizenz-Schritt: nur **Preis-Info** (Basis/Pro/Studio) – **kein** „Lizenz anfragen“-Link. |
+| **Guide / Orientierung** *(März 2026)* | **Nicht** mehr der globale schwarze Dialog. **ök2/VK2-Admin:** grüner **Orientierungs-Balken** bei aktivem Flow (`guideFlowAktiv`). **K2-Galerie:** `GalerieEntdeckenGuide` auf der Seite. Lizenz-Infos: **Willkommen**, **Entdecken**, **Lizenzen** – siehe `licencePricing.ts`. |
 
 **Fazit Einstieg ök2:** Es gibt **keine technische Anmeldung** (kein Login, kein Account). Nutzer:in bleibt anonym; Name optional für personalisierte Vorschau (sessionStorage/localStorage).
 
@@ -39,7 +41,7 @@
 | **WillkommenPage** | **Einstieg wieder aktiv (02.03.26):** Zeigt Variante A/C mit „Galerie ausprobieren“, „Lizenz anfragen“ (mailto), „Lizenz online kaufen“ (Stripe). Kein Redirect mehr zu /entdecken. |
 | **EntdeckenPage** | **Kein** „Lizenz anfragen“-Button/Link. Nur Feedback-Mail (andere E-Mail) am Ende. |
 | **GalerieVorschauPage (ök2)** | Kein expliziter CTA „Lizenz anfragen“ im sichtbaren Flow (Guide zeigt nur Preise). |
-| **GlobaleGuideBegleitung** | Lizenz-Schritt: **LizenzInfo** (Basic/Pro/Pro+/Pro++/VK2) aus **LIZENZPREISE** (15/35/45/55 €, VK2 „ab 10 Mitgl. kostenfrei“) + Link „Lizenz anfragen →“ (mailto). |
+| **Preise / Lizenz-Info (eine Quelle)** | **LIZENZPREISE** in `licencePricing.ts` – u. a. **LicencesPage**, **LicenseManager**, **Willkommen** / **Entdecken** (früher zusätzlich im globalen Guide; dieser ist aus). |
 | **LicencesPage** (mök2) | **Intern (APf):** Lizenzstufen aus **LIZENZPREISE** (Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €, VK2). Formular „Lizenz vergeben“ (Name, E-Mail, Typ, optional Empfehler-ID). Speicher: **localStorage** (`k2-license-grants`). Kein Backend, keine E-Mail an Kund:in. |
 | **LicenseManager** (Komponente) | Wird in **ProjectPlanPage** eingebunden. Zeigt **dieselben** Preise wie LicencesPage (aus **src/config/licencePricing.ts**: 15/35/45/55 €, VK2). **Nicht** auf der öffentlichen Demo sichtbar. |
 
@@ -58,7 +60,7 @@
    /willkommen zeigt nur „Weiterleitung …“ und springt zu /entdecken. Die alten Varianten (mit „Lizenz anfragen“-Link) werden nie gerendert.
 
 3. **Preise uneinheitlich**  
-   **Erledigt (02.03.26):** Eine Quelle **src/config/licencePricing.ts** (LIZENZPREISE). LicencesPage, GlobaleGuideBegleitung und LicenseManager lesen daraus – überall Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €, VK2 „ab 10 Mitgliedern kostenfrei“.
+   **Erledigt (02.03.26):** Eine Quelle **src/config/licencePricing.ts** (LIZENZPREISE). LicencesPage und LicenseManager (sowie öffentliche Seiten) lesen daraus – überall Basic 15 €, Pro 35 €, Pro+ 45 €, Pro++ 55 €, VK2 „ab 10 Mitgliedern kostenfrei“.
 
 4. **Kein „Nächster Schritt“ nach der Demo**  
    Doku (z. B. VERBESSERUNGEN-VERMARKTUNG-GEMEINSAM, mök2) fordert: „klarer Nächster Schritt nach der Demo (z. B. Lizenz anfragen)“. Im aktuellen Flow fehlt genau dieser eine, sichtbare CTA.
@@ -72,7 +74,7 @@
 
 | Priorität | Maßnahme | Aufwand |
 |-----------|----------|--------|
-| 1 | **CTA „Lizenz anfragen“** in EntdeckenPage und im Guide (Lizenz-Schritt) einbauen. **Erledigt (02.03.26):** Guide (GlobaleGuideBegleitung): unter LizenzInfo Link „Lizenz anfragen →“ (mailto). EntdeckenPage (Hub): beim Schritt „Galerie jetzt öffnen“ Link „Lizenz anfragen →“ (mailto). Beide nutzen tenantConfig PRODUCT_LIZENZ_ANFRAGE_*. | ✅ |
+| 1 | **CTA „Lizenz anfragen“** in EntdeckenPage und (historisch) im globalen Guide. **Erledigt (02.03.26):** EntdeckenPage (Hub): Link „Lizenz anfragen →“ (mailto). Globaler Guide-Dialog ist **März 2026 aus** – CTAs bleiben auf **Willkommen/Entdecken** u. a. | ✅ |
 | 2 | **Preise vereinheitlichen:** Eine Quelle definieren; Guide und LicenseManager darauf abstimmen. **Erledigt (02.03.26):** `src/config/licencePricing.ts` (LIZENZPREISE); LicencesPage, Guide, LicenseManager nutzen dieselben Werte (15/35/45 €, VK2). | ✅ |
 | 3 | **WillkommenPage:** Entweder Redirect beibehalten und „Lizenz anfragen“ nur auf Entdecken/Guide setzen – oder Redirect entfernen und WillkommenPage wieder als Einstieg mit klarem „Lizenz anfragen“ anzeigen. | **Erledigt (02.03.26):** Redirect entfernt. /willkommen zeigt wieder Variante A oder C (variant=a/c) mit „Meine Galerie ausprobieren“, „Nur Galerie ansehen“, **„Lizenz anfragen“** (mailto) und **„Lizenz online kaufen“** (Link zu Stripe-Checkout). |
 | 4 | **LicencesPage:** Optional Backend/ E-Mail (z. B. bei „Lizenz vergeben“ E-Mail an Kund:in) – produktionsreif erst mit klarem Prozess. | Mittel |
@@ -85,7 +87,7 @@
 |-------|-----------|
 | Einstieg /willkommen | `src/pages/WillkommenPage.tsx` (Redirect + alter UI-Code mit mailto) |
 | Einstieg /entdecken | `src/pages/EntdeckenPage.tsx` |
-| Guide + Lizenz-Schritt | `src/components/GlobaleGuideBegleitung.tsx` (LizenzInfo, Tour-Schritte) |
+| Guide (aktuell) | `src/utils/k2GuideFlowStorage.ts`, grüner Balken in `components/ScreenshotExportAdmin.tsx`; Stub `src/components/GlobaleGuideBegleitung.tsx` |
 | Lizenz-Anfrage-Konfiguration | `src/config/tenantConfig.ts` (PRODUCT_LIZENZ_ANFRAGE_*) |
 | Lizenzen verwalten (intern) | `src/pages/LicencesPage.tsx` |
 | Pricing-Komponente (Plan) | `src/components/LicenseManager.tsx` |

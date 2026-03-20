@@ -35,7 +35,7 @@ Nur **Anreicherung**: sichtbarer Fortschritt, Meilensteine, ermutigende Labels, 
 | Tab-/Bereichs-Heroes (X/4) **oder** globaler Guide – **koordiniert**, kein Doppel-Fortschritt für dieselbe Aufgabe | Dieselbe Station zweimal mit unterschiedlichen Zahlen oder Texten führen |
 | Guide **ersetzt** Gamification nicht und umgekehrt – sie **ergänzen** sich in **einem** Erlebnisfluss | Parallel zwei „Stimmen“, die den Nutzer in verschiedene Richtungen ziehen |
 
-**Umsetzungsrichtung:** Wo möglich **eine** Steuerungs-/Anzeige-Logik für „was sieht der Nutzer als nächstes“ (Begleitung + Status); bestehende Standards (`GlobaleGuideBegleitung`, Ampel/UX) **einbetten** statt **zweiten** Kanal zu eröffnen. Details und Phasen: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md).
+**Umsetzungsrichtung:** Wo möglich **eine** Steuerungs-/Anzeige-Logik für „was sieht der Nutzer als nächstes“ (Begleitung + Status); bestehende Standards **einbetten** – z. B. **grüner Admin-Balken** (ök2/VK2), **GalerieEntdeckenGuide** (K2-Galerie), Tab-Heroes / Ampeln – **nicht** einen zweiten globalen Overlay-Kanal eröffnen. *(Hinweis: Der frühere globale schwarze `GlobaleGuideBegleitung`-Dialog ist abgeschaltet; der Name taucht in alter Doku noch auf.)* Details: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md).
 
 ---
 

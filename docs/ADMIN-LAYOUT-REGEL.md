@@ -21,22 +21,26 @@
 
 ---
 
-## Getroffene Fixes (Code)
+## Getroffene Fixes (Code) – **Stand März 2026**
 
 - **TenantContext.tsx:** `/admin` ohne `?context=` → immer `'k2'`; syncStorageFromUrl: ohne context → `'k2'` setzen.
-- **ScreenshotExportAdmin.tsx:** Grüner Balken und beide Guide-Panels mit `false &&` dauerhaft deaktiviert; der **normale Hub** („Was möchtest du heute tun?“ + Kacheln) wird **immer** gerendert – für K2, VK2 und ök2 gleich.
+- **ScreenshotExportAdmin.tsx:** Der **normale Hub** („Was möchtest du heute tun?“ + Kacheln) wird **immer** gerendert – für K2, VK2 und ök2 gleich. Die beiden großen Guide-Panels (mittlerer Willkommens-Hub, zweites Panel) bleiben mit `false &&` **aus** – kein zweites Hub-UI.
+- **Grüner Orientierungs-Balken** (nur **ök2/VK2**, wenn `guideFlowAktiv`): **erlaubt** – ersetzt **nicht** den Hub, nur Text + Orientierung oben (siehe Kommentar im Code: „Kein schwarzer Dialog – nur dieser Balken“).
+- **GlobaleGuideBegleitung:** **nicht** mehr global gemountet; Komponente ist **Stub** (`return null`). Zustand `k2-guide-flow` liegt in **`src/utils/k2GuideFlowStorage.ts`**.
 
 ---
 
-## Verbindliche Regeln (damit es 100 % nicht wieder passiert)
+## Verbindliche Regeln (aktuell – nicht mit alter Fassung verwechseln)
 
-1. **Ein Layout für alle:** Admin-Startseite = ein Hub („Was möchtest du heute tun?“ + Kacheln) für K2, ök2 und VK2. Kein kontextabhängiges Ersetzen durch anderes UI (kein Guide-Balken, keine Guide-Panels im Admin).
+1. **Ein Hub-Layout für alle:** Admin-Start = immer dieselben Kacheln – K2, ök2, VK2.
 
-2. **Guide nur in GlobaleGuideBegleitung:** Guide für neue Besucher = nur der schwarze Dialog; Ende wenn User „Jetzt starten“ / ID anlegt (`beendeGuideFlow()` in `fertigStellen()`). Kein Guide-UI (Balken, Panels) in ScreenshotExportAdmin.
+2. **Kein schwarzer Vollbild-Guide über alle Routen:** `GlobaleGuideBegleitung` **nicht** in `App.tsx` einhängen (nur bei ausdrücklicher Anordnung). Ursache der früheren Doppel-UI (APf, iframe).
 
-3. **Kontext bei /admin:** `/admin` ohne `?context=` = immer K2. Nicht aus sessionStorage ableiten.
+3. **Orientierung ök2/VK2:** **Grüner Balken** oben = **ein** erlaubter Weg für Guide-Text – **kein** Ersatz-Hub, keine zweiten Kachel-Panels.
 
-4. **Tote Blöcke nicht reaktivieren:** Die mit `false &&` abgeschalteten Blöcke (grüner Balken, zwei Guide-Panels) in ScreenshotExportAdmin nicht wieder aktivieren – sie verletzen die einheitliche Admin-Startseite.
+4. **Kontext bei /admin:** `/admin` ohne `?context=` = immer K2.
+
+5. **`false &&`-Panels** (große Guide-Panels im Admin): **nicht** wieder aktivieren – würden das einheitliche Hub-Layout brechen (das ist **nicht** dasselbe wie der grüne Balken).
 
 ---
 
@@ -46,8 +50,10 @@ Vor Änderungen an TenantContext, Admin-Route, ScreenshotExportAdmin (Hub/Guide-
 
 - [ ] `/admin` ohne context = K2?
 - [ ] Hub für K2, ök2, VK2 dasselbe Layout?
-- [ ] Kein neues „zweites“ Layout pro Kontext (kein Guide-Balken/Panel im Admin)?
-- [ ] Guide = nur GlobaleGuideBegleitung?
+- [ ] Kein globales erneutes Mounten von `GlobaleGuideBegleitung` ohne Anordnung?
+- [ ] Grüner Balken nur als **Zusatz** zur Orientierung – Hub bleibt sichtbar?
+
+**Verbindliche Quelle:** `.cursor/rules/admin-einheitliches-layout.mdc` und `.cursor/rules/guide-nahtlos-begleitung.mdc` (immer aktueller als diese Analyse-Datei bei Widerspruch).
 
 ---
 

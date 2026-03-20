@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
+import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
@@ -4522,8 +4522,7 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   const [textIdx, setTextIdx] = useState(0)
   const [sichtbar, setSichtbar] = useState(true)
 
-  // Beim Start der Galerie-Seite: alten Guide-Flow aus localStorage löschen
-  // damit der globale Begleiter nicht auf der Landing Page erscheint
+  // Beim Start: Guide-Flow-State zurücksetzen (kein veralteter ök2/VK2-Admin-Balken-Kontext von früher)
   useEffect(() => {
     beendeGuideFlow()
   }, [])
