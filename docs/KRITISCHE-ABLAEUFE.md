@@ -97,7 +97,7 @@
 
 | Was | Quelle |
 |-----|--------|
-| **Primäre Aktion** | Ein Standard: **openDocumentInApp** – gleicher Öffnungsweg, gleiche Leiste, gleiche Zurück-Navigation für Flyer, Presse, Newsletter, QR-Plakat, Vita, gespeicherte Dateien. |
+| **Primäre Aktion** | Ein Standard: **openDocumentInApp** – gleicher Öffnungsweg, gleiche Leiste, gleiche Zurück-Navigation für Flyer, Presse, Newsletter, Vita, gespeicherte Dateien. |
 | **Doku** | .cursor/rules/ein-standard-problem.mdc (Tabelle „Dokument aus Admin öffnen“). |
 | **Code** | Alle Aufrufer von Dokument-Öffnen (Admin, DevView, Handbuch-Links); eine Implementierung, viele Aufrufer. |
 

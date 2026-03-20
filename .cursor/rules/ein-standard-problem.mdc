@@ -7,7 +7,7 @@ alwaysApply: true
 
 ## Was passiert ist (Dokumente-Chaos, 26.02.26)
 
-- **Problemstellung:** „Dokument aus dem Admin öffnen“ (Flyer, Presse, Newsletter, QR-Plakat, Vita, gespeicherte Dateien).
+- **Problemstellung:** „Dokument aus dem Admin öffnen“ (Flyer, Presse, Newsletter, Vita, gespeicherte Dateien).
 - **Statt einer Lösung:** Verschiedene Wege – teils neues Fenster, teils In-App-Viewer, teils Fallback nur bei blockiertem Pop-up, teils andere Zurück-URL, teils anderes Verhalten. Folge: leere Dokumente, „hängt im Browser-Balken“, Zurück führt in die falsche Ansicht.
 - **Georg:** „Was hat dich dazu bewogen, verschiedene Standards für die gleiche Problemstellung zu erfinden?“
 

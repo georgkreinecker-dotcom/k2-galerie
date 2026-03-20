@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit: 9c4c412** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **QR-Code-Plakat entfernt** (Admin Eventplan → Öffentlichkeitsarbeit): Funktion `printQRCodePlakat`, Karte und Typ `qr-plakat` raus – zu verwirrend für Nutzer; QR bleiben in Plakat, Flyer, Newsletter. Doku/mök2/Regeln angepasst. **Commit:** 1975114 ✅
 
-**Vorher:** ök2 Eventplan WhatsApp-Block ausgeblendet (2fa0b8d); QR-Plakat eine Meldung (28830da).
+**Vorher:** 20.03.26 – Werbemittel Split-Ansicht Presse/Social/Newsletter/Plakat/Flyer; **Commit: 9c4c412**
 
-**Was wir JETZT tun:** Optional: Vercel „Ready“ abwarten, dann im Admin Plakat/Flyer kurz testen.
+**Was wir JETZT tun:** Nach Push: Vercel „Ready“, Admin Öffentlichkeitsarbeit kurz prüfen (keine QR-Plakat-Karte).
 
-**Einordnung:** Gleicher UX-Standard wie Newsletter-Screenshot für alle PR-Dokumente inkl. Plakat.
+**Einordnung:** Weniger parallele Wege; einheitliche Werbemittel über Plakat/Flyer/Newsletter.
 
-**Nächster Schritt:** Nach Deployment am Mac prüfen (Format-Leiste, Speichern, „Dokument öffnen“).
+**Nächster Schritt:** Deployment prüfen; alte gespeicherte Dokumente `werbematerialTyp: qr-plakat` ggf. in Dokumentenliste ignorieren oder manuell löschen.
 
 ---
 

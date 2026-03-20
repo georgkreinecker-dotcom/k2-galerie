@@ -33,7 +33,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 | **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: Kassabuch (Eingänge); ab Pro+: Kassausgänge, Bar, Beleg (QR/Foto), PDF-Export. Basic: keine Kassa. |
 | **Events & Ausstellungen** | Events anlegen, Einladungen, Flyer, Presseaussendung pro Event, Social Media – aus Stammdaten und Event-Daten. |
 | **Presse & Medien** | Medienkit (Kontakt, Galerie, Kurzporträt), Presse-Vorlage, Einladung an Journalist:innen; Abgrenzung zu Event-spezifischer Presse. |
-| **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge, QR-Plakat – aus einer Quelle, Galerie-Design, druckbar. |
+| **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge – aus einer Quelle, Galerie-Design, druckbar. |
 | **Lizenzen** | Basic (15 €/Monat), Pro (35 €/Monat), Pro+ (45 €/Monat), Pro++ (55 €/Monat, inkl. Rechnung § 11 UStG), VK2 (Kunstvereine, ab 10 Mitgliedern kostenfrei). Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
 | **Multi-Tenant** | **K2** = echte Galerie (Stammdaten, Werke). **ök2** = öffentliche Demo (Musterwerke, Mustertexte). **VK2** = Vereinsplattform (Mitglieder, Vereinsgalerie, eigene Stammdaten). Keine Vermischung. |
 

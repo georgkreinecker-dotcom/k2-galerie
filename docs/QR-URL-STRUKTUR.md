@@ -10,7 +10,7 @@
 | Fall | Wofür | URL / Logik | Wo |
 |------|--------|-------------|-----|
 | **A) QR zum Scannen (Handy soll aktuelle Version laden)** | Galerie, Mission Control, Mobile Connect, Werbeunterlagen (live auf APf) | **Basis-URL = Produktion** (BASE_APP_URL + Route). **Immer** `buildQrUrlWithBust(url, useQrVersionTimestamp())` – Server-Stand + Cache-Bust. Nie nur `urlWithBuildVersion` (lokal). | GaleriePage, PlatformStartPage, MobileConnectPage, WerbeunterlagenPage, ProspektGalerieeroeffnungPage, PraesentationsmappePage, Vk2GaleriePage, ZettelPilotPage, ZettelMartinaMunaPage, PilotStartPage, GalerieVorschauPage (Etikett-Basis), MarketingOek2Page |
-| **B) QR/Link in gedrucktem oder geteiltem Werbemittel** | Plakat, Flyer, Newsletter, Presse-PDF, Event-Plakat, „Mehr erfahren“-Link | **Immer Produktions-URL.** Wenn Stammdaten.website leer: **Fallback = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie** (bzw. FALLBACK_GALERIE_URL_WERBEMITTEL in ScreenshotExportAdmin). **Niemals** `window.location.origin` als Fallback – sonst landet gedruckter QR auf localhost. | ScreenshotExportAdmin: printQRCodePlakat, Flyer/Plakat/Newsletter-Inhalte (getFlyerContent, getPlakatContent, Newsletter-HTML), Presse „Mehr erfahren“-Link |
+| **B) QR/Link in gedrucktem oder geteiltem Werbemittel** | Plakat, Flyer, Newsletter, Presse-PDF, Event-Plakat, „Mehr erfahren“-Link | **Immer Produktions-URL.** Wenn Stammdaten.website leer: **Fallback = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie** (bzw. FALLBACK_GALERIE_URL_WERBEMITTEL in ScreenshotExportAdmin). **Niemals** `window.location.origin` als Fallback – sonst landet gedruckter QR auf localhost. | ScreenshotExportAdmin: Flyer/Plakat/Newsletter-Inhalte (getFlyerContent, getPlakatContent, Newsletter-HTML), Presse „Mehr erfahren“-Link |
 
 ---
 
@@ -40,7 +40,6 @@
 
 | Stelle | Inhalt | Regel (umgesetzt) |
 |--------|--------|-------------------|
-| **printQRCodePlakat** | Homepage-, Virtueller-Rundgang-QR | BASE_APP_URL + PROJECT_ROUTES (galerie, virtuellerRundgang). |
 | **getFlyerContent** (Varianten) | qrCode | galleryData.website \|\| FALLBACK_GALERIE_URL_WERBEMITTEL. |
 | **getPlakatContent** (Flyer/Plakat) | qrCode | g.website \|\| FALLBACK_GALERIE_URL_WERBEMITTEL. |
 | **Plakat (Event) websiteUrl** | plakatContent.qrCode | freshGalleryData.website \|\| FALLBACK_GALERIE_URL_WERBEMITTEL. |

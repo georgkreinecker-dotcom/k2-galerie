@@ -782,7 +782,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Muster pro Werbetyp (Eröffnung)
         </h2>
         <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Auf Basis der mök2-Marketingstrategie und der Musterstorys (§1a / §1b aus Medienstudio K2) gibt es für <strong>jeden Eintrag</strong> in der Öffentlichkeitsarbeit (Admin → Eventplanung → Öffentlichkeitsarbeit) ein fertiges Muster: QR-Plakat, Newsletter, Plakat, Event-Flyer, Presse (neutral + lokal), Social Media, Präsentationsmappen.
+          Auf Basis der mök2-Marketingstrategie und der Musterstorys (§1a / §1b aus Medienstudio K2) gibt es für <strong>jeden Eintrag</strong> in der Öffentlichkeitsarbeit (Admin → Eventplanung → Öffentlichkeitsarbeit) ein fertiges Muster: Newsletter, Plakat, Event-Flyer, Presse (neutral + lokal), Social Media, Präsentationsmappen.
         </p>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Vollständige Mustersammlung (Copy-Paste, Platzhalter ersetzen):</strong>{' '}
@@ -791,7 +791,6 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.2)', marginTop: '0.5rem', fontSize: '0.88rem' }}>
           <p style={{ margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 600 }}>Übersicht – ein Muster pro Eintrag</p>
           <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.6, color: 'rgba(255,255,255,0.88)' }}>
-            <li><strong>QR-Code Plakat</strong> – Headline, Unterzeile, Links</li>
             <li><strong>Newsletter</strong> – Betreff, Body (Eröffnung, Lounge, Kontakt)</li>
             <li><strong>Plakat</strong> – Titel, Datum, Ort, Kurztext (A3/A2)</li>
             <li><strong>Event-Flyer</strong> – Headline, Datum, Ort, Beschreibung</li>
@@ -996,7 +995,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <li><strong>Nicht nur App – multifunktional am PC/Mac:</strong> Volle Arbeitsplattform am Rechner (Planung, Veröffentlichen, Werbeunterlagen), dazu Galerie & Kassa mobil – gleicher Stand überall. In dieser Form einzigartig.</li>
           <li><strong>Alles in einer App:</strong> Website-Builder, Shops, Event-Tools und Kasse sind sonst getrennt – hier eine Oberfläche, eine Datenbasis, ein Design.</li>
           <li><strong>Sprache und Begriffe für Künstler:innen:</strong> Werke, Events, Stammdaten, Öffentlichkeitsarbeit – kein abstraktes „CMS“ oder „Items“.</li>
-          <li><strong>Marketing aus einem Guss:</strong> Newsletter, Plakat, Presse, Social Media und QR-Plakat werden aus denselben Stammdaten erzeugt – einheitlich, sofort nutzbar.</li>
+          <li><strong>Marketing aus einem Guss:</strong> Newsletter, Plakat, Presse und Social Media werden aus denselben Stammdaten erzeugt – einheitlich, sofort nutzbar (QR in Plakat, Flyer und Newsletter integriert).</li>
           <li><strong>Plattformneutral:</strong> Windows, Android, Mac, iOS – Browser/PWA, keine App-Store-Pflicht, keine Mac-Pflicht für Kunden.</li>
           <li><strong>Für breite Vermarktung:</strong> Alle produktiven Funktionen laufen ohne Mac; Entwickler-Tools (APf) bleiben optional am Rechner. Technische Details und Skalierung stehen in der Produkt-Doku.</li>
           <li><strong>Fotostudio in der App:</strong> Objektfreistellung und Pro-Hintergrund im Browser, ideal für Fotos vom Handy/Tablet – ohne externe Dienste.</li>

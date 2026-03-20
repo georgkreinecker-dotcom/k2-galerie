@@ -5,7 +5,6 @@ import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE } from '../src/config/navigation'
 import { buildQrUrlWithBust } from '../src/hooks/useServerBuildTimestamp'
-import { fetchQrVersionTs } from '../src/utils/praesentationsmappeKurzHtml'
 import { APP_BASE_URL } from '../src/config/externalUrls'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
@@ -4382,25 +4381,26 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     localStorage.setItem('k2-pr-suggestions', JSON.stringify(existingSuggestions))
   }
 
-  // Öffnen des Redaktions-Modals: Texte aus Vorschlag oder generiert laden
-  const openRedaction = (event: any) => {
+  /** Presseaussendung: Redaktions-Modal (Split-Ansicht). optionalOverride = z. B. frisch generiert neutral/lokal; sonst Vorschlag aus k2-pr-suggestions oder Standard. */
+  const openRedaction = (event: any, optionalOverride?: any) => {
+    const defaultQr = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
     try {
       const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
       const list = JSON.parse(raw)
       const sug = list.find((s: any) => s.eventId === event.id)
-      const presse = sug?.presseaussendung || generatePresseaussendungContent(event)
+      const presse = optionalOverride ?? sug?.presseaussendung ?? generatePresseaussendungContent(event)
       setRedactionPresseTitle(presse?.title ?? '')
       setRedactionPresseContent(presse?.content ?? '')
       setRedactionPresseImageUrl(presse?.imageUrl ?? '')
       setRedactionPresseQrShow(!!presse?.qrShow)
-      setRedactionPresseQrUrl(presse?.qrUrl ?? (BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)))
+      setRedactionPresseQrUrl(presse?.qrUrl ?? defaultQr)
       setRedactionEvent(event)
     } catch {
       setRedactionPresseTitle('')
       setRedactionPresseContent('')
       setRedactionPresseImageUrl('')
       setRedactionPresseQrShow(false)
-      setRedactionPresseQrUrl(BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie))
+      setRedactionPresseQrUrl(defaultQr)
       setRedactionEvent(event)
     }
   }
@@ -5232,174 +5232,11 @@ ${'='.repeat(60)}
     })
   }
 
-  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, nameSuffix?: string, qrDataUrl?: string) => {
-    let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
-    const eid = event?.id || 'unknown'
-    const presseDocIdComputed = `pr-editable-presseaussendung-${eid}-${Date.now()}`
-    let presseDocId: string | null = null
-    const isVk2 = tenant.isVk2
-    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
-    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
-    const g = galleryData || {}
-    const galleryName = g.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
-    const galleryAddress = g.address || ''
-    const galleryPhone = g.phone || ''
-    const galleryEmail = g.email || ''
-    const imageUrl = presseaussendung?.imageUrl || ''
-    const imageBlock = imageUrl ? `<div style="margin: 0.75rem 0;"><img src="${imageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
-    const qrBlock = qrDataUrl ? `<div style="margin: 0.75rem 0; text-align: center;"><img src="${qrDataUrl.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 160px; height: 160px;" /><p style="font-size: 0.85rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
-    const presseTitleEsc = (presseaussendung?.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-    const presseContentWithLinks = textToHtmlWithLinks(presseaussendung?.content || '')
-    const eventDateEsc = event ? (formatEventDates(event) || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>') : ''
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Presseaussendung - ${event?.title || 'Event'}</title>
-  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${prDocCss}</style>
-  <style>.presse-body a { color: inherit; text-decoration: underline; }</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
-</head>
-<body class="${prDocClass} format-a4">
-  <div class="no-print">
-    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
-    <button onclick="typeof saveDoc === 'function' && saveDoc(); return false;" style="margin-left: 8px; background: #2d5a2d; color: #fff; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer;">Speichern</button>
-    <span style="margin: 0 8px; color: #666;">Format:</span>
-    <button onclick="setFormat('a4'); return false;">A4</button>
-    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
-    <button onclick="setFormat('a5'); return false;">A5</button>
-    <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p>Galerie-Design, druckbar als A4 / A3 / A5. Beim Drucken erscheinen Links klickbar.</p>
-  </div>
-
-  <div class="page">
-    <div class="content">
-    <div class="header">
-      <h1>${galleryName}</h1>
-      <div class="header-info">
-        ${galleryAddress ? `<strong>Adresse:</strong> ${galleryAddress}<br>` : ''}
-        ${galleryPhone ? `<strong>Telefon:</strong> ${galleryPhone}<br>` : ''}
-        ${galleryEmail ? `<strong>E-Mail:</strong> ${galleryEmail}<br>` : ''}
-        ${eventDateEsc ? `<strong>Event-Datum:</strong> ${eventDateEsc}<br>` : ''}
-        ${event?.title ? `<strong>Event:</strong> ${event.title}` : ''}
-      </div>
-    </div>
-    <h1>Presseaussendung</h1>
-    <div class="presse-headline">${presseTitleEsc}</div>
-    ${imageBlock}
-    <div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${presseContentWithLinks}</div>
-    ${qrBlock}
-    </div>
-  </div>
-
-  <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
-    var prDocClass = '${prDocClass}';
-    var K2_DOC_ID = '${escapeJsStringForDoc(presseDocIdComputed)}';
-    function saveDoc() {
-      var html = document.documentElement.outerHTML;
-      if (window.opener && !window.opener.closed) {
-        try { window.opener.postMessage({ type: 'k2-save-doc-html', payload: { docId: K2_DOC_ID, html: html } }, '*'); } catch (e) {}
-      }
-    }
-    function setFormat(f) {
-      document.body.className = prDocClass + ' format-' + f;
-      var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
-    }
-    function goBack() {
-      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
-        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin');
-      if (window.opener && !window.opener.closed) {
-        try {
-          window.opener.location.href = adminUrl
-          window.opener.focus()
-          setTimeout(function() { try { window.close(); } catch (e) {} }, 100)
-          return
-        } catch (e) {}
-      }
-      window.location.href = adminUrl
-    }
-    var autoCloseTimeout = null
-    function handleAfterPrint() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
-      setTimeout(function() { goBack(); }, 1000)
-    }
-    window.addEventListener('afterprint', handleAfterPrint)
-    function cleanup() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      if (autoCloseTimeout) clearTimeout(autoCloseTimeout)
-    }
-    window.addEventListener('beforeunload', cleanup)
-    window.addEventListener('unload', cleanup)
-  </script>
-</body>
-</html>
-    `
-    try {
-      blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      presseDocId = presseDocIdComputed
-      const etitle = event?.title || 'Event'
-      const pressePlaceholder = {
-        id: presseDocId,
-        name: getNextWerbematerialVorschlagName(eid, etitle, 'presse', 'Presseaussendung' + (nameSuffix || '') + ' (bearbeitbar)'),
-        type: 'text/html',
-        size: blob.size,
-        data: '',
-        fileName: `presseaussendung-editable-${etitle.replace(/\s+/g, '-').toLowerCase()}.html`,
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: eid,
-        eventTitle: etitle,
-        werbematerialTyp: 'presse'
-      }
-      const existingPresse = loadDocuments()
-      saveDocuments([...existingPresse, pressePlaceholder])
-      setDocuments([...existingPresse, pressePlaceholder])
-      const url = URL.createObjectURL(blob)
-      const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
-      if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
-      setTimeout(() => {
-        if (!pdfWindow || pdfWindow.closed || typeof pdfWindow.closed === 'undefined') {
-          URL.revokeObjectURL(url)
-          const newUrl = URL.createObjectURL(blob!)
-          const link = document.createElement('a')
-          link.href = newUrl
-          link.target = '_blank'
-          document.body.appendChild(link)
-          link.click()
-          setTimeout(() => {
-            document.body.removeChild(link)
-            setTimeout(() => URL.revokeObjectURL(newUrl), 2000)
-          }, 100)
-        } else {
-          pdfWindow.addEventListener('beforeunload', () => {
-            URL.revokeObjectURL(url)
-          })
-        }
-      }, 100)
-    } catch (error) {
-      console.error('Fehler beim Generieren des PDFs:', error)
-      alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
-      return
-    }
-    if (blob && presseDocId) {
-      const docId = presseDocId
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const current = loadDocuments()
-        const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
-        saveDocuments(updated)
-        setDocuments(updated)
-      }
-      reader.readAsDataURL(blob)
-    }
+  /** Wie Newsletter/Flyer: gleiche Split-Ansicht im Admin-Modal (kein separates Fenster). */
+  const generateEditablePresseaussendungPDF = (presseaussendung: any, event: any, _nameSuffix?: string, _qrDataUrl?: string) => {
+    void _nameSuffix
+    void _qrDataUrl
+    openRedaction(event, presseaussendung)
   }
 
   /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). options.iframePreview: Modal-Vorschau ohne Zurück/afterprint. */
@@ -10263,382 +10100,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       window.open(dataUrl, '_blank')
     } catch (e) {
       alert((e as Error)?.message || 'Etikett konnte nicht geöffnet werden.')
-    }
-  }
-
-  // PDF für QR-Code Plakat erstellen (lokal generiert – keine externe API). Optional event für Zuordnung zur Rubrik.
-  // K2: Homepage + virtueller Rundgang (gleiche Domain-Logik wie bisher). ök2: nur Muster + Demo-URLs – keine K2-Stammdaten (eisernes Gesetz).
-  // QR-URLs: Server-Stand + Cache-Bust (buildQrUrlWithBust), wie Galerie-QR.
-  const printQRCodePlakat = async (event?: any) => {
-    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-    const qrVersionTs = await fetchQrVersionTs()
-    let homepageUrl: string
-    let secondUrl: string
-    let qr1Label: string
-    let qr1Desc: string
-    let qr2Label: string
-    let qr2Desc: string
-    let docTitle: string
-    let h1Text: string
-    let h2Text: string
-    let subtitleText: string
-    let blockIntro: string
-    let highlightInner: string
-    let howtoBlock: string
-    let footerLines: string
-
-    if (tenant.isOeffentlich) {
-      const g = MUSTER_TEXTE.gallery
-      const demoName = (g.firmenname || TENANT_CONFIGS.oeffentlich.galleryName).trim() || 'Galerie Muster'
-      homepageUrl = buildQrUrlWithBust(APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, qrVersionTs)
-      secondUrl = buildQrUrlWithBust(APP_BASE_URL + WILLKOMMEN_ROUTE, qrVersionTs)
-      qr1Label = 'Demo-Galerie (ök2)'
-      qr1Desc = 'Musterwerke und Vorschau – keine echten K2-Daten'
-      qr2Label = 'Willkommen'
-      qr2Desc = 'Einstieg und Überblick zur Plattform'
-      docTitle = `QR-Codes – ${demoName} (Demo)`
-      h1Text = demoName.toUpperCase()
-      h2Text = 'Besuch uns online'
-      subtitleText = `${TENANT_CONFIGS.oeffentlich.tagline} · Demo`
-      blockIntro = `<p><strong>Entdecke die öffentliche Demo-Galerie – jederzeit verfügbar.</strong></p>
-                <p>Die Plattform im Überblick: Mustertexte und Beispielwerke zum Ausprobieren. Die Demo nutzt erfundene Namen und Kontakte; keine Daten der echten K2 Galerie.</p>`
-      highlightInner = `🎨 Demo &amp; Ideen<br>
-                📱 QR scannen – aktueller Stand vom Server<br>
-                🌐 Windows, Android, macOS, iOS · Browser &amp; PWA`
-      howtoBlock = `<p><strong>So funktioniert's:</strong></p>
-                <p>1. Kamera-App öffnen<br>
-                2. Einen QR-Code scannen<br>
-                3. Demo-Galerie oder Willkommen erkunden</p>
-                <p style="margin-top: 15px;">Lizenzen und mehr: ${esc(PRODUCT_BRAND_NAME)} · ${esc(PRODUCT_WERBESLOGAN)}</p>`
-      footerLines = `<p><strong>${esc(demoName)}</strong> (Demo ök2)<br>
-                ${esc(g.email || 'info@galerie-muster.example')}<br>
-                Nur Mustertexte – keine K2-Stammdaten</p>`
-    } else {
-      const rawHomeRaw = (galleryData?.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
-      homepageUrl = buildQrUrlWithBust(rawHomeRaw, qrVersionTs)
-      const baseForRundgang = (galleryData?.website && isProductionLikeUrl(galleryData.website))
-        ? (() => { try { return new URL(galleryData.website).origin } catch { return APP_BASE_URL } })()
-        : APP_BASE_URL
-      secondUrl = buildQrUrlWithBust(baseForRundgang + PROJECT_ROUTES['k2-galerie'].virtuellerRundgang, qrVersionTs)
-      qr1Label = 'Homepage'
-      qr1Desc = 'Besuch unsere Galerie-Website'
-      qr2Label = 'Virtueller Rundgang'
-      qr2Desc = 'Erkunde die Ausstellung'
-      docTitle = 'QR-Codes – K2 Galerie'
-      h1Text = 'K2 GALERIE'
-      h2Text = 'Besuch uns online'
-      subtitleText = 'Kunst & Keramik • Jederzeit verfügbar'
-      blockIntro = `<p><strong>Entdecke die K2 Galerie – auch wenn wir geschlossen haben!</strong></p>
-                <p>Die K2 Galerie öffnet ihre Türen für dich – jederzeit und überall. Erlebe die aktuellen Werke von Martina und Georg Kreinecker bequem von zu Hause oder unterwegs. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.</p>`
-      highlightInner = `🎨 Malerei & Keramik<br>
-                📱 Einfach QR-Code scannen<br>
-                🌐 Sofort verfügbar, jederzeit`
-      howtoBlock = `<p><strong>So funktioniert's:</strong></p>
-                <p>1. Öffne die Kamera-App auf deinem Smartphone<br>
-                2. Scanne einen der QR-Codes<br>
-                3. Erkunde unsere Galerie in Ruhe</p>
-                <p style="margin-top: 15px;">Lass dich von der Vielfalt unserer Kunstwerke inspirieren und entdecke die einzigartige Verbindung von Malerei und Keramik.</p>`
-      footerLines = `<p><strong>K2 Galerie</strong><br>
-                Martina & Georg Kreinecker<br>
-                Kunst & Keramik</p>`
-    }
-
-    const [homepageQRUrl, secondQRUrl] = await Promise.all([
-      QRCode.toDataURL(homepageUrl, { width: 300, margin: 1 }),
-      QRCode.toDataURL(secondUrl, { width: 300, margin: 1 })
-    ])
-
-    const date = new Date().toLocaleDateString('de-DE', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric'
-    })
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${esc(docTitle)}</title>
-          <style>
-            @media print {
-              @page {
-                size: A4;
-                margin: 0;
-              }
-              * {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-            }
-            * {
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
-            }
-            body {
-              font-family: 'Arial', 'Helvetica', sans-serif;
-              margin: 0;
-              padding: 0;
-              background: #ffffff !important;
-              color: #1f1f1f !important;
-              min-height: 100vh;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-            @media screen {
-              body {
-                padding: 20px;
-                background: #f5f5f5 !important;
-              }
-            }
-            .plakat {
-              width: 210mm;
-              min-height: 297mm;
-              background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%) !important;
-              padding: 20mm;
-              box-sizing: border-box;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              text-align: center;
-              position: relative;
-              color: #ffffff !important;
-            }
-            .content {
-              position: relative;
-              z-index: 1;
-              width: 100%;
-            }
-            .icon {
-              font-size: 60px;
-              margin-bottom: 20px;
-              opacity: 0.8;
-            }
-            h1 {
-              font-size: 48px;
-              font-weight: 700;
-              margin: 0 0 15px;
-              background: linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
-              letter-spacing: -0.02em;
-              line-height: 1.2;
-            }
-            h2 {
-              font-size: 28px;
-              font-weight: 600;
-              margin: 0 0 10px;
-              color: #ffffff;
-              letter-spacing: -0.01em;
-            }
-            .subtitle {
-              font-size: 18px;
-              color: rgba(255, 255, 255, 0.7);
-              margin-bottom: 35px;
-              font-weight: 300;
-              line-height: 1.5;
-            }
-            .text-block {
-              font-size: 15px;
-              color: rgba(255, 255, 255, 0.9);
-              line-height: 1.7;
-              margin-bottom: 30px;
-              max-width: 550px;
-              margin-left: auto;
-              margin-right: auto;
-              text-align: center;
-            }
-            .text-block strong {
-              color: #ffffff;
-              font-weight: 600;
-            }
-            .highlight-box {
-              background: rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(20px);
-              border: 1px solid rgba(255, 255, 255, 0.2);
-              border-radius: 16px;
-              padding: 25px;
-              margin: 35px 0;
-              max-width: 500px;
-              margin-left: auto;
-              margin-right: auto;
-            }
-            .highlight-box p {
-              margin: 0;
-              font-size: 16px;
-              color: #ffffff;
-              font-weight: 500;
-              line-height: 1.8;
-            }
-            .qr-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 25px;
-              margin: 40px 0;
-              max-width: 550px;
-              margin-left: auto;
-              margin-right: auto;
-            }
-            .qr-container {
-              background: rgba(255, 255, 255, 0.95);
-              padding: 20px;
-              border-radius: 16px;
-              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            }
-            .qr-code {
-              width: 100%;
-              max-width: 200px;
-              height: auto;
-              display: block;
-              margin: 0 auto;
-            }
-            .qr-label {
-              margin-top: 15px;
-              font-size: 16px;
-              color: #1f1f1f;
-              font-weight: 700;
-            }
-            .qr-description {
-              margin-top: 8px;
-              font-size: 13px;
-              color: #666;
-              line-height: 1.5;
-            }
-            .footer {
-              margin-top: 50px;
-              font-size: 13px;
-              color: rgba(255, 255, 255, 0.7);
-              line-height: 1.6;
-            }
-            .footer strong {
-              color: #ffffff;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="plakat">
-            <div class="content">
-              <div class="icon">🏛️</div>
-              <h1>${esc(h1Text)}</h1>
-              <h2>${esc(h2Text)}</h2>
-              <p class="subtitle">${esc(subtitleText)}</p>
-              
-              <div class="text-block">
-                ${blockIntro}
-              </div>
-
-              <div class="highlight-box">
-                <p>${highlightInner}</p>
-              </div>
-
-              <div class="qr-grid">
-                <div class="qr-container">
-                  <img src="${homepageQRUrl}" alt="QR ${esc(qr1Label)}" class="qr-code" />
-                  <div class="qr-label">${esc(qr1Label)}</div>
-                  <div class="qr-description">${esc(qr1Desc)}</div>
-                </div>
-                <div class="qr-container">
-                  <img src="${secondQRUrl}" alt="QR ${esc(qr2Label)}" class="qr-code" />
-                  <div class="qr-label">${esc(qr2Label)}</div>
-                  <div class="qr-description">${esc(qr2Desc)}</div>
-                </div>
-              </div>
-
-              <div class="text-block">
-                ${howtoBlock}
-              </div>
-
-              <div class="footer">
-                ${footerLines}
-                <p style="margin-top: 12px;">Erstellt am: ${date}</p>
-              </div>
-            </div>
-          </div>
-          
-          <script>
-            window.onload = function() {
-              // Zeige PDF an - Nutzer kann dann selbst drucken/speichern
-              // Kein automatischer Druck-Dialog mehr
-            }
-          </script>
-        </body>
-      </html>
-    `
-
-    // Speichern, dann Vorschau – eine Meldung (kein doppeltes alert durch async Reader + synchrones window.open)
-    try {
-      const blob = new Blob([htmlContent], { type: 'text/html' })
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const r = new FileReader()
-        r.onload = () => resolve(r.result as string)
-        r.onerror = () => reject(new Error('Datei konnte nicht gelesen werden'))
-        r.readAsDataURL(blob)
-      })
-
-      const existingDocs = loadDocuments()
-      let doc: any
-      if (event?.id) {
-        doc = {
-          id: `qr-plakat-${event.id}-${Date.now()}`,
-          name: getNextWerbematerialVorschlagName(event.id, event.title, 'qr-plakat', 'QR-Code Plakat'),
-          type: 'text/html',
-          size: blob.size,
-          data: base64,
-          uploadedAt: new Date().toISOString(),
-          isPDF: false,
-          isPlaceholder: false,
-          category: 'pr-dokumente',
-          eventId: event.id,
-          eventTitle: event.title,
-          werbematerialTyp: 'qr-plakat'
-        }
-        saveDocuments([...existingDocs, doc])
-        setDocuments([...existingDocs, doc])
-      } else {
-        const existingInvitation = existingDocs.find((d: any) =>
-          d.name && d.name.includes('Virtuelle Einladung')
-        )
-        doc = {
-          id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
-          name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
-          type: 'text/html',
-          size: blob.size,
-          data: base64,
-          uploadedAt: new Date().toISOString(),
-          isPDF: false,
-          isPlaceholder: false
-        }
-        const updated = existingInvitation
-          ? existingDocs.map((d: any) => (d.id === existingInvitation.id ? doc : d))
-          : [...existingDocs, doc]
-        saveDocuments(updated)
-        setDocuments(updated)
-      }
-
-      const printWindow = window.open('', '_blank')
-      if (printWindow) {
-        try {
-          printWindow.focus()
-        } catch (_) {
-          /* ignore */
-        }
-        printWindow.document.write(htmlContent)
-        printWindow.document.close()
-        // Kein zweites alert: Vorschau im neuen Tab = sofort sichtbar; Speichern ist erledigt
-      } else {
-        alert(
-          `✅ Gespeichert im Dokumentenordner.\n\nDateiname: ${doc.name}\n\nDie Vorschau im neuen Tab wurde vom Browser blockiert (Pop-up-Blocker). Öffne das Plakat unter Marketing → Dokumente – oder erlaube Pop-ups für diese Seite und wähle „Neu erstellen“ erneut.`
-        )
-      }
-    } catch (error) {
-      console.error('QR-Code Plakat:', error)
-      alert(
-        (error as Error)?.message?.includes('lesen')
-          ? '❌ Datei konnte nicht gelesen werden.'
-          : '❌ Fehler beim Speichern der virtuellen Einladung.'
-      )
     }
   }
 
@@ -19319,7 +18780,7 @@ ${name}`
                           if (d.eventTitle === event.title && (d.eventId == null || !allEventIds.has(String(d.eventId)))) return true
                           return false
                         })
-                        const WERBEMATERIAL_TYPEN = ['qr-plakat', 'newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz'] as const
+                        const WERBEMATERIAL_TYPEN = ['newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz'] as const
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
                         prDocsForEvent.forEach((d: any) => { if (d.werbematerialTyp && byTyp[d.werbematerialTyp]) byTyp[d.werbematerialTyp].push(d) })
@@ -19348,18 +18809,6 @@ ${name}`
                         >
                           {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
-                            // QR-Code Plakat = nur K2 (Martina & Georg, K2 GALERIE) – nicht im VK2-Admin anbieten
-                            const qrPlakatKarte = {
-                              typ: 'qr-plakat' as const,
-                              icon: '🏛️',
-                              titel: 'QR-Code Plakat',
-                              beschreibung: 'Zum Aufhängen – Besucher scannen',
-                              docs: byTyp['qr-plakat'] || [],
-                              onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                              onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                              onErstellen: () => printQRCodePlakat(event)
-                            }
-                            // Alle Dokument-Karten definieren (QR-Code Plakat nur bei K2)
                             const DOKUMENT_KARTEN = [
                               {
                                 typ: 'druckversion' as const,
@@ -19374,7 +18823,6 @@ ${name}`
                                 },
                                 onErstellen: null as null | (() => void)
                               },
-                              ...(tenant.isVk2 ? [] : [qrPlakatKarte]),
                               {
                                 typ: 'newsletter' as const,
                                 icon: '📧',
@@ -19429,30 +18877,22 @@ ${name}`
                                 erstellenVarianten: [
                                   {
                                     label: 'Neutral (ohne Personendaten)',
-                                    onErstellen: async () => {
+                                    onErstellen: () => {
                                       const ev = events.find((e: any) => e.id === event.id)
                                       if (!ev) return
                                       const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
                                       const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'neutral')
-                                      let qrDataUrl: string | undefined
-                                      if (presse?.qrShow && presse?.qrUrl) {
-                                        qrDataUrl = await QRCode.toDataURL(presse.qrUrl, { width: 200, margin: 1 })
-                                      }
-                                      generateEditablePresseaussendungPDF(presse, ev, ' (neutral)', qrDataUrl)
+                                      generateEditablePresseaussendungPDF(presse, ev, ' (neutral)')
                                     }
                                   },
                                   {
                                     label: 'Lokal (mit Personenstory)',
-                                    onErstellen: async () => {
+                                    onErstellen: () => {
                                       const ev = events.find((e: any) => e.id === event.id)
                                       if (!ev) return
                                       const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
                                       const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'lokal')
-                                      let qrDataUrl: string | undefined
-                                      if (presse?.qrShow && presse?.qrUrl) {
-                                        qrDataUrl = await QRCode.toDataURL(presse.qrUrl, { width: 200, margin: 1 })
-                                      }
-                                      generateEditablePresseaussendungPDF(presse, ev, ' (lokal)', qrDataUrl)
+                                      generateEditablePresseaussendungPDF(presse, ev, ' (lokal)')
                                     }
                                   }
                                 ]
@@ -19504,23 +18944,6 @@ ${name}`
                                     </div>
                                   </div>
                                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
-                                    <button
-                                      type="button"
-                                      onClick={() => openRedaction(event)}
-                                      style={{
-                                        padding: '0.4rem 0.75rem',
-                                        background: `${s.accent}14`,
-                                        border: `1px solid ${s.accent}44`,
-                                        borderRadius: '8px',
-                                        color: s.accent,
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem',
-                                        fontWeight: 500,
-                                        whiteSpace: 'nowrap'
-                                      }}
-                                    >
-                                      ✏️ Texte redigieren
-                                    </button>
                                     <button
                                       onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
                                       style={{
@@ -20190,7 +19613,7 @@ ${name}`
         </div>
       )}
 
-      {/* Redaktions-Modal: Texte redigieren mit Live-Vorschau, Bild, Links, QR */}
+      {/* Presseaussendung: wie Newsletter – Split-Ansicht, Speichern → Vorschlag + Werbemittel-Dokument */}
       {redactionEvent && (() => {
         const isVk2 = tenant.isVk2
         const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
@@ -20237,10 +19660,39 @@ ${name}`
               })
             }
             localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+            const blob = new Blob([previewHtml], { type: 'text/html;charset=utf-8' })
+            const docId = `pr-editable-presseaussendung-${redactionEvent.id}-${Date.now()}`
+            const ev = redactionEvent
+            const fr = new FileReader()
+            fr.onloadend = () => {
+              const data = fr.result as string
+              const current = loadDocuments()
+              const docPayload = {
+                id: docId,
+                name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse', 'Presseaussendung'),
+                type: 'text/html',
+                size: blob.size,
+                data,
+                fileName: `presseaussendung-${(ev.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                uploadedAt: new Date().toISOString(),
+                isPDF: false,
+                isPlaceholder: false,
+                category: 'pr-dokumente',
+                eventId: ev.id,
+                eventTitle: ev.title,
+                werbematerialTyp: 'presse'
+              }
+              saveDocuments([...current, docPayload])
+              setDocuments([...current, docPayload])
+            }
+            fr.readAsDataURL(blob)
             setRedactionEvent(null)
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
+        }
+        const openPresseDocInWindow = () => {
+          openDocumentInApp(previewHtml, 'Presseaussendung – ' + (redactionEvent?.title || 'Event'))
         }
         const handleImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           const file = e.target.files?.[0]
@@ -20264,7 +19716,7 @@ ${name}`
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Texte redigieren – {redactionEvent?.title ?? 'Event'}</strong>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Presseaussendung – {redactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
                 onClick={() => setRedactionEvent(null)}
@@ -20371,22 +19823,38 @@ ${name}`
                     />
                   )}
                 </div>
-                <button
-                  type="button"
-                  onClick={saveRedaction}
-                  style={{
-                    padding: '0.6rem 1.25rem',
-                    background: '#16a34a',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    alignSelf: 'flex-start'
-                  }}
-                >
-                  💾 Speichern – Texte übernehmen
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={saveRedaction}
+                    style={{
+                      padding: '0.6rem 1.25rem',
+                      background: '#16a34a',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    💾 Speichern – Presseaussendung übernehmen
+                  </button>
+                  <button
+                    type="button"
+                    onClick={openPresseDocInWindow}
+                    style={{
+                      padding: '0.6rem 1.25rem',
+                      background: (s?.accent) ?? '#0d9488',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📄 Dokument öffnen (Drucken)
+                  </button>
+                </div>
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>

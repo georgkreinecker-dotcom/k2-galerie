@@ -38,7 +38,7 @@
 
 ## 4. Werbematerial / Flyer / Dokumente
 
-- **VK2:** Alle erzeugten Dokumente (Newsletter, Flyer, Presse, Social, QR-Plakat) nutzen **Vereinsdaten** (Verein, Mitglieder) und das **helle VK2-Design**. „Zurück“ führt in den VK2-Admin. Gespeichert wird in `k2-vk2-documents`.
+- **VK2:** Alle erzeugten Dokumente (Newsletter, Flyer, Presse, Social) nutzen **Vereinsdaten** (Verein, Mitglieder) und das **helle VK2-Design**. „Zurück“ führt in den VK2-Admin. Gespeichert wird in `k2-vk2-documents`.
 - **K2:** Dokumente nutzen K2-Stammdaten und K2-Design. Gespeichert in `k2-documents`.
 - **Listen:** Im VK2-Admin werden nur Dokumente aus `k2-vk2-documents` und Events aus `k2-vk2-events` angezeigt. Keine K2-Daten in der Liste.
 

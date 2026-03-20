@@ -16,25 +16,7 @@ Zur Eröffnung laden wir Sie herzlich ein: **Erstens** unsere Ausstellung – We
 
 ---
 
-## 1. QR-Code Plakat
-
-**Zweck:** Zum Aufhängen – Besucher scannen und landen auf der Galerie.
-
-**Headline (auf dem Plakat):**
-```
-Eröffnung der K2 Galerie
-24.–26. April 2026 · [Ort]
-```
-**Unterzeile:**
-```
-Scannen Sie den QR-Code für Öffnungszeiten, Werke und Einblick in die K2-Plattform.
-K2 Galerie – für Künstler:innen, die gesehen werden wollen.
-```
-**Links (QR-Codes):** K2 Galerie: https://k2-galerie.vercel.app/projects/k2-galerie/galerie · Demo (ök2): https://k2-galerie.vercel.app/willkommen
-
----
-
-## 2. Newsletter (E-Mail an Stammkunden)
+## 1. Newsletter (E-Mail an Stammkunden)
 
 **Betreff:** Einladung: Eröffnung der K2 Galerie – 24.–26. April 2026
 
@@ -67,7 +49,7 @@ Wir freuen uns auf Sie!
 
 ---
 
-## 3. Plakat (A3/A2 für Schaufenster & Wände)
+## 2. Plakat (A3/A2 für Schaufenster & Wände)
 
 **Titel:** Eröffnung der K2 Galerie
 
@@ -88,7 +70,7 @@ Gemeinsame Lounge: Plattform (K2 · ök2 · VK2) entdecken.
 
 ---
 
-## 4. Event-Flyer (Handzettel für persönliche Einladung)
+## 3. Event-Flyer (Handzettel für persönliche Einladung)
 
 **Headline:** Eröffnung der K2 Galerie
 
@@ -126,7 +108,7 @@ Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen W
 
 ---
 
-## 6. Presseaussendung – lokal (mit Personenstory)
+## 5. Presseaussendung – lokal (mit Personenstory)
 
 **Titel:** Presseinformation – Eröffnung der K2 Galerie
 
@@ -194,7 +176,7 @@ Werke, Raum, Begegnung – und Einblick in die K2-Plattform (K2 · ök2 · VK2).
 
 ---
 
-## 8. Präsentationsmappen
+## 7. Präsentationsmappen
 
 **Kein eigener Fließtext-Muster nötig.** Links wie in der Marketingstrategie verwenden; in der App unter Öffentlichkeitsarbeit die Varianten wählen:
 
@@ -213,13 +195,12 @@ VK2: https://k2-galerie.vercel.app/projects/vk2
 
 | Eintrag | Muster in diesem Dokument |
 |--------|---------------------------|
-| QR-Code Plakat | §1 – Headline, Unterzeile, Links |
-| Newsletter | §2 – Betreff, Body |
-| Plakat | §3 – Titel, Datum, Ort, Kurztext |
-| Event-Flyer | §4 – Headline, Datum, Ort, Beschreibung |
-| Presse neutral | §5 – Titel, Lead, §1b, Kontakt „über Galerie“ |
-| Presse lokal | §6 – Titel, §1a + §1b, Kontaktblock |
-| Social Media | §7 – Instagram, Facebook, WhatsApp |
-| Präsentationsmappen | §8 – nur Links; Varianten in der App wählen |
+| Newsletter | §1 – Betreff, Body |
+| Plakat | §2 – Titel, Datum, Ort, Kurztext |
+| Event-Flyer | §3 – Headline, Datum, Ort, Beschreibung |
+| Presse neutral | §4 – Titel, Lead, §1b, Kontakt „über Galerie“ |
+| Presse lokal | §5 – Titel, §1a + §1b, Kontaktblock |
+| Social Media | §6 – Instagram, Facebook, WhatsApp |
+| Präsentationsmappen | §7 – nur Links; Varianten in der App wählen |
 
 **Quellen:** docs/MARKETING-EROEFFNUNG-K2-OEK2.md, docs/MEDIENSTUDIO-K2.md (§1a, §1b), docs/MEDIENVERTEILER-EROEFFNUNG.md (Verteiler).

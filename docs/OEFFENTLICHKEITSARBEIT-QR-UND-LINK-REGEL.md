@@ -28,7 +28,7 @@
 
 | Medien | QR/Link |
 |--------|--------|
-| Plakat, Event-Flyer, Newsletter, QR-Plakat | **Automatisch** QR-Codes (User/Verein) – keine Extra-Eingabe |
+| Plakat, Event-Flyer, Newsletter | **Automatisch** QR-Codes (User/Verein) – keine Extra-Eingabe |
 | Social Media, Presseaussendung | **Nur Link** – reicht zum Teilen/Kopieren |
 
 ---

@@ -28,7 +28,7 @@ Sinnvolle Stufen für die Zielgruppe **Künstler:innen** (Einstieg → aktive Nu
 | **Stammdaten & Design** | Galerie-Name, Kontakt, Farben, Willkommensbild, Galerie-Karte – alles anpassbar. |
 | **Kasse / Shop** | Kasse für Verkauf vor Ort (z. B. am iPad). |
 | **Etiketten**  | Etikettendruck (z. B. Brother QL) – Werk-Nummer, Titel, QR. |
-| **Marketing**  | Grundlegende Werbematerialien (Flyer, Presse, QR-Plakat) aus Stammdaten. |
+| **Marketing**  | Grundlegende Werbematerialien (Flyer, Presse) aus Stammdaten. |
 | **Backup**     | Backup & Wiederherstellung (lokal/Vollbackup). |
 | **URL / QR**   | **Standard-URL** (z. B. Subdomain oder Pfad auf k2-galerie.vercel.app). Eigener QR-Code für die Galerie. |
 | **Support**    | Doku, FAQ, E-Mail-Support (Standard). |
@@ -55,7 +55,7 @@ Sinnvolle Stufen für die Zielgruppe **Künstler:innen** (Einstieg → aktive Nu
 | **Stammdaten & Design** | Wie Basic, volle Anpassung. |
 | **Kasse / Shop** | Wie Basic. |
 | **Etiketten**  | Wie Basic. |
-| **Marketing**   | **Vollumfang:** Flyer, Presse, Newsletter-Vorschläge, Plakat, Social Media, Event-Flyer, QR-Plakat – alles aus Stammdaten im Galerie-Design. |
+| **Marketing**   | **Vollumfang:** Flyer, Presse, Newsletter-Vorschläge, Plakat, Social Media, Event-Flyer – alles aus Stammdaten im Galerie-Design. |
 | **Backup**     | Wie Basic. |
 | **URL / QR**   | **Custom Domain** möglich (eigene Domain, z. B. galerie-künstlerin.at). Eigener QR-Code. |
 | **Support**    | Wie Basic, priorisierte Bearbeitung (E-Mail). |
