@@ -1,16 +1,16 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF **zuerst** (Layout/Farben: html2pdf → Blob). Dann **Web Share** mit PDF-Datei, wo unterstützt (iPhone/iPad → Mail oft mit Anhang). Sonst **mailto + Zwischenablage + PDF-Download**. **Commit:** 8a85c2b ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF sauber:** `renderStyledPdfBlobFromHtmlString` blendet **`.no-print`** für html2canvas aus (keine Format-Leiste im PDF). **Plakat:** PDF-Seite **A3**, breiteres Iframe, höhere canvas-Scale; bei Vorschau-HTML (`min(100%, 760px)`) **Export-Overrides** auf Druckgrößen (297×420 mm, große Typo/QR). Tests + Build grün – **Commit:** (nach Push eintragen) ✅
 
-**Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis, jspdf, To bei einem Empfänger – **Commit:** 396755f
+**Vorher:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF zuerst (html2pdf → Blob), Web Share, sonst mailto + Download – **Commit:** 8a85c2b
 
-**Vorher:** 20.03.26 – **1-Klick-Mail für alle Werbemittel** – **Commit:** 3b44845
+**Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Plakat/Newsletter nochmal klicken – Mailtext + „An“ bei einem Kontakt prüfen; PDF-Hinweisdialog nach Downloads.
+**Was wir JETZT tun:** Georg: Plakat erneut „Mail“/Teilen – PDF nur Plakatfläche, größer; bei Abweichung kurz melden.
 
-**Einordnung:** Nutzererwartung „alles in der Mail“ vs. Browser-Grenze mailto – UX ehrlich, Ablauf unverändert sinnvoll.
+**Einordnung:** html2canvas = Screen-CSS; `.no-print` galt nur für `@media print` → Toolbar landete im Raster. Plakat auf A4-PDF wirkte winzig → A3 + Breite.
 
-**Nächster Schritt:** Optional später: Web Share API / Server-Mail für echten Anhang.
+**Nächster Schritt:** Bei Bedarf weitere Werbemittel-Templates (`.page`-Dokumente) mit gleicher Capture-Logik feinjustieren.
 
 ---
 

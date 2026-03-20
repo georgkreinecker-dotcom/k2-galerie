@@ -183,7 +183,7 @@ function decodeHtmlDataUrl(fileData: string): string | null {
   }
 }
 
-const HTML2PDF_WERBEMITTEL_OPTS = {
+const HTML2PDF_WERBEMITTEL_BASE = {
   margin: [6, 6, 6, 6] as [number, number, number, number],
   image: { type: 'jpeg' as const, quality: 0.96 },
   html2canvas: {
@@ -194,8 +194,14 @@ const HTML2PDF_WERBEMITTEL_OPTS = {
     letterRendering: true,
     backgroundColor: '#ffffff',
   },
-  jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const },
   pagebreak: { mode: ['css', 'legacy'] as ('css' | 'legacy')[] },
+}
+
+/** PDF-Seitenformat: Plakat = A3 (sonst wirkt Inhalt auf A4-PDF winzig). */
+function inferWerbemittelPdfFormat(html: string): 'a4' | 'a3' {
+  const h = String(html || '')
+  if (/\bclass=["'][^"']*\bplakat\b/i.test(h) || /\bplakat\s*\{/i.test(h)) return 'a3'
+  return 'a4'
 }
 
 type Html2PdfWorker = {
@@ -220,11 +226,15 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       ? safeHtml
       : `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><style>html,body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact;}</style></head><body>${safeHtml}</body></html>`
 
+  const pdfFormat = inferWerbemittelPdfFormat(safeHtml)
+  /** A3-Breite ~1123 CSS-Px + Rand; schmalere Iframe quetscht Plakat + html2canvas. */
+  const iframeWidthPx = pdfFormat === 'a3' ? 1240 : 900
+  const iframeMinHeightPx = pdfFormat === 'a3' ? 2000 : 1400
+
   const iframe = document.createElement('iframe')
   iframe.setAttribute('title', 'pdf-export')
   iframe.setAttribute('sandbox', 'allow-same-origin')
-  iframe.style.cssText =
-    'position:fixed;left:-14000px;top:0;width:794px;min-height:1123px;border:none;margin:0;padding:0;background:#fff;'
+  iframe.style.cssText = `position:fixed;left:-14000px;top:0;width:${iframeWidthPx}px;min-height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
   document.body.appendChild(iframe)
 
   try {
@@ -240,7 +250,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
         reject(new Error('iframe onerror'))
       }
     })
-    await new Promise<void>(r => window.setTimeout(r, 250))
+    await new Promise<void>(r => window.setTimeout(r, 400))
     const idoc = iframe.contentDocument
     const root = idoc?.body
     if (!root || !root.innerHTML.trim()) return null
@@ -253,15 +263,71 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       /* ignore */
     }
 
+    /** html2canvas nutzt Screen-Styles – .no-print ist sonst sichtbar (nur @media print versteckt). */
+    const head = idoc.head
+    if (head) {
+      const captureStyle = idoc.createElement('style')
+      captureStyle.setAttribute('id', 'k2-werbemittel-pdf-capture')
+      let extraPlakat = ''
+      if (/width:\s*min\(100%,\s*760px\)/i.test(safeHtml) || /plakatWidth:\s*['"]min\(100%,\s*760px\)/i.test(safeHtml)) {
+        extraPlakat = `
+          body { padding: 0.5rem !important; }
+          .plakat {
+            width: 297mm !important;
+            max-width: none !important;
+            min-height: 420mm !important;
+            padding: 4rem !important;
+            border-radius: 24px !important;
+            margin: 0 auto !important;
+          }
+          .plakat h1 { font-size: 5rem !important; margin-bottom: 3rem !important; }
+          .plakat > h1 + p { font-size: 2rem !important; }
+          .plakat .event-info { font-size: 2rem !important; margin: 2rem 0 !important; }
+          .plakat .event-info strong { font-size: 2.2rem !important; }
+          .plakat .event-info p[style*="font-size"] { font-size: 2rem !important; }
+          .plakat p[style*="margin-top: 2rem"] { font-size: 1.6rem !important; }
+          .plakat .qr-code { margin: 3rem 0 !important; padding: 2rem !important; }
+          .plakat .qr-code img { width: 250px !important; height: 250px !important; }
+          .plakat .qr-code p { font-size: 1.2rem !important; }
+          .plakat .contact { font-size: 1.5rem !important; padding-top: 2rem !important; }
+          .plakat .contact strong { font-size: 1.8rem !important; }
+        `
+      }
+      captureStyle.textContent = `
+        .no-print { display: none !important; }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #ffffff !important;
+          min-height: auto !important;
+        }
+        ${extraPlakat}
+      `
+      head.appendChild(captureStyle)
+    }
+
+    await new Promise<void>(r => window.setTimeout(r, 120))
+
     const html2pdfMod = await import('html2pdf.js')
     const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
     if (typeof html2pdfRaw !== 'function') return null
     const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
 
-    const out = await worker
-      .set({ ...HTML2PDF_WERBEMITTEL_OPTS, filename: 'werbemittel.pdf' })
-      .from(root)
-      .outputPdf('blob')
+    const pdfOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE,
+      filename: 'werbemittel.pdf',
+      jsPDF: {
+        unit: 'mm' as const,
+        format: pdfFormat,
+        orientation: 'portrait' as const,
+      },
+      html2canvas: {
+        ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+        scale: pdfFormat === 'a3' ? 2.25 : 2,
+      },
+    }
+
+    const out = await worker.set(pdfOpts).from(root).outputPdf('blob')
 
     return out instanceof Blob ? out : null
   } catch (e) {
