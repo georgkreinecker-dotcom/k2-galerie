@@ -19198,6 +19198,14 @@ ${name}`
 
         {/* Eventplanung: Öffentlichkeitsarbeit (Marketingabteilung) – gleicher Inhalt im Tab und im Vollbild-Modal */}
         {((activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') || showOeffentlichkeitsarbeitModal) && (() => {
+          /** Gamification (leicht): echte Meilensteine aus Daten, keine Punkte-Währung */
+          const oeffMilestones: { id: string; label: string; done: boolean; hint: string }[] = [
+            { id: 'event', label: 'Event in der Planung', done: events.length > 0, hint: 'Mindestens ein Termin in der Eventliste' },
+            { id: 'medien', label: 'Medienspiegel mit Kontakten', done: medienspiegel.length > 0, hint: 'Presse-E-Mails eintragen oder Hilfe: Beispiel-Medien' },
+            { id: 'dok', label: 'Mind. ein gespeichertes Dokument', done: documents.length > 0, hint: 'Flyer, Presse oder Social aus einem Event' },
+            { id: 'news', label: 'Newsletter-Verteiler (optional)', done: verteilerNewsletter.length > 0, hint: 'Empfänger für Einladungen' },
+          ]
+          const oeffMilestoneDone = oeffMilestones.filter(m => m.done).length
           const oeffSection = (
           <section style={{
             background: 'rgba(255, 255, 255, 0.05)',
@@ -19230,6 +19238,117 @@ ${name}`
                 </button>
               </div>
             )}
+            {/* Gamification-Baustein: visueller Einstieg + Fortschritt (neue Generation, ohne Videospiel-Feeling) */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'stretch',
+                gap: 'clamp(1rem, 3vw, 1.5rem)',
+                marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+                padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                borderRadius: '16px',
+                border: `1px solid ${s.accent}33`,
+                background: s.bgCard,
+                boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+              }}
+            >
+              <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                <img
+                  src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                  alt=""
+                  width={240}
+                  height={147}
+                  style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                />
+              </div>
+              <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                  Kommunikations-Modus
+                </div>
+                <h2
+                  style={{
+                    fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)',
+                    fontWeight: 800,
+                    color: '#1c1a18',
+                    margin: '0 0 0.5rem',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Öffentlichkeit mit Schwung
+                </h2>
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                  Jeder grüne Schritt ist ein echter Fortschritt – keine Spielerei, sondern Klarheit. Wenn alle Kreise grün sind, bist du für Medien und Gäste startklar.
+                </p>
+                <div style={{ marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{oeffMilestoneDone} / {oeffMilestones.length}</span>
+                  </div>
+                  <div
+                    role="progressbar"
+                    aria-valuenow={oeffMilestoneDone}
+                    aria-valuemin={0}
+                    aria-valuemax={oeffMilestones.length}
+                    style={{
+                      height: 10,
+                      borderRadius: 999,
+                      background: `${s.accent}18`,
+                      overflow: 'hidden',
+                      border: `1px solid ${s.accent}30`,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.round((100 * oeffMilestoneDone) / Math.max(1, oeffMilestones.length))}%`,
+                        height: '100%',
+                        borderRadius: 999,
+                        background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                        transition: 'width 0.35s ease-out',
+                      }}
+                    />
+                  </div>
+                </div>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                  {oeffMilestones.map(m => (
+                    <li
+                      key={m.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.5rem',
+                        fontSize: '0.8rem',
+                        color: m.done ? '#1c1a18' : '#5c5650',
+                      }}
+                    >
+                      <span
+                        aria-hidden
+                        style={{
+                          flexShrink: 0,
+                          width: 22,
+                          height: 22,
+                          borderRadius: '50%',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 800,
+                          background: m.done ? '#10b981' : 'transparent',
+                          color: m.done ? '#fff' : '#5c5650',
+                          border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                        }}
+                      >
+                        {m.done ? '✓' : '○'}
+                      </span>
+                      <span>
+                        <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                        {!m.done && <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: 2 }}>{m.hint}</span>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
             {documentSaveFeedback === 'ok' && (
               <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</div>
             )}

@@ -43,6 +43,8 @@ Der Medienbereich wirkt oft **sehr textlastig**. **Bilder und visuelle Anker** z
 
 **Technik:** Bilder aus `public/` (z. B. `public/img/medienstudio/…`), **eine** Bildsprache für K2/ök2/VK2, **maximale Komprimierung** (Regel Komprimierung). Keine Lizenz-Fallen – eigene Fotos, Unsplash mit fester URL, oder schlichte SVG-Illustrationen.
 
+**Umgesetzt (20.03.26):** Admin → Eventplanung → **Öffentlichkeitsarbeit**: Hero-SVG `public/img/medienstudio/marketing-oeffentlichkeit-hero.svg` + **Fortschritt 0–4** (Events, Medienspiegel, Dokumente, Newsletter). Weitere Ideen: **docs/GAMIFICATION-POTENTIALE-K2.md**.
+
 ---
 
 ## 1. Was ihr heute schon habt (Ist-Stand)

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" role="img" aria-label="Öffentlichkeitsarbeit  Illustration">
+  <defs>
+    <linearGradient id="mw" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b54a1e"/>
+      <stop offset="100%" stop-color="#d4622a"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffefb"/>
+      <stop offset="100%" stop-color="#f0ebe4"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="220" rx="20" fill="url(#paper)"/>
+  <circle cx="270" cy="56" r="28" fill="url(#mw)" opacity="0.12"/>
+  <circle cx="92" cy="164" r="36" fill="url(#mw)" opacity="0.1"/>
+  <!-- Megaphone -->
+  <path fill="url(#mw)" d="M52 88 L52 132 L76 132 L108 152 L108 68 L76 88 Z"/>
+  <path fill="#1c1a18" opacity="0.08" d="M108 72 L132 64 L132 156 L108 148 Z"/>
+  <!-- Sound -->
+  <path fill="none" stroke="url(#mw)" stroke-width="4" stroke-linecap="round" opacity="0.5" d="M138 92 Q158 110 138 128"/>
+  <path fill="none" stroke="url(#mw)" stroke-width="3" stroke-linecap="round" opacity="0.35" d="M148 78 Q178 110 148 142"/>
+  <!-- Document -->
+  <rect x="168" y="56" width="88" height="112" rx="10" fill="#fff" stroke="#b54a1e" stroke-width="2" opacity="0.9"/>
+  <rect x="184" y="76" width="56" height="6" rx="2" fill="#b54a1e" opacity="0.35"/>
+  <rect x="184" y="92" width="48" height="6" rx="2" fill="#1c1a18" opacity="0.12"/>
+  <rect x="184" y="108" width="52" height="6" rx="2" fill="#1c1a18" opacity="0.12"/>
+  <rect x="184" y="124" width="40" height="6" rx="2" fill="#1c1a18" opacity="0.12"/>
+  <!-- Spark -->
+  <circle cx="200" cy="44" r="5" fill="#d4622a" opacity="0.85"/>
+  <circle cx="312" cy="120" r="4" fill="#b54a1e" opacity="0.55"/>
+</svg>

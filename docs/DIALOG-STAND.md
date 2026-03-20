@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Medienstudio:** Spielerisches *Gefühl* ohne Videospiel (Ziele, Fortschritt, kleine Triumphe) + **Bildsprache** (weniger Textwüste, Illustrationen/Icons/Leerzustände) – in **MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP** ergänzt. Dazu UX-Zeile in **PRODUKT-VISION**. **Commit:** 7e54abe ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Baustein 1:** Admin → Eventplan → **Öffentlichkeitsarbeit** – Hero-SVG + Fortschritt **X/4** (Events, Medienspiegel, Dokumente, Newsletter) + Doku **docs/GAMIFICATION-POTENTIALE-K2.md** (weitere Bereiche). **Commit:** (nach Push)
+
+**Vorher:** 20.03.26 – **Medienstudio:** Spielerisches *Gefühl* ohne Videospiel (Ziele, Fortschritt, kleine Triumphe) + **Bildsprache** (weniger Textwüste, Illustrationen/Icons/Leerzustände) – in **MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP** ergänzt. Dazu UX-Zeile in **PRODUKT-VISION**. **Commit:** 7e54abe ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Medienstudio Roadmap Einzigartigkeit:** Ist-Stand Tool (Werbelinie, Event-Dokumente, Verteiler, Prozess-Doku) + priorisierte Erweiterungen (Journalist:innen-Paket/ZIP, KI im Medien-Tab, Redaktions-Checkliste, Embargo, OTS, Versand-Log) in **docs/MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md**; Index + Verweis in MEDIENSTUDIO-K2. **Commit:** bb90beb ✅ auf GitHub
 
