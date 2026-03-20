@@ -136,22 +136,12 @@ function textToHtmlWithLinks(text: string): string {
   return parts.map((part) => (/^https?:\/\//.test(part) ? `<a href="${esc(part)}" target="_blank" rel="noopener noreferrer">${esc(part)}</a>` : esc(part))).join('')
 }
 
-/** Einheitliche „← Zurück“-Leiste für alle geöffneten Dokumente (K2, ök2, VK2) – immer sichtbar, gleicher Tab/Kontext. */
-function getDocumentBackBarHtml(returnUrl: string): string {
-  const url = escapeJsStringForDoc(returnUrl)
-  return (
-    '<div style="position:sticky;top:0;z-index:9999;background:#1c1a18;color:#fff;padding:0.5rem 1rem;display:flex;align-items:center;gap:0.75rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-family:system-ui,sans-serif;">' +
-    '<button type="button" onclick="goBack(); return false;" style="padding:0.4rem 0.8rem;background:#b54a1e;color:#fff;border:none;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;">← Zurück</button>' +
-    '<span style="font-size:0.9rem;opacity:0.9;">Dokument</span></div>' +
-    '<script>var ADMIN_RETURN_URL=\'' + url + '\';function goBack(){var u=(typeof ADMIN_RETURN_URL!==\'undefined\'&&ADMIN_RETURN_URL)?ADMIN_RETURN_URL:(window.opener&&!window.opener.closed&&window.opener.location.pathname.indexOf(\'/admin\')!==-1)?(window.opener.location.origin+window.opener.location.pathname+(window.opener.location.search||\'\')):\'\';if(window.opener&&!window.opener.closed){window.opener.location.href=u;window.opener.focus();window.close();return;}if(u)window.location.href=u;else window.history.back();}<\/script>'
-  )
-}
-
-/** Fügt die Zurück-Leiste am Anfang des body ein – für alle Dokumente einheitlich. */
-function wrapDocumentHtmlWithBackButton(html: string, returnUrl: string): string {
-  const bar = getDocumentBackBarHtml(returnUrl)
-  return html.replace(/<body([^>]*)>/i, '<body$1>' + bar)
-}
+/**
+ * Hinweis: Keine zweite „Zurück“-Leiste mehr im HTML für openDocumentInApp.
+ * Der In-App-Viewer (ScreenshotExportAdmin) hat oben bereits „← Zurück“ + „Drucken“.
+ * Eine eingebettete Leiste im iframe würde bei Klick window.location = Admin im **iframe** setzen
+ * → in Cursor/Vorschau die „schwarze“ Platzhalter-Seite statt zurück zum Admin.
+ */
 
 /** Fügt Druck-Fußzeile in jedes Dokument: Dokumentenersteller, Druckdatum, Seitenzahl (für In-App-Viewer-Drucke). */
 function wrapDocumentWithPrintFooter(html: string): string {
@@ -7907,7 +7897,6 @@ ${'='.repeat(60)}
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any, event?: any) => {
     try {
-    const adminReturnUrl = getAdminReturnUrl(activeTab, eventplanSubTab)
     const fileDataOrUrl = document.fileData || document.data
     const docTitle = document.name || 'Dokument'
     // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. iframe src = absolute URL.
@@ -7916,10 +7905,12 @@ ${'='.repeat(60)}
       const absUrl = (typeof window !== 'undefined' && window.location.origin)
         ? window.location.origin + (docUrl.startsWith('/') ? docUrl : '/' + docUrl)
         : docUrl
-      const wrapper = wrapDocumentHtmlWithBackButton(
-        '<html><head><meta charset="utf-8"><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="margin:0;padding:0;"><iframe src="' + absUrl.replace(/"/g, '&quot;') + '" style="width:100%;height:calc(100vh - 52px);border:none;"></iframe></body></html>',
-        adminReturnUrl
-      )
+      const wrapper =
+        '<html><head><meta charset="utf-8"><title>' +
+        (docTitle).replace(/</g, '&lt;') +
+        '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
+        absUrl.replace(/"/g, '&quot;') +
+        '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
       openDocumentInApp(wrapper, docTitle)
       return
     }
@@ -7938,11 +7929,10 @@ ${'='.repeat(60)}
         const mitglieder = (stamm?.mitglieder || []).filter((m: any) => m?.name).map((m: any) => ({ name: m.name, typ: m.typ, kurzVita: m.kurzVita, bio: m.bio }))
         const docKind = isEinladung ? 'einladung' : isPresse ? 'presse' : 'flyer'
         const htmlRaw = buildVk2ReadyToSendDocumentHtml(docKind, eventTitle, eventDate, verein, mitglieder)
-        const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
-        openDocumentInApp(html, docTitle)
+        openDocumentInApp(htmlRaw, docTitle)
       } catch (e) {
         const htmlRaw = buildVk2ReadyToSendDocumentHtml('einladung', eventTitle, eventDate, { name: 'Kunstverein Muster' }, [])
-        openDocumentInApp(wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl), docTitle)
+        openDocumentInApp(htmlRaw, docTitle)
       }
       return
     }
@@ -7950,8 +7940,7 @@ ${'='.repeat(60)}
     // Gespeicherte Einladung/Presse (HTML) hat Vorrang – nicht durch Vorlagen-HTML ersetzen
     if ((isEinladung || isPresse) && !fileDataOrUrl) {
       const htmlRaw = buildReadyToSendDocumentHtml(isEinladung ? 'einladung' : 'presse', eventTitle, eventDate)
-      const html = wrapDocumentHtmlWithBackButton(htmlRaw, adminReturnUrl)
-      openDocumentInApp(html, docTitle)
+      openDocumentInApp(htmlRaw, docTitle)
       return
     }
     const fileData = fileDataOrUrl
@@ -7991,8 +7980,7 @@ ${'='.repeat(60)}
             openNewsletterRedaction(eventLike, document, { subject, body })
             return
           }
-          const html = wrapDocumentHtmlWithBackButton(htmlDecoded, adminReturnUrl)
-          openDocumentInApp(html, docTitle)
+          openDocumentInApp(htmlDecoded, docTitle)
           return
         } catch (_) {
           // Fallback unten
@@ -8025,15 +8013,18 @@ ${'='.repeat(60)}
           break
       }
     }
-    const emptyDocHtml = wrapDocumentHtmlWithBackButton('<html><head><meta charset="utf-8"><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>', adminReturnUrl)
+    const emptyDocHtml =
+      '<html><head><meta charset="utf-8"><title>' +
+      (docTitle).replace(/</g, '&lt;') +
+      '</title></head><body style="padding:2rem; font-family:sans-serif;"><p>Dieses Dokument hat keinen gespeicherten Inhalt. Bitte erstelle es neu mit „Neu erstellen“.</p></body></html>'
     if (!fileData) {
       openDocumentInApp(emptyDocHtml, docTitle)
       return
     }
     try {
       if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-        const wrapperWithBack = wrapDocumentHtmlWithBackButton(`<html><head><title>${(docTitle).replace(/</g, '&lt;')}</title></head><body style="margin:0; padding:20px;"><iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe></body></html>`, adminReturnUrl)
-        openDocumentInApp(wrapperWithBack, docTitle)
+        const wrapperIframe = `<html><head><title>${(docTitle).replace(/</g, '&lt;')}</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="${fileData}" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>`
+        openDocumentInApp(wrapperIframe, docTitle)
       } else {
         const bodyContent = fileType?.includes('pdf')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
@@ -8042,15 +8033,17 @@ ${'='.repeat(60)}
           : fileType?.includes('html')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
           : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(docTitle).replace(/</g, '&lt;')}</a>`
-        const wrapperWithBack = wrapDocumentHtmlWithBackButton(
-          '<html><head><title>' + (docTitle).replace(/</g, '&lt;') + '</title></head><body style="margin:0; padding:20px; background:#f5f5f5;">' + bodyContent + '</body></html>',
-          adminReturnUrl
-        )
-        openDocumentInApp(wrapperWithBack, docTitle)
+        const wrapperBody =
+          '<html><head><title>' +
+          (docTitle).replace(/</g, '&lt;') +
+          '</title></head><body style="margin:0; padding:20px; background:#f5f5f5;">' +
+          bodyContent +
+          '</body></html>'
+        openDocumentInApp(wrapperBody, docTitle)
       }
     } catch (e) {
       console.error('Dokument öffnen:', e)
-      openDocumentInApp(wrapDocumentHtmlWithBackButton('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>', adminReturnUrl), docTitle)
+      openDocumentInApp('<html><body style="padding:2rem; font-family:sans-serif;"><p>Dokument konnte nicht angezeigt werden.</p></body></html>', docTitle)
     }
     } catch (err) {
       console.error('Dokument öffnen (Handler):', err)
@@ -8074,8 +8067,7 @@ ${'='.repeat(60)}
       textColor: design.textColor,
       mutedColor: design.mutedColor
     }, galleryData?.name)
-    const html = wrapDocumentHtmlWithBackButton(htmlRaw, getAdminReturnUrl(activeTab, eventplanSubTab))
-    openDocumentInApp(html, person?.name ? `Vita – ${person.name}` : 'Vita')
+    openDocumentInApp(htmlRaw, person?.name ? `Vita – ${person.name}` : 'Vita')
   }
 
   // Werbematerial-Vorschlag aus globalem Dokumentenspeicher löschen

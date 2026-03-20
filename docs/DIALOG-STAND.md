@@ -1,12 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Vorlagen aus Vergangenheit:** Unter „Flyer & Werbedokumente“ → „Veranstaltungen der Vergangenheit“ gibt es pro Dokument **Ansehen** und **→ Event übernehmen** (Modal: Ziel-Event wählen). Gespeicherte Einladung/Presse mit HTML werden beim Ansehen nicht mehr durch die Standard-Vorlage ersetzt (Bugfix in `handleViewEventDocument`). PR-Dokumente der Vergangenheit erscheinen in der Liste mit; Newsletter/Social-Vorlagen mergen bei Übernahme zusätzlich `k2-pr-suggestions` fürs Ziel-Event. Commit: da3c728 ✅ auf GitHub.
+**Letzter Stand:** 20.03.26 – **Doppel-Zurück im Dokument-Viewer behoben:** Die eingebettete HTML-Leiste („Zurück“ + „Dokument“) im iframe war überflüssig – oben gibt es schon **← Zurück** + **Drucken** (React). Der innere Button lud `/admin` **im iframe** → in Cursor die „schwarze“ Vorschau-Seite. Jetzt nur noch **eine** Leiste; `wrapDocumentHtmlWithBackButton` entfernt. Commit: folgt mit Push (siehe git log).
 
-**Was wir JETZT tun:** Georg kann im ök2-Admin testen: Vergangenheit aufklappen → Vorlage übernehmen → Rubrik des Ziel-Events prüfen.
+**Vorher gleicher Tag:** Vorlagen Vergangenheit + `handleViewEventDocument` (Commit da3c728).
 
-**Einordnung:** Ein Standard: `openDocumentInApp` / bestehende Speicherwege (`saveDocuments`, `saveEvents`); keine K2-Daten in ök2 verletzt.
+**Was wir JETZT tun:** Dokument ansehen → nur noch ein Zurück oben; soll den Viewer schließen und zum Admin zurück.
 
-**Nächster Schritt:** Kurz testen; bei Bedarf Feintuning Texte/Modal.
+**Einordnung:** `openDocumentInApp` = eine UX-Schicht; kein zweiter Navigationsweg im srcDoc.
+
+**Nächster Schritt:** Kurz im Browser (nicht nur Cursor-Preview) prüfen.
 
 ---
 
