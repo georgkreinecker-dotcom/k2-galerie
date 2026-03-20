@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF **zuerst** (Layout/Farben: html2pdf → Blob). Dann **Web Share** mit PDF-Datei, wo unterstützt (iPhone/iPad → Mail oft mit Anhang). Sonst **mailto + Zwischenablage + PDF-Download**. **Commit:** (nach Push eintragen) ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF **zuerst** (Layout/Farben: html2pdf → Blob). Dann **Web Share** mit PDF-Datei, wo unterstützt (iPhone/iPad → Mail oft mit Anhang). Sonst **mailto + Zwischenablage + PDF-Download**. **Commit:** 8a85c2b ✅
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis, jspdf, To bei einem Empfänger – **Commit:** 396755f
 
