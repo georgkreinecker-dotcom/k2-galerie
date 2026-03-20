@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification: ein Erlebnis (Vereinheitlichung):** Georg: **nicht** zwei getrennte, sich **störenden** UI-Elemente – **Begleitung + Fortschritt/Status** sollen **zusammenwirken** (ein Rahmen, koordiniert). Festgehalten in **GAMIFICATION-OEK2.md** §2 „Vereinheitlichung“, Phasenplan + DoD + Checkliste. **Commit:** (folgt nach Push)
+**Letzter Stand:** 20.03.26 – **Gamification: ein Erlebnis (Vereinheitlichung):** Georg: **nicht** zwei getrennte, sich **störenden** UI-Elemente – **Begleitung + Fortschritt/Status** sollen **zusammenwirken** (ein Rahmen, koordiniert). Festgehalten in **GAMIFICATION-OEK2.md** §2 „Vereinheitlichung“, Phasenplan + DoD + Checkliste. **Commit:** e967318 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification + Sportwagenmodus:** Georg: **weiter** mit **Vorsicht**; **Markt** mit Gamification **drin**; **Plan B** nur **Notlösung**. Zusätzlich: **gesamter** Weg verbindlich **Sportwagenmodus** (eine Lösung pro Problem, keine Parallelwege) – in **GAMIFICATION-PLAN-OEK2-PHASEN.md** und **GAMIFICATION-OEK2.md** festgehalten. **Commit:** 331e6a9 ✅ auf GitHub
 
