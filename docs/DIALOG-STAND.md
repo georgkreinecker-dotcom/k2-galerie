@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Plakat ök2:** (1) **Speichern:** `loadDocuments` für ök2 lud nur die 5 Muster aus dem Code – Einträge in `k2-oeffentlich-documents` wurden ignoriert → neu erzeugtes Plakat wirkte „nicht erhalten“. Jetzt **Muster + localStorage mergen**. (2) **Kleiner Text beim Öffnen:** Muster-Plakat nutzt `data:…,` ohne base64; `handleViewEventDocument` dekodierte nur base64 → Anzeige lief über iframe/anderen Pfad. Jetzt **`decodeHtmlDataUrl`** (base64 + utf-8-Komma). (3) **Zweites Zurück beim neuen Plakat:** eingebettete `.no-print`-Leiste im generierten Plakat-HTML entfernt; **sofort `fileData`** per `htmlToDataUrlUtf8`. Commit: 3d50158 ✅
+**Letzter Stand:** 20.03.26 – **Präsentationsmappen (ök2 vs. K2):** Tab „Präsentationsmappen“ im Admin: IIFE korrekt geschlossen (`})()}`). Deckblatt/Kurz-HTML: Galerienamen aus **`MUSTER_TEXTE.gallery.firmenname`** bzw. **`TENANT_CONFIGS.oeffentlich.galleryName`** (nicht `.name` – TS/Modell). K2-Zweig: `name`/`firmenname` aus geladenen Stammdaten + Default. `PraesentationsmappePage`: ungenutzten `PROJECT_ROUTES`-Import entfernt. Tests + Build grün (ohne Sandbox). **Commit:** _(nach Push eintragen)_
 
-**Vorher gleicher Tag:** Doppel-Zurück allgemein (`wrapDocumentHtmlWithBackButton` entfernt, Commit 11fd275).
+**Vorher gleicher Tag:** Plakat ök2 (Speichern/Merge, decodeHtmlDataUrl, ein Zurück) – Commit 3d50158.
 
-**Was wir JETZT tun:** Georg: ök2 → Plakat neu erzeugen → Liste prüfen (Eintrag bleibt) → erneut öffnen (volles Layout, ein Zurück oben).
+**Was wir JETZT tun:** Kurz im Browser: ök2-Admin → Marketing/Präsentationsmappen → „Kurz-Mappe erzeugen“ und Links mit `?context=oeffentlich` – keine K2-Stammdaten in der Demo-Variante.
 
-**Einordnung:** Ein Standard `openDocumentInApp`; ök2-Dokumente = Muster + User-Einträge aus einem Speicher.
+**Einordnung:** Werbemittel ein Standard (`openDocumentInApp`, Kontext-Hook); ök2 = nur Muster + `k2-oeffentlich-*`.
 
-**Nächster Schritt:** Nach Push im Browser testen.
+**Nächster Schritt:** Push abwarten → ggf. Vercel kurz prüfen.
 
 ---
 

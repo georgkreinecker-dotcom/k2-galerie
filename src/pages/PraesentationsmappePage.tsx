@@ -6,9 +6,19 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
-import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
+import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import {
+  PRODUCT_COPYRIGHT,
+  PRODUCT_LIZENZ_ANFRAGE_EMAIL,
+  PRODUCT_WERBESLOGAN,
+  PRODUCT_WERBESLOGAN_2,
+  K2_STAMMDATEN_DEFAULTS,
+  MUSTER_TEXTE,
+  TENANT_CONFIGS,
+} from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 
 const TEAL = '#0f766e'
 const TEAL_DARK = '#0c5c55' /* kräftiger Brand-Bereich (Druck + Bildschirm) */
@@ -47,6 +57,8 @@ const VK2_URL = BASE_APP_URL + '/projects/vk2'
 export default function PraesentationsmappePage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const printCtx = useWerbemittelPrintContext()
+  const isOeffentlich = printCtx === 'oeffentlich'
 
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
   const [qrOek2, setQrOek2] = useState('')
@@ -67,6 +79,13 @@ export default function PraesentationsmappePage() {
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
   const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+
+  const gallery = typeof window !== 'undefined'
+    ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>)
+    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>
+  const coverTitle = isOeffentlich
+    ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
+    : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || 'K2 Galerie').replace(/&/g, ' & ')
 
   return (
     <div className="pm-wrap" style={{ minHeight: '100vh', background: '#faf8f5', color: '#1c1a18' }}>
@@ -93,7 +112,7 @@ export default function PraesentationsmappePage() {
         {/* Deckblatt im Erscheinungsbild Teal/Weiß (Vorbild für alle Drucksorten) */}
         <div className="pm-teal-cover" style={{ background: TEAL_DARK, color: '#fff', padding: 'clamp(2rem, 5vw, 3rem) 1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'center' }}>
           <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
-            K2 Galerie
+            {coverTitle}
           </h1>
           <p className="pm-slogan" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', fontWeight: 600, color: '#fff', margin: '0.75rem 0 0', lineHeight: 1.4 }}>
             {PRODUCT_WERBESLOGAN}
@@ -135,9 +154,27 @@ export default function PraesentationsmappePage() {
 
         <div className="pm-impressum" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.4 }}>
           <strong style={{ color: '#1c1a18' }}>Impressum</strong><br />
-          Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />
-          Kontakt: <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: TEAL_LIGHT, textDecoration: 'none' }}>{PRODUCT_LIZENZ_ANFRAGE_EMAIL}</a><br />
-          {PRODUCT_COPYRIGHT}
+          {isOeffentlich ? (
+            <>
+              Medieninhaber: K2 Galerie · Demo (ök2) – nur Mustertexte, keine K2-Daten.<br />
+              Kontakt:{' '}
+              <a href={`mailto:${MUSTER_TEXTE.gallery.email}`} style={{ color: TEAL_LIGHT, textDecoration: 'none' }}>
+                {MUSTER_TEXTE.gallery.email}
+              </a>
+              <br />
+              {PRODUCT_COPYRIGHT}
+            </>
+          ) : (
+            <>
+              Medieninhaber &amp; Herausgeber: K2 Galerie · Design und Entwicklung: kgm solution (G. Kreinecker).<br />
+              Kontakt:{' '}
+              <a href={`mailto:${PRODUCT_LIZENZ_ANFRAGE_EMAIL}`} style={{ color: TEAL_LIGHT, textDecoration: 'none' }}>
+                {PRODUCT_LIZENZ_ANFRAGE_EMAIL}
+              </a>
+              <br />
+              {PRODUCT_COPYRIGHT}
+            </>
+          )}
         </div>
 
         <footer className="pm-footer" style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: `1px solid ${TEAL_LIGHT}40`, fontSize: '0.8rem', color: '#5c5650' }}>

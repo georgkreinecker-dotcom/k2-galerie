@@ -8,13 +8,28 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, K2_GALERIE_PUBLIC_BRAND } from '../config/tenantConfig'
+import {
+  PRODUCT_BRAND_NAME,
+  PRODUCT_WERBESLOGAN,
+  PRODUCT_WERBESLOGAN_2,
+  K2_GALERIE_PUBLIC_BRAND,
+  MUSTER_TEXTE,
+  TENANT_CONFIGS,
+  getOek2WelcomeImageEffective,
+} from '../config/tenantConfig'
+import { loadStammdaten } from '../utils/stammdatenStorage'
+import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 
 const BASE = '/praesentationsmappe-vollversion'
 const DOC_PARAM = 'doc'
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
-/** Willkommensseite – Deckblatt-Cover (Brand/Slogan + dieses Bild) */
+/** Fallback Deckblatt-Bild wenn kein Welcome-Bild in Stammdaten */
 const DECKBLATT_WILLKOMMENSBILD = '/img/oeffentlich/willkommen-demo.jpg'
+
+function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): string {
+  if (!isOeffentlich) return raw
+  return `# Kontakt\n\n${MUSTER_TEXTE.gallery.email} · Demo ök2 – nur Mustertexte, keine K2-Stammdaten.\n\n© ${PRODUCT_BRAND_NAME}\n\nQR zur Demo (ök2) unten.`
+}
 
 const DOCUMENTS = [
   { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
@@ -38,6 +53,8 @@ const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 export default function PraesentationsmappeVollversionPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const printCtx = useWerbemittelPrintContext()
+  const isOeffentlich = printCtx === 'oeffentlich'
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
   const [docContent, setDocContent] = useState<string>('')
   const [loading, setLoading] = useState(false)
@@ -67,7 +84,7 @@ export default function PraesentationsmappeVollversionPage() {
       ? docFromUrl
       : DOCUMENTS[0].file
     loadDocument(fileToLoad)
-  }, [searchParams, isMobile])
+  }, [searchParams, isMobile, isOeffentlich])
 
   useEffect(() => {
     const needQr = selectedDoc === '13-KONTAKT.md' || fullPrintView
@@ -91,7 +108,8 @@ export default function PraesentationsmappeVollversionPage() {
     try {
       const response = await fetch(`${BASE}/${filename}`)
       if (response.ok) {
-        const text = await response.text()
+        let text = await response.text()
+        if (filename === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
         setDocContent(text)
       } else {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei konnte nicht geladen werden.`)
@@ -109,7 +127,8 @@ export default function PraesentationsmappeVollversionPage() {
       const contents: string[] = []
       for (const doc of DOCUMENTS) {
         const response = await fetch(`${BASE}/${doc.file}`)
-        const text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
+        let text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
+        if (doc.file === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
         contents.push(text)
       }
       setAllDocContents(contents)
@@ -278,19 +297,36 @@ export default function PraesentationsmappeVollversionPage() {
   }
 
   /** Deckblatt außen: K2 Galerie groß, Slogans, kgm solution dezent als Copyright. Header-Höhe inhaltabhängig, kein Abschneiden. */
-  const renderDeckblattCover = () => (
-    <div className="pmv-deckblatt-cover" lang="de">
-      <div className="pmv-deckblatt-header">
-        <h1 className="pmv-cover-title">{K2_GALERIE_PUBLIC_BRAND}</h1>
-        <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
-        <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
-        <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
+  const renderDeckblattCover = () => {
+    const deckTitle = isOeffentlich
+      ? MUSTER_TEXTE.gallery.firmenname || TENANT_CONFIGS.oeffentlich.galleryName
+      : K2_GALERIE_PUBLIC_BRAND
+    const g =
+      typeof window !== 'undefined'
+        ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string | undefined>)
+        : undefined
+    const welcomeRaw = g?.welcomeImage?.trim() || ''
+    const deckImg = isOeffentlich
+      ? getOek2WelcomeImageEffective(welcomeRaw)
+      : welcomeRaw || DECKBLATT_WILLKOMMENSBILD
+    return (
+      <div className="pmv-deckblatt-cover" lang="de">
+        <div className="pmv-deckblatt-header">
+          <h1 className="pmv-cover-title">{deckTitle}</h1>
+          <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
+          <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
+          <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
+        </div>
+        <div className="pmv-cover-img-wrap">
+          <img
+            src={deckImg}
+            alt={isOeffentlich ? 'Willkommensseite Demo-Galerie (ök2)' : 'Willkommensseite der K2 Galerie'}
+            className="pmv-cover-img"
+          />
+        </div>
       </div>
-      <div className="pmv-cover-img-wrap">
-        <img src={DECKBLATT_WILLKOMMENSBILD} alt="Willkommensseite der K2 Galerie" className="pmv-cover-img" />
-      </div>
-    </div>
-  )
+    )
+  }
 
   const styles = `
     .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; }

@@ -330,11 +330,11 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe (Kurzvariante)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappe}</a>
+              <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?context=oeffentlich`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?context=oeffentlich</a>
             </div>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe (Vollversion)</p>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}</a>
+              <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich</a>
             </div>
           </div>
         </section>

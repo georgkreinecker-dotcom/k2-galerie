@@ -4,20 +4,14 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-
-function useProspektTenant(): 'k2' | 'oeffentlich' {
-  const [searchParams] = useSearchParams()
-  const fromUrl = searchParams.get('context') === 'oeffentlich'
-  const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
-  return fromUrl || fromStorage ? 'oeffentlich' : 'k2'
-}
+import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 
 /** Datum formatieren (YYYY-MM-DD → DD.MM.YYYY). */
 function formatDate(iso: string): string {
@@ -61,7 +55,7 @@ const K2_GALERIE_URL = BASE_APP_URL + '/projects/k2-galerie/galerie'
 const OEK2_GALERIE_URL = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
 
 export default function ProspektGalerieeroeffnungPage() {
-  const tenant = useProspektTenant()
+  const tenant = useWerbemittelPrintContext()
   const isOeffentlich = tenant === 'oeffentlich'
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
   const [qrK2, setQrK2] = useState('')

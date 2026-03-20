@@ -460,7 +460,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Fertig editiert, professionelles Layout, 2–3 Seiten – zum Herzeigen bei Partnern, Presse oder Pitches. Keine Listenform; Fließtext und klare Gliederung.
         </p>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe}
+          to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?context=oeffentlich`}
           state={{ returnTo: PROJECT_ROUTES['k2-galerie'].marketingOek2 }}
           style={{
             display: 'inline-block',
