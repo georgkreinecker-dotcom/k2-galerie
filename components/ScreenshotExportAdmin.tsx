@@ -68,6 +68,7 @@ import {
   getPlakatPosterPrintCss,
   getWerbemittelHtml2canvasCaptureCss,
   applyWerbemittelCaptureToClone,
+  type WerbemittelPdfCaptureOptions,
   designToPlakatVars,
   WERBELINIE_FONTS_URL,
   WERBEUNTERLAGEN_STIL,
@@ -265,7 +266,10 @@ type Html2PdfWorker = {
 /**
  * PDF mit Layout, Farben (html2canvas → jsPDF) als Blob – für Web Share / Download.
  */
-async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | null> {
+async function renderStyledPdfBlobFromHtmlString(
+  html: string,
+  capture?: WerbemittelPdfCaptureOptions
+): Promise<Blob | null> {
   const safeHtml = String(html || '')
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<iframe\b[^>]*>[\s\S]*?<\/iframe>/gi, '')
@@ -317,7 +321,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       const captureStyle = idoc.createElement('style')
       captureStyle.setAttribute('id', 'k2-werbemittel-pdf-capture')
       /** Eine Quelle: marketingWerbelinie (Plakat + k2-pr-doc + Vorschau-Skalierung). */
-      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtml, pdfFormat)
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtml, pdfFormat, capture)
       head.appendChild(captureStyle)
     }
 
@@ -352,7 +356,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
             clonedDoc.querySelectorAll('.no-print').forEach(n => {
               ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
             })
-            applyWerbemittelCaptureToClone(clonedDoc, safeHtml, pdfFormat)
+            applyWerbemittelCaptureToClone(clonedDoc, safeHtml, pdfFormat, capture)
           } catch {
             /* ignore */
           }
@@ -372,8 +376,12 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
 }
 
 /** PDF speichern (Downloads) – nutzt dieselbe Render-Pipeline wie Share. */
-async function saveStyledPdfFromHtmlString(html: string, filename: string): Promise<boolean> {
-  const blob = await renderStyledPdfBlobFromHtmlString(html)
+async function saveStyledPdfFromHtmlString(
+  html: string,
+  filename: string,
+  capture?: WerbemittelPdfCaptureOptions
+): Promise<boolean> {
+  const blob = await renderStyledPdfBlobFromHtmlString(html, capture)
   if (!blob) return false
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -8436,6 +8444,10 @@ ${'='.repeat(60)}
 
       let plainBody = ''
       let betreff = fallbackBetreff
+      /** K2/ök2: Galerie-Design im PDF-Raster; VK2: eigene Capture-CSS über body.vk2-pr-doc. */
+      const werbemittelPdfCapture: WerbemittelPdfCaptureOptions | undefined = tenant.isVk2
+        ? undefined
+        : { prDocDesign: designSettings ?? null }
       const prepareDocumentAttachment = async (sourceDoc: any, preferPdf: boolean): Promise<{ label: string; readyToAttach: boolean } | null> => {
         try {
           const rawData = sourceDoc?.fileData || sourceDoc?.data
@@ -8477,7 +8489,7 @@ ${'='.repeat(60)}
               const pdfName = `${baseName || 'werbemittel'}.pdf`
               // 1) Layout + Farben (html2canvas) – wie in der Vorschau
               try {
-                const styledOk = await saveStyledPdfFromHtmlString(htmlDecoded, pdfName)
+                const styledOk = await saveStyledPdfFromHtmlString(htmlDecoded, pdfName, werbemittelPdfCapture)
                 if (styledOk) {
                   return { label: pdfName, readyToAttach: true }
                 }
@@ -8735,7 +8747,7 @@ ${'='.repeat(60)}
             const htmlDecoded = decodeHtmlDataUrl(rawData)
             if (!htmlDecoded) return null
 
-            const styled = await renderStyledPdfBlobFromHtmlString(htmlDecoded)
+            const styled = await renderStyledPdfBlobFromHtmlString(htmlDecoded, werbemittelPdfCapture)
             if (styled && styled.size > 0) return { blob: styled, fileName: pdfName }
 
             try {

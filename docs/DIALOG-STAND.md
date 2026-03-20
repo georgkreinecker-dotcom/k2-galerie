@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** 9d228d0 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** html2canvas nutzt kein `@media print`; Capture-CSS jetzt für **`body.vk2-pr-doc`** (VK2-Palette, lesbar) und **K2** mit **Homepage-Design** (`designToPlakatVars` → Akzent/Fließtext/Muted auf weißem PDF). `WerbemittelPdfCaptureOptions`, `sendWerbemittelPerMail` übergibt `prDocDesign` (K2/ök2). Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 75fc957 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** 9d228d0 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 4:** `VITE_OEK2_GAMIFICATION_LAYER_B` + `isGamificationLayerBEnabled()`; Heroes/Lesepfade; mök2 standalone. Doku Phase 4; Test `gamificationLayer.test.ts`. **Commit:** c3eef23 ✅ auf GitHub
 
@@ -62,11 +64,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Phase 4 **kurz prüfen** (optional `VITE_OEK2_GAMIFICATION_LAYER_B=off` in `.env` / Vercel → alle Fortschritts-UI weg, Kern bleibt).
+**Was wir JETZT tun:** Kurz **Presse/Newsletter/Flyer-PDF** am Mac prüfen (K2, ök2, VK2): Text gut lesbar, **Akzentfarbe** wie in der Vorschau.
 
-**Einordnung:** Gamification Schicht B abschaltbar ohne Revert; K2-Kern unverändert (Presse/Öffentlichkeitsarbeit-Hero nur Optik, gleicher Env-Schalter).
+**Einordnung:** Werbelinie = sichtbar im PDF (nicht nur Screen); html2canvas brauchte explizites Capture-CSS + VK2-Klasse.
 
-**Nächster Schritt:** Nutzung beobachten; bei Notfall Plan B = Variable setzen; weitere Ideen nur nach Georg / Bedarf.
+**Nächster Schritt:** Bei OK nichts; sonst konkretes Beispiel (welches Dokument, welcher Kontext) melden.
 
 ---
 
