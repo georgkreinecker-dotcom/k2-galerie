@@ -1255,8 +1255,30 @@ function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
 
 function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
   try {
-    // ök2: Immer Muster-Events aus einer Quelle – keine gespeicherten Events/Dokumente (verhindert K2-Daten in Demo)
-    if (tenant.isOeffentlich) return JSON.parse(JSON.stringify(MUSTER_EVENTS))
+    // ök2: Muster-Events + k2-oeffentlich-events mergen (wie loadDocuments) – sonst verschwinden neue Events nach Reload trotz Speichern
+    if (tenant.isOeffentlich) {
+      const muster = JSON.parse(JSON.stringify(MUSTER_EVENTS)) as any[]
+      const key = tenant.getEventsKey()
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
+      if (!raw || !raw.trim()) return muster
+      let stored: any[] = []
+      try {
+        const parsed = JSON.parse(raw)
+        stored = Array.isArray(parsed) ? parsed : []
+      } catch {
+        return muster
+      }
+      if (stored.length === 0) return muster
+      const musterIds = new Set(muster.map((e: any) => e?.id).filter(Boolean))
+      const mergedMuster = muster.map((e: any) => {
+        const s = stored.find((x: any) => x?.id === e.id)
+        return s ? { ...e, ...s } : e
+      })
+      const extras = stored.filter((x: any) => x?.id && !musterIds.has(x.id))
+      const combined = [...mergedMuster, ...extras]
+      combined.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      return combined
+    }
     if (tenant.isVk2) initVk2DemoEventAndDocumentsIfEmpty()
     const key = tenant.getEventsKey()
     const stored = localStorage.getItem(key)
@@ -4616,7 +4638,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
     setEvents(updatedEvents)
     saveEvents(tenant, updatedEvents)
-    
+    try {
+      window.dispatchEvent(new CustomEvent('k2-events-updated'))
+    } catch {
+      /* ignore */
+    }
+
     // PR-Vorschläge: Bei Bearbeitung eventTitle in localStorage aktualisieren; bei neuem Event automatisch generieren
     const existingSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
     const suggestionIndex = existingSuggestions.findIndex((s: any) => s.eventId === eventData.id)

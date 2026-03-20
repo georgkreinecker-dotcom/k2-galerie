@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Baustein 2:** Admin → **Presse & Medien** – dasselbe Hero-SVG + Fortschritt **X/4** (Medienkit-Kernangaben, Presse-Story, Anlass/Datum/Ort, Medienspiegel). Doku **GAMIFICATION-POTENTIALE-K2.md** aktualisiert. **Commit:** a6e2620 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** c2b4846 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification Baustein 2:** Admin → **Presse & Medien** – dasselbe Hero-SVG + Fortschritt **X/4** (Medienkit-Kernangaben, Presse-Story, Anlass/Datum/Ort, Medienspiegel). Doku **GAMIFICATION-POTENTIALE-K2.md** aktualisiert. **Commit:** a6e2620 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Baustein 1:** Admin → Eventplan → **Öffentlichkeitsarbeit** – Hero-SVG + Fortschritt **X/4** (Events, Medienspiegel, Dokumente, Newsletter) + Doku **docs/GAMIFICATION-POTENTIALE-K2.md** (weitere Bereiche). **Commit:** 41e1062 ✅ auf GitHub
 
@@ -28,11 +30,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Nach Vercel **Ready** Tab **Presse & Medien** öffnen – Fortschrittskarte + Meilensteine prüfen (Spaß-Faktor).
+**Was wir JETZT tun:** Georg: Nach Push **ök2** Admin – Event anlegen, Reload – Event muss **bleiben**; Flyer erneut testen.
 
-**Einordnung:** Gamification = **eine Bildsprache** (Hero `marketing-oeffentlichkeit-hero.svg`), **unterschiedliche echte Meilensteine** je Tab – Sportwagenmodus, kein zweites Design.
+**Einordnung:** ök2 = Demo, aber **Speicher** (`k2-oeffentlich-events`) war schon da – Admin lud ihn fälschlich nicht (nur Muster). Jetzt wie **Dokumente**: Muster + gespeicherte Einträge.
 
-**Nächster Schritt:** Optional nächster Baustein aus **GAMIFICATION-POTENTIALE-K2.md** (z. B. Werke-Ampel, Guide) – nur wenn Georg Lust hat.
+**Nächster Schritt:** Wenn Flyer nach Fix noch hakt → melden (docId / Fenster).
 
 ---
 
