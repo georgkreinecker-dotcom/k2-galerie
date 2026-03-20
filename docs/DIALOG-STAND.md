@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Plakat ök2:** (1) **Speichern:** `loadDocuments` für ök2 lud nur die 5 Muster aus dem Code – Einträge in `k2-oeffentlich-documents` wurden ignoriert → neu erzeugtes Plakat wirkte „nicht erhalten“. Jetzt **Muster + localStorage mergen**. (2) **Kleiner Text beim Öffnen:** Muster-Plakat nutzt `data:…,` ohne base64; `handleViewEventDocument` dekodierte nur base64 → Anzeige lief über iframe/anderen Pfad. Jetzt **`decodeHtmlDataUrl`** (base64 + utf-8-Komma). (3) **Zweites Zurück beim neuen Plakat:** eingebettete `.no-print`-Leiste im generierten Plakat-HTML entfernt; **sofort `fileData`** per `htmlToDataUrlUtf8`. Commit: _(folgt)_.
+**Letzter Stand:** 20.03.26 – **Plakat ök2:** (1) **Speichern:** `loadDocuments` für ök2 lud nur die 5 Muster aus dem Code – Einträge in `k2-oeffentlich-documents` wurden ignoriert → neu erzeugtes Plakat wirkte „nicht erhalten“. Jetzt **Muster + localStorage mergen**. (2) **Kleiner Text beim Öffnen:** Muster-Plakat nutzt `data:…,` ohne base64; `handleViewEventDocument` dekodierte nur base64 → Anzeige lief über iframe/anderen Pfad. Jetzt **`decodeHtmlDataUrl`** (base64 + utf-8-Komma). (3) **Zweites Zurück beim neuen Plakat:** eingebettete `.no-print`-Leiste im generierten Plakat-HTML entfernt; **sofort `fileData`** per `htmlToDataUrlUtf8`. Commit: 3d50158 ✅
 
 **Vorher gleicher Tag:** Doppel-Zurück allgemein (`wrapDocumentHtmlWithBackButton` entfernt, Commit 11fd275).
 
