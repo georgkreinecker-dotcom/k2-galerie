@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **ök2 Eventplan:** Block **„Anmeldung per WhatsApp“** wird im Demo-Admin **nicht** angezeigt (`!tenant.isOeffentlich`); K2/VK2 unverändert. Doku `ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT.md` ergänzt. **Commit: 2fa0b8d** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit:** _(nach Push eintragen)_ ✅
 
-**Vorher:** QR-Plakat eine Meldung (28830da); Werke Kategorie „Alle“ (eebd3c2).
+**Vorher:** ök2 Eventplan WhatsApp-Block ausgeblendet (2fa0b8d); QR-Plakat eine Meldung (28830da).
 
-**Was wir JETZT tun:** Optional ök2 Admin → Eventplan prüfen: kein WhatsApp-Anmelde-Block.
+**Was wir JETZT tun:** Kurz im Admin testen: Plakat/Flyer öffnen → Vorschau Format-Leiste; Speichern.
 
-**Einordnung:** Demo soll keine WhatsApp-Anmeldung zur „Galerie-Nummer“ suggerieren.
+**Einordnung:** Gleicher UX-Standard wie Newsletter-Screenshot für alle PR-Dokumente inkl. Plakat.
 
-**Nächster Schritt:** Vercel „Ready“.
+**Nächster Schritt:** `git push` → Vercel Ready → am Mac prüfen.
 
 ---
 

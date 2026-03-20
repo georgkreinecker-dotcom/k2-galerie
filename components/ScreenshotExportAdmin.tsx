@@ -1315,6 +1315,28 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [newsletterRedactionDocument, setNewsletterRedactionDocument] = useState<any>(null)
   const [newsletterRedactionSubject, setNewsletterRedactionSubject] = useState('')
   const [newsletterRedactionBody, setNewsletterRedactionBody] = useState('')
+  /** Plakat / Flyer: gleiche Split-Ansicht wie Newsletter */
+  const [plakatRedactionEvent, setPlakatRedactionEvent] = useState<any>(null)
+  const [plakatRedactionDoc, setPlakatRedactionDoc] = useState<any>(null)
+  const [plakatRedaction, setPlakatRedaction] = useState<{
+    title: string
+    type: string
+    date: string
+    location: string
+    description: string
+    qrCode: string
+  } | null>(null)
+  const [flyerRedactionEvent, setFlyerRedactionEvent] = useState<any>(null)
+  const [flyerRedactionDoc, setFlyerRedactionDoc] = useState<any>(null)
+  const [flyerRedaction, setFlyerRedaction] = useState<{
+    headline: string
+    date: string
+    location: string
+    description: string
+    type: string
+    qrCode: string
+    contact: { phone?: string; email?: string; address?: string }
+  } | null>(null)
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
   const settingsContentRef = useRef<HTMLDivElement>(null)
@@ -4404,6 +4426,72 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setNewsletterRedactionBody(useContent?.body ?? '')
   }
 
+  /** Plakat-Redaktion: wie Newsletter, links Felder, rechts Vorschau mit Format-Leiste */
+  const openPlakatRedaction = (event: any) => {
+    if (!event) return
+    setPlakatRedactionEvent(event)
+    setPlakatRedactionDoc(null)
+    const freshGalleryData = (() => {
+      if (tenant.isOeffentlich) return galleryData || {}
+      if (tenant.isVk2) {
+        const v = vk2Stammdaten?.verein
+        return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
+      }
+      return loadStammdaten('k2', 'gallery') as Record<string, unknown>
+    })()
+    const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
+    let plakatContent: any = freshEventSuggestion?.plakat || generatePlakatContent(event)
+    if (!plakatContent || typeof plakatContent !== 'object') plakatContent = generatePlakatContent(event)
+    plakatContent.title = event.title || plakatContent.title || 'Event'
+    plakatContent.date = formatEventDates(event) || plakatContent.date || 'Datum folgt'
+    plakatContent.location = event.location || plakatContent.location || (freshGalleryData as any).address || ''
+    plakatContent.description = event.description || plakatContent.description || ''
+    const websiteUrl = ((freshGalleryData as any).website && isProductionLikeUrl((freshGalleryData as any).website))
+      ? (freshGalleryData as any).website
+      : FALLBACK_GALERIE_URL_WERBEMITTEL
+    plakatContent.qrCode = websiteUrl
+    const eventTypeNames: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung'
+    }
+    plakatContent.type = eventTypeNames[event.type] || plakatContent.type || 'Veranstaltung'
+    setPlakatRedaction({
+      title: String(plakatContent.title || ''),
+      type: String(plakatContent.type || ''),
+      date: String(plakatContent.date || ''),
+      location: String(plakatContent.location || ''),
+      description: String(plakatContent.description || ''),
+      qrCode: String(plakatContent.qrCode || websiteUrl)
+    })
+  }
+
+  /** Flyer-Redaktion: wie Newsletter */
+  const openFlyerRedaction = (event: any) => {
+    if (!event) return
+    setFlyerRedactionEvent(event)
+    setFlyerRedactionDoc(null)
+    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
+    const flyerContent = eventSuggestion?.flyer || generateFlyerContent(event)
+    setFlyerRedaction({
+      headline: String(flyerContent.headline || event.title || ''),
+      date: String(flyerContent.date || formatEventDates(event) || ''),
+      location: String(flyerContent.location || ''),
+      description: String(flyerContent.description || ''),
+      type: String(flyerContent.type || event.type || ''),
+      qrCode: String(flyerContent.qrCode || ''),
+      contact: {
+        phone: flyerContent.contact?.phone,
+        email: flyerContent.contact?.email,
+        address: flyerContent.contact?.address
+      }
+    })
+  }
+
   // QR-Vorschau für Redaktions-Modal generieren, wenn QR aktiv und URL gesetzt
   React.useEffect(() => {
     if (!redactionEvent || !redactionPresseQrShow || !redactionPresseQrUrl) {
@@ -5314,15 +5402,16 @@ ${'='.repeat(60)}
     }
   }
 
-  /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). */
+  /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). options.iframePreview: Modal-Vorschau ohne Zurück/afterprint. */
   const buildSocialMediaEditableHtml = (params: {
     socialMedia: { instagram: string; facebook: string; whatsapp: string }
     eventLike: { title: string; date?: string }
     imageDataUrl?: string
-    options: { socialDocId: string; adminReturnUrl: string; prDocClass: string; prDocCss: string; galleryName: string }
+    options: { socialDocId: string; adminReturnUrl: string; prDocClass: string; prDocCss: string; galleryName: string; iframePreview?: boolean }
     event?: any
   }): string => {
     const { socialMedia, eventLike, imageDataUrl, options, event } = params
+    const iframePreview = options.iframePreview === true
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
     const eventDateStr = event ? formatEventDates(event) : (eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
@@ -5341,13 +5430,13 @@ ${'='.repeat(60)}
 </head>
 <body class="${options.prDocClass} format-a4">
   <div class="no-print">
-    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    ${iframePreview ? '' : '<button onclick="goBack(); return false;" class="secondary">← Zurück</button>'}
     <span style="margin: 0 8px; color: #666;">Format:</span>
-    <button onclick="setFormat('a4'); return false;">A4</button>
-    <button onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
-    <button onclick="setFormat('a5'); return false;">A5</button>
-    <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="margin:${iframePreview ? '0.35rem 0 0' : 'inherit'};font-size:${iframePreview ? '0.85rem' : 'inherit'};color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
 
   <div class="page">
@@ -5370,14 +5459,14 @@ ${'='.repeat(60)}
     </div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(options.adminReturnUrl)}';
+    ${iframePreview ? '' : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(options.adminReturnUrl)}';`}
     var prDocClass = '${options.prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
-    function goBack() {
+    ${iframePreview ? '' : `function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
         : (window.location.origin + '/admin');
@@ -5403,31 +5492,10 @@ ${'='.repeat(60)}
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
     }
     window.addEventListener('beforeunload', cleanup);
-    window.addEventListener('unload', cleanup);
+    window.addEventListener('unload', cleanup);`}
   <\/script>
 </body>
 </html>`
-  }
-
-  /** HTML nur für Live-Vorschau (Modal rechte Spalte) – gleiches Layout wie Dokument, ohne Formulare/Skript. */
-  const buildSocialMediaPreviewHtml = (params: {
-    socialMedia: { instagram: string; facebook: string; whatsapp: string }
-    eventLike: { title: string; date?: string }
-    imageDataUrl?: string
-    prDocClass: string
-    prDocCss: string
-    galleryName: string
-    event?: any
-  }): string => {
-    const { socialMedia, eventLike, imageDataUrl, prDocClass, prDocCss, galleryName, event } = params
-    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-    const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
-    const eventDateStr = event ? formatEventDates(event) : (eventLike.date ? new Date(eventLike.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '')
-    const eventDateStrEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
-    const imageBlock = imageDataUrl
-      ? `<div class="field-group" style="margin-bottom:0.75rem;"><img src="${imageDataUrl.replace(/"/g, '&quot;')}" alt="" style="max-width:100%;height:auto;border-radius:8px;" /></div>`
-      : ''
-    return `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${esc(galleryName)}</h1><div class="header-info">${eventLike.title ? '<strong>Event:</strong> ' + esc(eventLike.title) + '<br>' : ''}${eventDateStrEsc ? '<strong>Datum:</strong> ' + eventDateStrEsc : ''}</div></div><h1>Social Media Posts</h1>${imageBlock}<h2>Instagram Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.instagram)}</div><h2>Facebook Post</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.facebook)}</div><h2>WhatsApp / Kurznachricht</h2><div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div></div></div></body></html>`
   }
 
   const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
@@ -5743,8 +5811,9 @@ ${'='.repeat(60)}
     }
   }
 
-  /** Baut Newsletter-HTML nur zur Ansicht/Druck (Bearbeitung im Modal). */
-  const buildNewsletterViewHtml = (newsletter: { subject?: string; body?: string }, event: any) => {
+  /** Baut Newsletter-HTML nur zur Ansicht/Druck (Bearbeitung im Modal). iframePreview: nur Format+Druck, kein Zurück (iframe im Modal). */
+  const buildNewsletterViewHtml = (newsletter: { subject?: string; body?: string }, event: any, opts?: { iframePreview?: boolean }) => {
+    const iframePreview = opts?.iframePreview === true
     const isVk2 = tenant.isVk2
     const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
     const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
@@ -5760,17 +5829,15 @@ ${'='.repeat(60)}
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
     const eventDateEsc = event ? (formatEventDates(event) || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>') : ''
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Newsletter - ${event?.title || 'Event'}</title>
-  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
-  <style>${prDocCss}</style>
-  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
-</head>
-<body class="${prDocClass} format-a4">
-  <div class="no-print">
+    const toolbarNoBack = `<div class="no-print">
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>`
+    const toolbarFull = `<div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
     <button onclick="setFormat('a4'); return false;">A4</button>
@@ -5778,22 +5845,16 @@ ${'='.repeat(60)}
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
     <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
-  </div>
-  <div class="page">
-    <div class="content">
-    <div class="header">
-      <h1>${galleryName}</h1>
-      <div class="header-info">
-        ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
-        ${eventDateEsc ? `<strong>Datum:</strong> ${eventDateEsc}` : ''}
-      </div>
-    </div>
-    <h1>E-Mail Newsletter</h1>
-    <div class="newsletter-subject-line" style="font-weight:600;margin-bottom:0.75rem;">${esc(newsletter?.subject ?? '')}</div>
-    <div class="presse-body" style="white-space:pre-wrap;">${nl2br(newsletter?.body ?? '')}</div>
-    </div>
-  </div>
-  <script>
+  </div>`
+    const scriptIframe = `<script>
+    var prDocClass = '${prDocClass}';
+    function setFormat(f) {
+      document.body.className = prDocClass + ' format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }
+  <\/script>`
+    const scriptFull = `<script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
     function setFormat(f) {
@@ -5822,6 +5883,95 @@ ${'='.repeat(60)}
     }
     window.addEventListener('beforeunload', cleanup);
     window.addEventListener('unload', cleanup);
+  <\/script>`
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Newsletter - ${event?.title || 'Event'}</title>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${prDocCss}</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
+</head>
+<body class="${prDocClass} format-a4">
+  ${iframePreview ? toolbarNoBack : toolbarFull}
+  <div class="page">
+    <div class="content">
+    <div class="header">
+      <h1>${galleryName}</h1>
+      <div class="header-info">
+        ${event?.title ? `<strong>Event:</strong> ${event.title}<br>` : ''}
+        ${eventDateEsc ? `<strong>Datum:</strong> ${eventDateEsc}` : ''}
+      </div>
+    </div>
+    <h1>E-Mail Newsletter</h1>
+    <div class="newsletter-subject-line" style="font-weight:600;margin-bottom:0.75rem;">${esc(newsletter?.subject ?? '')}</div>
+    <div class="presse-body" style="white-space:pre-wrap;">${nl2br(newsletter?.body ?? '')}</div>
+    </div>
+  </div>
+  ${iframePreview ? scriptIframe : scriptFull}
+</body>
+</html>`
+  }
+
+  /** Presseaussendung: gleiche Toolbar wie Newsletter in der Modal-Vorschau (iframe). */
+  const buildPresseaussendungRedactionPreviewHtml = (params: {
+    prDocClass: string
+    prDocCss: string
+    galleryName: string
+    eventTitle: string
+    eventDateStr: string
+    presseTitle: string
+    presseContent: string
+    imageBlock: string
+    qrBlock: string
+  }) => {
+    const { prDocClass, prDocCss, galleryName, eventTitle, eventDateStr, presseTitle, presseContent, imageBlock, qrBlock } = params
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const contentWithLinks = textToHtmlWithLinks(presseContent)
+    const eventDateEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Presseaussendung</title>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${prDocCss}</style>
+  <style>.presse-body a { color: inherit; text-decoration: underline; }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
+</head>
+<body class="${prDocClass} format-a4">
+  <div class="no-print">
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>
+  <div class="page">
+    <div class="content">
+    <div class="header">
+      <h1>${esc(galleryName)}</h1>
+      <div class="header-info">
+        ${eventTitle ? '<strong>Event:</strong> ' + esc(eventTitle) + '<br>' : ''}
+        ${eventDateEsc ? '<strong>Datum:</strong> ' + eventDateEsc : ''}
+      </div>
+    </div>
+    <h1>Presseaussendung</h1>
+    <div class="presse-headline">${esc(presseTitle)}</div>
+    ${imageBlock}
+    <div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>
+    ${qrBlock}
+    </div>
+  </div>
+  <script>
+    var prDocClass = '${prDocClass}';
+    function setFormat(f) {
+      document.body.className = prDocClass + ' format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }
   <\/script>
 </body>
 </html>`
@@ -6388,23 +6538,49 @@ ${'='.repeat(60)}
     generateSocialMediaPostsForEvent(selectedEvent || events[0])
   }
 
-  // Event-Flyer für spezifisches Event generieren
-  const generateEventFlyerForEvent = (event: any) => {
-    
-    // Prüfe ob Vorschläge vorhanden sind
-    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-    
-    const flyerContent = eventSuggestion?.flyer || generateFlyerContent(event)
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(flyerContent.qrCode)}`
-    const fd = designToPlakatVars(designSettings)
-    
-    const html = `
-<!DOCTYPE html>
+  /** Event-Flyer HTML (Modal-Vorschau + Druckfenster): einheitliche Toolbar A4/A3/A5 wie Newsletter. */
+  const buildFlyerWerbemittelHtml = (
+    flyerContent: {
+      headline: string
+      date: string
+      location: string
+      description: string
+      type: string
+      qrCode: string
+      contact?: { phone?: string; email?: string; address?: string }
+    },
+    gData: { name?: string; address?: string; phone?: string; email?: string },
+    fd: ReturnType<typeof designToPlakatVars>,
+    qrCodeUrl: string,
+    opts?: { iframePreview?: boolean }
+  ): string => {
+    const iframePreview = opts?.iframePreview === true
+    const typeLabel = flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'
+    const esc = (s: string) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const scriptBody = iframePreview
+      ? `function setFormat(f) {
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }`
+      : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
+    function setFormat(f) {
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }
+    function goBack() {
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.location.origin + '/admin');
+      if (window.opener && !window.opener.closed) {
+        try { window.opener.location.href = adminUrl; window.opener.focus(); setTimeout(function() { try { window.close(); } catch (e) {} }, 100); return; } catch (e) {}
+      }
+      window.location.href = adminUrl;
+    }
+    window.addEventListener('afterprint', function h() { window.removeEventListener('afterprint', h); setTimeout(goBack, 300); });`
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Flyer - ${flyerContent.headline}</title>
+  <title>Flyer - ${esc(flyerContent.headline)}</title>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
   <style>
     @media print {
       @page { margin: 10mm; size: A4; }
@@ -6496,117 +6672,47 @@ ${'='.repeat(60)}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
-    <button onclick="window.print()">🖨️ Drucken (A4)</button>
+  <div class="no-print" style="text-align: center; margin-bottom: 1rem;">
+    <span style="color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
   </div>
-  
   <div class="flyer">
     <div>
-      <h1>${flyerContent.headline}</h1>
-      
-      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: ${fd.muted2}; margin-bottom: 1rem;">${flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'}</p>` : ''}
-      
+      <h1>${esc(flyerContent.headline)}</h1>
+      ${flyerContent.type ? `<p style="font-size: 1.2rem; color: ${fd.muted2}; margin-bottom: 1rem;">${esc(typeLabel)}</p>` : ''}
       <div class="event-info">
         <p><strong>📅 Termindaten:</strong></p>
-        <p style="white-space: pre-wrap; margin-left: 1rem;">${flyerContent.date.replace(/\n/g, '<br>')}</p>
-        
-        ${flyerContent.location ? `<p style="margin-top: 1rem;"><strong>📍 Ort:</strong> ${flyerContent.location}</p>` : ''}
+        <p style="white-space: pre-wrap; margin-left: 1rem;">${esc(flyerContent.date).replace(/\n/g, '<br>')}</p>
+        ${flyerContent.location ? `<p style="margin-top: 1rem;"><strong>📍 Ort:</strong> ${esc(flyerContent.location)}</p>` : ''}
       </div>
-      
-      ${flyerContent.description ? `<div class="description">${flyerContent.description.replace(/\n/g, '<br>')}</div>` : ''}
+      ${flyerContent.description ? `<div class="description">${esc(flyerContent.description).replace(/\n/g, '<br>')}</div>` : ''}
     </div>
-    
     <div class="qr-code">
-      <p style="color: #5ffbf1; font-weight: 600; margin-bottom: 1rem;">Besuch uns online:</p>
+      <p style="color: #1c1a18; font-weight: 600; margin-bottom: 1rem;">Besuch uns online:</p>
       <img src="${qrCodeUrl}" alt="QR Code" />
-      <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #8fa0c9;">${flyerContent.qrCode}</p>
+      <p style="font-size: 0.9rem; margin-top: 0.5rem; color: ${fd.muted2};">${esc(flyerContent.qrCode)}</p>
     </div>
-    
     <div class="contact">
-      <p><strong>${flyerContent.contact?.address ? flyerContent.contact.address.split(',')[0] : (galleryData.name || 'K2 Galerie')}</strong></p>
-      ${flyerContent.contact?.address ? `<p>${flyerContent.contact.address}</p>` : (galleryData.address ? `<p>${galleryData.address}</p>` : '')}
-      ${flyerContent.contact?.phone ? `<p>Tel: ${flyerContent.contact.phone}</p>` : (galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : '')}
-      ${flyerContent.contact?.email ? `<p>E-Mail: ${flyerContent.contact.email}</p>` : (galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : '')}
+      <p><strong>${flyerContent.contact?.address ? esc(flyerContent.contact.address.split(',')[0]) : esc(gData.name || 'K2 Galerie')}</strong></p>
+      ${flyerContent.contact?.address ? `<p>${esc(flyerContent.contact.address)}</p>` : (gData.address ? `<p>${esc(gData.address)}</p>` : '')}
+      ${flyerContent.contact?.phone ? `<p>Tel: ${esc(flyerContent.contact.phone)}</p>` : (gData.phone ? `<p>Tel: ${esc(gData.phone)}</p>` : '')}
+      ${flyerContent.contact?.email ? `<p>E-Mail: ${esc(flyerContent.contact.email)}</p>` : (gData.email ? `<p>E-Mail: ${esc(gData.email)}</p>` : '')}
     </div>
   </div>
   <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
-    function goBack() {
-      var baseUrl = window.location.origin + window.location.pathname.replace(/\\/[^\\/]*$/, '');
-      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
-        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (baseUrl + '/admin');
-
-      console.log('goBack() - adminUrl:', adminUrl)
-      console.log('goBack() - window.location:', window.location.href)
-      
-      if (window.opener && !window.opener.closed) {
-        try {
-          window.opener.location.href = adminUrl
-          window.opener.focus()
-          setTimeout(function() {
-            try {
-              window.close()
-            } catch (e) {
-              // Ignorieren
-            }
-          }, 100)
-          return
-        } catch (e) {
-          console.log('Fehler beim Schließen des Pop-ups:', e)
-        }
-      }
-      window.location.href = adminUrl
-    }
-    var handleAfterPrint = function() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-      goBack()
-    }
-    window.addEventListener('afterprint', handleAfterPrint)
-    
-    var cleanup = function() {
-      window.removeEventListener('afterprint', handleAfterPrint)
-    }
-    window.addEventListener('beforeunload', cleanup)
-    window.addEventListener('unload', cleanup)
-  </script>
+    ${scriptBody}
+  <\/script>
 </body>
-</html>
-    `
+</html>`
+  }
 
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    const docId = `pr-flyer-${event.id}-${Date.now()}`
-    const docName = getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Event-Flyer')
-    // Sofort in Liste eintragen, damit grüner Bereich erscheint (Inhalt wird unten nachgetragen)
-    const documentDataPlaceholder = {
-      id: docId,
-      name: docName,
-      type: 'text/html',
-      size: blob.size,
-      data: '',
-      fileName: `flyer-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-      uploadedAt: new Date().toISOString(),
-      isPDF: false,
-      isPlaceholder: false,
-      category: 'pr-dokumente',
-      eventId: event.id,
-      eventTitle: event.title,
-      werbematerialTyp: 'event-flyer'
-    }
-    const existingDocs = loadDocuments()
-    saveDocuments([...existingDocs, documentDataPlaceholder])
-    setDocuments([...existingDocs, documentDataPlaceholder])
-    openDocumentInApp(html, 'Event-Flyer – ' + (event?.title || 'Event'))
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      const documentData = { ...documentDataPlaceholder, fileData: reader.result as string, data: reader.result as string }
-      const current = loadDocuments()
-      const updated = current.map((d: any) => d.id === docId ? documentData : d)
-      saveDocuments(updated)
-      setDocuments(updated)
-    }
-    reader.readAsDataURL(blob)
-    alert('✅ Flyer generiert! Bitte im Browser drucken.')
+  const generateEventFlyerForEvent = (event: any) => {
+    if (!event) return
+    openFlyerRedaction(event)
   }
 
   // Event-Flyer generieren (mit App-Design) - Fallback
@@ -6791,78 +6897,44 @@ ${'='.repeat(60)}
     generateEmailNewsletterForEvent(selectedEvent || events[0])
   }
 
-  // Plakat für spezifisches Event generieren
-  const generatePlakatForEvent = (event: any) => {
-    let blob: Blob | null = null // WICHTIG: Außerhalb try-catch definieren
-    let plakatDocIdForUpdate: string | null = null
-    
-    try {
-      console.log('generatePlakatForEvent aufgerufen mit Event:', event)
-      
-      if (!event) {
-        console.error('Kein Event übergeben')
-        alert('Fehler: Kein Event ausgewählt')
-        return
+  /** Plakat-HTML mit Format-Leiste (wie Flyer/Newsletter). */
+  const buildPlakatWerbemittelHtml = (
+    plakatContent: { title: string; type: string; date: string; location: string; description: string; qrCode: string },
+    currentGalleryData: Record<string, unknown>,
+    pd: ReturnType<typeof designToPlakatVars>,
+    qrCodeUrl: string,
+    opts?: { iframePreview?: boolean }
+  ): string => {
+    const iframePreview = opts?.iframePreview === true
+    const esc = (s: string) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const scriptBody = iframePreview
+      ? `function setFormat(f) {
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }`
+      : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
+    function setFormat(f) {
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }
+    function goBack() {
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.location.origin + '/admin');
+      if (window.opener && !window.opener.closed) {
+        try { window.opener.location.href = adminUrl; window.opener.focus(); setTimeout(function() { try { window.close(); } catch (e) {} }, 100); return; } catch (e) {}
       }
-      
-      // Immer nur eigene Kontext-Daten: ök2 = State (Muster), VK2 = Verein, K2 = localStorage
-      const freshGalleryData = (() => {
-        if (tenant.isOeffentlich) return galleryData || {}
-        if (tenant.isVk2) {
-          const v = vk2Stammdaten?.verein
-          return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as any).phone || '', email: v.email || '' } : {}
-        }
-        return loadStammdaten('k2', 'gallery') as Record<string, unknown>
-      })()
-      const freshSuggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-      const freshEventSuggestion = freshSuggestions.find((s: any) => s.eventId === event.id)
-      
-      // Generiere Plakat-Content mit aktuellen Daten
-      let plakatContent = freshEventSuggestion?.plakat || generatePlakatContent(event)
-      
-      // Sicherstellen dass alle Werte vorhanden sind und mit aktuellen Daten aktualisieren
-      if (!plakatContent || typeof plakatContent !== 'object') {
-        plakatContent = generatePlakatContent(event)
-      }
-      
-      // Aktualisiere mit neuesten Event-Daten
-      plakatContent.title = event.title || plakatContent.title || 'Event'
-      plakatContent.date = formatEventDates(event) || plakatContent.date || 'Datum folgt'
-      plakatContent.location = event.location || plakatContent.location || freshGalleryData.address || ''
-      plakatContent.description = event.description || plakatContent.description || ''
-      
-      // QR-Code: Nur gültige Produktions-URL (https, kein localhost), sonst Fallback – gedrucktes Plakat muss von überall funktionieren
-      const websiteUrl = (freshGalleryData.website && isProductionLikeUrl(freshGalleryData.website)) ? freshGalleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL
-      plakatContent.qrCode = websiteUrl
-      
-      // Event-Typ aktualisieren
-      const eventTypeNames: Record<string, string> = {
-        galerieeröffnung: 'Galerieeröffnung',
-        vernissage: 'Vernissage',
-        finissage: 'Finissage',
-        öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
-        sonstiges: 'Veranstaltung'
-      }
-      plakatContent.type = eventTypeNames[event.type] || plakatContent.type || 'Veranstaltung'
-      
-      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(plakatContent.qrCode)}`
-      
-      // Verwende die bereits geladenen frischen Galerie-Daten
-      const currentGalleryData = freshGalleryData
-      
-      console.log('Plakat Content:', plakatContent)
-      console.log('Event:', event)
-      console.log('QR Code URL:', qrCodeUrl)
-      console.log('Aktuelle Galerie-Daten:', currentGalleryData)
-
-      const pd = designToPlakatVars(designSettings)
-    
-      const html = `
-<!DOCTYPE html>
+      window.location.href = adminUrl;
+    }
+    window.addEventListener('afterprint', function h() { window.removeEventListener('afterprint', h); setTimeout(goBack, 300); });`
+    const gName = currentGalleryData.name
+    const gAddr = currentGalleryData.address
+    const gPhone = currentGalleryData.phone
+    const gEmail = currentGalleryData.email
+    return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Plakat - ${plakatContent.title}</title>
+  <title>Plakat - ${esc(plakatContent.title)}</title>
+  <style id="print-page-size">@media print { @page { size: A3; margin: 10mm; } }</style>
   <style>
     @media print {
       @page { margin: 10mm; size: A4; }
@@ -6965,81 +7037,47 @@ ${'='.repeat(60)}
   </style>
 </head>
 <body>
+  <div class="no-print" style="text-align: center; margin-bottom: 1rem;">
+    <span style="color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>
   <div class="plakat">
-    <h1>${String(plakatContent.title || 'Event').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
-    
-    ${plakatContent.type ? `<p style="font-size: 2rem; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${String(plakatContent.type).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
-    
+    <h1>${esc(plakatContent.title || 'Event')}</h1>
+    ${plakatContent.type ? `<p style="font-size: 2rem; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${esc(plakatContent.type)}</p>` : ''}
     <div class="event-info">
       <p><strong>Termindaten:</strong></p>
-      <p style="white-space: pre-wrap; font-size: 1.8rem; line-height: 1.6; margin-top: 1rem;">${String(plakatContent.date || 'Datum folgt').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>
-      
-      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${String(plakatContent.location).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
-      
-      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: ${pd.muted};">${String(plakatContent.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</p>` : ''}
+      <p style="white-space: pre-wrap; font-size: 1.8rem; line-height: 1.6; margin-top: 1rem;">${esc(plakatContent.date || 'Datum folgt').replace(/\n/g, '<br>')}</p>
+      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${esc(plakatContent.location)}</p>` : ''}
+      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: ${pd.muted};">${esc(plakatContent.description).replace(/\n/g, '<br>')}</p>` : ''}
     </div>
-    
     <div class="qr-code">
       <img src="${qrCodeUrl}" alt="QR Code" />
-      <p>${String(plakatContent.qrCode || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+      <p>${esc(plakatContent.qrCode || '')}</p>
     </div>
-    
     <div class="contact">
-      <p><strong>${String(currentGalleryData.name || 'K2 Galerie').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</strong></p>
-      ${currentGalleryData.address ? `<p>${String(currentGalleryData.address).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
-      ${currentGalleryData.phone ? `<p>${String(currentGalleryData.phone).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
-      ${currentGalleryData.email ? `<p>${String(currentGalleryData.email).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+      <p><strong>${esc(String(gName || 'K2 Galerie'))}</strong></p>
+      ${gAddr ? `<p>${esc(String(gAddr))}</p>` : ''}
+      ${gPhone ? `<p>${esc(String(gPhone))}</p>` : ''}
+      ${gEmail ? `<p>${esc(String(gEmail))}</p>` : ''}
     </div>
   </div>
+  <script>
+    ${scriptBody}
+  <\/script>
 </body>
-</html>
-    `
-      
-      console.log('HTML generiert, Länge:', html.length)
+</html>`
+  }
 
-      blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      const dataUrlNow = htmlToDataUrlUtf8(html)
-      plakatDocIdForUpdate = `pr-plakat-${event.id}-${Date.now()}`
-      const plakatDocName = getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat')
-      const plakatPlaceholder = {
-        id: plakatDocIdForUpdate,
-        name: plakatDocName,
-        type: 'text/html',
-        size: blob.size,
-        data: dataUrlNow,
-        fileData: dataUrlNow,
-        fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
-        fileType: 'text/html',
-        uploadedAt: new Date().toISOString(),
-        isPDF: false,
-        isPlaceholder: false,
-        category: 'pr-dokumente',
-        eventId: event.id,
-        eventTitle: event.title,
-        werbematerialTyp: 'plakat'
-      }
-      const existingPlakat = loadDocuments()
-      saveDocuments([...existingPlakat, plakatPlaceholder])
-      setDocuments([...existingPlakat, plakatPlaceholder])
-      openDocumentInApp(html, 'Plakat – ' + (event?.title || 'Event'))
-    } catch (error) {
-      console.error('Fehler beim Generieren des Plakats:', error)
-      alert('Fehler beim Generieren des Plakats: ' + (error instanceof Error ? error.message : String(error)))
-      return // WICHTIG: Return wenn Fehler, damit blob nicht verwendet wird
+  const generatePlakatForEvent = (event: any) => {
+    if (!event) {
+      alert('Fehler: Kein Event ausgewählt')
+      return
     }
-    
-    if (blob && plakatDocIdForUpdate) {
-      const docId = plakatDocIdForUpdate
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const current = loadDocuments()
-        const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
-        saveDocuments(updated)
-        setDocuments(updated)
-      }
-      reader.readAsDataURL(blob)
-      alert('✅ Plakat generiert! Bitte im Browser drucken (A3 Format).')
-    }
+    openPlakatRedaction(event)
   }
 
   // Plakat generieren (mit App-Design) - Fallback
@@ -20159,11 +20197,19 @@ ${name}`
         const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
         const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
         const eventDateStr = redactionEvent ? formatEventDates(redactionEvent) : ''
-        const escapeHtml = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-        const contentWithLinks = textToHtmlWithLinks(redactionPresseContent)
         const imageBlock = redactionPresseImageUrl ? `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
         const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
-        const previewHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" /><style>${prDocCss}</style><style>.presse-body a { color: inherit; text-decoration: underline; }</style></head><body class="${prDocClass} format-a4"><div class="page"><div class="content"><div class="header"><h1>${escapeHtml(galleryName)}</h1><div class="header-info">${redactionEvent?.title ? '<strong>Event:</strong> ' + escapeHtml(redactionEvent.title) + '<br>' : ''}${eventDateStr ? '<strong>Datum:</strong> ' + escapeHtml(eventDateStr).replace(/\n/g, '<br>') : ''}</div></div><h1>Presseaussendung</h1><div class="presse-headline">${escapeHtml(redactionPresseTitle)}</div>${imageBlock}<div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>${qrBlock}</div></div></body></html>`
+        const previewHtml = buildPresseaussendungRedactionPreviewHtml({
+          prDocClass,
+          prDocCss,
+          galleryName,
+          eventTitle: redactionEvent?.title || '',
+          eventDateStr,
+          presseTitle: redactionPresseTitle,
+          presseContent: redactionPresseContent,
+          imageBlock,
+          qrBlock
+        })
         const saveRedaction = () => {
           try {
             const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
@@ -20350,7 +20396,7 @@ ${name}`
                   title="Presse-Vorschau"
                   srcDoc={previewHtml}
                   style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
                 />
               </div>
             </div>
@@ -20364,13 +20410,19 @@ ${name}`
         const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
         const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
         const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
-        const previewHtml = buildSocialMediaPreviewHtml({
+        const socialPreviewDocId = socialRedactionDocument?.id || `pr-preview-social-${socialRedactionEvent?.id || 'x'}`
+        const previewHtml = buildSocialMediaEditableHtml({
           socialMedia: { instagram: socialRedactionInstagram, facebook: socialRedactionFacebook, whatsapp: socialRedactionWhatsApp },
           eventLike: { title: socialRedactionEvent?.title || 'Event', date: socialRedactionEvent?.date },
           imageDataUrl: socialRedactionImageUrl || undefined,
-          prDocClass,
-          prDocCss,
-          galleryName,
+          options: {
+            socialDocId: socialPreviewDocId,
+            adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab),
+            prDocClass,
+            prDocCss,
+            galleryName,
+            iframePreview: true
+          },
           event: socialRedactionEvent
         })
         const saveSocialRedaction = () => {
@@ -20561,7 +20613,342 @@ ${name}`
                   title="Social-Media-Vorschau"
                   srcDoc={previewHtml}
                   style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Plakat-Redaktion: links Felder, rechts Vorschau A4/A3/A5 + PDF */}
+      {plakatRedactionEvent && plakatRedaction && (() => {
+        const event = events.find((e: any) => e.id === plakatRedactionEvent?.id) || plakatRedactionEvent
+        const freshGalleryData = (() => {
+          if (tenant.isOeffentlich) return (galleryData || {}) as Record<string, unknown>
+          if (tenant.isVk2) {
+            const v = vk2Stammdaten?.verein
+            return v ? { name: v.name, address: v.address, city: v.city, website: v.website || '', phone: (v as { phone?: string }).phone || '', email: v.email || '' } : {}
+          }
+          return loadStammdaten('k2', 'gallery') as Record<string, unknown>
+        })()
+        const pd = designToPlakatVars(designSettings)
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(plakatRedaction.qrCode || '')}`
+        const previewHtml = buildPlakatWerbemittelHtml(plakatRedaction, freshGalleryData, pd, qrCodeUrl, { iframePreview: true })
+        const patchPlakat = (partial: Partial<typeof plakatRedaction>) => {
+          setPlakatRedaction((prev) => (prev ? { ...prev, ...partial } : null))
+        }
+        const savePlakatRedaction = () => {
+          try {
+            const list: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+            const idx = list.findIndex((s: any) => s.eventId === event.id)
+            const plakatPayload = { ...plakatRedaction }
+            if (idx >= 0) list[idx] = { ...list[idx], plakat: plakatPayload }
+            else {
+              list.push({
+                eventId: event.id,
+                eventTitle: event.title,
+                generatedAt: new Date().toISOString(),
+                presseaussendung: generatePresseaussendungContent(event),
+                socialMedia: generateSocialMediaContent(event),
+                flyer: generateFlyerContent(event),
+                newsletter: generateNewsletterContent(event),
+                plakat: plakatPayload
+              })
+            }
+            localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+            const html = buildPlakatWerbemittelHtml(plakatRedaction, freshGalleryData, pd, qrCodeUrl)
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+            const docId = plakatRedactionDoc?.id || `pr-plakat-${event.id}-${Date.now()}`
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              const data = reader.result as string
+              const current = loadDocuments()
+              const existing = current.find((d: any) => d.id === docId)
+              const docPayload = {
+                id: docId,
+                name: plakatRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
+                type: 'text/html',
+                size: blob.size,
+                data,
+                fileData: data,
+                fileName: plakatRedactionDoc?.fileName || `plakat-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                uploadedAt: new Date().toISOString(),
+                isPDF: false,
+                isPlaceholder: false,
+                category: 'pr-dokumente',
+                eventId: event.id,
+                eventTitle: event.title,
+                werbematerialTyp: 'plakat'
+              }
+              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+              saveDocuments(updated)
+              setDocuments(updated)
+            }
+            reader.readAsDataURL(blob)
+            setPlakatRedactionEvent(null)
+            setPlakatRedactionDoc(null)
+            setPlakatRedaction(null)
+          } catch (e) {
+            alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        const openPlakatDocInWindow = () => {
+          const html = buildPlakatWerbemittelHtml(plakatRedaction, freshGalleryData, pd, qrCodeUrl)
+          openDocumentInApp(html, 'Plakat – ' + (event?.title || 'Event'))
+        }
+        const fieldStyle = {
+          width: '100%',
+          padding: '0.5rem 0.6rem',
+          borderRadius: '8px',
+          border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+          background: s?.bgCard ?? '#fff',
+          color: s?.text ?? '#1c1a18',
+          fontSize: '0.9rem'
+        } as const
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99998,
+              background: (s?.bgDark) ?? '#0f1419',
+              overflow: 'auto',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Plakat – {plakatRedactionEvent?.title ?? 'Event'}</strong>
+              <button
+                type="button"
+                onClick={() => { setPlakatRedactionEvent(null); setPlakatRedactionDoc(null); setPlakatRedaction(null) }}
+                style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                × Schließen
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', minWidth: 0, overflow: 'auto' }}>
+                {(['title', 'type', 'date', 'location', 'description', 'qrCode'] as const).map((key) => (
+                  <div key={key}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>
+                      {key === 'title' ? 'Titel' : key === 'type' ? 'Art' : key === 'date' ? 'Termin' : key === 'location' ? 'Ort' : key === 'description' ? 'Text' : 'QR-Link (URL)'}
+                    </label>
+                    {key === 'description' ? (
+                      <textarea
+                        value={plakatRedaction[key]}
+                        onChange={(e) => patchPlakat({ [key]: e.target.value })}
+                        rows={6}
+                        style={{ ...fieldStyle, minHeight: 120, resize: 'vertical', lineHeight: 1.5 }}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={plakatRedaction[key]}
+                        onChange={(e) => patchPlakat({ [key]: e.target.value })}
+                        style={fieldStyle}
+                      />
+                    )}
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={savePlakatRedaction} style={{ padding: '0.6rem 1.25rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    💾 Speichern – Plakat übernehmen
+                  </button>
+                  <button type="button" onClick={openPlakatDocInWindow} style={{ padding: '0.6rem 1.25rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    📄 Dokument öffnen (Drucken)
+                  </button>
+                </div>
+              </div>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Vorschau – Galerie-Design, Format wählbar, druckbar
+                </div>
+                <iframe
+                  title="Plakat-Vorschau"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  sandbox="allow-same-origin allow-scripts"
+                />
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      {/* Flyer-Redaktion: wie Plakat */}
+      {flyerRedactionEvent && flyerRedaction && (() => {
+        const event = events.find((e: any) => e.id === flyerRedactionEvent?.id) || flyerRedactionEvent
+        const gData = (() => {
+          if (tenant.isOeffentlich) {
+            const g = galleryData || {}
+            return { name: g.name, address: g.address, phone: g.phone, email: g.email }
+          }
+          if (tenant.isVk2) {
+            const v = vk2Stammdaten?.verein
+            return v ? { name: v.name, address: v.address, phone: (v as { phone?: string }).phone, email: v.email } : {}
+          }
+          const g = loadStammdaten('k2', 'gallery') as { name?: string; address?: string; phone?: string; email?: string }
+          return { name: g?.name, address: g?.address, phone: g?.phone, email: g?.email }
+        })()
+        const fd = designToPlakatVars(designSettings)
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(flyerRedaction.qrCode || '')}`
+        const flyerForBuild = {
+          headline: flyerRedaction.headline,
+          date: flyerRedaction.date,
+          location: flyerRedaction.location,
+          description: flyerRedaction.description,
+          type: flyerRedaction.type,
+          qrCode: flyerRedaction.qrCode,
+          contact: flyerRedaction.contact
+        }
+        const previewHtml = buildFlyerWerbemittelHtml(flyerForBuild, gData, fd, qrCodeUrl, { iframePreview: true })
+        const patchFlyer = (partial: Partial<typeof flyerRedaction>) => {
+          setFlyerRedaction((prev) => (prev ? { ...prev, ...partial } : null))
+        }
+        const saveFlyerRedaction = () => {
+          try {
+            const list: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+            const idx = list.findIndex((s: any) => s.eventId === event.id)
+            const flyerPayload = { ...flyerForBuild }
+            if (idx >= 0) list[idx] = { ...list[idx], flyer: flyerPayload }
+            else {
+              list.push({
+                eventId: event.id,
+                eventTitle: event.title,
+                generatedAt: new Date().toISOString(),
+                presseaussendung: generatePresseaussendungContent(event),
+                socialMedia: generateSocialMediaContent(event),
+                newsletter: generateNewsletterContent(event),
+                plakat: generatePlakatContent(event),
+                flyer: flyerPayload
+              })
+            }
+            localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
+            const html = buildFlyerWerbemittelHtml(flyerForBuild, gData, fd, qrCodeUrl)
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+            const docId = flyerRedactionDoc?.id || `pr-flyer-${event.id}-${Date.now()}`
+            const reader = new FileReader()
+            reader.onloadend = () => {
+              const data = reader.result as string
+              const current = loadDocuments()
+              const existing = current.find((d: any) => d.id === docId)
+              const docPayload = {
+                id: docId,
+                name: flyerRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'flyer', 'Flyer'),
+                type: 'text/html',
+                size: blob.size,
+                data,
+                fileData: data,
+                fileName: flyerRedactionDoc?.fileName || `flyer-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                uploadedAt: new Date().toISOString(),
+                isPDF: false,
+                isPlaceholder: false,
+                category: 'pr-dokumente',
+                eventId: event.id,
+                eventTitle: event.title,
+                werbematerialTyp: 'flyer'
+              }
+              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+              saveDocuments(updated)
+              setDocuments(updated)
+            }
+            reader.readAsDataURL(blob)
+            setFlyerRedactionEvent(null)
+            setFlyerRedactionDoc(null)
+            setFlyerRedaction(null)
+          } catch (e) {
+            alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
+          }
+        }
+        const openFlyerDocInWindow = () => {
+          const html = buildFlyerWerbemittelHtml(flyerForBuild, gData, fd, qrCodeUrl)
+          openDocumentInApp(html, 'Flyer – ' + (event?.title || 'Event'))
+        }
+        const fieldStyle = {
+          width: '100%',
+          padding: '0.5rem 0.6rem',
+          borderRadius: '8px',
+          border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
+          background: s?.bgCard ?? '#fff',
+          color: s?.text ?? '#1c1a18',
+          fontSize: '0.9rem'
+        } as const
+        return (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 99998,
+              background: (s?.bgDark) ?? '#0f1419',
+              overflow: 'auto',
+              padding: '1rem',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <strong style={{ color: s?.text ?? '#f0f6ff' }}>Flyer – {flyerRedactionEvent?.title ?? 'Event'}</strong>
+              <button
+                type="button"
+                onClick={() => { setFlyerRedactionEvent(null); setFlyerRedactionDoc(null); setFlyerRedaction(null) }}
+                style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+              >
+                × Schließen
+              </button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', minWidth: 0, overflow: 'auto' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Überschrift</label>
+                  <input type="text" value={flyerRedaction.headline} onChange={(e) => patchFlyer({ headline: e.target.value })} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Event-Typ (Kürzel)</label>
+                  <input type="text" value={flyerRedaction.type} onChange={(e) => patchFlyer({ type: e.target.value })} style={fieldStyle} placeholder="z. B. vernissage" />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Termin</label>
+                  <textarea value={flyerRedaction.date} onChange={(e) => patchFlyer({ date: e.target.value })} rows={3} style={{ ...fieldStyle, resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Ort</label>
+                  <input type="text" value={flyerRedaction.location} onChange={(e) => patchFlyer({ location: e.target.value })} style={fieldStyle} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Text</label>
+                  <textarea value={flyerRedaction.description} onChange={(e) => patchFlyer({ description: e.target.value })} rows={5} style={{ ...fieldStyle, resize: 'vertical', lineHeight: 1.5 }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>QR-Link (URL)</label>
+                  <input type="text" value={flyerRedaction.qrCode} onChange={(e) => patchFlyer({ qrCode: e.target.value })} style={fieldStyle} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8' }}>Kontakt (optional, überschreibt Stammdaten)</label>
+                  <input type="text" placeholder="Adresse" value={flyerRedaction.contact?.address || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, address: e.target.value } })} style={fieldStyle} />
+                  <input type="text" placeholder="Telefon" value={flyerRedaction.contact?.phone || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, phone: e.target.value } })} style={fieldStyle} />
+                  <input type="text" placeholder="E-Mail" value={flyerRedaction.contact?.email || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, email: e.target.value } })} style={fieldStyle} />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button type="button" onClick={saveFlyerRedaction} style={{ padding: '0.6rem 1.25rem', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    💾 Speichern – Flyer übernehmen
+                  </button>
+                  <button type="button" onClick={openFlyerDocInWindow} style={{ padding: '0.6rem 1.25rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
+                    📄 Dokument öffnen (Drucken)
+                  </button>
+                </div>
+              </div>
+              <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
+                  Vorschau – Galerie-Design, Format wählbar, druckbar
+                </div>
+                <iframe
+                  title="Flyer-Vorschau"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
+                  sandbox="allow-same-origin allow-scripts"
                 />
               </div>
             </div>
@@ -20574,7 +20961,8 @@ ${name}`
         const event = events.find((e: any) => e.id === newsletterRedactionEvent?.id) || newsletterRedactionEvent
         const previewHtml = buildNewsletterViewHtml(
           { subject: newsletterRedactionSubject, body: newsletterRedactionBody },
-          event
+          event,
+          { iframePreview: true }
         )
         const saveNewsletterRedaction = () => {
           try {
@@ -20711,7 +21099,7 @@ ${name}`
                   title="Newsletter-Vorschau"
                   srcDoc={previewHtml}
                   style={{ width: '100%', height: 'calc(100% - 28px)', minHeight: 380, border: 'none', display: 'block' }}
-                  sandbox="allow-same-origin"
+                  sandbox="allow-same-origin allow-scripts"
                 />
               </div>
             </div>
