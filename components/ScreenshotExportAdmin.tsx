@@ -13090,6 +13090,219 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}>
                 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
+              {/* Gamification: Werke (nur ök2) / Mitglieder (nur VK2) – nur Anzeige, kein Schreiben */}
+              {tenant.isOeffentlich && (() => {
+                const list = Array.isArray(allArtworks) ? allArtworks : []
+                const hasArtImg = (a: any) => {
+                  const u = (a?.imageUrl || a?.imageRef || a?.previewUrl || '').toString().trim()
+                  return u.length > 0
+                }
+                const hasArtPrice = (a: any) => {
+                  const p = typeof a?.price === 'number' ? a.price : parseFloat(String(a?.price ?? '').replace(',', '.'))
+                  return !isNaN(p) && p > 0
+                }
+                const hasArtTitle = (a: any) => String(a?.title ?? '').trim().length > 0
+                const anyW = list.length >= 1
+                const milestones = [
+                  { id: 'n', label: 'Werke in der Galerie', done: anyW, hint: 'Mindestens ein Werk in der Liste' },
+                  { id: 'b', label: 'Jedes Werk hat ein Bild', done: anyW && list.every(hasArtImg), hint: 'Foto oder Bildreferenz je Werk' },
+                  { id: 'p', label: 'Jedes Werk hat einen Preis', done: anyW && list.every(hasArtPrice), hint: 'Preis > 0 € für Shop & Übersicht' },
+                  { id: 't', label: 'Jedes Werk hat einen Titel', done: anyW && list.every(hasArtTitle), hint: 'Titel in der Werkbearbeitung' },
+                ]
+                const doneCt = milestones.filter(m => m.done).length
+                return (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'stretch',
+                      gap: 'clamp(1rem, 3vw, 1.5rem)',
+                      marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+                      padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                      borderRadius: '16px',
+                      border: `1px solid ${s.accent}33`,
+                      background: s.bgElevated,
+                      boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                    }}
+                  >
+                    <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                      <img
+                        src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                        alt=""
+                        width={240}
+                        height={147}
+                        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                        Werke
+                      </div>
+                      <h3 style={{ fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+                        Galerie-Stand – vollständig sichtbar?
+                      </h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                        Grün = für alle Einträge erledigt; grau = noch offen. Nur Übersicht – keine automatischen Änderungen.
+                      </p>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{doneCt} / {milestones.length}</span>
+                        </div>
+                        <div
+                          role="progressbar"
+                          aria-valuenow={doneCt}
+                          aria-valuemin={0}
+                          aria-valuemax={milestones.length}
+                          style={{ height: 10, borderRadius: 999, background: `${s.accent}18`, overflow: 'hidden', border: `1px solid ${s.accent}30` }}
+                        >
+                          <div
+                            style={{
+                              width: `${Math.round((100 * doneCt) / Math.max(1, milestones.length))}%`,
+                              height: '100%',
+                              borderRadius: 999,
+                              background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                              transition: 'width 0.35s ease-out',
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                        {milestones.map(m => (
+                          <li key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.8rem', color: m.done ? '#1c1a18' : '#5c5650' }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                flexShrink: 0,
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                background: m.done ? '#10b981' : 'transparent',
+                                color: m.done ? '#fff' : '#5c5650',
+                                border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                              }}
+                            >
+                              {m.done ? '✓' : '○'}
+                            </span>
+                            <span>
+                              <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                              <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )
+              })()}
+              {tenant.isVk2 && (() => {
+                const ml = (vk2Stammdaten?.mitglieder || []).filter((m: any) => String(m?.name || '').trim())
+                const mAny = ml.length >= 1
+                const hasFoto = (m: any) => String(m?.mitgliedFotoUrl || m?.imageUrl || '').trim().length > 0
+                const hasKontakt = (m: any) => String(m?.email || '').trim().length > 0 || String(m?.phone || '').trim().length > 0
+                const hasTyp = (m: any) => String(m?.typ || '').trim().length > 0
+                const milestones = [
+                  { id: 'v1', label: 'Mitglieder angelegt', done: mAny, hint: 'Mindestens ein Mitglied mit Namen' },
+                  { id: 'v2', label: 'Alle mit Kunstbereich', done: mAny && ml.every(hasTyp), hint: 'Feld Kunstbereich je Profil' },
+                  { id: 'v3', label: 'Alle mit Foto', done: mAny && ml.every(hasFoto), hint: 'Porträt oder Bild-URL' },
+                  { id: 'v4', label: 'Alle mit E-Mail oder Telefon', done: mAny && ml.every(hasKontakt), hint: 'Erreichbarkeit für Verein & Galerie' },
+                ]
+                const doneCt = milestones.filter(m => m.done).length
+                return (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'stretch',
+                      gap: 'clamp(1rem, 3vw, 1.5rem)',
+                      marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+                      padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                      borderRadius: '16px',
+                      border: `1px solid ${s.accent}33`,
+                      background: s.bgElevated,
+                      boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                    }}
+                  >
+                    <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                      <img
+                        src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                        alt=""
+                        width={240}
+                        height={147}
+                        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                      />
+                    </div>
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                        Vereinsmitglieder
+                      </div>
+                      <h3 style={{ fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)', fontWeight: 800, color: '#1c1a18', margin: '0 0 0.5rem', lineHeight: 1.2 }}>
+                        Profile vollständig?
+                      </h3>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                        Nur Lesen aus der Mitgliederliste – keine automatischen Änderungen.
+                      </p>
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{doneCt} / {milestones.length}</span>
+                        </div>
+                        <div
+                          role="progressbar"
+                          aria-valuenow={doneCt}
+                          aria-valuemin={0}
+                          aria-valuemax={milestones.length}
+                          style={{ height: 10, borderRadius: 999, background: `${s.accent}18`, overflow: 'hidden', border: `1px solid ${s.accent}30` }}
+                        >
+                          <div
+                            style={{
+                              width: `${Math.round((100 * doneCt) / Math.max(1, milestones.length))}%`,
+                              height: '100%',
+                              borderRadius: 999,
+                              background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                              transition: 'width 0.35s ease-out',
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                        {milestones.map(m => (
+                          <li key={m.id} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', fontSize: '0.8rem', color: m.done ? '#1c1a18' : '#5c5650' }}>
+                            <span
+                              aria-hidden
+                              style={{
+                                flexShrink: 0,
+                                width: 22,
+                                height: 22,
+                                borderRadius: '50%',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.75rem',
+                                fontWeight: 800,
+                                background: m.done ? '#10b981' : 'transparent',
+                                color: m.done ? '#fff' : '#5c5650',
+                                border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                              }}
+                            >
+                              {m.done ? '✓' : '○'}
+                            </span>
+                            <span>
+                              <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                              <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )
+              })()}
               {/* Hauptakteur zuerst: + Neues Werk, daneben Etiketten – Nebenakteure (Anzeige, Sync) unter „Einstellungen & Sync“ aufklappbar */}
               <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start', marginBottom: '1rem' }}>
                 {!tenant.isVk2 && (

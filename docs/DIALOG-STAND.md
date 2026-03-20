@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 1 – „Galerie gestalten“:** Admin → **Design** (nur **ök2/VK2**): Hero-SVG wie Presse/Öffentlichkeitsarbeit + **X/4** (Willkommensbild, Galerie-Karte, Virtueller Rundgang, Texte vs. Baseline). Export **`getGaleriePageTextsBaseline`** in `pageTexts.ts`. **K2-Design-Tab** unverändert (kein Block). Doku **GAMIFICATION-PLAN-OEK2-PHASEN** Baseline + Phase-1-Zeile. **Commit:** 67f8098 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Phase 1 – „Werke verwalten“:** Admin → **Werke**: **ök2** = X/4 aus `allArtworks` (Menge, Bild, Preis, Titel); **VK2** = X/4 aus `vk2Stammdaten.mitglieder` (keine Werke-Liste im VK2-Speicher). **K2** ohne Block. **Commit:** (folgt nach Push)
+
+**Vorher:** 20.03.26 – **Gamification Phase 1 – „Galerie gestalten“:** Admin → **Design** (nur **ök2/VK2**): Hero-SVG wie Presse/Öffentlichkeitsarbeit + **X/4** (Willkommensbild, Galerie-Karte, Virtueller Rundgang, Texte vs. Baseline). Export **`getGaleriePageTextsBaseline`** in `pageTexts.ts`. **K2-Design-Tab** unverändert (kein Block). Doku **GAMIFICATION-PLAN-OEK2-PHASEN** Baseline + Phase-1-Zeile. **Commit:** 67f8098 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Guide-Strategie Doku bereinigt:** Prüfung ob Guide-Umbau die Projektstrategie verwirrt hat → **Code + alwaysApply-Regeln waren schon konsistent**; **Widersprüche nur in alter Markdown-Doku** (`ADMIN-LAYOUT-REGEL.md` wollte grünen Balken dauerhaft aus; `GAMIFICATION-*` / `OEK2-ANMELDUNG-*` beschrieben noch globalen Dialog). **Angeglichen:** ADMIN-LAYOUT-REGEL, GAMIFICATION-OEK2, GAMIFICATION-PLAN Phase 1, OEK2-ANMELDUNG, `guide-nahtlos-begleitung.mdc`; Kommentar `GalerieEntdeckenGuide`. **Commit:** 2f64ef0 ✅ auf GitHub
 
@@ -50,11 +52,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Gamification Phase 1 **Prio 3** – **Werke verwalten** (Ampel nur Anzeige: fehlendes Bild/Preis), nur ök2/VK2, kein Schreiben – **GAMIFICATION-PLAN-OEK2-PHASEN.md**.
+**Was wir JETZT tun:** Phase-1-**DoD** und **GAMIFICATION-OEK2.md**-Checkliste durchgehen; optional nächste Schritte aus **Phase 2** nur bei grünem Stand.
 
-**Einordnung:** „Galerie gestalten“ (Design-Tab X/4) ist umgesetzt (Commit 67f8098); gleiche Leitlinien: nur Lesen, K2-Kern unberührt.
+**Einordnung:** „Galerie gestalten“ + „Werke verwalten“ (Ampeln) umgesetzt; K2-Kern unberührt.
 
-**Nächster Schritt:** Werke-Ampel im Admin-Werke-Tab; danach Phase-1-DoD-Checkboxen prüfen.
+**Nächster Schritt:** Phase 1 abschließen (Doku/DoD) oder – nach Georg – vorsichtig **Phase 2** öffnen.
 
 ---
 

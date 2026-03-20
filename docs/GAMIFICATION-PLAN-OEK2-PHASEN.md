@@ -39,6 +39,8 @@
 | Admin → Eventplan → **Öffentlichkeitsarbeit** | Hero + **Fortschritt X/4** (reale Daten) |
 | Admin → **Presse & Medien** | Hero + **Fortschritt X/4** (reale Daten) |
 | Admin → **Design** (Galerie gestalten), nur **ök2/VK2** | Gleiche Bildsprache (Hero-SVG) + **Fortschritt X/4**: Willkommensbild, Galerie-Karte, Virtueller Rundgang (Bild/Video), Texte vs. **Baseline** (`getGaleriePageTextsBaseline`) – nur Lesen/Anzeige |
+| Admin → **Werke** (Tab), **ök2** | Hero + **X/4**: Werke vorhanden; jedes Werk Bild; Preis &gt; 0; Titel – nur aus `allArtworks` |
+| Admin → **Werke** (Tab), **VK2** | Hero + **X/4**: Mitglieder mit Namen; Kunstbereich; Foto; E-Mail oder Telefon – nur aus `vk2Stammdaten.mitglieder` (kein `k2-artworks` bei VK2) |
 
 Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Phasen und nur wenn [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md)-Checkliste grün ist.
 
@@ -65,7 +67,7 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 |-----------|---------|---------------------------|
 | **1** | **Guide / Onboarding** (kontextgebunden, kein globaler schwarzer Dialog) | „**Vom ersten Zugang an**“: **Ist-Stand ab 20.03.26** – schwarzer Vollbild-`GlobaleGuideBegleitung` ist **aus** (Stub); Orientierung läuft über **grünen Admin-Balken** (ök2/VK2, `guideFlowAktiv` + `k2-guide-flow` in `k2GuideFlowStorage.ts`), **ohne** zweites Hub-UI. Shop/Kasse ohne diesen Flow; **/mein-bereich** kann den Flow starten. *Hinweis:* Frühere Planzeile „Overlay wieder aktiv / selber Dialog“ bezog sich auf den schwarzen Global-Guide – **veraltet**, Strategie siehe `guide-nahtlos-begleitung.mdc`. |
 | **2** | **Galerie gestalten** (Schritte / Häkchen aus vorhandenen Keys) | Nutzer sehen „was fehlt noch“, ohne neuen Workflow. **Umgesetzt:** Design-Tab, ök2/VK2 (`ScreenshotExportAdmin`), siehe Baseline-Tabelle oben. |
-| **3** | **Werke verwalten** (Ampel nur **Anzeige**: fehlendes Bild/Preis) | Hoher Nutzen in der Demo; technisch nur UI über bestehende Liste – **niemals** automatisch bereinigen oder schreiben. |
+| **3** | **Werke verwalten** (Ampel nur **Anzeige**: fehlendes Bild/Preis) | Hoher Nutzen in der Demo; technisch nur UI über bestehende Liste – **niemals** automatisch bereinigen oder schreiben. **Umgesetzt:** Werke-Tab ök2 + VK2-Mitglieder-Variante (`ScreenshotExportAdmin`), siehe Baseline-Tabelle. |
 
 **Definition of Done (Phase 1)**  
 - [ ] Ohne Schicht B: alle Aktionen wie heute erreichbar.  
