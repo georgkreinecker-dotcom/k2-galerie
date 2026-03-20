@@ -204,6 +204,43 @@ function inferWerbemittelPdfFormat(html: string): 'a4' | 'a3' {
   return 'a4'
 }
 
+/** Schriften + Bilder (QR) müssen im Iframe fertig sein, sonst leerer/falscher PDF-Raster. */
+async function waitForWerbemittelIframePaint(idoc: Document, timeoutMs: number): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  try {
+    const fonts = (idoc as Document & { fonts?: FontFaceSet }).fonts
+    if (fonts?.ready) await fonts.ready.catch(() => undefined)
+  } catch {
+    /* ignore */
+  }
+  const imgs = Array.from(idoc.images)
+  await Promise.all(
+    imgs.map(img => {
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve()
+      return new Promise<void>(resolve => {
+        const ms = Math.max(400, deadline - Date.now())
+        const t = window.setTimeout(() => resolve(), ms)
+        const done = () => {
+          window.clearTimeout(t)
+          resolve()
+        }
+        img.addEventListener('load', done, { once: true })
+        img.addEventListener('error', done, { once: true })
+      })
+    })
+  )
+  await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())))
+}
+
+/** Nur der druckbare Kasten – nicht body (Rand, Leiste-Reste, Scroll). */
+function pickWerbemittelPdfRoot(body: HTMLElement): HTMLElement {
+  const el =
+    (body.querySelector('.plakat') as HTMLElement | null) ||
+    (body.querySelector('.flyer') as HTMLElement | null) ||
+    (body.querySelector('.page') as HTMLElement | null)
+  return el || body
+}
+
 type Html2PdfWorker = {
   set: (o: object) => {
     from: (el: HTMLElement) => {
@@ -233,14 +270,14 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
 
   const iframe = document.createElement('iframe')
   iframe.setAttribute('title', 'pdf-export')
-  iframe.setAttribute('sandbox', 'allow-same-origin')
-  iframe.style.cssText = `position:fixed;left:-14000px;top:0;width:${iframeWidthPx}px;min-height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
+  /** Kein sandbox: Subressourcen (Fonts, QR-Bild) zuverlässig; offscreen ohne Opacity (sonst ggf. leerer Raster). */
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${iframeWidthPx}px;height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
   document.body.appendChild(iframe)
 
   try {
     iframe.srcdoc = fullDoc
     await new Promise<void>((resolve, reject) => {
-      const t = window.setTimeout(() => resolve(), 10000)
+      const t = window.setTimeout(() => resolve(), 12000)
       iframe.onload = () => {
         window.clearTimeout(t)
         resolve()
@@ -250,7 +287,6 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
         reject(new Error('iframe onerror'))
       }
     })
-    await new Promise<void>(r => window.setTimeout(r, 400))
     const idoc = iframe.contentDocument
     const root = idoc?.body
     if (!root || !root.innerHTML.trim()) return null
@@ -306,7 +342,10 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       head.appendChild(captureStyle)
     }
 
-    await new Promise<void>(r => window.setTimeout(r, 120))
+    const captureRoot = pickWerbemittelPdfRoot(root)
+    await waitForWerbemittelIframePaint(idoc, 9000)
+
+    const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
 
     const html2pdfMod = await import('html2pdf.js')
     const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
@@ -316,6 +355,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
     const pdfOpts = {
       ...HTML2PDF_WERBEMITTEL_BASE,
       filename: 'werbemittel.pdf',
+      margin: (pdfFormat === 'a3' ? [1, 1, 1, 1] : [3, 3, 3, 3]) as [number, number, number, number],
       jsPDF: {
         unit: 'mm' as const,
         format: pdfFormat,
@@ -323,11 +363,24 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       },
       html2canvas: {
         ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
-        scale: pdfFormat === 'a3' ? 2.25 : 2,
+        scale: pdfFormat === 'a3' ? 2.35 : 2.1,
+        windowWidth: iframeWidthPx,
+        windowHeight: Math.min(Math.max(scrollH + 120, iframeMinHeightPx), 8000),
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc: Document) => {
+          try {
+            clonedDoc.querySelectorAll('.no-print').forEach(n => {
+              ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+            })
+          } catch {
+            /* ignore */
+          }
+        },
       },
     }
 
-    const out = await worker.set(pdfOpts).from(root).outputPdf('blob')
+    const out = await worker.set(pdfOpts).from(captureRoot).outputPdf('blob')
 
     return out instanceof Blob ? out : null
   } catch (e) {
