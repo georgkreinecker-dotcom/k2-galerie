@@ -50,11 +50,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Gamification/ök2 **ohne** globalen schwarzen Guide weiterdenken (Tab-Heroes, Ampeln, Medienstudio) – **GAMIFICATION-OEK2.md** / Phasenplan; globaler Dialog bleibt aus bis Georg etwas anderes anordnet.
+**Was wir JETZT tun:** Gamification Phase 1 **Prio 3** – **Werke verwalten** (Ampel nur Anzeige: fehlendes Bild/Preis), nur ök2/VK2, kein Schreiben – **GAMIFICATION-PLAN-OEK2-PHASEN.md**.
 
-**Einordnung:** Georg: globaler Guide = Durcheinander (APf doppelt). **Umkehr** statt weiter optimieren an dieser Stelle.
+**Einordnung:** „Galerie gestalten“ (Design-Tab X/4) ist umgesetzt (Commit 67f8098); gleiche Leitlinien: nur Lesen, K2-Kern unberührt.
 
-**Nächster Schritt:** Phase 1 ohne GlobaleGuideBegleitung: z. B. **Galerie gestalten** / **Werke-Ampel**; Checkliste **GAMIFICATION-OEK2.md**; **Plan B** nur Notfall.
+**Nächster Schritt:** Werke-Ampel im Admin-Werke-Tab; danach Phase-1-DoD-Checkboxen prüfen.
 
 ---
 
