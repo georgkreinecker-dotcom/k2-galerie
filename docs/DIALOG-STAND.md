@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Vorlagen aus Vergangenheit:** Unter „Flyer & Werbedokumente“ → „Veranstaltungen der Vergangenheit“ gibt es pro Dokument **Ansehen** und **→ Event übernehmen** (Modal: Ziel-Event wählen). Gespeicherte Einladung/Presse mit HTML werden beim Ansehen nicht mehr durch die Standard-Vorlage ersetzt (Bugfix in `handleViewEventDocument`). PR-Dokumente der Vergangenheit erscheinen in der Liste mit; Newsletter/Social-Vorlagen mergen bei Übernahme zusätzlich `k2-pr-suggestions` fürs Ziel-Event. Commit: b260c31 ✅ auf GitHub (nach Push).
+**Letzter Stand:** 20.03.26 – **Vorlagen aus Vergangenheit:** Unter „Flyer & Werbedokumente“ → „Veranstaltungen der Vergangenheit“ gibt es pro Dokument **Ansehen** und **→ Event übernehmen** (Modal: Ziel-Event wählen). Gespeicherte Einladung/Presse mit HTML werden beim Ansehen nicht mehr durch die Standard-Vorlage ersetzt (Bugfix in `handleViewEventDocument`). PR-Dokumente der Vergangenheit erscheinen in der Liste mit; Newsletter/Social-Vorlagen mergen bei Übernahme zusätzlich `k2-pr-suggestions` fürs Ziel-Event. Commit: da3c728 ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg kann im ök2-Admin testen: Vergangenheit aufklappen → Vorlage übernehmen → Rubrik des Ziel-Events prüfen.
 
