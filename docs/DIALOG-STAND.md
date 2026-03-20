@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Präsentationsmappen (Eventplan):** „Jetzt erstellen“ entfernt (`onErstellen: null` wie Druckversion). Stattdessen **Hinweis-Box** (Vorschau-Vorlagen, kein Bearbeitungswerkzeug; PDF im Browser). Kurzbeschreibung der Karte angepasst; Ampel-Badge ohne Dokumente: **„Vorschau“** statt „Offen“. Tab „Präsentationsmappen“: Einleitung auf Vorschau & Druck klargestellt. Import `generatePraesentationsmappeKurzHtmlDocument` entfernt. **Commit: a610509** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Admin „Werke verwalten“:** Kategorie-Filter **standardmäßig immer „Alle“** wenn man wieder in die Listenansicht kommt (anderen Tab verlassen und zurück, Modal schließen, nach Speichern) – damit kein Eindruck „Werke fehlen“. ök2: kein automatisches Setzen der Kategorie aus Stammdaten-Fokus mehr. Ungenutzten Import entfernt. **Commit: eebd3c2** ✅ auf GitHub
 
-**Vorher:** QR-Code Plakat ök2 (c177d9f).
+**Vorher:** Präsentationsmappen Eventplan (a610509); QR-Code Plakat ök2 (c177d9f).
 
-**Was wir JETZT tun:** Optional kurz im Browser: Eventplan → Karte Präsentationsmappen – kein Erstellen-Button, Hinweis sichtbar.
+**Was wir JETZT tun:** Kurz im Admin testen: Werke → Kategorie einschränken → anderer Tab → zurück: **Alle**; Modal öffnen/schließen: **Alle**.
 
-**Einordnung:** Erwartung klären (nicht wie Flyer/Presse erzeugbar); Links Kurz/Vollversion/Prospekt bleiben.
+**Einordnung:** Nutzer-Logik (Ampel/kein „verloren“); Admin-UX, keine K2-Kern-Datenlogik.
 
-**Nächster Schritt:** Vercel „Ready“ abwarten – dann ggf. smoke-test Admin.
+**Nächster Schritt:** Vercel „Ready“ – ggf. smoke-test Werke-Liste.
 
 ---
 
