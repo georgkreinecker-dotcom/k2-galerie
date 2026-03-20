@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Doppel-Zurück im Dokument-Viewer behoben:** Die eingebettete HTML-Leiste („Zurück“ + „Dokument“) im iframe war überflüssig – oben gibt es schon **← Zurück** + **Drucken** (React). Der innere Button lud `/admin` **im iframe** → in Cursor die „schwarze“ Vorschau-Seite. Jetzt nur noch **eine** Leiste; `wrapDocumentHtmlWithBackButton` entfernt. Commit: 11fd275 ✅ auf main (nach push).
+**Letzter Stand:** 20.03.26 – **Plakat ök2:** (1) **Speichern:** `loadDocuments` für ök2 lud nur die 5 Muster aus dem Code – Einträge in `k2-oeffentlich-documents` wurden ignoriert → neu erzeugtes Plakat wirkte „nicht erhalten“. Jetzt **Muster + localStorage mergen**. (2) **Kleiner Text beim Öffnen:** Muster-Plakat nutzt `data:…,` ohne base64; `handleViewEventDocument` dekodierte nur base64 → Anzeige lief über iframe/anderen Pfad. Jetzt **`decodeHtmlDataUrl`** (base64 + utf-8-Komma). (3) **Zweites Zurück beim neuen Plakat:** eingebettete `.no-print`-Leiste im generierten Plakat-HTML entfernt; **sofort `fileData`** per `htmlToDataUrlUtf8`. Commit: _(folgt)_.
 
-**Vorher gleicher Tag:** Vorlagen Vergangenheit + `handleViewEventDocument` (Commit da3c728).
+**Vorher gleicher Tag:** Doppel-Zurück allgemein (`wrapDocumentHtmlWithBackButton` entfernt, Commit 11fd275).
 
-**Was wir JETZT tun:** Dokument ansehen → nur noch ein Zurück oben; soll den Viewer schließen und zum Admin zurück.
+**Was wir JETZT tun:** Georg: ök2 → Plakat neu erzeugen → Liste prüfen (Eintrag bleibt) → erneut öffnen (volles Layout, ein Zurück oben).
 
-**Einordnung:** `openDocumentInApp` = eine UX-Schicht; kein zweiter Navigationsweg im srcDoc.
+**Einordnung:** Ein Standard `openDocumentInApp`; ök2-Dokumente = Muster + User-Einträge aus einem Speicher.
 
-**Nächster Schritt:** Kurz im Browser (nicht nur Cursor-Preview) prüfen.
+**Nächster Schritt:** Nach Push im Browser testen.
 
 ---
 

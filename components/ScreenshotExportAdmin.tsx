@@ -154,6 +154,34 @@ function wrapDocumentWithPrintFooter(html: string): string {
   return out
 }
 
+/** Sofort gültiges data:-URL für HTML (UTF-8), ohne FileReader – z. B. ök2-Dokumente direkt speicherbar. */
+function htmlToDataUrlUtf8(html: string): string {
+  return 'data:text/html;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(html)))
+}
+
+/** HTML aus data:text/html… lesen (base64 oder charset=utf-8 per Komma, wie Muster-Dokumente in tenantConfig). */
+function decodeHtmlDataUrl(fileData: string): string | null {
+  if (!fileData || typeof fileData !== 'string' || !fileData.startsWith('data:')) return null
+  const comma = fileData.indexOf(',')
+  if (comma < 0) return null
+  const header = fileData.slice(0, comma)
+  if (!header.includes('text/html')) return null
+  const payload = fileData.slice(comma + 1)
+  if (header.includes('base64')) {
+    try {
+      const bytes = Uint8Array.from(atob(payload), c => c.charCodeAt(0))
+      return new TextDecoder('utf-8').decode(bytes)
+    } catch {
+      return null
+    }
+  }
+  try {
+    return decodeURIComponent(payload)
+  } catch {
+    return null
+  }
+}
+
 const KEY_OEF_ADMIN_PASSWORD = 'k2-oeffentlich-admin-password'
 const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
@@ -3982,7 +4010,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Dokumente aus localStorage laden (Key abhängig von K2 vs. ök2). ök2: 5 fertige Muster-PR-Dokumente (Newsletter, Plakat, Flyer, Presse, Social) + Event-Docs aus MUSTER_EVENTS = 7 Muster.
   const loadDocuments = () => {
     try {
-      if (tenant.isOeffentlich) return getOek2MusterPrDocuments()
+      // ök2: Muster-Dokumente + Einträge aus localStorage mergen (sonst verschwinden neu erzeugte PR-Dokumente nach Reload)
+      if (tenant.isOeffentlich) {
+        const muster = getOek2MusterPrDocuments()
+        const stored = loadDocumentsFromStorage('oeffentlich')
+        if (!Array.isArray(stored) || stored.length === 0) return muster
+        const musterIds = new Set(muster.map((d: { id: string }) => d.id))
+        const mergedMuster = muster.map((d: Record<string, unknown>) => {
+          const s = stored.find((x: { id?: string }) => x.id === d.id)
+          return s ? { ...d, ...s } : d
+        })
+        const extras = stored.filter((x: { id?: string }) => x.id && !musterIds.has(x.id))
+        return [...mergedMuster, ...extras]
+      }
       if (tenant.isVk2) initVk2DemoEventAndDocumentsIfEmpty()
       const stored = localStorage.getItem(tenant.getDocumentsKey())
       if (stored) return JSON.parse(stored)
@@ -6908,11 +6948,6 @@ ${'='.repeat(60)}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 2rem;">
-    <button onclick="goBack(); return false;" style="background: ${pd.btnSecondary}; margin-right: 8px; cursor: pointer;">← Zurück</button>
-    <button onclick="window.print(); return false;">🖨️ Drucken (A3)</button>
-  </div>
-  
   <div class="plakat">
     <h1>${String(plakatContent.title || 'Event').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</h1>
     
@@ -6939,32 +6974,6 @@ ${'='.repeat(60)}
       ${currentGalleryData.email ? `<p>${String(currentGalleryData.email).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
     </div>
   </div>
-  
-  <script>
-    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
-    function goBack() {
-      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
-        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
-        : (window.location.origin + '/admin');
-      if (window.opener && !window.opener.closed) {
-        try {
-          window.opener.location.href = adminUrl
-          window.opener.focus()
-          setTimeout(function() {
-            try {
-              window.close()
-            } catch (e) {
-              // Ignorieren
-            }
-          }, 100)
-          return
-        } catch (e) {
-          // Falls Fehler, navigiere direkt
-        }
-      }
-      window.location.href = adminUrl
-    }
-  </script>
 </body>
 </html>
     `
@@ -6972,6 +6981,7 @@ ${'='.repeat(60)}
       console.log('HTML generiert, Länge:', html.length)
 
       blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const dataUrlNow = htmlToDataUrlUtf8(html)
       plakatDocIdForUpdate = `pr-plakat-${event.id}-${Date.now()}`
       const plakatDocName = getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat')
       const plakatPlaceholder = {
@@ -6979,8 +6989,10 @@ ${'='.repeat(60)}
         name: plakatDocName,
         type: 'text/html',
         size: blob.size,
-        data: '',
+        data: dataUrlNow,
+        fileData: dataUrlNow,
         fileName: `plakat-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+        fileType: 'text/html',
         uploadedAt: new Date().toISOString(),
         isPDF: false,
         isPlaceholder: false,
@@ -7944,13 +7956,11 @@ ${'='.repeat(60)}
       return
     }
     const fileData = fileDataOrUrl
-    // Gespeichertes HTML (Base64)
+    // Gespeichertes HTML (data:-URL: base64 oder utf-8 mit Komma wie Muster in tenantConfig)
     if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-      const base64 = fileData.replace(/^data:[^;]+;base64,/, '')
-      if (base64 !== fileData) {
+      const htmlDecoded = decodeHtmlDataUrl(fileData)
+      if (htmlDecoded) {
         try {
-          const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-          const htmlDecoded = new TextDecoder('utf-8').decode(bytes)
           // Social-Media-Dokument: immer mit neuer Vorlage (Dokument bearbeiten, Bild einfügen) öffnen, Inhalte aus gespeichertem HTML übernehmen
           if (document.werbematerialTyp === 'social' && document.id) {
             const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
