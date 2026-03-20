@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **PDF = dasselbe Produkt wie Vorschau:** Georg richtig – kein zweites „Admin-Orange“-Layout. **Plakat-HTML** trägt `:root { --k2-plakat-pdf-accent }` aus **designToPlakatVars**; PDF-Capture ändert **nur** `.plakat h1` (Gradient-Clip → volle Akzentfarbe, html2canvas-Limit). **Kein** Überschreiben von Karte/Fließtext/Kontakt; Body-Hintergrund bei A3 nicht auf Weiß zwingen. Tests + Build grün – **Commit:** (siehe `git log -1`)
+**Letzter Stand:** 20.03.26 – **PDF = dasselbe Produkt wie Vorschau:** Georg richtig – kein zweites „Admin-Orange“-Layout. **Plakat-HTML** trägt `:root { --k2-plakat-pdf-accent }` aus **designToPlakatVars**; PDF-Capture ändert **nur** `.plakat h1` (Gradient-Clip → volle Akzentfarbe, html2canvas-Limit). **Kein** Überschreiben von Karte/Fließtext/Kontakt; Body-Hintergrund bei A3 nicht auf Weiß zwingen. Tests + Build grün – **Commit:** 0a30955 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – Plakat-PDF mit erzwungenem Weiß/Orange – **Commit:** 6a4baf8 (zurückgenommen inhaltlich)
 
