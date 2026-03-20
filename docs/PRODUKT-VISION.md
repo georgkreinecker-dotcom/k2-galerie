@@ -8,6 +8,12 @@
 - **Für die Kunst gedacht:** Aus der Kunst heraus entstanden. Ein Modell, eine Galerie: Qualität und Sorgfalt in der Präsentation.
 - **Für den Markt gemacht:** Vermarktbar, professionell, skalierbar. Gleicher Stand auf allen Geräten, Lizenzen für Einstieg bis Vollausbau (Basic, Pro, Pro+, Pro++, VK2), ohne Sonderbau pro Kunde.
 
+### Medientool, KI und Kommunikation (Bewusstsein für das Produkt)
+
+- **Erfolgsschlüssel am Markt:** Mit dem **Medientool** (Öffentlichkeitsarbeit, Werbemittel, Kanäle) geben wir Nutzer:innen etwas, womit sie sich **von anderen abheben** – **schneller und professioneller** kommunizieren als ohne dieses Werkzeug.
+- **Kommunikation ist der Hebel:** Der messbare Vorteil für Kund:innen liegt oft nicht in einer einzelnen Funktion, sondern in **besserer, konsistenter Außenkommunikation**. Daran orientieren wir Prioritäten und Qualität.
+- **Zukunftsfähigkeit:** **Aktuelle Medientechnik und KI** gehören dort hinein, wo sie den Ablauf **wirklich verbessern** (Tempo, Varianten, Lesbarkeit, Kanäle) – nicht als Selbstzweck, sondern damit das Angebot **am Markt bestehen kann**.
+
 **Verwendung:** Diese Botschaft gilt einheitlich in Handbuch, Präsentationsmappe, Werbetexte und mök2. Keine abweichende Positionierung – Sportwagenmodus.
 
 ---
