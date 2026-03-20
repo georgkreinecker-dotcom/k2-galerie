@@ -1,14 +1,16 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF sauber:** `renderStyledPdfBlobFromHtmlString` blendet **`.no-print`** für html2canvas aus (keine Format-Leiste im PDF). **Plakat:** PDF-Seite **A3**, breiteres Iframe, höhere canvas-Scale; bei Vorschau-HTML (`min(100%, 760px)`) **Export-Overrides** auf Druckgrößen (297×420 mm, große Typo/QR). Tests + Build grün – **Commit:** b504209 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF Raster stabilisieren:** Iframe wieder **offscreen** (`left:-9999px`) **ohne** fast-transparente **Opacity** (kann leeren/verfälschten Raster geben). **html2canvas:** keine erzwungenen **`width`/`height`** mehr (nur `windowWidth`/`windowHeight` + Scale) – vermeidet ungewolltes Croppen/Skalieren. Tests + Build grün – **Commit:** 8fbbb2a ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Werbemittel-PDF sauber:** `.no-print` für html2canvas, Plakat A3, Export-Overrides – **Commit:** b504209
 
 **Vorher:** 20.03.26 – **Werbemittel 1-Klick vollständig:** PDF zuerst (html2pdf → Blob), Web Share, sonst mailto + Download – **Commit:** 8a85c2b
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Plakat erneut „Mail“/Teilen – PDF nur Plakatfläche, größer; bei Abweichung kurz melden.
+**Was wir JETZT tun:** Georg: Nach Vercel **Ready** Plakat **Mail/Teilen** testen – PDF öffnen: volle Plakatfläche, keine Toolbar. **Hinweis Mac Mail:** Ohne System-**Teilen** mit Datei landet oft nur **Download** + **mailto ohne Anhang** – dann PDF aus Downloads anhängen oder Teilen-Dialog nutzen.
 
-**Einordnung:** html2canvas = Screen-CSS; `.no-print` galt nur für `@media print` → Toolbar landete im Raster. Plakat auf A4-PDF wirkte winzig → A3 + Breite.
+**Einordnung:** PDF-Pipeline (Iframe → Warten auf Fonts/Bilder → `captureRoot` → html2pdf). Opacity am Iframe + feste Canvas-Maße waren Kandidaten für „kommt nicht richtig an“ / leer klein.
 
 **Nächster Schritt:** Bei Bedarf weitere Werbemittel-Templates (`.page`-Dokumente) mit gleicher Capture-Logik feinjustieren.
 
