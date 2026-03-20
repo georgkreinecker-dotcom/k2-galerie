@@ -83,7 +83,7 @@ Damit ist das **Zwischenlagern vor Senden** abgeschlossen: Das fertige Dokument 
 
 **Medienspiegel:** Liste von Medien (Name + E-Mail) pro Kontext in localStorage (eigener Key). Dient nur dazu, E-Mail-Adressen auszuwählen und **in die Zwischenablage zu kopieren** (BCC im E-Mail-Programm).
 
-**Anmeldung per WhatsApp (tageweise Zusage/Absage):** Pro Event zeigt der Admin einen Block „Anmeldung per WhatsApp“ mit vorgefertigtem Text (Eventtitel, „Ich komme:“, pro Tag eine Zeile z. B. „[ ] Fr 24.4.“, „[ ] Leider nicht“, „Name: ___“). Gäste können den Text kopieren oder über „Per WhatsApp senden“ (wa.me mit Galerie-Telefon) öffnen und tageweise antworten (z. B. „Komme Fr, Sa – Sonntag leider nicht“). Kein Backend: Nachricht geht an die Galerie-Nummer, Empfang manuell.
+**Anmeldung per WhatsApp (tageweise Zusage/Absage):** Pro Event zeigt der Admin einen Block „Anmeldung per WhatsApp“ mit vorgefertigtem Text (Eventtitel, „Ich komme:“, pro Tag eine Zeile z. B. „[ ] Fr 24.4.“, „[ ] Leider nicht“, „Name: ___“). Gäste können den Text kopieren oder über „Per WhatsApp senden“ (wa.me mit Galerie-Telefon) öffnen und tageweise antworten (z. B. „Komme Fr, Sa – Sonntag leider nicht“). Kein Backend: Nachricht geht an die Galerie-Nummer, Empfang manuell. **In ök2 (Demo-Admin) wird dieser Block nicht angeboten.**
 
 ---
 
@@ -97,7 +97,7 @@ Damit ist das **Zwischenlagern vor Senden** abgeschlossen: Das fertige Dokument 
 | Dokument anlegen + öffnen | `generateEditablePresseaussendungPDF`, `generateEditableNewsletterPDF`, Plakat/Flyer-Blöcke, `openDocumentInApp`, `handleViewEventDocument` |
 | Speichern aus geöffnetem Doc | postMessage-Handler (`k2-save-social-doc`), afterprint → FileReader → `saveDocuments(updated)` |
 | Zwischenablage / „Absenden“-Hilfe | `exportPresseaussendungAsText`, Newsletter/Social „Kopieren“, Medienspiegel „E-Mail-Adressen kopieren“ |
-| Anmeldung per WhatsApp (tageweise) | ScreenshotExportAdmin – `getWhatsAppAnmeldungForEvent(event)` (Text + wa.me-URL); Block in Event-Karte: „Text kopieren“, „Per WhatsApp senden“ |
+| Anmeldung per WhatsApp (tageweise) | ScreenshotExportAdmin – `getWhatsAppAnmeldungForEvent(event)` (Text + wa.me-URL); Block in Event-Karte: „Text kopieren“, „Per WhatsApp senden“ (nur K2/VK2, nicht `tenant.isOeffentlich`) |
 
 ---
 

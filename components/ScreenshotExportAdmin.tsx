@@ -19517,8 +19517,8 @@ ${name}`
                                   </div>
                                 </div>
 
-                                {/* Anmeldung per WhatsApp – tageweise Zusage/Absage („Komme Fr/Sa, So leider nicht“) */}
-                                {(() => {
+                                {/* Anmeldung per WhatsApp – K2/VK2; in ök2 nicht anbieten (keine echte Galerie-Nummer / Demo) */}
+                                {!tenant.isOeffentlich && (() => {
                                   const wa = getWhatsAppAnmeldungForEvent(event)
                                   if (!wa.text) return null
                                   return (
