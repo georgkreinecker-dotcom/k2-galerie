@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel 1 Klick:** Erfolgs-Alerts nach Teilen/PDF-Download/Social entfernt – Mail öffnet, PDF lädt still, Zwischenablage ohne Extra-OK. Nur noch: zu langer mailto → ein Hinweis; Fehler/Link-Fall wie zuvor. **Commit:** f47e5d6 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Medienstudio Roadmap Einzigartigkeit:** Ist-Stand Tool (Werbelinie, Event-Dokumente, Verteiler, Prozess-Doku) + priorisierte Erweiterungen (Journalist:innen-Paket/ZIP, KI im Medien-Tab, Redaktions-Checkliste, Embargo, OTS, Versand-Log) in **docs/MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md**; Index + Verweis in MEDIENSTUDIO-K2. **Commit:** bb90beb ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Produkt-Bewusstsein:** Medientool = Erfolgsschlüssel am Markt (Differenzierung, Tempo); Kommunikation = Hebel; KI + Medientechnik = zukunftsfähig – festgehalten in **docs/PRODUKT-VISION.md**. **Commit:** d08ee54 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Werbemittel 1 Klick:** Erfolgs-Alerts nach Teilen/PDF-Download/Social entfernt – Mail öffnet, PDF lädt still, Zwischenablage ohne Extra-OK. Nur noch: zu langer mailto → ein Hinweis; Fehler/Link-Fall wie zuvor. **Commit:** f47e5d6 (Inhalt) ✅ auf GitHub · **HEAD/Push:** 7c5d70a
 
 **Vorher:** 20.03.26 – **Sportwagenmodus Werbemittel (keine Plakat-Einzellösung im Admin):** Plakat-`@media print` + html2pdf-Capture + onclone in **marketingWerbelinie.ts** gebündelt: `getPlakatPosterPrintCss`, `getWerbemittelHtml2canvasCaptureCss`, `applyWerbemittelCaptureToClone` (baut auf `getK2PrDocHtml2canvasCaptureCss` auf). **ScreenshotExportAdmin** ruft nur noch diese API auf. Tests erweitert in **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 53ce780 ✅ auf GitHub
 
