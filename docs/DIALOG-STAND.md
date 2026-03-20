@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **PDF = dasselbe Produkt wie Vorschau:** Georg richtig – kein zweites „Admin-Orange“-Layout. **Plakat-HTML** trägt `:root { --k2-plakat-pdf-accent }` aus **designToPlakatVars**; PDF-Capture ändert **nur** `.plakat h1` (Gradient-Clip → volle Akzentfarbe, html2canvas-Limit). **Kein** Überschreiben von Karte/Fließtext/Kontakt; Body-Hintergrund bei A3 nicht auf Weiß zwingen. Tests + Build grün – **Commit:** 0a30955 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Sportwagenmodus Werbemittel (keine Plakat-Einzellösung im Admin):** Plakat-`@media print` + html2pdf-Capture + onclone in **marketingWerbelinie.ts** gebündelt: `getPlakatPosterPrintCss`, `getWerbemittelHtml2canvasCaptureCss`, `applyWerbemittelCaptureToClone` (baut auf `getK2PrDocHtml2canvasCaptureCss` auf). **ScreenshotExportAdmin** ruft nur noch diese API auf. Tests erweitert in **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** (nach Push eintragen) ✅
+
+**Vorher:** 20.03.26 – **Newsletter/Presse-PDF (k2-pr-doc) lesbar:** html2canvas wertet `@media print` nicht aus → bisher fast weiße Schrift auf weiß. **Fix:** `getK2PrDocHtml2canvasCaptureCss()` in **marketingWerbelinie.ts** (sinngleich Druck-Regeln: weiße `.page`, Text `#1a1f3a`, Gradient-Titel entfernt); **renderStyledPdfBlobFromHtmlString** injiziert das bei A4 + `k2-pr-doc` + **onclone**-Absicherung. Test: **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 85a00ab ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **PDF = dasselbe Produkt wie Vorschau:** Plakat `--k2-plakat-pdf-accent`; PDF-Capture nur `.plakat h1`. **Commit:** 0a30955
 
 **Vorher:** 20.03.26 – Plakat-PDF mit erzwungenem Weiß/Orange – **Commit:** 6a4baf8 (zurückgenommen inhaltlich)
 
@@ -12,11 +16,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Nach Vercel **Ready** Plakat **Mail/Teilen** testen – PDF öffnen: volle Plakatfläche, keine Toolbar. **Hinweis Mac Mail:** Ohne System-**Teilen** mit Datei landet oft nur **Download** + **mailto ohne Anhang** – dann PDF aus Downloads anhängen oder Teilen-Dialog nutzen.
+**Was wir JETZT tun:** Georg: Nach Push/Vercel **Ready** Newsletter + Plakat (Druck + PDF-Teilen) kurz prüfen.
 
-**Einordnung:** PDF-Pipeline (Iframe → Warten auf Fonts/Bilder → `captureRoot` → html2pdf). Opacity am Iframe + feste Canvas-Maße waren Kandidaten für „kommt nicht richtig an“ / leer klein.
+**Einordnung:** Eine Quelle **marketingWerbelinie.ts** für Druck-Kontrast + PDF-Raster (Plakat = Sonder-Layout `.plakat`, aber **dieselben Regeln** wie k2-pr-doc, nicht eigene Admin-Logik).
 
-**Nächster Schritt:** Bei Bedarf weitere Werbemittel-Templates (`.page`-Dokumente) mit gleicher Capture-Logik feinjustieren.
+**Nächster Schritt:** Neue Werbemittel nur über diese Export-Funktionen anbinden, keine zweite Capture-Spur im Admin.
 
 ---
 

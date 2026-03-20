@@ -204,19 +204,20 @@ export function getWerbeliniePrDocCss(className: string): string {
   }
   @media print {
     @page { margin: 10mm; size: A4; }
-    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; }
+    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; min-height: auto !important; }
     .no-print { display: none !important; }
     .page {
       box-shadow: none !important;
       margin: 0 !important;
       padding: 8mm 10mm !important;
-      page-break-after: always;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    body.format-a4 .page { width: 210mm !important; min-height: 297mm !important; }
-    body.format-a3 .page { width: 297mm !important; min-height: 420mm !important; }
-    body.format-a5 .page { width: 148mm !important; min-height: 210mm !important; }
+    .page:not(:last-child) { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    body.format-a4 .page { width: 210mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a3 .page { width: 297mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a5 .page { width: 148mm !important; min-height: 0 !important; height: auto !important; }
   }
   `
 }
@@ -422,13 +423,12 @@ export function getPlakatDesignPrDocCss(className: string, design?: HomepageDesi
   }
   @media print {
     @page { margin: 10mm; size: A4; }
-    body { margin: 0 !important; background: white !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; color: #1a1f3a !important; }
+    body { margin: 0 !important; background: white !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; color: #1a1f3a !important; min-height: auto !important; }
     .no-print { display: none !important; }
     .page {
       box-shadow: none !important;
       margin: 0 !important;
       padding: 8mm 10mm !important;
-      page-break-after: always;
       background: white !important;
       color: #1a1f3a !important;
       border: 1px solid #ddd !important;
@@ -436,12 +436,27 @@ export function getPlakatDesignPrDocCss(className: string, design?: HomepageDesi
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    .page .header h1, .page h1, .page h2 { color: #1a1f3a !important; -webkit-text-fill-color: #1a1f3a; background: none !important; }
-    .page .header-info, .page label { color: #5c5650 !important; }
+    /* Kein Umbruch nach der letzten Seite – sonst leere Safari-/PDF-Seite */
+    .page:not(:last-child) { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    .page .header h1, .page h1, .page h2 {
+      color: #1a1f3a !important;
+      -webkit-text-fill-color: #1a1f3a !important;
+      background: none !important;
+      background-image: none !important;
+      background-clip: border-box !important;
+      -webkit-background-clip: border-box !important;
+    }
+    .page .header-info, .page label { color: #5c5650 !important; -webkit-text-fill-color: #5c5650 !important; }
+    .page .newsletter-subject-line,
+    .page .presse-body,
+    .page .presse-headline,
+    .page .content { color: #1a1f3a !important; -webkit-text-fill-color: #1a1f3a !important; }
     .page textarea, .page input[type="text"] { background: #f9f9f9 !important; color: #1a1f3a !important; border-color: #ccc !important; }
-    body.format-a4 .page { width: 210mm !important; min-height: 297mm !important; }
-    body.format-a3 .page { width: 297mm !important; min-height: 420mm !important; }
-    body.format-a5 .page { width: 148mm !important; min-height: 210mm !important; }
+    /* Hohe min-height nur am Bildschirm – im Druck nur Inhaltshöhe (weniger leere Flächen / Umbruch-Chaos) */
+    body.format-a4 .page { width: 210mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a3 .page { width: 297mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a5 .page { width: 148mm !important; min-height: 0 !important; height: auto !important; }
   }
   `
 }
@@ -500,6 +515,170 @@ export function getK2PrDocHtml2canvasCaptureCss(): string {
       border-color: #ccc !important;
     }
   `.trim()
+}
+
+/** Einheitliche Fallback-Akzentfarbe für Plakat-PDF-Raster, wenn --k2-plakat-pdf-accent fehlt. */
+export const PLAKAT_PDF_ACCENT_FALLBACK = '#d97a50'
+
+/**
+ * @media print für die Plakat-Box (.plakat) – dieselbe Logik wie PR-Dok (.page): helles Papier,
+ * keine Gradienten-Titel (Safari / „Hintergrund drucken“ aus).
+ * @page nicht enthalten – Format steuert #print-page-size im Plakat-HTML.
+ */
+export function getPlakatPosterPrintCss(): string {
+  return `
+    @media print {
+      body { margin: 0; background: white !important; font-size: 9pt; line-height: 1.32; padding: 2mm; min-height: auto !important; }
+      .no-print { display: none; }
+      .plakat {
+        width: 100% !important;
+        min-height: 0 !important;
+        height: auto !important;
+        background: #fff !important;
+        color: #1a1f3a !important;
+        box-shadow: none !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .plakat h1 {
+        color: #1a1f3a !important;
+        -webkit-text-fill-color: #1a1f3a !important;
+        background: none !important;
+        background-image: none !important;
+        background-clip: border-box !important;
+        -webkit-background-clip: border-box !important;
+      }
+      .plakat .event-info,
+      .plakat .event-info p { color: #333 !important; -webkit-text-fill-color: #333 !important; }
+      .plakat .event-info strong { color: #1a1f3a !important; -webkit-text-fill-color: #1a1f3a !important; }
+      .plakat .qr-code { background: #f5f5f5 !important; }
+      .plakat .qr-code p { color: #555 !important; -webkit-text-fill-color: #555 !important; }
+      .plakat .contact,
+      .plakat .contact strong { color: #333 !important; -webkit-text-fill-color: #333 !important; }
+    }
+  `.trim()
+}
+
+/**
+ * Sportwagenmodus: **eine** CSS-Quelle für html2canvas/jsPDF (Werbemittel), statt Plakat-/PR-Zweig im Admin.
+ * Entspricht dem früheren Inline-Block in ScreenshotExportAdmin + getK2PrDocHtml2canvasCaptureCss.
+ */
+export function getWerbemittelHtml2canvasCaptureCss(safeHtml: string, pdfFormat: 'a4' | 'a3'): string {
+  const isK2PrDoc = pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml)
+  const isPlakatPreviewScale =
+    pdfFormat === 'a3' &&
+    (/width:\s*min\(100%,\s*760px\)/i.test(safeHtml) || /plakatWidth:\s*['"]min\(100%,\s*760px\)/i.test(safeHtml))
+
+  const bodyPdfCapture =
+    pdfFormat === 'a3'
+      ? `html, body { margin: 0 !important; padding: 0 !important; min-height: auto !important; }`
+      : `html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; min-height: auto !important; }`
+
+  const plakatH1Raster =
+    pdfFormat === 'a3'
+      ? `
+        .plakat h1 {
+          color: var(--k2-plakat-pdf-accent, ${PLAKAT_PDF_ACCENT_FALLBACK}) !important;
+          background: none !important;
+          background-image: none !important;
+          -webkit-text-fill-color: var(--k2-plakat-pdf-accent, ${PLAKAT_PDF_ACCENT_FALLBACK}) !important;
+          background-clip: border-box !important;
+          -webkit-background-clip: border-box !important;
+        }
+      `
+      : ''
+
+  const extraPlakat = isPlakatPreviewScale
+    ? `
+          body { padding: 0.5rem !important; }
+          .plakat h1 { font-size: 5rem !important; margin-bottom: 3rem !important; }
+          .plakat > h1 + p { font-size: 2rem !important; }
+          .plakat .event-info { font-size: 2rem !important; margin: 2rem 0 !important; }
+          .plakat .event-info strong { font-size: 2.2rem !important; }
+          .plakat .event-info p[style*="font-size"] { font-size: 2rem !important; }
+          .plakat p[style*="margin-top: 2rem"] { font-size: 1.6rem !important; }
+          .plakat .qr-code { margin: 3rem 0 !important; padding: 2rem !important; }
+          .plakat .qr-code img { width: 250px !important; height: 250px !important; }
+          .plakat .qr-code p { font-size: 1.2rem !important; }
+          .plakat .contact { font-size: 1.5rem !important; padding-top: 2rem !important; }
+          .plakat .contact strong { font-size: 1.8rem !important; }
+        `
+    : ''
+
+  const k2Pr = isK2PrDoc ? getK2PrDocHtml2canvasCaptureCss() : ''
+
+  return `
+        .no-print { display: none !important; }
+        ${bodyPdfCapture}
+        ${plakatH1Raster}
+        ${extraPlakat}
+        ${k2Pr}
+      `.trim()
+}
+
+function solidifyGradientHeadingsOnClone(el: HTMLElement): void {
+  el.style.setProperty('color', '#1a1f3a', 'important')
+  el.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
+  el.style.setProperty('background', 'none', 'important')
+  el.style.setProperty('background-image', 'none', 'important')
+  el.style.setProperty('background-clip', 'border-box', 'important')
+  el.style.setProperty('-webkit-background-clip', 'border-box', 'important')
+}
+
+/**
+ * onclone-Ergänzung für html2pdf: gleiche Zieloptik wie getWerbemittelHtml2canvasCaptureCss (DOM-Seite).
+ */
+export function applyWerbemittelCaptureToClone(
+  clonedDoc: Document,
+  safeHtml: string,
+  pdfFormat: 'a4' | 'a3'
+): void {
+  if (pdfFormat === 'a3') {
+    let accent = ''
+    try {
+      accent = getComputedStyle(clonedDoc.documentElement).getPropertyValue('--k2-plakat-pdf-accent').trim()
+    } catch {
+      accent = ''
+    }
+    if (!accent) accent = PLAKAT_PDF_ACCENT_FALLBACK
+    clonedDoc.querySelectorAll('.plakat h1').forEach(n => {
+      const h = n as HTMLElement
+      h.style.setProperty('color', accent, 'important')
+      h.style.setProperty('-webkit-text-fill-color', accent, 'important')
+      h.style.setProperty('background', 'none', 'important')
+      h.style.setProperty('background-image', 'none', 'important')
+      h.style.setProperty('background-clip', 'border-box', 'important')
+      h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
+    })
+  }
+  if (pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml)) {
+    const solidHeading = (sel: string) => {
+      clonedDoc.querySelectorAll(sel).forEach(n => solidifyGradientHeadingsOnClone(n as HTMLElement))
+    }
+    solidHeading('body.k2-pr-doc .page .header h1')
+    solidHeading('body.k2-pr-doc .page h1')
+    solidHeading('body.k2-pr-doc .page h2')
+    clonedDoc.querySelectorAll('body.k2-pr-doc .page .header-info').forEach(n => {
+      const h = n as HTMLElement
+      h.style.setProperty('color', '#5c5650', 'important')
+      h.style.setProperty('-webkit-text-fill-color', '#5c5650', 'important')
+    })
+    clonedDoc.querySelectorAll(
+      'body.k2-pr-doc .page .newsletter-subject-line, body.k2-pr-doc .page .presse-body, body.k2-pr-doc .page .presse-headline'
+    ).forEach(n => {
+      const h = n as HTMLElement
+      h.style.setProperty('color', '#1a1f3a', 'important')
+      h.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
+    })
+    clonedDoc.querySelectorAll('body.k2-pr-doc').forEach(n => {
+      ;(n as HTMLElement).style.setProperty('background', '#ffffff', 'important')
+    })
+    clonedDoc.querySelectorAll('body.k2-pr-doc .page').forEach(n => {
+      const h = n as HTMLElement
+      h.style.setProperty('background', '#ffffff', 'important')
+      h.style.setProperty('color', '#1a1f3a', 'important')
+    })
+  }
 }
 
 /**
@@ -623,19 +802,20 @@ export function getWerbeliniePrDocCssVk2(className: string): string {
   }
   @media print {
     @page { margin: 10mm; size: A4; }
-    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; }
+    body { background: #fff !important; padding: 0 !important; font-size: 9pt; line-height: 1.32; min-height: auto !important; }
     .no-print { display: none !important; }
     .page {
       box-shadow: none !important;
       margin: 0 !important;
       padding: 8mm 10mm !important;
-      page-break-after: always;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    body.format-a4 .page { width: 210mm !important; min-height: 297mm !important; }
-    body.format-a3 .page { width: 297mm !important; min-height: 420mm !important; }
-    body.format-a5 .page { width: 148mm !important; min-height: 210mm !important; }
+    .page:not(:last-child) { page-break-after: always; }
+    .page:last-child { page-break-after: auto; }
+    body.format-a4 .page { width: 210mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a3 .page { width: 297mm !important; min-height: 0 !important; height: auto !important; }
+    body.format-a5 .page { width: 148mm !important; min-height: 0 !important; height: auto !important; }
   }
   `
 }

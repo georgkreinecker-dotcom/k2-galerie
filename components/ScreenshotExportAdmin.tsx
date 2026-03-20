@@ -61,7 +61,18 @@ import { ImageProcessingOptions, type ImageProcessingMode } from '../src/compone
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
 import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
-import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, getPlakatDesignPrDocCss, getK2PrDocHtml2canvasCaptureCss, designToPlakatVars, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
+import {
+  getWerbeliniePrDocCss,
+  getWerbeliniePrDocCssVk2,
+  getPlakatDesignPrDocCss,
+  getPlakatPosterPrintCss,
+  getWerbemittelHtml2canvasCaptureCss,
+  applyWerbemittelCaptureToClone,
+  designToPlakatVars,
+  WERBELINIE_FONTS_URL,
+  WERBEUNTERLAGEN_STIL,
+  PROMO_FONTS_URL,
+} from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
 /** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
@@ -304,54 +315,8 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
     if (head) {
       const captureStyle = idoc.createElement('style')
       captureStyle.setAttribute('id', 'k2-werbemittel-pdf-capture')
-      /**
-       * Plakat: Gradient-Titel → html2canvas unsichtbar. Kein zweites Layout: nur h1 auf Akzent aus
-       * :root --k2-plakat-pdf-accent (vom gleichen buildPlakatWerbemittelHtml wie die Vorschau).
-       */
-      const plakatH1RasterOnly =
-        pdfFormat === 'a3'
-          ? `
-        .plakat h1 {
-          color: var(--k2-plakat-pdf-accent, #d97a50) !important;
-          background: none !important;
-          background-image: none !important;
-          -webkit-text-fill-color: var(--k2-plakat-pdf-accent, #d97a50) !important;
-          background-clip: border-box !important;
-          -webkit-background-clip: border-box !important;
-        }
-      `
-          : ''
-      let extraPlakat = ''
-      if (/width:\s*min\(100%,\s*760px\)/i.test(safeHtml) || /plakatWidth:\s*['"]min\(100%,\s*760px\)/i.test(safeHtml)) {
-        extraPlakat = `
-          body { padding: 0.5rem !important; }
-          .plakat h1 { font-size: 5rem !important; margin-bottom: 3rem !important; }
-          .plakat > h1 + p { font-size: 2rem !important; }
-          .plakat .event-info { font-size: 2rem !important; margin: 2rem 0 !important; }
-          .plakat .event-info strong { font-size: 2.2rem !important; }
-          .plakat .event-info p[style*="font-size"] { font-size: 2rem !important; }
-          .plakat p[style*="margin-top: 2rem"] { font-size: 1.6rem !important; }
-          .plakat .qr-code { margin: 3rem 0 !important; padding: 2rem !important; }
-          .plakat .qr-code img { width: 250px !important; height: 250px !important; }
-          .plakat .qr-code p { font-size: 1.2rem !important; }
-          .plakat .contact { font-size: 1.5rem !important; padding-top: 2rem !important; }
-          .plakat .contact strong { font-size: 1.8rem !important; }
-        `
-      }
-      const bodyPdfCapture =
-        pdfFormat === 'a3'
-          ? `html, body { margin: 0 !important; padding: 0 !important; min-height: auto !important; }`
-          : `html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; min-height: auto !important; }`
-      /** K2 PR-Dokumente (Newsletter, Presse, …): Screen-Styles + Gradient-Titel → html2canvas unlesbar; wie @media print erzwingen. */
-      const k2PrDocRasterCapture =
-        pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml) ? getK2PrDocHtml2canvasCaptureCss() : ''
-      captureStyle.textContent = `
-        .no-print { display: none !important; }
-        ${bodyPdfCapture}
-        ${plakatH1RasterOnly}
-        ${extraPlakat}
-        ${k2PrDocRasterCapture}
-      `
+      /** Eine Quelle: marketingWerbelinie (Plakat + k2-pr-doc + Vorschau-Skalierung). */
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtml, pdfFormat)
       head.appendChild(captureStyle)
     }
 
@@ -386,63 +351,7 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
             clonedDoc.querySelectorAll('.no-print').forEach(n => {
               ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
             })
-            if (pdfFormat === 'a3') {
-              let accent = ''
-              try {
-                accent =
-                  getComputedStyle(clonedDoc.documentElement).getPropertyValue('--k2-plakat-pdf-accent').trim() ||
-                  ''
-              } catch {
-                accent = ''
-              }
-              if (!accent) accent = '#d97a50'
-              clonedDoc.querySelectorAll('.plakat h1').forEach(n => {
-                const h = n as HTMLElement
-                h.style.setProperty('color', accent, 'important')
-                h.style.setProperty('-webkit-text-fill-color', accent, 'important')
-                h.style.setProperty('background', 'none', 'important')
-                h.style.setProperty('background-image', 'none', 'important')
-                h.style.setProperty('background-clip', 'border-box', 'important')
-                h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
-              })
-            }
-            if (pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml)) {
-              const solidHeading = (sel: string) => {
-                clonedDoc.querySelectorAll(sel).forEach(n => {
-                  const h = n as HTMLElement
-                  h.style.setProperty('color', '#1a1f3a', 'important')
-                  h.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
-                  h.style.setProperty('background', 'none', 'important')
-                  h.style.setProperty('background-image', 'none', 'important')
-                  h.style.setProperty('background-clip', 'border-box', 'important')
-                  h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
-                })
-              }
-              solidHeading('body.k2-pr-doc .page .header h1')
-              solidHeading('body.k2-pr-doc .page h1')
-              solidHeading('body.k2-pr-doc .page h2')
-              clonedDoc.querySelectorAll('body.k2-pr-doc .page .header-info').forEach(n => {
-                const h = n as HTMLElement
-                h.style.setProperty('color', '#5c5650', 'important')
-                h.style.setProperty('-webkit-text-fill-color', '#5c5650', 'important')
-              })
-              clonedDoc.querySelectorAll(
-                'body.k2-pr-doc .page .newsletter-subject-line, body.k2-pr-doc .page .presse-body, body.k2-pr-doc .page .presse-headline'
-              ).forEach(n => {
-                const h = n as HTMLElement
-                h.style.setProperty('color', '#1a1f3a', 'important')
-                h.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
-              })
-              clonedDoc.querySelectorAll('body.k2-pr-doc').forEach(n => {
-                const h = n as HTMLElement
-                h.style.setProperty('background', '#ffffff', 'important')
-              })
-              clonedDoc.querySelectorAll('body.k2-pr-doc .page').forEach(n => {
-                const h = n as HTMLElement
-                h.style.setProperty('background', '#ffffff', 'important')
-                h.style.setProperty('color', '#1a1f3a', 'important')
-              })
-            }
+            applyWerbemittelCaptureToClone(clonedDoc, safeHtml, pdfFormat)
           } catch {
             /* ignore */
           }
@@ -6120,7 +6029,7 @@ ${'='.repeat(60)}
     <button type="button" onclick="setFormat('a3'); return false;">A3</button>
     <button type="button" onclick="setFormat('a5'); return false;">A5</button>
     <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5. Safari: falls der Druck leer wirkt, „Hintergrund drucken“ im Druckdialog aktivieren.</p>
   </div>`
     const toolbarFull = `<div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
@@ -6129,7 +6038,7 @@ ${'='.repeat(60)}
     <button onclick="setFormat('a3'); return false;">A3</button>
     <button onclick="setFormat('a5'); return false;">A5</button>
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p>Galerie-Design, druckbar als A4 / A3 / A5.</p>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5. Safari: falls der Druck leer wirkt, „Hintergrund drucken“ im Druckdialog aktivieren.</p>
   </div>`
     const scriptIframe = `<script>
     var prDocClass = '${prDocClass}';
@@ -7258,15 +7167,7 @@ ${'='.repeat(60)}
   <style>
     /* PDF-Raster (html2canvas): nur Akzent für festen Titel – gleiche Quelle wie Screen-Design */
     :root { --k2-plakat-pdf-accent: ${pd.accent}; }
-    @media print {
-      @page { margin: 10mm; size: A4; }
-      body { margin: 0; background: white !important; font-size: 9pt; line-height: 1.32; padding: 2mm; }
-      .no-print { display: none; }
-      .plakat { width: 297mm; height: 420mm; background: white !important; color: #1a1f3a !important; }
-      .plakat h1 { color: #1a1f3a !important; }
-      .plakat .event-info { color: #333 !important; }
-      .plakat .contact { color: #666 !important; }
-    }
+    ${getPlakatPosterPrintCss()}
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: ${pd.font};
