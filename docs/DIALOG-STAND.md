@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** _(nach Push eintragen)_ ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** 4cb9d77 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Hard-Backup erklärt (Georg: „zu wenig Daten“):** `MANIFEST.txt` + Konsolen-Hinweis im Skript – **gallery-data.json** ist absichtlich **klein** (veröffentlichter Stand, Bilder als URL, kein Base64-Blob). **Mehr:** `backup/k2-vollbackup-latest.json` + Skript erneut; Code: `backup-code-to-backupmicro.sh`. **Commit:** d3d5315 ✅ auf GitHub
 
