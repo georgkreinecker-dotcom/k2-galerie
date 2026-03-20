@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF Raster stabilisieren:** Iframe wieder **offscreen** (`left:-9999px`) **ohne** fast-transparente **Opacity** (kann leeren/verfälschten Raster geben). **html2canvas:** keine erzwungenen **`width`/`height`** mehr (nur `windowWidth`/`windowHeight` + Scale) – vermeidet ungewolltes Croppen/Skalieren. Tests + Build grün – **Commit:** 8fbbb2a ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Plakat-PDF lesbar:** Ursache fast unsichtbarer Schrift = **Gradient-Titel** (`-webkit-text-fill-color: transparent`) + html2canvas-**weißer Hintergrund** → Titel „weg“; helle muted-Farben auf Weiß. **Fix:** für A3/`.plakat` Capture-CSS + **onclone** Titel auf **festes Orange** (#b54a1e), **weiße Karte**, **dunkle Fließtexte**, volle **297×420 mm** + **Flex space-between** (Inhalt über die Höhe verteilt). Tests + Build grün – **Commit:** 6a4baf8 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – Werbemittel-PDF Iframe/html2canvas – **Commit:** 8fbbb2a
 
 **Vorher:** 20.03.26 – **Werbemittel-PDF sauber:** `.no-print` für html2canvas, Plakat A3, Export-Overrides – **Commit:** b504209
 
