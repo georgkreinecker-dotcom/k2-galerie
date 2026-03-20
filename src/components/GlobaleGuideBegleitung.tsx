@@ -348,12 +348,27 @@ export function GlobaleGuideBegleitung() {
 
   if (!flow || !flow.aktiv || geschlossen) return null
 
-  // Guide-Overlay nirgends mehr anzeigen (war auf Kassa, Shop und anderen Seiten störend – komplett ausgeblendet)
-  const guideOverlayAnzeigen = false
-  if (!guideOverlayAnzeigen) return null
-
   const { name, pfad, context: flowContext } = flow
   const ctx: GuideContext = flowContext === 'vk2' ? 'vk2' : 'oeffentlich'
+
+  // Phase 1 ök2/VK2: Begleiter wieder einblenden – vereinheitlicht mit Stations-Fortschritt im Dialog.
+  // Ausnahmen: Shop/Kasse (volle Fläche, kein Overlay); nur wenn Admin-Session öffentlich/VK2 (nicht K2-Hauptkontext).
+  const pathLower = location.pathname.toLowerCase()
+  const aufShopOderKasse =
+    pathLower.includes('/shop') ||
+    pathLower.includes('kasse')
+  let adminSessionOeffentlichOderVk2 = false
+  try {
+    const ac = sessionStorage.getItem('k2-admin-context')
+    adminSessionOeffentlichOderVk2 = ac === 'oeffentlich' || ac === 'vk2'
+  } catch { /* ignore */ }
+
+  const guideOverlayAnzeigen =
+    (ctx === 'oeffentlich' || ctx === 'vk2') &&
+    adminSessionOeffentlichOderVk2 &&
+    !aufShopOderKasse
+
+  if (!guideOverlayAnzeigen) return null
   const schritte = baueSchritte(pfad, name, ctx)
   const istVerein = pfad === 'gemeinschaft'
   const akzentFarbe = istVerein ? '#42a4ff' : '#ff8c42'

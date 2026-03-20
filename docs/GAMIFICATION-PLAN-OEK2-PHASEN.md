@@ -62,7 +62,7 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 | Priorität | Bereich | Warum diese Reihenfolge |
 |-----------|---------|---------------------------|
-| **1** | **Guide / Onboarding** (GlobaleGuideBegleitung, ök2-Einstieg) | Entspricht „**vom ersten Zugang an**“ – größter Orientierungsgewinn, Kern bleibt parallel nutzbar. |
+| **1** | **Guide / Onboarding** (GlobaleGuideBegleitung, ök2-Einstieg) | Entspricht „**vom ersten Zugang an**“ – größter Orientierungsgewinn, Kern bleibt parallel nutzbar. **Umgesetzt (20.03.26):** Overlay wieder aktiv für **aktiven** Flow in **ök2/VK2** + Session `k2-admin-context` passend; **aus** auf **Shop/Kasse**; ök2 **/mein-bereich** startet Flow (ohne APf-Flag), Stations-Fortschritt im **selben** Dialog wie die Begleitung. |
 | **2** | **Galerie gestalten** (Schritte / Häkchen aus vorhandenen Keys) | Nutzer sehen „was fehlt noch“, ohne neuen Workflow. |
 | **3** | **Werke verwalten** (Ampel nur **Anzeige**: fehlendes Bild/Preis) | Hoher Nutzen in der Demo; technisch nur UI über bestehende Liste – **niemals** automatisch bereinigen oder schreiben. |
 
