@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Phase 1 Guide ök2:** **GlobaleGuideBegleitung** wieder sichtbar: nur bei **aktivem** Flow + **ök2/VK2**-Session (`k2-admin-context`), **nicht** auf **Shop/Kasse**; **/mein-bereich?context=oeffentlich** startet Demo-Flow (ohne `k2-oek2-from-apf`), Pfad aus URL validiert. Stations-Fortschritt bleibt **im selben** Dialog (Vereinheitlichung). Doku **GAMIFICATION-PLAN-OEK2-PHASEN.md** Zeile Phase 1. **Commit:** 3943425 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Phase 1 Guide ök2:** **GlobaleGuideBegleitung** wieder sichtbar: nur bei **aktivem** Flow + **ök2/VK2**-Session (`k2-admin-context`), **nicht** auf **Shop/Kasse**; **/mein-bereich?context=oeffentlich** startet Demo-Flow (ohne `k2-oek2-from-apf`), Pfad aus URL validiert. Stations-Fortschritt bleibt **im selben** Dialog (Vereinheitlichung). Doku **GAMIFICATION-PLAN-OEK2-PHASEN.md** Zeile Phase 1. **Commit:** 8e80018 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification: ein Erlebnis (Vereinheitlichung):** Georg: **nicht** zwei getrennte, sich **störenden** UI-Elemente – **Begleitung + Fortschritt/Status** sollen **zusammenwirken** (ein Rahmen, koordiniert). Festgehalten in **GAMIFICATION-OEK2.md** §2 „Vereinheitlichung“, Phasenplan + DoD + Checkliste. **Commit:** e967318 ✅ auf GitHub
 
