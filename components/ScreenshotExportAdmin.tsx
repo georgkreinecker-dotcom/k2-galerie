@@ -10529,82 +10529,79 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       </html>
     `
 
-    // Speichere das PDF automatisch im Dokumentenordner
+    // Speichern, dann Vorschau – eine Meldung (kein doppeltes alert durch async Reader + synchrones window.open)
     try {
-      // Erstelle ein Blob aus dem HTML
       const blob = new Blob([htmlContent], { type: 'text/html' })
-      const reader = new FileReader()
-      
-      reader.onload = () => {
-        try {
-          const base64 = reader.result as string
-          
-          const existingDocs = loadDocuments()
-          let doc: any
-          if (event?.id) {
-            doc = {
-              id: `qr-plakat-${event.id}-${Date.now()}`,
-              name: getNextWerbematerialVorschlagName(event.id, event.title, 'qr-plakat', 'QR-Code Plakat'),
-              type: 'text/html',
-              size: blob.size,
-              data: base64,
-              uploadedAt: new Date().toISOString(),
-              isPDF: false,
-              isPlaceholder: false,
-              category: 'pr-dokumente',
-              eventId: event.id,
-              eventTitle: event.title,
-              werbematerialTyp: 'qr-plakat'
-            }
-            saveDocuments([...existingDocs, doc])
-            setDocuments([...existingDocs, doc])
-          } else {
-            const existingInvitation = existingDocs.find((d: any) =>
-              d.name && d.name.includes('Virtuelle Einladung')
-            )
-            doc = {
-              id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
-              name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
-              type: 'text/html',
-              size: blob.size,
-              data: base64,
-              uploadedAt: new Date().toISOString(),
-              isPDF: false,
-              isPlaceholder: false
-            }
-            const updated = existingInvitation
-              ? existingDocs.map((d: any) => d.id === existingInvitation.id ? doc : d)
-              : [...existingDocs, doc]
-            saveDocuments(updated)
-            setDocuments(updated)
-          }
-          alert(`✅ Virtuelle Einladung wurde im Dokumentenordner gespeichert!\n\nDateiname: ${doc.name}`)
-        } catch (error) {
-          console.error('Fehler beim Speichern:', error)
-          alert('❌ Fehler beim Speichern der virtuellen Einladung')
-        }
-      }
-      
-      reader.onerror = () => {
-        alert('❌ Fehler beim Lesen der Datei')
-      }
-      
-      reader.readAsDataURL(blob)
-    } catch (error) {
-      console.error('Fehler beim Erstellen des Blobs:', error)
-      alert('❌ Fehler beim Speichern der virtuellen Einladung')
-    }
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = () => reject(new Error('Datei konnte nicht gelesen werden'))
+        r.readAsDataURL(blob)
+      })
 
-    // Öffne auch das PDF-Fenster zur Ansicht
-    const printWindow = window.open('', '_blank')
-    if (printWindow) try { printWindow.focus() } catch (_) { }
-    if (!printWindow) {
-      alert('Pop-up-Blocker verhindert PDF-Ansicht. Bitte erlaube Pop-ups.')
-      return
+      const existingDocs = loadDocuments()
+      let doc: any
+      if (event?.id) {
+        doc = {
+          id: `qr-plakat-${event.id}-${Date.now()}`,
+          name: getNextWerbematerialVorschlagName(event.id, event.title, 'qr-plakat', 'QR-Code Plakat'),
+          type: 'text/html',
+          size: blob.size,
+          data: base64,
+          uploadedAt: new Date().toISOString(),
+          isPDF: false,
+          isPlaceholder: false,
+          category: 'pr-dokumente',
+          eventId: event.id,
+          eventTitle: event.title,
+          werbematerialTyp: 'qr-plakat'
+        }
+        saveDocuments([...existingDocs, doc])
+        setDocuments([...existingDocs, doc])
+      } else {
+        const existingInvitation = existingDocs.find((d: any) =>
+          d.name && d.name.includes('Virtuelle Einladung')
+        )
+        doc = {
+          id: existingInvitation ? existingInvitation.id : `qr-plakat-${Date.now()}`,
+          name: `Virtuelle Einladung - QR-Code Plakat (${date}).html`,
+          type: 'text/html',
+          size: blob.size,
+          data: base64,
+          uploadedAt: new Date().toISOString(),
+          isPDF: false,
+          isPlaceholder: false
+        }
+        const updated = existingInvitation
+          ? existingDocs.map((d: any) => (d.id === existingInvitation.id ? doc : d))
+          : [...existingDocs, doc]
+        saveDocuments(updated)
+        setDocuments(updated)
+      }
+
+      const printWindow = window.open('', '_blank')
+      if (printWindow) {
+        try {
+          printWindow.focus()
+        } catch (_) {
+          /* ignore */
+        }
+        printWindow.document.write(htmlContent)
+        printWindow.document.close()
+        // Kein zweites alert: Vorschau im neuen Tab = sofort sichtbar; Speichern ist erledigt
+      } else {
+        alert(
+          `✅ Gespeichert im Dokumentenordner.\n\nDateiname: ${doc.name}\n\nDie Vorschau im neuen Tab wurde vom Browser blockiert (Pop-up-Blocker). Öffne das Plakat unter Marketing → Dokumente – oder erlaube Pop-ups für diese Seite und wähle „Neu erstellen“ erneut.`
+        )
+      }
+    } catch (error) {
+      console.error('QR-Code Plakat:', error)
+      alert(
+        (error as Error)?.message?.includes('lesen')
+          ? '❌ Datei konnte nicht gelesen werden.'
+          : '❌ Fehler beim Speichern der virtuellen Einladung.'
+      )
     }
-    
-    printWindow.document.write(htmlContent)
-    printWindow.document.close()
   }
 
   // PDF für Werke drucken
