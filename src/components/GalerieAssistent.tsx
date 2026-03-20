@@ -75,7 +75,7 @@ function baueSchritte(pfad: string): Step[] {
     },
     {
       id: 'presse',
-      title: 'Presse & Medien',
+      title: 'Event- und Medienplanung',
       short: istVerein
         ? 'Medienkit und Presse-Vorlage aus Vereinsdaten – für Pressearbeit und Einladungen an Medien.'
         : 'Medienkit und Presse-Vorlage – wenn du Presse oder Medien einladen willst.',

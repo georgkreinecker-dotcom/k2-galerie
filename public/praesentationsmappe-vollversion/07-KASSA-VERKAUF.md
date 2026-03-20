@@ -1,8 +1,8 @@
 # Kassa und Verkauf
 
-Verkauf vor Ort: Kasse in der App, Belege druckbar (z. B. WLAN-Etikettendrucker). Verkaufte Werke erfassen, Etiketten für Werke – alles aus einer Hand.
+Verkauf vor Ort: Kassa in der App, Belege druckbar (z. B. WLAN-Etikettendrucker). Verkaufte Werke erfassen, Etiketten fuer Werke – alles aus einer Hand.
 
-**Buchhaltung (Kassa → Buchhaltung):** Zeitraum wählen (z. B. Jahr), Kassabuch- und Verkäufe-CSV exportieren, Belege als PDF – Vorarbeit für den Steuerberater. Unterlagen 7 Jahre aufbewahren. Mit Pro++ vollständige Buchhaltung in einer App.
+**Buchhaltung (Kassa -> Buchhaltung):** Zeitraum waehlen (z. B. Jahr), Kassabuch- und Verkaeufe-CSV exportieren, Belege als PDF – Vorarbeit fuer den Steuerberater. Unterlagen 7 Jahre aufbewahren. Mit Pro++ vollstaendige Buchhaltung in einer App.
 
 ![Kasse – Werk hinzufügen, QR scannen, Auswahl](/img/oeffentlich/pm-kassa.png)
 

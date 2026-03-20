@@ -1,8 +1,8 @@
 # Deckblatt
 
-**K2 Galerie** – für die Kunst gedacht, für den Markt gemacht.
+**K2 Galerie** – fuer die Kunst gedacht, fuer den Markt gemacht.
 
-Für Künstler:innen, die gesehen werden wollen. Deine Ideen, deine Werke verdienen mehr als einen Instagram-Post.
+Fuer Kuenstler:innen, die gesehen werden wollen. Deine Ideen und Produkte verdienen mehr als einen Instagram-Post.
 
 ---
 

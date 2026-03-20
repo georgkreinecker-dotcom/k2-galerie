@@ -28,9 +28,9 @@ Unter **„Dokumente“** können Sie Presse-Texte, Einladungen oder Flyer verwa
 
 ---
 
-## Events & Werbung
+## Event- und Medienplanung
 
-Unter **„Events & Werbung“** finden Sie alles für Veranstaltungen und Öffentlichkeitsarbeit: Termine anlegen (Vernissagen, Vereinsfeste), dazu Einladungen, Flyer und PR-Vorschläge. Vollständige Beschreibung: [Eventplanung & Öffentlichkeitsarbeit](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md).
+Unter **„Event- und Medienplanung“** finden Sie alles fuer Veranstaltungen und Oeffentlichkeitsarbeit: Termine anlegen (Vernissagen, Vereinsfeste), dazu Einladungen, Flyer, PR-Vorschlaege und Verteiler. Vollstaendige Beschreibung: [Event- und Medienplanung](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md).
 
 ---
 
@@ -46,5 +46,5 @@ Unter **„Kassa“** erfassen Sie Einnahmen und Ausgaben des Vereins, drucken B
 - **Design** = Erscheinungsbild der Vereinsgalerie.
 - **Einstellungen** = Stammdaten, Backup, Veröffentlichen, Passwort, Drucker.
 - **Dokumente** = Presse, Einladungen, Flyer.
-- **Events & Werbung** = Veranstaltungen, Flyer, Öffentlichkeitsarbeit.
+- **Event- und Medienplanung** = Veranstaltungen, Mediengenerator, Verteiler, Oeffentlichkeitsarbeit.
 - **Kassa** = Einnahmen, Ausgaben, Belege, Kassabuch.

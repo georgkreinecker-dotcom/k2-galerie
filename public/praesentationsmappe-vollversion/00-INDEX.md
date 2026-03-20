@@ -10,11 +10,11 @@ Willkommen, Slogan, erster Eindruck.
 
 2. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-Künstlerapp für Galerien und Künstler:innen – eine Zeile, klar.
+Plattform fuer Ideen und Produkte: Sparten-Stammbaum fuer Werke plus Event- und Medienplanung in einem Ablauf.
 
-3. [Für wen](03-FUER-WEN.md)
+3. [Fuer wen](03-FUER-WEN.md)
 
-Künstler:innen, Galerien, Kunstvereine (VK2) – Nutzen pro Zielgruppe.
+Kuenstler:innen, Galerien, Vereine und weitere Maerkte – Nutzen pro Zielgruppe.
 
 4. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
@@ -32,9 +32,9 @@ Farben, Texte, Willkommensbild – ein Klick veröffentlichen, gleicher Stand ü
 
 Verkauf vor Ort, Kasse in der App, Belege.
 
-8. [Events und Öffentlichkeitsarbeit](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
+8. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Veranstaltungen, Flyer, Presse, Einladungen – aus einer Hand.
+Ein Bereich fuer Planung, Mediengenerator und Verteiler – von Event bis Aussendung in einem Fluss.
 
 9. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 

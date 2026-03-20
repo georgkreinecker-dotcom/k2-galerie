@@ -33,7 +33,7 @@
 ### 4. Verteiler (E-Mail-Adressen)
 
 - **Quelle:** [Medienverteiler-Kurz.md](Medienverteiler-Kurz.md) (Übersicht) bzw. [../MEDIENVERTEILER-EROEFFNUNG.md](../MEDIENVERTEILER-EROEFFNUNG.md) (vollständig mit E-Mails).
-- **In der App:** Eventplanung → Presse & Medien → Medienspiegel: Häkchen setzen → „E-Mail-Adressen kopieren“ → in E-Mail bei BCC einfügen.
+- **In der App:** Event- und Medienplanung → Mediengenerator & Verteiler → Medienspiegel: Haekchen setzen -> „E-Mail-Adressen kopieren“ -> in E-Mail bei BCC einfuegen.
 - **Reihenfolge:** Zuerst regional (OÖN, MeinBezirk, Tips, ORF OÖ), dann überregional (Standard, Presse).
 
 ### 5. E-Mail versenden

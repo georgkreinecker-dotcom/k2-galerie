@@ -1,8 +1,8 @@
 # Demo und Lizenz
 
-**ök2** ausprobieren – Demo-Galerie im Browser, keine Anmeldung. Von der Demo zur eigenen Galerie: Lizenz erwerben (Basic, Pro, Pro+, Pro++, VK2), gleiche Oberfläche, eigene Daten.
+**oek2** ausprobieren – Demo-Galerie im Browser, keine Anmeldung. Von der Demo zur eigenen Galerie: Lizenz erwerben (Basic, Pro, Pro+, Pro++, VK2), gleiche Oberflaeche, eigene Daten.
 
-Lizenzen: Basic (Einstieg), Pro, Pro+ (Marketingbereich), Pro++ (inkl. Rechnung § 11 UStG und vollständiger Buchhaltung: Kassabuch-/Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater; 7 Jahre Aufbewahrung), VK2 für alle Vereine (Kunstvereine = Einstieg; ab 10 Mitgliedern für den Verein kostenfrei). Keine Mindestlaufzeit, jederzeit kündbar.
+Lizenzen: Basic (Einstieg), Pro, Pro+ (Marketingbereich), Pro++ (inkl. Rechnung § 11 UStG und vollstaendiger Buchhaltung: Kassabuch-/Verkaeufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit fuer den Steuerberater; 7 Jahre Aufbewahrung), VK2 fuer alle Vereine (Kunstvereine = Einstieg; ab 10 Mitgliedern fuer den Verein kostenfrei). Keine Mindestlaufzeit, jederzeit kuendbar.
 
 ![Lizenz abschließen – Basic, Pro, Pro+, Zahlung per Karte (Stripe)](/img/oeffentlich/pm-lizenz-abschliessen.png)
 

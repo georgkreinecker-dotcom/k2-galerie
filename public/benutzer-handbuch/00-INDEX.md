@@ -18,9 +18,9 @@ Werke, Design, Einstellungen, Dokumente, Events, Kassa, Empfehlungsprogramm.
 
 Willkommensbild, Galerie-Karte, Werke erfassen und bearbeiten, Design anpassen, Veröffentlichen.
 
-4. [Eventplanung & Öffentlichkeitsarbeit](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md)
+4. [Event- und Medienplanung](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md)
 
-Events & Werbung (bzw. Events & Ausstellungen), Presse, Ausstellung gestalten und texten; Veranstaltungen, Flyer, Einladungen, Werbematerial.
+Event- und Medienplanung mit Veranstaltungen, Mediengenerator und Verteiler; Einladungen, Flyer, Presse und Social in einem Ablauf.
 
 5. [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md)
 

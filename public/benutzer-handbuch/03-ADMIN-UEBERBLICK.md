@@ -28,21 +28,15 @@ Unter **„Dokumente“** können Sie z. B. Presse-Texte, Vita, Einladungen oder
 
 ---
 
-## Events & Ausstellungen (bzw. Events & Werbung)
+## Event- und Medienplanung
 
-Unter **„Events & Ausstellungen“** (Galerie) bzw. **„Events & Werbung“** (Vereinsplattform) finden Sie alles für Veranstaltungen und Werbung: Termine anlegen (Vernissagen, Galerieeröffnungen, Finissagen), dazu Einladungen, Flyer, Presse und PR-Vorschläge (Newsletter, Plakat, Social Media). Der Bereich gliedert sich in **Veranstaltungen** und **Flyer & Werbematerial**. Eine **vollständige Beschreibung** steht im Kapitel [Eventplanung & Öffentlichkeitsarbeit](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md).
-
----
-
-## Presse & Dokumente
-
-Unter **„Presse & Dokumente“** (bzw. **„Presse & Medien“**) haben Sie Zugriff auf Ihre Pressemappe, Vita und Presse-Texte – vorbefüllt mit Ihren Stammdaten, druckfertig für Galerien, Medien und Veranstalter. Presse-Einladungen und Presseaussendungen zu einzelnen Events finden Sie im Bereich **Events & Ausstellungen** → **Flyer & Werbematerial** bei der jeweiligen Veranstaltung.
+Unter **„Event- und Medienplanung“** finden Sie den gesamten Ablauf in einem Bereich: Termine anlegen (z. B. Vernissagen, Galerieeroeffnungen), Werbematerial erzeugen (Flyer, Presse, Newsletter, Plakat, Social Media) und den passenden Verteiler direkt nutzen (Medienspiegel + Newsletter-Empfaenger). Der Bereich gliedert sich in **Veranstaltungen** und **Mediengenerator & Verteiler**. Eine **vollstaendige Beschreibung** steht im Kapitel [Event- und Medienplanung](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md).
 
 ---
 
 ## Ausstellung gestalten und texten
 
-**Ausstellung gestalten:** Das Erscheinungsbild Ihrer Galerie (Willkommen, Galerie-Ansicht, Farben, Texte) richten Sie unter **Design** ein – siehe Kapitel [Galerie gestalten, Werke anlegen](02-GALERIE-GESTALTEN.md). **Ausstellung texten:** Texte für Presse, Einladungen, Wandtexte und PR (z. B. Vernissage, Finissage) erzeugen Sie aus Ihren Stammdaten und Events unter **Events & Ausstellungen** → **Flyer & Werbematerial** (Druckversionen, PR-Vorschläge). So bleiben Galerie und Werbetexte einheitlich.
+**Ausstellung gestalten:** Das Erscheinungsbild Ihrer Galerie (Willkommen, Galerie-Ansicht, Farben, Texte) richten Sie unter **Design** ein – siehe Kapitel [Galerie gestalten, Werke anlegen](02-GALERIE-GESTALTEN.md). **Ausstellung texten:** Texte für Presse, Einladungen, Wandtexte und PR erzeugen Sie unter **Event- und Medienplanung** → **Mediengenerator & Werbematerial**. So bleiben Galerie und Werbetexte einheitlich.
 
 ---
 
@@ -70,8 +64,7 @@ Je nach Produkt (Galerie oder Vereinsplattform) gibt es weitere Tabs – z. B. *
 - **Design** = Willkommensbild, Texte, Aussehen der Galerie.
 - **Einstellungen** = Stammdaten, Backup, Veröffentlichen, Passwort, Drucker.
 - **Dokumente** = Presse, Vita, Einladungen usw.
-- **Events & Ausstellungen** (bzw. **Events & Werbung**) = Veranstaltungen anlegen, Flyer, Presse, Einladungen, PR-Vorschläge.
-- **Presse & Dokumente** = Pressemappe, Vita, Presse-Texte – druckfertig für Medien und Partner.
-- **Ausstellung gestalten und texten** = Design für Galerie und Willkommen; Texte für Presse und Einladungen unter Events → Flyer & Werbematerial.
+- **Event- und Medienplanung** = Veranstaltungen anlegen, Werbematerial erzeugen, Verteiler nutzen und mit einem Ablauf versenden.
+- **Ausstellung gestalten und texten** = Design fuer Galerie und Willkommen; Texte fuer Presse und Einladungen unter Event- und Medienplanung -> Mediengenerator & Verteiler.
 - **Kassa und Kassabuch** = Verkäufe erfassen, Belege drucken, Kassabuch führen (Eingänge/Ausgänge, optional).
 - **Empfehlungsprogramm** = Link teilen, Rabatt für Geworbene, Gutschrift für Sie (je nach Lizenz).

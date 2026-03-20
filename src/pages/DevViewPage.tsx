@@ -815,7 +815,7 @@ end tell`
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
-    { id: 'presse', name: 'Presse & Medien (K2)', component: ScreenshotExportAdmin },
+    { id: 'presse', name: 'Event- und Medienplanung (K2)', component: ScreenshotExportAdmin },
     { id: 'oeffentlichkeitsarbeit', name: 'Öffentlichkeitsarbeit (K2)', component: ScreenshotExportAdmin },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
@@ -946,13 +946,13 @@ end tell`
         </Suspense>
       )
     }
-    // Presse & Medien / Öffentlichkeitsarbeit aus Smart Panel → Admin mit richtigem Tab (APf zeigt sonst Galerie)
+    // Event- und Medienplanung / Oeffentlichkeitsarbeit aus Smart Panel -> Admin mit richtigem Tab (APf zeigt sonst Galerie)
     if (pageToRender === 'presse') {
       if (typeof window !== 'undefined' && window.self !== window.top) {
         return <AdminPreviewPlaceholder key="presse-placeholder" />
       }
       return (
-        <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Presse & Medien wird geladen…</div>}>
+        <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Event- und Medienplanung wird geladen…</div>}>
           <ScreenshotExportAdmin key="admin-presse" forceTab="presse" />
         </Suspense>
       )

@@ -29,10 +29,9 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 | Bereich | Inhalt |
 |--------|--------|
 | **Galerie** | Werke mit Foto, Titel, Preis, Kategorie; Vorschau; Veröffentlichen; gleicher Stand auf allen Geräten (Mac, iPad, Handy). |
-| **Admin** | Werke hinzufügen/bearbeiten, Aussehen & Design, Einstellungen (Stammdaten, Backup, Lizenz), Schritt-für-Schritt-Assistent, Kassa/Lager/Listen/Werkkatalog, Events & Ausstellungen, Presse & Medien. |
+| **Admin** | Werke hinzufuegen/bearbeiten, Aussehen & Design, Einstellungen (Stammdaten, Backup, Lizenz), Schritt-fuer-Schritt-Assistent, Kassa/Lager/Listen/Werkkatalog, Event- und Medienplanung. |
 | **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: Kassabuch (Eingänge); ab Pro+: Kassausgänge, Bar, Beleg (QR/Foto), PDF-Export. Basic: keine Kassa. |
-| **Events & Ausstellungen** | Events anlegen, Einladungen, Flyer, Presseaussendung pro Event, Social Media – aus Stammdaten und Event-Daten. |
-| **Presse & Medien** | Medienkit (Kontakt, Galerie, Kurzporträt), Presse-Vorlage, Einladung an Journalist:innen; Abgrenzung zu Event-spezifischer Presse. |
+| **Event- und Medienplanung** | Events anlegen, Einladungen, Mediengenerator, Verteiler, Presseaussendung pro Event und Social Media – aus Stammdaten und Event-Daten. |
 | **Werbeunterlagen** | Newsletter, Plakat, Flyer, PR-Vorschläge – aus einer Quelle, Galerie-Design, druckbar. |
 | **Lizenzen** | Basic (15 €/Monat), Pro (35 €/Monat), Pro+ (45 €/Monat), Pro++ (55 €/Monat, inkl. Rechnung § 11 UStG), VK2 (Kunstvereine, ab 10 Mitgliedern kostenfrei). Stripe-Checkout, Bestätigung druckbar, keine Kartendaten in der App. |
 | **Multi-Tenant** | **K2** = echte Galerie (Stammdaten, Werke). **ök2** = öffentliche Demo (Musterwerke, Mustertexte). **VK2** = Vereinsplattform (Mitglieder, Vereinsgalerie, eigene Stammdaten). Keine Vermischung. |
@@ -79,7 +78,7 @@ Web-App plattformneutral; keine produktive Funktion setzt einen Mac voraus. Quel
 |-------|-------|--------|
 | Basic | 15 €/Monat | Galerie, Werke, Design; keine Kassa. |
 | Pro | 35 €/Monat | + Kassa (Verkauf erfassen), Kassabuch nur Eingänge. |
-| Pro+ | 45 €/Monat | + Volles Kassabuch (Eingänge + Ausgänge), gesamter Marketingbereich (Events, Flyer, Presse, Social). |
+| Pro+ | 45 €/Monat | + Volles Kassabuch (Eingaenge + Ausgaenge), gesamter Marketingbereich (Event- und Medienplanung, Flyer, Presse, Social). |
 | Pro++ | 55 €/Monat | Pro+ inkl. Rechnung (§ 11 UStG): fortlaufende Nummer, Pflichtangaben, USt-Aufschlüsselung. |
 | VK2 (Kunstvereine) | ab 10 Mitgliedern kostenfrei | Vereinsplattform, Mitglieder, Vereinsgalerie; Lizenzmitglied 50 % Lizenz. |
 
@@ -92,7 +91,7 @@ Quelle: src/config/licencePricing.ts. Kein direkter Kundenkontakt; Bestätigung 
 Zur **erweiterten Präsentationsmappe** gehören:
 
 1. **Dieser Prospekt** (eine Seite, in der App: mök2 → K2 Galerie Prospekt / Präsentationsmappe, „Als PDF drucken“).
-2. **Benutzerhandbuch** – für Lizenznehmer:innen, Piloten und Vereine. Inhalt: Kurzanleitung (alle Bereiche auf einen Blick), detailliertes Inhaltsverzeichnis, 7 Kapitel (Erste Schritte, Galerie gestalten, Admin im Überblick, Häufige Fragen, Vereinsplattform VK2, Demo und Lizenz ök2, Eventplanung & Werbung). Zum Nachschlagen, in der App lesbar und druckbar. **Quelle:** `public/benutzer-handbuch/*.md`. **In der App:** Route `/benutzer-handbuch` bzw. Projekte → K2 Galerie → Benutzerhandbuch.
+2. **Benutzerhandbuch** – fuer Lizenznehmer:innen, Piloten und Vereine. Inhalt: Kurzanleitung (alle Bereiche auf einen Blick), detailliertes Inhaltsverzeichnis, 7 Kapitel (Erste Schritte, Galerie gestalten, Admin im Ueberblick, Haeufige Fragen, Vereinsplattform VK2, Demo und Lizenz oek2, Event- und Medienplanung). Zum Nachschlagen, in der App lesbar und druckbar. **Quelle:** `public/benutzer-handbuch/*.md`. **In der App:** Route `/benutzer-handbuch` bzw. Projekte → K2 Galerie → Benutzerhandbuch.
 
 Für Pitches und Partner: Prospekt (1 Seite) beilegen oder zeigen; auf Wunsch zusätzlich Link zum Handbuch oder Handbuch als PDF mitgeben.
 

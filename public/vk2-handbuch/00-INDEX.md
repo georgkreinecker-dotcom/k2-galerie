@@ -12,7 +12,7 @@ Schwerpunkt gemeinsame Interessen, Mitgliederliste, optional Galerie – Zugang 
 
 2. [Admin im Überblick](04-ADMIN-UEBERBLICK.md)
 
-Tabs im Admin: Werke/Mitglieder in der Galerie, Design, Einstellungen, Dokumente, Events & Werbung, Kassa.
+Tabs im Admin: Werke/Mitglieder in der Galerie, Design, Einstellungen, Dokumente, Event- und Medienplanung, Kassa.
 
 3. [Verein, Stammdaten und Mitglieder](02-VEREIN-STAMMDATEN-MITGLIEDER.md)
 
@@ -26,9 +26,9 @@ Wo anlegen, „+ Profil anlegen“, „User übernehmen“, CSV-Import, nur Name
 
 Optionale Galerie-Profile, Katalog drucken. Kassa: Einnahmen und Ausgaben erfassen, Bon und Rechnung drucken, Ausgabenbeleg, Storno, Buchhaltung.
 
-6. [Eventplanung & Öffentlichkeitsarbeit](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md)
+6. [Event- und Medienplanung](06-EVENTPLANUNG-OEFFENTLICHKEITSARBEIT.md)
 
-Veranstaltungen anlegen, Flyer und Einladungen, Presse und PR-Vorschläge aus Vereins-Stammdaten.
+Veranstaltungen anlegen, Mediengenerator und Verteiler nutzen, Presse und PR-Vorschlaege aus Vereins-Stammdaten.
 
 7. [Demo und Lizenz](07-DEMO-LIZENZ.md)
 
@@ -44,7 +44,7 @@ Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
 
 10. [Kurz zusammengefasst](05-KURZ-ZUSAMMENGEFASST.md)
 
-Überblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Events, Einstellungen.
+Ueberblick: Mitgliederliste, Stammdaten, Galerie optional, Katalog, Kassa, Event- und Medienplanung, Einstellungen.
 
 11. [Impressum](10-IMPRESSUM.md)
 

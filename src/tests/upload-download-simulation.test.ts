@@ -217,14 +217,16 @@ describe('Upload-Download-Simulation (Protokoll)', () => {
                 mkFullArtwork('0030', {
                   imageUrl: 'https://server.com/30.jpg',
                   title: 'Von Server',
-                  price: 480
+                  price: 480,
+                  updatedAt: '2026-01-02T12:00:00Z'
                 })
               ]
               const local = [
                 mkFullArtwork('K2-K-0030', {
                   imageUrl: KLEINES_PNG_BASE64,
                   title: 'Lokal',
-                  price: 999
+                  price: 999,
+                  updatedAt: '2026-01-01T12:00:00Z'
                 })
               ]
               const { merged } = applyServerDataToLocal(server, local)

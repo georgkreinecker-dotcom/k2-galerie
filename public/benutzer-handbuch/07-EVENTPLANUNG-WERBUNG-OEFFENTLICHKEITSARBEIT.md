@@ -1,15 +1,15 @@
-# Eventplanung, Werbung & Öffentlichkeitsarbeit
+# Event- und Medienplanung
 
-Im Admin finden Sie unter **„Events & Ausstellungen“** (bzw. **„Events & Werbung“** bei der Vereinsplattform) alles für Veranstaltungen, Einladungen, Flyer und Presse. Hier können Sie **Ausstellung gestalten und texten**: Termine anlegen, Werbetexte und Presse aus Ihren Stammdaten erzeugen. Der Bereich ist in zwei Teile gegliedert: **Veranstaltungen** und **Flyer & Werbematerial**.
+Im Admin finden Sie unter **„Event- und Medienplanung“** alles fuer Veranstaltungen, Einladungen, Flyer, Presse und Verteiler. Der Bereich ist in zwei Teile gegliedert: **Veranstaltungen** und **Mediengenerator & Verteiler**.
 
 ---
 
 ## Wo Sie den Bereich finden
 
-- Im Admin: Klick auf die Karte **„Events & Ausstellungen“** (oder **„Events & Werbung“** bei VK2).
+- Im Admin: Klick auf die Karte **„Event- und Medienplanung“**.
 - Oben im Bereich sehen Sie zwei Schaltflächen:
   - **Veranstaltungen** – Events anlegen und Termine verwalten.
-  - **Flyer & Werbematerial** – Einladungen, Flyer, Presse, Social Media ansehen und drucken.
+  - **Mediengenerator & Verteiler** – Einladungen, Flyer, Presse, Social Media ansehen, drucken und Verteiler nutzen.
 
 ---
 
@@ -29,18 +29,19 @@ Die Events erscheinen auf Ihrer Galerie (sofern Sie eine entsprechende Sektion e
 
 ---
 
-## 2. Flyer & Werbematerial (Öffentlichkeitsarbeit)
+## 2. Mediengenerator & Verteiler (Öffentlichkeitsarbeit)
 
-Wechseln Sie oben auf **„Flyer & Werbematerial“**. Dort sehen Sie zu jedem angelegten Event eine Rubrik mit:
+Wechseln Sie oben auf **„Mediengenerator & Verteiler“**. Dort sehen Sie zu jedem angelegten Event eine Rubrik mit:
 
 - **Druckversionen:** Flyer, Presse-Einladung – direkt ansehen und als PDF drucken.
 - **Eigene Dokumente:** Zusätzliche Texte oder Blätter, die Sie dem Event zuordnen.
-- **PR-Vorschläge:** Vorgefertigte Texte für Newsletter, Plakat, Presseaussendung und Social Media – aus Ihren Stammdaten (Galerie, Künstler:innen, Kontakt) erzeugt. Sie können die Texte übernehmen, anpassen und z. B. an die Presse schicken oder in sozialen Netzwerken nutzen.
+- **PR-Vorschläge:** Vorgefertigte Texte fuer Newsletter, Plakat, Presseaussendung und Social Media – aus Ihren Stammdaten (Galerie, Kuenstler:innen, Kontakt) erzeugt.
+- **Verteiler:** Medienspiegel und Newsletter-Empfaenger direkt im gleichen Ablauf.
 
 **Ablauf in Kurzform:**
 
 1. Event unter **Veranstaltungen** anlegen (Titel, Datum, Ort, Art, Beschreibung).
-2. Unter **Flyer & Werbematerial** die passende Event-Rubrik öffnen.
+2. Unter **Mediengenerator & Verteiler** die passende Event-Rubrik oeffnen.
 3. Flyer, Presse-Einladung oder PR-Vorschläge ansehen, bei Bedarf bearbeiten und drucken bzw. als PDF speichern oder den Text kopieren und versenden.
 
 ---
@@ -67,7 +68,7 @@ Alle Werbetexte (Presse, Flyer, Einladungen, Social Media) werden aus Ihren **St
 
 ## Kurz zusammengefasst
 
-- **Eventplanung** = Bereich **„Events & Ausstellungen“** im Admin.
-- **Zwei Teile:** (1) **Veranstaltungen** – Events anlegen und verwalten; (2) **Flyer & Werbematerial** – Einladungen, Flyer, Presse, PR-Vorschläge, Social Media.
-- Zuerst Event anlegen, dann in **Flyer & Werbematerial** die zugehörigen Dokumente nutzen und drucken oder versenden.
+- **Event- und Medienplanung** = Bereich **„Event- und Medienplanung“** im Admin.
+- **Zwei Teile:** (1) **Veranstaltungen** – Events anlegen und verwalten; (2) **Mediengenerator & Verteiler** – Einladungen, Flyer, Presse, PR-Vorschlaege, Social Media und Verteiler.
+- Zuerst Event anlegen, dann in **Mediengenerator & Verteiler** die zugehoerigen Dokumente nutzen und drucken oder versenden.
 - Stammdaten unter Einstellungen pflegen – sie sind die Quelle für alle Werbetexte.

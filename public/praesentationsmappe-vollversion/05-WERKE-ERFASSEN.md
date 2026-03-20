@@ -1,6 +1,6 @@
 # Werke erfassen und präsentieren
 
-Fotos, Beschreibungen, Kategorien, Preise – alles in der App. Professioneller Eindruck ohne IT-Kenntnisse. Werke am Handy oder Tablet erfassen, am Rechner nachbearbeiten; Objektfreistellung und professioneller Hintergrund optional (z. B. für Katalog).
+Fotos, Beschreibungen, Preise und Zuordnung nach den neuen Sparten – alles in der App. Der neue Aufbau mit Stammbaum-Logik sorgt für klare Ordnung von Werkgruppen und Werkkarten. Werke am Handy oder Tablet erfassen, am Rechner nachbearbeiten; Objektfreistellung und professioneller Hintergrund optional (z. B. fuer Katalog).
 
 ![Werke verwalten – Neues Werk, Liste mit Karten](/img/oeffentlich/pm-werke-verwalten.png)
 

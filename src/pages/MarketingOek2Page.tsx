@@ -321,7 +321,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
                 textAlign: 'left',
               }}
             >
-              📰 Presse & Medien
+              📰 Event- und Medienplanung
             </button>
             <Link
               to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}
@@ -727,7 +727,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: 'rgba(255,255,255,0.65)' }}>Einsatz: Neutrale Plattform-Story für Presse – ohne persönliche Details, für K2, ök2 und VK2.</p>
         </div>
         <p style={{ marginTop: '1rem', marginBottom: 0 }}>
-          <Link to="/admin?tab=presse" style={{ display: 'inline-block', padding: '0.6rem 1rem', background: 'rgba(95,251,241,0.15)', color: '#5ffbf1', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.4)', fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem', marginRight: '0.75rem' }}>Presse & Medien in K2 öffnen →</Link>
+          <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit" style={{ display: 'inline-block', padding: '0.6rem 1rem', background: 'rgba(95,251,241,0.15)', color: '#5ffbf1', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.4)', fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem', marginRight: '0.75rem' }}>Event- und Medienplanung in K2 öffnen →</Link>
           <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1" style={{ display: 'inline-block', padding: '0.6rem 1rem', background: 'rgba(95,251,241,0.15)', color: '#5ffbf1', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.4)', fontWeight: 600, textDecoration: 'none', fontSize: '0.9rem' }}>Öffentlichkeitsarbeit in K2 (Modal) öffnen →</Link>
         </p>
         <div style={{ padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', borderRadius: '8px', border: '1px solid rgba(95,251,241,0.2)', marginTop: '0.5rem' }}>
@@ -782,7 +782,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Muster pro Werbetyp (Eröffnung)
         </h2>
         <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Auf Basis der mök2-Marketingstrategie und der Musterstorys (§1a / §1b aus Medienstudio K2) gibt es für <strong>jeden Eintrag</strong> in der Öffentlichkeitsarbeit (Admin → Eventplanung → Öffentlichkeitsarbeit) ein fertiges Muster: Newsletter, Plakat, Event-Flyer, Presse (neutral + lokal), Social Media, Präsentationsmappen.
+          Auf Basis der mök2-Marketingstrategie und der Musterstorys (§1a / §1b aus Medienstudio K2) gibt es für <strong>jeden Eintrag</strong> in der Event- und Medienplanung (Admin → Event- und Medienplanung → Oeffentlichkeitsarbeit) ein fertiges Muster: Newsletter, Plakat, Event-Flyer, Presse (neutral + lokal), Social Media, Praesentationsmappen.
         </p>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Vollständige Mustersammlung (Copy-Paste, Platzhalter ersetzen):</strong>{' '}

@@ -41,7 +41,7 @@
 | [SICHTBARKEIT-PHASE1-VORLAGEN.md](../SICHTBARKEIT-PHASE1-VORLAGEN.md) | Copy-Paste Phase 1 (Google Business, Social, QR, Presse). |
 | [K2-GALERIE-PRAESENTATIONSMAPPE.md](../K2-GALERIE-PRAESENTATIONSMAPPE.md) | Prospekt, erweiterte Mappe (inkl. Benutzerhandbuch). |
 | [USP-UND-MARKTCHANCEN.md](../USP-UND-MARKTCHANCEN.md) | USPs und Marktchancen. |
-| [MEDIENSTUDIO-K2.md](../MEDIENSTUDIO-K2.md) | Presse & Medien, Medienkit, Redaktionsplan. |
+| [MEDIENSTUDIO-K2.md](../MEDIENSTUDIO-K2.md) | Event- und Medienplanung, Medienkit, Redaktionsplan. |
 | [PRESSEARBEIT-STANDARD.md](../PRESSEARBEIT-STANDARD.md) | Pressearbeit standardisiert. |
 | [MEDIENVERTEILER-EROEFFNUNG.md](../MEDIENVERTEILER-EROEFFNUNG.md) | Presseverteiler regional/überregional. |
 

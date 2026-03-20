@@ -22,6 +22,7 @@
 | 17.03.26 | ro5 – check the crash: Kontext + bereits geprüft gelesen, orientiert. |
 | 18.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
 | 20.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert (ök2 Plakat: Speichern/Liste/Öffnen testen). |
+| 20.03.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert (1-Klick-Mail/Medienversand kurz prüfen). |
 
 ---
 

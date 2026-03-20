@@ -416,10 +416,8 @@ async function tryShareWerbemittelPdf(
     console.warn('tryShareWerbemittelPdf', e)
     return false
   }
+  /** Kein Erfolgs-Alert – Nutzer hat das Teilen-Dialog bereits geschlossen; Zwischenablage reicht. */
   void navigator.clipboard?.writeText(fullPacketForClipboard)
-  alert(
-    '✅ Teilen war erfolgreich.\n\nIn vielen Mail-Apps ist die PDF schon als Anhang dabei. Betreff, Empfänger (BCC) und voller Text liegen zusätzlich in der Zwischenablage – bei Bedarf einfügen.'
-  )
   return true
 }
 
@@ -8379,8 +8377,7 @@ ${'='.repeat(60)}
           const waUrl = `https://wa.me/?text=${encodeURIComponent(whatsapp)}`
           window.open(waUrl, '_blank', 'noopener,noreferrer')
         }
-
-        alert('✅ Social-Media-Text ist in der Zwischenablage. WhatsApp wurde geöffnet. Instagram/Facebook: Text einfügen und posten.')
+        /** Kein Alert – Text liegt in der Zwischenablage, WhatsApp ggf. offen. */
         return
       }
 
@@ -8769,12 +8766,8 @@ ${'='.repeat(60)}
       }, 0)
 
       if (werbemittelPdfPack) {
+        /** Stiller Download – kein zweites Fenster nach Mail; PDF liegt in Downloads zum Anhängen. */
         downloadBlobAsFile(werbemittelPdfPack.blob, werbemittelPdfPack.fileName)
-        window.setTimeout(() => {
-          alert(
-            `✅ PDF: ${werbemittelPdfPack.fileName}\n\nOrdner: Downloads.\nBitte in die geöffnete Mail ziehen. Tipp: Am Handy/iPad oft „Teilen“ nutzen – dann ist die PDF direkt als Anhang möglich.`
-          )
-        }, 400)
       } else if (shouldPreparePdf) {
         window.setTimeout(async () => {
           let attachmentSource = doc
@@ -8792,9 +8785,6 @@ ${'='.repeat(60)}
 
           const prepared = await prepareDocumentAttachment(attachmentSource, true)
           if (prepared?.readyToAttach) {
-            alert(
-              `✅ PDF: ${prepared.label}\n\nOrdner: Downloads.\nBitte in die geöffnete Mail ziehen (Anhang).`
-            )
             return
           }
           if (prepared?.label) {
@@ -8805,13 +8795,13 @@ ${'='.repeat(60)}
         }, 300)
       }
 
-      if (isLikelyTooLong || plainBody.length > 2500) {
-        alert(
-          isLikelyTooLong
-            ? 'Mailprogramm wurde sicher geöffnet (nur Betreff). BCC und voller Text liegen in der Zwischenablage – bitte beides einfügen.'
-            : 'Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Text liegt in der Zwischenablage – bitte einmal einfügen.'
-        )
-        return
+      /** Nur wenn mailto zu lang war: ein kurzer Hinweis (BCC/Text in Zwischenablage). Langer Fließtext: steht schon im Mail-Stub „Zwischenablage“. */
+      if (isLikelyTooLong) {
+        window.setTimeout(() => {
+          alert(
+            'Mail geöffnet (kurzer Link). BCC und voller Text liegen in der Zwischenablage – bitte einfügen.'
+          )
+        }, 250)
       }
     } catch (e) {
       console.error('sendWerbemittelPerMail', e)

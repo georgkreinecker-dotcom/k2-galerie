@@ -1,9 +1,9 @@
-# Events und Öffentlichkeitsarbeit
+# Event- und Medienplanung
 
-Veranstaltungen planen, Einladungen und Flyer aus der App erstellen, Presse und Social Media – aus einer Hand. Eventplaner, Dokumente (Flyer, Presse, Newsletter) zentral, druckfertig.
+Ein Bereich, ein Ablauf: Veranstaltung planen, Werbedokumente erzeugen und direkt an den passenden Verteiler senden. Mediengenerator und Verteiler (Medienspiegel + Newsletter-Empfaenger) arbeiten im selben Schritt zusammen.
 
-![Admin – Events & Ausstellungen](/img/oeffentlich/pm-admin-uebersicht.png)
+![Admin – Event- und Medienplanung](/img/oeffentlich/pm-admin-uebersicht.png)
 
-*Quelle: Admin → Bereich „Events & Ausstellungen“.*
+*Quelle: Admin -> Bereich „Event- und Medienplanung“ (Mediengenerator & Verteiler).*
 
 [SEITENUMBRUCH]
