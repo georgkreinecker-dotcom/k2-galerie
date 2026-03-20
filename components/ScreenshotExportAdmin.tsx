@@ -17751,6 +17751,14 @@ ${name}`
           const presseKontakt = (kontaktEmail || kontaktPhone) ? `Kontakt: ${[kontaktEmail, kontaktPhone].filter(Boolean).join(', ')}` : 'Kontakt: [E-Mail], [Telefon]'
           const storyText = presseStoryVariante === 'human' ? STORY_1A_HUMAN : presseStoryVariante === 'produkt' ? STORY_1B_PRODUKT : ''
           const presseVorlageText = storyText ? `${presseHeader}\n\n${storyText}\n\n${presseKontakt}` : `${presseHeader}\n\n${presseKontakt}`
+          /** Gamification Presse-Tab: gleiches Muster wie Öffentlichkeitsarbeit, andere Meilensteine (Medienkit / Vorlage / Medienspiegel) */
+          const presseMilestones: { id: string; label: string; done: boolean; hint: string }[] = [
+            { id: 'kit', label: 'Medienkit mit Kernangaben', done: medienkitZeilen.length >= 2, hint: 'Name plus Kurztext, Adresse oder Kontakt – Stammdaten pflegen' },
+            { id: 'story', label: 'Story für die Presse gewählt', done: presseStoryVariante === 'human' || presseStoryVariante === 'produkt', hint: 'Human Interest oder Produkt-Story in der Vorlage wählen' },
+            { id: 'meta', label: 'Anlass, Datum oder Ort', done: Boolean(n(presseAnlass) || n(presseDatum) || n(presseOrt)), hint: 'Presse-Infos konkretisieren – wirkt professionell bei Medien' },
+            { id: 'medien', label: 'Medienspiegel mit Kontakten', done: medienspiegel.length > 0, hint: 'Eventplanung → Mediengenerator: Presse-E-Mails eintragen' },
+          ]
+          const presseMilestoneDone = presseMilestones.filter(m => m.done).length
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
               <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Event- und Medienplanung</h2>
@@ -17767,6 +17775,118 @@ ${name}`
                   Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.
                 </p>
               )}
+
+              {/* Gamification: Presse & Medien – gleiche Bildsprache wie Öffentlichkeitsarbeit (eine SVG-Quelle) */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'stretch',
+                  gap: 'clamp(1rem, 3vw, 1.5rem)',
+                  marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)',
+                  padding: 'clamp(1rem, 2.5vw, 1.35rem)',
+                  borderRadius: '16px',
+                  border: `1px solid ${s.accent}33`,
+                  background: s.bgElevated,
+                  boxShadow: '0 4px 24px rgba(28, 26, 24, 0.06)',
+                }}
+              >
+                <div style={{ flex: '0 0 auto', maxWidth: 'min(100%, 240px)' }}>
+                  <img
+                    src="/img/medienstudio/marketing-oeffentlichkeit-hero.svg"
+                    alt=""
+                    width={240}
+                    height={147}
+                    style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
+                  />
+                </div>
+                <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
+                    Presse &amp; Medien
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: 'clamp(1.25rem, 3.2vw, 1.65rem)',
+                      fontWeight: 800,
+                      color: '#1c1a18',
+                      margin: '0 0 0.5rem',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Medienkit und Vorlage – Schritt für Schritt
+                  </h3>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
+                    Grün = erledigt, grau = noch offen. Kein Punktesammeln – nur Klarheit, ob Presse und Medien dich erreichen können.
+                  </p>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18' }}>Dein Fortschritt</span>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: s.accent }}>{presseMilestoneDone} / {presseMilestones.length}</span>
+                    </div>
+                    <div
+                      role="progressbar"
+                      aria-valuenow={presseMilestoneDone}
+                      aria-valuemin={0}
+                      aria-valuemax={presseMilestones.length}
+                      style={{
+                        height: 10,
+                        borderRadius: 999,
+                        background: `${s.accent}18`,
+                        overflow: 'hidden',
+                        border: `1px solid ${s.accent}30`,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.round((100 * presseMilestoneDone) / Math.max(1, presseMilestones.length))}%`,
+                          height: '100%',
+                          borderRadius: 999,
+                          background: 'linear-gradient(90deg, #b54a1e, #d4622a)',
+                          transition: 'width 0.35s ease-out',
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: '0.4rem' }}>
+                    {presseMilestones.map(m => (
+                      <li
+                        key={m.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '0.5rem',
+                          fontSize: '0.8rem',
+                          color: m.done ? '#1c1a18' : '#5c5650',
+                        }}
+                      >
+                        <span
+                          aria-hidden
+                          style={{
+                            flexShrink: 0,
+                            width: 22,
+                            height: 22,
+                            borderRadius: '50%',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '0.75rem',
+                            fontWeight: 800,
+                            background: m.done ? '#10b981' : 'transparent',
+                            color: m.done ? '#fff' : '#5c5650',
+                            border: m.done ? 'none' : `2px solid ${s.accent}44`,
+                          }}
+                        >
+                          {m.done ? '✓' : '○'}
+                        </span>
+                        <span>
+                          <strong style={{ fontWeight: 700 }}>{m.label}</strong>
+                          <span style={{ display: 'block', fontSize: '0.74rem', color: '#5c5650', marginTop: '0.15rem' }}>{m.hint}</span>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
               {/* Abgrenzung: Presseaussendung zu konkretem Event = Events & Ausstellungen (keine Dopplung) */}
               <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>

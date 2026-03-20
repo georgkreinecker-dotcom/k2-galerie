@@ -11,6 +11,7 @@
 | Ort | Was |
 |-----|-----|
 | **Eventplan → Öffentlichkeitsarbeit** | Hero-Bild (`/img/medienstudio/marketing-oeffentlichkeit-hero.svg`) + **Fortschritt X/4** aus echten Daten (Events, Medienspiegel, Dokumente, Newsletter-Verteiler). |
+| **Admin → Presse & Medien** | Dasselbe Hero + **Fortschritt X/4**: Medienkit (Kernangaben), Presse-Story gewählt, Anlass/Datum/Ort, Medienspiegel. |
 
 ---
 
@@ -22,7 +23,7 @@
 | **Werke verwalten** | Hoch | Ampel „Katalog vollständig“: fehlende Bilder, fehlende Preise – **ohne** Daten zu löschen. |
 | **Galerie gestalten** | Hoch | Schritte 1–4 mit Häkchen (Willkommen, Karte, Galerie, Speichern) – schon teils Handbuch-nah. |
 | **Veröffentlichen / Stand** | Mittel | „Alles draußen“-Badge wenn letzter Push = aktueller Stand (nur Hinweis, kein Auto-Reload). |
-| **Presse & Medien (Tab)** | Mittel | Gleiche Meilenstein-Logik wie Öffentlichkeitsarbeit (Medienkit „gelesen“, Verteiler gefüllt). |
+| **Presse & Medien (Tab)** | ~~Mittel~~ umgesetzt | Wie oben; weitere Verfeinerung nur bei Bedarf (z. B. Kopier-Historie). |
 | **Newsletter-Tab** | Niedrig–mittel | Empfänger-Zahl als Erfolgsanzeige, erste Kampagne = Meilenstein. |
 | **Kassa / Shop** | Niedrig | Nur wo sinnvoll: „Erste Übungstransaktion“ in Demo – nicht im Echtbetrieb nerven. |
 | **VK2 Mitglieder** | Mittel | „Vereinsprofil komplett“ – X von Y Pflichtfeldern (ohne Druck). |

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Baustein 1:** Admin → Eventplan → **Öffentlichkeitsarbeit** – Hero-SVG + Fortschritt **X/4** (Events, Medienspiegel, Dokumente, Newsletter) + Doku **docs/GAMIFICATION-POTENTIALE-K2.md** (weitere Bereiche). **Commit:** 41e1062 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Baustein 2:** Admin → **Presse & Medien** – dasselbe Hero-SVG + Fortschritt **X/4** (Medienkit-Kernangaben, Presse-Story, Anlass/Datum/Ort, Medienspiegel). Doku **GAMIFICATION-POTENTIALE-K2.md** aktualisiert. **Commit:** b680a2c ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification Baustein 1:** Admin → Eventplan → **Öffentlichkeitsarbeit** – Hero-SVG + Fortschritt **X/4** (Events, Medienspiegel, Dokumente, Newsletter) + Doku **docs/GAMIFICATION-POTENTIALE-K2.md** (weitere Bereiche). **Commit:** 41e1062 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Medienstudio:** Spielerisches *Gefühl* ohne Videospiel (Ziele, Fortschritt, kleine Triumphe) + **Bildsprache** (weniger Textwüste, Illustrationen/Icons/Leerzustände) – in **MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP** ergänzt. Dazu UX-Zeile in **PRODUKT-VISION**. **Commit:** 7e54abe ✅ auf GitHub
 
@@ -26,11 +28,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Georg: Nach Push/Vercel **Ready** Newsletter + Plakat (Druck + PDF-Teilen) kurz prüfen.
+**Was wir JETZT tun:** Georg: Nach Vercel **Ready** Tab **Presse & Medien** öffnen – Fortschrittskarte + Meilensteine prüfen (Spaß-Faktor).
 
-**Einordnung:** Eine Quelle **marketingWerbelinie.ts** für Druck-Kontrast + PDF-Raster (Plakat = Sonder-Layout `.plakat`, aber **dieselben Regeln** wie k2-pr-doc, nicht eigene Admin-Logik).
+**Einordnung:** Gamification = **eine Bildsprache** (Hero `marketing-oeffentlichkeit-hero.svg`), **unterschiedliche echte Meilensteine** je Tab – Sportwagenmodus, kein zweites Design.
 
-**Nächster Schritt:** Neue Werbemittel nur über diese Export-Funktionen anbinden, keine zweite Capture-Spur im Admin.
+**Nächster Schritt:** Optional nächster Baustein aus **GAMIFICATION-POTENTIALE-K2.md** (z. B. Werke-Ampel, Guide) – nur wenn Georg Lust hat.
 
 ---
 
