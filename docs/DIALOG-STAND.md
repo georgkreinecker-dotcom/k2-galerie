@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** html2canvas nutzt kein `@media print`; Capture-CSS jetzt für **`body.vk2-pr-doc`** (VK2-Palette, lesbar) und **K2** mit **Homepage-Design** (`designToPlakatVars` → Akzent/Fließtext/Muted auf weißem PDF). `WerbemittelPdfCaptureOptions`, `sendWerbemittelPerMail` übergibt `prDocDesign` (K2/ök2). Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 75fc957 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** html2canvas nutzt kein `@media print`; Capture-CSS jetzt für **`body.vk2-pr-doc`** (VK2-Palette, lesbar) und **K2** mit **Homepage-Design** (`designToPlakatVars` → Akzent/Fließtext/Muted auf weißem PDF). `WerbemittelPdfCaptureOptions`, `sendWerbemittelPerMail` übergibt `prDocDesign` (K2/ök2). Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 5f636bf ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Profi-Modus:** Admin → **Einstellungen** → ein Klick **Checklisten ausblenden**; `localStorage` `k2-admin-hide-gamification-checklists`; `shouldShowGamificationChecklists()` + Hook `useGamificationChecklistsUi` (alle Schicht-B-UI inkl. mök2, Shop-Demo). Doku **GAMIFICATION-OEK2** §3. **Commit:** 9d228d0 ✅ auf GitHub
 
