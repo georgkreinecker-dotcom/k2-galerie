@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **1-Klick-Mail für alle Werbemittel:** Zentraler Versand-Handler öffnet Mailprogramm mit BCC+Betreff+Text. Mapping: Presse/Social → Medienspiegel; Newsletter/Event-Flyer/Plakat → Newsletter-Empfänger (auch Druckerei). Karten haben jetzt je Typ 1‑Klick-Senden. Bei langem Text: Kurztext in Mail, Volltext in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** 3b44845 ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel-Mail ehrlich + technisch sauber:** `sendWerbemittelPerMail`: Mailtext erklärt, dass **mailto keinen Anhang** kann – PDF landet in **Downloads** und muss manuell angehängt werden (vorher: `attachmentInfo` war immer `null` → Text „aus Vorschau anhängen“ war irreführend). **Ein** Empfänger → `mailto:adresse@…` (**An** gefüllt); mehrere → weiter **BCC**. **`jspdf`** als Dependency (PDF aus HTML). **Commit:** 396755f ✅
 
-**Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
+**Vorher:** 20.03.26 – **1-Klick-Mail für alle Werbemittel** – **Commit:** 3b44845
 
-**Was wir JETZT tun:** Nach Push: Vercel „Ready“; Admin → Event → Öffentlichkeitsarbeit → Presseaussendung: „An Medien – 1 Klick“ kurz testen.
+**Was wir JETZT tun:** Georg: Plakat/Newsletter nochmal klicken – Mailtext + „An“ bei einem Kontakt prüfen; PDF-Hinweisdialog nach Downloads.
 
-**Einordnung:** Ein Standard / eine Hauptaktion für Medienversand (Georg: Sportwagenprinzip); Viewer bleibt für Kontrolle.
+**Einordnung:** Nutzererwartung „alles in der Mail“ vs. Browser-Grenze mailto – UX ehrlich, Ablauf unverändert sinnvoll.
 
-**Nächster Schritt:** Deployment prüfen; bei Bedarf PRESSEARBEIT-STANDARD.md um denselben Hinweis ergänzen.
+**Nächster Schritt:** Optional später: Web Share API / Server-Mail für echten Anhang.
 
 ---
 
