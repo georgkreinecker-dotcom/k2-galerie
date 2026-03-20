@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Korrektur (Georg):** Schwarzer **GlobaleGuideBegleitung** bleibt **aus** – aber **grüner Orientierungs-Balken** im Admin (ök2/VK2) war **fälschlich mit entfernt** und ist **wieder da** (`guideFlowAktiv`, Auto-Start wie zuvor). **`beendeGuideFlow()` beim App-Start entfernt**, damit `k2-guide-flow` den grünen Balken nicht sofort löscht. **Commit:** (folgt nach Push) ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Korrektur (Georg):** Schwarzer **GlobaleGuideBegleitung** bleibt **aus** – aber **grüner Orientierungs-Balken** im Admin (ök2/VK2) war **fälschlich mit entfernt** und ist **wieder da** (`guideFlowAktiv`, Auto-Start wie zuvor). **`beendeGuideFlow()` beim App-Start entfernt**, damit `k2-guide-flow` den grünen Balken nicht sofort löscht. **Commit:** b38d341 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – Globaler Guide aus: kein Mount; zuvor grüner Balken fälschlich entfernt – **Commit:** fc195b5 ✅ auf GitHub
 
