@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **mök2: Corporate Design als Marketing-Thema:** Neue Sektion **„Corporate Design – eine Linie“** (`mok2-cd-corporate-design`) in **MarketingOek2Page** + Sidebar **mok2Structure**; USP-Bullet + **Produkt- & Branchenvergleich**-Bullet; **docs/00-INDEX.md** + **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** (Tabelle). Inhalt: CD = durchgängige Linie Galerie gestalten → Web/Druck, Sportwagenprinzip, Argument für Piloten/PR. **Commit:** 27e38fe ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Werbemittel-PDF k2-pr-doc = CD wie Vorschau (nicht Grau auf Weiß):** `getK2PrDocHtml2canvasCaptureCss` + **onclone** nutzen **dieselben** Verläufe/Farben wie **Design-Tab** (`designToPlakatVars`: bodyBg, pageBg, text, muted, accent); nur **Gradient-Titel** → feste Akzentfarbe für html2canvas. Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts** angepasst. **Commit:** a0a1bb7 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **mök2: Corporate Design als Marketing-Thema:** Neue Sektion **„Corporate Design – eine Linie“** (`mok2-cd-corporate-design`) in **MarketingOek2Page** + Sidebar **mok2Structure**; USP-Bullet + **Produkt- & Branchenvergleich**-Bullet; **docs/00-INDEX.md** + **KOMMUNIKATION-DOKUMENTE-STRUKTUR.md** (Tabelle). Inhalt: CD = durchgängige Linie Galerie gestalten → Web/Druck, Sportwagenprinzip, Argument für Piloten/PR. **Commit:** 27e38fe ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Werbemittel-PDF: Kontrast + Werbelinie (html2canvas):** Capture-CSS `vk2-pr-doc` + K2-Design `prDocDesign`; Tests **marketingWerbelinie-k2-pr-doc-capture.test.ts**. **Commit:** 5f636bf ✅ auf GitHub (Doku-Hash-Fix a523bfd)
 
@@ -66,11 +68,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** mök2 im Browser öffnen → Sidebar **„Corporate Design – eine Linie“**; bei Bedarf **Als PDF drucken** für Gespräche.
+**Was wir JETZT tun:** Newsletter/Werbemittel **PDF** (Teilen/Mail) prüfen: soll wie **Vorschau** aussehen (dunkle Karte, Galerie-Farben).
 
-**Einordnung:** CD ergänzt **Slogans/Werbelinie** um das **visuelle** Einheitsargument; eine Quelle (Galerie gestalten) – Sportwagenmodus.
+**Einordnung:** PDF-Raster = **dieselbe CD** wie Bildschirm; Druck im Browser (`@media print`) kann weiter weißes Papier simulieren – getrennt vom html2canvas-Pfad.
 
-**Nächster Schritt:** PDF-Kontrast weiter beobachten; CD-Text bei Pilot-Feedback nachschärfen.
+**Nächster Schritt:** Georg: einmal **An Empfänger – 1 Klick** testen; bei Wunsch **Safari-Druck** ebenfalls auf CD umstellen (eigene Entscheidung).
 
 ---
 

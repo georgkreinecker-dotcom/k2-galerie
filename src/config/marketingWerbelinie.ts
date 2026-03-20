@@ -255,53 +255,6 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-/** Nur #rgb / #rrggbb – für PDF-Capture (Kontrast auf weißem Papier). */
-function hexToRgbForLuminance(hex: string): { r: number; g: number; b: number } | null {
-  const h = String(hex || '')
-    .trim()
-    .replace(/^#/, '')
-  if (h.length === 3) {
-    const r = parseInt(h[0] + h[0], 16)
-    const g = parseInt(h[1] + h[1], 16)
-    const b = parseInt(h[2] + h[2], 16)
-    return Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b) ? { r, g, b } : null
-  }
-  if (h.length === 6) {
-    const r = parseInt(h.slice(0, 2), 16)
-    const g = parseInt(h.slice(2, 4), 16)
-    const b = parseInt(h.slice(4, 6), 16)
-    return Number.isFinite(r) && Number.isFinite(g) && Number.isFinite(b) ? { r, g, b } : null
-  }
-  return null
-}
-
-/** WCAG relative luminance; hell ≈ >0.55 → auf weißem PDF schlecht lesbar. */
-function relativeLuminanceHex(hex: string): number | null {
-  const rgb = hexToRgbForLuminance(hex)
-  if (!rgb) return null
-  const lin = (c: number) => {
-    const x = c / 255
-    return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4)
-  }
-  const R = lin(rgb.r)
-  const G = lin(rgb.g)
-  const B = lin(rgb.b)
-  return 0.2126 * R + 0.7152 * G + 0.0722 * B
-}
-
-/** Galerie-Design nutzt oft hellen Fließtext – für PDF/html2canvas auf weiß: dunkle Lesefarbe. */
-function pdfMainTextOnWhite(designTextHex: string): string {
-  const L = relativeLuminanceHex(designTextHex)
-  if (L == null) return '#1c1a18'
-  return L > 0.55 ? '#1c1a18' : designTextHex
-}
-
-function pdfMutedOnWhite(designMutedHex: string): string {
-  const L = relativeLuminanceHex(designMutedHex)
-  if (L == null) return '#5c5650'
-  return L > 0.55 ? '#5c5650' : designMutedHex
-}
-
 /**
  * Baut aus Homepage-Design die Farbwerte für Werbemittel-CSS (eine Quelle = Design-Tab).
  * Exportiert für Plakat-/Flyer-HTML im Admin.
@@ -509,70 +462,84 @@ export function getPlakatDesignPrDocCss(className: string, design?: HomepageDesi
 }
 
 /**
- * html2canvas wertet @media print nicht aus – bei k2-pr-doc bleiben sonst dunkle Seitenverläufe + Gradient-Titel
- * und heller Text → im PDF fast unsichtbar (Newsletter, Presseaussendung, PR-Vorschläge).
- * Akzent + Lesetext aus Design-Tab (Werbelinie); Fließtext auf weiß immer dunkel genug.
+ * html2canvas wertet @media print nicht aus und rendert Gradient-Text (-webkit-text-fill transparent) oft falsch.
+ * **CD wie Vorschau:** gleiche Body-/Karten-Verläufe und Farben wie `getPlakatDesignPrDocCss` (Design-Tab);
+ * nur Titel-Gradient → feste Akzentfarbe, damit der Raster exakt zur Marke passt (nicht Grau auf Weiß).
  */
 export function getK2PrDocHtml2canvasCaptureCss(design?: HomepageDesign | null): string {
   const p = designToPlakatVars(design)
-  const main = pdfMainTextOnWhite(p.text)
-  const muted = pdfMutedOnWhite(p.muted)
-  const accent = p.accent
   return `
     body.k2-pr-doc {
       margin: 0 !important;
-      background: #ffffff !important;
-      padding: 0 !important;
+      background: ${p.bodyBg} !important;
+      padding: 12px !important;
+      font-family: ${p.font} !important;
       font-size: 9pt !important;
       line-height: 1.32 !important;
-      color: ${main} !important;
-    }
-    body.k2-pr-doc .page {
-      box-shadow: none !important;
-      margin: 0 auto 16px !important;
-      padding: 8mm 10mm !important;
-      background: #ffffff !important;
-      color: ${main} !important;
-      border: 1px solid #ddd !important;
-      border-radius: 0 !important;
+      color: ${p.text} !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    body.k2-pr-doc .page {
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45) !important;
+      margin: 0 auto 16px !important;
+      padding: 8mm 10mm !important;
+      background: ${p.pageBg} !important;
+      color: ${p.text} !important;
+      border: 1px solid ${p.border} !important;
+      border-radius: 20px !important;
+      position: relative !important;
+      overflow: hidden !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    body.k2-pr-doc .page .header {
+      border-bottom-color: ${p.accentRgba25} !important;
     }
     body.k2-pr-doc .page .header h1,
     body.k2-pr-doc .page h1 {
-      color: ${accent} !important;
-      -webkit-text-fill-color: ${accent} !important;
+      color: ${p.accent} !important;
+      -webkit-text-fill-color: ${p.accent} !important;
       background: none !important;
       background-image: none !important;
       background-clip: border-box !important;
       -webkit-background-clip: border-box !important;
     }
     body.k2-pr-doc .page h2 {
-      color: ${muted} !important;
-      -webkit-text-fill-color: ${muted} !important;
+      color: ${p.muted} !important;
+      -webkit-text-fill-color: ${p.muted} !important;
       background: none !important;
       background-image: none !important;
       background-clip: border-box !important;
       -webkit-background-clip: border-box !important;
     }
-    body.k2-pr-doc .page .header-info,
+    body.k2-pr-doc .page .header-info {
+      color: ${p.muted2} !important;
+      -webkit-text-fill-color: ${p.muted2} !important;
+    }
     body.k2-pr-doc .page label {
-      color: ${muted} !important;
-      -webkit-text-fill-color: ${muted} !important;
+      color: ${p.accent} !important;
+      -webkit-text-fill-color: ${p.accent} !important;
     }
     body.k2-pr-doc .page .newsletter-subject-line,
     body.k2-pr-doc .page .presse-body,
     body.k2-pr-doc .page .presse-headline,
     body.k2-pr-doc .page .content,
     body.k2-pr-doc .page .info-box {
-      color: ${main} !important;
-      -webkit-text-fill-color: ${main} !important;
+      color: ${p.text} !important;
+      -webkit-text-fill-color: ${p.text} !important;
+    }
+    body.k2-pr-doc .page .presse-body a {
+      color: ${p.accent} !important;
+      -webkit-text-fill-color: ${p.accent} !important;
     }
     body.k2-pr-doc .page textarea,
     body.k2-pr-doc .page input[type="text"] {
-      background: #f9f9f9 !important;
-      color: ${main} !important;
-      border-color: #ccc !important;
+      background: ${p.inputBg} !important;
+      color: ${p.text} !important;
+      border-color: ${p.inputBorder} !important;
     }
   `.trim()
 }
@@ -826,34 +793,46 @@ export function applyWerbemittelCaptureToClone(
     })
   } else if (pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml)) {
     const p = designToPlakatVars(capture?.prDocDesign)
-    const main = pdfMainTextOnWhite(p.text)
-    const muted = pdfMutedOnWhite(p.muted)
-    const accent = p.accent
     const solidHeading = (sel: string, color: string) => {
       clonedDoc.querySelectorAll(sel).forEach(n => solidifyHeadingOnClone(n as HTMLElement, color))
     }
-    solidHeading('body.k2-pr-doc .page .header h1', accent)
-    solidHeading('body.k2-pr-doc .page h1', accent)
-    solidHeading('body.k2-pr-doc .page h2', muted)
+    solidHeading('body.k2-pr-doc .page .header h1', p.accent)
+    solidHeading('body.k2-pr-doc .page h1', p.accent)
+    solidHeading('body.k2-pr-doc .page h2', p.muted)
     clonedDoc.querySelectorAll('body.k2-pr-doc .page .header-info').forEach(n => {
       const h = n as HTMLElement
-      h.style.setProperty('color', muted, 'important')
-      h.style.setProperty('-webkit-text-fill-color', muted, 'important')
+      h.style.setProperty('color', p.muted2, 'important')
+      h.style.setProperty('-webkit-text-fill-color', p.muted2, 'important')
+    })
+    clonedDoc.querySelectorAll('body.k2-pr-doc .page label').forEach(n => {
+      const h = n as HTMLElement
+      h.style.setProperty('color', p.accent, 'important')
+      h.style.setProperty('-webkit-text-fill-color', p.accent, 'important')
     })
     clonedDoc.querySelectorAll(
-      'body.k2-pr-doc .page .newsletter-subject-line, body.k2-pr-doc .page .presse-body, body.k2-pr-doc .page .presse-headline, body.k2-pr-doc .page .content'
+      'body.k2-pr-doc .page .newsletter-subject-line, body.k2-pr-doc .page .presse-body, body.k2-pr-doc .page .presse-headline, body.k2-pr-doc .page .content, body.k2-pr-doc .page .info-box'
     ).forEach(n => {
       const h = n as HTMLElement
-      h.style.setProperty('color', main, 'important')
-      h.style.setProperty('-webkit-text-fill-color', main, 'important')
+      h.style.setProperty('color', p.text, 'important')
+      h.style.setProperty('-webkit-text-fill-color', p.text, 'important')
     })
-    clonedDoc.querySelectorAll('body.k2-pr-doc').forEach(n => {
-      ;(n as HTMLElement).style.setProperty('background', '#ffffff', 'important')
-    })
-    clonedDoc.querySelectorAll('body.k2-pr-doc .page').forEach(n => {
-      const h = n as HTMLElement
-      h.style.setProperty('background', '#ffffff', 'important')
-      h.style.setProperty('color', main, 'important')
+    /** Gleiche CD-Farben wie Design-Tab (kein Ersatz-Grau); nur Text-Füllung erzwingen wo der Parser zickt. */
+    clonedDoc.querySelectorAll('body.k2-pr-doc .page .content *').forEach(n => {
+      const el = n as HTMLElement
+      const tag = el.tagName
+      if (tag === 'H1' || tag === 'H2') return
+      if (el.closest('.header-info')) {
+        el.style.setProperty('color', p.muted2, 'important')
+        el.style.setProperty('-webkit-text-fill-color', p.muted2, 'important')
+        return
+      }
+      if (tag === 'A') {
+        el.style.setProperty('color', p.accent, 'important')
+        el.style.setProperty('-webkit-text-fill-color', p.accent, 'important')
+        return
+      }
+      el.style.setProperty('color', p.text, 'important')
+      el.style.setProperty('-webkit-text-fill-color', p.text, 'important')
     })
   }
 }

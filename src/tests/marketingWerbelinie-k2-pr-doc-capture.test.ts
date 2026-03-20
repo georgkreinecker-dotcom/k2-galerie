@@ -8,11 +8,13 @@ import {
 } from '../config/marketingWerbelinie'
 
 describe('getK2PrDocHtml2canvasCaptureCss', () => {
-  it('enthält body.k2-pr-doc, lesbaren Fließtext und Akzent aus Werbelinie (Design-Tab)', () => {
+  it('PDF-Capture = CD wie Vorschau: Fließtext + Akzent aus Design-Tab (kein Ersatz-Grau)', () => {
     const css = getK2PrDocHtml2canvasCaptureCss()
     expect(css).toContain('body.k2-pr-doc')
-    expect(css).toContain('#1c1a18')
+    expect(css).toContain('#fdf6f2')
     expect(css).toContain('#d97a50')
+    expect(css).toContain('#c49a88')
+    expect(css).toContain('145deg')
     expect(css).toContain('-webkit-text-fill-color')
     expect(css).toContain('.newsletter-subject-line')
     expect(css).toContain('.presse-body')
