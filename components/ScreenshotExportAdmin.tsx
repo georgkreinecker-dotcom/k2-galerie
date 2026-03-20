@@ -186,16 +186,24 @@ function decodeHtmlDataUrl(fileData: string): string | null {
 /** Klartext aus HTML für E-Mail/Zwischenablage (Presseaussendung). */
 function htmlToPlainTextForClipboard(html: string): string {
   if (!html || typeof html !== 'string') return ''
+  const cleanedHtml = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, '')
+    .replace(/<button\b[^>]*>[\s\S]*?<\/button>/gi, '')
+    .replace(/<select\b[^>]*>[\s\S]*?<\/select>/gi, '')
+    .replace(/<option\b[^>]*>[\s\S]*?<\/option>/gi, '')
+    .replace(/<input\b[^>]*>/gi, '')
   try {
     if (typeof document !== 'undefined') {
-      const parsed = new DOMParser().parseFromString(html, 'text/html')
+      const parsed = new DOMParser().parseFromString(cleanedHtml, 'text/html')
       const text = parsed.body?.innerText ?? ''
       if (text.trim()) return text.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim()
     }
   } catch {
     /* Fallback unten */
   }
-  return html
+  return cleanedHtml
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|h1|h2|h3|h4|h5|h6|li|section|article|header|footer|tr)>/gi, '\n')
     .replace(/<li[^>]*>/gi, '- ')
@@ -263,6 +271,14 @@ function getMedienspiegelStorageKey(tenant: { isOeffentlich?: boolean; isVk2?: b
 function getVerteilerBlockStorageKey(tenant: { isOeffentlich?: boolean; isVk2?: boolean }, blockId: string): string {
   const prefix = tenant.isOeffentlich ? 'k2-oeffentlich' : tenant.isVk2 ? 'k2-vk2' : 'k2'
   return `${prefix}-verteiler-${blockId}`
+}
+
+function isNewsletterEntryId(id: string): boolean {
+  return /^vn-/.test(id)
+}
+
+function isMedienspiegelEntryId(id: string): boolean {
+  return /^m-/.test(id) || /^(at|de|ch|li|lu)-(print|tv|radio|regionalOoe|online|kultur)-/.test(id)
 }
 
 /** Wichtige österreichische Medien – vordefiniert zum Einfügen (Print, TV, Radio). E-Mail = typische Presse-/Redaktionsadresse; Nutzer kann anpassen. */
@@ -1225,15 +1241,42 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   React.useEffect(() => {
     try {
       const key = getMedienspiegelStorageKey(tenant)
-      const raw = localStorage.getItem(key)
-      if (!raw) { setMedienspiegel([]); setMedienspiegelSelectedIds(new Set()); return }
-      const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      const parseEntries = (rawValue: string | null): { id: string; name: string; email: string }[] => {
+        if (!rawValue) return []
+        const parsed = JSON.parse(rawValue)
+        if (!Array.isArray(parsed)) return []
         const list = parsed.filter((e: unknown) => e && typeof e === 'object' && 'id' in e && 'email' in e && typeof (e as any).email === 'string')
           .map((e: any) => ({ id: String(e.id), name: String(e.name ?? '').trim(), email: String(e.email ?? '').trim() }))
-        setMedienspiegel(list)
-        setMedienspiegelSelectedIds(new Set())
-      } else setMedienspiegel([])
+        return list.filter(entry => !isNewsletterEntryId(entry.id))
+      }
+
+      let cleaned = parseEntries(localStorage.getItem(key))
+
+      // Migration: Falls der aktuelle Kontext leer ist, aus den anderen Kontext-Keys übernehmen.
+      if (cleaned.length === 0) {
+        const otherKeys = ['k2-medienspiegel', 'k2-oeffentlich-medienspiegel', 'k2-vk2-medienspiegel'].filter(k => k !== key)
+        const mergedByEmail = new Map<string, { id: string; name: string; email: string }>()
+        for (const candidate of otherKeys) {
+          const entries = parseEntries(localStorage.getItem(candidate))
+          for (const item of entries) {
+            const emailKey = item.email.toLowerCase()
+            if (!emailKey) continue
+            if (!mergedByEmail.has(emailKey)) mergedByEmail.set(emailKey, item)
+          }
+        }
+        if (mergedByEmail.size > 0) {
+          cleaned = Array.from(mergedByEmail.values())
+          try { localStorage.setItem(key, JSON.stringify(cleaned)) } catch (_) {}
+        }
+      }
+
+      setMedienspiegel(cleaned)
+      setMedienspiegelSelectedIds(new Set())
+
+      const rawNow = localStorage.getItem(key)
+      if (rawNow && parseEntries(rawNow).length !== cleaned.length) {
+        try { localStorage.setItem(key, JSON.stringify(cleaned)) } catch (_) {}
+      }
     } catch { setMedienspiegel([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
@@ -1247,8 +1290,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       if (Array.isArray(parsed) && parsed.length > 0) {
         const list = parsed.filter((e: unknown) => e && typeof e === 'object' && 'id' in e && 'email' in e && typeof (e as any).email === 'string')
           .map((e: any) => ({ id: String(e.id), name: String(e.name ?? '').trim(), email: String(e.email ?? '').trim() }))
-        setVerteilerNewsletter(list)
+        // Gegenrichtung: Newsletter-Verteiler soll keine Medienspiegel-Einträge enthalten.
+        const cleaned = list.filter(entry => !isMedienspiegelEntryId(entry.id))
+        setVerteilerNewsletter(cleaned)
         setVerteilerNewsletterSelectedIds(new Set())
+        if (cleaned.length !== list.length) {
+          try { localStorage.setItem(key, JSON.stringify(cleaned)) } catch (_) {}
+        }
       } else setVerteilerNewsletter([])
     } catch { setVerteilerNewsletter([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
@@ -6801,6 +6849,41 @@ ${'='.repeat(60)}
     opts?: { iframePreview?: boolean }
   ): string => {
     const iframePreview = opts?.iframePreview === true
+    const previewScale = iframePreview
+      ? {
+          bodyPadding: '0.4rem',
+          plakatWidth: 'min(100%, 760px)',
+          plakatMinHeight: 'auto',
+          plakatPadding: '1.2rem',
+          plakatRadius: '12px',
+          h1Size: '2rem',
+          typeSize: '1rem',
+          eventSize: '1rem',
+          eventStrongSize: '1.2rem',
+          locationSize: '1rem',
+          descriptionSize: '0.9rem',
+          qrSize: '120px',
+          qrTextSize: '0.82rem',
+          contactSize: '0.95rem',
+          contactStrongSize: '1.05rem',
+        }
+      : {
+          bodyPadding: '2rem',
+          plakatWidth: '297mm',
+          plakatMinHeight: '420mm',
+          plakatPadding: '4rem',
+          plakatRadius: '24px',
+          h1Size: '5rem',
+          typeSize: '2rem',
+          eventSize: '2rem',
+          eventStrongSize: '2.2rem',
+          locationSize: '1.6rem',
+          descriptionSize: '1.4rem',
+          qrSize: '250px',
+          qrTextSize: '1.2rem',
+          contactSize: '1.5rem',
+          contactStrongSize: '1.8rem',
+        }
     const esc = (s: string) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     const scriptBody = iframePreview
       ? `function setFormat(f) {
@@ -6845,25 +6928,25 @@ ${'='.repeat(60)}
       font-family: ${pd.font};
       background: ${pd.bodyBg};
       color: ${pd.text};
-      padding: 2rem;
+      padding: ${previewScale.bodyPadding};
       min-height: 100vh;
     }
     .plakat {
       background: ${pd.pageBg};
-      width: 297mm;
-      min-height: 420mm;
+      width: ${previewScale.plakatWidth};
+      min-height: ${previewScale.plakatMinHeight};
       margin: 0 auto;
-      padding: 4rem;
+      padding: ${previewScale.plakatPadding};
       box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
       border: 1px solid ${pd.border};
-      border-radius: 24px;
+      border-radius: ${previewScale.plakatRadius};
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
     }
     h1 {
-      font-size: 5rem;
+      font-size: ${previewScale.h1Size};
       margin: 0 0 3rem 0;
       color: ${pd.accent};
       text-align: center;
@@ -6875,7 +6958,7 @@ ${'='.repeat(60)}
       font-weight: 700;
     }
     .event-info {
-      font-size: 2rem;
+      font-size: ${previewScale.eventSize};
       text-align: center;
       margin: 2rem 0;
       line-height: 2.5;
@@ -6883,7 +6966,7 @@ ${'='.repeat(60)}
     }
     .event-info strong {
       color: ${pd.accent};
-      font-size: 2.2rem;
+      font-size: ${previewScale.eventStrongSize};
     }
     .qr-code {
       text-align: center;
@@ -6893,18 +6976,18 @@ ${'='.repeat(60)}
       border-radius: 20px;
     }
     .qr-code img {
-      width: 250px;
-      height: 250px;
+      width: ${previewScale.qrSize};
+      height: ${previewScale.qrSize};
       border-radius: 12px;
     }
     .qr-code p {
-      font-size: 1.2rem;
+      font-size: ${previewScale.qrTextSize};
       margin-top: 1rem;
       color: ${pd.muted2};
     }
     .contact {
       text-align: center;
-      font-size: 1.5rem;
+      font-size: ${previewScale.contactSize};
       color: ${pd.muted2};
       margin-top: auto;
       width: 100%;
@@ -6913,7 +6996,7 @@ ${'='.repeat(60)}
     }
     .contact strong {
       color: ${pd.accent};
-      font-size: 1.8rem;
+      font-size: ${previewScale.contactStrongSize};
       display: block;
       margin-bottom: 0.5rem;
     }
@@ -6942,12 +7025,12 @@ ${'='.repeat(60)}
   </div>
   <div class="plakat">
     <h1>${esc(plakatContent.title || 'Event')}</h1>
-    ${plakatContent.type ? `<p style="font-size: 2rem; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${esc(plakatContent.type)}</p>` : ''}
+    ${plakatContent.type ? `<p style="font-size: ${previewScale.typeSize}; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${esc(plakatContent.type)}</p>` : ''}
     <div class="event-info">
       <p><strong>Termindaten:</strong></p>
-      <p style="white-space: pre-wrap; font-size: 1.8rem; line-height: 1.6; margin-top: 1rem;">${esc(plakatContent.date || 'Datum folgt').replace(/\n/g, '<br>')}</p>
-      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: 1.6rem;">📍 ${esc(plakatContent.location)}</p>` : ''}
-      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: 1.4rem; line-height: 1.6; color: ${pd.muted};">${esc(plakatContent.description).replace(/\n/g, '<br>')}</p>` : ''}
+      <p style="white-space: pre-wrap; font-size: ${previewScale.eventSize}; line-height: 1.6; margin-top: 1rem;">${esc(plakatContent.date || 'Datum folgt').replace(/\n/g, '<br>')}</p>
+      ${plakatContent.location ? `<p style="margin-top: 2rem; font-size: ${previewScale.locationSize};">📍 ${esc(plakatContent.location)}</p>` : ''}
+      ${plakatContent.description ? `<p style="margin-top: 2rem; font-size: ${previewScale.descriptionSize}; line-height: 1.6; color: ${pd.muted};">${esc(plakatContent.description).replace(/\n/g, '<br>')}</p>` : ''}
     </div>
     <div class="qr-code">
       <img src="${qrCodeUrl}" alt="QR Code" />
@@ -8023,7 +8106,40 @@ ${'='.repeat(60)}
   /** Sportwagen-Standard: ein Klick öffnet Mailprogramm mit BCC + Betreff + Text. */
   const sendWerbemittelPerMail = async (typ: string, doc: any, ev: any) => {
     try {
-      const usesPresseRecipients = typ === 'presse' || typ === 'social'
+      if (typ === 'social') {
+        const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+        const evSug = ev?.id ? suggestionsList.find((sg: any) => sg.eventId === ev.id) : null
+        const socialRaw = evSug?.socialMedia || (ev ? generateSocialMediaContent(ev) : null)
+        const social = socialRaw && typeof socialRaw === 'object' ? socialRaw : null
+        const instagram = String(social?.instagram || '').trim()
+        const facebook = String(social?.facebook || '').trim()
+        const whatsapp = String(social?.whatsapp || '').trim()
+        const title = ev?.title || 'Veranstaltung'
+        const socialPacket = [
+          `SOCIAL MEDIA PAKET – ${title}`,
+          '',
+          'Instagram:',
+          instagram || '(kein Text)',
+          '',
+          'Facebook:',
+          facebook || '(kein Text)',
+          '',
+          'WhatsApp:',
+          whatsapp || '(kein Text)',
+        ].join('\n')
+
+        await navigator.clipboard.writeText(socialPacket)
+
+        if (whatsapp) {
+          const waUrl = `https://wa.me/?text=${encodeURIComponent(whatsapp)}`
+          window.open(waUrl, '_blank', 'noopener,noreferrer')
+        }
+
+        alert('✅ Social-Media-Text ist in der Zwischenablage. WhatsApp wurde geöffnet. Instagram/Facebook: Text einfügen und posten.')
+        return
+      }
+
+      const usesPresseRecipients = typ === 'presse'
       const allRecipients = usesPresseRecipients ? medienspiegel : verteilerNewsletter
       const selectedByCheck = usesPresseRecipients
         ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
@@ -8052,53 +8168,287 @@ ${'='.repeat(60)}
 
       let plainBody = ''
       let betreff = fallbackBetreff
+      const prepareDocumentAttachment = async (sourceDoc: any, preferPdf: boolean): Promise<{ label: string; readyToAttach: boolean } | null> => {
+        try {
+          const rawData = sourceDoc?.fileData || sourceDoc?.data
+          const rawType = String(sourceDoc?.fileType || sourceDoc?.type || '')
+          const rawBaseName = String(sourceDoc?.fileName || sourceDoc?.name || 'werbemittel')
+          const baseName = rawBaseName
+            .replace(/\.[a-z0-9]{2,5}$/i, '')
+            .replace(/[^\w\-]+/g, '_')
+          if (!rawData || typeof rawData !== 'string') return null
 
-      if (fileData && typeof fileData === 'string' && fileData.startsWith('data:') && fileType.includes('html')) {
+          // Bereits gehostete Datei: als Link im Mailtext verwenden (kein lokaler Download nötig).
+          if (rawData.startsWith('http://') || rawData.startsWith('https://') || rawData.startsWith('/')) {
+            return { label: `${baseName || 'werbemittel'} (Link): ${rawData}`, readyToAttach: false }
+          }
+
+          // data:-Dokument als echte Datei in Downloads speichern, damit es druckfertig angehängt werden kann.
+          if (!rawData.startsWith('data:')) return null
+          const commaIdx = rawData.indexOf(',')
+          if (commaIdx < 0) return null
+          const header = rawData.slice(0, commaIdx)
+          const payload = rawData.slice(commaIdx + 1)
+          const mimeFromData = header.slice(5).split(';')[0] || ''
+          const mime = (rawType || mimeFromData || 'application/octet-stream').toLowerCase()
+          const isBase64 = /;base64/i.test(header)
+          const ext = mime.includes('pdf')
+            ? 'pdf'
+            : mime.includes('html')
+            ? 'html'
+            : mime.includes('png')
+            ? 'png'
+            : mime.includes('jpeg') || mime.includes('jpg')
+            ? 'jpg'
+            : 'bin'
+          const fileName = `${baseName || 'werbemittel'}.${ext}`
+
+          if (preferPdf && mime.includes('html')) {
+            const htmlDecoded = decodeHtmlDataUrl(rawData)
+            if (htmlDecoded) {
+              try {
+                const plainFromHtml = htmlToPlainTextForClipboard(htmlDecoded).trim()
+                const fallbackPlain = String(plainBody || '').trim()
+                const safeText = plainFromHtml || fallbackPlain || 'Dokument'
+                const safeTitle = String(betreff || baseName || 'Werbemittel')
+                const jspdfModule = await import('jspdf')
+                const JsPdfCtor = (jspdfModule.jsPDF || (jspdfModule as any).default) as any
+                const pdf = new JsPdfCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+                pdf.setFont('helvetica', 'normal')
+                pdf.setFontSize(15)
+                pdf.text(safeTitle, 12, 14)
+                pdf.setFontSize(11)
+                const lines = pdf.splitTextToSize(safeText, 185)
+                let y = 24
+                const pageHeight = 287
+                for (const line of lines) {
+                  if (y > pageHeight) {
+                    pdf.addPage()
+                    y = 14
+                  }
+                  pdf.text(String(line), 12, y)
+                  y += 5.5
+                }
+                const pdfName = `${baseName || 'werbemittel'}.pdf`
+                pdf.save(pdfName)
+                return { label: pdfName, readyToAttach: true }
+              } catch (pdfErr) {
+                // Fallback: Wenn PDF-Generator fehlschlägt, HTML-Datei herunterladen statt Abbruch.
+                console.warn('jspdf/PDF fehlgeschlagen, Fallback HTML-Download', pdfErr)
+              }
+            }
+          }
+
+          let blob: Blob
+          if (isBase64) {
+            const binary = atob(payload)
+            const bytes = new Uint8Array(binary.length)
+            for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+            blob = new Blob([bytes], { type: mime || 'application/octet-stream' })
+          } else {
+            blob = new Blob([decodeURIComponent(payload)], { type: mime || 'application/octet-stream' })
+          }
+
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = fileName
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          window.setTimeout(() => URL.revokeObjectURL(url), 1500)
+          return { label: fileName, readyToAttach: true }
+        } catch (err) {
+          console.warn('prepareDocumentAttachment fehlgeschlagen', err)
+          return null
+        }
+      }
+      const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const evSug = ev?.id ? suggestionsList.find((sg: any) => sg.eventId === ev.id) : null
+
+      // Mail muss sofort aufgehen; PDF-Erzeugung daher erst danach im Hintergrund.
+      const shouldPreparePdf = typ === 'plakat' || typ === 'event-flyer' || typ === 'newsletter' || typ === 'presse'
+      // mailto: kann keine Dateianhänge setzen – ehrlicher Hinweis im Fließtext (vorher war attachmentInfo immer null → irreführende „Vorschau anhängen“-Texte).
+      const pdfMailHinweis = shouldPreparePdf
+        ? 'Hinweis: Gleich wird eine druckfertige PDF-Datei in den Ordner „Downloads" gelegt (es erscheint ein kurzer Dialog mit dem Dateinamen). Bitte diese Datei in die geöffnete E-Mail als Anhang einfügen – automatische Anhänge sind bei mailto aus technischen Gründen nicht möglich.'
+        : ''
+
+      if (ev && typ === 'newsletter') {
+        const newsletterRaw = evSug?.newsletter || generateEmailNewsletterContent(ev)
+        const newsletter = newsletterRaw && typeof newsletterRaw === 'object' ? newsletterRaw : null
+        betreff = String(newsletter?.subject || fallbackBetreff).trim()
+        plainBody = [String(newsletter?.body || '').trim(), pdfMailHinweis].filter(Boolean).join('\n\n').trim()
+      }
+
+      if (ev && typ === 'event-flyer') {
+        const flyerRaw = evSug?.flyer || generateEventFlyerContent(ev)
+        const flyer = flyerRaw && typeof flyerRaw === 'object' ? flyerRaw : null
+        betreff = String(flyer?.subject || fallbackBetreff).trim()
+        plainBody = [
+          `Hier kommt der Event-Flyer für „${ev?.title || 'Veranstaltung'}“.`,
+          pdfMailHinweis,
+          'Viele Grüße',
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+          .trim()
+      }
+
+      if (ev && typ === 'plakat') {
+        betreff = `Plakat – ${ev?.title || 'Veranstaltung'}`
+        plainBody = [
+          `Hier kommt das Plakat für „${ev?.title || 'Veranstaltung'}“.`,
+          pdfMailHinweis,
+          'Viele Grüße',
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+          .trim()
+      }
+
+      if (
+        typ !== 'plakat' &&
+        typ !== 'event-flyer' &&
+        fileData &&
+        typeof fileData === 'string' &&
+        fileData.startsWith('data:') &&
+        fileType.includes('html')
+      ) {
         const htmlDecoded = decodeHtmlDataUrl(fileData)
         if (htmlDecoded) {
-          betreff = extractPresseBetreffFromHtml(htmlDecoded, fallbackBetreff)
-          plainBody = htmlToPlainTextForClipboard(htmlDecoded)
+          // HTML als Fallback: Betreff/Text nur übernehmen, wenn noch kein sauberer Inhalt vorliegt.
+          if (!betreff.trim() || betreff === fallbackBetreff) {
+            betreff = extractPresseBetreffFromHtml(htmlDecoded, fallbackBetreff)
+          }
+          if (!plainBody.trim()) {
+            plainBody = htmlToPlainTextForClipboard(htmlDecoded)
+          }
         }
       }
 
       if (!plainBody.trim() && ev?.id && typ === 'presse') {
-        const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-        const evSug = suggestionsList.find((sg: any) => sg.eventId === ev.id)
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
         const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
-        plainBody = (presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim()
+        plainBody = [(presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim(), pdfMailHinweis]
+          .filter(Boolean)
+          .join('\n\n')
+          .trim()
       }
 
       if (!plainBody.trim()) {
         plainBody = `Hallo,\n\nim Anhang/als Vorlage senden wir ${doc?.name || 'das Werbemittel'} für ${ev?.title || 'das Event'}.\n\nViele Grüße`
       }
 
+      // Presse: Text kann schon aus HTML kommen – PDF-Hinweis trotzdem anhängen, wenn noch nicht drin.
+      if (
+        typ === 'presse' &&
+        shouldPreparePdf &&
+        pdfMailHinweis &&
+        !plainBody.includes('Gleich wird eine druckfertige PDF-Datei')
+      ) {
+        plainBody = [plainBody.trim(), pdfMailHinweis].filter(Boolean).join('\n\n').trim()
+      }
+
       plainBody = normalizeMailBody(betreff, plainBody)
 
-      if (typ === 'social') {
-        plainBody += '\n\nHinweis: Social-Varianten im Dokument prüfen (Instagram/Facebook/WhatsApp) und passend übernehmen.'
-      }
       if (typ === 'plakat') {
-        plainBody += '\n\nBitte für Druck (Format/Material) vorbereiten. Bei Rückfragen gern antworten.'
+        // Keine zusätzlichen Textblöcke: Plakat-Mail bleibt bewusst kurz.
       }
       if (typ === 'event-flyer') {
-        plainBody += '\n\nBitte als druckfertigen Flyer aufbereiten.'
+        // Keine zusätzlichen Textblöcke: Flyer-Mail bleibt bewusst kurz.
       }
 
-      const bcc = selectedRecipients.map(m => m.email).join(',')
-      const shortBody = 'Der vollständige Text ist in der Zwischenablage. Bitte hier einfügen.'
-      const bodyForMailto = plainBody.length > 3800 ? shortBody : plainBody
-      const mailto = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const recipientEmails = selectedRecipients.map(m => String(m.email || '').trim()).filter(Boolean)
+      const bcc = recipientEmails.join(',')
+      // Ein Empfänger: im „An“-Feld (mailto:user@…) – sonst zeigen Clients nur BCC und leeres „An“.
+      const mailtoTo = recipientEmails.length === 1 ? recipientEmails[0] : ''
+      const shortBody = 'Der volle Text liegt in der Zwischenablage. Bitte im Mailprogramm einfuegen.'
+      const empfaengerBlock = mailtoTo ? `AN:\n${mailtoTo}` : `BCC:\n${bcc}`
+      const fullPacket = `BETREFF:\n${betreff}\n\n${empfaengerBlock}\n\nTEXT:\n${plainBody}`
 
-      if (plainBody.length > 3800) {
-        const paket = `Betreff: ${betreff}\n\n${plainBody}`
-        await navigator.clipboard.writeText(paket)
+      const bodyForMailto = plainBody.length > 2500 ? shortBody : plainBody
+      const mailtoWithBcc = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const mailtoWithTo = `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const mailtoPrimary = mailtoTo ? mailtoWithTo : mailtoWithBcc
+      const mailtoSubjectOnly = mailtoTo
+        ? `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}`
+        : `mailto:?subject=${encodeURIComponent(betreff)}`
+
+      const triggerMailClient = (url: string) => {
+        // Robuster Start: erst echter Link-Klick, dann Fallback über aktuelle/top Location.
+        let triggered = false
+        try {
+          const a = document.createElement('a')
+          a.href = url
+          a.style.display = 'none'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          triggered = true
+        } catch (_) {}
+
+        if (!triggered) {
+          try {
+            window.location.href = url
+            triggered = true
+          } catch (_) {}
+        }
+
+        if (!triggered) {
+          try {
+            if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
+              window.top.location.href = url
+            }
+          } catch (_) {}
+        }
       }
 
-      window.location.href = mailto
+      // mailto-Links werden je nach Client früh abgeschnitten.
+      // Deshalb: bei langem Link sicherer Fallback ohne BCC/Body, alles liegt im Clipboard.
+      const isLikelyTooLong = mailtoPrimary.length > 1800
+      triggerMailClient(isLikelyTooLong ? mailtoSubjectOnly : mailtoPrimary)
 
-      if (plainBody.length > 3800) {
-        alert('Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Text ist wegen Länge in der Zwischenablage – bitte im Mailprogramm einmal einfügen.')
+      // Clipboard bewusst nach dem Mail-Start schreiben (blockiert so den Öffnen-Klick nicht).
+      window.setTimeout(() => {
+        navigator.clipboard.writeText(fullPacket).catch(() => {})
+      }, 0)
+
+      // PDF/Datei erst nach dem Mail-Start vorbereiten (stabilerer 1-Klick-Flow).
+      window.setTimeout(async () => {
+        if (!shouldPreparePdf) return
+        let attachmentSource = doc
+        if ((!attachmentSource?.fileData && !attachmentSource?.data) && plainBody.trim()) {
+          const safeTitle = String(betreff || 'Werbemittel').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          const safeBody = String(plainBody || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          const htmlFallback = `<!doctype html><html><head><meta charset="utf-8"><title>${safeTitle}</title></head><body style="font-family:Arial,sans-serif;padding:24px;white-space:pre-wrap;line-height:1.5;">${safeBody}</body></html>`
+          attachmentSource = {
+            ...(doc || {}),
+            fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
+            fileType: 'text/html',
+            fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+          }
+        }
+
+        const prepared = await prepareDocumentAttachment(attachmentSource, true)
+        if (prepared?.readyToAttach) {
+          alert(
+            `✅ PDF gespeichert: ${prepared.label}\n\nOrdner: Downloads.\nBitte die Datei in die geöffnete Mail ziehen (Anhang). Ein automatischer Anhang geht mit mailto nicht.`
+          )
+          return
+        }
+        if (prepared?.label) {
+          alert(`ℹ️ Dokument-Link erkannt:\n${prepared.label}\n\nDiesen Link in der Mail verwenden oder Datei manuell anhängen.`)
+          return
+        }
+        alert('⚠️ PDF konnte nicht automatisch vorbereitet werden. Bitte Dokument in der Vorschau öffnen und als PDF drucken.')
+      }, 300)
+
+      if (isLikelyTooLong || plainBody.length > 2500) {
+        alert(
+          isLikelyTooLong
+            ? 'Mailprogramm wurde sicher geöffnet (nur Betreff). BCC und voller Text liegen in der Zwischenablage – bitte beides einfügen.'
+            : 'Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Text liegt in der Zwischenablage – bitte einmal einfügen.'
+        )
         return
       }
     } catch (e) {
@@ -11545,10 +11895,23 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               type="button"
               onClick={() => {
                 try {
-                  const win = inAppViewerIframeRef.current?.contentWindow
-                  if (win) {
-                    win.focus()
-                    win.print()
+                  const iframeEl = inAppViewerIframeRef.current
+                  const win = iframeEl?.contentWindow
+                  if (win && iframeEl) {
+                    const doPrint = () => {
+                      try {
+                        win.focus()
+                        win.print()
+                      } catch (err) {
+                        console.error('Iframe-Druck fehlgeschlagen:', err)
+                      }
+                    }
+                    const isReady = iframeEl.contentDocument?.readyState === 'complete'
+                    if (isReady) {
+                      doPrint()
+                    } else {
+                      iframeEl.addEventListener('load', doPrint, { once: true })
+                    }
                   } else {
                     const w = window.open('', '_blank')
                     if (w) {
@@ -11580,7 +11943,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             style={{
               flex: 1, width: '100%', border: 'none', background: '#fff'
             }}
-            sandbox="allow-same-origin allow-scripts"
+            sandbox="allow-same-origin allow-scripts allow-modals"
           />
         </div>
       )}
@@ -11617,8 +11980,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
             Du schaust dir gerade an: <strong style={{ color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               {activeTab === 'werke' ? (tenant.isVk2 ? '🖼️ Vereinsmitglieder' : '🖼️ Werke hinzufügen und bearbeiten') :
-               activeTab === 'eventplan' ? '🎟️ Events & Ausstellungen' :
-               activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse & Medien</> :
+               activeTab === 'eventplan' ? '🎟️ Event- und Medienplanung' :
+               activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Event- und Medienplanung</> :
                activeTab === 'design' ? (tenant.isVk2 ? '✨ Ausstellung gestalten und texten' : '✨ Galerie gestalten und texten') :
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
@@ -11654,9 +12017,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' }
             : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' },
           eventplan: istVerein
-            ? { titel: 'Events & Ausstellungen', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellst du Einladungen, QR-Codes für Gäste und siehst, wer kommt. Alles für eure Events an einem Ort – ohne Zettelwirtschaft.' }
-            : { titel: 'Events & Ausstellungen', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen und QR-Codes für deine Gäste. Du siehst auf einen Blick, was ansteht – und deine Besucher können sich einfach anmelden.' },
-          presse: { titel: 'Presse & Medien', text: 'Hier findest du alles für deine Pressearbeit: Medienkit, Pressevorlagen und Texte zum Kopieren. Ein Klick – und du hast das Richtige für Zeitung, Web oder Social Media. Professionell formuliert, du musst nur noch anpassen und versenden.' },
+            ? { titel: 'Event- und Medienplanung', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellt ihr Einladungen, QR-Codes, Werbedokumente und nutzt den Verteiler direkt im gleichen Ablauf.' }
+            : { titel: 'Event- und Medienplanung', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen, Werbedokumente und nutzt den Verteiler in einem Schritt.' },
+          presse: { titel: 'Event- und Medienplanung', text: 'Der Bereich ist jetzt ein gemeinsamer Ablauf: Event planen, Werbematerial erzeugen und an Medien oder Newsletter-Empfänger senden.' },
           design: istVerein
             ? { titel: 'Ausstellung gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellst du es ein. Vorschau zeigt dir sofort, wie es wirkt.' }
             : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
@@ -12049,16 +12412,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
                   const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
                     { emoji: '🖼️', name: 'Vereinsmitglieder neu anlegen oder ändern', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissagen planen, Einladungen erstellen, QR-Codes.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
+                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Vernissagen planen, Werbedokumente erstellen, Verteiler nutzen.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Event- und Medienplanung', beschreibung: 'Ein Ablauf fuer Event, Mediengenerator und Verteiler.', tab: 'presse' },
                     { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Vernissage planen, Einladungen & QR-Codes erstellen.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
+                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Vernissage planen, Werbedokumente erstellen, Verteiler nutzen.', tab: 'eventplan' },
+                    { emoji: '📰', name: 'Event- und Medienplanung', beschreibung: 'Ein Ablauf fuer Event, Mediengenerator und Verteiler.', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu dir.', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher und Geräte sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
@@ -12229,7 +12592,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     { emoji: '🏛️', name: 'Vereinsmitglieder neu anlegen oder ändern', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
+                    { emoji: '📰', name: 'Event- und Medienplanung', text: 'Event, Mediengenerator und Verteiler in einem Ablauf', tab: 'presse' },
                     { emoji: '✨', name: 'Ausstellung gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand', tab: 'veroeffentlichen' },
                     { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
@@ -12238,7 +12601,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
                     { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
                     { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', text: 'Medienkit und Presse-Vorlage für Pressearbeit', tab: 'presse' },
+                    { emoji: '📰', name: 'Event- und Medienplanung', text: 'Event, Mediengenerator und Verteiler in einem Ablauf', tab: 'presse' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
                     { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild sichtbar machen – Besucher und Geräte sehen den aktuellen Stand', tab: 'veroeffentlichen' },
                   ]
@@ -12359,12 +12722,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                    { emoji: '🎟️', name: 'Events & Werbung', beschreibung: 'Events planen, Flyer und Newsletter für den Verein erstellen.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit und Presse-Vorlage – professionell für Pressearbeit.', tab: 'presse' },
+                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ] : [
                     { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
-                    { emoji: '🎟️', name: 'Events & Ausstellungen', beschreibung: 'Events planen, Einladungen und Flyer erstellen, Presse, Social Media.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Presse & Medien', beschreibung: 'Medienkit, Presse-Vorlage und Einladung an Medien – ök2 testen.', tab: 'presse' },
+                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
                   const openKasse = () => {
@@ -12453,6 +12814,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           })() : <div key={`empty-${idx}`} />)
                         })()}
                       </div>
+                      <div style={{ marginTop: '0.9rem', maxWidth: '900px', padding: '0.7rem 0.85rem', borderRadius: '10px', background: '#f5f8f2', border: '1px solid #90a88044', color: s.text }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.2rem' }}>🔗 Ein Bereich, ein Ablauf</div>
+                        <div style={{ fontSize: '0.8rem', color: s.muted, lineHeight: 1.35 }}>
+                          <strong>Event- und Medienplanung</strong> verbindet Planung, Werbematerial und Verteiler in einem Schritt – ohne zweiten Einstiegs-Button.
+                        </div>
+                      </div>
                     </div>
                   )
                 })()}
@@ -12481,8 +12848,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
-                  {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Vereins-Events & Werbematerial' : '📢 Veranstaltungen & Werbung')}
-                  {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</> : <><MedienstudioIcon size={22} /> Presse & Medien – Medienkit und Presse-Vorlage</>)}
+                  {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Event- und Medienplanung (Verein)' : '📢 Event- und Medienplanung')}
+                  {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Event- und Medienplanung</> : <><MedienstudioIcon size={22} /> Event- und Medienplanung</>)}
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Ausstellung gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
                   {activeTab === 'veroeffentlichen' && '📤 Veröffentlichen – Aushängeschild sichtbar machen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
@@ -17034,7 +17401,7 @@ ${name}`
           const presseVorlageText = storyText ? `${presseHeader}\n\n${storyText}\n\n${presseKontakt}` : `${presseHeader}\n\n${presseKontakt}`
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Presse & Medien</h2>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Event- und Medienplanung</h2>
               <p style={{ color: s.muted, marginBottom: tenant.isVk2 ? '0.5rem' : '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 {tenant.isVk2 ? 'Medienkit und Presse-Vorlage aus euren Vereinsdaten (Verein, Vorstand, Adresse) – zum Kopieren und Versand an Medien.' : 'Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.'}
               </p>
@@ -17051,362 +17418,27 @@ ${name}`
 
               {/* Abgrenzung: Presseaussendung zu konkretem Event = Events & Ausstellungen (keine Dopplung) */}
               <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
-                <strong style={{ color: s.text }}>Presseaussendung zu einem konkreten Event?</strong> (Vernissage, Eröffnung, Lesung …) → <button type="button" onClick={() => setActiveTab('eventplan')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}>Events & Ausstellungen</button> → Event wählen → Presseaussendung. Hier nur Medienkit und allgemeine Vorlage (ohne Event).
+                <strong style={{ color: s.text }}>Presseaussendung zu einem konkreten Event?</strong> (Vernissage, Eröffnung, Lesung …) → <button type="button" onClick={() => setActiveTab('eventplan')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}>Event- und Medienplanung</button> → Event wählen → Presseaussendung. Hier nur Medienkit und allgemeine Vorlage (ohne Event).
               </p>
 
-              {/* Medienspiegel: eigene Medienliste, Auswahl, ein Klick → E-Mail-Adressen kopieren (BCC). id = Sprung von Event „An Medien – 1 Klick“. */}
-              <div id="admin-medienspiegel-bcc" style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
-                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📋 Medienspiegel</h3>
-                <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Lege deine Presse-Empfänger an (einzeln oder aus einer Liste). <strong style={{ color: s.text }}>Häkchen setzen, welche Medien du kontaktieren willst – ein Klick kopiert alle E-Mail-Adressen</strong> (z. B. für BCC in deinem E-Mail-Programm).
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.85rem', color: s.text }}>Land / Markt:</span>
-                  <select value={medienspiegelLand} onChange={e => setMedienspiegelLand(e.target.value as 'at' | 'de' | 'ch' | 'li' | 'lu')} style={{ padding: '0.4rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
-                    <option value="at">Österreich</option>
-                    <option value="de">Deutschland</option>
-                    <option value="ch">Schweiz</option>
-                    <option value="li">Liechtenstein</option>
-                    <option value="lu">Luxemburg</option>
-                  </select>
-                  <span style={{ fontSize: '0.8rem', color: s.muted }}>– Kategorie: Klick fügt die Medien ein und zeigt nur diese Kategorie. «Alle» zeigt die komplette Liste.</span>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-                  {(['alle', 'print', 'tv', 'radio', 'regionalOoe', 'online', 'kultur'] as const).map(typ => (
-                    <button key={typ} type="button" onClick={() => {
-                      setMedienspiegelKategorieFilter(typ)
-                      if (typ !== 'alle') {
-                        const medienSet = MEDIEN_NACH_LAND[medienspiegelLand]
-                        if (!medienSet) return
-                        const existingEmails = new Set(medienspiegel.map(m => m.email.toLowerCase()))
-                        const list = medienSet[typ].filter((e: { name: string; email: string }) => !existingEmails.has(e.email.toLowerCase()))
-                        if (list.length > 0) {
-                          const added = list.map((e: { name: string; email: string }, i: number) => ({ id: `${medienspiegelLand}-${typ}-${Date.now()}-${i}`, name: e.name, email: e.email }))
-                          const next = [...medienspiegel, ...added]
-                          setMedienspiegel(next)
-                          try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                        }
-                      }
-                    }} style={{ padding: '0.45rem 0.9rem', background: medienspiegelKategorieFilter === typ ? s.gradientAccent : s.bgElevated, color: medienspiegelKategorieFilter === typ ? '#fff' : s.text, border: `1px solid ${medienspiegelKategorieFilter === typ ? 'transparent' : s.accent + '44'}`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                      {typ === 'alle' ? 'Alle' : typ === 'print' ? '📰 Print' : typ === 'tv' ? '📺 TV' : typ === 'radio' ? '📻 Radio' : typ === 'regionalOoe' ? '📍 Regional' : typ === 'online' ? '🌐 Online' : '🎨 Kultur'}
-                    </button>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
-                  <input type="text" value={medienspiegelAddName} onChange={e => setMedienspiegelAddName(e.target.value)} placeholder="Name (z. B. Kleine Zeitung)" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
-                  <input type="text" value={medienspiegelAddEmail} onChange={e => setMedienspiegelAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
-                  <button type="button" onClick={() => {
-                    const email = medienspiegelAddEmail.trim()
-                    if (!email) return
-                    const name = medienspiegelAddName.trim() || email
-                    const next = [...medienspiegel, { id: `m-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
-                    setMedienspiegel(next)
-                    setMedienspiegelAddName(''); setMedienspiegelAddEmail('')
-                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                  }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
-                    Hinzufügen
-                  </button>
-                </div>
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.35rem' }}>Aus Liste einfügen (eine Zeile pro Medium: „Name, E-Mail“ oder nur E-Mail)</label>
-                  <textarea value={medienspiegelPasteText} onChange={e => setMedienspiegelPasteText(e.target.value)} placeholder={'z. B.:\nKleine Zeitung, redaktion@kleinezeitung.at\nredaktion@nachrichten.at'} rows={3} style={{ width: '100%', maxWidth: '500px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }} />
-                  <button type="button" onClick={() => {
-                    const lines = medienspiegelPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
-                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
-                    const added: { id: string; name: string; email: string }[] = []
-                    const baseId = Date.now()
-                    lines.forEach((line, i) => {
-                      const match = line.match(emailRe)
-                      if (!match) return
-                      const email = match[0]
-                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
-                      added.push({ id: `m-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
-                    })
-                    if (added.length === 0) { setMedienspiegelPasteText(''); return }
-                    const next = [...medienspiegel, ...added]
-                    setMedienspiegel(next)
-                    setMedienspiegelPasteText('')
-                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                  }} style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                    Einfügen
-                  </button>
-                </div>
-                {medienspiegel.length > 0 && (() => {
-                  const getKategorie = (id: string): 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur' | 'sonstige' => {
-                    const m = id.match(/^(at|de|ch|li|lu)-(print|tv|radio|regionalOoe|online|kultur)-/)
-                    return m ? (m[2] as 'print' | 'tv' | 'radio' | 'regionalOoe' | 'online' | 'kultur') : 'sonstige'
-                  }
-                  const kategorieReihenfolge: Record<string, number> = { print: 0, tv: 1, radio: 2, regionalOoe: 3, online: 4, kultur: 5, sonstige: 6 }
-                  const gefiltert = medienspiegel.filter(m => medienspiegelKategorieFilter === 'alle' || getKategorie(m.id) === medienspiegelKategorieFilter)
-                  const sortiert = [...gefiltert].sort((a, b) => kategorieReihenfolge[getKategorie(a.id)] - kategorieReihenfolge[getKategorie(b.id)] || a.name.localeCompare(b.name))
-                  return (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.85rem', color: s.text }}>Medien auswählen, dann E-Mail-Adressen kopieren:</span>
-                      <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
-                      <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
-                    </div>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
-                      {sortiert.map(m => (
-                        <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
-                          <input type="checkbox" checked={medienspiegelSelectedIds.has(m.id)} onChange={() => {
-                            const next = new Set(medienspiegelSelectedIds)
-                            if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
-                            setMedienspiegelSelectedIds(next)
-                          }} />
-                          <span style={{ flex: 1, fontSize: '0.9rem', color: s.text }}>{m.name}</span>
-                          <span style={{ fontSize: '0.8rem', color: s.muted }}>{m.email}</span>
-                          <button type="button" onClick={() => {
-                            const next = medienspiegel.filter(x => x.id !== m.id)
-                            setMedienspiegel(next)
-                            const sel = new Set(medienspiegelSelectedIds); sel.delete(m.id); setMedienspiegelSelectedIds(sel)
-                            try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                          }} style={{ padding: '0.2rem 0.5rem', background: 'transparent', border: `1px solid ${s.muted}66`, borderRadius: '6px', fontSize: '0.75rem', color: s.muted, cursor: 'pointer' }}>Löschen</button>
-                        </li>
-                      ))}
-                    </ul>
-                    {(() => {
-                      const selected = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
-                      const count = selected.length
-                      return (
-                        <button type="button" disabled={count === 0} onClick={() => {
-                          const emails = selected.map(m => m.email).join(', ')
-                          navigator.clipboard.writeText(emails).then(() => alert(`✅ E-Mail-Adressen von ${count} ${count === 1 ? 'Medium' : 'Medien'} in die Zwischenablage kopiert.\n\nIn deinem E-Mail-Programm bei BCC einfügen – dann geht die Aussendung an alle ausgewählten.`)).catch(() => alert('Kopieren fehlgeschlagen.'))
-                        }} style={{ padding: '0.6rem 1.2rem', background: count > 0 ? s.gradientAccent : s.bgElevated, color: count > 0 ? '#fff' : s.muted, border: 'none', borderRadius: '10px', fontWeight: 600, cursor: count > 0 ? 'pointer' : 'not-allowed', fontSize: '0.95rem' }}>
-                          {count === 0 ? 'E-Mail-Adressen kopieren (zuerst Medien auswählen)' : `E-Mail-Adressen kopieren (${count} ${count === 1 ? 'Medium' : 'Medien'})`}
-                        </button>
-                      )
-                    })()}
-                  </>
-                  )
-                })()}
-                {medienspiegel.length === 0 && <p style={{ fontSize: '0.85rem', color: s.muted }}>Noch keine Medien. Füge welche hinzu oder füge eine Liste ein.</p>}
+              <div style={{ marginBottom: '2rem', padding: '0.95rem 1rem', background: `${s.accent}10`, border: `1px solid ${s.accent}38`, borderRadius: '10px', fontSize: '0.85rem', color: s.text }}>
+                Der Verteiler (Medienspiegel + Newsletter) ist jetzt vollständig im Ablauf
+                <strong> Event- und Medienplanung → Mediengenerator &amp; Verteiler</strong> eingebunden – dort steht er bewusst
+                <strong> unter den Werbemitteln</strong> (zuerst Dokumente, dann Versand).
               </div>
 
-              {/* Verteilerblock: Newsletter-Empfänger (wie Medienspiegel – Liste, auswählen, E-Mails kopieren) */}
-                <div id="admin-newsletter-verteiler-bcc" style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
-                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📧 Newsletter-Empfänger</h3>
-                <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Verteiler für Newsletter und Einladungen. <strong style={{ color: s.text }}>Häkchen setzen, dann E-Mail-Adressen kopieren</strong> (z. B. für BCC im E-Mail-Programm).
-                </p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
-                  <input type="text" value={verteilerNewsletterAddName} onChange={e => setVerteilerNewsletterAddName(e.target.value)} placeholder="Name (z. B. Galerie-Interessent)" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
-                  <input type="text" value={verteilerNewsletterAddEmail} onChange={e => setVerteilerNewsletterAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
-                  <button type="button" onClick={() => {
-                    const email = verteilerNewsletterAddEmail.trim()
-                    if (!email) return
-                    const name = verteilerNewsletterAddName.trim() || email
-                    const next = [...verteilerNewsletter, { id: `vn-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
-                    setVerteilerNewsletter(next)
-                    setVerteilerNewsletterAddName(''); setVerteilerNewsletterAddEmail('')
-                    try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
-                  }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
-                    Hinzufügen
-                  </button>
-                </div>
-                <div style={{ marginBottom: '1rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.35rem' }}>Aus Liste einfügen (eine Zeile pro Empfänger: „Name, E-Mail“ oder nur E-Mail)</label>
-                  <textarea value={verteilerNewsletterPasteText} onChange={e => setVerteilerNewsletterPasteText(e.target.value)} placeholder={'z. B.:\nMax Mustermann, max@beispiel.at\nanna@beispiel.at'} rows={3} style={{ width: '100%', maxWidth: '500px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }} />
-                  <button type="button" onClick={() => {
-                    const lines = verteilerNewsletterPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
-                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
-                    const added: { id: string; name: string; email: string }[] = []
-                    const baseId = Date.now()
-                    lines.forEach((line, i) => {
-                      const match = line.match(emailRe)
-                      if (!match) return
-                      const email = match[0]
-                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
-                      added.push({ id: `vn-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
-                    })
-                    if (added.length === 0) { setVerteilerNewsletterPasteText(''); return }
-                    const next = [...verteilerNewsletter, ...added]
-                    setVerteilerNewsletter(next)
-                    setVerteilerNewsletterPasteText('')
-                    try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
-                  }} style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                    Einfügen
-                  </button>
-                </div>
-                {verteilerNewsletter.length > 0 && (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.85rem', color: s.text }}>Empfänger auswählen, dann E-Mail-Adressen kopieren:</span>
-                      <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set(verteilerNewsletter.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
-                      <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
-                    </div>
-                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
-                      {verteilerNewsletter.map(m => (
-                        <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
-                          <input type="checkbox" checked={verteilerNewsletterSelectedIds.has(m.id)} onChange={() => {
-                            const next = new Set(verteilerNewsletterSelectedIds)
-                            if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
-                            setVerteilerNewsletterSelectedIds(next)
-                          }} />
-                          <span style={{ flex: 1, fontSize: '0.9rem', color: s.text }}>{m.name}</span>
-                          <span style={{ fontSize: '0.8rem', color: s.muted }}>{m.email}</span>
-                          <button type="button" onClick={() => {
-                            const next = verteilerNewsletter.filter(x => x.id !== m.id)
-                            setVerteilerNewsletter(next)
-                            const sel = new Set(verteilerNewsletterSelectedIds); sel.delete(m.id); setVerteilerNewsletterSelectedIds(sel)
-                            try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
-                          }} style={{ padding: '0.2rem 0.5rem', background: 'transparent', border: `1px solid ${s.muted}66`, borderRadius: '6px', fontSize: '0.75rem', color: s.muted, cursor: 'pointer' }}>Löschen</button>
-                        </li>
-                      ))}
-                    </ul>
-                    {(() => {
-                      const selected = verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
-                      const count = selected.length
-                      return (
-                        <button type="button" disabled={count === 0} onClick={() => {
-                          const emails = selected.map(m => m.email).join(', ')
-                          navigator.clipboard.writeText(emails).then(() => alert(`✅ E-Mail-Adressen von ${count} ${count === 1 ? 'Empfänger' : 'Empfängern'} in die Zwischenablage kopiert.\n\nIm E-Mail-Programm bei BCC einfügen.`)).catch(() => alert('Kopieren fehlgeschlagen.'))
-                        }} style={{ padding: '0.6rem 1.2rem', background: count > 0 ? s.gradientAccent : s.bgElevated, color: count > 0 ? '#fff' : s.muted, border: 'none', borderRadius: '10px', fontWeight: 600, cursor: count > 0 ? 'pointer' : 'not-allowed', fontSize: '0.95rem' }}>
-                          {count === 0 ? 'E-Mail-Adressen kopieren (zuerst Empfänger auswählen)' : `E-Mail-Adressen kopieren (${count} ${count === 1 ? 'Empfänger' : 'Empfänger'})`}
-                        </button>
-                      )
-                    })()}
-                  </>
-                )}
-                {verteilerNewsletter.length === 0 && <p style={{ fontSize: '0.85rem', color: s.muted }}>Noch keine Empfänger. Füge welche hinzu oder füge eine Liste ein.</p>}
-              </div>
-
-              {/* Produkt-Story (K2 & VK2) – für alle Kontexte, neutrale Story für Medien */}
-              <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
-                <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📖 Produkt-Story (K2 & VK2)</h3>
-                <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Neutrale Story für Presse – Plattform, Künstler:innen, Kunstvereine. Interessant, ohne in den persönlichen Bereich zu gehen.
-                </p>
-                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
-                  {`Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.`}
-                </pre>
-                <button type="button" onClick={() => {
-                  const t = 'Künstler:innen und kleine Galerien stehen vor demselben Problem: Sie brauchen Webauftritt, Kasse, Events und Presse – aber am Markt gibt es vor allem Stückwerke. Eine Software für die Galerie, eine andere für die Kasse, wieder eine für Einladungen. Die K2 Galerie ist aus genau dieser Lücke entstanden. Für große Anbieter ist dieser Markt zu klein; für Einzelne ist der Aufwand zu groß – genau dort positionieren wir uns: eine Oberfläche für alles. Galerie, Kasse, Events und Marketing aus einer Hand, ohne dass man sich durch ein Dutzend Programme klicken muss. Mittlerweile wächst die Plattform: ök2 für den gesamten Markt (Kunstmarkt = Einstieg), VK2 für alle Vereine (Kunstvereine = Einstieg) – alle Mitglieder, alle Werke, eine gemeinsame Galerie und eine Presse-Stimme. Keine Tech-Story von oben, sondern gebaut für die, die es brauchen.'
-                  try { navigator.clipboard.writeText(t); alert('✅ Produkt-Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                  📋 Produkt-Story kopieren
+              <div style={{ marginBottom: '0.5rem', padding: '0.9rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
+                <strong style={{ color: s.text }}>Vereinfacht:</strong> Dieser Bereich ist jetzt bewusst nur der <strong>Verteiler-Schlüssel</strong> (Medienspiegel + Newsletter-Empfänger).
+                {' '}
+                Alle Werbetexte und Werbedokumente (Einladung, Presseaussendung, Flyer, Social) erzeugst du im Bereich{' '}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('eventplan')}
+                  style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontWeight: 600, fontSize: 'inherit' }}
+                >
+                  Event- und Medienplanung
                 </button>
-              </div>
-
-              {/* Einladung an Journalist:innen – ök2 testen & berichten, dankbar für Verbesserungsvorschläge */}
-              <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
-                <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📢 Einladung an Medien (ök2 testen)</h3>
-                <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Für Presseaussendungen und E-Mails an Redaktionen – einladend, offen für Feedback.
-                </p>
-                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
-                  {`Wir laden Redaktionen ein, ök2 selbst zu testen – und über ihren Eindruck zu berichten. Die Demo-Galerie zeigt den vollen Umfang der Plattform; wer mag, kann sie vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.`}
-                </pre>
-                <button type="button" onClick={() => {
-                  const t = 'Wir laden Redaktionen ein, ök2 selbst zu testen – und über ihren Eindruck zu berichten. Die Demo-Galerie zeigt den vollen Umfang der Plattform; wer mag, kann sie vor Ort oder von zu Hause aus ausprobieren. Wir sind auch dankbar für Verbesserungsvorschläge.'
-                  try { navigator.clipboard.writeText(t); alert('✅ Einladung an Medien in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                  📋 Einladung kopieren
-                </button>
-              </div>
-
-              {/* Story für Presse (Human Interest – persönlich) – nur K2, optional zum Kopieren */}
-              {!tenant.isVk2 && !tenant.isOeffentlich && (
-                <div style={{ marginBottom: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
-                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>💡 Story für Presse (optional)</h3>
-                  <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.75rem' }}>
-                    Locker, mit Augenzwinkern – für Medien, die eine kleine „Geschichte dahinter“ mögen.
-                  </p>
-                  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.85rem', color: s.text, marginBottom: '0.75rem', lineHeight: 1.5, fontFamily: 'inherit' }}>
-                    {`Die K2 Kunst Galerie betreiben Martina und Georg Kreinecker gemeinsam – Malerei und Keramik, nah an den Menschen. Die Plattform (ök2, VK2) hat Georg gebaut: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. Am Markt fand er vor allem Stückwerke – also wurde selbst gebaut. Galerie, Kasse, Events und Presse aus einer Hand. Kein Tech-Konzern, sondern einer, der nicht auf halben Lösungen sitzen bleiben wollte.`}
-                  </pre>
-                  <button type="button" onClick={() => {
-                    const t = 'Die K2 Kunst Galerie betreiben Martina und Georg Kreinecker gemeinsam – Malerei und Keramik, nah an den Menschen. Die Plattform (ök2, VK2) hat Georg gebaut: Wer jahrzehntelang Maschinenbau und Vertrieb gemanagt hat, hat gewisse Ansprüche. An die Kassa. An die Organisation. An Marketing und Presse. Am Markt fand er vor allem Stückwerke – also wurde selbst gebaut. Heute heißt das Ergebnis K2 Galerie – Galerie, Kasse, Events und Presse aus einer Hand, und die Plattform wächst mit (ök2 für den gesamten Markt, Kunstmarkt = Einstieg; VK2 für alle Vereine, Kunstvereine = Einstieg). Kein Tech-Konzern, sondern einer, der nicht auf halben Lösungen sitzen bleiben wollte. Mit Augenzwinkern: Wer sein Leben lang Dinge organisiert hat, hört im Ruhestand nicht einfach auf.'
-                    try { navigator.clipboard.writeText(t); alert('✅ Story in Zwischenablage kopiert.') } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                  }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
-                    📋 Story kopieren
-                  </button>
-                </div>
-              )}
-
-              <div style={{ marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Medienkit</h3>
-                <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  {tenant.isVk2 ? 'Kurztext über euren Verein und Ansprechpartner (Vorstand) – aus Vereins-Stammdaten. Für E-Mails an Redaktionen oder als Anhang.' : 'Kurztext über Galerie/Verein und Ansprechpartner – aus Stammdaten erzeugt. Für E-Mails an Redaktionen oder als Anhang.'}
-                </p>
-                <pre style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.9rem', color: s.text, marginBottom: '0.75rem', minHeight: '80px' }}>
-                  {medienkitText || (tenant.isVk2 ? 'Noch keine Vereinsdaten vorhanden. In Einstellungen → Stammdaten (Verein, Vorstand) ergänzen.' : 'Noch keine Stammdaten vorhanden. In Einstellungen → Stammdaten ergänzen.')}
-                </pre>
-                <button type="button" onClick={() => {
-                  try {
-                    const t = medienkitText || 'Noch keine Stammdaten vorhanden.'
-                    navigator.clipboard.writeText(t)
-                    alert('✅ Medienkit in Zwischenablage kopiert.')
-                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                }} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
-                  📋 Kopieren
-                </button>
-              </div>
-
-              <div>
-                <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.5rem' }}>Presse-Vorlage</h3>
-                <p style={{ fontSize: '0.88rem', color: s.muted, marginBottom: '0.75rem' }}>
-                  Variablen ausfüllen und optional eine der beiden Ausgangsgeschichten aus mök2 einbauen – fertiger Text zum Kopieren für Presseinformationen.
-                </p>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: s.text, marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: 600 }}>Story in Pressemeldung:</span>
-                  <select value={presseStoryVariante} onChange={e => setPresseStoryVariante(e.target.value as 'keine' | 'human' | 'produkt')} style={{ marginLeft: '0.5rem', padding: '0.4rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
-                    <option value="keine">Keine – nur Kopf und Kontakt</option>
-                    {!tenant.isVk2 && <option value="human">1a – Human Interest (persönlich, Martina & Georg)</option>}
-                    <option value="produkt">1b – Produkt-Story (K2 & VK2, neutral)</option>
-                  </select>
-                </label>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
-                    <span>Anlass</span>
-                    <input type="text" value={presseAnlass} onChange={e => setPresseAnlass(e.target.value)} placeholder="z. B. Eröffnung Galerie" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
-                    <span>Datum</span>
-                    <input type="text" value={presseDatum} onChange={e => setPresseDatum(e.target.value)} placeholder="z. B. 15.03.2026" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.85rem', color: s.text }}>
-                    <span>Ort</span>
-                    <input type="text" value={presseOrt} onChange={e => setPresseOrt(e.target.value)} placeholder="z. B. Adresse oder Stadt" style={{ padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem' }} />
-                  </label>
-                </div>
-                <pre style={{ background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: '0.9rem', color: s.text, marginBottom: '0.75rem', minHeight: '60px' }}>
-                  {presseVorlageText}
-                </pre>
-                <button type="button" onClick={() => {
-                  try {
-                    navigator.clipboard.writeText(presseVorlageText)
-                    alert('✅ Presse-Text in Zwischenablage kopiert.')
-                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                }} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
-                  📋 In Zwischenablage
-                </button>
-                <button type="button" onClick={() => {
-                  try {
-                    const betreff = `Presseinformation – ${presseAnlass || '[Anlass]'}, ${presseDatum || '[Datum]'}, ${presseOrt || '[Ort]'}`
-                    const paket = `Betreff: ${betreff}\n\n${presseVorlageText}`
-                    navigator.clipboard.writeText(paket)
-                    alert('✅ Presse-Paket (Betreff + Text) in Zwischenablage kopiert.\n\nIn E-Mail: Betreff-Zeile übernehmen, Text in den Körper einfügen.')
-                  } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                }} style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, color: s.text, border: `2px solid ${s.accent}66`, borderRadius: '10px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
-                  📦 Presse-Paket kopieren
-                </button>
-                <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: s.muted }}>
-                  Tipp: E-Mail-Adressen für BCC oben unter Medienspiegel (Häkchen setzen → E-Mail-Adressen kopieren).
-                </p>
-                <div style={{ marginTop: '2rem', padding: '1rem 1.25rem', background: `${s.accent}08`, border: `1px solid ${s.accent}30`, borderRadius: '12px' }}>
-                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>Kernbotschaften (für Pitch, Web, Social)</h3>
-                  <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Slogan, Zielgruppe und Positionierung aus einer Quelle – ein Klick kopiert alles.</p>
-                  <button type="button" onClick={() => {
-                    try {
-                      const text = `1. ${PRODUCT_WERBESLOGAN}\n2. ${PRODUCT_WERBESLOGAN_2}\n\nZielgruppe: ${PRODUCT_ZIELGRUPPE}\n\nPositionierung: ${PRODUCT_POSITIONING_SWEET_SPOT}`
-                      navigator.clipboard.writeText(text)
-                      alert('✅ Kernbotschaften in Zwischenablage kopiert.')
-                    } catch (_) { alert('Kopieren fehlgeschlagen.') }
-                  }} style={{ padding: '0.5rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem', color: s.text }}>
-                    📋 Kernbotschaften kopieren
-                  </button>
-                </div>
+                .
               </div>
             </section>
           )
@@ -17440,7 +17472,7 @@ ${name}`
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'events' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📅</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Veranstaltungen</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Veranstaltung - Werbkampagne</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Events anlegen, bearbeiten, Termine verwalten</div>
               </button>
               <button type="button" onClick={() => setEventplanSubTab('öffentlichkeitsarbeit')} style={{ textAlign: 'left', cursor: 'pointer', background: eventplanSubTab === 'öffentlichkeitsarbeit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem 1.25rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
@@ -17448,7 +17480,7 @@ ${name}`
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📢</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Flyer & Werbematerial</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Mediengenerator & Werbematerial</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Einladungen, Flyer, Presse, Social Media – ansehen & drucken</div>
               </button>
             </div>
@@ -18822,7 +18854,9 @@ ${name}`
             borderRadius: '24px',
             padding: 'clamp(2rem, 5vw, 3rem)',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            marginBottom: 'clamp(2rem, 5vw, 3rem)'
+            marginBottom: 'clamp(2rem, 5vw, 3rem)',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             {activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit' && !showOeffentlichkeitsarbeitModal && !tenant.isOeffentlich && (
               <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
@@ -18857,27 +18891,325 @@ ${name}`
             }}>
               📢 Hier sind deine Flyer und Werbedokumente – ansehen, bearbeiten …
             </h2>
-            <p style={{
-              fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
-              color: s.muted,
-              marginBottom: '0.75rem',
-              lineHeight: 1.55
-            }}>
-              <strong style={{ color: s.text }}>So geht’s:</strong> Event in der Eventplanung anlegen (Eckdaten) → hier erscheint automatisch eine Rubrik mit allen Werbe-Werkzeugen.
-            </p>
-            <p style={{
-              fontSize: 'clamp(0.8rem, 2vw, 0.9rem)',
-              color: s.muted,
-              marginBottom: '0.5rem',
-              lineHeight: 1.5
-            }}>
-              Pro Rubrik: Druckversionen (Flyer, Presse-Einladung), eigene Dokumente, PR-Vorschläge (Newsletter, Plakat, Presse, Social Media) – aus deinen Stammdaten erzeugt, direkt nutzbar oder als PDF.
-            </p>
-            <p style={{ fontSize: '0.8rem', color: s.muted, marginBottom: 'clamp(1.5rem, 4vw, 2rem)', fontStyle: 'italic' }}>
-              Tipp: Presse absenden = In Zwischenablage kopieren → Eventplanung Tab „Presse & Medien“: Medienspiegel E-Mails kopieren → in E-Mail bei BCC einfügen.
-            </p>
+            <div style={{ marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)', padding: '0.7rem 0.8rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: s.bgCard }}>
+              <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.45rem' }}>Schnellstart für neue Nutzer</div>
+              <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+                {['1 Event wählen', '2 Dokument erstellen', '3 Vorschau prüfen', '4 Mit 1 Klick senden'].map((step, idx) => (
+                  <span key={step} style={{ fontSize: '0.76rem', fontWeight: 600, color: s.text, padding: '0.28rem 0.5rem', borderRadius: 999, background: `${s.accent}15`, border: `1px solid ${s.accent}35` }}>
+                    {idx + 1}. {step.replace(/^\d+\s/, '')}
+                  </span>
+                ))}
+              </div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
+                Inhaltlich gilt immer: eine Einheit, getrennt gesendet (kurzer Mailtext + druckfertiges PDF).
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem', padding: '0.8rem 0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: `${s.accent}0c` }}>
+              <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.35rem' }}>📣 Mediengenerator & Verteiler</div>
+              <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
+                Hier erzeugst du deine Werbedokumente pro Event und verwaltest direkt den Verteiler für Medien und Newsletter – alles in einem Ablauf.
+              </div>
+            </div>
+
+            {/* Medienspiegel: direkt im Werbematerial-Ablauf */}
+            <div id="admin-medienspiegel-bcc" style={{ order: 3, marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+              <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📋 Medienspiegel</h3>
+              <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
+                Lege deine Presse-Empfänger an. <strong style={{ color: s.text }}>Häkchen setzen und E-Mail-Adressen kopieren</strong> (für BCC).
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const medienSet = MEDIEN_NACH_LAND[medienspiegelLand]
+                    if (!medienSet) return
+                    const startListe = [
+                      ...medienSet.print,
+                      ...medienSet.online,
+                      ...medienSet.kultur,
+                    ]
+                    const existingEmails = new Set(medienspiegel.map(m => String(m.email || '').toLowerCase()))
+                    const add = startListe
+                      .filter(e => !existingEmails.has(String(e.email || '').toLowerCase()))
+                      .map((e, i) => ({ id: `${medienspiegelLand}-start-${Date.now()}-${i}`, name: e.name, email: e.email }))
+                    if (add.length === 0) {
+                      alert('ℹ️ Beispiel-Medien sind bereits geladen.')
+                      return
+                    }
+                    const next = [...medienspiegel, ...add]
+                    setMedienspiegel(next)
+                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                    alert(`✅ Hilfe aktiv: ${add.length} Beispiel-Medien eingefuegt.`)
+                  }}
+                  style={{ padding: '0.45rem 0.75rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
+                >
+                  💡 Hilfe: Beispiel-Medien laden
+                </button>
+                <span style={{ fontSize: '0.8rem', color: s.muted }}>
+                  Aktuell: <strong style={{ color: s.text }}>{medienspiegel.length}</strong> Medien
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                <span style={{ fontSize: '0.78rem', color: s.muted }}>Icons klicken = Kategorie-Medien einfügen</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.9rem' }}>
+                <details style={{ width: '100%', maxWidth: '360px', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', padding: '0.55rem 0.7rem' }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 700, color: s.text, fontSize: '0.85rem' }}>
+                    Optional: Schritt-Anleitung fuer sicheren Versand
+                  </summary>
+                  <ol style={{ margin: '0.55rem 0 0', paddingLeft: '1.1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.45 }}>
+                    <li>Empfaenger im Medienspiegel erfassen oder per Liste einfuegen.</li>
+                    <li>Nur die Medien anhaeken, die diese Aussendung erhalten sollen.</li>
+                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfuegen (nicht in „An“).</li>
+                    <li>Betreff und Dokumenttext aus der Event- und Medienplanung uebernehmen.</li>
+                    <li>Vor dem echten Versand: eine Testmail an die eigene Adresse senden.</li>
+                  </ol>
+                </details>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.85rem', color: s.text }}>Land / Markt:</span>
+                <select value={medienspiegelLand} onChange={e => setMedienspiegelLand(e.target.value as 'at' | 'de' | 'ch' | 'li' | 'lu')} style={{ padding: '0.4rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', background: s.bgElevated, color: s.text }}>
+                  <option value="at">Österreich</option>
+                  <option value="de">Deutschland</option>
+                  <option value="ch">Schweiz</option>
+                  <option value="li">Liechtenstein</option>
+                  <option value="lu">Luxemburg</option>
+                </select>
+                <span style={{ fontSize: '0.8rem', color: s.muted }}>Kategorie anklicken = Medien einfügen.</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                {(['alle', 'print', 'tv', 'radio', 'regionalOoe', 'online', 'kultur'] as const).map(typ => (
+                  <button key={typ} type="button" onClick={() => {
+                    setMedienspiegelKategorieFilter(typ)
+                    if (typ !== 'alle') {
+                      const medienSet = MEDIEN_NACH_LAND[medienspiegelLand]
+                      if (!medienSet) return
+                      const existingEmails = new Set(medienspiegel.map(m => m.email.toLowerCase()))
+                      const list = medienSet[typ].filter((e: { name: string; email: string }) => !existingEmails.has(e.email.toLowerCase()))
+                      if (list.length > 0) {
+                        const added = list.map((e: { name: string; email: string }, i: number) => ({ id: `${medienspiegelLand}-${typ}-${Date.now()}-${i}`, name: e.name, email: e.email }))
+                        const next = [...medienspiegel, ...added]
+                        setMedienspiegel(next)
+                        try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                        alert(`✅ ${added.length} Medien aus ${typ === 'regionalOoe' ? 'regional' : typ} eingefuegt.`)
+                      }
+                    }
+                  }} style={{ padding: '0.45rem 0.9rem', background: medienspiegelKategorieFilter === typ ? s.gradientAccent : s.bgElevated, color: medienspiegelKategorieFilter === typ ? '#fff' : s.text, border: `1px solid ${medienspiegelKategorieFilter === typ ? 'transparent' : s.accent + '44'}`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
+                    {typ === 'alle' ? 'Alle' : typ === 'print' ? '📰 Print' : typ === 'tv' ? '📺 TV' : typ === 'radio' ? '📻 Radio' : typ === 'regionalOoe' ? '📍 Regional' : typ === 'online' ? '🌐 Online' : '🎨 Kultur'}
+                  </button>
+                ))}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
+                <input type="text" value={medienspiegelAddName} onChange={e => setMedienspiegelAddName(e.target.value)} placeholder="Name" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
+                <input type="text" value={medienspiegelAddEmail} onChange={e => setMedienspiegelAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
+                <button type="button" onClick={() => {
+                  const email = medienspiegelAddEmail.trim()
+                  if (!email) return
+                  const name = medienspiegelAddName.trim() || email
+                  const next = [...medienspiegel, { id: `m-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
+                  setMedienspiegel(next)
+                  setMedienspiegelAddName(''); setMedienspiegelAddEmail('')
+                  try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  Hinzufügen
+                </button>
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', color: s.text, marginBottom: '0.35rem' }}>
+                  Aus Liste einfuegen (eine Zeile: Name, E-Mail oder nur E-Mail)
+                </label>
+                <textarea
+                  value={medienspiegelPasteText}
+                  onChange={e => setMedienspiegelPasteText(e.target.value)}
+                  placeholder={'z. B.:\nKleine Zeitung, redaktion@kleinezeitung.at\nredaktion@nachrichten.at'}
+                  rows={3}
+                  style={{ width: '100%', maxWidth: '520px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lines = medienspiegelPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
+                    const added: { id: string; name: string; email: string }[] = []
+                    const baseId = Date.now()
+                    lines.forEach((line, i) => {
+                      const match = line.match(emailRe)
+                      if (!match) return
+                      const email = match[0]
+                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
+                      added.push({ id: `m-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
+                    })
+                    if (added.length === 0) { setMedienspiegelPasteText(''); return }
+                    const next = [...medienspiegel, ...added]
+                    setMedienspiegel(next)
+                    setMedienspiegelPasteText('')
+                    try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
+                  }}
+                  style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Einfuegen
+                </button>
+              </div>
+              {medienspiegel.length > 0 && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Eintraegen: E-Mail-Adressen kopieren</span>
+                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswaehlen</button>
+                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswaehlen</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const selected = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
+                        const emails = selected.map(m => m.email).filter(Boolean).join(', ')
+                        if (!emails) {
+                          alert('Bitte zuerst Eintraege auswaehlen.')
+                          return
+                        }
+                        navigator.clipboard.writeText(emails)
+                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewaehlten Eintraegen kopiert.'))
+                          .catch(() => alert('Kopieren fehlgeschlagen.'))
+                      }}
+                      title="Bei Eintraegen: E-Mail-Adressen kopieren"
+                      style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
+                    >
+                      📋 E-Mail-Adressen kopieren
+                    </button>
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
+                    {medienspiegel.map(m => (
+                      <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
+                        <input type="checkbox" checked={medienspiegelSelectedIds.has(m.id)} onChange={() => {
+                          const next = new Set(medienspiegelSelectedIds)
+                          if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
+                          setMedienspiegelSelectedIds(next)
+                        }} />
+                        <span style={{ flex: 1, fontSize: '0.88rem', color: s.text }}>{m.name}</span>
+                        <span style={{ fontSize: '0.78rem', color: s.muted }}>{m.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {medienspiegel.length === 0 && <p style={{ fontSize: '0.82rem', color: s.muted }}>Noch keine Medien vorhanden.</p>}
+            </div>
+
+            {/* Newsletter-Verteiler: direkt im Werbematerial-Ablauf */}
+            <div id="admin-newsletter-verteiler-bcc" style={{ order: 3, marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+              <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📧 Newsletter-Empfänger</h3>
+              <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
+                Verteiler für Newsletter und Einladungen. <strong style={{ color: s.text }}>Häkchen setzen und E-Mail-Adressen kopieren</strong> (für BCC).
+              </p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.9rem' }}>
+                <details style={{ width: '100%', maxWidth: '360px', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', padding: '0.55rem 0.7rem' }}>
+                  <summary style={{ cursor: 'pointer', fontWeight: 700, color: s.text, fontSize: '0.85rem' }}>
+                    Optional: Schritt-Anleitung fuer sicheren Versand
+                  </summary>
+                  <ol style={{ margin: '0.55rem 0 0', paddingLeft: '1.1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.45 }}>
+                    <li>Empfaenger erfassen oder per Liste einfuegen.</li>
+                    <li>Nur die gewuenschten Empfaenger anhaeken.</li>
+                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfuegen (nicht in „An“).</li>
+                    <li>Betreff und Newsletter-Text aus dem Dokument uebernehmen.</li>
+                    <li>Vor dem echten Versand: Testmail an die eigene Adresse senden.</li>
+                  </ol>
+                </details>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
+                <input type="text" value={verteilerNewsletterAddName} onChange={e => setVerteilerNewsletterAddName(e.target.value)} placeholder="Name" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '140px' }} />
+                <input type="text" value={verteilerNewsletterAddEmail} onChange={e => setVerteilerNewsletterAddEmail(e.target.value)} placeholder="E-Mail" style={{ padding: '0.45rem 0.6rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', minWidth: '180px' }} />
+                <button type="button" onClick={() => {
+                  const email = verteilerNewsletterAddEmail.trim()
+                  if (!email) return
+                  const name = verteilerNewsletterAddName.trim() || email
+                  const next = [...verteilerNewsletter, { id: `vn-${Date.now()}-${Math.random().toString(36).slice(2)}`, name, email }]
+                  setVerteilerNewsletter(next)
+                  setVerteilerNewsletterAddName(''); setVerteilerNewsletterAddEmail('')
+                  try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
+                }} style={{ padding: '0.5rem 1rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>
+                  Hinzufügen
+                </button>
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ display: 'block', fontSize: '0.82rem', color: s.text, marginBottom: '0.35rem' }}>
+                  Aus Liste einfuegen (eine Zeile: Name, E-Mail oder nur E-Mail)
+                </label>
+                <textarea
+                  value={verteilerNewsletterPasteText}
+                  onChange={e => setVerteilerNewsletterPasteText(e.target.value)}
+                  placeholder={'z. B.:\nMax Mustermann, max@beispiel.at\nanna@beispiel.at'}
+                  rows={3}
+                  style={{ width: '100%', maxWidth: '520px', padding: '0.5rem 0.75rem', border: `1px solid ${s.accent}44`, borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const lines = verteilerNewsletterPasteText.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+                    const emailRe = /[\w.-]+@[\w.-]+\.\w+/
+                    const added: { id: string; name: string; email: string }[] = []
+                    const baseId = Date.now()
+                    lines.forEach((line, i) => {
+                      const match = line.match(emailRe)
+                      if (!match) return
+                      const email = match[0]
+                      const name = line.replace(email, '').replace(/^[\s,<>]+|[\s,<>]+$/g, '').trim() || email
+                      added.push({ id: `vn-${baseId}-${i}-${Math.random().toString(36).slice(2)}`, name, email })
+                    })
+                    if (added.length === 0) { setVerteilerNewsletterPasteText(''); return }
+                    const next = [...verteilerNewsletter, ...added]
+                    setVerteilerNewsletter(next)
+                    setVerteilerNewsletterPasteText('')
+                    try { localStorage.setItem(getVerteilerBlockStorageKey(tenant, 'newsletter'), JSON.stringify(next)) } catch (_) {}
+                  }}
+                  style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Einfuegen
+                </button>
+              </div>
+              {verteilerNewsletter.length > 0 && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Eintraegen: E-Mail-Adressen kopieren</span>
+                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set(verteilerNewsletter.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswaehlen</button>
+                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswaehlen</button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const selected = verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
+                        const emails = selected.map(m => m.email).filter(Boolean).join(', ')
+                        if (!emails) {
+                          alert('Bitte zuerst Eintraege auswaehlen.')
+                          return
+                        }
+                        navigator.clipboard.writeText(emails)
+                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewaehlten Eintraegen kopiert.'))
+                          .catch(() => alert('Kopieren fehlgeschlagen.'))
+                      }}
+                      title="Bei Eintraegen: E-Mail-Adressen kopieren"
+                      style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
+                    >
+                      📋 E-Mail-Adressen kopieren
+                    </button>
+                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
+                    {verteilerNewsletter.map(m => (
+                      <li key={m.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: `1px solid ${s.accent}15` }}>
+                        <input type="checkbox" checked={verteilerNewsletterSelectedIds.has(m.id)} onChange={() => {
+                          const next = new Set(verteilerNewsletterSelectedIds)
+                          if (next.has(m.id)) next.delete(m.id); else next.add(m.id)
+                          setVerteilerNewsletterSelectedIds(next)
+                        }} />
+                        <span style={{ flex: 1, fontSize: '0.88rem', color: s.text }}>{m.name}</span>
+                        <span style={{ fontSize: '0.78rem', color: s.muted }}>{m.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {verteilerNewsletter.length === 0 && <p style={{ fontSize: '0.82rem', color: s.muted }}>Noch keine Newsletter-Empfaenger vorhanden.</p>}
+            </div>
 
             {/* Alle Events: zuerst aktuell/geplant, dann Ordner „Veranstaltungen der Vergangenheit“ (Dokumente als Muster) */}
+            <div style={{ order: 2 }}>
             {(() => {
               void prSuggestionsRefresh // Re-Render auslösen nach PR-Vorschläge generieren
               const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -18924,7 +19256,6 @@ ${name}`
                         const k2FlyerDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-flyer', name: 'K2 Galerie Flyer (Druckversion)', documentUrl: '/flyer-k2-galerie' } : null
                         const k2PresseDoc = event.type === 'galerieeröffnung' ? { id: 'k2-galerie-presse', name: 'Presse-Einladung (Druckversion)', documentUrl: '/presse-einladung-k2-galerie' } : null
                         const hiddenIds = event.hiddenDocIds || []
-                        const docList = [k2FlyerDoc, k2PresseDoc, ...(event.documents || [])].filter(Boolean).filter((d: any) => !hiddenIds.includes(d.id))
                         // eventId/event.id typensicher vergleichen; Fallback: Dokumente ohne passende Event-ID per Event-Titel zuordnen (damit nach Neuladen/ID-Änderung „vorhanden“ bleibt)
                         const eventIdStr = event.id != null ? String(event.id) : ''
                         const allEventIds = new Set((flyerTabUpcomingList || []).map((e: any) => e.id != null ? String(e.id) : ''))
@@ -18964,19 +19295,6 @@ ${name}`
                           {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
                             const DOKUMENT_KARTEN = [
-                              {
-                                typ: 'druckversion' as const,
-                                icon: '🖨️',
-                                titel: 'Druckfertige Dokumente',
-                                beschreibung: 'Flyer & Presse-Einladung',
-                                docs: docList,
-                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => {
-                                  if (doc.id === 'k2-galerie-flyer' || doc.id === 'k2-galerie-presse') handleHideFromEventList(event.id, doc.id)
-                                  else handleDeleteEventDocument(event.id, doc.id)
-                                },
-                                onErstellen: null as null | (() => void)
-                              },
                               {
                                 typ: 'newsletter' as const,
                                 icon: '📧',
@@ -19024,7 +19342,7 @@ ${name}`
                                 typ: 'presse' as const,
                                 icon: '📰',
                                 titel: 'Presseaussendung',
-                                beschreibung: 'Neutral (ohne Personendaten) oder lokal (mit Personenstory). Medienkit: Presse & Medien.',
+                                beschreibung: 'Neutral (ohne Personendaten) oder lokal (mit Personenstory). Medienkit: Event- und Medienplanung.',
                                 docs: byTyp['presse'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -19171,7 +19489,15 @@ ${name}`
 
                                 {/* Karten-Grid: zwei Spalten auf breiten Bildschirmen */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
-                                  {DOKUMENT_KARTEN.map(karte => {
+                                  {[...DOKUMENT_KARTEN]
+                                    .sort((a, b) => {
+                                      const aDocs = (a.docs || []).length
+                                      const bDocs = (b.docs || []).length
+                                      if (aDocs === 0 && bDocs > 0) return -1
+                                      if (aDocs > 0 && bDocs === 0) return 1
+                                      return 0
+                                    })
+                                    .map(karte => {
                                     const istPraesentationsmappen = karte.typ === 'praesentationsmappen'
                                     const hatDokumente = karte.docs.length > 0
                                     return (
@@ -19200,12 +19526,12 @@ ${name}`
                                             fontWeight: 600,
                                             padding: '0.15rem 0.5rem',
                                             borderRadius: '999px',
-                                            background: hatDokumente ? 'rgba(34,197,94,0.15)' : 'rgba(0,0,0,0.06)',
-                                            color: hatDokumente ? '#15803d' : s.muted,
+                                            background: hatDokumente ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)',
+                                            color: hatDokumente ? '#15803d' : '#b91c1c',
                                             whiteSpace: 'nowrap',
                                             flexShrink: 0
                                           }}>
-                                            {hatDokumente ? `${karte.docs.length} vorhanden` : (istPraesentationsmappen ? 'Vorschau' : 'Offen')}
+                                            {hatDokumente ? `✅ ${karte.docs.length} bereit` : (istPraesentationsmappen ? 'Vorschau' : '🔴 Offen')}
                                           </span>
                                         </div>
 
@@ -19230,32 +19556,38 @@ ${name}`
                                             </div>
                                           </div>
                                         )}
-                                        {hatDokumente && (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                                            {karte.docs.map((doc: any) => (
-                                              <div key={doc.id || doc.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                                                {karte.typ === 'presse' ? (
-                                                  <>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
-                                                      style={{
-                                                        width: '100%',
-                                                        textAlign: 'center',
-                                                        padding: '0.5rem 0.65rem',
-                                                        background: '#15803d',
-                                                        border: '1px solid rgba(21,128,61,0.35)',
-                                                        borderRadius: '8px',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.84rem',
-                                                        color: '#fff',
-                                                        fontWeight: 600
-                                                      }}
-                                                      title="Betreff und Text in die Zwischenablage – für E-Mail an Medien"
-                                                    >
-                                                      {getWerbemittelMailActionLabel(karte.typ)}
-                                                    </button>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                        {hatDokumente && (() => {
+                                          const primaryDoc = karte.docs[0]
+                                          return (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                              {!istPraesentationsmappen && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => void sendWerbemittelPerMail(karte.typ, primaryDoc, event)}
+                                                  style={{
+                                                    width: '100%',
+                                                    textAlign: 'center',
+                                                    padding: '0.55rem 0.7rem',
+                                                    background: '#15803d',
+                                                    border: '1px solid rgba(21,128,61,0.35)',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.84rem',
+                                                    color: '#fff',
+                                                    fontWeight: 700
+                                                  }}
+                                                  title="Hauptaktion für diese Karte"
+                                                >
+                                                  {getWerbemittelMailActionLabel(karte.typ)}
+                                                </button>
+                                              )}
+                                              <details style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.45rem 0.5rem' }}>
+                                                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: s.text, fontWeight: 600 }}>
+                                                  Weitere Dokumente anzeigen ({karte.docs.length})
+                                                </summary>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.45rem' }}>
+                                                  {karte.docs.map((doc: any) => (
+                                                    <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onOpen(doc)}
@@ -19264,7 +19596,7 @@ ${name}`
                                                           textAlign: 'left',
                                                           padding: '0.4rem 0.55rem',
                                                           background: '#fff',
-                                                          border: '1px solid rgba(34,197,94,0.2)',
+                                                          border: '1px solid rgba(34,197,94,0.25)',
                                                           borderRadius: '6px',
                                                           cursor: 'pointer',
                                                           fontSize: '0.78rem',
@@ -19276,99 +19608,38 @@ ${name}`
                                                         }}
                                                         title={doc.name || doc.fileName}
                                                       >
-                                                        Ansehen: {doc.name?.length > 32 ? doc.name.slice(0, 29) + '…' : (doc.name || doc.fileName || 'Dokument')}
+                                                        {doc.name || doc.fileName || 'Dokument'}
                                                       </button>
+                                                      {!istPraesentationsmappen && (
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
+                                                          style={{ padding: '0.38rem 0.48rem', background: '#15803d', border: '1px solid rgba(21,128,61,0.35)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.74rem', color: '#fff', fontWeight: 600 }}
+                                                          title="Dieses Dokument senden"
+                                                        >
+                                                          Senden
+                                                        </button>
+                                                      )}
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onDelete(doc)}
-                                                        style={{
-                                                          padding: '0.45rem 0.55rem',
-                                                          background: 'transparent',
-                                                          border: '1px solid rgba(220,38,38,0.2)',
-                                                          borderRadius: '6px',
-                                                          color: '#dc2626',
-                                                          cursor: 'pointer',
-                                                          fontSize: '0.9rem',
-                                                          lineHeight: 1,
-                                                          flexShrink: 0
-                                                        }}
+                                                        style={{ padding: '0.42rem 0.5rem', background: 'transparent', border: '1px solid rgba(220,38,38,0.2)', borderRadius: '6px', color: '#dc2626', cursor: 'pointer', fontSize: '0.88rem', lineHeight: 1 }}
                                                         title="Dokument entfernen"
                                                       >
                                                         ×
                                                       </button>
                                                     </div>
-                                                  </>
-                                                ) : (
-                                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
-                                                      style={{
-                                                        padding: '0.45rem 0.6rem',
-                                                        background: '#15803d',
-                                                        border: '1px solid rgba(21,128,61,0.35)',
-                                                        borderRadius: '6px',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.78rem',
-                                                        color: '#fff',
-                                                        fontWeight: 600,
-                                                        flexShrink: 0
-                                                      }}
-                                                      title="Mailprogramm mit BCC, Betreff und Text öffnen"
-                                                    >
-                                                      1 Klick
-                                                    </button>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => karte.onOpen(doc)}
-                                                      style={{
-                                                        flex: 1,
-                                                        textAlign: 'left',
-                                                        padding: '0.45rem 0.6rem',
-                                                        background: '#fff',
-                                                        border: '1px solid rgba(34,197,94,0.25)',
-                                                        borderRadius: '6px',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.82rem',
-                                                        color: '#15803d',
-                                                        fontWeight: 500,
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap'
-                                                      }}
-                                                      title={doc.name || doc.fileName}
-                                                    >
-                                                      {doc.name?.length > 38 ? doc.name.slice(0, 35) + '…' : (doc.name || doc.fileName || 'Öffnen')}
-                                                    </button>
-                                                    <button
-                                                      type="button"
-                                                      onClick={() => karte.onDelete(doc)}
-                                                      style={{
-                                                        padding: '0.45rem 0.55rem',
-                                                        background: 'transparent',
-                                                        border: '1px solid rgba(220,38,38,0.2)',
-                                                        borderRadius: '6px',
-                                                        color: '#dc2626',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.9rem',
-                                                        lineHeight: 1,
-                                                        flexShrink: 0
-                                                      }}
-                                                      title="Dokument entfernen"
-                                                    >
-                                                      ×
-                                                    </button>
-                                                  </div>
-                                                )}
+                                                  ))}
+                                                </div>
+                                              </details>
+                                              <div style={{ marginTop: '0.1rem', fontSize: '0.75rem', color: s.muted }}>
+                                                {karte.typ === 'presse'
+                                                  ? 'Pressepaket: Einheitlich erzeugt, getrennt gesendet (Mailtext + PDF).'
+                                                  : 'Hauptaktion oben: schnell senden. Details unten im Aufklapper.'}
                                               </div>
-                                            ))}
-                                          </div>
-                                        )}
-                                        {hatDokumente && karte.typ !== 'presse' && (
-                                          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: s.muted }}>
-                                            Pro Dokument: links „1 Klick“ senden, rechts „Öffnen“.
-                                          </div>
-                                        )}
+                                            </div>
+                                          )
+                                        })()}
 
                                         <>
                                         {(karte as any).erstellenVarianten ? (
@@ -19413,29 +19684,7 @@ ${name}`
                                           </button>
                                         ) : null}
 
-                                        {karte.typ === 'druckversion' && (
-                                          <button
-                                            type="button"
-                                            onClick={(e) => {
-                                              e.preventDefault()
-                                              e.stopPropagation()
-                                              setSelectedEventForDocument(event.id)
-                                              setShowDocumentModal(true)
-                                            }}
-                                            style={{
-                                              padding: '0.35rem 0',
-                                              background: 'none',
-                                              border: 'none',
-                                              cursor: 'pointer',
-                                              fontSize: '0.75rem',
-                                              color: s.accent,
-                                              textDecoration: 'underline',
-                                              fontWeight: 500
-                                            }}
-                                          >
-                                            + Weiteres Dokument hinzufügen
-                                          </button>
-                                        )}
+                                        
                                         </>
                                       </div>
                                     )
@@ -19670,6 +19919,7 @@ ${name}`
                 </div>
               )
             })()}
+            </div>
 
             {/* Leer: Hinweis auf 2-Schritte-Flow */}
             {events.length === 0 && (
@@ -20348,6 +20598,12 @@ ${name}`
         const pd = designToPlakatVars(designSettings)
         const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(plakatRedaction.qrCode || '')}`
         const previewHtml = buildPlakatWerbemittelHtml(plakatRedaction, freshGalleryData, pd, qrCodeUrl, { iframePreview: true })
+        const defaultDate = formatEventDates(event) || ''
+        const defaultLocation = [
+          String((freshGalleryData as { address?: string }).address || '').trim(),
+          String((freshGalleryData as { city?: string }).city || '').trim(),
+        ].filter(Boolean).join(', ')
+        const defaultQr = FALLBACK_GALERIE_URL_WERBEMITTEL
         const patchPlakat = (partial: Partial<typeof plakatRedaction>) => {
           setPlakatRedaction((prev) => (prev ? { ...prev, ...partial } : null))
         }
@@ -20412,13 +20668,38 @@ ${name}`
         }
         const fieldStyle = {
           width: '100%',
-          padding: '0.5rem 0.6rem',
+          padding: '0.6rem 0.7rem',
           borderRadius: '8px',
           border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
           background: s?.bgCard ?? '#fff',
           color: s?.text ?? '#1c1a18',
-          fontSize: '0.9rem'
+          fontSize: '0.95rem'
         } as const
+        const plakatFields: Array<{
+          key: 'title' | 'type' | 'date' | 'location' | 'description' | 'qrCode'
+          label: string
+          placeholder: string
+          help?: string
+          multiline?: boolean
+        }> = [
+          { key: 'title', label: 'Titel', placeholder: 'z. B. Vernissage - Neue Arbeiten' },
+          { key: 'type', label: 'Art', placeholder: 'z. B. Vernissage, Ausstellung, Veranstaltung' },
+          { key: 'date', label: 'Termin', placeholder: 'z. B. Sonntag, 15. März 2026' },
+          { key: 'location', label: 'Ort', placeholder: 'z. B. Musterstraße 1, 12345 Musterstadt' },
+          {
+            key: 'description',
+            label: 'Kurztext',
+            placeholder: 'Kurzer, klarer Satz fürs Plakat (1-3 Zeilen)',
+            help: 'Tipp: Kurz halten. Das wirkt auf Plakaten besser.',
+            multiline: true,
+          },
+          {
+            key: 'qrCode',
+            label: 'QR-Link (URL)',
+            placeholder: 'https://...',
+            help: 'Der QR-Code führt genau auf diesen Link.',
+          },
+        ]
         return (
           <div
             style={{
@@ -20443,27 +20724,48 @@ ${name}`
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', minWidth: 0, overflow: 'auto' }}>
-                {(['title', 'type', 'date', 'location', 'description', 'qrCode'] as const).map((key) => (
-                  <div key={key}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', minWidth: 0, overflow: 'auto' }}>
+                <div style={{ padding: '0.6rem 0.7rem', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, borderRadius: 8, background: s?.bgCard ?? '#fff' }}>
+                  <div style={{ fontSize: '0.84rem', color: s?.text ?? '#1c1a18', fontWeight: 600, marginBottom: '0.35rem' }}>
+                    Schritt 1: Links ausfüllen • Schritt 2: Rechts live prüfen • Schritt 3: Speichern
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => patchPlakat({ date: defaultDate })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Termin aus Event
+                    </button>
+                    <button type="button" onClick={() => patchPlakat({ location: defaultLocation })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Ort aus Stammdaten
+                    </button>
+                    <button type="button" onClick={() => patchPlakat({ qrCode: defaultQr })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      QR-Link Standard
+                    </button>
+                  </div>
+                </div>
+                {plakatFields.map((field) => (
+                  <div key={field.key}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>
-                      {key === 'title' ? 'Titel' : key === 'type' ? 'Art' : key === 'date' ? 'Termin' : key === 'location' ? 'Ort' : key === 'description' ? 'Text' : 'QR-Link (URL)'}
+                      {field.label}
                     </label>
-                    {key === 'description' ? (
+                    {field.multiline ? (
                       <textarea
-                        value={plakatRedaction[key]}
-                        onChange={(e) => patchPlakat({ [key]: e.target.value })}
-                        rows={6}
+                        value={plakatRedaction[field.key]}
+                        onChange={(e) => patchPlakat({ [field.key]: e.target.value })}
+                        rows={5}
+                        placeholder={field.placeholder}
                         style={{ ...fieldStyle, minHeight: 120, resize: 'vertical', lineHeight: 1.5 }}
                       />
                     ) : (
                       <input
                         type="text"
-                        value={plakatRedaction[key]}
-                        onChange={(e) => patchPlakat({ [key]: e.target.value })}
+                        value={plakatRedaction[field.key]}
+                        onChange={(e) => patchPlakat({ [field.key]: e.target.value })}
+                        placeholder={field.placeholder}
                         style={fieldStyle}
                       />
                     )}
+                    {field.help ? (
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.76rem', color: s?.muted ?? '#94a3b8' }}>{field.help}</div>
+                    ) : null}
                   </div>
                 ))}
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -20518,6 +20820,9 @@ ${name}`
           contact: flyerRedaction.contact
         }
         const previewHtml = buildFlyerWerbemittelHtml(flyerForBuild, gData, fd, qrCodeUrl, { iframePreview: true })
+        const defaultDate = formatEventDates(event) || ''
+        const defaultLocation = String(gData.address || '').trim()
+        const defaultQr = FALLBACK_GALERIE_URL_WERBEMITTEL
         const patchFlyer = (partial: Partial<typeof flyerRedaction>) => {
           setFlyerRedaction((prev) => (prev ? { ...prev, ...partial } : null))
         }
@@ -20582,13 +20887,27 @@ ${name}`
         }
         const fieldStyle = {
           width: '100%',
-          padding: '0.5rem 0.6rem',
+          padding: '0.6rem 0.7rem',
           borderRadius: '8px',
           border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
           background: s?.bgCard ?? '#fff',
           color: s?.text ?? '#1c1a18',
-          fontSize: '0.9rem'
+          fontSize: '0.95rem'
         } as const
+        const flyerFields: Array<{
+          key: 'headline' | 'type' | 'date' | 'location' | 'description' | 'qrCode'
+          label: string
+          placeholder: string
+          multiline?: boolean
+          help?: string
+        }> = [
+          { key: 'headline', label: 'Überschrift', placeholder: 'z. B. Vernissage - Neue Arbeiten' },
+          { key: 'type', label: 'Art', placeholder: 'z. B. Vernissage, Ausstellung' },
+          { key: 'date', label: 'Termin', placeholder: 'z. B. Sonntag, 15. März 2026', multiline: true },
+          { key: 'location', label: 'Ort', placeholder: 'z. B. Musterstraße 1, 12345 Musterstadt' },
+          { key: 'description', label: 'Kurztext', placeholder: 'Kurzer Einladungstext (1-3 Zeilen)', multiline: true, help: 'Tipp: Kurz und konkret formulieren.' },
+          { key: 'qrCode', label: 'QR-Link (URL)', placeholder: 'https://...', help: 'Der QR-Code führt genau auf diesen Link.' },
+        ]
         return (
           <div
             style={{
@@ -20613,33 +20932,48 @@ ${name}`
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', minWidth: 0, overflow: 'auto' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Überschrift</label>
-                  <input type="text" value={flyerRedaction.headline} onChange={(e) => patchFlyer({ headline: e.target.value })} style={fieldStyle} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', minWidth: 0, overflow: 'auto' }}>
+                <div style={{ padding: '0.6rem 0.7rem', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, borderRadius: 8, background: s?.bgCard ?? '#fff' }}>
+                  <div style={{ fontSize: '0.84rem', color: s?.text ?? '#1c1a18', fontWeight: 600, marginBottom: '0.35rem' }}>
+                    Schritt 1: Links ausfüllen • Schritt 2: Rechts live prüfen • Schritt 3: Speichern
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={() => patchFlyer({ date: defaultDate })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Termin aus Event
+                    </button>
+                    <button type="button" onClick={() => patchFlyer({ location: defaultLocation })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      Ort aus Stammdaten
+                    </button>
+                    <button type="button" onClick={() => patchFlyer({ qrCode: defaultQr })} style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                      QR-Link Standard
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Event-Typ (Kürzel)</label>
-                  <input type="text" value={flyerRedaction.type} onChange={(e) => patchFlyer({ type: e.target.value })} style={fieldStyle} placeholder="z. B. vernissage" />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Termin</label>
-                  <textarea value={flyerRedaction.date} onChange={(e) => patchFlyer({ date: e.target.value })} rows={3} style={{ ...fieldStyle, resize: 'vertical', lineHeight: 1.5 }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Ort</label>
-                  <input type="text" value={flyerRedaction.location} onChange={(e) => patchFlyer({ location: e.target.value })} style={fieldStyle} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>Text</label>
-                  <textarea value={flyerRedaction.description} onChange={(e) => patchFlyer({ description: e.target.value })} rows={5} style={{ ...fieldStyle, resize: 'vertical', lineHeight: 1.5 }} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>QR-Link (URL)</label>
-                  <input type="text" value={flyerRedaction.qrCode} onChange={(e) => patchFlyer({ qrCode: e.target.value })} style={fieldStyle} />
-                </div>
+                {flyerFields.map((field) => (
+                  <div key={field.key}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>{field.label}</label>
+                    {field.multiline ? (
+                      <textarea
+                        value={flyerRedaction[field.key]}
+                        onChange={(e) => patchFlyer({ [field.key]: e.target.value })}
+                        rows={field.key === 'description' ? 5 : 3}
+                        placeholder={field.placeholder}
+                        style={{ ...fieldStyle, resize: 'vertical', lineHeight: 1.5 }}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={flyerRedaction[field.key]}
+                        onChange={(e) => patchFlyer({ [field.key]: e.target.value })}
+                        placeholder={field.placeholder}
+                        style={fieldStyle}
+                      />
+                    )}
+                    {field.help ? <div style={{ marginTop: '0.25rem', fontSize: '0.76rem', color: s?.muted ?? '#94a3b8' }}>{field.help}</div> : null}
+                  </div>
+                ))}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8' }}>Kontakt (optional, überschreibt Stammdaten)</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8' }}>Kontakt (optional)</label>
                   <input type="text" placeholder="Adresse" value={flyerRedaction.contact?.address || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, address: e.target.value } })} style={fieldStyle} />
                   <input type="text" placeholder="Telefon" value={flyerRedaction.contact?.phone || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, phone: e.target.value } })} style={fieldStyle} />
                   <input type="text" placeholder="E-Mail" value={flyerRedaction.contact?.email || ''} onChange={(e) => patchFlyer({ contact: { ...flyerRedaction.contact, email: e.target.value } })} style={fieldStyle} />
@@ -20672,6 +21006,8 @@ ${name}`
       {/* Newsletter-Redaktions-Modal: links Betreff + Inhalt, rechts Live-Vorschau */}
       {newsletterRedactionEvent && (() => {
         const event = events.find((e: any) => e.id === newsletterRedactionEvent?.id) || newsletterRedactionEvent
+        const defaultSubject = String(generateEmailNewsletterContent(event)?.subject || '').trim()
+        const defaultBody = String(generateEmailNewsletterContent(event)?.body || '').trim()
         const previewHtml = buildNewsletterViewHtml(
           { subject: newsletterRedactionSubject, body: newsletterRedactionBody },
           event,
@@ -20756,6 +21092,27 @@ ${name}`
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: 0 }}>
+                <div style={{ padding: '0.6rem 0.7rem', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, borderRadius: 8, background: s?.bgCard ?? '#fff' }}>
+                  <div style={{ fontSize: '0.84rem', color: s?.text ?? '#1c1a18', fontWeight: 600, marginBottom: '0.35rem' }}>
+                    Schritt 1: Betreff/Text links anpassen • Schritt 2: Vorschau rechts prüfen • Schritt 3: Speichern
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      onClick={() => setNewsletterRedactionSubject(defaultSubject)}
+                      style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Betreff Standard
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewsletterRedactionBody(defaultBody)}
+                      style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: `1px solid ${(s?.accent ?? '#0d9488')}55`, background: '#fff', color: s?.text ?? '#1c1a18', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      Text Standard
+                    </button>
+                  </div>
+                </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: s?.muted ?? '#94a3b8', marginBottom: '0.35rem' }}>E-Mail Betreff</label>
                   <input
@@ -20765,12 +21122,12 @@ ${name}`
                     placeholder="Betreff …"
                     style={{
                       width: '100%',
-                      padding: '0.5rem 0.6rem',
+                      padding: '0.6rem 0.7rem',
                       borderRadius: '8px',
                       border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
                       background: s?.bgCard ?? '#fff',
                       color: s?.text ?? '#1c1a18',
-                      fontSize: '0.9rem'
+                      fontSize: '0.95rem'
                     }}
                   />
                 </div>
@@ -20784,12 +21141,12 @@ ${name}`
                       flex: 1,
                       minHeight: 200,
                       width: '100%',
-                      padding: '0.5rem 0.6rem',
+                      padding: '0.6rem 0.7rem',
                       borderRadius: '8px',
                       border: `1px solid ${(s?.accent ?? '#0d9488')}44`,
                       background: s?.bgCard ?? '#fff',
                       color: s?.text ?? '#1c1a18',
-                      fontSize: '0.9rem',
+                      fontSize: '0.95rem',
                       lineHeight: 1.5,
                       resize: 'vertical'
                     }}
