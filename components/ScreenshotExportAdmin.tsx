@@ -7994,24 +7994,42 @@ ${'='.repeat(60)}
     }
   }
 
-  /** Sportwagen: ein Klick – Mailprogramm mit BCC, Betreff und Text aus gespeicherter Presseaussendung. */
-  const copyPressePaketForMedien = async (prDoc: any, ev: any) => {
+  const getWerbemittelMailActionLabel = (typ: string): string => {
+    if (typ === 'presse') return '📰 An Medien – 1 Klick'
+    if (typ === 'plakat') return '🖨️ An Druckerei – 1 Klick'
+    if (typ === 'event-flyer') return '📄 Flyer senden – 1 Klick'
+    if (typ === 'newsletter') return '📧 An Empfänger – 1 Klick'
+    if (typ === 'social') return '📱 Social senden – 1 Klick'
+    return '📨 Senden – 1 Klick'
+  }
+
+  /** Sportwagen-Standard: ein Klick öffnet Mailprogramm mit BCC + Betreff + Text. */
+  const sendWerbemittelPerMail = async (typ: string, doc: any, ev: any) => {
     try {
-      const selectedMedien = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
-      if (selectedMedien.length === 0) {
+      const usesPresseRecipients = typ === 'presse' || typ === 'social'
+      const selectedRecipients = usesPresseRecipients
+        ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
+        : verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
+
+      if (selectedRecipients.length === 0) {
         setActiveTab('presse')
         window.scrollTo({ top: 200, behavior: 'smooth' })
         window.setTimeout(() => {
-          document.getElementById('admin-medienspiegel-bcc')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          const targetId = usesPresseRecipients ? 'admin-medienspiegel-bcc' : 'admin-newsletter-verteiler-bcc'
+          document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }, 150)
-        alert('Bitte zuerst im Medienspiegel die gewünschten Medien anhaken. Danach erneut „An Medien – 1 Klick“.')
+        alert(
+          usesPresseRecipients
+            ? 'Bitte zuerst im Medienspiegel die gewünschten Medien anhaken. Danach erneut „An Medien – 1 Klick“.'
+            : 'Bitte zuerst im Verteiler „Newsletter-Empfänger“ die gewünschten Adressen anhaken. Danach erneut senden.'
+        )
         return
       }
 
-      const fileData = prDoc?.fileData || prDoc?.data
-      const fileType = String(prDoc?.fileType || prDoc?.type || '')
+      const fileData = doc?.fileData || doc?.data
+      const fileType = String(doc?.fileType || doc?.type || '')
       const ort = (ev?.location || '').trim() || '[Ort]'
-      const fallbackBetreff = `Presseinformation – ${ev?.title || 'Veranstaltung'}, ${formatEventDates(ev)}, ${ort}`
+      const fallbackBetreff = `${doc?.name || 'Werbemittel'} – ${ev?.title || 'Veranstaltung'}, ${formatEventDates(ev)}, ${ort}`
 
       let plainBody = ''
       let betreff = fallbackBetreff
@@ -8024,7 +8042,7 @@ ${'='.repeat(60)}
         }
       }
 
-      if (!plainBody.trim() && ev?.id) {
+      if (!plainBody.trim() && ev?.id && typ === 'presse') {
         const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
         const evSug = suggestionsList.find((sg: any) => sg.eventId === ev.id)
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
@@ -8033,12 +8051,21 @@ ${'='.repeat(60)}
       }
 
       if (!plainBody.trim()) {
-        alert('Kein Text gefunden. Bitte Presseaussendung speichern oder über „Neu erstellen“ anlegen.')
-        return
+        plainBody = `Hallo,\n\nim Anhang/als Vorlage senden wir ${doc?.name || 'das Werbemittel'} für ${ev?.title || 'das Event'}.\n\nViele Grüße`
       }
 
-      const bcc = selectedMedien.map(m => m.email).join(',')
-      const shortBody = 'Die vollständige Presseaussendung ist in der Zwischenablage. Bitte hier einfügen.'
+      if (typ === 'social') {
+        plainBody += '\n\nHinweis: Social-Varianten im Dokument prüfen (Instagram/Facebook/WhatsApp) und passend übernehmen.'
+      }
+      if (typ === 'plakat') {
+        plainBody += '\n\nBitte für Druck (Format/Material) vorbereiten. Bei Rückfragen gern antworten.'
+      }
+      if (typ === 'event-flyer') {
+        plainBody += '\n\nBitte als druckfertigen Flyer aufbereiten.'
+      }
+
+      const bcc = selectedRecipients.map(m => m.email).join(',')
+      const shortBody = 'Der vollständige Text ist in der Zwischenablage. Bitte hier einfügen.'
       const bodyForMailto = plainBody.length > 3800 ? shortBody : plainBody
       const mailto = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
 
@@ -8050,10 +8077,11 @@ ${'='.repeat(60)}
       window.location.href = mailto
 
       if (plainBody.length > 3800) {
-        alert('Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Presse-Text ist wegen Länge in der Zwischenablage – bitte im Mailprogramm einmal einfügen.')
+        alert('Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Text ist wegen Länge in der Zwischenablage – bitte im Mailprogramm einmal einfügen.')
+        return
       }
     } catch (e) {
-      console.error('copyPressePaketForMedien', e)
+      console.error('sendWerbemittelPerMail', e)
       alert('Mail konnte nicht vorbereitet werden. Bitte erneut versuchen.')
     }
   }
@@ -17135,7 +17163,7 @@ ${name}`
               </div>
 
               {/* Verteilerblock: Newsletter-Empfänger (wie Medienspiegel – Liste, auswählen, E-Mails kopieren) */}
-              <div style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
+                <div id="admin-newsletter-verteiler-bcc" style={{ marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
                 <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📧 Newsletter-Empfänger</h3>
                 <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
                   Verteiler für Newsletter und Einladungen. <strong style={{ color: s.text }}>Häkchen setzen, dann E-Mail-Adressen kopieren</strong> (z. B. für BCC im E-Mail-Programm).
@@ -19189,7 +19217,7 @@ ${name}`
                                                   <>
                                                     <button
                                                       type="button"
-                                                      onClick={() => void copyPressePaketForMedien(doc, event)}
+                                                      onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
                                                       style={{
                                                         width: '100%',
                                                         textAlign: 'center',
@@ -19204,7 +19232,7 @@ ${name}`
                                                       }}
                                                       title="Betreff und Text in die Zwischenablage – für E-Mail an Medien"
                                                     >
-                                                      📧 An Medien – 1 Klick
+                                                      {getWerbemittelMailActionLabel(karte.typ)}
                                                     </button>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                       <button
@@ -19295,6 +19323,32 @@ ${name}`
                                                 )}
                                               </div>
                                             ))}
+                                          </div>
+                                        )}
+                                        {hatDokumente && karte.typ !== 'presse' && (
+                                          <div style={{ marginTop: '0.45rem' }}>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const lastDoc = karte.docs[karte.docs.length - 1]
+                                                if (lastDoc) void sendWerbemittelPerMail(karte.typ, lastDoc, event)
+                                              }}
+                                              style={{
+                                                width: '100%',
+                                                textAlign: 'center',
+                                                padding: '0.48rem 0.65rem',
+                                                background: '#15803d',
+                                                border: '1px solid rgba(21,128,61,0.35)',
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontSize: '0.83rem',
+                                                color: '#fff',
+                                                fontWeight: 600
+                                              }}
+                                              title="Mailprogramm mit BCC, Betreff und Text öffnen"
+                                            >
+                                              {getWerbemittelMailActionLabel(karte.typ)}
+                                            </button>
                                           </div>
                                         )}
 

@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Presse End-to-End 1 Klick:** „An Medien – 1 Klick“ öffnet direkt das Mailprogramm mit `mailto:` inklusive BCC (aus markierten Medien), Betreff und Text. Wenn Text zu lang: Mail mit Kurztext + voller Text automatisch in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** f2e1e4a ✅
+**Letzter Stand:** 20.03.26 – **1-Klick-Mail für alle Werbemittel:** Zentraler Versand-Handler öffnet Mailprogramm mit BCC+Betreff+Text. Mapping: Presse/Social → Medienspiegel; Newsletter/Event-Flyer/Plakat → Newsletter-Empfänger (auch Druckerei). Karten haben jetzt je Typ 1‑Klick-Senden. Bei langem Text: Kurztext in Mail, Volltext in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** (nach Push eintragen) ✅
 
 **Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
 

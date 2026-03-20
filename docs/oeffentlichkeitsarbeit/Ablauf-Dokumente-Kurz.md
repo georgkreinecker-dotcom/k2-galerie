@@ -19,7 +19,11 @@
 ## 3. Anzeigen & Bearbeiten
 
 - **Öffnen:** Klick auf das Dokument → In-App-Viewer oder Druckansicht.
-- **Presse (Sportwagen):** **„An Medien – 1 Klick“** unter dem Event → öffnet direkt das Mailprogramm mit **BCC (aus markierten Medien)** + **Betreff** + **Text**. Bei sehr langem Text: Mail öffnet mit Kurztext, der volle Text liegt automatisch in der Zwischenablage (einfügen). **„Ansehen“** = nur Viewer.
+- **Werbemittel (Sportwagen):** Je Dokumentkarte ein **1‑Klick-Senden**: Mailprogramm öffnet direkt mit **BCC (aus markierter Empfängerliste)** + **Betreff** + **Text**.  
+  - Presse + Social: Empfänger aus **Medienspiegel**  
+  - Newsletter + Flyer + Plakat: Empfänger aus **Newsletter-Empfänger** (auch für Druckerei nutzbar)  
+  - Bei sehr langem Text: Mail mit Kurztext, voller Text automatisch in der Zwischenablage.
+  - **„Ansehen“** bleibt nur Viewer.
 - **Tab Presse & Medien:** weiterhin „Presse-Paket kopieren“ aus Vorlage/Variablen.
 - **Anpassen:** Datum, Ort, Kontakt prüfen; nach Änderung speichern, dann erneut „An Medien – 1 Klick“.
 - **Speichern:** Änderungen werden in der Dokumenten-Liste gespeichert.
