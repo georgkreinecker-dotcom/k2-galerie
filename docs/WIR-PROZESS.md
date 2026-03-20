@@ -143,6 +143,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 17.03.26 | Stammbaum horizontal: gleiche Grafik-Logik, nur Orientierung (x↔y, ViewBox, Pan) – eine Komponente, zwei Ansichten; Session-Ende = DIALOG-STAND + Commit+Push, dann „Raum bereit“. |
 | 18.03.26 | Brand-Bereich überall gleich kräftig (ein Teal-Wert #0c5c55 für Deckblatt/Cover); Kurzvariante und Prospekt nutzen dieselbe QR-Logik – Kontrolle bestätigt, keine Änderung nötig. Zusätzlich heute: ök2 Admin „Flyer & Werbedokumente“ zeigt Muster-PR-Tools auch bei vergangenen Muster-Events, damit nichts „leer“ wirkt. |
 | 20.03.26 | Wenn etwas **kein** gleichwertiges „Erstellen“ wie die anderen Karten hat: Button weg und **einen klaren Hinweis** – sonst wirkt es kaputt oder unehrlich. Präsentationsmappen = Vorschau/Druck, kein in-App-Editor. |
+| 20.03.26 | **Lizenz ≠ eingebaute KI:** Piloten verstehen schneller, wenn klar ist: eigenes KI-Werkzeug + **Einfügen** in Galerie/Presse reicht; integrierter Assistent = später optional – eine Sektion in mök2 statt Streit über „fehlende KI“. |
 
 ---
 

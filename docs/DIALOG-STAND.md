@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Hard-Backup erklärt (Georg: „zu wenig Daten“):** `MANIFEST.txt` + Konsolen-Hinweis im Skript – **gallery-data.json** ist absichtlich **klein** (veröffentlichter Stand, Bilder als URL, kein Base64-Blob). **Mehr:** `backup/k2-vollbackup-latest.json` + Skript erneut; Code: `backup-code-to-backupmicro.sh`. **Commit:** d3d5315 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** _(nach Push eintragen)_ ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Hard-Backup erklärt (Georg: „zu wenig Daten“):** `MANIFEST.txt` + Konsolen-Hinweis im Skript – **gallery-data.json** ist absichtlich **klein** (veröffentlichter Stand, Bilder als URL, kein Base64-Blob). **Mehr:** `backup/k2-vollbackup-latest.json` + Skript erneut; Code: `backup-code-to-backupmicro.sh`. **Commit:** d3d5315 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Fullbackup auf backupmicro:** `hard-backup-to-backupmicro.sh` → **v007** (`gallery-data.json` + MANIFEST). Code-Spiegelung → `KL2-Galerie-Backups /K2-Galerie-Code-Backups/k2-galerie-code--2026-03-20--19-57`. **Skript-Fix:** `backup-code-to-backupmicro.sh` legt Code-Backups **im gleichen Ordner** wie die v00x-Versionen ab (Volume-Root war nicht beschreibbar). **Commit:** 980db3c ✅ auf GitHub
 
@@ -72,11 +74,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Session-Ende / Ruhe nach vielen Änderungen; Stand liegt auf **GitHub + backupmicro**.
+**Was wir JETZT tun:** Session beendet – mök2-KI-Hinweis committed; nächster Einstieg frei wählen.
 
-**Einordnung:** Daten-Spiegel (gallery-data) + Code-Spiegel (.git, src, …) auf externem Medium – wie in Doku/Hausregel backupmicro.
+**Einordnung:** Vertrieb (mök2) = klare Erwartung: **KI zum Schreiben** außerhalb der Lizenz ok; **App** = Ausliefern/Einfügen/Workflow.
 
-**Nächster Schritt:** Bei nächster Session: PDF-1-Klick testen; optional im Browser **Admin → Vollbackup herunterladen** (localStorage nur dort, nicht im Hard-Backup).
+**Nächster Schritt:** Bei Bedarf: mök2 im Browser prüfen (Anker **Texte & KI**); sonst wie zuvor PDF-1-Klick / Vollbackup nach Lust.
 
 ---
 

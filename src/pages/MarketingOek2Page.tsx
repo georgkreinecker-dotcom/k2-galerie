@@ -584,6 +584,26 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </div>
       </section>
 
+      {/* Texte & KI: Marketing-Hinweis für Lizenznehmer:innen (externes Werkzeug + Einfügen) */}
+      <section id="mok2-texte-ki-freiheit" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Texte &amp; KI – eigenes Werkzeug, eine Einfügen-Stelle
+        </h2>
+        <p style={{ marginBottom: '0.85rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Für Werbetexte, Einladungen, Social-Posts oder Entwürfe in Presse und Newsletter braucht die Lizenz <strong>keine</strong> in der App eingebaute KI-Pflicht. Künstler:innen und Galerien nutzen <strong>ihr gewohntes KI-Werkzeug</strong> (welches auch immer sie mögen), lassen sich Texte vorschlagen, <strong>überarbeiten sie selbst</strong> – und fügen den fertigen Text dort ein, wo er in der K2 Galerie hingehört: <strong>Galerie gestalten</strong>, Presse &amp; Medien, Flyer, Newsletter usw.
+        </p>
+        <ul style={{ lineHeight: 1.65, paddingLeft: '1.2em', margin: '0 0 0.85rem 0', fontSize: '0.92rem', color: 'rgba(255,255,255,0.92)' }}>
+          <li><strong>Freiheit:</strong> Jede:r entscheidet selbst, ob und welche KI genutzt wird – nicht an einen Anbieter in der App gebunden.</li>
+          <li><strong>Kosten &amp; Daten:</strong> API-Kosten und Datenschutz liegen beim gewählten Dienst, nicht automatisch in der Lizenz.</li>
+          <li><strong>Produkt:</strong> Die App liefert die <strong>einheitlichen Felder und Kanäle</strong> (CD, PDF, Web) – der Text kommt als Inhalt, den du einfügst.</li>
+        </ul>
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 10 }}>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
+            <strong>Kurz fürs Gespräch mit Pilot:innen:</strong> <em>„KI zum Schreiben dürfen Sie ohne uns – zum Ausliefern nehmen Sie uns.“</em> Optional kann später eine integrierte KI ergänzt werden; der Alltag funktioniert auch so.
+          </p>
+        </div>
+      </section>
+
       {/* Produkt- und Branchenvergleich – Vorteile von ök2 klar herausarbeiten */}
       <section id="mok2-produkt-branchenvergleich" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
@@ -957,7 +977,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Ideen für spätere Phasen – hier gesammelt, in anderen Sektionen oder der Roadmap ausgearbeitet.
         </p>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
-          <li>Optional: KI-Assistent für neue Kunden (Chat/API) – derzeit bewusst ohne externe Funktion.</li>
+          <li>
+            <strong>Texte &amp; KI:</strong> Lizenznehmer:innen brauchen keine eingebaute KI – eigenes Werkzeug, Text in die App einfügen;{' '}
+            <a href="#mok2-texte-ki-freiheit" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Sektion „Texte &amp; KI – eigenes Werkzeug“</a>.
+            Optional: später integrierter Assistent (Chat/API) für die, die es wollen.
+          </li>
           <li>Vermarktbare Version: Eine Instanz pro Künstler:in (eigene URL/Subdomain), später Multi-Tenant möglich.</li>
         </ul>
       </section>
