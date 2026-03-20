@@ -1,14 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **QR-Code Plakat „Neu erstellen“:** Keine **zwei** Meldungen mehr (Pop-up-Blocker + Erfolg). **Ursache:** `FileReader` async, `window.open` sofort – falsche Reihenfolge. **Jetzt:** `await` Speichern, dann Vorschau; bei offenem Tab **kein** Erfolgs-Alert; nur bei **blockiertem** Pop-up **eine** Meldung (gespeichert + Hinweis Dokumente). **Commit: 28830da** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **ök2 Eventplan:** Block **„Anmeldung per WhatsApp“** wird im Demo-Admin **nicht** angezeigt (`!tenant.isOeffentlich`); K2/VK2 unverändert. Doku `ABLAUF-DOKUMENT-OEFFENTLICHKEITSARBEIT.md` ergänzt. **Commit: 2fa0b8d** ✅ auf GitHub
 
-**Vorher:** Werke Kategorie „Alle“ (eebd3c2); Präsentationsmappen (a610509).
+**Vorher:** QR-Plakat eine Meldung (28830da); Werke Kategorie „Alle“ (eebd3c2).
 
-**Was wir JETZT tun:** Optional: QR-Plakat „Neu erstellen“ – ein Tab ODER eine Meldung bei Blocker.
+**Was wir JETZT tun:** Optional ök2 Admin → Eventplan prüfen: kein WhatsApp-Anmelde-Block.
 
-**Einordnung:** Admin Marketing/Dokumente; kein Publish/Load geändert.
+**Einordnung:** Demo soll keine WhatsApp-Anmeldung zur „Galerie-Nummer“ suggerieren.
 
-**Nächster Schritt:** Vercel „Ready“ – kurz QR-Plakat testen.
+**Nächster Schritt:** Vercel „Ready“.
 
 ---
 
