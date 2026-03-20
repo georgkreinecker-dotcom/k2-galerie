@@ -197,7 +197,8 @@ function htmlToPlainTextForClipboard(html: string): string {
   }
   return html
     .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/(p|div|h1|h2|h3|h4|h5|h6|li|section|article|header|footer|tr)>/gi, '\n')
+    .replace(/<li[^>]*>/gi, '- ')
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
@@ -207,6 +208,22 @@ function htmlToPlainTextForClipboard(html: string): string {
     .replace(/\n\s+/g, '\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim()
+}
+
+function normalizeMailBody(betreff: string, body: string): string {
+  const normalized = String(body || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n[ \t]+/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  if (!normalized) return ''
+
+  const firstLine = normalized.split('\n')[0]?.trim() || ''
+  if (firstLine && firstLine.toLowerCase() === String(betreff || '').trim().toLowerCase()) {
+    return normalized.split('\n').slice(1).join('\n').trim()
+  }
+  return normalized
 }
 
 /** Betreff-Zeile aus gespeichertem Presse-HTML (h1/title) oder Fallback. */
@@ -8055,6 +8072,8 @@ ${'='.repeat(60)}
       if (!plainBody.trim()) {
         plainBody = `Hallo,\n\nim Anhang/als Vorlage senden wir ${doc?.name || 'das Werbemittel'} für ${ev?.title || 'das Event'}.\n\nViele Grüße`
       }
+
+      plainBody = normalizeMailBody(betreff, plainBody)
 
       if (typ === 'social') {
         plainBody += '\n\nHinweis: Social-Varianten im Dokument prüfen (Instagram/Facebook/WhatsApp) und passend übernehmen.'
