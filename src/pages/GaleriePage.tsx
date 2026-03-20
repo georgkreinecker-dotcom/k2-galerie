@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { speichereGuideFlow, beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
+import { beendeGuideFlow } from '../components/GlobaleGuideBegleitung'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
@@ -4682,15 +4682,6 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
     speichereGuideAntworten(neu)
     if (schritt === 'kontakt') {
       setTimeout(() => {
-        speichereGuideFlow({
-          aktiv: true,
-          name: name ?? '',
-          pfad: (neu.pfad ?? '') as import('../components/GlobaleGuideBegleitung').GuidePfad,
-          schritt: 'start',
-          erledigte: [],
-          context: 'oeffentlich',
-        })
-        window.dispatchEvent(new CustomEvent('guide-flow-update'))
         const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
         const pfadPart = neu.pfad ? `&pfad=${neu.pfad}` : ''
         const adminUrl = `/admin?context=oeffentlich${vornamePart}${pfadPart}`
@@ -4709,16 +4700,6 @@ function GalerieEntdeckenGuide({ name, onDismiss }: { name: string; onDismiss: (
   // Alle Wege führen in den Admin – mit Vorname + Pfad damit das Banner ihn willkommen heißt
   const geheZuAdmin = (assistent = false) => {
     setSichtbar(false)
-    // Globalen Guide-Flow starten – Dialog begleitet auf jeder Seite weiter (ök2-Kontext)
-    speichereGuideFlow({
-      aktiv: true,
-      name: name ?? '',
-      pfad: (antworten.pfad ?? '') as import('../components/GlobaleGuideBegleitung').GuidePfad,
-      schritt: 'start',
-      erledigte: [],
-      context: 'oeffentlich',
-    })
-    window.dispatchEvent(new CustomEvent('guide-flow-update'))
     const vornamePart = name ? `&vorname=${encodeURIComponent(name)}` : ''
     const pfadPart = antworten.pfad ? `&pfad=${antworten.pfad}` : ''
     const assistentPart = assistent ? '&assistent=1' : ''

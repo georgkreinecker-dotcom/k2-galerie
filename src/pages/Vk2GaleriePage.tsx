@@ -9,7 +9,6 @@ import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
-import { speichereGuideFlow } from '../components/GlobaleGuideBegleitung'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -246,21 +245,11 @@ const Vk2GaleriePage: React.FC = () => {
         )
       })()}
 
-      {/* VK2 Willkommens-Banner – wie ök2: Guide-Flow starten, dann in Admin (nahtlose Begleitung) */}
+      {/* VK2 Willkommens-Banner – Admin ohne globalen Guide (Guide abgeschaltet 20.03.26) */}
       {(() => {
         const showVorschau = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') !== '1'
         if (!showVorschau) return null
-        // Wie ök2: Guide-Flow starten, damit GlobaleGuideBegleitung auf allen Seiten weiterläuft
         const handleAdminKlick = () => {
-          speichereGuideFlow({
-            aktiv: true,
-            name: 'Verein',
-            pfad: 'gemeinschaft',
-            schritt: 'start',
-            erledigte: [],
-            context: 'vk2',
-          })
-          window.dispatchEvent(new CustomEvent('guide-flow-update'))
           navigate('/mein-bereich?context=vk2&vorname=Verein&pfad=gemeinschaft')
         }
         return (

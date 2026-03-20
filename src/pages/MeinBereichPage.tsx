@@ -4,14 +4,6 @@
  */
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { ladeGuideFlow, speichereGuideFlow, type GuidePfad } from '../components/GlobaleGuideBegleitung'
-
-const ERLAUBTE_GUIDE_PFADE: readonly GuidePfad[] = ['kuenstlerin', 'gemeinschaft', 'atelier', 'entdecker', '']
-function parseGuidePfad(raw: string | null): GuidePfad {
-  const s = (raw || '').trim()
-  if (ERLAUBTE_GUIDE_PFADE.includes(s as GuidePfad)) return s as GuidePfad
-  return 'kuenstlerin'
-}
 
 type Context = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -44,28 +36,6 @@ export default function MeinBereichPage() {
     try {
       sessionStorage.setItem('k2-admin-context', context)
     } catch (_) {}
-
-    // ök2-Demo: GlobaleGuideBegleitung starten (ein Erlebnis mit Stations-Fortschritt), wenn noch kein aktiver Flow.
-    // Nicht von der APf (Georg): dort kein Auto-Guide.
-    if (context === 'oeffentlich') {
-      try {
-        const fromApf = sessionStorage.getItem('k2-oek2-from-apf') === '1'
-        const existing = ladeGuideFlow()
-        if (!fromApf && (!existing || !existing.aktiv)) {
-          const vn = searchParams.get('vorname')?.trim() ?? ''
-          const pd = parseGuidePfad(searchParams.get('pfad'))
-          speichereGuideFlow({
-            aktiv: true,
-            name: vn,
-            pfad: pd,
-            schritt: 'start',
-            erledigte: [],
-            context: 'oeffentlich',
-          })
-          window.dispatchEvent(new CustomEvent('guide-flow-update'))
-        }
-      } catch (_) { /* ignore */ }
-    }
 
     const qs = parts.length ? '?' + parts.join('&') : ''
     navigate('/admin' + qs, { replace: true })

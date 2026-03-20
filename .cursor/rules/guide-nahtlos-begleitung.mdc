@@ -1,36 +1,29 @@
 ---
-description: Guide-Begleitung – nahtlos, persönlich, verblüffend (unveränderlich)
+description: Guide / Onboarding – Historie + aktueller Stand (GlobaleGuideBegleitung aus)
 alwaysApply: true
 ---
 
-# 🔒 GUIDE-BEGLEITUNG – NAHTLOS BIS ZUM LETZTEN SCHRITT
+# 🔒 GUIDE / ONBOARDING – AKTUELLER STAND (März 2026)
 
-## Das Prinzip (Georgs Vision)
+## Entscheidung Georg (20.03.26)
 
-> „Diese Art der Kommunikation steht für unsere absolute Bedienerorientiertheit.
-> Sie soll so einzigartig sein, dass allen der Mund offen stehen bleibt. Verblüffen."
+**Der globale schwarze Hub-Guide (`GlobaleGuideBegleitung`) ist abgeschaltet.** Er soll **nicht** wieder auftauchen – er hat in der APf (u. a. iframe + gemeinsamer Speicher) zu **Doppel-Anzeige** und **Durcheinander** geführt.
 
-## Was das konkret bedeutet
+- **`App.tsx`:** rendert **keine** `GlobaleGuideBegleitung` mehr.
+- **`beendeGuideFlow()`** beim App-Start: setzt `k2-guide-flow` auf inaktiv.
+- **Admin:** kein grüner „Galerie-Guide“-Balken mehr; kein Auto-Start des Flows in **ScreenshotExportAdmin** / **MeinBereich** / **Vk2GaleriePage**.
 
-- **Der Guide-Dialog läuft auf JEDER Seite weiter.** Kein Bruch beim Wechsel in den Admin, zur Lizenz-Seite, zur Vereinsgalerie, zur Vita.
-- **Kein User wird alleine gelassen.** Wenn jemand eine neue Seite betritt, ist der Begleiter bereits da.
-- **Derselbe Dialog, derselbe Stil.** Kein neues, fremdes UI – der vertraute schwarze Dialog bleibt.
-- **Nie neu bauen was schon funktioniert.** Bestehende Komponenten erweitern, nicht duplizieren.
+## Was weiterhin existiert (bewusst getrennt)
 
-## Technische Umsetzung
+- **`GalerieEntdeckenGuide`** auf der **öffentlichen Galerie** (Fremde, `!musterOnly` K2-Kontext): **eigenes** Onboarding auf der Galerie-Seite – **nicht** der globale Dialog über alle Routen.
+- **Datei `GlobaleGuideBegleitung.tsx`:** enthält nur noch **Typen** + **Helfer** (`beendeGuideFlow`, `ladeGuideFlow`, `speichereGuideFlow`) und eine **leere** Komponente `return null` (falls noch importiert).
 
-- **`GlobaleGuideBegleitung`** in `App.tsx` außerhalb der Routes → läuft auf jeder Seite.
-- **`k2-guide-flow`** in `localStorage` → State überlebt Seitenwechsel.
-- Guide startet Flow beim Verlassen der Galerie (`geheZuAdmin` in `GaleriePage.tsx`).
-- Auf der Galerie-Seite selbst: nativer Guide läuft (keine Dopplung).
+## Regel bei Änderungen an Guide / Onboarding
 
-## Regel bei JEDER Änderung an Guide/Dialog/Onboarding
+- [ ] **`GlobaleGuideBegleitung` nicht** wieder global in `App.tsx` einhängen – nur wenn Georg es **ausdrücklich** anordnet.
+- [ ] Keinen **zweiten** globalen Begleiter parallel bauen (kein Auto-Overlay über alle Seiten ohne klare Anordnung).
+- [ ] Onboarding **kontextgebunden** (eine Seite / ein Bereich) ist erlaubt – **ein Standard**, keine verwirrenden Doppel-UI.
 
-- [ ] Läuft der Dialog noch auf jeder Seite durch?
-- [ ] Wird kein zweiter, ähnlicher Dialog gebaut statt den bestehenden zu erweitern?
-- [ ] Ist der Stil konsistent (schwarzes Popup, Avatar, Fortschrittsbalken)?
-- [ ] Endet der Flow mit einer klaren, einfachen Aktion (Daten ausfüllen & starten)?
+## Kurzfassung (aktualisiert)
 
-## Kurzfassung
-
-**Guide = Begleiter für den ganzen Weg. Nie abbiegen, nie neu bauen, nie alleine lassen.**
+**Globaler schwarzer Guide = aus. Onboarding nur noch klar abgegrenzt pro Kontext – nicht wieder „überall“ ohne Anordnung.**

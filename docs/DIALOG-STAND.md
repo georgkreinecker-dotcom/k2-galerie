@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Phase 1 Guide ök2:** **GlobaleGuideBegleitung** wieder sichtbar: nur bei **aktivem** Flow + **ök2/VK2**-Session (`k2-admin-context`), **nicht** auf **Shop/Kasse**; **/mein-bereich?context=oeffentlich** startet Demo-Flow (ohne `k2-oek2-from-apf`), Pfad aus URL validiert. Stations-Fortschritt bleibt **im selben** Dialog (Vereinheitlichung). Doku **GAMIFICATION-PLAN-OEK2-PHASEN.md** Zeile Phase 1. **Commit:** 8e80018 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Globaler Guide aus (Georg):** **GlobaleGuideBegleitung** wird **nicht** mehr gemountet (`App.tsx`); `beendeGuideFlow()` beim App-Start + kein Auto-Start in **MeinBereich** / **ScreenshotExportAdmin** / **Vk2GaleriePage**; **grüner Guide-Balken** im Admin entfernt. **GalerieEntdeckenGuide** auf der öffentlichen Galerie (Fremde) bleibt eigenes UI. **Commit:** (folgt nach Push) ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Phase 1 Guide ök2:** GlobaleGuideBegleitung wieder sichtbar … **Commit:** 8e80018 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification: ein Erlebnis (Vereinheitlichung):** Georg: **nicht** zwei getrennte, sich **störenden** UI-Elemente – **Begleitung + Fortschritt/Status** sollen **zusammenwirken** (ein Rahmen, koordiniert). Festgehalten in **GAMIFICATION-OEK2.md** §2 „Vereinheitlichung“, Phasenplan + DoD + Checkliste. **Commit:** e967318 ✅ auf GitHub
 
@@ -42,11 +44,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** ök2 für Markt **mit** Gamification fertigstellen – **vorsichtig**, kleine Schritte; **einheitliches Erlebnis**: Guide/Begleitung und Status **ineinander**, nicht zwei konkurrierende Schichten (**GAMIFICATION-OEK2.md** §2); **Sportwagenmodus** durchgängig; Phasenplan **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **Plan B** nur bei echter Not.
+**Was wir JETZT tun:** Gamification/ök2 **ohne** globalen schwarzen Guide weiterdenken (Tab-Heroes, Ampeln, Medienstudio) – **GAMIFICATION-OEK2.md** / Phasenplan; globaler Dialog bleibt aus bis Georg etwas anderes anordnet.
 
-**Einordnung:** Nicht „einfrieren“ – **Qualität + Umkehr** bei Bedarf; kein zweiter Ersatz-Ablauf neben dem Kern; **Vereinheitlichung** = Maßstab für Phase-1-Code (GlobaleGuideBegleitung vs. Tab-Heroes koordinieren).
+**Einordnung:** Georg: globaler Guide = Durcheinander (APf doppelt). **Umkehr** statt weiter optimieren an dieser Stelle.
 
-**Nächster Schritt:** Phase 1 weiter: **Galerie gestalten** / **Werke-Ampel** (nur Anzeige) unter derselben Vereinheitlichung; **GAMIFICATION-OEK2.md**-Checkliste; **Plan B** nur Notfall.
+**Nächster Schritt:** Phase 1 ohne GlobaleGuideBegleitung: z. B. **Galerie gestalten** / **Werke-Ampel**; Checkliste **GAMIFICATION-OEK2.md**; **Plan B** nur Notfall.
 
 ---
 

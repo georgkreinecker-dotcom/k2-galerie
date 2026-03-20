@@ -37,7 +37,6 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
-import { speichereGuideFlow } from '../src/components/GlobaleGuideBegleitung'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1572,61 +1571,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } catch { setVerteilerNewsletter([]) }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
-  // Vorname aus URL – kommt vom Guide (z.B. /admin?context=oeffentlich&vorname=Klein)
-  const guideVorname = (() => {
-    try { return new URLSearchParams(window.location.search).get('vorname') ?? '' } catch { return '' }
-  })()
-  const guidePfad = (() => {
-    try { return new URLSearchParams(window.location.search).get('pfad') ?? '' } catch { return '' }
-  })()
-  // Guide-Flow reaktiv: bei 'guide-flow-update' neu lesen, damit grüner Balken erscheint sobald Flow startet
-  const [guideFlowAktiv, setGuideFlowAktiv] = useState(() => {
-    try {
-      const v = localStorage.getItem('k2-guide-flow')
-      if (!v) return false
-      const f = JSON.parse(v)
-      return f?.aktiv === true
-    } catch { return false }
-  })
-  React.useEffect(() => {
-    const onUpdate = () => {
-      try {
-        const v = localStorage.getItem('k2-guide-flow')
-        if (!v) { setGuideFlowAktiv(false); return }
-        const f = JSON.parse(v)
-        setGuideFlowAktiv(f?.aktiv === true)
-      } catch { setGuideFlowAktiv(false) }
-    }
-    window.addEventListener('guide-flow-update', onUpdate)
-    return () => window.removeEventListener('guide-flow-update', onUpdate)
-  }, [])
-
-  // Direktaufruf Admin (ök2/VK2): Wenn noch kein Guide-Flow aktiv ist, einmal starten – außer Einstieg von APf (dann keinen Guide)
-  React.useEffect(() => {
-    if (!(tenant.isOeffentlich || tenant.isVk2)) return
-    try {
-      if (tenant.isOeffentlich) {
-        const fromApf = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-oek2-from-apf') === '1'
-        const fromApfUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search || '').get('fromApf') === '1'
-        if (fromApfUrl) sessionStorage.setItem('k2-oek2-from-apf', '1')
-        if (fromApf || fromApfUrl) return
-      }
-      const v = localStorage.getItem('k2-guide-flow')
-      const f = v ? JSON.parse(v) : {}
-      if (f?.aktiv === true) return
-      const params = new URLSearchParams(window.location.search || '')
-      speichereGuideFlow({
-        aktiv: true,
-        name: f?.name ?? params.get('vorname') ?? '',
-        pfad: (f?.pfad ?? params.get('pfad') ?? '') as import('../src/components/GlobaleGuideBegleitung').GuidePfad,
-        schritt: f?.schritt ?? 'start',
-        erledigte: Array.isArray(f?.erledigte) ? f.erledigte : [],
-        context: tenant.isVk2 ? 'vk2' : 'oeffentlich',
-      })
-      window.dispatchEvent(new CustomEvent('guide-flow-update'))
-      setGuideFlowAktiv(true)
-    } catch { /* ignore */ }
-  }, [tenant.isOeffentlich, tenant.isVk2])
+  // Globaler Guide / grüner Guide-Balken: abgeschaltet (20.03.26) – kein k2-guide-flow Auto-Start mehr
 
   // Vom Hub gekommen? → Zurück-Button anzeigen
   const fromHub = (() => {
@@ -1649,8 +1594,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return 'werke'
   })()
   const [activeTab, setActiveTab] = useState<AdminTabType>(initialTab)
-  const [guideBannerClosed, setGuideBannerClosed] = useState(false)
-  const [guideBegleiterGeschlossen, setGuideBegleiterGeschlossen] = useState(false)
   const initialEventplanSubTab = ((): 'events' | 'öffentlichkeitsarbeit' => {
     if (forceEventplanSubTab) return forceEventplanSubTab
     try {
@@ -12388,93 +12331,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* Oberer Rand des Admin-Bereichs (Anker für „Zurück in den Admin-Bereich“); Spacer wenn Zurück-Banner sichtbar */}
       <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
 
-      {/* Grüner Guide-Balken: Orientierung für Besucher im Guide (ök2 + VK2). Zeigt aktuellen Bereich + Zurück. */}
-      {(tenant.isOeffentlich || tenant.isVk2) && guideFlowAktiv && (() => {
-        const istVerein = guidePfad === 'gemeinschaft'
-        const guideTexte: Record<string, { titel: string; text: string }> = {
-          werke: istVerein
-            ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' }
-            : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' },
-          eventplan: istVerein
-            ? { titel: 'Event- und Medienplanung', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellt ihr Einladungen, QR-Codes, Werbedokumente und nutzt den Verteiler direkt im gleichen Ablauf.' }
-            : { titel: 'Event- und Medienplanung', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen, Werbedokumente und nutzt den Verteiler in einem Schritt.' },
-          presse: { titel: 'Event- und Medienplanung', text: 'Der Bereich ist jetzt ein gemeinsamer Ablauf: Event planen, Werbematerial erzeugen und an Medien oder Newsletter-Empfänger senden.' },
-          design: istVerein
-            ? { titel: 'Ausstellung gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellst du es ein. Vorschau zeigt dir sofort, wie es wirkt.' }
-            : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
-          veroeffentlichen: { titel: 'Veröffentlichen', text: 'Damit Besucher und Geräte den aktuellen Stand sehen: Hier sendest du deine Galerie an den Server. Ein Klick auf „An Server senden“ – danach ist überall dasselbe zu sehen. Wichtig nach jeder Änderung an Werken oder Gestaltung.' },
-          einstellungen: istVerein
-            ? { titel: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Adresse – hier pflegt ihr alles, was auf der Galerie und in Einladungen erscheint. Unter „Stammdaten“ trägst du Namen und Kontakt ein. So sind eure Daten immer aktuell.' }
-            : { titel: 'Einstellungen', text: 'Dein Name, deine Adresse, Öffnungszeiten – hier trägst du alles ein, was Besucher sehen sollen. Unter „Stammdaten“ findest du die Felder. Einmal ausfüllen, dann stimmt es überall.' },
-          katalog: { titel: 'Werkkatalog', text: 'Alle Werke auf einen Blick: filtern, suchen, als Liste oder für den Druck. Hier behältst du die Übersicht – ob für dich selbst oder für Kunden. Export und PDF möglich.' },
-          statistik: { titel: 'Kassa, Lager & Listen', text: 'Verkäufe erfassen, Belege drucken, Lager und Verkaufsstatistik im Blick. Hier läuft alles rund um Verkauf und Übersicht – auch vom Handy aus bei der Ausstellung.' },
-        }
-        const allgemein = {
-          titel: 'Admin – deine Zentrale',
-          text: 'Wir sind jetzt im Admin angelangt. Hier kannst du alle deine Arbeiten erledigen. Wenn du auf eine Aufgabe tippst, gehe ich mit dir dort hinein und erkläre dir, was du dort machen kannst.',
-        }
-        const aktuell = guideTexte[activeTab] ?? allgemein
-        return (
-          <div
-            style={{
-              position: 'sticky',
-              top: fromHub ? 44 : 0,
-              zIndex: 99998,
-              padding: '0.85rem clamp(1rem, 3vw, 1.5rem)',
-              background: 'linear-gradient(135deg, #15803d, #22c55e)',
-              borderBottom: '2px solid #15803d',
-              marginBottom: 0,
-              color: '#fff',
-              boxShadow: '0 2px 12px rgba(21,128,61,0.35)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.25rem' }}>
-                  {istVerein ? 'Dein Vereins-Guide' : 'Dein Galerie-Guide'}
-                </div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: '0.2rem' }}>{aktuell.titel}</div>
-                <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.98)', maxWidth: '52rem' }}>
-                  {aktuell.text}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  if (activeTab === 'werke') {
-                    const galeriePath = tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-                    navigate(galeriePath, { state: { fromAdmin: true } })
-                  } else {
-                    setActiveTab('werke')
-                    adminTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    window.scrollTo({ top: 0, behavior: 'smooth' })
-                  }
-                }}
-                style={{
-                  flexShrink: 0,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  padding: '0.45rem 0.85rem',
-                  background: 'rgba(255,255,255,0.2)',
-                  border: '1px solid rgba(255,255,255,0.5)',
-                  borderRadius: 8,
-                  color: '#fff',
-                  fontSize: '0.82rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                }}
-                title={activeTab === 'werke' ? 'Zur Galerie (öffentliche Ansicht)' : 'Zurück zur Übersicht (Werke, Events, Kassa, …)'}
-              >
-                {activeTab === 'werke' ? '← Zurück zur Galerie' : '← Zurück in den Admin-Bereich'}
-              </button>
-            </div>
-          </div>
-        )
-      })()}
-
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
@@ -12771,320 +12627,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {activeTab === 'werke' && (
               <div>
 
-                {/* Guide-Panel aus: ök2 soll denselben Hub wie K2/VK2 zeigen („Was möchtest du heute tun?“). Guide nur als GlobaleGuideBegleitung. */}
-                {false && guideFlowAktiv && tenant.isOeffentlich && !guideBannerClosed && (() => {
-                  const istVerein = guidePfad === 'gemeinschaft'
-                  const akzent = istVerein ? '#1e5cb5' : '#b54a1e'
-                  const akzentHell = istVerein ? '#42a4ff' : '#ff8c42'
-                  const akzentGrad = istVerein
-                    ? 'linear-gradient(135deg, #1e5cb5, #42a4ff)'
-                    : 'linear-gradient(135deg, #b54a1e, #ff8c42)'
-                  const avatarEmoji = istVerein ? '🏛️' : guidePfad === 'atelier' ? '🏢' : guidePfad === 'entdecker' ? '🌱' : '👨‍🎨'
-                  const vornameTitel = guideVorname ? `Willkommen, ${guideVorname}!` : 'Willkommen!'
-                  const pfadText = istVerein ? 'Das ist die Zentrale eures Vereins.'
-                    : guidePfad === 'atelier' ? 'Dein Atelier ist bereit.'
-                    : guidePfad === 'entdecker' ? 'Deine Galerie wartet auf dich.'
-                    : 'Das ist deine Galerie-Zentrale.'
-                  const galerieUrl = '/projects/k2-galerie/galerie-oeffentlich'
-
-                  // Alle Stationen – Kacheln links + rechts; einheitlich „Galerie gestalten und texten“
-                  type HubTab = 'werke' | 'eventplan' | 'presse' | 'design' | 'veroeffentlichen' | 'einstellungen' | 'katalog'
-                  const alleStationen: { emoji: string; name: string; beschreibung: string; tab: HubTab }[] = istVerein ? [
-                    { emoji: '🖼️', name: 'Vereinsmitglieder neu anlegen oder ändern', beschreibung: 'Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Vernissagen planen, Werbedokumente erstellen, Verteiler nutzen.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Event- und Medienplanung', beschreibung: 'Ein Ablauf fuer Event, Mediengenerator und Verteiler.', tab: 'presse' },
-                    { emoji: '✨', name: 'Ausstellung gestalten und texten', beschreibung: 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
-                    { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Vereinsdaten, Kontakt, Mitglieder verwalten.', tab: 'einstellungen' },
-                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                  ] : [
-                    { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Fotos hochladen, Titel, Preis – ein Klick und es ist live.', tab: 'werke' },
-                    { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Vernissage planen, Werbedokumente erstellen, Verteiler nutzen.', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Event- und Medienplanung', beschreibung: 'Ein Ablauf fuer Event, Mediengenerator und Verteiler.', tab: 'presse' },
-                    { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu dir.', tab: 'design' },
-                    { emoji: '📤', name: 'Veröffentlichen', beschreibung: 'Aushängeschild der Galerie sichtbar machen – Besucher und Geräte sehen den aktuellen Stand.', tab: 'veroeffentlichen' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten.', tab: 'einstellungen' },
-                    { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
-                  ]
-
-                  // Abgestimmte Hintergrundfarben pro Bereich (inaktiv) – alle aus einer warmen Palette
-                  const HUB_CARD_BG: Record<HubTab, string> = {
-                    werke: '#fdf4ef',
-                    eventplan: '#f5f8f2',
-                    presse: '#f2f4f8',
-                    design: '#f8f4f0',
-                    veroeffentlichen: '#f0f8f4',
-                    einstellungen: '#f0f4f8',
-                    katalog: '#f4f8f0',
-                  }
-                  const HUB_ICON_TINT: Record<HubTab, string> = {
-                    werke: '#b54a1e22',
-                    eventplan: '#2d7a3e22',
-                    presse: '#1e5cb522',
-                    design: '#a65a2a22',
-                    veroeffentlichen: '#0d948822',
-                    einstellungen: '#4a5a8a22',
-                    katalog: '#3a7a5a22',
-                  }
-
-                  // Aktive Station = welcher Tab ist gerade offen
-                  const aktivIdx = alleStationen.findIndex(s => s.tab === activeTab)
-                  const aktivStation = aktivIdx >= 0 ? alleStationen[aktivIdx] : alleStationen[0]
-                  const halbePunkte = Math.ceil(alleStationen.length / 2)
-                  const linksStationen = alleStationen.slice(0, halbePunkte)
-                  const rechtsStationen = alleStationen.slice(halbePunkte)
-
-                  return (
-                    <div style={{ background: `linear-gradient(135deg, ${akzent}10, ${akzent}05)`, border: `1.5px solid ${akzent}30`, borderRadius: '20px', padding: '1.5rem', marginBottom: '2rem', position: 'relative' }}>
-                      <style>{`
-                        .hub-guide-karte { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-                        .hub-guide-karte:hover:not(.hub-guide-karte--aktiv) {
-                          transform: translateY(-3px);
-                          box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-                        }
-                        .hub-guide-karte:active:not(.hub-guide-karte--aktiv) { transform: translateY(-1px); }
-                      `}</style>
-                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.9rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: `${akzent}44`, fontSize: '1.2rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen – danach siehst du dieselben Bereiche als Karten">×</button>
-
-                      {/* Kopfzeile */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '1.25rem', flexWrap: 'wrap' as const }}>
-                        <div style={{ width: 46, height: 46, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0, boxShadow: `0 4px 14px ${akzent}44` }}>
-                          {avatarEmoji}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1c1a18', lineHeight: 1.3 }}>{vornameTitel} {pfadText}</div>
-                          <div style={{ fontSize: '0.82rem', color: '#5c5650', marginTop: '0.2rem' }}>
-                            {istVerein ? 'Dein Guide führt euch durch alle Bereiche.' : 'Klick auf eine Kachel – dein Guide erklärt sie dir.'}
-                          </div>
-                        </div>
-                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined } : { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.55rem 1rem', background: akzent, color: '#fff', borderRadius: '10px', fontSize: '0.84rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const, boxShadow: `0 3px 10px ${akzent}44` }}>
-                          {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
-                        </Link>
-                      </div>
-
-                      {/* Hub: Kacheln links | aktiver Dialog Mitte | Kacheln rechts */}
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'stretch' }}>
-
-                        {/* Kacheln links – jede mit abgestimmter Hintergrundfarbe (inaktiv), aktiv = Akzent */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
-                          {linksStationen.map((st, i) => {
-                            const istAktiv = activeTab === st.tab
-                            return (
-                              <button key={st.tab} type="button"
-                                className={`hub-guide-karte${istAktiv ? ' hub-guide-karte--aktiv' : ''}`}
-                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                                style={{
-                                  padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                  background: istAktiv ? akzentGrad : HUB_CARD_BG[st.tab],
-                                  border: istAktiv ? 'none' : `1px solid ${HUB_ICON_TINT[st.tab].replace('22', '44')}`,
-                                  borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                  textAlign: 'left' as const,
-                                  boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
-                                  color: istAktiv ? '#fff' : '#1c1a18',
-                                  fontWeight: istAktiv ? 700 : 400,
-                                  position: 'relative' as const,
-                                }}>
-                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : '#5c5650' }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0, background: istAktiv ? 'transparent' : HUB_ICON_TINT[st.tab], borderRadius: '6px', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{st.emoji}</span>}
-                                <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
-                                {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
-                              </button>
-                            )
-                          })}
-                        </div>
-
-                        {/* Aktiver Dialog Mitte */}
-                        <div style={{ flex: 1, background: '#fff', borderRadius: '16px', padding: '1.25rem', border: `2px solid ${akzentHell}44`, boxShadow: `0 4px 20px ${akzent}18`, display: 'flex', flexDirection: 'column' as const, gap: '0.75rem', minWidth: 0 }}>
-                          {/* Station-Kopf */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <div style={{ width: 40, height: 40, borderRadius: '50%', background: akzentGrad, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                              {avatarEmoji}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '0.6rem', color: akzentHell, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>
-                                {istVerein ? 'Vereins-Guide' : 'Galerie-Guide'}
-                              </div>
-                              <div style={{ fontSize: '1rem', fontWeight: 700, color: '#1c1a18', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                {aktivStation.tab === 'presse' ? <MedienstudioIcon size={20} /> : aktivStation.emoji} {aktivStation.name}
-                              </div>
-                            </div>
-                          </div>
-                          {/* Fortschrittsbalken */}
-                          <div style={{ display: 'flex', gap: '0.2rem' }}>
-                            {alleStationen.map((st, i) => (
-                              <div key={st.tab}
-                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                                style={{ flex: 1, height: 4, borderRadius: 2, cursor: 'pointer', transition: 'background 0.2s',
-                                  background: i < (aktivIdx >= 0 ? aktivIdx : 0) ? akzent : st.tab === activeTab ? akzentHell : '#e8e4de' }}
-                                title={st.name}
-                              />
-                            ))}
-                          </div>
-                          {/* Beschreibung */}
-                          <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.6, flex: 1 }}>
-                            {aktivStation.beschreibung}
-                          </div>
-                          {/* Aktion */}
-                          <button type="button"
-                            onClick={() => { setActiveTab(aktivStation.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                            style={{ width: '100%', padding: '0.8rem', background: akzentGrad, border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'inherit', boxShadow: `0 4px 14px ${akzent}44` }}>
-                            {aktivStation.tab === 'presse' ? <MedienstudioIcon size={18} /> : aktivStation.emoji} {aktivStation.name} öffnen →
-                          </button>
-                        </div>
-
-                        {/* Kacheln rechts – gleiche abgestimmte Farben wie links */}
-                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.5rem', width: '140px', flexShrink: 0 }}>
-                          {rechtsStationen.map((st) => {
-                            const istAktiv = activeTab === st.tab
-                            return (
-                              <button key={st.tab} type="button"
-                                className={`hub-guide-karte${istAktiv ? ' hub-guide-karte--aktiv' : ''}`}
-                                onClick={() => { setActiveTab(st.tab); window.scrollTo({ top: 200, behavior: 'smooth' }) }}
-                                style={{
-                                  padding: '0.65rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                  background: istAktiv ? akzentGrad : HUB_CARD_BG[st.tab],
-                                  border: istAktiv ? 'none' : `1px solid ${HUB_ICON_TINT[st.tab].replace('22', '44')}`,
-                                  borderRadius: '12px', cursor: 'pointer', fontFamily: 'inherit',
-                                  textAlign: 'left' as const,
-                                  boxShadow: istAktiv ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
-                                  color: istAktiv ? '#fff' : '#1c1a18',
-                                  fontWeight: istAktiv ? 700 : 400,
-                                  position: 'relative' as const,
-                                }}>
-                                {st.tab === 'presse' ? <MedienstudioIcon size={22} style={{ color: istAktiv ? '#fff' : '#5c5650' }} /> : <span style={{ fontSize: '1.2rem', flexShrink: 0, background: istAktiv ? 'transparent' : HUB_ICON_TINT[st.tab], borderRadius: '6px', width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>{st.emoji}</span>}
-                                <span style={{ fontSize: '0.78rem', lineHeight: 1.3 }}>{st.name}</span>
-                                {istAktiv && <span style={{ position: 'absolute', top: 5, right: 7, fontSize: '0.5rem', color: 'rgba(255,255,255,0.7)' }}>●</span>}
-                              </button>
-                            )
-                          })}
-                        </div>
-
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Zweites Guide-Panel aus: ök2 = gleicher Hub wie K2/VK2 */}
-                {false && guideVorname && tenant.isOeffentlich && !guideBannerClosed && !guideFlowAktiv && (() => {
-                  const istVerein = guidePfad === 'gemeinschaft'
-                  type BannerBereich = { emoji: string; name: string; text: string; tab: string }
-                  const bereiche: BannerBereich[] = istVerein ? [
-                    { emoji: '🏛️', name: 'Vereinsmitglieder neu anlegen oder ändern', text: 'Mitglieder mit „In Galerie anzeigen“ – Profile und Karten unter einem Dach', tab: 'werke' },
-                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke des Vereins filtern, suchen, drucken', tab: 'katalog' },
-                    { emoji: '🎟️', name: 'Veranstaltungen', text: 'Ausstellungen planen, Einladungen an alle Mitglieder versenden', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Event- und Medienplanung', text: 'Event, Mediengenerator und Verteiler in einem Ablauf', tab: 'presse' },
-                    { emoji: '✨', name: 'Ausstellung gestalten und texten', text: 'Farben, Texte, Foto – eure Mitglieder-Seite nach euren Wünschen', tab: 'design' },
-                    { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild der Galerie sichtbar machen – Besucher sehen den aktuellen Stand', tab: 'veroeffentlichen' },
-                    { emoji: '⚙️', name: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Mitglieder verwalten', tab: 'einstellungen' },
-                  ] : [
-                    { emoji: '🎨', name: 'Werke hinzufügen und bearbeiten', text: 'Fotos hochladen, Titel, Preis, Beschreibung – deine Galerie füllen', tab: 'werke' },
-                    { emoji: '📋', name: 'Werkkatalog', text: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
-                    { emoji: '💰', name: 'Kassa', text: 'Direkt verkaufen – Beleg drucken, Übersicht behalten', tab: 'kassa' },
-                    { emoji: '📢', name: 'Veranstaltungen', text: 'Events planen, Einladungen erstellen, Presse informieren', tab: 'eventplan' },
-                    { emoji: '📰', name: 'Event- und Medienplanung', text: 'Event, Mediengenerator und Verteiler in einem Ablauf', tab: 'presse' },
-                    { emoji: '✨', name: 'Galerie gestalten und texten', text: 'Farben, Texte, dein Foto – die Galerie wird zu dir', tab: 'design' },
-                    { emoji: '📤', name: 'Veröffentlichen', text: 'Aushängeschild sichtbar machen – Besucher und Geräte sehen den aktuellen Stand', tab: 'veroeffentlichen' },
-                  ]
-                  const galerieUrl = tenant.isOeffentlich
-                    ? '/projects/k2-galerie/galerie-oeffentlich'
-                    : '/projects/k2-galerie/galerie'
-                  return (
-                    <div style={{ background: 'linear-gradient(135deg, #b54a1e14, #b54a1e08)', border: '1.5px solid #b54a1e33', borderRadius: '16px', padding: '1.25rem 1.5rem', marginBottom: '1.75rem', position: 'relative' }}>
-                      <button type="button" onClick={() => setGuideBannerClosed(true)} style={{ position: 'absolute', top: '0.75rem', right: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', color: '#b54a1e66', fontSize: '1.1rem', lineHeight: 1, padding: '0.2rem 0.4rem' }} title="Schließen – danach siehst du dieselben Bereiche als Karten">×</button>
-
-                      {/* Kopf + Galerie-Vorschau Button */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <div>
-                          <div style={{ fontSize: '1.3rem', marginBottom: '0.35rem' }}>{istVerein ? '🤝' : '👋'}</div>
-                          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#1c1a18' }}>
-                            {istVerein
-                              ? `Willkommen, ${guideVorname}! Das ist die Zentrale eures Vereins.`
-                              : `Willkommen, ${guideVorname}! Das ist deine Galerie-Zentrale.`}
-                          </div>
-                        </div>
-                        <Link to={galerieUrl} state={tenant.isOeffentlich ? { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined } : { fromAdmin: true, designSettings: (designSettings && Object.keys(designSettings).length > 0) ? designSettings : undefined }} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.5rem 0.9rem', background: '#b54a1e', color: '#fff', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0, whiteSpace: 'nowrap' as const }}>
-                          {istVerein ? '👥 Unsere Mitglieder' : '🎨 Galerie ansehen'} →
-                        </Link>
-                      </div>
-                      <div style={{ fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.55, marginBottom: '1rem' }}>
-                        {istVerein
-                          ? 'Tippe auf einen Bereich um direkt loszulegen:'
-                          : 'Tippe auf einen Bereich um direkt loszulegen:'}
-                      </div>
-
-                      {/* Bereichs-Karten – klickbar */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.6rem', marginBottom: '1rem' }}>
-                        {bereiche.map((b, i) => (
-                          <button key={i} type="button"
-                            onClick={() => {
-                              setGuideBannerClosed(true)
-                              if (b.tab === 'kassa') {
-                                try {
-                                  sessionStorage.setItem('k2-admin-context', tenant.isOeffentlich ? 'oeffentlich' : 'k2')
-                                  if (tenant.isOeffentlich) sessionStorage.setItem('k2-shop-from-oeffentlich', '1')
-                                } catch (_) {}
-                                if (typeof window !== 'undefined' && window.self === window.top) window.location.href = '/projects/k2-galerie/shop?openAsKasse=1'
-                              } else {
-                                const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
-                                type AdminTab = typeof validTabs[number]
-                                if (validTabs.includes(b.tab as AdminTab)) {
-                                  setActiveTab(b.tab as AdminTab)
-                                }
-                                window.scrollTo({ top: 0, behavior: 'smooth' })
-                              }
-                            }}
-                            style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.65rem 0.8rem', display: 'flex', gap: '0.6rem', alignItems: 'flex-start', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', transition: 'all 0.15s' }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#b54a1e66'; e.currentTarget.style.background = '#fdf9f6' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = '#e8e4de'; e.currentTarget.style.background = '#fff' }}
-                          >
-                            {b.tab === 'presse' ? <MedienstudioIcon size={24} style={{ flexShrink: 0 }} /> : <span style={{ fontSize: '1.25rem', flexShrink: 0, lineHeight: 1.2 }}>{b.emoji}</span>}
-                            <div>
-                              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.2rem' }}>{b.name}</div>
-                              <div style={{ fontSize: '0.75rem', color: '#5c5650', lineHeight: 1.4 }}>{b.text}</div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* Trennlinie */}
-                      <div style={{ height: '1px', background: '#b54a1e22', margin: '0.9rem 0' }} />
-
-                      {/* Empfehlungs-Hinweis */}
-                      <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                        <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>🤝</span>
-                        <div style={{ fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.5 }}>
-                          <span style={{ fontWeight: 700, color: '#1c1a18' }}>Andere Künstler:innen einladen:</span>{' '}
-                          Wenn du jemanden kennst der das hier auch braucht – teile einfach deinen persönlichen Link. Beide profitieren: du bekommst deinen nächsten Monat gratis, sie starten mit einem Monat gratis. Kein Verkaufen, einfach teilen.
-                        </div>
-                      </div>
-
-                      {/* Lizenz-Übersicht */}
-                      <div style={{ background: '#fff', border: '1px solid #e8e4de', borderRadius: '10px', padding: '0.75rem 0.9rem', marginBottom: '0.9rem' }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.55rem' }}>📋 Was du gerade siehst – und was noch wartet:</div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.45rem' }}>
-                          {[
-                            { name: 'Basis', color: '#5c5650', icon: '🔓', text: 'Galerie, Werke, Kassa – sofort, kostenlos testen' },
-                            { name: 'Pro', color: '#b54a1e', icon: '⭐', text: 'Werkverzeichnis, Zertifikate, Pressemappe, Events' },
-                            { name: istVerein ? 'VK2 Verein' : 'Studio', color: '#1d6b3a', icon: istVerein ? '🏛️' : '🏢', text: istVerein ? 'Mehrere Mitglieder, gemeinsame Verwaltung' : 'Mehrere Künstler:innen, gemeinsame Plattform' },
-                          ].map((l, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '0.4rem', alignItems: 'flex-start' }}>
-                              <span style={{ fontSize: '1rem', flexShrink: 0 }}>{l.icon}</span>
-                              <div>
-                                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: l.color }}>{l.name}</div>
-                                <div style={{ fontSize: '0.7rem', color: '#5c5650', lineHeight: 1.35 }}>{l.text}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div style={{ fontSize: '0.82rem', color: '#b54a1e', fontWeight: 600 }}>
-                        👇 Einfach einen Bereich antippen – los geht's!
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* EINHEITLICHER ADMIN-HUB (Regel: admin-einheitliches-layout.mdc, docs/ADMIN-LAYOUT-REGEL.md). K2, VK2, ök2 = ein Layout: „Was möchtest du heute tun?“ + Kacheln. Kein zweites UI (Guide-Balken/Panels) – die mit false && deaktivierten Blöcke nicht reaktivieren. */}
+                {/* EINHEITLICHER ADMIN-HUB (Regel: admin-einheitliches-layout.mdc, docs/ADMIN-LAYOUT-REGEL.md). K2, VK2, ök2 = ein Layout: „Was möchtest du heute tun?“ + Kacheln. Globaler Guide abgeschaltet (20.03.26). */}
                 {(() => {
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
@@ -13135,11 +12678,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         Was möchtest du heute tun?
                       </h2>
                       <p style={{ color: s.muted, margin: 0, fontSize: '0.9rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        {tenant.isOeffentlich && !guideFlowAktiv ? (
-                          <span>Schau dich ein wenig in unseren Abteilungen um. Bei Fragen kannst du im Handbuch nachlesen.</span>
-                        ) : (
-                          <span>Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.</span>
-                        )}
+                        <span>
+                          {tenant.isOeffentlich
+                            ? 'Schau dich in unseren Abteilungen um. Bei Fragen: Handbuch.'
+                            : 'Ein Klick – du bist im Bereich. Das sind alle Bereiche deiner Galerie.'}
+                        </span>
                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
                           <button type="button" onClick={() => openHandbuchInFenster(getAdminReturnUrl(activeTab, eventplanSubTab), tenant.isVk2 ? VK2_HANDBUCH_ROUTE : undefined)} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12`, border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }} title="Handbuch in eigenem Fenster öffnen – zum Zoomen und neben Einstellungen mitlesen">📖 Handbuch</button>
                           <Link to="#" onClick={(e) => { e.preventDefault(); setActiveTab('einstellungen'); window.scrollTo({ top: 200, behavior: 'smooth' }); }} style={{ color: s.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.25rem', padding: '0.2rem 0.4rem', borderRadius: '6px', background: `${s.accent}12` }} title="Einstellungen">⚙️ Einstellungen</Link>
@@ -24402,7 +23945,7 @@ ${name}`
 
       {/* ─── Nahtloser Guide-Begleiter im Admin ─────────────────────────────── */}
       {/* Erscheint wenn User über Guide-Flow hereinkam – begleitet bis Schritt 1 erledigt */}
-      {/* Alter Guide-Begleiter entfernt – Hub-Dialog GlobaleGuideBegleitung übernimmt */}
+      {/* Globaler Guide (GlobaleGuideBegleitung) abgeschaltet 20.03.26 – kein zweiter Begleiter im Admin */}
 
     </div>
   )

@@ -87,7 +87,7 @@ import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
 import AGBPage from './pages/AGBPage'
-import { GlobaleGuideBegleitung } from './components/GlobaleGuideBegleitung'
+import { beendeGuideFlow } from './components/GlobaleGuideBegleitung'
 import SeitengestaltungPage from './pages/SeitengestaltungPage'
 import { BUILD_LABEL, BUILD_TIMESTAMP } from './buildInfo.generated'
 import { PRODUCT_BRAND_NAME } from './config/tenantConfig'
@@ -535,6 +535,11 @@ function App() {
     return () => clearTimeout(t)
   }, [])
 
+  // Globaler Guide aus: einmal alten Flow deaktivieren (kein schwarzer Dialog / kein „aktiv“ mehr)
+  useEffect(() => {
+    beendeGuideFlow()
+  }, [])
+
   return (
     <TenantProvider>
     <AppErrorBoundary>
@@ -689,8 +694,6 @@ function App() {
       <Route path="*" element={<NotFoundOrRedirect />} />
     </Routes>
 
-    {/* Globaler Guide-Begleiter – läuft auf jeder Seite nahtlos weiter */}
-    <GlobaleGuideBegleitung />
     {/* Druck-Fußzeile: Dokumentenersteller | Druckdatum (Seitenzahl via @page in index.css) */}
     <PrintFooter />
     </div>

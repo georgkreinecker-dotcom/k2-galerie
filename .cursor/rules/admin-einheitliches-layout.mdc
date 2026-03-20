@@ -16,7 +16,7 @@ alwaysApply: true
 **Die Admin-Startseite (Tab Werke = Hub) ist für K2, ök2 und VK2 ein einheitliches Layout.**
 
 - **Ein Layout:** „Was möchtest du heute tun?“ + Kacheln (Werke, Galerie gestalten, Kassa/Lager/Listen, Events, Einstellungen, Presse, …). Dasselbe in allen drei Kontexten – nur Texte/Beschreibungen pro Kontext angepasst (z. B. „Vereinsmitglieder“ bei VK2), **nicht** die Struktur oder ein anderes UI.
-- **Kein zweites UI im Admin:** Kein grüner Guide-Balken, kein mittleres „GALERIE-GUIDE“-Panel, kein Willkommens-Hub mit anderem Aufbau. Guide für neue Besucher = **nur** GlobaleGuideBegleitung (schwarzer Dialog), nicht in der Admin-Seite.
+- **Kein zweites UI im Admin:** Kein grüner Guide-Balken, kein mittleres „GALERIE-GUIDE“-Panel, kein Willkommens-Hub mit anderem Aufbau. **Globaler Guide (GlobaleGuideBegleitung) ist abgeschaltet** (20.03.26) – kein schwarzer Dialog über alle Seiten; Onboarding nur kontextgebunden (z. B. GalerieEntdeckenGuide auf der öffentlichen Galerie), nicht im Admin-Hub duplizieren.
 - **TenantContext:** `/admin` ohne `?context=` = **immer K2**. Kontext nicht aus sessionStorage ableiten, wenn URL keinen context hat. Siehe TenantContext.tsx.
 
 ## Konkret
@@ -24,7 +24,7 @@ alwaysApply: true
 | Nicht | Sondern |
 |-------|---------|
 | Verschiedene Hub- oder Guide-Panels je Kontext (K2/ök2/VK2) | Ein Hub-Layout, eine Quelle (ScreenshotExportAdmin, Tab werke). |
-| Grüner „Dein Galerie-Guide“-Balken oder mittleres Guide-Panel im Admin | Kein Guide-UI im Admin; Guide nur GlobaleGuideBegleitung. |
+| Grüner „Dein Galerie-Guide“-Balken oder mittleres Guide-Panel im Admin | Kein Guide-UI im Admin; kein globaler Dialog. |
 | Hub nur anzeigen wenn `!guideFlowAktiv` oder `!guideVorname` | Hub **immer** anzeigen (K2, VK2, ök2). |
 | `/admin` ohne context → Kontext aus sessionStorage | `/admin` ohne `?context=` → immer K2 (deriveTenantId). |
 
@@ -35,7 +35,7 @@ Wenn du **TenantContext**, **Admin-Route**, **ScreenshotExportAdmin** (Hub, Guid
 - [ ] Zeigt `/admin` ohne `?context=` weiterhin K2? (TenantContext: Default K2.)
 - [ ] Ist die Admin-Startseite (Hub) für K2, ök2 und VK2 **dasselbe** Layout („Was möchtest du heute tun?“ + Kacheln)?
 - [ ] Wird **nirgends** ein anderes Layout für einen Kontext eingebaut (kein Guide-Balken, kein Guide-Panel im Admin)?
-- [ ] Guide für neue Besucher = nur GlobaleGuideBegleitung; Ende = beendeGuideFlow() wenn User „ID anlegt“ (fertigStellen).
+- [ ] Kein globaler Guide im Admin; `GlobaleGuideBegleitung` nicht wieder global mounten ohne Georgs Anordnung.
 
 ## Tote Code-Blöcke (nicht reaktivieren)
 
