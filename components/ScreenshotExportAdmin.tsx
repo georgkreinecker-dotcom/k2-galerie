@@ -7994,9 +7994,20 @@ ${'='.repeat(60)}
     }
   }
 
-  /** Sportwagen: ein Klick – Betreff + Presse-Text in die Zwischenablage (gespeichertes HTML oder Vorschlag/Event-Text). */
+  /** Sportwagen: ein Klick – Mailprogramm mit BCC, Betreff und Text aus gespeicherter Presseaussendung. */
   const copyPressePaketForMedien = async (prDoc: any, ev: any) => {
     try {
+      const selectedMedien = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
+      if (selectedMedien.length === 0) {
+        setActiveTab('presse')
+        window.scrollTo({ top: 200, behavior: 'smooth' })
+        window.setTimeout(() => {
+          document.getElementById('admin-medienspiegel-bcc')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 150)
+        alert('Bitte zuerst im Medienspiegel die gewünschten Medien anhaken. Danach erneut „An Medien – 1 Klick“.')
+        return
+      }
+
       const fileData = prDoc?.fileData || prDoc?.data
       const fileType = String(prDoc?.fileType || prDoc?.type || '')
       const ort = (ev?.location || '').trim() || '[Ort]'
@@ -8022,26 +8033,28 @@ ${'='.repeat(60)}
       }
 
       if (!plainBody.trim()) {
-        alert('Kein Text zum Kopieren.\n\nBitte Presseaussendung speichern oder über „Neu erstellen“ anlegen – danach erneut „An Medien – 1 Klick“.')
+        alert('Kein Text gefunden. Bitte Presseaussendung speichern oder über „Neu erstellen“ anlegen.')
         return
       }
 
-      const paket = `Betreff: ${betreff}\n\n${plainBody}`
-      await navigator.clipboard.writeText(paket)
-      setActiveTab('presse')
-      window.scrollTo({ top: 200, behavior: 'smooth' })
-      window.setTimeout(() => {
-        document.getElementById('admin-medienspiegel-bcc')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 150)
-      alert(
-        '✅ Presse-Text ist in der Zwischenablage.\n\n' +
-          'Du bist jetzt bei Presse & Medien (Medienspiegel).\n\n' +
-          '1) E-Mail-Programm öffnen – Betreff und Text einfügen (einmal Einfügen).\n' +
-          '2) Dann hier: Medien auswählen → „E-Mail-Adressen kopieren“ für BCC (zweiter Klick – sonst würde die Zwischenablage überschrieben, bevor du den Text eingefügt hast).'
-      )
+      const bcc = selectedMedien.map(m => m.email).join(',')
+      const shortBody = 'Die vollständige Presseaussendung ist in der Zwischenablage. Bitte hier einfügen.'
+      const bodyForMailto = plainBody.length > 3800 ? shortBody : plainBody
+      const mailto = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+
+      if (plainBody.length > 3800) {
+        const paket = `Betreff: ${betreff}\n\n${plainBody}`
+        await navigator.clipboard.writeText(paket)
+      }
+
+      window.location.href = mailto
+
+      if (plainBody.length > 3800) {
+        alert('Mailprogramm geöffnet. BCC und Betreff sind gesetzt. Der volle Presse-Text ist wegen Länge in der Zwischenablage – bitte im Mailprogramm einmal einfügen.')
+      }
     } catch (e) {
       console.error('copyPressePaketForMedien', e)
-      alert('Kopieren ist fehlgeschlagen. Bitte „Ansehen“ öffnen und Text markieren – oder erneut versuchen.')
+      alert('Mail konnte nicht vorbereitet werden. Bitte erneut versuchen.')
     }
   }
 

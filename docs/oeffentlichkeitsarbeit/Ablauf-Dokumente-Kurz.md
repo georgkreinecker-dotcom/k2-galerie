@@ -19,7 +19,7 @@
 ## 3. Anzeigen & Bearbeiten
 
 - **Öffnen:** Klick auf das Dokument → In-App-Viewer oder Druckansicht.
-- **Presse (Sportwagen):** **„An Medien – 1 Klick“** unter dem Event → Presse-Text in die Zwischenablage **und** Wechsel zum Tab **Presse & Medien** mit Sprung zum **Medienspiegel** (nächster Schritt: BCC-Adressen kopieren). **Reihenfolge:** Zuerst Text in der Mail einfügen, **danach** „E-Mail-Adressen kopieren“ – sonst überschreibt der zweite Klick die Zwischenablage. **„Ansehen“** = nur Viewer.
+- **Presse (Sportwagen):** **„An Medien – 1 Klick“** unter dem Event → öffnet direkt das Mailprogramm mit **BCC (aus markierten Medien)** + **Betreff** + **Text**. Bei sehr langem Text: Mail öffnet mit Kurztext, der volle Text liegt automatisch in der Zwischenablage (einfügen). **„Ansehen“** = nur Viewer.
 - **Tab Presse & Medien:** weiterhin „Presse-Paket kopieren“ aus Vorlage/Variablen.
 - **Anpassen:** Datum, Ort, Kontakt prüfen; nach Änderung speichern, dann erneut „An Medien – 1 Klick“.
 - **Speichern:** Änderungen werden in der Dokumenten-Liste gespeichert.
