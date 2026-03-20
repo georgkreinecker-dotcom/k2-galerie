@@ -1,16 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **QR-Code Plakat ök2:** `printQRCodePlakat` war fest auf K2 (Text Martina/Georg, QR auf K2-Galerie + Rundgang). **Jetzt:** `tenant.isOeffentlich` → Mustertexte, Demo-Galerie-URL + Willkommen, **`buildQrUrlWithBust` + `fetchQrVersionTs`** (wie Galerie-QR). K2-Zweig: unveränderte Texte, QRs jetzt ebenfalls mit Bust. `fetchQrVersionTs` aus `praesentationsmappeKurzHtml.ts` exportiert. **Commit:** _(nach Push)_
+**Letzter Stand:** 20.03.26 – **Präsentationsmappen (Eventplan):** „Jetzt erstellen“ entfernt (`onErstellen: null` wie Druckversion). Stattdessen **Hinweis-Box** (Vorschau-Vorlagen, kein Bearbeitungswerkzeug; PDF im Browser). Kurzbeschreibung der Karte angepasst; Ampel-Badge ohne Dokumente: **„Vorschau“** statt „Offen“. Tab „Präsentationsmappen“: Einleitung auf Vorschau & Druck klargestellt. Import `generatePraesentationsmappeKurzHtmlDocument` entfernt. **Commit: f68d029** ✅ auf GitHub
 
-**Vorher:** Präsentationsmappen / db661b0.
+**Vorher:** QR-Code Plakat ök2 (c177d9f).
 
-**Vorher gleicher Tag:** Plakat ök2 (Speichern/Merge, decodeHtmlDataUrl, ein Zurück) – Commit 3d50158.
+**Was wir JETZT tun:** Optional kurz im Browser: Eventplan → Karte Präsentationsmappen – kein Erstellen-Button, Hinweis sichtbar.
 
-**Was wir JETZT tun:** Kurz im Browser: ök2-Admin → Marketing/Präsentationsmappen → „Kurz-Mappe erzeugen“ und Links mit `?context=oeffentlich` – keine K2-Stammdaten in der Demo-Variante.
+**Einordnung:** Erwartung klären (nicht wie Flyer/Presse erzeugbar); Links Kurz/Vollversion/Prospekt bleiben.
 
-**Einordnung:** Werbemittel ein Standard (`openDocumentInApp`, Kontext-Hook); ök2 = nur Muster + `k2-oeffentlich-*`.
-
-**Nächster Schritt:** Push abwarten → ggf. Vercel kurz prüfen.
+**Nächster Schritt:** Vercel „Ready“ abwarten – dann ggf. smoke-test Admin.
 
 ---
 

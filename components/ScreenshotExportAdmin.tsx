@@ -47,7 +47,6 @@ import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage,
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
-import { generatePraesentationsmappeKurzHtmlDocument } from '../src/utils/praesentationsmappeKurzHtml'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
@@ -14634,7 +14633,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               📁 Präsentationsmappen
             </h2>
             <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Kurzvariante (1 Seite, Teal/Weiß), Vollversion (große Mappe) und Prospekt/Flyer (1 A4, gleiches Design). Ein Klick öffnet die Mappe.
+              <strong style={{ color: s.text }}>Vorschau &amp; Druck</strong> – Kurzvariante, Vollversion und Prospekt/Flyer (gleiches Design). Kein Bearbeitungswerkzeug in der App: öffnen, ansehen, als PDF drucken.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
@@ -19432,47 +19431,11 @@ ${name}`
                                 typ: 'praesentationsmappen' as const,
                                 icon: '📁',
                                 titel: 'Präsentationsmappen',
-                                beschreibung: 'Kurz (1 Seite) erzeugen wie andere Werbemittel · Links ök2/VK2/Vollversion',
+                                beschreibung: 'Vorschau-Vorlagen (Kurz/Vollversion/Prospekt) – nicht wie Flyer oder Presse in der App erzeugbar',
                                 docs: byTyp['praesentationsmappe-kurz'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: () => {
-                                  void (async () => {
-                                    try {
-                                      const variant = tenant.isOeffentlich ? 'oeffentlich' : 'k2'
-                                      const html = await generatePraesentationsmappeKurzHtmlDocument(variant)
-                                      const wrapped = wrapDocumentWithPrintFooter(html)
-                                      openDocumentInApp(wrapped, 'Präsentationsmappe Kurz – ' + (event.title || 'Event'))
-                                      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-                                      const reader = new FileReader()
-                                      reader.onloadend = () => {
-                                        const documentData = {
-                                          id: `pr-praesentationsmappe-kurz-${event.id}-${Date.now()}`,
-                                          name: getNextWerbematerialVorschlagName(event.id, event.title, 'praesentationsmappe-kurz', 'Präsentationsmappe Kurz'),
-                                          type: 'text/html',
-                                          size: blob.size,
-                                          fileData: reader.result as string,
-                                          data: reader.result as string,
-                                          fileName: `praesentationsmappe-kurz-${String(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                                          uploadedAt: new Date().toISOString(),
-                                          isPDF: false,
-                                          isPlaceholder: false,
-                                          category: 'pr-dokumente',
-                                          eventId: event.id,
-                                          eventTitle: event.title,
-                                          werbematerialTyp: 'praesentationsmappe-kurz'
-                                        }
-                                        const existingDocs = loadDocuments()
-                                        saveDocuments([...existingDocs, documentData])
-                                      }
-                                      reader.readAsDataURL(blob)
-                                      alert('✅ Präsentationsmappe Kurz erzeugt und in Dokumenten gespeichert.')
-                                    } catch (err) {
-                                      console.error(err)
-                                      alert('Fehler beim Erzeugen der Präsentationsmappe Kurz.')
-                                    }
-                                  })()
-                                }
+                                onErstellen: null as null | (() => void)
                               }
                             ]
 
@@ -19620,12 +19583,15 @@ ${name}`
                                             whiteSpace: 'nowrap',
                                             flexShrink: 0
                                           }}>
-                                            {hatDokumente ? `${karte.docs.length} vorhanden` : 'Offen'}
+                                            {hatDokumente ? `${karte.docs.length} vorhanden` : (istPraesentationsmappen ? 'Vorschau' : 'Offen')}
                                           </span>
                                         </div>
 
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', lineHeight: 1.45, color: '#5c5650', padding: '0.55rem 0.65rem', background: 'rgba(181,74,30,0.06)', border: '1px solid rgba(181,74,30,0.2)', borderRadius: 8 }}>
+                                              <strong style={{ color: '#1c1a18' }}>Hinweis:</strong> Kein „Jetzt erstellen“ wie bei Flyer oder Presse. Die Mappen sind <strong>Vorschau-Vorlagen</strong> – öffnen, ansehen, im Browser als PDF drucken. Eine freie Bearbeitung der Inhalte in der App gibt es dafür nicht.
+                                            </p>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                               <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Kurzvariante
