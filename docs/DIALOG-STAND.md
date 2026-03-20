@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 1 – „Galerie gestalten“:** Admin → **Design** (nur **ök2/VK2**): Hero-SVG wie Presse/Öffentlichkeitsarbeit + **X/4** (Willkommensbild, Galerie-Karte, Virtueller Rundgang, Texte vs. Baseline). Export **`getGaleriePageTextsBaseline`** in `pageTexts.ts`. **K2-Design-Tab** unverändert (kein Block). Doku **GAMIFICATION-PLAN-OEK2-PHASEN** Baseline + Phase-1-Zeile. **Commit:** (folgt nach Push)
+**Letzter Stand:** 20.03.26 – **Gamification Phase 1 – „Galerie gestalten“:** Admin → **Design** (nur **ök2/VK2**): Hero-SVG wie Presse/Öffentlichkeitsarbeit + **X/4** (Willkommensbild, Galerie-Karte, Virtueller Rundgang, Texte vs. Baseline). Export **`getGaleriePageTextsBaseline`** in `pageTexts.ts`. **K2-Design-Tab** unverändert (kein Block). Doku **GAMIFICATION-PLAN-OEK2-PHASEN** Baseline + Phase-1-Zeile. **Commit:** 67f8098 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Guide-Strategie Doku bereinigt:** Prüfung ob Guide-Umbau die Projektstrategie verwirrt hat → **Code + alwaysApply-Regeln waren schon konsistent**; **Widersprüche nur in alter Markdown-Doku** (`ADMIN-LAYOUT-REGEL.md` wollte grünen Balken dauerhaft aus; `GAMIFICATION-*` / `OEK2-ANMELDUNG-*` beschrieben noch globalen Dialog). **Angeglichen:** ADMIN-LAYOUT-REGEL, GAMIFICATION-OEK2, GAMIFICATION-PLAN Phase 1, OEK2-ANMELDUNG, `guide-nahtlos-begleitung.mdc`; Kommentar `GalerieEntdeckenGuide`. **Commit:** 2f64ef0 ✅ auf GitHub
 
