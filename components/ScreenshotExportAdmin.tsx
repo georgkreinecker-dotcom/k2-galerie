@@ -61,7 +61,7 @@ import { ImageProcessingOptions, type ImageProcessingMode } from '../src/compone
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
 import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
-import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, getPlakatDesignPrDocCss, designToPlakatVars, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
+import { getWerbeliniePrDocCss, getWerbeliniePrDocCssVk2, getPlakatDesignPrDocCss, getK2PrDocHtml2canvasCaptureCss, designToPlakatVars, WERBELINIE_FONTS_URL, WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../src/config/marketingWerbelinie'
 import '../src/App.css'
 
 /** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
@@ -342,11 +342,15 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
         pdfFormat === 'a3'
           ? `html, body { margin: 0 !important; padding: 0 !important; min-height: auto !important; }`
           : `html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; min-height: auto !important; }`
+      /** K2 PR-Dokumente (Newsletter, Presse, …): Screen-Styles + Gradient-Titel → html2canvas unlesbar; wie @media print erzwingen. */
+      const k2PrDocRasterCapture =
+        pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml) ? getK2PrDocHtml2canvasCaptureCss() : ''
       captureStyle.textContent = `
         .no-print { display: none !important; }
         ${bodyPdfCapture}
         ${plakatH1RasterOnly}
         ${extraPlakat}
+        ${k2PrDocRasterCapture}
       `
       head.appendChild(captureStyle)
     }
@@ -400,6 +404,43 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
                 h.style.setProperty('background-image', 'none', 'important')
                 h.style.setProperty('background-clip', 'border-box', 'important')
                 h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
+              })
+            }
+            if (pdfFormat === 'a4' && /\bk2-pr-doc\b/i.test(safeHtml)) {
+              const solidHeading = (sel: string) => {
+                clonedDoc.querySelectorAll(sel).forEach(n => {
+                  const h = n as HTMLElement
+                  h.style.setProperty('color', '#1a1f3a', 'important')
+                  h.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
+                  h.style.setProperty('background', 'none', 'important')
+                  h.style.setProperty('background-image', 'none', 'important')
+                  h.style.setProperty('background-clip', 'border-box', 'important')
+                  h.style.setProperty('-webkit-background-clip', 'border-box', 'important')
+                })
+              }
+              solidHeading('body.k2-pr-doc .page .header h1')
+              solidHeading('body.k2-pr-doc .page h1')
+              solidHeading('body.k2-pr-doc .page h2')
+              clonedDoc.querySelectorAll('body.k2-pr-doc .page .header-info').forEach(n => {
+                const h = n as HTMLElement
+                h.style.setProperty('color', '#5c5650', 'important')
+                h.style.setProperty('-webkit-text-fill-color', '#5c5650', 'important')
+              })
+              clonedDoc.querySelectorAll(
+                'body.k2-pr-doc .page .newsletter-subject-line, body.k2-pr-doc .page .presse-body, body.k2-pr-doc .page .presse-headline'
+              ).forEach(n => {
+                const h = n as HTMLElement
+                h.style.setProperty('color', '#1a1f3a', 'important')
+                h.style.setProperty('-webkit-text-fill-color', '#1a1f3a', 'important')
+              })
+              clonedDoc.querySelectorAll('body.k2-pr-doc').forEach(n => {
+                const h = n as HTMLElement
+                h.style.setProperty('background', '#ffffff', 'important')
+              })
+              clonedDoc.querySelectorAll('body.k2-pr-doc .page').forEach(n => {
+                const h = n as HTMLElement
+                h.style.setProperty('background', '#ffffff', 'important')
+                h.style.setProperty('color', '#1a1f3a', 'important')
               })
             }
           } catch {

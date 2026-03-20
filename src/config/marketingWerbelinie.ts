@@ -447,6 +447,62 @@ export function getPlakatDesignPrDocCss(className: string, design?: HomepageDesi
 }
 
 /**
+ * html2canvas wertet @media print nicht aus – bei k2-pr-doc bleiben sonst dunkle Seitenverläufe + Gradient-Titel
+ * und heller Text → im PDF fast unsichtbar (Newsletter, Presseaussendung, PR-Vorschläge).
+ * Diese Regeln entsprechen sinngleich dem @media print-Block in getPlakatDesignPrDocCss (nur für body.k2-pr-doc).
+ */
+export function getK2PrDocHtml2canvasCaptureCss(): string {
+  return `
+    body.k2-pr-doc {
+      margin: 0 !important;
+      background: #ffffff !important;
+      padding: 0 !important;
+      font-size: 9pt !important;
+      line-height: 1.32 !important;
+      color: #1a1f3a !important;
+    }
+    body.k2-pr-doc .page {
+      box-shadow: none !important;
+      margin: 0 auto 16px !important;
+      padding: 8mm 10mm !important;
+      background: #ffffff !important;
+      color: #1a1f3a !important;
+      border: 1px solid #ddd !important;
+      border-radius: 0 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    body.k2-pr-doc .page .header h1,
+    body.k2-pr-doc .page h1,
+    body.k2-pr-doc .page h2 {
+      color: #1a1f3a !important;
+      -webkit-text-fill-color: #1a1f3a !important;
+      background: none !important;
+      background-image: none !important;
+      background-clip: border-box !important;
+      -webkit-background-clip: border-box !important;
+    }
+    body.k2-pr-doc .page .header-info,
+    body.k2-pr-doc .page label {
+      color: #5c5650 !important;
+      -webkit-text-fill-color: #5c5650 !important;
+    }
+    body.k2-pr-doc .page .newsletter-subject-line,
+    body.k2-pr-doc .page .presse-body,
+    body.k2-pr-doc .page .presse-headline {
+      color: #1a1f3a !important;
+      -webkit-text-fill-color: #1a1f3a !important;
+    }
+    body.k2-pr-doc .page textarea,
+    body.k2-pr-doc .page input[type="text"] {
+      background: #f9f9f9 !important;
+      color: #1a1f3a !important;
+      border-color: #ccc !important;
+    }
+  `.trim()
+}
+
+/**
  * CSS für PR-Dokumente im VK2-Kontext – hell wie VK2/Admin (WERBEUNTERLAGEN_STIL), nicht dunkles K2-Design.
  */
 export function getWerbeliniePrDocCssVk2(className: string): string {
