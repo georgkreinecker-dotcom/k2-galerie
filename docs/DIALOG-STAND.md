@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Präsentationsmappen (Eventplan):** „Jetzt erstellen“ entfernt (`onErstellen: null` wie Druckversion). Stattdessen **Hinweis-Box** (Vorschau-Vorlagen, kein Bearbeitungswerkzeug; PDF im Browser). Kurzbeschreibung der Karte angepasst; Ampel-Badge ohne Dokumente: **„Vorschau“** statt „Offen“. Tab „Präsentationsmappen“: Einleitung auf Vorschau & Druck klargestellt. Import `generatePraesentationsmappeKurzHtmlDocument` entfernt. **Commit: f68d029** ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Präsentationsmappen (Eventplan):** „Jetzt erstellen“ entfernt (`onErstellen: null` wie Druckversion). Stattdessen **Hinweis-Box** (Vorschau-Vorlagen, kein Bearbeitungswerkzeug; PDF im Browser). Kurzbeschreibung der Karte angepasst; Ampel-Badge ohne Dokumente: **„Vorschau“** statt „Offen“. Tab „Präsentationsmappen“: Einleitung auf Vorschau & Druck klargestellt. Import `generatePraesentationsmappeKurzHtmlDocument` entfernt. **Commit: a610509** ✅ auf GitHub
 
 **Vorher:** QR-Code Plakat ök2 (c177d9f).
 
