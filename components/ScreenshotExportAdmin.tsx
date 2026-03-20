@@ -8007,9 +8007,11 @@ ${'='.repeat(60)}
   const sendWerbemittelPerMail = async (typ: string, doc: any, ev: any) => {
     try {
       const usesPresseRecipients = typ === 'presse' || typ === 'social'
-      const selectedRecipients = usesPresseRecipients
+      const allRecipients = usesPresseRecipients ? medienspiegel : verteilerNewsletter
+      const selectedByCheck = usesPresseRecipients
         ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
         : verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
+      const selectedRecipients = selectedByCheck.length > 0 ? selectedByCheck : allRecipients
 
       if (selectedRecipients.length === 0) {
         setActiveTab('presse')
@@ -19281,6 +19283,24 @@ ${name}`
                                                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                     <button
                                                       type="button"
+                                                      onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
+                                                      style={{
+                                                        padding: '0.45rem 0.6rem',
+                                                        background: '#15803d',
+                                                        border: '1px solid rgba(21,128,61,0.35)',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.78rem',
+                                                        color: '#fff',
+                                                        fontWeight: 600,
+                                                        flexShrink: 0
+                                                      }}
+                                                      title="Mailprogramm mit BCC, Betreff und Text öffnen"
+                                                    >
+                                                      1 Klick
+                                                    </button>
+                                                    <button
+                                                      type="button"
                                                       onClick={() => karte.onOpen(doc)}
                                                       style={{
                                                         flex: 1,
@@ -19326,29 +19346,8 @@ ${name}`
                                           </div>
                                         )}
                                         {hatDokumente && karte.typ !== 'presse' && (
-                                          <div style={{ marginTop: '0.45rem' }}>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const lastDoc = karte.docs[karte.docs.length - 1]
-                                                if (lastDoc) void sendWerbemittelPerMail(karte.typ, lastDoc, event)
-                                              }}
-                                              style={{
-                                                width: '100%',
-                                                textAlign: 'center',
-                                                padding: '0.48rem 0.65rem',
-                                                background: '#15803d',
-                                                border: '1px solid rgba(21,128,61,0.35)',
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.83rem',
-                                                color: '#fff',
-                                                fontWeight: 600
-                                              }}
-                                              title="Mailprogramm mit BCC, Betreff und Text öffnen"
-                                            >
-                                              {getWerbemittelMailActionLabel(karte.typ)}
-                                            </button>
+                                          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: s.muted }}>
+                                            Pro Dokument: links „1 Klick“ senden, rechts „Öffnen“.
                                           </div>
                                         )}
 
