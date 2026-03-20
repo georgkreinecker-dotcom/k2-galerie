@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 4:** `VITE_OEK2_GAMIFICATION_LAYER_B` (`0`/`false`/`off`/`no` → Schicht B aus) + `isGamificationLayerBEnabled()`; alle Heroes/Lesepfade (Admin inkl. Presse & Öffentlichkeitsarbeit, Newsletter, Shop-Demo, Backup-Zeile ök2/VK2); **mök2** Pilot-Hinweis auch **standalone**-Header. Doku: **GAMIFICATION-PLAN-OEK2-PHASEN** Phase 4, **GAMIFICATION-OEK2** §3 + Abnahme 4; `.env.example`; Test `gamificationLayer.test.ts`. **Commit:** 8af13df ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Phase 4:** `VITE_OEK2_GAMIFICATION_LAYER_B` (`0`/`false`/`off`/`no` → Schicht B aus) + `isGamificationLayerBEnabled()`; alle Heroes/Lesepfade (Admin inkl. Presse & Öffentlichkeitsarbeit, Newsletter, Shop-Demo, Backup-Zeile ök2/VK2); **mök2** Pilot-Hinweis auch **standalone**-Header. Doku: **GAMIFICATION-PLAN-OEK2-PHASEN** Phase 4, **GAMIFICATION-OEK2** §3 + Abnahme 4; `.env.example`; Test `gamificationLayer.test.ts`. **Commit:** c3eef23 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 3 umgesetzt:** VK2 **Vereinsprofil** X/4 (Einstellungen → Meine Daten); **Shop** Demo-Kasse X/4 nur ök2-Admin; **Backup** „letztes Herunterladen“ nach Download-Klick (`autoSave` + Admin); **mök2** Pilot-Hinweis (Lesepfade, keine Spielmechanik). Doku Plan Phase 3 + **GAMIFICATION-OEK2** §5.3. **Commit:** b419c08 ✅ auf GitHub
 
