@@ -153,6 +153,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **SICHTBARKEIT-WERBUNG-AGENDA.md** – **Punkt-für-Punkt:** Arbeitsliste Sichtbarkeit & Werbung (Phase 1–3), Status pro Punkt; zum Abarbeiten mit Nächster Schritt.
 - **SICHTBARKEIT-PHASE1-VORLAGEN.md** – **Copy-Paste für Phase 1:** Google Business, Social Bio/Post, QR/Links, Medienlisten (§5a), Presse + **Medienverteiler-Eröffnung** (§6).
 - **MEDIENSTUDIO-K2.md** – **Medienstudio K2 (Event- und Medienplanung):** Einstieg fuer alle Pressearbeit; Medienkit, Redaktionsplan, Qualitaetsregeln; **Abgrenzung allgemeine Medienarbeit vs. Event-spezifische Presseaussendung** (keine Dopplung); verknuepft mit PRESSEARBEIT-STANDARD und MEDIENVERTEILER.
+- **MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md** – **Ist-Stand Medientool + Roadmap Einzigartigkeit:** Was die App schon kann (Werbelinie, Event-Dokumente, Verteiler, Doku); Lücken vs. klassische Workflows; priorisierte Erweiterungen (Journalist:innen-Paket, KI im Medienstudio, Redaktions-Checkliste, Embargo, OTS, leichtes Versand-Log). Ziel: Medienprofis neidisch, Kommunikation als Hebel.
 - **PRESSEARBEIT-STANDARD.md** – **Pressearbeit standardisiert (Sportwagenmodus):** ein Ablauf, eine Vorlage, ein Verteiler; Teil von Medienstudio K2; Checkliste vor Versand.
 - **MEDIENVERTEILER-EROEFFNUNG.md** – **Presseverteiler:** regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse); mit PRESSEARBEIT-STANDARD verknüpft.
 - **ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md** – Abrechnungsstruktur Empfehlungsprogramm.

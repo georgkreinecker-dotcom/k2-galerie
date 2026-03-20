@@ -137,3 +137,5 @@ In der App gibt es zwei Einstiege für Presse – sie ergänzen sich, ohne sich 
 - **Für dich (Georg):** Ein Einstieg = docs/MEDIENSTUDIO-K2.md. Von hier aus alle Pressearbeit steuern.
 
 **Kurz:** Medienstudio K2 = ein Standard, ein Ablauf, ein Verteiler, ein Medienkit. Presse & Medien = Medienstudio (ohne Event). Events = Presseaussendung pro Event. Keine Dopplung – klare Zuordnung.
+
+**Roadmap Einzigartigkeit (Produkt/Feature-Ideen):** docs/MEDIENSTUDIO-EINZIGARTIGKEIT-ROADMAP.md
