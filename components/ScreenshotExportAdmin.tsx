@@ -305,50 +305,20 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
       const captureStyle = idoc.createElement('style')
       captureStyle.setAttribute('id', 'k2-werbemittel-pdf-capture')
       /**
-       * Plakat: Titel = Gradient-Text (-webkit-text-fill-color: transparent). html2canvas füllt den Rest mit
-       * backgroundColor #fff → Titel „verschwindet“. Helle muted-Farben auf weiß = kaum lesbar.
-       * Hier: feste Kontraste wie @media print im Plakat-HTML + volle A3-Kachel + Flex-Verteilung.
+       * Plakat: Gradient-Titel → html2canvas unsichtbar. Kein zweites Layout: nur h1 auf Akzent aus
+       * :root --k2-plakat-pdf-accent (vom gleichen buildPlakatWerbemittelHtml wie die Vorschau).
        */
-      const plakatReadableForRaster =
+      const plakatH1RasterOnly =
         pdfFormat === 'a3'
           ? `
-        .plakat {
-          width: 297mm !important;
-          max-width: none !important;
-          min-height: 420mm !important;
-          padding: 4rem !important;
-          margin: 0 auto !important;
-          box-sizing: border-box !important;
-          display: flex !important;
-          flex-direction: column !important;
-          justify-content: space-between !important;
-          align-items: center !important;
-          background: #ffffff !important;
-          background-image: none !important;
-          color: #1c1a18 !important;
-          box-shadow: none !important;
-          border: 1px solid #e5e2dc !important;
-          border-radius: 24px !important;
-        }
         .plakat h1 {
-          color: #b54a1e !important;
+          color: var(--k2-plakat-pdf-accent, #d97a50) !important;
           background: none !important;
           background-image: none !important;
-          -webkit-text-fill-color: #b54a1e !important;
+          -webkit-text-fill-color: var(--k2-plakat-pdf-accent, #d97a50) !important;
           background-clip: border-box !important;
           -webkit-background-clip: border-box !important;
         }
-        .plakat > h1 + p { color: #5c5650 !important; }
-        .plakat .event-info,
-        .plakat .event-info p { color: #333333 !important; }
-        .plakat .event-info strong { color: #b54a1e !important; }
-        .plakat .qr-code {
-          background: #f6f4f0 !important;
-        }
-        .plakat .qr-code p { color: #444444 !important; }
-        .plakat .contact,
-        .plakat .contact p { color: #333333 !important; }
-        .plakat .contact strong { color: #b54a1e !important; }
       `
           : ''
       let extraPlakat = ''
@@ -368,15 +338,14 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
           .plakat .contact strong { font-size: 1.8rem !important; }
         `
       }
+      const bodyPdfCapture =
+        pdfFormat === 'a3'
+          ? `html, body { margin: 0 !important; padding: 0 !important; min-height: auto !important; }`
+          : `html, body { margin: 0 !important; padding: 0 !important; background: #ffffff !important; min-height: auto !important; }`
       captureStyle.textContent = `
         .no-print { display: none !important; }
-        html, body {
-          margin: 0 !important;
-          padding: 0 !important;
-          background: #ffffff !important;
-          min-height: auto !important;
-        }
-        ${plakatReadableForRaster}
+        ${bodyPdfCapture}
+        ${plakatH1RasterOnly}
         ${extraPlakat}
       `
       head.appendChild(captureStyle)
@@ -414,10 +383,19 @@ async function renderStyledPdfBlobFromHtmlString(html: string): Promise<Blob | n
               ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
             })
             if (pdfFormat === 'a3') {
+              let accent = ''
+              try {
+                accent =
+                  getComputedStyle(clonedDoc.documentElement).getPropertyValue('--k2-plakat-pdf-accent').trim() ||
+                  ''
+              } catch {
+                accent = ''
+              }
+              if (!accent) accent = '#d97a50'
               clonedDoc.querySelectorAll('.plakat h1').forEach(n => {
                 const h = n as HTMLElement
-                h.style.setProperty('color', '#b54a1e', 'important')
-                h.style.setProperty('-webkit-text-fill-color', '#b54a1e', 'important')
+                h.style.setProperty('color', accent, 'important')
+                h.style.setProperty('-webkit-text-fill-color', accent, 'important')
                 h.style.setProperty('background', 'none', 'important')
                 h.style.setProperty('background-image', 'none', 'important')
                 h.style.setProperty('background-clip', 'border-box', 'important')
@@ -7237,6 +7215,8 @@ ${'='.repeat(60)}
   <title>Plakat - ${esc(plakatContent.title)}</title>
   <style id="print-page-size">@media print { @page { size: A3; margin: 10mm; } }</style>
   <style>
+    /* PDF-Raster (html2canvas): nur Akzent für festen Titel – gleiche Quelle wie Screen-Design */
+    :root { --k2-plakat-pdf-accent: ${pd.accent}; }
     @media print {
       @page { margin: 10mm; size: A4; }
       body { margin: 0; background: white !important; font-size: 9pt; line-height: 1.32; padding: 2mm; }
