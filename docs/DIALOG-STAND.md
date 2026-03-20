@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Doppel-Zurück im Dokument-Viewer behoben:** Die eingebettete HTML-Leiste („Zurück“ + „Dokument“) im iframe war überflüssig – oben gibt es schon **← Zurück** + **Drucken** (React). Der innere Button lud `/admin` **im iframe** → in Cursor die „schwarze“ Vorschau-Seite. Jetzt nur noch **eine** Leiste; `wrapDocumentHtmlWithBackButton` entfernt. Commit: folgt mit Push (siehe git log).
+**Letzter Stand:** 20.03.26 – **Doppel-Zurück im Dokument-Viewer behoben:** Die eingebettete HTML-Leiste („Zurück“ + „Dokument“) im iframe war überflüssig – oben gibt es schon **← Zurück** + **Drucken** (React). Der innere Button lud `/admin` **im iframe** → in Cursor die „schwarze“ Vorschau-Seite. Jetzt nur noch **eine** Leiste; `wrapDocumentHtmlWithBackButton` entfernt. Commit: 11fd275 ✅ auf main (nach push).
 
 **Vorher gleicher Tag:** Vorlagen Vergangenheit + `handleViewEventDocument` (Commit da3c728).
 
