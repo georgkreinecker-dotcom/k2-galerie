@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** c2b4846 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **ök2 Admin Events:** Nach Reload waren neue Events „weg“, obwohl sie in `k2-oeffentlich-events` gespeichert waren – **Ursache:** `loadEvents` im Admin lud nur MUSTER, nicht den Speicher. **Fix:** Merge wie bei Dokumenten (Muster + localStorage) + `k2-events-updated` nach Event-Speichern. **Commit:** fa026ba ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Baustein 2:** Admin → **Presse & Medien** – dasselbe Hero-SVG + Fortschritt **X/4** (Medienkit-Kernangaben, Presse-Story, Anlass/Datum/Ort, Medienspiegel). Doku **GAMIFICATION-POTENTIALE-K2.md** aktualisiert. **Commit:** a6e2620 ✅ auf GitHub
 
