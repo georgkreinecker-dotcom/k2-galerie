@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification ök2 – Phasenplan (Georg):** **docs/GAMIFICATION-PLAN-OEK2-PHASEN.md** – Phase **0** = bis Markt stabil **kein** neuer Gamification-Code; Phase **1–3** mit Reihenfolge (Guide → Galerie gestalten → Werke-Ampel nur Anzeige …), Risiko-Stufen, **DoD**, Umkehr kleiner Commits. Verknüpfungen in **GAMIFICATION-OEK2.md**, **GAMIFICATION-POTENTIALE-K2.md**, **docs/00-INDEX.md**. **Commit:** f082f6c ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification: Klarstellung Georg (nicht Stopp):** **Weiter** mit **Vorsicht**; **Markt** mit Gamification in ök2 **drin** (Baseline + Vereinbartes). **Plan B** ohne sichtbare Gamification = nur **absolute Notlösung** (Schicht B aus / Rettungsanker), kein regulärer Modus. Doku angepasst: **GAMIFICATION-PLAN-OEK2-PHASEN.md**, **GAMIFICATION-OEK2.md**. **Commit:** (nach Push)
 
 **Vorher:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** e700042 ✅ auf GitHub
 
@@ -38,11 +38,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** **Phase 0** einhalten (kein neuer Gamification-Code bis Freigabe); Plan liegt in **GAMIFICATION-PLAN-OEK2-PHASEN.md**.
+**Was wir JETZT tun:** ök2 für Markt **mit** Gamification fertigstellen – **vorsichtig**, kleine Schritte; Phasenplan **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **Plan B** nur bei echter Not.
 
-**Einordnung:** Mut mit Sorgfalt; Umkehr = revert / kleine PRs.
+**Einordnung:** Nicht „einfrieren“ – **Qualität + Umkehr** bei Bedarf.
 
-**Nächster Schritt:** Nach Markt-Freigabe Phase 1 starten laut Phasenplan; vorher nur **GAMIFICATION-OEK2.md**-Checkliste bei jedem Eingriff.
+**Nächster Schritt:** Bausteine für Marktstart laut Plan; bei jedem Eingriff **GAMIFICATION-OEK2.md**-Checkliste; **Plan B** dokumentiert, nicht der Happy Path.
 
 ---
 

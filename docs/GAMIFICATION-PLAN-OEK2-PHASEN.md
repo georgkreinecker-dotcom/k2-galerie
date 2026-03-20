@@ -2,7 +2,29 @@
 
 **Stand:** 20.03.26 · **Geltung:** nur **ök2** (Demo). **Leitlinien:** [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) · **Ideen-Katalog:** [GAMIFICATION-POTENTIALE-K2.md](./GAMIFICATION-POTENTIALE-K2.md)
 
-**Ziel dieses Plans:** Klare **Reihenfolge**, **Risiko-Stufen** und **Umkehr** (kein großer Knopf ohne Rückweg). Kurz vor Markteintritt: **Phase 0** strikt einhalten.
+**Ziel dieses Plans:** Klare **Reihenfolge**, **Risiko-Stufen** und **Umkehr** (kein großer Knopf ohne Rückweg). **Klarstellung Georg:** Es heißt **nicht** „Stopp“ – ihr macht **weiter**, nur **vorsichtig**. **Zum Markteintritt** soll Gamification in ök2 **schon drin sein** (mindestens die **Baseline** unten; plus was ihr für den Start festlegt). **Plan B ohne sichtbare Gamification** ist nur die **absolute Notlösung**, kein normaler Plan.
+
+---
+
+## Vorsicht – aber weiter
+
+| | |
+|--|--|
+| **Gemeint** | **Vorsicht:** keine unnötigen Risiken kurz vor / beim Markt; kritische Abläufe nicht anfassen; kleine Commits; Checklisten. |
+| **Nicht gemeint** | Alles einfrieren oder Gamification „erst später“ als Standard – der **Marktstart** soll mit **Schicht B** (Gamification) erfolgen, soweit vereinbart. |
+| **K2** | Echte Galerie unverändert: keine Gamification am Kern ohne Anordnung ([GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md)). |
+
+---
+
+## Plan B – absolute Notlösung (ohne sichtbare Gamification)
+
+**Nur** wenn Schicht B einen **Showstopper** liefert (z. B. schwerer Bug, der den Start blockiert) und **kein** schneller Fix möglich ist.
+
+| | |
+|--|--|
+| **Maßnahme** | Schicht-B-Elemente **ausblenden** (später: ein Flag nur für **Darstellung**) oder **gezielter Revert** der betroffenen Gamification-Commits. |
+| **Kern** | **Schicht A** bleibt voll nutzbar – dieselben Buttons, Speichern, Veröffentlichen, Admin ([GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §2). |
+| **Klarstellung** | Plan B ist **kein** regulärer Startmodus und **keine** Absage an Gamification – nur der **Rettungsanker**, damit der Betrieb nicht hängen bleibt. |
 
 ---
 
@@ -17,20 +39,20 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 ---
 
-## Phase 0 – bis Markteintritt stabil
+## Phase 0 – vorsichtig bis zum Markt (kein Stopp)
 
 | | |
 |--|--|
-| **Ziel** | **Kein Risiko:** keine neuen Gamification-Features im Code. |
-| **Erlaubt** | Bugfixes, Doku, Texte; bestehende X/4 nur reparieren wenn etwas **kaputt** ist. |
-| **Verboten** | Neue Tabs/Helden/Fortschritts-UI „nebenbei“; Änderungen an kritischen Abläufen ([KRITISCHE-ABLAEUFE.md](./KRITISCHE-ABLAEUFE.md)). |
-| **Umkehr** | Nicht nötig – nichts Neues. |
+| **Ziel** | Marktfähige ök2-Experience **mit** Gamification (Baseline + vereinbarte Bausteine); **ohne** riskante Experimente an Kern und kritischen Abläufen. |
+| **Erlaubt** | Gezielte, kleine Erweiterungen von Schicht B in ök2; Bugfixes; Doku; bestehende X/4 stabil halten und verbessern. |
+| **Verboten** | „Großer Wurf“ ohne Tests; Änderungen an [KRITISCHE-ABLAEUFE.md](./KRITISCHE-ABLAEUFE.md) nur wenn nötig und separat geprüft. |
+| **Notfall** | Wenn nötig: **Plan B** (oben) – nur als **absolute Notlösung**. |
 
-**Freigabe Phase 1:** erst wenn ihr **bewusst** sagt: Markt / Demo ist stabil genug für kleine UX-Schicht B.
+**Übergang Phase 1:** sobald der Marktstart erfolgt ist, können **zusätzliche** Bausteine (siehe Phase 1) **weiter vorsichtig** dazukommen – nicht „erst nach Jahren“, sondern **schrittweise** mit gleicher Sorgfalt.
 
 ---
 
-## Phase 1 – nach Freigabe: niedrigstes Risiko
+## Phase 1 – zusätzliche Bausteine: niedrigstes Risiko
 
 **Prinzip:** Nur **Lesen** vorhandener Daten / State → **Anzeige** (Ampel, Häkchen, Balken). **Kein** neuer Speicherpfad, **kein** Filter+`setItem`, **keine** Pflichtklicks.
 
@@ -78,17 +100,19 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 1. **Kleine Commits** pro Baustein – bei Bedarf `git revert` eines Commits.  
 2. **Später:** ein Schalter nur für **Darstellung** Schicht B (öff. Config) – bis dahin Code so schreiben, als ob der Schalter schon da wäre (siehe [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §3).  
-3. **Stop-Regel:** Wenn Markt oder Support stressen → zurück auf **Phase 0** für Gamification, bis wieder Luft ist.
+3. **Stressfall:** Zuerst **Bugfix**; **Plan B** (Schicht B aus) nur wenn wirklich **Not** – nicht als Dauerzustand planen.
 
 ---
 
 ## Kurzfassung
 
-| Phase | Wann | Was |
-|-------|------|-----|
-| **0** | Jetzt bis stabiler Start | **Kein** neuer Gamification-Code |
-| **1** | Nach Freigabe | Guide → Galerie gestalten → Werke-Ampel (**nur Anzeige**) |
-| **2** | Wenn Phase 1 gut läuft | Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) |
-| **3** | Optional | VK2, Demo-Kassa, Backup-Info, mök2 |
+| | Inhalt |
+|--|--------|
+| **Normal** | Markt mit **Gamification** in ök2 (Baseline + Vereinbartes); **weiter** mit **Vorsicht**. |
+| **Plan B** | Nur **absolute Notlösung:** Schicht B aus / Revert – Kern bleibt bedienbar. |
+| **Phase 0** | Bis Markt: **vorsichtig** bauen, **nicht** einfrieren. |
+| **Phase 1** | Zusätzlich: Guide → Galerie gestalten → Werke-Ampel (**nur Anzeige**) |
+| **Phase 2** | Wenn Phase 1 gut läuft: Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) |
+| **Phase 3** | Optional: VK2, Demo-Kassa, Backup-Info, mök2 |
 
-**Mut voran – mit Sorgfalt und Rückweg.** 💚
+**Mut voran – mit Sorgfalt, Plan B nur im Notfall.** 💚
