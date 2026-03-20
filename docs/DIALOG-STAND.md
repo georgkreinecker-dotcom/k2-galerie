@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit:** _(nach Push eintragen)_ ✅
+**Letzter Stand:** 20.03.26 – **Werbemittel:** Einheitliche **Split-Ansicht** (links bearbeiten, rechts Live-Vorschau mit **A4/A3/A5** + **Als PDF drucken**) für **Presseaussendung**, **Social**, **Newsletter**, **Plakat**, **Flyer**; `generatePlakatForEvent`/`generateEventFlyerForEvent` öffnen Redaktions-Modal; `buildPlakatWerbemittelHtml`; iframe-`sandbox` mit `allow-scripts` wo nötig. **Commit: 9c4c412** ✅
 
 **Vorher:** ök2 Eventplan WhatsApp-Block ausgeblendet (2fa0b8d); QR-Plakat eine Meldung (28830da).
 
