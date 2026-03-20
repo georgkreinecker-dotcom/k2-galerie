@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 3 umgesetzt:** VK2 **Vereinsprofil** X/4 (Einstellungen → Meine Daten); **Shop** Demo-Kasse X/4 nur ök2-Admin; **Backup** „letztes Herunterladen“ nach Download-Klick (`autoSave` + Admin); **mök2** Pilot-Hinweis (Lesepfade, keine Spielmechanik). Doku Plan Phase 3 + **GAMIFICATION-OEK2** §5.3. **Commit:** _(nach Push)_
+**Letzter Stand:** 20.03.26 – **Gamification Phase 3 umgesetzt:** VK2 **Vereinsprofil** X/4 (Einstellungen → Meine Daten); **Shop** Demo-Kasse X/4 nur ök2-Admin; **Backup** „letztes Herunterladen“ nach Download-Klick (`autoSave` + Admin); **mök2** Pilot-Hinweis (Lesepfade, keine Spielmechanik). Doku Plan Phase 3 + **GAMIFICATION-OEK2** §5.3. **Commit:** b419c08 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 2 umgesetzt (ök2/VK2):** Eventplan → **Events** = X/4 + **Nächstes Event**; Tab **Newsletter** = Empfänger-Zahl + X/4 (`NewsletterTab`); **Veröffentlichen** = Hinweis Stand-Badge (ohne Auto-Reload/Fetch). Doku Plan + **GAMIFICATION-OEK2** §5.2. **K2** ohne diese Blöcke. **Commit:** 2b19f77 ✅ auf GitHub
 
