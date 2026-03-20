@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification ök2 – Phasenplan (Georg):** **docs/GAMIFICATION-PLAN-OEK2-PHASEN.md** – Phase **0** = bis Markt stabil **kein** neuer Gamification-Code; Phase **1–3** mit Reihenfolge (Guide → Galerie gestalten → Werke-Ampel nur Anzeige …), Risiko-Stufen, **DoD**, Umkehr kleiner Commits. Verknüpfungen in **GAMIFICATION-OEK2.md**, **GAMIFICATION-POTENTIALE-K2.md**, **docs/00-INDEX.md**. **Commit:** COMMITHASH_PLACEHOLDER ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification ök2 – Phasenplan (Georg):** **docs/GAMIFICATION-PLAN-OEK2-PHASEN.md** – Phase **0** = bis Markt stabil **kein** neuer Gamification-Code; Phase **1–3** mit Reihenfolge (Guide → Galerie gestalten → Werke-Ampel nur Anzeige …), Risiko-Stufen, **DoD**, Umkehr kleiner Commits. Verknüpfungen in **GAMIFICATION-OEK2.md**, **GAMIFICATION-POTENTIALE-K2.md**, **docs/00-INDEX.md**. **Commit:** f082f6c ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** e700042 ✅ auf GitHub
 
