@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Presse End-to-End 1 Klick:** „An Medien – 1 Klick“ öffnet direkt das Mailprogramm mit `mailto:` inklusive BCC (aus markierten Medien), Betreff und Text. Wenn Text zu lang: Mail mit Kurztext + voller Text automatisch in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** (nach Push eintragen) ✅
+**Letzter Stand:** 20.03.26 – **Presse End-to-End 1 Klick:** „An Medien – 1 Klick“ öffnet direkt das Mailprogramm mit `mailto:` inklusive BCC (aus markierten Medien), Betreff und Text. Wenn Text zu lang: Mail mit Kurztext + voller Text automatisch in Zwischenablage. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** f2e1e4a ✅
 
 **Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
 
