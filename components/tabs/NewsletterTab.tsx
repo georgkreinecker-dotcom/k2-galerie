@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
+import { isGamificationLayerBEnabled } from '../../src/utils/gamificationLayer'
 
 const s = WERBEUNTERLAGEN_STIL
 const NEWSLETTER_KEY = 'k2-newsletter-kontakte'
@@ -104,7 +105,7 @@ export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = f
       </div>
 
       {/* Gamification Phase 2: Einladungsliste – nur ök2/VK2, nur Anzeige */}
-      {showGamification && (
+      {showGamification && isGamificationLayerBEnabled() && (
         <div
           style={{
             display: 'flex',

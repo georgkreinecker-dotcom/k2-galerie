@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification Phase 3 umgesetzt:** VK2 **Vereinsprofil** X/4 (Einstellungen → Meine Daten); **Shop** Demo-Kasse X/4 nur ök2-Admin; **Backup** „letztes Herunterladen“ nach Download-Klick (`autoSave` + Admin); **mök2** Pilot-Hinweis (Lesepfade, keine Spielmechanik). Doku Plan Phase 3 + **GAMIFICATION-OEK2** §5.3. **Commit:** b419c08 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification Phase 4:** `VITE_OEK2_GAMIFICATION_LAYER_B` (`0`/`false`/`off`/`no` → Schicht B aus) + `isGamificationLayerBEnabled()`; alle Heroes/Lesepfade (Admin inkl. Presse & Öffentlichkeitsarbeit, Newsletter, Shop-Demo, Backup-Zeile ök2/VK2); **mök2** Pilot-Hinweis auch **standalone**-Header. Doku: **GAMIFICATION-PLAN-OEK2-PHASEN** Phase 4, **GAMIFICATION-OEK2** §3 + Abnahme 4; `.env.example`; Test `gamificationLayer.test.ts`. **Commit:** 8af13df ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **Gamification Phase 3 umgesetzt:** VK2 **Vereinsprofil** X/4 (Einstellungen → Meine Daten); **Shop** Demo-Kasse X/4 nur ök2-Admin; **Backup** „letztes Herunterladen“ nach Download-Klick (`autoSave` + Admin); **mök2** Pilot-Hinweis (Lesepfade, keine Spielmechanik). Doku Plan Phase 3 + **GAMIFICATION-OEK2** §5.3. **Commit:** b419c08 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification Phase 2 umgesetzt (ök2/VK2):** Eventplan → **Events** = X/4 + **Nächstes Event**; Tab **Newsletter** = Empfänger-Zahl + X/4 (`NewsletterTab`); **Veröffentlichen** = Hinweis Stand-Badge (ohne Auto-Reload/Fetch). Doku Plan + **GAMIFICATION-OEK2** §5.2. **K2** ohne diese Blöcke. **Commit:** 2b19f77 ✅ auf GitHub
 
@@ -58,11 +60,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Phase 3 **kurz im Alltag prüfen** (VK2 Vereinsprofil, ök2 Shop-Kasse, Backup-Zeile, mök2-Header).
+**Was wir JETZT tun:** Phase 4 **kurz prüfen** (optional `VITE_OEK2_GAMIFICATION_LAYER_B=off` in `.env` / Vercel → alle Fortschritts-UI weg, Kern bleibt).
 
-**Einordnung:** Gamification Phase 1–3 für Demo/Verein; K2-Kern ohne Ampeln.
+**Einordnung:** Gamification Schicht B abschaltbar ohne Revert; K2-Kern unverändert (Presse/Öffentlichkeitsarbeit-Hero nur Optik, gleicher Env-Schalter).
 
-**Nächster Schritt:** Nutzung beobachten; weitere Gamification nur nach Bedarf / Georg.
+**Nächster Schritt:** Nutzung beobachten; bei Notfall Plan B = Variable setzen; weitere Ideen nur nach Georg / Bedarf.
 
 ---
 

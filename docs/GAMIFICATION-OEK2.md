@@ -1,6 +1,6 @@
 # Gamification – nur ök2 (Demo), verbindliche Leitlinien
 
-**Stand:** 20.03.26 · **Entscheid Georg:** Gamification soll **K2 (echte Galerie) nicht** betreffen. Für **ök2** (öffentliche Demo, `context=oeffentlich` / `musterOnly`) ist sie sinnvoll – aber **nur als zusätzliche Schicht**, die man **theoretisch abschalten** kann, **ohne** dass sich Abläufe oder Erreichbarkeit von Funktionen ändern.
+**Stand:** 20.03.26 (Phase 4: Env-Schalter) · **Entscheid Georg:** Gamification soll **K2 (echte Galerie) nicht** betreffen. Für **ök2** (öffentliche Demo, `context=oeffentlich` / `musterOnly`) ist sie sinnvoll – aber **nur als zusätzliche Schicht**, die man **theoretisch abschalten** kann, **ohne** dass sich Abläufe oder Erreichbarkeit von Funktionen ändern.
 
 **Sportwagenmodus:** Gilt **für diesen ganzen Bereich** – nicht nur „schöne UI“, sondern: **bestehende Standards** nutzen, **keine** zweiten Wege erfinden (`.cursorrules` Sportwagenmodus, `ein-standard-problem.mdc`). Gamification baut **auf** dem Kern auf, ersetzt ihn nicht.
 
@@ -42,10 +42,11 @@ Nur **Anreicherung**: sichtbarer Fortschritt, Meilensteine, ermutigende Labels, 
 ## 3. Was „an- und abschaltbar“ technisch bedeutet
 
 - **Konzeptionell:** Kein Feature darf **nur** über einen Gamification-Pfad erreichbar sein (z. B. keine „Quest“ als einziger Einstieg in Presse oder Veröffentlichen).
-- **Umsetzung (Richtung):** Eine zentrale Stelle pro Mandant, z. B. Konstante oder Config nur für ök2 (`TENANT_CONFIGS.oeffentlich` oder `import.meta.env.VITE_…`), die **nur** die **Darstellung** von Schicht B steuert. Schicht A (Logik, Routen, Speicher) bleibt unverändert.
-- **Ausgeschaltet:** UI-Elemente von Schicht B werden nicht gerendert; **keine** Änderung an Datenflüssen, Keys, APIs oder Pflichtvalidierungen.
+- **Umsetzung (jetzt):** **`VITE_OEK2_GAMIFICATION_LAYER_B`** – steuert **nur die Darstellung** von Schicht B (Heroes, Fortschritt X/Y, Lesepfade, mök2-Pilot-Hinweis). Werte **`0`**, **`false`**, **`off`**, **`no`** (Groß/Klein, Leerzeichen) → Schicht B **aus**; Variable **leer** oder **jeder andere Wert** → **an** (Standard). Implementierung: `isGamificationLayerBEnabled()` in `src/utils/gamificationLayer.ts`. **Schicht A** (Buttons, Speichern, Tabs, APIs) bleibt unverändert.
+- **Geltung Schalter:** **Global** in der gebauten App (alle Kontexte, inkl. K2-Admin bei Presse/Öffentlichkeitsarbeit-Hero) – gedacht für **Notfall / Demo ohne Optik**, nicht als Dauer-„K2 ohne, ök2 mit“.
+- **Ausgeschaltet:** Entsprechende UI-Elemente von Schicht B werden nicht gerendert; **keine** Änderung an Datenflüssen, Keys, APIs oder Pflichtvalidierungen.
 
-Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in Schicht B so bauen, dass es **ohne** diese Teile weiter funktioniert.
+Alles in Schicht B bleibt so gebaut, dass es **ohne** diese Teile weiter funktioniert; der Schalter macht das für den Betrieb **ohne Code-Revert** möglich (Phase 4: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md)).
 
 **Plan B (Georg):** Das „Wegschalten“ von Schicht B ist **kein** normaler Betriebsmodus, sondern nur die **absolute Notlösung**, falls die Darstellung kurzfristig einen Start blockiert. **Marktziel** bleibt: ök2 **mit** Gamification live gehen (Details: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md)).
 
@@ -81,6 +82,10 @@ Die umgesetzten Bausteine (siehe [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATI
 ### Phase 3 – Abnahme (20.03.26)
 
 **VK2** Vereinsprofil (X/4, nur Lesen), **Shop** Demo-Kassen-Lesepfad (nur ök2-Admin, nicht VK2), **Backup** Zeitstempel nach Download + Infozeile (drei Wege unverändert), **mök2** Pilot-Hinweis (Lesepfade ≠ Spiel). Details: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Phase 3.
+
+### Phase 4 – Abnahme (20.03.26)
+
+**Env-Schalter** `VITE_OEK2_GAMIFICATION_LAYER_B`, zentrale Prüfung `isGamificationLayerBEnabled()`, alle Schicht-B-Blöcke im Admin (inkl. Presse/Öffentlichkeitsarbeit), Newsletter, Shop-Demo, mök2 (standalone + embedded). Details: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md) Phase 4.
 
 ---
 

@@ -1,6 +1,6 @@
 # Gamification ök2 – Phasenplan (analysiert, umkehrbar)
 
-**Stand:** 20.03.26 · **Geltung:** nur **ök2** (Demo). **Leitlinien:** [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) · **Ideen-Katalog:** [GAMIFICATION-POTENTIALE-K2.md](./GAMIFICATION-POTENTIALE-K2.md)
+**Stand:** 20.03.26 (Phase 4 ergänzt) · **Geltung:** nur **ök2** (Demo). **Leitlinien:** [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) · **Ideen-Katalog:** [GAMIFICATION-POTENTIALE-K2.md](./GAMIFICATION-POTENTIALE-K2.md)
 
 **Ziel dieses Plans:** Klare **Reihenfolge**, **Risiko-Stufen** und **Umkehr** (kein großer Knopf ohne Rückweg). **Klarstellung Georg:** Es heißt **nicht** „Stopp“ – ihr macht **weiter**, nur **vorsichtig**. **Zum Markteintritt** soll Gamification in ök2 **schon drin sein** (mindestens die **Baseline** unten; plus was ihr für den Start festlegt). **Plan B ohne sichtbare Gamification** ist nur die **absolute Notlösung**, kein normaler Plan.
 
@@ -118,10 +118,27 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 
 ---
 
+## Phase 4 – Schicht B abschaltbar + mök2 konsistent
+
+| | |
+|--|--|
+| **Ziel** | **Plan B technisch ohne Revert:** Umgebungsvariable schaltet **nur die Darstellung** von Schicht B (Heroes, X/4, Lesepfade, Pilot-Hinweis) **global** aus – **Kern (Schicht A)** unverändert. |
+| **Umsetzung** | `VITE_OEK2_GAMIFICATION_LAYER_B` – Werte `0`, `false`, `off`, `no` (Groß/Klein, trim) → aus; leer oder anderer Wert → an. Hilfsfunktion `isGamificationLayerBEnabled()` in `src/utils/gamificationLayer.ts`. `.env.example` dokumentiert. |
+| **Einbindung** | Admin: Werke (ök2/VK2), Design (ök2/VK2), Veröffentlichen-Hinweis, VK2 Vereinsprofil, Presse-Hero, Events (ök2/VK2), Öffentlichkeitsarbeit-Hero, Backup-Zeile „Letztes Herunterladen…“ (ök2/VK2). `NewsletterTab`, `ShopPage` Demo-Kasse, `MarketingOek2Page` Pilot-Hinweis (standalone + embedded). |
+| **Hinweis K2** | Presse- und Öffentlichkeitsarbeit-Hero im K2-Admin hängen am **gleichen** Schalter (Notfall = alles Schicht-B-Optik weg, keine zweite Logik). |
+
+**Definition of Done (Phase 4)**  
+- [x] Variable + Hilfsfunktion + Doku (Plan, GAMIFICATION-OEK2 §3).  
+- [x] Alle genannten UI-Stellen an `isGamificationLayerBEnabled()` gekoppelt.  
+- [x] mök2: Pilot-Hinweis auch im **freistehenden** Seitenkopf (nicht nur embedded).  
+- [x] Tests grün für `gamificationLayer`.  
+
+---
+
 ## Umkehr / Sorgfalt (für alle Phasen)
 
 1. **Kleine Commits** pro Baustein – bei Bedarf `git revert` eines Commits.  
-2. **Später:** ein Schalter nur für **Darstellung** Schicht B (öff. Config) – bis dahin Code so schreiben, als ob der Schalter schon da wäre (siehe [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §3).  
+2. **Schalter Schicht B:** `VITE_OEK2_GAMIFICATION_LAYER_B=off` (oder `0` / `false` / `no`) – siehe Phase 4 und [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §3.  
 3. **Stressfall:** Zuerst **Bugfix**; **Plan B** (Schicht B aus) nur wenn wirklich **Not** – nicht als Dauerzustand planen.
 
 ---
@@ -136,5 +153,6 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 | **Phase 1** | Zusätzlich: Guide → Galerie gestalten → Werke-Ampel (**nur Anzeige**) |
 | **Phase 2** | Events, Newsletter, Stand-Hinweis (**ohne Auto-Reload**) – **umgesetzt** (nur ök2/VK2) |
 | **Phase 3** | VK2 Vereinsprofil, Demo-Kassa (Shop), Backup-Info, mök2-Pilot-Hinweis – **umgesetzt** (nur Anzeige/Lesepfade) |
+| **Phase 4** | Env-Schalter Schicht B, alle Heroes/Lesepfade gekoppelt, mök2 Pilot auch standalone – **umgesetzt** |
 
 **Mut voran – mit Sorgfalt, Plan B nur im Notfall.** 💚

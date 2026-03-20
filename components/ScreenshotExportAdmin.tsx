@@ -73,6 +73,7 @@ import {
   WERBEUNTERLAGEN_STIL,
   PROMO_FONTS_URL,
 } from '../src/config/marketingWerbelinie'
+import { isGamificationLayerBEnabled } from '../src/utils/gamificationLayer'
 import '../src/App.css'
 
 /** Icon für Presse & Medien / Medienstudio – Zeitung/Presse, gut sichtbar im Admin (Tab, Hub, Bereichs-Karten). */
@@ -13091,7 +13092,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {tenant.isVk2 ? 'Vereinsmitglieder' : 'Werke verwalten'}
               </h2>
               {/* Gamification: Werke (nur ök2) / Mitglieder (nur VK2) – nur Anzeige, kein Schreiben */}
-              {tenant.isOeffentlich && (() => {
+              {tenant.isOeffentlich && isGamificationLayerBEnabled() && (() => {
                 const list = Array.isArray(allArtworks) ? allArtworks : []
                 const hasArtImg = (a: any) => {
                   const u = (a?.imageUrl || a?.imageRef || a?.previewUrl || '').toString().trim()
@@ -13200,7 +13201,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </div>
                 )
               })()}
-              {tenant.isVk2 && (() => {
+              {tenant.isVk2 && isGamificationLayerBEnabled() && (() => {
                 const ml = (vk2Stammdaten?.mitglieder || []).filter((m: any) => String(m?.name || '').trim())
                 const mAny = ml.length >= 1
                 const hasFoto = (m: any) => String(m?.mitgliedFotoUrl || m?.imageUrl || '').trim().length > 0
@@ -14593,7 +14594,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             overflow: 'visible'
           }}>
             {/* Gamification: Galerie gestalten (nur ök2/VK2) – nur Anzeige aus State, kein neuer Speicherpfad */}
-            {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
               const designTenantId = tenant.isOeffentlich ? 'oeffentlich' : 'vk2'
               const baselineGalerie = getGaleriePageTextsBaseline(designTenantId)
               const pg = pageContent
@@ -14930,7 +14931,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <strong style={{ color: s.text }}>Veröffentlichen</strong> = das Aushängeschild der Galerie sichtbar machen. Besucher und andere Geräte sehen dann den aktuellen Stand.
             </p>
             {/* Gamification Phase 2: Stand-Hinweis nur ök2/VK2 – kein Auto-Reload, keine Server-Abfrage */}
-            {(tenant.isOeffentlich || tenant.isVk2) && (
+            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (
               <div
                 style={{
                   display: 'flex',
@@ -15460,7 +15461,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <strong>VK2 Stammdaten:</strong> Verein mit Adresse, Vorstand und Mitgliedern. Alle Felder optional – nur Name ausfüllen wo bekannt.
                     </div>
                     {/* Gamification Phase 3: Vereinsprofil – nur Anzeige (vk2Stammdaten) */}
-                    {(() => {
+                    {isGamificationLayerBEnabled() && (() => {
                       const v = vk2Stammdaten?.verein
                       const n1 = !!(v?.name || '').trim()
                       const n2 = !!(v?.address || '').trim() && !!(v?.city || '').trim()
@@ -16843,7 +16844,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Backup & Wiederherstellung – K2, ök2 und VK2 getrennt; je Kontext eigenes Backup */}
                 <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
-                  {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+                  {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
                     const raw = getLastBackupDownloadExported(tenant.isOeffentlich ? 'oeffentlich' : 'vk2')
                     const label = raw
                       ? new Date(raw).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
@@ -17964,6 +17965,7 @@ ${name}`
               )}
 
               {/* Gamification: Presse & Medien – gleiche Bildsprache wie Öffentlichkeitsarbeit (eine SVG-Quelle) */}
+              {isGamificationLayerBEnabled() && (
               <div
                 style={{
                   display: 'flex',
@@ -18074,6 +18076,7 @@ ${name}`
                   </ul>
                 </div>
               </div>
+              )}
 
               {/* Abgrenzung: Presseaussendung zu konkretem Event = Events & Ausstellungen (keine Dopplung) */}
               <p style={{ marginBottom: '1.5rem', padding: '0.6rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
@@ -18146,7 +18149,7 @@ ${name}`
             {eventplanSubTab === 'events' && (
             <>
             {/* Gamification Phase 2: Events – nur ök2/VK2, nur Anzeige */}
-            {(tenant.isOeffentlich || tenant.isVk2) && (() => {
+            {(tenant.isOeffentlich || tenant.isVk2) && isGamificationLayerBEnabled() && (() => {
               const todayStart = new Date()
               todayStart.setHours(0, 0, 0, 0)
               const getEventEnd = (e: any) => {
@@ -19690,6 +19693,7 @@ ${name}`
               </div>
             )}
             {/* Gamification-Baustein: visueller Einstieg + Fortschritt (neue Generation, ohne Videospiel-Feeling) */}
+            {isGamificationLayerBEnabled() && (
             <div
               style={{
                 display: 'flex',
@@ -19800,6 +19804,7 @@ ${name}`
                 </ul>
               </div>
             </div>
+            )}
             {documentSaveFeedback === 'ok' && (
               <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</div>
             )}
