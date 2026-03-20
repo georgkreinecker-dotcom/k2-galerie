@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Gamification + Sportwagenmodus:** Georg: **weiter** mit **Vorsicht**; **Markt** mit Gamification **drin**; **Plan B** nur **Notlösung**. Zusätzlich: **gesamter** Weg verbindlich **Sportwagenmodus** (eine Lösung pro Problem, keine Parallelwege) – in **GAMIFICATION-PLAN-OEK2-PHASEN.md** und **GAMIFICATION-OEK2.md** festgehalten. **Commit:** 331e6a9 ✅ auf GitHub
+**Letzter Stand:** 20.03.26 – **Gamification: ein Erlebnis (Vereinheitlichung):** Georg: **nicht** zwei getrennte, sich **störenden** UI-Elemente – **Begleitung + Fortschritt/Status** sollen **zusammenwirken** (ein Rahmen, koordiniert). Festgehalten in **GAMIFICATION-OEK2.md** §2 „Vereinheitlichung“, Phasenplan + DoD + Checkliste. **Commit:** (folgt nach Push)
+
+**Vorher:** 20.03.26 – **Gamification + Sportwagenmodus:** Georg: **weiter** mit **Vorsicht**; **Markt** mit Gamification **drin**; **Plan B** nur **Notlösung**. Zusätzlich: **gesamter** Weg verbindlich **Sportwagenmodus** (eine Lösung pro Problem, keine Parallelwege) – in **GAMIFICATION-PLAN-OEK2-PHASEN.md** und **GAMIFICATION-OEK2.md** festgehalten. **Commit:** 331e6a9 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Gamification ök2 – verbindliche Doku (Georg):** **docs/GAMIFICATION-OEK2.md** – nur Demo/ök2; **K2 ohne** Gamification-Pflicht; **Kern vs. optionale Schicht** – alle Funktionen **ohne** Gamification gleich bedienbar; **an-/abschaltbar** ohne Ablauf zu ändern. **GAMIFICATION-POTENTIALE-K2.md** + **docs/00-INDEX.md** angepasst. **Commit:** e700042 ✅ auf GitHub
 
@@ -38,11 +40,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** ök2 für Markt **mit** Gamification fertigstellen – **vorsichtig**, kleine Schritte; **Sportwagenmodus** durchgängig (Standards aus **ein-standard-problem.mdc**); Phasenplan **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **Plan B** nur bei echter Not.
+**Was wir JETZT tun:** ök2 für Markt **mit** Gamification fertigstellen – **vorsichtig**, kleine Schritte; **einheitliches Erlebnis**: Guide/Begleitung und Status **ineinander**, nicht zwei konkurrierende Schichten (**GAMIFICATION-OEK2.md** §2); **Sportwagenmodus** durchgängig; Phasenplan **GAMIFICATION-PLAN-OEK2-PHASEN.md**; **Plan B** nur bei echter Not.
 
-**Einordnung:** Nicht „einfrieren“ – **Qualität + Umkehr** bei Bedarf; kein zweiter Ersatz-Ablauf neben dem Kern.
+**Einordnung:** Nicht „einfrieren“ – **Qualität + Umkehr** bei Bedarf; kein zweiter Ersatz-Ablauf neben dem Kern; **Vereinheitlichung** = Maßstab für Phase-1-Code (GlobaleGuideBegleitung vs. Tab-Heroes koordinieren).
 
-**Nächster Schritt:** Bausteine für Marktstart laut Plan; bei jedem Eingriff **GAMIFICATION-OEK2.md**-Checkliste; **Plan B** dokumentiert, nicht der Happy Path.
+**Nächster Schritt:** Phase 1 umsetzen unter §2 Vereinheitlichung (eine Steuerung/Anzeige wo möglich); bei jedem Eingriff **GAMIFICATION-OEK2.md**-Checkliste; **Plan B** dokumentiert, nicht der Happy Path.
 
 ---
 

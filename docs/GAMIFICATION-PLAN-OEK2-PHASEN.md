@@ -6,6 +6,8 @@
 
 **Sportwagenmodus (verbindlich):** Der **gesamte** Weg bis Markt – und danach – läuft im **Sportwagenmodus**: **eine** Problemstellung = **eine** Lösung im Projekt, vorhandene Abläufe und Tabellen in `ein-standard-problem.mdc` / kritische Abläufe **nicht** umgehen oder duplizieren. Gamification ist **Schicht B** auf dem **bestehenden** Kern, kein zweiter Parallel-App-Bau.
 
+**Vereinheitlichung (Georg):** **Keine** zwei getrennten, sich **störenden** UI-Schichten (z. B. unkoordinierter globaler Guide **plus** zweiter Fortschrittskanal). **Ein** durchgängiges Erlebnis: Begleitung und Status (Meilensteine, X/Y) **greifen ineinander** – siehe [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §2 „Vereinheitlichung“. Phase 1 (Guide + Ampeln) **so planen**, dass Anzeigen **koordiniert** sind, nicht doppelt.
+
 ---
 
 ## Vorsicht – aber weiter
@@ -69,6 +71,7 @@ Diese Bausteine **nicht** ohne Grund umbauen; Verfeinerungen nur in späteren Ph
 - [ ] Nur `musterOnly` / ök2-Admin / öffentliche Keys – **K2-Kern** unberührt.  
 - [ ] Kein Auto-Reload, kein Druck-Text ([code-5-crash-kein-auto-reload.mdc](../.cursor/rules/code-5-crash-kein-auto-reload.mdc)).  
 - [ ] Kontrast heller Admin-Hintergrund ok ([ui-kontrast-leserbarkeit.mdc](../.cursor/rules/ui-kontrast-leserbarkeit.mdc)).  
+- [ ] **Ein Erlebnis:** Guide/Begleitung und Fortschritt **nicht** als zwei konkurrierende Haupt-Elemente; **Vereinheitlichung** nach [GAMIFICATION-OEK2.md](./GAMIFICATION-OEK2.md) §2.  
 - [ ] Ein Baustein = ein PR; bei Problemen **revert** möglich.
 
 ---

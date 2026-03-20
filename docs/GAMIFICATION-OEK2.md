@@ -25,6 +25,18 @@ Nur **Anreicherung**: sichtbarer Fortschritt, Meilensteine, ermutigende Labels, 
 
 **Merksatz:** Gamification **dazuschalten** = mehr Hinweise und Freude; **wegschalten** = dieselbe App, nur nüchterner – **derselbe Weg** zum Ziel.
 
+### Vereinheitlichung – ein Erlebnis, keine zwei störenden Schichten (Georg)
+
+**Ziel:** **Nicht** zwei getrennte UI-Elemente, die sich **gegenseitig nerven** (z. B. ein globaler Begleiter **und** parallel ein zweiter Fortschritts-/Gamification-Block ohne Bezug). **Sondern:** **Zusammenwirken** – **ein** klarer Rahmen, in dem **Orientierung (Guide/Onboarding)** und **Status (Meilensteine, X/Y, Häkchen)** **logisch und visuell zusammengehören**.
+
+| Richtig | Vermeiden |
+|--------|-----------|
+| Ein Begleiter-/Status-Rahmen (z. B. derselbe Dialog-Stil, Fortschritt **im** Begleiter wo sinnvoll) | Zwei konkurrierende Overlays oder zwei „Haupt“-Fortschrittsanzeigen gleichzeitig ohne klare Rollen |
+| Tab-/Bereichs-Heroes (X/4) **oder** globaler Guide – **koordiniert**, kein Doppel-Fortschritt für dieselbe Aufgabe | Dieselbe Station zweimal mit unterschiedlichen Zahlen oder Texten führen |
+| Guide **ersetzt** Gamification nicht und umgekehrt – sie **ergänzen** sich in **einem** Erlebnisfluss | Parallel zwei „Stimmen“, die den Nutzer in verschiedene Richtungen ziehen |
+
+**Umsetzungsrichtung:** Wo möglich **eine** Steuerungs-/Anzeige-Logik für „was sieht der Nutzer als nächstes“ (Begleitung + Status); bestehende Standards (`GlobaleGuideBegleitung`, Ampel/UX) **einbetten** statt **zweiten** Kanal zu eröffnen. Details und Phasen: [GAMIFICATION-PLAN-OEK2-PHASEN.md](./GAMIFICATION-PLAN-OEK2-PHASEN.md).
+
 ---
 
 ## 3. Was „an- und abschaltbar“ technisch bedeutet
@@ -46,6 +58,7 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 3. **Kein stilles Löschen** von Nutzerdaten wegen „Quest“ oder Meilenstein (Regel: `niemals-kundendaten-loeschen.mdc`).
 4. **Kontrast:** Auf hellem Admin-Hintergrund nur lesbare Farben (`ui-kontrast-leserbarkeit.mdc`).
 5. **Ein Standard:** Gleiche Art von Fortschrittsanzeige überall in ök2, wo ihr sie nutzt – nicht pro Tab ein neues Spiel (Sportwagenmodus: `ein-standard-problem.mdc`).
+6. **Ein Erlebnis:** Guide/Begleitung und Gamification **vereinheitlicht** – zusammenwirken, nicht zwei getrennte, sich störende Elemente (siehe §2 „Vereinheitlichung“).
 
 ---
 
@@ -55,6 +68,7 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 - [ ] Wird **irgendein** kritischer Ablauf (siehe KRITISCHE-ABLAEUFE) nur in Schicht B versteckt oder erschwert? → **Nein** erforderlich.
 - [ ] Liegt die Änderung **nur** in ök2-Kontext / `musterOnly` / `oeffentlich`-Keys – **nicht** am K2-Kern?
 - [ ] Sind Texte und Elemente **optional** (kein Blocker für „nur schnell erledigen“)?
+- [ ] **Ein Erlebnis:** Keine **zwei** getrennten, sich störenden Elemente – Guide/Begleitung und Status/Fortschritt **vereinheitlicht** bzw. koordiniert (§2 „Vereinheitlichung“)?
 
 ---
 
@@ -69,4 +83,4 @@ Bis ein Schalter im Code existiert, gilt die **Regel** trotzdem: alles Neue in S
 
 ## Kurzfassung
 
-**Nur ök2.** Gamification = **Schicht B** über dem **unveränderten Kern**. **Alles muss ohne Schicht B** gleich funktionieren – **an- und abschaltbar**, ohne den Ablauf zu merken. **K2** braucht das nicht; dort kein Druck zur Gamification.
+**Nur ök2.** Gamification = **Schicht B** über dem **unveränderten Kern**. **Alles muss ohne Schicht B** gleich funktionieren – **an- und abschaltbar**, ohne den Ablauf zu merken. **K2** braucht das nicht; dort kein Druck zur Gamification. **Vereinheitlichung:** Begleitung und Fortschritt **zusammenwirken** – **kein** doppeltes, sich störendes UI.
