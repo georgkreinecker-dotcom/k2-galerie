@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **Presse 1 Klick + Presse & Medien:** Nach „An Medien – 1 Klick“ zusätzlich `setActiveTab('presse')` + Scroll zu `#admin-medienspiegel-bcc`; Hinweis in der Meldung: zuerst Mail-Text einfügen, dann BCC kopieren. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** 588252e ✅
+**Letzter Stand:** 20.03.26 – **Presse 1 Klick + Presse & Medien:** Nach „An Medien – 1 Klick“ zusätzlich `setActiveTab('presse')` + Scroll zu `#admin-medienspiegel-bcc`; Hinweis in der Meldung: zuerst Mail-Text einfügen, dann BCC kopieren. Doku: `Ablauf-Dokumente-Kurz.md`. **Commit:** c735a5e ✅
 
 **Vorher:** 20.03.26 – **QR-Code-Plakat entfernt** – **Commit:** 39e946a
 
