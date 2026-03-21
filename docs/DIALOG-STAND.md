@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Verkaufsstatistik „nach Künstler“: Ohne Künstler trotz Martina/Georg (Georg):** Viele Werke hatten **`artist` leer** in den Daten; die Statistik wertete nur dieses Feld. **Neu:** `resolveArtistLabelForGalerieStatistik` (**artworkArtistDisplay.ts**) – gleiche Logik wie Admin (Kategorie, K2-Werknummer M/K/G/S/O/P/I, Legacy `K2-1234`, `entryType` product/idea); **StatistikTab** + **ScreenshotExportAdmin** (`kuenstlerFallback` aus Stammdaten; **VK2** ohne Fallback). Kein stiller Schreibzugriff auf Werke. Tests **artworkArtistDisplay.test.ts**. **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Verkaufsstatistik „nach Künstler“: Ohne Künstler trotz Martina/Georg (Georg):** Viele Werke hatten **`artist` leer** in den Daten; die Statistik wertete nur dieses Feld. **Neu:** `resolveArtistLabelForGalerieStatistik` (**artworkArtistDisplay.ts**) – gleiche Logik wie Admin (Kategorie, K2-Werknummer M/K/G/S/O/P/I, Legacy `K2-1234`, `entryType` product/idea); **StatistikTab** + **ScreenshotExportAdmin** (`kuenstlerFallback` aus Stammdaten; **VK2** ohne Fallback). Kein stiller Schreibzugriff auf Werke. Tests **artworkArtistDisplay.test.ts**. **Commit:** 3ac9104 ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 **Einordnung:** Anzeige/Statistik K2/ök2; K2-Kern-Speicher unverändert.
