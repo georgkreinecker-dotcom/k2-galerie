@@ -66,6 +66,26 @@
 
 ---
 
+## 8. Grep-Audit `k2-artworks` / verwandte Keys (Referenz)
+
+Suche im Repo nach **`k2-artworks`** und **`getItem('k2-artworks')`** – Kurzüberblick (Stand Nachziehen nach Grep):
+
+| Bereich | Bemerkung |
+|--------|-----------|
+| **`artworksStorage.ts`**, **`TenantContext`**, **`readArtworksRawForContext`** | Zentrale Schicht – richtiger Ansatz. |
+| **`GalerieVorschauPage`** | Render-Fallback nur K2; **`addToCart`**: verkauft-Prüfung über **`getShopSoldArtworksKey(musterOnly, vk2)`** (nicht immer `k2-sold-artworks`). |
+| **`ShopPage`** | Verzweigt **`fromOeffentlich`** – ok. |
+| **`ZertifikatTab` / `PressemappeTab`** | Lesen über **`readArtworksRawForContext`** + **`loadStammdaten('oeffentlich'\|'k2')`**; VK2: **`loadVk2Stammdaten`**, keine K2-Keys. |
+| **`ControlStudioPage` Archiv** | **`useTenant`** + **`getShopSoldArtworksKey`** + Werke-Key ök2/K2 bzw. VK2-`k2-vk2-artworks-*`. |
+| **`ScreenshotExportAdmin`** | K2-Fallback nur wenn **`!tenant.isOeffentlich && !tenant.isVk2`**. |
+| **`publishGalleryData`**, **`DevViewPage`**, **`PlatzanordnungPage`**, **`supabaseClient`** (K2-Pfade) | Bewusst K2 – nicht in ök2-Admin aufrufen bzw. nur K2-Flow. |
+| **`GaleriePage.simple.tsx`** | Von Build ausgeschlossen (`tsconfig` exclude) – kein Produktivpfad. |
+| **`VirtuellerRundgangPage`** | Route unter K2-Projekt; aktuell K2-Keys – bei künftiger ök2-Nutzung derselben Route wäre Tenant nötig (K2-Kern vor Änderung mit Georg klären). |
+
+Neue Stellen mit **`localStorage.getItem('k2-artworks')`** in **gemeinsamen** UI-Komponenten: immer mit **`musterOnly` / `tenant` / `getShopSoldArtworksKey`** abgleichen.
+
+---
+
 ## Kurz-Fazit
 
 **Vermischung passiert nicht, weil die Regel „schwach“ ist, sondern weil:**

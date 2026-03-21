@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
+import { readArtworksRawForContext } from '../../src/utils/artworksStorage'
+import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -7,12 +9,46 @@ interface PressemappeTabProps {
   onBack: () => void
   /** Wenn gesetzt (z. B. ök2 mit getStoryForPr): wird für Vita/Story-Block genutzt. Sonst: personStammdaten.vita/bio. */
   storyForPr?: string
+  isOeffentlich?: boolean
+  isVk2?: boolean
 }
 
-export default function PressemappeTab({ onBack, storyForPr }: PressemappeTabProps) {
-  const galStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch (_) { return {} } })()
-  const personStammdaten: any = (() => { try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch (_) { return {} } })()
-  const allArtworks: any[] = (() => { try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch (_) { return [] } })()
+export default function PressemappeTab({ onBack, storyForPr, isOeffentlich = false, isVk2 = false }: PressemappeTabProps) {
+  const galStammdaten: any = (() => {
+    if (isVk2) {
+      const v = loadVk2Stammdaten()?.verein || {}
+      return {
+        name: v.name || 'Verein',
+        city: v.city || '',
+        address: v.address || '',
+        email: v.email || '',
+        phone: v.phone || '',
+        website: v.website || '',
+        openingHours: v.openingHours || '',
+      }
+    }
+    return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+  })()
+  const personStammdaten: any = (() => {
+    if (isVk2) {
+      const v = loadVk2Stammdaten()?.verein || {}
+      return {
+        name: (v.name && String(v.name).trim()) ? String(v.name) : 'Verein',
+        vita: '',
+        bio: '',
+      }
+    }
+    return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'martina')
+  })()
+  const allArtworks: any[] = (() => {
+    if (isVk2) return []
+    if (isOeffentlich) return readArtworksRawForContext(true, false)
+    try {
+      return JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+    } catch (_) {
+      return []
+    }
+  })().map((a: any) => ({ ...a, image: a.image || a.imageUrl || a.previewUrl }))
 
   const gName = galStammdaten.name || 'K2 Galerie'
   const gCity = galStammdaten.city || ''

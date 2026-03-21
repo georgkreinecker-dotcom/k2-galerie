@@ -20,6 +20,7 @@ import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
@@ -1654,7 +1655,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     }
 
     try {
-      const soldData = localStorage.getItem('k2-sold-artworks')
+      const soldKey = getShopSoldArtworksKey(!!musterOnly, !!vk2)
+      const soldData = localStorage.getItem(soldKey)
       if (soldData) {
         const soldArtworks = JSON.parse(soldData)
         if (Array.isArray(soldArtworks)) {

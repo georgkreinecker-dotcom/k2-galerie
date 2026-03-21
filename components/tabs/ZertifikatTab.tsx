@@ -1,21 +1,49 @@
 import React from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
+import { readArtworksRawForContext } from '../../src/utils/artworksStorage'
+import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
 
 const s = WERBEUNTERLAGEN_STIL
 
 interface ZertifikatTabProps {
   onBack: () => void
+  /** ök2/VK2: keine K2-Keys lesen (eisernes Gesetz). */
+  isOeffentlich?: boolean
+  isVk2?: boolean
 }
 
-export default function ZertifikatTab({ onBack }: ZertifikatTabProps) {
+export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = false }: ZertifikatTabProps) {
   const allArtworks: any[] = (() => {
-    try { return JSON.parse(localStorage.getItem('k2-artworks') || '[]') } catch (_) { return [] }
-  })()
+    if (isVk2) return []
+    if (isOeffentlich) return readArtworksRawForContext(true, false)
+    try {
+      return JSON.parse(localStorage.getItem('k2-artworks') || '[]')
+    } catch (_) {
+      return []
+    }
+  })().map((a: any) => ({ ...a, image: a.image || a.imageUrl || a.previewUrl }))
+
   const galStammdaten: any = (() => {
-    try { return JSON.parse(localStorage.getItem('k2-stammdaten-galerie') || '{}') } catch (_) { return {} }
+    if (isVk2) {
+      const v = loadVk2Stammdaten()?.verein || {}
+      return {
+        name: v.name || 'Verein',
+        city: v.city || '',
+        address: v.address || '',
+        email: v.email || '',
+        phone: v.phone || '',
+        website: v.website || '',
+        openingHours: v.openingHours || '',
+      }
+    }
+    return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
   })()
   const personStammdaten: any = (() => {
-    try { return JSON.parse(localStorage.getItem('k2-stammdaten-martina') || '{}') } catch (_) { return {} }
+    if (isVk2) {
+      const v = loadVk2Stammdaten()?.verein || {}
+      return { name: (v.name && String(v.name).trim()) ? String(v.name) : 'Verein' }
+    }
+    return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'martina')
   })()
 
   const gName = galStammdaten.name || 'K2 Galerie'

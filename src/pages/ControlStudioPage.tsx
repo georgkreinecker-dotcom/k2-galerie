@@ -6,6 +6,8 @@ import { ProjectNavButton } from '../components/Navigation'
 import { KundenTab } from '../components/KundenTab'
 import { getCustomers, type Customer } from '../utils/customers'
 import { hasKassa } from '../utils/kassabuchStorage'
+import { useTenant } from '../context/TenantContext'
+import { getShopSoldArtworksKey } from '../utils/shopContextKeys'
 
 type ChatMessage = { role: 'user' | 'ai'; content: string }
 
@@ -17,8 +19,9 @@ const quickPrompts = [
 
 type ControlTab = 'kasse' | 'galerie' | 'verkaufe' | 'archiv' | 'kunden' | 'events' | 'einstellungen'
 
-// Archiv-Tab Komponente für Verkaufshistorie
+// Archiv-Tab: verkaufte Werke + Stammdaten – Keys wie Shop (K2 / ök2 / VK2), kein K2-Verkauf in ök2-Archiv mischen
 const ArchivTab = () => {
+  const tenant = useTenant()
   const [soldArtworks, setSoldArtworks] = useState<any[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [allArtworks, setAllArtworks] = useState<any[]>([])
@@ -28,10 +31,26 @@ const ArchivTab = () => {
   useEffect(() => {
     const loadData = () => {
       try {
-        const soldData = localStorage.getItem('k2-sold-artworks')
+        const soldKey = getShopSoldArtworksKey(tenant.isOeffentlich, tenant.isVk2)
+        const soldData = localStorage.getItem(soldKey)
         const sold = soldData ? JSON.parse(soldData) : []
-        const artworksData = localStorage.getItem('k2-artworks')
-        const artworks = artworksData ? JSON.parse(artworksData) : []
+        let artworks: any[] = []
+        if (tenant.isVk2) {
+          try {
+            Object.keys(localStorage).forEach((key) => {
+              if (!key.startsWith('k2-vk2-artworks-')) return
+              const raw = localStorage.getItem(key)
+              if (!raw) return
+              const arr = JSON.parse(raw)
+              if (Array.isArray(arr)) artworks.push(...arr)
+            })
+          } catch (_) {}
+        } else {
+          const ak = tenant.isOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
+          const artworksData = localStorage.getItem(ak)
+          artworks = artworksData ? JSON.parse(artworksData) : []
+          if (!Array.isArray(artworks)) artworks = []
+        }
         const soldWithDetails = sold.map((soldItem: any) => {
           const artwork = artworks.find((a: any) => a.number === soldItem.number)
           return { ...soldItem, ...artwork, soldAt: soldItem.soldAt || soldItem.soldAt }
@@ -53,7 +72,7 @@ const ArchivTab = () => {
       window.removeEventListener('artworks-updated', handleUpdate)
       window.removeEventListener('customers-updated', handleUpdate)
     }
-  }, [])
+  }, [tenant.isOeffentlich, tenant.isVk2, tenant.tenantId])
 
   // Filter verkaufte Werke nach Suchbegriff
   const filteredSold = soldArtworks.filter((item: any) => {

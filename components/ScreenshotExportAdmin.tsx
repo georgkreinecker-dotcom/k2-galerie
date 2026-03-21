@@ -13121,7 +13121,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
           {/* ===== ECHTHEITSZERTIFIKAT ===== */}
           {activeTab === 'zertifikat' && (
-            <ZertifikatTab onBack={() => setActiveTab('werke')} />
+            <ZertifikatTab
+              onBack={() => setActiveTab('werke')}
+              isOeffentlich={!!tenant.isOeffentlich}
+              isVk2={!!tenant.isVk2}
+            />
           )}
 
 
@@ -13136,6 +13140,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <PressemappeTab
               onBack={() => setActiveTab('werke')}
               storyForPr={tenant.isOeffentlich ? getStoryForPr(tenant, galleryData, martinaData, georgData) : undefined}
+              isOeffentlich={!!tenant.isOeffentlich}
+              isVk2={!!tenant.isVk2}
             />
           )}
 
