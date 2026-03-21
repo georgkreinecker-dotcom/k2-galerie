@@ -1086,6 +1086,27 @@ function loadArtworksRaw(tenant: ReturnType<typeof useTenant>): any[] {
   return Array.isArray(raw) ? raw : []
 }
 
+/** Bei Duplikat-Umbenennung: Buchstabe + Basiszahl aus der gemeinsamen Nummer (z. B. K2-M-0011), nicht aus Kategorie — sonst entstehen fälschlich K2-K-… neben K2-M-…. */
+function parseK2DuplicateRenumberParts(
+  sharedNumber: string,
+  category: string,
+  entryType: string
+): { prefix: string; baseNum: number } {
+  const s = String(sharedNumber || '').trim()
+  const withLetter = s.match(/^K2-([A-Za-z])-(\d+)/)
+  if (withLetter) {
+    return { prefix: withLetter[1].toUpperCase(), baseNum: parseInt(withLetter[2], 10) || 1 }
+  }
+  const legacy = s.match(/^K2-(\d+)/i)
+  if (legacy) {
+    return {
+      prefix: getCategoryPrefixLetter(category, entryType),
+      baseNum: parseInt(legacy[1], 10) || 1,
+    }
+  }
+  return { prefix: getCategoryPrefixLetter(category, entryType), baseNum: 1 }
+}
+
 function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
   if (tenant.isVk2) return []
   const key = tenant.getArtworksKey()
@@ -1172,11 +1193,11 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
         // WICHTIG: Beide Werke bleiben erhalten, bekommen aber unterschiedliche Nummern
         for (let i = 1; i < duplicates.length; i++) {
           const duplicate = duplicates[i]
-          const prefix = getCategoryPrefixLetter(duplicate.category, duplicate.entryType)
-          
-          // Extrahiere Basis-Nummer (z.B. "0011" aus "K2-M-0011")
-          const baseNumber = number.replace(/K2-[KM]-/, '').replace(/[^0-9]/g, '')
-          const baseNum = parseInt(baseNumber) || 1
+          const { prefix, baseNum } = parseK2DuplicateRenumberParts(
+            number,
+            duplicate.category,
+            duplicate.entryType
+          )
           
           // Finde nächste freie Nummer mit Suffix (z.B. K2-M-0011-1, K2-M-0011-2)
           let newNumber = ''
