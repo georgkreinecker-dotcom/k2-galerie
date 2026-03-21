@@ -7,7 +7,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import jsQR from 'jsqr'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { addKassabuchEintrag, getKassabuchArtLabel, hasKassabuchVoll, type KassabuchArt } from '../utils/kassabuchStorage'
+import { addKassabuchEintrag, getKassabuchArtLabel, hasKassabuchVoll, isKassabuchAktiv, type KassabuchArt } from '../utils/kassabuchStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -33,6 +33,7 @@ export default function KassausgangPage() {
   const location = useLocation()
   const tenant = getTenant(location)
   const kassabuchVoll = hasKassabuchVoll(tenant)
+  const ausgabenErlaubt = kassabuchVoll && isKassabuchAktiv(tenant)
   const [step, setStep] = useState<Step>('choose')
   const [art, setArt] = useState<KassabuchArt>('bar_privat')
   const [bankRichtung, setBankRichtung] = useState<'kassa_an_bank' | 'bank_an_kassa'>('kassa_an_bank')
@@ -160,6 +161,26 @@ export default function KassausgangPage() {
           </p>
           <Link to={PROJECT_ROUTES['k2-galerie'].kassabuch} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ display: 'inline-block', marginRight: '0.75rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>← Kassabuch</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ padding: '0.75rem 1.25rem', background: s.accent, color: '#fff', borderRadius: s.radius, textDecoration: 'none', fontWeight: 600 }}>Pro+ ansehen</Link>
+        </div>
+      </div>
+    )
+  }
+
+  if (!ausgabenErlaubt) {
+    return (
+      <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem' }}>
+        <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', paddingTop: '2rem' }}>
+          <h1 style={{ fontSize: '1.35rem', color: s.text, marginBottom: '0.5rem' }}>Neuer Kassausgang</h1>
+          <p style={{ color: s.muted, marginBottom: '1rem', lineHeight: 1.45 }}>
+            Kassausgänge sind gerade ausgeschaltet. In der{' '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].kassa} state={{ fromOeffentlich: tenant === 'oeffentlich' ? true : undefined }} style={{ color: s.accent, fontWeight: 600 }}>
+              Kassa
+            </Link>{' '}
+            kannst du „Volles Kassabuch mit Ausgaben“ anhaken.
+          </p>
+          <Link to={PROJECT_ROUTES['k2-galerie'].kassabuch} state={{ fromOeffentlich: tenant === 'oeffentlich' }} style={{ color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+            ← Kassabuch
+          </Link>
         </div>
       </div>
     )

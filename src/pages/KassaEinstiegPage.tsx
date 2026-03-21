@@ -1,6 +1,7 @@
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { hasKassa, hasKassabuchVoll, isKassabuchAktiv } from '../utils/kassabuchStorage'
+import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, setKassabuchAktiv } from '../utils/kassabuchStorage'
 
 const s = {
   bg: '#f8f7f5',
@@ -24,7 +25,12 @@ export default function KassaEinstiegPage() {
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich')
   const tenant = fromOeffentlich ? 'oeffentlich' as const : 'k2' as const
   const kassaVerfuegbar = hasKassa(tenant)
-  const kassabuchVollVerfuegbar = hasKassabuchVoll(tenant) && isKassabuchAktiv(tenant)
+  const kassabuchProPlus = hasKassabuchVoll(tenant)
+  const [ausgabenMitfuehren, setAusgabenMitfuehren] = useState(() => isKassabuchAktiv(tenant))
+  useEffect(() => {
+    setAusgabenMitfuehren(isKassabuchAktiv(tenant))
+  }, [tenant])
+  const kassabuchVollVerfuegbar = kassabuchProPlus && ausgabenMitfuehren
 
   const toShop = () => {
     navigate(PROJECT_ROUTES['k2-galerie'].shop, {
@@ -60,9 +66,45 @@ export default function KassaEinstiegPage() {
   return (
     <div style={{ minHeight: '100vh', background: s.bg, padding: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <h1 style={{ fontSize: '1.5rem', color: s.text, marginBottom: '0.5rem' }}>💰 Kassa</h1>
-      <p style={{ color: s.muted, marginBottom: '1.5rem', textAlign: 'center' }}>
+      <p style={{ color: s.muted, marginBottom: '1rem', textAlign: 'center' }}>
         Was möchtest du erfassen?
       </p>
+      {kassabuchProPlus && (
+        <label
+          style={{
+            maxWidth: '320px',
+            width: '100%',
+            marginBottom: '1rem',
+            padding: '0.85rem 1rem',
+            background: s.card,
+            border: `1px solid ${s.muted}55`,
+            borderRadius: s.radius,
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.65rem',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+            boxShadow: s.shadow,
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={ausgabenMitfuehren}
+            onChange={e => {
+              const next = e.target.checked
+              setKassabuchAktiv(tenant, next)
+              setAusgabenMitfuehren(next)
+            }}
+            style={{ marginTop: '0.2rem', width: '1.1rem', height: '1.1rem', flexShrink: 0, cursor: 'pointer' }}
+          />
+          <span style={{ textAlign: 'left' }}>
+            <span style={{ display: 'block', color: s.text, fontWeight: 600, fontSize: '0.95rem' }}>Volles Kassabuch mit Ausgaben</span>
+            <span style={{ display: 'block', color: s.muted, fontSize: '0.8rem', marginTop: '0.25rem', lineHeight: 1.35 }}>
+              Angehakt: Auszahlungen, Bar privat, Bank, Belege. Ohne Haken: nur Verkäufe (Eingänge).
+            </span>
+          </span>
+        </label>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '320px', width: '100%' }}>
         <button
           type="button"

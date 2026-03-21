@@ -31,7 +31,7 @@
 | **Bar privat** | Sonderfall Ausgang: „Bar privat“ (Entnahme für private Zwecke) – klar gekennzeichnet für Steuerberater. |
 | **Bar mit Beleg** | Bei Ausgang (oder bei Eingang): Beleg erfassen. **QR-Code einscannen** (z. B. E-Rechnung) oder **Foto** (Quittung, Kassenzettel) – zuordnung zur Buchung, Speicherung/Anzeige für Steuerberater. |
 | **Kassa an Bank** | Buchungsart: „Kassa → Bank“ (Einzahlung) oder „Bank → Kassa“ (Bar-Entnahme von der Bank). Kein Bankkonto-Verwaltung in der App – nur die Buchung, dass Geld die Kasse verlassen/betreten hat. |
-| **Kassabuch führen Ja/Nein** | Einstellung (z. B. in Admin unter Kassa/Einstellungen): **Kassabuch aktiv** = alle Buchungen (Eingänge + Ausgänge, Bar privat, Kassa an Bank, Belege) führen. **Kassabuch aus** = nur Verkäufe wie bisher (keine Ausgänge, kein Bar privat, keine Kassa-an-Bank-Buchungen). |
+| **Kassabuch führen Ja/Nein** | **Kassa-Einstieg** (Admin → Kassa): Checkbox **„Volles Kassabuch mit Ausgaben“**. An = Eingänge + Ausgänge; aus = nur Verkäufe (Eingänge). Nicht in den allgemeinen Einstellungen (schlanke Admin-Einstellungen). |
 
 ---
 
@@ -48,7 +48,7 @@
 - **Kassa, Lager & Listen** (bisher: Verkaufsstatistik, PDF-Export, Speicherdaten) – dort **„Kassabuch“** als neuer Bereich/Tab oder Unterkarte:
   - Liste aller Buchungen (chronologisch), Filter nach Art/Zeitraum.
   - Buttons: **Neuer Kassausgang**, **Bar privat**, **Kassa an Bank**, **Beleg zu Buchung** (QR/Foto).
-  - Einstellung **„Kassabuch führen: Ja / Nein“** (z. B. oben auf der Kassabuch-Seite oder in Einstellungen unter Kassa).
+  - Einstellung **„Volles Kassabuch mit Ausgaben“** (Checkbox auf dem **Kassa-Einstieg**).
 
 ---
 

@@ -109,7 +109,7 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 
 - **Eingänge:** Jeder Verkauf (Bar, Karte, Rechnung) wird automatisch als **Eingang** im Kassabuch erfasst.  
 - **Ausgänge:** Sie können **Kassausgänge** erfassen: z. B. **Bar privat** (Entnahme aus der Kasse), **Kassa an Bank** (Einzahlung), **Bank an Kassa** (Abhebung), **Bar mit Beleg** (Ausgabe mit Quittung/Foto).  
-- **Kassabuch führen: Ja / Nein:** In den Einstellungen bzw. im Kassabuch können Sie **„Kassabuch führen“** ein- oder ausschalten. Wenn Sie nur Verkäufe brauchen und keine Ausgänge erfassen möchten, können Sie das Kassabuch auf **nur Eingänge** belassen oder die Option deaktivieren (je nach Implementierung).
+- **Volles Kassabuch mit Ausgaben:** Auf dem **Kassa-Einstieg** (nach **Admin → Kassa**) gibt es die Option **„Volles Kassabuch mit Ausgaben“** zum Anhaken. **Angehakt:** Sie sehen **Auszahlen (Ausgabe)** und können Kassausgänge erfassen. **Ohne Haken:** nur Verkäufe (Eingänge) – die Einstellungen im Admin bleiben dafür schlank.
 
 **Kassabuch öffnen:** Vom **Kassa-Einstieg** aus wählen Sie **„Auszahlen (Kassabuch)“** – dann gelangen Sie zur **Kassabuch-Seite**. Dort sehen Sie alle Buchungen **chronologisch** (Datum, Art, Betrag, ggf. Notiz). Das Kassabuch können Sie **drucken** und als **CSV exportieren** (z. B. für den Steuerberater). Ein Button **„Neuer Kassausgang“** führt Sie zur Erfassung von Bar privat, Kassa an Bank usw.
 

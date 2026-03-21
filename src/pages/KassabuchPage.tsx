@@ -13,7 +13,6 @@ import {
   hasKassa,
   hasKassabuchVoll,
   isKassabuchAktiv,
-  setKassabuchAktiv,
   type KassabuchEintrag,
 } from '../utils/kassabuchStorage'
 
@@ -69,12 +68,6 @@ export default function KassabuchPage() {
     setEntries(getKassabuchMitEingaengen(tenant))
     setAktiv(isKassabuchAktiv(tenant))
   }
-  const toggleAktiv = () => {
-    const next = !aktiv
-    setKassabuchAktiv(tenant, next)
-    setAktiv(next)
-  }
-
   const handleExportCsv = () => {
     const toExport = (kassabuchVoll && aktiv) ? entries : entries.filter(e => e.art === 'eingang')
     const csv = exportKassabuchCsv(toExport, von || undefined, bis || undefined)
@@ -139,28 +132,18 @@ export default function KassabuchPage() {
           {kassabuchVoll ? 'Chronologische Buchungen – steuerberatergeeignet, separat druckbar und übermittelbar.' : 'Pro: Nur Verkäufe (Eingänge). Volles Kassabuch (Ausgänge, Bar privat, Belege) mit Pro+.'}
         </p>
 
-        {kassabuchVoll && (
-        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <label style={{ color: s.text, fontSize: '0.95rem', fontWeight: 500 }}>Kassabuch führen:</label>
-          <button
-            type="button"
-            onClick={toggleAktiv}
-            style={{
-              padding: '0.35rem 0.75rem',
-              background: aktiv ? '#2d7a3a' : s.muted,
-              color: '#fff',
-              border: 'none',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontSize: '0.9rem',
-            }}
-          >
-            {aktiv ? 'Ja' : 'Nein'}
-          </button>
-          <span style={{ color: s.muted, fontSize: '0.85rem' }}>
-            {aktiv ? 'Eingänge + Ausgänge' : 'Nur Verkäufe (Eingänge)'}
-          </span>
-        </div>
+        {kassabuchVoll && !aktiv && (
+          <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.45 }}>
+            Ausgaben sind gerade ausgeblendet. In der{' '}
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].kassa}
+              state={{ fromOeffentlich: tenant === 'oeffentlich' ? true : undefined }}
+              style={{ color: s.accent, fontWeight: 600 }}
+            >
+              Kassa
+            </Link>{' '}
+            kannst du „Volles Kassabuch mit Ausgaben“ anhaken.
+          </p>
         )}
 
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>

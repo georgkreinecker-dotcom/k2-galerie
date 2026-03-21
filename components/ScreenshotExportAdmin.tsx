@@ -1002,7 +1002,6 @@ import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '.
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
-import { isKassabuchAktiv, setKassabuchAktiv, hasKassa } from '../src/utils/kassabuchStorage'
 import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -1740,7 +1739,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     contact: { phone?: string; email?: string; address?: string }
   } | null>(null)
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'kassabuch' | 'backup'>('stammdaten')
+  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'backup'>('stammdaten')
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
@@ -1856,14 +1855,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   useEffect(() => {
     if (activeTab === 'einstellungen') setBackupTimestamps(getBackupTimestamps())
   }, [activeTab])
-
-  // Kassabuch führen (Einstellungen): lokale Anzeige synchron mit Speicher
-  const kassabuchTenantForSettings = tenant.isOeffentlich ? 'oeffentlich' as const : 'k2' as const
-  const [kassabuchAktivSetting, setKassabuchAktivSetting] = useState<boolean | null>(null)
-  useEffect(() => {
-    if (activeTab === 'einstellungen' && !tenant.isVk2) setKassabuchAktivSetting(null)
-  }, [activeTab, tenant.isVk2])
-  const kassabuchAktivDisplay = kassabuchAktivSetting !== null ? kassabuchAktivSetting : isKassabuchAktiv(kassabuchTenantForSettings)
 
   // Vorschau-Container für bildausfüllende Skalierung messen (Design-Tab Vorschau; bei Overlay ref wechselt)
   useEffect(() => {
@@ -2704,7 +2695,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // ök2: Lager-Tab nicht verfügbar. VK2: Sicherheit und Lager nicht – auf Stammdaten wechseln
   useEffect(() => {
-    if (tenant.isVk2 && (settingsSubTab === 'sicherheit' || settingsSubTab === 'kassabuch')) setSettingsSubTab('stammdaten')
+    if (tenant.isVk2 && settingsSubTab === 'sicherheit') setSettingsSubTab('stammdaten')
   }, [settingsSubTab])
 
   // Einstellungen: Beim Klick auf eine Karte (Meine Daten, Drucker, …) sofort den geöffneten Bereich in den sichtbaren Bereich scrollen (v. a. Handy)
@@ -15497,17 +15488,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Sicherungskopie und Wiederherstellung</div>
               </button>
               )}
-              {/* Kassabuch führen – nur ök2 (K2: immer Ja, keine Kachel nötig) */}
-              {tenant.isOeffentlich && hasKassa(kassabuchTenantForSettings) && (
-              <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'kassabuch' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📒</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Kassabuch führen</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Ja: vollständig (Eingänge + Ausgänge). Nein: nur Verkäufe.</div>
-              </button>
-              )}
               {/* 6. Passwort & Sicherheit – nur ök2 (K2 schlank, kein Passwort) */}
               {tenant.isOeffentlich && (
               <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
@@ -16722,26 +16702,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )}
               </div>
             )}
-
-            {/* Kassabuch führen Sub-Tab – nur K2/ök2, ab Pro */}
-            {!tenant.isVk2 && hasKassa(kassabuchTenantForSettings) && settingsSubTab === 'kassabuch' && (() => {
-              const aktiv = kassabuchAktivDisplay
-              return (
-                <div ref={settingsContentRef} style={{ padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1rem', color: s.text, marginBottom: '0.5rem' }}>📒 Kassabuch führen</h3>
-                  <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-                    <strong>Ja</strong>: Vollständiges Kassabuch (Eingänge + Ausgänge). <strong>Nein</strong>: Nur Verkäufe (Eingänge) sichtbar.
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <button type="button" onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, true); setKassabuchAktivSetting(true) }}
-                      style={{ padding: '0.5rem 1rem', background: aktiv ? s.accent : s.bgElevated, color: aktiv ? '#fff' : s.muted, border: `1px solid ${aktiv ? s.accent : s.muted}`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Ja</button>
-                    <button type="button" onClick={() => { setKassabuchAktiv(kassabuchTenantForSettings, false); setKassabuchAktivSetting(false) }}
-                      style={{ padding: '0.5rem 1rem', background: !aktiv ? s.accent : s.bgElevated, color: !aktiv ? '#fff' : s.muted, border: `1px solid ${!aktiv ? s.accent : s.muted}`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Nein</button>
-                    <span style={{ fontSize: '0.85rem', color: s.muted }}>{aktiv ? 'Vollständiges Kassabuch' : 'Nur Verkäufe'}</span>
-                  </div>
-                </div>
-              )
-            })()}
 
             {/* Registrierung Sub-Tab – nur K2/VK2; ök2 nutzt „Lizenz abschließen“ */}
             {!tenant.isOeffentlich && settingsSubTab === 'registrierung' && (
