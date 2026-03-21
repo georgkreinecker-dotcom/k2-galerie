@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **ök2 Demo/Muster UI (Georg):** Zwei Einstellungs-Zeilen + Stammdaten-Button → **eine** aufklappbare Zeile **„Demo & Muster zurücksetzen“** (zu, bis aufgeklappt); darin alle drei Aktionen + Hinweis Einzellöschen. **Meine Daten:** Verweis statt doppelter Button-Zeile. **Werke:** ein Zeilen-Hinweis. **App.css** `.admin-oek2-demo-details` für sauberes summary. Tests + Build grün. **Commit:** (nach Push)
+**Letzter Stand:** 21.03.26 – **ök2 Demo/Muster UI (Georg):** Zwei Einstellungs-Zeilen + Stammdaten-Button → **eine** aufklappbare Zeile **„Demo & Muster zurücksetzen“** (zu, bis aufgeklappt); darin alle drei Aktionen + Hinweis Einzellöschen. **Meine Daten:** Verweis statt doppelter Button-Zeile. **Werke:** ein Zeilen-Hinweis. **App.css** `.admin-oek2-demo-details` für sauberes summary. Tests + Build grün. **Commit:** 69b5bae ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Einstellungen: Lizenzen eine Karte (Georg):** Drei Lizenz-Kacheln → **eine** Karte **„Lizenzen“** mit **Lizenzinformation** als Hauptbutton (dunkelrot), darunter **Lizenz abschließen** und **Lizenz beenden** (ök2). VK2/dynamischer Mandant: dieselbe Karte, nur **Lizenz beenden**. Untermenüs `lizenz` / `lizenzbeenden` / `lizenzinfo` unverändert. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** (nach Push)
 
