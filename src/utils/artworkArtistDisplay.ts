@@ -1,4 +1,22 @@
+import {
+  FOCUS_DIRECTION_PRODUCT_CATEGORIES,
+  IDEA_CATEGORIES,
+  K2_STAMMDATEN_DEFAULTS,
+  MUSTER_TEXTE,
+  PRODUCT_CATEGORIES,
+} from '../config/tenantConfig'
 import { loadStammdaten } from './stammdatenStorage'
+
+function isProductCategoryId(cat: string | undefined): boolean {
+  if (!cat) return false
+  if (PRODUCT_CATEGORIES.some((c) => c.id === cat)) return true
+  return Object.values(FOCUS_DIRECTION_PRODUCT_CATEGORIES).some((list) => list.some((c) => c.id === cat))
+}
+
+function isIdeaCategoryId(cat: string | undefined): boolean {
+  if (!cat) return false
+  return IDEA_CATEGORIES.some((c) => c.id === cat)
+}
 
 /**
  * Anzeige-Künstler für Statistik & Reports: gleiche Logik wie Admin (Neues Werk) –
@@ -40,6 +58,10 @@ export function resolveArtistLabelForGalerieStatistik(
   if (cat === 'keramik' || cat === 'skulptur') return georg
   if (cat === 'konzept' || cat === 'fotografie' || cat === 'textil') return martina
 
+  /** Produkt-/Idee-Kategorien (Serie, Druck, Projekt, …) – auch wenn entryType fehlt oder veraltet ist */
+  if (isProductCategoryId(cat)) return georg
+  if (isIdeaCategoryId(cat)) return martina
+
   const et = artwork?.entryType
   if (et === 'product') return georg
   if (et === 'idea') return martina
@@ -77,8 +99,12 @@ export function readKuenstlerFallbackShop(fromOeffentlich: boolean): KuenstlerFa
   const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
   const m = loadStammdaten(tenant, 'martina')
   const g = loadStammdaten(tenant, 'georg')
-  const martina = String(m?.name ?? '').trim()
-  const georg = String(g?.name ?? '').trim()
+  const martina =
+    String(m?.name ?? '').trim() ||
+    (fromOeffentlich ? String(MUSTER_TEXTE.martina.name || '').trim() : String(K2_STAMMDATEN_DEFAULTS.martina.name || '').trim())
+  const georg =
+    String(g?.name ?? '').trim() ||
+    (fromOeffentlich ? String(MUSTER_TEXTE.georg.name || '').trim() : String(K2_STAMMDATEN_DEFAULTS.georg.name || '').trim())
   if (!martina || !georg) return null
   return { martina, georg }
 }

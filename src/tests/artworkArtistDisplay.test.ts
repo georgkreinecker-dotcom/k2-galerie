@@ -28,6 +28,7 @@ describe('resolveArtistLabelForGalerieStatistik', () => {
     expect(resolveArtistLabelForGalerieStatistik({ number: 'K2-K-0012' }, fb)).toBe('Georg K.')
     expect(resolveArtistLabelForGalerieStatistik({ number: 'k2-s-0003' }, fb)).toBe('Georg K.')
     expect(resolveArtistLabelForGalerieStatistik({ id: 'K2-G-0099' }, fb)).toBe('Martina K.')
+    expect(resolveArtistLabelForGalerieStatistik({ number: 'K2-P-0001' }, fb)).toBe('Georg K.')
   })
 
   it('Legacy K2-1234 → Martina', () => {
@@ -37,5 +38,12 @@ describe('resolveArtistLabelForGalerieStatistik', () => {
   it('entryType product / idea', () => {
     expect(resolveArtistLabelForGalerieStatistik({ entryType: 'product' }, fb)).toBe('Georg K.')
     expect(resolveArtistLabelForGalerieStatistik({ entryType: 'idea' }, fb)).toBe('Martina K.')
+  })
+
+  it('Produkt-/Idee-Kategorie ohne artist (auch ohne entryType) wie auf Werkkarten', () => {
+    expect(resolveArtistLabelForGalerieStatistik({ category: 'serie', entryType: 'artwork' }, fb)).toBe('Georg K.')
+    expect(resolveArtistLabelForGalerieStatistik({ category: 'druck' }, fb)).toBe('Georg K.')
+    expect(resolveArtistLabelForGalerieStatistik({ category: 'projekt', entryType: 'artwork' }, fb)).toBe('Martina K.')
+    expect(resolveArtistLabelForGalerieStatistik({ category: 'sonstiges_idee' }, fb)).toBe('Martina K.')
   })
 })
