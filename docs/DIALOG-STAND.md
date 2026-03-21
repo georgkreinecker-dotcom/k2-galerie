@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Korrektur CD = Cooperate Design (Georg):** **CD** ist **kein** Buchhaltungsbegriff. **Benutzerhandbuch** Buchhaltung nur noch **EK-Kalkulation** und **Rohertrag/Lager** in der Demo (`08`, `09`, `00-INDEX`, Kassa-Absatz in `03`). **Cooperate Design** in `02-GALERIE-GESTALTEN`, `03` Design-Absatz, **Präsi** `06-DESIGN-VEROEFFENTLICHUNG` + Verweis in `05-WERKE-ERFASSEN`; Kassa-Präsi `07` ohne falsche CD-Controlling-Zeile. **Commit:** 89025fd ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Korrektur CD = Cooperate Design (Georg):** **CD** ist **kein** Buchhaltungsbegriff. **Benutzerhandbuch** Buchhaltung nur noch **EK-Kalkulation** und **Rohertrag/Lager** in der Demo (`08`, `09`, `00-INDEX`, Kassa-Absatz in `03`). **Cooperate Design** in `02-GALERIE-GESTALTEN`, `03` Design-Absatz, **Präsi** `06-DESIGN-VEROEFFENTLICHUNG` + Verweis in `05-WERKE-ERFASSEN`; Kassa-Präsi `07` ohne falsche CD-Controlling-Zeile. **Commit:** baebf92 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau:** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**; Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**. **Commit:** f8b06e1 ✅ auf GitHub
 
