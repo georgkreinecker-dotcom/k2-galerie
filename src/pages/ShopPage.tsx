@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import jsQR from 'jsqr'
 import QRCode from 'qrcode'
@@ -9,6 +9,7 @@ import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorag
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getShopStorageKeys } from '../utils/shopContextKeys'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
+import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
@@ -165,6 +166,7 @@ const ShopPage = () => {
     fromReferrer
   const displayPhone = fromOeffentlich ? MUSTER_TEXTE.gallery.phone : galleryPhone
   const displayEmail = fromOeffentlich ? MUSTER_TEXTE.gallery.email : galleryEmail
+  const kuenstlerFbShop = useMemo(() => readKuenstlerFallbackShop(fromOeffentlich), [fromOeffentlich])
 
   // Ök2-Flag entfernen, wenn Shop von K2/APf aus geöffnet wurde (kein State, Referrer nicht von galerie-oeffentlich). Nicht entfernen wenn ök2-Kassa (k2-admin-context === oeffentlich).
   useEffect(() => {
@@ -963,13 +965,16 @@ ${bankBlock}
 
     const date = new Date(order.date)
     const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    const kuenstlerFbBon = readKuenstlerFallbackShop(fromOeffentlich)
     const itemsRows = order.items.map((item: CartItem, idx: number) => {
       const menge = 1
       const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
       const betrag = menge * ep
       const title = (item.title || item.number || '').replace(/</g, '&lt;')
       const sn = (item.number || '').replace(/</g, '&lt;')
-      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}<br><small>Nr. ${sn}</small></td><td style="text-align:center;font-size:8px">${menge}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:center;font-size:7px">inkl.</td><td style="text-align:right;font-size:8px">€ ${betrag.toFixed(2)}</td></tr>`
+      const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbBon)
+      const artistLine = r && r !== 'Ohne Künstler' ? `<br><small>${String(r).replace(/</g, '&lt;')}</small>` : ''
+      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}${artistLine}<br><small>Nr. ${sn}</small></td><td style="text-align:center;font-size:8px">${menge}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:center;font-size:7px">inkl.</td><td style="text-align:right;font-size:8px">€ ${betrag.toFixed(2)}</td></tr>`
     }).join('')
     const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
 
@@ -1072,6 +1077,7 @@ ${bankBlock}
     }
 
     const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+    const kuenstlerFbA4 = readKuenstlerFallbackShop(fromOeffentlich)
     let gStamm: ReturnType<typeof loadStammdaten> = null
     try {
       gStamm = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
@@ -1163,7 +1169,9 @@ ${bankBlock}
         const menge = 1
         const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
         const betrag = menge * ep
-        return `<tr><td style="text-align:center">${idx + 1}</td><td>${(item.title || item.number).replace(/</g, '&lt;')}${item.artist ? ' · ' + String(item.artist).replace(/</g, '&lt;') : ''}<br><small>Seriennr. ${String(item.number).replace(/</g, '&lt;')}</small></td><td style="text-align:center">${menge}</td><td style="text-align:right">€ ${ep.toFixed(2)}</td><td style="text-align:center">inkl.</td><td style="text-align:right">€ ${betrag.toFixed(2)}</td></tr>`
+        const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
+        const artEsc = r && r !== 'Ohne Künstler' ? ' · ' + String(r).replace(/</g, '&lt;') : ''
+        return `<tr><td style="text-align:center">${idx + 1}</td><td>${(item.title || item.number).replace(/</g, '&lt;')}${artEsc}<br><small>Seriennr. ${String(item.number).replace(/</g, '&lt;')}</small></td><td style="text-align:center">${menge}</td><td style="text-align:right">€ ${ep.toFixed(2)}</td><td style="text-align:center">inkl.</td><td style="text-align:right">€ ${betrag.toFixed(2)}</td></tr>`
       }).join('')
       const paymentTextRechnung = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung (Zahlung per Überweisung)'
       const bankBlock = [
@@ -1407,10 +1415,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   sizeInfo += (sizeInfo ? ' • ' : '') + [typeInfo, surfaceInfo].filter(Boolean).join(' • ')
                 }
               }
+              const rA4 = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
+              const artPart = rA4 && rA4 !== 'Ohne Künstler' ? ' • ' + String(rA4).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
               return `
               <div class="item">
                 <div class="item-title">${item.title || item.number}</div>
-                <div class="item-details">${getCategoryLabel(item.category)}${item.artist ? ' • ' + item.artist : ''}</div>
+                <div class="item-details">${getCategoryLabel(item.category)}${artPart}</div>
                 ${sizeInfo ? `<div class="item-details" style="margin-top: 1px;">${sizeInfo}</div>` : ''}
                 <div class="item-details" style="font-weight: bold; margin-top: 2px;">Seriennummer: ${item.number}</div>
                 <div class="item-price">€ ${item.price.toFixed(2)}</div>
@@ -2777,7 +2787,10 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                         marginTop: '0.15rem'
                       }}>
                         {getCategoryLabel(item.category)}
-                        {item.artist && ` · ${item.artist}`}
+                        {(() => {
+                          const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbShop)
+                          return r && r !== 'Ohne Künstler' ? ` · ${r}` : ''
+                        })()}
                       </div>
                     </div>
                     {/* Preis + Entfernen */}

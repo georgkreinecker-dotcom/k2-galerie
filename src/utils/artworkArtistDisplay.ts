@@ -1,3 +1,5 @@
+import { loadStammdaten } from './stammdatenStorage'
+
 /**
  * Anzeige-Künstler für Statistik & Reports: gleiche Logik wie Admin (Neues Werk) –
  * malerei/grafik/sonstiges → Künstler:in 1, keramik/skulptur → Künstler:in 2;
@@ -46,11 +48,37 @@ export function resolveArtistLabelForGalerieStatistik(
   const lettered = num.match(/^K2-([MKGSPOI])-/i)
   if (lettered) {
     const L = lettered[1].toUpperCase()
-    if (L === 'K' || L === 'S') return georg
+    // K Keramik, S Skulptur, P Produkt/Serien (typ. Werkstatt) → Georg; M/G/O/I → Martina
+    if (L === 'K' || L === 'S' || L === 'P') return georg
     return martina
   }
 
   if (/^K2-\d/.test(num) && !/^K2-[A-Z]-/i.test(num)) return martina
 
   return 'Ohne Künstler'
+}
+
+/** Galerie-Vorschau / Werkkarten: Martina & Georg aus Stammdaten (K2 bzw. ök2). VK2: kein Fallback (Mitglieder-Werke). */
+export function readKuenstlerFallbackGalerieKarten(musterOnly: boolean, vk2: boolean): KuenstlerFallbackNamen | null {
+  if (typeof window === 'undefined') return null
+  if (vk2) return null
+  const tenant = musterOnly ? 'oeffentlich' : 'k2'
+  const m = loadStammdaten(tenant, 'martina')
+  const g = loadStammdaten(tenant, 'georg')
+  const martina = String(m?.name ?? '').trim()
+  const georg = String(g?.name ?? '').trim()
+  if (!martina || !georg) return null
+  return { martina, georg }
+}
+
+/** Shop-Warenkorb & Belege: Kontext K2 vs. ök2. */
+export function readKuenstlerFallbackShop(fromOeffentlich: boolean): KuenstlerFallbackNamen | null {
+  if (typeof window === 'undefined') return null
+  const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+  const m = loadStammdaten(tenant, 'martina')
+  const g = loadStammdaten(tenant, 'georg')
+  const martina = String(m?.name ?? '').trim()
+  const georg = String(g?.name ?? '').trim()
+  if (!martina || !georg) return null
+  return { martina, georg }
 }

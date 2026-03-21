@@ -1,11 +1,13 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Manuell gelöschte Werke restlos (Georg):** Eiserne Regel: Löschen muss **nicht** durch „Vom Server laden“ zurückkommen. **Ursache:** Server-JSON hatte alten Stand. **Neu (K2 Admin):** Nach **Löschen** eines Werks automatisch **`publishGalleryDataToServer`** (optional leer: `allowEmptyArtworks`). Regel **`.cursor/rules/manuell-geloeschte-werke-restlos.mdc`**, **PROZESS-VEROEFFENTLICHEN-LADEN.md**. **Commit:** 820a690 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Werkkarten: Künstler wieder sichtbar (Georg):** `K2-S-…` = Kategorie **Skulptur** (Buchstabe **S**), nicht „gelöscht“. **K2-K-…** = **Keramik** – im Werk unter Bearbeiten setzen. Auf den Karten wurde bisher nur `artist` aus dem JSON gezeigt; bei leerem Feld nichts. **Neu:** dieselbe **Fallback-Logik** wie Statistik (`resolveArtistLabelForGalerieStatistik` + Stammdaten): **GalerieVorschauPage**, **ShopPage** (Warenkorb + Bon/Rechnung A4). Hilfen **`readKuenstlerFallbackGalerieKarten`** / **`readKuenstlerFallbackShop`** in **artworkArtistDisplay.ts**. Kein Schreiben in Werke. **Commit:** (nach Push) ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Manuell gelöschte Werke restlos (Georg):** Eiserne Regel: Löschen muss **nicht** durch „Vom Server laden“ zurückkommen. **Ursache:** Server-JSON hatte alten Stand. **Neu (K2 Admin):** Nach **Löschen** eines Werks automatisch **`publishGalleryDataToServer`** (optional leer: `allowEmptyArtworks`). Regel **`.cursor/rules/manuell-geloeschte-werke-restlos.mdc`**, **PROZESS-VEROEFFENTLICHEN-LADEN.md**. **Commit:** 820a690 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
 **Was wir JETZT tun:** –
-**Einordnung:** Keine weitere automatische Datenbereinigung ohne Backup / explizite Anweisung; Preis-Wahrheit laut Georg an **K2-K-…** wo Doppel schon entstanden.
+**Einordnung:** Künstler auf Karten = Anzeige aus Stammdaten wenn `artist` leer; Nummer **S vs. K** = gespeicherte **Kategorie** im Werk.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

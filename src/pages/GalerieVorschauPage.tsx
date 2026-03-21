@@ -20,6 +20,7 @@ import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { mergeServerWithLocal, preserveLocalImageData, updateKnownServerMaxNumbers, getKnownServerMaxForPrefix, renumberCollidingLocalArtworks } from '../utils/syncMerge'
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 // Fotos für neue Werke nur im Admin (Neues Werk hinzufügen) – dort Option Freistellen/Original
 import '../App.css'
 
@@ -2438,7 +2439,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           const sorted = sortArtworksFavoritesFirstThenNewest(filtered)
           // Bei „alle Werke“: Kategorien abwechselnd anzeigen (nicht alle Malerei, dann alle Keramik)
           const filteredArtworks = filter === 'alle' ? interleaveArtworksByCategory(sorted) : sorted
-          
+          const kuenstlerFb = readKuenstlerFallbackGalerieKarten(musterOnly, vk2)
+
           console.log('🎨 Render - filteredArtworks:', {
             anzahl: filteredArtworks.length,
             nummern: filteredArtworks.map((a: any) => a.number || a.id),
@@ -2798,7 +2800,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                     }}>
                       {getCategoryLabel(artwork.category)}
                       {artwork.subcategoryFree?.trim() && isSubcategoryPlausibleForCategory(artwork.category, artwork.subcategoryFree) && ` · ${artwork.subcategoryFree.trim()}`}
-                      {artwork.artist && ` • ${artwork.artist}`}
+                      {(() => {
+                        const r = resolveArtistLabelForGalerieStatistik(artwork, kuenstlerFb)
+                        return r && r !== 'Ohne Künstler' ? ` • ${r}` : ''
+                      })()}
                     </p>
                     {artwork.location && (
                       <p style={{ 
