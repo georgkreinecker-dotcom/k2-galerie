@@ -13377,7 +13377,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </button>
                     <span style={{ fontSize: '0.72rem', color: s.muted }}>Hier können die neuen Werke angelegt werden</span>
                     {tenant.isOeffentlich && (
-                      <span style={{ fontSize: '0.72rem', color: s.muted }}>Musterwerke entfernen: Werk in der Liste öffnen → unten „Löschen“ (alle nacheinander = Galerie leer)</span>
+                      <span style={{ fontSize: '0.72rem', color: s.muted }}>Demo-Werk einzeln löschen: öffnen → unten „Löschen“. Alles auf einmal: Einstellungen → „Demo &amp; Muster zurücksetzen“.</span>
                     )}
                   </div>
                 )}
@@ -15254,57 +15254,93 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
             )}
 
-            {/* ök2: Musterwerke zurücksetzen – Demo wieder auf Standard bringen (wenn z. B. versehentlich K2-Daten reingekommen sind) */}
+            {/* ök2: Demo/Muster – eine aufklappbare Zeile; Inhalt (3 Aktionen + Hinweis) nur bei Bedarf, Standard zu */}
             {tenant.isOeffentlich && (
-              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Demo-Galerie wieder auf Musterwerke setzen:</span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!confirm('Alle aktuellen Werke in der Demo-Galerie durch die Standard-Musterwerke ersetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
-                    const muster = [...MUSTER_ARTWORKS]
-                    await saveArtworksByKeyWithImageStore('k2-oeffentlich-artworks', muster, { filterK2Only: false, allowReduce: true })
-                    const resolved = await loadArtworksWithResolvedImages(tenant)
-                    setAllArtworksSafe(resolved)
-                    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
-                    alert(`✅ Musterwerke wiederhergestellt (${muster.length} Werke). Galerie-Ansicht zeigt wieder die Demo.`)
+              <details
+                className="admin-oek2-demo-details"
+                style={{
+                  marginBottom: '1rem',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(95,251,241,0.22)',
+                  background: 'rgba(95,251,241,0.05)',
+                }}
+              >
+                <summary
+                  style={{
+                    padding: '0.65rem 1rem',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    color: s.text,
+                    listStyle: 'none',
                   }}
-                  style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  🔄 Musterwerke zurücksetzen
-                </button>
-              </div>
-            )}
-
-            {/* ök2: Musterstammdaten zurücksetzen – Lena Berg, Paul Weber, Galerie Muster wieder herstellen */}
-            {tenant.isOeffentlich && (
-              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(95,251,241,0.06)', border: '1px solid rgba(95,251,241,0.2)', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Person & Galerie wieder auf Muster (Lena Berg, Paul Weber, Galerie Muster):</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!confirm('Stammdaten in der Demo auf die Standard-Muster (Lena Berg, Paul Weber, Galerie Muster) zurücksetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
-                    const martinaMuster = { ...MUSTER_TEXTE.martina, category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, vita: MUSTER_VITA_MARTINA, address: '', city: '', country: '' }
-                    const georgMuster = { ...MUSTER_TEXTE.georg, category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, vita: MUSTER_VITA_GEORG, address: '', city: '', country: '' }
-                    try {
-                      persistStammdaten('oeffentlich', 'martina', martinaMuster, { merge: false })
-                      persistStammdaten('oeffentlich', 'georg', georgMuster, { merge: false })
-                      persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery, focusDirections: [] }, { merge: false })
-                      setMartinaData(loadStammdaten('oeffentlich', 'martina') as any)
-                      setGeorgData(loadStammdaten('oeffentlich', 'georg') as any)
-                      setGalleryData(loadStammdaten('oeffentlich', 'gallery') as any)
-                    } catch (e) {
-                      console.error('Musterstammdaten zurücksetzen:', e)
-                      alert('⚠️ Fehler beim Zurücksetzen – siehe Konsole.')
-                      return
-                    }
-                    alert('✅ Musterstammdaten wiederhergestellt (Lena Berg, Paul Weber, Galerie Muster). In der Galerie und hier im Admin sichtbar.')
+                  Demo &amp; Muster zurücksetzen – meist nur in der Startphase, bis deine eigene Galerie steht
+                </summary>
+                <div
+                  style={{
+                    padding: '0 1rem 1rem',
+                    borderTop: '1px solid rgba(95,251,241,0.12)',
                   }}
-                  style={{ padding: '0.4rem 0.9rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}
                 >
-                  🔄 Musterstammdaten zurücksetzen
-                </button>
-              </div>
+                  <p style={{ margin: '0.75rem 0', fontSize: '0.82rem', color: s.muted, lineHeight: 1.55 }}>
+                    <strong>Wieder Standard-Demo:</strong> Werke auf die festen Musterwerke setzen, oder Person &amp; Galerie wieder auf Lena Berg, Paul Weber und „Galerie Muster“.
+                    <br />
+                    <strong>Leere Felder:</strong> Alle Mustertexte in Person &amp; Galerie auf einmal leeren – danach trägst du deine eigenen Daten ein (Tab „Meine Daten“).
+                  </p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.65rem' }}>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!confirm('Alle aktuellen Werke in der Demo-Galerie durch die Standard-Musterwerke ersetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
+                        const muster = [...MUSTER_ARTWORKS]
+                        await saveArtworksByKeyWithImageStore('k2-oeffentlich-artworks', muster, { filterK2Only: false, allowReduce: true })
+                        const resolved = await loadArtworksWithResolvedImages(tenant)
+                        setAllArtworksSafe(resolved)
+                        if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+                        alert(`✅ Musterwerke wiederhergestellt (${muster.length} Werke). Galerie-Ansicht zeigt wieder die Demo.`)
+                      }}
+                      style={{ padding: '0.45rem 0.85rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🔄 Musterwerke zurücksetzen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!confirm('Stammdaten in der Demo auf die Standard-Muster (Lena Berg, Paul Weber, Galerie Muster) zurücksetzen? (Nur für diese Demo, K2 bleibt unberührt.)')) return
+                        const martinaMuster = { ...MUSTER_TEXTE.martina, category: 'malerei' as const, bio: MUSTER_TEXTE.artist1Bio, vita: MUSTER_VITA_MARTINA, address: '', city: '', country: '' }
+                        const georgMuster = { ...MUSTER_TEXTE.georg, category: 'keramik' as const, bio: MUSTER_TEXTE.artist2Bio, vita: MUSTER_VITA_GEORG, address: '', city: '', country: '' }
+                        try {
+                          persistStammdaten('oeffentlich', 'martina', martinaMuster, { merge: false })
+                          persistStammdaten('oeffentlich', 'georg', georgMuster, { merge: false })
+                          persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery, focusDirections: [] }, { merge: false })
+                          setMartinaData(loadStammdaten('oeffentlich', 'martina') as any)
+                          setGeorgData(loadStammdaten('oeffentlich', 'georg') as any)
+                          setGalleryData(loadStammdaten('oeffentlich', 'gallery') as any)
+                        } catch (e) {
+                          console.error('Musterstammdaten zurücksetzen:', e)
+                          alert('⚠️ Fehler beim Zurücksetzen – siehe Konsole.')
+                          return
+                        }
+                        alert('✅ Musterstammdaten wiederhergestellt (Lena Berg, Paul Weber, Galerie Muster). In der Galerie und hier im Admin sichtbar.')
+                      }}
+                      style={{ padding: '0.45rem 0.85rem', background: 'transparent', color: s.accent, border: `1px solid ${s.accent}`, borderRadius: 8, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🔄 Musterstammdaten zurücksetzen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearStammdatenMuster}
+                      style={{ padding: '0.45rem 0.85rem', background: 'transparent', color: '#b54a1e', border: '1px solid #b54a1e', borderRadius: 8, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                    >
+                      🗑️ Musterfelder leeren
+                    </button>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.75rem', color: s.muted, lineHeight: 1.5 }}>
+                    Nur <strong>einzelne</strong> Demo-Werke entfernen: Tab <strong>Werke verwalten</strong> → Werk in der Liste öffnen → unten <strong>Löschen</strong> (mehrfach = Galerie leer).
+                  </p>
+                </div>
+              </details>
             )}
 
             {/* Nur ök2: Verwaltung-Links (Lizenzen, Empfehlungstool). K2 = nur unsere App, schlank ohne Lizenz-Button. */}
@@ -15312,7 +15348,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
-            {/* Einstellungen: Karten – Reihenfolge 1. Meine Daten, 2. Lizenz abschließen (ök2), 3. Lizenzinformation, 4. Empfehlungs-Programm, 5. Drucker, 6. Passwort */}
+            {/* Einstellungen: Karten – 1. Meine Daten, 2. Lizenzen (ök2: Info + abschließen + beenden; VK2/dynamisch: beenden), 3. Empfehlung … */}
             {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem' }}>
               {/* 1. Meine Daten */}
@@ -15324,39 +15360,102 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
               </button>
-              {/* 2. Lizenz abschließen (nur ök2) */}
-              {tenant.isOeffentlich && (
-              <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenz' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenz' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenz' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📄</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz abschließen</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Lizenz wählen, bezahlen – evtl. mit deinen Daten aus Einstellungen</div>
-              </button>
-              )}
-              {/* 2b. Lizenz beenden – ök2, VK2 oder dynamischer Mandant (K2 ohne ?tenantId= = unsere App, kein Ausstieg nötig) */}
-              {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (
-              <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzbeenden' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzbeenden' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🚪</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenz beenden</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Jederzeit aussteigen – 3 kurze Fragen, dann Kündigung</div>
-              </button>
-              )}
-              {/* 3. Lizenzinformation – nur ök2 (K2 schlank) */}
-              {tenant.isOeffentlich && (
-              <button type="button" onClick={() => setSettingsSubTab('lizenzinfo')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'lizenzinfo' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'lizenzinfo' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'lizenzinfo' ? s.accent : `${s.accent}22` }}
-              >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📋</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzinformation</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Stufen, Preise, Übersicht-Board & Lizenzen</div>
-              </button>
-              )}
+              {/* 2. Lizenzen – eine Karte, Hauptaktion Lizenzinformation, daneben Abschließen & Beenden (ök2); VK2/dynamisch nur Beenden */}
+              {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
+                const lizenzHubAktiv = settingsSubTab === 'lizenz' || settingsSubTab === 'lizenzbeenden' || settingsSubTab === 'lizenzinfo'
+                const innerBtn = {
+                  flex: '1 1 140px',
+                  minWidth: 0,
+                  padding: '0.55rem 0.75rem',
+                  borderRadius: 8,
+                  fontSize: '0.82rem',
+                  fontWeight: 600,
+                  cursor: 'pointer' as const,
+                  fontFamily: 'inherit',
+                  border: `1px solid ${s.accent}55`,
+                  background: s.bgCard,
+                  color: s.text,
+                  textAlign: 'left' as const,
+                }
+                return (
+                  <div
+                    style={{
+                      textAlign: 'left',
+                      background: lizenzHubAktiv ? `${s.accent}18` : s.bgElevated,
+                      border: `2px solid ${lizenzHubAktiv ? s.accent : `${s.accent}22`}`,
+                      borderRadius: '12px',
+                      padding: '1rem',
+                      transition: 'all 0.2s',
+                      fontFamily: 'inherit',
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = lizenzHubAktiv ? s.accent : `${s.accent}22` }}
+                  >
+                    <div style={{ fontSize: '1.4rem', marginBottom: '0.35rem' }}>📜</div>
+                    <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzen</div>
+                    <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', marginBottom: '0.75rem', lineHeight: 1.45 }}>
+                      {tenant.isOeffentlich
+                        ? 'Stufen & Preise – abschließen oder jederzeit beenden'
+                        : 'Lizenz beenden – jederzeit möglich'}
+                    </div>
+                    {tenant.isOeffentlich && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setSettingsSubTab('lizenzinfo')}
+                          style={{
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            padding: '0.65rem 0.9rem',
+                            marginBottom: '0.5rem',
+                            borderRadius: 8,
+                            border: 'none',
+                            background: '#b54a1e',
+                            color: '#fff',
+                            fontWeight: 700,
+                            fontSize: '0.88rem',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'center',
+                          }}
+                        >
+                          📋 Lizenzinformation
+                        </button>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenz' ? `${s.accent}22` : s.bgCard }}>
+                            📄 Lizenz abschließen
+                          </button>
+                          <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard }}>
+                            🚪 Lizenz beenden
+                          </button>
+                        </div>
+                      </>
+                    )}
+                    {!tenant.isOeffentlich && (tenant.isVk2 || tenant.dynamicTenantId) && (
+                      <button
+                        type="button"
+                        onClick={() => setSettingsSubTab('lizenzbeenden')}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          padding: '0.65rem 0.9rem',
+                          borderRadius: 8,
+                          border: `1px solid ${s.accent}55`,
+                          background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard,
+                          color: s.text,
+                          fontWeight: 600,
+                          fontSize: '0.88rem',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'center',
+                        }}
+                      >
+                        🚪 Lizenz beenden
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
               {/* 4. Empfehlungs-Programm – nur ök2 (K2 schlank) */}
               {tenant.isOeffentlich && (
               <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
@@ -16141,12 +16240,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       </div>
                     )}
                     {tenant.isOeffentlich && (
-                      <div style={{ marginBottom: '1rem' }}>
-                        <button type="button" onClick={clearStammdatenMuster} style={{ padding: '0.6rem 1.2rem', background: 'transparent', border: `2px solid ${s.accent}`, borderRadius: 10, color: s.accent, fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
-                          🗑️ Musterdaten entfernen – Felder leeren für eigene Eintragung
-                        </button>
-                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: s.muted }}>Ein Klick leert Person und Galerie – danach deine Daten eintragen.</p>
-                      </div>
+                      <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
+                        Musterfelder leeren: oben unter <strong>Einstellungen</strong> auf <strong>„Demo &amp; Muster zurücksetzen“</strong> tippen → <strong>🗑️ Musterfelder leeren</strong>.
+                      </p>
                     )}
                 <div style={{
                   display: 'grid',

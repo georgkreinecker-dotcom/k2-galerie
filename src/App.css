@@ -2360,3 +2360,11 @@ header h1 {
     border-color: #ccc;
   }
 }
+
+/* ök2 Admin: aufklappbare Demo/Muster-Zeile – kein Doppel-Pfeil am summary */
+.admin-oek2-demo-details summary {
+  list-style: none;
+}
+.admin-oek2-demo-details summary::-webkit-details-marker {
+  display: none;
+}
