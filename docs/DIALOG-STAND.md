@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **K2-Galerie links oben:** **kgm solution ©** ist **`Link`** zu **`PROJECT_ROUTES['k2-galerie'].galerieOeffentlich`** (öffentliche ök2-Demo-Galerie); vorher nur Text + `pointerEvents: 'none'`. VK2: Vereinsname unverändert ohne Link. **Tests grün, Build grün.** **Commit:** (nach Push)
+**Letzter Stand:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 2a66e65 (Push falls nötig)
+
+**Vorher:** 21.03.26 – **Eingangstor = `/entdecken` (Georg, Screenshot):** Verbindliches erste Tor = **EntdeckenPage** (Hero, Tor-Bild, „Jetzt entdecken“, Flow → ök2). **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = **`ENTDECKEN_ROUTE`** (nicht direkt `galerie-oeffentlich`). **PRODUKT-VISION** + Kommentare **navigation**, **EntdeckenPage**, **GaleriePage**-Tooltip, **BrandLogo**. **Commit:** (nach Push)
+
+**Vorher:** 21.03.26 – **kgm solution** oben links: Link über Konstante zum Fremd-Einstieg; zuvor nur Demo-Galerie-URL. **Commit:** 921f297 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **K2 Galerie: ⚙️ Admin / Einstellungen-Button wieder von APf:** `showAdminEntryOnGalerie` für echte K2-Galerie ergänzt um **`fromApf`** (DevView rendert wie ök2) und **`?embedded=1`** (Desktop/Mobil-Iframe der APf); ohne das war der Button oft weg (Referrer leer/strikt). **DevView:** `GaleriePage` mit `fromApf`. **Tests grün.** **Commit:** ae72a1d ✅ auf GitHub
 
@@ -80,11 +84,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Kurz im Browser: K2-Galerie → **kgm solution ©** tippen → landet auf **Demo-Galerie (ök2)**.
+**Was wir JETZT tun:** **Eingangstor** visuell & fachlich = Seite **Entdecken** (`/entdecken`); kgm-Link von Galerien dorthin.
 
-**Einordnung:** Relativer Router-Link = gleiche Origin (Mac/Vercel); ök2-Eingang = eine Route aus **navigation** (`galerieOeffentlich`).
+**Einordnung:** Screenshot (Hero + Tor) = Referenz; Fremde landen immer dort, dann Flow.
 
-**Nächster Schritt:** Bei Bedarf: mök2 / weitere Oberflächen; sonst wie zuvor.
+**Nächster Schritt:** Neue Einstiege nur über **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`**, keine zweite „Tor“-URL.
 
 ---
 
