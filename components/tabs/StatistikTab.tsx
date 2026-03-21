@@ -1,6 +1,10 @@
 import React from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel } from '../../src/config/tenantConfig'
+import {
+  resolveArtistLabelForGalerieStatistik,
+  type KuenstlerFallbackNamen,
+} from '../../src/utils/artworkArtistDisplay'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -10,9 +14,17 @@ interface StatistikTabProps {
   onRerender: () => void
   /** Verkauf stornieren: Eintrag entfernen, Stückzahl +1. Optional (z. B. ök2 ohne Storno). */
   onStorno?: (number: string) => void
+  /** K2/ök2: wenn `artist` leer, wie im Admin aus Kategorie/Werknummer zuordnen (VK2: weglassen). */
+  kuenstlerFallback?: KuenstlerFallbackNamen | null
 }
 
-export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender, onStorno }: StatistikTabProps) {
+export default function StatistikTab({
+  allArtworks,
+  onMarkAsReserved,
+  onRerender,
+  onStorno,
+  kuenstlerFallback,
+}: StatistikTabProps) {
   let soldEntries: any[] = []
   try { soldEntries = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]') } catch (_) {}
   let reservedEntries: any[] = []
@@ -61,7 +73,7 @@ export default function StatistikTab({ allArtworks, onMarkAsReserved, onRerender
   const galerieWert = galerieWerke.reduce((sum: number, a: any) => sum + wertProWerk(a), 0)
   const galerieNachKuenstler: Record<string, { count: number; wert: number }> = {}
   galerieWerke.forEach((a: any) => {
-    const name = (a.artist || 'Ohne Künstler').trim() || 'Ohne Künstler'
+    const name = resolveArtistLabelForGalerieStatistik(a, kuenstlerFallback ?? undefined)
     if (!galerieNachKuenstler[name]) galerieNachKuenstler[name] = { count: 0, wert: 0 }
     galerieNachKuenstler[name].count++
     galerieNachKuenstler[name].wert += wertProWerk(a)
