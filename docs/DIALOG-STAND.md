@@ -1,9 +1,13 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Verkaufsstatistik „nach Künstler“: Ohne Künstler trotz Martina/Georg (Georg):** Viele Werke hatten **`artist` leer** in den Daten; die Statistik wertete nur dieses Feld. **Neu:** `resolveArtistLabelForGalerieStatistik` (**artworkArtistDisplay.ts**) – gleiche Logik wie Admin (Kategorie, K2-Werknummer M/K/G/S/O/P/I, Legacy `K2-1234`, `entryType` product/idea); **StatistikTab** + **ScreenshotExportAdmin** (`kuenstlerFallback` aus Stammdaten; **VK2** ohne Fallback). Kein stiller Schreibzugriff auf Werke. Tests **artworkArtistDisplay.test.ts**. **Commit:** 3ac9104 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
 **Was wir JETZT tun:** –
-**Einordnung:** Anzeige/Statistik K2/ök2; K2-Kern-Speicher unverändert.
+**Einordnung:** Keine weitere automatische Datenbereinigung ohne Backup / explizite Anweisung; Preis-Wahrheit laut Georg an **K2-K-…** wo Doppel schon entstanden.
+
+**Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
+
+**Vorher:** 21.03.26 – **Verkaufsstatistik „nach Künstler“: Ohne Künstler trotz Martina/Georg (Georg):** Viele Werke hatten **`artist` leer** in den Daten; die Statistik wertete nur dieses Feld. **Neu:** `resolveArtistLabelForGalerieStatistik` (**artworkArtistDisplay.ts**) – gleiche Logik wie Admin (Kategorie, K2-Werknummer M/K/G/S/O/P/I, Legacy `K2-1234`, `entryType` product/idea); **StatistikTab** + **ScreenshotExportAdmin** (`kuenstlerFallback` aus Stammdaten; **VK2** ohne Fallback). Kein stiller Schreibzugriff auf Werke. Tests **artworkArtistDisplay.test.ts**. **Commit:** 3ac9104 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Kassabuch Ja/Nein auf der Kassa (Georg):** Entscheidung **nicht** in **Admin → Einstellungen** (Kachel/Sub-Tab **Kassabuch** entfernt in **ScreenshotExportAdmin**). **KassaEinstiegPage:** Checkbox **„Volles Kassabuch mit Ausgaben“** → `setKassabuchAktiv` / **Auszahlen (Ausgabe)** sichtbar. **KassabuchPage:** Ja/Nein-Buttons entfernt, Hinweis mit Link zur **Kassa**. **KassausgangPage:** bei ausgeschalteten Ausgaben Hinweis + Link **Kassa** (Direkt-URL). **Benutzerhandbuch** 08, **docs/K2-OEK2-KASSABUCH-AGENDA.md**. Tests + Build grün. **Commit:** 5bd4109 ✅ auf GitHub
 
