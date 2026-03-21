@@ -2352,8 +2352,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
           // Keine setState-Aufrufe während Render (verursacht Render-Loops)
           let currentArtworks = artworks && artworks.length > 0 ? artworks : (initialArtworks && initialArtworks.length > 0 ? initialArtworks : [])
           
-          // KRITISCH: Fallback - wenn beide leer sind, lade direkt aus localStorage
-          if (!currentArtworks || currentArtworks.length === 0) {
+          // KRITISCH: Fallback nur K2 – niemals k2-artworks bei ök2 lesen (eisernes Gesetz; Vermischung im Render)
+          if ((!currentArtworks || currentArtworks.length === 0) && !musterOnly) {
             try {
               const stored = localStorage.getItem('k2-artworks')
               if (stored) {

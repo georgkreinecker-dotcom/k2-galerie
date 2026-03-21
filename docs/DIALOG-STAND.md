@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **K2 K→M Batch: Nummern wirkten nicht (Georg):** Nach dem Button lud **`safeReload`** die Galerie – **Merge Server+lokal** erkennt `K2-K-0031` und `K2-M-0031` über dieselbe Ziffer **`0031`**; mit **`serverAsSoleTruth`** blieb der **alte Server-Stand** → lokale Korrektur weg. **Fix:** Nach Batch wie bei Veröffentlichen **`publishGalleryDataToServer(resolveArtworkImages(...))`**, dann Reload. Zusätzlich **grafik** + **sonstiges** wie **malerei** (Martina-Bereich). **Commit:** 38f3a05 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **K2/ök2 Vermischung – Analyse + Fix Vorschau:** Ursachenklassen in **`docs/K2-OEK2-VERMISCHUNG-URSACHEN.md`** (SessionStorage, direkte Keys, Render-Fallback, Auto-Save/State, Restore, `getPageTexts` ohne Tenant). **Bug:** `GalerieVorschauPage` Render-Fallback lud **`k2-artworks`** auch bei **`musterOnly`** (ök2) → echte K2-Werke in der Demo-Vorschau möglich. **Fix:** Fallback nur wenn **`!musterOnly`**. **00-INDEX** verlinkt die neue Doku. Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **K2 K→M Batch: Nummern wirkten nicht (Georg):** Nach dem Button lud **`safeReload`** die Galerie – **Merge Server+lokal** erkennt `K2-K-0031` und `K2-M-0031` über dieselbe Ziffer **`0031`**; mit **`serverAsSoleTruth`** blieb der **alte Server-Stand** → lokale Korrektur weg. **Fix:** Nach Batch wie bei Veröffentlichen **`publishGalleryDataToServer(resolveArtworkImages(...))`**, dann Reload. Zusätzlich **grafik** + **sonstiges** wie **malerei** (Martina-Bereich). **Commit:** 38f3a05 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **K2 Malerei-Button sichtbar (Georg):** Der Batch-Button war nur im Unter-Tab **„Passwort & Sicherheit“** – **K2 hat diese Kachel nicht** (nur ök2). **Fix:** gleicher Button jetzt unter **Einstellungen → Kachel „Backup & Bilder“** (Unter-Tab `backup`). **Commit:** 3b649c0 ✅ auf GitHub
 
@@ -15,7 +17,7 @@
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
 **Was wir JETZT tun:** –
-**Einordnung:** K2 K/M-Präfixe + Publish nach Batch = gleicher Stand Mac/Server; keine ök2/VK2 an dieser Logik.
+**Einordnung:** K2/ök2-Trennung: dokumentierte Ursachen + Vorschau-Fallback ohne `k2-artworks` bei ök2; gleiche Codebasis erfordert weiterhin Mandanten-Checks bei jedem neuen Lesepfad.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
