@@ -39,6 +39,11 @@
 
 ök2 nutzen kann der gesamte Markt (Ideen, Produkte); Kunstmarkt ist die Unterkategorie. VK2 nutzen können alle Vereine; Kunstvereine sind der aktuelle Einstieg.
 
+### Fremde / neue Besucher: ein Einstieg, sanfter Hinweis
+
+- **Eingangstor (klar und deutlich):** Die Seite **`/entdecken`** (EntdeckenPage) – Hero mit K2-Galerie-Werbelinie, **„Jetzt entdecken“**, Hinweis Tablet/PC, visuelles **Tor** – ist das **verbindliche erste Tor** für neue Nutzer:innen. Von dort führt der Flow in die persönliche ök2-Vorschau. Technische Konstante: **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = `ENTDECKEN_ROUTE` in `src/config/navigation.ts`. **Nicht** dasselbe wie der direkte Link nur zur nackten Demo-Galerie (`galerie-oeffentlich`).
+- **Sanft von jeder Galerie aus:** Auf fremden Galerie-Seiten kein zweiter lauter Einstieg – nur **kgm solution** (dezent, z. B. links oben) verlinkt auf **`/entdecken`**. Die Galerie bleibt **Schaufenster**; das **Eingangstor** bleibt die Entdecken-Seite.
+
 ---
 
 ## Zielplattformen (breite Vermarktung)

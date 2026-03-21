@@ -207,6 +207,13 @@ export const PROJECT_ROUTES = {
   },
 } as const
 
+/**
+ * **Eingangstor** für neue User / Fremde (Georg): immer **`/entdecken`** (EntdeckenPage –
+ * Hero mit Werbelinie, „Jetzt entdecken“, Tor-Bild, 3-Fragen-Flow → ök2-Demo).
+ * In fremden Galerien nur sanfter Hinweis über **kgm solution** (Link); Ziel = diese Route, nicht direkt `galerie-oeffentlich`.
+ */
+export const OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE = ENTDECKEN_ROUTE
+
 export type ProjectId = keyof typeof PROJECT_ROUTES
 
 /**

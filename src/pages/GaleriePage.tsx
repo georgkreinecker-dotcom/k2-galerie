@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
@@ -3104,7 +3104,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              So könnte dein Auftritt aussehen. Galerie ist unser Beispiel für Künstler:innen – hier kannst du jedes Produkt oder jede Idee präsentieren. Deine eigene Galerie bringst du genauso einfach in den Verteiler (WhatsApp, Link, überall). Schau dich um, dann gehst du mit mir in den Admin und siehst, wie du deine Plattform gestaltest.
+              So könnte <strong style={{ fontWeight: 700 }}>dein Auftritt mit eigener Linie</strong> aussehen – <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. Der <strong style={{ fontWeight: 700 }}>Mittelpunkt in der Plattform ist „Galerie gestalten“</strong> – dort legst du das fest; alles andere baut darauf auf. Diese Galerie ist das Beispiel. Teilen geht überall genauso einfach. Schau dich um, dann mit mir in den Admin – oder direkt zu Galerie gestalten.
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
               {typeof navigator !== 'undefined' && (
@@ -3127,6 +3127,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   📤 Galerie teilen
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  try { sessionStorage.setItem('k2-admin-context', 'oeffentlich') } catch (_) {}
+                  navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=design`)
+                }}
+                title="Corporate Design: Farben, Bilder, Texte – eine Linie für Web und Druck"
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'transparent',
+                  color: 'var(--k2-accent)',
+                  border: '2px solid var(--k2-accent)',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                ✨ Galerie gestalten (CD) →
+              </button>
               <button
                 type="button"
                 onClick={handleAdminButtonClick}

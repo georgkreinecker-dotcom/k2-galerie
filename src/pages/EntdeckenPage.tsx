@@ -1,8 +1,8 @@
 /**
- * EntdeckenPage – Landingpage für neue Künstler:innen
- * Route: /entdecken
+ * EntdeckenPage – **Eingangstor** (Georg): Landing für neue Nutzer:innen
+ * Route: /entdecken (= OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE in navigation.ts)
  *
- * 3-Fragen-Flow → persönliche Demo (ök2-Galerie)
+ * Hero + Tor-Bild + „Jetzt entdecken“ → 3-Fragen-Flow → persönliche Demo (ök2-Galerie).
  * Kein Verkaufsdruck, kein Formular, kein Anmeldeformular.
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
@@ -54,8 +54,14 @@ const T_DEFAULTS = {
   ctaSub: 'Kostenlos · Keine Anmeldung · 1 Minute',
 
   weg: 'Wofür interessierst du dich?',
-  wegSolo: { emoji: '🖼️', label: 'Meine eigene Plattform', sub: 'Deine Werke, dein Name, dein Auftritt – online und im Atelier.' },
+  wegSolo: {
+    emoji: '🖼️',
+    label: 'Meine eigene Plattform',
+    sub: 'Dein Corporate Design: eine Linie für die Galerie, Einladungen und Druck. Im Mittelpunkt steht Galerie gestalten – Farben, Bilder, Texte – alles andere baut darauf auf.',
+  },
   wegVerein: { emoji: '🏛️', label: 'Vereinsplattform', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Plattform – eine eigene Welt.' },
+  /** Kurzzeile unter der Weg-Frage (nur Kontext, kein Extra-Klick) */
+  wegCdHinweis: 'Tipp: Bei „eigene Plattform“ legst du mit Galerie gestalten dein Erscheinungsbild fest – das ist dein Corporate Design, durchgängig und professionell.',
 
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
@@ -94,8 +100,8 @@ interface HeroHubProps {
 }
 
 const HUB_STATIONEN = [
+  { emoji: '✨', name: 'Galerie gestalten und texten',  sub: 'Dein Corporate Design: Farben, Bilder, Texte – eine Linie für Web und Druck. Hier startet dein Auftritt.', tab: 'design', cdHerzstueck: true },
   { emoji: '🖼️', name: 'Meine Werke',                  sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen',     tab: 'werke' },
-  { emoji: '✨', name: 'Galerie gestalten und texten',  sub: 'Farben, Texte, Bilder – die Galerie wird zu dir',        tab: 'design' },
   { emoji: '🎟️', name: 'Events & Ausst.',               sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen',  tab: 'eventplan' },
   { emoji: '📋', name: 'Werkkatalog',                   sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
   { emoji: '🧾', name: 'Kassa & Verkauf',                sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy',      tab: 'statistik' },
@@ -196,6 +202,11 @@ function HeroHub({ accent, accentLight, accentGlow, bgDark, bgMid, fontHeading, 
               </div>
               <div>
                 <div style={{ fontSize: '0.6rem', color: `${accentGlow}88`, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Dein Galerie-Guide</div>
+                {'cdHerzstueck' in aktivStation && aktivStation.cdHerzstueck && (
+                  <div style={{ marginTop: '0.35rem', marginBottom: '0.15rem', display: 'inline-block', padding: '0.18rem 0.45rem', borderRadius: 8, background: `${accent}38`, border: `1px solid ${accentGlow}55`, fontSize: '0.58rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: '#fff8f0' }}>
+                    Corporate Design · Mittelpunkt
+                  </div>
+                )}
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#fff8f0', marginTop: '0.1rem' }}>
                   {aktivStation.emoji} {aktivStation.name}
                 </div>
@@ -283,6 +294,13 @@ function baueHubStationen(weg: string) {
   if (istVerein) {
     return [
       {
+        emoji: '✨',
+        name: 'Galerie gestalten und texten',
+        beschreibung: 'Euer gemeinsames Erscheinungsbild: Logo, Farben, Vereinsname, Willkommensbild – das Corporate Design des Vereins. Web, Einladungen und Druck bleiben in einer Linie.',
+        tab: 'design',
+        cdHerzstueck: true,
+      },
+      {
         emoji: '🖼️',
         name: 'Werke & Mitglieder',
         beschreibung: 'Alle Werke aller Mitglieder an einem Ort. Jede:r hat ein eigenes Profil mit Fotos, Preisen und Beschreibungen.',
@@ -307,12 +325,6 @@ function baueHubStationen(weg: string) {
         tab: 'katalog',
       },
       {
-        emoji: '✨',
-        name: 'Galerie gestalten und texten',
-        beschreibung: 'Farben, Logo, Vereinsname, Willkommensbild – die Galerie wird zum Gesicht eures Vereins.',
-        tab: 'design',
-      },
-      {
         emoji: '🚀',
         name: 'Verein starten',
         beschreibung: 'Vereinsname, Kontakt, Adresse – einmal eingetragen und euer gemeinsamer Auftritt ist live.',
@@ -324,22 +336,23 @@ function baueHubStationen(weg: string) {
 
   return [
     {
+      emoji: '✨',
+      name: 'Galerie gestalten und texten',
+      beschreibung: 'Das Herzstück deines Corporate Design: Willkommensbild, Farben, Typo, Texte. Eine Linie – von der Website bis zu Einladungen und Plakaten. Alles andere (Werke, Events, Druck) nutzt genau diesen Look.',
+      tab: 'design',
+      cdHerzstueck: true,
+    },
+    {
       emoji: '🖼️',
       name: 'Meine Werke',
-      beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.',
+      beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie – im Look, den du unter Galerie gestalten festgelegt hast.',
       tab: 'werke',
     },
     {
       emoji: '🎟️',
       name: 'Events & Ausstellungen',
-      beschreibung: 'Vernissage planen, Einladungen erstellen, QR-Codes für Besucher – alles an einem Ort.',
+      beschreibung: 'Vernissage planen, Einladungen erstellen, QR-Codes für Besucher – im gleichen Erscheinungsbild wie deine Galerie.',
       tab: 'eventplan',
-    },
-    {
-      emoji: '✨',
-      name: 'Galerie gestalten und texten',
-      beschreibung: 'Farben, Texte, Bilder – die Galerie wird zu deinem persönlichen Auftritt.',
-      tab: 'design',
     },
     {
       emoji: '📋',
@@ -476,6 +489,11 @@ function HubArbeitsbereich({ name, q1, accent, accentLight, accentGlow, bgDark, 
               <div style={{ fontSize: '0.6rem', color: `${accentGlow}88`, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>
                 {istVerein ? 'Vereins-Guide' : 'Galerie-Guide'}
               </div>
+              {'cdHerzstueck' in aktivStation && aktivStation.cdHerzstueck && (
+                <div style={{ marginTop: '0.35rem', marginBottom: '0.2rem', display: 'inline-block', padding: '0.2rem 0.5rem', borderRadius: 8, background: `${hubAccent}35`, border: `1px solid ${hubAccentGlow}66`, fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: '#fff8f0' }}>
+                  Corporate Design · Mittelpunkt
+                </div>
+              )}
               <div style={{ fontSize: 'clamp(0.95rem, 2.5vw, 1.1rem)', fontWeight: 700, color: '#fff8f0', marginTop: '0.1rem' }}>
                 {aktivStation.emoji} {aktivStation.name}
               </div>
@@ -716,6 +734,9 @@ export default function EntdeckenPage() {
                 <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '0.75rem' }}>
                   {T_hero.heroSub}
                 </p>
+                <p style={{ fontSize: 'clamp(0.82rem, 1.85vw, 0.95rem)', color: 'rgba(255,248,240,0.82)', lineHeight: 1.65, maxWidth: 460, marginBottom: '0.85rem', borderLeft: `3px solid ${accentGlow}88`, paddingLeft: '0.85rem' }}>
+                  <strong style={{ color: textLight }}>Galerie gestalten</strong> ist der Mittelpunkt: Hier legst du dein <strong style={{ color: textLight }}>Corporate Design</strong> fest – eine durchgängige Linie für die Website, Einladungen und alles, was du druckst.
+                </p>
                 <p style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'rgba(212,165,116,0.85)', lineHeight: 1.5, maxWidth: 420, marginBottom: '2.5rem' }}>
                   {T_hero.heroDeviceHint}
                 </p>
@@ -776,9 +797,12 @@ export default function EntdeckenPage() {
             <Progress />
 
             {/* Ein Klick auf die Karte öffnet direkt ök2 oder VK2 – kein Zusatzbutton */}
-            <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '1.5rem', lineHeight: 1.3 }}>
+            <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.65rem', lineHeight: 1.3 }}>
               {T.weg}
             </h2>
+            <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
+              {T.wegCdHinweis}
+            </p>
             <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} />
             <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
             <div style={{ marginTop: '1rem' }}>
