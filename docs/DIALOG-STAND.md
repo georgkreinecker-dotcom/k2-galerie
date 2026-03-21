@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 4e3e5ef (Push falls nötig)
+**Letzter Stand:** 21.03.26 – **Corporate Design am Eingang + ök2-Banner:** **EntdeckenPage** – Weg „Meine eigene Plattform“ mit **eigener CD**-Hinweis, **Galerie gestalten** als **Mittelpunkt** (Hero, Frage 1, Hub-Stationen mit Badge). **GaleriePage** (ök2 Fremde): Banner-Text stärker CD + Button **„Galerie gestalten (CD)“** → **Mein Bereich** `?context=oeffentlich&tab=design`; **Import** `MEIN_BEREICH_ROUTE` ergänzt (Build-Fix). Mit **navigation** (`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`), **BrandLogo**, **PRODUKT-VISION** (Fremde-Einstieg). **Tests + Build grün.** **Commit:** aadb30c ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 4e3e5ef (Push falls nötig)
 
 **Vorher:** 21.03.26 – **Eingangstor = `/entdecken` (Georg, Screenshot):** Verbindliches erste Tor = **EntdeckenPage** (Hero, Tor-Bild, „Jetzt entdecken“, Flow → ök2). **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = **`ENTDECKEN_ROUTE`** (nicht direkt `galerie-oeffentlich`). **PRODUKT-VISION** + Kommentare **navigation**, **EntdeckenPage**, **GaleriePage**-Tooltip, **BrandLogo**. **Commit:** (nach Push)
 
@@ -84,11 +86,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** **Eingangstor** visuell & fachlich = Seite **Entdecken** (`/entdecken`); kgm-Link von Galerien dorthin.
+**Was wir JETZT tun:** CD-/Plattform-Botschaft am **Eingang** und auf **ök2-Galerie** (Fremde) verifizieren; ggf. Textfeinschliff nach Georgs Live-Test.
 
-**Einordnung:** Screenshot (Hero + Tor) = Referenz; Fremde landen immer dort, dann Flow.
+**Einordnung:** **Galerie gestalten** = fachlicher **Mittelpunkt** der eigenen Linie (Web + Druck); **Entdecken** + grüner Balken führen dorthin.
 
-**Nächster Schritt:** Neue Einstiege nur über **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`**, keine zweite „Tor“-URL.
+**Nächster Schritt:** Georg: `/entdecken` + ök2-Galerie im Browser prüfen; bei Wunsch weitere Formulierungen nachziehen.
 
 ---
 
