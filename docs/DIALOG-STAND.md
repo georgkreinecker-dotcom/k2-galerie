@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **K2 Galerie: ⚙️ Admin / Einstellungen-Button wieder von APf:** `showAdminEntryOnGalerie` für echte K2-Galerie ergänzt um **`fromApf`** (DevView rendert wie ök2) und **`?embedded=1`** (Desktop/Mobil-Iframe der APf); ohne das war der Button oft weg (Referrer leer/strikt). **DevView:** `GaleriePage` mit `fromApf`. **Tests grün.** **Commit:** ae72a1d ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **K2-Galerie links oben:** **kgm solution ©** ist **`Link`** zu **`PROJECT_ROUTES['k2-galerie'].galerieOeffentlich`** (öffentliche ök2-Demo-Galerie); vorher nur Text + `pointerEvents: 'none'`. VK2: Vereinsname unverändert ohne Link. **Tests grün, Build grün.** **Commit:** (nach Push)
+
+**Vorher:** 21.03.26 – **K2 Galerie: ⚙️ Admin / Einstellungen-Button wieder von APf:** `showAdminEntryOnGalerie` für echte K2-Galerie ergänzt um **`fromApf`** (DevView rendert wie ök2) und **`?embedded=1`** (Desktop/Mobil-Iframe der APf); ohne das war der Button oft weg (Referrer leer/strikt). **DevView:** `GaleriePage` mit `fromApf`. **Tests grün.** **Commit:** ae72a1d ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Werbemittel-PDF:** html2canvas **direkt im Iframe** auf `captureRoot` (Styles aus Capture-CSS bleiben wirksam); **html2pdf** nur noch **jsPDF aus fertigem Canvas** (`.from(canvas, 'canvas')`), kein DOM-Klon ins Hauptdokument. **Typ:** `Html2PdfWorker.from` zweites Arg erlaubt. **mök2:** `Mok2ChapterPage` Überschrift **Teal `#0d9488`** statt Türkis auf hellem Kasten (Lesbarkeit). **Tests grün, Build grün.** **Commit:** 456fb23 ✅ auf GitHub
 
@@ -78,11 +80,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** APf → K2 Galerie: **⚙️ Admin** sichtbar; ggf. PDF-Fix weiter prüfen.
+**Was wir JETZT tun:** Kurz im Browser: K2-Galerie → **kgm solution ©** tippen → landet auf **Demo-Galerie (ök2)**.
 
-**Einordnung:** APf-K2-Galerie = **dieselbe Signalleiste** wie ök2 (`fromApf` + `embedded`); Besucher-Link ohne die Parameter weiter ohne Button.
+**Einordnung:** Relativer Router-Link = gleiche Origin (Mac/Vercel); ök2-Eingang = eine Route aus **navigation** (`galerieOeffentlich`).
 
-**Nächster Schritt:** Bei Bedarf: mök2 im Browser prüfen (Anker **Texte & KI**); sonst wie zuvor PDF-1-Klick / Vollbackup nach Lust.
+**Nächster Schritt:** Bei Bedarf: mök2 / weitere Oberflächen; sonst wie zuvor.
 
 ---
 

@@ -2528,28 +2528,52 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Brand linkes oberes Eck – VK2 klar erkennbar, sonst K2 Galerie */}
+        {/* Brand linkes oberes Eck – VK2: Vereinsname; K2: kgm solution → Link zur ök2-Demo-Galerie */}
         <div
           style={{
             position: 'fixed',
             top: 'max(clamp(0.75rem, 2vw, 1.25rem), calc(env(safe-area-inset-top, 0px) + 0.75rem))',
             left: 'clamp(1rem, 2vw, 1.5rem)',
             zIndex: 100,
-            pointerEvents: 'none'
+            pointerEvents: 'auto',
           }}
         >
           {(!musterOnly || vk2) && (
-          <div style={{
-            fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
-            fontWeight: '500',
-            color: 'var(--k2-text)',
-            letterSpacing: '0.02em',
-            lineHeight: 1.25,
-            textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
-            opacity: 0.92
-          }}>
-            {vk2 ? displayGalleryName : <>{PRODUCT_BRAND_NAME} <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span></>}
-          </div>
+            vk2 ? (
+              <div
+                style={{
+                  fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
+                  fontWeight: '500',
+                  color: 'var(--k2-text)',
+                  letterSpacing: '0.02em',
+                  lineHeight: 1.25,
+                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                  opacity: 0.92,
+                }}
+              >
+                {displayGalleryName}
+              </div>
+            ) : (
+              <Link
+                to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}
+                style={{
+                  fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
+                  fontWeight: '500',
+                  color: 'var(--k2-text)',
+                  letterSpacing: '0.02em',
+                  lineHeight: 1.25,
+                  textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
+                  opacity: 0.92,
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-block',
+                }}
+                title="Zur ök2-Demo-Galerie – ausprobieren und entdecken"
+              >
+                {PRODUCT_BRAND_NAME}{' '}
+                <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span>
+              </Link>
+            )
           )}
         </div>
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
