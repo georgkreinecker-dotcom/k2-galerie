@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Grep-Audit `k2-artworks` + Fixes:** `ZertifikatTab` / `PressemappeTab`: Lesen über **`readArtworksRawForContext`** + **`loadStammdaten`** / VK2 **`loadVk2Stammdaten`** (Props `isOeffentlich`/`isVk2` aus Admin). **`ControlStudioPage`** Archiv: **`useTenant`** + **`getShopSoldArtworksKey`** + Werke-Key ök2/K2 bzw. VK2-`k2-vk2-artworks-*`. **`GalerieVorschauPage`** `addToCart`: verkauft-Check mit **`getShopSoldArtworksKey(musterOnly, vk2)`** statt immer `k2-sold-artworks`. Doku **`K2-OEK2-VERMISCHUNG-URSACHEN.md`** §8 Tabelle. Tests + Build grün. **Commit:** a3c6abf ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **ök2 Fremde-Test: grüner Balken + Werke 4/4 + Sparte Kunst:** **GaleriePage** `showOek2FremdeOrientierungsBanner`: bei **`k2-from-entdecken`** immer **true** (SPA-Referrer oft leer). **EntdeckenPage** `openByChoice`: **`k2-galerie-from-admin`** + **`k2-oek2-from-apf`** entfernen, damit Fremde-Flow nicht blockiert. **ScreenshotExportAdmin** Gamification ök2: Liste nach **`getEffectiveDirectionFromWork`** vs. **`galleryData.focusDirections[0]`** gefiltert (kein fremdes Handwerk-Werk für 4/4). **`stammdatenStorage`** `loadStammdaten(oeffentlich, gallery)`: gespeicherte Sparte **`handwerk`** → Lesen als **`kunst`** (Demo-Muster). Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Grep-Audit `k2-artworks` + Fixes:** `ZertifikatTab` / `PressemappeTab`: Lesen über **`readArtworksRawForContext`** + **`loadStammdaten`** / VK2 **`loadVk2Stammdaten`** (Props `isOeffentlich`/`isVk2` aus Admin). **`ControlStudioPage`** Archiv: **`useTenant`** + **`getShopSoldArtworksKey`** + Werke-Key ök2/K2 bzw. VK2-`k2-vk2-artworks-*`. **`GalerieVorschauPage`** `addToCart`: verkauft-Check mit **`getShopSoldArtworksKey(musterOnly, vk2)`** statt immer `k2-sold-artworks`. Doku **`K2-OEK2-VERMISCHUNG-URSACHEN.md`** §8 Tabelle. Tests + Build grün. **Commit:** a3c6abf ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **K2/ök2 Vermischung – Analyse + Fix Vorschau:** Ursachenklassen in **`docs/K2-OEK2-VERMISCHUNG-URSACHEN.md`** (SessionStorage, direkte Keys, Render-Fallback, Auto-Save/State, Restore, `getPageTexts` ohne Tenant). **Bug:** `GalerieVorschauPage` Render-Fallback lud **`k2-artworks`** auch bei **`musterOnly`** (ök2) → echte K2-Werke in der Demo-Vorschau möglich. **Fix:** Fallback nur wenn **`!musterOnly`**. **00-INDEX** verlinkt die neue Doku. Tests + Build grün. **Commit:** 73c13bb ✅ auf GitHub
 
@@ -18,8 +20,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** –
-**Einordnung:** K2/ök2-Trennung: dokumentierte Ursachen + Vorschau-Fallback ohne `k2-artworks` bei ök2; gleiche Codebasis erfordert weiterhin Mandanten-Checks bei jedem neuen Lesepfad.
+**Was wir JETZT tun:** ök2 Fremde-Flow nach Deploy kurz prüfen (Entdecken → Muster-Galerie → grüner Balken; Admin Werke X/4 ohne Handwerk-Zombie bei Sparte Kunst).
+**Einordnung:** ök2-Demo-Einstieg und Gamification sollen echte Piloten nicht durch Session-Artefakte oder falsche Sparten-Werke verwirren.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

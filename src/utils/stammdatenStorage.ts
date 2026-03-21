@@ -143,6 +143,10 @@ export function loadStammdaten(tenant: StammdatenTenantId, type: StammdatenType)
       if (fd.length === 0) {
         return { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
       }
+      // Demo-Muster = Sparte Kunst; verwaiste „Handwerk“-Einstellung aus frühen Tests nicht dauerhaft durchreichen.
+      if (fd[0] === 'handwerk') {
+        return { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
+      }
     }
     return parsed
   } catch {

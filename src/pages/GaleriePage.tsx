@@ -451,6 +451,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1') return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return false
+      // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): Referrer bleibt bei SPA oft leer/extern –
+      // Orientierungs-Balken trotzdem zeigen (sonst sehen echte Fremde keinen grünen Guide).
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-entdecken') === '1') return true
       const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
       const origin = typeof window !== 'undefined' ? window.location.origin : ''
       if (ref.startsWith(origin)) {

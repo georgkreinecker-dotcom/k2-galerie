@@ -13188,7 +13188,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </h2>
               {/* Gamification: Werke (nur ök2) / Mitglieder (nur VK2) – nur Anzeige, kein Schreiben */}
               {tenant.isOeffentlich && showGamificationChecklists && (() => {
-                const list = Array.isArray(allArtworks) ? allArtworks : []
+                const fd0 = (galleryData?.focusDirections?.[0] as string) || DEFAULT_OEK2_FOCUS_DIRECTION_ID
+                const rawList = Array.isArray(allArtworks) ? allArtworks : []
+                // Nur Werke der gewählten Sparte (z. B. Kunst) – sonst zählt ein „Handwerk“-Testwerk die 4/4-Haken falsch hoch.
+                const list = rawList.filter((a: any) => getEffectiveDirectionFromWork(a) === fd0)
                 const hasArtImg = (a: any) => {
                   const u = (a?.imageUrl || a?.imageRef || a?.previewUrl || '').toString().trim()
                   return u.length > 0

@@ -649,6 +649,9 @@ export default function EntdeckenPage() {
   /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
   const openByChoice = (weg: 'solo' | 'verein') => {
     try {
+      // Fremde-Test: alte Admin/APf-Session-Flags nicht mit auf die Muster-Galerie nehmen (sonst fehlt der grüne Balken).
+      sessionStorage.removeItem('k2-galerie-from-admin')
+      sessionStorage.removeItem('k2-oek2-from-apf')
       sessionStorage.setItem('k2-from-entdecken', '1')
     } catch (_) {}
     const url = weg === 'verein'
