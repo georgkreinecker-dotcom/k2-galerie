@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
@@ -434,6 +434,31 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       const path = ref.slice(origin.length) || '/'
       if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
       if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return true
+    } catch (_) {}
+    return false
+  })()
+
+  /**
+   * ök2: grüner Orientierungs-Balken („So könnte dein Auftritt …“) für Fremde vor dem Admin.
+   * Nicht an `k2-admin-context` allein koppeln – der bleibt session-weit gesetzt und hätte den Balken dauerhaft versteckt (Kontext-Vergiftung).
+   * Ausblenden nur bei echter interner Herkunft: APf, embedded, fromAdmin, Referrer von Admin/Mission Control/APf-Projekt.
+   */
+  const showOek2FremdeOrientierungsBanner = (() => {
+    if (!musterOnly) return false
+    try {
+      if (fromApf) return false
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return false
+      if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return false
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1') return false
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return false
+      const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
+      const origin = typeof window !== 'undefined' ? window.location.origin : ''
+      if (ref.startsWith(origin)) {
+        const path = ref.slice(origin.length) || '/'
+        if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return false
+        if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return false
+      }
+      return true
     } catch (_) {}
     return false
   })()
@@ -2528,7 +2553,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Brand linkes oberes Eck – VK2: Vereinsname; K2: kgm solution → Link zur ök2-Demo-Galerie */}
+        {/* Brand linkes oberes Eck – VK2: Vereinsname; K2: kgm solution → einheitlicher Fremd-Einstieg (navigation) */}
         <div
           style={{
             position: 'fixed',
@@ -2555,7 +2580,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               </div>
             ) : (
               <Link
-                to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}
+                to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
                 style={{
                   fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
                   fontWeight: '500',
@@ -2568,7 +2593,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   cursor: 'pointer',
                   display: 'inline-block',
                 }}
-                title="Zur ök2-Demo-Galerie – ausprobieren und entdecken"
+                title="Zum Eingangstor – Entdecken (jetzt starten)"
               >
                 {PRODUCT_BRAND_NAME}{' '}
                 <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span>
@@ -3061,8 +3086,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </header>
         ) : (
         <>
-        {/* ök2: Willkommens-Banner nur für Fremde; von APf aus zeigen wir den festen Admin-Button statt Guide. */}
-        {musterOnly && !showAdminEntryOnGalerie && (
+        {/* ök2: Willkommens-Banner nur für Fremde; siehe showOek2FremdeOrientierungsBanner (nicht nur !showAdminEntryOnGalerie). */}
+        {showOek2FremdeOrientierungsBanner && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
             padding: 'clamp(0.75rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem)',
@@ -3956,8 +3981,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         </>
         )}
 
-        {/* Guide nur für Fremde (Besucher), nicht wenn User von Admin/APf kommt */}
-        {!musterOnly && isFremder && guideVisible && guideName && (
+        {/* Guide nur für Fremde (Besucher), nicht wenn User von Admin/APf kommt. ök2: Name kommt aus Entdecken (useEffect musterOnly) – vorher fälschlich nur !musterOnly gerendert → Guide nie sichtbar. */}
+        {isFremder && guideVisible && guideName && (
           <GalerieEntdeckenGuide
             name={guideName}
             onDismiss={() => {
@@ -3967,7 +3992,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           />
         )}
 
-        {!musterOnly && isFremder && !guideVisible && guideName && (
+        {isFremder && !guideVisible && guideName && (
           <GuideAbschlussKarte name={guideName} />
         )}
 
