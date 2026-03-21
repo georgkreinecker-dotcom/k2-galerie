@@ -404,6 +404,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const showAdminEntryOnGalerie = (() => {
     try {
       if (!musterOnly && !vk2) {
+        /** APf: DevView rendert Galerie mit fromApf; Iframe-Vorschau hängt ?embedded=1 an (Referrer oft unzuverlässig). */
+        if (fromApf) return true
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return true
         if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return true
         if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN)) return true
         if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
@@ -2638,7 +2641,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         )}
         </div>
         )}
-        {/* Admin-Button (fixed) – K2 immer; ök2/VK2 wenn von APf/Kontext (Fremde sehen nur das Guide-Banner). */}
+        {/* Admin-Button (fixed) – K2 wenn APf/embedded/entsperrt/Referrer; ök2/VK2 wenn von APf/Kontext (Fremde ohne Button). */}
         {showAdminEntryOnGalerie && (
         <button
           onClick={handleAdminButtonClick}

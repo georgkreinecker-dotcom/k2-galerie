@@ -878,7 +878,7 @@ end tell`
     const componentKey = `${pageToRender}-${key || 'default'}`
     
     if (pageToRender === 'galerie') {
-      return <GaleriePage key={componentKey} scrollToSection={galerieSection} />
+      return <GaleriePage key={componentKey} scrollToSection={galerieSection} fromApf />
     }
     // ök2: Im Cursor Preview (iframe) Platzhalter – im Browser echte Seite
     if (pageToRender === 'galerie-oeffentlich') {

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Werbemittel-PDF:** html2canvas **direkt im Iframe** auf `captureRoot` (Styles aus Capture-CSS bleiben wirksam); **html2pdf** nur noch **jsPDF aus fertigem Canvas** (`.from(canvas, 'canvas')`), kein DOM-Klon ins Hauptdokument. **Typ:** `Html2PdfWorker.from` zweites Arg erlaubt. **mök2:** `Mok2ChapterPage` Überschrift **Teal `#0d9488`** statt Türkis auf hellem Kasten (Lesbarkeit). **Tests grün, Build grün.** **Commit:** 456fb23 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **K2 Galerie: ⚙️ Admin / Einstellungen-Button wieder von APf:** `showAdminEntryOnGalerie` für echte K2-Galerie ergänzt um **`fromApf`** (DevView rendert wie ök2) und **`?embedded=1`** (Desktop/Mobil-Iframe der APf); ohne das war der Button oft weg (Referrer leer/strikt). **DevView:** `GaleriePage` mit `fromApf`. **Tests grün.** **Commit:** d64ba91 ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Werbemittel-PDF:** html2canvas **direkt im Iframe** auf `captureRoot` (Styles aus Capture-CSS bleiben wirksam); **html2pdf** nur noch **jsPDF aus fertigem Canvas** (`.from(canvas, 'canvas')`), kein DOM-Klon ins Hauptdokument. **Typ:** `Html2PdfWorker.from` zweites Arg erlaubt. **mök2:** `Mok2ChapterPage` Überschrift **Teal `#0d9488`** statt Türkis auf hellem Kasten (Lesbarkeit). **Tests grün, Build grün.** **Commit:** 456fb23 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** 4cb9d77 ✅ auf GitHub
 
@@ -76,9 +78,9 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** PDF-Fix live prüfen (Admin → Werbemittel → PDF); bei Abweichung Screenshot/Format melden.
+**Was wir JETZT tun:** APf → K2 Galerie: **⚙️ Admin** sichtbar; ggf. PDF-Fix weiter prüfen.
 
-**Einordnung:** **Ein Standard** – Raster = gleiche CSS-Quelle wie Vorschau; **kein** html2pdf-Klon ohne Styles.
+**Einordnung:** APf-K2-Galerie = **dieselbe Signalleiste** wie ök2 (`fromApf` + `embedded`); Besucher-Link ohne die Parameter weiter ohne Button.
 
 **Nächster Schritt:** Bei Bedarf: mök2 im Browser prüfen (Anker **Texte & KI**); sonst wie zuvor PDF-1-Klick / Vollbackup nach Lust.
 
