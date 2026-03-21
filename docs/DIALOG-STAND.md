@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau (Georg, Kleingewerbe):** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**: Kasten **Rohertrag** (VK/EK aus Verkäufen mit Werknummer + EK aus **`k2-oeffentlich-artworks`**) und **Vorschau Lagerstand** (Stückzahl &gt; 0, Tabelle max. 20 Zeilen, Summen VK/EK Lager, Link Admin Werkkatalog). Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**, Tests; **`Aktualisieren`** lädt Orders + Werke neu; Admin-Link **`?context=oeffentlich`**. Tests + Build grün. **Commit:** 0b597fc ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau (Georg, Kleingewerbe):** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**: Kasten **Rohertrag** (VK/EK aus Verkäufen mit Werknummer + EK aus **`k2-oeffentlich-artworks`**) und **Vorschau Lagerstand** (Stückzahl &gt; 0, Tabelle max. 20 Zeilen, Summen VK/EK Lager, Link Admin Werkkatalog). Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**, Tests; **`Aktualisieren`** lädt Orders + Werke neu; Admin-Link **`?context=oeffentlich`**. Tests + Build grün. **Commit:** f8b06e1 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Werkkarte: EK + VK:** **`purchasePrice`**, Eigenproduktion, Export ohne EK, Werkkatalog/Admin – siehe History.
 
