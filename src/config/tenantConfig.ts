@@ -979,6 +979,25 @@ export function getCategoriesForDirection(directionId: string | undefined): read
   return ARTWORK_CATEGORIES
 }
 
+/**
+ * ök2 Galerie/Vorschau: Kategorie-Tabs nur aus der gewählten Sparte (getCategoriesForDirection),
+ * und nur wenn mindestens ein Werk diese Kategorie trägt. Verhindert z. B. bei Sparte „Kunst“
+ * Tabs wie Möbel, Serie oder Konzept, die aus Fremd-Werken oder Demo-Mix stammen würden.
+ */
+export function getOek2GalleryFilterTabsForWorks(
+  directionId: string | undefined,
+  works: ReadonlyArray<{ category?: string } | null | undefined>
+): { id: string; label: string }[] {
+  const allowed = getCategoriesForDirection(directionId)
+  const allowedIds = new Set(allowed.map((c) => c.id))
+  const present = new Set<string>()
+  for (const w of works) {
+    const cat = w?.category
+    if (cat && allowedIds.has(cat)) present.add(cat)
+  }
+  return allowed.filter((c) => present.has(c.id))
+}
+
 /** Ermittelt die Sparte (Richtung) eines Werks aus entryType + category – für Filter und Anzeige in ök2. */
 export function getEffectiveDirectionFromWork(work: { entryType?: string; category?: string } | null | undefined): FocusDirectionId {
   if (!work) return 'kunst'

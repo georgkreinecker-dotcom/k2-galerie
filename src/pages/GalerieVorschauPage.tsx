@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, getOek2GalleryFilterTabsForWorks } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -285,23 +285,14 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     setArtworks(mergeWithPending(list))
   }, [musterOnly, vk2])
 
-  /** Nur Kategorien anzeigen, die in den aktuellen Werken vorkommen (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab). ök2: Reihenfolge nach Stammdaten-Sparte. */
+  /** K2/VK2: Tabs = alle in der Liste vorkommenden Kategorien. ök2: Tabs nur aus Sparte (getCategoriesForDirection) ∩ vorhandene Werke – keine „Möbel“/Serie/Konzept bei Sparte Kunst. */
   const categoriesWithArtworks = useMemo(() => {
     const list = artworks?.length ? artworks : (initialArtworks?.length ? initialArtworks : [])
-    const ids = new Set(list.map((a: any) => a.category).filter(Boolean) as string[])
-    const arr = Array.from(ids).map((id) => ({ id, label: getCategoryLabel(id) }))
     if (musterOnly && oeffentlichFocusDirection) {
-      const order = getCategoriesForDirection(oeffentlichFocusDirection)
-      return arr.slice().sort((a, b) => {
-        const i = order.findIndex((c) => c.id === a.id)
-        const j = order.findIndex((c) => c.id === b.id)
-        if (i === -1 && j === -1) return 0
-        if (i === -1) return 1
-        if (j === -1) return -1
-        return i - j
-      })
+      return getOek2GalleryFilterTabsForWorks(oeffentlichFocusDirection, list)
     }
-    return arr
+    const ids = new Set(list.map((a: any) => a.category).filter(Boolean) as string[])
+    return Array.from(ids).map((id) => ({ id, label: getCategoryLabel(id) }))
   }, [artworks, initialArtworks, musterOnly, oeffentlichFocusDirection])
 
   // Filter auf "alle" zurücksetzen, wenn gewählte Kategorie keine Werke mehr hat

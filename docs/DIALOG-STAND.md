@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **ök2 Fremde-Test: grüner Balken + Werke 4/4 + Sparte Kunst:** **GaleriePage** `showOek2FremdeOrientierungsBanner`: bei **`k2-from-entdecken`** immer **true** (SPA-Referrer oft leer). **EntdeckenPage** `openByChoice`: **`k2-galerie-from-admin`** + **`k2-oek2-from-apf`** entfernen, damit Fremde-Flow nicht blockiert. **ScreenshotExportAdmin** Gamification ök2: Liste nach **`getEffectiveDirectionFromWork`** vs. **`galleryData.focusDirections[0]`** gefiltert (kein fremdes Handwerk-Werk für 4/4). **`stammdatenStorage`** `loadStammdaten(oeffentlich, gallery)`: gespeicherte Sparte **`handwerk`** → Lesen als **`kunst`** (Demo-Muster). Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **ök2 Vorschau: Kategorie-Tabs = nur Sparte ∩ Werke:** Ursache des Chaos: **`categoriesWithArtworks`** baute Tabs aus **allen** `work.category`-Werten und sortierte nur nach Sparte → bei Sparte **Kunst** erschienen **Möbel**, **Serie/Edition**, **Konzept** (MUSTER_ARTWORKS product/idea + ggf. Alt-Werke). **Neu:** **`getOek2GalleryFilterTabsForWorks`** in **`tenantConfig`** – erlaubte IDs nur aus **`getCategoriesForDirection`**, Tab nur wenn ein Werk diese Kategorie in der Liste hat. **`GalerieVorschauPage`** nutzt das bei **`musterOnly`**. K2/VK2-Pfad unverändert. Tests **`oek2GalleryFilterTabs.test.ts`**. Tests + Build grün. **Commit:** 7d7f1db ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Grep-Audit `k2-artworks` + Fixes:** `ZertifikatTab` / `PressemappeTab`: Lesen über **`readArtworksRawForContext`** + **`loadStammdaten`** / VK2 **`loadVk2Stammdaten`** (Props `isOeffentlich`/`isVk2` aus Admin). **`ControlStudioPage`** Archiv: **`useTenant`** + **`getShopSoldArtworksKey`** + Werke-Key ök2/K2 bzw. VK2-`k2-vk2-artworks-*`. **`GalerieVorschauPage`** `addToCart`: verkauft-Check mit **`getShopSoldArtworksKey(musterOnly, vk2)`** statt immer `k2-sold-artworks`. Doku **`K2-OEK2-VERMISCHUNG-URSACHEN.md`** §8 Tabelle. Tests + Build grün. **Commit:** a3c6abf ✅ auf GitHub
 
@@ -20,8 +20,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** ök2 Fremde-Flow nach Deploy kurz prüfen (Entdecken → Muster-Galerie → grüner Balken; Admin Werke X/4 ohne Handwerk-Zombie bei Sparte Kunst).
-**Einordnung:** ök2-Demo-Einstieg und Gamification sollen echte Piloten nicht durch Session-Artefakte oder falsche Sparten-Werke verwirren.
+**Was wir JETZT tun:** ök2 Galerie-Vorschau mit Sparte Kunst: Filterzeile – nur noch Bilder/Keramik/Grafik/Skulptur/Sonstiges (laut vorhandenen Musterwerken), Produkt-/Idee-Kacheln weg; Fremde-Flow + Gamification wie zuvor kurz gegenprüfen.
+**Einordnung:** Eine Quelle Sparte→Kategorien (`getCategoriesForDirection`); Tabs dürfen nicht stärker sein als die Sparte (Sportwagenmodus).
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
