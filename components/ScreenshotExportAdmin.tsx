@@ -15350,15 +15350,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
             {/* Einstellungen: Karten – 1. Meine Daten, 2. Lizenzen (ök2: Info + abschließen + beenden; VK2/dynamisch: beenden), 3. Empfehlung … */}
             {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem', alignItems: 'stretch' }}>
               {/* 1. Meine Daten */}
-              <button type="button" onClick={() => setSettingsSubTab('stammdaten')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'stammdaten' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'stammdaten' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('stammdaten')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'stammdaten' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'stammdaten' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'stammdaten' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>👥</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
               </button>
               {/* 2. Lizenzen – eine Karte, Hauptaktion Lizenzinformation, daneben Abschließen & Beenden (ök2); VK2/dynamisch nur Beenden */}
               {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
@@ -15387,6 +15387,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       padding: '1rem',
                       transition: 'all 0.2s',
                       fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                      width: '100%',
+                      height: '100%',
+                      minHeight: '7.75rem',
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = lizenzHubAktiv ? s.accent : `${s.accent}22` }}
@@ -15458,23 +15462,23 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               })()}
               {/* 4. Empfehlungs-Programm – nur ök2 (K2 schlank) */}
               {tenant.isOeffentlich && (
-              <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('empfehlung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'empfehlung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'empfehlung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'empfehlung' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🤝</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Empfehlungs-Programm</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Deine Rabattstufe, geworbene User</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Deine Rabattstufe, geworbene User</div>
               </button>
               )}
               {/* 5. Drucker */}
-              <button type="button" onClick={() => setSettingsSubTab('drucker')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'drucker' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'drucker' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('drucker')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'drucker' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'drucker' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'drucker' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🖨️</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Drucker</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
@@ -15483,46 +15487,46 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <button
                 type="button"
                 onClick={() => setSettingsSubTab('backup')}
-                style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'backup' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'backup' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'backup' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'backup' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'backup' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>💾</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Bilder</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Sicherungskopie und Wiederherstellung</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Sicherungskopie und Wiederherstellung</div>
               </button>
               )}
               {/* Kassabuch führen – nur ök2 (K2: immer Ja, keine Kachel nötig) */}
               {tenant.isOeffentlich && hasKassa(kassabuchTenantForSettings) && (
-              <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('kassabuch')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'kassabuch' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'kassabuch' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'kassabuch' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📒</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Kassabuch führen</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Ja: vollständig (Eingänge + Ausgänge). Nein: nur Verkäufe.</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Ja: vollständig (Eingänge + Ausgänge). Nein: nur Verkäufe.</div>
               </button>
               )}
               {/* 6. Passwort & Sicherheit – nur ök2 (K2 schlank, kein Passwort) */}
               {tenant.isOeffentlich && (
-              <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('sicherheit')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'sicherheit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'sicherheit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'sicherheit' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🔒</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Passwort & Sicherheit</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Admin-Passwort ändern</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Admin-Passwort ändern</div>
               </button>
               )}
               {/* Anmeldung – nur VK2 (K2 schlank, keine Anmeldung) */}
               {tenant.isVk2 && (
-              <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
+              <button type="button" onClick={() => setSettingsSubTab('registrierung')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'registrierung' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'registrierung' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'registrierung' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📝</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Anmeldung</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Wie melden sich Nutzer an?</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Wie melden sich Nutzer an?</div>
               </button>
               )}
             </div>
