@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **K2 K→M Batch: Nummern wirkten nicht (Georg):** Nach dem Button lud **`safeReload`** die Galerie – **Merge Server+lokal** erkennt `K2-K-0031` und `K2-M-0031` über dieselbe Ziffer **`0031`**; mit **`serverAsSoleTruth`** blieb der **alte Server-Stand** → lokale Korrektur weg. **Fix:** Nach Batch wie bei Veröffentlichen **`publishGalleryDataToServer(resolveArtworkImages(...))`**, dann Reload. Zusätzlich **grafik** + **sonstiges** wie **malerei** (Martina-Bereich). **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **K2 K→M Batch: Nummern wirkten nicht (Georg):** Nach dem Button lud **`safeReload`** die Galerie – **Merge Server+lokal** erkennt `K2-K-0031` und `K2-M-0031` über dieselbe Ziffer **`0031`**; mit **`serverAsSoleTruth`** blieb der **alte Server-Stand** → lokale Korrektur weg. **Fix:** Nach Batch wie bei Veröffentlichen **`publishGalleryDataToServer(resolveArtworkImages(...))`**, dann Reload. Zusätzlich **grafik** + **sonstiges** wie **malerei** (Martina-Bereich). **Commit:** 38f3a05 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **K2 Malerei-Button sichtbar (Georg):** Der Batch-Button war nur im Unter-Tab **„Passwort & Sicherheit“** – **K2 hat diese Kachel nicht** (nur ök2). **Fix:** gleicher Button jetzt unter **Einstellungen → Kachel „Backup & Bilder“** (Unter-Tab `backup`). **Commit:** 3b649c0 ✅ auf GitHub
 
