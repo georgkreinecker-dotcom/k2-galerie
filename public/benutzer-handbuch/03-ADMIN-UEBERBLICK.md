@@ -12,7 +12,7 @@ Unter **„Werke“** legen Sie Ihre Kunstwerke oder Objekte an und bearbeiten s
 
 ## Design (Galerie gestalten)
 
-Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willkommensbild, Galerie-Karte, Texte, Farben, Anordnung. Alles, was Besucherinnen und Besucher zuerst sehen, steuern Sie von hier aus.
+Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willkommensbild, Galerie-Karte, Texte, Farben, Anordnung. Alles, was Besucherinnen und Besucher zuerst sehen, steuern Sie von hier aus. **Cooperate Design** bedeutet: **eine Linie** von der Galerie bis zu Druck und Werbemitteln – **CD** ist hier das **Design-Thema**, nicht die Buchhaltung.
 
 ---
 
@@ -42,7 +42,7 @@ Unter **„Event- und Medienplanung“** finden Sie den gesamten Ablauf in einem
 
 ## Kassa und Kassabuch
 
-Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zu **EK-Kalkulation** am Werk und zur **CD-Übersicht** Controlling-Daten in der Demo. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
+Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zur **EK-Kalkulation** am Werk sowie **Rohertrag** und **Lager-Vorschau** in der **Demo**. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
 
 ---
 

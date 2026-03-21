@@ -115,7 +115,7 @@ Unter **Kassa → Buchhaltung** haben Sie **alles an einem Ort**: Unterlagen pro
 
 So haben Sie **eine zentrale Ablage** pro Jahr oder Quartal: CSVs plus Belege-PDF. Die Vorarbeit erledigen Sie hier; der Rest (UStVA, EO, Jahresabschluss) bleibt beim Steuerberater.
 
-## CD-Übersicht und EK-Kalkulation
+## EK-Kalkulation und Rohertrag in der Demo
 
 **Keine Steuerberatung:** Die folgenden Punkte sind ein **Überblick für den Alltag** und ersetzen keine Prüfung durch eine Steuerberaterin oder einen Steuerberater.
 
@@ -129,9 +129,7 @@ An jedem Werk pflegen Sie in der **Werkkarte** den **Verkaufspreis** und optiona
 
 So liegt die **Grundlage** für Wareneinsatz und Lagerwerte in Ihren **Werkdaten** – nicht in separaten Tabellen.
 
-### CD-Übersicht Controlling-Daten
-
-**CD** steht hier für **Controlling‑Daten**: ein **schneller Überblick**, ob Verkauf und Einstand zusammenpassen.
+### Rohertrag und Lager-Vorschau in der Demo
 
 In der **öffentlichen Demo-Galerie** zeigt die Seite **Buchhaltung** zusätzlich zu den Exporten eine **Übersicht Rohertrag**: **Verkaufserlös** minus **Wareneinsatz** aus den Werkdaten, nur für Positionen **mit Werknummer**. Daneben gibt es eine **Vorschau Lagerstand** aus den Demo-Werken mit **Stückzahl größer null**.
 
@@ -163,4 +161,4 @@ Mit **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollstä
 - **Storno:** In **Verkaufsliste – Storno** Verkauf **Stornieren** (Verkauf aufheben) oder nur **Bon erneut drucken**.
 - **Kassabuch:** Pro = nur Eingänge. Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge). Kassabuch drucken und CSV-Export.
 - **Buchhaltung:** Admin → Kassa → **Buchhaltung**. **Zeitraum** wählen (Jahr/Von–Bis) → **Kassabuch-CSV**, **Verkäufe-CSV**, **Belege als PDF**. Vorarbeit in der App; UStVA/EO beim Steuerberater. **7 Jahre** Aufbewahrung. **Pro++** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
-- **EK am Werk** optional für Einstand; leer = Eigenproduktion. **CD-Übersicht** in der Demo: Rohertrag und Lager-Vorschau als Controlling-Hilfe, keine Steuerberatung.
+- **EK am Werk** optional für Einstand; leer = Eigenproduktion. In der **Demo:** Rohertrag-Übersicht und Lager-Vorschau als Alltags-Hilfe, keine Steuerberatung.

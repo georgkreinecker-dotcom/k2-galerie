@@ -60,11 +60,13 @@ Nach dem Auswählen eines Fotos können Sie die Darstellung wählen:
 
 Alle Änderungen sind zunächst auf dem Gerät gespeichert. Damit Besucherinnen und Besucher die aktuelle Version sehen, müssen Sie **veröffentlichen** (siehe unten).
 
-**Preise und EK-Kalkulation:** Ausführlicher Ablauf mit Kassa, **CD-Übersicht** Rohertrag in der Demo und Exporten für den Steuerberater steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md).
+**Preise und EK-Kalkulation:** Ausführlicher Ablauf mit Kassa, Rohertrag in der Demo und Exporten für den Steuerberater steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md).
 
 ---
 
 ## Design anpassen
+
+**Cooperate Design:** Unter diesem Thema fassen wir die **durchgängige visuelle Linie** zusammen: Was Sie unter **Galerie gestalten** und **Design** festlegen – Farben, Texte, Willkommensbild, Galerie-Karte – soll **derselben Handschrift** folgen wie später Flyer, Plakat, Presse und die öffentliche Galerie. **CD** steht dafür **nicht** für Buchhaltung, sondern für **einheitliches Erscheinungsbild** über alle Kanäle hinweg.
 
 Unter **„Design“** können Sie neben dem Willkommensbild oft auch Texte, Farben oder die Anordnung der Galerie anpassen. Die genauen Optionen hängen von Ihrer Version ab. Wählen Sie den Tab **„Design“** und folgen Sie den Beschreibungen auf der Seite. Nach jeder Änderung lohnt sich ein Klick auf **„Speichern“**.
 
