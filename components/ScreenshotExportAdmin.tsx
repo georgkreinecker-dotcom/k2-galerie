@@ -52,6 +52,7 @@ import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumen
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
+import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
@@ -1866,7 +1867,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     suchtext: string
   }>({ status: 'alle', kategorie: '', artist: '', vonDatum: '', bisDatum: '', vonPreis: '', bisPreis: '', suchtext: '' })
   const [katalogAnsicht, setKatalogAnsicht] = useState<'tabelle' | 'karten'>('tabelle')
-  const [katalogSpalten, setKatalogSpalten] = useState<string[]>(['nummer', 'titel', 'kategorie', 'kuenstler', 'masse', 'technik', 'preis', 'status', 'datum', 'kaeufer'])
+  const [katalogSpalten, setKatalogSpalten] = useState<string[]>(['nummer', 'titel', 'kategorie', 'kuenstler', 'masse', 'technik', 'ek', 'preis', 'status', 'datum', 'kaeufer'])
   const [katalogSelectedWork, setKatalogSelectedWork] = useState<any>(null)
 
   // Besucher-Ticker: Zahl der Hompage-Besucher für aktuellen Kontext (K2 / ök2 / VK2)
@@ -2136,6 +2137,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [artworkVerkaufsstatus, setArtworkVerkaufsstatus] = useState<'verfuegbar' | 'reserviert' | 'verkauft'>('verfuegbar')
   const [artworkDimensions, setArtworkDimensions] = useState<string>('') // z.B. "60×80 cm"
   const [artworkPrice, setArtworkPrice] = useState<string>('')
+  /** Einkaufspreis (intern); leer = Eigenproduktion – wird nicht veröffentlicht. */
+  const [artworkPurchasePrice, setArtworkPurchasePrice] = useState<string>('')
   // Sichtbarkeit-Einstellungen:
   // - inExhibition: In Online-Galerie anzeigen (false = nur Lager & Kassa, nicht digital)
   // - inShop: Werke im Online-Shop verfügbar (kann geändert werden)
@@ -10021,6 +10024,11 @@ ${'='.repeat(60)}
       if (artworkPaintingHeight) artworkData.paintingHeight = parseFloat(artworkPaintingHeight)
     }
 
+    const ekParsed = parseEkFromForm(artworkPurchasePrice)
+    if (ekParsed != null) {
+      artworkData.purchasePrice = ekParsed
+    }
+
     // K2: Martinas Malerei mit fälschlich K2-K- → K2-M- (Stammdaten + Kategorie; kein manuelles Nummern-Fummeln)
     if (!forOek2 && !tenant.isVk2 && !editingArtwork) {
       const preList = loadArtworksRaw(tenant)
@@ -10521,6 +10529,7 @@ ${'='.repeat(60)}
       setArtworkTechnik('')
       setArtworkDimensions('')
       setArtworkPrice('')
+      setArtworkPurchasePrice('')
       setArtworkQuantity('1')
       setIsInShop(true)
       setIsImVereinskatalog(false)
@@ -13017,6 +13026,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 onMarkAsReserved={handleMarkAsReserved}
                 onRerender={() => loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)}
                 onStorno={handleStornoVerkauf}
+                showPreisspanneVerkauf={tenant.isOeffentlich}
                 kuenstlerFallback={
                   tenant.isVk2
                     ? undefined
@@ -14438,6 +14448,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             setArtworkTechnik(artwork.technik || '')
                             setArtworkDimensions(artwork.dimensions || '')
                             setArtworkPrice(String(artwork.price || ''))
+                            setArtworkPurchasePrice(artwork.purchasePrice != null && Number(artwork.purchasePrice) > 0 ? String(artwork.purchasePrice) : '')
                             setArtworkQuantity(String(artwork.quantity ?? 1))
                             setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                             setIsInExhibition(artwork.inExhibition === true)
@@ -14490,6 +14501,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           setArtworkTechnik(artwork.technik || '')
                           setArtworkDimensions(artwork.dimensions || (artwork.paintingWidth && artwork.paintingHeight ? `${artwork.paintingWidth}×${artwork.paintingHeight} cm` : ''))
                           setArtworkPrice(String(artwork.price || ''))
+                          setArtworkPurchasePrice(artwork.purchasePrice != null && Number(artwork.purchasePrice) > 0 ? String(artwork.purchasePrice) : '')
                           setArtworkQuantity(String(artwork.quantity ?? 1))
                           setIsInShop(artwork.inShop !== undefined ? artwork.inShop : true)
                           setIsInExhibition(artwork.inExhibition === true)
@@ -22786,6 +22798,7 @@ ${name}`
             setArtworkTechnik('')
             setArtworkDimensions('')
             setArtworkPrice('')
+            setArtworkPurchasePrice('')
             setArtworkQuantity('1')
             setSelectedFile(null)
             setPreviewUrl(null)
@@ -22855,6 +22868,7 @@ ${name}`
                   setArtworkArtist('')
                   setArtworkDescription('')
                   setArtworkPrice('')
+                  setArtworkPurchasePrice('')
                   setArtworkQuantity('1')
                   setSelectedFile(null)
                   setPreviewUrl(null)
@@ -23607,20 +23621,25 @@ ${name}`
                     <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Beschreibung</label>
                     <textarea value={artworkDescription} onChange={e => setArtworkDescription(e.target.value)} placeholder="Kurze Beschreibung des Werks …" rows={2} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', resize: 'vertical' }} />
                   </div>
-                  {/* Zeile 5: Preis + Status */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.6rem', alignItems: 'start' }}>
+                  {/* Zeile 5: EK + VK + Verkaufsstatus */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', alignItems: 'start' }}>
                     <div>
-                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Preis (€) *</label>
-                      <input type="number" min={0} step={0.01} value={artworkPrice} onChange={e => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>EK (€)</label>
+                      <input type="number" min={0} step={0.01} value={artworkPurchasePrice} onChange={e => setArtworkPurchasePrice(e.target.value)} placeholder="leer" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                      <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.45)', marginTop: 3 }}>Leer = Eigenproduktion</div>
                     </div>
                     <div>
+                      <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>VK (€) *</label>
+                      <input type="number" min={0} step={0.01} value={artworkPrice} onChange={e => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
+                  </div>
+                  <div style={{ marginBottom: '0.6rem' }}>
                       <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: 600 }}>Verkaufsstatus</label>
                       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                         {([['verfuegbar','✅ Verfügbar','rgba(34,197,94,0.2)','rgba(34,197,94,0.6)'],['reserviert','🔶 Reserviert','rgba(251,191,36,0.2)','rgba(251,191,36,0.6)'],['verkauft','🔴 Verkauft','rgba(239,68,68,0.2)','rgba(239,68,68,0.6)']] as const).map(([val, lbl, bg, bd]) => (
                           <button key={val} type="button" onClick={() => setArtworkVerkaufsstatus(val)} style={{ padding: '0.35rem 0.7rem', borderRadius: 20, border: `1px solid ${artworkVerkaufsstatus === val ? bd : 'rgba(255,255,255,0.12)'}`, background: artworkVerkaufsstatus === val ? bg : 'transparent', color: artworkVerkaufsstatus === val ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: '0.78rem', cursor: 'pointer', fontWeight: artworkVerkaufsstatus === val ? 700 : 400 }}>{lbl}</button>
                         ))}
                       </div>
-                    </div>
                   </div>
                 </div>
               ) : tenant.isOeffentlich ? (
@@ -23713,9 +23732,16 @@ ${name}`
                       </div>
                     </>
                   )}
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Preis (€) *</label>
-                    <input type="number" min="0" step="0.01" value={artworkPrice} onChange={(e) => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', maxWidth: '140px', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', maxWidth: 320 }}>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>EK (€)</label>
+                      <input type="number" min="0" step="0.01" value={artworkPurchasePrice} onChange={(e) => setArtworkPurchasePrice(e.target.value)} placeholder="leer" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                      <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Leer = Eigenproduktion</div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>VK (€) *</label>
+                      <input type="number" min="0" step="0.01" value={artworkPrice} onChange={(e) => setArtworkPrice(e.target.value)} placeholder="0.00" style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }} />
+                    </div>
                   </div>
                   <div>
                     <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Stückzahl</label>
@@ -24103,34 +24129,66 @@ ${name}`
                     }}
                   />
                 </div>
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '0.4rem',
-                    fontSize: '0.8rem',
-                    color: '#8fa0c9',
-                    fontWeight: '500'
-                  }}>
-                    Preis (€) *
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={artworkPrice}
-                    onChange={(e) => setArtworkPrice(e.target.value)}
-                    placeholder="0.00"
-                    style={{
-                      width: '100%',
-                      padding: '0.6rem',
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                      borderRadius: '8px',
-                      color: '#ffffff',
-                      fontSize: '0.9rem',
-                      outline: 'none'
-                    }}
-                  />
+                <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      EK (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={artworkPurchasePrice}
+                      onChange={(e) => setArtworkPurchasePrice(e.target.value)}
+                      placeholder="leer"
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>Leer = Eigenproduktion</div>
+                  </div>
+                  <div>
+                    <label style={{
+                      display: 'block',
+                      marginBottom: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: '#8fa0c9',
+                      fontWeight: '500'
+                    }}>
+                      VK (€) *
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={artworkPrice}
+                      onChange={(e) => setArtworkPrice(e.target.value)}
+                      placeholder="0.00"
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem',
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '8px',
+                        color: '#ffffff',
+                        fontSize: '0.9rem',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
                 </div>
                 <div>
                   <label style={{
@@ -24309,6 +24367,7 @@ ${name}`
                     setArtworkArtist('')
                     setArtworkDescription('')
                     setArtworkPrice('')
+                    setArtworkPurchasePrice('')
                     setArtworkQuantity('1')
                     setSelectedFile(null)
                     setPreviewUrl(null)

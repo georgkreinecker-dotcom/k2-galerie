@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel, getEntryTypeLabel, ARTWORK_CATEGORIES, ENTRY_TYPES, getCategoriesForEntryType, type EntryTypeId } from '../../src/config/tenantConfig'
 import { isEchteK2Werknummer } from '../../src/utils/artworksStorage'
+import { formatEkAnzeige } from '../../src/utils/artworkEkVk'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -43,7 +44,8 @@ const ALLE_SPALTEN = [
   { id: 'kategorie', label: 'Kategorie' }, { id: 'kuenstler', label: 'Künstler:in' },
   { id: 'masse', label: 'Maße' }, { id: 'technik', label: 'Technik/Material' },
   { id: 'beschreibung', label: 'Beschreibung' },
-  { id: 'preis', label: 'Preis' }, { id: 'status', label: 'Status' },
+  { id: 'ek', label: 'EK' },
+  { id: 'preis', label: 'VK' }, { id: 'status', label: 'Status' },
   { id: 'datum', label: 'Erstellt' }, { id: 'kaeufer', label: 'Käufer:in' },
   { id: 'verkauftam', label: 'Verkauft am' }, { id: 'stueck', label: 'Stück' }, { id: 'standort', label: 'Standort' },
 ]
@@ -116,7 +118,7 @@ export default function WerkkatalogTab({
     if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
     if (katalogFilter.suchtext) {
       const q = katalogFilter.suchtext.toLowerCase()
-      const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''}`.toLowerCase()
+      const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''} ${a.purchasePrice != null ? a.purchasePrice : ''}`.toLowerCase()
       if (!hay.includes(q)) return false
     }
     if (!isVk2) {
@@ -152,6 +154,7 @@ export default function WerkkatalogTab({
           case 'masse': return `<td>${a.dimensions || '–'}</td>`
           case 'technik': return `<td>${a.technik || '–'}</td>`
           case 'beschreibung': return `<td>${(a.description || '–').toString().slice(0, 200)}${(a.description || '').length > 200 ? '…' : ''}</td>`
+          case 'ek': return `<td style="text-align:right">${formatEkAnzeige(a.purchasePrice)}</td>`
           case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
           case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Online-Galerie</span>' : 'Lager'}</td>`
           case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
@@ -167,9 +170,12 @@ export default function WerkkatalogTab({
     const colHeaders: Record<string, string> = {
       nummer: 'Nr.', titel: 'Titel', typ: 'Typ', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
       masse: 'Maße', technik: 'Technik/Material', beschreibung: 'Beschreibung',
-      preis: 'Preis', status: 'Status', datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
+      ek: 'EK', preis: 'VK', status: 'Status', datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
     }
-    const thead = cols.map(c => `<th style="text-align:left;padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`).join('')
+    const thead = cols.map(c => {
+      const align = c === 'preis' || c === 'ek' || c === 'stueck' ? 'right' : 'left'
+      return `<th style="text-align:${align};padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`
+    }).join('')
     pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Werkkatalog – ${galName}</title>
       <style>
@@ -261,7 +267,8 @@ export default function WerkkatalogTab({
         ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
         ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
         ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
-        ${w.price ? `<div class="meta-item"><label>Preis</label><span>€ ${Number(w.price).toFixed(2)}</span></div>` : ''}
+        <div class="meta-item"><label>EK</label><span>${formatEkAnzeige(w.purchasePrice)}</span></div>
+        <div class="meta-item"><label>VK</label><span>${w.price ? `€ ${Number(w.price).toFixed(2)}` : '–'}</span></div>
         ${(w.quantity != null && Number(w.quantity) > 1) ? `<div class="meta-item"><label>Stückzahl</label><span>${w.quantity} Exemplare</span></div>` : ''}
         ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
         ${w.soldAt ? `<div class="meta-item"><label>Verkauft am</label><span>${new Date(w.soldAt).toLocaleDateString('de-DE')}</span></div>` : ''}
@@ -421,7 +428,8 @@ export default function WerkkatalogTab({
                 {effectiveSpalten.includes('masse') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Maße</th>}
                 {effectiveSpalten.includes('technik') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Technik</th>}
                 {effectiveSpalten.includes('beschreibung') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Beschreibung</th>}
-                {effectiveSpalten.includes('preis') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Preis</th>}
+                {effectiveSpalten.includes('ek') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>EK</th>}
+                {effectiveSpalten.includes('preis') && <th style={{ padding: '8px 10px', textAlign: 'right', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>VK</th>}
                 {effectiveSpalten.includes('status') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Status</th>}
                 {effectiveSpalten.includes('datum') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Erstellt</th>}
                 {effectiveSpalten.includes('kaeufer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Käufer:in</th>}
@@ -446,6 +454,7 @@ export default function WerkkatalogTab({
                   {effectiveSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
                   {effectiveSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
                   {effectiveSpalten.includes('beschreibung') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }} title={a.description || ''}>{(a.description || '–').toString().slice(0, 80)}{(a.description || '').length > 80 ? '…' : ''}</td>}
+                  {effectiveSpalten.includes('ek') && <td style={{ padding: '7px 10px', color: s.muted, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{formatEkAnzeige(a.purchasePrice)}</td>}
                   {effectiveSpalten.includes('preis') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>}
                   {effectiveSpalten.includes('status') && <td style={{ padding: '7px 10px', borderBottom: `1px solid ${s.accent}18` }} onClick={e => e.stopPropagation()}>
                     {a.sold ? <span style={{ color: '#b91c1c', fontWeight: 700, fontSize: '0.82rem' }}>● Verkauft</span>
@@ -521,7 +530,18 @@ export default function WerkkatalogTab({
               {isVk2 && showTypAndCategory && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Typ</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{getEntryTypeLabel(w.entryType)}</div></div>}
               {w.dimensions && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Maße</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.dimensions}</div></div>}
               {w.technik && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Technik / Material</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.technik}</div></div>}
-              {!isVk2 && w.price ? <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Preis</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>€ {Number(w.price).toFixed(2)}</div></div> : null}
+              {!isVk2 && (
+                <>
+                  <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                    <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>EK</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{formatEkAnzeige(w.purchasePrice)}</div>
+                  </div>
+                  <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}>
+                    <div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>VK</div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.price ? `€ ${Number(w.price).toFixed(2)}` : '–'}</div>
+                  </div>
+                </>
+              )}
               {w.category && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Kategorie</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{getCategoryLabel(w.category)}</div></div>}
               {w.createdAt && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Erstellt</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{new Date(w.createdAt).toLocaleDateString('de-DE')}</div></div>}
               {!isVk2 && w.soldAt && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Verkauft am</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: '#b91c1c' }}>{new Date(w.soldAt).toLocaleDateString('de-DE')}</div></div>}

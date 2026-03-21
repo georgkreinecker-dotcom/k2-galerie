@@ -14,12 +14,13 @@ export function isBase64Image(url: string | undefined): boolean {
  * nur dann gesetzt bleiben, wenn es eine URL ist (nicht Base64).
  * Base64 wird durch '' ersetzt → kleiner JSON, schneller Download.
  */
-export function artworksForExport<T extends { imageUrl?: string; previewUrl?: string }>(artworks: T[]): T[] {
+export function artworksForExport<T extends { imageUrl?: string; previewUrl?: string; purchasePrice?: unknown }>(artworks: T[]): T[] {
   return artworks.map((a) => {
     const imageUrl = isBase64Image(a.imageUrl) ? '' : (a.imageUrl ?? '')
     const previewUrl = isBase64Image(a.previewUrl) ? '' : (a.previewUrl ?? '')
-    if (imageUrl === (a.imageUrl ?? '') && previewUrl === (a.previewUrl ?? '')) return a
-    return { ...a, imageUrl, previewUrl }
+    const copy = { ...a, imageUrl, previewUrl } as Record<string, unknown>
+    delete copy.purchasePrice
+    return copy as T
   })
 }
 
