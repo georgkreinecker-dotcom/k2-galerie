@@ -15614,7 +15614,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🖼️ Bilder (Martina): falsche Nummer K2-K- → K2-M-</h4>
                   <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
-                    Wenn bei <strong>Kategorie Bilder (Malerei)</strong> fälschlich <strong>K2-K-…</strong> statt <strong>K2-M-…</strong> steht und das Werk zu <strong>Martina</strong> gehört (Künstlerfeld oder leer), passt die App die Nummer an. Verkäufe, Reservierungen und Bestellungen werden mitangepasst. Bitte vorher Sicherungskopie herunterladen.
+                    Wenn bei <strong>Kategorie Bilder, Grafik oder Sonstiges</strong> (Martinas Bereich) fälschlich <strong>K2-K-…</strong> statt <strong>K2-M-…</strong> steht und das Werk zu <strong>Martina</strong> gehört (Künstlerfeld oder leer), passt die App die Nummer an. Anschließend wird wie bei „Veröffentlichen“ an den Server gesendet – sonst holt die Galerie beim nächsten Öffnen die alten Nummern zurück. Verkäufe, Reservierungen und Bestellungen werden mitangepasst. Bitte vorher Sicherungskopie herunterladen.
                   </p>
                   <button
                     type="button"
@@ -15652,7 +15652,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         return
                       }
                       patchK2LocalStorageAfterArtworkRenames(map)
-                      alert(`✅ Fertig: ${renames.length} Nummer(n) angepasst. Seite neu laden, damit überall der neue Stand sichtbar ist.`)
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal sind ${renames.length} Nummer(n) geändert – der Server konnte aber nicht aktualisiert werden.\n\nBeim nächsten Galerie-Laden kommen sonst wieder die alten Nummern vom Server. Bitte gleich unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen nutzen.\n\nTechnisch: ${pub.error || 'unbekannt'}`
+                        )
+                        return
+                      }
+                      alert(
+                        `✅ Fertig: ${renames.length} Nummer(n) angepasst und an Vercel gesendet. Die Seite lädt neu – Stand bleibt auf allen Geräten konsistent.`
+                      )
                       safeReload()
                     }}
                     style={{

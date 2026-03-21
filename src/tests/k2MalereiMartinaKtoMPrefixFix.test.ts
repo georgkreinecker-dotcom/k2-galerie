@@ -56,6 +56,13 @@ describe('k2MalereiMartinaKtoMPrefixFix', () => {
     ).toBe(false)
     expect(
       isK2MalereiMartinaWrongKPrefix(
+        { category: 'grafik', number: 'K2-K-0099', artist: '' },
+        M,
+        G
+      )
+    ).toBe(true)
+    expect(
+      isK2MalereiMartinaWrongKPrefix(
         { category: 'malerei', number: 'K2-M-0031', artist: M },
         M,
         G

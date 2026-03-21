@@ -12,6 +12,9 @@ import { getNextFreeNumberInCategory } from './syncMerge'
 const WRONG_K_PREFIX = /^K2-K-(\d+)$/i
 const M_PREFIX = 'K2-M-'
 
+/** K2: Martinas Kunst-Bereiche (Admin „Bilder“-Seite) – fälschliches Keramik-Präfix K2-K- hier korrigieren. */
+const MARTINA_ART_CATEGORIES = new Set(['malerei', 'grafik', 'sonstiges'])
+
 function normName(s: unknown): string {
   return String(s ?? '')
     .trim()
@@ -66,7 +69,7 @@ export function isK2MalereiMartinaWrongKPrefix(
   georgName: string
 ): boolean {
   if (!String(martinaName || '').trim()) return false
-  if (artwork.category !== 'malerei') return false
+  if (!MARTINA_ART_CATEGORIES.has(String(artwork.category || '').trim())) return false
   if (artwork.entryType === 'product' || artwork.entryType === 'idea') return false
   const num = String(artwork.number ?? artwork.id ?? '').trim()
   if (!WRONG_K_PREFIX.test(num)) return false
