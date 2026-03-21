@@ -15,6 +15,14 @@ So haben Sie **eine zentrale Ablage** pro Jahr oder Quartal: CSVs plus Belege-PD
 
 ---
 
+## CD-Übersicht und EK-Kalkulation
+
+**EK am Werk:** In der Werkkarte tragen Sie **VK** und optional **EK** ein. Ohne EK rechnet die App mit **Eigenproduktion** keinen Wareneinsatz aus Einkauf. **Stückzahl** steuert Lager; fehlt sie, gilt oft **1** Stück.
+
+**CD Controlling-Daten:** In der **Demo-Galerie** zeigt die Buchhaltungsseite eine **Rohertrag-Übersicht** Verkaufserlös minus Wareneinsatz aus den Werkdaten und eine **Vorschau Lagerstand**. Das ist eine **Alltags-Hilfe** für Kleingewerbe, **keine** Steuerberatung. Ihre eigene Galerie nutzt dieselben EK- und VK-Felder; die Summenkarten sind in der Demo als Beispiel sichtbar.
+
+---
+
 ## Pro++ = vollständige Buchhaltung
 
 Mit der Lizenzstufe **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen – ohne zusätzliche Buchhaltungssoftware.
@@ -36,3 +44,4 @@ Mit der Lizenzstufe **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)*
 - **Vorarbeit** in der App; UStVA/EO beim Steuerberater.
 - **7 Jahre** Aufbewahrung der Unterlagen.
 - **Pro++** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
+- **EK** und optional **CD-Rohertrag** in der Demo siehe Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md) Abschnitt CD-Übersicht und EK-Kalkulation.

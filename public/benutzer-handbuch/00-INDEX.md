@@ -32,7 +32,7 @@ Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
 7. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
 
-Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
+Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), **EK-Kalkulation** am Werk und **CD-Übersicht** Controlling-Daten Rohertrag und Lager-Vorschau in der Demo, Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
 
 8. [Einstellungen](10-EINSTELLUNGEN.md)
 

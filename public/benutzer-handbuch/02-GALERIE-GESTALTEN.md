@@ -48,7 +48,7 @@ Nach dem Auswählen eines Fotos können Sie die Darstellung wählen:
 **Neues Werk anlegen:**
 
 1. Klicken Sie auf **Neues Werk** (oder „Werk hinzufügen“).
-2. Füllen Sie die Felder aus: mindestens **Foto** und **Titel**, optional Künstlerin/Künstler, Technik, Jahr, Preis.
+2. Füllen Sie die Felder aus: mindestens **Foto** und **Titel**, optional Künstlerin/Künstler, Technik, Jahr, **Verkaufspreis** und optional **EK** Einstandspreis. **Ohne EK** gilt das Werk in der Regel als **Eigenproduktion** für Überblicke in Kassa und Buchhaltung. **Stückzahl** können Sie setzen, wenn Sie mehrere gleiche oder mehrere Exemplare führen.
 3. Wählen Sie ein Foto (von Ihrem Gerät oder bereits hochgeladen). Entscheiden Sie die Bildverarbeitung (Original, Freistellen, Zuschneiden oder Vollkachelform).
 4. Speichern Sie das Werk.
 
@@ -59,6 +59,8 @@ Nach dem Auswählen eines Fotos können Sie die Darstellung wählen:
 3. Speichern Sie die Änderungen.
 
 Alle Änderungen sind zunächst auf dem Gerät gespeichert. Damit Besucherinnen und Besucher die aktuelle Version sehen, müssen Sie **veröffentlichen** (siehe unten).
+
+**Preise und EK-Kalkulation:** Ausführlicher Ablauf mit Kassa, **CD-Übersicht** Rohertrag in der Demo und Exporten für den Steuerberater steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md).
 
 ---
 

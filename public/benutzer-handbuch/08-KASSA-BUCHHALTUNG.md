@@ -115,6 +115,28 @@ Unter **Kassa → Buchhaltung** haben Sie **alles an einem Ort**: Unterlagen pro
 
 So haben Sie **eine zentrale Ablage** pro Jahr oder Quartal: CSVs plus Belege-PDF. Die Vorarbeit erledigen Sie hier; der Rest (UStVA, EO, Jahresabschluss) bleibt beim Steuerberater.
 
+## CD-Übersicht und EK-Kalkulation
+
+**Keine Steuerberatung:** Die folgenden Punkte sind ein **Überblick für den Alltag** und ersetzen keine Prüfung durch eine Steuerberaterin oder einen Steuerberater.
+
+### EK-Kalkulation am Werk
+
+An jedem Werk pflegen Sie in der **Werkkarte** den **Verkaufspreis** und optional den **EK** Einstandspreis bzw. Einkaufspreis.
+
+- **EK leer oder ohne sinnvollen Betrag:** Die App behandelt das Werk wie **Eigenproduktion** – es wird **kein Wareneinsatz** aus einem Einkauf zugerechnet.
+- **Stückzahl:** Steuert Lager und Verkauf. Fehlt die Angabe, rechnet die App in der Regel mit **1** Stück.
+- **Werkkatalog:** Spalten und Druckansichten nutzen **EK** und **VK**, damit Sie Preise und Einstand **auf einen Blick** haben.
+
+So liegt die **Grundlage** für Wareneinsatz und Lagerwerte in Ihren **Werkdaten** – nicht in separaten Tabellen.
+
+### CD-Übersicht Controlling-Daten
+
+**CD** steht hier für **Controlling‑Daten**: ein **schneller Überblick**, ob Verkauf und Einstand zusammenpassen.
+
+In der **öffentlichen Demo-Galerie** zeigt die Seite **Buchhaltung** zusätzlich zu den Exporten eine **Übersicht Rohertrag**: **Verkaufserlös** minus **Wareneinsatz** aus den Werkdaten, nur für Positionen **mit Werknummer**. Daneben gibt es eine **Vorschau Lagerstand** aus den Demo-Werken mit **Stückzahl größer null**.
+
+In **Ihrer eigenen Galerie** nutzen Sie dieselben **EK- und VK-Felder** an den Werken. Die **farbig hervorgehobenen Summen** der Demo sind ein **Muster**, wie Kleingewerbe den Überblick nutzen kann. **Aktualisieren** auf der Buchhaltungsseite lädt Verkäufe und Demo-Werke neu, nachdem Sie etwas geändert haben.
+
 ### Pro++ = vollständige Buchhaltung
 
 Mit **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollständige Buchhaltungsfunktion**: Rechnungspflege inkl. fortlaufender Nummer und USt-Aufschlüsselung **und** in der Buchhaltung **Belege als PDF** pro Zeitraum. Sie können damit alle Unterlagen für den Steuerberater aus einer App bereitstellen.
@@ -141,3 +163,4 @@ Mit **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)** die **vollstä
 - **Storno:** In **Verkaufsliste – Storno** Verkauf **Stornieren** (Verkauf aufheben) oder nur **Bon erneut drucken**.
 - **Kassabuch:** Pro = nur Eingänge. Pro+ / Pro++ = volles Kassabuch (Eingänge + Ausgänge). Kassabuch drucken und CSV-Export.
 - **Buchhaltung:** Admin → Kassa → **Buchhaltung**. **Zeitraum** wählen (Jahr/Von–Bis) → **Kassabuch-CSV**, **Verkäufe-CSV**, **Belege als PDF**. Vorarbeit in der App; UStVA/EO beim Steuerberater. **7 Jahre** Aufbewahrung. **Pro++** = Rechnung (§ 11 UStG) + vollständige Buchhaltung (Belege-PDF pro Zeitraum).
+- **EK am Werk** optional für Einstand; leer = Eigenproduktion. **CD-Übersicht** in der Demo: Rohertrag und Lager-Vorschau als Controlling-Hilfe, keine Steuerberatung.

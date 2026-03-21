@@ -42,7 +42,7 @@ Unter **„Event- und Medienplanung“** finden Sie den gesamten Ablauf in einem
 
 ## Kassa und Kassabuch
 
-Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
+Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zu **EK-Kalkulation** am Werk und zur **CD-Übersicht** Controlling-Daten in der Demo. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
 
 ---
 
