@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Korrektur CD = Cooperate Design (Georg):** **CD** ist **kein** Buchhaltungsbegriff. **Benutzerhandbuch** Buchhaltung nur noch **EK-Kalkulation** und **Rohertrag/Lager** in der Demo (`08`, `09`, `00-INDEX`, Kassa-Absatz in `03`). **Cooperate Design** in `02-GALERIE-GESTALTEN`, `03` Design-Absatz, **Präsi** `06-DESIGN-VEROEFFENTLICHUNG` + Verweis in `05-WERKE-ERFASSEN`; Kassa-Präsi `07` ohne falsche CD-Controlling-Zeile. **Commit:** baebf92 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Session-Ende (Georg):** **StatistikTab**, **TEST-PROTOKOLL**, Build-Info-Dateien, **DIALOG-STAND** (JETZT/Einordnung), **WIR-PROZESS** Reflexion; Tests + Build grün. **Commit:** COMMIT_HASH_PLACEHOLDER ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Korrektur CD = Cooperate Design (Georg):** **CD** ist **kein** Buchhaltungsbegriff. **Benutzerhandbuch** Buchhaltung nur noch **EK-Kalkulation** und **Rohertrag/Lager** in der Demo (`08`, `09`, `00-INDEX`, Kassa-Absatz in `03`). **Cooperate Design** in `02-GALERIE-GESTALTEN`, `03` Design-Absatz, **Präsi** `06-DESIGN-VEROEFFENTLICHUNG` + Verweis in `05-WERKE-ERFASSEN`; Kassa-Präsi `07` ohne falsche CD-Controlling-Zeile. **Commit:** baebf92 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau:** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**; Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**. **Commit:** f8b06e1 ✅ auf GitHub
 
@@ -30,8 +32,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Handbuch/Präsi-Texte zu **CD** mit Georgs Begriff **Cooperate Design** abgestimmt; Buchhaltung ohne CD-Falschbedeutung.
-**Einordnung:** **CD** = durchgängiges Erscheinungsbild Design/Web/Druck; **EK/Rohertrag** bleiben Kassa/Buchhaltung/Demo.
+**Was wir JETZT tun:** **21.03.26 Session beendet** – nächster Einstieg: Briefing + diesen DIALOG lesen, dann laut Georgs Auftrag weiter.
+**Einordnung:** **CD** = **Cooperate Design** (Handbuch/Präsi); **EK/Rohertrag** = Kassa/Buchhaltung/Demo.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

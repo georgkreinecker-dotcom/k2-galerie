@@ -16,6 +16,8 @@ interface StatistikTabProps {
   onStorno?: (number: string) => void
   /** K2/ök2: wenn `artist` leer, wie im Admin aus Kategorie/Werknummer zuordnen (VK2: weglassen). */
   kuenstlerFallback?: KuenstlerFallbackNamen | null
+  /** Min/Max/Ø Preisspanne + Ø-Kachel + Druckzeile nur ök2 (Demo); K2/VK2 ohne. */
+  showPreisspanneVerkauf?: boolean
 }
 
 export default function StatistikTab({
@@ -24,6 +26,7 @@ export default function StatistikTab({
   onRerender,
   onStorno,
   kuenstlerFallback,
+  showPreisspanneVerkauf = false,
 }: StatistikTabProps) {
   let soldEntries: any[] = []
   try { soldEntries = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]') } catch (_) {}
@@ -67,22 +70,25 @@ export default function StatistikTab({
 
   const lagerBestand = gesamtWerke - soldWerke.length // Noch im Bestand (nicht verkauft)
 
-  // Wert der Galerie: Werke die in Galerie hängen und nicht verkauft (Preis pro Stück × Stückzahl = Lagerwert)
-  const galerieWerke = allArtworks.filter((a: any) => a.inExhibition && !soldNumbers.has(a.number || a.id))
-  const wertProWerk = (a: any) => (Number(a.price) || 0) * Math.max(1, Number(a.quantity) || 1)
-  const galerieWert = galerieWerke.reduce((sum: number, a: any) => sum + wertProWerk(a), 0)
+  // Wert der Galerie / Bestand: alle angelegten Werke, die noch nicht verkauft sind (Preis × Stückzahl).
+  // „In Galerie“ = nur Sichtbarkeit im Netz – für den Lagerwert irrelevant.
+  const bestandsWerkeFuerWert = allArtworks.filter((a: any) => !soldNumbers.has(a.number || a.id))
+  const stueckzahlProWerk = (a: any) => Math.max(1, Math.floor(Number(a.quantity)) || 1)
+  const wertProWerk = (a: any) => (Number(a.price) || 0) * stueckzahlProWerk(a)
+  const galerieWert = bestandsWerkeFuerWert.reduce((sum: number, a: any) => sum + wertProWerk(a), 0)
   const galerieNachKuenstler: Record<string, { count: number; wert: number }> = {}
-  galerieWerke.forEach((a: any) => {
+  bestandsWerkeFuerWert.forEach((a: any) => {
     const name = resolveArtistLabelForGalerieStatistik(a, kuenstlerFallback ?? undefined)
     if (!galerieNachKuenstler[name]) galerieNachKuenstler[name] = { count: 0, wert: 0 }
-    galerieNachKuenstler[name].count++
+    galerieNachKuenstler[name].count += stueckzahlProWerk(a)
     galerieNachKuenstler[name].wert += wertProWerk(a)
   })
   const galerieNachKategorie: Record<string, { count: number; wert: number }> = {}
-  galerieWerke.forEach((a: any) => {
-    const kat = getCategoryLabel(a.category || 'malerei')
+  bestandsWerkeFuerWert.forEach((a: any) => {
+    const katRaw = getCategoryLabel(a.category)
+    const kat = (katRaw && String(katRaw).trim()) || 'Ohne Kategorie'
     if (!galerieNachKategorie[kat]) galerieNachKategorie[kat] = { count: 0, wert: 0 }
-    galerieNachKategorie[kat].count++
+    galerieNachKategorie[kat].count += stueckzahlProWerk(a)
     galerieNachKategorie[kat].wert += wertProWerk(a)
   })
   const galerieKuenstlerSorted = Object.entries(galerieNachKuenstler).sort((a, b) => b[1].wert - a[1].wert)
@@ -123,7 +129,7 @@ export default function StatistikTab({
         <tr><td style="padding:0.35rem 1rem 0.35rem 0">In Galerie</td><td style="padding:0.35rem 0;font-weight:700">${inGalerie}</td></tr>
         <tr><td style="padding:0.35rem 1rem 0.35rem 0">Reserviert</td><td style="padding:0.35rem 0;font-weight:700">${reserviert}</td></tr>
         <tr><td style="padding:0.35rem 1rem 0.35rem 0">Gesamtumsatz</td><td style="padding:0.35rem 0;font-weight:700">€ ${summe.toFixed(2)}</td></tr>
-        ${preiseVerkauf.length > 0 ? `<tr><td style="padding:0.35rem 1rem 0.35rem 0">Ø Verkaufspreis</td><td style="padding:0.35rem 0;font-weight:700">€ ${preisDurchForPrint.toFixed(2)}</td></tr>` : ''}
+        ${showPreisspanneVerkauf && preiseVerkauf.length > 0 ? `<tr><td style="padding:0.35rem 1rem 0.35rem 0">Ø Verkaufspreis</td><td style="padding:0.35rem 0;font-weight:700">€ ${preisDurchForPrint.toFixed(2)}</td></tr>` : ''}
       </table>`
     const rows = alleVerkaufe.map((e: any, i: number) => {
       const datum = e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–'
@@ -205,7 +211,7 @@ export default function StatistikTab({
           <div style={{ fontSize: '2rem', fontWeight: 800, color: galerieWert > 0 ? '#16a34a' : s.muted }}>€ {galerieWert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
           <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Wert der Galerie</div>
         </div>
-        {preise.length > 0 && (
+        {showPreisspanneVerkauf && preise.length > 0 && (
           <div style={{ ...kachelStyle, textAlign: 'center' }}>
             <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisDurch.toFixed(0)}</div>
             <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Ø Verkaufspreis</div>
@@ -242,9 +248,10 @@ export default function StatistikTab({
 
         {/* Wert der Galerie – nach Künstler */}
         <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🖼️ Wert der Galerie – nach Künstler</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>🖼️ Wert der Galerie – nach Künstler</h3>
+          <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0 0 1rem', lineHeight: 1.3 }}>Bestand: alle nicht verkauften Werke · <strong>Stk.</strong> = Stückzahl (mehrere Stück pro Werk werden addiert)</p>
           {galerieKuenstlerSorted.length === 0 ? (
-            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke in Galerie</div>
+            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke im Bestand</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {galerieKuenstlerSorted.map(([name, data]) => {
@@ -253,7 +260,7 @@ export default function StatistikTab({
                   <div key={name}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
                       <span style={{ color: s.text, fontWeight: 600 }}>{name}</span>
-                      <span style={{ color: s.muted }}>{data.count}× · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                      <span style={{ color: s.muted }}>{data.count} Stk. · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
@@ -267,9 +274,10 @@ export default function StatistikTab({
 
         {/* Wert der Galerie – nach Artikel (Kategorie) */}
         <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>📂 Wert der Galerie – nach Artikel</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>📂 Wert der Galerie – nach Artikel</h3>
+          <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0 0 1rem', lineHeight: 1.3 }}>Bestand: alle nicht verkauften Werke · <strong>Stk.</strong> = Stückzahl · ohne Kategorie → „Ohne Kategorie“ (nicht als Bilder gewertet)</p>
           {galerieKategorieSorted.length === 0 ? (
-            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke in Galerie</div>
+            <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke im Bestand</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {galerieKategorieSorted.map(([kat, data]) => {
@@ -278,7 +286,7 @@ export default function StatistikTab({
                   <div key={kat}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 4 }}>
                       <span style={{ color: s.text, fontWeight: 600 }}>{kat}</span>
-                      <span style={{ color: s.muted }}>{data.count}× · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                      <span style={{ color: s.muted }}>{data.count} Stk. · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
@@ -312,8 +320,8 @@ export default function StatistikTab({
           )}
         </div>
 
-        {/* Preisspanne */}
-        {preise.length > 0 && (
+        {/* Preisspanne – nur ök2 */}
+        {showPreisspanneVerkauf && preise.length > 0 && (
           <div style={kachelStyle}>
             <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>💰 Preisspanne (verkaufte Werke)</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', textAlign: 'center' }}>
