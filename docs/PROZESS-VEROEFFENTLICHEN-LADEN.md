@@ -20,6 +20,7 @@
 - **DevViewPage** (Button „Veröffentlichen“ / Speichern): Nach Supabase-Merge → `publishGalleryDataToServer(artworks)`.
 - **GalerieVorschauPage** (nach Speichern/Bearbeiten, neues Werk): `publishGalleryDataToServer(loadArtworks())`.
 - **ScreenshotExportAdmin (K2):** Vor dem Aufruf State in localStorage flushen, dann `publishGalleryDataToServer(readArtworksRawByKey('k2-artworks'))`. Kein eigener Fetch zu write-gallery-data mehr für K2.
+- **ScreenshotExportAdmin (K2) – Werk löschen:** Nach erfolgreichem Speichern der gekürzten Liste **automatisch** `publishGalleryDataToServer` (mit `allowEmptyArtworks`, falls der Bestand leer ist). **Grund:** Sonst steht das gelöschte Werk noch in `gallery-data.json` und kommt beim nächsten „Vom Server laden“ zurück (**Server = Wahrheit**). Bei Fehler des Sendens: Hinweis, manuell **Veröffentlichen**.
 
 **Regel:** Kein eigener Fetch zu write-gallery-data, kein eigener Aufruf von resolveArtworkImageUrlsForExport + artworksForExport an anderer Stelle. Immer `publishGalleryDataToServer`.
 

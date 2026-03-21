@@ -14502,6 +14502,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                 setAllArtworksSafe(resolved)
                               }
                               window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { fromLocalWrite: true } }))
+                              // K2: Gelöschte Werke müssen auf Vercel (gallery-data) mit – sonst holt „Vom Server laden“ sie zurück (Server = Wahrheit).
+                              const isK2Echt =
+                                tenant.tenantId === 'k2' &&
+                                !tenant.isOeffentlich &&
+                                !tenant.isVk2 &&
+                                !tenant.dynamicTenantId
+                              if (isK2Echt) {
+                                try {
+                                  const raw = readArtworksRawByKey('k2-artworks')
+                                  const toPublish = await resolveArtworkImages(raw)
+                                  const result = await publishGalleryDataToServer(toPublish, {
+                                    allowEmptyArtworks: toPublish.length === 0,
+                                  })
+                                  if (!result.success) {
+                                    alert(
+                                      '⚠️ Lokal gelöscht – aber Vercel wurde nicht aktualisiert.\n\nBeim nächsten „Bilder vom Server laden“ kann das Werk wieder erscheinen. Bitte bei gutem Netz **Veröffentlichen** (oder erneut löschen nach Veröffentlichen).\n\n' +
+                                        (result.error ? String(result.error) : '')
+                                    )
+                                  }
+                                } catch (e) {
+                                  alert(
+                                    '⚠️ Lokal gelöscht – Senden an den Server fehlgeschlagen: ' +
+                                      (e instanceof Error ? e.message : String(e)) +
+                                      '\n\nBitte später **Veröffentlichen**, damit das Löschen überall fest ist.'
+                                  )
+                                }
+                              }
                             } else {
                               alert('⚠️ Fehler beim Löschen! Bitte versuche es erneut.')
                             }

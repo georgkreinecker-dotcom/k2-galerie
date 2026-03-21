@@ -56,9 +56,14 @@ export interface PublishGalleryDataResult {
 /** phase 'chunks' = Teil X von Y senden; sonst Bilder vorbereiten / Daten senden */
 export async function publishGalleryDataToServer(
   artworks: any[],
-  options?: { onProgress?: (done: number, total: number, phase?: 'images' | 'chunks') => void }
+  options?: {
+    onProgress?: (done: number, total: number, phase?: 'images' | 'chunks') => void
+    /** Nach bewusstem Löschen aller Werke: leeres Array an Vercel schreiben (sonst kommen alte Werke beim nächsten Laden zurück). */
+    allowEmptyArtworks?: boolean
+  }
 ): Promise<PublishGalleryDataResult> {
-  if (!Array.isArray(artworks) || artworks.length === 0) {
+  const allowEmpty = options?.allowEmptyArtworks === true
+  if (!Array.isArray(artworks) || (!allowEmpty && artworks.length === 0)) {
     return { success: false, error: 'Keine Werke zum Veröffentlichen' }
   }
 

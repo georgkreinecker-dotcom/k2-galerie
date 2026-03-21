@@ -1,0 +1,32 @@
+---
+description: Manuelles Löschen von Werken muss überall wirken – kein Wiederauftauchen vom Server
+alwaysApply: true
+---
+
+# 🔒 Manuell gelöschte Werke – restlos entfernt (eiserne Regel)
+
+## Georg (verbindlich)
+
+**Wer ein Werk manuell löscht, erwartet: es ist weg – nicht nur lokal, und es kommt nicht wieder**, z. B. nach „Vom Server laden“ oder auf einem anderen Gerät.
+
+## Ursache wenn es „wieder kommt“
+
+- **Server (Vercel / gallery-data.json)** enthält den alten Stand noch.
+- Beim Laden gilt **Server = Wahrheit** (`mergeServerWithLocal` mit `serverAsSoleTruth`) → gelöschte Einträge erscheinen erneut.
+
+## Was die App tun muss (K2 echte Galerie)
+
+1. **Nach erfolgreichem Löschen** in Admin: **dieselbe zentrale Veröffentlichung** wie bei „Veröffentlichen“ (`publishGalleryDataToServer`), damit **gallery-data.json** den aktuellen (gekürzten) Bestand hat.
+2. **Leerer Bestand:** Veröffentlichen mit **leerer** Werkliste muss möglich sein (`allowEmptyArtworks`), sonst kann der letzte Stand auf dem Server nie „restlos“ werden.
+3. **Kein zweiter Publish-Pfad** erfinden – **ein Standard:** `publishGalleryData.ts` / `docs/PROZESS-VEROEFFENTLICHEN-LADEN.md`.
+
+## Was nicht reicht
+
+- Nur **localStorage** schreiben ohne Server-Update → Lücken für „Zombie-Werke“.
+- Nutzer verlangen, **nach jedem Löschen extra** auf „Veröffentlichen“ zu klicken, wenn es technisch beim Löschen mitgehen kann (K2) – **Entlastung:** wo möglich automatisch mitsenden; bei Fehler **klare Meldung** (lokal weg, Server alt).
+
+## Kurzfassung
+
+**Manuell gelöscht = auch vom gemeinsamen Server-Stand entfernt, wo K2 über gallery-data geht – sonst kommt es durch den Merge zurück.**
+
+Verknüpfung: `prozesssicherheit-veroeffentlichen-laden.mdc`, `niemals-kundendaten-loeschen.mdc` (Löschen nur nach User-Klick – hier genau das).
