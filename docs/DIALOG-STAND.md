@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Handbuch + Präsentationsmappe: CD-Übersicht und EK-Kalkulation (Georg):** **Benutzerhandbuch** `08-KASSA-BUCHHALTUNG`, `09-BUCHHALTUNG-STEUERBERATER`, `02-GALERIE-GESTALTEN`, `03-ADMIN-UEBERBLICK`, `00-INDEX` – **CD** = **Controlling‑Daten** Rohertrag/Lager-Vorschau Demo, **EK** am Werk Eigenproduktion Stückzahl. **Präsentationsmappe** Lang- + Vollversion `05-WERKE-ERFASSEN`, `07-KASSA-VERKAUF`. Tests grün. **Commit:** 3121a60 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Handbuch + Präsentationsmappe: CD-Übersicht und EK-Kalkulation (Georg):** **Benutzerhandbuch** `08-KASSA-BUCHHALTUNG`, `09-BUCHHALTUNG-STEUERBERATER`, `02-GALERIE-GESTALTEN`, `03-ADMIN-UEBERBLICK`, `00-INDEX` – **CD** = **Controlling‑Daten** Rohertrag/Lager-Vorschau Demo, **EK** am Werk Eigenproduktion Stückzahl. **Präsentationsmappe** Lang- + Vollversion `05-WERKE-ERFASSEN`, `07-KASSA-VERKAUF`. Tests grün. **Commit:** e7ec2f4 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau:** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**; Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**. **Commit:** f8b06e1 ✅ auf GitHub
 
