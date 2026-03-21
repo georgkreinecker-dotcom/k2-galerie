@@ -15610,6 +15610,65 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
                   Sicherungskopie herunterladen und aus Backup-Datei wiederherstellen.
                 </p>
+                {/* K2: Unter „Backup & Bilder“ (eigene Kachel) – nicht unter „Sicherheit“, die K2 nicht hat */}
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🖼️ Bilder (Martina): falsche Nummer K2-K- → K2-M-</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Wenn bei <strong>Kategorie Bilder (Malerei)</strong> fälschlich <strong>K2-K-…</strong> statt <strong>K2-M-…</strong> steht und das Werk zu <strong>Martina</strong> gehört (Künstlerfeld oder leer), passt die App die Nummer an. Verkäufe, Reservierungen und Bestellungen werden mitangepasst. Bitte vorher Sicherungskopie herunterladen.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const mName = String(loadStammdaten('k2', 'martina')?.name ?? '').trim()
+                      const gName = String(loadStammdaten('k2', 'georg')?.name ?? '').trim()
+                      if (!mName) {
+                        alert('Martina-Stammdaten (Name) fehlen – bitte unter Stammdaten Martina ergänzen.')
+                        return
+                      }
+                      const raw = readArtworksRawByKey('k2-artworks')
+                      const { list, renames } = applyK2MalereiMartinaKtoMBatch(raw, mName, gName)
+                      if (renames.length === 0) {
+                        alert('Es gibt keine Werke, die nach dieser Regel geändert werden müssen.')
+                        return
+                      }
+                      const preview = renames.slice(0, 12).map((r) => `${r.from} → ${r.to}`).join('\n')
+                      const more = renames.length > 12 ? `\n… und ${renames.length - 12} weitere` : ''
+                      if (
+                        !confirm(
+                          `${renames.length} Werk(e) erhalten eine neue Nummer (nur K2 Malerei / Martina):\n\n${preview}${more}\n\nFortfahren?`
+                        )
+                      )
+                        return
+                      const map: Record<string, string> = {}
+                      renames.forEach((r) => {
+                        map[r.from] = r.to
+                      })
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', list, {
+                        filterK2Only: true,
+                        allowReduce: false,
+                      })
+                      if (!ok) {
+                        alert('Speichern der Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+                      patchK2LocalStorageAfterArtworkRenames(map)
+                      alert(`✅ Fertig: ${renames.length} Nummer(n) angepasst. Seite neu laden, damit überall der neue Stand sichtbar ist.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    K2-Malerei: falsche K2-K- Nummern jetzt korrigieren
+                  </button>
+                </div>
                 <input
                   ref={backupFileInputRef}
                   type="file"
@@ -17066,67 +17125,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Passwort speichern
                   </button>
                 </div>
-                {/* K2: falsche K2-K- bei Martinas Malerei → K2-M- (ein Klick, nur nach Regel) */}
-                {!tenant.isOeffentlich && !tenant.isVk2 && (
-                  <div style={{ marginTop: '1rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
-                    <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🖼️ Bilder-Martinawerke: Nummern prüfen (K2-K- → K2-M-)</h4>
-                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
-                      Wenn bei <strong>Kategorie Bilder (Malerei)</strong> fälschlich <strong>K2-K-…</strong> statt <strong>K2-M-…</strong> steht und das Werk zu <strong>Martina</strong> gehört (laut Künstlerfeld oder leer = Martina), kann die App die Nummer automatisch anpassen. Verkäufe, Reservierungen und Bestellungen werden mitangepasst. Bitte vorher Sicherungskopie laden.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const mName = String(loadStammdaten('k2', 'martina')?.name ?? '').trim()
-                        const gName = String(loadStammdaten('k2', 'georg')?.name ?? '').trim()
-                        if (!mName) {
-                          alert('Martina-Stammdaten (Name) fehlen – bitte unter Stammdaten Martina ergänzen.')
-                          return
-                        }
-                        const raw = readArtworksRawByKey('k2-artworks')
-                        const { list, renames } = applyK2MalereiMartinaKtoMBatch(raw, mName, gName)
-                        if (renames.length === 0) {
-                          alert('Es gibt keine Werke, die nach dieser Regel geändert werden müssen.')
-                          return
-                        }
-                        const preview = renames.slice(0, 12).map((r) => `${r.from} → ${r.to}`).join('\n')
-                        const more = renames.length > 12 ? `\n… und ${renames.length - 12} weitere` : ''
-                        if (
-                          !confirm(
-                            `${renames.length} Werk(e) erhalten eine neue Nummer (nur K2 Malerei / Martina):\n\n${preview}${more}\n\nFortfahren?`
-                          )
-                        )
-                          return
-                        const map: Record<string, string> = {}
-                        renames.forEach((r) => {
-                          map[r.from] = r.to
-                        })
-                        const ok = await saveArtworksByKeyWithImageStore('k2-artworks', list, {
-                          filterK2Only: true,
-                          allowReduce: false,
-                        })
-                        if (!ok) {
-                          alert('Speichern der Werke ist fehlgeschlagen – bitte erneut versuchen.')
-                          return
-                        }
-                        patchK2LocalStorageAfterArtworkRenames(map)
-                        alert(`✅ Fertig: ${renames.length} Nummer(n) angepasst. Seite neu laden, damit überall der neue Stand sichtbar ist.`)
-                        safeReload()
-                      }}
-                      style={{
-                        padding: '0.6rem 1rem',
-                        background: '#b54a1e',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 8,
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                      }}
-                    >
-                      K2-Malerei: falsche K2-K- Nummern jetzt korrigieren
-                    </button>
-                  </div>
-                )}
                 {/* Backup & Wiederherstellung – K2, ök2 und VK2 getrennt; je Kontext eigenes Backup */}
                 <div id="einstellungen-backup" style={{ marginTop: '1.5rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>💾 Deine Daten sichern und zurückholen</h4>
