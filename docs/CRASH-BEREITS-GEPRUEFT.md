@@ -24,6 +24,7 @@
 | 20.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert (ök2 Plakat: Speichern/Liste/Öffnen testen). |
 | 20.03.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert (1-Klick-Mail/Medienversand kurz prüfen). |
 | 20.03.26 | ro5 – Reopen; DIALOG-STAND gelesen, kurz orientiert (letzter Stand: Guide-Korrektur b38d341; Fokus Gamification ök2 ohne globalen Dialog). |
+| 21.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
 
 ---
 
