@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Admin Einstellungen: Kacheln gleiche Höhe (Georg):** Grid **alignItems: stretch**; Kacheln **Empfehlungs-Programm**, **Drucker**, **Kassabuch**, **Passwort & Sicherheit**, **Meine Daten**, **Backup**, **Anmeldung** (VK2) u. a. mit **minHeight 7.75rem**, **height 100%**, Flex-Spalte; Untertitel **flex: 1** + **lineHeight 1.35** (**Meine Daten**, **Anmeldung** nachgezogen). **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** e02c86d ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **ök2 Standard-Sparte „Kunst & Galerie“ (Georg):** Festgelegter Standard war **Kunst**, Code nutzte still **Food** und leere **`focusDirections`**. **Neu:** `DEFAULT_OEK2_FOCUS_DIRECTION_ID` + **`MUSTER_TEXTE.gallery.focusDirections: ['kunst']`**; **`loadStammdaten`** normalisiert ök2-Galerie bei leerer/fehlender Sparte; **`mergeStammdatenGallery`** füllt aus Defaults wenn `focusDirections` im Merge fehlt; Admin/Vorschau/Restore ohne **`?? 'food'`**; Muster-Stammdaten-Reset ohne `focusDirections: []`. **PraesentationsmappePage** / **ProspektGalerieeroeffnungPage:** Cast `as unknown as Record<string, string>`. Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Admin Einstellungen: Kacheln gleiche Höhe (Georg):** Grid **alignItems: stretch**; Kacheln **Empfehlungs-Programm**, **Drucker**, **Kassabuch**, **Passwort & Sicherheit**, **Meine Daten**, **Backup**, **Anmeldung** (VK2) u. a. mit **minHeight 7.75rem**, **height 100%**, Flex-Spalte; Untertitel **flex: 1** + **lineHeight 1.35** (**Meine Daten**, **Anmeldung** nachgezogen). **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** e02c86d ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **ök2 Demo/Muster UI (Georg):** Zwei Einstellungs-Zeilen + Stammdaten-Button → **eine** aufklappbare Zeile **„Demo & Muster zurücksetzen“** (zu, bis aufgeklappt); darin alle drei Aktionen + Hinweis Einzellöschen. **Meine Daten:** Verweis statt doppelter Button-Zeile. **Werke:** ein Zeilen-Hinweis. **App.css** `.admin-oek2-demo-details` für sauberes summary. Tests + Build grün. **Commit:** 69b5bae ✅ auf GitHub
 
@@ -92,11 +94,11 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** CD-/Plattform-Botschaft am **Eingang** und auf **ök2-Galerie** (Fremde) verifizieren; ggf. Textfeinschliff nach Georgs Live-Test.
+**Was wir JETZT tun:** ök2 **Sparte** in Admin + Vorschau kurz prüfen (soll überall **Kunst & Galerie** starten, nicht Food); CD-/Eingang wie zuvor bei Bedarf verifizieren.
 
-**Einordnung:** **Galerie gestalten** = fachlicher **Mittelpunkt** der eigenen Linie (Web + Druck); **Entdecken** + grüner Balken führen dorthin.
+**Einordnung:** Ein vereinbarter **Demo-Standard** (Kunst) muss im Code **eine Konstante + Muster + Lade/Merge** sein – nicht verstreute `'food'`-Fallbacks.
 
-**Nächster Schritt:** Georg: `/entdecken` + ök2-Galerie im Browser prüfen; bei Wunsch weitere Formulierungen nachziehen.
+**Nächster Schritt:** Georg: ök2-Admin **Werke** / **Neues Werk** + **Galerie-Vorschau** (Muster) – Kategorien/Typ aus **Kunst**; bei Abweichung melden.
 
 ---
 

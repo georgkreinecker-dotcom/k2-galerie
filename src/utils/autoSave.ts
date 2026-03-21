@@ -3,7 +3,7 @@
  * Verhindert Datenverlust bei Cursor-Crashes
  */
 
-import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
 import { readArtworksRawByKey, saveArtworksByKey, saveArtworksByKeyWithImageStore } from './artworksStorage'
 import { preserveStorageImageRefs, mergeMissingFromStorage } from './syncMerge'
 import { fillMissingImageRefsFromIndexedDB } from './artworkImageStore'
@@ -491,6 +491,8 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
   const om = MUSTER_TEXTE.martina
   const og = MUSTER_TEXTE.georg
   const oGal = MUSTER_TEXTE.gallery
+  const oGalFd = (oGal as { focusDirections?: readonly string[] }).focusDirections
+  const oGalFocus = Array.isArray(oGalFd) && oGalFd.length > 0 ? [oGalFd[0]] : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
   saveStammdaten('oeffentlich', 'martina', { name: om.name, email: om.email, phone: om.phone, website: om.website ?? '', category: 'malerei', bio: '' }, { merge: false })
   saveStammdaten('oeffentlich', 'georg', { name: og.name, email: og.email, phone: og.phone, website: og.website ?? '', category: 'keramik', bio: '' }, { merge: false })
   saveStammdaten('oeffentlich', 'gallery', {
@@ -511,6 +513,8 @@ export function restoreK2AndOek2StammdatenFromRepo(): void {
     galerieCardImage: oGal.galerieCardImage ?? '',
     soldArtworksDisplayDays: 30,
     internetShopNotSetUp: true,
+    focusDirections: oGalFocus,
+    story: (oGal as { story?: string }).story ?? '',
   }, { merge: false })
 
   try {

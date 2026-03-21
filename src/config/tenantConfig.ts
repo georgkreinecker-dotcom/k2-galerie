@@ -776,6 +776,8 @@ export const MUSTER_TEXTE = {
     welcomeImage: OEK2_WILLKOMMEN_IMAGES.welcomeImage,
     virtualTourImage: OEK2_WILLKOMMEN_IMAGES.virtualTourImage,
     galerieCardImage: OEK2_WILLKOMMEN_IMAGES.galerieCardImage,
+    /** Eine Sparte – Standard für Demo/Lizenz-Einstieg (nicht leer, nicht Food). */
+    focusDirections: ['kunst'],
     story: '',
   },
   welcomeText: 'Für Künstler:innen – eine Galerie für Werke, Ideen und Produkte. Ein Modell: Bilder und Skulptur in einem Raum.',
@@ -934,6 +936,9 @@ export const FOCUS_DIRECTIONS = [
 ] as const
 
 export type FocusDirectionId = typeof FOCUS_DIRECTIONS[number]['id']
+
+/** Standard-Sparte ök2/Demo: Kunst & Galerie (docs/KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md). Nicht „food“ als stiller Fallback. */
+export const DEFAULT_OEK2_FOCUS_DIRECTION_ID: FocusDirectionId = 'kunst'
 
 /** Kategorien je Richtung (ök2) – Typ/Kategorie-Dropdowns und Neues Werk. Erste Richtung entscheidet. */
 export const FOCUS_DIRECTION_PRODUCT_CATEGORIES: Record<string, readonly { id: string; label: string }[]> = {

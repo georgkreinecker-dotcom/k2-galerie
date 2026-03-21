@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
-import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection } from '../config/tenantConfig'
+import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
 import { 
   syncMobileToSupabase, 
   checkMobileUpdates, 
@@ -271,7 +271,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [filter, setFilter] = useState<Filter>(initialFilter || 'alle')
   const [cartCount, setCartCount] = useState(0)
   /** ök2: Sparte aus Stammdaten (eine) – für Kategorie-Dropdown und entryType beim mobilen Neues Werk; oben wegen useMemo categoriesWithArtworks */
-  const [oeffentlichFocusDirection, setOeffentlichFocusDirection] = useState<string>('food')
+  const [oeffentlichFocusDirection, setOeffentlichFocusDirection] = useState<string>(DEFAULT_OEK2_FOCUS_DIRECTION_ID)
 
   /** K2: Anzeige-Liste = Hauptliste + Pending (neu gespeicherte Werke bleiben sichtbar, auch wenn etwas überschreibt). */
   const setArtworksDisplay = useCallback((list: any[]) => {
@@ -402,8 +402,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
     if (!musterOnly) return
     try {
       const g = loadStammdaten('oeffentlich', 'gallery') as { focusDirections?: string[] } | null
-      const fd = Array.isArray(g?.focusDirections) ? g.focusDirections : []
-      if (fd.length > 0) setOeffentlichFocusDirection(fd[0])
+      const fd = Array.isArray(g?.focusDirections) ? g.focusDirections.filter((id) => typeof id === 'string') : []
+      setOeffentlichFocusDirection(fd.length > 0 ? fd[0] : DEFAULT_OEK2_FOCUS_DIRECTION_ID)
     } catch (_) {}
   }, [musterOnly])
 

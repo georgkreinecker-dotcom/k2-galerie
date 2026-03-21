@@ -4,7 +4,7 @@
  * Merge-Logik nur hier; keine leeren Werte überschreiben (kein-datenverlust).
  */
 
-import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
+import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
 
 export type StammdatenTenantId = 'k2' | 'oeffentlich'
 export type StammdatenType = 'martina' | 'georg' | 'gallery'
@@ -135,7 +135,16 @@ export function loadStammdaten(tenant: StammdatenTenantId, type: StammdatenType)
       return getDefaults(tenant, type)
     }
     const parsed = JSON.parse(raw)
-    return typeof parsed === 'object' && parsed !== null ? parsed : getDefaults(tenant, type)
+    if (typeof parsed !== 'object' || parsed === null) return getDefaults(tenant, type)
+    if (tenant === 'oeffentlich' && type === 'gallery') {
+      const fd = Array.isArray((parsed as any).focusDirections)
+        ? (parsed as any).focusDirections.filter((id: unknown) => typeof id === 'string')
+        : []
+      if (fd.length === 0) {
+        return { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
+      }
+    }
+    return parsed
   } catch {
     return getDefaults(tenant, type)
   }

@@ -81,8 +81,8 @@ export default function PraesentationsmappePage() {
   const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
 
   const gallery = typeof window !== 'undefined'
-    ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>)
-    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>
+    ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)
+    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as unknown as Record<string, string>
   const coverTitle = isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
     : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || 'K2 Galerie').replace(/&/g, ' & ')

@@ -65,8 +65,8 @@ export default function ProspektGalerieeroeffnungPage() {
   }, [refetchQrStand])
 
   const gallery = typeof window !== 'undefined'
-    ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>
-    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>
+    ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>
+    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as unknown as Record<string, string>
   const martina = typeof window !== 'undefined'
     ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'martina') as Record<string, string>
     : (isOeffentlich ? MUSTER_TEXTE.martina : K2_STAMMDATEN_DEFAULTS.martina) as Record<string, string>

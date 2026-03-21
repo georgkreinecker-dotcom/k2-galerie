@@ -30,7 +30,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -2167,7 +2167,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   /** ök2: Erste Kategorisierung in der Filter-Leiste – Typ (Kunstwerk/Produkt/Idee) zuerst, dann Kategorie */
   const [entryTypeFilter, setEntryTypeFilter] = useState<'alle' | EntryTypeId>('alle')
   /** ök2: Im Neues-Werk/Bearbeiten-Modal gewählte Sparte (Richtung) – Typ = Sparte aus Stammdaten, Kategorie darunter wählbar */
-  const [artworkDirection, setArtworkDirection] = useState<string>('food')
+  const [artworkDirection, setArtworkDirection] = useState<string>(DEFAULT_OEK2_FOCUS_DIRECTION_ID)
   const [showCameraView, setShowCameraView] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
@@ -2754,9 +2754,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
       const g = (K2_STAMMDATEN_DEFAULTS.gallery as any) || {}
       const rawFd = data && typeof data === 'object' && Array.isArray((data as any).focusDirections) ? (data as any).focusDirections : []
+      const fdOne = rawFd.length > 0 ? [rawFd[0]] : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
       const merged = data && typeof data === 'object'
-        ? { ...g, ...data, focusDirections: rawFd.length > 0 ? [rawFd[0]] : [] }
-        : { ...g, focusDirections: [] }
+        ? { ...g, ...data, focusDirections: fdOne }
+        : { ...g, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
       setGalleryData(merged)
     } catch (_) {}
   }, [tenant.isOeffentlich])
@@ -2768,7 +2769,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const data = loadStammdaten('oeffentlich', 'gallery') as Record<string, unknown> | null
       if (data && typeof data === 'object' && Array.isArray((data as any).focusDirections)) {
         const fd = (data as any).focusDirections
-        const one = fd.length > 0 ? [fd[0]] : []
+        const one = fd.length > 0 ? [fd[0]] : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
         setGalleryData((prev: any) => {
           if (prev && JSON.stringify(prev.focusDirections) === JSON.stringify(one)) return prev
           return { ...(prev || {}), ...data, focusDirections: one }
@@ -3105,7 +3106,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
       name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', iban: '', bic: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
-      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [] as string[], story: ''
+      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] as string[], story: ''
     }
     setMartinaData(emptyPerson1)
     setGeorgData(emptyPerson2)
@@ -3788,8 +3789,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   useEffect(() => {
     if (!tenant.isOeffentlich) return
     const dirs = galleryData?.focusDirections
-    if (!Array.isArray(dirs) || dirs.length === 0) return
-    const typ = getDefaultEntryTypeForFocusDirections(dirs)
+    const effective = Array.isArray(dirs) && dirs.length > 0 ? dirs : [DEFAULT_OEK2_FOCUS_DIRECTION_ID]
+    const typ = getDefaultEntryTypeForFocusDirections(effective)
     setEntryTypeFilter(typ)
   }, [tenant.isOeffentlich, galleryData?.focusDirections])
 
@@ -3814,7 +3815,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   useEffect(() => {
     if (!showAddModal || editingArtwork || !tenant.isOeffentlich) return
     const dirs = galleryData?.focusDirections
-    const dir = Array.isArray(dirs) && dirs.length > 0 ? dirs[0] : 'food'
+    const dir = Array.isArray(dirs) && dirs.length > 0 ? dirs[0] : DEFAULT_OEK2_FOCUS_DIRECTION_ID
     setArtworkDirection(dir)
     setArtworkEntryType(getEntryTypeForDirection(dir))
     const cats = getCategoriesForDirection(dir)
@@ -14040,7 +14041,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 )
 
                 if (filtered.length === 0) {
-                  const fixedDir = tenant.isOeffentlich ? (galleryData?.focusDirections?.[0] ?? 'food') : null
+                  const fixedDir = tenant.isOeffentlich ? (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : null
                   const previewCategory = tenant.isOeffentlich
                     ? (categoryFilter === 'alle' ? (getCategoriesForDirection(fixedDir)[0]?.id ?? '') : categoryFilter)
                     : (artworkCategory || (ARTWORK_CATEGORIES[0]?.id ?? ''))
@@ -15313,7 +15314,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         try {
                           persistStammdaten('oeffentlich', 'martina', martinaMuster, { merge: false })
                           persistStammdaten('oeffentlich', 'georg', georgMuster, { merge: false })
-                          persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery, focusDirections: [] }, { merge: false })
+                          persistStammdaten('oeffentlich', 'gallery', { ...MUSTER_TEXTE.gallery }, { merge: false })
                           setMartinaData(loadStammdaten('oeffentlich', 'martina') as any)
                           setGeorgData(loadStammdaten('oeffentlich', 'georg') as any)
                           setGalleryData(loadStammdaten('oeffentlich', 'gallery') as any)
@@ -23511,7 +23512,7 @@ ${name}`
                       <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>Kategorie *</label>
                       <p style={{ margin: '0 0 0.35rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)' }}>Deine Sparte (z. B. Food & Genuss) kommt aus den Stammdaten.</p>
                       <select value={artworkCategory} onChange={(e) => { const v = e.target.value; setArtworkCategory(v); try { localStorage.setItem(K2_LAST_ARTWORK_CATEGORY_KEY, v) } catch (_) {} }} style={{ width: '100%', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem', outline: 'none', cursor: 'pointer' }}>
-                        {getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? 'food').map((c) => (
+                        {getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID).map((c) => (
                           <option key={c.id} value={c.id}>{c.label}</option>
                         ))}
                       </select>
@@ -23706,7 +23707,7 @@ ${name}`
                       cursor: 'pointer'
                     }}
                   >
-                    {(tenant.isOeffentlich ? getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? 'food') : (tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType))).map((c) => (
+                    {(tenant.isOeffentlich ? getCategoriesForDirection(galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID) : (tenant.isVk2 ? getVk2Kunstrichtungen(vk2Stammdaten) : getCategoriesForEntryType(artworkEntryType))).map((c) => (
                       <option key={c.id} value={c.id}>{c.label}</option>
                     ))}
                   </select>
@@ -23716,7 +23717,7 @@ ${name}`
                 <label style={{ display: 'block', marginBottom: '0.4rem', fontSize: '0.8rem', color: '#8fa0c9', fontWeight: '500' }}>{tenant.isOeffentlich ? 'Typ (Sparte)' : 'Typ'}</label>
                 {tenant.isOeffentlich ? (
                   <span style={{ display: 'inline-block', padding: '0.6rem', background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '8px', color: '#ffffff', fontSize: '0.9rem' }}>
-                    {FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? 'food'))?.label ?? 'Kunst & Galerie'}
+                    {FOCUS_DIRECTIONS.find((d) => d.id === (galleryData?.focusDirections?.[0] ?? DEFAULT_OEK2_FOCUS_DIRECTION_ID))?.label ?? 'Kunst & Galerie'}
                   </span>
                 ) : (
                   <select value={artworkEntryType} onChange={(e) => {
