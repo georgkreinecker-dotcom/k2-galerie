@@ -71,7 +71,7 @@ function Mok2ChapterPage({ title }: { title: string }) {
         borderLeftWidth: 4,
       }}
     >
-      <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#5ffbf1', fontWeight: 700 }}>
+      <h2 style={{ margin: 0, fontSize: '1.1rem', color: '#0d9488', fontWeight: 700 }}>
         {title}
       </h2>
     </div>

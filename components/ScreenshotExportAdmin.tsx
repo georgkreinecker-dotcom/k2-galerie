@@ -256,7 +256,8 @@ function pickWerbemittelPdfRoot(body: HTMLElement): HTMLElement {
 
 type Html2PdfWorker = {
   set: (o: object) => {
-    from: (el: HTMLElement) => {
+    /** Zweites Arg z. B. `'canvas'`, wenn Quelle schon ein gerendertes Canvas ist (kein DOM-Klon). */
+    from: (el: HTMLElement, sourceType?: string) => {
       save: () => Promise<void>
       outputPdf: (type: string) => Promise<Blob | string>
     }
@@ -330,6 +331,39 @@ async function renderStyledPdfBlobFromHtmlString(
 
     const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
 
+    /**
+     * html2pdf klont DOM ins Hauptdokument – Styles aus dem Iframe-`<head>` (Capture-CSS) gelten dort nicht
+     * → leeres/falsches Raster. html2canvas auf dem Element **im Iframe** hält alle Regeln; jsPDF nur noch aus Canvas.
+     */
+    const html2canvasMod = await import('html2canvas')
+    const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+    if (typeof runHtml2Canvas !== 'function') return null
+
+    const h2cOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+      scale: pdfFormat === 'a3' ? 2.35 : 2.1,
+      windowWidth: iframeWidthPx,
+      windowHeight: Math.min(Math.max(scrollH + 120, iframeMinHeightPx), 8000),
+      scrollX: 0,
+      scrollY: 0,
+      onclone: (clonedDoc: Document) => {
+        try {
+          clonedDoc.querySelectorAll('.no-print').forEach(n => {
+            ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+          })
+          applyWerbemittelCaptureToClone(clonedDoc, safeHtml, pdfFormat, capture)
+        } catch {
+          /* ignore */
+        }
+      },
+    }
+
+    const canvas = await (runHtml2Canvas as (el: HTMLElement, o: typeof h2cOpts) => Promise<HTMLCanvasElement>)(
+      captureRoot,
+      h2cOpts
+    )
+    if (!canvas || canvas.width < 1 || canvas.height < 1) return null
+
     const html2pdfMod = await import('html2pdf.js')
     const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
     if (typeof html2pdfRaw !== 'function') return null
@@ -347,24 +381,10 @@ async function renderStyledPdfBlobFromHtmlString(
       html2canvas: {
         ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
         scale: pdfFormat === 'a3' ? 2.35 : 2.1,
-        windowWidth: iframeWidthPx,
-        windowHeight: Math.min(Math.max(scrollH + 120, iframeMinHeightPx), 8000),
-        scrollX: 0,
-        scrollY: 0,
-        onclone: (clonedDoc: Document) => {
-          try {
-            clonedDoc.querySelectorAll('.no-print').forEach(n => {
-              ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
-            })
-            applyWerbemittelCaptureToClone(clonedDoc, safeHtml, pdfFormat, capture)
-          } catch {
-            /* ignore */
-          }
-        },
       },
     }
 
-    const out = await worker.set(pdfOpts).from(captureRoot).outputPdf('blob')
+    const out = await worker.set(pdfOpts).from(canvas, 'canvas').outputPdf('blob')
 
     return out instanceof Blob ? out : null
   } catch (e) {

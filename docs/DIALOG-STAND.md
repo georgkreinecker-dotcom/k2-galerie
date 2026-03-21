@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** 4cb9d77 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Werbemittel-PDF:** html2canvas **direkt im Iframe** auf `captureRoot` (Styles aus Capture-CSS bleiben wirksam); **html2pdf** nur noch **jsPDF aus fertigem Canvas** (`.from(canvas, 'canvas')`), kein DOM-Klon ins Hauptdokument. **Typ:** `Html2PdfWorker.from` zweites Arg erlaubt. **mök2:** `Mok2ChapterPage` Überschrift **Teal `#0d9488`** statt Türkis auf hellem Kasten (Lesbarkeit). **Tests grün, Build grün.** **Commit:** 41607b1 ✅ auf GitHub
+
+**Vorher:** 20.03.26 – **mök2: Texte & KI – eigenes Werkzeug:** Sektion **`#mok2-texte-ki-freiheit`** in **MarketingOek2Page** (externes KI-Tool + Einfügen in App; keine eingebaute KI-Pflicht in der Lizenz); Sidebar **mok2Structure**; Bullet in „5. Weitere Ideen“ verweist dorthin. **Tests 225 grün, Build grün.** **Commit:** 4cb9d77 ✅ auf GitHub
 
 **Vorher:** 20.03.26 – **Hard-Backup erklärt (Georg: „zu wenig Daten“):** `MANIFEST.txt` + Konsolen-Hinweis im Skript – **gallery-data.json** ist absichtlich **klein** (veröffentlichter Stand, Bilder als URL, kein Base64-Blob). **Mehr:** `backup/k2-vollbackup-latest.json` + Skript erneut; Code: `backup-code-to-backupmicro.sh`. **Commit:** d3d5315 ✅ auf GitHub
 
@@ -74,9 +76,9 @@
 
 **Vorher:** 20.03.26 – Werbemittel-Mail mailto/PDF-Hinweis – **Commit:** 396755f
 
-**Was wir JETZT tun:** Session beendet – mök2-KI-Hinweis committed; nächster Einstieg frei wählen.
+**Was wir JETZT tun:** PDF-Fix live prüfen (Admin → Werbemittel → PDF); bei Abweichung Screenshot/Format melden.
 
-**Einordnung:** Vertrieb (mök2) = klare Erwartung: **KI zum Schreiben** außerhalb der Lizenz ok; **App** = Ausliefern/Einfügen/Workflow.
+**Einordnung:** **Ein Standard** – Raster = gleiche CSS-Quelle wie Vorschau; **kein** html2pdf-Klon ohne Styles.
 
 **Nächster Schritt:** Bei Bedarf: mök2 im Browser prüfen (Anker **Texte & KI**); sonst wie zuvor PDF-1-Klick / Vollbackup nach Lust.
 
