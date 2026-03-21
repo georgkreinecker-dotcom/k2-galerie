@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 2a66e65 (Push falls nötig)
+**Letzter Stand:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 4e3e5ef (Push falls nötig)
 
 **Vorher:** 21.03.26 – **Eingangstor = `/entdecken` (Georg, Screenshot):** Verbindliches erste Tor = **EntdeckenPage** (Hero, Tor-Bild, „Jetzt entdecken“, Flow → ök2). **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = **`ENTDECKEN_ROUTE`** (nicht direkt `galerie-oeffentlich`). **PRODUKT-VISION** + Kommentare **navigation**, **EntdeckenPage**, **GaleriePage**-Tooltip, **BrandLogo**. **Commit:** (nach Push)
 
