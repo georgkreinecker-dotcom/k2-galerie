@@ -16,6 +16,9 @@ import {
   type KassabuchEintrag,
   type KassabuchTenant,
 } from '../utils/kassabuchStorage'
+import { computeRohertragOek2, type RohertragOek2Artwork } from '../utils/buchhaltungRohertragOek2'
+import { computeLagerstandOek2Vorschau } from '../utils/buchhaltungLagerstandOek2'
+import { formatEkAnzeige } from '../utils/artworkEkVk'
 
 const s = {
   bg: '#f8f7f5',
@@ -49,11 +52,22 @@ interface OrderRow {
   soldAt?: string
   total?: number
   paymentMethod?: string
+  items?: Array<{ number?: string; title?: string; price?: number; quantity?: number }>
 }
 
 function loadOrders(tenant: KassabuchTenant): OrderRow[] {
   try {
     const raw = localStorage.getItem(ORDERS_KEY[tenant])
+    const list = raw ? JSON.parse(raw) : []
+    return Array.isArray(list) ? list : []
+  } catch {
+    return []
+  }
+}
+
+function loadOeffentlichArtworksForRohertrag(): unknown[] {
+  try {
+    const raw = localStorage.getItem('k2-oeffentlich-artworks')
     const list = raw ? JSON.parse(raw) : []
     return Array.isArray(list) ? list : []
   } catch {
@@ -101,7 +115,10 @@ export default function BuchhaltungPage() {
   const [von, setVon] = useState('')
   const [bis, setBis] = useState('')
   const [entries, setEntries] = useState<KassabuchEintrag[]>(() => getKassabuchMitEingaengen(tenant))
-  const [orders] = useState<OrderRow[]>(() => loadOrders(tenant))
+  const [orders, setOrders] = useState<OrderRow[]>(() => loadOrders(tenant))
+  const [artworksOeffRohertrag, setArtworksOeffRohertrag] = useState<unknown[]>(() =>
+    tenant === 'oeffentlich' ? loadOeffentlichArtworksForRohertrag() : []
+  )
 
   const filteredEntries = useMemo(() => {
     let list = kassabuchVoll && aktiv ? entries : entries.filter(e => e.art === 'eingang' || (tenant === 'vk2' && e.art === 'ausgang'))
@@ -124,13 +141,27 @@ export default function BuchhaltungPage() {
     return list.sort((a, b) => (b.date || b.soldAt || '').localeCompare(a.date || a.soldAt || ''))
   }, [orders, von, bis])
 
+  const rohertragOek2 = useMemo(() => {
+    if (tenant !== 'oeffentlich') return null
+    return computeRohertragOek2(filteredOrders, artworksOeffRohertrag as RohertragOek2Artwork[])
+  }, [tenant, filteredOrders, artworksOeffRohertrag])
+
+  const lagerstandOek2 = useMemo(() => {
+    if (tenant !== 'oeffentlich') return null
+    return computeLagerstandOek2Vorschau(artworksOeffRohertrag)
+  }, [tenant, artworksOeffRohertrag])
+
   /** Einträge mit Beleg (Foto oder QR) – für PDF an Steuerberater. Pro++ = vollständige Buchhaltung inkl. Belege. */
   const entriesWithBeleg = useMemo(
     () => filteredEntries.filter(e => e.belegImage || e.belegQrText),
     [filteredEntries]
   )
 
-  const refresh = () => setEntries(getKassabuchMitEingaengen(tenant))
+  const refresh = () => {
+    setEntries(getKassabuchMitEingaengen(tenant))
+    setOrders(loadOrders(tenant))
+    if (tenant === 'oeffentlich') setArtworksOeffRohertrag(loadOeffentlichArtworksForRohertrag())
+  }
 
   const handlePrint = () => window.print()
 
@@ -199,7 +230,8 @@ export default function BuchhaltungPage() {
     )
   }
 
-  const adminLink = tenant === 'vk2' ? '/admin?context=vk2' : '/admin'
+  const adminLink =
+    tenant === 'vk2' ? '/admin?context=vk2' : tenant === 'oeffentlich' ? '/admin?context=oeffentlich' : '/admin'
   const kassaTo = tenant === 'vk2'
     ? { pathname: PROJECT_ROUTES['k2-galerie'].shop, state: { openAsKasse: true, fromVk2: true } }
     : tenant === 'oeffentlich'
@@ -300,6 +332,137 @@ export default function BuchhaltungPage() {
         </p>
 
         {/* Summen für den Zeitraum – einfach, für jeden verständlich */}
+        {rohertragOek2 && (
+          <div
+            style={{
+              background: '#fff8e1',
+              border: '1px solid #f9a82544',
+              borderRadius: s.radius,
+              padding: '1rem 1.1rem',
+              marginBottom: '1.25rem',
+              boxShadow: s.shadow,
+            }}
+          >
+            <h2 style={{ fontSize: '1.05rem', color: s.text, margin: '0 0 0.5rem', fontWeight: 700 }}>
+              Übersicht Rohertrag (Demo-Galerie)
+            </h2>
+            <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 0.85rem', lineHeight: 1.45 }}>
+              Für <strong>Kleingewerbe</strong> zum Überblick: nur Verkäufe mit <strong>Werknummer</strong>. EK kommt aus dem Werk (EK-Feld); leer ={' '}
+              <strong>Eigenproduktion</strong> (EK 0). Keine Steuerberatung – Vorlage für dich, Prüfung beim Steuerberater.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              <div style={{ background: '#e8f5e9', padding: '0.75rem', borderRadius: 10, textAlign: 'center', border: '1px solid #2d7a3a22' }}>
+                <div style={{ fontSize: '0.72rem', color: s.muted }}>Verkauf (VK)</div>
+                <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#1b5e20' }}>{rohertragOek2.verkaufserloes.toFixed(2)} €</div>
+              </div>
+              <div style={{ background: '#fce4ec', padding: '0.75rem', borderRadius: 10, textAlign: 'center', border: '1px solid #c2185b22' }}>
+                <div style={{ fontSize: '0.72rem', color: s.muted }}>Wareneinsatz (EK)</div>
+                <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#880e4f' }}>{rohertragOek2.wareneinsatz.toFixed(2)} €</div>
+              </div>
+              <div
+                style={{
+                  background: rohertragOek2.rohertrag >= 0 ? '#e3f2fd' : '#fff3e0',
+                  padding: '0.75rem',
+                  borderRadius: 10,
+                  textAlign: 'center',
+                  border: `1px solid ${rohertragOek2.rohertrag >= 0 ? '#1565c022' : '#e6510022'}`,
+                }}
+              >
+                <div style={{ fontSize: '0.72rem', color: s.muted }}>Rohertrag</div>
+                <div
+                  style={{
+                    fontSize: '1.15rem',
+                    fontWeight: 700,
+                    color: rohertragOek2.rohertrag >= 0 ? '#0d47a1' : '#e65100',
+                  }}
+                >
+                  {rohertragOek2.rohertrag.toFixed(2)} €
+                </div>
+              </div>
+            </div>
+            <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0.65rem 0 0', lineHeight: 1.4 }}>
+              Positionen mit Werknummer: {rohertragOek2.positionenMitWerknummer}
+              {rohertragOek2.positionenEigenproduktion > 0
+                ? ` · davon ohne EK (Eigenproduktion): ${rohertragOek2.positionenEigenproduktion}`
+                : null}
+              {rohertragOek2.positionenMitWerknummer === 0 ? ' – im Zeitraum keine Werkverkäufe.' : ''}
+            </p>
+
+            {lagerstandOek2 && (
+              <>
+                <hr style={{ border: 'none', borderTop: '1px solid #f9a82555', margin: '1.1rem 0' }} />
+                <h3 style={{ fontSize: '0.98rem', color: s.text, margin: '0 0 0.35rem', fontWeight: 700 }}>
+                  Vorschau Lagerstand
+                </h3>
+                <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0 0 0.65rem', lineHeight: 1.45 }}>
+                  Aus dem aktuellen Demo-Werkstamm: Stückzahl &gt; 0 (ohne Angabe = 1 Stück). Detail und Filter „Nur Lager &amp; Kassa“ im{' '}
+                  <Link to="/admin?context=oeffentlich" style={{ color: s.accent, fontWeight: 600 }}>
+                    Admin → Werkkatalog
+                  </Link>
+                  .
+                </p>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: s.text,
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem 1rem',
+                  }}
+                >
+                  <span>
+                    <strong>{lagerstandOek2.gesamtStueck}</strong> Stück im Lager
+                  </span>
+                  <span>
+                    VK (Lager): <strong>{lagerstandOek2.wertVk.toFixed(2)} €</strong>
+                  </span>
+                  <span>
+                    EK (Lager): <strong>{lagerstandOek2.wertEk.toFixed(2)} €</strong>
+                  </span>
+                </div>
+                {lagerstandOek2.rows.length === 0 ? (
+                  <p style={{ fontSize: '0.82rem', color: s.muted, margin: 0 }}>Keine Stücke mit Stückzahl &gt; 0.</p>
+                ) : (
+                  <div style={{ overflowX: 'auto', maxHeight: 'min(320px, 50vh)', overflowY: 'auto', borderRadius: 8, border: '1px solid #f9a82533' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                      <thead>
+                        <tr style={{ background: '#fffde7', position: 'sticky', top: 0 }}>
+                          <th style={{ textAlign: 'left', padding: '0.45rem 0.5rem' }}>Nr.</th>
+                          <th style={{ textAlign: 'left', padding: '0.45rem 0.5rem' }}>Titel</th>
+                          <th style={{ textAlign: 'right', padding: '0.45rem 0.5rem' }}>Stück</th>
+                          <th style={{ textAlign: 'right', padding: '0.45rem 0.5rem' }}>VK</th>
+                          <th style={{ textAlign: 'right', padding: '0.45rem 0.5rem' }}>EK</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lagerstandOek2.rows.slice(0, 20).map(row => (
+                          <tr key={row.number} style={{ borderTop: '1px solid #eee' }}>
+                            <td style={{ padding: '0.4rem 0.5rem', whiteSpace: 'nowrap' }}>{row.number}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', color: '#5c5650', maxWidth: 200 }} title={row.title}>
+                              {row.title.length > 42 ? `${row.title.slice(0, 40)}…` : row.title || '–'}
+                            </td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'right' }}>{row.menge}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'right' }}>{row.vk.toFixed(2)} €</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'right', fontSize: '0.76rem' }}>
+                              {row.eigenproduktion ? formatEkAnzeige(undefined) : formatEkAnzeige(row.ek)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {lagerstandOek2.rows.length > 20 && (
+                      <p style={{ fontSize: '0.72rem', color: s.muted, margin: '0.35rem 0.5rem 0.5rem', padding: 0 }}>
+                        … und {lagerstandOek2.rows.length - 20} weitere Zeilen im Werkkatalog.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
           <div style={{ background: '#e8f5e9', padding: '1rem', borderRadius: s.radius, border: '1px solid #2d7a3a33', textAlign: 'center' }}>
             <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.25rem' }}>Einnahmen</div>

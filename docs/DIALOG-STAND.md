@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Werkkarte: EK + VK (Georg):** **`purchasePrice`** = EK (optional); **`price`** = VK unverändert (Shop/Kassa/Etikett). Ohne/leerer EK → Anzeige **„Eigenproduktion“**. **Admin** (K2, ök2, VK2-Mitgliederwerk): Felder **EK (€)** + **VK (€)**; **`saveArtworkData`** setzt `purchasePrice` nur bei positivem Betrag. **WerkkatalogTab:** Spalte **EK**, **VK** statt „Preis“; Modal + Druck (K2/ök2) mit EK/VK. **`artworksForExport`:** `purchasePrice` wird aus öffentlicher Nutzlast entfernt. **`artworkEkVk.ts`** + Tests **`artworkEkVk.test.ts`**. Default **Katalog-Spalten** inkl. **ek**. Tests + Build grün. **Commit:** 7f8c7a3 ✅ auf GitHub
+**Letzter Stand:** 21.03.26 – **Buchhaltung ök2: Rohertrag + Lager-Vorschau (Georg, Kleingewerbe):** **`BuchhaltungPage`** nur **`tenant === 'oeffentlich'`**: Kasten **Rohertrag** (VK/EK aus Verkäufen mit Werknummer + EK aus **`k2-oeffentlich-artworks`**) und **Vorschau Lagerstand** (Stückzahl &gt; 0, Tabelle max. 20 Zeilen, Summen VK/EK Lager, Link Admin Werkkatalog). Utils **`buchhaltungRohertragOek2`**, **`buchhaltungLagerstandOek2`**, Tests; **`Aktualisieren`** lädt Orders + Werke neu; Admin-Link **`?context=oeffentlich`**. Tests + Build grün. **Commit:** 0b597fc ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Werkkarte: EK + VK:** **`purchasePrice`**, Eigenproduktion, Export ohne EK, Werkkatalog/Admin – siehe History.
 
 **Vorher:** 21.03.26 – **Verkaufsstatistik: Preisspanne nur ök2 (Georg):** **Preisspanne** (Min/Max/Ø), **Ø-Verkaufspreis-Kachel** und **Ø-Zeile** beim Druck **„Verkaufs- & Lagerstatistik“** nur bei **`tenant.isOeffentlich`**; **K2 und VK2** ohne. **`StatistikTab`** Prop **`showPreisspanneVerkauf`**, **ScreenshotExportAdmin** setzt **`tenant.isOeffentlich`**. Tests + Build grün. **Commit:** (siehe History) ✅
 
