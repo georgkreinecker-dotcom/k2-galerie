@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **ök2 Fremden-Banner Infofeld Sparten (Georg):** Statt Einstellungen-Button ein **Info-Kasten** mit allen **`FOCUS_DIRECTIONS`**-Labels (eine Quelle mit Admin); Fließtext: **zuerst im Muster umschauen**, Auswahl **später in Einstellungen**; Buttons nur noch **Galerie gestalten** + **Admin**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
+**Letzter Stand:** 22.03.26 – **ök2 Fremden-Banner Text + Button (Georg):** Fließtext **ohne Teilen**; **kein ✨** bei **Galerie gestalten**; Info-Kasten-Zeile leicht **redigiert**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
+
+**Vorher:** 22.03.26 – **ök2 Fremden-Banner Infofeld Sparten (Georg):** Statt Einstellungen-Button ein **Info-Kasten** mit allen **`FOCUS_DIRECTIONS`**-Labels (eine Quelle mit Admin); Fließtext: **zuerst im Muster umschauen**, Auswahl **später in Einstellungen**; Buttons nur noch **Galerie gestalten** + **Admin**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
 
 **Vorher:** 22.03.26 – **ök2 Fremden-Banner (Georg):** Text = **Muster**, zuerst **Einstellungen** (Sparte, Meine Richtung), dann **Galerie gestalten**; **Teilen** erst sinnvoll wenn Stand klar – Hinweis im Text; **„Galerie teilen“** aus Banner entfernt; fixierter **Teilen**-Button ausgeblendet solange **`showOek2FremdeOrientierungsBanner`**. Neuer Button **Einstellungen: Sparte und Richtung** → **`MEIN_BEREICH_ROUTE?context=oeffentlich&tab=einstellungen`**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
 

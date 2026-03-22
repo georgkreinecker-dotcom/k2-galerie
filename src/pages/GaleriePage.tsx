@@ -3107,7 +3107,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt später: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Schau dich zuerst in Ruhe um</strong> – rechts siehst du, welche <strong style={{ fontWeight: 700 }}>Sparten</strong> du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Meine Richtung</strong> wählen kannst, damit alles zu deinen Themen passt; danach richtest du in <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ein. <strong style={{ fontWeight: 700 }}>Teilen</strong> der eigenen Galerie kommt erst, wenn du deinen Stand kennst – den Teilen-Button siehst du dann oben rechts.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit und schau dich um.</strong> Rechts siehst du die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Meine Richtung</strong> wählst, damit die Plattform zu deinen Themen passt. Wenn du startest, legst du Willkommen und Galerie unter <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> fest.
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
               <div
@@ -3127,7 +3127,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   Sparte und „Meine Richtung“ – Auswahl später in den Einstellungen
                 </div>
                 <p style={{ margin: '0 0 0.4rem', color: '#5c5650' }}>
-                  Für deine eigene Linie kannst du eine dieser Richtungen festlegen (nicht hier im Muster):
+                  So kannst du deine eigene Linie später ausrichten – im Muster nur zum Nachlesen:
                 </p>
                 <ul style={{ margin: 0, paddingLeft: '1.15rem', color: '#1c1a18' }}>
                   {FOCUS_DIRECTIONS.map((d) => (
@@ -3155,7 +3155,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   fontFamily: 'inherit',
                 }}
               >
-                ✨ Galerie gestalten (CD) →
+                Galerie gestalten (CD) →
               </button>
               <button
                 type="button"
