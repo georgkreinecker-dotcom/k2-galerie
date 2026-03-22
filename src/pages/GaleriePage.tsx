@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
@@ -3107,30 +3107,35 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt später: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. Wähle zuerst in den <strong style={{ fontWeight: 700 }}>Einstellungen</strong> deine <strong style={{ fontWeight: 700 }}>Sparte</strong> und <strong style={{ fontWeight: 700 }}>Meine Richtung</strong>; danach richtest du alles Weitere in <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ein. Schau dich in Ruhe um. <strong style={{ fontWeight: 700 }}>Teilen</strong> der eigenen Galerie ergibt sich erst, wenn du deinen Stand kennst – den Teilen-Button siehst du dann oben rechts.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt später: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Schau dich zuerst in Ruhe um</strong> – rechts siehst du, welche <strong style={{ fontWeight: 700 }}>Sparten</strong> du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Meine Richtung</strong> wählen kannst, damit alles zu deinen Themen passt; danach richtest du in <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ein. <strong style={{ fontWeight: 700 }}>Teilen</strong> der eigenen Galerie kommt erst, wenn du deinen Stand kennst – den Teilen-Button siehst du dann oben rechts.
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0, flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                onClick={() => {
-                  try { sessionStorage.setItem('k2-admin-context', 'oeffentlich') } catch (_) {}
-                  navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=einstellungen`)
-                }}
-                title="Sparte und Meine Richtung festlegen"
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
+              <div
+                role="note"
+                aria-label="Sparten und Meine Richtung"
                 style={{
-                  padding: '0.5rem 1rem',
-                  background: 'rgba(107, 144, 128, 0.28)',
-                  color: 'var(--k2-text)',
-                  border: '2px solid rgba(107, 144, 128, 0.65)',
+                  padding: '0.65rem 0.85rem',
+                  background: 'rgba(255, 255, 255, 0.55)',
+                  border: '1px solid rgba(107, 144, 128, 0.45)',
                   borderRadius: '10px',
-                  fontWeight: 700,
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
+                  color: 'var(--k2-text)',
+                  fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
+                  lineHeight: 1.4,
                 }}
               >
-                ⚙️ Einstellungen: Sparte und Richtung →
-              </button>
+                <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#1c1a18' }}>
+                  Sparte und „Meine Richtung“ – Auswahl später in den Einstellungen
+                </div>
+                <p style={{ margin: '0 0 0.4rem', color: '#5c5650' }}>
+                  Für deine eigene Linie kannst du eine dieser Richtungen festlegen (nicht hier im Muster):
+                </p>
+                <ul style={{ margin: 0, paddingLeft: '1.15rem', color: '#1c1a18' }}>
+                  {FOCUS_DIRECTIONS.map((d) => (
+                    <li key={d.id} style={{ marginBottom: '0.15rem' }}>{d.label}</li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 onClick={() => {
@@ -3169,6 +3174,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               >
                 Mit mir in den Admin →
               </button>
+              </div>
             </div>
           </div>
         )}
