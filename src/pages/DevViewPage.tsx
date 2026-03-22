@@ -28,6 +28,8 @@ import K2GalerieHandbuchPage from './K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
 import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
+import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
+import MobileConnectPage from './MobileConnectPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -265,6 +267,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'mission-control': return PLATFORM_ROUTES.missionControl
       case 'presse': return '/admin?tab=presse'
       case 'oeffentlichkeitsarbeit': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1'
+      case 'softwareentwicklung': return PROJECT_ROUTES['k2-galerie'].softwareentwicklung
+      case 'mobile-connect': return PROJECT_ROUTES['k2-galerie'].mobileConnect
+      case 'admin-einstellungen': return '/admin?tab=einstellungen'
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
   }
@@ -814,6 +819,9 @@ end tell`
     { id: 'mok2', name: 'mök2 – Vertrieb', component: MarketingOek2Page },
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
+    { id: 'softwareentwicklung', name: 'K2 Softwareentwicklung', component: K2SoftwareentwicklungPage },
+    { id: 'mobile-connect', name: 'Mobile verbinden', component: MobileConnectPage },
+    { id: 'admin-einstellungen', name: 'Admin – Einstellungen & Backup', component: ScreenshotExportAdmin },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
     { id: 'presse', name: 'Event- und Medienplanung (K2)', component: ScreenshotExportAdmin },
     { id: 'oeffentlichkeitsarbeit', name: 'Öffentlichkeitsarbeit (K2)', component: ScreenshotExportAdmin },
@@ -945,6 +953,22 @@ end tell`
           <ScreenshotExportAdmin key="admin-singleton" />
         </Suspense>
       )
+    }
+    if (pageToRender === 'admin-einstellungen') {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="admin-einstellungen-placeholder" />
+      }
+      return (
+        <Suspense key="admin-einstellungen-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Einstellungen werden geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-einstellungen" forceTab="einstellungen" />
+        </Suspense>
+      )
+    }
+    if (pageToRender === 'softwareentwicklung') {
+      return <K2SoftwareentwicklungPage key={componentKey} />
+    }
+    if (pageToRender === 'mobile-connect') {
+      return <MobileConnectPage key={componentKey} />
     }
     // Event- und Medienplanung / Oeffentlichkeitsarbeit aus Smart Panel -> Admin mit richtigem Tab (APf zeigt sonst Galerie)
     if (pageToRender === 'presse') {
@@ -1353,7 +1377,10 @@ end tell`
               currentPageData.id === 'kampagne' ? PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie :
               currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-markt'].home :
               currentPageData.id === 'presse' ? '/admin?tab=presse' :
-              currentPageData.id === 'oeffentlichkeitsarbeit' ? '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1' : '/'}
+              currentPageData.id === 'oeffentlichkeitsarbeit' ? '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1' :
+              currentPageData.id === 'softwareentwicklung' ? PROJECT_ROUTES['k2-galerie'].softwareentwicklung :
+              currentPageData.id === 'mobile-connect' ? PROJECT_ROUTES['k2-galerie'].mobileConnect :
+              currentPageData.id === 'admin-einstellungen' ? '/admin?tab=einstellungen' : '/'}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',

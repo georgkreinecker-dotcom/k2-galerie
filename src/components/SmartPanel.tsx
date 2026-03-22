@@ -120,9 +120,11 @@ function saveOrder(order: string[]) {
 }
 
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
+const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
 const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
+  { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
@@ -135,29 +137,12 @@ function loadMappenOpen(): Record<string, boolean> {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
+  return { 'ready-to-go': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
 }
 
 function saveMappenOpen(open: Record<string, boolean>) {
   try { localStorage.setItem(MAPPEN_OPEN_KEY, JSON.stringify(open)) } catch { /* ignore */ }
 }
-
-/** Deine To-dos – Feinschliff (step by step). Links führen direkt zur Stelle. */
-const MEINE_TODOS = [
-  // Sicherheit vor Go-Live (4–6 Wochen) – Details: docs/SICHERHEIT-VOR-GO-LIVE.md
-  { text: '🔒 Vercel: WRITE_GALLERY_API_KEY + VITE_WRITE_GALLERY_API_KEY setzen, „An Server senden“ testen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 Supabase: Admin-User anlegen (z. B. georg.kreinecker@kgm.at), Passwort setzen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 Supabase: Migration 002 ausführen (RLS – nur eingeloggt schreiben)', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 Vercel: VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY prüfen (Admin-Login online)', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 Terminal: npm audit – kritische/hohe Meldungen beheben', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 AGB / Datenschutz / Impressum für Live-Betrieb prüfen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  { text: '🔒 Einmal Vollbackup anlegen und Wiederherstellung testen', href: PROJECT_ROUTES['k2-galerie'].softwareentwicklung },
-  // Feinschliff & Testen
-  { text: 'Weit testen: Abläufe (Veröffentlichen, Laden, Stand, Werke, K2/ök2, Etikett, Dokument, Backup)', href: PROJECT_ROUTES['k2-galerie'].galerieVorschau },
-  { text: 'Weit testen: Geräte (Mac, iPad, Handy – Stand, Sync)', href: PROJECT_ROUTES['k2-galerie'].mobileConnect },
-  { text: 'Weit testen: Kontexte (K2, ök2, VK2 prüfen)', href: PROJECT_ROUTES['k2-galerie'].galerie },
-  { text: 'ök2-Texte kürzen/schärfen', href: PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau },
-]
 
 // ── Diverses – frei befüllbare Ablage ──────────────────────────────────────────
 const DIVERSES_KEY = 'smartpanel-diverses'
@@ -403,6 +388,104 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
             </button>
             {isOpen && (
               <div style={{ marginTop: '0.5rem', paddingLeft: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                {mappe.id === 'ready-to-go' && (
+                  <>
+                    <p style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', lineHeight: 1.45, color: 'rgba(255,245,240,0.75)' }}>
+                      Offene Schritte und Prüfpunkte vor dem Live-Start – eine Mappe statt verstreuter To-dos. Details und Dateipfade: K2 Softwareentwicklung.
+                    </p>
+                    {onNavigate ? (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => onNavigate('softwareentwicklung')}
+                        onKeyDown={e => e.key === 'Enter' && onNavigate('softwareentwicklung')}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.12))', border: '1px solid rgba(251,191,36,0.45)', borderRadius: '8px', color: '#fcd34d', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}
+                      >
+                        📘 K2 Softwareentwicklung – Ready-to-go &amp; Docs
+                      </span>
+                    ) : (
+                      <Link
+                        to={`${K2_SOFTWAREENTWICKLUNG}#k2-ready-go`}
+                        style={{ display: 'block', padding: '0.55rem 0.75rem', background: 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(245,158,11,0.12))', border: '1px solid rgba(251,191,36,0.45)', borderRadius: '8px', color: '#fcd34d', fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}
+                      >
+                        📘 K2 Softwareentwicklung – Ready-to-go &amp; Docs
+                      </Link>
+                    )}
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Zahlung (nur wenn Online-Lizenz)</div>
+                    <ul style={{ margin: '0.15rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
+                      <li>Migration 003 (Stripe-Tabellen), Vercel-Env, Stripe-Webhook – siehe docs/START-NUR-NOCH-OFFEN.md</li>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('softwareentwicklung')} onKeyDown={e => e.key === 'Enter' && onNavigate('softwareentwicklung')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Abschnitt Stripe Go-Live öffnen</span>
+                        ) : (
+                          <Link to={`${K2_SOFTWAREENTWICKLUNG}#k2-ready-stripe`} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Abschnitt Stripe Go-Live öffnen</Link>
+                        )}
+                      </li>
+                    </ul>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Sicherheit &amp; Audit</div>
+                    <ul style={{ margin: '0.15rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
+                      <li>API-Key „An Server senden“, Supabase-User, Migration 002, Env-Variablen, npm audit, AGB/DSGVO – docs/SICHERHEIT-VOR-GO-LIVE.md</li>
+                      <li>
+                        Verbindlicher Ablauf &amp; Ampel:{' '}
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('softwareentwicklung')} onKeyDown={e => e.key === 'Enter' && onNavigate('softwareentwicklung')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Audit &amp; Programmsicherheit</span>
+                        ) : (
+                          <Link to={`${K2_SOFTWAREENTWICKLUNG}#k2-ready-audit`} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Audit &amp; Programmsicherheit</Link>
+                        )}
+                      </li>
+                    </ul>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Testen &amp; Backups</div>
+                    <ul style={{ margin: '0.15rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('galerie-vorschau')} onKeyDown={e => e.key === 'Enter' && onNavigate('galerie-vorschau')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Werke-Vorschau K2</span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerieVorschau} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Werke-Vorschau K2</Link>
+                        )}
+                        {' '}– Veröffentlichen, Laden, Stand, Etikett, Dokumente
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('mobile-connect')} onKeyDown={e => e.key === 'Enter' && onNavigate('mobile-connect')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Mobile verbinden</span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].mobileConnect} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Mobile verbinden</Link>
+                        )}
+                        {' '}– Stand, QR, Geräte
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('galerie')} onKeyDown={e => e.key === 'Enter' && onNavigate('galerie')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Galerie K2</span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerie} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Galerie K2</Link>
+                        )}
+                        {' '}·{' '}
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('galerie-oeffentlich')} onKeyDown={e => e.key === 'Enter' && onNavigate('galerie-oeffentlich')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>ök2</span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>ök2</Link>
+                        )}
+                        {' '}· VK2 – Kontexte prüfen
+                      </li>
+                      <li>
+                        Vollbackup &amp; Wiederherstellung:{' '}
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('admin-einstellungen')} onKeyDown={e => e.key === 'Enter' && onNavigate('admin-einstellungen')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin → Einstellungen</span>
+                        ) : (
+                          <Link to="/admin?tab=einstellungen" style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin → Einstellungen</Link>
+                        )}
+                      </li>
+                      <li>
+                        ök2-Texte:{' '}
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('galerie-oeffentlich-vorschau')} onKeyDown={e => e.key === 'Enter' && onNavigate('galerie-oeffentlich-vorschau')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Werke-Vorschau ök2</span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Werke-Vorschau ök2</Link>
+                        )}
+                      </li>
+                    </ul>
+                    <p style={{ margin: '0.4rem 0 0', fontSize: '0.68rem', lineHeight: 1.35, color: 'rgba(255,255,255,0.45)' }}>Daten-Tests: im Cursor Terminal <code style={{ fontSize: '0.65rem' }}>npm run test:daten</code> – wenn vorhanden.</p>
+                  </>
+                )}
                 {mappe.id === 'galerie' && (
                   <>
                     {onNavigate ? (
@@ -497,16 +580,6 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     <button type="button" onClick={startFremderModus} style={{ width: '100%', padding: '0.6rem 0.85rem', background: 'linear-gradient(135deg, rgba(255,140,66,0.18), rgba(181,74,30,0.12))', border: '1px solid rgba(255,140,66,0.5)', borderRadius: '8px', color: '#ff8c42', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.5rem' }} title="Landingpage wie ein Erstbesucher">
                       <span>👤</span><span>Als Fremder eintreten</span>
                     </button>
-                    <div style={{ marginTop: '0.25rem' }}>
-                      <span style={{ fontSize: '0.78rem', color: '#fbbf24', fontWeight: 600 }}>📋 To-dos</span>
-                      <ul style={{ margin: '0.25rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        {MEINE_TODOS.map((todo, i) => (
-                          <li key={i} style={{ fontSize: '0.75rem', lineHeight: 1.3 }}>
-                            <a href={todo.href} style={{ color: '#fbbf24', textDecoration: 'none' }} onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }} onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}>{todo.text}</a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
                   </>
                 )}
                 {mappe.id === 'k2-markt' && (

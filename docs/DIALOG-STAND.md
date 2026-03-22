@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Audit-Prozess Programmsicherheit dokumentiert (Georg):** **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – Trigger, 5-Schritte-Ablauf, Rollen, Ampeltabelle (P1.x, P2.x, PZ Stripe, PT Tests), Protokoll „Letzte Runde“; Verweise in **SICHERHEIT-VOR-GO-LIVE**, **00-INDEX**, **EINSTIEG-INFORMATIKER**, **SERVICE-ARBEIT-DATEN-TESTS**. **Commit:** `8e434c2` ✅.
+**Letzter Stand:** 22.03.26 – **Smart Panel: Mappe „K2 Ready to go“ (Georg):** Ersetzt die alten **To-dos** unter K2 Galerie. Eine Mappe mit Stripe/Sicherheit/Audit/Test/Backup-Links; **K2SoftwareentwicklungPage** um Block **K2 Ready to go** mit Ankern (`#k2-ready-go`, `#k2-ready-stripe`, …) ergänzt. **DevViewPage:** Seiten **softwareentwicklung**, **mobile-connect**, **admin-einstellungen** (Einstellungen-Tab) für Panel-Klicks. Tests + Build grün. **Commit:** mit diesem Stand auf **main** verifizieren (`git log -1 --oneline`) ✅.
+
+**Vorher:** 22.03.26 – **Audit-Prozess Programmsicherheit dokumentiert (Georg):** **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – Trigger, 5-Schritte-Ablauf, Rollen, Ampeltabelle (P1.x, P2.x, PZ Stripe, PT Tests), Protokoll „Letzte Runde“; Verweise in **SICHERHEIT-VOR-GO-LIVE**, **00-INDEX**, **EINSTIEG-INFORMATIKER**, **SERVICE-ARBEIT-DATEN-TESTS**. **Commit:** `8e434c2` ✅.
 
 **Vorher:** 22.03.26 – **Servicarbeit + Test-Audit Daten (Georg):** **docs/SERVICE-ARBEIT-DATEN-TESTS.md** – Betrieb ohne unnötiges User-Update-Theater (APf/API vs. Galerie), Checkliste, Audit was getestet ist / Lücken (getPageTexts, autoSave-Guards, Stammdaten-Merge, TenantContext); **`npm run test:daten`** für Fokus-Suite (11 Dateien, ersetzt nicht volle Tests). Verweise in **EINSTIEG-INFORMATIKER**, **00-INDEX**. **Commit:** `494b9eb` ✅.
 
@@ -22,7 +24,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Servicarbeit-Doku + `test:daten` stehen; bei Arbeit an Storage/Merge optional Fokus-Tests; nächster inhaltlicher Schritt von Georg.
+**Was wir JETZT tun:** Ready-to-go-Mappe nutzen; Go-Live-Schritte in **K2 Softwareentwicklung** / Docs; nächster inhaltlicher Schritt von Georg.
 
 **Einordnung:** Betrieb: viele Verbesserungen nur Werkzeug/API – volle QS bleibt; Besucher sehen nur, was sich auf öffentlicher UI ändert.
 

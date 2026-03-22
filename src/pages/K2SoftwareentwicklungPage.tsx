@@ -3,10 +3,20 @@
  * Deployment und technischen Checklisten zu tun hat (nicht Marketing).
  */
 
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
 
 export default function K2SoftwareentwicklungPage() {
+  useEffect(() => {
+    try {
+      const id = (window.location.hash || '').replace(/^#/, '')
+      if (!id) return
+      const el = document.getElementById(id)
+      if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+    } catch { /* ignore */ }
+  }, [])
+
   return (
     <article
       style={{
@@ -29,6 +39,56 @@ export default function K2SoftwareentwicklungPage() {
           <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none' }}>Projekt-Start</Link>
         </p>
       </div>
+
+      {/* Smart Panel: Mappe „K2 Ready to go“ – dieselben Anker (#k2-ready-*) */}
+      <section
+        id="k2-ready-go"
+        style={{
+          marginBottom: '2rem',
+          padding: '1rem 1.1rem',
+          background: 'rgba(95,251,241,0.07)',
+          borderRadius: '12px',
+          border: '1px solid rgba(95,251,241,0.22)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.2rem', color: '#5ffbf1', margin: '0 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.25)', paddingBottom: '0.35rem' }}>
+          K2 Ready to go
+        </h2>
+        <p style={{ margin: '0 0 1rem', lineHeight: 1.55, fontSize: '0.92rem', color: 'rgba(255,245,240,0.9)' }}>
+          Eine Übersicht der offenen Schritte und Docs – abgestimmt mit dem Smart Panel (Mappe <strong>K2 Ready to go</strong>). Details immer in den genannten Dateien unter <code style={{ fontSize: '0.85em' }}>docs/</code>.
+        </p>
+
+        <h3 id="k2-ready-stripe" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
+          Zahlung / Stripe (nur wenn Online-Lizenz von Tag 1)
+        </h3>
+        <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
+          Minimal nötig laut <code>docs/START-NUR-NOCH-OFFEN.md</code> – ausführlich: <code>docs/STRIPE-LIZENZEN-GO-LIVE.md</code>
+        </p>
+        <ol style={{ lineHeight: 1.65, paddingLeft: '1.35em', margin: '0 0 0.75rem', fontSize: '0.88rem' }}>
+          <li>Supabase: Migration 003 ausführen (<code>supabase/migrations/003_stripe_licences_payments_gutschriften.sql</code>)</li>
+          <li>Vercel: Env (u. a. <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>STRIPE_SECRET_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code>)</li>
+          <li>Stripe: Webhook <code>checkout.session.completed</code>, Secret in Vercel</li>
+        </ol>
+
+        <h3 id="k2-ready-security" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
+          Sicherheit vor Go-Live
+        </h3>
+        <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
+          Checklisten: <code>docs/SICHERHEIT-VOR-GO-LIVE.md</code> – API-Key „An Server senden“, Supabase-Admin, Migration 002 (RLS), Env-Variablen, npm audit, AGB/Datenschutz/Impressum, Backup.
+        </p>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.35em', margin: 0, fontSize: '0.88rem' }}>
+          <li><code>docs/VOR-VEROEFFENTLICHUNG.md</code> – Gesamt-Check vor Live</li>
+          <li><code>docs/ADMIN-AUTH-SETUP.md</code> – Admin-Auth / Supabase</li>
+          <li><code>docs/SUPABASE-RLS-SICHERHEIT.md</code> – RLS-Status</li>
+        </ul>
+
+        <h3 id="k2-ready-audit" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
+          Audit &amp; Programmsicherheit
+        </h3>
+        <p style={{ margin: 0, lineHeight: 1.55, fontSize: '0.88rem' }}>
+          Verbindlicher Ablauf, Ampeltabelle, Protokoll: <code>docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md</code>. Daten-Fokus-Tests im Projekt: <code>npm run test:daten</code>
+        </p>
+      </section>
 
       {/* Sicherheit & Vor Veröffentlichung */}
       <section id="k2-se-sicherheit-vor-veroeffentlichung" style={{ marginBottom: '2rem' }}>
