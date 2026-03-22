@@ -325,6 +325,7 @@ function StandBadgeSync() {
   const showHere = STAND_BADGE_PATHNAMES.some((p) => pathname === p)
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
+  const [showStandHelp, setShowStandHelp] = useState(false)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
   // Alle Hooks VOR jedem Return – sonst „Rendered fewer hooks“ beim Wechsel der Route (K2/ök2/Vorschau/Admin)
   const mountedRef = useRef(true)
@@ -346,6 +347,15 @@ function StandBadgeSync() {
       })
       .catch(() => {})
   }, [isLocal])
+
+  useEffect(() => {
+    if (!showStandHelp) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowStandHelp(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [showStandHelp])
 
   if (!showHere) return null
 
@@ -392,28 +402,132 @@ function StandBadgeSync() {
           Neuer Stand verfügbar – hier tippen zum Aktualisieren
         </div>
       )}
+      {/* Restrisiko Stand/Cache: fest eingebaute Kurzinfo für Nutzer (ohne Piloten-Feedback-Schleife) */}
+      {showStandHelp && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="stand-hilfe-titel"
+          onClick={() => setShowStandHelp(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 2147483647,
+            background: 'rgba(0,0,0,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+            fontFamily: 'system-ui, sans-serif',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: 420,
+              width: '100%',
+              background: '#fffefb',
+              color: '#1c1a18',
+              borderRadius: 12,
+              padding: '1.1rem 1.15rem',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+              lineHeight: 1.5,
+              fontSize: isMobile ? 15 : 14,
+            }}
+          >
+            <h2 id="stand-hilfe-titel" style={{ margin: '0 0 0.6rem', fontSize: '1.05rem', fontWeight: 700, color: '#1c1a18' }}>
+              Stand auf dem Handy oder Tablet
+            </h2>
+            <p style={{ margin: '0 0 0.75rem' }}>
+              Manchmal wirkt die Galerie <strong>noch alt</strong>, obwohl Sie bereits veröffentlicht haben. Häufig liegt das am <strong>Zwischenspeicher</strong> Ihres Browsers – das ist bei Webseiten normal und kein Fehler Ihrer Daten.
+            </p>
+            <p style={{ margin: '0 0 0.35rem', fontWeight: 600 }}>So holen Sie den aktuellen Stand:</p>
+            <ul style={{ margin: '0 0 0.85rem', paddingLeft: '1.2rem' }}>
+              <li style={{ marginBottom: 6 }}>Auf <strong>„Stand …“</strong> unten links tippen (lädt die Seite neu).</li>
+              <li style={{ marginBottom: 6 }}>Oder den Tab schließen und die Galerie <strong>neu öffnen</strong>.</li>
+              <li style={{ marginBottom: 6 }}>Oder den <strong>QR-Code erneut scannen</strong>.</li>
+            </ul>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.92em', color: '#5c5650' }}>
+              Wichtig: Handy und PC sollten <strong>dieselbe Internet-Adresse</strong> in der Adresszeile zeigen (keine nur am Rechner gültige Testadresse).
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowStandHelp(false)}
+              style={{
+                width: '100%',
+                padding: '0.65rem 1rem',
+                background: '#b54a1e',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: '1rem',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+            >
+              Verstanden
+            </button>
+          </div>
+        </div>
+      )}
       <div
-        id="app-stand-badge"
-        role="status"
-        onClick={reloadForStand}
-        title={title}
         style={{
           position: 'fixed',
           bottom: 10,
           left: 10,
           zIndex: 2147483647,
-          fontSize: isMobile ? 14 : 12,
-          color: '#fff',
-          background: serverNewer ? 'rgba(200,120,0,0.95)' : 'rgba(0,0,0,0.85)',
-          padding: isMobile ? '8px 12px' : '6px 10px',
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontFamily: 'system-ui, sans-serif',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-          pointerEvents: 'auto'
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          gap: 8,
+          pointerEvents: 'none',
         }}
       >
-        {label}
+        <div
+          id="app-stand-badge"
+          role="status"
+          onClick={reloadForStand}
+          title={title}
+          style={{
+            fontSize: isMobile ? 14 : 12,
+            color: '#fff',
+            background: serverNewer ? 'rgba(200,120,0,0.95)' : 'rgba(0,0,0,0.85)',
+            padding: isMobile ? '8px 12px' : '6px 10px',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontFamily: 'system-ui, sans-serif',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            pointerEvents: 'auto',
+          }}
+        >
+          {label}
+        </div>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); setShowStandHelp(true) }}
+          aria-label="Hinweis: Stand auf dem Handy aktualisieren"
+          title="Was tun, wenn die Anzeige alt wirkt?"
+          style={{
+            flexShrink: 0,
+            width: isMobile ? 40 : 34,
+            height: isMobile ? 40 : 34,
+            padding: 0,
+            fontSize: isMobile ? 18 : 16,
+            fontWeight: 700,
+            lineHeight: 1,
+            color: '#fff',
+            background: 'rgba(0,0,0,0.85)',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontFamily: 'system-ui, sans-serif',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            pointerEvents: 'auto',
+          }}
+        >
+          ?
+        </button>
       </div>
     </>
   )

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Benutzerhandbuch: Ansprache überall gleich (Sie) (Georg):** Repo-Prüfung **public/benutzer-handbuch**: nummerierte Kapitel **01–12**, **00-INDEX** waren bereits **Sie**; ergänzt **00-INDEX** mit explizitem Satz zur einheitlichen **Sie**-Anrede. **README-EDITOR**, **PRUEFLISTE-HANDBUCH** von **Du** auf **Sie** umgestellt (Redaktion/Prüfliste). **Commit:** `3cc98e8` ✅; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** (nach Push `git log -1 --oneline`) ✅; **Push:** Git-Button Cursor.
+
+**Vorher:** 22.03.26 – **Benutzerhandbuch: Ansprache überall gleich (Sie) (Georg):** Repo-Prüfung **public/benutzer-handbuch**: nummerierte Kapitel **01–12**, **00-INDEX** waren bereits **Sie**; ergänzt **00-INDEX** mit explizitem Satz zur einheitlichen **Sie**-Anrede. **README-EDITOR**, **PRUEFLISTE-HANDBUCH** von **Du** auf **Sie** umgestellt (Redaktion/Prüfliste). **Commit:** `3cc98e8` ✅; **Push:** Git-Button.
 
 **Vorher:** 22.03.26 – **Passwort-Strategie: Gerätemanagement:** Handbuch **10-EINSTELLUNGEN** Passwort auf dem Gerät; **04-FAQ**, **03-ADMIN**; **GaleriePage** Dialog ehrlich. **Commit:** `6732222` ✅.
 
@@ -12,9 +14,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Wie zuvor; Handbuch-Sie-Form ist abgeglichen.
+**Was wir JETZT tun:** Stand-Hilfe in der App + FAQ-Absatz; nächster Schritt von Georg.
 
-**Einordnung:** **Benutzerhandbuch** = durchgängig **Sie** (inkl. Redaktions-Dateien im gleichen Ordner); **App** = **Du** möglich – getrennte Kanäle.
+**Einordnung:** **Restrisiko** für Nutzer **in der Oberfläche** erklären – **ohne** Warten auf Piloten-Rückmeldungen; Handbuch ergänzt für Lesende in der App.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

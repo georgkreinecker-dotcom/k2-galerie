@@ -35,6 +35,8 @@ Wenn Sie am Rechner etwas geändert und veröffentlicht haben, kann es sein, das
 
 Die App ist so eingerichtet, dass beim Öffnen oder beim Tippen auf den Stand-Hinweis immer die aktuellen Daten vom Server geladen werden.
 
+**Ehrlicher Kurzhinweis:** Kein Handy-Browser lässt sich zu 100 % von außen steuern. In seltenen Fällen kann ein Gerät trotz allem noch eine ältere Ansicht zeigen. Dann helfen die Schritte oben – und auf der Galerie-Seite das **Fragezeichen** neben dem Stand unten links: dort steht dasselbe in einem kurzen Fenster, ohne dass Sie warten oder Feedback geben müssen.
+
 ---
 
 ## Werden meine Änderungen auf dem Rechner auch auf dem Handy sichtbar?
