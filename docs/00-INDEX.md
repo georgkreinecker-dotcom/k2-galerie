@@ -95,6 +95,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **REGELWERK-LAST-UND-UMSTRUKTURIERUNG.md** – **Programmier-Last durch Regeln:** Analyse (~150 KB Kontext pro Request), Vorschlag Kern-Regel + alwaysApply reduzieren, Schritte 1–6.
 - **CRASH-FIXES-STAND-17-02-26.md** – Was wir für Admin-Stabilität geändert haben (Safe-Mode, Verzögerungen). Nicht rückgängig machen.
 - **SICHERHEIT-VOR-GO-LIVE.md** – **Go-Live in 4–6 Wochen:** Priorität 1 Systemsicherheit (API-Key, Admin-Auth, RLS, npm audit), Priorität 2 Userdaten (AGB, Datenschutz, Backup); Zeitplan und Checklisten.
+- **AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – **Verbindlicher Ablauf** für Sicherheits-/Go-Live-Prüfungen: Trigger (Marktstart, Release, Quartal), **5 Schritte**, Rollen, **Ampeltabelle** (Grün/Gelb/Rot) zu allen Punkten aus SICHERHEIT-VOR-GO-LIVE plus Stripe-Go-Live und `test:daten`; Protokoll „Letzte Audit-Runde“; Verweis aus SICHERHEIT-VOR-GO-LIVE.
 - **SICHERHEIT-STABILITAET-CHECKLISTE.md** – 5 Punkte Einsturzsicher, 5 Punkte Einbruchsicher; Skala innen/außen; bei Änderungen im Blick behalten.
 - **VERBESSERUNGEN-OHNE-MEHRKOSTEN.md** – Was ohne Mehrkosten umgesetzt wurde + was du regelmäßig tun kannst (npm audit, CORS, RLS).
 - **PRODUKT-LABEL-SICHERHEIT-ROADMAP.md** – Verkaufbares Produkt: sehr gutes Label, Zahlungen/Vergütungen sicher, Nachweis für Regress; Prioritäten (Auth, RLS, Zahlungsprovider, Audit-Log, Rechtliches).

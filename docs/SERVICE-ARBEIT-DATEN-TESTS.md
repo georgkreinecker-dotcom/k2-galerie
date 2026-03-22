@@ -83,6 +83,7 @@ npm run test:daten
 - **Prozesse:** `docs/PROZESS-VEROEFFENTLICHEN-LADEN.md`, `docs/K2-OEK2-DATENTRENNUNG.md`
 - **Einstieg Wartung:** `docs/EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md`
 - **QS:** `docs/QUALITAETSSICHERUNG.md`, Regel **qs-standard-vor-commit**
+- **Go-Live / Systemsicherheit (Audit):** `docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md` – dort ist **Schritt 3** mit `npm run test` / `test:daten` eingebunden; Ampeltabelle **PT**
 
 ---
 

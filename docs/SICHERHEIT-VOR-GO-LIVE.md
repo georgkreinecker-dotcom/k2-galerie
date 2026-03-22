@@ -4,6 +4,8 @@
 **Priorität 1:** System (kein Einbruch, keine Manipulation von außen).  
 **Priorität 2:** Userdaten (Datenschutz, AGB, Speicherung, Backup).
 
+**Audit-Prozess (wann prüfen, Ampel, Protokoll):** **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – dort festgelegter Ablauf und die **Ampeltabelle** zu allen Punkten unten (inkl. Stripe-Go-Live und Test-Fokus).
+
 ---
 
 ## Priorität 1: Systemsicherheit
