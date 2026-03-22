@@ -11,7 +11,7 @@ import {
   isSupabaseConfigured
 } from '../utils/supabaseClient'
 import { publishGalleryDataToServer } from '../utils/publishGalleryData'
-import { sortArtworksFavoritesFirstThenNewest, interleaveArtworksByCategory } from '../utils/artworkSort'
+import { sortArtworksFavoritesFirstThenNewest, sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
 import { appendToHistory } from '../utils/artworkHistory'
 import { tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from '../../components/SafeMode'
 import { readArtworksRawForContext, readArtworksRawForContextOrNull, readArtworksForContextWithResolvedImages, resolveArtworkImages, saveArtworksForContextWithImageStore, loadForDisplay, filterK2Only as filterK2OnlyStorage, mayWriteServerList, mergeAndMaybeWrite, mergeWithPending, getPendingArtworks, addPendingArtwork, clearPendingIfInList } from '../utils/artworksStorage'
@@ -2429,9 +2429,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             }
             return include
           })
-          const sorted = sortArtworksFavoritesFirstThenNewest(filtered)
-          // Bei „alle Werke“: Kategorien abwechselnd anzeigen (nicht alle Malerei, dann alle Keramik)
-          const filteredArtworks = filter === 'alle' ? interleaveArtworksByCategory(sorted) : sorted
+          // Bei „alle Kategorien“: Kategorie für Kategorie, innerhalb jeder Kategorie Nummern fortlaufend (nicht M/K/M gemischt).
+          const filteredArtworks =
+            filter === 'alle'
+              ? sortArtworksCategoryBlocksThenNumberAsc(filtered)
+              : sortArtworksFavoritesFirstThenNewest(filtered)
           const kuenstlerFb = readKuenstlerFallbackGalerieKarten(musterOnly, vk2)
 
           console.log('🎨 Render - filteredArtworks:', {

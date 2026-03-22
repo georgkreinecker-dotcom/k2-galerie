@@ -1,10 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
+**Letzter Stand:** 22.03.26 – **„Alle Kategorien“: Reihenfolge Kategorie für Kategorie, Nummern fortlaufend (Georg):** Früher Round-Robin (**interleave**) mischte M/K/M in der Vorschau. Jetzt **`sortArtworksCategoryBlocksThenNumberAsc`** in **GalerieVorschauPage** (Tab „alle“) + **WerkkatalogTab** (Tabelle/Druck): Reihenfolge **malerei → keramik → grafik → skulptur → sonstiges**, dann weitere Kategorien alphabetisch; innerhalb Block **Nummer aufsteigend**. Tests **artworkSort.test.ts**. Build grün. **Commit/Push:** wie üblich.
 
-**Was wir JETZT tun:** Georg druckt testweise ein **K2-K-**-Zertifikat aus dem Tab **Echtheitszertifikat** – Künstler:in muss **Georg** zeigen; ök2-Demo dasselbe Muster.
+**Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Einordnung:** Eine Quelle für „Künstler:in auf dem Papier“ = keine zweite Logik neben Werkkatalog; Datentrennung K2/ök2 bleibt (kein Martina-String für alle Werke).
+**Was wir JETZT tun:** Georg prüft **Galerie-Vorschau** Tab **Alle** und **Werkkatalog** – Reihenfolge z. B. alle **K2-M-…** dann alle **K2-K-…** mit aufsteigenden Nummern.
+
+**Einordnung:** Anzeige-Sortierung = eine klare Regel (Kategorieblöcke + Nummer); kein Durcheinander mehr wie Round-Robin.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

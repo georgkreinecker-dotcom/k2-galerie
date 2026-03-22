@@ -29,33 +29,42 @@ export function sortArtworksFavoritesFirstThenNewest<T extends WithFavorite>(art
   })
 }
 
-/** Kategorie-Feld für Interleave (Werke haben category als string). */
-type WithCategory = { category?: string }
+/** Kategorie + Werknummer für Block-Sortierung in Galerie/Werkkatalog. */
+type WithCategoryNumber = { category?: string; number?: string; id?: string }
+
+/** Feste Reihenfolge für „alle Kategorien“: eine Kategorie komplett, dann die nächste (fortlaufende Nummern pro Block). */
+export const GALERIE_CATEGORY_ORDER: readonly string[] = ['malerei', 'keramik', 'grafik', 'skulptur', 'sonstiges']
+
+function artworkNumberSortKey(a: WithCategoryNumber): string {
+  return String(a.number ?? a.id ?? '').trim()
+}
+
+function orderedCategoryKeys(categoriesPresent: Set<string>): string[] {
+  const keys = [...categoriesPresent]
+  const known = GALERIE_CATEGORY_ORDER.filter((k) => keys.includes(k))
+  const unknown = keys.filter((k) => !GALERIE_CATEGORY_ORDER.includes(k)).sort((a, b) => a.localeCompare(b, 'de'))
+  return [...known, ...unknown]
+}
 
 /**
- * Stellt Werke so um, dass Kategorien abwechselnd vorkommen (nicht alle Malerei, dann alle Keramik).
- * Round-Robin: Ein Malerei, ein Keramik, ein Grafik, … – so wirkt die Galerie-Vorschau abwechslungsreich.
+ * Sortiert für die Anzeige „alle Kategorien“: zuerst Kategorie-Block 1 (alle Werke), dann Block 2, …
+ * Innerhalb jedes Blocks aufsteigend nach Werknummer (natürliche Sortierung).
+ * So wirken Nummern fortlaufend (K2-M-… zusammen, K2-K-… zusammen), nicht durcheinander wie beim früheren Round-Robin.
  */
-export function interleaveArtworksByCategory<T extends WithCategory>(artworks: T[]): T[] {
-  if (!Array.isArray(artworks) || artworks.length <= 1) return artworks
+export function sortArtworksCategoryBlocksThenNumberAsc<T extends WithCategoryNumber>(artworks: T[]): T[] {
+  if (!Array.isArray(artworks) || artworks.length <= 1) return [...artworks]
   const byCategory = new Map<string, T[]>()
   for (const a of artworks) {
     const cat = (a.category && String(a.category).trim()) || 'sonstiges'
     if (!byCategory.has(cat)) byCategory.set(cat, [])
     byCategory.get(cat)!.push(a)
   }
-  const categories = Array.from(byCategory.keys())
-  if (categories.length <= 1) return artworks
+  const categories = orderedCategoryKeys(new Set(byCategory.keys()))
   const result: T[] = []
-  const queues = categories.map((c) => [...(byCategory.get(c) || [])])
-  let maxLen = Math.max(...queues.map((q) => q.length))
-  while (maxLen > 0) {
-    for (let i = 0; i < queues.length; i++) {
-      if (queues[i].length > 0) {
-        result.push(queues[i].shift()!)
-      }
-    }
-    maxLen = Math.max(...queues.map((q) => q.length))
+  for (const c of categories) {
+    const group = [...(byCategory.get(c) || [])]
+    group.sort((a, b) => artworkNumberSortKey(a).localeCompare(artworkNumberSortKey(b), 'de', { numeric: true }))
+    result.push(...group)
   }
   return result
 }

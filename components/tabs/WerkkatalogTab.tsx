@@ -16,6 +16,7 @@ import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
 } from '../../src/utils/artworkArtistDisplay'
+import { sortArtworksCategoryBlocksThenNumberAsc } from '../../src/utils/artworkSort'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -180,26 +181,27 @@ const WERKKARTE_PRINT_STYLES = `
         .cert-frame { border: 2px solid #8b6914; border-radius: 4px; padding: 18px 20px 14px; box-sizing: border-box; min-height: 168mm; position: relative; background: linear-gradient(180deg, #fffefb 0%, #faf8f4 100%); }
         .cert-ornament { text-align: center; font-size: 11px; color: #c4a35a; letter-spacing: 0.4em; margin-bottom: 6px; }
         .cert-h1 { margin: 0 0 6px; font-size: 17px; font-weight: 700; text-align: center; letter-spacing: 0.18em; text-transform: uppercase; color: #6b4e0e; font-family: Arial, sans-serif; }
-        .cert-gal { margin: 0 0 12px; text-align: center; font-size: 11px; color: #666; font-style: italic; }
+        .cert-gal { margin: 0 0 12px; text-align: center; font-size: 11px; color: #3d3a36; font-style: italic; }
         .cert-rule { height: 1px; background: linear-gradient(90deg, transparent, #c4a35a, transparent); margin: 0 0 12px; }
         .cert-img-wrap { text-align: center; margin-bottom: 12px; }
         .cert-thumb { max-height: 88px; max-width: 100%; object-fit: contain; border-radius: 6px; border: 1px solid #e8dcc8; background: #f5f0e8; }
-        .cert-lead { font-size: 11.5px; line-height: 1.55; color: #333; margin: 0 0 14px; text-align: justify; hyphens: auto; }
-        .cert-facts { border: 1px solid #e8dcc8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,0.65); }
-        .cert-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; padding: 4px 0; border-bottom: 1px dotted #e5e0d8; }
+        .cert-lead { font-size: 11.5px; line-height: 1.55; color: #1c1a18; margin: 0 0 14px; text-align: justify; hyphens: auto; }
+        .cert-facts { border: 1px solid #e8dcc8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,0.92); }
+        .cert-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; padding: 4px 0; border-bottom: 1px dotted #c4b8a8; }
         .cert-row:last-child { border-bottom: none; }
-        .cert-k { color: #888; flex: 0 0 38%; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; }
-        .cert-v { color: #1a1a1a; font-weight: 600; text-align: right; flex: 1; }
-        .cert-meta { font-size: 10.5px; color: #555; margin: 0 0 16px; text-align: center; }
+        .cert-k { color: #2c2824; flex: 0 0 38%; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .cert-v { color: #0f0f0f; font-weight: 600; text-align: right; flex: 1; }
+        .cert-meta { font-size: 10.5px; color: #2c2824; margin: 0 0 16px; text-align: center; }
         .cert-sig-section { margin-top: 8px; }
-        .cert-sig-hint { font-size: 9.5px; color: #888; margin: 0 0 10px; text-align: center; line-height: 1.4; }
+        .cert-sig-hint { font-size: 9.5px; color: #4a4540; margin: 0 0 10px; text-align: center; line-height: 1.4; }
         .cert-sig-pad { margin-bottom: 14px; }
         .cert-sig-pad--small { margin-bottom: 0; }
         .cert-sig-line { height: 0; border: none; border-bottom: 2px solid #2c2c2c; margin: 0 8px 6px; min-width: 200px; }
         .cert-sig-line--thin { border-bottom-width: 1px; border-color: #666; }
-        .cert-sig-label { text-align: center; font-size: 10px; color: #444; font-weight: 600; letter-spacing: 0.04em; }
-        .cert-opt { font-weight: 400; color: #999; font-size: 9px; }
-        .cert-footer-foot { position: absolute; bottom: 10px; left: 20px; right: 20px; text-align: center; font-size: 8.5px; color: #aaa; }
+        .cert-sig-label { text-align: center; font-size: 10px; color: #2c2824; font-weight: 600; letter-spacing: 0.04em; }
+        .cert-opt { font-weight: 400; color: #5c5650; font-size: 9px; }
+        .cert-footer-foot { position: absolute; bottom: 10px; left: 20px; right: 20px; text-align: center; font-size: 8.5px; color: #6b6560; }
+        @media print { * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 `
 
 function openWerkkartePrintWindow(title: string, bodyInner: string): void {
@@ -352,8 +354,13 @@ export default function WerkkatalogTab({
           if (!hay.includes(q)) return false
         }
         if (!isVk2) {
-          if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
-          if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
+          const vkNum =
+            a.price != null && a.price !== ''
+              ? Number(a.price)
+              : Number.NaN
+          const hasVk = Number.isFinite(vkNum)
+          if (katalogFilter.vonPreis && hasVk && vkNum < parseFloat(katalogFilter.vonPreis)) return false
+          if (katalogFilter.bisPreis && hasVk && vkNum > parseFloat(katalogFilter.bisPreis)) return false
           if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
           if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
         }
@@ -378,6 +385,9 @@ export default function WerkkatalogTab({
       artistFuerDruck,
     ]
   )
+
+  /** Gleiche Logik wie Galerie-Vorschau „alle Kategorien“: Kategorieblöcke, innerhalb Nummer fortlaufend. */
+  const filteredSorted = useMemo(() => sortArtworksCategoryBlocksThenNumberAsc(filtered), [filtered])
 
   /** Kurz erklären, warum die Katalog-Zahl von „Werke verwalten“ abweichen kann (eigene Filter + persistiert). */
   const katalogEingrenzungHinweis = useMemo(() => {
@@ -412,22 +422,22 @@ export default function WerkkatalogTab({
     katalogFilter.bisDatum,
   ])
 
-  const [rowsWithImages, setRowsWithImages] = useState<any[]>(filtered)
+  const [rowsWithImages, setRowsWithImages] = useState<any[]>(filteredSorted)
   useEffect(() => {
     let cancelled = false
-    setRowsWithImages(filtered)
-    resolveArtworkImages(filtered).then((list) => {
+    setRowsWithImages(filteredSorted)
+    resolveArtworkImages(filteredSorted).then((list) => {
       if (!cancelled) setRowsWithImages(list)
     })
     return () => {
       cancelled = true
     }
-  }, [filtered])
+  }, [filteredSorted])
 
   const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(() => new Set())
   useEffect(() => {
     setSelectedForBatchPrint(new Set())
-  }, [filtered])
+  }, [filteredSorted])
 
   const selectableKeys = useMemo(
     () => rowsWithImages.map(rowKeyArtwork).filter((k): k is string => k.length > 0),
@@ -461,7 +471,7 @@ export default function WerkkatalogTab({
             : 'Alle'
     const cols = isVk2 ? effectiveSpalten : katalogSpalten
     void (async () => {
-      const resolvedRows = await resolveArtworkImages(filtered)
+      const resolvedRows = await resolveArtworkImages(filteredSorted)
       const rows = resolvedRows
         .map((a: any) => {
           const cells = cols
@@ -549,7 +559,7 @@ export default function WerkkatalogTab({
         td { padding: 5px 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; }
       </style></head><body>
       <h1>📋 Werkkatalog – ${galName}</h1>
-      <div class="meta">Stand: ${datum} · Filter: ${statusLabel} · ${filtered.length} Werke</div>
+      <div class="meta">Stand: ${datum} · Filter: ${statusLabel} · ${filteredSorted.length} Werke</div>
       <table><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table>
       <script>window.onload=()=>window.print()</script>
     </body></html>`)
@@ -803,7 +813,7 @@ export default function WerkkatalogTab({
           </label>
         ))}
         <div style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.82rem', color: s.muted, alignSelf: 'center' }}>{filtered.length} Werke</span>
+          <span style={{ fontSize: '0.82rem', color: s.muted, alignSelf: 'center' }}>{filteredSorted.length} Werke</span>
           <button
             type="button"
             onClick={druckeAusgewaehlteWerkkarten}
@@ -830,7 +840,7 @@ export default function WerkkatalogTab({
       </div>
 
       {/* Tabelle */}
-      {filtered.length === 0 ? (
+      {filteredSorted.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: s.muted }}>Keine Werke mit diesen Kriterien gefunden.</div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
@@ -961,7 +971,7 @@ export default function WerkkatalogTab({
       )}
 
       {/* Fehlende Felder Hinweis */}
-      {filtered.some((a: any) => !a.dimensions && !a.technik) && (
+      {filteredSorted.some((a: any) => !a.dimensions && !a.technik) && (
         <div style={{ marginTop: '1rem', padding: '0.75rem 1rem', background: `${s.accent}10`, border: `1px solid ${s.accent}33`, borderRadius: 8, fontSize: '0.85rem', color: s.muted }}>
           💡 Tipp: Maße und Technik/Material kannst du beim Bearbeiten eines Werks eintragen – danach erscheinen sie hier und im Ausdruck.
         </div>
