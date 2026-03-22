@@ -10,6 +10,20 @@
 
 ---
 
+## BUG-042 · Echtheitszertifikat zeigte für jedes Werk nur Martina (Künstler:in falsch, Keramik/Georg) (gelöst 22.03.26)
+
+**Symptom:** Auf dem gedruckten Echtheitszertifikat stand bei Werken, die eigentlich Georg (z. B. Keramik K2-K-…) zugeordnet sind, fälschlich „Martina“ – Datenverwechslung, von Georg zufällig entdeckt; besonders inakzeptabel wenn ök2-Demo dasselbe Muster abbilden müsste.
+
+**Ursache:** **ZertifikatTab.tsx** setzte `artistName` einmalig aus **`loadStammdaten(..., 'martina')`** und nutzte diesen String für **jedes** Werk – unabhängig von Kategorie, Nummer (`K2-K-` vs. `K2-M-`) und der bereits existierenden Logik in **Werkkatalog/Statistik** (`resolveArtistLabelForGalerieStatistik`).
+
+**Lösung:** Pro Werk: **`resolveArtistLabelForGalerieStatistik(artwork, readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2))`** – derselbe Standard wie Werkkatalog. VK2: `artwork.artist`. Eintrag in **ein-standard-problem.mdc** (Tabelle). Text auf dem Zertifikat neutral („entspricht den vorstehenden Angaben“).
+
+**Betroffene Dateien:** components/tabs/ZertifikatTab.tsx, .cursor/rules/ein-standard-problem.mdc.
+
+**Status:** ✅ Behoben (22.03.26).
+
+---
+
 ## BUG-041 · Event-Zeiten (startTime, endTime, dailyTimes) gingen beim „Aktuellen Stand holen“ verloren (gelöst 18.03.26)
 
 **Symptom:** Nutzer: „wieso veränderst du die zeiten im event immer wieder“ – die im Admin eingetragenen Uhrzeiten (startTime, endTime, tägliche Zeiten) verschwanden oder wurden zurückgesetzt.

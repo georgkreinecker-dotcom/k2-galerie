@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Keramik K2-K-0001–0021 / Backup (Georg):** Verstanden: Sorge um **fehlende** Keramik **K2-K-0001…0021** und Vermutung Vertauschung mit **Martina/K2-M**. Im Repo **`public/gallery-data.json`** sind alle 21 **Keramik/Georg** noch vorhanden; die **K2-M-0001…0021**-Reihe ist **Malerei/Martina** (parallel, kein Ersatz). **Neu:** Admin **Einstellungen → Backup & Bilder** – Button **Fehlende K2-K-0001–0021 aus gallery-data.json anfügen** (nur Anfügen, kein Löschen; danach Veröffentlichen). Util **`mergeMissingK2KeramikFromGalleryData.ts`** + Tests. **`resolveArtistLabelForGalerieStatistik`:** **K2-K-** + falsches Martina-Feld + Kategorie z. B. malerei → **Georg** (Zertifikat/Statistik). Tests + Build grün. **Commit:** `git log -1 --oneline`; **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Georg testet ggf. Wiederherstellungs-Button auf **k2-galerie.vercel.app** (gleiche Origin → `gallery-data.json`); sonst **Vollbackup**-Datei.
+**Was wir JETZT tun:** Georg druckt testweise ein **K2-K-**-Zertifikat aus dem Tab **Echtheitszertifikat** – Künstler:in muss **Georg** zeigen; ök2-Demo dasselbe Muster.
 
-**Einordnung:** Datenrettung ohne stillen Overwrite; K2-Kern nur **Werkzeug**-Button mit Bestätigung.
+**Einordnung:** Eine Quelle für „Künstler:in auf dem Papier“ = keine zweite Logik neben Werkkatalog; Datentrennung K2/ök2 bleibt (kein Martina-String für alle Werke).
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { readArtworksRawForContext } from '../../src/utils/artworksStorage'
 import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
+import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../../src/utils/artworkArtistDisplay'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -12,7 +13,17 @@ interface ZertifikatTabProps {
   isVk2?: boolean
 }
 
+/**
+ * Echtheitszertifikat: Künstler:in **pro Werk** wie Werkkatalog/Statistik/Shop –
+ * `resolveArtistLabelForGalerieStatistik` + Kontext-Stammdaten (K2 vs. ök2).
+ * Nicht nur Martina-Stammdaten für alle Werke (BUG-042).
+ */
 export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = false }: ZertifikatTabProps) {
+  const kuenstlerFb = useMemo(
+    () => readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2),
+    [isOeffentlich, isVk2],
+  )
+
   const allArtworks: any[] = (() => {
     if (isVk2) return []
     if (isOeffentlich) return readArtworksRawForContext(true, false)
@@ -38,19 +49,17 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
     }
     return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
   })()
-  const personStammdaten: any = (() => {
-    if (isVk2) {
-      const v = loadVk2Stammdaten()?.verein || {}
-      return { name: (v.name && String(v.name).trim()) ? String(v.name) : 'Verein' }
-    }
-    return loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'martina')
-  })()
 
   const gName = galStammdaten.name || 'K2 Galerie'
   const gCity = galStammdaten.city || ''
-  const artistName = personStammdaten.name || 'Martina Kreinecker'
+
+  const artistLabelForPrint = (artwork: any): string => {
+    if (isVk2) return String(artwork?.artist || '').trim() || '–'
+    return resolveArtistLabelForGalerieStatistik(artwork, kuenstlerFb ?? undefined)
+  }
 
   const druckeZertifikat = (artwork: any) => {
+    const artistLabel = artistLabelForPrint(artwork)
     const win = window.open('', '_blank')
     if (!win) return
     const imgHtml = artwork.image
@@ -60,7 +69,7 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
     const fields = [
       { label: 'Werknummer', value: artwork.number || '–' },
       { label: 'Titel', value: artwork.title || '–' },
-      { label: 'Künstler:in', value: artistName },
+      { label: 'Künstler:in', value: artistLabel },
       { label: 'Technik / Material', value: artwork.technik || '–' },
       { label: 'Maße', value: artwork.dimensions || '–' },
       { label: 'Erstellt', value: artwork.date ? new Date(artwork.date).toLocaleDateString('de-DE') : '–' },
@@ -74,11 +83,11 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
   body { font-family: 'Georgia', serif; background: #fff; color: #1a1a1a; margin: 0; padding: 0; }
   .page { width: 148mm; min-height: 210mm; padding: 18mm 16mm; box-sizing: border-box; margin: 0 auto; border: 2px solid #b8a060; position: relative; }
   h1 { font-size: 1.3rem; text-align: center; letter-spacing: 2px; color: #8a6800; margin: 0 0 6px; text-transform: uppercase; }
-  .subtitle { text-align: center; font-size: 0.8rem; color: #888; letter-spacing: 1px; margin-bottom: 18px; text-transform: uppercase; }
+  .subtitle { text-align: center; font-size: 0.8rem; color: #555; letter-spacing: 1px; margin-bottom: 18px; text-transform: uppercase; }
   .divider { border: none; border-top: 1px solid #c8a840; margin: 14px 0; }
   table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   td { padding: 5px 4px; vertical-align: top; }
-  td:first-child { color: #888; font-size: 0.78rem; width: 38%; padding-right: 8px; }
+  td:first-child { color: #2c2824; font-size: 0.78rem; width: 38%; padding-right: 8px; font-weight: 700; }
   td:last-child { font-weight: 600; color: #1a1a1a; }
   .signature { margin-top: 28px; text-align: center; }
   .sig-line { display: inline-block; width: 180px; border-top: 1px solid #1a1a1a; margin-top: 38px; padding-top: 6px; font-size: 0.78rem; color: #555; }
@@ -88,7 +97,7 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
   .tr { top: 6px; right: 6px; border-width: 2px 2px 0 0; }
   .bl { bottom: 6px; left: 6px; border-width: 0 0 2px 2px; }
   .br { bottom: 6px; right: 6px; border-width: 0 2px 2px 0; }
-  @media print { body { margin: 0; } .page { border: 2px solid #b8a060; } }
+  @media print { body { margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page { border: 2px solid #b8a060; } }
 </style></head><body>
 <div class="page">
   <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
@@ -99,7 +108,7 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
   <table>${fields.map(f => `<tr><td>${f.label}</td><td>${f.value}</td></tr>`).join('')}</table>
   <hr class="divider" style="margin-top:18px" />
   <div class="signature">
-    <div style="font-size:0.82rem;color:#555;margin-bottom:4px">Hiermit wird bestätigt, dass dieses Werk ein Original der oben genannten Künstlerin ist.</div>
+    <div style="font-size:0.82rem;color:#555;margin-bottom:4px">Hiermit wird bestätigt, dass dieses Werk den vorstehenden Angaben entspricht.</div>
     <div class="sig-line">Datum &amp; Unterschrift</div>
   </div>
   <div class="footer">${gName}${gCity ? ` · ${gCity}` : ''} · ${certDate}</div>
@@ -114,7 +123,7 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
       <div style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 12 }}>
         <p style={{ margin: 0, color: s.muted, fontSize: '0.9rem', lineHeight: 1.6 }}>
           🔏 <strong style={{ color: '#fbbf24' }}>Echtheitszertifikat</strong> – Wähle ein Werk aus, um ein professionelles PDF-Zertifikat zu drucken.
-          Enthält Foto, Künstlerin, Galeriedaten, Maße, Technik und Unterschriften-Feld.
+          Enthält Foto, <strong>Künstler:in</strong> (wie Werkkatalog: Kategorie und Nummer, K2/ök2 getrennt), Galeriedaten, Maße, Technik und Unterschriften-Feld.
         </p>
       </div>
 
@@ -131,6 +140,7 @@ export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = f
               <div style={{ padding: '0.75rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: s.text, lineHeight: 1.3 }}>{aw.title || `Werk ${aw.number}`}</div>
                 <div style={{ fontSize: '0.78rem', color: s.muted }}>Nr. {aw.number}{aw.dimensions ? ` · ${aw.dimensions}` : ''}</div>
+                <div style={{ fontSize: '0.76rem', color: s.text, fontWeight: 600 }}>{artistLabelForPrint(aw)}</div>
                 {aw.technik && <div style={{ fontSize: '0.78rem', color: s.muted }}>{aw.technik}</div>}
                 <button
                   type="button"
