@@ -4596,7 +4596,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Ihr Name *</label>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Dein Name *</label>
                     <input type="text" value={anfrageName} onChange={e => setAnfrageName(e.target.value)}
                       placeholder="Vorname Nachname"
                       style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
@@ -4604,13 +4604,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>E-Mail *</label>
                     <input type="email" value={anfrageEmail} onChange={e => setAnfrageEmail(e.target.value)}
-                      placeholder="ihre@email.at"
+                      placeholder="deine@email.at"
                       style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>Nachricht (optional)</label>
                     <textarea value={anfrageNachricht} onChange={e => setAnfrageNachricht(e.target.value)}
-                      placeholder="Ihre Frage oder Interesse an diesem Werk …"
+                      placeholder="Deine Frage oder Interesse an diesem Werk …"
                       rows={3}
                       style={{ width: '100%', padding: '0.6rem', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 8, color: '#fff', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                   </div>
@@ -4644,8 +4644,8 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
             ) : (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💚</div>
-                <h2 style={{ color: '#5ffbf1', marginBottom: '0.5rem' }}>Danke für Ihr Interesse!</h2>
-                <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>Ihre Anfrage zu „{anfrageArtwork.title}" wurde gespeichert. Wir melden uns bald bei Ihnen.</p>
+                <h2 style={{ color: '#5ffbf1', marginBottom: '0.5rem' }}>Danke für dein Interesse!</h2>
+                <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1.5rem' }}>Deine Anfrage zu „{anfrageArtwork.title}" wurde gespeichert. Wir melden uns bald bei dir.</p>
                 <button type="button" onClick={() => setAnfrageArtwork(null)}
                   style={{ padding: '0.6rem 1.5rem', background: 'rgba(95,251,241,0.15)', border: '1px solid rgba(95,251,241,0.4)', borderRadius: 10, color: '#5ffbf1', fontWeight: 600, cursor: 'pointer' }}>
                   OK

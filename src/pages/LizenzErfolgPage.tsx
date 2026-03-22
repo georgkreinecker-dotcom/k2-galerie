@@ -114,7 +114,7 @@ export default function LizenzErfolgPage() {
         <p style={{ margin: '0 0 0.25rem', fontSize: '0.85rem', color: 'var(--k2-muted)' }}>{PRODUCT_BRAND_NAME}</p>
         <h2 style={{ margin: '0 0 1rem', fontSize: '1.15rem', fontWeight: 700, color: '#1a1a1a' }}>Lizenzbestätigung</h2>
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: '#333', lineHeight: 1.5 }}>
-          Vielen Dank für Ihren Lizenzabschluss. Ihre Lizenz ist aktiv.
+          Vielen Dank für deinen Lizenzabschluss. Deine Lizenz ist aktiv.
         </p>
         <p style={{ margin: '0 0 0.25rem', fontSize: '0.9rem', color: '#555' }}>Datum: {bestaetigungsDatum}</p>
         {sessionId && (

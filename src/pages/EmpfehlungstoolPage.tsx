@@ -136,7 +136,7 @@ ${name}`
       >
         <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: t.accent }}>Deine Empfehler-ID</h2>
         <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: t.muted }}>
-          Sie steckt im Link, den du teilst. Beim Lizenzabschluss können sie entscheiden: Empfehlung annehmen (dann Zuordnung zu dir, du erhältst 10 % Gutschrift) oder ohne Empfehlung lizensieren.
+          Die ID steckt im Link, den du teilst. Beim Lizenzabschluss kann die Person entscheiden: Empfehlung annehmen (dann Zuordnung zu dir, du erhältst 10 % Gutschrift) oder ohne Empfehlung lizensieren.
         </p>
         <div
           style={{

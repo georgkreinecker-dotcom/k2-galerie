@@ -613,7 +613,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </ul>
         <div style={{ padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: 10 }}>
           <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.95)', lineHeight: 1.55 }}>
-            <strong>Kurz fürs Gespräch mit Pilot:innen:</strong> <em>„KI zum Schreiben dürfen Sie ohne uns – zum Ausliefern nehmen Sie uns.“</em> Optional kann später eine integrierte KI ergänzt werden; der Alltag funktioniert auch so.
+            <strong>Kurz fürs Gespräch mit Pilot:innen:</strong> <em>„KI zum Schreiben – ohne uns. Zum Ausliefern – mit uns.“</em> Optional kann später eine integrierte KI ergänzt werden; der Alltag funktioniert auch so.
           </p>
         </div>
       </section>
@@ -1687,7 +1687,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
         <p style={{ padding: '0.75rem 1rem', background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.4)', borderRadius: '8px', lineHeight: 1.7, fontSize: '0.95rem' }}>
           <strong style={{ color: '#22c55e' }}>💬 Formulierung für Gespräche und Unterlagen:</strong><br />
-          „Mit K2 Galerie haben Sie jederzeit einen druckfertigen Werkkatalog – vom ersten Pinselstrich bis zum Verkauf. Eine Werkkarte pro Bild, gefilterte Listen für den Steuerberater, die Versicherung oder Ausstellungsorganisatoren – ohne Zusatz-Software, direkt aus der App."
+          „Mit K2 Galerie hast du jederzeit einen druckfertigen Werkkatalog – vom ersten Pinselstrich bis zum Verkauf. Eine Werkkarte pro Bild, gefilterte Listen für den Steuerberater, die Versicherung oder Ausstellungsorganisatoren – ohne Zusatz-Software, direkt aus der App."
         </p>
       </section>
 
@@ -1741,7 +1741,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
         <p style={{ padding: '0.75rem 1rem', background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: '8px', lineHeight: 1.7, fontSize: '0.95rem' }}>
           <strong style={{ color: '#fbbf24' }}>💬 Formulierung für Gespräche und Unterlagen:</strong><br />
-          „Mit K2 Galerie Excellent haben Sie nicht nur eine digitale Galerie – Sie haben ein vollständiges Werk-Archiv mit Echtheitszertifikaten, eine eigene Einladungsliste für Vernissagen, eine fertige Pressemappe und direkte Anfragen von Interessenten. Alles in einer App, ohne Zusatz-Software."
+          „Mit K2 Galerie Excellent hast du nicht nur eine digitale Galerie – du hast ein vollständiges Werk-Archiv mit Echtheitszertifikaten, eine eigene Einladungsliste für Vernissagen, eine fertige Pressemappe und direkte Anfragen von Interessenten. Alles in einer App, ohne Zusatz-Software."
         </p>
       </section>
 
@@ -1759,15 +1759,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1rem' }}>
           <li>Maximal <strong>50 Gründer-Galerien</strong> – wer früh kommt, prägt das Produkt mit</li>
           <li>Günstigerer Einstiegspreis als Dankeschön für das Vertrauen</li>
-          <li>Ihre Stimme zählt – Feedback fließt direkt in die Weiterentwicklung</li>
+          <li>Deine Stimme zählt – Feedback fließt direkt in die Weiterentwicklung</li>
           <li>Kein „Beta" – sondern: <em>„Wir bauen das gemeinsam"</em></li>
         </ul>
 
         <h3 style={{ fontSize: '1rem', color: '#fbbf24', margin: '1.25rem 0 0.5rem' }}>Die Leitkünstler:innen – Multiplikatoren</h3>
         <p style={{ lineHeight: 1.75, marginBottom: '0.75rem' }}>
           5 bis 10 ausgewählte Künstler:innen erhalten die K2 Galerie <strong style={{ color: '#5ffbf1' }}>kostenlos</strong> –
-          als Zeichen des Vertrauens, nicht als Werbegeschäft. Sie werden nicht gebeten zu werben.
-          Sie werden gebeten, <strong>ehrlich zu sein</strong>. Was sie berichten, kommt von allein.
+          als Zeichen des Vertrauens, nicht als Werbegeschäft. Es geht nicht ums Werben – sondern darum, <strong>ehrlich zu sein</strong>.
+          Was sie berichten, kommt von allein.
         </p>
         <ul style={{ paddingLeft: '1.25rem', lineHeight: 1.8, marginBottom: '1.25rem' }}>
           <li>Etablierte Künstler:innen mit Netzwerk und Glaubwürdigkeit</li>

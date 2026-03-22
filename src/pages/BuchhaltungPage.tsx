@@ -325,10 +325,10 @@ export default function BuchhaltungPage() {
         </div>
 
         <p style={{ color: s.muted, fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-          Die heruntergeladenen CSV-Dateien können Sie per E-Mail an Ihren Steuerberater senden. <strong>Belege als PDF</strong>: Öffnet alle Belege (Fotos/QR) des Zeitraums zum Drucken – „Als PDF speichern“ wählen und mitsenden. Ohne Zeitraum = alle Daten.
+          Die heruntergeladenen CSV-Dateien kannst du per E-Mail an deinen Steuerberater senden. <strong>Belege als PDF</strong>: öffnet alle Belege (Fotos/QR) des Zeitraums zum Drucken – „Als PDF speichern“ wählen und mitsenden. Ohne Zeitraum = alle Daten.
         </p>
         <p style={{ color: s.muted, fontSize: '0.8rem', marginBottom: '1rem' }}>
-          <strong>Vorarbeit hier, Rest beim Steuerberater:</strong> Für UStVA/EO geben Sie Daten und Belege an Ihren Steuerberater – die aufwändige Vorarbeit erledigen Sie hier praktisch kostenlos. Buchungsunterlagen und Belege <strong>7 Jahre</strong> aufbewahren (Österreich).
+          <strong>Vorarbeit hier, Rest beim Steuerberater:</strong> Für UStVA/EO gibst du Daten und Belege an deinen Steuerberater – die aufwändige Vorarbeit erledigst du hier praktisch kostenlos. Buchungsunterlagen und Belege <strong>7 Jahre</strong> aufbewahren (Österreich).
         </p>
 
         {/* Summen für den Zeitraum – einfach, für jeden verständlich */}
