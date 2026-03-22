@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Benutzerhandbuch Passwort: Sie-Form + Nutzerwortlaut (Georg):** **10-EINSTELLUNGEN** durchgängig **Sie** (inkl. Passwort-Abschnitt, VK2-Kategorien); kein Entwickler-Satz („tatsächlich gemeint“); **04-FAQ** Passwort **Sie**; **03-ADMIN** Einstellungen **Sie**; **06-OEK2** Verweis Einstellungen/Passwort merken + Link Kap. 10. **Commit:** *(folgt)*; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Benutzerhandbuch Passwort: Sie-Form + Nutzerwortlaut (Georg):** **10-EINSTELLUNGEN** durchgängig **Sie** (inkl. Passwort-Abschnitt, VK2-Kategorien); kein Entwickler-Satz („tatsächlich gemeint“); **04-FAQ** Passwort **Sie**; **03-ADMIN** Einstellungen **Sie**; **06-OEK2** Verweis Einstellungen/Passwort merken + Link Kap. 10. **Commit:** `492ec63` ✅; **Push:** Git-Button.
 
 **Vorher:** 22.03.26 – **Passwort-Strategie: Gerätemanagement:** Handbuch **10-EINSTELLUNGEN** Passwort auf dem Gerät; **04-FAQ**, **03-ADMIN**; **GaleriePage** Dialog ehrlich. **Commit:** `6732222` ✅.
 
