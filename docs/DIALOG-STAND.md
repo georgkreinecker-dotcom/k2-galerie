@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **PR-Dokumente Modal-Vorschau:** Grauer **Format / Als PDF drucken**-Balken in der **iframe-Vorschau** entfernt (Newsletter, Presseaussendung, Social, Flyer, Plakat) – **Druck nur noch über „Dokument öffnen (Drucken)“**; gespeicherte/geöffnete HTML-Dateien behalten die volle Leiste (Zurück, Format, Druck). **ScreenshotExportAdmin** (`buildNewsletterViewHtml`, `buildPresseaussendungRedactionPreviewHtml` + `fullPresseHtml`, `buildSocialMediaEditableHtml`, Flyer/Plakat). Tests + Build grün. **Commit:** 7560fbc ✅
+**Letzter Stand:** 22.03.26 – **PR-Dokumente Modal-Vorschau:** Grauer **Format / Als PDF drucken**-Balken in der **iframe-Vorschau** entfernt (Newsletter, Presseaussendung, Social, Flyer, Plakat) – **Druck nur noch über „Dokument öffnen (Drucken)“**; gespeicherte/geöffnete HTML-Dateien behalten die volle Leiste (Zurück, Format, Druck). **ScreenshotExportAdmin** (`buildNewsletterViewHtml`, `buildPresseaussendungRedactionPreviewHtml` + `fullPresseHtml`, `buildSocialMediaEditableHtml`, Flyer/Plakat). Tests + Build grün. **Commit:** e7d20a3 ✅ lokal; Push: Git-Button Cursor wenn Credentials greifen
 
 **Vorher:** 22.03.26 – **Gamification-Modal Werke/VK2:** Rechts unten Hinweis **Zum Ausblenden: Einstellungen → Profi-Modus → „Checklisten ausblenden (Profi)“** bei **Galerie-Stand** (ök2) und **Profile vollständig?** (VK2). **ScreenshotExportAdmin.** **Push:** Git-Button Cursor.
 
