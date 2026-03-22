@@ -145,6 +145,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 20.03.26 | Wenn etwas **kein** gleichwertiges „Erstellen“ wie die anderen Karten hat: Button weg und **einen klaren Hinweis** – sonst wirkt es kaputt oder unehrlich. Präsentationsmappen = Vorschau/Druck, kein in-App-Editor. |
 | 20.03.26 | **Lizenz ≠ eingebaute KI:** Piloten verstehen schneller, wenn klar ist: eigenes KI-Werkzeug + **Einfügen** in Galerie/Presse reicht; integrierter Assistent = später optional – eine Sektion in mök2 statt Streit über „fehlende KI“. |
 | 21.03.26 | **CD erst fragen:** Georg meinte **Cooperate Design**, ich hatte es als Buchhaltungs-„Controlling“ geschrieben – ein Wort, zwei Welten. Abkürzungen immer mit seiner Bedeutung abgleichen; Doku/Handbuch sofort korrigieren, nicht erst „irgendwann“. |
+| 21.03.26 | **Werkkatalog = gleiche Sparten-Logik wie Werke verwalten:** eine Quelle (`getEffectiveDirectionFromWork`, `getCategoriesForDirection`, `getShopSoldArtworksKey`) – nicht parallel ENTRY_TYPES/Dropdown in ök2 erfinden. |
 
 ---
 
