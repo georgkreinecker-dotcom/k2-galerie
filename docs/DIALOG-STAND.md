@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Gamification-Modal Werke/VK2:** Rechts unten Hinweis **Zum Ausblenden: Einstellungen → Profi-Modus → „Checklisten ausblenden (Profi)“** bei **Galerie-Stand** (ök2) und **Profile vollständig?** (VK2). **ScreenshotExportAdmin.** **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **PR-Dokumente Modal-Vorschau:** Grauer **Format / Als PDF drucken**-Balken in der **iframe-Vorschau** entfernt (Newsletter, Presseaussendung, Social, Flyer, Plakat) – **Druck nur noch über „Dokument öffnen (Drucken)“**; gespeicherte/geöffnete HTML-Dateien behalten die volle Leiste (Zurück, Format, Druck). **ScreenshotExportAdmin** (`buildNewsletterViewHtml`, `buildPresseaussendungRedactionPreviewHtml` + `fullPresseHtml`, `buildSocialMediaEditableHtml`, Flyer/Plakat). Tests + Build grün. **Commit:** 7560fbc ✅
+
+**Vorher:** 22.03.26 – **Gamification-Modal Werke/VK2:** Rechts unten Hinweis **Zum Ausblenden: Einstellungen → Profi-Modus → „Checklisten ausblenden (Profi)“** bei **Galerie-Stand** (ök2) und **Profile vollständig?** (VK2). **ScreenshotExportAdmin.** **Push:** Git-Button Cursor.
 
 **Vorher:** 22.03.26 – **Werkkatalog: Echtheitszertifikat zum Drucken:** Zweite **A5-Seite** mit Goldrahmen, Werkdaten, **großes Unterschriftenfeld** „Künstler:in“ + optional Ort/Datum; Buttons **Nur Echtheitszertifikat**, **Werkkarte + Zertifikat**, **Werkkarte drucken**. **Künstler:in** wie Statistik über **`resolveArtistLabelForGalerieStatistik`** + **`kuenstlerFallback`** (**ScreenshotExportAdmin** wie **StatistikTab**; VK2 ohne Fallback). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit (Kern):** 06e9bcf. **Push:** Git-Button in Cursor – Remote von hier nicht erreichbar.
 
@@ -46,8 +48,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** ök2 Admin **Werke** – Modal **Galerie-Stand** prüfen (Hinweis rechts unten); optional VK2 gleiche Karte.
-**Einordnung:** Nutzer-Logik – Weg zum Ausblenden sichtbar, keine neue Einstellung.
+**Was wir JETZT tun:** PR-Dokumente im Admin kurz testen (Newsletter/Presse/Flyer – Vorschau ohne Leiste, roter Button öffnet Dokument).
+**Einordnung:** Weniger verwirrende Doppel-Druck-UI; ein klarer Weg wie bei Georg gewünscht.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

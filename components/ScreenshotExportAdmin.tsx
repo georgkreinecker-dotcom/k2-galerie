@@ -5703,7 +5703,7 @@ ${'='.repeat(60)}
     openRedaction(event, presseaussendung)
   }
 
-  /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). options.iframePreview: Modal-Vorschau ohne Zurück/afterprint. */
+  /** Baut das Social-Media-Dokument-HTML nur zur Ansicht und zum Drucken. Bearbeitung erfolgt im Admin-Modal (zweigeteilte Ansicht). options.iframePreview: reine Vorschau im iframe (keine Leiste – Druck über „Dokument öffnen“). */
   const buildSocialMediaEditableHtml = (params: {
     socialMedia: { instagram: string; facebook: string; whatsapp: string }
     eventLike: { title: string; date?: string }
@@ -5730,15 +5730,15 @@ ${'='.repeat(60)}
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${options.prDocClass} format-a4">
-  <div class="no-print">
-    ${iframePreview ? '' : '<button onclick="goBack(); return false;" class="secondary">← Zurück</button>'}
+  ${iframePreview ? '' : `<div class="no-print">
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
     <button type="button" onclick="setFormat('a4'); return false;">A4</button>
     <button type="button" onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
     <button type="button" onclick="setFormat('a5'); return false;">A5</button>
     <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="margin:${iframePreview ? '0.35rem 0 0' : 'inherit'};font-size:${iframePreview ? '0.85rem' : 'inherit'};color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
-  </div>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>`}
 
   <div class="page">
     <div class="content">
@@ -5759,15 +5759,15 @@ ${'='.repeat(60)}
     <div class="presse-body" style="white-space:pre-wrap;margin-top:0.35rem;">${nl2br(socialMedia.whatsapp)}</div>
     </div>
   </div>
-  <script>
-    ${iframePreview ? '' : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(options.adminReturnUrl)}';`}
+  ${iframePreview ? '' : `<script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(options.adminReturnUrl)}';
     var prDocClass = '${options.prDocClass}';
     function setFormat(f) {
       document.body.className = prDocClass + ' format-' + f;
       var p = document.getElementById('print-page-size');
       if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
     }
-    ${iframePreview ? '' : `function goBack() {
+    function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
         ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || ''))
         : (window.location.origin + '/admin');
@@ -5793,8 +5793,8 @@ ${'='.repeat(60)}
       if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
     }
     window.addEventListener('beforeunload', cleanup);
-    window.addEventListener('unload', cleanup);`}
-  <\/script>
+    window.addEventListener('unload', cleanup);
+  <\/script>`}
 </body>
 </html>`
   }
@@ -6112,7 +6112,7 @@ ${'='.repeat(60)}
     }
   }
 
-  /** Baut Newsletter-HTML nur zur Ansicht/Druck (Bearbeitung im Modal). iframePreview: nur Format+Druck, kein Zurück (iframe im Modal). */
+  /** Baut Newsletter-HTML nur zur Ansicht/Druck (Bearbeitung im Modal). iframePreview: reine Dokument-Vorschau im Modal-iframe (keine Leiste – Druck über „Dokument öffnen“). */
   const buildNewsletterViewHtml = (newsletter: { subject?: string; body?: string }, event: any, opts?: { iframePreview?: boolean }) => {
     const iframePreview = opts?.iframePreview === true
     const isVk2 = tenant.isVk2
@@ -6130,14 +6130,6 @@ ${'='.repeat(60)}
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const nl2br = (s: string) => esc(s).replace(/\n/g, '<br>')
     const eventDateEsc = event ? (formatEventDates(event) || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\n/g, '<br>') : ''
-    const toolbarNoBack = `<div class="no-print">
-    <span style="margin: 0 8px; color: #666;">Format:</span>
-    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
-    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
-    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
-    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5. Safari: falls der Druck leer wirkt, „Hintergrund drucken“ im Druckdialog aktivieren.</p>
-  </div>`
     const toolbarFull = `<div class="no-print">
     <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
     <span style="margin: 0 8px; color: #666;">Format:</span>
@@ -6147,14 +6139,6 @@ ${'='.repeat(60)}
     <button onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
     <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5. Safari: falls der Druck leer wirkt, „Hintergrund drucken“ im Druckdialog aktivieren.</p>
   </div>`
-    const scriptIframe = `<script>
-    var prDocClass = '${prDocClass}';
-    function setFormat(f) {
-      document.body.className = prDocClass + ' format-' + f;
-      var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
-    }
-  <\/script>`
     const scriptFull = `<script>
     var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     var prDocClass = '${prDocClass}';
@@ -6195,7 +6179,7 @@ ${'='.repeat(60)}
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
-  ${iframePreview ? toolbarNoBack : toolbarFull}
+  ${iframePreview ? '' : toolbarFull}
   <div class="page">
     <div class="content">
     <div class="header">
@@ -6210,27 +6194,70 @@ ${'='.repeat(60)}
     <div class="presse-body" style="white-space:pre-wrap;">${nl2br(newsletter?.body ?? '')}</div>
     </div>
   </div>
-  ${iframePreview ? scriptIframe : scriptFull}
+  ${iframePreview ? '' : scriptFull}
 </body>
 </html>`
   }
 
-  /** Presseaussendung: gleiche Toolbar wie Newsletter in der Modal-Vorschau (iframe). */
-  const buildPresseaussendungRedactionPreviewHtml = (params: {
-    prDocClass: string
-    prDocCss: string
-    galleryName: string
-    eventTitle: string
-    eventDateStr: string
-    presseTitle: string
-    presseContent: string
-    imageBlock: string
-    qrBlock: string
-  }) => {
+  /** Presseaussendung: iframePreview = nur Dokument im Modal; sonst volle Leiste wie beim geöffneten Newsletter (Zurück, Format, Druck). */
+  const buildPresseaussendungRedactionPreviewHtml = (
+    params: {
+      prDocClass: string
+      prDocCss: string
+      galleryName: string
+      eventTitle: string
+      eventDateStr: string
+      presseTitle: string
+      presseContent: string
+      imageBlock: string
+      qrBlock: string
+    },
+    opts?: { iframePreview?: boolean }
+  ) => {
+    const iframePreview = opts?.iframePreview === true
     const { prDocClass, prDocCss, galleryName, eventTitle, eventDateStr, presseTitle, presseContent, imageBlock, qrBlock } = params
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const contentWithLinks = textToHtmlWithLinks(presseContent)
     const eventDateEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
+    const toolbarFull = `<div class="no-print">
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <span style="margin: 0 8px; color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5. Safari: falls der Druck leer wirkt, „Hintergrund drucken“ im Druckdialog aktivieren.</p>
+  </div>`
+    const scriptFull = `<script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
+    var prDocClass = '${prDocClass}';
+    function setFormat(f) {
+      document.body.className = prDocClass + ' format-' + f;
+      var p = document.getElementById('print-page-size');
+      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+    }
+    function goBack() {
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.opener && !window.opener.closed && window.opener.location.pathname.indexOf('/admin') !== -1)
+        ? (window.opener.location.origin + window.opener.location.pathname + (window.opener.location.search || '')) : (window.location.origin + '/admin');
+      if (window.opener && !window.opener.closed) {
+        try { window.opener.location.href = adminUrl; window.opener.focus(); setTimeout(function() { try { window.close(); } catch (e) {} }, 100); return; } catch (e) {}
+      }
+      window.location.href = adminUrl;
+    }
+    var autoCloseTimeout = null;
+    function handleAfterPrint() {
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+      setTimeout(function() { goBack(); }, 1000);
+    }
+    window.addEventListener('afterprint', handleAfterPrint);
+    function cleanup() {
+      window.removeEventListener('afterprint', handleAfterPrint);
+      if (autoCloseTimeout) clearTimeout(autoCloseTimeout);
+    }
+    window.addEventListener('beforeunload', cleanup);
+    window.addEventListener('unload', cleanup);
+  <\/script>`
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -6242,14 +6269,7 @@ ${'='.repeat(60)}
   <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
 </head>
 <body class="${prDocClass} format-a4">
-  <div class="no-print">
-    <span style="margin: 0 8px; color: #666;">Format:</span>
-    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
-    <button type="button" onclick="setFormat('a3'); return false;">A3 (Plakat)</button>
-    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
-    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
-  </div>
+  ${iframePreview ? '' : toolbarFull}
   <div class="page">
     <div class="content">
     <div class="header">
@@ -6266,14 +6286,7 @@ ${'='.repeat(60)}
     ${qrBlock}
     </div>
   </div>
-  <script>
-    var prDocClass = '${prDocClass}';
-    function setFormat(f) {
-      document.body.className = prDocClass + ' format-' + f;
-      var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
-    }
-  <\/script>
+  ${iframePreview ? '' : scriptFull}
 </body>
 </html>`
   }
@@ -6859,10 +6872,7 @@ ${'='.repeat(60)}
     const typeLabel = flyerContent.type === 'galerieeröffnung' ? 'Galerieeröffnung' : flyerContent.type === 'vernissage' ? 'Vernissage' : flyerContent.type === 'finissage' ? 'Finissage' : flyerContent.type === 'öffentlichkeitsarbeit' ? 'Öffentlichkeitsarbeit' : 'Veranstaltung'
     const esc = (s: string) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     const scriptBody = iframePreview
-      ? `function setFormat(f) {
-      var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
-    }`
+      ? ''
       : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function setFormat(f) {
       var p = document.getElementById('print-page-size');
@@ -6876,6 +6886,16 @@ ${'='.repeat(60)}
       window.location.href = adminUrl;
     }
     window.addEventListener('afterprint', function h() { window.removeEventListener('afterprint', h); setTimeout(goBack, 300); });`
+    const toolbarFlyer = iframePreview
+      ? ''
+      : `<div class="no-print" style="text-align: center; margin-bottom: 1rem;">
+    <span style="color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>`
     return `<!DOCTYPE html>
 <html>
 <head>
@@ -6973,14 +6993,7 @@ ${'='.repeat(60)}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 1rem;">
-    <span style="color: #666;">Format:</span>
-    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
-    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
-    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
-    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
-  </div>
+  ${toolbarFlyer}
   <div class="flyer">
     <div>
       <h1>${esc(flyerContent.headline)}</h1>
@@ -7244,10 +7257,7 @@ ${'='.repeat(60)}
         }
     const esc = (s: string) => String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     const scriptBody = iframePreview
-      ? `function setFormat(f) {
-      var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
-    }`
+      ? ''
       : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function setFormat(f) {
       var p = document.getElementById('print-page-size');
@@ -7261,6 +7271,16 @@ ${'='.repeat(60)}
       window.location.href = adminUrl;
     }
     window.addEventListener('afterprint', function h() { window.removeEventListener('afterprint', h); setTimeout(goBack, 300); });`
+    const toolbarPlakat = iframePreview
+      ? ''
+      : `<div class="no-print" style="text-align: center; margin-bottom: 1rem;">
+    <span style="color: #666;">Format:</span>
+    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
+    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
+    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+  </div>`
     const gName = currentGalleryData.name
     const gAddr = currentGalleryData.address
     const gPhone = currentGalleryData.phone
@@ -7367,14 +7387,7 @@ ${'='.repeat(60)}
   </style>
 </head>
 <body>
-  <div class="no-print" style="text-align: center; margin-bottom: 1rem;">
-    <span style="color: #666;">Format:</span>
-    <button type="button" onclick="setFormat('a4'); return false;">A4</button>
-    <button type="button" onclick="setFormat('a3'); return false;">A3</button>
-    <button type="button" onclick="setFormat('a5'); return false;">A5</button>
-    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
-  </div>
+  ${toolbarPlakat}
   <div class="plakat">
     <h1>${esc(plakatContent.title || 'Event')}</h1>
     ${plakatContent.type ? `<p style="font-size: ${previewScale.typeSize}; color: ${pd.muted2}; margin-bottom: 2rem; text-align: center;">${esc(plakatContent.type)}</p>` : ''}
@@ -21471,7 +21484,21 @@ ${name}`
         const eventDateStr = redactionEvent ? formatEventDates(redactionEvent) : ''
         const imageBlock = redactionPresseImageUrl ? `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
         const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
-        const previewHtml = buildPresseaussendungRedactionPreviewHtml({
+        const previewHtml = buildPresseaussendungRedactionPreviewHtml(
+          {
+            prDocClass,
+            prDocCss,
+            galleryName,
+            eventTitle: redactionEvent?.title || '',
+            eventDateStr,
+            presseTitle: redactionPresseTitle,
+            presseContent: redactionPresseContent,
+            imageBlock,
+            qrBlock
+          },
+          { iframePreview: true }
+        )
+        const fullPresseHtml = buildPresseaussendungRedactionPreviewHtml({
           prDocClass,
           prDocCss,
           galleryName,
@@ -21509,7 +21536,7 @@ ${name}`
               })
             }
             localStorage.setItem('k2-pr-suggestions', JSON.stringify(list))
-            const blob = new Blob([previewHtml], { type: 'text/html;charset=utf-8' })
+            const blob = new Blob([fullPresseHtml], { type: 'text/html;charset=utf-8' })
             const docId = `pr-editable-presseaussendung-${redactionEvent.id}-${Date.now()}`
             const ev = redactionEvent
             const fr = new FileReader()
@@ -21541,7 +21568,7 @@ ${name}`
           }
         }
         const openPresseDocInWindow = () => {
-          openDocumentInApp(previewHtml, 'Presseaussendung – ' + (redactionEvent?.title || 'Event'))
+          openDocumentInApp(fullPresseHtml, 'Presseaussendung – ' + (redactionEvent?.title || 'Event'))
         }
         const handleImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
           const file = e.target.files?.[0]
@@ -21938,7 +21965,7 @@ ${name}`
         )
       })()}
 
-      {/* Plakat-Redaktion: links Felder, rechts Vorschau A4/A3/A5 + PDF */}
+      {/* Plakat-Redaktion: links Felder, rechts reine Vorschau; Druck über „Dokument öffnen“ */}
       {plakatRedactionEvent && plakatRedaction && (() => {
         const event = events.find((e: any) => e.id === plakatRedactionEvent?.id) || plakatRedactionEvent
         const freshGalleryData = (() => {
@@ -22133,7 +22160,7 @@ ${name}`
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
-                  Vorschau – Galerie-Design, Format wählbar, druckbar
+                  Vorschau – so kommt das Plakat im Dokument an
                 </div>
                 <iframe
                   title="Plakat-Vorschau"
@@ -22343,7 +22370,7 @@ ${name}`
               </div>
               <div style={{ minHeight: 400, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${(s?.accent ?? '#0d9488')}33`, background: s?.bgCard ?? '#fff' }}>
                 <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.75rem', color: s?.muted ?? '#94a3b8', borderBottom: `1px solid ${(s?.accent ?? '#0d9488')}22` }}>
-                  Vorschau – Galerie-Design, Format wählbar, druckbar
+                  Vorschau – so kommt der Flyer im Dokument an
                 </div>
                 <iframe
                   title="Flyer-Vorschau"
