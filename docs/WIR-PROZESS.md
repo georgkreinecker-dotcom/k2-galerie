@@ -147,6 +147,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 21.03.26 | **CD erst fragen:** Georg meinte **Cooperate Design**, ich hatte es als Buchhaltungs-„Controlling“ geschrieben – ein Wort, zwei Welten. Abkürzungen immer mit seiner Bedeutung abgleichen; Doku/Handbuch sofort korrigieren, nicht erst „irgendwann“. |
 | 21.03.26 | **Werkkatalog = gleiche Sparten-Logik wie Werke verwalten:** eine Quelle (`getEffectiveDirectionFromWork`, `getCategoriesForDirection`, `getShopSoldArtworksKey`) – nicht parallel ENTRY_TYPES/Dropdown in ök2 erfinden. |
 | 22.03.26 | **Sportwagenblock Werkkatalog:** Thumbnails brauchen `resolveArtworkImages` + stabiles `useMemo` fürs Filtern; Einzel- und Sammeldruck = dieselbe HTML-Funktion + ein Print-Fenster – kein drittes `document.write`-Monster pflegen. |
+| 23.03.26 | **Kommentar „UI nutzt getOek2DefaultArtworkImage“** reicht nicht, wenn eine UI nur **`imageUrl`** rendert: **`resolveArtworkImages`** muss für ök2-Muster mit **`imageRef`** die Kategorie-URL setzen – sonst leere Thumbnails (M1/G1). |
 
 ---
 

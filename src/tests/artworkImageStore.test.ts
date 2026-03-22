@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getArtworkImageRefVariants, getArtworkImageRef } from '../utils/artworkImageStore'
+import { getArtworkImageRefVariants, getArtworkImageRef, resolveArtworkImages } from '../utils/artworkImageStore'
 
 describe('artworkImageStore: getArtworkImageRefVariants', () => {
 
@@ -34,5 +34,18 @@ describe('artworkImageStore: getArtworkImageRefVariants', () => {
   it('getArtworkImageRef: number/id wird zu k2-img-{id}', () => {
     expect(getArtworkImageRef({ number: 'K2-K-0030' })).toBe('k2-img-K2-K-0030')
     expect(getArtworkImageRef({ number: '0030' })).toBe('k2-img-0030')
+  })
+})
+
+describe('resolveArtworkImages: ök2 Musterwerk mit imageRef', () => {
+  it('setzt imageUrl auf Kategorie-Default (Werkkatalog), imageRef bleibt erhalten', async () => {
+    const list = await resolveArtworkImages([
+      { number: 'M1', category: 'malerei', imageRef: 'k2-img-M1', imageUrl: '' },
+      { number: 'G1', category: 'grafik', imageRef: 'k2-img-G1', imageUrl: '' },
+    ])
+    expect(list[0].imageUrl).toBe('/img/muster/malerei.svg')
+    expect(list[1].imageUrl).toBe('/img/muster/grafik.svg')
+    expect(list[0].imageRef).toBe('k2-img-M1')
+    expect(list[1].imageRef).toBe('k2-img-G1')
   })
 })

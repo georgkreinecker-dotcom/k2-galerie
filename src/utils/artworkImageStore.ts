@@ -4,6 +4,8 @@
  * Metadaten bleiben in localStorage (k2-artworks), nur Bilddaten gehen hier rein.
  */
 
+import { getOek2DefaultArtworkImage } from '../config/tenantConfig'
+
 const DB_NAME = 'k2-artwork-images'
 const STORE_NAME = 'images'
 const DB_VERSION = 1
@@ -383,9 +385,10 @@ export async function resolveArtworkImages(artworks: any[]): Promise<any[]> {
         }
         continue
       }
-      // Musterwerke (M1, K1, …): Kein IDB-Lookup – sonst alle dasselbe Bild (k2-img-1). imageUrl leer lassen → UI nutzt getOek2DefaultArtworkImage(category).
+      // Musterwerke (M1, K1, …): Kein IDB-Lookup – sonst alle dasselbe Bild (k2-img-1).
+      // imageUrl trotzdem setzen: Werkkatalog & Co. zeigen nur imageUrl; leer = fehlende Vorschau (M1/G1 mit imageRef).
       if (isOek2MusterArtwork(a)) {
-        out.push({ ...a, imageUrl: '', imageRef: ref })
+        out.push({ ...a, imageUrl: getOek2DefaultArtworkImage(a.category), imageRef: ref })
         continue
       }
       try {

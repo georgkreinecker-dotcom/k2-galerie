@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Werkkatalog: Einstellungen merken:** **localStorage** pro Kontext (`k2-werkkatalog-prefs` / `k2-oeffentlich-werkkatalog-prefs` / `k2-vk2-werkkatalog-prefs`) – **Filter** + **Spalten**; beim Kontextwechsel laden oder Defaults. Utils **`werkkatalogPreferences.ts`**, **ScreenshotExportAdmin**; Tests **`werkkatalogPreferences.test.ts`**. Typ/Kategorie-Leiste = weiterhin geteilter Werke-State (nicht im Katalog-Key). Tests + Build grün. **Commit:** `git log -1 --oneline` auf main (Werkkatalog-Prefs) ✅ nach Push
+**Letzter Stand:** 23.03.26 – **ök2 Werkkatalog: 2 fehlende Vorschaubilder (M1, G1):** **`resolveArtworkImages`** setzte bei Musterwerken mit **`imageRef`** absichtlich **`imageUrl: ''`** (kein IDB-Lookup) – Werkkatalog zeigt nur **`imageUrl`** → leere Zelle. **Fix:** **`getOek2DefaultArtworkImage(category)`** als **`imageUrl`**, **`imageRef`** bleibt. **`artworkImageStore.ts`**, Test **`artworkImageStore.test.ts`**. K2-Kern unberührt (`isOek2MusterArtwork` nur Demo-Nummern). Tests + Build grün. **Commit:** 87697a7 ✅ nach Push
 
 **Vorher:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 90fb394 ✅ auf GitHub
 
@@ -38,8 +38,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Nach Push: Werkkatalog öffnen – Filter/Spalten ändern, Admin neu laden oder nächster Tag → Einstellungen müssen stehen bleiben (K2/ök2/VK2 je eigener Key).
-**Einordnung:** Nur UI-Prefs, keine Werkdaten; Sportwagen = eine Utility + Hook-Reihenfolge mit Skip-Ref gegen Überschreiben beim ersten Render.
+**Was wir JETZT tun:** Nach Push: ök2 Admin → Werkkatalog → Spalte **Bild**: M1 und G1 zeigen wieder **malerei.svg** / **grafik.svg**.
+**Einordnung:** Ein Standard an der Quelle (`resolveArtworkImages`); keine zweite Fallback-Logik nur im Werkkatalog.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
