@@ -12467,7 +12467,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               display: 'flex', alignItems: 'center', gap: '0.4rem',
               fontFamily: s.fontBody,
             }}
-            title="Zurück zur Übersicht mit allen Bereichen (Werke hinzufügen und bearbeiten, Events, Kassa, …)">
+            title="Zurück zur Übersicht mit allen Bereichen (Werke, Events, Statistik/Werkkatalog, …)">
             ← Zurück zur Übersicht
           </button>
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -12478,7 +12478,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                activeTab === 'design' ? (tenant.isVk2 ? '✨ Ausstellung gestalten und texten' : '✨ Galerie gestalten und texten') :
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
-               activeTab === 'statistik' ? '🧾 Kassa & Verkauf' :
+               activeTab === 'statistik' ? '📋📊 Statistik/Werkkatalog' :
                activeTab === 'praesentationsmappen' ? '📁 Präsentationsmappen' :
                activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
                activeTab}
@@ -12521,7 +12521,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             ? { titel: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Adresse – hier pflegt ihr alles, was auf der Galerie und in Einladungen erscheint. Unter „Stammdaten“ tragt ihr Namen und Kontakt ein. So sind eure Daten immer aktuell.' }
             : { titel: 'Einstellungen', text: 'Dein Name, deine Adresse, Öffnungszeiten – hier trägst du alles ein, was Besucher sehen sollen. Unter „Stammdaten“ findest du die Felder. Einmal ausfüllen, dann stimmt es überall.' },
           katalog: { titel: 'Werkkatalog', text: 'Alle Werke auf einen Blick: filtern, suchen, als Liste oder für den Druck. Hier behältst du die Übersicht – ob für dich selbst oder für Kunden. Export und PDF möglich.' },
-          statistik: { titel: 'Kassa, Lager & Listen', text: 'Verkäufe erfassen, Belege drucken, Lager und Verkaufsstatistik im Blick. Hier läuft alles rund um Verkauf und Übersicht – auch vom Handy aus bei der Ausstellung.' },
+          statistik: { titel: 'Statistik/Werkkatalog', text: 'Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDF-Export und Speicherdaten an einem Ort. Kundenadressen und Kassa-Schnellzugriff bleiben im gewohnten Ablauf erreichbar.' },
         }
         const allgemein = {
           titel: 'Admin – deine Zentrale',
@@ -12904,7 +12904,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ] : [
-                    { emoji: '📋📊', name: 'Kassa, Lager, Listen & Werkkatalog', beschreibung: 'Werkkatalog, Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
+                    { emoji: '📋📊', name: 'Statistik/Werkkatalog', beschreibung: 'Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
                     { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
@@ -13013,12 +13013,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button type="button" onClick={() => setActiveTab('statistik')} style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }} title="Zurück zu Kassa, Lager & Listen">←</button>
+                    <button type="button" onClick={() => setActiveTab('statistik')} style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }} title="Zurück zu Statistik/Werkkatalog">←</button>
                     {' '}
                     📋 Werkkatalog
                   </span>
                 )}
-                  {activeTab === 'statistik' && '📋📊 Kassa, Lager, Listen & Werkkatalog'}
+                  {activeTab === 'statistik' && '📋📊 Statistik/Werkkatalog'}
                   {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
@@ -13030,7 +13030,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </h2>
                 {activeTab === 'statistik' && (
                   <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ flex: '1 1 12rem', minWidth: 0 }}>Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.</span>
+                    <span style={{ flex: '1 1 12rem', minWidth: 0 }}>Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.</span>
                     <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
                       <button
                         type="button"
@@ -13083,7 +13083,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
           </div>
 
-          {/* ===== VERKAUFSSTATISTIK (Kassa, Lager, Listen) + PDFs & Speicherdaten ===== */}
+          {/* ===== Statistik/Werkkatalog (StatistikTab + PDFs & Speicherdaten) ===== */}
           {activeTab === 'statistik' && (
             <>
               <StatistikTab

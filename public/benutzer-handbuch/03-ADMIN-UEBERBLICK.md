@@ -40,6 +40,12 @@ Unter **„Event- und Medienplanung“** finden Sie den gesamten Ablauf in einem
 
 ---
 
+## Statistik/Werkkatalog
+
+Im Admin gibt es den Bereich **Statistik/Werkkatalog** (eine Registerkarte): Hier sehen Sie **Verkaufs- und Lagerstatistik**, öffnen den **druckbaren Werkkatalog**, exportieren **PDFs und Speicherdaten** und erreichen **Kundenadressen** per Link. Der eigentliche **Verkauf** (Kassa, Belege, Kassabuch, Buchhaltung) bleibt wie beschrieben unter **Kassa** – siehe [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Ausführlich: [Statistik und Werkkatalog](11-STATISTIK-WERKKATALOG.md).
+
+---
+
 ## Kassa und Kassabuch
 
 Unter **„Kassa“** erfassen Sie Verkäufe, drucken Belege und führen das Kassabuch. Unter **Kassa → Buchhaltung** erledigen Sie die Vorarbeit für den Steuerberater (Zeitraum, CSV, Belege-PDF). Dort finden Sie auch Hinweise zur **EK-Kalkulation** am Werk sowie **Rohertrag** und **Lager-Vorschau** in der **Demo**. Die **vollständige Beschreibung** – Verkauf erfassen, Zahlungsarten, Belege, Storno, Kassabuch, Buchhaltung, Pro++ – steht im Kapitel [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md). Details für Vereine: [Vereinsplattform](05-VK2-VEREINSPLATTFORM.md).
@@ -66,5 +72,6 @@ Je nach Produkt (Galerie oder Vereinsplattform) gibt es weitere Tabs – z. B. *
 - **Dokumente** = Presse, Vita, Einladungen usw.
 - **Event- und Medienplanung** = Veranstaltungen anlegen, Werbematerial erzeugen, Verteiler nutzen und mit einem Ablauf versenden.
 - **Ausstellung gestalten und texten** = Design fuer Galerie und Willkommen; Texte fuer Presse und Einladungen unter Event- und Medienplanung -> Mediengenerator & Verteiler.
+- **Statistik/Werkkatalog** = Verkaufs- und Lagerstatistik, Werkkatalog drucken, PDFs und Speicherdaten, Link zu Kundenadressen; Kassa weiter über den Verkauf.
 - **Kassa und Kassabuch** = Verkäufe erfassen, Belege drucken, Kassabuch führen (Eingänge/Ausgänge, optional).
 - **Empfehlungsprogramm** = Link teilen, Rabatt für Geworbene, Gutschrift für Sie (je nach Lizenz).

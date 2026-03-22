@@ -45,7 +45,7 @@
 
 ## 4. Wo einordnen (Admin)
 
-- **Kassa, Lager & Listen** (bisher: Verkaufsstatistik, PDF-Export, Speicherdaten) – dort **„Kassabuch“** als neuer Bereich/Tab oder Unterkarte:
+- **Statistik/Werkkatalog** (Verkaufsstatistik, Werkkatalog, PDF-Export, Speicherdaten) – dort **„Kassabuch“** als neuer Bereich/Tab oder Unterkarte:
   - Liste aller Buchungen (chronologisch), Filter nach Art/Zeitraum.
   - Buttons: **Neuer Kassausgang**, **Bar privat**, **Kassa an Bank**, **Beleg zu Buchung** (QR/Foto).
   - Einstellung **„Volles Kassabuch mit Ausgaben“** (Checkbox auf dem **Kassa-Einstieg**).

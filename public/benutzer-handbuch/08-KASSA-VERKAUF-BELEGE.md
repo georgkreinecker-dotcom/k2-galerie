@@ -119,7 +119,7 @@ Mit der Lizenzstufe **Pro** werden **nur die Verkäufe** (Eingänge) im Kassabuc
 
 ## Kundenadressen und Verkaufsstatistik
 
-- **Kunden:** Kundendaten (Name, E-Mail, Telefon, Adresse) verwalten Sie im Bereich **Kunden** (z. B. **„Kundenadressen“** oder **„Kunden“** im Admin unter Kassa, Lager, Listen). Beim Verkauf mit Rechnung oder bei Reservierungen können Sie einen **bestehenden Kunden** auswählen oder **neu anlegen**. Die Kundendatei dient der Zuordnung „Verkauft an“ und für Rechnungen.  
+- **Kunden:** Kundendaten (Name, E-Mail, Telefon, Adresse) verwalten Sie im Bereich **Kunden** (z. B. **„Kundenadressen“** im Admin unter **Statistik/Werkkatalog** oder die Kunden-Seite aus dem Admin). Beim Verkauf mit Rechnung oder bei Reservierungen können Sie einen **bestehenden Kunden** auswählen oder **neu anlegen**. Die Kundendatei dient der Zuordnung „Verkauft an“ und für Rechnungen.  
 - **Verkaufs- und Lagerstatistik:** Im Admin gibt es einen Bereich **„Verkaufsstatistik“** (bzw. **„Statistik“** unter Kassa/Lager). Dort können Sie **Umsatz**, **verkaufte Werke**, **Bestand** (Galerie, Lager, Verkauft, Reserviert) einsehen und die **Verkaufs- und Lagerstatistik drucken** (A4). So behalten Sie den Überblick ohne zusätzliche Software.
 
 ---

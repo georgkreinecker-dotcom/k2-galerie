@@ -1,6 +1,6 @@
 /**
  * Kassabuch – Liste aller Buchungen, separat druckbar, Export für Steuerberater.
- * Bereich „Kassa, Lager & Listen“ – im Ordner extra gekennzeichnet, übermittelbar.
+ * Admin-Bereich Statistik/Werkkatalog (Kassabuch) – im Ordner extra gekennzeichnet, übermittelbar.
  */
 
 import { useState, useMemo } from 'react'

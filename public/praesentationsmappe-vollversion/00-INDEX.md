@@ -28,31 +28,35 @@ Fotos, Beschreibungen, Preise – professionell ohne IT-Kenntnisse.
 
 Farben, Texte, Willkommensbild – ein Klick veröffentlichen, gleicher Stand überall.
 
-7. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
+7. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
+
+Verkaufs- und Lagerübersicht, druckbarer Werkkatalog, PDF- und Speicherdaten-Export, Kundenadressen – zentral im Admin.
+
+8. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
 
 Verkauf vor Ort, Kasse in der App, Belege.
 
-8. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
+9. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
 Ein Bereich fuer Planung, Mediengenerator und Verteiler – von Event bis Aussendung in einem Fluss.
 
-9. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
+10. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
 Für alle Vereinstypen – Kunstvereine = Einstieg. Gemeinsame Vereinsgalerie, Mitglieder, eine Lizenz – ab 10 Mitgliedern für den Verein kostenfrei.
 
-10. [Demo und Lizenz](10-DEMO-LIZENZ.md)
+11. [Demo und Lizenz](10-DEMO-LIZENZ.md)
 
 ök2 ausprobieren, von der Demo zur eigenen Galerie, Lizenzen (Basic, Pro, Pro+, Pro++, VK2).
 
-11. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
+12. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
 
 Vertrieb durch Nutzer:innen – Empfehler-ID, 10 % Rabatt/Gutschrift, ein Klick zum Teilen.
 
-12. [Technik](12-TECHNIK.md)
+13. [Technik](12-TECHNIK.md)
 
 Plattform (Windows, Android, macOS, iOS), Browser & PWA – ein Stand überall, kein Mac nötig.
 
-13. [Kontakt und nächste Schritte](13-KONTAKT.md)
+14. [Kontakt und nächste Schritte](13-KONTAKT.md)
 
 QR, Link zur Demo, Lizenz anfragen – zum Schluss.
 

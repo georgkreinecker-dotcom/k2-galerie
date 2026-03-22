@@ -129,6 +129,12 @@ export default function PraesentationsmappePage() {
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
             {leadText}
           </p>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+            Statistik und Werkkatalog
+          </h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+            Im Admin führt der Bereich <strong>Statistik/Werkkatalog</strong> Verkaufs- und Lagerstatistik, den druckbaren Werkkatalog sowie PDF- und Speicherdaten-Exporte zusammen – inklusive schnellem Zugang zu Kundenadressen und zur Kassa. Details im Benutzerhandbuch und in der erweiterten Präsentationsmappe.
+          </p>
         </div>
 
         <div className="pm-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>

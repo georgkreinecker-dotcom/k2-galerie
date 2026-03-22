@@ -39,6 +39,7 @@ const DOCUMENTS = [
   { id: '04-willkommen', name: 'Willkommen und Galerie', file: '04-WILLKOMMEN-UND-GALERIE.md' },
   { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md' },
   { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
+  { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },
   { id: '07-kassa', name: 'Kassa und Verkauf', file: '07-KASSA-VERKAUF.md' },
   { id: '08-events', name: 'Events und Öffentlichkeitsarbeit', file: '08-EVENTS-OEFFENTLICHKEITSARBEIT.md' },
   { id: '09-vk2', name: 'Vereinsplattform VK2', file: '09-VEREINSPLATTFORM-VK2.md' },

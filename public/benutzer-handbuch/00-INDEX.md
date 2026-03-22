@@ -12,7 +12,7 @@ App öffnen, Galerie ansehen, in den Admin kommen.
 
 2. [Admin im Überblick](03-ADMIN-UEBERBLICK.md)
 
-Werke, Design, Einstellungen, Dokumente, Events, Kassa, Empfehlungsprogramm.
+Werke, Design, Einstellungen, Dokumente, Events, Statistik/Werkkatalog, Kassa, Empfehlungsprogramm.
 
 3. [Galerie gestalten, Werke anlegen](02-GALERIE-GESTALTEN.md)
 
@@ -30,15 +30,19 @@ Kurzfassung – ausführliches Handbuch für Vereine separat (VK2-Handbuch).
 
 Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
-7. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
+7. [Statistik und Werkkatalog](11-STATISTIK-WERKKATALOG.md)
+
+Admin-Bereich **Statistik/Werkkatalog**: Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDFs und Speicherdaten, Link zu Kundenadressen.
+
+8. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
 
 Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), **EK-Kalkulation** am Werk, Rohertrag und Lager-Vorschau in der **Demo**, Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
 
-8. [Einstellungen](10-EINSTELLUNGEN.md)
+9. [Einstellungen](10-EINSTELLUNGEN.md)
 
 Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
 
-9. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+10. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

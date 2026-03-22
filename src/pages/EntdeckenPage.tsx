@@ -104,7 +104,7 @@ const HUB_STATIONEN = [
   { emoji: '🖼️', name: 'Meine Werke',                  sub: 'Fotos, Preise, Beschreibungen – deine Galerie füllen',     tab: 'werke' },
   { emoji: '🎟️', name: 'Events & Ausst.',               sub: 'Vernissagen planen, Einladungen & QR-Codes erstellen',  tab: 'eventplan' },
   { emoji: '📋', name: 'Werkkatalog',                   sub: 'Alle Werke auf einen Blick – filtern, suchen, drucken', tab: 'katalog' },
-  { emoji: '🧾', name: 'Kassa & Verkauf',                sub: 'Direkt verkaufen, Beleg drucken – auch vom Handy',      tab: 'statistik' },
+  { emoji: '📋📊', name: 'Statistik/Werkkatalog',         sub: 'Verkäufe, Lager, Werkkatalog, PDFs – Kassa und Kunden vom gleichen Ort', tab: 'statistik' },
   { emoji: '⚙️', name: 'Einstellungen',                  sub: 'Kontakt, Adresse, Öffnungszeiten – deine Stammdaten',   tab: 'einstellungen' },
 ]
 
@@ -361,9 +361,9 @@ function baueHubStationen(weg: string) {
       tab: 'katalog',
     },
     {
-      emoji: '🧾',
-      name: 'Kassa & Verkauf',
-      beschreibung: 'Werk verkauft? Eintragen, Beleg drucken – vom Handy direkt bei der Ausstellung. Ganz simpel.',
+      emoji: '📋📊',
+      name: 'Statistik/Werkkatalog',
+      beschreibung: 'Übersicht über Verkäufe und Lager, Werkkatalog drucken, PDFs und Speicherdaten – mit Weg zur Kassa und zu Kundenadressen.',
       tab: 'statistik',
     },
     {

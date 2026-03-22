@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Admin Statistik-Zeile: Werkkatalog + Kundenadressen präsenter:** Untertitel bei Tab **Kassa, Lager, Listen** – **→ Werkkatalog** und **Kundenadressen** als **Primär-Buttons** (Accent #b54a1e, weiß, Schatten, Flex-Wrap). **ScreenshotExportAdmin.** Build grün. **Commit:** nach Push `git log -1 --oneline` ✅
+**Letzter Stand:** 21.03.26 – **Admin-Tab umbenannt: Statistik/Werkkatalog** (statt „Kassa, Lager, Listen“): **ScreenshotExportAdmin** (Hub, Guide, Kopfzeilen), **Benutzerhandbuch** (`00-INDEX`, `03-ADMIN`, Kapitel `11-STATISTIK-WERKKATALOG`, Verweise in `08-KASSA-VERKAUF-BELEGE`), **Präsentationsmappe** Kurzform + Vollversion (`DOCUMENTS`, `00-INDEX`, `14-STATISTIK-WERKKATALOG`), **EntdeckenPage** Hub, **ProspektK2GaleriePage**, **KassabuchPage**-Kommentar, Doku **K2-GALERIE-PRAESENTATIONSMAPPE**, **KASSA-ETIKETTEN**, **K2-OEK2-KASSABUCH-AGENDA**. Tests + Build grün. **Auf main:** letzter Push mit Commit-Nachricht „Statistik/Werkkatalog“. ✅
 
 **Vorher:** 23.03.26 – **ök2 Werkkatalog: 2 fehlende Vorschaubilder (M1, G1):** **`resolveArtworkImages`** setzte bei Musterwerken mit **`imageRef`** absichtlich **`imageUrl: ''`** (kein IDB-Lookup) – Werkkatalog zeigt nur **`imageUrl`** → leere Zelle. **Fix:** **`getOek2DefaultArtworkImage(category)`** als **`imageUrl`**, **`imageRef`** bleibt. **`artworkImageStore.ts`**, Test **`artworkImageStore.test.ts`**. K2-Kern unberührt (`isOek2MusterArtwork` nur Demo-Nummern). Tests + Build grün. **Commit:** b6a6542 ✅ nach Push
 
@@ -40,8 +40,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Nach Push: Admin → Tab **Kassa, Lager, Listen** – die zwei Buttons unter der Überschrift kurz ansehen.
-**Einordnung:** Nutzer-Logik (Ampel/klare Aktion); Kontrast heller Admin-Hintergrund = dunkelroter Button aus **WERBEUNTERLAGEN_STIL**.
+**Was wir JETZT tun:** Nach Push: Admin → Tab **Statistik/Werkkatalog** kurz prüfen (Texte, Werkkatalog/Kunden-Buttons).
+**Einordnung:** Einheitliche Bezeichnung überall; Handbuch + Präsi mit eigenem Kapitel **Statistik/Werkkatalog**.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
