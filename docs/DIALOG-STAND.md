@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** (nach Push `git log -1 --oneline`) ✅; **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** `5f394b5` (+ DIALOG-Hash `2f3b202`) ✅ lokal; **Push:** Git-Button Cursor.
 
 **Vorher:** 22.03.26 – **Benutzerhandbuch: Ansprache überall gleich (Sie) (Georg):** Repo-Prüfung **public/benutzer-handbuch**: nummerierte Kapitel **01–12**, **00-INDEX** waren bereits **Sie**; ergänzt **00-INDEX** mit explizitem Satz zur einheitlichen **Sie**-Anrede. **README-EDITOR**, **PRUEFLISTE-HANDBUCH** von **Du** auf **Sie** umgestellt (Redaktion/Prüfliste). **Commit:** `3cc98e8` ✅; **Push:** Git-Button.
 
