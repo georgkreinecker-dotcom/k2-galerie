@@ -10,6 +10,8 @@ interface UserWish {
   text: string
   source?: string
   createdAt: string
+  /** wish = Idee/Wunsch (Standard), problem = Störung / Problem melden */
+  kind?: 'wish' | 'problem'
 }
 
 const GUIDE_LABELS: Record<string, string> = {
@@ -683,7 +685,7 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
         )
       })}
 
-      {/* Wünsche von Nutzer:innen (API – Entdecken „Idee? Wunsch?“) */}
+      {/* Rückmeldungen: Ideen/Wünsche + Probleme (API /admin „Idee? Wunsch?“ / „Probleme“) */}
       <div style={{ borderBottom: '1px solid rgba(95,251,241,0.12)', paddingBottom: '1rem' }}>
         <button
           type="button"
@@ -706,7 +708,7 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
             {newCount > 0 && (
               <span style={{ background: '#b54a1e', color: '#fff', borderRadius: '50%', minWidth: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, padding: '0 0.25rem' }}>{newCount}</span>
             )}
-            💡 Wünsche von Nutzer:innen
+            💬 Rückmeldungen
           </h4>
           <span style={{ fontSize: '0.8rem', opacity: 0.8 }}>{wuenscheOpen ? '▼' : '▶'}</span>
         </button>
@@ -715,17 +717,31 @@ hr { border: none; border-top: 1px solid #ddd; margin: 1.25rem 0; }
             {wishesLoading ? (
               <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)' }}>Lade …</div>
             ) : wishes.length === 0 ? (
-              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)' }}>Noch keine Wünsche eingegangen.</div>
+              <div style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)' }}>Noch keine Rückmeldungen.</div>
             ) : (
-              wishes.map(w => (
-                <div key={w.id} style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '8px', padding: '0.6rem 0.75rem' }}>
-                  <div style={{ fontSize: '0.82rem', color: '#fff8f0', lineHeight: 1.5 }}>{w.text}</div>
-                  <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
-                    {new Date(w.createdAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}
-                    {w.source ? ` · ${w.source}` : ''}
+              wishes.map(w => {
+                const isProblem = w.kind === 'problem'
+                return (
+                  <div
+                    key={w.id}
+                    style={{
+                      background: isProblem ? 'rgba(239,68,68,0.08)' : 'rgba(251,191,36,0.07)',
+                      border: isProblem ? '1px solid rgba(239,68,68,0.28)' : '1px solid rgba(251,191,36,0.2)',
+                      borderRadius: '8px',
+                      padding: '0.6rem 0.75rem',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: isProblem ? '#fca5a5' : '#fcd34d', marginBottom: '0.35rem', letterSpacing: '0.02em' }}>
+                      {isProblem ? '⚠️ Problem' : '💡 Idee / Wunsch'}
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: '#fff8f0', lineHeight: 1.5 }}>{w.text}</div>
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.25rem' }}>
+                      {new Date(w.createdAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}
+                      {w.source ? ` · ${w.source}` : ''}
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         )}

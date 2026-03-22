@@ -1,5 +1,5 @@
 /**
- * Vercel Serverless: Nutzer-Wünsche (Idee? Wunsch?) – sammeln und im Smart Panel anzeigen.
+ * Vercel Serverless: Rückmeldungen (Idee/Wunsch + Problem melden) – Smart Panel.
  * GET: Liste (neueste zuerst), POST: neuer Eintrag. Speicher: Vercel Blob user-wishes.json.
  * CommonJS für zuverlässigen Vercel-Build (ohne "type": "module").
  */
@@ -55,11 +55,13 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Text fehlt oder zu lang (max 2000 Zeichen)' })
     }
     const source = typeof parsed.source === 'string' ? parsed.source.slice(0, 64) : 'entdecken'
+    const kind = parsed.kind === 'problem' ? 'problem' : 'wish'
     const list = await loadWishes()
     const entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       text,
       source,
+      kind,
       createdAt: new Date().toISOString(),
     }
     list.push(entry)

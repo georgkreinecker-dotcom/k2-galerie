@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** `5f394b5` (+ DIALOG-Hash `2f3b202`) ✅ lokal; **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **Admin: „Probleme“ neben Idee/Wunsch (Georg):** Button **⚠️ Probleme** in der Kopfleiste; Modal mit Hinweis auf schnelle Bearbeitung + Smart Panel; API **user-wishes** speichert **kind: wish | problem**; **SmartPanel** zeigt **💬 Rückmeldungen** mit Kennzeichnung Problem vs. Idee. Tests + Build grün. **Commit:** `65822d8` ✅ lokal; **Push:** Git-Button.
+
+**Vorher:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** `5f394b5` (+ DIALOG-Hash `2f3b202`) ✅ lokal; **Push:** Git-Button Cursor.
 
 **Vorher:** 22.03.26 – **Benutzerhandbuch: Ansprache überall gleich (Sie) (Georg):** Repo-Prüfung **public/benutzer-handbuch**: nummerierte Kapitel **01–12**, **00-INDEX** waren bereits **Sie**; ergänzt **00-INDEX** mit explizitem Satz zur einheitlichen **Sie**-Anrede. **README-EDITOR**, **PRUEFLISTE-HANDBUCH** von **Du** auf **Sie** umgestellt (Redaktion/Prüfliste). **Commit:** `3cc98e8` ✅; **Push:** Git-Button.
 
@@ -14,9 +16,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Stand-Hilfe in der App + FAQ-Absatz; nächster Schritt von Georg.
+**Was wir JETZT tun:** Rückmeldungs-Kanal Probleme + Smart Panel; nächster Schritt von Georg.
 
-**Einordnung:** **Restrisiko** für Nutzer **in der Oberfläche** erklären – **ohne** Warten auf Piloten-Rückmeldungen; Handbuch ergänzt für Lesende in der App.
+**Einordnung:** Lizenznehmer/Georg können Störungen **ohne Piloten-Schleife** erfassen; gleicher Speicher wie Wünsche, im Panel unterscheidbar.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

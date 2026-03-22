@@ -2180,12 +2180,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [saleInput, setSaleInput] = useState('')
   const [saleMethod, setSaleMethod] = useState<'scan' | 'manual'>('scan')
   const [showReserveModal, setShowReserveModal] = useState(false)
-  /** Idee? Wunsch? – prominent im Admin, landet in Smart Panel (Wünsche von Nutzer:innen) */
+  /** Idee? Wunsch? / Problem melden – landet im Smart Panel (API user-wishes) */
   const [wunschModalOpen, setWunschModalOpen] = useState(false)
+  const [wunschModalKind, setWunschModalKind] = useState<'wish' | 'problem'>('wish')
   const [wunschText, setWunschText] = useState('')
   const [wunschSending, setWunschSending] = useState(false)
   const [wunschError, setWunschError] = useState<string | null>(null)
   const [wunschSuccess, setWunschSuccess] = useState(false)
+  const openWunschModal = (kind: 'wish' | 'problem') => {
+    setWunschModalKind(kind)
+    setWunschModalOpen(true)
+    setWunschText('')
+    setWunschError(null)
+    setWunschSuccess(false)
+  }
   const [reserveInput, setReserveInput] = useState('')
   const [reserveMethod, setReserveMethod] = useState<'scan' | 'manual'>('scan')
   const [reserveName, setReserveName] = useState('')
@@ -12523,8 +12531,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
-            ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' }
-            : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ notierst du Anregungen – sie erscheinen in deiner Wunschliste.' },
+            ? { titel: 'Vereinsmitglieder & Schnellzugriff', text: 'Hier verwaltest du die Mitglieder mit „In Galerie anzeigen“ – Fotos, Profile, Karten. In der Leiste oben: „Unsere Mitglieder“ zeigt die öffentliche Ansicht, „Kasse“ und „Buchhaltung“ führen direkt dorthin. Die Zahl daneben sind eure Homepage-Besucher. Mit „Idee? Wunsch?“ und „Probleme“ schreibst du Rückmeldungen – sie erscheinen im Smart Panel.' }
+            : { titel: 'Werke & Schnellzugriff', text: 'Hier legst du deine Werke an: Foto hochladen, Titel und Preis eintragen – schon in der Galerie. In der Leiste oben: „Galerie ansehen“ zeigt, was Besucher sehen; „Kasse öffnen“ und „Buchhaltung“ führen direkt dorthin. Die Zahl (👁) sind deine Homepage-Besucher. Mit „Idee? Wunsch?“ und „Probleme“ schreibst du Rückmeldungen – sie erscheinen im Smart Panel.' },
           eventplan: istVerein
             ? { titel: 'Event- und Medienplanung', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellt ihr Einladungen, QR-Codes, Werbedokumente und nutzt den Verteiler direkt im gleichen Ablauf.' }
             : { titel: 'Event- und Medienplanung', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen, Werbedokumente und nutzt den Verteiler in einem Schritt.' },
@@ -25313,16 +25321,22 @@ ${name}`
         </div>
       )}
 
-      {/* Idee? Wunsch? – Modal, landet in Smart Panel (Wünsche von Nutzer:innen) */}
+      {/* Idee? Wunsch? / Probleme – Modal, landet im Smart Panel */}
       {wunschModalOpen && (
         <div className="admin-modal-overlay" onClick={() => !wunschSending && setWunschModalOpen(false)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
             <div className="admin-modal-header">
-              <h2>💡 Idee? Wunsch?</h2>
+              <h2>{wunschModalKind === 'problem' ? '⚠️ Problem melden' : '💡 Idee? Wunsch?'}</h2>
               <button type="button" className="admin-modal-close" onClick={() => !wunschSending && setWunschModalOpen(false)} disabled={wunschSending} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content">
-              <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Deine Notiz landet im Smart Panel unter „Wünsche von Nutzer:innen“. Wir freuen uns über deine Ideen – schreib hier gern, was du dir wünschst.</p>
+              {wunschModalKind === 'problem' ? (
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--k2-muted)' }}>
+                  Beschreib kurz, was schiefgeht (z. B. Handy, welche Seite, was du erwartest). Deine Meldung landet im <strong>Smart Panel</strong> – wir gehen das so schnell wie möglich an; du kannst den Text auch in Cursor einfügen, wenn du gerade mit der KI daran arbeitest.
+                </p>
+              ) : (
+                <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Deine Notiz landet im Smart Panel unter <strong>Rückmeldungen</strong>. Wir freuen uns über deine Ideen – schreib hier gern, was du dir wünschst.</p>
+              )}
               {wunschSuccess ? (
                 <div style={{ textAlign: 'center', padding: '1rem', color: '#10b981', fontWeight: 700 }}>✅ Gespeichert!</div>
               ) : (
@@ -25331,8 +25345,8 @@ ${name}`
                     autoFocus
                     value={wunschText}
                     onChange={(e) => { setWunschText(e.target.value); setWunschError(null) }}
-                    placeholder="Dein Wunsch, deine Idee …"
-                    rows={3}
+                    placeholder={wunschModalKind === 'problem' ? 'Was ist passiert? Gerät, Browser, Schritt …' : 'Dein Wunsch, deine Idee …'}
+                    rows={wunschModalKind === 'problem' ? 5 : 3}
                     style={{ width: '100%', padding: '0.65rem 0.75rem', border: '1px solid var(--k2-accent, #b54a1e)33', borderRadius: '8px', fontSize: '0.9rem', resize: 'vertical', boxSizing: 'border-box' }}
                   />
                   {wunschError && <div style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '0.35rem' }}>{wunschError}</div>}
@@ -25351,7 +25365,7 @@ ${name}`
                           const res = await fetch(`${origin}/api/user-wishes`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ text, source: 'admin' }),
+                            body: JSON.stringify({ text, source: 'admin', kind: wunschModalKind }),
                           })
                           if (!res.ok) {
                             const data = await res.json().catch(() => ({}))
