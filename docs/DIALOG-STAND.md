@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Benutzerhandbuch Passwort: Sie-Form + Nutzerwortlaut (Georg):** **10-EINSTELLUNGEN** durchgängig **Sie** (inkl. Passwort-Abschnitt, VK2-Kategorien); kein Entwickler-Satz („tatsächlich gemeint“); **04-FAQ** Passwort **Sie**; **03-ADMIN** Einstellungen **Sie**; **06-OEK2** Verweis Einstellungen/Passwort merken + Link Kap. 10. **Commit:** `492ec63` ✅; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Benutzerhandbuch: Ansprache überall gleich (Sie) (Georg):** Repo-Prüfung **public/benutzer-handbuch**: nummerierte Kapitel **01–12**, **00-INDEX** waren bereits **Sie**; ergänzt **00-INDEX** mit explizitem Satz zur einheitlichen **Sie**-Anrede. **README-EDITOR**, **PRUEFLISTE-HANDBUCH** von **Du** auf **Sie** umgestellt (Redaktion/Prüfliste). **Commit:** *(folgt)*; **Push:** Git-Button.
 
 **Vorher:** 22.03.26 – **Passwort-Strategie: Gerätemanagement:** Handbuch **10-EINSTELLUNGEN** Passwort auf dem Gerät; **04-FAQ**, **03-ADMIN**; **GaleriePage** Dialog ehrlich. **Commit:** `6732222` ✅.
 
@@ -12,9 +12,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Kurz prüfen, ob **Benutzerhandbuch**-Ton (**Sie**, Endnutzer) überall passt.
+**Was wir JETZT tun:** Wie zuvor; Handbuch-Sie-Form ist abgeglichen.
 
-**Einordnung:** **Benutzerhandbuch** = formale **Sie**-Anrede an Lizenznehmer/Demo-Nutzer; **App-Oberfläche** kann weiter **Du** nutzen (Polish) – getrennte Kanäle.
+**Einordnung:** **Benutzerhandbuch** = durchgängig **Sie** (inkl. Redaktions-Dateien im gleichen Ordner); **App** = **Du** möglich – getrennte Kanäle.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

@@ -1,6 +1,6 @@
 # Benutzerhandbuch – K2 Galerie
 
-Willkommen. Das Handbuch dient zum Nachschlagen.
+Willkommen. Das Handbuch dient zum Nachschlagen. **Alle nummerierten Kapitel (1–12) nutzen durchgängig die Anrede „Sie“** – einheitlich für Leserinnen und Leser.
 
 ---
 

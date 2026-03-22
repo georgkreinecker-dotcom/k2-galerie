@@ -1,6 +1,6 @@
 # Prüfliste Benutzerhandbuch – für Georg
 
-Kurze Übersicht, damit du gezielt prüfen kannst. Stand: 07.03.26.
+Kurze Übersicht, damit **Sie** gezielt prüfen können. Stand: 22.03.26.
 
 ---
 
@@ -15,13 +15,13 @@ Kurze Übersicht, damit du gezielt prüfen kannst. Stand: 07.03.26.
 
 ---
 
-## Zum Abhaken (bitte du prüfen)
+## Zum Abhaken (bitte prüfen)
 
-- [ ] **00-INDEX** – Wirkt die Einleitung und die Kapitelübersicht für dich stimmig?
+- [ ] **00-INDEX** – Wirkt die Einleitung und die Kapitelübersicht für **Sie** stimmig?
 - [ ] **01 Erste Schritte** – Passt der Ablauf (App öffnen → Galerie ansehen → Admin)?
 - [ ] **02 Galerie gestalten** – Fehlt etwas Wichtiges (z. B. Virtueller Rundgang, Galerie-Karte)?
 - [ ] **03 Admin Überblick** – Sind alle Tabs/Bereiche für K2/VK2/ök2 treffend beschrieben?
-- [ ] **04 Häufige Fragen** – Fehlt eine Frage, die Nutzer oft stellen?
+- [ ] **04 Häufige Fragen** – Fehlt eine Frage, die Nutzerinnen und Nutzer oft stellen?
 - [ ] **05 VK2 Vereinsplattform** – Stimmt die Reihenfolge (Stammdaten, Mitglieder, Katalog, Kassa)?
 - [ ] **06 ök2 Demo und Lizenz** – Passt der Weg „Demo → Lizenz online kaufen (eigenständig) → eigene Galerie“?
 
@@ -29,10 +29,10 @@ Kurze Übersicht, damit du gezielt prüfen kannst. Stand: 07.03.26.
 
 ## Optional: Feinschliff
 
-- **Abkürzung „z. B.“:** In den meisten Kapiteln steht **z. B.** (mit Leer, Duden); in **05-VK2** steht teils **z.B.** (ohne Leer). Wenn du auf einheitliche Rechtschreibung Wert legst, in 05 nach „z.B.“ suchen und durch „z. B.“ ersetzen.
+- **Abkürzung „z. B.“:** In den meisten Kapiteln steht **z. B.** (mit Leer, Duden); in **05-VK2** ggf. noch **z.B.** (ohne Leer). Wenn **Sie** auf einheitliche Rechtschreibung Wert legen, in **05** nach „z.B.“ suchen und durch „z. B.“ ersetzen.
 
 ---
 
 ## Nächster Schritt
 
-Wenn du etwas anpassen willst: Kapitel und gewünschte Änderung nennen, dann setze ich es um. Wenn die Prüfliste für dich passt, können wir sie später entfernen oder als interne Notiz lassen.
+Wenn **Sie** etwas anpassen möchten: Kapitel und gewünschte Änderung nennen – dann kann die Bearbeitung erfolgen. Wenn die Prüfliste für **Sie** passt, kann sie später entfernt oder als interne Notiz belassen werden.
