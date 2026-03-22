@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Audit-Prozess Programmsicherheit dokumentiert (Georg):** **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – Trigger, 5-Schritte-Ablauf, Rollen, Ampeltabelle (P1.x, P2.x, PZ Stripe, PT Tests), Protokoll „Letzte Runde“; Verweise in **SICHERHEIT-VOR-GO-LIVE**, **00-INDEX**, **EINSTIEG-INFORMATIKER**, **SERVICE-ARBEIT-DATEN-TESTS**. **Commit:** _(nach Commit)_.
+**Letzter Stand:** 22.03.26 – **Audit-Prozess Programmsicherheit dokumentiert (Georg):** **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** – Trigger, 5-Schritte-Ablauf, Rollen, Ampeltabelle (P1.x, P2.x, PZ Stripe, PT Tests), Protokoll „Letzte Runde“; Verweise in **SICHERHEIT-VOR-GO-LIVE**, **00-INDEX**, **EINSTIEG-INFORMATIKER**, **SERVICE-ARBEIT-DATEN-TESTS**. **Commit:** `8e434c2` ✅.
 
 **Vorher:** 22.03.26 – **Servicarbeit + Test-Audit Daten (Georg):** **docs/SERVICE-ARBEIT-DATEN-TESTS.md** – Betrieb ohne unnötiges User-Update-Theater (APf/API vs. Galerie), Checkliste, Audit was getestet ist / Lücken (getPageTexts, autoSave-Guards, Stammdaten-Merge, TenantContext); **`npm run test:daten`** für Fokus-Suite (11 Dateien, ersetzt nicht volle Tests). Verweise in **EINSTIEG-INFORMATIKER**, **00-INDEX**. **Commit:** `494b9eb` ✅.
 
