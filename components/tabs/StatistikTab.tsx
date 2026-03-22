@@ -7,6 +7,11 @@ import {
 } from '../../src/utils/artworkArtistDisplay'
 
 const s = WERBEUNTERLAGEN_STIL
+/** Eine klare Grünnuance für Geldbeträge auf hellem Hintergrund (Admin-Stil) */
+const MONEY = '#166534'
+/** Balken: alles aus der Akzentfamilie statt Blau/Orange/Zufallsgrün */
+const barSale = `linear-gradient(90deg, ${s.accent}, #c45a28)`
+const barValue = `linear-gradient(90deg, ${s.accent}cc, ${s.accent})`
 
 interface StatistikTabProps {
   allArtworks: any[]
@@ -155,7 +160,17 @@ export default function StatistikTab({
   const preisMax = preise.length ? Math.max(...preise) : 0
   const preisDurch = preise.length ? preise.reduce((a: number, b: number) => a + b, 0) / preise.length : 0
 
-  const kachelStyle = { background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 16, padding: '1.25rem', boxShadow: s.shadow }
+  const kachelStyle: React.CSSProperties = {
+    background: s.bgCard,
+    border: `1px solid ${s.accent}22`,
+    borderRadius: 12,
+    padding: '1rem 1.1rem',
+    boxShadow: '0 4px 18px rgba(28, 26, 24, 0.06)',
+    minHeight: 0,
+  }
+
+  const kpiLabel: React.CSSProperties = { fontSize: '0.8rem', color: s.muted, marginTop: 6, lineHeight: 1.35, fontWeight: 500 }
+  const kpiValue = (color: string): React.CSSProperties => ({ fontSize: '1.65rem', fontWeight: 700, color, letterSpacing: '-0.02em', lineHeight: 1.1 })
 
   let anfragen: any[] = []
   try { anfragen = JSON.parse(localStorage.getItem('k2-anfragen') || '[]') } catch (_) {}
@@ -178,52 +193,92 @@ export default function StatistikTab({
     onRerender()
   }
 
-  return (
-    <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 24, padding: 'clamp(1.5rem, 4vw, 2.5rem)', marginBottom: '2rem' }}>
+  const vierteVerkaufKachel = showPreisspanneVerkauf && preise.length > 0
+    ? { zahl: `€ ${preisDurch.toFixed(0)}`, label: 'Ø Verkaufspreis', farbe: s.text }
+    : { zahl: String(lagerBestand), label: 'Im Bestand (nicht verkauft)', farbe: s.accent }
 
-      {/* Kennzahlen-Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: s.accent }}>{soldWerke.length}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Verkaufte Werke</div>
+  const sectionBand: React.CSSProperties = {
+    gridColumn: '1 / -1',
+    padding: '0.5rem 0 0.35rem',
+    marginTop: 2,
+    borderBottom: `1px solid ${s.accent}18`,
+  }
+
+  return (
+    <section
+      style={{
+        background: s.bgCard,
+        border: `1px solid ${s.accent}18`,
+        borderRadius: 16,
+        padding: 'clamp(1.25rem, 3vw, 2rem)',
+        marginBottom: '2rem',
+      }}
+    >
+      <style>{`
+        .stat-kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; }
+        @media (max-width: 768px) {
+          .stat-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        .stat-breakdown-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: stretch; }
+        @media (max-width: 1100px) {
+          .stat-breakdown-grid { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        }
+        .stat-secondary-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+        @media (min-width: 900px) {
+          .stat-secondary-grid.stat-secondary-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+        }
+      `}</style>
+
+      {/* Kennzahlen: festes 4×2-Raster – gleiches Gewicht, klar Verkauf vs. Bestand */}
+      <div className="stat-kpi-grid" style={{ marginBottom: '1.75rem' }}>
+        <div style={sectionBand}>
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: s.muted }}>Verkauf</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#15803d' }}>€ {umsatzGesamt.toFixed(0)}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Gesamtumsatz</div>
+          <div style={kpiValue(s.accent)}>{soldWerke.length}</div>
+          <div style={kpiLabel}>Verkaufte Werke</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: s.text }}>{gesamtWerke}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Werke gesamt</div>
+          <div style={kpiValue(umsatzGesamt > 0 ? MONEY : s.muted)}>€ {umsatzGesamt.toFixed(0)}</div>
+          <div style={kpiLabel}>Gesamtumsatz</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#2563eb' }}>{inGalerie}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>In Galerie</div>
+          <div style={kpiValue(umsatzHeute > 0 ? MONEY : s.muted)}>€ {umsatzHeute.toFixed(0)}</div>
+          <div style={kpiLabel}>Umsatz heute</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: '#d97706' }}>{reserviert}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Reserviert</div>
+          <div style={kpiValue(vierteVerkaufKachel.farbe)}>{vierteVerkaufKachel.zahl}</div>
+          <div style={kpiLabel}>{vierteVerkaufKachel.label}</div>
+        </div>
+
+        <div style={{ ...sectionBand, marginTop: 14 }}>
+          <div style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: s.muted }}>Bestand &amp; Sichtbarkeit</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: umsatzHeute > 0 ? '#15803d' : s.muted }}>€ {umsatzHeute.toFixed(0)}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Umsatz heute</div>
+          <div style={kpiValue(s.text)}>{gesamtWerke}</div>
+          <div style={kpiLabel}>Werke gesamt</div>
         </div>
         <div style={{ ...kachelStyle, textAlign: 'center' }}>
-          <div style={{ fontSize: '2rem', fontWeight: 800, color: galerieWert > 0 ? '#16a34a' : s.muted }}>€ {galerieWert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</div>
-          <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Wert der Galerie</div>
+          <div style={kpiValue(s.text)}>{inGalerie}</div>
+          <div style={kpiLabel}>In Galerie</div>
         </div>
-        {showPreisspanneVerkauf && preise.length > 0 && (
-          <div style={{ ...kachelStyle, textAlign: 'center' }}>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisDurch.toFixed(0)}</div>
-            <div style={{ fontSize: '0.85rem', color: s.muted, marginTop: 4 }}>Ø Verkaufspreis</div>
+        <div style={{ ...kachelStyle, textAlign: 'center' }}>
+          <div style={kpiValue(reserviert > 0 ? s.accent : s.text)}>{reserviert}</div>
+          <div style={kpiLabel}>Reserviert</div>
+        </div>
+        <div style={{ ...kachelStyle, textAlign: 'center' }}>
+          <div style={kpiValue(galerieWert > 0 ? MONEY : s.muted)}>
+            € {galerieWert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
           </div>
-        )}
+          <div style={kpiLabel}>Wert der Galerie (Bestand)</div>
+        </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+      <div className="stat-breakdown-grid">
 
         {/* Nach Kategorie */}
-        <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>📂 Umsatz nach Kategorie</h3>
+        <div style={{ ...kachelStyle, display: 'flex', flexDirection: 'column', minHeight: 260 }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.75rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Umsatz nach Kategorie</h3>
           {katSorted.length === 0 ? (
             <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe</div>
           ) : (
@@ -237,7 +292,7 @@ export default function StatistikTab({
                       <span style={{ color: s.muted }}>{data.count}× · € {data.umsatz.toFixed(0)}</span>
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${s.accent}, #d96b35)`, borderRadius: 4, transition: 'width 0.5s' }} />
+                      <div style={{ height: '100%', width: `${pct}%`, background: barSale, borderRadius: 4, transition: 'width 0.5s' }} />
                     </div>
                   </div>
                 )
@@ -247,8 +302,8 @@ export default function StatistikTab({
         </div>
 
         {/* Wert der Galerie – nach Künstler */}
-        <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>🖼️ Wert der Galerie – nach Künstler</h3>
+        <div style={{ ...kachelStyle, display: 'flex', flexDirection: 'column', minHeight: 260 }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Wert der Galerie – nach Künstler</h3>
           <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0 0 1rem', lineHeight: 1.3 }}>Bestand: alle nicht verkauften Werke · <strong>Stk.</strong> = Stückzahl (mehrere Stück pro Werk werden addiert)</p>
           {galerieKuenstlerSorted.length === 0 ? (
             <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke im Bestand</div>
@@ -263,7 +318,7 @@ export default function StatistikTab({
                       <span style={{ color: s.muted }}>{data.count} Stk. · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
+                      <div style={{ height: '100%', width: `${pct}%`, background: barValue, borderRadius: 4, transition: 'width 0.5s' }} />
                     </div>
                   </div>
                 )
@@ -273,8 +328,8 @@ export default function StatistikTab({
         </div>
 
         {/* Wert der Galerie – nach Artikel (Kategorie) */}
-        <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem' }}>📂 Wert der Galerie – nach Artikel</h3>
+        <div style={{ ...kachelStyle, display: 'flex', flexDirection: 'column', minHeight: 260 }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Wert der Galerie – nach Artikel</h3>
           <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0 0 1rem', lineHeight: 1.3 }}>Bestand: alle nicht verkauften Werke · <strong>Stk.</strong> = Stückzahl · ohne Kategorie → „Ohne Kategorie“ (nicht als Bilder gewertet)</p>
           {galerieKategorieSorted.length === 0 ? (
             <div style={{ color: s.muted, fontSize: '0.9rem' }}>Keine Werke im Bestand</div>
@@ -289,7 +344,7 @@ export default function StatistikTab({
                       <span style={{ color: s.muted }}>{data.count} Stk. · € {data.wert.toLocaleString('de-DE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
                     </div>
                     <div style={{ height: 8, background: s.bgElevated, borderRadius: 4, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, #16a34a, #22c55e)', borderRadius: 4, transition: 'width 0.5s' }} />
+                      <div style={{ height: '100%', width: `${pct}%`, background: barValue, borderRadius: 4, transition: 'width 0.5s' }} />
                     </div>
                   </div>
                 )
@@ -297,10 +352,15 @@ export default function StatistikTab({
             </div>
           )}
         </div>
+      </div>
 
+      <div
+        className={`stat-secondary-grid${showPreisspanneVerkauf && preise.length > 0 ? ' stat-secondary-grid--two' : ''}`}
+        style={{ marginBottom: '1rem' }}
+      >
         {/* Letzte Verkäufe */}
-        <div style={kachelStyle}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🕐 Letzte Verkäufe</h3>
+        <div style={{ ...kachelStyle, display: 'flex', flexDirection: 'column', minHeight: 220 }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 1rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Letzte Verkäufe</h3>
           {letzteFuenf.length === 0 ? (
             <div style={{ color: s.muted, fontSize: '0.9rem' }}>Noch keine Verkäufe</div>
           ) : (
@@ -311,7 +371,7 @@ export default function StatistikTab({
                     <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text }}>{e.werk?.title || e.number}</div>
                     <div style={{ fontSize: '0.78rem', color: s.muted }}>{e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE') : '–'} · {e.number}</div>
                   </div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#15803d' }}>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: MONEY }}>
                     € {(e.soldPrice || e.werk?.price || 0).toFixed(0)}
                   </div>
                 </div>
@@ -320,10 +380,10 @@ export default function StatistikTab({
           )}
         </div>
 
-        {/* Preisspanne – nur ök2 */}
+        {/* Preisspanne – nur ök2 (nebeneinander mit Letzte Verkäufe ab 900px) */}
         {showPreisspanneVerkauf && preise.length > 0 && (
-          <div style={kachelStyle}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>💰 Preisspanne (verkaufte Werke)</h3>
+          <div style={{ ...kachelStyle, display: 'flex', flexDirection: 'column', minHeight: 220 }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 1rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Preisspanne (verkaufte Werke)</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', textAlign: 'center' }}>
               <div>
                 <div style={{ fontSize: '1.4rem', fontWeight: 800, color: s.text }}>€ {preisMin.toFixed(0)}</div>
@@ -340,11 +400,12 @@ export default function StatistikTab({
             </div>
           </div>
         )}
+      </div>
 
         {/* Reservierungen */}
         {reservedEntries.length > 0 && (
-          <div style={kachelStyle}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: '0 0 1rem' }}>🔶 Reservierungen</h3>
+          <div style={{ ...kachelStyle, marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 1rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>Reservierungen</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               {reservedEntries.map((e: any, i: number) => {
                 const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
@@ -369,9 +430,9 @@ export default function StatistikTab({
         )}
 
         {/* Verkaufsliste – alle Umsätze ansehen & drucken */}
-        <div style={{ ...kachelStyle, gridColumn: '1 / -1', marginTop: '0.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>📋 Verkaufsliste</h3>
+        <div style={{ ...kachelStyle, marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1rem', paddingBottom: 10, borderBottom: `2px solid ${s.accent}14` }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: 0 }}>Verkaufsliste</h3>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -413,7 +474,7 @@ export default function StatistikTab({
                       <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.soldAt ? new Date(e.soldAt).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '–'}</td>
                       <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.number || '–'}</td>
                       <td style={{ padding: '0.5rem 0.75rem', color: s.text }}>{e.werk?.title || '–'}</td>
-                      <td style={{ padding: '0.5rem 0.75rem', textAlign: 'right', fontWeight: 600, color: '#15803d' }}>€ {(e.preis || 0).toFixed(2)}</td>
+                      <td style={{ padding: '0.5rem 0.75rem', textAlign: 'right', fontWeight: 600, color: MONEY }}>€ {(e.preis || 0).toFixed(2)}</td>
                       {onStorno && (
                         <td style={{ padding: '0.5rem 0.75rem' }}>
                           <button
@@ -434,17 +495,17 @@ export default function StatistikTab({
                   ))}
                 </tbody>
               </table>
-              <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', fontWeight: 700, color: s.text }}>Gesamtumsatz: € {alleVerkaufe.reduce((sum: number, e: any) => sum + (e.preis || 0), 0).toFixed(2)}</div>
+              <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', fontWeight: 700, color: MONEY }}>Gesamtumsatz: € {alleVerkaufe.reduce((sum: number, e: any) => sum + (e.preis || 0), 0).toFixed(2)}</div>
             </div>
           )}
         </div>
 
         {/* Anfragen-Inbox */}
         {anfragen.length > 0 && (
-          <div style={{ ...kachelStyle, gridColumn: '1 / -1' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, color: s.text, margin: 0 }}>
-                ✉️ Anfragen
+          <div style={{ ...kachelStyle, marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', paddingBottom: 8, borderBottom: `2px solid ${s.accent}14` }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: 0 }}>
+                Anfragen
                 {neueAnfragen.length > 0 && <span style={{ marginLeft: 8, background: '#ef4444', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: '0.78rem', fontWeight: 700 }}>{neueAnfragen.length} neu</span>}
               </h3>
             </div>
@@ -482,7 +543,6 @@ export default function StatistikTab({
             </div>
           </div>
         )}
-      </div>
 
     </section>
   )
