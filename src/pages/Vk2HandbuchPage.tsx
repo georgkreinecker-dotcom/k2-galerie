@@ -132,7 +132,7 @@ export default function Vk2HandbuchPage() {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei konnte nicht geladen werden.`)
       }
     } catch {
-      setDocContent(`# Fehler beim Laden\n\nBitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.`)
+      setDocContent(`# Fehler beim Laden\n\nBitte prüfe deine Internetverbindung und versuche es erneut.`)
     } finally {
       setLoading(false)
     }

@@ -77,9 +77,9 @@ export default function GalerieTenantPage() {
   if (error || !data) {
     return (
       <main style={{ maxWidth: 560, margin: '3rem auto', padding: '1rem', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Ihre Galerie</h1>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Deine Galerie</h1>
         <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem' }}>
-          Noch keine Inhalte – gestalten Sie Ihre Galerie im Admin.
+          Noch keine Inhalte – gestalte deine Galerie im Admin.
         </p>
         <a href={adminUrl} className="btn primary-btn" style={{ display: 'inline-block' }}>
           Galerie gestalten

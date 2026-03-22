@@ -41,6 +41,7 @@ const DOCUMENTS = [
   { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
   { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },
   { id: '07-kassa', name: 'Kassa und Verkauf', file: '07-KASSA-VERKAUF.md' },
+  { id: '15-shop-internet', name: 'Shop und Internetbestellung', file: '15-SHOP-INTERNETBESTELLUNG.md' },
   { id: '08-events', name: 'Events und Öffentlichkeitsarbeit', file: '08-EVENTS-OEFFENTLICHKEITSARBEIT.md' },
   { id: '09-vk2', name: 'Vereinsplattform VK2', file: '09-VEREINSPLATTFORM-VK2.md' },
   { id: '10-demo', name: 'Demo und Lizenz', file: '10-DEMO-LIZENZ.md' },
@@ -117,7 +118,7 @@ export default function PraesentationsmappeVollversionPage() {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei konnte nicht geladen werden.`)
       }
     } catch {
-      setDocContent(`# Fehler beim Laden\n\nBitte prüfen Sie Ihre Verbindung und versuchen Sie es erneut.`)
+      setDocContent(`# Fehler beim Laden\n\nBitte prüfe deine Verbindung und versuche es erneut.`)
     } finally {
       setLoading(false)
     }

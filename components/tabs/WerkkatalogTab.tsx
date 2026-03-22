@@ -1042,8 +1042,9 @@ export default function WerkkatalogTab({
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', justifyContent: 'flex-end', alignItems: 'stretch' }}>
               <button type="button" onClick={() => setKatalogSelectedWork(null)}
-                style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 10, color: s.muted, fontSize: '0.9rem', cursor: 'pointer' }}>
-                Schließen
+                style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 10, color: s.muted, fontSize: '0.9rem', cursor: 'pointer' }}
+                aria-label="Detail schließen">
+                OK
               </button>
               <button type="button" onClick={druckeEchtheitszertifikat}
                 style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, border: `2px solid ${s.accent}`, borderRadius: 10, color: s.accent, fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>

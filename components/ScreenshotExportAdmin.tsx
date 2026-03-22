@@ -6633,7 +6633,7 @@ ${'='.repeat(60)}
           }, 100)
           return
         } catch (e) {
-          console.log('Fehler beim Schließen des Pop-ups:', e)
+          console.warn('Fehler beim Schließen des Pop-ups:', e)
         }
       }
       window.location.href = adminUrl
@@ -7658,7 +7658,7 @@ ${'='.repeat(60)}
           }, 100)
           return
         } catch (e) {
-          console.log('Fehler beim Schließen des Pop-ups:', e)
+          console.warn('Fehler beim Schließen des Pop-ups:', e)
         }
       }
       window.location.href = adminUrl
@@ -7880,7 +7880,7 @@ ${'='.repeat(60)}
           }, 100)
           return
         } catch (e) {
-          console.log('Fehler beim Schließen des Pop-ups:', e)
+          console.warn('Fehler beim Schließen des Pop-ups:', e)
         }
       }
       window.location.href = adminUrl
@@ -9025,7 +9025,7 @@ ${'='.repeat(60)}
     const updated = [...events, newEvent].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setEvents(updated)
     saveEvents(tenant, updated)
-    alert('✅ Ateliersbesichtigung bei Paul Weber angelegt (Datum vor 1 Woche). Sie erscheint unter „Veranstaltungen der Vergangenheit“ mit Einladung und Presse – anklicken zum Ansehen.')
+    alert('✅ Ateliersbesichtigung bei Paul Weber angelegt (Datum vor 1 Woche). Die Veranstaltung steht unter „Veranstaltungen der Vergangenheit“ mit Einladung und Presse – zum Ansehen anklicken.')
   }
 
   // Event-Modal öffnen
@@ -12369,7 +12369,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* Dynamischer Mandant: Hinweis – Änderungen nur über Veröffentlichen speichern */}
       {tenant.dynamicTenantId && !dynamicTenantLoading && (
         <div style={{ background: 'rgba(181,74,30,0.12)', border: '1px solid rgba(181,74,30,0.4)', padding: '0.5rem 1rem', fontSize: '0.85rem', color: s.text, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <span>📌 Sie bearbeiten die Galerie <strong>{tenant.dynamicTenantId}</strong>. Änderungen mit „Veröffentlichen“ speichern.</span>
+          <span>📌 Du bearbeitest die Galerie <strong>{tenant.dynamicTenantId}</strong>. Änderungen mit „Veröffentlichen“ speichern.</span>
         </div>
       )}
 
@@ -12393,6 +12393,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 } catch (_) {}
                 setInAppDocumentViewer(null)
               }}
+              aria-label="Dokument schließen und zurück"
               style={{
                 padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
                 fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
@@ -12481,7 +12482,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               display: 'flex', alignItems: 'center', gap: '0.4rem',
               fontFamily: s.fontBody,
             }}
-            title="Zurück zur Übersicht mit allen Bereichen (Werke, Events, Statistik/Werkkatalog, …)">
+            title="Zurück zur Übersicht mit allen Bereichen (Werke, Events, Statistik/Werkkatalog, …)"
+            aria-label="Zurück zur Übersicht mit allen Bereichen">
             ← Zurück zur Übersicht
           </button>
           <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -13067,13 +13069,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <button type="button" onClick={() => setActiveTab('statistik')} style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }} title="Zurück zu Statistik/Werkkatalog">←</button>
+                    <button type="button" onClick={() => setActiveTab('statistik')} style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }} title="Zurück zu Statistik/Werkkatalog" aria-label="Zurück zu Statistik/Werkkatalog">←</button>
                     {' '}
                     📋 Werkkatalog
                   </span>
                 )}
                   {activeTab === 'statistik' && '📋📊 Statistik/Werkkatalog'}
-                  {activeTab === 'zertifikat' && '🔏 Echtheitszertifikate'}
+                  {activeTab === 'zertifikat' && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('statistik')}
+                        style={{ background: 'none', border: 'none', padding: 0, color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }}
+                        title="Zurück zu Statistik/Werkkatalog"
+                        aria-label="Zurück zu Statistik/Werkkatalog"
+                      >
+                        ←
+                      </button>{' '}
+                      🔏 Echtheitszertifikate
+                    </span>
+                  )}
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Event- und Medienplanung (Verein)' : '📢 Event- und Medienplanung')}
@@ -18552,7 +18567,7 @@ ${name}`
               )}
               {tenant.isOeffentlich && (
                 <p style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: `${s.accent}15`, border: `1px solid ${s.accent}40`, borderRadius: '10px', fontSize: '0.9rem', color: s.text }}>
-                  Demo – in Ihrer lizenzierten Galerie nutzen Sie Ihre eigenen Daten.
+                  Demo – in deiner lizenzierten Galerie nutzt du deine eigenen Daten.
                 </p>
               )}
 
@@ -21496,7 +21511,7 @@ ${name}`
                         cursor: 'pointer'
                       }}
                     >
-                      × Schließen
+                      × OK
                     </button>
                   </div>
                   {oeffSection}
@@ -21758,7 +21773,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × Schließen
+                × OK
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -22014,7 +22029,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × Schließen
+                × OK
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -22253,7 +22268,7 @@ ${name}`
                 onClick={() => { setPlakatRedactionEvent(null); setPlakatRedactionDoc(null); setPlakatRedaction(null) }}
                 style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
               >
-                × Schließen
+                × OK
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -22461,7 +22476,7 @@ ${name}`
                 onClick={() => { setFlyerRedactionEvent(null); setFlyerRedactionDoc(null); setFlyerRedaction(null) }}
                 style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
               >
-                × Schließen
+                × OK
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -22620,7 +22635,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × Schließen
+                × OK
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -24730,7 +24745,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="admin-modal-header">
               <h2>Etikett drucken</h2>
-              <button className="admin-modal-close" onClick={() => setShowPrintModal(false)}>×</button>
+              <button type="button" className="admin-modal-close" onClick={() => setShowPrintModal(false)} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content">
               <div style={{ textAlign: 'center', padding: isMobile ? '0.75rem' : '1rem' }}>
@@ -24948,7 +24963,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px', background: '#fffefb', color: '#1c1a18' }}>
             <div className="admin-modal-header" style={{ borderBottom: '1px solid #e5e2dc', color: '#1c1a18' }}>
               <h2 style={{ color: '#1c1a18', margin: 0 }}>Empfehlungstext teilen</h2>
-              <button type="button" className="admin-modal-close" onClick={() => setShowEmpfehlungstextModal(false)} style={{ color: '#1c1a18' }}>×</button>
+              <button type="button" className="admin-modal-close" onClick={() => setShowEmpfehlungstextModal(false)} style={{ color: '#1c1a18' }} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem 1.25rem', background: '#fffefb' }}>
               <p style={{ fontSize: '0.9rem', color: '#5c5650', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
@@ -25042,7 +25057,7 @@ ${name}`
                     cursor: 'pointer',
                   }}
                 >
-                  Schließen
+                  OK
                 </button>
               </div>
             </div>
@@ -25056,7 +25071,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center', border: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             <div className="admin-modal-header">
               <h2>{canUseShare ? 'Etikett teilen' : 'Etikett herunterladen'}</h2>
-              <button className="admin-modal-close" onClick={closeShareFallbackOverlay}>×</button>
+              <button type="button" className="admin-modal-close" onClick={closeShareFallbackOverlay} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem' }}>
               <p style={{ margin: '0 0 0.5rem', fontWeight: 600, color: '#8b6914' }}>
@@ -25106,7 +25121,7 @@ ${name}`
                 📄 In neuem Tab öffnen
               </button>
               <button type="button" className="btn-secondary" onClick={closeShareFallbackOverlay} style={{ marginTop: '0.5rem' }}>
-                Schließen
+                OK
               </button>
             </div>
           </div>
@@ -25119,7 +25134,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="admin-modal-header">
               <h2>Werk als verkauft markieren</h2>
-              <button className="admin-modal-close" onClick={() => setShowSaleModal(false)}>×</button>
+              <button type="button" className="admin-modal-close" onClick={() => setShowSaleModal(false)} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content">
               {/* Methode wählen */}
@@ -25236,7 +25251,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="admin-modal-header">
               <h2>🔶 Werk reservieren</h2>
-              <button className="admin-modal-close" onClick={() => setShowReserveModal(false)}>×</button>
+              <button type="button" className="admin-modal-close" onClick={() => setShowReserveModal(false)} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content">
               <div className="field" style={{ marginBottom: '1.5rem' }}>
@@ -25304,7 +25319,7 @@ ${name}`
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px' }}>
             <div className="admin-modal-header">
               <h2>💡 Idee? Wunsch?</h2>
-              <button className="admin-modal-close" onClick={() => !wunschSending && setWunschModalOpen(false)} disabled={wunschSending}>×</button>
+              <button type="button" className="admin-modal-close" onClick={() => !wunschSending && setWunschModalOpen(false)} disabled={wunschSending} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content">
               <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Deine Notiz landet im Smart Panel unter „Wünsche von Nutzer:innen“. Wir freuen uns über deine Ideen – schreib hier gern, was du dir wünschst.</p>

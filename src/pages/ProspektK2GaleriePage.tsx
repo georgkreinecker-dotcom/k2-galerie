@@ -113,7 +113,7 @@ export default function ProspektK2GaleriePage() {
         <div className="prospekt-body">
           <h2 style={{ color: TEAL_LIGHT, fontSize: '1rem', fontWeight: 600, margin: '0 0 0.5rem' }}>Was ist die K2 Galerie?</h2>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
-            Die K2 Galerie ist keine reine Galerie-App, sondern eine <strong>Arbeitsplattform</strong>: Sie verbindet den öffentlichen Webauftritt mit Verwaltung, Verkauf und Marketing. Werke anlegen, Galerie veröffentlichen, vor Ort verkaufen (Kasse am Tablet oder Handy), Events planen, Einladungen und Presse aus denselben Stammdaten – einheitlich und sofort nutzbar. Ein Stand auf allen Geräten, ein Klick zum Ziel.
+            Die K2 Galerie ist keine reine Galerie-App, sondern eine <strong>Arbeitsplattform</strong>: sie verbindet den öffentlichen Webauftritt mit Verwaltung, Verkauf und Marketing. Werke anlegen, Galerie veröffentlichen, vor Ort verkaufen (Kasse am Tablet oder Handy), Events planen, Einladungen und Presse aus denselben Stammdaten – einheitlich und sofort nutzbar. Ein Stand auf allen Geräten, ein Klick zum Ziel.
           </p>
           <p style={{ fontSize: '0.9rem', lineHeight: 1.5, margin: '0 0 0.75rem' }}>
             Für alle, die <strong>Ideen oder Produkte</strong> professionell zeigen und vermarkten wollen. <strong>Kunstmarkt</strong> ist die Unterkategorie (Künstler:innen, Galerien). Skalierbar und ohne direkten Kundenkontakt: Lizenz, Bestätigung und Abrechnung erfolgen über das System (Stripe, druckbare Bestätigung).
