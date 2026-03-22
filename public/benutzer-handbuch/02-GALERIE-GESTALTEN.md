@@ -66,7 +66,7 @@ Alle Änderungen sind zunächst auf dem Gerät gespeichert. Damit Besucherinnen 
 
 ## Design anpassen
 
-**Cooperate Design:** Unter diesem Thema fassen wir die **durchgängige visuelle Linie** zusammen: Was Sie unter **Galerie gestalten** und **Design** festlegen – Farben, Texte, Willkommensbild, Galerie-Karte – soll **derselben Handschrift** folgen wie später Flyer, Plakat, Presse und die öffentliche Galerie. **CD** steht dafür **nicht** für Buchhaltung, sondern für **einheitliches Erscheinungsbild** über alle Kanäle hinweg.
+**Corporate Design:** Unter diesem Thema fassen wir die **durchgängige visuelle Linie** zusammen: Was Sie unter **Galerie gestalten** und **Design** festlegen – Farben, Texte, Willkommensbild, Galerie-Karte – soll **derselben Handschrift** folgen wie später Flyer, Plakat, Presse und die öffentliche Galerie. **CD** steht dafür für **einheitliches Erscheinungsbild** über alle Kanäle hinweg.
 
 Unter **„Design“** können Sie neben dem Willkommensbild oft auch Texte, Farben oder die Anordnung der Galerie anpassen. Die genauen Optionen hängen von Ihrer Version ab. Wählen Sie den Tab **„Design“** und folgen Sie den Beschreibungen auf der Seite. Nach jeder Änderung lohnt sich ein Klick auf **„Speichern“**.
 

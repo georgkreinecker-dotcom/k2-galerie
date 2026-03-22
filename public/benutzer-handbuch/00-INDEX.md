@@ -38,11 +38,15 @@ Admin-Bereich **Statistik/Werkkatalog**: Verkaufs- und Lagerstatistik, druckbare
 
 Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Zahlungsarten, Kassenbon und Rechnung drucken, Storno, Kassabuch (Eingänge/Ausgänge), Buchhaltung (Zeitraum, Kassabuch-CSV, Verkäufe-CSV, Belege als PDF), **EK-Kalkulation** am Werk, Rohertrag und Lager-Vorschau in der **Demo**, Pro++ Rechnungspflege und vollständige Buchhaltung, 7 Jahre Aufbewahrung.
 
-9. [Einstellungen](10-EINSTELLUNGEN.md)
+9. [Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)
+
+**Internetshop für Besucher:** Hinweise zu Zahlung (**keine** eingebaute Online-Abbuchung im Warenkorb), was **Karte / Rechnung / Bar** bedeutet, Unterschied zur **Kasse**; **optionale** Online-Bezahllösung (Richtung Zahlungsanbieter, Ablauf, Mandant, Rechtliches).
+
+10. [Einstellungen](10-EINSTELLUNGEN.md)
 
 Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
 
-10. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+11. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

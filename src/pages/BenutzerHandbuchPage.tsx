@@ -21,6 +21,7 @@ const DOCUMENTS = [
   { id: '06-oek2', name: 'Demo und Lizenz', file: '06-OEK2-DEMO-LIZENZ.md' },
   { id: '11-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '11-STATISTIK-WERKKATALOG.md' },
   { id: '08-kassa-buchhaltung', name: 'Kassa und Buchhaltung', file: '08-KASSA-BUCHHALTUNG.md' },
+  { id: '12-shop-internet', name: 'Shop und Internetbestellung', file: '12-SHOP-INTERNET-BESTELLUNG.md' },
   { id: '10-einstellungen', name: 'Einstellungen', file: '10-EINSTELLUNGEN.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const

@@ -1,6 +1,11 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Präsentationsmappe Fortsetzung (Georg):** Kapitel **4–5** inhaltlich an **Mein Weg / Sparte** (Filter, Typen, Kategorien); **Corporate Design**-Schreibweise in Kap. 5; **10 Demo/Lizenz** mit Stammdaten/Mein Weg; **Vollversion**-Seitenuntertitel. **Commits:** `b290021` (Mappe + früherer Dialog-Block), `9cd4f06` (mök2 + Kurz-Lead). Tests + Build grün. **Push:** Git-Button Cursor.
+**Letzter Stand:** 21.03.26 – **Benutzerhandbuch Shop/Zahlung (Georg):** Neues Kapitel **`12-SHOP-INTERNET-BESTELLUNG.md`** (Hinweise: keine eingebaute Online-Zahlung im Warenkorb; Karte/Rechnung/Bar; Kasse vs. Shop; **optionale** Bezahllösung Richtung PSP/Mandant/Recht). **00-INDEX**, **08-KASSA** Querverweis, **04-HÄUFIGE-FRAGEN** (FAQ + Kurzüberblick), **02/03** kleine Anpassung, **BenutzerHandbuchPage** `DOCUMENTS`. Tests + Build grün. **Commit:** Nachricht beginnt mit **Benutzerhandbuch: Shop/Internetbestellung** – Kurzhash mit `git log -1 --oneline` prüfen; Push wie üblich.
+
+**Was wir JETZT tun:** Wie zuvor – nach Bedarf ök2 Fremden-Galerie prüfen oder nächste Georg-Aufgabe.
+**Einordnung:** Nutzer-Handbuch = klare Erwartung Shop vs. Kasse; keine K2-Kern-Code-Änderung.
+
+**Vorher:** 21.03.26 – **Präsentationsmappe Fortsetzung (Georg):** Kapitel **4–5** inhaltlich an **Mein Weg / Sparte** (Filter, Typen, Kategorien); **Corporate Design**-Schreibweise in Kap. 5; **10 Demo/Lizenz** mit Stammdaten/Mein Weg; **Vollversion**-Seitenuntertitel. **Commits:** `b290021` (Mappe + früherer Dialog-Block), `9cd4f06` (mök2 + Kurz-Lead). Tests + Build grün. **Push:** Git-Button Cursor.
 
 **Vorher:** 21.03.26 – **Präsentationsmappe & mök2 (Georg):** Kapitel **1–3** (voll + lang) neu; **mök2** Sparten-Fokus; Kurzform Lead.
 
@@ -63,9 +68,6 @@
 **Vorher:** 21.03.26 – **Manuell gelöschte Werke restlos (Georg):** Eiserne Regel: Löschen muss **nicht** durch „Vom Server laden“ zurückkommen. **Ursache:** Server-JSON hatte alten Stand. **Neu (K2 Admin):** Nach **Löschen** eines Werks automatisch **`publishGalleryDataToServer`** (optional leer: `allowEmptyArtworks`). Regel **`.cursor/rules/manuell-geloeschte-werke-restlos.mdc`**, **PROZESS-VEROEFFENTLICHEN-LADEN.md**. **Commit:** 820a690 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
-
-**Was wir JETZT tun:** Nach Push: ök2 **Fremden-Galerie** kurz prüfen (Banner-Text, drei Buttons, kein Teilen bis Banner weg / interner Einstieg).
-**Einordnung:** Nutzer-Logik: kein **Teilen**-Drängen bevor Muster + Einstellungsweg klar sind (nur **musterOnly**-Banner, K2-Kern unberührt).
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

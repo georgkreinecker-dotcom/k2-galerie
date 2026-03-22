@@ -12,7 +12,7 @@ Unter **„Werke“** legen Sie Ihre Kunstwerke oder Objekte an und bearbeiten s
 
 ## Design (Galerie gestalten)
 
-Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willkommensbild, Galerie-Karte, Texte, Farben, Anordnung. Alles, was Besucherinnen und Besucher zuerst sehen, steuern Sie von hier aus. **Cooperate Design** bedeutet: **eine Linie** von der Galerie bis zu Druck und Werbemitteln – **CD** ist hier das **Design-Thema**, nicht die Buchhaltung.
+Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willkommensbild, Galerie-Karte, Texte, Farben, Anordnung. Alles, was Besucherinnen und Besucher zuerst sehen, steuern Sie von hier aus. **Corporate Design** bedeutet: **eine Linie** von der Galerie bis zu Druck und Werbemitteln – **CD** ist hier das **Design-Thema**.
 
 ---
 

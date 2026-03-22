@@ -4,6 +4,12 @@ Hier finden Sie Antworten auf Fragen, die oft beim Nutzen der Galerie oder Verei
 
 ---
 
+## Wird im Internetshop der Betrag sofort von der Karte abgebucht?
+
+**Nein.** Im **Warenkorb** der öffentlichen Galerie gibt es **keine** eingebaute Anbindung an ein Bezahlsystem (keine automatische Online-Zahlung in der App). Die gewählte Zahlungsart ist ein **Wunsch**; die **eigentliche Zahlung** klären Sie mit dem Kunden **außerhalb** der App. Ausführliche Hinweise und der Ausblick auf eine **optionale** Online-Lösung: Kapitel **[Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)**.
+
+---
+
 ## Wie sorge ich dafür, dass PC und Handy wirklich dieselbe Galerie öffnen?
 
 Viele Probleme mit „Stand stimmt nicht“ oder „Bilder fehlen auf dem Handy“ entstehen, weil **zwei verschiedene Internet-Adressen** genutzt werden – ohne dass es auffällt.
@@ -78,6 +84,7 @@ Das Passwort für den Admin-Bereich wird von Ihrer Galerie oder Ihrem Verein ver
 
 ## Kurz zusammengefasst
 
+- **Internetshop / Zahlung:** **Keine** automatische Kartenzahlung im Browser; Details im Kapitel **Shop und Internetbestellung**.
 - **PC und Handy – dieselbe Galerie:** **Gleiche URL** auf beiden Geräten (Link teilen, Lesezeichen abgleichen oder **QR scannen**); Details im Kapitel **Erste Schritte**.
 - **Neuesten Stand sehen:** Seite neu öffnen oder auf „Neuer Stand“ tippen; bei QR-Code einfach noch einmal scannen.
 - **Rechner und Handy:** Nach dem Bearbeiten **„Veröffentlichen“** klicken, dann auf dem anderen Gerät die Seite neu laden.
