@@ -379,6 +379,39 @@ export default function WerkkatalogTab({
     ]
   )
 
+  /** Kurz erklären, warum die Katalog-Zahl von „Werke verwalten“ abweichen kann (eigene Filter + persistiert). */
+  const katalogEingrenzungHinweis = useMemo(() => {
+    if (isVk2) return ''
+    const parts: string[] = []
+    if (katalogFilter.status === 'galerie') parts.push('nur Werke, die in der Online-Galerie aktiv sind')
+    else if (katalogFilter.status === 'verkauft') parts.push('nur verkaufte Werke')
+    else if (katalogFilter.status === 'reserviert') parts.push('nur reservierte Werke')
+    else if (katalogFilter.status === 'lager') parts.push('nur Lager & Kassa (nicht in der Online-Galerie)')
+    if (showTypAndCategory && categoryFilter !== 'alle') {
+      parts.push(`Kategorie „${getCategoryLabel(categoryFilter)}“`)
+    } else if (!showTypAndCategory && katalogFilter.kategorie) {
+      parts.push(`Kategorie „${getCategoryLabel(katalogFilter.kategorie)}“`)
+    }
+    if (katalogFilter.suchtext.trim()) parts.push('Suchbegriff gesetzt')
+    if (katalogFilter.artist.trim()) parts.push('Künstler:in gefiltert')
+    if (katalogFilter.vonPreis || katalogFilter.bisPreis) parts.push('Preisbereich eingeschränkt')
+    if (katalogFilter.vonDatum || katalogFilter.bisDatum) parts.push('Erstellungsdatum eingeschränkt')
+    if (parts.length === 0) return ''
+    return `Hier gelten andere Filter als bei „Werke verwalten“: ${parts.join(' · ')}. „Zurücksetzen“ zeigt alle Werke ohne diese Einschränkungen.`
+  }, [
+    isVk2,
+    showTypAndCategory,
+    categoryFilter,
+    katalogFilter.status,
+    katalogFilter.kategorie,
+    katalogFilter.suchtext,
+    katalogFilter.artist,
+    katalogFilter.vonPreis,
+    katalogFilter.bisPreis,
+    katalogFilter.vonDatum,
+    katalogFilter.bisDatum,
+  ])
+
   const [rowsWithImages, setRowsWithImages] = useState<any[]>(filtered)
   useEffect(() => {
     let cancelled = false
@@ -740,6 +773,11 @@ export default function WerkkatalogTab({
           ✕ Zurücksetzen
         </button>
       </div>
+      {katalogEingrenzungHinweis ? (
+        <p style={{ fontSize: '0.82rem', color: '#5c5650', marginTop: -6, marginBottom: '0.85rem', lineHeight: 1.45, padding: '0.55rem 0.75rem', background: `${s.accent}0f`, borderRadius: 8, border: `1px solid ${s.accent}28` }}>
+          {katalogEingrenzungHinweis}
+        </p>
+      ) : null}
       {showTypAndCategory && (
         <p style={{ fontSize: '0.8rem', color: s.muted, marginTop: -8, marginBottom: '0.75rem', fontWeight: 500 }}>
           Deine Sparte kommt aus den Stammdaten (wie bei „Werke verwalten“). <strong>Kategorie</strong> = Feinzuordnung (z. B. Speise, Getränk, Malerei).
