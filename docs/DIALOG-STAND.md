@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Admin: „Probleme“ neben Idee/Wunsch (Georg):** Button **⚠️ Probleme** in der Kopfleiste; Modal mit Hinweis auf schnelle Bearbeitung + Smart Panel; API **user-wishes** speichert **kind: wish | problem**; **SmartPanel** zeigt **💬 Rückmeldungen** mit Kennzeichnung Problem vs. Idee. Tests + Build grün. **Commit:** `65822d8` ✅ lokal; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Admin: „Probleme“ neben Idee/Wunsch (Georg):** Button **⚠️ Probleme** in der Kopfleiste; Modal mit Hinweis auf schnelle Bearbeitung + Smart Panel; API **user-wishes** speichert **kind: wish | problem**; **SmartPanel** zeigt **💬 Rückmeldungen** mit Kennzeichnung Problem vs. Idee. Tests + Build grün. **Commit:** `e7e3388` ✅ lokal; **Push:** Git-Button.
 
 **Vorher:** 22.03.26 – **Nutzer: Restrisiko Stand/Handy ohne Piloten-Feedback (Georg):** Galerie-Routen mit Stand-Badge: **?** neben **Stand** öffnet Modal (Zwischenspeicher, was tun: Stand tippen, Tab neu, QR neu, gleiche URL). **public/benutzer-handbuch/04-HAEUFIGE-FRAGEN.md** Kurzabsatz verweist darauf. **App.tsx** `StandBadgeSync`. Tests + Build grün. **Commit:** `5f394b5` (+ DIALOG-Hash `2f3b202`) ✅ lokal; **Push:** Git-Button Cursor.
 
