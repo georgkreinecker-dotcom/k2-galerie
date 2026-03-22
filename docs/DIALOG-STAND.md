@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Präsentationsmappe & mök2 (Georg):** Kapitel **1–3** (voll + lang) neu mit **sechs Sparten / Mein Weg**; **4–5** und **Index** angeglichen; **10 Demo/Lizenz** mit Hinweis Stammdaten/Mein Weg; **PraesentationsmappeVollversionPage** Untertitel. **mök2:** Kern-Kapitel, Leitvision, Was-kann-die-App, Produktbeschreibung, USPs, `mok2Structure` – Fokus Sparten (`FOCUS_DIRECTIONS`). Kurzform **PraesentationsmappePage** + **praesentationsmappeKurzHtml** Lead-Text. **Nächster Schritt:** `npm run test` && `npm run build`, commit + push.
+**Letzter Stand:** 21.03.26 – **Präsentationsmappe Fortsetzung (Georg):** Kapitel **4–5** inhaltlich an **Mein Weg / Sparte** (Filter, Typen, Kategorien); **Corporate Design**-Schreibweise in Kap. 5; **10 Demo/Lizenz** mit Stammdaten/Mein Weg; **Vollversion**-Seitenuntertitel. **Commits:** `b290021` (Mappe + früherer Dialog-Block), `9cd4f06` (mök2 + Kurz-Lead). Tests + Build grün. **Push:** Git-Button Cursor.
+
+**Vorher:** 21.03.26 – **Präsentationsmappe & mök2 (Georg):** Kapitel **1–3** (voll + lang) neu; **mök2** Sparten-Fokus; Kurzform Lead.
 
 **Vorher:** 21.03.26 – **Terminologie (Georg):** überall **„Meine Richtung“** → **„Mein Weg“** (Admin-Hinweise, ök2-Banner/Vorschau, `tenantConfig`/`prStory`-Kommentare, Konzept-/Analyse-Docs). Repo-Suche `Meine Richtung` = 0 Treffer. **Commit:** `git log -1 --oneline`; Push wie üblich.
 
