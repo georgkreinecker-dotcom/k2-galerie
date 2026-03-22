@@ -16,7 +16,9 @@ Die Demo ist eine voll funktionsfähige Vorschau der K2 Galerie. Sie können dam
 
 - **Galerie ansehen:** Über den Link oder QR-Code zur Demo gelangen Sie auf die Galerie-Ansicht. Dort sehen Sie Musterwerke und -texte. Sie können wie eine Besucherin oder ein Besucher durch die Galerie scrollen.
 - **Bearbeiten (Erster Entwurf):** Wenn Sie auf **„Erster Entwurf“** oder **„Galerie gestalten“** klicken, können Sie – oft ohne Passwort – erste eigene Schritte ausprobieren: z. B. ein Willkommensbild hochladen oder ein Werk anlegen. Die Änderungen werden in der Demo-Umgebung gespeichert und sind nur für Sie sichtbar, bis Sie veröffentlichen.
-- **Admin mit Passwort:** Für den vollen Admin-Zugang (alle Tabs, Einstellungen, Veröffentlichen) wird in der Regel ein Demo-Passwort abgefragt. Dieses erhalten Sie von der Stelle, die Sie zur Demo eingeladen hat.
+- **Voller Admin (alle Funktionen):** Über **„Mit mir in den Admin“** bzw. den Bereich **„Mein Bereich“** gelangen Sie zu allen Tabs, Einstellungen und zu **Veröffentlichen**. **Es gibt hier keine Anmeldung per Passkey, Face ID oder „vom Gerät erzeugtem Schlüssel“** wie bei manchen Bank-Apps – der Admin-Zugang der Galerie nutzt solche Verfahren nicht.
+- **Optional: ein einfaches Galerie-Passwort:** Nur wenn in der Demo **bewusst ein Galerie-Passwort** hinterlegt wurde (unter **Einstellungen** → **Passwort & Sicherheit**), erscheint beim Einstieg das Passwortfeld – dann geben Sie **dieses Wort** ein. **In der öffentlichen Demo ist oft kein Passwort gesetzt**; dann ist **keine** Eingabe nötig. Bei einer **persönlichen Einladung** (Pilot) kann eine Stelle mit Ihnen ein **vereinbartes Wort** abstimmen – technisch bleibt es ein normales Passwortfeld im Browser, kein Mac- oder Handy-Schlüssel.
+- **Passwort merken:** Wie bei anderen Web-Zugängen können Sie das Passwort im **Passwort-Speicher** Ihres Browsers oder Geräts speichern lassen – oder nicht, je nach Ihrer Gewohnheit. Ausführliche Hinweise (auch wenn Sie das Passwort vergessen haben): Kapitel **[Einstellungen](10-EINSTELLUNGEN.md)** → Abschnitt **Passwort und Admin-Zugang**.
 
 ---
 
@@ -76,7 +78,7 @@ Wir wollen niemanden „festhalten“. Wer einsteigt, soll sich wohl fühlen –
 ## Kurz zusammengefasst
 
 - **Demo** = Vorschau mit Beispieldaten zum Ausprobieren; ideal vor einer Lizenz.
-- **Bearbeiten in der Demo** = „Erster Entwurf“ oder Admin mit Demo-Passwort; Änderungen in der Demo-Umgebung.
+- **Bearbeiten in der Demo** = „Erster Entwurf“ oder voller Admin über „Mein Bereich“ / Admin-Button; nur wenn ein Galerie-Passwort gesetzt ist, dieses eingeben (kein Passkey).
 - **Eigene Galerie** = Lizenz online kaufen → Zahlung (Stripe) → Lizenz sofort aktiv, Bestätigung druckbar.
 - **Lizenz kaufen** = Im Admin unter Einstellungen → „Lizenz online kaufen“ → Lizenz wählen → Name & E-Mail → bezahlen → fertig. Alles eigenständig, ohne Rückfragen.
 - **Lizenz beenden** = Jederzeit aussteigen möglich, keine Bindung. So einfach wie der Einstieg – keine Zwangsbeglückung. Daten vorher exportieren/sichern (Backup im Admin).

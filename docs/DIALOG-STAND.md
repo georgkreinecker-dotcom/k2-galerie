@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Passwort-Strategie: Gerätemanagement (Georg):** Handbuch **10-EINSTELLUNGEN** neuer Abschnitt **Passwort auf dem Gerät speichern** (Schlüsselbund, Google Passwort-Manager, Browser); **Passwort vergessen** = zuerst dort nachsehen, dann Hinweis/Kontakt Galerie; **04-FAQ**, **03-ADMIN** ergänzt. **GaleriePage** Admin-Dialog: Texte ohne falsches „Link wird gesendet“, Button **Hinweis anzeigen**, Alert ehrlich; **Passwort setzen**-Hinweis Gerät/Browser. Tests + Build grün. **Commit:** `6732222` ✅; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Benutzerhandbuch Passwort: Sie-Form + Nutzerwortlaut (Georg):** **10-EINSTELLUNGEN** durchgängig **Sie** (inkl. Passwort-Abschnitt, VK2-Kategorien); kein Entwickler-Satz („tatsächlich gemeint“); **04-FAQ** Passwort **Sie**; **03-ADMIN** Einstellungen **Sie**; **06-OEK2** Verweis Einstellungen/Passwort merken + Link Kap. 10. **Commit:** *(folgt)*; **Push:** Git-Button.
+
+**Vorher:** 22.03.26 – **Passwort-Strategie: Gerätemanagement:** Handbuch **10-EINSTELLUNGEN** Passwort auf dem Gerät; **04-FAQ**, **03-ADMIN**; **GaleriePage** Dialog ehrlich. **Commit:** `6732222` ✅.
 
 **Vorher:** 22.03.26 – **Benutzerhandbuch: Passwort/Admin-Zugang mit App abgeglichen (Georg):** **10-EINSTELLUNGEN.md** neu: K2 = Dialog auf der Galerie (Testphase 14 Tage, **Passwort setzen** ohne „altes Passwort“), ök2 = **Einstellungen → Passwort & Sicherheit**, **Passwort vergessen** = UI vorhanden aber **kein E-Mail-Versand** bislang (Hinweis + Stammdaten-Kontakt / manuell); kgm sieht Passwort nicht. **04-HAEUFIGE-FRAGEN**, **03-ADMIN-UEBERBLICK** angepasst; **vk2-handbuch/08** = Name+PIN statt falscher Passwort-Kachel. **Commit:** `8a1640a` ✅ (*Handbuch: Admin-Passwort/Zugang …*).
 
@@ -10,9 +12,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Georg kann **Passwort-Flow** (Dialog + Handbuch) kurz am Gerät prüfen; sonst wie zuvor.
+**Was wir JETZT tun:** Kurz prüfen, ob **Benutzerhandbuch**-Ton (**Sie**, Endnutzer) überall passt.
 
-**Einordnung:** Passwort-Verantwortung beim Nutzer über **Gerät/Browser-Passwortspeicher** dokumentiert und in der UI nicht mehr als E-Mail-Link verkauft; **K2-Kern** nur Texte im Admin-Zugang-Modal.
+**Einordnung:** **Benutzerhandbuch** = formale **Sie**-Anrede an Lizenznehmer/Demo-Nutzer; **App-Oberfläche** kann weiter **Du** nutzen (Polish) – getrennte Kanäle.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

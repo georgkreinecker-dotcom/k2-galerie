@@ -70,9 +70,9 @@ Sie können den QR-Code aus der App heraus anzeigen und – falls vorgesehen –
 
 ## Ich habe mein Passwort vergessen. Was tun?
 
-**Galerie (K2 / später Lizenz):** **Zuerst** in den **Passwort-Speichern** deines **Handys, Tablets oder Browsers** nachsehen (z. B. **Einstellungen → Passwörter** / **Schlüsselbund** / **Google Passwort-Manager**). Die App baut **keinen** zentralen „Link zum Zurücksetzen“ per E-Mail – **du** nutzt dafür am besten das **Gerätemanagement**, das du sowieso hast.
+**Galerie (K2 / später Lizenz):** **Zuerst** in den **Passwort-Speichern** Ihres **Handys, Tablets oder Browsers** nachsehen (z. B. **Einstellungen → Passwörter** / **Schlüsselbund** / **Google Passwort-Manager**). Die App verschickt **keinen** zentralen „Link zum Zurücksetzen“ per E-Mail – nutzen Sie dafür am besten die **Passwort-Verwaltung Ihres Geräts**, wie Sie es von anderen Zugängen gewohnt sind.
 
-Wenn dort nichts steht: Im Dialog **Admin-Zugang** auf **Passwort vergessen?** tippen – du bekommst einen **Hinweis** und ggf. die **Kontaktadresse aus den Stammdaten**, um die **Galerie-Inhaber:in** zu bitten, das Passwort neu zu setzen (**Passwort setzen** im gleichen Dialog).
+Wenn dort nichts hinterlegt ist: Im Dialog **Admin-Zugang** auf **Passwort vergessen?** tippen – Sie erhalten einen **Hinweis** und ggf. die **Kontaktadresse aus den Stammdaten**, um die **Inhaberin oder den Inhaber der Galerie** zu bitten, das Passwort neu zu setzen (**Passwort setzen** im gleichen Dialog).
 
 **Verein (VK2):** Zugang mit **Name + PIN** – PIN-Vergessen = **Vorstand** im Verein, nicht über eine zentrale Hotline zurücksetzbar.
 
