@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Servicarbeit + Test-Audit Daten (Georg):** **docs/SERVICE-ARBEIT-DATEN-TESTS.md** – Betrieb ohne unnötiges User-Update-Theater (APf/API vs. Galerie), Checkliste, Audit was getestet ist / Lücken (getPageTexts, autoSave-Guards, Stammdaten-Merge, TenantContext); **`npm run test:daten`** für Fokus-Suite (11 Dateien, ersetzt nicht volle Tests). Verweise in **EINSTIEG-INFORMATIKER**, **00-INDEX**. **Commit:** `fb1d351` ✅.
+**Letzter Stand:** 22.03.26 – **Servicarbeit + Test-Audit Daten (Georg):** **docs/SERVICE-ARBEIT-DATEN-TESTS.md** – Betrieb ohne unnötiges User-Update-Theater (APf/API vs. Galerie), Checkliste, Audit was getestet ist / Lücken (getPageTexts, autoSave-Guards, Stammdaten-Merge, TenantContext); **`npm run test:daten`** für Fokus-Suite (11 Dateien, ersetzt nicht volle Tests). Verweise in **EINSTIEG-INFORMATIKER**, **00-INDEX**. **Commit:** `494b9eb` ✅.
 
 **Vorher:** 22.03.26 – **Benutzerhandbuch INDEX (Georg):** Meta-Zeile **Sie** aus **00-INDEX** entfernt (war Redaktionshinweis, nicht für Nutzer); Regel **Kapitel 1–12 = Sie** nur in **README-EDITOR**; **App-Oberfläche** weiter **Du**. **Commit:** `3d24ee1` ✅ lokal; **Push:** Git-Button.
 
