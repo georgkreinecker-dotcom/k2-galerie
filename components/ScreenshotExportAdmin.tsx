@@ -13324,7 +13324,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
                       />
                     </div>
-                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                    <div style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
                       <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
                         Werke
                       </div>
@@ -13386,6 +13386,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           </li>
                         ))}
                       </ul>
+                      <p
+                        style={{
+                          marginTop: 'auto',
+                          marginBottom: 0,
+                          paddingTop: '0.75rem',
+                          textAlign: 'right',
+                          fontSize: '0.72rem',
+                          color: '#7a736c',
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        Zum Ausblenden:{' '}
+                        <strong style={{ color: '#5c5650', fontWeight: 600 }}>Einstellungen</strong>
+                        {' '}→ Profi-Modus → „Checklisten ausblenden (Profi)“
+                      </p>
                     </div>
                   </div>
                 )
@@ -13427,7 +13442,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '12px' }}
                       />
                     </div>
-                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                    <div style={{ flex: '1 1 220px', minWidth: 0, display: 'flex', flexDirection: 'column', alignSelf: 'stretch' }}>
                       <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em', color: s.accent, textTransform: 'uppercase', marginBottom: '0.35rem' }}>
                         Vereinsmitglieder
                       </div>
@@ -13489,6 +13504,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           </li>
                         ))}
                       </ul>
+                      <p
+                        style={{
+                          marginTop: 'auto',
+                          marginBottom: 0,
+                          paddingTop: '0.75rem',
+                          textAlign: 'right',
+                          fontSize: '0.72rem',
+                          color: '#7a736c',
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        Zum Ausblenden:{' '}
+                        <strong style={{ color: '#5c5650', fontWeight: 600 }}>Einstellungen</strong>
+                        {' '}→ Profi-Modus → „Checklisten ausblenden (Profi)“
+                      </p>
                     </div>
                   </div>
                 )
