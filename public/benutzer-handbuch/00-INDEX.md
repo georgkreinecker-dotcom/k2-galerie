@@ -32,7 +32,7 @@ Demo nutzen, von der Demo zur eigenen Galerie, Lizenz kaufen.
 
 7. [Statistik und Werkkatalog](11-STATISTIK-WERKKATALOG.md)
 
-Admin-Bereich **Statistik/Werkkatalog**: Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDFs und Speicherdaten, Link zu Kundenadressen.
+Admin-Bereich **Statistik/Werkkatalog**: Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, **Echtheitszertifikat** von der Startkachel und aus dem Tab, PDFs und Speicherdaten, Link zu Kundenadressen.
 
 8. [Kassa und Buchhaltung](08-KASSA-BUCHHALTUNG.md)
 
@@ -40,7 +40,7 @@ Vollständige Beschreibung: Kassa finden, Verkauf erfassen (QR, Seriennummer), Z
 
 9. [Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)
 
-**Internetshop für Besucher:** Hinweise zu Zahlung (**keine** eingebaute Online-Abbuchung im Warenkorb), was **Karte / Rechnung / Bar** bedeutet, Unterschied zur **Kasse**; **optionale** Online-Bezahllösung (Richtung Zahlungsanbieter, Ablauf, Mandant, Rechtliches).
+Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbuchung in der App). Sie: Zahlung und Ablauf mit dem Kunden klären. **Kasse** = separater Weg für Verkauf vor Ort.
 
 10. [Einstellungen](10-EINSTELLUNGEN.md)
 

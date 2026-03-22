@@ -12925,7 +12925,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {(() => {
                   const akzent = s.accent
                   const akzentGrad = `linear-gradient(135deg, ${s.accent} 0%, #d96b35 100%)`
-                  type HubArea = { emoji: string; name: string; beschreibung: string; tab: string }
+                  type HubArea = {
+                    emoji: string
+                    name: string
+                    beschreibung: string
+                    tab: string
+                    /** Optional: zweiter Klick unter der Kachel (z. B. Echtheitszertifikat von Statistik/Werkkatalog). */
+                    subLink?: { label: string; tab: AdminTabType }
+                  }
                   // Links: Werke → Aussehen → Einstellungen → Schritt-für-Schritt | Rechts: Kassa → Events → Presse
                   const linksBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '🖼️', name: 'Vereinsmitglieder neu anlegen oder ändern', beschreibung: 'Mitglieder mit Galerie-Profil – Fotos, Profile, Karten.', tab: 'werke' },
@@ -12940,7 +12947,13 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
                     { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ] : [
-                    { emoji: '📋📊', name: 'Statistik/Werkkatalog', beschreibung: 'Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.', tab: 'statistik' },
+                    {
+                      emoji: '📋📊',
+                      name: 'Statistik/Werkkatalog',
+                      beschreibung: 'Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.',
+                      tab: 'statistik',
+                      subLink: { label: '🔏 Echtheitszertifikat', tab: 'zertifikat' },
+                    },
                     { emoji: '🎟️', name: 'Event- und Medienplanung', beschreibung: 'Events planen, Werbematerial erzeugen und Verteiler direkt nutzen.', tab: 'eventplan' },
                   ]
                   const scrollToWerke = () => document.getElementById('admin-werke-inhalt')?.scrollIntoView({ behavior: 'smooth' })
@@ -12996,15 +13009,86 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           return cells.map((b, idx) => b ? (() => {
                             const cs = GRID_CARD_STYLE[b.tab] || { bg: s.bgCard, text: s.text, sub: s.muted, border: `${s.accent}22` }
                             const isAccent = b.tab === 'werke'
+                            const openHubTab = (tab: string) => {
+                              if (tab === 'kassa') openKasse()
+                              else if (tab === 'werke') scrollToWerke()
+                              else { setActiveTab(tab as AdminTabType); window.scrollTo({ top: 200, behavior: 'smooth' }) }
+                            }
+                            const mainPad = 'clamp(0.75rem, 2vw, 1rem) clamp(0.9rem, 2.5vw, 1.1rem)'
+                            const cardBody = (
+                              <>
+                                {b.tab === 'presse' ? <MedienstudioIcon size={28} style={{ flexShrink: 0, color: cs.text }} /> : <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>}
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1rem)', lineHeight: 1.25 }}>{b.name}</div>
+                                  <div style={{ fontSize: '0.72rem', color: cs.sub, marginTop: '0.15rem', lineHeight: 1.3 }}>
+                                    {b.beschreibung.length > 48 ? b.beschreibung.slice(0, 47) + '…' : b.beschreibung}
+                                  </div>
+                                </div>
+                              </>
+                            )
+                            if (b.subLink) {
+                              return (
+                                <div
+                                  key={b.tab}
+                                  className="admin-hub-karte"
+                                  style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'stretch',
+                                    padding: 0,
+                                    overflow: 'hidden',
+                                    background: cs.bg,
+                                    border: isAccent ? 'none' : `1px solid ${cs.border}`,
+                                    borderRadius: '12px',
+                                    boxShadow: isAccent ? `0 3px 12px ${akzent}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={() => openHubTab(b.tab)}
+                                    style={{
+                                      padding: mainPad,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 'clamp(0.6rem, 1.5vw, 0.9rem)',
+                                      background: 'transparent',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      fontFamily: 'inherit',
+                                      textAlign: 'left' as const,
+                                      color: cs.text,
+                                      fontWeight: isAccent ? 700 : 500,
+                                    }}
+                                  >
+                                    {cardBody}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openHubTab(b.subLink!.tab)}
+                                    title="Echtheitszertifikat: Werk wählen und drucken"
+                                    style={{
+                                      border: 'none',
+                                      borderTop: `1px solid ${cs.border}`,
+                                      padding: '0.45rem clamp(0.9rem, 2.5vw, 1.1rem)',
+                                      background: 'rgba(255,255,255,0.55)',
+                                      cursor: 'pointer',
+                                      fontFamily: 'inherit',
+                                      fontSize: '0.78rem',
+                                      fontWeight: 700,
+                                      color: '#b54a1e',
+                                      textAlign: 'left' as const,
+                                    }}
+                                  >
+                                    {b.subLink.label}
+                                  </button>
+                                </div>
+                              )
+                            }
                             return (
                           <button key={b.tab} type="button" className="admin-hub-karte"
-                            onClick={() => {
-                              if (b.tab === 'kassa') openKasse()
-                              else if (b.tab === 'werke') scrollToWerke()
-                              else { setActiveTab(b.tab as any); window.scrollTo({ top: 200, behavior: 'smooth' }) }
-                            }}
+                            onClick={() => openHubTab(b.tab)}
                             style={{
-                              padding: 'clamp(0.75rem, 2vw, 1rem) clamp(0.9rem, 2.5vw, 1.1rem)',
+                              padding: mainPad,
                               display: 'flex',
                               alignItems: 'center',
                               gap: 'clamp(0.6rem, 1.5vw, 0.9rem)',
@@ -13018,13 +13102,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                               color: cs.text,
                               fontWeight: isAccent ? 700 : 500,
                             }}>
-                            {b.tab === 'presse' ? <MedienstudioIcon size={28} style={{ flexShrink: 0, color: cs.text }} /> : <span style={{ fontSize: 'clamp(1.75rem, 4vw, 2.1rem)', flexShrink: 0, lineHeight: 1 }}>{b.emoji}</span>}
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: 'clamp(0.88rem, 1.8vw, 1rem)', lineHeight: 1.25 }}>{b.name}</div>
-                              <div style={{ fontSize: '0.72rem', color: cs.sub, marginTop: '0.15rem', lineHeight: 1.3 }}>
-                                {b.beschreibung.length > 48 ? b.beschreibung.slice(0, 47) + '…' : b.beschreibung}
-                              </div>
-                            </div>
+                            {cardBody}
                           </button>
                             )
                           })() : <div key={`empty-${idx}`} />)
@@ -13090,6 +13168,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       >
                         → Werkkatalog
                       </button>
+                      {!tenant.isVk2 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('zertifikat')
+                            window.scrollTo({ top: 200, behavior: 'smooth' })
+                          }}
+                          title="Echtheitszertifikat: Werk wählen und drucken"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            background: s.bgElevated,
+                            color: '#b54a1e',
+                            border: `2px solid ${s.accent}`,
+                            borderRadius: s.radius,
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            boxShadow: '0 1px 6px rgba(0,0,0,0.08)',
+                          }}
+                        >
+                          🔏 Echtheitszertifikat
+                        </button>
+                      )}
                       {!tenant.isVk2 && (
                         <Link
                           to={PROJECT_ROUTES['k2-galerie'].kunden}
