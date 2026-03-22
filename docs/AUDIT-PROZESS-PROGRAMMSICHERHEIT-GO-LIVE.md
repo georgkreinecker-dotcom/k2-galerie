@@ -69,19 +69,19 @@
 
 | ID | Prüfpunkt | Detail-Quelle | Ampel | Geprüft am | Bemerkung |
 |----|-----------|---------------|-------|------------|-----------|
-| P1.1 | API „An Server senden“ (Key / Auth) | SICHERHEIT 1.1 | ⬜ | | |
-| P1.2 | Admin-Zugang (Supabase-Login optional) | SICHERHEIT 1.2, ADMIN-AUTH-SETUP, Regel APf eine Tür | ⬜ | | |
-| P1.3 | Supabase RLS, Migration 002 | SICHERHEIT 1.3, SUPABASE-RLS-SICHERHEIT | ⬜ | | |
-| P1.4 | Keine Secrets im Repo; Env Vercel/Supabase vollständig | SICHERHEIT 1.4 | ⬜ | | |
-| P1.5 | npm audit – kritisch/hoch behoben | SICHERHEIT 1.5 | ⬜ | | |
-| P1.6 | Security-Header / XSS-Basis (vercel.json, Fehlerseiten) | SICHERHEIT 1.6 | ⬜ | | |
-| P2.1 | AGB / Datenschutz / Impressum inhaltlich aktuell | SICHERHEIT 2.1, VOR-VEROEFFENTLICHUNG | ⬜ | | |
-| P2.2 | Datenschutz: Transparenz Speicherorte (lokal, Vercel, Supabase, Stripe) | SICHERHEIT 2.2 | ⬜ | | |
-| P2.3 | Vollbackup erstellt + Wiederherstellung probiert | SICHERHEIT 2.3, Handbuch Backup | ⬜ | | |
-| PZ | **Zahlung / Lizenzen Go-Live** (wenn Online-Kauf live): Migration 003, Vercel Env, Stripe-Webhook | **STRIPE-LIZENZEN-GO-LIVE**, **START-NUR-NOCH-OFFEN** | ⬜ | | |
-| PT | **Tests Daten-Schicht** (bei Storage/Merge/Trennung-Änderungen): `npm run test:daten` + volle `npm run test` grün | **SERVICE-ARBEIT-DATEN-TESTS** | ⬜ | | |
+| P1.1 | API „An Server senden“ (Key / Auth) | SICHERHEIT 1.1 | 🟡 | 22.03.26 | Code: `X-API-Key` wenn `VITE_WRITE_GALLERY_API_KEY` gesetzt (`publishGalleryData`, `api/write-gallery-data.js`). **Production:** Vercel `WRITE_GALLERY_API_KEY` + `VITE_WRITE_GALLERY_API_KEY` prüfen; einmal „An Server senden“ gegen Live testen. |
+| P1.2 | Admin-Zugang (Supabase-Login optional) | SICHERHEIT 1.2, ADMIN-AUTH-SETUP, Regel APf eine Tür | 🟢 | 22.03.26 | **Bewusst:** eine Tür – `AdminRoute` nur `ScreenshotExportAdmin`, Galerie-Passwort (Regel georg-apf-admin-ohne-huerden). Kein Supabase-E-Mail-Gate auf `/admin`. |
+| P1.3 | Supabase RLS, Migration 002 | SICHERHEIT 1.3, SUPABASE-RLS-SICHERHEIT | 🟡 | 22.03.26 | `002_artworks_rls_authenticated_only.sql` liegt im Repo. **Offen:** Bestätigung, dass Migration auf **eurem** Supabase-Projekt angewendet ist. |
+| P1.4 | Keine Secrets im Repo; Env Vercel/Supabase vollständig | SICHERHEIT 1.4 | 🟡 | 22.03.26 | Repo ohne produktive Secrets (üblich). **Offen:** Stichprobe Vercel/Supabase Production-Env (nur im Dashboard). |
+| P1.5 | npm audit – kritisch/hoch behoben | SICHERHEIT 1.5 | 🟡 | 22.03.26 | `npm audit` (22.03.26): 19 Meldungen (u. a. 1 critical, 14 high, u. a. undici). **Follow-up:** triagieren / `npm audit fix` wo sicher möglich. |
+| P1.6 | Security-Header / XSS-Basis (vercel.json, Fehlerseiten) | SICHERHEIT 1.6 | 🟢 | 22.03.26 | `vercel.json`: u. a. `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `X-XSS-Protection`, `Referrer-Policy`; no-cache für index/build-info/projects. |
+| P2.1 | AGB / Datenschutz / Impressum inhaltlich aktuell | SICHERHEIT 2.1, VOR-VEROEFFENTLICHUNG | 🟡 | 22.03.26 | **Georg:** Texte für Live-Betrieb inhaltlich freigeben (kein technischer Check in dieser Session). |
+| P2.2 | Datenschutz: Transparenz Speicherorte (lokal, Vercel, Supabase, Stripe) | SICHERHEIT 2.2 | 🟡 | 22.03.26 | **Georg / Redaktion:** Datenschutzerklärung vs. tatsächliche Speicherorte (lokal, Vercel, Supabase, ggf. Stripe) abgleichen. |
+| P2.3 | Vollbackup erstellt + Wiederherstellung probiert | SICHERHEIT 2.3, Handbuch Backup | 🟡 | 22.03.26 | **Georg:** Admin → Einstellungen → Vollbackup + **Wiederherstellung einmal testen** (nicht nur Download). |
+| PZ | **Zahlung / Lizenzen Go-Live** (wenn Online-Kauf live): Migration 003, Vercel Env, Stripe-Webhook | **STRIPE-LIZENZEN-GO-LIVE**, **START-NUR-NOCH-OFFEN** | 🟡 | 22.03.26 | Wenn Online-Lizenz gewünscht: 3 Schritte (Migration 003, Vercel-Env, Stripe-Webhook) – **Dashboard-Arbeit**, siehe Smart Panel / Ready-to-go. |
+| PT | **Tests Daten-Schicht** (bei Storage/Merge/Trennung-Änderungen): `npm run test:daten` + volle `npm run test` grün | **SERVICE-ARBEIT-DATEN-TESTS** | 🟢 | 22.03.26 | **Erstrunde:** `npm run test` → 266 Tests OK (25 Files); `npm run test:daten` → 193 Tests OK (11 Files). KI-Session 22.03.26. |
 
-⬜ = beim ersten Durchlauf durch 🟢 / 🟡 / 🔴 ersetzen (oder Textfarbe in Markdown: Grün/Gelb/Rot schreiben wenn Emojis in Druck stören).
+🟢 = erfüllt oder bewusst so beschlossen · 🟡 = Teil offen / nur Repo ohne Production · 🔴 = nicht erfüllt (hier keine 🔴 gesetzt).
 
 ---
 
@@ -89,11 +89,11 @@
 
 | Feld | Eintrag |
 |------|---------|
-| **Datum** | _TT.MM.JJ_ |
-| **Durchgeführt von** | _Name / KI-Session_ |
-| **Umfang** | _Voll / Teilaudit (welche IDs)_ |
-| **Kurzfazit** | _z. B. „P1.1 rot – Key fehlt“_ |
-| **Nächster Termin** | _optional_ |
+| **Datum** | 22.03.26 |
+| **Durchgeführt von** | KI-Session (Georg: manuelle Punkte P2.x, P1.1 Live-Test, PZ nach Bedarf) |
+| **Umfang** | Erstrunde: Ampel gesetzt, PT + technisch nachvollziehbare P1.x/P1.6 aus Repo + `npm audit`; Production-Dashboard nicht eingeloggt geprüft |
+| **Kurzfazit** | 🟢 PT, P1.2, P1.6 · 🟡 Rest (Vercel/Supabase live, npm audit Follow-up, Georg Backup/Recht/Stripe) · Siehe Smart Panel **K2 Ready to go** → Abschnitt „Noch von Georg“ / Anker `#k2-ready-georg` auf K2 Softwareentwicklung |
+| **Nächster Termin** | Nach Georgs manuellen Häkchen oder quartalsweise laut Trigger-Tabelle |
 
 ---
 

@@ -434,6 +434,58 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         )}
                       </li>
                     </ul>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Erstrunde technisch (22.03.26)</div>
+                    <p style={{ margin: '0.1rem 0 0.25rem', fontSize: '0.7rem', lineHeight: 1.4, color: 'rgba(255,245,240,0.78)' }}>
+                      <code style={{ fontSize: '0.68em' }}>npm run test</code> + <code style={{ fontSize: '0.68em' }}>npm run test:daten</code> grün. Ampel in <code style={{ fontSize: '0.68em' }}>AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md</code>.
+                    </p>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Noch von dir (manuell)</div>
+                    <ul style={{ margin: '0.15rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
+                      <li>Vercel-Keys + „An Server senden“ live testen</li>
+                      <li>Supabase: Migration 002 (003 bei Stripe) bestätigen</li>
+                      <li>AGB / DSGVO / Impressum · Backup-Wiederherstellung üben</li>
+                      <li>npm audit Follow-up</li>
+                    </ul>
+                    {onNavigate ? (
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          onNavigate('softwareentwicklung')
+                          window.setTimeout(() => {
+                            try {
+                              window.location.hash = 'k2-ready-georg'
+                              const el = document.getElementById('k2-ready-georg')
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            } catch {
+                              /* ignore */
+                            }
+                          }, 450)
+                        }}
+                        onKeyDown={e => {
+                          if (e.key !== 'Enter') return
+                          onNavigate('softwareentwicklung')
+                          window.setTimeout(() => {
+                            try {
+                              window.location.hash = 'k2-ready-georg'
+                              const el = document.getElementById('k2-ready-georg')
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                            } catch {
+                              /* ignore */
+                            }
+                          }, 450)
+                        }}
+                        style={{ display: 'inline-block', marginTop: '0.35rem', color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.74rem', fontFamily: 'inherit' }}
+                      >
+                        Vollständige Checkliste öffnen →
+                      </span>
+                    ) : (
+                      <Link
+                        to={`${K2_SOFTWAREENTWICKLUNG}#k2-ready-georg`}
+                        style={{ display: 'inline-block', marginTop: '0.35rem', color: '#fcd34d', textDecoration: 'underline', fontSize: '0.74rem', fontFamily: 'inherit' }}
+                      >
+                        Vollständige Checkliste öffnen →
+                      </Link>
+                    )}
                     <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, marginTop: '0.35rem' }}>Testen &amp; Backups</div>
                     <ul style={{ margin: '0.15rem 0 0', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
                       <li>

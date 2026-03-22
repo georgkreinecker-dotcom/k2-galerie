@@ -85,9 +85,24 @@ export default function K2SoftwareentwicklungPage() {
         <h3 id="k2-ready-audit" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
           Audit &amp; Programmsicherheit
         </h3>
-        <p style={{ margin: 0, lineHeight: 1.55, fontSize: '0.88rem' }}>
+        <p style={{ margin: '0 0 0.75rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
           Verbindlicher Ablauf, Ampeltabelle, Protokoll: <code>docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md</code>. Daten-Fokus-Tests im Projekt: <code>npm run test:daten</code>
         </p>
+
+        <h3 id="k2-ready-georg" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
+          Noch von dir (manuell) – nach Erstrunde 22.03.26
+        </h3>
+        <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
+          <strong>Bereits erledigt (KI / Repo):</strong> <code>npm run test</code> und <code>npm run test:daten</code> grün; Ampeltabelle und Protokoll in <code>docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md</code> eingetragen. <code>npm audit</code> zeigt noch Meldungen – siehe Punkt 6 unten.
+        </p>
+        <ol style={{ lineHeight: 1.65, paddingLeft: '1.35em', margin: 0, fontSize: '0.88rem' }}>
+          <li><strong>Production „An Server senden“:</strong> In Vercel <code>WRITE_GALLERY_API_KEY</code> und <code>VITE_WRITE_GALLERY_API_KEY</code> prüfen/setzen; einmal gegen Live testen (siehe <code>docs/SICHERHEIT-VOR-GO-LIVE.md</code>).</li>
+          <li><strong>Supabase Migration 002:</strong> Im Dashboard bestätigen, dass <code>002_artworks_rls_authenticated_only.sql</code> auf eurem Projekt läuft.</li>
+          <li><strong>Online-Lizenz / Stripe:</strong> Nur wenn gewünscht – die drei Schritte oben (Migration 003, Vercel-Env, Webhook); Details <code>docs/START-NUR-NOCH-OFFEN.md</code>.</li>
+          <li><strong>Rechtstexte:</strong> AGB, Datenschutz, Impressum für den Live-Betrieb inhaltlich freigeben; Speicherorte in der Datenschutzerklärung prüfen.</li>
+          <li><strong>Backup:</strong> Admin → Einstellungen → Vollbackup laden <em>und</em> die Wiederherstellung aus einer Datei einmal real durchspielen.</li>
+          <li><strong>npm audit:</strong> Meldungen ansehen; wo möglich <code>npm audit fix</code> (ohne Breaking) oder bewusste Freigabe mit Notiz dokumentieren.</li>
+        </ol>
       </section>
 
       {/* Sicherheit & Vor Veröffentlichung */}
