@@ -70,6 +70,14 @@
 
 ---
 
+## Internetshop: Lizenznehmer vs. K2-Betrieb
+
+- **K2 (eigene Galerie, Betrieb Martina & Georg):** Ein **voll ausgebauter Internetshop inkl. Online-Zahlung** ist **kein Pflicht-Ziel** für den eigenen Betrieb; am Schreibtisch kann der Bedarf **ohne** Zahlungsdienst und ohne „Bezahlen mit einem Klick“ ausreichen. Die **öffentliche Galerie** und der bestehende Shop für Besucher bleiben nutzbar – es geht nur um **Priorität und Scope**: K2 muss nicht der Treiber für PSP, Webhooks und Vollausbau sein.
+
+- **Vermarktbare Version / Lizenznehmer:** Künstler:innen und Galerien sollen den **Internetshop vollständig anbieten können** – Warenkorb, Bestellabwicklung und **optional** sichere **Online-Bezahlung** (z. B. Hosted Checkout auf **externer** Anbieter-Seite), sobald sie Anbindung und Rechtliches einrichten. **Technisch:** **ein Standard** im Produktkern, **aktivierbar pro Mandant** (Konfiguration statt Festverdrahtung), damit K2 schlank bleiben kann und Kund:innen trotzdem das volle Angebot haben.
+
+---
+
 ## Nächste Schritte (Reihenfolge nach Priorität)
 
 1. **Konfiguration zentralisieren**  

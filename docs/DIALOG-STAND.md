@@ -1,9 +1,11 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Benutzerhandbuch Shop/Zahlung (Georg):** Neues Kapitel **`12-SHOP-INTERNET-BESTELLUNG.md`** (Hinweise: keine eingebaute Online-Zahlung im Warenkorb; Karte/Rechnung/Bar; Kasse vs. Shop; **optionale** Bezahllösung Richtung PSP/Mandant/Recht). **00-INDEX**, **08-KASSA** Querverweis, **04-HÄUFIGE-FRAGEN** (FAQ + Kurzüberblick), **02/03** kleine Anpassung, **BenutzerHandbuchPage** `DOCUMENTS`. Tests + Build grün. **Commit:** Nachricht beginnt mit **Benutzerhandbuch: Shop/Internetbestellung** – Kurzhash mit `git log -1 --oneline` prüfen; Push wie üblich.
+**Letzter Stand:** 21.03.26 – **PRODUKT-VISION (Georg):** Neuer Abschnitt **„Internetshop: Lizenznehmer vs. K2-Betrieb“** – K2 **ohne** Pflicht zum Vollausbau inkl. Online-Zahlung; **Lizenznehmer** sollen Internetshop **vollständig** inkl. optionaler externer Bezahlung **pro Mandant** anbieten können (Konfiguration, ein Standard im Kern).
 
-**Was wir JETZT tun:** Wie zuvor – nach Bedarf ök2 Fremden-Galerie prüfen oder nächste Georg-Aufgabe.
-**Einordnung:** Nutzer-Handbuch = klare Erwartung Shop vs. Kasse; keine K2-Kern-Code-Änderung.
+**Was wir JETZT tun:** Nach Bedarf nächste Aufgabe oder Push prüfen.
+**Einordnung:** Produkt-Scope klar: K2 schlank, Markt vollständig.
+
+**Vorher:** 21.03.26 – **Benutzerhandbuch Shop/Zahlung (Georg):** Neues Kapitel **`12-SHOP-INTERNET-BESTELLUNG.md`** … **BenutzerHandbuchPage** `DOCUMENTS`. Tests + Build grün. **Commit:** Nachricht **Benutzerhandbuch: Shop/Internetbestellung**; Push wie üblich.
 
 **Vorher:** 21.03.26 – **Präsentationsmappe Fortsetzung (Georg):** Kapitel **4–5** inhaltlich an **Mein Weg / Sparte** (Filter, Typen, Kategorien); **Corporate Design**-Schreibweise in Kap. 5; **10 Demo/Lizenz** mit Stammdaten/Mein Weg; **Vollversion**-Seitenuntertitel. **Commits:** `b290021` (Mappe + früherer Dialog-Block), `9cd4f06` (mök2 + Kurz-Lead). Tests + Build grün. **Push:** Git-Button Cursor.
 
