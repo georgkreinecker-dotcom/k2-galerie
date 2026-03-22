@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **Keramik K2-K-0001–0021 / Backup (Georg):** Verstanden: Sorge um **fehlende** Keramik **K2-K-0001…0021** und Vermutung Vertauschung mit **Martina/K2-M**. Im Repo **`public/gallery-data.json`** sind alle 21 **Keramik/Georg** noch vorhanden; die **K2-M-0001…0021**-Reihe ist **Malerei/Martina** (parallel, kein Ersatz). **Neu:** Admin **Einstellungen → Backup & Bilder** – Button **Fehlende K2-K-0001–0021 aus gallery-data.json anfügen** (nur Anfügen, kein Löschen; danach Veröffentlichen). Util **`mergeMissingK2KeramikFromGalleryData.ts`** + Tests. **`resolveArtistLabelForGalerieStatistik`:** **K2-K-** + falsches Martina-Feld + Kategorie z. B. malerei → **Georg** (Zertifikat/Statistik). Tests + Build grün. **Commit:** `git log -1 --oneline`; **Push:** Git-Button Cursor.
+
+**Was wir JETZT tun:** Georg testet ggf. Wiederherstellungs-Button auf **k2-galerie.vercel.app** (gleiche Origin → `gallery-data.json`); sonst **Vollbackup**-Datei.
+
+**Einordnung:** Datenrettung ohne stillen Overwrite; K2-Kern nur **Werkzeug**-Button mit Bestätigung.
+
+**Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat sichtbar (Georg):** Hub-Kachel **Statistik/Werkkatalog** mit Unterzeile **Echtheitszertifikat**; im Tab Statistik Button **Echtheitszertifikat** (K2/ök2, nicht VK2). **Benutzerhandbuch:** `11-STATISTIK-WERKKATALOG.md`, `00-INDEX.md`, `03-ADMIN-UEBERBLICK.md`. Tests + Build grün. **Commit:** `git log -1 --oneline`; **Push:** Git-Button Cursor.
 
@@ -9,9 +15,6 @@
 **Vorher:** 22.03.26 – **Admin vs. öffentliche Galerie (Georg):** Im **Admin** unter dem Kopf eine **Orientierungszeile** („Wo du gerade bist“): K2 / ök2-Demo / VK2 … **Commit:** `c509872` …
 
 **Vorher:** 22.03.26 – **Shop-Handbuch nur Nutzer (Georg):** **`12-SHOP-INTERNET-BESTELLUNG.md`** Überschrift **Shop und Internetbestellung**; Strategie-/Produkt-Vision-Abschnitte entfernt; **00-INDEX** 9, **08-Kassa**, **04-FAQ** ohne Strategie-Verweise. **Präsi:** **`15-SHOP-…`** ohne Produktstrategie-Block; **00-INDEX** Voll+Lang; **PraesentationsmappePage** Kurztext ohne Produkt-Vision.
-
-**Was wir JETZT tun:** Push **main**; nächste Aufgabe von Georg.
-**Einordnung:** Klarstellung Werkkatalog-Filter vs. Werke-Übersicht (keine Datenänderung, nur Transparenz).
 
 **Vorher:** 21.03.26 – **PRODUKT-VISION (Georg):** Abschnitt **„Internetshop: Lizenznehmer vs. K2-Betrieb“** …
 

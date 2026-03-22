@@ -30,6 +30,18 @@ function norm(s: unknown): string {
   return String(s ?? '').trim()
 }
 
+/** Gleiche Person wie Stammdaten-Martina? (Vollname vs. Rufname, Tippfehler in Künstlerfeld.) */
+function isLikelyMartinaName(direct: string, martinaFallback: string): boolean {
+  const d = norm(direct).toLowerCase()
+  const m = norm(martinaFallback).toLowerCase()
+  if (!d || !m) return false
+  if (d === m) return true
+  if (m.startsWith(d + ' ') || m.startsWith(d + ',') || m.startsWith(d + '.')) return true
+  const firstMartina = m.split(/[\s,]+/)[0]
+  if (d === firstMartina) return true
+  return false
+}
+
 /**
  * @param artwork – Werk-Objekt (artist, category, number, id, entryType)
  * @param fallback – Stammdaten-Namen (Martina / Georg bzw. ök2-Muster); wenn fehlt, nur `artist`
@@ -45,7 +57,26 @@ export function resolveArtistLabelForGalerieStatistik(
   fallback?: KuenstlerFallbackNamen | null
 ): string {
   const direct = norm(artwork?.artist)
-  if (direct) return direct
+  const num = norm(artwork?.number || artwork?.id).toUpperCase()
+  const letteredEarly = num.match(/^K2-([MKGSPOI])-/i)
+  const L0 = letteredEarly ? letteredEarly[1].toUpperCase() : ''
+  const cat0 = artwork?.category
+  const georgByK2Letter = L0 === 'K' || L0 === 'S' || L0 === 'P'
+  const georgByCategory = cat0 === 'keramik' || cat0 === 'skulptur'
+  /** K2-K-/Keramik gehört zu Georg; altes Künstlerfeld „Martina …“ darf das nicht überschreiben (z. B. Echtheitszertifikat). */
+  const ignoreWrongMartinaOnGeorgWerk =
+    !!fallback &&
+    !!norm(fallback.martina) &&
+    !!direct &&
+    isLikelyMartinaName(direct, fallback.martina) &&
+    (georgByK2Letter || georgByCategory)
+
+  /** Nummer K2-K-/K2-S-/K2-P- hat Vorrang vor falscher Kategorie + falschem Künstlerfeld (z. B. K2-K + malerei + „Martina“). */
+  if (ignoreWrongMartinaOnGeorgWerk && fallback && norm(fallback.georg)) {
+    return norm(fallback.georg)
+  }
+
+  if (direct && !ignoreWrongMartinaOnGeorgWerk) return direct
 
   if (!fallback || !norm(fallback.martina) || !norm(fallback.georg)) {
     return direct || 'Ohne Künstler'
@@ -66,7 +97,6 @@ export function resolveArtistLabelForGalerieStatistik(
   if (et === 'product') return georg
   if (et === 'idea') return martina
 
-  const num = norm(artwork?.number || artwork?.id).toUpperCase()
   const lettered = num.match(/^K2-([MKGSPOI])-/i)
   if (lettered) {
     const L = lettered[1].toUpperCase()

@@ -55,6 +55,7 @@ import {
   computeK2MalereiMartinaCorrectedNumber,
   patchK2LocalStorageAfterArtworkRenames,
 } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
+import { mergeMissingCanonicalKeramikK2FromServerArtworks } from '../src/utils/mergeMissingK2KeramikFromGalleryData'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
@@ -15951,6 +15952,82 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     K2-Malerei: falsche K2-K- Nummern jetzt korrigieren
+                  </button>
+                </div>
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🏺 Keramik K2-K-0001–0021 fehlen lokal?</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Liest die veröffentlichte <strong>gallery-data.json</strong> (dieselbe Origin wie die App) und fügt nur die fehlenden Werke{' '}
+                    <strong>K2-K-0001</strong> bis <strong>K2-K-0021</strong> an, wenn sie dort als <strong>Keramik</strong> stehen. Es wird{' '}
+                    <strong>nichts gelöscht</strong> und nichts umbenannt. Vorher Sicherungskopie empfohlen. Danach wie üblich an Vercel senden.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (
+                        !confirm(
+                          'Nur K2: Fehlende Keramik-Werke K2-K-0001 bis 0021 aus gallery-data.json anfügen (nichts löschen)?\n\nVorher ggf. Vollbackup herunterladen.'
+                        )
+                      )
+                        return
+                      let serverArtworks: any[] = []
+                      try {
+                        const u = `/gallery-data.json?_=${Date.now()}`
+                        const res = await fetch(u, { cache: 'no-store' })
+                        if (!res.ok) throw new Error(String(res.status))
+                        const data = await res.json()
+                        serverArtworks = Array.isArray(data?.artworks) ? data.artworks : []
+                      } catch (e) {
+                        alert(`gallery-data.json konnte nicht geladen werden: ${e instanceof Error ? e.message : 'Fehler'}\n\nApp auf Vercel öffnen oder lokalen Build nutzen.`)
+                        return
+                      }
+                      const raw = readArtworksRawByKey('k2-artworks')
+                      const { merged, added } = mergeMissingCanonicalKeramikK2FromServerArtworks(raw, serverArtworks)
+                      if (added.length === 0) {
+                        alert(
+                          'Keine fehlenden Einträge: Entweder K2-K-0001…0021 sind schon lokal, oder sie stehen nicht (als Keramik) in der geladenen gallery-data.json.'
+                        )
+                        return
+                      }
+                      if (
+                        !confirm(
+                          `${added.length} Werk(e) werden angefügt:\n${added.slice(0, 15).join(', ')}${added.length > 15 ? ' …' : ''}\n\nSpeichern und an Vercel senden?`
+                        )
+                      )
+                        return
+                      const toSave = stripBase64FromArtworks(merged)
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, {
+                        filterK2Only: true,
+                        allowReduce: false,
+                      })
+                      if (!ok) {
+                        alert('Speichern der Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurden ${added.length} Werk(e) ergänzt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert(`✅ ${added.length} Keramik-Werk(e) ergänzt und veröffentlicht. Die Seite lädt neu.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#1c4d3a',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Fehlende K2-K-0001–0021 aus gallery-data.json anfügen
                   </button>
                 </div>
                 <input
