@@ -68,7 +68,8 @@ export default function PraesentationsmappeVollversionPage() {
   const returnTo = searchParams.get('returnTo')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const pageTitle = 'Präsentationsmappe'
-  const pageSubtitle = 'Handbuch-Struktur, Marketing-Stil, Texte aus mök2. Screenshots unter /img/oeffentlich/.'
+  const pageSubtitle =
+    'Handbuch-Struktur, Marketing-Stil; Fokus Mein Weg & sechs Sparten. Screenshots unter /img/oeffentlich/.'
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')

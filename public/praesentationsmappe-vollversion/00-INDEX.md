@@ -6,23 +6,23 @@
 
 1. [Deckblatt](01-DECKBLATT.md)
 
-Willkommen, Slogan, erster Eindruck.
+Slogan, **Mein Weg** und die sechs Sparten auf einen Blick – erster Eindruck.
 
 2. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-Plattform fuer Ideen und Produkte: Sparten-Stammbaum fuer Werke plus Event- und Medienplanung in einem Ablauf.
+Plattform mit **Sparten (Mein Weg)**: Kunst & Galerie bis Dienstleister & Portfolio – eine Quelle für Typ, Kategorien und Abläufe; dazu Galerie, Events, Medienplanung, ein Stand überall.
 
 3. [Fuer wen](03-FUER-WEN.md)
 
-Kuenstler:innen, Galerien, Vereine und weitere Maerkte – Nutzen pro Zielgruppe.
+Wer zu welcher **Sparte** passt; ök2/Lizenz und VK2 kurz eingeordnet.
 
 4. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
-Das Erste, was Besucher sehen: Willkommensseite und Galerie mit Werken.
+Willkommen und Galerie; Filter passen zu **Mein Weg** / Sparte.
 
 5. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 
-Fotos, Beschreibungen, Preise – professionell ohne IT-Kenntnisse.
+Typ und Kategorien aus der Sparte; Fotos, Preise, EK/VK – ohne IT-Kenntnisse.
 
 6. [Design und Veröffentlichung](06-DESIGN-VEROEFFENTLICHUNG.md)
 

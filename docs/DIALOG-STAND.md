@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Terminologie (Georg):** überall **„Meine Richtung“** → **„Mein Weg“** (Admin-Hinweise, ök2-Banner/Vorschau, `tenantConfig`/`prStory`-Kommentare, Konzept-/Analyse-Docs). Repo-Suche `Meine Richtung` = 0 Treffer. **Commit:** `git log -1 --oneline`; Push wie üblich.
+**Letzter Stand:** 21.03.26 – **Präsentationsmappe & mök2 (Georg):** Kapitel **1–3** (voll + lang) neu mit **sechs Sparten / Mein Weg**; **4–5** und **Index** angeglichen; **10 Demo/Lizenz** mit Hinweis Stammdaten/Mein Weg; **PraesentationsmappeVollversionPage** Untertitel. **mök2:** Kern-Kapitel, Leitvision, Was-kann-die-App, Produktbeschreibung, USPs, `mok2Structure` – Fokus Sparten (`FOCUS_DIRECTIONS`). Kurzform **PraesentationsmappePage** + **praesentationsmappeKurzHtml** Lead-Text. **Nächster Schritt:** `npm run test` && `npm run build`, commit + push.
+
+**Vorher:** 21.03.26 – **Terminologie (Georg):** überall **„Meine Richtung“** → **„Mein Weg“** (Admin-Hinweise, ök2-Banner/Vorschau, `tenantConfig`/`prStory`-Kommentare, Konzept-/Analyse-Docs). Repo-Suche `Meine Richtung` = 0 Treffer. **Commit:** `git log -1 --oneline`; Push wie üblich.
 
 **Vorher:** 22.03.26 – **ök2 Fremden-Banner (Georg):** Text: **Galerie gestalten** = Ort für alles; **Nimm dir Zeit … Plattform** + Sparten/Einstellungen; Button **Galerie gestalten** entfernt, nur noch **Mit mir in den Admin**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
 

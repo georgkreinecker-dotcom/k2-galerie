@@ -1,8 +1,19 @@
 # Für wen?
 
-**Fokus = gesamter Markt.** In der Kommunikation klar: **oek2** (und die lizenzierte Galerie) sind fuer alle, die **Ideen oder Produkte** professionell zeigen und vermarkten wollen. **Kunstmarkt ist die Unterkategorie** – unser Einstieg (Kuenstler:innen, Galerien, Kunstvereine), nicht die Grenze. Eine Oberflaeche: Galerie, Werke, Event- und Medienplanung, Marketing, Kassa. Begriffe und Ablaeufe passen zu Ateliers, Galerien und allen, die praesentieren wollen.
+**Für alle, die über Mein Weg klar sagen, was sie zeigen.** Die Sparte ist kein Marketing-Label allein – sie steuert, wie Werke erfasst werden und was Besucher in der Galerie erwarten. Typische Zuordnungen:
 
-**VK2 (Vereinsplattform):** Fuer **alle Vereinstypen** – aehnlich strukturiert. Kunstvereine sind der aktuelle Einstieg. Gemeinsame Vereinsgalerie, jedes Mitglied kann eigene Galerie zeigen. Vereinskatalog (PDF, filterbar), Event- und Medienplanung fuer den Verein. Ab 10 registrierten Mitgliedern fuer den Verein kostenfrei.
+| Sparte | Typische Nutzer:innen |
+|--------|------------------------|
+| **Kunst & Galerie** | Künstler:innen, Ateliers, kleine Galerien, Sammler:innen als Zielgruppe |
+| **Handwerk & Manufaktur** | Handwerkstradition, Manufakturen, Unikate und Kleinserien |
+| **Design & Möbel** | Designer:innen, Studios, Showrooms, Innenausstattung |
+| **Mode & Kleinserien** | Mode, Accessoires, Märkte, Pop-up |
+| **Food & Genuss** | Produzent:innen, Manufakturen, Direktvermarktung |
+| **Dienstleister & Portfolio** | Beratung, Werkstätten mit Referenzen, kreative Dienstleistungen |
+
+**ök2 (Demo)** und **lizenzierte Galerien** nutzen dieselbe Sparten-Logik: einmal **Mein Weg** wählen – dann passen Begriffe, Kategorien und viele Generatoren (Presse, Flyer, Events) zum Profil.
+
+**VK2 (Vereinsplattform):** für **Vereine** mit gemeinsamer Präsentation – strukturell verwandt, eigener Einstieg (Mitglieder, Vereinsgalerie, Katalog). Kunstvereine sind der aktuelle Schwerpunkt; **ab 10 registrierten Mitgliedern** für den Verein kostenfrei.
 
 ![Admin-Übersicht – alle Bereiche auf einen Blick](/img/oeffentlich/pm-admin-uebersicht.png)
 
