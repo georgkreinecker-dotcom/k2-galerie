@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Benutzerhandbuch INDEX (Georg):** Meta-Zeile **Sie** aus **00-INDEX** entfernt (war Redaktionshinweis, nicht für Nutzer); Regel **Kapitel 1–12 = Sie** nur in **README-EDITOR**; **App-Oberfläche** weiter **Du**. **Commit:** `3d24ee1` ✅ lokal; **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Servicarbeit + Test-Audit Daten (Georg):** **docs/SERVICE-ARBEIT-DATEN-TESTS.md** – Betrieb ohne unnötiges User-Update-Theater (APf/API vs. Galerie), Checkliste, Audit was getestet ist / Lücken (getPageTexts, autoSave-Guards, Stammdaten-Merge, TenantContext); **`npm run test:daten`** für Fokus-Suite (11 Dateien, ersetzt nicht volle Tests). Verweise in **EINSTIEG-INFORMATIKER**, **00-INDEX**. **Commit:** `fb1d351` ✅.
+
+**Vorher:** 22.03.26 – **Benutzerhandbuch INDEX (Georg):** Meta-Zeile **Sie** aus **00-INDEX** entfernt (war Redaktionshinweis, nicht für Nutzer); Regel **Kapitel 1–12 = Sie** nur in **README-EDITOR**; **App-Oberfläche** weiter **Du**. **Commit:** `3d24ee1` ✅ lokal; **Push:** Git-Button.
 
 **Vorher:** 22.03.26 – **Admin: „Probleme“ neben Idee/Wunsch (Georg):** Button **⚠️ Probleme** in der Kopfleiste; Modal mit Hinweis auf schnelle Bearbeitung + Smart Panel; API **user-wishes** speichert **kind: wish | problem**; **SmartPanel** zeigt **💬 Rückmeldungen** mit Kennzeichnung Problem vs. Idee. Tests + Build grün. **Commit:** `e7e3388` ✅ lokal; **Push:** Git-Button.
 
@@ -18,9 +20,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Rückmeldungs-Kanal Probleme + Smart Panel; nächster Schritt von Georg.
+**Was wir JETZT tun:** Servicarbeit-Doku + `test:daten` stehen; bei Arbeit an Storage/Merge optional Fokus-Tests; nächster inhaltlicher Schritt von Georg.
 
-**Einordnung:** Lizenznehmer/Georg können Störungen **ohne Piloten-Schleife** erfassen; gleicher Speicher wie Wünsche, im Panel unterscheidbar.
+**Einordnung:** Betrieb: viele Verbesserungen nur Werkzeug/API – volle QS bleibt; Besucher sehen nur, was sich auf öffentlicher UI ändert.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 
