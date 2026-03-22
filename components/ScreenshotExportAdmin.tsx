@@ -12960,12 +12960,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           })() : <div key={`empty-${idx}`} />)
                         })()}
                       </div>
-                      <div style={{ marginTop: '0.9rem', maxWidth: '900px', padding: '0.7rem 0.85rem', borderRadius: '10px', background: '#f5f8f2', border: '1px solid #90a88044', color: s.text }}>
-                        <div style={{ fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.2rem' }}>🔗 Ein Bereich, ein Ablauf</div>
-                        <div style={{ fontSize: '0.8rem', color: s.muted, lineHeight: 1.35 }}>
-                          <strong>Event- und Medienplanung</strong> verbindet Planung, Werbematerial und Verteiler in einem Schritt – ohne zweiten Einstiegs-Button.
-                        </div>
-                      </div>
                     </div>
                   )
                 })()}

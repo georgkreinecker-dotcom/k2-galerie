@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **Werkkatalog ök2 = Sparte wie „Werke verwalten“:** **WerkkatalogTab** – Filter nach **`getEffectiveDirectionFromWork`** vs. **`galleryData.focusDirections[0]`**; **Kategorie** nur **`getCategoriesForDirection(focusDirections[0])`**; **Typ**-Dropdown (ENTRY_TYPES) bei ök2 entfernt, Stammdaten-Sparte als Anzeige; Spalte/Druck **Typ** = **`FOCUS_DIRECTIONS` + `getEffectiveDirectionFromWork`**; **Verkauft** aus **`getShopSoldArtworksKey(isOeffentlich, isVk2)`** statt fest **k2-sold-artworks**. Tests + Build grün. **Commit:** dc47af8 ✅ auf GitHub
+**Letzter Stand:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 4f86888 ✅ auf GitHub
+
+**Vorher:** 21.03.26 – **Werkkatalog ök2 = Sparte wie „Werke verwalten“:** **WerkkatalogTab** – `getEffectiveDirectionFromWork`, `getCategoriesForDirection`, `getShopSoldArtworksKey`; Doku **dc47af8** / **e8f9d15**. ✅
 
 **Vorher:** 21.03.26 – **Session-Ende (Georg):** **StatistikTab**, **TEST-PROTOKOLL**, Build-Info-Dateien, **DIALOG-STAND**, **WIR-PROZESS**; Tests + Build grün. **Commit:** 81609e3 ✅ auf GitHub
 
@@ -34,8 +36,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** **Werkkatalog** ök2 an **Werke-Spartenlogik** angeglichen – offen nur noch optional: Thumbnails/Auswahl/Sammeldruck + **`druckeWerkkarte`** auf **`buildWerkkarteCardHtml`** umstellen (Helfer liegt schon in der Datei).
-**Einordnung:** **Sportwagenmodus** – eine Quelle für Sparte/Kategorien wie im Admin-Tab Werke; **Datentrennung** Sold-Keys K2/ök2/VK2.
+**Was wir JETZT tun:** Nach Briefing/DIALOG – nächster Auftrag von Georg (z. B. Werkkatalog Thumbnails/Sammeldruck oder anderes).
+**Einordnung:** Admin-UI etwas schlanker; Werkkatalog-Sportwagen optional offen.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
@@ -49,13 +51,13 @@
 
 **Vorher:** 21.03.26 – **ök2 Demo/Muster UI (Georg):** Zwei Einstellungs-Zeilen + Stammdaten-Button → **eine** aufklappbare Zeile **„Demo & Muster zurücksetzen“** (zu, bis aufgeklappt); darin alle drei Aktionen + Hinweis Einzellöschen. **Meine Daten:** Verweis statt doppelter Button-Zeile. **Werke:** ein Zeilen-Hinweis. **App.css** `.admin-oek2-demo-details` für sauberes summary. Tests + Build grün. **Commit:** 69b5bae ✅ auf GitHub
 
-**Vorher:** 21.03.26 – **Einstellungen: Lizenzen eine Karte (Georg):** Drei Lizenz-Kacheln → **eine** Karte **„Lizenzen“** mit **Lizenzinformation** als Hauptbutton (dunkelrot), darunter **Lizenz abschließen** und **Lizenz beenden** (ök2). VK2/dynamischer Mandant: dieselbe Karte, nur **Lizenz beenden**. Untermenüs `lizenz` / `lizenzbeenden` / `lizenzinfo` unverändert. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** (nach Push)
+**Vorher:** 21.03.26 – **Einstellungen: Lizenzen eine Karte (Georg):** Drei Lizenz-Kacheln → **eine** Karte **„Lizenzen“** mit **Lizenzinformation** als Hauptbutton (dunkelrot), darunter **Lizenz abschließen** und **Lizenz beenden** (ök2). VK2/dynamischer Mandant: dieselbe Karte, nur **Lizenz beenden**. Untermenüs `lizenz` / `lizenzbeenden` / `lizenzinfo` unverändert. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 4f86888
 
 **Vorher:** 21.03.26 – **Corporate Design am Eingang + ök2-Banner:** **EntdeckenPage** – Weg „Meine eigene Plattform“ mit **eigener CD**-Hinweis, **Galerie gestalten** als **Mittelpunkt** (Hero, Frage 1, Hub-Stationen mit Badge). **GaleriePage** (ök2 Fremde): Banner-Text stärker CD + Button **„Galerie gestalten (CD)“** → **Mein Bereich** `?context=oeffentlich&tab=design`; **Import** `MEIN_BEREICH_ROUTE` ergänzt (Build-Fix). Mit **navigation** (`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`), **BrandLogo**, **PRODUKT-VISION** (Fremde-Einstieg). **Tests + Build grün.** **Commit:** aadb30c ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **ök2 Galerie: grüner Fremde-Balken + Entdecken-Guide:** Balken hing an `musterOnly && !showAdminEntryOnGalerie` – sobald `k2-admin-context=oeffentlich` session-weit gesetzt war, verschwand er (ohne echten Admin-Einstieg). **Neu:** `showOek2FremdeOrientierungsBanner` (ohne Kontext-Shortcut). **GalerieEntdeckenGuide** war nur bei `!musterOnly` gerendert, Name aber nur bei `musterOnly` geladen → auf ök2 nie sichtbar; jetzt `isFremder && guideName` ohne `!musterOnly`. **Commit:** 4e3e5ef (Push falls nötig)
 
-**Vorher:** 21.03.26 – **Eingangstor = `/entdecken` (Georg, Screenshot):** Verbindliches erste Tor = **EntdeckenPage** (Hero, Tor-Bild, „Jetzt entdecken“, Flow → ök2). **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = **`ENTDECKEN_ROUTE`** (nicht direkt `galerie-oeffentlich`). **PRODUKT-VISION** + Kommentare **navigation**, **EntdeckenPage**, **GaleriePage**-Tooltip, **BrandLogo**. **Commit:** (nach Push)
+**Vorher:** 21.03.26 – **Eingangstor = `/entdecken` (Georg, Screenshot):** Verbindliches erste Tor = **EntdeckenPage** (Hero, Tor-Bild, „Jetzt entdecken“, Flow → ök2). **`OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`** = **`ENTDECKEN_ROUTE`** (nicht direkt `galerie-oeffentlich`). **PRODUKT-VISION** + Kommentare **navigation**, **EntdeckenPage**, **GaleriePage**-Tooltip, **BrandLogo**. **Commit:** 4f86888
 
 **Vorher:** 21.03.26 – **kgm solution** oben links: Link über Konstante zum Fremd-Einstieg; zuvor nur Demo-Galerie-URL. **Commit:** 921f297 ✅ auf GitHub
 
