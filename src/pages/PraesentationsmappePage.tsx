@@ -136,6 +136,12 @@ export default function PraesentationsmappePage() {
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
             Im Admin führt der Bereich <strong>Statistik/Werkkatalog</strong> Verkaufs- und Lagerstatistik, den druckbaren Werkkatalog sowie PDF- und Speicherdaten-Exporte zusammen – inklusive schnellem Zugang zu Kundenadressen und zur Kassa. Details im Benutzerhandbuch und in der erweiterten Präsentationsmappe.
           </p>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+            Shop und Internetbestellung
+          </h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+            Über die öffentliche Galerie können Besucher in den <strong>Warenkorb</strong> legen und bestellen; die gewählte Zahlungsart ist ein <strong>Wunsch</strong> – in der App gibt es <strong>keine</strong> automatische Online-Abbuchung für den Kunstwerk-Warenkorb. Die <strong>Kasse</strong> im Admin bleibt der Weg für den Verkauf <strong>vor Ort</strong>. Ausführlich im Benutzerhandbuch (Kapitel Shop) und in der Präsentationsmappe Vollversion.
+          </p>
         </div>
 
         <div className="pm-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>

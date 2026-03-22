@@ -17,7 +17,7 @@ Dieses Kapitel beschreibt **Kassa** und **Buchhaltung** vollständig: wo Sie die
 
 **Wichtig:** Wenn Sie die **Galerie** als Besucherin oder Besucher ansehen und von dort einen Link zum **Shop** nutzen, sehen Sie die **Kundenansicht** („Meine Auswahl“, Reservierung) – **nicht** die Kasse. Die **Kasse** nutzen Sie immer **vom Admin aus** (Kassa-Einstieg). In der Kundenansicht erscheint bei Anmeldung ggf. **„Als Kasse öffnen“** – ein Klick schaltet in die Kassenansicht um.
 
-**Internetshop und Zahlung:** Was Besucher im **Online-Shop** sehen, wie **Karte / Rechnung / Bar** dort gemeint sind und wie eine **optionale** Online-Bezahllösung später aussehen könnte, steht ausführlich im Kapitel [Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md).
+**Internetshop und Zahlung:** Was Besucher im **Online-Shop** sehen und wie **Karte / Rechnung / Bar** dort gemeint sind, steht im Kapitel [Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md).
 
 ---
 

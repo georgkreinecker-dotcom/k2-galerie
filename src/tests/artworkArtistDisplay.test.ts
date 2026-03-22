@@ -23,6 +23,22 @@ describe('resolveArtistLabelForGalerieStatistik', () => {
     expect(resolveArtistLabelForGalerieStatistik({ category: 'skulptur' }, fb)).toBe('Georg K.')
   })
 
+  it('K2-K-/Keramik: fälschlich Martina im Künstlerfeld → Georg (Echtheitszertifikat / Statistik)', () => {
+    const fbFull = { martina: 'Martina Kreinecker', georg: 'Georg Kreinecker' }
+    expect(
+      resolveArtistLabelForGalerieStatistik(
+        { number: 'K2-K-0041', artist: 'Martina Kreinecker', category: 'malerei' },
+        fbFull,
+      ),
+    ).toBe('Georg Kreinecker')
+    expect(
+      resolveArtistLabelForGalerieStatistik({ number: 'K2-K-0041', artist: 'Martina K.', category: 'keramik' }, fb),
+    ).toBe('Georg K.')
+    expect(
+      resolveArtistLabelForGalerieStatistik({ number: 'K2-K-0041', artist: 'Martina', category: 'grafik' }, fb),
+    ).toBe('Georg K.')
+  })
+
   it('K2-Werknummer ohne artist', () => {
     expect(resolveArtistLabelForGalerieStatistik({ number: 'K2-M-0042' }, fb)).toBe('Martina K.')
     expect(resolveArtistLabelForGalerieStatistik({ number: 'K2-K-0012' }, fb)).toBe('Georg K.')
