@@ -12872,6 +12872,38 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               )}
             </div>
           </div>
+
+          {/* Orientierung: Arbeitsbereich vs. Besucheransicht – besonders beim Einstieg hilfreich */}
+          <div
+            role="note"
+            aria-label="Orientierung Admin und öffentliche Galerie"
+            style={{
+              marginTop: '0.85rem',
+              padding: '0.55rem 0.85rem',
+              borderRadius: '10px',
+              background: 'rgba(26, 95, 122, 0.09)',
+              border: '1px solid rgba(26, 95, 122, 0.28)',
+              color: '#1c1a18',
+              fontSize: '0.82rem',
+              lineHeight: 1.5,
+              fontFamily: s.fontBody,
+            }}
+          >
+            <strong style={{ color: '#1a5f7a' }}>Wo du gerade bist:</strong>{' '}
+            {tenant.isVk2 ? (
+              <>
+                <strong>Admin</strong> = interner Arbeitsbereich (Mitglieder, Einstellungen, Veröffentlichen). Die <strong>öffentliche</strong> Ansicht für Besucher siehst du über <strong>„Unsere Mitglieder“</strong> bzw. die Galerie – nicht jedes Speichern hier ist sofort draußen sichtbar, sondern nach dem vereinbarten Veröffentlichen.
+              </>
+            ) : tenant.isOeffentlich ? (
+              <>
+                <strong>Demo-Admin</strong> = Arbeitsbereich mit <strong>Musterdaten</strong> (nicht die echte K2-Galerie). Änderungen zuerst in der Demo gespeichert; <strong>für alle Demo-Besucher</strong> sichtbar wird es nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> prüfst du die Ansicht wie ein Besucher.
+              </>
+            ) : (
+              <>
+                <strong>Admin</strong> = dein <strong>Arbeitsbereich</strong> (nicht automatisch dasselbe wie die reine Galerie-URL für Besucher). Änderungen sind zuerst auf deinem Gerät gespeichert; <strong>öffentlich für alle</strong> werden sie nach <strong>Veröffentlichen</strong> (Tab „Veröffentlichen“ / An Server senden). <strong>„Galerie ansehen“</strong> zeigt die Besucherperspektive.
+              </>
+            )}
+          </div>
         </header>
 
         <main style={{

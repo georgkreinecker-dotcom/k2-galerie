@@ -4,6 +4,18 @@ Der Admin-Bereich ist Ihr Arbeitsplatz für alles, was Sie an Ihrer Galerie oder
 
 ---
 
+## Wo bin ich? Admin und öffentliche Galerie
+
+| Wo Sie sind | Was das bedeutet |
+|-------------|-------------------|
+| **Admin** (diese Oberfläche mit den Tabs) | **Ihr Arbeitsbereich.** Hier bearbeiten Sie Daten; zuerst oft nur auf **diesem Gerät** gespeichert. |
+| **Galerie / „Galerie ansehen“** (Besucherperspektive) | So sehen **Besucher** Ihre Seite – ohne die Admin-Tabs. |
+| **Öffentlich für alle im Netz** | In der Regel erst nach **Veröffentlichen** (An Server senden). Ohne diesen Schritt können andere Geräte oder Besucher einen älteren Stand sehen. |
+
+Oben im Admin steht ein kurzer **Orientierungshinweis** (grauer Kasten). So können Sie jederzeit prüfen: gerade **intern bearbeiten** oder **schon für Besucher freigegeben**.
+
+---
+
 ## Werke
 
 Unter **„Werke“** legen Sie Ihre Kunstwerke oder Objekte an und bearbeiten sie. Sie sehen eine Liste aller Werke, können neue hinzufügen, bestehende ändern oder – falls vorgesehen – aus der Galerie entfernen. Jedes Werk hat mindestens ein Bild und einen Titel; dazu können Sie z. B. Technik, Jahr und Preis erfassen.
