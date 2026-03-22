@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 90fb394 ✅ auf GitHub
+**Letzter Stand:** 22.03.26 – **Werkkatalog Sportwagenblock:** **WerkkatalogTab** – Spalte **Bild** (`vorschau`, `resolveArtworkImages`), **Checkbox-Spalte** + **„Alle der Ansicht“**, **Sammeldruck Werkkarten** (`buildWerkkarteCardHtml` + `openWerkkartePrintWindow`), **Einzel-Werkkarte** dieselbe Quelle; Katalog-**Drucken/PDF** mit aufgelösten Bildern + **vorschau**-Spalte. Tests + Build grün. **Commit:** 4111372 ✅ auf GitHub
+
+**Vorher:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 90fb394 ✅ auf GitHub
 
 **Vorher:** 21.03.26 – **Werkkatalog ök2 = Sparte wie „Werke verwalten“:** **WerkkatalogTab** – `getEffectiveDirectionFromWork`, `getCategoriesForDirection`, `getShopSoldArtworksKey`; Doku **dc47af8** / **e8f9d15**. ✅
 
@@ -36,8 +38,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Nach Briefing/DIALOG – nächster Auftrag von Georg (z. B. Werkkatalog Thumbnails/Sammeldruck oder anderes).
-**Einordnung:** Admin-UI etwas schlanker; Werkkatalog-Sportwagen optional offen.
+**Was wir JETZT tun:** Nach Briefing/DIALOG – nächster Auftrag von Georg.
+**Einordnung:** Werkkatalog = eine Druckquelle für Werkkarten; optional Spalte **Bild** in den Spalten-Checkboxen aktivieren.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

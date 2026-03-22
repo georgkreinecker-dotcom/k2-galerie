@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import {
   getCategoryLabel,
@@ -9,20 +9,42 @@ import {
   getEffectiveDirectionFromWork,
   getCategoriesForDirection,
 } from '../../src/config/tenantConfig'
-import { isEchteK2Werknummer } from '../../src/utils/artworksStorage'
+import { isEchteK2Werknummer, resolveArtworkImages } from '../../src/utils/artworksStorage'
 import { formatEkAnzeige } from '../../src/utils/artworkEkVk'
 import { getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
 
 const s = WERBEUNTERLAGEN_STIL
 
+function escAttr(v: string): string {
+  return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
+}
+
+function rowKeyArtwork(a: any): string {
+  return String(a?.number ?? a?.id ?? '')
+}
+
+/** Spalte „Typ“: ök2 = Sparte aus Werk (wie Werke verwalten), sonst entryType-Label. */
+function werkKatalogTypZelle(isOeffentlich: boolean, isVk2: boolean, a: { entryType?: string; category?: string }): string {
+  if (isOeffentlich && !isVk2) {
+    return FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(a))?.label ?? getEntryTypeLabel(a.entryType)
+  }
+  return getEntryTypeLabel(a.entryType)
+}
+
+type WerkkarteCardOpts = {
+  galName: string
+  datum: string
+  isVk2: boolean
+  showTypAndCategory: boolean
+  showOek2TypRow?: boolean
+  isOeffentlich?: boolean
+}
+
 /** Eine Werkkarte (innerer HTML-Block) – gleiches Layout für Einzeldruck und Sammeldruck (Sportwagen: eine Quelle). */
-function buildWerkkarteCardHtml(
-  w: any,
-  opts: { galName: string; datum: string; isVk2: boolean; showTypAndCategory: boolean }
-): string {
+function buildWerkkarteCardHtml(w: any, opts: WerkkarteCardOpts): string {
   const statusColor = w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280'
   const statusLabel = w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Online-Galerie' : 'Nur Lager & Kassa'
-  const imgHtml = w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${(w.title || '').replace(/"/g, '&quot;')}" />` : ''
+  const imgHtml = w.imageUrl ? `<img class="werk-img" src="${escAttr(w.imageUrl)}" alt="${escAttr(w.title || '')}" />` : ''
   if (opts.isVk2) {
     return `
       <div class="werk-page-inner">
@@ -49,6 +71,7 @@ function buildWerkkarteCardHtml(
       <div class="kuenstler">${w.artist || ''}</div>
       <div class="status-badge" style="background: ${w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border-color: ${statusColor}44;">${statusLabel}</div>
       <div class="meta">
+        ${opts.showOek2TypRow && opts.isOeffentlich ? `<div class="meta-item"><label>Typ</label><span>${escAttr(werkKatalogTypZelle(true, false, w))}</span></div>` : ''}
         ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
         ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
         ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
@@ -97,14 +120,6 @@ function openWerkkartePrintWindow(title: string, bodyInner: string): void {
       <script>window.onload=()=>window.print()</script>
       </body></html>`)
   pw.document.close()
-}
-
-/** Spalte „Typ“: ök2 = Sparte aus Werk (wie Werke verwalten), sonst entryType-Label. */
-function werkKatalogTypZelle(isOeffentlich: boolean, isVk2: boolean, a: { entryType?: string; category?: string }): string {
-  if (isOeffentlich && !isVk2) {
-    return FOCUS_DIRECTIONS.find((d) => d.id === getEffectiveDirectionFromWork(a))?.label ?? getEntryTypeLabel(a.entryType)
-  }
-  return getEntryTypeLabel(a.entryType)
 }
 
 interface KatalogFilter {
@@ -179,59 +194,102 @@ export default function WerkkatalogTab({
       : undefined
 
   // Sold-Status + Reservierung aus separaten Keys holen (K2 / ök2 / VK2 – wie Shop & Werke)
-  const soldMap = new Map<string, any>()
-  try {
-    const soldRaw = localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2))
-    if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
-  } catch (_) {}
-  const reservedMap = new Map<string, any>()
-  try {
-    const resRaw = localStorage.getItem('k2-reserved-artworks')
-    if (resRaw) JSON.parse(resRaw).forEach((r: any) => reservedMap.set(r.number, r))
-  } catch (_) {}
-
-  // Werke anreichern
-  const enriched = allArtworks.map((a: any) => {
-    const soldEntry = soldMap.get(a.number || a.id)
-    const resEntry = reservedMap.get(a.number || a.id)
-    return {
-      ...a,
-      sold: !!soldEntry,
-      soldAt: soldEntry?.soldAt || '',
-      soldPrice: soldEntry?.soldPrice || a.price,
-      buyer: soldEntry?.buyer || '',
-      reserved: !!resEntry,
-      reservedFor: resEntry?.reservedFor || '',
-      reservedAt: resEntry?.reservedAt || '',
-    }
-  })
+  const enriched = useMemo(() => {
+    const soldMap = new Map<string, any>()
+    try {
+      const soldRaw = localStorage.getItem(getShopSoldArtworksKey(!!isOeffentlich, !!isVk2))
+      if (soldRaw) JSON.parse(soldRaw).forEach((s: any) => soldMap.set(s.number, s))
+    } catch (_) {}
+    const reservedMap = new Map<string, any>()
+    try {
+      const resRaw = localStorage.getItem('k2-reserved-artworks')
+      if (resRaw) JSON.parse(resRaw).forEach((r: any) => reservedMap.set(r.number, r))
+    } catch (_) {}
+    return allArtworks.map((a: any) => {
+      const soldEntry = soldMap.get(a.number || a.id)
+      const resEntry = reservedMap.get(a.number || a.id)
+      return {
+        ...a,
+        sold: !!soldEntry,
+        soldAt: soldEntry?.soldAt || '',
+        soldPrice: soldEntry?.soldPrice || a.price,
+        buyer: soldEntry?.buyer || '',
+        reserved: !!resEntry,
+        reservedFor: resEntry?.reservedFor || '',
+        reservedAt: resEntry?.reservedAt || '',
+      }
+    })
+  }, [allArtworks, isOeffentlich, isVk2])
 
   // Filter anwenden (VK2: keine Verkaufs-/Status-/Preis-/Datumsfilter)
-  const filtered = enriched.filter((a: any) => {
-    // ök2: wie „Werke verwalten“ – nur Werke der Sparte aus Stammdaten (focusDirections[0])
-    if (showTypAndCategory && oek2SparteId && getEffectiveDirectionFromWork(a) !== oek2SparteId) return false
-    if (showTypAndCategory && setCategoryFilter && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
-    if (!isOeffentlich && !isVk2 && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
-    if (!isVk2) {
-      if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
-      if (katalogFilter.status === 'verkauft' && !a.sold) return false
-      if (katalogFilter.status === 'reserviert' && !a.reserved) return false
-      if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
+  const filtered = useMemo(
+    () =>
+      enriched.filter((a: any) => {
+        if (showTypAndCategory && oek2SparteId && getEffectiveDirectionFromWork(a) !== oek2SparteId) return false
+        if (showTypAndCategory && setCategoryFilter && categoryFilter !== 'alle' && a.category !== categoryFilter) return false
+        if (!isOeffentlich && !isVk2 && katalogFilter.kategorie && a.category !== katalogFilter.kategorie) return false
+        if (!isVk2) {
+          if (katalogFilter.status === 'galerie' && !a.inExhibition) return false
+          if (katalogFilter.status === 'verkauft' && !a.sold) return false
+          if (katalogFilter.status === 'reserviert' && !a.reserved) return false
+          if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
+        }
+        if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
+        if (katalogFilter.suchtext) {
+          const q = katalogFilter.suchtext.toLowerCase()
+          const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''} ${a.purchasePrice != null ? a.purchasePrice : ''}`.toLowerCase()
+          if (!hay.includes(q)) return false
+        }
+        if (!isVk2) {
+          if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
+          if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
+          if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
+          if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
+        }
+        return true
+      }),
+    [
+      enriched,
+      showTypAndCategory,
+      oek2SparteId,
+      categoryFilter,
+      setCategoryFilter,
+      katalogFilter.status,
+      katalogFilter.kategorie,
+      katalogFilter.artist,
+      katalogFilter.suchtext,
+      katalogFilter.vonPreis,
+      katalogFilter.bisPreis,
+      katalogFilter.vonDatum,
+      katalogFilter.bisDatum,
+      isVk2,
+      isOeffentlich,
+    ]
+  )
+
+  const [rowsWithImages, setRowsWithImages] = useState<any[]>(filtered)
+  useEffect(() => {
+    let cancelled = false
+    setRowsWithImages(filtered)
+    resolveArtworkImages(filtered).then((list) => {
+      if (!cancelled) setRowsWithImages(list)
+    })
+    return () => {
+      cancelled = true
     }
-    if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
-    if (katalogFilter.suchtext) {
-      const q = katalogFilter.suchtext.toLowerCase()
-      const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''} ${a.purchasePrice != null ? a.purchasePrice : ''}`.toLowerCase()
-      if (!hay.includes(q)) return false
-    }
-    if (!isVk2) {
-      if (katalogFilter.vonPreis && a.price < parseFloat(katalogFilter.vonPreis)) return false
-      if (katalogFilter.bisPreis && a.price > parseFloat(katalogFilter.bisPreis)) return false
-      if (katalogFilter.vonDatum && a.createdAt && a.createdAt < katalogFilter.vonDatum) return false
-      if (katalogFilter.bisDatum && a.createdAt && a.createdAt > katalogFilter.bisDatum + 'T23:59:59') return false
-    }
-    return true
-  })
+  }, [filtered])
+
+  const [selectedForBatchPrint, setSelectedForBatchPrint] = useState<Set<string>>(() => new Set())
+  useEffect(() => {
+    setSelectedForBatchPrint(new Set())
+  }, [filtered])
+
+  const selectableKeys = useMemo(
+    () => rowsWithImages.map(rowKeyArtwork).filter((k): k is string => k.length > 0),
+    [rowsWithImages]
+  )
+  const allViewSelected =
+    selectableKeys.length > 0 && selectableKeys.every((k) => selectedForBatchPrint.has(k))
 
   /** VK2: nur Präsentations-Spalten anzeigen (ohne Typ/Kategorie). Fallback wenn keine gewählt. */
   const effectiveSpalten = isVk2
@@ -241,45 +299,99 @@ export default function WerkkatalogTab({
 
   const druckeKatalog = () => {
     const pw = window.open('', '_blank')
-    if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
+    if (!pw) {
+      alert('Pop-up blockiert – bitte erlauben.')
+      return
+    }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
-    const statusLabel = isVk2 ? 'Präsentation' : (katalogFilter.status === 'galerie' ? 'In Online-Galerie' : katalogFilter.status === 'verkauft' ? 'Verkauft' : katalogFilter.status === 'lager' ? 'Nur Lager & Kassa' : 'Alle')
+    const statusLabel = isVk2
+      ? 'Präsentation'
+      : katalogFilter.status === 'galerie'
+        ? 'In Online-Galerie'
+        : katalogFilter.status === 'verkauft'
+          ? 'Verkauft'
+          : katalogFilter.status === 'lager'
+            ? 'Nur Lager & Kassa'
+            : 'Alle'
     const cols = isVk2 ? effectiveSpalten : katalogSpalten
-    const rows = filtered.map((a: any) => {
-      const cells = cols.map(col => {
-        switch (col) {
-          case 'nummer': return `<td>${a.number || a.id || '–'}</td>`
-          case 'titel': return `<td><strong>${a.title || '–'}</strong></td>`
-          case 'typ': return `<td>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>`
-          case 'kategorie': return `<td>${getCategoryLabel(a.category)}</td>`
-          case 'kuenstler': return `<td>${a.artist || '–'}</td>`
-          case 'masse': return `<td>${a.dimensions || '–'}</td>`
-          case 'technik': return `<td>${a.technik || '–'}</td>`
-          case 'beschreibung': return `<td>${(a.description || '–').toString().slice(0, 200)}${(a.description || '').length > 200 ? '…' : ''}</td>`
-          case 'ek': return `<td style="text-align:right">${formatEkAnzeige(a.purchasePrice)}</td>`
-          case 'preis': return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
-          case 'status': return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Online-Galerie</span>' : 'Lager'}</td>`
-          case 'datum': return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
-          case 'kaeufer': return `<td>${a.buyer || '–'}</td>`
-          case 'verkauftam': return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
-          case 'stueck': return `<td style="text-align:right;font-weight:${a.quantity > 1 ? 700 : 400}">${a.quantity ?? 1}</td>`
-          case 'standort': return `<td>${a.location || '–'}</td>`
-          default: return '<td>–</td>'
-        }
-      }).join('')
-      return `<tr>${cells}</tr>`
-    }).join('')
-    const colHeaders: Record<string, string> = {
-      nummer: 'Nr.', titel: 'Titel', typ: 'Typ', kategorie: 'Kategorie', kuenstler: 'Künstler:in',
-      masse: 'Maße', technik: 'Technik/Material', beschreibung: 'Beschreibung',
-      ek: 'EK', preis: 'VK', status: 'Status', datum: 'Erstellt', kaeufer: 'Käufer:in', verkauftam: 'Verkauft am', stueck: 'Stück', standort: 'Standort'
-    }
-    const thead = cols.map(c => {
-      const align = c === 'preis' || c === 'ek' || c === 'stueck' ? 'right' : 'left'
-      return `<th style="text-align:${align};padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`
-    }).join('')
-    pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
+    void (async () => {
+      const resolvedRows = await resolveArtworkImages(filtered)
+      const rows = resolvedRows
+        .map((a: any) => {
+          const cells = cols
+            .map((col) => {
+              switch (col) {
+                case 'nummer':
+                  return `<td>${a.number || a.id || '–'}</td>`
+                case 'vorschau':
+                  return a.imageUrl
+                    ? `<td style="padding:4px"><img src="${escAttr(a.imageUrl)}" alt="" style="max-height:52px;max-width:72px;object-fit:contain;vertical-align:middle" /></td>`
+                    : '<td style="padding:4px">–</td>'
+                case 'titel':
+                  return `<td><strong>${a.title || '–'}</strong></td>`
+                case 'typ':
+                  return `<td>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>`
+                case 'kategorie':
+                  return `<td>${getCategoryLabel(a.category)}</td>`
+                case 'kuenstler':
+                  return `<td>${a.artist || '–'}</td>`
+                case 'masse':
+                  return `<td>${a.dimensions || '–'}</td>`
+                case 'technik':
+                  return `<td>${a.technik || '–'}</td>`
+                case 'beschreibung':
+                  return `<td>${(a.description || '–').toString().slice(0, 200)}${(a.description || '').length > 200 ? '…' : ''}</td>`
+                case 'ek':
+                  return `<td style="text-align:right">${formatEkAnzeige(a.purchasePrice)}</td>`
+                case 'preis':
+                  return `<td style="text-align:right">${a.price ? `€ ${Number(a.price).toFixed(2)}` : '–'}</td>`
+                case 'status':
+                  return `<td>${a.sold ? `<span style="color:#b91c1c;font-weight:700">Verkauft</span>` : a.reserved ? `<span style="color:#d97706;font-weight:700">Reserviert${a.reservedFor ? ' – ' + a.reservedFor : ''}</span>` : a.inExhibition ? '<span style="color:#15803d">Online-Galerie</span>' : 'Lager'}</td>`
+                case 'datum':
+                  return `<td>${a.createdAt ? new Date(a.createdAt).toLocaleDateString('de-DE') : '–'}</td>`
+                case 'kaeufer':
+                  return `<td>${a.buyer || '–'}</td>`
+                case 'verkauftam':
+                  return `<td>${a.soldAt ? new Date(a.soldAt).toLocaleDateString('de-DE') : '–'}</td>`
+                case 'stueck':
+                  return `<td style="text-align:right;font-weight:${a.quantity > 1 ? 700 : 400}">${a.quantity ?? 1}</td>`
+                case 'standort':
+                  return `<td>${a.location || '–'}</td>`
+                default:
+                  return '<td>–</td>'
+              }
+            })
+            .join('')
+          return `<tr>${cells}</tr>`
+        })
+        .join('')
+      const colHeaders: Record<string, string> = {
+        nummer: 'Nr.',
+        vorschau: 'Bild',
+        titel: 'Titel',
+        typ: 'Typ',
+        kategorie: 'Kategorie',
+        kuenstler: 'Künstler:in',
+        masse: 'Maße',
+        technik: 'Technik/Material',
+        beschreibung: 'Beschreibung',
+        ek: 'EK',
+        preis: 'VK',
+        status: 'Status',
+        datum: 'Erstellt',
+        kaeufer: 'Käufer:in',
+        verkauftam: 'Verkauft am',
+        stueck: 'Stück',
+        standort: 'Standort',
+      }
+      const thead = cols
+        .map((c) => {
+          const align = c === 'preis' || c === 'ek' || c === 'stueck' ? 'right' : 'left'
+          return `<th style="text-align:${align};padding:6px 8px;border-bottom:2px solid #8b6914;white-space:nowrap">${colHeaders[c] || c}</th>`
+        })
+        .join('')
+      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Werkkatalog – ${galName}</title>
       <style>
         @media print { @page { size: A4 landscape; margin: 12mm; } }
@@ -296,7 +408,37 @@ export default function WerkkatalogTab({
       <table><thead><tr>${thead}</tr></thead><tbody>${rows}</tbody></table>
       <script>window.onload=()=>window.print()</script>
     </body></html>`)
-    pw.document.close()
+      pw.document.close()
+    })()
+  }
+
+  const showOek2TypRow = !!isOeffentlich && !isVk2 && !!galleryData?.focusDirections?.[0]
+
+  const druckeAusgewaehlteWerkkarten = () => {
+    if (selectedForBatchPrint.size === 0) {
+      alert('Bitte mindestens ein Werk in der Tabelle ankreuzen.')
+      return
+    }
+    const galName = galleryData.name || 'K2 Galerie'
+    const datum = new Date().toLocaleDateString('de-DE')
+    const picked = rowsWithImages.filter((a) => selectedForBatchPrint.has(rowKeyArtwork(a)))
+    void (async () => {
+      const resolved = await resolveArtworkImages(picked)
+      const body = resolved
+        .map(
+          (rw) =>
+            `<div class="werk-page">${buildWerkkarteCardHtml(rw, {
+              galName,
+              datum,
+              isVk2: !!isVk2,
+              showTypAndCategory,
+              showOek2TypRow,
+              isOeffentlich: !!isOeffentlich,
+            })}</div>`
+        )
+        .join('')
+      openWerkkartePrintWindow(`Werkkarten (${resolved.length}) – ${galName}`, body)
+    })()
   }
 
   const w = katalogSelectedWork
@@ -305,86 +447,21 @@ export default function WerkkatalogTab({
 
   const druckeWerkkarte = () => {
     if (!w) return
-    const pw = window.open('', '_blank')
-    if (!pw) { alert('Pop-up blockiert – bitte erlauben.'); return }
     const galName = galleryData.name || 'K2 Galerie'
     const datum = new Date().toLocaleDateString('de-DE')
-    if (isVk2) {
-      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>${w.title || w.number || 'Werk'} – ${galName}</title>
-      <style>
-        @media print { @page { size: A5; margin: 10mm; } }
-        body { font-family: Georgia, serif; color: #111; margin: 0; padding: 20px; max-width: 148mm; }
-        .header { border-bottom: 3px solid #8b6914; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .header h1 { margin: 0; font-size: 14px; color: #8b6914; font-family: Arial, sans-serif; }
-        .header .nr { font-size: 22px; font-weight: bold; color: #111; font-family: Arial, sans-serif; }
-        .werk-img { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; margin-bottom: 14px; background: #f5f0e8; }
-        .titel { font-size: 22px; font-weight: bold; margin: 0 0 4px; color: #111; }
-        .kuenstler { font-size: 13px; color: #555; margin: 0 0 14px; font-style: italic; }
-        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 12px; margin-bottom: 14px; }
-        .meta-item label { color: #888; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
-        .meta-item span { color: #111; font-weight: 500; }
-        .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
-        .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
-      </style></head><body>
-      <div class="header"><h1>${galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
-      ${w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${w.title || ''}" />` : ''}
-      <div class="titel">${w.title || '–'}</div>
-      <div class="kuenstler">${w.artist || ''}</div>
-      <div class="meta">
-        ${showTypAndCategory && galleryData?.focusDirections?.[0] ? `<div class="meta-item"><label>Typ</label><span>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, w)}</span></div>` : ''}
-        ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
-        ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
-        ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
-        ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
-      </div>
-      ${w.description ? `<div class="beschreibung">${w.description}</div>` : ''}
-      <div class="footer"><span>${galName}</span><span>Vereinskatalog · ${datum}</span></div>
-      <script>window.onload=()=>window.print()</script>
-      </body></html>`)
-    } else {
-      pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>Werkkarte – ${w.number || w.id}</title>
-      <style>
-        @media print { @page { size: A5; margin: 10mm; } }
-        body { font-family: Georgia, serif; color: #111; margin: 0; padding: 20px; max-width: 148mm; }
-        .header { border-bottom: 3px solid #8b6914; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .header h1 { margin: 0; font-size: 14px; color: #8b6914; font-family: Arial, sans-serif; }
-        .header .nr { font-size: 22px; font-weight: bold; color: #111; font-family: Arial, sans-serif; }
-        .werk-img { width: 100%; max-height: 160px; object-fit: contain; border-radius: 6px; margin-bottom: 14px; background: #f5f0e8; }
-        .titel { font-size: 22px; font-weight: bold; margin: 0 0 4px; color: #111; }
-        .kuenstler { font-size: 13px; color: #555; margin: 0 0 14px; font-style: italic; }
-        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 12px; margin-bottom: 14px; }
-        .meta-item label { color: #888; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1px; }
-        .meta-item span { color: #111; font-weight: 500; }
-        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: ${w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border: 1px solid ${statusColor}44; margin-bottom: 14px; }
-        .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
-        .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
-      </style></head><body>
-      <div class="header"><h1>${galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
-      ${w.imageUrl ? `<img class="werk-img" src="${w.imageUrl}" alt="${w.title || ''}" />` : ''}
-      <div class="titel">${w.title || '–'}</div>
-      <div class="kuenstler">${w.artist || ''}</div>
-      <div class="status-badge">${statusLabel}</div>
-      <div class="meta">
-        ${isOeffentlich && galleryData?.focusDirections?.[0] ? `<div class="meta-item"><label>Typ</label><span>${werkKatalogTypZelle(!!isOeffentlich, !!isVk2, w)}</span></div>` : ''}
-        ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
-        ${w.technik ? `<div class="meta-item"><label>Technik / Material</label><span>${w.technik}</span></div>` : ''}
-        ${w.category ? `<div class="meta-item"><label>Kategorie</label><span>${getCategoryLabel(w.category)}</span></div>` : ''}
-        <div class="meta-item"><label>EK</label><span>${formatEkAnzeige(w.purchasePrice)}</span></div>
-        <div class="meta-item"><label>VK</label><span>${w.price ? `€ ${Number(w.price).toFixed(2)}` : '–'}</span></div>
-        ${(w.quantity != null && Number(w.quantity) > 1) ? `<div class="meta-item"><label>Stückzahl</label><span>${w.quantity} Exemplare</span></div>` : ''}
-        ${w.createdAt ? `<div class="meta-item"><label>Erstellt</label><span>${new Date(w.createdAt).toLocaleDateString('de-DE')}</span></div>` : ''}
-        ${w.soldAt ? `<div class="meta-item"><label>Verkauft am</label><span>${new Date(w.soldAt).toLocaleDateString('de-DE')}</span></div>` : ''}
-        ${w.buyer ? `<div class="meta-item"><label>Käufer:in</label><span>${w.buyer}</span></div>` : ''}
-        ${w.soldPrice && w.soldPrice !== w.price ? `<div class="meta-item"><label>Verkaufspreis</label><span>€ ${Number(w.soldPrice).toFixed(2)}</span></div>` : ''}
-      </div>
-      ${w.description ? `<div class="beschreibung">${w.description}</div>` : ''}
-      <div class="footer"><span>${galName}</span><span>Werkkarte · ${datum}</span></div>
-      <script>window.onload=()=>window.print()</script>
-      </body></html>`)
-    }
-    pw.document.close()
+    void (async () => {
+      const [rw] = await resolveArtworkImages([w])
+      const work = rw || w
+      const inner = buildWerkkarteCardHtml(work, {
+        galName,
+        datum,
+        isVk2: !!isVk2,
+        showTypAndCategory,
+        showOek2TypRow,
+        isOeffentlich: !!isOeffentlich,
+      })
+      openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`)
+    })()
   }
 
   return (
@@ -510,8 +587,26 @@ export default function WerkkatalogTab({
             {col.label}
           </label>
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
           <span style={{ fontSize: '0.82rem', color: s.muted, alignSelf: 'center' }}>{filtered.length} Werke</span>
+          <button
+            type="button"
+            onClick={druckeAusgewaehlteWerkkarten}
+            disabled={selectedForBatchPrint.size === 0}
+            title={selectedForBatchPrint.size === 0 ? 'Werke in der Tabelle ankreuzen' : `${selectedForBatchPrint.size} Werkkarten drucken`}
+            style={{
+              padding: '0.5rem 1rem',
+              background: selectedForBatchPrint.size === 0 ? s.bgElevated : '#5c3d0e',
+              color: selectedForBatchPrint.size === 0 ? s.muted : '#fff',
+              border: `1px solid ${s.accent}44`,
+              borderRadius: 8,
+              fontWeight: 700,
+              fontSize: '0.9rem',
+              cursor: selectedForBatchPrint.size === 0 ? 'not-allowed' : 'pointer',
+            }}
+          >
+            🖨️ Ausgewählte Werkkarten ({selectedForBatchPrint.size})
+          </button>
           <button type="button" onClick={druckeKatalog}
             style={{ padding: '0.5rem 1.25rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
             🖨️ Drucken / PDF
@@ -527,7 +622,20 @@ export default function WerkkatalogTab({
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
             <thead>
               <tr style={{ background: s.bgElevated }}>
+                <th style={{ padding: '8px 6px', textAlign: 'center', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, width: 36, verticalAlign: 'middle' }} title="Alle sichtbaren Werke für Sammeldruck">
+                  <input
+                    type="checkbox"
+                    checked={allViewSelected}
+                    onChange={() => {
+                      if (allViewSelected) setSelectedForBatchPrint(new Set())
+                      else setSelectedForBatchPrint(new Set(selectableKeys))
+                    }}
+                    style={{ accentColor: s.accent, width: 16, height: 16, cursor: 'pointer' }}
+                    aria-label="Alle Werke der Ansicht für Werkkarten-Sammeldruck auswählen"
+                  />
+                </th>
                 {effectiveSpalten.includes('nummer') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Nr.</th>}
+                {effectiveSpalten.includes('vorschau') && <th style={{ padding: '8px 10px', textAlign: 'center', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33`, whiteSpace: 'nowrap' }}>Bild</th>}
                 {effectiveSpalten.includes('titel') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Titel</th>}
                 {effectiveSpalten.includes('typ') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Typ</th>}
                 {effectiveSpalten.includes('kategorie') && <th style={{ padding: '8px 10px', textAlign: 'left', color: s.muted, fontWeight: 600, borderBottom: `2px solid ${s.accent}33` }}>Kategorie</th>}
@@ -546,14 +654,47 @@ export default function WerkkatalogTab({
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a: any, i: number) => (
+              {rowsWithImages.map((a: any, i: number) => {
+                const rk = rowKeyArtwork(a)
+                const sel = rk ? selectedForBatchPrint.has(rk) : false
+                return (
                 <tr key={a.id || a.number || i}
                   onClick={() => setKatalogSelectedWork(a)}
                   style={{ background: i % 2 === 0 ? 'transparent' : `${s.accent}06`, cursor: 'pointer', transition: 'background 0.15s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = `${s.accent}14`)}
                   onMouseLeave={e => (e.currentTarget.style.background = i % 2 === 0 ? 'transparent' : `${s.accent}06`)}
                 >
+                  <td
+                    style={{ padding: '6px', textAlign: 'center', borderBottom: `1px solid ${s.accent}18`, verticalAlign: 'middle' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {rk ? (
+                      <input
+                        type="checkbox"
+                        checked={sel}
+                        onChange={() => {
+                          setSelectedForBatchPrint((prev) => {
+                            const n = new Set(prev)
+                            if (n.has(rk)) n.delete(rk)
+                            else n.add(rk)
+                            return n
+                          })
+                        }}
+                        style={{ accentColor: s.accent, width: 16, height: 16, cursor: 'pointer' }}
+                        aria-label={`Werk ${rk} für Sammeldruck`}
+                      />
+                    ) : null}
+                  </td>
                   {effectiveSpalten.includes('nummer') && <td style={{ padding: '7px 10px', color: s.accent, fontWeight: 700, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.number || a.id || '–'}</td>}
+                  {effectiveSpalten.includes('vorschau') && (
+                    <td style={{ padding: '4px 6px', borderBottom: `1px solid ${s.accent}18`, textAlign: 'center', verticalAlign: 'middle' }}>
+                      {a.imageUrl ? (
+                        <img src={a.imageUrl} alt="" style={{ maxHeight: 44, maxWidth: 56, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle', borderRadius: 4, background: s.bgElevated }} />
+                      ) : (
+                        <span style={{ color: s.muted, fontSize: '0.75rem' }}>–</span>
+                      )}
+                    </td>
+                  )}
                   {effectiveSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
                   {effectiveSpalten.includes('typ') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>}
                   {effectiveSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
@@ -595,7 +736,8 @@ export default function WerkkatalogTab({
                   {effectiveSpalten.includes('stueck') && <td style={{ padding: '7px 10px', color: s.text, textAlign: 'right', fontWeight: a.quantity > 1 ? 700 : 400, borderBottom: `1px solid ${s.accent}18` }}>{a.quantity ?? 1}</td>}
                   {effectiveSpalten.includes('standort') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.location || '–'}</td>}
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
