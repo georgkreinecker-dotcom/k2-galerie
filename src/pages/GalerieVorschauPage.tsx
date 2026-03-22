@@ -2457,7 +2457,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 marginTop: '1rem',
                 color: galerieTheme.muted
               }}>
-                {musterOnly ? 'Deine Sparte steht in den Stammdaten (Meine Richtung). Hier siehst du nur Werke dieser Sparte. Füge im Admin neue Werke hinzu und markiere sie als "Teil der Ausstellung".' : 'Füge im Admin-Bereich neue Werke hinzu und markiere sie als "Teil der Ausstellung".'}
+                {musterOnly ? 'Deine Sparte steht in den Stammdaten (Mein Weg). Hier siehst du nur Werke dieser Sparte. Füge im Admin neue Werke hinzu und markiere sie als "Teil der Ausstellung".' : 'Füge im Admin-Bereich neue Werke hinzu und markiere sie als "Teil der Ausstellung".'}
               </p>
             </div>
           ) : (

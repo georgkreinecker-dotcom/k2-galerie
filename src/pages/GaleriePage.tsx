@@ -3107,12 +3107,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen: rechts die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Meine Richtung</strong> festlegst.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen: rechts die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Mein Weg</strong> festlegst.
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
               <div
                 role="note"
-                aria-label="Sparten und Meine Richtung"
+                aria-label="Sparten und Mein Weg"
                 style={{
                   padding: '0.65rem 0.85rem',
                   background: 'rgba(255, 255, 255, 0.55)',
@@ -3124,7 +3124,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 }}
               >
                 <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#1c1a18' }}>
-                  Sparte und „Meine Richtung“ – Auswahl später in den Einstellungen
+                  Sparte und „Mein Weg“ – Auswahl später in den Einstellungen
                 </div>
                 <p style={{ margin: '0 0 0.4rem', color: '#5c5650' }}>
                   So kannst du deine eigene Linie später ausrichten – im Muster nur zum Nachlesen:

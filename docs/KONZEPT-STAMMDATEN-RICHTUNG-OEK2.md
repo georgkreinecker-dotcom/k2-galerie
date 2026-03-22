@@ -1,4 +1,4 @@
-# Konzept: Stammdaten „Meine Richtung“ (ök2 / Lizenznehmer)
+# Konzept: Stammdaten „Mein Weg“ (ök2 / Lizenznehmer)
 
 **Stand:** 19.03.26 – Georg: User hat eine Idee/Vorstellung im Kopf, wenn er auf ök2 kommt; in den Stammdaten seine Richtung per Ankreuzen festlegen → bekommt die passenden Einstellungen in Werken und für alle weiteren Schritte. Auswahl erweitern: Marktanalyse nutzen, Kunst + 5 weitere.
 
@@ -39,7 +39,7 @@ Quelle: **docs/MARKTANALYSE-K2-GALERIE.md**, **docs/MAERKTE-OHNE-KUNST-CHANCEN.m
 - **Neues Feld** (konfigurierbar, erweiterbar):
   - z. B. `focusDirections: string[]` oder `richtungen: ('kunst'|'handwerk'|'design'|'mode'|'food'|'dienstleister')[]`
   - Speicher: `k2-stammdaten-galerie` (K2), `k2-oeffentlich-stammdaten-galerie` (ök2), bei Lizenznehmer analog.
-- **UI:** Im Admin unter Stammdaten (Galerie / Meine Daten) ein Block **„Meine Richtung“** / **„Wofür nutzt du deine Galerie?“** – Mehrfachauswahl (Checkboxen), mindestens eine Auswahl.
+- **UI:** Im Admin unter Stammdaten (Galerie / Meine Daten) ein Block **„Mein Weg“** / **„Wofür nutzt du deine Galerie?“** – Mehrfachauswahl (Checkboxen), mindestens eine Auswahl.
 
 ---
 
@@ -70,7 +70,7 @@ Alles **konfigurierbar**, kein Sonderbau pro Richtung – **ein** Modell, Richtu
 
 1. **Richtungen festlegen:** Die 6 (Kunst + 5) so übernehmen oder 1–2 tauschen (z. B. „Messen & Märkte“ statt „Food“)?
 2. **Stammdaten erweitern:** Feld `focusDirections` / `richtungen` in Stammdaten-Galerie (Typ + Keys); Doku DATENFLUSS-GALERIE-STRUKTUR.md ergänzen.
-3. **UI Stammdaten:** Block „Meine Richtung“ mit Checkboxen (ök2 zuerst, dann K2/Lizenznehmer).
+3. **UI Stammdaten:** Block „Mein Weg“ mit Checkboxen (ök2 zuerst, dann K2/Lizenznehmer).
 4. **Verhalten Werke:** Beim ersten Öffnen von „Neues Werk“ Default-Typ und -Kategorien aus gewählter Richtung ableiten (eine Funktion, eine Quelle).
 5. **Weitere Schritte:** Willkommenstext, Presse, Events schrittweise an Richtung anbinden.
 

@@ -3176,7 +3176,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     alert('✅ Musterdaten entfernt. Trage jetzt deine eigenen Daten ein.')
   }
 
-  // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Meine Richtung) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; K2: echte Stammdaten
+  // Stammdaten speichern - bei ök2: Demo-Stammdaten (inkl. Mein Weg) in k2-oeffentlich-stammdaten-*; bei VK2 in k2-vk2-stammdaten; K2: echte Stammdaten
   const saveStammdaten = () => {
     return new Promise<void>((resolve, reject) => {
       if (tenant.isOeffentlich) {
@@ -14254,7 +14254,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </p>
                         {tenant.isOeffentlich && (
                           <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', marginTop: '0.35rem', color: s.muted }}>
-                            Deine Sparte steht in den Stammdaten (Meine Richtung). Hier siehst du nur Werke dieser Sparte.
+                            Deine Sparte steht in den Stammdaten (Mein Weg). Hier siehst du nur Werke dieser Sparte.
                           </p>
                         )}
                         <p style={{ fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', marginTop: '0.35rem', color: s.muted }}>
@@ -16797,7 +16797,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       Ausstellungs-Galerie – Adresse (für Impressum, Dokumente, Google Maps)
                     </h3>
                     <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: s.muted }}>Diese Adresse ist die prominente Adresse nach außen: Impressum, alle Dokumente und Google Maps nutzen sie zuerst. Nur wenn hier nichts eingetragen ist, werden die Adressdaten der Kontaktperson verwendet.</p>
-                    {/* Nur ök2: Meine Richtung – eine Sparte, fix aus Stammdaten (kommt in Werke verwalten automatisch). */}
+                    {/* Nur ök2: Mein Weg – eine Sparte, fix aus Stammdaten (kommt in Werke verwalten automatisch). */}
                     {tenant.isOeffentlich && (
                       <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px' }}>
                         <p style={{ margin: '0 0 0.5rem', fontSize: '0.9rem', fontWeight: 600, color: s.text }}>Wofür nutzt du deine Galerie?</p>

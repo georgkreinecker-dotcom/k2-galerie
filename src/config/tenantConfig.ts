@@ -159,7 +159,7 @@ export const K2_STAMMDATEN_DEFAULTS = {
     rechnungAddress: '',
     rechnungCity: '',
     rechnungCountry: '',
-    /** Meine Richtung (ök2/Lizenznehmer): Kunst + 5 weitere – für Werke-Defaults und weitere Schritte. */
+    /** Mein Weg (ök2/Lizenznehmer): Kunst + 5 weitere – für Werke-Defaults und weitere Schritte. */
     focusDirections: [] as string[],
     /** Produktstory / Idee-Story für Presse & PR (ök2 andere Sparten); bei Kunst = Vita. */
     story: '',
@@ -922,7 +922,7 @@ export function isSubcategoryPlausibleForCategory(categoryId: string | undefined
 }
 
 /**
- * Richtungen für Stammdaten „Meine Richtung“ (ök2 / Lizenznehmer).
+ * Richtungen für Stammdaten „Mein Weg“ (ök2 / Lizenznehmer).
  * User legt beim Einstieg fest, wofür er die Galerie nutzt → Defaults für Werke und weitere Schritte.
  * Doku: docs/KONZEPT-STAMMDATEN-RICHTUNG-OEK2.md, docs/MARKTANALYSE-K2-GALERIE.md
  */

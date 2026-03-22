@@ -19,7 +19,7 @@ export interface PersonDataForPr {
 
 /**
  * Liefert den einen Story-Text für Presse, Flyer, Einladung, Social.
- * - Kunst (Meine Richtung = kunst oder kein focusDirections): Vita/Bio von Person 1 (Martina).
+ * - Kunst (Mein Weg = kunst oder kein focusDirections): Vita/Bio von Person 1 (Martina).
  * - Andere Sparten (food, handwerk, design, mode, dienstleister): gallery.story (Produktstory).
  */
 export function getStoryForPr(

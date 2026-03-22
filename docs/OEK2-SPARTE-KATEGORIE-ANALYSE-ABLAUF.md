@@ -9,7 +9,7 @@
 
 | Schritt | Wo | Verhalten |
 |--------|-----|-----------|
-| **Stammdaten** | Admin → Stammdaten → „Meine Richtung“ | Eine Sparte wählen (Radio), gespeichert als `focusDirections: [id]`. |
+| **Stammdaten** | Admin → Stammdaten → „Mein Weg“ | Eine Sparte wählen (Radio), gespeichert als `focusDirections: [id]`. |
 | **Werke verwalten – Filter** | Tab Werke, Filterzeile | **Typ** = nur Anzeige (fix aus Stammdaten). **Kategorie** = Dropdown (Alle + Kategorien aus `getCategoriesForDirection(focusDirections[0])`). |
 | **Filterlogik** | Liste der Werke | Nur Werke der festen Sparte: `getEffectiveDirectionFromWork(artwork) === galleryData.focusDirections[0]`. Zusätzlich Filter nach Kategorie. |
 | **Karten (Admin)** | Werke-Kacheln | **Typ:** Sparte-Label (z. B. Food & Genuss). **Kategorie:** Feinzuordnung (z. B. Speise). |
@@ -72,7 +72,7 @@
 ### 2.6 Leere Liste / Hinweise
 
 - **Stelle:** Admin „Werke verwalten“, wenn 0 Werke angezeigt werden (z. B. weil alle gefiltert sind oder wirklich leer).
-- **Optional:** Kurzer Hinweis: „Deine Sparte steht in den Stammdaten (Meine Richtung). Hier siehst du nur Werke dieser Sparte; Kategorie filtert die Feinzuordnung.“
+- **Optional:** Kurzer Hinweis: „Deine Sparte steht in den Stammdaten (Mein Weg). Hier siehst du nur Werke dieser Sparte; Kategorie filtert die Feinzuordnung.“
 
 **Nutzen:** Nutzer versteht, warum nur bestimmte Werke erscheinen.
 
