@@ -13239,6 +13239,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               setEntryTypeFilter={setEntryTypeFilter}
               categoryFilter={categoryFilter}
               setCategoryFilter={setCategoryFilter}
+              kuenstlerFallback={
+                tenant.isVk2
+                  ? undefined
+                  : {
+                      martina:
+                        (martinaData?.name || '').trim() ||
+                        (tenant.isOeffentlich
+                          ? (TENANT_CONFIGS.oeffentlich.artist1Name || '').trim()
+                          : K2_STAMMDATEN_DEFAULTS.martina.name),
+                      georg:
+                        (georgData?.name || '').trim() ||
+                        (tenant.isOeffentlich
+                          ? (TENANT_CONFIGS.oeffentlich.artist2Name || '').trim()
+                          : K2_STAMMDATEN_DEFAULTS.georg.name),
+                    }
+              }
             />
           )}
 

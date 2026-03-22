@@ -12,6 +12,10 @@ import {
 import { isEchteK2Werknummer, resolveArtworkImages } from '../../src/utils/artworksStorage'
 import { formatEkAnzeige } from '../../src/utils/artworkEkVk'
 import { getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
+import {
+  resolveArtistLabelForGalerieStatistik,
+  type KuenstlerFallbackNamen,
+} from '../../src/utils/artworkArtistDisplay'
 
 const s = WERBEUNTERLAGEN_STIL
 
@@ -88,6 +92,68 @@ function buildWerkkarteCardHtml(w: any, opts: WerkkarteCardOpts): string {
       </div>`
 }
 
+type EchtheitszertifikatOpts = WerkkarteCardOpts & {
+  artistDisplay: string
+  certDateLong: string
+  galCityLine: string
+}
+
+/** Zweite Druckseite: Echtheitszertifikat mit großzügigem Unterschriftenfeld für die Künstler:in (eine Quelle mit Werkkarte, A5). */
+function buildEchtheitszertifikatHtml(w: any, opts: EchtheitszertifikatOpts): string {
+  const imgHtml = w.imageUrl
+    ? `<div class="cert-img-wrap"><img class="cert-thumb" src="${escAttr(w.imageUrl)}" alt="" /></div>`
+    : ''
+  const kat = w.category ? getCategoryLabel(w.category) : ''
+  const jahr =
+    w.date
+      ? new Date(w.date).getFullYear()
+      : w.createdAt
+        ? new Date(w.createdAt).getFullYear()
+        : ''
+  const stueck =
+    w.quantity != null && Number(w.quantity) > 1
+      ? `<div class="cert-row"><span class="cert-k">Auflage / Stückzahl</span><span class="cert-v">${escAttr(String(w.quantity))} Exemplare</span></div>`
+      : ''
+  const vk2Hint = opts.isVk2
+    ? `<p class="cert-lead">Hiermit bestätigt die unterzeichnende Künstlerin / der unterzeichnende Künstler, dass das nachstehend bezeichnete Werk von ihr/ihm stammt.</p>`
+    : `<p class="cert-lead">Hiermit bestätigt die unterzeichnende <strong>Künstlerin</strong> / der unterzeichnende <strong>Künstler</strong>, dass das nachstehend bezeichnete Werk in <strong>eigener Schöpfung</strong> entstanden ist und als <strong>Original</strong> ausgegeben wird.</p>`
+
+  return `
+      <div class="cert-page-inner">
+        <div class="cert-frame">
+          <div class="cert-ornament">◆</div>
+          <h1 class="cert-h1">Echtheitszertifikat</h1>
+          <p class="cert-gal">${escAttr(opts.galName)}${opts.galCityLine ? ` · ${escAttr(opts.galCityLine)}` : ''}</p>
+          <div class="cert-rule"></div>
+          ${imgHtml}
+          ${vk2Hint}
+          <div class="cert-facts">
+            <div class="cert-row"><span class="cert-k">Werk-Nr.</span><span class="cert-v">${escAttr(String(w.number || w.id || '–'))}</span></div>
+            <div class="cert-row"><span class="cert-k">Titel</span><span class="cert-v">${escAttr(String(w.title || '–'))}</span></div>
+            <div class="cert-row"><span class="cert-k">Künstler:in</span><span class="cert-v">${escAttr(opts.artistDisplay)}</span></div>
+            ${w.technik ? `<div class="cert-row"><span class="cert-k">Technik / Material</span><span class="cert-v">${escAttr(w.technik)}</span></div>` : ''}
+            ${w.dimensions ? `<div class="cert-row"><span class="cert-k">Maße</span><span class="cert-v">${escAttr(w.dimensions)}</span></div>` : ''}
+            ${kat ? `<div class="cert-row"><span class="cert-k">Kategorie</span><span class="cert-v">${escAttr(kat)}</span></div>` : ''}
+            ${jahr ? `<div class="cert-row"><span class="cert-k">Jahr</span><span class="cert-v">${jahr}</span></div>` : ''}
+            ${stueck}
+          </div>
+          <p class="cert-meta">Ausgestellt am <strong>${escAttr(opts.certDateLong)}</strong></p>
+          <div class="cert-sig-section">
+            <p class="cert-sig-hint">Bitte hier mit fester Hand unterschreiben (Original dokumentiert die Echtheit des Werks).</p>
+            <div class="cert-sig-pad">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-label">Unterschrift Künstler:in</div>
+            </div>
+            <div class="cert-sig-pad cert-sig-pad--small">
+              <div class="cert-sig-line cert-sig-line--thin"></div>
+              <div class="cert-sig-label">Ort, Datum <span class="cert-opt">(optional)</span></div>
+            </div>
+          </div>
+          <div class="cert-footer-foot">Echtheitszertifikat · ${escAttr(opts.galName)} · ${escAttr(opts.datum)}</div>
+        </div>
+      </div>`
+}
+
 const WERKKARTE_PRINT_STYLES = `
         @media print { @page { size: A5; margin: 10mm; } }
         body { font-family: Georgia, serif; color: #111; margin: 0; padding: 0; }
@@ -106,6 +172,31 @@ const WERKKARTE_PRINT_STYLES = `
         .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 14px; border: 1px solid; }
         .beschreibung { font-size: 12px; color: #444; line-height: 1.6; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
         .footer { margin-top: 16px; border-top: 1px solid #e5e7eb; padding-top: 8px; font-size: 10px; color: #999; display: flex; justify-content: space-between; }
+        /* ─── Echtheitszertifikat (zweite A5-Seite) ─── */
+        .cert-page-inner { padding: 14px 18px 18px; max-width: 148mm; margin: 0 auto; box-sizing: border-box; }
+        .cert-frame { border: 2px solid #8b6914; border-radius: 4px; padding: 18px 20px 14px; box-sizing: border-box; min-height: 168mm; position: relative; background: linear-gradient(180deg, #fffefb 0%, #faf8f4 100%); }
+        .cert-ornament { text-align: center; font-size: 11px; color: #c4a35a; letter-spacing: 0.4em; margin-bottom: 6px; }
+        .cert-h1 { margin: 0 0 6px; font-size: 17px; font-weight: 700; text-align: center; letter-spacing: 0.18em; text-transform: uppercase; color: #6b4e0e; font-family: Arial, sans-serif; }
+        .cert-gal { margin: 0 0 12px; text-align: center; font-size: 11px; color: #666; font-style: italic; }
+        .cert-rule { height: 1px; background: linear-gradient(90deg, transparent, #c4a35a, transparent); margin: 0 0 12px; }
+        .cert-img-wrap { text-align: center; margin-bottom: 12px; }
+        .cert-thumb { max-height: 88px; max-width: 100%; object-fit: contain; border-radius: 6px; border: 1px solid #e8dcc8; background: #f5f0e8; }
+        .cert-lead { font-size: 11.5px; line-height: 1.55; color: #333; margin: 0 0 14px; text-align: justify; hyphens: auto; }
+        .cert-facts { border: 1px solid #e8dcc8; border-radius: 6px; padding: 10px 12px; margin-bottom: 12px; background: rgba(255,255,255,0.65); }
+        .cert-row { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; padding: 4px 0; border-bottom: 1px dotted #e5e0d8; }
+        .cert-row:last-child { border-bottom: none; }
+        .cert-k { color: #888; flex: 0 0 38%; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.06em; }
+        .cert-v { color: #1a1a1a; font-weight: 600; text-align: right; flex: 1; }
+        .cert-meta { font-size: 10.5px; color: #555; margin: 0 0 16px; text-align: center; }
+        .cert-sig-section { margin-top: 8px; }
+        .cert-sig-hint { font-size: 9.5px; color: #888; margin: 0 0 10px; text-align: center; line-height: 1.4; }
+        .cert-sig-pad { margin-bottom: 14px; }
+        .cert-sig-pad--small { margin-bottom: 0; }
+        .cert-sig-line { height: 0; border: none; border-bottom: 2px solid #2c2c2c; margin: 0 8px 6px; min-width: 200px; }
+        .cert-sig-line--thin { border-bottom-width: 1px; border-color: #666; }
+        .cert-sig-label { text-align: center; font-size: 10px; color: #444; font-weight: 600; letter-spacing: 0.04em; }
+        .cert-opt { font-weight: 400; color: #999; font-size: 9px; }
+        .cert-footer-foot { position: absolute; bottom: 10px; left: 20px; right: 20px; text-align: center; font-size: 8.5px; color: #aaa; }
 `
 
 function openWerkkartePrintWindow(title: string, bodyInner: string): void {
@@ -114,8 +205,9 @@ function openWerkkartePrintWindow(title: string, bodyInner: string): void {
     alert('Pop-up blockiert – bitte erlauben.')
     return
   }
+  const safeTitle = escAttr(title).replace(/</g, '')
   pw.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8">
-      <title>${title}</title>
+      <title>${safeTitle}</title>
       <style>${WERKKARTE_PRINT_STYLES}</style></head><body>${bodyInner}
       <script>window.onload=()=>window.print()</script>
       </body></html>`)
@@ -152,6 +244,8 @@ interface WerkkatalogTabProps {
   setEntryTypeFilter?: (v: 'alle' | EntryTypeId) => void
   categoryFilter?: string
   setCategoryFilter?: (v: string) => void
+  /** K2/ök2: Künstler aus Stammdaten ableiten wenn `artist` leer (wie Statistik); VK2: nicht setzen. */
+  kuenstlerFallback?: KuenstlerFallbackNamen | null
 }
 
 const ALLE_SPALTEN = [
@@ -185,6 +279,7 @@ export default function WerkkatalogTab({
   categoryFilter = 'alle',
   setCategoryFilter,
   isVk2 = false,
+  kuenstlerFallback = null,
 }: WerkkatalogTabProps) {
   /** Typ-/Kategorie-Filter nur ök2; VK2 = nur Katalog der Mitgliederwerke (Kategorisierung in Stammdaten/Werkkarten). */
   const showTypAndCategory = !!isOeffentlich && !isVk2
@@ -445,6 +540,12 @@ export default function WerkkatalogTab({
   const statusColor = w ? (w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280') : '#6b7280'
   const statusLabel = w ? (w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Online-Galerie' : 'Nur Lager & Kassa') : ''
 
+  const artistFuerDruck = (work: any) => {
+    const direct = String(work?.artist || '').trim()
+    if (isVk2) return direct || '–'
+    return resolveArtistLabelForGalerieStatistik(work, kuenstlerFallback ?? undefined)
+  }
+
   const druckeWerkkarte = () => {
     if (!w) return
     const galName = galleryData.name || 'K2 Galerie'
@@ -461,6 +562,68 @@ export default function WerkkatalogTab({
         isOeffentlich: !!isOeffentlich,
       })
       openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`)
+    })()
+  }
+
+  const druckeEchtheitszertifikat = () => {
+    if (!w) return
+    const galName = galleryData.name || 'K2 Galerie'
+    const datum = new Date().toLocaleDateString('de-DE')
+    const certDateLong = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+    const galCityLine = String(galleryData?.city || '').trim()
+    void (async () => {
+      const [rw] = await resolveArtworkImages([w])
+      const work = rw || w
+      const certInner = buildEchtheitszertifikatHtml(work, {
+        galName,
+        datum,
+        isVk2: !!isVk2,
+        showTypAndCategory,
+        showOek2TypRow,
+        isOeffentlich: !!isOeffentlich,
+        artistDisplay: artistFuerDruck(work),
+        certDateLong,
+        galCityLine,
+      })
+      openWerkkartePrintWindow(
+        `Echtheitszertifikat – ${work.title || work.number || 'Werk'} – ${galName}`,
+        `<div class="werk-page">${certInner}</div>`
+      )
+    })()
+  }
+
+  const druckeWerkkarteMitEchtheitszertifikat = () => {
+    if (!w) return
+    const galName = galleryData.name || 'K2 Galerie'
+    const datum = new Date().toLocaleDateString('de-DE')
+    const certDateLong = new Date().toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
+    const galCityLine = String(galleryData?.city || '').trim()
+    void (async () => {
+      const [rw] = await resolveArtworkImages([w])
+      const work = rw || w
+      const inner = buildWerkkarteCardHtml(work, {
+        galName,
+        datum,
+        isVk2: !!isVk2,
+        showTypAndCategory,
+        showOek2TypRow,
+        isOeffentlich: !!isOeffentlich,
+      })
+      const certInner = buildEchtheitszertifikatHtml(work, {
+        galName,
+        datum,
+        isVk2: !!isVk2,
+        showTypAndCategory,
+        showOek2TypRow,
+        isOeffentlich: !!isOeffentlich,
+        artistDisplay: artistFuerDruck(work),
+        certDateLong,
+        galCityLine,
+      })
+      openWerkkartePrintWindow(
+        `${work.title || work.number || 'Werk'} + Echtheitszertifikat – ${galName}`,
+        `<div class="werk-page">${inner}</div><div class="werk-page">${certInner}</div>`
+      )
     })()
   }
 
@@ -803,10 +966,23 @@ export default function WerkkatalogTab({
               {!isVk2 && w.buyer && <div style={{ background: s.bgElevated, borderRadius: 10, padding: '0.6rem 0.85rem', gridColumn: 'span 2' }}><div style={{ fontSize: '0.72rem', color: s.muted, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3 }}>Käufer:in</div><div style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text }}>{w.buyer}</div></div>}
             </div>
             {w.description && <div style={{ fontSize: '0.9rem', color: s.muted, lineHeight: 1.7, borderTop: `1px solid ${s.accent}22`, paddingTop: '0.85rem', marginBottom: '1.25rem' }}>{w.description}</div>}
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <div style={{ marginBottom: '1rem', padding: '0.75rem 0.9rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}28`, borderRadius: 12 }}>
+              <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.5 }}>
+                <strong style={{ color: s.text }}>Echtheitszertifikat</strong> – extra A5-Seite mit festem Rahmen und großem Feld zur <strong>Unterschrift der Künstlerin / des Künstlers</strong>. Druckdialog öffnet sich wie bei der Werkkarte (zweite Seite nur bei „Werkkarte + Zertifikat“).
+              </div>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', justifyContent: 'flex-end', alignItems: 'stretch' }}>
               <button type="button" onClick={() => setKatalogSelectedWork(null)}
                 style={{ padding: '0.6rem 1.2rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 10, color: s.muted, fontSize: '0.9rem', cursor: 'pointer' }}>
                 Schließen
+              </button>
+              <button type="button" onClick={druckeEchtheitszertifikat}
+                style={{ padding: '0.6rem 1.1rem', background: s.bgElevated, border: `2px solid ${s.accent}`, borderRadius: 10, color: s.accent, fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>
+                🪪 Nur Echtheitszertifikat
+              </button>
+              <button type="button" onClick={druckeWerkkarteMitEchtheitszertifikat}
+                style={{ padding: '0.6rem 1.1rem', background: '#5c3d0e', border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>
+                🖨️ Werkkarte + Zertifikat
               </button>
               <button type="button" onClick={druckeWerkkarte}
                 style={{ padding: '0.6rem 1.4rem', background: s.accent, border: 'none', borderRadius: 10, color: '#fff', fontWeight: 700, fontSize: '0.95rem', cursor: 'pointer' }}>
