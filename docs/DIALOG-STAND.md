@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **ök2 Werkkatalog: 2 fehlende Vorschaubilder (M1, G1):** **`resolveArtworkImages`** setzte bei Musterwerken mit **`imageRef`** absichtlich **`imageUrl: ''`** (kein IDB-Lookup) – Werkkatalog zeigt nur **`imageUrl`** → leere Zelle. **Fix:** **`getOek2DefaultArtworkImage(category)`** als **`imageUrl`**, **`imageRef`** bleibt. **`artworkImageStore.ts`**, Test **`artworkImageStore.test.ts`**. K2-Kern unberührt (`isOek2MusterArtwork` nur Demo-Nummern). Tests + Build grün. **Commit:** 87697a7 ✅ nach Push
+**Letzter Stand:** 23.03.26 – **ök2 Werkkatalog: 2 fehlende Vorschaubilder (M1, G1):** **`resolveArtworkImages`** setzte bei Musterwerken mit **`imageRef`** absichtlich **`imageUrl: ''`** (kein IDB-Lookup) – Werkkatalog zeigt nur **`imageUrl`** → leere Zelle. **Fix:** **`getOek2DefaultArtworkImage(category)`** als **`imageUrl`**, **`imageRef`** bleibt. **`artworkImageStore.ts`**, Test **`artworkImageStore.test.ts`**. K2-Kern unberührt (`isOek2MusterArtwork` nur Demo-Nummern). Tests + Build grün. **Commit:** b6a6542 ✅ nach Push
 
 **Vorher:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 90fb394 ✅ auf GitHub
 
