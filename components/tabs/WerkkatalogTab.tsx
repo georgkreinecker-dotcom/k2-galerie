@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import {
   getCategoryLabel,
@@ -42,6 +42,8 @@ type WerkkarteCardOpts = {
   showTypAndCategory: boolean
   showOek2TypRow?: boolean
   isOeffentlich?: boolean
+  /** K2/ök2: aufgelöster Künstler:in-Name (wie Statistik). VK2: weglassen → nur `w.artist`. */
+  artistDisplay?: string
 }
 
 /** Eine Werkkarte (innerer HTML-Block) – gleiches Layout für Einzeldruck und Sammeldruck (Sportwagen: eine Quelle). */
@@ -49,13 +51,14 @@ function buildWerkkarteCardHtml(w: any, opts: WerkkarteCardOpts): string {
   const statusColor = w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280'
   const statusLabel = w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Online-Galerie' : 'Nur Lager & Kassa'
   const imgHtml = w.imageUrl ? `<img class="werk-img" src="${escAttr(w.imageUrl)}" alt="${escAttr(w.title || '')}" />` : ''
+  const kuenstlerZeile = opts.artistDisplay !== undefined ? opts.artistDisplay : w.artist || ''
   if (opts.isVk2) {
     return `
       <div class="werk-page-inner">
       <div class="header"><h1>${opts.galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
       ${imgHtml}
       <div class="titel">${w.title || '–'}</div>
-      <div class="kuenstler">${w.artist || ''}</div>
+      <div class="kuenstler">${escAttr(kuenstlerZeile)}</div>
       <div class="meta">
         ${opts.showTypAndCategory ? `<div class="meta-item"><label>Typ</label><span>${getEntryTypeLabel(w.entryType)}</span></div>` : ''}
         ${w.dimensions ? `<div class="meta-item"><label>Maße</label><span>${w.dimensions}</span></div>` : ''}
@@ -72,7 +75,7 @@ function buildWerkkarteCardHtml(w: any, opts: WerkkarteCardOpts): string {
       <div class="header"><h1>${opts.galName}</h1><div class="nr">${w.number || w.id || ''}</div></div>
       ${imgHtml}
       <div class="titel">${w.title || '–'}</div>
-      <div class="kuenstler">${w.artist || ''}</div>
+      <div class="kuenstler">${escAttr(kuenstlerZeile)}</div>
       <div class="status-badge" style="background: ${w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : '#f9fafb'}; color: ${statusColor}; border-color: ${statusColor}44;">${statusLabel}</div>
       <div class="meta">
         ${opts.showOek2TypRow && opts.isOeffentlich ? `<div class="meta-item"><label>Typ</label><span>${escAttr(werkKatalogTypZelle(true, false, w))}</span></div>` : ''}
@@ -316,6 +319,15 @@ export default function WerkkatalogTab({
     })
   }, [allArtworks, isOeffentlich, isVk2])
 
+  const artistFuerDruck = useCallback(
+    (work: any) => {
+      const direct = String(work?.artist || '').trim()
+      if (isVk2) return direct || '–'
+      return resolveArtistLabelForGalerieStatistik(work, kuenstlerFallback ?? undefined)
+    },
+    [isVk2, kuenstlerFallback]
+  )
+
   // Filter anwenden (VK2: keine Verkaufs-/Status-/Preis-/Datumsfilter)
   const filtered = useMemo(
     () =>
@@ -329,7 +341,11 @@ export default function WerkkatalogTab({
           if (katalogFilter.status === 'reserviert' && !a.reserved) return false
           if (katalogFilter.status === 'lager' && (a.inExhibition || a.sold)) return false
         }
-        if (katalogFilter.artist && !(a.artist || '').toLowerCase().includes(katalogFilter.artist.toLowerCase())) return false
+        if (
+          katalogFilter.artist &&
+          !artistFuerDruck(a).toLowerCase().includes(katalogFilter.artist.toLowerCase())
+        )
+          return false
         if (katalogFilter.suchtext) {
           const q = katalogFilter.suchtext.toLowerCase()
           const hay = `${a.number || ''} ${a.title || ''} ${a.description || ''} ${a.technik || ''} ${a.buyer || ''} ${a.purchasePrice != null ? a.purchasePrice : ''}`.toLowerCase()
@@ -359,6 +375,7 @@ export default function WerkkatalogTab({
       katalogFilter.bisDatum,
       isVk2,
       isOeffentlich,
+      artistFuerDruck,
     ]
   )
 
@@ -430,7 +447,7 @@ export default function WerkkatalogTab({
                 case 'kategorie':
                   return `<td>${getCategoryLabel(a.category)}</td>`
                 case 'kuenstler':
-                  return `<td>${a.artist || '–'}</td>`
+                  return `<td>${escAttr(artistFuerDruck(a))}</td>`
                 case 'masse':
                   return `<td>${a.dimensions || '–'}</td>`
                 case 'technik':
@@ -529,6 +546,7 @@ export default function WerkkatalogTab({
               showTypAndCategory,
               showOek2TypRow,
               isOeffentlich: !!isOeffentlich,
+              ...(!isVk2 ? { artistDisplay: artistFuerDruck(rw) } : {}),
             })}</div>`
         )
         .join('')
@@ -539,12 +557,6 @@ export default function WerkkatalogTab({
   const w = katalogSelectedWork
   const statusColor = w ? (w.sold ? '#b91c1c' : w.reserved ? '#d97706' : w.inExhibition ? '#15803d' : '#6b7280') : '#6b7280'
   const statusLabel = w ? (w.sold ? 'Verkauft' : w.reserved ? `🔶 Reserviert${w.reservedFor ? ` – ${w.reservedFor}` : ''}` : w.inExhibition ? 'In Online-Galerie' : 'Nur Lager & Kassa') : ''
-
-  const artistFuerDruck = (work: any) => {
-    const direct = String(work?.artist || '').trim()
-    if (isVk2) return direct || '–'
-    return resolveArtistLabelForGalerieStatistik(work, kuenstlerFallback ?? undefined)
-  }
 
   const druckeWerkkarte = () => {
     if (!w) return
@@ -560,6 +572,7 @@ export default function WerkkatalogTab({
         showTypAndCategory,
         showOek2TypRow,
         isOeffentlich: !!isOeffentlich,
+        ...(!isVk2 ? { artistDisplay: artistFuerDruck(work) } : {}),
       })
       openWerkkartePrintWindow(`${work.title || work.number || 'Werk'} – ${galName}`, `<div class="werk-page">${inner}</div>`)
     })()
@@ -608,6 +621,7 @@ export default function WerkkatalogTab({
         showTypAndCategory,
         showOek2TypRow,
         isOeffentlich: !!isOeffentlich,
+        ...(!isVk2 ? { artistDisplay: artistFuerDruck(work) } : {}),
       })
       const certInner = buildEchtheitszertifikatHtml(work, {
         galName,
@@ -861,7 +875,9 @@ export default function WerkkatalogTab({
                   {effectiveSpalten.includes('titel') && <td style={{ padding: '7px 10px', color: s.text, fontWeight: 600, borderBottom: `1px solid ${s.accent}18` }}>{a.title || '–'}</td>}
                   {effectiveSpalten.includes('typ') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{werkKatalogTypZelle(!!isOeffentlich, !!isVk2, a)}</td>}
                   {effectiveSpalten.includes('kategorie') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{getCategoryLabel(a.category)}</td>}
-                  {effectiveSpalten.includes('kuenstler') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.artist || '–'}</td>}
+                  {effectiveSpalten.includes('kuenstler') && (
+                    <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{artistFuerDruck(a)}</td>
+                  )}
                   {effectiveSpalten.includes('masse') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, whiteSpace: 'nowrap' }}>{a.dimensions || '–'}</td>}
                   {effectiveSpalten.includes('technik') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18` }}>{a.technik || '–'}</td>}
                   {effectiveSpalten.includes('beschreibung') && <td style={{ padding: '7px 10px', color: s.muted, borderBottom: `1px solid ${s.accent}18`, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }} title={a.description || ''}>{(a.description || '–').toString().slice(0, 80)}{(a.description || '').length > 80 ? '…' : ''}</td>}
@@ -932,7 +948,12 @@ export default function WerkkatalogTab({
               </div>
             )}
             <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.text, marginBottom: 4 }}>{w.title || '–'}</div>
-            {w.artist && <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{w.artist}</div>}
+            {!isVk2 && (
+              <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{artistFuerDruck(w)}</div>
+            )}
+            {isVk2 && w.artist?.trim() && (
+              <div style={{ fontSize: '0.95rem', color: s.muted, fontStyle: 'italic', marginBottom: '0.75rem' }}>{w.artist}</div>
+            )}
             {!isVk2 && (
               <div style={{ display: 'inline-block', padding: '3px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 700, background: w.sold ? '#fef2f2' : w.reserved ? '#fffbeb' : w.inExhibition ? '#f0fdf4' : s.bgElevated, color: statusColor, border: `1px solid ${statusColor}55`, marginBottom: '1.25rem' }}>
                 {statusLabel}
