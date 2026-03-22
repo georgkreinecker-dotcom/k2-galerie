@@ -38,8 +38,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Nach Briefing/DIALOG – nächster Auftrag von Georg.
-**Einordnung:** Werkkatalog = eine Druckquelle für Werkkarten; optional Spalte **Bild** in den Spalten-Checkboxen aktivieren.
+**Was wir JETZT tun:** **Sportwagenblock Werkkatalog** fertig im Code (**8707e5a**). Noch **`git push origin main`** am Mac (hier scheiterte Credentials) → dann Vercel. Kurz prüfen: Spalte **Bild**, **Alle der Ansicht**, Sammeldruck Werkkarten, Einzel-Werkkarte, Katalog-PDF mit Bildspalte.
+**Einordnung:** Eine Druckquelle (`buildWerkkarteCardHtml` / `openWerkkartePrintWindow`); DIALOG-Hash-Fix **9ac9d0c**.
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
