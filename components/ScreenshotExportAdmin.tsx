@@ -12535,7 +12535,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             ? { titel: 'Einstellungen', text: 'Vereinsdaten, Kontakt, Adresse – hier pflegt ihr alles, was auf der Galerie und in Einladungen erscheint. Unter „Stammdaten“ tragt ihr Namen und Kontakt ein. So sind eure Daten immer aktuell.' }
             : { titel: 'Einstellungen', text: 'Dein Name, deine Adresse, Öffnungszeiten – hier trägst du alles ein, was Besucher sehen sollen. Unter „Stammdaten“ findest du die Felder. Einmal ausfüllen, dann stimmt es überall.' },
           katalog: { titel: 'Werkkatalog', text: 'Alle Werke auf einen Blick: filtern, suchen, als Liste oder für den Druck. Hier behältst du die Übersicht – ob für dich selbst oder für Kunden. Export und PDF möglich.' },
-          statistik: { titel: 'Statistik/Werkkatalog', text: 'Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDF-Export und Speicherdaten an einem Ort. Kundenadressen und Kassa-Schnellzugriff bleiben im gewohnten Ablauf erreichbar.' },
+          statistik: { titel: 'Statistik/Werkkatalog', text: 'Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, Echtheitszertifikate für einzelne Werke, PDF-Export und Speicherdaten an einem Ort. Kundenadressen und Kassa-Schnellzugriff bleiben im gewohnten Ablauf erreichbar.' },
         }
         const allgemein = {
           titel: 'Admin – deine Zentrale',
@@ -12951,7 +12951,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     {
                       emoji: '📋📊',
                       name: 'Statistik/Werkkatalog',
-                      beschreibung: 'Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.',
+                      beschreibung: 'Verkaufs- und Lagerstatistik, Werkkatalog, Echtheitszertifikate drucken, PDF-Export, Speicherdaten – alles an einem Ort.',
                       tab: 'statistik',
                       subLink: { label: '🔏 Echtheitszertifikat', tab: 'zertifikat' },
                     },
@@ -13145,7 +13145,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </h2>
                 {activeTab === 'statistik' && (
                   <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem' }}>
-                    <span style={{ flex: '1 1 12rem', minWidth: 0 }}>Verkaufs- und Lagerstatistik, Werkkatalog, PDF-Export, Speicherdaten – alles an einem Ort.</span>
+                    <span style={{ flex: '1 1 12rem', minWidth: 0 }}>Verkaufs- und Lagerstatistik, Werkkatalog, Echtheitszertifikate drucken, PDF-Export, Speicherdaten – alles an einem Ort.</span>
                     <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
                       <button
                         type="button"
@@ -13234,6 +13234,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 onRerender={() => loadArtworksWithResolvedImages(tenant).then(setAllArtworksSafe)}
                 onStorno={handleStornoVerkauf}
                 showPreisspanneVerkauf={tenant.isOeffentlich}
+                isOeffentlich={!!tenant.isOeffentlich}
+                isVk2={!!tenant.isVk2}
                 kuenstlerFallback={
                   tenant.isVk2
                     ? undefined
@@ -13342,6 +13344,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               onBack={() => setActiveTab('werke')}
               isOeffentlich={!!tenant.isOeffentlich}
               isVk2={!!tenant.isVk2}
+              allArtworks={allArtworks}
             />
           )}
 

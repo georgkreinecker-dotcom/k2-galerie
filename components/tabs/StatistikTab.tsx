@@ -1,6 +1,7 @@
 import React from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
 import { getCategoryLabel } from '../../src/config/tenantConfig'
+import { getShopSoldArtworksKey } from '../../src/utils/shopContextKeys'
 import {
   resolveArtistLabelForGalerieStatistik,
   type KuenstlerFallbackNamen,
@@ -23,6 +24,9 @@ interface StatistikTabProps {
   kuenstlerFallback?: KuenstlerFallbackNamen | null
   /** Min/Max/Ø Preisspanne + Ø-Kachel + Druckzeile nur ök2 (Demo); K2/VK2 ohne. */
   showPreisspanneVerkauf?: boolean
+  /** Verkaufsliste aus dem passenden Key (K2 / ök2 / VK2). */
+  isOeffentlich?: boolean
+  isVk2?: boolean
 }
 
 export default function StatistikTab({
@@ -32,9 +36,12 @@ export default function StatistikTab({
   onStorno,
   kuenstlerFallback,
   showPreisspanneVerkauf = false,
+  isOeffentlich = false,
+  isVk2 = false,
 }: StatistikTabProps) {
+  const soldStorageKey = getShopSoldArtworksKey(!!isOeffentlich, !!isVk2)
   let soldEntries: any[] = []
-  try { soldEntries = JSON.parse(localStorage.getItem('k2-sold-artworks') || '[]') } catch (_) {}
+  try { soldEntries = JSON.parse(localStorage.getItem(soldStorageKey) || '[]') } catch (_) {}
   let reservedEntries: any[] = []
   try { reservedEntries = JSON.parse(localStorage.getItem('k2-reserved-artworks') || '[]') } catch (_) {}
 

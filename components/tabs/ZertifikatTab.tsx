@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { WERBEUNTERLAGEN_STIL } from '../../src/config/marketingWerbelinie'
-import { readArtworksRawForContext } from '../../src/utils/artworksStorage'
 import { loadStammdaten, loadVk2Stammdaten } from '../../src/utils/stammdatenStorage'
 import { readKuenstlerFallbackGalerieKarten, resolveArtistLabelForGalerieStatistik } from '../../src/utils/artworkArtistDisplay'
 
@@ -11,6 +10,8 @@ interface ZertifikatTabProps {
   /** ök2/VK2: keine K2-Keys lesen (eisernes Gesetz). */
   isOeffentlich?: boolean
   isVk2?: boolean
+  /** Dieselbe Liste wie Werkkatalog (Admin-State, Bilder aufgelöst). */
+  allArtworks: any[]
 }
 
 /**
@@ -18,21 +19,25 @@ interface ZertifikatTabProps {
  * `resolveArtistLabelForGalerieStatistik` + Kontext-Stammdaten (K2 vs. ök2).
  * Nicht nur Martina-Stammdaten für alle Werke (BUG-042).
  */
-export default function ZertifikatTab({ onBack, isOeffentlich = false, isVk2 = false }: ZertifikatTabProps) {
+export default function ZertifikatTab({
+  onBack,
+  isOeffentlich = false,
+  isVk2 = false,
+  allArtworks: artworksFromParent,
+}: ZertifikatTabProps) {
   const kuenstlerFb = useMemo(
     () => readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2),
     [isOeffentlich, isVk2],
   )
 
-  const allArtworks: any[] = (() => {
-    if (isVk2) return []
-    if (isOeffentlich) return readArtworksRawForContext(true, false)
-    try {
-      return JSON.parse(localStorage.getItem('k2-artworks') || '[]')
-    } catch (_) {
-      return []
-    }
-  })().map((a: any) => ({ ...a, image: a.image || a.imageUrl || a.previewUrl }))
+  const allArtworks = useMemo(
+    () =>
+      (Array.isArray(artworksFromParent) ? artworksFromParent : []).map((a: any) => ({
+        ...a,
+        image: a.image || a.imageUrl || a.previewUrl,
+      })),
+    [artworksFromParent],
+  )
 
   const galStammdaten: any = (() => {
     if (isVk2) {
