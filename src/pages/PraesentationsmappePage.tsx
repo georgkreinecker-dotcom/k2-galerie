@@ -78,7 +78,8 @@ export default function PraesentationsmappePage() {
   }, [qrVersionTs])
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
-  const leadText = 'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+  const leadText =
+    'Sechs Sparten, eine Plattform: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. In der Demo und Lizenz wählst du „Mein Weg“ in den Stammdaten – daraus folgen passende Werktypen, Kategorien und Texte. Für die Kunst gedacht, für den Markt gemacht. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
 
   const gallery = typeof window !== 'undefined'
     ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)

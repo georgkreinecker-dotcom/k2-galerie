@@ -9,7 +9,7 @@ import QRCode from 'qrcode'
 import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
-import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT } from '../config/tenantConfig'
+import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import ProductCopyright from '../components/ProductCopyright'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
@@ -203,7 +203,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <div>
             <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', margin: 0 }}>Marketing ök2 <span style={{ fontSize: '0.75em', fontWeight: 400, color: 'rgba(255,255,255,0.7)' }}>(mök2)</span></h1>
             <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', maxWidth: '520px' }}>
-              Arbeitsplattform für alles, was mit dem Vertrieb von ök2 zu tun hat.
+              Arbeitsplattform für den Vertrieb von ök2 – mit Fokus auf <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Mein Weg</strong> und die <strong style={{ color: 'rgba(255,255,255,0.88)' }}>sechs Sparten</strong> (eine Liste, eine Demo-Story, ein Gesprächsleitfaden).
             </p>
             <p style={{ margin: '0.5rem 0 0', fontSize: '1rem', color: '#5ffbf1', fontStyle: 'italic', maxWidth: '520px' }}>
               {slogan}
@@ -252,7 +252,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <div className="marketing-oek2-no-print" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: '10px' }}>
           <h3 style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: '#5ffbf1', fontWeight: 600 }}>📋 Struktur der mök2</h3>
           <ol style={{ margin: 0, paddingLeft: '1.35rem', lineHeight: 1.9, color: 'rgba(255,255,255,0.95)', fontSize: '0.95rem' }}>
-            <li><a href="#mok2-leitvision-k2-markt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Leitvision K2 Markt</strong> (kreative Leitvision – eine Stelle)</a></li>
+            <li><a href="#mok2-leitvision-k2-markt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Leitvision – Mein Weg &amp; sechs Sparten</strong> (Vertrieb &amp; Demo)</a></li>
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
             <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
@@ -310,7 +310,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <section className="marketing-oek2-no-print" id="mok2-board" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
           <h2 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem', color: '#5ffbf1', fontWeight: 700 }}>mök2 Board</h2>
           <p style={{ margin: 0, fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)', marginBottom: '1rem' }}>
-            Ein Klick – du bist beim Thema. Presse, Vertrieb, Lizenzen, Werbeunterlagen.
+            Ein Klick – du bist beim Thema. Zuerst: <strong style={{ color: 'rgba(255,255,255,0.92)' }}>Mein Weg / Sparten</strong> im Kern-Kapitel; dazu Presse, Vertrieb, Lizenzen, Werbeunterlagen.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem' }}>
             {mok2Groups.map((group, i) => {
@@ -415,16 +415,26 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       {/* Leitvision K2 Markt – kreative Leitvision (eine Stelle, ausrichtend) */}
       <section id="mok2-leitvision-k2-markt" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          Leitvision K2 Markt
+          Leitvision: Mein Weg &amp; sechs Sparten
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
-          <strong>Ich setze mich an meinen Mac und sage: Heute möchte ich meine K2 oder ök2 oder etwas anderes – zum Beispiel K2 Familie – auf den Markt bringen. Du hast alles, was du dafür brauchst.</strong>
+          <strong>Vertrieb ök2 erzählt zuerst die Sparten-Story:</strong> In der Demo und in der Lizenz wählt der Kunde in den Stammdaten <strong>Mein Weg</strong> – eine von sechs klar benannten Sparten. Daraus folgen Werktyp, Kategorien, Galerie-Filter und viele Texte. <strong>Eine Plattform</strong>, keine sechs verschiedenen Produkte – das ist unser wiedererkennbares Angebot.
         </p>
+        <p style={{ marginBottom: '0.65rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.55 }}>
+          Die sechs Sparten (Anzeigenamen = Gesprächs- und Flyer-Vokabular, technische IDs in Klammer nur für Team/Doku):
+        </p>
+        <ul style={{ margin: '0 0 1rem', paddingLeft: '1.25em', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,255,255,0.92)' }}>
+          {FOCUS_DIRECTIONS.map((d) => (
+            <li key={d.id}>
+              <strong style={{ color: '#5ffbf1' }}>{d.label}</strong>
+            </li>
+          ))}
+        </ul>
         <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
-          Wenn Bilder, Videos oder Texte fehlen: Im Werkzeugkasten haben wir ein <strong>Studio</strong>, in dem wir das selbst professionell erzeugen und ergänzen können.
+          <strong>Dazu die Leitvision vom Schreibtisch aus:</strong> Ich will heute K2, ök2 oder ein anderes Projekt (z.&nbsp;B. K2 Familie) auf den Markt bringen – hier liegt alles, was dafür brauchbar ist. Fehlen Bilder, Videos oder Texte: im Werkzeugkasten gibt es das Studio zum professionellen Nachziehen.
         </p>
         <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-          Quelle: Georg, 09.03.26. Eine Stelle – hier. Für alle (Team, KI, spätere Nutzer) ausrichtend.
+          Sparten-Liste = eine Quelle: <code style={{ fontSize: '0.75rem' }}>FOCUS_DIRECTIONS</code> in tenantConfig. Leitvision Georg 09.03.26, Sparten-Fokus mök2 21.03.26.
         </p>
       </section>
       {/* 0. Was kann die App? – ganz kurz für Interessenten (ök2 | VK2) */}
@@ -439,6 +449,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <div style={{ padding: '1rem 1.1rem', background: 'rgba(95,251,241,0.08)', border: '1px solid rgba(95,251,241,0.35)', borderRadius: 10 }}>
             <div style={{ fontSize: '1rem', fontWeight: 700, color: '#5ffbf1', marginBottom: '0.5rem' }}>ök2 – Deine Galerie (Lizenz)</div>
             <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)' }}>
+              <li>
+                <strong>Mein Weg (Sparte):</strong> in den Stammdaten eine von sechs Sparten – steuert Typ, Kategorien und Einsteig; siehe Liste oben (Leitvision).
+              </li>
               <li>Eigene Galerie im Netz: Werke, Vita, Shop</li>
               <li>Events planen, Einladungen &amp; Flyer aus der App</li>
               <li>Kasse &amp; Etiketten (Verkauf vor Ort, WLAN-Drucker); Verkaufs- &amp; Lagerstatistik</li>
@@ -466,7 +479,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Genaue Produktbeschreibung
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          <strong>ök2 (Lizenz für den gesamten Markt):</strong> Fokus: alle, die Ideen oder Produkte professionell zeigen wollen. Kunstmarkt ist die Unterkategorie und das Einstiegstor (Künstler:innen, Galerien, Kunstvereine). Eigene Galerie im Netz mit Werken, Vita und Shop; Events planen, Einladungen und Flyer aus der App; Kasse und Etiketten (Verkauf vor Ort, WLAN-Drucker); Marketing aus einem Guss (Newsletter, Presse, Social); ein Stand auf allen Geräten.
+          <strong>ök2 (Lizenz für den gesamten Markt):</strong> Zuerst <strong>Mein Weg</strong> – sechs Sparten von Kunst &amp; Galerie bis Dienstleister &amp; Portfolio bestimmen, wie Einträge geführt und gezeigt werden. Darauf aufbauend: alle, die Ideen oder Produkte professionell zeigen wollen; Kunst bleibt das Einstiegstor und die Herkunftsgeschichte. Eigene Galerie mit Werken, Vita und Shop; Events, Einladungen, Flyer; Kasse und Etiketten; Marketing aus einem Guss; ein Stand auf allen Geräten.
         </p>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
           <strong>VK2 (Vereinsplattform):</strong> Für **alle Vereinstypen** – Schwerpunkt **gemeinsame Interessen**, eine **Mitgliederliste**, Vereinsauftritt, Events. Kunstvereine = Einstieg. Wer sich in der Galerie präsentieren will, erhält optional ein Profil („Mitglieder in der Galerie“). Vereinskatalog (PDF), Events und Werbung; Vereinskassa und Buchhaltung vorgesehen. **Ab 10 eingetragenen Mitgliedern** für den Verein kostenfrei.
@@ -541,10 +554,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           1. USPs (Unique Selling Points)
         </h2>
         <ul style={{ lineHeight: 1.6, paddingLeft: '1.2em', margin: 0 }}>
+          <li><strong>Mein Weg – sechs Sparten, eine Plattform:</strong> Der Kunde wählt in den Stammdaten eine Sparte (Kunst &amp; Galerie bis Dienstleister &amp; Portfolio); Typ, Kategorien und viele Texte folgen daraus. Vertrieb und Demo führen mit dieser Liste – keine verwässerte „wir können alles“-Story ohne Halt.</li>
           <li><strong>Masse vs. individuell und Klasse:</strong> {PRODUCT_POSITIONING_SOCIAL} {PRODUCT_KERN_EIGENER_ORT} – eine Botschaft, die alle Zielgruppen anspricht (Künstler:innen, Galerien, Vereine, alle mit Ideen oder Produkten).</li>
           <li><strong>Nicht nur eine App – multifunktional am PC/Mac:</strong> Die K2 Galerie ist eine <strong>Arbeitsplattform am Rechner</strong> (Planung, Veröffentlichen, Werbeunterlagen, alle Geräte im Blick) plus Galerie & Kassa auf Tablet/Handy. Diese Kombination – volle Multifunktion am Desktop, gleicher Stand überall – ist in diesem Feld <strong>einzigartig</strong> und zentral für Werbung und Marketing.</li>
           <li><strong>Alles in einer Oberfläche</strong> – Eine App für Galerie-Webauftritt, Werke, Events, Marketing und Kasse; Admin am Rechner, Galerie und Kassa auf Tablet/Handy (QR, gleicher Stand).</li>
-          <li><strong>Fokus gesamter Markt, Kunstmarkt = Unterkategorie</strong> – Alle, die Ideen oder Produkte professionell zeigen wollen; Kunstmarkt (Künstler:innen, Galerien, Kunstvereine) ist unser Einstieg, nicht die Grenze. Begriffe und Abläufe passen zu Galerien und Ateliers.</li>
+          <li><strong>Fokus gesamter Markt, über Sparten greifbar</strong> – Die sechs Sparten machen den gesamten Markt sprachlich und technisch fassbar; Kunst &amp; Galerie bleibt Einstieg und Herkunft, nicht die Grenze. Begriffe und Abläufe passen pro Sparte.</li>
           <li><strong>Positionierung Sweet-Spot:</strong> {PRODUCT_POSITIONING_SWEET_SPOT} Der Markt für „Galerie, Kassa, Events aus einer Hand“ lohnt für Große nicht; für Kleine ist der Aufwand zu groß – genau dort liegen wir. Quelle: docs/POSITIONIERUNG-SWEET-SPOT-MARKT.md.</li>
           <li><strong>Marketing aus einem Guss</strong> – PR-Vorschläge aus Stammdaten und Event (Newsletter, Plakat, Presse, Social Media, Event-Flyer im Galerie-Design); mehrere Vorschläge pro Typ; A4/A3/A5; QR-Code-Plakat.</li>
           <li><strong>Corporate Design (CD) – eine Linie:</strong> Farben und Akzente aus <strong>Galerie gestalten</strong> ziehen durch bis Willkommensseite, Galerie, Plakat, Flyer und Presse-PDF – ein erkennbares Erscheinungsbild statt zerstückelter Tool-Optik. Ausführlich im Abschnitt <em>Corporate Design – eine Linie</em> direkt unterhalb der USPs.</li>

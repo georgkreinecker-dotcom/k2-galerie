@@ -83,7 +83,7 @@ export function buildPraesentationsmappeKurzHtmlDocument(opts: {
   }
 
   const lead =
-    'Für die Kunst gedacht, für den Markt gemacht. Ateliers, Galerien, Kunstvereine. Windows, Android, macOS, iOS · Browser &amp; PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+    'Sechs Sparten, eine Plattform: Kunst &amp; Galerie, Handwerk &amp; Manufaktur, Design &amp; Möbel, Mode &amp; Kleinserien, Food &amp; Genuss, Dienstleister &amp; Portfolio. In der Demo und Lizenz wählst du „Mein Weg“ in den Stammdaten – daraus folgen passende Werktypen, Kategorien und Texte. Für die Kunst gedacht, für den Markt gemacht. Windows, Android, macOS, iOS · Browser &amp; PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
 
   const s1 = escapeHtml(PRODUCT_WERBESLOGAN)
   const s2 = escapeHtml(PRODUCT_WERBESLOGAN_2)
