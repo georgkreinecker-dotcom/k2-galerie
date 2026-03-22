@@ -70,7 +70,9 @@ Sie können den QR-Code aus der App heraus anzeigen und – falls vorgesehen –
 
 ## Ich habe mein Passwort vergessen. Was tun?
 
-**Galerie (K2 / später Lizenz):** Am **Admin-Zugang**-Dialog gibt es **Passwort vergessen?**. **Automatischer Reset per Link (E-Mail/SMS) ist in der App noch nicht fertig** – nach dem Klick bekommst du einen **Hinweis** und ggf. die **Kontaktadresse aus den Stammdaten** der Galerie, damit du dich für einen **manuellen** Reset melden kannst. Bis der Versand eingebaut ist: **Galerie-Inhaber:in** oder **technische Stelle**, die den Zugang kennt.
+**Galerie (K2 / später Lizenz):** **Zuerst** in den **Passwort-Speichern** deines **Handys, Tablets oder Browsers** nachsehen (z. B. **Einstellungen → Passwörter** / **Schlüsselbund** / **Google Passwort-Manager**). Die App baut **keinen** zentralen „Link zum Zurücksetzen“ per E-Mail – **du** nutzt dafür am besten das **Gerätemanagement**, das du sowieso hast.
+
+Wenn dort nichts steht: Im Dialog **Admin-Zugang** auf **Passwort vergessen?** tippen – du bekommst einen **Hinweis** und ggf. die **Kontaktadresse aus den Stammdaten**, um die **Galerie-Inhaber:in** zu bitten, das Passwort neu zu setzen (**Passwort setzen** im gleichen Dialog).
 
 **Verein (VK2):** Zugang mit **Name + PIN** – PIN-Vergessen = **Vorstand** im Verein, nicht über eine zentrale Hotline zurücksetzbar.
 
@@ -92,4 +94,4 @@ Sie können den QR-Code aus der App heraus anzeigen und – falls vorgesehen –
 - **Rechner und Handy:** Nach dem Bearbeiten **„Veröffentlichen“** klicken, dann auf dem anderen Gerät die Seite neu laden.
 - **Drucken:** Button „Drucken“ in der App → im Dialog Drucker wählen oder „Als PDF speichern“.
 - **QR-Code:** Mit Handy-Kamera scannen → Galerie öffnet sich; nach Veröffentlichen zeigt er automatisch den neuesten Stand.
-- **Passwort vergessen:** Dialog **Passwort vergessen?** nutzen (Hinweis + Kontakt); vollautomatischer Link folgt später. VK2: Vorstand wegen PIN.
+- **Passwort vergessen:** Zuerst **gespeicherte Passwörter** am Gerät/Browser; dann Dialog **Passwort vergessen?** (Hinweis + Kontakt Galerie). VK2: Vorstand wegen PIN.

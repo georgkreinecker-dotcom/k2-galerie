@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Benutzerhandbuch: Passwort/Admin-Zugang mit App abgeglichen (Georg):** **10-EINSTELLUNGEN.md** neu: K2 = Dialog auf der Galerie (Testphase 14 Tage, **Passwort setzen** ohne „altes Passwort“), ök2 = **Einstellungen → Passwort & Sicherheit**, **Passwort vergessen** = UI vorhanden aber **kein E-Mail-Versand** bislang (Hinweis + Stammdaten-Kontakt / manuell); kgm sieht Passwort nicht. **04-HAEUFIGE-FRAGEN**, **03-ADMIN-UEBERBLICK** angepasst; **vk2-handbuch/08** = Name+PIN statt falscher Passwort-Kachel. **Commit:** `8a1640a` ✅ lokal (*Handbuch: Admin-Passwort/Zugang …*); **Push:** Git-Button.
+**Letzter Stand:** 22.03.26 – **Passwort-Strategie: Gerätemanagement (Georg):** Handbuch **10-EINSTELLUNGEN** neuer Abschnitt **Passwort auf dem Gerät speichern** (Schlüsselbund, Google Passwort-Manager, Browser); **Passwort vergessen** = zuerst dort nachsehen, dann Hinweis/Kontakt Galerie; **04-FAQ**, **03-ADMIN** ergänzt. **GaleriePage** Admin-Dialog: Texte ohne falsches „Link wird gesendet“, Button **Hinweis anzeigen**, Alert ehrlich; **Passwort setzen**-Hinweis Gerät/Browser. Tests + Build grün. **Commit:** *(folgt nach Commit)*; **Push:** Git-Button.
+
+**Vorher:** 22.03.26 – **Benutzerhandbuch: Passwort/Admin-Zugang mit App abgeglichen (Georg):** **10-EINSTELLUNGEN.md** neu: K2 = Dialog auf der Galerie (Testphase 14 Tage, **Passwort setzen** ohne „altes Passwort“), ök2 = **Einstellungen → Passwort & Sicherheit**, **Passwort vergessen** = UI vorhanden aber **kein E-Mail-Versand** bislang (Hinweis + Stammdaten-Kontakt / manuell); kgm sieht Passwort nicht. **04-HAEUFIGE-FRAGEN**, **03-ADMIN-UEBERBLICK** angepasst; **vk2-handbuch/08** = Name+PIN statt falscher Passwort-Kachel. **Commit:** `8a1640a` ✅ (*Handbuch: Admin-Passwort/Zugang …*).
 
 **Vorher:** 22.03.26 – **Polish Runde 2 – Du-Ton & Klarheit (Feinschliff):** **BuchhaltungPage** Steuerberater-Absätze **du/dein**; **LizenzErfolgPage** Drucktext **dein Lizenzabschluss**; **EmpfehlungstoolPage** **Die ID steckt im Link** + **die Person** statt missverständlichem **Sie**; **MarketingOek2Page** Zitate/KI-Kurzform, Werkkatalog/Excellent-Formulierung, Gründer-Liste **Deine Stimme**, Leitkünstler-Block ohne doppeltes **Sie** am Satzanfang (**Was sie berichten** = Künstler:innen). **GalerieVorschauPage** Werk-Anfrage: **Du** (Labels, Placeholder, Erfolgstext). Tests grün, Build grün. **Commit:** `8df9a7d` ✅ lokal (*Polish Runde 2: Du-Ton …*); **Push:** Cursor/Git-Button (von hier nicht möglich).
 
@@ -8,9 +10,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Georg kann **Benutzerhandbuch Kapitel Einstellungen** (Passwort-Abschnitt) gegen die App halten; optional **Polish Runde 2** / **Galerie-Vorschau** weiter prüfen.
+**Was wir JETZT tun:** Georg kann **Passwort-Flow** (Dialog + Handbuch) kurz am Gerät prüfen; sonst wie zuvor.
 
-**Einordnung:** Handbuch = was die App wirklich tut (kein erfundenes „altes Passwort“, kein totales „kein Zurücksetzen“); **K2-Kern-Logik** unverändert.
+**Einordnung:** Passwort-Verantwortung beim Nutzer über **Gerät/Browser-Passwortspeicher** dokumentiert und in der UI nicht mehr als E-Mail-Link verkauft; **K2-Kern** nur Texte im Admin-Zugang-Modal.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

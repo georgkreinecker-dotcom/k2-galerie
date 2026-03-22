@@ -2416,7 +2416,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     }
   }
 
-  // Passwort vergessen: E-Mail/Tel anfordern → Hinweis (E-Mail-Versand kann später aktiviert werden)
+  // Passwort vergessen: kein Versand – Hinweis Gerätemanagement + ggf. Kontakt Galerie (Handbuch: Passwort auf dem Gerät speichern)
   const handleForgotPassword = () => {
     const contact = musterOnly
       ? (localStorage.getItem(KEY_OEF_ADMIN_EMAIL) || localStorage.getItem(KEY_OEF_ADMIN_PHONE) || '')
@@ -2428,13 +2428,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           } catch { return '' }
         })()
     setForgotSent(true)
-    if (forgotEmailOrPhone.trim()) {
-      // TODO: Backend-Anbindung für E-Mail/SMS – bis dahin Hinweis
-      const msg = contact
-        ? `Falls ein Zugang mit dieser Angabe existiert, wird in Kürze ein Link zum Zurücksetzen gesendet.\n\n(E-Mail-Versand wird aktiviert – bis dahin: Kontakt unter ${contact} für manuellen Reset.)`
-        : 'Falls ein Zugang mit dieser Angabe existiert, wird in Kürze ein Link zum Zurücksetzen gesendet.\n\n(E-Mail-Versand wird aktiviert.)'
-      alert(msg)
-    }
+    const deviceHint =
+      'Zuerst in den gespeicherten Passwörtern deines Geräts oder Browsers nachsehen (Einstellungen → Passwörter / Schlüsselbund). Die App verschickt keinen automatischen Link.'
+    const resetHint = contact
+      ? `${deviceHint}\n\nWenn du ein neues Passwort brauchst, melde dich bei der Galerie unter ${contact} – die Inhaberin oder der Inhaber kann im Dialog „Passwort setzen“ ein neues festlegen.`
+      : `${deviceHint}\n\nWenn du ein neues Passwort brauchst, wende dich an die Person, die die Galerie betreibt.`
+    alert(resetHint)
   }
 
   const theme = musterOnly
@@ -2788,10 +2787,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               {showForgotPassword ? (
                 <>
                   <h3 style={{ margin: '0 0 1rem', fontSize: 'clamp(1.1rem, 2.8vw, 1.35rem)', fontWeight: 600, color: '#ffffff', textAlign: 'center' }}>
-                    Passwort zurücksetzen
+                    Passwort vergessen?
                   </h3>
                   <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)', textAlign: 'center' }}>
-                    E-Mail oder Telefonnummer eingeben – du erhältst einen Link zum Zurücksetzen.
+                    Zuerst in den <strong style={{ color: '#fff' }}>Passwort-Speichern</strong> deines Geräts oder Browsers nachsehen. Optional E-Mail oder Telefon eintragen und Hinweis anzeigen – es wird kein Link verschickt.
                   </p>
                   {!forgotSent ? (
                     <>
@@ -2827,12 +2826,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                           fontSize: '1rem'
                         }}
                       >
-                        Link anfordern
+                        Hinweis anzeigen
                       </button>
                     </>
                   ) : (
                     <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)' }}>
-                      Falls ein Zugang existiert, wurde ein Hinweis gesendet. Prüfe deine E-Mail bzw. nutze bei Bedarf den Kontakt für manuellen Reset.
+                      Sieh in den gespeicherten Passwörtern deines Geräts nach. Die App sendet keinen Link – bei Bedarf die Galerie kontaktieren (Stammdaten im Hinweis nach „Hinweis anzeigen“).
                     </p>
                   )}
                   <button type="button" onClick={() => { setShowForgotPassword(false); setForgotSent(false); setForgotEmailOrPhone('') }} style={{ marginTop: '1rem', background: 'none', border: 'none', color: 'var(--k2-accent)', cursor: 'pointer', fontSize: '0.9rem' }}>← Zurück</button>
@@ -2843,7 +2842,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                     Passwort setzen
                   </h3>
                   <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.8)', textAlign: 'center' }}>
-                    Mindestens 6 Zeichen. E-Mail/Telefon optional – für Passwort-Zurücksetzen falls vergessen.
+                    Mindestens 6 Zeichen. E-Mail/Telefon optional (Kontakt in der Galerie). Tipp: Passwort im Gerät oder Browser speichern lassen.
                   </p>
                   <input type="email" value={setPasswordEmail} onChange={(e) => setSetPasswordEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="tel" value={setPasswordPhone} onChange={(e) => setSetPasswordPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff', fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
