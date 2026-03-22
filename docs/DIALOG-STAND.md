@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **StatistikTab: Übersicht & Stil (Georg):** KPI-Raster **Verkauf** / **Bestand** mit **Sektionsbändern** (keine Kachel-Überschriften); **3 gleich hohe** Auswertungs-Spalten; **Letzte Verkäufe** + **Preisspanne (ök2)** in **eigener 2-Spalten-Zeile** ab 900px; Balken **barSale** / **barValue** (Akzentfamilie statt Zufallsgrün); **MONEY** für Beträge; responsive **2 Spalten** KPI unter 768px. **StatistikTab.tsx**. Tests + Build grün. **Commit:** a3cf8f2 ✅ lokal; Push bei Georg/Cursor wenn Credentials greifen
+**Letzter Stand:** 22.03.26 – **Werkkatalog: Echtheitszertifikat zum Drucken:** Zweite **A5-Seite** mit Goldrahmen, Werkdaten, **großes Unterschriftenfeld** „Künstler:in“ + optional Ort/Datum; Buttons **Nur Echtheitszertifikat**, **Werkkarte + Zertifikat**, **Werkkarte drucken**. **Künstler:in** wie Statistik über **`resolveArtistLabelForGalerieStatistik`** + **`kuenstlerFallback`** (**ScreenshotExportAdmin** wie **StatistikTab**; VK2 ohne Fallback). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit (Kern):** 06e9bcf. **Push:** Git-Button in Cursor – Remote von hier nicht erreichbar.
+
+**Vorher:** 22.03.26 – **StatistikTab: Übersicht & Stil (Georg):** KPI-Raster **Verkauf** / **Bestand** mit **Sektionsbändern** (keine Kachel-Überschriften); **3 gleich hohe** Auswertungs-Spalten; **Letzte Verkäufe** + **Preisspanne (ök2)** in **eigener 2-Spalten-Zeile** ab 900px; Balken **barSale** / **barValue** (Akzentfamilie statt Zufallsgrün); **MONEY** für Beträge; responsive **2 Spalten** KPI unter 768px. **StatistikTab.tsx**. Tests + Build grün. **Commit:** a3cf8f2 ✅ lokal; Push bei Georg/Cursor wenn Credentials greifen
 
 **Vorher:** 21.03.26 – **Admin-Tab umbenannt: Statistik/Werkkatalog** (statt „Kassa, Lager, Listen“): **ScreenshotExportAdmin** (Hub, Guide, Kopfzeilen), **Benutzerhandbuch** (`00-INDEX`, `03-ADMIN`, Kapitel `11-STATISTIK-WERKKATALOG`, Verweise in `08-KASSA-VERKAUF-BELEGE`), **Präsentationsmappe** Kurzform + Vollversion (`DOCUMENTS`, `00-INDEX`, `14-STATISTIK-WERKKATALOG`), **EntdeckenPage** Hub, **ProspektK2GaleriePage**, **KassabuchPage**-Kommentar, Doku **K2-GALERIE-PRAESENTATIONSMAPPE**, **KASSA-ETIKETTEN**, **K2-OEK2-KASSABUCH-AGENDA**. Tests + Build grün. **Auf main:** letzter Push mit Commit-Nachricht „Statistik/Werkkatalog“. ✅
 
@@ -42,8 +44,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Admin → **Statistik/Werkkatalog** optisch prüfen (KPI-Zeilen, drei Balken-Spalten, Handy schmal).
-**Einordnung:** Gleiches **WERBEUNTERLAGEN_STIL**-Erscheinungsbild wie übriger Admin; weniger Farbmix, klarere Hierarchie.
+**Was wir JETZT tun:** Admin → **Statistik/Werkkatalog** → Werk öffnen → **Echtheitszertifikat** / **Werkkarte + Zertifikat** im Druck prüfen (A5, Unterschrift).
+**Einordnung:** Druck-Standard wie Werkkarte; Künstlername konsistent mit Statistik (Stammdaten-Fallback K2/ök2).
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 
