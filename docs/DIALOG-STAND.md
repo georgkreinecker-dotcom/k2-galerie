@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Admin vs. öffentliche Galerie (Georg):** Im **Admin** unter dem Kopf eine **Orientierungszeile** („Wo du gerade bist“): K2 / ök2-Demo / VK2 jeweils kurz **Arbeitsbereich vs. Besucher** + **Veröffentlichen** + Link-Hinweis **Galerie ansehen**. **Handbuch** `03-ADMIN-UEBERBLICK.md` neuer Abschnitt **Wo bin ich?** mit Tabelle. Tests + Build grün. **Commit:** `c509872` ✅ lokal; **Push:** Git-Button Cursor wenn Credentials greifen.
+**Letzter Stand:** 22.03.26 – **Orientierungsbalken gelb (Georg):** „Wo du gerade bist“ im Admin wie **Galerie-Vorschau** (Bernstein, dunkle Schrift). **Handbuch** `03-ADMIN-UEBERBLICK.md` Text angepasst. Build grün. **Commit:** `d7295d7` ✅ lokal; **Push:** Git-Button Cursor.
+
+**Vorher:** 22.03.26 – **Admin vs. öffentliche Galerie (Georg):** Im **Admin** unter dem Kopf eine **Orientierungszeile** („Wo du gerade bist“): K2 / ök2-Demo / VK2 … **Commit:** `c509872` …
 
 **Vorher:** 22.03.26 – **Shop-Handbuch nur Nutzer (Georg):** **`12-SHOP-INTERNET-BESTELLUNG.md`** Überschrift **Shop und Internetbestellung**; Strategie-/Produkt-Vision-Abschnitte entfernt; **00-INDEX** 9, **08-Kassa**, **04-FAQ** ohne Strategie-Verweise. **Präsi:** **`15-SHOP-…`** ohne Produktstrategie-Block; **00-INDEX** Voll+Lang; **PraesentationsmappePage** Kurztext ohne Produkt-Vision.
 
