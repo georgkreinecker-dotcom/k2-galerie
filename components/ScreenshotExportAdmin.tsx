@@ -13029,16 +13029,53 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
                 </h2>
                 {activeTab === 'statistik' && (
-                  <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted }}>
-                    Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.
-                    {' '}
-                    <button type="button" onClick={() => setActiveTab('katalog')} style={{ background: 'none', border: 'none', padding: 0, color: s.accent, textDecoration: 'underline', cursor: 'pointer', fontSize: 'inherit' }}>→ Werkkatalog</button>
-                    {!tenant.isVk2 && (
-                      <>
-                        {' · '}
-                        <Link to={PROJECT_ROUTES['k2-galerie'].kunden} style={{ color: s.accent, textDecoration: 'underline', fontWeight: 600 }}>📋 Kundenadressen</Link>
-                      </>
-                    )}
+                  <p style={{ margin: '0.4rem 0 0', fontSize: '0.9rem', color: s.muted, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ flex: '1 1 12rem', minWidth: 0 }}>Verkaufsstatistik, PDF-Export, Speicherdaten – alles an einem Ort.</span>
+                    <span style={{ display: 'inline-flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('katalog')}
+                        title="Werkkatalog öffnen"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          background: s.accent,
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: s.radius,
+                          padding: '0.5rem 1rem',
+                          fontSize: '0.88rem',
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          boxShadow: '0 2px 10px rgba(181, 74, 30, 0.3)',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        → Werkkatalog
+                      </button>
+                      {!tenant.isVk2 && (
+                        <Link
+                          to={PROJECT_ROUTES['k2-galerie'].kunden}
+                          title="Kundenadressen in der APf"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '0.35rem',
+                            background: s.accent,
+                            color: '#fff',
+                            textDecoration: 'none',
+                            borderRadius: s.radius,
+                            padding: '0.5rem 1rem',
+                            fontSize: '0.88rem',
+                            fontWeight: 700,
+                            boxShadow: '0 2px 10px rgba(181, 74, 30, 0.3)',
+                          }}
+                        >
+                          📋 Kundenadressen
+                        </Link>
+                      )}
+                    </span>
                   </p>
                 )}
               </div>
