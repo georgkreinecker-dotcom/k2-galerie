@@ -12881,15 +12881,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               marginTop: '0.85rem',
               padding: '0.55rem 0.85rem',
               borderRadius: '10px',
-              background: 'rgba(26, 95, 122, 0.09)',
-              border: '1px solid rgba(26, 95, 122, 0.28)',
-              color: '#1c1a18',
+              background: 'rgba(245, 158, 11, 0.95)',
+              border: '1px solid rgba(180, 83, 9, 0.55)',
+              boxShadow: '0 1px 6px rgba(180, 83, 9, 0.2)',
+              color: '#1a1a1a',
               fontSize: '0.82rem',
               lineHeight: 1.5,
               fontFamily: s.fontBody,
             }}
           >
-            <strong style={{ color: '#1a5f7a' }}>Wo du gerade bist:</strong>{' '}
+            <strong style={{ color: '#92400e' }}>Wo du gerade bist:</strong>{' '}
             {tenant.isVk2 ? (
               <>
                 <strong>Admin</strong> = interner Arbeitsbereich (Mitglieder, Einstellungen, Veröffentlichen). Die <strong>öffentliche</strong> Ansicht für Besucher siehst du über <strong>„Unsere Mitglieder“</strong> bzw. die Galerie – nicht jedes Speichern hier ist sofort draußen sichtbar, sondern nach dem vereinbarten Veröffentlichen.
