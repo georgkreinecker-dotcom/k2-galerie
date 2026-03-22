@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Werkkatalog: Künstler:in ohne Lücken (Georg):** Tabelle, Katalog-Druck, Werkkarten (Sammel/Einzel/+Zertifikat) und Detail-Modal nutzen **`artistFuerDruck`** = **`resolveArtistLabelForGalerieStatistik`** + **`kuenstlerFallback`** (wie Statistik); VK2 unverändert nur **`w.artist`**. **`buildWerkkarteCardHtml`:** optional **`artistDisplay`**, Künstlerzeile **`escAttr`**. Künstler-Filter in der Liste sucht im **aufgelösten** Namen. **WerkkatalogTab.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline` → Nachricht **„Werkkatalog: Künstler:in wie Statistik…“**; Push: Git-Button / Cursor wenn Credentials greifen
+**Letzter Stand:** 22.03.26 – **ök2 Fremden-Banner (Georg):** Text = **Muster**, zuerst **Einstellungen** (Sparte, Meine Richtung), dann **Galerie gestalten**; **Teilen** erst sinnvoll wenn Stand klar – Hinweis im Text; **„Galerie teilen“** aus Banner entfernt; fixierter **Teilen**-Button ausgeblendet solange **`showOek2FremdeOrientierungsBanner`**. Neuer Button **Einstellungen: Sparte und Richtung** → **`MEIN_BEREICH_ROUTE?context=oeffentlich&tab=einstellungen`**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
+
+**Vorher:** 22.03.26 – **Werkkatalog: Künstler:in ohne Lücken (Georg):** Tabelle, Katalog-Druck, Werkkarten (Sammel/Einzel/+Zertifikat) und Detail-Modal nutzen **`artistFuerDruck`** = **`resolveArtistLabelForGalerieStatistik`** + **`kuenstlerFallback`** (wie Statistik); VK2 unverändert nur **`w.artist`**. **`buildWerkkarteCardHtml`:** optional **`artistDisplay`**, Künstlerzeile **`escAttr`**. Künstler-Filter in der Liste sucht im **aufgelösten** Namen. **WerkkatalogTab.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline` → Nachricht **„Werkkatalog: Künstler:in wie Statistik…“**; Push: Git-Button / Cursor wenn Credentials greifen
 
 **Vorher:** 22.03.26 – **PR-Dokumente Modal-Vorschau:** Grauer **Format / Als PDF drucken**-Balken in der **iframe-Vorschau** entfernt (Newsletter, Presseaussendung, Social, Flyer, Plakat) – **Druck nur noch über „Dokument öffnen (Drucken)“**; gespeicherte/geöffnete HTML-Dateien behalten die volle Leiste (Zurück, Format, Druck). **ScreenshotExportAdmin** (`buildNewsletterViewHtml`, `buildPresseaussendungRedactionPreviewHtml` + `fullPresseHtml`, `buildSocialMediaEditableHtml`, Flyer/Plakat). Tests + Build grün. **Commit:** e7d20a3 ✅ lokal; Push: Git-Button Cursor wenn Credentials greifen
 
@@ -50,8 +52,8 @@
 
 **Vorher:** 21.03.26 – **Duplikat-Umbenennung + Klarstellung Preis (Georg):** Bei doppelter Werknummer im **Admin-Laden** wurde die zweite Kopie mit **Kategorie-Präfix** neu nummeriert → z. B. gemeinsam **K2-M-…** konnte fälschlich **K2-K-…** werden. **Georg:** die **K2-K-…**-Zeilen tragen den **richtigen Preis**; die parallel verbliebenen **K2-M-…** sind die störenden Doppel (kein Auto-Merge). **Neu:** `parseK2DuplicateRenumberParts` – Buchstabe und Basiszahl aus der **gemeinsamen** Nummer (`K2-M-0011` → Umbenennung `K2-M-0011-1`, nicht K2-K). Bereits gespeicherte Einträge unverändert. **ScreenshotExportAdmin** `loadArtworks`. **Commit:** a127b85 ✅ auf GitHub
 
-**Was wir JETZT tun:** Werkkatalog (K2/ök2) prüfen: Spalte **Künstler:in** bei **K2-K-…** ohne gespeichertes `artist` = Name aus Stammdaten/Fallback wie Statistik.
-**Einordnung:** Eine Anzeige-Quelle für Künstler:in (keine „–“-Lücken mehr nur weil Feld leer).
+**Was wir JETZT tun:** Nach Push: ök2 **Fremden-Galerie** kurz prüfen (Banner-Text, drei Buttons, kein Teilen bis Banner weg / interner Einstieg).
+**Einordnung:** Nutzer-Logik: kein **Teilen**-Drängen bevor Muster + Einstellungsweg klar sind (nur **musterOnly**-Banner, K2-Kern unberührt).
 
 **Vorher:** 21.03.26 – **Wert der Galerie = gesamter Bestand (Georg):** Aufteilungen zählten nur **`inExhibition`** → **Neu:** gesamter Bestand (nicht verkauft). **StatistikTab.**
 

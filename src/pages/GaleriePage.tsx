@@ -2628,8 +2628,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             <span>{displayGalleryName} – {(galerieTexts.kunstschaffendeHeading === 'Unsere Mitglieder' && !vk2 ? 'Die Kunstschaffenden' : galerieTexts.kunstschaffendeHeading) || (vk2 ? 'Unsere Mitglieder' : 'Die Kunstschaffenden')}</span>
           </div>
         )}
-        {/* Galerie teilen (fixed) – K2, VK2, ök2: Popover mit WhatsApp, Link kopieren, System teilen */}
-        {typeof navigator !== 'undefined' && (
+        {/* Galerie teilen (fixed) – nicht parallel zum ök2-Fremden-Banner (sonst doppelt + „teilen“ vor dem Verständnis) */}
+        {typeof navigator !== 'undefined' && !showOek2FremdeOrientierungsBanner && (
         <div ref={sharePopoverContainerRef} style={{ position: 'relative' }}>
         <button
           type="button"
@@ -3107,29 +3107,30 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              So könnte <strong style={{ fontWeight: 700 }}>dein Auftritt mit eigener Linie</strong> aussehen – <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. Der <strong style={{ fontWeight: 700 }}>Mittelpunkt in der Plattform ist „Galerie gestalten“</strong> – dort legst du das fest; alles andere baut darauf auf. Diese Galerie ist das Beispiel. Teilen geht überall genauso einfach. Schau dich um, dann mit mir in den Admin – oder direkt zu Galerie gestalten.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt später: dieselben Farben, Bilder und Texte auf der Website, bei Einladungen und beim Druck. Wähle zuerst in den <strong style={{ fontWeight: 700 }}>Einstellungen</strong> deine <strong style={{ fontWeight: 700 }}>Sparte</strong> und <strong style={{ fontWeight: 700 }}>Meine Richtung</strong>; danach richtest du alles Weitere in <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ein. Schau dich in Ruhe um. <strong style={{ fontWeight: 700 }}>Teilen</strong> der eigenen Galerie ergibt sich erst, wenn du deinen Stand kennst – den Teilen-Button siehst du dann oben rechts.
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-              {typeof navigator !== 'undefined' && (
-                <button
-                  type="button"
-                  onClick={() => setSharePopoverOpen(true)}
-                  title="Galerie teilen – deine eigene genauso einfach in den Verteiler"
-                  style={{
-                    padding: '0.5rem 0.9rem',
-                    background: 'rgba(107, 144, 128, 0.2)',
-                    border: '1px solid rgba(107, 144, 128, 0.5)',
-                    color: 'var(--k2-text)',
-                    borderRadius: '10px',
-                    fontWeight: 600,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                  }}
-                >
-                  📤 Galerie teilen
-                </button>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  try { sessionStorage.setItem('k2-admin-context', 'oeffentlich') } catch (_) {}
+                  navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=einstellungen`)
+                }}
+                title="Sparte und Meine Richtung festlegen"
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(107, 144, 128, 0.28)',
+                  color: 'var(--k2-text)',
+                  border: '2px solid rgba(107, 144, 128, 0.65)',
+                  borderRadius: '10px',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                ⚙️ Einstellungen: Sparte und Richtung →
+              </button>
               <button
                 type="button"
                 onClick={() => {
