@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **ök2 Fremden-Banner Text + Button (Georg):** Fließtext **ohne Teilen**; **kein ✨** bei **Galerie gestalten**; Info-Kasten-Zeile leicht **redigiert**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
+**Letzter Stand:** 22.03.26 – **ök2 Fremden-Banner (Georg):** Text: **Galerie gestalten** = Ort für alles; **Nimm dir Zeit … Plattform** + Sparten/Einstellungen; Button **Galerie gestalten** entfernt, nur noch **Mit mir in den Admin**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
+
+**Vorher:** 22.03.26 – **ök2 Fremden-Banner Text + Button (Georg):** Fließtext **ohne Teilen**; **kein ✨** bei **Galerie gestalten**; Info-Kasten-Zeile leicht **redigiert**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
 
 **Vorher:** 22.03.26 – **ök2 Fremden-Banner Infofeld Sparten (Georg):** Statt Einstellungen-Button ein **Info-Kasten** mit allen **`FOCUS_DIRECTIONS`**-Labels (eine Quelle mit Admin); Fließtext: **zuerst im Muster umschauen**, Auswahl **später in Einstellungen**; Buttons nur noch **Galerie gestalten** + **Admin**. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `git log -1 --oneline`; Push: Git-Button / Cursor wenn Credentials greifen
 
