@@ -11,6 +11,14 @@ import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
 import StatistikTab from './tabs/StatistikTab'
 import WerkkatalogTab from './tabs/WerkkatalogTab'
+import {
+  loadWerkkatalogPrefs,
+  saveWerkkatalogPrefs,
+  werkkatalogStorageKey,
+  DEFAULT_KATALOG_FILTER,
+  DEFAULT_KATALOG_SPALTEN_K2_OEK2,
+  DEFAULT_KATALOG_SPALTEN_VK2,
+} from '../src/utils/werkkatalogPreferences'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
 function isProductionLikeUrl(url: string | undefined): boolean {
@@ -2186,8 +2194,34 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [categoryFilter, setCategoryFilter] = useState<string>('alle')
   /** ök2: Erste Kategorisierung in der Filter-Leiste – Typ (Kunstwerk/Produkt/Idee) zuerst, dann Kategorie */
   const [entryTypeFilter, setEntryTypeFilter] = useState<'alle' | EntryTypeId>('alle')
+  /** Werkkatalog: erstes Speichern nach Laden/Kontextwechsel unterdrücken (kein Überschreiben mit Defaults). */
+  const werkkatalogPrefsSkipSaveRef = useRef(false)
   /** ök2: Im Neues-Werk/Bearbeiten-Modal gewählte Sparte (Richtung) – Typ = Sparte aus Stammdaten, Kategorie darunter wählbar */
   const [artworkDirection, setArtworkDirection] = useState<string>(DEFAULT_OEK2_FOCUS_DIRECTION_ID)
+
+  useEffect(() => {
+    werkkatalogPrefsSkipSaveRef.current = true
+    const key = werkkatalogStorageKey(!!tenant.isOeffentlich, !!tenant.isVk2)
+    const loaded = loadWerkkatalogPrefs(key, { isVk2: !!tenant.isVk2 })
+    if (loaded) {
+      setKatalogFilter(loaded.filter)
+      setKatalogSpalten(loaded.spalten)
+    } else {
+      setKatalogFilter({ ...DEFAULT_KATALOG_FILTER })
+      setKatalogSpalten(
+        tenant.isVk2 ? [...DEFAULT_KATALOG_SPALTEN_VK2] : [...DEFAULT_KATALOG_SPALTEN_K2_OEK2],
+      )
+    }
+    queueMicrotask(() => {
+      werkkatalogPrefsSkipSaveRef.current = false
+    })
+  }, [tenant.isOeffentlich, tenant.isVk2])
+
+  useEffect(() => {
+    if (werkkatalogPrefsSkipSaveRef.current) return
+    const key = werkkatalogStorageKey(!!tenant.isOeffentlich, !!tenant.isVk2)
+    saveWerkkatalogPrefs(key, { filter: katalogFilter, spalten: katalogSpalten })
+  }, [tenant.isOeffentlich, tenant.isVk2, katalogFilter, katalogSpalten])
   const [showCameraView, setShowCameraView] = useState(false)
   const [documents, setDocuments] = useState<any[]>([])
   const [documentFilter, setDocumentFilter] = useState<'alle' | 'pr-dokumente' | 'sonstige'>('alle')
