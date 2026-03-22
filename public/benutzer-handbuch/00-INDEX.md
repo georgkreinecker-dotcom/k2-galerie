@@ -8,7 +8,7 @@ Willkommen. Das Handbuch dient zum Nachschlagen.
 
 1. [Erste Schritte](01-ERSTE-SCHRITTE.md)
 
-App öffnen, Galerie ansehen, in den Admin kommen.
+App öffnen, **PC und Handy: dieselbe Internet-Adresse** (Link teilen, Lesezeichen, QR-Code), Galerie ansehen, in den Admin kommen.
 
 2. [Admin im Überblick](03-ADMIN-UEBERBLICK.md)
 
@@ -16,7 +16,7 @@ Werke, Design, Einstellungen, Dokumente, Events, Statistik/Werkkatalog, Kassa, E
 
 3. [Galerie gestalten, Werke anlegen](02-GALERIE-GESTALTEN.md)
 
-Willkommensbild, Galerie-Karte, Werke erfassen und bearbeiten, **Cooperate Design** durchgängige visuelle Linie, Design anpassen, Veröffentlichen.
+Willkommensbild, Galerie-Karte, Werke erfassen und bearbeiten, **Corporate Design** – durchgängige visuelle Linie, Design anpassen, Veröffentlichen.
 
 4. [Event- und Medienplanung](07-EVENTPLANUNG-WERBUNG-OEFFENTLICHKEITSARBEIT.md)
 
@@ -44,7 +44,7 @@ Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Verö
 
 10. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
-Stand, Handy und Rechner, Drucken, QR-Code, Passwort vergessen, Hilfe.
+**Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 
 ---
 

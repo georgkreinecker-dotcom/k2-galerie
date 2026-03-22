@@ -4,6 +4,21 @@ Hier finden Sie Antworten auf Fragen, die oft beim Nutzen der Galerie oder Verei
 
 ---
 
+## Wie sorge ich dafür, dass PC und Handy wirklich dieselbe Galerie öffnen?
+
+Viele Probleme mit „Stand stimmt nicht“ oder „Bilder fehlen auf dem Handy“ entstehen, weil **zwei verschiedene Internet-Adressen** genutzt werden – ohne dass es auffällt.
+
+**So gehen Sie vor:**
+
+1. **Einen „richtigen“ Link festlegen:** Öffnen Sie die Galerie auf dem Gerät, auf dem alles passt. Kopieren Sie die **komplette Adresse** aus der Adresszeile (`https://…`).
+2. **Auf das andere Gerät bringen:** Link per **E-Mail**, **Messenger** oder **Notiz** an sich selbst schicken – oder **QR-Code** von der Galerie (oder vom Verbindungsbereich) **scannen**, damit das Handy **automatisch** die richtige Adresse bekommt.
+3. **Lesezeichen prüfen:** Wenn Sie gespeichert haben: Auf **beiden** Geräten muss **dieselbe** Zeichenkette in der Adresse stehen. Schon ein Unterschied (z. B. anderer Pfad, Demo statt Live) = **andere Seite**.
+4. **Nicht mischen:** `localhost` oder eine nur interne Adresse am **Mac** funktionieren auf dem **Handy im Mobilfunk** nicht. Für den Alltag: überall die **öffentliche Galerie-Adresse** nutzen.
+
+Ausführlicher mit Beispielen: Kapitel **[Erste Schritte](01-ERSTE-SCHRITTE.md)** → Abschnitt **„PC und Handy: dieselbe Internet-Adresse“**.
+
+---
+
 ## Wie aktualisiere ich die Anzeige auf dem Handy?
 
 Wenn Sie am Rechner etwas geändert und veröffentlicht haben, kann es sein, dass Ihr Handy noch die alte Version anzeigt. So bekommen Sie den neuesten Stand:
@@ -63,6 +78,7 @@ Das Passwort für den Admin-Bereich wird von Ihrer Galerie oder Ihrem Verein ver
 
 ## Kurz zusammengefasst
 
+- **PC und Handy – dieselbe Galerie:** **Gleiche URL** auf beiden Geräten (Link teilen, Lesezeichen abgleichen oder **QR scannen**); Details im Kapitel **Erste Schritte**.
 - **Neuesten Stand sehen:** Seite neu öffnen oder auf „Neuer Stand“ tippen; bei QR-Code einfach noch einmal scannen.
 - **Rechner und Handy:** Nach dem Bearbeiten **„Veröffentlichen“** klicken, dann auf dem anderen Gerät die Seite neu laden.
 - **Drucken:** Button „Drucken“ in der App → im Dialog Drucker wählen oder „Als PDF speichern“.
