@@ -1,11 +1,15 @@
 # Dialog-Stand
 
-**Letzter Stand:** 21.03.26 – **PRODUKT-VISION (Georg):** Neuer Abschnitt **„Internetshop: Lizenznehmer vs. K2-Betrieb“** – K2 **ohne** Pflicht zum Vollausbau inkl. Online-Zahlung; **Lizenznehmer** sollen Internetshop **vollständig** inkl. optionaler externer Bezahlung **pro Mandant** anbieten können (Konfiguration, ein Standard im Kern).
+**Letzter Stand:** 22.03.26 – **Admin vs. öffentliche Galerie (Georg):** Im **Admin** unter dem Kopf eine **Orientierungszeile** („Wo du gerade bist“): K2 / ök2-Demo / VK2 jeweils kurz **Arbeitsbereich vs. Besucher** + **Veröffentlichen** + Link-Hinweis **Galerie ansehen**. **Handbuch** `03-ADMIN-UEBERBLICK.md` neuer Abschnitt **Wo bin ich?** mit Tabelle. Tests + Build grün. **Commit:** `c509872` ✅ lokal; **Push:** Git-Button Cursor wenn Credentials greifen.
 
-**Was wir JETZT tun:** Nach Bedarf nächste Aufgabe oder Push prüfen.
-**Einordnung:** Produkt-Scope klar: K2 schlank, Markt vollständig.
+**Vorher:** 22.03.26 – **Shop-Handbuch nur Nutzer (Georg):** **`12-SHOP-INTERNET-BESTELLUNG.md`** Überschrift **Shop und Internetbestellung**; Strategie-/Produkt-Vision-Abschnitte entfernt; **00-INDEX** 9, **08-Kassa**, **04-FAQ** ohne Strategie-Verweise. **Präsi:** **`15-SHOP-…`** ohne Produktstrategie-Block; **00-INDEX** Voll+Lang; **PraesentationsmappePage** Kurztext ohne Produkt-Vision.
 
-**Vorher:** 21.03.26 – **Benutzerhandbuch Shop/Zahlung (Georg):** Neues Kapitel **`12-SHOP-INTERNET-BESTELLUNG.md`** … **BenutzerHandbuchPage** `DOCUMENTS`. Tests + Build grün. **Commit:** Nachricht **Benutzerhandbuch: Shop/Internetbestellung**; Push wie üblich.
+**Was wir JETZT tun:** Push `c509872` (+ ggf. DIALOG-STAND) / nächste Aufgabe.
+**Einordnung:** Nutzer:innen beim Einstieg Orientierung – Admin ≠ Besucherseite, Veröffentlichen klären.
+
+**Vorher:** 21.03.26 – **PRODUKT-VISION (Georg):** Abschnitt **„Internetshop: Lizenznehmer vs. K2-Betrieb“** …
+
+**Vorher:** 21.03.26 – **Benutzerhandbuch Shop/Zahlung (Georg):** Kapitel **`12-SHOP-INTERNET-BESTELLUNG.md`** … **BenutzerHandbuchPage** `DOCUMENTS`. Push wie üblich.
 
 **Vorher:** 21.03.26 – **Präsentationsmappe Fortsetzung (Georg):** Kapitel **4–5** inhaltlich an **Mein Weg / Sparte** (Filter, Typen, Kategorien); **Corporate Design**-Schreibweise in Kap. 5; **10 Demo/Lizenz** mit Stammdaten/Mein Weg; **Vollversion**-Seitenuntertitel. **Commits:** `b290021` (Mappe + früherer Dialog-Block), `9cd4f06` (mök2 + Kurz-Lead). Tests + Build grün. **Push:** Git-Button Cursor.
 
