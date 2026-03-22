@@ -1,13 +1,15 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Orientierungsbalken hellgelb (Georg):** „Wo du gerade bist“ = **reines Gelb** (`#fef9a8`), nicht Orange/Bernstein; dunkle Schrift. **Commit:** letzter lokaler Commit mit Nachricht „Admin: Orientierungsbalken hellgelb …“ (`git log -1 --oneline`); **Push:** Git-Button Cursor.
+**Letzter Stand:** 22.03.26 – **Demo-Hinweis nur ök2 (Georg):** Gelber Balken **nur** im **Demo-Admin** (`isOeffentlich`): klärt „Musterdaten, noch nicht deine Galerie“. **K2/VK2:** kein Balken. **Handbuch** `03-ADMIN-UEBERBLICK.md` angepasst. Tests + Build grün. **Commit:** Nachricht „Admin: gelber Demo-Hinweis nur ök2 …“ (`git log -1 --oneline`); **Push:** Git-Button Cursor.
+
+**Vorher:** 22.03.26 – **Orientierungsbalken hellgelb:** reines Gelb; zuvor für alle Kontexte – jetzt nur Demo.
 
 **Vorher:** 22.03.26 – **Admin vs. öffentliche Galerie (Georg):** Im **Admin** unter dem Kopf eine **Orientierungszeile** („Wo du gerade bist“): K2 / ök2-Demo / VK2 … **Commit:** `c509872` …
 
 **Vorher:** 22.03.26 – **Shop-Handbuch nur Nutzer (Georg):** **`12-SHOP-INTERNET-BESTELLUNG.md`** Überschrift **Shop und Internetbestellung**; Strategie-/Produkt-Vision-Abschnitte entfernt; **00-INDEX** 9, **08-Kassa**, **04-FAQ** ohne Strategie-Verweise. **Präsi:** **`15-SHOP-…`** ohne Produktstrategie-Block; **00-INDEX** Voll+Lang; **PraesentationsmappePage** Kurztext ohne Produkt-Vision.
 
-**Was wir JETZT tun:** Push `c509872` (+ ggf. DIALOG-STAND) / nächste Aufgabe.
-**Einordnung:** Nutzer:innen beim Einstieg Orientierung – Admin ≠ Besucherseite, Veröffentlichen klären.
+**Was wir JETZT tun:** Push Demo-Hinweis-Commit / nächste Aufgabe.
+**Einordnung:** Demo-Nutzer sollen nicht denken, die Muster-Galerie sei schon „ihre“ Galerie; K2/VK2 ohne redundanten Balken.
 
 **Vorher:** 21.03.26 – **PRODUKT-VISION (Georg):** Abschnitt **„Internetshop: Lizenznehmer vs. K2-Betrieb“** …
 

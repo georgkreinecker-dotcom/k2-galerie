@@ -12,7 +12,7 @@ Der Admin-Bereich ist Ihr Arbeitsplatz für alles, was Sie an Ihrer Galerie oder
 | **Galerie / „Galerie ansehen“** (Besucherperspektive) | So sehen **Besucher** Ihre Seite – ohne die Admin-Tabs. |
 | **Öffentlich für alle im Netz** | In der Regel erst nach **Veröffentlichen** (An Server senden). Ohne diesen Schritt können andere Geräte oder Besucher einen älteren Stand sehen. |
 
-Oben im Admin steht ein kurzer **Orientierungshinweis** als **hellgelber Balken** (gut sichtbar, gut lesbar). So können Sie jederzeit prüfen: gerade **intern bearbeiten** oder **schon für Besucher freigegeben**.
+In der **öffentlichen Demo** (Muster-Galerie zum Ausprobieren) steht oben im Admin ein **hellgelber Hinweis**: Damit klar ist, dass Sie in der **Demo mit Musterdaten** sind – **noch nicht** in Ihrer späteren eigenen Galerie. In Ihrem **normalen Admin** (eigene Lizenz / echte Galerie) erscheint dieser Balken **nicht**.
 
 ---
 

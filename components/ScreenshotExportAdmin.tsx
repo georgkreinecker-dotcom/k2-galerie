@@ -12873,38 +12873,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </div>
           </div>
 
-          {/* Orientierung: Arbeitsbereich vs. Besucheransicht – besonders beim Einstieg hilfreich */}
-          <div
-            role="note"
-            aria-label="Orientierung Admin und öffentliche Galerie"
-            style={{
-              marginTop: '0.85rem',
-              padding: '0.55rem 0.85rem',
-              borderRadius: '10px',
-              background: '#fef9a8',
-              border: '1px solid #d4d106',
-              boxShadow: '0 1px 6px rgba(212, 209, 6, 0.22)',
-              color: '#1a1a1a',
-              fontSize: '0.82rem',
-              lineHeight: 1.5,
-              fontFamily: s.fontBody,
-            }}
-          >
-            <strong style={{ color: '#3f3f06' }}>Wo du gerade bist:</strong>{' '}
-            {tenant.isVk2 ? (
-              <>
-                <strong>Admin</strong> = interner Arbeitsbereich (Mitglieder, Einstellungen, Veröffentlichen). Die <strong>öffentliche</strong> Ansicht für Besucher siehst du über <strong>„Unsere Mitglieder“</strong> bzw. die Galerie – nicht jedes Speichern hier ist sofort draußen sichtbar, sondern nach dem vereinbarten Veröffentlichen.
-              </>
-            ) : tenant.isOeffentlich ? (
-              <>
-                <strong>Demo-Admin</strong> = Arbeitsbereich mit <strong>Musterdaten</strong> (nicht die echte K2-Galerie). Änderungen zuerst in der Demo gespeichert; <strong>für alle Demo-Besucher</strong> sichtbar wird es nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> prüfst du die Ansicht wie ein Besucher.
-              </>
-            ) : (
-              <>
-                <strong>Admin</strong> = dein <strong>Arbeitsbereich</strong> (nicht automatisch dasselbe wie die reine Galerie-URL für Besucher). Änderungen sind zuerst auf deinem Gerät gespeichert; <strong>öffentlich für alle</strong> werden sie nach <strong>Veröffentlichen</strong> (Tab „Veröffentlichen“ / An Server senden). <strong>„Galerie ansehen“</strong> zeigt die Besucherperspektive.
-              </>
-            )}
-          </div>
+          {/* Nur ök2-Demo: klarstellen, dass es Musterdaten sind – nicht „schon meine Galerie“ */}
+          {tenant.isOeffentlich && (
+            <div
+              role="note"
+              aria-label="Hinweis: Demo mit Musterdaten"
+              style={{
+                marginTop: '0.85rem',
+                padding: '0.55rem 0.85rem',
+                borderRadius: '10px',
+                background: '#fef9a8',
+                border: '1px solid #d4d106',
+                boxShadow: '0 1px 6px rgba(212, 209, 6, 0.22)',
+                color: '#1a1a1a',
+                fontSize: '0.82rem',
+                lineHeight: 1.5,
+                fontFamily: s.fontBody,
+              }}
+            >
+              <strong style={{ color: '#3f3f06' }}>Demo:</strong>{' '}
+              Das hier ist der <strong>Demo-Admin</strong> mit <strong>Musterdaten</strong> – <strong>noch nicht deine eigene Galerie</strong>. Nach dem Ausprobieren richtest du deine echte Galerie mit der Lizenz ein. Änderungen bleiben zuerst in der Demo; <strong>für alle Demo-Besucher</strong> sichtbar werden sie nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> siehst du die Ansicht wie ein Besucher.
+            </div>
+          )}
         </header>
 
         <main style={{
