@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 – **Werkkatalog Sportwagenblock:** **WerkkatalogTab** – Spalte **Bild** (`vorschau`, `resolveArtworkImages`), **Checkbox-Spalte** + **„Alle der Ansicht“**, **Sammeldruck Werkkarten** (`buildWerkkarteCardHtml` + `openWerkkartePrintWindow`), **Einzel-Werkkarte** dieselbe Quelle; Katalog-**Drucken/PDF** mit aufgelösten Bildern + **vorschau**-Spalte. Tests + Build grün. **Commit:** 4111372 ✅ auf GitHub
+**Letzter Stand:** 22.03.26 – **Werkkatalog Sportwagenblock:** **WerkkatalogTab** – Spalte **Bild** (`vorschau`, `resolveArtworkImages`), **Checkbox-Spalte** + **„Alle der Ansicht“**, **Sammeldruck Werkkarten** (`buildWerkkarteCardHtml` + `openWerkkartePrintWindow`), **Einzel-Werkkarte** dieselbe Quelle; Katalog-**Drucken/PDF** mit aufgelösten Bildern + **vorschau**-Spalte. Tests + Build grün. **Commit:** 8707e5a ✅ auf GitHub
 
 **Vorher:** 22.03.26 – **Admin-Hub:** Hinweiszeile **„🔗 Ein Bereich, ein Ablauf“** (grüne Karte unter den Hub-Kacheln) entfernt – **Georg:** nicht mehr nötig. **ScreenshotExportAdmin.** Tests + Build grün. **Commit:** 90fb394 ✅ auf GitHub
 
