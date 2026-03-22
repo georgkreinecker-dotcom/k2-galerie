@@ -30,7 +30,7 @@ Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willk
 
 ## Einstellungen
 
-Unter **„Einstellungen“** finden Sie Stammdaten, Backup, Veröffentlichen, Passwort und Drucker. Eine **vollständige Beschreibung** aller Bereiche steht im Kapitel [Einstellungen](10-EINSTELLUNGEN.md).
+Unter **„Einstellungen“** findest du Stammdaten, Backup, Veröffentlichen und Drucker; **Admin-Passwort** und **Zugang** hängen von **Galerie (K2)** vs. **Demo (ök2)** ab – siehe Kapitel [Einstellungen](10-EINSTELLUNGEN.md).
 
 ---
 

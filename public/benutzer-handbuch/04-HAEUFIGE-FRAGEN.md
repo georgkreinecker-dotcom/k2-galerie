@@ -6,7 +6,7 @@ Hier finden Sie Antworten auf Fragen, die oft beim Nutzen der Galerie oder Verei
 
 ## Wird im Internetshop der Betrag sofort von der Karte abgebucht?
 
-**Nein.** Im **Warenkorb** der öffentlichen Galerie gibt es **keine** eingebaute Anbindung an ein Bezahlsystem (keine automatische Online-Zahlung in der App). Die gewählte Zahlungsart ist ein **Wunsch**; die **eigentliche Zahlung** klären Sie mit dem Kunden **außerhalb** der App. Ausführliche Hinweise und der Ausblick auf eine **optionale** Online-Lösung: Kapitel **[Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)**.
+**Nein.** Im **Warenkorb** der öffentlichen Galerie gibt es **keine** eingebaute Anbindung an ein Bezahlsystem (keine automatische Online-Zahlung in der App). Die gewählte Zahlungsart ist ein **Wunsch**; die **eigentliche Zahlung** klären Sie mit dem Kunden **außerhalb** der App. Ablauf und Ihre Rolle danach: Kapitel **[Shop und Internetbestellung](12-SHOP-INTERNET-BESTELLUNG.md)**.
 
 ---
 
@@ -70,7 +70,9 @@ Sie können den QR-Code aus der App heraus anzeigen und – falls vorgesehen –
 
 ## Ich habe mein Passwort vergessen. Was tun?
 
-Das Passwort für den Admin-Bereich wird von Ihrer Galerie oder Ihrem Verein vergeben. Wenn Sie es vergessen haben, wenden Sie sich an die Person, die Ihnen den Zugang eingerichtet hat (z. B. Galerie-Inhaberin, Vereinsvorstand). Die App speichert das Passwort nicht so, dass Sie es selbst zurücksetzen können – aus Sicherheitsgründen.
+**Galerie (K2 / später Lizenz):** Am **Admin-Zugang**-Dialog gibt es **Passwort vergessen?**. **Automatischer Reset per Link (E-Mail/SMS) ist in der App noch nicht fertig** – nach dem Klick bekommst du einen **Hinweis** und ggf. die **Kontaktadresse aus den Stammdaten** der Galerie, damit du dich für einen **manuellen** Reset melden kannst. Bis der Versand eingebaut ist: **Galerie-Inhaber:in** oder **technische Stelle**, die den Zugang kennt.
+
+**Verein (VK2):** Zugang mit **Name + PIN** – PIN-Vergessen = **Vorstand** im Verein, nicht über eine zentrale Hotline zurücksetzbar.
 
 ---
 
@@ -90,4 +92,4 @@ Das Passwort für den Admin-Bereich wird von Ihrer Galerie oder Ihrem Verein ver
 - **Rechner und Handy:** Nach dem Bearbeiten **„Veröffentlichen“** klicken, dann auf dem anderen Gerät die Seite neu laden.
 - **Drucken:** Button „Drucken“ in der App → im Dialog Drucker wählen oder „Als PDF speichern“.
 - **QR-Code:** Mit Handy-Kamera scannen → Galerie öffnet sich; nach Veröffentlichen zeigt er automatisch den neuesten Stand.
-- **Passwort vergessen:** An die Stelle wenden, die den Zugang eingerichtet hat.
+- **Passwort vergessen:** Dialog **Passwort vergessen?** nutzen (Hinweis + Kontakt); vollautomatischer Link folgt später. VK2: Vorstand wegen PIN.
