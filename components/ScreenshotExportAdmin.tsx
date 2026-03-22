@@ -55,7 +55,7 @@ import {
   computeK2MalereiMartinaCorrectedNumber,
   patchK2LocalStorageAfterArtworkRenames,
 } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
-import { mergeMissingCanonicalKeramikK2FromServerArtworks } from '../src/utils/mergeMissingK2KeramikFromGalleryData'
+import { mergeAllMissingKeramikK2KFromServerArtworks } from '../src/utils/mergeMissingK2KeramikFromGalleryData'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
@@ -13707,6 +13707,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     {tenant.isOeffentlich && (
                       <span style={{ fontSize: '0.72rem', color: s.muted }}>Demo-Werk einzeln löschen: öffnen → unten „Löschen“. Alles auf einmal: Einstellungen → „Demo &amp; Muster zurücksetzen“.</span>
                     )}
+                    {!tenant.isOeffentlich && !tenant.isVk2 && (
+                      <span style={{ fontSize: '0.72rem', color: s.muted, maxWidth: 'min(100%, 520px)', lineHeight: 1.45, display: 'block' }}>
+                        <strong>Sortierung:</strong> neueste zuerst nach Datum – <strong>nicht</strong> nach Werknummer. Zwischen K2-K-0022 und K2-K-0018 können K2-K-0019–0021 weiter unten in der Liste stehen; mit der Suche nach „K2-K-0019“ prüfen, ob sie da sind.
+                      </span>
+                    )}
                   </div>
                 )}
                 {tenant.isVk2 ? (
@@ -15955,18 +15960,18 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   </button>
                 </div>
                 <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
-                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🏺 Keramik K2-K-0001–0021 fehlen lokal?</h4>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🏺 Fehlende Keramik K2-K-…?</h4>
                   <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
-                    Liest die veröffentlichte <strong>gallery-data.json</strong> (dieselbe Origin wie die App) und fügt nur die fehlenden Werke{' '}
-                    <strong>K2-K-0001</strong> bis <strong>K2-K-0021</strong> an, wenn sie dort als <strong>Keramik</strong> stehen. Es wird{' '}
-                    <strong>nichts gelöscht</strong> und nichts umbenannt. Vorher Sicherungskopie empfohlen. Danach wie üblich an Vercel senden.
+                    Liest die veröffentlichte <strong>gallery-data.json</strong> und fügt alle fehlenden Werke mit Nummer <strong>K2-K-…</strong> an, die dort als{' '}
+                    <strong>Keramik</strong> stehen (z. B. 0001–0021, 0019–0023 – je nachdem was auf dem Server liegt). Es wird{' '}
+                    <strong>nichts gelöscht</strong> und nichts umbenannt. Vorher Sicherungskopie empfohlen. Danach an Vercel senden.
                   </p>
                   <button
                     type="button"
                     onClick={async () => {
                       if (
                         !confirm(
-                          'Nur K2: Fehlende Keramik-Werke K2-K-0001 bis 0021 aus gallery-data.json anfügen (nichts löschen)?\n\nVorher ggf. Vollbackup herunterladen.'
+                          'Nur K2: Alle fehlenden Keramik-Werke K2-K-… aus gallery-data.json anfügen (nichts löschen)?\n\nVorher ggf. Vollbackup herunterladen.'
                         )
                       )
                         return
@@ -15982,10 +15987,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         return
                       }
                       const raw = readArtworksRawByKey('k2-artworks')
-                      const { merged, added } = mergeMissingCanonicalKeramikK2FromServerArtworks(raw, serverArtworks)
+                      const { merged, added } = mergeAllMissingKeramikK2KFromServerArtworks(raw, serverArtworks)
                       if (added.length === 0) {
                         alert(
-                          'Keine fehlenden Einträge: Entweder K2-K-0001…0021 sind schon lokal, oder sie stehen nicht (als Keramik) in der geladenen gallery-data.json.'
+                          'Keine fehlenden Einträge: Alle Keramik-K2-K-… aus gallery-data.json sind schon lokal, oder die Datei enthält sie nicht (als Keramik).'
                         )
                         return
                       }
@@ -16027,7 +16032,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       fontSize: '0.9rem',
                     }}
                   >
-                    Fehlende K2-K-0001–0021 aus gallery-data.json anfügen
+                    Fehlende Keramik K2-K-… aus gallery-data.json anfügen
                   </button>
                 </div>
                 <input

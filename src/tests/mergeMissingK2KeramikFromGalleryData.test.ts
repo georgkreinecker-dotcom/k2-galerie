@@ -1,6 +1,7 @@
 import {
   canonicalKeramikK2Numbers,
   mergeMissingCanonicalKeramikK2FromServerArtworks,
+  mergeAllMissingKeramikK2KFromServerArtworks,
 } from '../utils/mergeMissingK2KeramikFromGalleryData'
 
 describe('mergeMissingK2KeramikFromGalleryData', () => {
@@ -30,5 +31,18 @@ describe('mergeMissingK2KeramikFromGalleryData', () => {
     const { merged, added } = mergeMissingCanonicalKeramikK2FromServerArtworks([], server)
     expect(added).toEqual([])
     expect(merged).toEqual([])
+  })
+
+  it('mergeAllMissingKeramikK2KFromServerArtworks: alle fehlenden K2-K-Keramik', () => {
+    const server = [
+      { number: 'K2-K-0019', category: 'keramik', title: '19' },
+      { number: 'K2-K-0050', category: 'keramik', title: '50' },
+      { number: 'K2-M-0001', category: 'malerei', title: 'M' },
+      { number: 'K2-K-0099', category: 'malerei', title: 'falsch' },
+    ]
+    const local = [{ number: 'K2-K-0050', category: 'keramik', title: 'lokal' }]
+    const { merged, added } = mergeAllMissingKeramikK2KFromServerArtworks(local, server)
+    expect(added).toEqual(['K2-K-0019'])
+    expect(merged.map((x) => x.number)).toEqual(['K2-K-0050', 'K2-K-0019'])
   })
 })

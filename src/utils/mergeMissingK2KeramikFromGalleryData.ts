@@ -44,3 +44,33 @@ export function mergeMissingCanonicalKeramikK2FromServerArtworks(
   }
   return { merged, added }
 }
+
+const K2_K_KERAMIK_NUM = /^K2-K-\d+$/i
+
+/**
+ * Alle Keramik-Werke mit Nummer K2-K- und Ziffern, die auf dem Server sind, aber lokal fehlen – nur anfügen.
+ * Deckt z. B. 0019–0023 mit ab, nicht nur 0001–0021.
+ */
+export function mergeAllMissingKeramikK2KFromServerArtworks(
+  localList: any[],
+  serverArtworks: any[]
+): { merged: any[]; added: string[] } {
+  const localSet = new Set((localList || []).map(normNum).filter(Boolean))
+  const merged = [...(localList || [])]
+  const added: string[] = []
+  for (const src of serverArtworks || []) {
+    const k = normNum(src)
+    if (!k || !K2_K_KERAMIK_NUM.test(k)) continue
+    if (String(src.category || '').trim() !== 'keramik') continue
+    if (localSet.has(k)) continue
+    merged.push({ ...src })
+    added.push(k)
+    localSet.add(k)
+  }
+  added.sort((a, b) => {
+    const na = parseInt(a.replace(/\D/g, ''), 10) || 0
+    const nb = parseInt(b.replace(/\D/g, ''), 10) || 0
+    return na - nb
+  })
+  return { merged, added }
+}
