@@ -1,0 +1,60 @@
+# Einladung an Freundinnen und Freunde – K2 Galerie & Plattform
+
+**Zweck:** Persönliche Nachricht (E-Mail oder Messenger), drei Punkte wie besprochen.  
+**Stand:** März 2026 · Eröffnung **24. April 2026**
+
+---
+
+## Betreff (Vorschlag)
+
+**Einladung & Neuigkeiten – K2 Galerie am 24.04. und was Martina und ich sonst noch gebaut haben**
+
+---
+
+## Text zum Kopieren
+
+Liebe …, lieber …,
+
+ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich, einmal mit etwas, das mich in den letzten Monaten stark beschäftigt hat.
+
+**1. Galerieeröffnung am 24. April**  
+Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung am **24.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
+
+Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
+
+- **Willkommen:** https://k2-galerie.vercel.app/willkommen  
+- **Galerie:** https://k2-galerie.vercel.app/galerie  
+
+**2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
+Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
+
+**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet unsere **Präsentationsmappe** hier (im Browser öffnen, gern auch „Als PDF drucken“ nutzen):
+
+- **Präsentationsmappe:** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+
+**3. Test-Pilot-Programm – 25 Gratislizenzen**  
+Wenn **du** selbst **Interesse** hast, **K2** (Galerie-Software) oder **VK2** (Vereinsplattform) auszuprobieren – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
+
+Bei Interesse bitte eine kurze Mail an: **georg.kreinecker@kgm.at**
+
+Ich freue mich auf dich – bei der Eröffnung und darüber hinaus.
+
+Herzliche Grüße  
+**Georg**  
+*(und von Martina die besten Grüße)*
+
+---
+
+## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
+
+- Homepage: https://k2-galerie.vercel.app/willkommen · https://k2-galerie.vercel.app/galerie  
+- Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
+
+---
+
+## Hinweis für dich
+
+- Namen in der Anrede einsetzen („Liebe Anna, lieber Thomas“ …).  
+- Wenn jemand nur das **Demo-ök2** sehen soll: https://k2-galerie.vercel.app/galerie-oeffentlich (optional, nicht im Haupttext nötig).  
+- **kgm solution** bleibt die Firmenmarke; **K2 Galerie** ist eure öffentliche Galerie – so wie in der App festgelegt.
