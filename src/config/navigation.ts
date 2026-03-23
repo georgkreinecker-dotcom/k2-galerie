@@ -100,6 +100,8 @@ export const PROJECT_ROUTES = {
     notizen: '/projects/k2-galerie/notizen',
     notizenBriefAugust: '/projects/k2-galerie/notizen/brief-an-august',
     notizenBriefAndreas: '/projects/k2-galerie/notizen/brief-an-andreas',
+    /** Einladung Freunde – Galerieeröffnung 24.04.2026 (Markdown aus public/notizen-georg) */
+    notizenEinladungEroeffnung24: '/projects/k2-galerie/notizen/einladung-eroeffnung-24-04',
     /** Board: Lizenznehmer, Empfehler, Abrechnung auf einen Blick (ein Klick zu Details) */
     uebersicht: '/projects/k2-galerie/uebersicht',
     /** Kampagne Marketing-Strategie – eigene Mappe (Zwischenergebnisse, Auftrag, Strategie) */

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 22.03.26 (Session-Ende) – **Morgen: Endphase, Markt ruft.** Session-Ende-Commit lokal: **„Session-Ende 22.03: Präsi Shop-Kapitel …“** – Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (wenn noch **ahead**). **Nächster Einstieg:** Ready-to-go + Markt.
+**Letzter Stand:** 22.03.26 – **Georgs Notizen: Einladung Eröffnung in der App.** Ursache „nichts angekommen“: Markdown lag nur unter `public/notizen-georg/`, war aber **nicht** in **NotizenPage** / Route verlinkt. **Fix:** Route `notizenEinladungEroeffnung24` → **EinladungFreundeEroeffnungNotizPage** lädt `einladung-freunde-eroeffnung-k2-24-04-2026.md`; Eintrag in **NotizenPage** + **SmartPanel** Diverses; **BriefAnAndreasPage** nutzt gemeinsamen **georgsNotizMarkdownView**. Tests + Build grün. **Commit:** `69dc7b8` ✅; **Push:** Git-Button Cursor.
+
+**Vorher:** 22.03.26 (Session-Ende) – **Morgen: Endphase, Markt ruft.** Session-Ende-Commit lokal: **„Session-Ende 22.03: Präsi Shop-Kapitel …“** – Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (wenn noch **ahead**). **Nächster Einstieg:** Ready-to-go + Markt.
 
 **Vorher:** 22.03.26 – **Audit Erstrunde + Ready-to-go für Georg:** `npm run test` + `npm run test:daten` grün; **docs/AUDIT-PROZESS-PROGRAMMSICHERHEIT-GO-LIVE.md** Abschnitt 5 (Ampel) + 6 (Protokoll) ausgefüllt. **K2SoftwareentwicklungPage:** Anker **`#k2-ready-georg`** – nummerierte Checkliste „Noch von dir (manuell)“. **SmartPanel:** unter **K2 Ready to go** Blöcke „Erstrunde technisch“ + „Noch von dir“ + Link **Vollständige Checkliste** (mit Hash-Scroll im Panel). Build grün. **Commit:** nach Push `git log -1 --oneline` prüfen ✅.
 
@@ -28,9 +30,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Endphase / Markt** – nach außen fokussieren; technischer Rest weiter über **Ready to go** (`#k2-ready-georg`) und Audit-Doku.
+**Was wir JETZT tun:** **Endphase / Markt** – nach außen fokussieren; technischer Rest weiter über **Ready to go** (`#k2-ready-georg`) und Audit-Doku. **Notizen:** Einladung 24.04. unter **Georgs Notizen** testbar.
 
-**Einordnung:** Session bewusst beendet; Stand im Repo + Push = gleicher Boden für morgen.
+**Einordnung:** Einladungstext war im Repo, fehlte nur der **App-Einstieg** – jetzt nachgezogen (Sportwagenmodus: eine Route + Liste wie andere Diverses-Einträge).
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

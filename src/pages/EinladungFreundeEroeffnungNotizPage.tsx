@@ -11,14 +11,16 @@ import {
 
 const baseStyles = georgsNotizBaseStyles
 
-export default function BriefAnAndreasPage() {
+const MD_PATH = '/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md'
+
+export default function EinladungFreundeEroeffnungNotizPage() {
   const [content, setContent] = useState<string>('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    fetch('/notizen-georg/diverses/brief-an-andreas.md')
+    fetch(MD_PATH)
       .then(r => (r.ok ? r.text() : Promise.reject(new Error('Datei nicht gefunden'))))
       .then(text => { if (!cancelled) setContent(text) })
       .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : 'Fehler beim Laden') })
@@ -39,19 +41,12 @@ export default function BriefAnAndreasPage() {
     }
   }
 
-  const printUrl = '/brief-andreas.html'
-
   return (
     <div style={georgsNotizPageStyle}>
-      <div style={georgsNotizContainerStyle}>
+      <div style={{ ...georgsNotizContainerStyle, maxWidth: 720 }}>
         <Link to={PROJECT_ROUTES['k2-galerie'].notizen} style={georgsNotizBackLinkStyle}>
           ← Zurück zu Georgs Notizen
         </Link>
-        <p style={{ ...baseStyles.p, marginBottom: '0.5rem' }}>
-          <a href={printUrl} target="_blank" rel="noopener noreferrer" style={{ ...baseStyles.a, fontSize: '0.95rem' }}>
-            🖨️ Druckversion (gleicher Stil wie „Für meine Freunde“) →
-          </a>
-        </p>
         {body}
       </div>
     </div>

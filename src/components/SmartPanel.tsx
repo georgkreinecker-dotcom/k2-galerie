@@ -158,6 +158,7 @@ const DEFAULT_DIVERSES: DiversesItem[] = [
   { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
   { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
   { id: 'brief-andreas', label: 'Brief an Andreas', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas, emoji: '✉️' },
+  { id: 'einladung-eroeffnung-24', label: 'Einladung Freunde – Eröffnung 24.04.', url: PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24, emoji: '📅' },
   { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
 ]
 
@@ -167,7 +168,7 @@ function loadDiverses(): DiversesItem[] {
     if (v) {
       const items: DiversesItem[] = JSON.parse(v)
       // Fehlt "Brief an Andreas" oder ist die Liste kürzer als der Standard → auf Standard setzen (damit neue Einträge immer erscheinen)
-      if (!items.some((x) => x.id === 'brief-andreas') || items.length < DEFAULT_DIVERSES.length) {
+      if (!items.some((x) => x.id === 'brief-andreas') || !items.some((x) => x.id === 'einladung-eroeffnung-24') || items.length < DEFAULT_DIVERSES.length) {
         saveDiverses(DEFAULT_DIVERSES)
         return DEFAULT_DIVERSES
       }
