@@ -439,19 +439,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   /**
    * ök2: grüner Orientierungs-Balken („So könnte dein Auftritt …“) für Fremde vor dem Admin.
    * Nicht an `k2-admin-context` allein koppeln – der bleibt session-weit gesetzt und hätte den Balken dauerhaft versteckt (Kontext-Vergiftung).
-   * Ausblenden nur bei echter interner Herkunft: APf, embedded, fromAdmin, Referrer von Admin/Mission Control/APf-Projekt.
+   * Ausblenden bei interner Herkunft: APf, embedded, fromAdmin, KEY_FROM_ADMIN, k2-oek2-from-apf, Referrer APf/Admin – außer Einstieg über Entdecken (`k2-from-entdecken`), damit der Rückweg aus dem Admin wie der Hineinweg bleibt.
    */
   const showOek2FremdeOrientierungsBanner = (() => {
     if (!musterOnly) return false
     try {
       if (fromApf) return false
       if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return false
+      // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): vor fromAdmin / KEY_FROM_ADMIN prüfen,
+      // sonst ist nach „Galerie ansehen“ vom Admin nur noch der Sparten-Block sichtbar (Orientierungsverlust).
+      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-entdecken') === '1') return true
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1') return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return false
-      // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): Referrer bleibt bei SPA oft leer/extern –
-      // Orientierungs-Balken trotzdem zeigen (sonst sehen echte Fremde keinen grünen Guide).
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-entdecken') === '1') return true
       {
         const path = getSameOriginReferrerPath()
         // Nur eine Quelle: galerieOek2Referrer (nicht zweite, „ältere“ Referrer-Regel parallel pflegen).
