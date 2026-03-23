@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Projekt-Home `/projects/k2-galerie` → Entdecken für Fremde:** Viele Klicks/Mails nutzten diese URL → **Mac** landete in der **APf** (Grafiker-Tisch), **Handy** in der **echten K2-Galerie**, nicht im Eingangstor **`/entdecken`**. **Fix:** `shouldShowK2GalerieApfProjectHub()` + `ProjectStartPage`: ohne `?apf=1` / `?dev=1` auf Vercel/kgm → **`Navigate` zu `ENTDECKEN_ROUTE`**; APf intern über **`K2_GALERIE_APF_EINSTIEG`** (`/projects/k2-galerie?apf=1`); **localhost** weiter direkt APf. **Projekte-Karte**, Rück-Links, Lizenz-Admin-URL, Handbuch-Redirect von `/` angepasst. Tests + Build grün. **Commit:** `5c299de` ✅.
+**Letzter Stand:** 23.03.26 – **Root `/` überall gleich → Entdecken:** Georg: herausgegebener Link darf nicht auf **localhost** anders sein als auf **Vercel**. **Fix:** `MobileRootRedirect` leitet nach Sonderfällen (Zettel, Handbuch-`doc`) **immer** zu **`/entdecken`**; kein APf mehr auf `/` auch nicht lokal. **APf:** `K2_GALERIE_APF_EINSTIEG`, `/platform`, `/dev-view`. `shouldRedirectRootUrlToEntdecken` entfernt. Tests + Build grün. **Commit:** `a0accc1` ✅.
+
+**Vorher:** 23.03.26 – **Projekt-Home `/projects/k2-galerie` → Entdecken für Fremde:** Viele Klicks/Mails nutzten diese URL → **Mac** landete in der **APf**, **Handy** in der **echten K2-Galerie**, nicht im Eingangstor **`/entdecken`**. **Fix:** `shouldShowK2GalerieApfProjectHub()` + `ProjectStartPage`: ohne `?apf=1` / `?dev=1` auf Vercel/kgm → **`Navigate` zu `ENTDECKEN_ROUTE`**; APf intern über **`K2_GALERIE_APF_EINSTIEG`**; **Projekte-Karte**, Rück-Links, Lizenz-Admin-URL, Handbuch-Redirect angepasst. **Commit:** `5c299de` ✅.
 
 **Vorher:** 23.03.26 – **Basis-URL → Entdecken (endgültig):** `https://k2-galerie.vercel.app/` soll **nicht** zur ök2-Muster-Galerie führen, sondern zur **Galerie entdecken**-Seite (`/entdecken`). **Fix:** `vercel.json` **Redirect** `/` → `/entdecken` (serverseitig auf Vercel, vor React); bestehende Logik `MobileRootRedirect` + `shouldRedirectRootUrlToEntdecken()` bleibt für Konsistenz. **localhost** unverändert. Tests + Build grün. **Commit:** `f7c1832` ✅.
 
@@ -50,7 +52,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Nach **Push** auf **main**: Vercel „Ready“, dann **Handy/Mail** testen: `https://k2-galerie.vercel.app/projects/k2-galerie` → **`/entdecken`**; Georg: Lesezeichen **`…/projects/k2-galerie?apf=1`** für APf.
+**Was wir JETZT tun:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 
 **Einordnung:** Einladungstext war im Repo, fehlte nur der **App-Einstieg** – jetzt nachgezogen (Sportwagenmodus: eine Route + Liste wie andere Diverses-Einträge). **Parallel:** Endphase/Markt, Ready-to-go, Einladung 24.04. unter **Georgs Notizen** testbar.
 

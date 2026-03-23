@@ -14,31 +14,12 @@ export const WILLKOMMEN_ROUTE = '/willkommen'
 /** Allgemeine Geschäftsbedingungen – rechtliche Absicherung */
 export const AGB_ROUTE = '/agb'
 
-/** Landingpage – 3-Fragen-Flow für neue Künstler:innen */
+/** Landingpage – 3-Fragen-Flow für neue Künstler:innen; Root-URL `/` leitet überall hierhin (App + Vercel-Redirect). */
 export const ENTDECKEN_ROUTE = '/entdecken'
 
 /**
- * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = **Haupteingang für Besucher** → Entdecken.
- * **Vercel:** `vercel.json` leitet `/` serverseitig nach `/entdecken` um (vor React) – zuverlässig, nicht ök2-Galerie.
- * Localhost bleibt `/` → APf (DevView). Siehe `MobileRootRedirect` in App.tsx.
- */
-export function shouldRedirectRootUrlToEntdecken(): boolean {
-  try {
-    if (typeof window === 'undefined') return false
-    const h = window.location.hostname.toLowerCase()
-    if (h === 'localhost' || h === '127.0.0.1') return false
-    if (h === 'k2-galerie.vercel.app') return true
-    if (h.endsWith('.vercel.app')) return true
-    if (h === 'kgm.at' || h === 'www.kgm.at') return true
-    return false
-  } catch {
-    return false
-  }
-}
-
-/**
- * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf (Grafiker-Tisch) und nicht direkt K2-Galerie.
- * **APf** nur: localhost, oder Query `apf=1` / `dev=1` (Lesezeichen Georg), siehe ProjectStartPage.
+ * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf und nicht direkt K2-Galerie.
+ * **APf** nur: localhost (ohne Query → Grafiker-Tisch), oder Query `apf=1` / `dev=1`, siehe ProjectStartPage.
  */
 export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
   try {
