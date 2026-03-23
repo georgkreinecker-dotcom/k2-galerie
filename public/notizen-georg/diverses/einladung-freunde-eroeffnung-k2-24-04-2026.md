@@ -47,7 +47,7 @@ Wenn du schon **neugierig bist**, kannst du die **K2 Galerie** im Web ansehen **
 
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab reinschauen möchte:
 
-- **ök2 – Eintritt** (öffentliche Demo, gleicher Einstieg wie Basis-URL `/` → **Entdecken**): https://k2-galerie.vercel.app/ **oder** https://k2-galerie.vercel.app/entdecken  
+- **ök2 – Eintritt** (öffentliche Demo): https://k2-galerie.vercel.app/entdecken  
 - **Präsentationsmappe – Langform (Vollversion, alle Kapitel):** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion · *Kurzform (eine Seite):* https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 
 **3. Test-Pilot-Programm – 25 Gratislizenzen**  
@@ -94,7 +94,7 @@ Was zuerst nur für die Kunst von mir gedacht war, hat sich dann zu einem Produk
 
 Bei unserer Galerieeröffnung werden wir diese Produkte und die Idee dahinter auch kurz vorstellen. Wer vorab reinschauen möchte:
 
-ök2 – Eintritt  https://k2-galerie.vercel.app/  
+ök2 – Eintritt  https://k2-galerie.vercel.app/entdecken  
 Präsentationsmappe  https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion ·
 
 3. Test-Pilot-Programm – 25 Gratislizenzen
@@ -115,7 +115,7 @@ Martina & Georg
 
 - **Eröffnung:** 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding  
 - K2 Galerie (Werke): https://k2-galerie.vercel.app/galerie  
-- ök2 Eintritt (Basis-URL → Entdecken): https://k2-galerie.vercel.app/ · Präsentationsmappe Langform: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
+- ök2 Eintritt: https://k2-galerie.vercel.app/entdecken · Präsentationsmappe Langform: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
 ---

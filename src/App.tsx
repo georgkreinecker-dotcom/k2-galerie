@@ -82,7 +82,7 @@ import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
@@ -558,7 +558,7 @@ function NotFoundOrRedirect() {
   return <Navigate to="/" replace />
 }
 
-/** Root "/": überall Besucher-Haupteingang Entdecken (inkl. localhost). APf: ?apf=1, /platform, /dev-view. */
+/** Root "/": Vercel/kgm → Entdecken; localhost → APf (Desktop) bzw. Galerie (Mobile). */
 function MobileRootRedirect() {
   const [searchParams] = useSearchParams()
 
@@ -574,8 +574,16 @@ function MobileRootRedirect() {
     return <Navigate to={target} replace />
   }
 
-  // Basis-URL überall gleich → Entdecken (localhost, Vercel, Handy, Desktop)
-  return <Navigate to={ENTDECKEN_ROUTE} replace />
+  // Produktion: Basis-URL = Entdecken (Haupteingang für Fremde)
+  if (typeof window !== 'undefined' && shouldRedirectRootUrlToEntdecken()) {
+    return <Navigate to={ENTDECKEN_ROUTE} replace />
+  }
+
+  if (isMobileView()) {
+    return <Navigate to={PROJECT_ROUTES['k2-galerie'].galerie} replace />
+  }
+
+  return <DevViewPage />
 }
 
 /** Auf Mobile: /dev-view → sofort Galerie (niemals 4 Seiten/Smart Panel). */

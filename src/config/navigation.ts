@@ -14,8 +14,26 @@ export const WILLKOMMEN_ROUTE = '/willkommen'
 /** Allgemeine Geschäftsbedingungen – rechtliche Absicherung */
 export const AGB_ROUTE = '/agb'
 
-/** Landingpage – 3-Fragen-Flow für neue Künstler:innen; Root-URL `/` leitet überall hierhin (App + Vercel-Redirect). */
+/** Landingpage – 3-Fragen-Flow für neue Künstler:innen */
 export const ENTDECKEN_ROUTE = '/entdecken'
+
+/**
+ * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = Besucher-Einstieg → Entdecken.
+ * Localhost bleibt `/` → APf (DevView) für Georgs Arbeitsstart am Mac.
+ */
+export function shouldRedirectRootUrlToEntdecken(): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    const h = window.location.hostname.toLowerCase()
+    if (h === 'localhost' || h === '127.0.0.1') return false
+    if (h === 'k2-galerie.vercel.app') return true
+    if (h.endsWith('.vercel.app')) return true
+    if (h === 'kgm.at' || h === 'www.kgm.at') return true
+    return false
+  } catch {
+    return false
+  }
+}
 
 /**
  * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf und nicht direkt K2-Galerie.
