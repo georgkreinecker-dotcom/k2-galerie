@@ -28,17 +28,17 @@ Martina und ich laden dich **recht herzlich** ein. In unserer **Eventplanung** i
 
 **Uhrzeiten** für einzelne Tage des Eröffnungswochenendes und den genauen Ablauf gebe ich dir **gern separat** durch – oder wir **telefonieren kurz**.
 
-Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
+Wenn du schon **neugierig bist**, kannst du unsere **Willkommensseite der K2 Galerie** aufrufen:
 
-- **Willkommen:** https://k2-galerie.vercel.app/willkommen  
-- **Galerie:** https://k2-galerie.vercel.app/galerie  
+- **K2 Galerie – Willkommen:** https://k2-galerie.vercel.app/willkommen  
 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
 Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
 
-**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet unsere **Präsentationsmappe** hier (im Browser öffnen, gern auch „Als PDF drucken“ nutzen):
+**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab reinschauen möchte:
 
-- **Präsentationsmappe:** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- **ök2 – Eintritt** (öffentliche Demo, Einstieg zum Entdecken): https://k2-galerie.vercel.app/entdecken  
+- **Präsentationsmappe** (im Browser öffnen, gern auch „Als PDF drucken“): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 
 **3. Test-Pilot-Programm – 25 Gratislizenzen**  
 Wenn **du** selbst **Interesse** hast, **K2** (Galerie-Software) oder **VK2** (Vereinsplattform) auszuprobieren – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
@@ -56,8 +56,8 @@ Herzliche Grüße
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
 - **Eröffnung:** 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding  
-- Homepage: https://k2-galerie.vercel.app/willkommen · https://k2-galerie.vercel.app/galerie  
-- Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- K2 Galerie – Willkommen: https://k2-galerie.vercel.app/willkommen  
+- ök2 Eintritt: https://k2-galerie.vercel.app/entdecken · Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
 ---
@@ -65,5 +65,5 @@ Herzliche Grüße
 ## Hinweis für dich
 
 - Namen in der Anrede einsetzen („Liebe Anna, lieber Thomas“ …).  
-- Wenn jemand nur das **Demo-ök2** sehen soll: https://k2-galerie.vercel.app/galerie-oeffentlich (optional, nicht im Haupttext nötig).  
+- Wenn jemand **nur die öffentliche Galerie-Ansicht** (Demo) ohne Entdecken-Flow sehen soll: https://k2-galerie.vercel.app/galerie-oeffentlich (optional).  
 - **kgm solution** bleibt die Firmenmarke; **K2 Galerie** ist eure öffentliche Galerie – so wie in der App festgelegt.
