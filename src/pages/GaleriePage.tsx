@@ -3118,7 +3118,25 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </header>
         ) : (
         <>
-        {/* ök2 Fremden-Einstieg: ein Banner – Text | Sparten | Admin (nicht separater Kasten darüber; nicht bei APf/Guide-Kontext). */}
+        {/*
+          ök2 Muster: Ohne großen Fremden-Balken (APf/intern) sonst keine Sparten – ein Block wie FOCUS_DIRECTIONS immer sichtbar.
+          Mit Fremden-Balken: dieselbe Liste zusätzlich im grünen Guide (eine Komponente renderOek2SpartenKasten).
+        */}
+        {musterOnly && !showOek2FremdeOrientierungsBanner && (
+          <div
+            style={{
+              margin: '0 auto',
+              maxWidth: '1400px',
+              paddingLeft: 'clamp(1rem, 2.5vw, 1.5rem)',
+              paddingRight: 'clamp(1rem, 2.5vw, 1.5rem)',
+              paddingBottom: 'clamp(0.5rem, 1.5vw, 0.75rem)',
+              paddingTop: 'clamp(3.25rem, 10vw, 4.5rem)',
+            }}
+          >
+            {renderOek2SpartenKasten()}
+          </div>
+        )}
+        {/* ök2 Fremden-Einstieg: ein Banner – Text | Sparten | Admin (nicht bei APf/embedded/fromAdmin). */}
         {showOek2FremdeOrientierungsBanner && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3127,7 +3145,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             border: '1px solid rgba(107, 144, 128, 0.35)',
             borderRadius: '12px',
             display: 'flex',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             justifyContent: 'space-between',
             gap: '1rem',
             flexWrap: 'wrap',
@@ -3136,7 +3154,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen: rechts die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Mein Weg</strong> festlegst.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen. <strong style={{ fontWeight: 700 }}>Hier</strong> siehst du die <strong style={{ fontWeight: 700 }}>Sparten</strong> – später legst du unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> deinen <strong style={{ fontWeight: 700 }}>Mein Weg</strong> fest.
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
               {renderOek2SpartenKasten()}
