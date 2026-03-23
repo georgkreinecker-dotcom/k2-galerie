@@ -2325,7 +2325,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     return
   }
 
-  const getShareUrl = () => typeof window !== 'undefined' ? window.location.origin + window.location.pathname + window.location.search : ''
+  /** Wie QR: Server-Stand + Cache-Bust – reiner Link ohne v/_ lädt oft gecachte alte App (Handy). */
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return ''
+    const base = `${window.location.origin}${window.location.pathname}`
+    return buildQrUrlWithBust(base, qrVersionTs)
+  }
   const getShareText = () => (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
 
   const handleCopyLink = async () => {

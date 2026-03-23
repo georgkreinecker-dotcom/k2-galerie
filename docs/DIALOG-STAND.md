@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Einladung Freunde: Links korrigiert.** K2-Galerie-Link **`/galerie`** (öffentliche Seite mit Werken), nicht **`/willkommen`**; **Präsentationsmappe Langform** = `…/praesentationsmappe-vollversion` (Kurzform optional); Hinweis-Abschnitt angepasst. Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. **Commit:** `7c29e96` ✅.
+**Letzter Stand:** 23.03.26 – **ök2 Stand per Link/QR:** **„Link kopieren“** in **GaleriePage** nutzte **keinen** Server-Stand + Cache-Bust (nur QR) → geteilte URLs konnten **alte** App laden. **Fix:** `getShareUrl` = `buildQrUrlWithBust` wie QR. **`useServerBuildTimestamp`:** Auf **Vercel-Preview** (`*.vercel.app`) Build-Info von **`origin/api/build-info`** (passender Deploy-Stand), localhost weiterhin **k2-galerie.vercel.app/api/build-info**. Tests + Build grün.
+
+**Vorher:** 23.03.26 – **Einladung Freunde: Links korrigiert.** K2-Galerie-Link **`/galerie`** (öffentliche Seite mit Werken), nicht **`/willkommen`**; **Präsentationsmappe Langform** = `…/praesentationsmappe-vollversion` (Kurzform optional); Hinweis-Abschnitt angepasst. Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. **Commit:** `2c24871` ✅.
 
 **Vorher:** 23.03.26 – **Einladung Freunde: Punkt 2 neu.** Zitat-Absatz (ök2/VK2/kgm) **entfernt**; neu: **Bedürfnis** Galerie **zeitgemäß präsentieren & organisieren** → **eine Programm-Software**, **großer Teil** Bedürfnisse **kleines Unternehmen** **in einem Programm**; kurz **K2 / ök2 / VK2**, **Joe** knapp, ohne 6-Sparten-Block. Datei: `einladung-freunde-eroeffnung-k2-24-04-2026.md`. **Commit:** `f6f574f` ✅; **Push:** Git-Button Cursor.
 

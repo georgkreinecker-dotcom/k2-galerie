@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 
-const BUILD_INFO_URL = 'https://k2-galerie.vercel.app/api/build-info'
+/** Produktions-API; localhost nutzt dieselbe URL, damit QR/Stand = immer Vercel-Stand (nicht 404 auf lokalem /api). */
+const BUILD_INFO_PRODUCTION = 'https://k2-galerie.vercel.app/api/build-info'
+
+function getBuildInfoFetchUrl(): string {
+  if (typeof window === 'undefined') return BUILD_INFO_PRODUCTION
+  const h = window.location.hostname
+  if (h === 'localhost' || h === '127.0.0.1') return BUILD_INFO_PRODUCTION
+  if (h.includes('vercel.app')) return `${window.location.origin}/api/build-info`
+  return BUILD_INFO_PRODUCTION
+}
 
 export type BuildInfo = { timestamp: number; label: string } | null
 
 function fetchBuildInfo(): Promise<BuildInfo> {
-  const url = BUILD_INFO_URL + '?t=' + Date.now() + '&r=' + Math.random()
+  const url = getBuildInfoFetchUrl() + '?t=' + Date.now() + '&r=' + Math.random()
   return fetch(url, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null))
     .then((d: { timestamp?: number; label?: string } | null) =>
