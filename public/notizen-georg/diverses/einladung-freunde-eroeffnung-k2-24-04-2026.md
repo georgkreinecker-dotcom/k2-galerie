@@ -33,7 +33,9 @@ Wenn du schon **neugierig bist**, kannst du unsere **Willkommensseite der K2 Gal
 - **K2 Galerie – Willkommen:** https://k2-galerie.vercel.app/willkommen  
 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
-Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
+Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. In den letzten Monaten habe ich dafür mit **Joe** eine **sehr intensive Zeit** verbracht – **Joe** ist **mein KI-Assistent**, mit dem ich Schritt für Schritt arbeite. Ich habe **viel nachgedacht**, Konzepte geprüft und Entscheidungen vorbereitet; **Joe** musste dazu **sehr viel Code programmieren**, damit aus den Ideen eine **stabile, im Alltag nutzbare Plattform** wird.
+
+Daraus sind **ök2** und **VK2** geworden – eingebettet in ein **größeres Ganze** unter **kgm solution**: **K2** ist unsere **echte Galerie-Software**, die Martina und ich täglich führen; **ök2** ist die **öffentliche Demo**, damit man ohne echte Galeriedaten hineinschnuppern kann; **VK2** richtet sich an **Kunstvereine**. Zur Plattform gehören **Website und Vorschau, Verwaltung von Werken und Texten, Gestaltung der Galerie, Veröffentlichen, Kasse und Belege** – alles so angelegt, dass es **für Künstlerinnen, Galerien und Vereine skalierbar** bleibt. Meine **über 45 Jahre Erfahrung** als Unternehmer – **Produktentwicklung, Marketing und Verkauf** – fließen da ein; **künstliche Intelligenz** sehe ich dabei **als Werkzeug**, nicht als Ersatz für den Menschen.
 
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab reinschauen möchte:
 

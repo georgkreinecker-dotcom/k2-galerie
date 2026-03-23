@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Einladung Freunde: Links Punkt 1/2.** Punkt 1 nur **K2 Willkommen** (`/willkommen`); Punkt 2 **ök2 Eintritt** (`/entdecken`) + **Präsentationsmappe**; Kurzfassung + Hinweis angepasst. **Commit:** `d8706a6` ✅; **Push:** Git-Button Cursor.
+**Letzter Stand:** 23.03.26 – **Einladung Freunde: Punkt 2 Text.** Intensive Zeit mit **Joe** (KI-Assistent), viel Nachdenken, Joe **sehr viel Code**; Plattform **breiter** erklärt (K2 / ök2 / VK2, kgm solution, Website, Werke, Gestaltung, Veröffentlichen, Kasse). Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. Tests grün. **Commit:** (dieser Push) ✅; **Push:** Git-Button Cursor.
+
+**Vorher:** 23.03.26 – **Einladung Freunde: Links Punkt 1/2.** Punkt 1 nur **K2 Willkommen** (`/willkommen`); Punkt 2 **ök2 Eintritt** (`/entdecken`) + **Präsentationsmappe**; Kurzfassung + Hinweis angepasst. **Commit:** `d8706a6` ✅; **Push:** Git-Button Cursor.
 
 **Vorher:** 23.03.26 – **Einladung Freunde (Notizen): Eventdaten vollständig.** Punkt 1 = Titel, Typ Galerieeröffnung, **24.–26.04.2026**, Adresse Schlossergasse 4 / Eferding, regelmäßige Öffnung Samstag; Betreff + Kurzfassung angepasst; Labels Notizen/SmartPanel **24.–26.04.** Quelle: gleicher Stand wie Event „Eröffnung wiederherstellen“ in der App. Tests + Build grün. **Commit:** `086e061` ✅; **Push:** Git-Button Cursor.
 
