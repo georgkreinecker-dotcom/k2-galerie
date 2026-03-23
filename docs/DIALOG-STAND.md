@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **ök2 Fremden-Banner: Sparten wieder eingebettet:** Separater Sparten-Kasten oben rückgängig; **FOCUS_DIRECTIONS** wieder **im grünen Balken** zwischen Erklärungstext und **Mit mir in den Admin** (wie zuvor). Sparten nur bei `showOek2FremdeOrientierungsBanner` (Fremden-Einstieg), nicht im APf-/internen CD-Fallback. Text wieder „rechts die Sparten …“. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `584c585` ✅ lokal; **Push:** Git-Button Cursor (Remote-Auth hier nicht möglich).
+**Letzter Stand:** 23.03.26 – **ök2 Eingangs-Guide: Sparten + Text:** Nach `584c585` fehlten die **Sparten** im **internen/APf-Zweig** (nur noch CD-Buttons). **Fix:** `renderOek2SpartenKasten()` auch wenn **kein** `showOek2FremdeOrientierungsBanner` (oben, Abstand zu „Galerie teilen“). **Fremden-Balken:** Sparten + Admin wie zuvor; Erklär-Text **„Hier siehst du die Sparten“** statt „rechts …“ (Mobile/Desktop); `alignItems: flex-start`. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `3442f6b` ✅; **Push:** Git-Button.
 
 **Vorher:** 23.03.26 – **ök2 Galerie: Sparten oben rechts fehlten:** Referrer von internen APf-Routen (`/projects/k2-galerie/galerie-oeffentlich` usw.) blendete den **gesamten** Fremden-Balken inkl. **FOCUS_DIRECTIONS** aus (alte Regel: „unter Projekt aber nicht `/galerie`“). **Fix:** Fremden-Banner nur noch aus bei **exakt** `/projects/k2-galerie` (Hub); gleiche Logik für **showAdminEntryOnGalerie**-Referrer. **Fallback:** Wenn der große Balken nicht gezeigt wird → **Sparten-Kasten** + **Galerie gestalten (CD)** + ggf. **Mit mir in den Admin** (`renderOek2SpartenKasten`). **GaleriePage.tsx**. Tests + Build grün.
 
@@ -56,7 +56,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Push** `1d2da9e` (oder **Git-Button**); dann **Entdecken** → **Meine eigene Plattform** → **Sparten**-Kasten **ganz oben** prüfen; Vercel „Ready“ → Stand-Badge tippen.
+**Was wir JETZT tun:** **Push** `3442f6b`; **Entdecken** → Muster-Galerie (Sparten im grünen Balken) **und** APf → ök2-Galerie (Sparten oben vor CD); Vercel „Ready“ → Stand-Badge tippen.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 
