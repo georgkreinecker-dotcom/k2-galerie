@@ -56,3 +56,6 @@ k2-export.json
 *.json.backup
 public/gallery-data.json.backup.*
 .vercel
+
+# Mac-Bildschirmfotos in Referenzordner (liegen lokal, nicht jedes Mal als „neu“ anzeigen)
+reference-screenshots/Bildschirmfoto*.png
