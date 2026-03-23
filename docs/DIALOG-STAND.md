@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Basis-URL → Entdecken (endgültig):** `https://k2-galerie.vercel.app/` soll **nicht** zur ök2-Muster-Galerie führen, sondern zur **Galerie entdecken**-Seite (`/entdecken`). **Fix:** `vercel.json` **Redirect** `/` → `/entdecken` (serverseitig auf Vercel, vor React); bestehende Logik `MobileRootRedirect` + `shouldRedirectRootUrlToEntdecken()` bleibt für Konsistenz. **localhost** unverändert. Tests + Build grün. **Commit:** `d805405` ✅.
+**Letzter Stand:** 23.03.26 – **Basis-URL → Entdecken (endgültig):** `https://k2-galerie.vercel.app/` soll **nicht** zur ök2-Muster-Galerie führen, sondern zur **Galerie entdecken**-Seite (`/entdecken`). **Fix:** `vercel.json` **Redirect** `/` → `/entdecken` (serverseitig auf Vercel, vor React); bestehende Logik `MobileRootRedirect` + `shouldRedirectRootUrlToEntdecken()` bleibt für Konsistenz. **localhost** unverändert. Tests + Build grün. **Commit:** `f7c1832` ✅.
 
 **Vorher:** 23.03.26 – **Einladung Herbert (letzte Mail):** Wortlaut der verschickten Fassung in **`public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`** unter „Beispiel: persönliche Einladung (Herbert & Evi)“ übernommen (u. a. „K2 Programm ,“, ök2/Präsentationsmappe-Zeilen, **·** am Ende Präsentationsmappe-URL). **Commit:** `e37aad4` ✅.
 
