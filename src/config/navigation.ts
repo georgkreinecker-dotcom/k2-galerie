@@ -19,6 +19,7 @@ export const ENTDECKEN_ROUTE = '/entdecken'
 
 /**
  * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = **Haupteingang für Besucher** → Entdecken.
+ * **Vercel:** `vercel.json` leitet `/` serverseitig nach `/entdecken` um (vor React) – zuverlässig, nicht ök2-Galerie.
  * Localhost bleibt `/` → APf (DevView). Siehe `MobileRootRedirect` in App.tsx.
  */
 export function shouldRedirectRootUrlToEntdecken(): boolean {
