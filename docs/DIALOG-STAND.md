@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **ök2 Galerie: Sparten oben rechts fehlten:** Referrer von internen APf-Routen (`/projects/k2-galerie/galerie-oeffentlich` usw.) blendete den **gesamten** Fremden-Balken inkl. **FOCUS_DIRECTIONS** aus (alte Regel: „unter Projekt aber nicht `/galerie`“). **Fix:** Fremden-Banner nur noch aus bei **exakt** `/projects/k2-galerie` (Hub); gleiche Logik für **showAdminEntryOnGalerie**-Referrer. **Fallback:** Wenn der große Balken nicht gezeigt wird → **Sparten-Kasten** + **Galerie gestalten (CD)** + ggf. **Mit mir in den Admin** (`renderOek2SpartenKasten`). **GaleriePage.tsx**. Tests + Build grün. **Commit:** _(nach Push eintragen)_ ✅.
+**Letzter Stand:** 23.03.26 – **ök2 Muster-Galerie: Sparten immer zuerst (Entdecken → eigene Plattform):** `renderOek2SpartenKasten()` (FOCUS_DIRECTIONS) liegt jetzt **immer** oben unter `musterOnly` – **vor** Fremden-Banner und vor dem CD-Fallback, damit kein Zweig (Referrer, Deploy, Flags) ohne sichtbare Sparten bleibt. Fremden-Balken-Text angepasst („Oben hast du die Sparten“). **GaleriePage.tsx**. Tests + Build grün. **Commit (Code):** `1d2da9e` ✅ lokal; DIALOG-Stand dieselbe Session; **Push:** Git-Button Cursor (Remote-Auth hier nicht möglich).
+
+**Vorher:** 23.03.26 – **ök2 Galerie: Sparten oben rechts fehlten:** Referrer von internen APf-Routen (`/projects/k2-galerie/galerie-oeffentlich` usw.) blendete den **gesamten** Fremden-Balken inkl. **FOCUS_DIRECTIONS** aus (alte Regel: „unter Projekt aber nicht `/galerie`“). **Fix:** Fremden-Banner nur noch aus bei **exakt** `/projects/k2-galerie` (Hub); gleiche Logik für **showAdminEntryOnGalerie**-Referrer. **Fallback:** Wenn der große Balken nicht gezeigt wird → **Sparten-Kasten** + **Galerie gestalten (CD)** + ggf. **Mit mir in den Admin** (`renderOek2SpartenKasten`). **GaleriePage.tsx**. Tests + Build grün.
 
 **Vorher:** 23.03.26 – **Root `/` überall gleich → Entdecken:** Georg: herausgegebener Link darf nicht auf **localhost** anders sein als auf **Vercel**. **Fix:** `MobileRootRedirect` leitet nach Sonderfällen (Zettel, Handbuch-`doc`) **immer** zu **`/entdecken`**; kein APf mehr auf `/` auch nicht lokal. **APf:** `K2_GALERIE_APF_EINSTIEG`, `/platform`, `/dev-view`. `shouldRedirectRootUrlToEntdecken` entfernt. Tests + Build grün. **Commit:** `f23fc95` ✅.
 
@@ -54,7 +56,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Nach **Push**: ök2 **Galerie öffentlich** öffnen (von Link/Entdecken) → **Sparten** oben rechts sichtbar; ggf. Stand-Badge tippen.
+**Was wir JETZT tun:** **Push** `1d2da9e` (oder **Git-Button**); dann **Entdecken** → **Meine eigene Plattform** → **Sparten**-Kasten **ganz oben** prüfen; Vercel „Ready“ → Stand-Badge tippen.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 
