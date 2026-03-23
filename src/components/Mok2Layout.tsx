@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { mok2Groups } from '../config/mok2Structure'
 
 const PANEL_WIDTH = 380
@@ -62,7 +62,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
       >
         <span style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff', marginRight: '0.5rem' }}>mök2</span>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].home}
+          to={K2_GALERIE_APF_EINSTIEG}
           style={{
             padding: '0.4rem 0.8rem',
             background: '#444',

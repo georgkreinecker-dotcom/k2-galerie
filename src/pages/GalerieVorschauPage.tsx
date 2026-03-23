@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, MEIN_BEREICH_ROUTE, BASE_APP_URL, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { MUSTER_ARTWORKS, ARTWORK_CATEGORIES, getCategoryLabel, getCategoryPrefixLetter, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, isSubcategoryPlausibleForCategory, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, type ArtworkCategoryId, initVk2DemoStammdatenIfEmpty, getCategoriesForDirection, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, getOek2GalleryFilterTabsForWorks } from '../config/tenantConfig'
 import { 
@@ -2105,7 +2105,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
                 {/* Projekt-Start-Link nur bei K2 – bei ök2 entfernt, führt sonst fälschlich zu K2-Galerie-Projekt */}
                 {!musterOnly && (
                 <Link 
-                  to={PROJECT_ROUTES['k2-galerie'].home}
+                  to={K2_GALERIE_APF_EINSTIEG}
                   style={{
                     color: galerieTheme.muted,
                     textDecoration: 'none',

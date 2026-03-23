@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import '../App.css'
 
 type Filter = 'alle' | 'malerei' | 'keramik'
@@ -43,7 +43,7 @@ const GaleriePage = () => {
               ← Zurück
             </button>
             <Link 
-              to={PROJECT_ROUTES['k2-galerie'].home} 
+              to={K2_GALERIE_APF_EINSTIEG} 
               style={{ padding: '0.5rem 1rem', background: '#8b6914', color: '#fff', textDecoration: 'none', borderRadius: '6px' }}
             >
               ← Projekt

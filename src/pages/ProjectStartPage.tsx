@@ -1,7 +1,14 @@
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import '../App.css'
-import { PROJECT_ROUTES, PLATFORM_ROUTES, getProjectRoutes, type ProjectId } from '../config/navigation'
+import {
+  PROJECT_ROUTES,
+  PLATFORM_ROUTES,
+  getProjectRoutes,
+  type ProjectId,
+  ENTDECKEN_ROUTE,
+  shouldShowK2GalerieApfProjectHub,
+} from '../config/navigation'
 import { getPageTexts, defaultPageTexts } from '../config/pageTexts'
 import DevViewPage from './DevViewPage'
 
@@ -39,6 +46,11 @@ export default function ProjectStartPage() {
   // K2 Markt ist eigenständiges Projekt – direkt zur Arbeitsoberfläche (wird sonst „Projekt nicht gefunden“)
   if (projectId === 'k2-markt') {
     return <Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />
+  }
+
+  // Öffentlicher Einstieg (Mail, Lesezeichen): /projects/k2-galerie ohne ?apf=1 → Entdecken (nicht APf, nicht direkt K2-Galerie)
+  if (projectId === 'k2-galerie' && !shouldShowK2GalerieApfProjectHub()) {
+    return <Navigate to={ENTDECKEN_ROUTE} replace />
   }
 
   // Auf Handy/Tablet: Sofort zur Galerie (niemals Dev-Ansicht/Smart Panel, auch beim Wiederöffnen)

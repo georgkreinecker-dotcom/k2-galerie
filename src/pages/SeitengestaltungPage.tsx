@@ -5,7 +5,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 const NOTIZEN_KEY = 'k2-grafiker-tisch-notizen'
 const LAST_PAGE_KEY = 'k2-grafiker-tisch-last-page'
@@ -174,7 +174,7 @@ export default function SeitengestaltungPage() {
         flexWrap: 'wrap',
         flexShrink: 0,
       }}>
-        <Link to="/projects/k2-galerie" style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.82rem', flexShrink: 0 }}>
+        <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', fontSize: '0.82rem', flexShrink: 0 }}>
           ← Zurück
         </Link>
 

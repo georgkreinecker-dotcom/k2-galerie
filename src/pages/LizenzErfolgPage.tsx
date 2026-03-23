@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
-import { PROJECT_ROUTES, ENTDECKEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
 
 type LicenceLinks = { galerie_url: string | null; admin_url: string; name: string; email: string }
@@ -37,7 +37,7 @@ export default function LizenzErfolgPage() {
         }
         setLinks({
           galerie_url: data.galerie_url || null,
-          admin_url: data.admin_url || '/projects/k2-galerie',
+          admin_url: data.admin_url || K2_GALERIE_APF_EINSTIEG,
           name: data.name || '',
           email: data.email || '',
         })

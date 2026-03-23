@@ -82,7 +82,7 @@ import ProspektK2GaleriePage from './pages/ProspektK2GaleriePage'
 import PresseEinladungK2GaleriePage from './pages/PresseEinladungK2GaleriePage'
 import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE } from './config/navigation'
+import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
@@ -540,9 +540,6 @@ const isMobileView = () => typeof window !== 'undefined' && (
   window.innerWidth <= 768 // schmaler Bildschirm = immer Galerie (kein Smart Panel), auch bei „Desktop“-Browser
 )
 
-/** Handbuch-Dokument-URL: wenn jemand mit ?page=handbuch&doc=... auf "/" landet, sofort zur APf-Route weiterleiten. */
-const HANDBUCH_DOC_REDIRECT = '/projects/k2-galerie'
-
 /** Catch-all: Bei Projekt-Unterseiten-URL (3+ Segmente), die nicht gematcht wurde, Hinweis statt stiller Redirect zur APf (Link-öffnet-APf-Bug, ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md). */
 function NotFoundOrRedirect() {
   const location = useLocation()
@@ -571,9 +568,9 @@ function MobileRootRedirect() {
   if (doc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || doc === '20-PILOT-ZETTEL-OEK2-VK2.md') {
     return <Navigate to="/zettel-pilot" replace />
   }
-  // Andere Handbuch-Dokument-Parameter → APf mit Handbuch
+  // Andere Handbuch-Dokument-Parameter → APf mit Handbuch (?apf=1 nötig, sonst Entdecken)
   if ((page === 'handbuch' || doc) && typeof window !== 'undefined') {
-    const target = `${HANDBUCH_DOC_REDIRECT}?page=handbuch&doc=${doc || ''}`
+    const target = `${K2_GALERIE_APF_EINSTIEG}&page=handbuch&doc=${encodeURIComponent(doc || '')}`
     return <Navigate to={target} replace />
   }
 

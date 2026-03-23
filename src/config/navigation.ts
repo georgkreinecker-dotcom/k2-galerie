@@ -36,6 +36,26 @@ export function shouldRedirectRootUrlToEntdecken(): boolean {
   }
 }
 
+/**
+ * `/projects/k2-galerie` ohne Kennzeichen: auf Vercel/kgm **öffentlicher Einstieg** → nicht APf (Grafiker-Tisch) und nicht direkt K2-Galerie.
+ * **APf** nur: localhost, oder Query `apf=1` / `dev=1` (Lesezeichen Georg), siehe ProjectStartPage.
+ */
+export function shouldShowK2GalerieApfProjectHub(search?: string): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    const h = window.location.hostname.toLowerCase()
+    if (h === 'localhost' || h === '127.0.0.1') return true
+    const sp = new URLSearchParams(search ?? window.location.search)
+    if (sp.get('apf') === '1' || sp.get('dev') === '1') return true
+    return false
+  } catch {
+    return false
+  }
+}
+
+/** Interne Links zur K2-Galerie-APf – immer mit ?apf=1 (sonst Besucher:innen landen auf Entdecken). */
+export const K2_GALERIE_APF_EINSTIEG = '/projects/k2-galerie?apf=1' as const
+
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
 export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'

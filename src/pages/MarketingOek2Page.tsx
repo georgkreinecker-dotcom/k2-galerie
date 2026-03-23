@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
@@ -194,7 +194,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       {!embeddedInMok2Layout && (
       <header className="marketing-oek2-no-print" style={{ marginBottom: '2rem' }}>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].home}
+          to={K2_GALERIE_APF_EINSTIEG}
           style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.95rem' }}
         >
           ← Projekt-Start

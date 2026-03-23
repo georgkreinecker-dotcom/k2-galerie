@@ -5,7 +5,7 @@
  */
 
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 const cards: Array<{
   title: string
@@ -48,7 +48,7 @@ const cards: Array<{
   {
     title: 'K2 Galerie',
     subtitle: 'Zurück zur Galerie-Projektübersicht.',
-    to: PROJECT_ROUTES['k2-galerie'].home,
+    to: K2_GALERIE_APF_EINSTIEG,
     icon: '🏠',
   },
 ]
@@ -59,7 +59,7 @@ export default function K2MarktOberflaechePage() {
       <div className="viewport" style={{ padding: '2rem 1.5rem', maxWidth: 900, margin: '0 auto' }}>
         {/* Nav – minimal */}
         <nav className="no-print" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem', fontSize: '0.9rem' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>← K2 Galerie</Link>
+          <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>← K2 Galerie</Link>
           <Link to={PROJECT_ROUTES['k2-markt'].mappe} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Mappe</Link>
           <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>Zum Tor</Link>
         </nav>
@@ -209,7 +209,7 @@ export default function K2MarktOberflaechePage() {
 
         {/* Footer-Nav */}
         <footer className="no-print" style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>K2 Galerie</Link>
+          <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>K2 Galerie</Link>
           <Link to={PROJECT_ROUTES['k2-markt'].mappe} style={{ color: 'inherit', textDecoration: 'none', marginRight: '1rem' }}>Mappe</Link>
           <Link to={PROJECT_ROUTES['k2-markt'].tor} style={{ color: 'inherit', textDecoration: 'none' }}>Zum Tor</Link>
         </footer>

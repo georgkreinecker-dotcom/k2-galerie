@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 export default function K2SoftwareentwicklungPage() {
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function K2SoftwareentwicklungPage() {
         <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
           <Link to={PROJECT_ROUTES['k2-galerie'].marketingOek2} style={{ color: '#5ffbf1', textDecoration: 'none' }}>← Marketing ök2 (mök2)</Link>
           {' · '}
-          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none' }}>Projekt-Start</Link>
+          <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none' }}>Projekt-Start</Link>
         </p>
       </div>
 

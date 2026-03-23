@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, SOCIAL_MEDIA_FORMATE, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -117,7 +117,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
       <header className={PRINT_HIDE} style={{ padding: '1.5rem 2rem', borderBottom: `2px solid ${s.accentSoft}` }}>
         {!embeddedInMok2Layout && (
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>← Projekt-Start</Link>
+          <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: s.muted, textDecoration: 'none', fontSize: '0.9rem' }}>← Projekt-Start</Link>
           <Link to={PROJECT_ROUTES['k2-galerie'].marketingOek2} style={{ color: s.accent, textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600 }}>← mök2 (Marketing ök2)</Link>
         </div>
         )}

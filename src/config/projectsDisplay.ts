@@ -6,7 +6,7 @@
  * - Zusatzeinträge (z. B. „Öffentliche K2 Galerie“): in extraCards in getProjectCards() ergänzen.
  */
 
-import { PROJECT_ROUTES, getAllProjectIds, type ProjectId } from './navigation'
+import { PROJECT_ROUTES, getAllProjectIds, type ProjectId, K2_GALERIE_APF_EINSTIEG } from './navigation'
 
 /** Farben pro Projekt – jedes Projekt eindeutig */
 export const PROJECT_COLORS: Record<string, string> = {
@@ -43,8 +43,13 @@ export function getProjectCards(): ProjectCard[] {
   const cards: ProjectCard[] = ids.map((id, index) => {
     const route = PROJECT_ROUTES[id]
     const color = PROJECT_COLORS[id] ?? PROJECT_PALETTE[index % PROJECT_PALETTE.length]
-    // VK2: direkt zur Galerie (nicht home), damit man nicht auf K2 landet. K2-Markt hat nur home.
-    const to = id === 'vk2' && 'galerie' in route ? route.galerie : route.home
+    // VK2: direkt zur Galerie (nicht home). K2-Galerie: APf-Einstieg mit ?apf=1 (ohne → Entdecken).
+    const to =
+      id === 'vk2' && 'galerie' in route
+        ? route.galerie
+        : id === 'k2-galerie'
+          ? K2_GALERIE_APF_EINSTIEG
+          : route.home
     return {
       id: `${id}-projekt`,
       title: route.name,

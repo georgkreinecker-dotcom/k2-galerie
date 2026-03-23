@@ -6,8 +6,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
-import { BASE_APP_URL, WILLKOMMEN_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { getOrCreateEmpfehlerId } from '../utils/empfehlerId'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN } from '../config/tenantConfig'
 
@@ -105,7 +104,7 @@ ${name}`
     >
       <div style={{ marginBottom: '1.5rem' }}>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].home}
+          to={K2_GALERIE_APF_EINSTIEG}
           style={{ color: t.muted, textDecoration: 'none', fontSize: '0.95rem' }}
         >
           ← Projekt-Start

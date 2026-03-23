@@ -5,7 +5,7 @@
 
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 const t = {
   bg: 'var(--k2-bg-1, #1a0f0a)',
@@ -46,7 +46,7 @@ export default function VerguetungPage() {
       }}
     >
       <div style={{ marginBottom: '1.5rem' }}>
-        <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: t.muted, textDecoration: 'none', fontSize: '0.95rem' }}>
+        <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: t.muted, textDecoration: 'none', fontSize: '0.95rem' }}>
           ← Projekt-Start
         </Link>
       </div>

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 const DOC_PARAM = 'doc'
 const BASE = '/kampagne-marketing-strategie'
@@ -80,7 +80,7 @@ export default function KampagneMarketingStrategiePage() {
             <p className="meta" style={{ marginTop: '0.35rem' }}>Eigene Mappe in K2 Galerie – Zwischenergebnisse, Auftrag, ausgearbeitete Strategie (zwei Zweige).</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
-            <Link to={PROJECT_ROUTES['k2-galerie'].home} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
+            <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none', fontSize: '0.9rem' }}>← K2 Galerie</Link>
             <Link to={PROJECT_ROUTES['k2-galerie'].marketingOek2} style={{ color: 'rgba(95,251,241,0.85)', textDecoration: 'none', fontSize: '0.9rem' }}>mök2 – Vertrieb & Promotion</Link>
           </div>
         </header>

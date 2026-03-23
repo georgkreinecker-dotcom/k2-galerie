@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 type NotizItem = { label: string; to?: string; href?: string }
 
@@ -27,7 +27,7 @@ export default function NotizenPage() {
     }}>
       <div style={{ maxWidth: 560, margin: '0 auto' }}>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].home}
+          to={K2_GALERIE_APF_EINSTIEG}
           style={{ color: 'rgba(233,213,255,0.7)', fontSize: '0.9rem', textDecoration: 'none', display: 'inline-block', marginBottom: '1.5rem' }}
         >
           ← Zurück

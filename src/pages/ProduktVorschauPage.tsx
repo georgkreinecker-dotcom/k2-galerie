@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import {
   getCurrentTenantId,
   setCurrentTenantId,
@@ -38,7 +38,7 @@ export default function ProduktVorschauPage() {
     >
       <div style={{ marginBottom: '2rem' }}>
         <Link
-          to={PROJECT_ROUTES['k2-galerie'].home}
+          to={K2_GALERIE_APF_EINSTIEG}
           style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '0.95rem' }}
         >
           ← Projekt-Start
