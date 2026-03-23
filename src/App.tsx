@@ -568,13 +568,23 @@ function MobileRootRedirect() {
   if (doc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || doc === '20-PILOT-ZETTEL-OEK2-VK2.md') {
     return <Navigate to="/zettel-pilot" replace />
   }
-  // Produktion: Eingangstor zuerst (vor Handbuch-Logik). Nur echte .md-Handbuch-Links → APf, nicht jedes ?doc=…
+  // Produktion: Eingangstor – gleicher Mechanismus wie SmartPanel „Als Fremder eintreten“
+  // (window.location, nicht nur <Navigate />), sonst bleibt die APf oft sichtbar.
   if (typeof window !== 'undefined' && shouldRedirectRootUrlToEntdecken()) {
     const wantsHandbuchDeepLink =
       page === 'handbuch' ||
       (doc != null && doc.length > 0 && /\.md$/i.test(doc))
     if (!wantsHandbuchDeepLink) {
-      return <Navigate to={ENTDECKEN_ROUTE} replace />
+      if (window.self !== window.top) {
+        return <Navigate to={ENTDECKEN_ROUTE} replace />
+      }
+      const suffix = `${window.location.search || ''}${window.location.hash || ''}`
+      window.location.replace(`${window.location.origin}${ENTDECKEN_ROUTE}${suffix}`)
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'system-ui', color: '#5c5650', padding: '2rem' }}>
+          Eingangstor wird geladen …
+        </div>
+      )
     }
   }
   // Handbuch / Dokument (.md) → APf mit Handbuch
