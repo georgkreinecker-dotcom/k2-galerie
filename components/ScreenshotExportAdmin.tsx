@@ -12613,6 +12613,30 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         )
       })()}
 
+      {/* ök2 Werke-Hub: Sparten immer (FOCUS_DIRECTIONS) – auch ohne grünen Guide, z. B. Einstieg von APf (dort wird kein Guide-Flow gestartet). */}
+      {tenant.isOeffentlich && activeTab === 'werke' && (
+        <div
+          role="note"
+          aria-label="Sparten und Mein Weg"
+          style={{
+            padding: '0.65rem clamp(1rem, 3vw, 1.5rem)',
+            background: 'rgba(107, 144, 128, 0.14)',
+            borderBottom: '1px solid rgba(107, 144, 128, 0.35)',
+          }}
+        >
+          <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#1c1a18', marginBottom: '0.3rem' }}>
+              Sparten – unter Einstellungen als „Mein Weg“ wählbar
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '1.15rem', fontSize: '0.82rem', lineHeight: 1.45, color: '#1c1a18' }}>
+              {FOCUS_DIRECTIONS.map((d) => (
+                <li key={d.id}>{d.label}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <div style={{ position: 'relative', zIndex: 1 }}>
         <header style={{
           padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.5rem, 4vw, 3rem)',
