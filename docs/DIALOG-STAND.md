@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Einladung Freunde (Notizen): Eventdaten vollständig.** Punkt 1 = Titel, Typ Galerieeröffnung, **24.–26.04.2026**, Adresse Schlossergasse 4 / Eferding, regelmäßige Öffnung Samstag; Betreff + Kurzfassung angepasst; Labels Notizen/SmartPanel **24.–26.04.** Quelle: gleicher Stand wie Event „Eröffnung wiederherstellen“ in der App. Tests + Build grün. **Commit:** (dieser Push); **Push:** Git-Button Cursor.
+**Letzter Stand:** 23.03.26 – **Einladung Freunde (Notizen): Eventdaten vollständig.** Punkt 1 = Titel, Typ Galerieeröffnung, **24.–26.04.2026**, Adresse Schlossergasse 4 / Eferding, regelmäßige Öffnung Samstag; Betreff + Kurzfassung angepasst; Labels Notizen/SmartPanel **24.–26.04.** Quelle: gleicher Stand wie Event „Eröffnung wiederherstellen“ in der App. Tests + Build grün. **Commit:** `086e061` ✅; **Push:** Git-Button Cursor.
 
 **Vorher:** 22.03.26 – **Georgs Notizen: Einladung Eröffnung in der App.** Ursache „nichts angekommen“: Markdown lag nur unter `public/notizen-georg/`, war aber **nicht** in **NotizenPage** / Route verlinkt. **Fix:** Route `notizenEinladungEroeffnung24` → **EinladungFreundeEroeffnungNotizPage** lädt `einladung-freunde-eroeffnung-k2-24-04-2026.md`; Eintrag in **NotizenPage** + **SmartPanel** Diverses; **BriefAnAndreasPage** nutzt gemeinsamen **georgsNotizMarkdownView**. Tests + Build grün. **Commit (Implementierung):** `c71980d` ✅; **Push:** Git-Button Cursor.
 
