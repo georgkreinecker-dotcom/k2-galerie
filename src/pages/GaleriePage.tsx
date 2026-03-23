@@ -417,7 +417,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         if (ref.startsWith(origin)) {
           const path = ref.slice(origin.length) || '/'
           if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
-          if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return true
+          if (path === '/projects/k2-galerie' || path === '/projects/k2-galerie/') return true
         }
         return false
       }
@@ -433,7 +433,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (!ref.startsWith(origin)) return false
       const path = ref.slice(origin.length) || '/'
       if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
-      if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return true
+      if (path === '/projects/k2-galerie' || path === '/projects/k2-galerie/') return true
     } catch (_) {}
     return false
   })()
@@ -459,7 +459,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (ref.startsWith(origin)) {
         const path = ref.slice(origin.length) || '/'
         if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return false
-        if (path.includes('/projects/k2-galerie') && !path.endsWith('/galerie') && !path.endsWith('/galerie/')) return false
+        // Nur echter APf-Projekthub ohne Besucher-Route – nicht: galerie-oeffentlich, seitengestaltung, entdecken, …
+        // (Alte Regel „/projects/k2-galerie && nicht /galerie“ blendete fälschlich Sparten aus.)
+        if (path === '/projects/k2-galerie' || path === '/projects/k2-galerie/') return false
       }
       return true
     } catch (_) {}
@@ -2491,6 +2493,35 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
   const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
 
+  /** ök2: Sparten-Liste (FOCUS_DIRECTIONS) – ein Kasten, zwei Einbauorte (großer Fremden-Balken + Fallback). */
+  const renderOek2SpartenKasten = () => (
+    <div
+      role="note"
+      aria-label="Sparten und Mein Weg"
+      style={{
+        padding: '0.65rem 0.85rem',
+        background: 'rgba(255, 255, 255, 0.55)',
+        border: '1px solid rgba(107, 144, 128, 0.45)',
+        borderRadius: '10px',
+        color: 'var(--k2-text)',
+        fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
+        lineHeight: 1.4,
+      }}
+    >
+      <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#1c1a18' }}>
+        Sparte und „Mein Weg“ – Auswahl später in den Einstellungen
+      </div>
+      <p style={{ margin: '0 0 0.4rem', color: '#5c5650' }}>
+        So kannst du deine eigene Linie später ausrichten – im Muster nur zum Nachlesen:
+      </p>
+      <ul style={{ margin: 0, paddingLeft: '1.15rem', color: '#1c1a18' }}>
+        {FOCUS_DIRECTIONS.map((d) => (
+          <li key={d.id} style={{ marginBottom: '0.15rem' }}>{d.label}</li>
+        ))}
+      </ul>
+    </div>
+  )
+
   return (
     <div style={{ 
       minHeight: '-webkit-fill-available',
@@ -3114,31 +3145,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen: rechts die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Mein Weg</strong> festlegst.
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
-              <div
-                role="note"
-                aria-label="Sparten und Mein Weg"
-                style={{
-                  padding: '0.65rem 0.85rem',
-                  background: 'rgba(255, 255, 255, 0.55)',
-                  border: '1px solid rgba(107, 144, 128, 0.45)',
-                  borderRadius: '10px',
-                  color: 'var(--k2-text)',
-                  fontSize: 'clamp(0.8rem, 1.8vw, 0.88rem)',
-                  lineHeight: 1.4,
-                }}
-              >
-                <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#1c1a18' }}>
-                  Sparte und „Mein Weg“ – Auswahl später in den Einstellungen
-                </div>
-                <p style={{ margin: '0 0 0.4rem', color: '#5c5650' }}>
-                  So kannst du deine eigene Linie später ausrichten – im Muster nur zum Nachlesen:
-                </p>
-                <ul style={{ margin: 0, paddingLeft: '1.15rem', color: '#1c1a18' }}>
-                  {FOCUS_DIRECTIONS.map((d) => (
-                    <li key={d.id} style={{ marginBottom: '0.15rem' }}>{d.label}</li>
-                  ))}
-                </ul>
-              </div>
+              {renderOek2SpartenKasten()}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -3157,6 +3164,69 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               >
                 Mit mir in den Admin →
               </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ök2: Sparten immer sichtbar, wenn der große Fremden-Balken aus Referrer/embedded/APf ausbleibt (kein „altes“ Layout ohne Sparten). */}
+        {musterOnly && !showOek2FremdeOrientierungsBanner && (
+          <div
+            style={{
+              margin: 'clamp(0.75rem, 2vw, 1rem)',
+              maxWidth: '1400px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
+            <div style={{ width: '100%', maxWidth: 'min(100%, 380px)' }}>
+              {renderOek2SpartenKasten()}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  marginTop: '0.65rem',
+                  justifyContent: 'flex-end',
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=design`)}
+                  style={{
+                    padding: '0.5rem 0.95rem',
+                    background: '#fffefb',
+                    color: '#1c1a18',
+                    border: '1px solid rgba(107, 144, 128, 0.55)',
+                    borderRadius: '10px',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  ✨ Galerie gestalten (CD) →
+                </button>
+                {!showAdminEntryOnGalerie && (
+                  <button
+                    type="button"
+                    onClick={handleAdminButtonClick}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: 'var(--k2-accent)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontWeight: 600,
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    Mit mir in den Admin →
+                  </button>
+                )}
               </div>
             </div>
           </div>
