@@ -16,6 +16,7 @@ import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
+import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '../utils/galerieOek2Referrer'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
@@ -412,12 +413,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         if (typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2') return true
         if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context')) return true
         if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return true
-        const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
-        const origin = typeof window !== 'undefined' ? window.location.origin : ''
-        if (ref.startsWith(origin)) {
-          const path = ref.slice(origin.length) || '/'
-          if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return true
-          if (path === '/projects/k2-galerie' || path === '/projects/k2-galerie/') return true
+        {
+          const path = getSameOriginReferrerPath()
+          if (path && isReferrerIndicatingApfStyleSession(path)) return true
         }
         return false
       }
@@ -454,14 +452,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): Referrer bleibt bei SPA oft leer/extern –
       // Orientierungs-Balken trotzdem zeigen (sonst sehen echte Fremde keinen grünen Guide).
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-entdecken') === '1') return true
-      const ref = typeof document !== 'undefined' ? document.referrer || '' : ''
-      const origin = typeof window !== 'undefined' ? window.location.origin : ''
-      if (ref.startsWith(origin)) {
-        const path = ref.slice(origin.length) || '/'
-        if (path.includes('mission-control') || path.includes('mein-bereich') || path.includes('/admin')) return false
-        // Nur echter APf-Projekthub ohne Besucher-Route – nicht: galerie-oeffentlich, seitengestaltung, entdecken, …
-        // (Alte Regel „/projects/k2-galerie && nicht /galerie“ blendete fälschlich Sparten aus.)
-        if (path === '/projects/k2-galerie' || path === '/projects/k2-galerie/') return false
+      {
+        const path = getSameOriginReferrerPath()
+        // Nur eine Quelle: galerieOek2Referrer (nicht zweite, „ältere“ Referrer-Regel parallel pflegen).
+        if (path && isReferrerIndicatingApfStyleSession(path)) return false
       }
       return true
     } catch (_) {}

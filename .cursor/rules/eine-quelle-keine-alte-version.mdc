@@ -1,0 +1,27 @@
+---
+description: Keine parallele „alte“ Logik – eine Quelle pro Entscheidung; verhindert Cache-vs-Code-Bugs.
+alwaysApply: true
+---
+
+# 🔒 Eine Quelle – keine zweite, veraltete Version (Georg, März 2026)
+
+## Das Problem
+
+**Symptom:** Etwas wird neu gemacht und wirkt – bis man von **einer anderen Seite** oder **einem anderen Einstieg** kommt. Dann greift eine **zweite Kopie** der Logik (Referrer, Merge, Keys, Texte) – oft noch die **alte Regel**.
+
+**Hauptursache:** Dieselbe fachliche Entscheidung an **mehreren Stellen** im Code (copy-paste, ähnlicher Block „nochmal“). Die KI oder ein Refactor ändert **nur eine Stelle** → Drift → Bugs, die wie „Cache“ wirken, in Wahrheit aber **inkonsistenter Code** sind.
+
+**„Cache“** im weiten Sinn: Browser-CDN-Cache, **und** mentale/Repo-„Cache“: alte Muster, die noch irgendwo stehen.
+
+## Unveränderliche Regeln
+
+1. **Eine Problemstellung = eine Funktion / ein Modul** (Sportwagenmodus). Referenz: **ein-standard-problem.mdc** Tabelle.
+2. **Vor jeder Änderung** an einem Thema, das es schon gibt: **Repo-Suche** (`grep`/Suche) nach **gleicher Entscheidung** (z. B. `referrer`, `mergeServerWithLocal`, `getPageTexts(` ohne Tenant). **Nicht** eine zweite Variante schreiben.
+3. **Nach einer Regel-Änderung:** Alle Aufrufer auf die **eine** Quelle umstellen – siehe **standard-verstoss-alle-stellen-nachziehen.mdc**.
+4. **Konkret ök2-Galerie / Referrer / Fremde vs. APf:** Nur **galerieOek2Referrer.ts** (`getSameOriginReferrerPath`, `isReferrerIndicatingApfStyleSession`). **Nicht** erneut `document.referrer` + eigene Pfad-IFs in **GaleriePage** duplizieren.
+
+## Kurzfassung
+
+**Keine zweite, still veraltete Version parallel pflegen. Eine Quelle, viele Aufrufer – sonst „Cache vs. Code“-Chaos.**
+
+Verknüpfung: **ein-standard-problem.mdc**, **fehlersuche-zuerst-struktur-datenfluss.mdc**, **standard-verstoss-alle-stellen-nachziehen.mdc**.
