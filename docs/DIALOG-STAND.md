@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Einladung Freunde: Links Punkt 1/2.** Punkt 1 nur **K2 Willkommen** (`/willkommen`); Punkt 2 **ök2 Eintritt** (`/entdecken`) + **Präsentationsmappe**; Kurzfassung + Hinweis angepasst. **Commit:** (dieser Push); **Push:** Git-Button Cursor.
+**Letzter Stand:** 23.03.26 – **Einladung Freunde: Links Punkt 1/2.** Punkt 1 nur **K2 Willkommen** (`/willkommen`); Punkt 2 **ök2 Eintritt** (`/entdecken`) + **Präsentationsmappe**; Kurzfassung + Hinweis angepasst. **Commit:** `d8706a6` ✅; **Push:** Git-Button Cursor.
 
 **Vorher:** 23.03.26 – **Einladung Freunde (Notizen): Eventdaten vollständig.** Punkt 1 = Titel, Typ Galerieeröffnung, **24.–26.04.2026**, Adresse Schlossergasse 4 / Eferding, regelmäßige Öffnung Samstag; Betreff + Kurzfassung angepasst; Labels Notizen/SmartPanel **24.–26.04.** Quelle: gleicher Stand wie Event „Eröffnung wiederherstellen“ in der App. Tests + Build grün. **Commit:** `086e061` ✅; **Push:** Git-Button Cursor.
 
