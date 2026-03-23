@@ -148,6 +148,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 | 21.03.26 | **Werkkatalog = gleiche Sparten-Logik wie Werke verwalten:** eine Quelle (`getEffectiveDirectionFromWork`, `getCategoriesForDirection`, `getShopSoldArtworksKey`) – nicht parallel ENTRY_TYPES/Dropdown in ök2 erfinden. |
 | 22.03.26 | **Sportwagenblock Werkkatalog:** Thumbnails brauchen `resolveArtworkImages` + stabiles `useMemo` fürs Filtern; Einzel- und Sammeldruck = dieselbe HTML-Funktion + ein Print-Fenster – kein drittes `document.write`-Monster pflegen. |
 | 23.03.26 | **Kommentar „UI nutzt getOek2DefaultArtworkImage“** reicht nicht, wenn eine UI nur **`imageUrl`** rendert: **`resolveArtworkImages`** muss für ök2-Muster mit **`imageRef`** die Kategorie-URL setzen – sonst leere Thumbnails (M1/G1). |
+| 23.03.26 (Abend) | Georg beendet die Session – **Raum aufgeräumt:** Notizen-Einladung mit **WhatsApp** in Liste/README/Zweck; **Root→Entdecken** mit **useLayoutEffect** + **Prod ohne Host-Whitelist** committed; **Push** = Georg (Git-Button), damit **GitHub/Vercel** den gleichen Stand haben wie der Mac. |
 | 22.03.26 (Abend) | Georg beendet bewusst die Session und nennt **Endphase – der Markt ruft**: Vertrauen + dokumentierter Stand (Audit, Ready-to-go) tragen die Last mit; nächster Tag = Fokus nach außen – DIALOG-STAND und Push sollen den Übergang ohne Kontextverlust sichern. |
 
 ---

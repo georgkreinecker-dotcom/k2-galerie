@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, lazy, Suspense } from 'react'
+import { useEffect, useLayoutEffect, useState, useRef, lazy, Suspense } from 'react'
 import { safeReload, safeReloadWithCacheBypass, getRefreshUrl } from './utils/env'
 import { K2_ADMIN_UNLOCKED_KEY, clearAdminUnlockIfExpired } from './utils/adminUnlockStorage'
 import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
@@ -564,6 +564,20 @@ function MobileRootRedirect() {
 
   const page = searchParams.get('page')
   const doc = searchParams.get('doc')
+
+  // Zweite Absicherung vor erstem Paint (falls Render-Pfad zu spät greift / gecachtes Bundle)
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!shouldRedirectRootUrlToEntdecken()) return
+    const wantsHandbuchDeepLink =
+      page === 'handbuch' ||
+      (doc != null && doc.length > 0 && /\.md$/i.test(doc))
+    if (wantsHandbuchDeepLink) return
+    if (window.self !== window.top) return
+    const suffix = `${window.location.search || ''}${window.location.hash || ''}`
+    window.location.replace(`${window.location.origin}${ENTDECKEN_ROUTE}${suffix}`)
+  }, [page, doc])
+
   // Pilot-Zettel (ehem. Martina & Muna) → Pilot-Zettel
   if (doc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || doc === '20-PILOT-ZETTEL-OEK2-VK2.md') {
     return <Navigate to="/zettel-pilot" replace />

@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Notizen Einladung Freunde: WhatsApp mit dran.** In **`einladung-freunde-eroeffnung-k2-24-04-2026.md`** (public + docs) **Zweck**-Zeile mit **WhatsApp-Kurzversion** (unten in der Datei); **NotizenPage** + **SmartPanel** Label **„Mail + WhatsApp“**; **docs/notizen-georg/README.md** Eintrag ergänzt. Tests + Build grün. **Push:** Git-Button.
+**Letzter Stand:** 23.03.26 (Session-Ende) – **Root `/` → Entdecken:** **useLayoutEffect** in **MobileRootRedirect** als zweite Absicherung vor erstem Paint (Handbuch-`page`/`doc` ausgenommen, kein iframe). **`shouldRedirectRootUrlToEntdecken`:** unter **Vite** (`import.meta.env.DEV`) immer **false** (localhost/LAN = APf); **Produktions-Build** auf **jeder anderen Origin** **true** (keine Host-Whitelist – vermeidet falsche Seite bei Preview/Alias). **App.tsx**, **navigation.ts**. Kleine Doku-Touch: **LINKS-QR-CODES-UEBERSICHT**, **TEST-PROTOKOLL-UPLOAD-DOWNLOAD**. Tests + Build grün. **Push:** Git-Button (**main** ist lokal **viele Commits ahead** – bitte pushen).
+
+**Vorher:** 23.03.26 – **Notizen Einladung Freunde: WhatsApp mit dran.** In **`einladung-freunde-eroeffnung-k2-24-04-2026.md`** (public + docs) **Zweck**-Zeile mit **WhatsApp-Kurzversion** (unten in der Datei); **NotizenPage** + **SmartPanel** Label **„Mail + WhatsApp“**; **docs/notizen-georg/README.md** Eintrag ergänzt. Tests + Build grün. **Push:** Git-Button.
 
 **Vorher:** 23.03.26 – **Willkommens-/Hero-Bilder schärfer (K2, ök2, VK2):** Ursache war zu starke Kompression (Desktop/„Bild übernehmen“ wie **Werk**). **Neu:** Kontext **`pageHero`** (max. Breite ~1920, höhere Qualität) für Willkommen, Galerie-Karte, Virtual Tour, VK2-Karten, GitHub-Upload; **`runBildUebernehmen`** optional **`compressContext: 'pageHero'`** in der Seitengestaltung; Hero-**img** mit `translateZ(0)` / `backfaceVisibility` (K2 **GaleriePage**, VK2 **Galerie + Vorschau**). Bereits gespeicherte kleine Bilder: in der Seitengestaltung **neu übernehmen** für volle Qualität. **Push:** Git-Button.
 
@@ -62,7 +64,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Push** auf **main** (Hero-Bildqualität + Notizen-Labels); bei Bedarf Willkommensbilder in **Galerie gestalten** neu **Bild übernehmen**; Vercel „Ready“ → Stand-Badge tippen.
+**Was wir JETZT tun:** **Push** auf **origin/main** (alles Lokale inkl. Root→Entdecken + Notizen-WhatsApp + Hero); Vercel „Ready“ → Stand-Badge tippen.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 

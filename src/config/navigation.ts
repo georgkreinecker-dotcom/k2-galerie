@@ -19,17 +19,18 @@ export const ENTDECKEN_ROUTE = '/entdecken'
 
 /**
  * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = Besucher-Einstieg → Entdecken.
- * Localhost bleibt `/` → APf (DevView) für Georgs Arbeitsstart am Mac.
+ * Localhost + Vite-Devserver: `/` bleibt APf (DevView) für Georgs Arbeitsstart am Mac.
+ * Produktions-Build auf jeder anderen Origin: immer umleiten (keine Domain-Whitelist – vermeidet „falsche Seite“ bei Alias/Preview).
  */
 export function shouldRedirectRootUrlToEntdecken(): boolean {
   try {
     if (typeof window === 'undefined') return false
     const h = window.location.hostname.toLowerCase()
     if (h === 'localhost' || h === '127.0.0.1') return false
-    if (h === 'k2-galerie.vercel.app') return true
-    if (h.endsWith('.vercel.app')) return true
-    if (h === 'kgm.at' || h === 'www.kgm.at') return true
-    return false
+    // npm run dev: bewusst APf auf / (auch bei Zugriff über LAN-IP)
+    if (import.meta.env.DEV) return false
+    // npm run build (Vercel, Preview, kgm.at, …): Root → Eingangstor
+    return true
   } catch {
     return false
   }

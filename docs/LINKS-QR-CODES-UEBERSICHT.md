@@ -31,6 +31,7 @@
 | **PilotStartPage** | QR Galerie-Einstieg, QR diese Seite | ✅ buildQrUrlWithBust für beide |
 | **GalerieVorschauPage** | Etikett-QR (galerie-vorschau?q=…) | ✅ BASE_APP_URL + buildQrUrlWithBust (Version von Parent) |
 | **MarketingOek2Page** | Link Willkommen; QR Pilot-Schreiben | ✅ Link aus BASE_APP_URL; Pilot-QR mit Bust |
+| **Einladung an Freunde** | Links + QR für Einladungstext | ✅ Quelle ist `src/config/navigation.ts`; QR nur aus diesen Ziel-URLs erzeugen |
 | **FlyerK2GaleriePage** | Kein QR in Datei – nur Stammdaten/Text | – |
 | **EmpfehlungstoolPage** | Willkommens-URL mit Empfehler-Parameter | BASE_APP_URL + WILLKOMMEN_ROUTE + Query |
 
@@ -40,6 +41,7 @@
 
 - **Neuer Link auf Galerie/Willkommen/Vercel:** Immer `BASE_APP_URL` + Route aus `navigation.ts` verwenden, nie `https://k2-galerie.vercel.app` fest eintippen.
 - **Neuer QR auf Vercel:** Immer `buildQrUrlWithBust(url, useQrVersionTimestamp())` (oder von Parent übergebener Timestamp), nie nur `url` in QRCode.toDataURL.
+- **Neue Öffentlichkeitsarbeit (Mails/Einladungen/Briefe):** Links aus derselben Quelle (`navigation.ts` + diese Übersicht) übernehmen; Vorlagen in `docs/notizen-georg/diverses/` und `public/notizen-georg/diverses/` synchron halten.
 
 ---
 
