@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **ök2: Guide nach Admin → Galerie wie beim Hineingehen:** Nach Besuch im Admin setzten **`fromAdmin`** / **`k2-galerie-from-admin`** den grünen Fremden-Balken aus – Rückweg zeigte nur noch **Sparten**-Block. **Fix:** In **`showOek2FremdeOrientierungsBanner`** zuerst **`k2-from-entdecken === '1'`** → voller Guide (wie Entdecken → Muster-Galerie), **dann** erst fromAdmin / KEY_FROM_ADMIN. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `6ba0893` ✅; **Push:** Git-Button.
+**Letzter Stand:** 23.03.26 – **Willkommens-/Hero-Bilder schärfer (K2, ök2, VK2):** Ursache war zu starke Kompression (Desktop/„Bild übernehmen“ wie **Werk**). **Neu:** Kontext **`pageHero`** (max. Breite ~1920, höhere Qualität) für Willkommen, Galerie-Karte, Virtual Tour, VK2-Karten, GitHub-Upload; **`runBildUebernehmen`** optional **`compressContext: 'pageHero'`** in der Seitengestaltung; Hero-**img** mit `translateZ(0)` / `backfaceVisibility` (K2 **GaleriePage**, VK2 **Galerie + Vorschau**). Bereits gespeicherte kleine Bilder: in der Seitengestaltung **neu übernehmen** für volle Qualität. **Push:** Git-Button.
+
+**Vorher:** 23.03.26 – **ök2: Guide nach Admin → Galerie wie beim Hineingehen:** Nach Besuch im Admin setzten **`fromAdmin`** / **`k2-galerie-from-admin`** den grünen Fremden-Balken aus – Rückweg zeigte nur noch **Sparten**-Block. **Fix:** In **`showOek2FremdeOrientierungsBanner`** zuerst **`k2-from-entdecken === '1'`** → voller Guide (wie Entdecken → Muster-Galerie), **dann** erst fromAdmin / KEY_FROM_ADMIN. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `6ba0893` ✅; **Push:** Git-Button.
 
 **Vorher:** 23.03.26 – **ök2 Eingangs-Guide: Sparten + Text:** Nach `584c585` fehlten die **Sparten** im **internen/APf-Zweig** (nur noch CD-Buttons). **Fix:** `renderOek2SpartenKasten()` auch wenn **kein** `showOek2FremdeOrientierungsBanner` (oben, Abstand zu „Galerie teilen“). **Fremden-Balken:** Sparten + Admin wie zuvor; Erklär-Text **„Hier siehst du die Sparten“** statt „rechts …“ (Mobile/Desktop); `alignItems: flex-start`. **GaleriePage.tsx**. Tests + Build grün. **Commit:** `3442f6b` ✅; **Push:** Git-Button.
 
@@ -58,7 +60,7 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Push** `6ba0893`; **Entdecken** → ök2-Galerie → Admin → **Galerie ansehen**: grüner Guide wie beim ersten Mal; Vercel „Ready“ → Stand-Badge tippen.
+**Was wir JETZT tun:** **Push** auf **main** (Hero-Bildqualität); bei Bedarf Willkommensbilder in **Galerie gestalten** neu **Bild übernehmen**; Vercel „Ready“ → Stand-Badge tippen.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 

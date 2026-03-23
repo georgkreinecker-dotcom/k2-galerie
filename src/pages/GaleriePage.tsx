@@ -3265,6 +3265,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   height: 'auto',
                   display: 'block',
                   maxHeight: '90vh',
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
                 }}
               />
               {/* Dunkler Gradient unten – Titel lesbar */}
@@ -3775,7 +3777,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         height: '100%',
                         objectFit: 'cover',
                         display: 'block',
-                        boxSizing: 'border-box'
+                        boxSizing: 'border-box',
+                        transform: 'translateZ(0)',
+                        backfaceVisibility: 'hidden',
                       }}
                     />
                   ) : (
@@ -3879,7 +3883,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         controls
                         playsInline
                         onClick={() => setFullscreenMedia({ type: 'video', src: videoSrc })}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                       />
                     )
                     if (hasImg) return (
@@ -3887,7 +3891,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         src={imgSrc}
                         alt="Virtueller Rundgang"
                         onClick={() => setFullscreenMedia({ type: 'image', src: imgSrc })}
-                        style={{ width: '100%', maxWidth: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer' }}
+                        style={{ width: '100%', maxWidth: '100%', height: '100%', objectFit: 'cover', display: 'block', boxSizing: 'border-box', cursor: 'pointer', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }}
                       />
                     )
                     return <div style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', opacity: 0.25 }}>{musterOnly ? '🖼️' : '📹'}</div>

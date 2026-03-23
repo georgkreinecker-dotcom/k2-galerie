@@ -63,8 +63,8 @@ export async function uploadImageToGitHub(
 
   onStatus?.('Bild wird vorbereitet…')
 
-  // Regel komprimierung-fotos-videos: max. 600–800 px, Qualität 0.5–0.65
-  const compressed = await compressImageForStorage(file, { maxWidth: 760, quality: 0.65 })
+  // Seiten-Heldenbilder: pageHero (scharf auf großen Displays); Werke bleiben separat „artwork“.
+  const compressed = await compressImageForStorage(file, { context: 'pageHero' })
   const base64 = compressed.replace(/^data:image\/\w+;base64,/, '')
 
   const path = `public/img/${subfolder}/${filename}`

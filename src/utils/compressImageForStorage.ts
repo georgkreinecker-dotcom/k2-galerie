@@ -4,7 +4,7 @@
  * artwork = für Werke in localStorage (viele Bilder → klein halten).
  */
 
-export type CompressContext = 'mobile' | 'desktop' | 'artwork'
+export type CompressContext = 'mobile' | 'desktop' | 'artwork' | 'pageHero'
 
 export interface CompressImageOptions {
   /** Kontext: mobile = stärker, desktop = Standard, artwork = für Werke (localStorage) */
@@ -15,12 +15,17 @@ export interface CompressImageOptions {
   quality?: number
 }
 
-/** Optimiert laut Regel komprimierung-fotos-videos.mdc: max. Breite 600–800 px, JPEG-Qualität 0.5–0.65. Mobil stärker. */
+/**
+ * artwork / mobile: viele Bilder, klein halten (Regel komprimierung-fotos-videos.mdc).
+ * desktop: allgemeine Admin-Vorschau, z. B. kleine Avatare.
+ * pageHero: wenige große Flächen (Willkommen, Galerie-Karte, Virtual Tour, VK2-Eingangskarten) – schärfer auf Retina/Fullscreen.
+ */
 const DEFAULTS: Record<CompressContext, { maxWidth: number; quality: number }> = {
   mobile: { maxWidth: 560, quality: 0.48 },
   desktop: { maxWidth: 760, quality: 0.6 },
   /** Für Werke: stark komprimieren (localStorage, Upload) – viele Werke, schnelle Speicherung. */
-  artwork: { maxWidth: 520, quality: 0.5 }
+  artwork: { maxWidth: 520, quality: 0.5 },
+  pageHero: { maxWidth: 1920, quality: 0.82 }
 }
 
 /**

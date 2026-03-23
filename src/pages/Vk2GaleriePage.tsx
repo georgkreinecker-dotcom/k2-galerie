@@ -313,7 +313,7 @@ const Vk2GaleriePage: React.FC = () => {
       {/* ── HERO: Foto mit Titel-Overlay ── */}
       <div style={{ position: 'relative', width: '100%', height: 'clamp(320px, 52vh, 540px)', overflow: 'hidden' }}>
         {welcomeImage ? (
-          <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={welcomeImage} alt={heroTitle} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
         ) : (
           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #c8b89a 0%, #a89278 50%, #887258 100%)' }} />
         )}

@@ -184,7 +184,7 @@ const Vk2GalerieVorschauPage: React.FC = () => {
       {/* Hero: Willkommensfoto (optional) */}
       {welcomeImage && (
         <div style={{ position: 'relative', width: '100%', height: 'clamp(200px, 38vh, 380px)', overflow: 'hidden' }}>
-          <img src={welcomeImage} alt={vereinsName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={welcomeImage} alt={vereinsName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(20,12,8,0.6) 100%)' }} />
         </div>
       )}
