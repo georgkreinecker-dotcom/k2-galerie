@@ -81,11 +81,19 @@ Entwickelt wird alles mit einem KI-Assistenten namens Joe – ich habe keine Pro
 
 ## Demo ansehen (ök2)
 
-Unter diesem Link siehst du die **öffentliche Demo-Galerie** – so, wie eine digitale Galerie für Künstlerinnen und Künstler aussieht und funktioniert (ohne Anmeldung):
+Unter diesen Links siehst du die **öffentliche Demo** – so, wie eine digitale Galerie für Künstlerinnen und Künstler aussieht und funktioniert (ohne Anmeldung). **Wichtig:** immer die vollständige Adresse nutzen (nicht nur die Basis-URL ohne Pfad).
 
-**→ [ök2 Demo-Galerie](https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich)**
+**ök2 – Demo-Galerie**  
+https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich  
 
-Einfach im Browser öffnen – am Handy oder am Rechner.
+![QR-Code Demo-Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie-oeffentlich)
+
+**Willkommen** (Zugangsbereich / Erster Entwurf):  
+https://k2-galerie.vercel.app/willkommen  
+
+![QR-Code Willkommen](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen)
+
+Einfach im Browser öffnen oder QR scannen – am Handy oder am Rechner.
 
 ---
 

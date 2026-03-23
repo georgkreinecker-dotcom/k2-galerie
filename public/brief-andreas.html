@@ -440,11 +440,28 @@
     </div>
   </section>
 
-  <!-- Demo ök2 -->
+  <!-- Demo ök2 + QR (volle URLs – nicht nur Basis ohne Pfad) -->
   <section class="card" style="margin-top: 2rem;">
     <h2><span class="icon">🔗</span> Demo-Galerie ansehen (ök2)</h2>
-    <p style="font-size:0.92rem; color:#d4c9be; line-height:1.7; margin-bottom: 0.75rem;">So sieht die App aus – am Handy oder am Rechner. Ein Klick, keine Anmeldung:</p>
-    <p style="margin-top: 0.5rem;"><a href="https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich" target="_blank" rel="noopener" style="color: var(--teal); text-decoration: underline;">→ ök2 Demo-Galerie</a></p>
+    <p style="font-size:0.92rem; color:#d4c9be; line-height:1.7; margin-bottom: 1rem;">So sieht die App aus – am Handy oder am Rechner. <strong style="color:#c8bfb6;">Immer die vollständige Adresse nutzen</strong> (nicht nur <code style="font-size:0.85em; color:#8a8078;">k2-galerie.vercel.app</code> ohne Pfad). QR-Codes scannen oder Link tippen – keine Anmeldung nötig.</p>
+
+    <div class="demo-qr-grid" style="display:flex; flex-direction:column; gap:1.5rem;">
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1rem; padding:1rem 0; border-bottom:1px solid rgba(95,251,241,0.12);">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=132x132&amp;margin=8&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie-oeffentlich" width="132" height="132" alt="QR-Code ök2 Demo-Galerie" style="display:block; flex-shrink:0; background:#fff; border-radius:8px; padding:4px;" />
+        <div style="flex:1; min-width:200px;">
+          <div style="font-weight:600; color:var(--teal); margin-bottom:0.35rem;">ök2 – Demo-Galerie</div>
+          <a href="https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich" target="_blank" rel="noopener noreferrer" style="color: var(--teal); text-decoration: underline; word-break: break-all; font-size:0.9rem;">https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich</a>
+        </div>
+      </div>
+      <div style="display:flex; flex-wrap:wrap; align-items:flex-start; gap:1rem;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=132x132&amp;margin=8&amp;data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen" width="132" height="132" alt="QR-Code Willkommen ök2" style="display:block; flex-shrink:0; background:#fff; border-radius:8px; padding:4px;" />
+        <div style="flex:1; min-width:200px;">
+          <div style="font-weight:600; color:var(--teal); margin-bottom:0.35rem;">Willkommen</div>
+          <div style="font-size:0.82rem; color:var(--muted); margin-bottom:0.35rem;">Zugangsbereich / Erster Entwurf</div>
+          <a href="https://k2-galerie.vercel.app/willkommen" target="_blank" rel="noopener noreferrer" style="color: var(--teal); text-decoration: underline; word-break: break-all; font-size:0.9rem;">https://k2-galerie.vercel.app/willkommen</a>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- Joe's Statement -->

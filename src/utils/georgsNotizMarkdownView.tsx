@@ -118,6 +118,22 @@ export function renderGeorgsNotizMarkdown(text: string): ReactNode[] {
       continue
     }
 
+    // Eine Zeile: ![Alt-Text](https://...) – z. B. QR-Codes im Brief an Andreas
+    const imgLine = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+    if (imgLine) {
+      out.push(
+        <p key={key()} style={{ ...baseStyles.p, textAlign: 'center' as const }}>
+          <img
+            src={imgLine[2]}
+            alt={imgLine[1] || 'Bild'}
+            style={{ maxWidth: 160, height: 'auto', borderRadius: 8, background: '#fff', padding: 6, display: 'inline-block' }}
+          />
+        </p>
+      )
+      i++
+      continue
+    }
+
     if (line.startsWith('|') && line.includes('|', 1)) {
       const rows: string[][] = []
       while (i < lines.length && lines[i].trim().startsWith('|')) {
