@@ -568,15 +568,19 @@ function MobileRootRedirect() {
   if (doc === '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' || doc === '20-PILOT-ZETTEL-OEK2-VK2.md') {
     return <Navigate to="/zettel-pilot" replace />
   }
-  // Andere Handbuch-Dokument-Parameter → APf mit Handbuch (?apf=1 nötig, sonst Entdecken)
-  if ((page === 'handbuch' || doc) && typeof window !== 'undefined') {
+  // Produktion: Eingangstor zuerst (vor Handbuch-Logik). Nur echte .md-Handbuch-Links → APf, nicht jedes ?doc=…
+  if (typeof window !== 'undefined' && shouldRedirectRootUrlToEntdecken()) {
+    const wantsHandbuchDeepLink =
+      page === 'handbuch' ||
+      (doc != null && doc.length > 0 && /\.md$/i.test(doc))
+    if (!wantsHandbuchDeepLink) {
+      return <Navigate to={ENTDECKEN_ROUTE} replace />
+    }
+  }
+  // Handbuch / Dokument (.md) → APf mit Handbuch
+  if ((page === 'handbuch' || (doc != null && doc.length > 0 && /\.md$/i.test(doc))) && typeof window !== 'undefined') {
     const target = `${K2_GALERIE_APF_EINSTIEG}&page=handbuch&doc=${encodeURIComponent(doc || '')}`
     return <Navigate to={target} replace />
-  }
-
-  // Produktion: Basis-URL = Entdecken (Haupteingang für Fremde)
-  if (typeof window !== 'undefined' && shouldRedirectRootUrlToEntdecken()) {
-    return <Navigate to={ENTDECKEN_ROUTE} replace />
   }
 
   if (isMobileView()) {
