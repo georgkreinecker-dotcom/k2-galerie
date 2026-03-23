@@ -3118,7 +3118,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </header>
         ) : (
         <>
-        {/* ök2: Willkommens-Banner nur für Fremde; siehe showOek2FremdeOrientierungsBanner (nicht nur !showAdminEntryOnGalerie). */}
+        {/*
+          ök2 Muster: Sparten / „Mein Weg“ (FOCUS_DIRECTIONS) immer oben – eine Quelle, kein Zweig ohne Liste.
+          (Entdecken → eigene Plattform, Referrer leer, alter Deploy oder Banner-Flags – Sparten bleiben sichtbar.)
+        */}
+        {musterOnly && (
+          <div
+            style={{
+              margin: '0 auto',
+              maxWidth: '1400px',
+              paddingLeft: 'clamp(1rem, 2.5vw, 1.5rem)',
+              paddingRight: 'clamp(1rem, 2.5vw, 1.5rem)',
+              paddingBottom: 'clamp(0.5rem, 1.5vw, 0.75rem)',
+              /* Ohne Fremden-Balken: festes „Galerie teilen“ – mehr Abstand nach oben */
+              paddingTop: showOek2FremdeOrientierungsBanner
+                ? 'clamp(0.75rem, 2vw, 1rem)'
+                : 'clamp(3.25rem, 10vw, 4.5rem)',
+            }}
+          >
+            {renderOek2SpartenKasten()}
+          </div>
+        )}
+        {/* ök2: Willkommens-Banner nur für Fremde; siehe showOek2FremdeOrientierungsBanner (nicht nur !showAdminEntryOnGalerie). Sparten liegen nur im Block oben. */}
         {showOek2FremdeOrientierungsBanner && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3136,10 +3157,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             marginRight: 'auto',
           }}>
             <span style={{ color: 'var(--k2-text)', fontSize: 'clamp(0.88rem, 2vw, 0.98rem)', lineHeight: 1.45, flex: '1 1 280px', minWidth: 0 }}>
-              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen: rechts die <strong style={{ fontWeight: 700 }}>Sparten</strong>, die du später unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> als <strong style={{ fontWeight: 700 }}>Mein Weg</strong> festlegst.
+              Das hier ist ein <strong style={{ fontWeight: 700 }}>Muster zum Anschauen</strong> – noch nicht dein eigener Auftritt. <strong style={{ fontWeight: 700 }}>Corporate Design</strong> heißt: dieselbe Linie aus Farben, Bildern und Texten – auf der Website, bei Einladungen und beim Druck. <strong style={{ fontWeight: 700 }}>Galerie gestalten</strong> ist der Ort, an dem du das alles machen kannst. <strong style={{ fontWeight: 700 }}>Nimm dir Zeit, schau dich um</strong> – und wähle dann die <strong style={{ fontWeight: 700 }}>Plattform</strong> zu deinen Themen. Oben hast du die <strong style={{ fontWeight: 700 }}>Sparten</strong> – später legst du unter <strong style={{ fontWeight: 700 }}>Einstellungen</strong> deinen <strong style={{ fontWeight: 700 }}>Mein Weg</strong> fest.
             </span>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 320px)' }}>
-              {renderOek2SpartenKasten()}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '0.65rem', flexShrink: 0, minWidth: 'min(100%, 280px)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -3162,7 +3182,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             </div>
           </div>
         )}
-        {/* ök2: Sparten immer sichtbar, wenn der große Fremden-Balken aus Referrer/embedded/APf ausbleibt (kein „altes“ Layout ohne Sparten). */}
+        {/* ök2: CD + ggf. Admin nur wenn kein großer Fremden-Balken (intern/APf) – Sparten sind immer im Block oben. */}
         {musterOnly && !showOek2FremdeOrientierungsBanner && (
           <div
             style={{
@@ -3175,7 +3195,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             }}
           >
             <div style={{ width: '100%', maxWidth: 'min(100%, 380px)' }}>
-              {renderOek2SpartenKasten()}
               <div
                 style={{
                   display: 'flex',
