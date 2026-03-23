@@ -11,7 +11,7 @@ Alle persönlichen Notizen, Briefe und Gedanken liegen hier in **verschiedenen O
 
 ## Aktuell
 
-- **diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md** – Einladung Freunde: Eröffnung 24.04., Homepage-Links, ök2/VK2 & Präsentationsmappe, Test-Pilot 25 Gratislizenzen (Mail georg.kreinecker@kgm.at). Spiegel: `public/notizen-georg/diverses/` (App-URL `/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`).
+- **diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md** – Einladung Freunde: Eröffnung 24.04., Mail-Text, **WhatsApp-Kurzversion** (zum Kopieren), Homepage-Links, ök2/VK2 & Präsentationsmappe, Test-Pilot 25 Gratislizenzen (Mail georg.kreinecker@kgm.at). Spiegel: `public/notizen-georg/diverses/` (App-URL `/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`).
 - **diverses/brief-an-august.md** – Editerter Brief an August (Muße, Müßiggang, Beziehung zu Gott, Stille und Askese). Daraus abgeleitete Regeln: `.cursor/rules/vermaechtnis-intimitaet-wirken.mdc`
 
 ## Verknüpfung

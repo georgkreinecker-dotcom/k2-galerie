@@ -158,7 +158,7 @@ const DEFAULT_DIVERSES: DiversesItem[] = [
   { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
   { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
   { id: 'brief-andreas', label: 'Brief an Andreas', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas, emoji: '✉️' },
-  { id: 'einladung-eroeffnung-24', label: 'Einladung Freunde – Eröffnung 24.–26.04.', url: PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24, emoji: '📅' },
+  { id: 'einladung-eroeffnung-24', label: 'Einladung Freunde – Eröffnung 24.–26.04. · Mail + WhatsApp', url: PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24, emoji: '📅' },
   { id: 'freunde', label: 'Für meine Freunde', url: '/freunde-erklaerung.html', emoji: '👥' },
 ]
 
