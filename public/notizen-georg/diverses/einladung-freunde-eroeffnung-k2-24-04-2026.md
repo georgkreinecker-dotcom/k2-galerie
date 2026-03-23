@@ -32,16 +32,10 @@ Wenn du schon **neugierig bist**, kannst du unsere **Willkommensseite der K2 Gal
 
 - **K2 Galerie – Willkommen:** https://k2-galerie.vercel.app/willkommen  
 
-**2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
-Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. In den letzten Monaten habe ich dafür mit **Joe** eine **sehr intensive Zeit** verbracht – **Joe** ist **mein KI-Assistent**, mit dem ich Schritt für Schritt arbeite. Ich habe **viel nachgedacht**, Konzepte geprüft und Entscheidungen vorbereitet; **Joe** musste dazu **sehr viel Code programmieren**, damit aus den Ideen eine **stabile, im Alltag nutzbare Plattform** wird.
+**2. Was ich nach der Pension noch gebaut habe – Software und Plattform**  
+Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. **Aus dem Bedürfnis heraus, unsere eigene Galerie zeitgemäß zu präsentieren und zugleich verlässlich zu organisieren**, ist **eine Programm-Software entstanden** – **ein einziges Programm**, das einen **großen Teil der Bedürfnisse eines kleinen Unternehmens** abdeckt: **Webauftritt und Galerie**, **Werke und Texte**, **Gestaltung**, **Veröffentlichen**, **Kasse und Belege**, **Events und Öffentlichkeitsarbeit** – statt vieler **einzelner Werkzeuge und Anbieter** nebeneinander.
 
-Daraus sind **ök2** und **VK2** geworden – eingebettet in ein **größeres Ganze** unter **kgm solution**: **K2** ist unsere **echte Galerie-Software**, die Martina und ich täglich führen. **ök2** ist daraus geworden, was ich **zuerst für die Kunst** gedacht habe – und was wir dann **für den Markt** weiterentwickelt haben: die **öffentliche Demo**, damit Interessierte ohne echte Galeriedaten hineinschnuppern können.
-
-Heute ist die Plattform **viel weiter**: Unter **Mein Weg** gibt es **sechs Sparten** – **Kunst & Galerie**, **Handwerk & Manufaktur**, **Design & Möbel**, **Mode & Kleinserien**, **Food & Genuss** und **Dienstleister & Portfolio**. **Eine Oberfläche** für den Alltag, aber **Typen, Kategorien und Begriffe** passen sich der gewählten Sparte an (z. B. Kunstwerk, Produkt, Idee, Portfolio – je nachdem, was du zeigst und anbietest). Dazu **Website und Vorschau, Werke und Texte, Gestaltung der Galerie, Veröffentlichen, Kasse und Belege** – skalierbar für **Einzelne, kleine Betriebe und Vereine**.
-
-**VK2** ist die **Vereinsplattform**: sie ist **für jede Vereinsform gerüstet** – nicht nur für **Kunstvereine** (die ein **natürlicher Einstieg** sind, weil die Technik zur Galerie passt), sondern für **Vereine mit gemeinsamen Interessen** ganz allgemein: **Mitgliederverzeichnis**, **Vereinsauftritt**, **Events**, optional **Galerie- oder Profil-Auftritt** für Einzelne.
-
-Meine **über 45 Jahre Erfahrung** als Unternehmer – **Produktentwicklung, Marketing und Verkauf** – fließen da ein; **künstliche Intelligenz** sehe ich dabei **als Werkzeug**, nicht als Ersatz für den Menschen.
+Martina und ich nutzen das **täglich** in unserer **K2 Galerie**. Darauf aufbauend gibt es unter **kgm solution** auch **ök2** – die **öffentliche Demo** zum **Hineinschnuppern ohne echte Galeriedaten** – und **VK2** für **Vereine** (Mitglieder, Auftritt, Events). Bei der Umsetzung habe ich **intensiv mit meinem KI-Assistenten Joe** gearbeitet; **künstliche Intelligenz** ist für mich **Werkzeug**, nicht Ersatz für den Menschen. Meine **über 45 Jahre Erfahrung** als Unternehmer – **Produktentwicklung, Marketing und Verkauf** – fließen in die Konzeption ein.
 
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab reinschauen möchte:
 
