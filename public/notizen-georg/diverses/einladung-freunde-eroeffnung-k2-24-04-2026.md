@@ -1,13 +1,13 @@
 # Einladung an Freundinnen und Freunde – K2 Galerie & Plattform
 
 **Zweck:** Persönliche Nachricht (E-Mail oder Messenger), drei Punkte wie besprochen.  
-**Stand:** März 2026 · Eröffnung **24. April 2026**
+**Stand:** März 2026 · Eröffnungswochenende **24.–26. April 2026**
 
 ---
 
 ## Betreff (Vorschlag)
 
-**Einladung & Neuigkeiten – K2 Galerie am 24.04. und was Martina und ich sonst noch gebaut haben**
+**Einladung & Neuigkeiten – K2 Galerie 24.–26.04. und was Martina und ich sonst noch gebaut haben**
 
 ---
 
@@ -17,8 +17,16 @@ Liebe …, lieber …,
 
 ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich, einmal mit etwas, das mich in den letzten Monaten stark beschäftigt hat.
 
-**1. Galerieeröffnung am 24. April**  
-Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung am **24.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
+**1. Galerieeröffnung – die Daten des Events**  
+Martina und ich laden dich **recht herzlich** ein. In unserer **Eventplanung** ist die Eröffnung so geführt (gleicher Stand wie in der App):
+
+- **Titel:** Eröffnung der K2 Galerie  
+- **Art:** Galerieeröffnung  
+- **Zeitraum:** **Freitag, 24. April 2026** bis **Sonntag, 26. April 2026**  
+- **Ort:** **K2 Galerie Kunst & Keramik** · Schlossergasse 4 · **4070 Eferding** · Österreich  
+- **Regelmäßige Galerie-Öffnung** (für spätere Besuche, laut unseren Stammdaten): **Samstag 9.30 bis 14.00 Uhr**  
+
+**Uhrzeiten** für einzelne Tage des Eröffnungswochenendes und den genauen Ablauf gebe ich dir **gern separat** durch – oder wir **telefonieren kurz**.
 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
 
@@ -47,6 +55,7 @@ Herzliche Grüße
 
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
+- **Eröffnung:** 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding  
 - Homepage: https://k2-galerie.vercel.app/willkommen · https://k2-galerie.vercel.app/galerie  
 - Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
