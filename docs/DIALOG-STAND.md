@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Root-URL = Besucher-Haupteingang Entdecken:** `https://k2-galerie.vercel.app/` leitete Desktop auf **APf** (DevView), **nicht** auf **`/entdecken`**. **Fix:** `shouldRedirectRootUrlToEntdecken()` in **navigation.ts**; **`/`** auf Vercel/kgm → **`ENTDECKEN_ROUTE`** (wie `OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`); **localhost** unverändert (APf / Mobile → K2-Galerie). Georg: Haupteingang = **Entdecken**, nicht Muster-Galerie direkt. Tests + Build grün. **Commit:** `197dea6` ✅.
+**Letzter Stand:** 23.03.26 – **Einladung Herbert (letzte Mail):** Wortlaut der verschickten Fassung in **`public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`** unter „Beispiel: persönliche Einladung (Herbert & Evi)“ übernommen (u. a. „K2 Programm ,“, ök2/Präsentationsmappe-Zeilen, **·** am Ende Präsentationsmappe-URL). **Commit:** `e37aad4` ✅.
+
+**Vorher:** 23.03.26 – **Root-URL = Besucher-Haupteingang Entdecken:** `https://k2-galerie.vercel.app/` leitete Desktop auf **APf** (DevView), **nicht** auf **`/entdecken`**. **Fix:** `shouldRedirectRootUrlToEntdecken()` in **navigation.ts**; **`/`** auf Vercel/kgm → **`ENTDECKEN_ROUTE`** (wie `OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`); **localhost** unverändert (APf / Mobile → K2-Galerie). Georg: Haupteingang = **Entdecken**, nicht Muster-Galerie direkt. Tests + Build grün. **Commit:** `197dea6` ✅.
 
 **Vorher:** 23.03.26 – **Einladung Freunde: Links korrigiert.** K2-Galerie-Link **`/galerie`** (öffentliche Seite mit Werken), nicht **`/willkommen`**; **Präsentationsmappe Langform** = `…/praesentationsmappe-vollversion` (Kurzform optional); Hinweis-Abschnitt angepasst. Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. **Commit:** `2c24871` ✅.
 
