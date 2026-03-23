@@ -28,22 +28,30 @@ Martina und ich laden dich **recht herzlich** ein. In unserer **Eventplanung** i
 
 **Uhrzeiten** für einzelne Tage des Eröffnungswochenendes und den genauen Ablauf gebe ich dir **gern separat** durch – oder wir **telefonieren kurz**.
 
-Wenn du schon **neugierig bist**, kannst du unsere **Willkommensseite der K2 Galerie** aufrufen:
+**Variante mit Tages-Uhrzeiten** (wenn du sie schon festlegen willst):  
+- **Titel:** z. B. Eröffnung der K2 Galerie **Kunst & Keramik** (Schreibweise wie bei euch üblich)  
+- **Zeitraum:** **Freitag, 24. April 2026 ab 14.00 Uhr** · **Samstag, 25.04. ab 9.30 Uhr** · **Sonntag, 26. April 2026 ab 9.30 Uhr**
 
-- **K2 Galerie – Willkommen:** https://k2-galerie.vercel.app/willkommen  
+Wenn du schon **neugierig bist**, kannst du die **K2 Galerie** im Web ansehen **(öffentliche Seite mit den Werken)**:
+
+- **K2 Galerie:** https://k2-galerie.vercel.app/galerie  
 
 **2. Was ich nach der Pension noch gebaut habe – Software und Plattform**  
-Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. **Aus dem Bedürfnis heraus, unsere eigene Galerie zeitgemäß zu präsentieren und zugleich verlässlich zu organisieren**, ist **eine Programm-Software entstanden** – **ein einziges Programm**, das einen **großen Teil der Bedürfnisse eines kleinen Unternehmens** abdeckt: **Webauftritt und Galerie**, **Werke und Texte**, **Gestaltung**, **Veröffentlichen**, **Kasse und Belege**, **Events und Öffentlichkeitsarbeit** – statt vieler **einzelner Werkzeuge und Anbieter** nebeneinander.
+*Einstieg – eine Variante wählen:*  
+- **Neutral:** Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft.  
+- **Enge Freunde:** Du kennst mich, das Pensionistendasein ist nichts für mich – ich brauche Herausforderungen.
 
-Martina und ich nutzen das **täglich** in unserer **K2 Galerie**. Darauf aufbauend gibt es unter **kgm solution** auch **ök2** – die **öffentliche Demo** zum **Hineinschnuppern ohne echte Galeriedaten** – und **VK2** für **Vereine** (Mitglieder, Auftritt, Events). Bei der Umsetzung habe ich **intensiv mit meinem KI-Assistenten Joe** gearbeitet; **künstliche Intelligenz** ist für mich **Werkzeug**, nicht Ersatz für den Menschen. Meine **über 45 Jahre Erfahrung** als Unternehmer – **Produktentwicklung, Marketing und Verkauf** – fließen in die Konzeption ein.
+**Aus dem Bedürfnis heraus, unsere eigene Galerie zeitgemäß zu präsentieren und zugleich verlässlich zu organisieren**, ist **eine Programm-Software entstanden** – **ein einziges Programm**, das einen **großen Teil der Bedürfnisse eines kleinen Unternehmens** abdeckt: **Webauftritt und Galerie**, **Werke und Texte**, **Gestaltung**, **Veröffentlichen**, **Kasse und Belege**, **Events und Öffentlichkeitsarbeit** – statt vieler **einzelner Werkzeuge und Anbieter** nebeneinander.
+
+**Was zuerst nur für die Kunst von mir gedacht war, hat sich dann zu einem Produkt für den gesamten Markt entwickelt.** Bei der Umsetzung habe ich **intensiv mit meinem KI-Assistenten Joe** gearbeitet; **künstliche Intelligenz** ist für mich **Werkzeug**, nicht Ersatz für den Menschen. Meine **über 40 Jahre Erfahrung** als Unternehmer – **Produktentwicklung, Marketing und Verkauf** – fließen in die Konzeption ein.
 
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab reinschauen möchte:
 
 - **ök2 – Eintritt** (öffentliche Demo, Einstieg zum Entdecken): https://k2-galerie.vercel.app/entdecken  
-- **Präsentationsmappe** (im Browser öffnen, gern auch „Als PDF drucken“): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- **Präsentationsmappe – Langform (Vollversion, alle Kapitel):** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion · *Kurzform (eine Seite):* https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 
 **3. Test-Pilot-Programm – 25 Gratislizenzen**  
-Wenn **du** selbst **Interesse** hast, **K2** (Galerie-Software) oder **VK2** (Vereinsplattform) auszuprobieren – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
+Wenn **du** selbst **Interesse an K2** (Galerie-Software) oder **VK2** (Vereinsplattform) hast – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
 
 Bei Interesse bitte eine kurze Mail an: **georg.kreinecker@kgm.at**
 
@@ -53,13 +61,61 @@ Herzliche Grüße
 **Georg**  
 *(und von Martina die besten Grüße)*
 
+*Alternative Schlussformel (z. B. an ein Paar):* Ich freue mich auf euch – bei der Eröffnung und darüber hinaus. · **Martina & Georg**
+
+---
+
+## Beispiel: persönliche Einladung (Herbert & Evi)
+
+*Zur Orientierung – Text wie verschickt, leicht redigiert (Zeichensetzung, „Deine Lieben“).*
+
+Hallo Herbert,
+
+ich hoffe, es geht dir und **Deinen Lieben** gut, und wir sehen uns bald wieder. Einen Grund dafür kann ich dir gleich geben – etwas, das mich in den letzten Monaten stark beschäftigt hat.
+
+**1. Galerieeröffnung**
+
+Martina und ich laden **Evi und dich** und natürlich **alle Eure Lieben** recht herzlich ein.
+
+- **Titel:** Eröffnung der K2 Galerie Kunst&Keramik  
+- **Art:** Galerieeröffnung  
+- **Zeitraum:** Freitag, 24. April 2026 ab 14.00 Uhr · Samstag, 25.04. ab 9.30 Uhr · Sonntag, 26. April 2026 ab 9.30 Uhr  
+- **Ort:** K2 Galerie Kunst & Keramik · Schlossergasse 4 · 4070 Eferding · Österreich  
+
+Wenn du schon neugierig bist, kannst du die **K2 Galerie** im Web ansehen (öffentliche Seite mit den Werken):
+
+**K2 Galerie:** https://k2-galerie.vercel.app/galerie
+
+**2. Was ich nach der Pension noch gebaut habe – Software und Plattform**
+
+Du kennst mich, das Pensionistendasein ist nichts für mich – ich brauche Herausforderungen. Aus dem Bedürfnis heraus, unsere eigene Galerie zeitgemäß zu präsentieren und zugleich verlässlich zu organisieren, ist eine Programm-Software entstanden – ein einziges Programm, das einen großen Teil der Bedürfnisse eines kleinen Unternehmens abdeckt: Webauftritt und Galerie, Werke und Texte, Gestaltung, Veröffentlichen, Kasse und Belege, Events und Öffentlichkeitsarbeit – statt vieler einzelner Werkzeuge und Anbieter nebeneinander.
+
+Was zuerst nur für die Kunst von mir gedacht war, hat sich dann zu einem Produkt für den gesamten Markt entwickelt. Bei der Umsetzung habe ich intensiv mit meinem KI-Assistenten Joe gearbeitet; künstliche Intelligenz ist für mich Werkzeug, nicht Ersatz für den Menschen. Meine über 40 Jahre Erfahrung als Unternehmer – Produktentwicklung, Marketing und Verkauf – fließen in die Konzeption ein.
+
+Bei unserer Galerieeröffnung werden wir diese Produkte und die Idee dahinter auch kurz vorstellen. Wer vorab reinschauen möchte:
+
+- **ök2 – Eintritt** (öffentliche Demo, Einstieg zum Entdecken): https://k2-galerie.vercel.app/entdecken  
+- **Präsentationsmappe – Langform (Vollversion):** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion · *Kurzform:* https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+
+**3. Test-Pilot-Programm – 25 Gratislizenzen**
+
+Wenn du selbst Interesse an K2 (Galerie-Software) oder VK2 (Vereinsplattform) hast – oder jemanden kennst, der das möchte –: wir vergeben 25 Gratislizenzen an Testpilotinnen und Testpiloten. Das ist ein kostenloses Testprogramm, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
+
+Bei Interesse bitte eine kurze Mail an: georg.kreinecker@kgm.at
+
+Ich freue mich auf euch – bei der Eröffnung und darüber hinaus.
+
+Herzliche Grüße  
+
+**Martina & Georg**
+
 ---
 
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
 - **Eröffnung:** 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding  
-- K2 Galerie – Willkommen: https://k2-galerie.vercel.app/willkommen  
-- ök2 Eintritt: https://k2-galerie.vercel.app/entdecken · Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- K2 Galerie (Werke): https://k2-galerie.vercel.app/galerie  
+- ök2 Eintritt: https://k2-galerie.vercel.app/entdecken · Präsentationsmappe Langform: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
 ---
@@ -67,5 +123,6 @@ Herzliche Grüße
 ## Hinweis für dich
 
 - Namen in der Anrede einsetzen („Liebe Anna, lieber Thomas“ …).  
-- Wenn jemand **nur die öffentliche Galerie-Ansicht** (Demo) ohne Entdecken-Flow sehen soll: https://k2-galerie.vercel.app/galerie-oeffentlich (optional).  
+- **Links:** **Echte K2-Galerie mit Werken** = `/galerie` (nicht `/willkommen` – das ist nur die Willkommensseite). **Präsentationsmappe Langform** = `…/praesentationsmappe-vollversion`; Kurzform eine Seite = `…/praesentationsmappe`.  
+- **ök2-Demo-Galerie** (Muster, ohne echte K2-Daten): https://k2-galerie.vercel.app/galerie-oeffentlich (optional).  
 - **kgm solution** bleibt die Firmenmarke; **K2 Galerie** ist eure öffentliche Galerie – so wie in der App festgelegt.
