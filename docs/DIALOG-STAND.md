@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Root `/` überall gleich → Entdecken:** Georg: herausgegebener Link darf nicht auf **localhost** anders sein als auf **Vercel**. **Fix:** `MobileRootRedirect` leitet nach Sonderfällen (Zettel, Handbuch-`doc`) **immer** zu **`/entdecken`**; kein APf mehr auf `/` auch nicht lokal. **APf:** `K2_GALERIE_APF_EINSTIEG`, `/platform`, `/dev-view`. `shouldRedirectRootUrlToEntdecken` entfernt. Tests + Build grün. **Commit:** `a0accc1` ✅.
+**Letzter Stand:** 23.03.26 – **Root `/` überall gleich → Entdecken:** Georg: herausgegebener Link darf nicht auf **localhost** anders sein als auf **Vercel**. **Fix:** `MobileRootRedirect` leitet nach Sonderfällen (Zettel, Handbuch-`doc`) **immer** zu **`/entdecken`**; kein APf mehr auf `/` auch nicht lokal. **APf:** `K2_GALERIE_APF_EINSTIEG`, `/platform`, `/dev-view`. `shouldRedirectRootUrlToEntdecken` entfernt. Tests + Build grün. **Commit:** `f23fc95` ✅.
 
 **Vorher:** 23.03.26 – **Projekt-Home `/projects/k2-galerie` → Entdecken für Fremde:** Viele Klicks/Mails nutzten diese URL → **Mac** landete in der **APf**, **Handy** in der **echten K2-Galerie**, nicht im Eingangstor **`/entdecken`**. **Fix:** `shouldShowK2GalerieApfProjectHub()` + `ProjectStartPage`: ohne `?apf=1` / `?dev=1` auf Vercel/kgm → **`Navigate` zu `ENTDECKEN_ROUTE`**; APf intern über **`K2_GALERIE_APF_EINSTIEG`**; **Projekte-Karte**, Rück-Links, Lizenz-Admin-URL, Handbuch-Redirect angepasst. **Commit:** `5c299de` ✅.
 
