@@ -1,6 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 23.03.26 – **Einladung Freunde: Punkt 2 Text.** Intensive Zeit mit **Joe** (KI-Assistent), viel Nachdenken, Joe **sehr viel Code**; Plattform **breiter** erklärt (K2 / ök2 / VK2, kgm solution, Website, Werke, Gestaltung, Veröffentlichen, Kasse). Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. Tests grün. **Commit:** (dieser Push) ✅; **Push:** Git-Button Cursor.
+**Letzter Stand:** 23.03.26 – **Einladung Freunde: ök2 Kunst → Markt.** Im Punkt-2-Text ergänzt: **ök2** **zuerst für die Kunst** gedacht, dann **für den Markt** weiterentwickelt; Demo zum Hineinschnuppern. Datei: `einladung-freunde-eroeffnung-k2-24-04-2026.md`. **Commit:** (dieser Push) ✅; **Push:** Git-Button Cursor.
+
+**Vorher:** 23.03.26 – **Einladung Freunde: Punkt 2 Text.** Intensive Zeit mit **Joe** (KI-Assistent), viel Nachdenken, Joe **sehr viel Code**; Plattform **breiter** erklärt (K2 / ök2 / VK2, kgm solution, Website, Werke, Gestaltung, Veröffentlichen, Kasse). Datei: `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md`. Tests grün. **Commit:** `3a12960` ✅; **Push:** Git-Button Cursor.
 
 **Vorher:** 23.03.26 – **Einladung Freunde: Links Punkt 1/2.** Punkt 1 nur **K2 Willkommen** (`/willkommen`); Punkt 2 **ök2 Eintritt** (`/entdecken`) + **Präsentationsmappe**; Kurzfassung + Hinweis angepasst. **Commit:** `d8706a6` ✅; **Push:** Git-Button Cursor.
 
