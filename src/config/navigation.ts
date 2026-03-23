@@ -17,6 +17,24 @@ export const AGB_ROUTE = '/agb'
 /** Landingpage – 3-Fragen-Flow für neue Künstler:innen */
 export const ENTDECKEN_ROUTE = '/entdecken'
 
+/**
+ * Root `https://k2-galerie.vercel.app/` (Einladung, QR, Link ohne Pfad) = **Haupteingang für Besucher** → Entdecken.
+ * Localhost bleibt `/` → APf (DevView). Siehe `MobileRootRedirect` in App.tsx.
+ */
+export function shouldRedirectRootUrlToEntdecken(): boolean {
+  try {
+    if (typeof window === 'undefined') return false
+    const h = window.location.hostname.toLowerCase()
+    if (h === 'localhost' || h === '127.0.0.1') return false
+    if (h === 'k2-galerie.vercel.app') return true
+    if (h.endsWith('.vercel.app')) return true
+    if (h === 'kgm.at' || h === 'www.kgm.at') return true
+    return false
+  } catch {
+    return false
+  }
+}
+
 /** SessionStorage-Keys von WillkommenPage: Name + Flag „Erster Entwurf“ (in GalerieVorschauPage musterOnly auslesen) */
 export const WILLKOMMEN_NAME_KEY = 'k2-willkommen-name'
 export const WILLKOMMEN_ENTWURF_KEY = 'k2-willkommen-entwurf'
@@ -212,6 +230,7 @@ export const PROJECT_ROUTES = {
 /**
  * **Eingangstor** für neue User / Fremde (Georg): immer **`/entdecken`** (EntdeckenPage –
  * Hero mit Werbelinie, „Jetzt entdecken“, Tor-Bild, 3-Fragen-Flow → ök2-Demo).
+ * Technisch: **Basis-URL** ohne Pfad (`/`) leitet auf `ENTDECKEN_ROUTE` (gleiche Seite).
  * In fremden Galerien nur sanfter Hinweis über **kgm solution** (Link); Ziel = diese Route, nicht direkt `galerie-oeffentlich`.
  */
 export const OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE = ENTDECKEN_ROUTE
