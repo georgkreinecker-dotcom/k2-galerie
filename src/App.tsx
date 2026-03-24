@@ -537,10 +537,11 @@ function StandBadgeSync() {
   )
 }
 
+/** Mobil = echtes Mobilgerät oder Touch + schmal. In Vite-Dev: kein „nur schmal“ → APf bleibt bei schmalem Desktop-Fenster (Cursor + Browser nebeneinander). Produktion: schmal = Galerie wie bisher. */
 const isMobileView = () => typeof window !== 'undefined' && (
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
   (window.innerWidth <= 768 && ('ontouchstart' in window || (navigator.maxTouchPoints ?? 0) > 0)) ||
-  window.innerWidth <= 768 // schmaler Bildschirm = immer Galerie (kein Smart Panel), auch bei „Desktop“-Browser
+  (!import.meta.env.DEV && window.innerWidth <= 768)
 )
 
 /** Catch-all: Bei Projekt-Unterseiten-URL (3+ Segmente), die nicht gematcht wurde, Hinweis statt stiller Redirect zur APf (Link-öffnet-APf-Bug, ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md). */
