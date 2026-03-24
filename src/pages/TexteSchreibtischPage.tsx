@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
@@ -157,49 +158,254 @@ const BEREICHE: Bereich[] = [
   },
 ]
 
-function ZettelKarte({ z, akzent }: { z: Zettel; akzent: string }) {
-  const rot = z.rotateDeg ?? 0
+function zettelDragPayload(z: Zettel): string {
+  return `## ${z.titel}\n${z.zweck}\n\n[Öffnen](${z.to})`
+}
+
+/** Eine Schublade im Hängeordner: Zettelzahl von außen sichtbar, einklappbar, innen blättern ohne sofort die volle Seite zu öffnen */
+function HangeregisterSchublade({ b }: { b: Bereich }) {
+  const [eingeklappt, setEingeklappt] = useState(false)
+  const [zettelIndex, setZettelIndex] = useState(0)
+  const n = b.zettel.length
+  const safeIdx = n === 0 ? 0 : Math.min(zettelIndex, n - 1)
+  const z = n > 0 ? b.zettel[safeIdx] : null
+  const rot = z?.rotateDeg ?? 0
+
+  const goPrev = () => {
+    if (n < 2) return
+    setZettelIndex((i) => (i <= 0 ? n - 1 : i - 1))
+  }
+  const goNext = () => {
+    if (n < 2) return
+    setZettelIndex((i) => (i >= n - 1 ? 0 : i + 1))
+  }
+
+  const zettelLabel = n === 1 ? '1 Zettel' : `${n} Zettel`
+
   return (
-    <Link
-      to={z.to}
+    <section
       style={{
-        display: 'block',
-        textDecoration: 'none',
-        color: '#1c1a18',
-        background: 'linear-gradient(180deg, #fffefb 0%, #faf6f0 100%)',
-        borderRadius: 12,
-        padding: '0.85rem 1rem 1rem',
-        boxShadow: '0 4px 14px rgba(28,26,24,0.1), 0 1px 3px rgba(28,26,24,0.06)',
-        border: '1px solid rgba(28,26,24,0.08)',
-        transform: `rotate(${rot}deg)`,
-        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-        minHeight: 88,
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = `rotate(${rot}deg) translateY(-2px)`
-        e.currentTarget.style.boxShadow = '0 8px 22px rgba(28,26,24,0.14)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = `rotate(${rot}deg)`
-        e.currentTarget.style.boxShadow = '0 4px 14px rgba(28,26,24,0.1), 0 1px 3px rgba(28,26,24,0.06)'
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        minWidth: 0,
+        borderRadius: '6px 6px 10px 10px',
+        padding: '0.5rem 0.65rem 0.85rem',
+        background: `linear-gradient(180deg, ${b.akzent}18 0%, ${b.zoneBg} 28%, ${b.zoneBg} 100%)`,
+        border: '1px solid rgba(28,26,24,0.22)',
+        borderTop: '1px solid rgba(255,255,255,0.22)',
+        boxShadow:
+          '0 2px 0 rgba(255,255,255,0.15), 0 6px 14px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.35)',
       }}
     >
       <div
+        aria-hidden
         style={{
-          height: 4,
-          borderRadius: 2,
-          background: akzent,
-          marginBottom: '0.65rem',
-          opacity: 0.92,
+          alignSelf: 'center',
+          width: '52%',
+          maxWidth: 120,
+          height: 9,
+          marginBottom: '0.55rem',
+          borderRadius: 4,
+          background: 'linear-gradient(180deg, #a89a8c 0%, #7a7168 45%, #5c534c 100%)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2)',
         }}
       />
-      <div style={{ fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.25, marginBottom: '0.35rem' }}>
-        {z.titel}
-      </div>
-      <div style={{ fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.4 }}>
-        {z.zweck}
-      </div>
-    </Link>
+
+      <button
+        type="button"
+        aria-expanded={!eingeklappt}
+        onClick={() => setEingeklappt((v) => !v)}
+        style={{
+          margin: '0 0 0.2rem',
+          padding: 0,
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          textAlign: 'left',
+          width: '100%',
+          font: 'inherit',
+        }}
+      >
+        <h3
+          style={{
+            margin: 0,
+            fontSize: '0.96rem',
+            fontWeight: 800,
+            color: '#1c1a18',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '0.35rem',
+            lineHeight: 1.3,
+            flexWrap: 'wrap',
+          }}
+        >
+          <span style={{ width: 7, height: 7, borderRadius: 999, background: b.akzent, flexShrink: 0, marginTop: '0.35rem' }} aria-hidden />
+          <span style={{ flex: '1 1 auto', minWidth: 0 }}>{b.titel}</span>
+          <span
+            style={{
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              color: '#5c5650',
+              background: 'rgba(255,254,251,0.75)',
+              padding: '0.15rem 0.45rem',
+              borderRadius: 999,
+              border: '1px solid rgba(28,26,24,0.1)',
+              whiteSpace: 'nowrap',
+            }}
+            title="Anzahl Zettel in dieser Schublade"
+          >
+            {zettelLabel}
+          </span>
+          <span style={{ fontSize: '0.7rem', color: '#5c5650', marginLeft: 'auto' }} aria-hidden>
+            {eingeklappt ? '▸' : '▾'}
+          </span>
+        </h3>
+      </button>
+
+      <p
+        style={{
+          margin: '0 0 0.65rem',
+          fontSize: '0.72rem',
+          color: '#5c5650',
+          lineHeight: 1.42,
+          ...(eingeklappt
+            ? {
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical' as const,
+                overflow: 'hidden',
+              }
+            : {}),
+        }}
+      >
+        {eingeklappt ? `${b.untertitel} · Tippen zum Aufklappen.` : b.untertitel}
+      </p>
+
+      {!eingeklappt && z && (
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.55rem',
+            flex: 1,
+            borderRadius: 8,
+            padding: '0.4rem 0.25rem 0.15rem',
+            background: 'rgba(255,254,251,0.45)',
+            boxShadow: 'inset 0 1px 4px rgba(28,26,24,0.06)',
+          }}
+        >
+          {n > 1 && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                flexWrap: 'wrap',
+                marginBottom: '0.1rem',
+              }}
+            >
+              <button
+                type="button"
+                onClick={goPrev}
+                style={{
+                  padding: '0.35rem 0.65rem',
+                  borderRadius: 8,
+                  border: '1px solid rgba(28,26,24,0.15)',
+                  background: '#fffefb',
+                  color: '#1c1a18',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                }}
+              >
+                ← Vorheriger Zettel
+              </button>
+              <span style={{ fontSize: '0.75rem', color: '#5c5650', fontWeight: 600 }}>
+                {safeIdx + 1} / {n}
+              </span>
+              <button
+                type="button"
+                onClick={goNext}
+                style={{
+                  padding: '0.35rem 0.65rem',
+                  borderRadius: 8,
+                  border: '1px solid rgba(28,26,24,0.15)',
+                  background: '#fffefb',
+                  color: '#1c1a18',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Nächster Zettel →
+              </button>
+            </div>
+          )}
+
+          <div
+            draggable
+            title="Ziehen = in die Mitte legen · unten: Seite wirklich öffnen"
+            onDragStart={(e) => {
+              e.dataTransfer.setData('text/plain', zettelDragPayload(z))
+              e.dataTransfer.effectAllowed = 'copy'
+            }}
+            style={{
+              textDecoration: 'none',
+              color: '#1c1a18',
+              background: 'linear-gradient(180deg, #fffefb 0%, #faf6f0 100%)',
+              borderRadius: 12,
+              padding: '0.85rem 1rem 1rem',
+              boxShadow: '0 3px 0 rgba(28,26,24,0.06), 0 6px 16px rgba(28,26,24,0.08)',
+              border: '1px solid rgba(28,26,24,0.08)',
+              transform: `rotate(${rot}deg)`,
+              transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+              minHeight: 88,
+              cursor: 'grab',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = `rotate(${rot}deg) translateY(-2px)`
+              e.currentTarget.style.boxShadow = '0 4px 0 rgba(28,26,24,0.05), 0 10px 24px rgba(28,26,24,0.12)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = `rotate(${rot}deg)`
+              e.currentTarget.style.boxShadow = '0 3px 0 rgba(28,26,24,0.06), 0 6px 16px rgba(28,26,24,0.08)'
+            }}
+          >
+            <div
+              style={{
+                height: 4,
+                borderRadius: 2,
+                background: b.akzent,
+                marginBottom: '0.65rem',
+                opacity: 0.92,
+              }}
+            />
+            <div style={{ fontWeight: 800, fontSize: '0.98rem', lineHeight: 1.25, marginBottom: '0.35rem' }}>{z.titel}</div>
+            <div style={{ fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.4 }}>{z.zweck}</div>
+          </div>
+
+          <Link
+            to={z.to}
+            style={{
+              display: 'block',
+              textAlign: 'center',
+              padding: '0.55rem 0.75rem',
+              borderRadius: 10,
+              background: '#b54a1e',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: '0.84rem',
+              textDecoration: 'none',
+              border: '1px solid rgba(28,26,24,0.12)',
+            }}
+          >
+            Diese Seite öffnen →
+          </Link>
+        </div>
+      )}
+    </section>
   )
 }
 
@@ -229,65 +435,79 @@ export default function TexteSchreibtischPage() {
           ← Zur APf
         </Link>
 
-        <header style={{ marginBottom: '1.25rem' }}>
+        <header style={{ marginBottom: '1.1rem' }}>
           <h1 style={{ margin: '0 0 0.35rem', fontSize: 'clamp(1.35rem, 3vw, 1.75rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
             🪑 Texte-Schreibtisch
           </h1>
           <p style={{ margin: 0, fontSize: '0.95rem', color: '#5c5650', maxWidth: 52 * 16 }}>
-            Drumherum liegen die Themen-Zonen wie Zettelstapel. In der <strong>Mitte</strong> arbeitest du: reinziehen, schreiben, ablegen, ansehen, versenden – normaler Tagesablauf.
+            Oben: ein <strong>Hängeordnerkasten</strong> – die Spalten sind <strong>Schubladen</strong> mit Platz für viele Ordner und Zettel. Zieh in die <strong>Mitte</strong> oder klicke. Darunter der Tisch: schreiben, Vorschau, ablegen, versenden.
           </p>
         </header>
 
-        <TexteSchreibtischBoard variant="page" />
-
-        <div
+        {/* Ein Kasten: Schubladen nebeneinander; innen können später weitere Ordner/Kästen dazukommen */}
+        <section
+          aria-labelledby="haengeordner-heading"
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.25rem',
-            alignItems: 'start',
+            marginBottom: '1.75rem',
+            padding: '1rem 1rem 1.15rem',
+            borderRadius: 14,
+            background: 'linear-gradient(165deg, #7a6d62 0%, #5a5149 38%, #4a423c 100%)',
+            border: '1px solid rgba(20,18,16,0.35)',
+            boxShadow: '0 10px 28px rgba(28,22,16,0.28), inset 0 1px 0 rgba(255,255,255,0.12)',
           }}
         >
-          {BEREICHE.map((b) => (
-            <section
-              key={b.id}
+          <h2
+            id="haengeordner-heading"
+            style={{
+              margin: '0 0 0.35rem',
+              fontSize: '1.08rem',
+              fontWeight: 800,
+              color: '#faf6f0',
+              textShadow: '0 1px 1px rgba(0,0,0,0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+            }}
+          >
+            <span aria-hidden>🗄️</span> Hängeordnerkasten
+          </h2>
+          <p
+            style={{
+              margin: '0 0 1rem',
+              fontSize: '0.84rem',
+              color: 'rgba(250,246,240,0.88)',
+              lineHeight: 1.45,
+              maxWidth: 62 * 16,
+            }}
+          >
+            Jede Spalte ist eine <strong>Schublade</strong>: an der Front siehst du <strong>wie viele Zettel</strong> drin sind. Auf die Überschrift tippen = einklappen oder aufklappen. Aufgeklappt kannst du <strong>blättern</strong> (Vor/Zurück) und erst mit <strong>„Diese Seite öffnen“</strong> die volle Seite laden – oder den Zettel in die Mitte ziehen.
+          </p>
+
+          {/* Innenfach: leichtes „Fach“ hinter den Schubladen */}
+          <div
+            style={{
+              padding: '0.65rem 0.55rem 0.75rem',
+              borderRadius: 10,
+              background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(35,32,28,0.35) 100%)',
+              boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.35)',
+            }}
+          >
+            <div
               style={{
-                borderRadius: 16,
-                padding: '1.1rem 1rem 1.25rem',
-                background: b.zoneBg,
-                border: `1px solid ${b.akzent}22`,
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.65)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '0.65rem',
+                alignItems: 'stretch',
               }}
             >
-              <h2
-                style={{
-                  margin: '0 0 0.2rem',
-                  fontSize: '1.05rem',
-                  fontWeight: 800,
-                  color: '#1c1a18',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                }}
-              >
-                <span style={{ width: 8, height: 8, borderRadius: 999, background: b.akzent, flexShrink: 0 }} aria-hidden />
-                {b.titel}
-              </h2>
-              <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: '#5c5650', lineHeight: 1.45 }}>{b.untertitel}</p>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                  gap: '0.75rem',
-                }}
-              >
-                {b.zettel.map((z) => (
-                  <ZettelKarte key={z.id} z={z} akzent={b.akzent} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+              {BEREICHE.map((b) => (
+                <HangeregisterSchublade key={b.id} b={b} />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <TexteSchreibtischBoard variant="page" />
 
         <p style={{ marginTop: '1.75rem', fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.5 }}>
           Quelle der Zuordnung:{' '}

@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Hängeordner / Themenmappen nur auf Texte-Schreibtisch:** SmartPanel **ohne** Mappe-Flip (zurück auf Stand vor dem Experiment). **`TexteSchreibtischPage`:** pro Schublade **Zettel-Anzahl** als Badge, **einklappbar**, innen **blättern** (Vor/Zurück) + **„Diese Seite öffnen“**; Zettel weiter **ziehbar** in die Mitte. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline` prüfen.
+
 **Letzter Stand:** 24.03.26 – **Schreibtisch-Board (Mitte):** Komponente **`TexteSchreibtischBoard.tsx`** – **Schweben** (fixiert, Griff verschieben, Ecke resize), **Eigenes Fenster** (`/projects/k2-galerie/texte-schreibtisch-board`) für zweiten Monitor; **storage**-Sync zwischen Fenstern; Geometrie `k2-texte-schreibtisch-board-geom`. Route + **`TexteSchreibtischBoardPage.tsx`**, **`navigation.texteSchreibtischBoard`**. `tsc -b` grün. **Nächster Schritt:** Commit + Push (Build beim Push).
 
 **Letzter Stand:** 24.03.26 – **Texte-Schreibtisch – Mitte des Tischs (tägliche Arbeit):** Oben auf der Seite: **Gerade daran** mit Auto-Speicher (nur dieses Gerät), **Ablegen** ins Archiv, **Mitte leeren**, **Vorschau**, **Bild holen** → Admin Design, **Datei** / Drag&Drop (Namen + Text), **Notizen**, **Kopieren**, **Versenden** (mailto). Ablage mit „Zur Mitte“ / „Weg“. `TexteSchreibtischPage.tsx`. Tests + Build grün.
@@ -82,11 +84,11 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Push** auf **origin/main** (alles Lokale inkl. Root→Entdecken + Notizen-WhatsApp + Hero); Vercel „Ready“ → Stand-Badge tippen.
+**Was wir JETZT tun:** **Push** dieses Stands (Hängeordner Texte-Schreibtisch + SmartPanel-Revert); Georg: **`/projects/k2-galerie/texte-schreibtisch`** – Schubladen Badge, Einklappen, Blättern, Öffnen testen.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 
-**Einordnung:** Einladung (Mail + WhatsApp) in **einer** Notiz-Datei; Liste/SmartPanel/README zeigen **Mail + WhatsApp**, damit die Kurztexte auffindbar sind. **Parallel:** Endphase/Markt, Ready-to-go.
+**Einordnung:** **Texte-Schreibtisch** = richtiger Ort für **Hängeordner-Themenmappen** (nicht Smart-Panel-Arbeitsmappen). Zettel-Workflow: Übersicht ohne sofort volle Seite; Öffnen bewusst. **Parallel:** Einladung/Notizen, Endphase/Markt, Ready-to-go.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 
