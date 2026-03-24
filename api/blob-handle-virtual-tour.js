@@ -3,7 +3,7 @@
  * Ohne GitHub-Token im Browser – nutzt BLOB_READ_WRITE_TOKEN nur hier.
  * Pfad fest: k2/site-virtual-tour.mp4 | oeffentlich/site-virtual-tour.mp4
  */
-import { handleUpload } from '@vercel/blob/dist/client.js'
+import { handleUpload } from '@vercel/blob/client'
 
 const ALLOWED = new Set(['k2/site-virtual-tour.mp4', 'oeffentlich/site-virtual-tour.mp4'])
 
