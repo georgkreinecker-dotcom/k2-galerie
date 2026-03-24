@@ -45,7 +45,6 @@ import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, getGaleriePageTextsBaseline, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
 import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
-import { speichereGuideFlow, type GuidePfad } from '../src/utils/k2GuideFlowStorage'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1663,33 +1662,16 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     window.addEventListener('guide-flow-update', onUpdate)
     return () => window.removeEventListener('guide-flow-update', onUpdate)
   }, [])
+  /**
+   * Georg-Vorgabe (24.03.26):
+   * Kein Guide-Balken im APf/Admin-Alltag – nur echter Fremdenblick in der öffentlichen Galerie.
+   */
+  const showAdminGuideBalken = false
 
-  // Direktaufruf Admin (ök2/VK2): Wenn noch kein Guide-Flow aktiv ist, einmal starten – außer Einstieg von APf (dann keinen Flow)
+  // Direktaufruf Admin (ök2/VK2): bewusst kein Auto-Start mehr (Guide nur im Fremdenblick)
   React.useEffect(() => {
-    if (!(tenant.isOeffentlich || tenant.isVk2)) return
-    try {
-      if (tenant.isOeffentlich) {
-        const fromApf = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-oek2-from-apf') === '1'
-        const fromApfUrl = typeof window !== 'undefined' && new URLSearchParams(window.location.search || '').get('fromApf') === '1'
-        if (fromApfUrl) sessionStorage.setItem('k2-oek2-from-apf', '1')
-        if (fromApf || fromApfUrl) return
-      }
-      const v = localStorage.getItem('k2-guide-flow')
-      const f = v ? JSON.parse(v) : {}
-      if (f?.aktiv === true) return
-      const params = new URLSearchParams(window.location.search || '')
-      speichereGuideFlow({
-        aktiv: true,
-        name: f?.name ?? params.get('vorname') ?? '',
-        pfad: (f?.pfad ?? params.get('pfad') ?? '') as GuidePfad,
-        schritt: f?.schritt ?? 'start',
-        erledigte: Array.isArray(f?.erledigte) ? f.erledigte : [],
-        context: tenant.isVk2 ? 'vk2' : 'oeffentlich',
-      })
-      window.dispatchEvent(new CustomEvent('guide-flow-update'))
-      setGuideFlowAktiv(true)
-    } catch { /* ignore */ }
-  }, [tenant.isOeffentlich, tenant.isVk2])
+    // Kein Code nötig – absichtlich deaktiviert.
+  }, [])
 
   // Vom Hub gekommen? → Zurück-Button anzeigen
   const fromHub = (() => {
@@ -12536,7 +12518,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       <div ref={adminTopRef}>{fromHub && <div style={{ height: 44 }} />}</div>
 
       {/* Grüner Guide-Balken: Orientierung für Besucher im Guide (ök2 + VK2). Kein schwarzer Dialog – nur dieser Balken. */}
-      {(tenant.isOeffentlich || tenant.isVk2) && guideFlowAktiv && (() => {
+      {(tenant.isOeffentlich || tenant.isVk2) && guideFlowAktiv && showAdminGuideBalken && (() => {
         const istVerein = guidePfad === 'gemeinschaft'
         const guideTexte: Record<string, { titel: string; text: string }> = {
           werke: istVerein
