@@ -8,6 +8,8 @@ import { compressImageForStorage } from './compressImageForStorage'
 const GITHUB_API = 'https://api.github.com'
 const REPO = 'georgkreinecker-dotcom/k2-galerie'
 const BRANCH = 'main'
+const GITHUB_UPLOAD_TIMEOUT_MS = 3 * 60 * 1000
+const FILE_READ_TIMEOUT_MS = 2 * 60 * 1000
 
 function getToken(): string {
   return (import.meta.env.VITE_GITHUB_TOKEN as string) || ''
@@ -140,7 +142,15 @@ export async function deleteArtworkImagesFromGitHubForNumberRange(
   return { deleted, skipped: '' }
 }
 
-/** Lädt ein Video (File-Objekt) via GitHub API hoch. Gibt die öffentliche URL zurück.
+/**
+ * Vollständige öffentliche URL des Virtueller-Rundgang-Videos im Blob-Store (Production ohne GitHub-Token).
+ * Muss mit ALLOWED in api/blob-handle-virtual-tour.js übereinstimmen.
+ */
+function virtualTourBlobPathname(subfolder: 'k2' | 'oeffentlich'): string {
+  return subfolder === 'oeffentlich' ? 'oeffentlich/site-virtual-tour.mp4' : 'k2/site-virtual-tour.mp4'
+}
+
+/** Lädt ein Video hoch: lokal mit Token → GitHub (Repo-Pfad /img/…); sonst → Vercel Blob (HTTPS-URL).
  *  subfolder: 'k2' | 'oeffentlich' – für ök2-Demo dauerhafte URL statt blob (blob ist nur session-gebunden). */
 export async function uploadVideoToGitHub(
   file: File,
@@ -149,23 +159,51 @@ export async function uploadVideoToGitHub(
   subfolder: 'k2' | 'oeffentlich' = 'k2'
 ): Promise<string> {
   const token = getToken()
-  if (!token) throw new Error('Kein GitHub Token konfiguriert')
+
+  // Production / Handy: kein VITE_* Token im Bundle → Vercel Blob (API /api/blob-handle-virtual-tour).
+  // Reiner Vite-Devserver hat diese API nicht → ohne Token: klare Meldung (oder .env mit Token = GitHub-Zweig oben).
+  if (!token) {
+    if (import.meta.env.DEV) {
+      throw new Error(
+        'Lokal ohne GitHub-Token: Video bitte auf k2-galerie.vercel.app hochladen, oder VITE_GITHUB_TOKEN in .env setzen.'
+      )
+    }
+    const { upload } = await import('@vercel/blob/client')
+    const pathname = virtualTourBlobPathname(subfolder)
+    onStatus?.('Video wird hochgeladen…')
+    const blob = await upload(pathname, file, {
+      access: 'public',
+      handleUploadUrl: '/api/blob-handle-virtual-tour',
+      contentType: file.type || 'video/mp4',
+      multipart: true,
+    })
+    const url = blob?.url?.trim()
+    if (!url) throw new Error('Keine Blob-URL nach Upload')
+    onStatus?.('✅ Video gespeichert – in der Galerie abspielbar.')
+    return url
+  }
 
   onStatus?.('Video wird vorbereitet…')
 
-  // Video als Base64 lesen (keine Komprimierung – Browser kann Videos nicht einfach komprimieren)
   const base64 = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
+    const timeout = window.setTimeout(() => {
+      reader.abort()
+      reject(new Error('Video-Vorbereitung hat zu lange gedauert'))
+    }, FILE_READ_TIMEOUT_MS)
     reader.onload = (e) => {
       const result = e.target?.result as string
-      // Data-URL Prefix entfernen
+      clearTimeout(timeout)
       resolve(result.split(',')[1] || '')
     }
-    reader.onerror = reject
+    reader.onerror = () => {
+      clearTimeout(timeout)
+      reject(new Error('Video konnte nicht gelesen werden'))
+    }
     reader.readAsDataURL(file)
   })
 
-  onStatus?.('Video wird an Server gesendet…')
+  onStatus?.('Video wird an GitHub gesendet…')
 
   const path = `public/img/${subfolder}/${filename}`
 
@@ -173,13 +211,15 @@ export async function uploadVideoToGitHub(
   const sha = await getFileSha(path, token)
 
   onStatus?.('Video wird hochgeladen…')
-  const body: any = {
+  const body: Record<string, unknown> = {
     message: `Video aktualisiert: ${filename}`,
     content: base64,
     branch: BRANCH
   }
   if (sha) body.sha = sha
 
+  const controller = new AbortController()
+  const ghTimeout = window.setTimeout(() => controller.abort(), GITHUB_UPLOAD_TIMEOUT_MS)
   const res = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${path}`, {
     method: 'PUT',
     headers: {
@@ -187,12 +227,13 @@ export async function uploadVideoToGitHub(
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(body)
-  })
+    body: JSON.stringify(body),
+    signal: controller.signal
+  }).finally(() => clearTimeout(ghTimeout))
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.message || `Upload fehlgeschlagen (${res.status})`)
+    throw new Error((err as { message?: string }).message || `Upload fehlgeschlagen (${res.status})`)
   }
 
   onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
