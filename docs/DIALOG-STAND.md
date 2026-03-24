@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Texte & Briefe: eine Quelle, kein Doppel-Pflege-Chaos:** Kompass `k2team-handbuch/24-TEXTE-BRIEFE-KOMPASS.md` um Abschnitt „Eine Quelle – nicht doppelt pflegen“ ergänzt; **`npm run sync:texte-oeffentlich`** (`scripts/sync-texte-oeffentliche-spiegel.sh`) spiegelt `docs/` → `public/kampagne-marketing-strategie/`, `docs/notizen-georg/` → `public/notizen-georg/`, Kompass → `public/k2team-handbuch/`. Verknüpfungen in `KOMMUNIKATION-DOKUMENTE-STRUKTUR.md`, Kampagne-`00-INDEX.md`, `docs/notizen-georg/README.md`, `docs/00-INDEX.md`. Sync ausgeführt.
+
 **Letzter Stand:** 24.03.26 – **APf Deploy-Ampel eingebaut (Sicherheitsblick):** In `DevViewPage` gibt es jetzt eine feste Statusbox mit Ampel + „Jetzt prüfen“. Prüfung vergleicht lokalen Build mit `build-info.json` und prüft zusätzlich die Video-API `/api/blob-handle-virtual-tour` per OPTIONS. Zustände: **🟢 aktuell**, **🔴 Push fehlt/API fehlt/Fehler** mit klarer Ursache im Text. Tests + Build grün.
 
 **Letzter Stand:** 24.03.26 – **Video-Upload zeigte „Bad credentials“:** Ursache: In Dev mit Token lief der GitHub-Zweig und brach bei ungültigem Token ab. **Fix:** In `uploadVideoToGitHub` gibt es jetzt einen **Auto-Fallback auf Vercel Blob**, wenn GitHub `bad credentials`/`unauthorized`/`forbidden`/CORS liefert. So bleibt Video-Upload robust. Tests + Build grün.

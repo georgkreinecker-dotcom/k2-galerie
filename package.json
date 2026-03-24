@@ -24,6 +24,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "briefing": "node scripts/agenten-briefing.js",
+    "sync:texte-oeffentlich": "bash scripts/sync-texte-oeffentliche-spiegel.sh",
     "electron": "electron .",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5175 && electron . --dev\"",
     "electron:build": "npm run build && electron-builder --mac",

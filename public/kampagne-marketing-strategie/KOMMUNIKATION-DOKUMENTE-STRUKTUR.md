@@ -3,6 +3,9 @@
 **Stand:** 08.03.26  
 **Zweck:** Eine klare Übersicht: Welches Dokument wofür, was ist fertig, was muss ausgefeilt werden. Gezielt und mit Struktur – damit du (Georg) siehst, wo du ansetzen kannst und wo noch Probleme liegen.
 
+**Schnellwahl (alle Texte & Briefe):** Handbuch **Texte & Briefe Kompass** – `k2team-handbuch/24-TEXTE-BRIEFE-KOMPASS.md`.  
+**Pflege:** Diese Dateien hier in `docs/` bearbeiten; die Kopie für die Kampagne-Seite in der App kommt per `npm run sync:texte-oeffentlich` nach `public/kampagne-marketing-strategie/` – nicht zweimal manuell unterschiedlich halten.
+
 ---
 
 ## Sportwagenmodus (verbindlich)
@@ -32,6 +35,7 @@
 | **E-Mail-Vorlagen (nach Lizenzkauf, Einladung)** | docs/KOMMUNIKATION-EMAIL-VORLAGEN.md | ✅ Fertig | Vorlage A (nach Kauf), B (Einladung Test); Platzhalter ersetzen; später automatisierbar |
 | **Fertige Beispiele (redigierte Seiten)** | docs/KOMMUNIKATION-FERTIGE-BEISPIELE.md | ✅ Fertig | Flyer + alle E-Mails mit konkretem Text – zum sofortigen Lesen und Zeigen (keine Platzhalter) |
 | **FAQ für Kunden / Piloten** | mök2, ggf. Handbuch | ⚠️ Teils | Häufige Fragen gebündelt, eine Quelle |
+| **Corporate Design (CD) als Marketing-Argument** | mök2 → Sektion **„Corporate Design – eine Linie“** | ✅ Fertig | Eine visuelle Linie von Galerie gestalten bis Druck/PDF; ergänzt Slogans/Werbelinie für Gespräche und Prospekte |
 
 **Kurz:** Presse, Ansprache, Flyer/Handout und E-Mail-Vorlagen sind als **eine Quelle pro Zweck** angelegt. Phase 1 (DE) abgeschlossen; Mehrsprachigkeit mitgeplant (docs/MEHRSPRACHIGKEIT-PLAN.md).
 

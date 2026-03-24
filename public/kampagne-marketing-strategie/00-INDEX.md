@@ -27,7 +27,7 @@
 | [KOMMUNIKATION-EMAIL-VORLAGEN.md](../KOMMUNIKATION-EMAIL-VORLAGEN.md) | E-Mail A (nach Lizenzkauf), B (Einladung zum Test); später automatisierbar. |
 | [KOMMUNIKATION-FERTIGE-BEISPIELE.md](../KOMMUNIKATION-FERTIGE-BEISPIELE.md) | **Fertige, redigierte Seiten** – Flyer und E-Mails mit konkretem Text (keine Platzhalter); zum sofortigen Lesen und Zeigen. |
 
-**Eine Quelle pro Zweck.** Alle in docs/ bearbeitbar; Kampagne-Index = Einstieg. In der App: mök2 → Sichtbarkeit & Werbung (dort verlinkt).
+**Eine Quelle pro Zweck.** Die Vorlagen (`KOMMUNIKATION-*`, Auftrag, Strategie) in **`docs/`** bearbeiten; für die Anzeige in der App danach **`npm run sync:texte-oeffentlich`** ausführen (kopiert nach `public/kampagne-marketing-strategie/`). Schnellwahl über alle Texte/Briefe: **`k2team-handbuch/24-TEXTE-BRIEFE-KOMPASS.md`**.
 
 ---
 

@@ -25,7 +25,7 @@ K2 Galerie ist die Plattform für Galerien, Künstler:innen und Kunstvereine: We
 
 **Demo & Links**
 
-- **Willkommen / Demo (ök2):** https://k2-galerie.vercel.app/willkommen  
+- **Eingangstor / Demo (ök2):** https://k2-galerie.vercel.app/entdecken
 - **VK2 (Vereine):** https://k2-galerie.vercel.app/projects/vk2  
 
 QR-Code zu einer dieser URLs aus der APf (Mission Control oder Galerie) auf den Flyer setzen – dann führt er direkt zur Demo.
@@ -53,7 +53,7 @@ Liebe Maria,
 
 wir laden dich ein, **ök2** selbst anzuschauen – die Plattform, mit der Künstler:innen ihre Werke, Vita und Galerie im Netz präsentieren. Galerie, Kasse und Presse aus einer Hand, ohne Stückwerk.
 
-Demo und Willkommensseite: https://k2-galerie.vercel.app/willkommen
+Demo und Eingangstor: https://k2-galerie.vercel.app/entdecken
 
 Wenn du magst, probier es aus und sag uns, was fehlt oder was dir auffällt. Wir freuen uns auf dein Feedback.
 
@@ -130,7 +130,7 @@ Liebe Lena,
 
 wir laden dich ein, die K2-Demo selbst auszuprobieren – Galerie, Kasse, Presse aus einer Hand. Kein Account nötig zum Anschauen.
 
-**Demo / Willkommen:** https://k2-galerie.vercel.app/willkommen  
+**Demo / Eingangstor:** https://k2-galerie.vercel.app/entdecken
 **VK2 (Vereine):** https://k2-galerie.vercel.app/projects/vk2
 
 Wenn du magst, sag uns danach kurz, was dir auffällt oder fehlt. Wir freuen uns auf dein Feedback.

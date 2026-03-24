@@ -6,7 +6,7 @@
 
 Lieber Andreas,
 
-ich schicke dir eine persönliche Zusammenfassung unseres Projekts – damit du siehst, woran Martina und ich gerade bauen und wo wir stehen. Wenn du magst, kannst du dir die Demo-Galerie gleich am Handy oder am Rechner ansehen (Link unten).
+ich schicke dir eine persönliche Zusammenfassung des Projekts – damit du siehst, woran ich gerade baue und wo wir stehen. (Die K2 Kunst Galerie machen Martina und ich gemeinsam; die Plattform/App baue ich alleine.) Wenn du magst, kannst du dir die Demo-Galerie gleich am Handy oder am Rechner ansehen (Link unten).
 
 ---
 
@@ -45,7 +45,7 @@ Entwickelt wird alles mit einem KI-Assistenten namens Joe – ich habe keine Pro
 
 - Die Galerie läuft – auf Mac, Handy, Windows, Android  
 - Fotos werden automatisch freigestellt und professionell dargestellt  
-- Handy und Mac zeigen immer denselben Stand – kein „bei mir schaut's anders aus“  
+- Handy und Mac zeigen immer denselben Stand – kein „bei mir schaut’s anders aus“  
 - Etikettendrucker angebunden – Belege und Werksetiketten direkt drucken  
 - Über 45 automatische Sicherheitstests schützen die Daten – laufen bei jedem Start  
 - Das System kann für andere Künstler lizenziert werden – das ist das eigentliche Ziel  
@@ -89,7 +89,7 @@ https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich
 ![QR-Code Demo-Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie-oeffentlich)
 
 **Willkommen** (Zugangsbereich / Erster Entwurf):  
-https://k2-galerie.vercel.app/willkommen  
+https://k2-galerie.vercel.app/entdecken
 
 ![QR-Code Willkommen](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen)
 

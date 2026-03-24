@@ -72,6 +72,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 - **WIR-PROZESS.md** – **Gemeinsamer Arbeitsraum, Vermächtnis, Team-Hebel:** Wer Georg ist, Wachstums-Vereinbarungen, Session-Reflexion; Abschnitt „Team-Hebel und Lernkurve“ (Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung; Regelwerk + Vermächtnis für maximale Lernkurve). Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`.
 
 ## Zentrale Nutzer-Themen (Übersicht)
+- **TEXTE-BRIEFE-KOMPASS (Handbuch)** – **Schnellwahl bei Texten/Briefen:** Welches Dokument wofür? Eine klare Zuordnung nach Anlass (Einladung, Brief, Kommunikationsvorlage, Mustertext). Datei: `k2team-handbuch/24-TEXTE-BRIEFE-KOMPASS.md` (Spiegel in `public/k2team-handbuch/`). **Ein Befehl für alle Spiegel:** `npm run sync:texte-oeffentlich` (siehe Kompass, Abschnitt „Eine Quelle“).
 - **ZENTRALE-THEMEN-FUER-NUTZER.md** – **Eine Übersicht:** Änderungen sichtbar, Geräte, Drucker, Stand/Handy, Backup, Echte Galerie vs. Demo, Admin, Kassa. Kurz + Verweise auf die Einzel-Dokus.
 - **HANDBUCH-AUFBAU-UND-ZIEL.md** – **Handbuch-Struktur & Ziel (für Georg/APf):** Wie K2Team-, K2-Galerie- und K2-Familie-Handbuch aufgebaut sind; Zielbild Kurzanleitung + Langversion als Buch. Gespeichert – bei Gelegenheit umsetzen.
 - **BENUTZERHANDBUCH-OEK2-VK2-KONZEPT.md** – **Benutzerhandbuch für unsere User (ök2, VK2):** Konzept und Anforderungen: sehr professionell, leicht verständlich, für jeden Laien, redigiert. Für Lizenznehmer:innen, Piloten, Vereine. Inhalt und Ablage bei Gelegenheit ausarbeiten.
