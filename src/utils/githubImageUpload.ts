@@ -150,6 +150,19 @@ function virtualTourBlobPathname(subfolder: 'k2' | 'oeffentlich'): string {
   return subfolder === 'oeffentlich' ? 'oeffentlich/site-virtual-tour.mp4' : 'k2/site-virtual-tour.mp4'
 }
 
+const BLOB_HANDLE_UPLOAD_PATH = '/api/blob-handle-virtual-tour'
+const BLOB_HANDLE_UPLOAD_PRODUCTION = 'https://k2-galerie.vercel.app/api/blob-handle-virtual-tour'
+
+function resolveBlobHandleUploadUrl(): string {
+  if (typeof window === 'undefined') return BLOB_HANDLE_UPLOAD_PATH
+  const host = (window.location.hostname || '').toLowerCase()
+  // In lokalem Dev gibt es diese Serverless-Route oft nicht. Dann direkt Production verwenden.
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return BLOB_HANDLE_UPLOAD_PRODUCTION
+  }
+  return BLOB_HANDLE_UPLOAD_PATH
+}
+
 async function uploadVirtualTourVideoViaBlob(
   file: File,
   subfolder: 'k2' | 'oeffentlich',
@@ -161,7 +174,7 @@ async function uploadVirtualTourVideoViaBlob(
   try {
     const blob = await upload(pathname, file, {
       access: 'public',
-      handleUploadUrl: '/api/blob-handle-virtual-tour',
+      handleUploadUrl: resolveBlobHandleUploadUrl(),
       contentType: file.type || 'video/mp4',
       multipart: true,
     })
