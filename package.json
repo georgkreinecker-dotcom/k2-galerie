@@ -15,6 +15,7 @@
     "test:daten": "vitest run src/tests/datentrennung.test.ts src/tests/syncMerge.test.ts src/tests/artworksStorage.test.ts src/tests/kundendaten-schutz.test.ts src/tests/publish-mock.test.ts src/tests/mergeMissingK2KeramikFromGalleryData.test.ts src/tests/upload-download-simulation.test.ts src/tests/kritische-ablaeufe.test.ts src/tests/bild-zu-karte-flow.test.ts src/tests/artworkImageStore.test.ts src/tests/vk2-backup.test.ts",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "guard:kritische-prozesse": "node scripts/guard-kritische-prozesse.mjs",
     "build": "npm run test && node scripts/write-build-info.js --inject-html && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
