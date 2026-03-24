@@ -157,21 +157,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         details: 'Vergleiche lokalen Build mit Vercel.'
       }))
 
-      const [buildInfoRes, blobApiOptionsRes] = await Promise.all([
-        fetch('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now(), { cache: 'no-store' }),
-        fetch('https://k2-galerie.vercel.app/api/blob-handle-virtual-tour', { method: 'OPTIONS', cache: 'no-store' })
-      ])
-
-      const blobApiOk = blobApiOptionsRes.ok
-      if (!blobApiOk) {
-        setDeployHealth({
-          state: 'missing_api',
-          text: 'Nicht aktuell: Video-API fehlt live',
-          details: `API /api/blob-handle-virtual-tour antwortet mit ${blobApiOptionsRes.status}.`,
-          serverTimestamp: null
-        })
-        return
-      }
+      const buildInfoRes = await fetch('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now(), { cache: 'no-store' })
 
       if (!buildInfoRes.ok) {
         setDeployHealth({
@@ -196,6 +182,27 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       }
 
       if (serverTs >= BUILD_TIMESTAMP) {
+        try {
+          const blobApiOptionsRes = await fetch('https://k2-galerie.vercel.app/api/blob-handle-virtual-tour', { method: 'OPTIONS', cache: 'no-store' })
+          if (!blobApiOptionsRes.ok) {
+            setDeployHealth({
+              state: 'missing_api',
+              text: 'Nicht aktuell: Video-API fehlt live',
+              details: `API /api/blob-handle-virtual-tour antwortet mit ${blobApiOptionsRes.status}.`,
+              serverTimestamp: serverTs
+            })
+            return
+          }
+        } catch {
+          // Cross-Origin/Netzfall in lokaler APf: als API-fehlt markieren statt "Prüfung fehlgeschlagen"
+          setDeployHealth({
+            state: 'missing_api',
+            text: 'Video-API nicht erreichbar',
+            details: 'Blob-Video-API konnte nicht bestätigt werden. Meist fehlt der Push auf main oder API ist noch nicht live.',
+            serverTimestamp: serverTs
+          })
+          return
+        }
         setDeployHealth({
           state: 'ok',
           text: 'Aktuell auf Vercel',
