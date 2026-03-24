@@ -135,8 +135,12 @@ export const PROJECT_ROUTES = {
     verguetung: '/projects/k2-galerie/verguetung',
     vitaMartina: '/projects/k2-galerie/vita/martina',
     vitaGeorg: '/projects/k2-galerie/vita/georg',
+    /** Große Arbeitsfläche: Texte wie auf dem Schreibtisch (Bereiche + Zettel, kein Listen-Navi) */
+    texteSchreibtisch: '/projects/k2-galerie/texte-schreibtisch',
     /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
     notizen: '/projects/k2-galerie/notizen',
+    /** Schreiben an August (technischer Softwarestand, Profi-Blick) */
+    notizenAugustSoftwarestand: '/projects/k2-galerie/notizen/schreiben-august-softwarestand',
     notizenBriefAugust: '/projects/k2-galerie/notizen/brief-an-august',
     notizenBriefAndreas: '/projects/k2-galerie/notizen/brief-an-andreas',
     /** Einladung Freunde – Galerieeröffnung 24.–26.04.2026 (Markdown aus public/notizen-georg) */

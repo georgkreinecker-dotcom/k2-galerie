@@ -380,27 +380,75 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
           Schnellzugriff
         </p>
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate('texte-schreibtisch')}
+            style={{
+              width: '100%',
+              marginTop: '0.65rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
+              border: '1px solid rgba(212,167,106,0.65)',
+              borderRadius: '10px',
+              color: '#f5e6c8',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
+            }}
+            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
+          >
+            🪑 Texte-Schreibtisch
+          </button>
+        ) : (
+          <Link
+            to={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch}
+            style={{
+              display: 'block',
+              width: '100%',
+              marginTop: '0.65rem',
+              padding: '0.65rem 0.85rem',
+              background: 'linear-gradient(135deg, rgba(180,120,60,0.35), rgba(138,90,43,0.2))',
+              border: '1px solid rgba(212,167,106,0.65)',
+              borderRadius: '10px',
+              color: '#f5e6c8',
+              fontWeight: 800,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 12px rgba(40,26,12,0.25)',
+              textDecoration: 'none',
+            }}
+            title="Texte wie auf dem Schreibtisch: Bereiche und Zettel, keine Listen"
+          >
+            🪑 Texte-Schreibtisch
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_KOMPASS)}
           style={{
             width: '100%',
-            marginTop: '0.65rem',
-            padding: '0.65rem 0.85rem',
-            background: 'linear-gradient(135deg, rgba(59,130,246,0.28), rgba(37,99,235,0.15))',
-            border: '1px solid rgba(96,165,250,0.55)',
-            borderRadius: '10px',
+            marginTop: '0.45rem',
+            padding: '0.45rem 0.65rem',
+            background: 'transparent',
+            border: '1px solid rgba(96,165,250,0.35)',
+            borderRadius: '8px',
             color: '#93c5fd',
-            fontWeight: 800,
-            fontSize: '0.9rem',
+            fontWeight: 600,
+            fontSize: '0.75rem',
             cursor: 'pointer',
             fontFamily: 'inherit',
             textAlign: 'center',
-            boxShadow: '0 0 14px rgba(59,130,246,0.12)',
+            opacity: 0.92,
           }}
-          title="Welches Dokument für welchen Anlass - sofort im Handbuch"
+          title="Klassische Tabellenübersicht im Team-Handbuch"
         >
-          🧭 Texte-Kompass
+          📋 Kompass als Tabelle
         </button>
       </div>
 
@@ -811,7 +859,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     ) : (
                       <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
                     )}
-                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>Texte-Kompass: oben unter „Schnellzugriff“.</p>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>Texte-Schreibtisch &amp; Kompass: oben unter „Schnellzugriff“.</p>
                     <button type="button" onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_ZENTRALE_THEMEN)} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
                     <button type="button" onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_NOTFALL)} style={{ width: '100%', padding: '0.5rem 0.7rem', marginTop: '0.35rem', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '6px', color: '#fca5a5', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>🚨 Notfall-Checkliste</button>
                     <button

@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Texte-Schreibtisch (Vision Schreibtisch):** Eigene große Seite **`/projects/k2-galerie/texte-schreibtisch`** – Bereiche wie Zonen auf dem Tisch, Entwürfe als **Zettel-Karten** (Farbbalken, leichte Drehung), nicht als Navigationsliste. Smart Panel: **🪑 Texte-Schreibtisch** unter Schnellzugriff; **📋 Kompass als Tabelle** klein darunter. DevView-Tab, `navigation.texteSchreibtisch`, `TexteSchreibtischPage.tsx`. Tests + Build grün. **Nächster Schritt:** Push + Georg im Browser ansehen.
+
 **Letzter Stand:** 24.03.26 – **Smart Panel: Texte-Kompass oben:** Direkt unter „Schnellzugriff“ (immer sichtbar). Klick setzt **`?page=handbuch&doc=24-TEXTE-BRIEFE-KOMPASS.md`** + öffnet Handbuch (vorher fehlte `doc` in der APf). Vermächtnis: Hinweis + Zentrale Themen/Notfall ebenfalls per `openTeamHandbuchDoc`. Commit: `edf7967`; Push: Git-Button.
 
 **Letzter Stand:** 24.03.26 – **Texte & Briefe: eine Quelle, kein Doppel-Pflege-Chaos:** Kompass `k2team-handbuch/24-TEXTE-BRIEFE-KOMPASS.md` um Abschnitt „Eine Quelle – nicht doppelt pflegen“ ergänzt; **`npm run sync:texte-oeffentlich`** (`scripts/sync-texte-oeffentliche-spiegel.sh`) spiegelt `docs/` → `public/kampagne-marketing-strategie/`, `docs/notizen-georg/` → `public/notizen-georg/`, Kompass → `public/k2team-handbuch/`. Verknüpfungen in `KOMMUNIKATION-DOKUMENTE-STRUKTUR.md`, Kampagne-`00-INDEX.md`, `docs/notizen-georg/README.md`, `docs/00-INDEX.md`. Sync ausgeführt.
