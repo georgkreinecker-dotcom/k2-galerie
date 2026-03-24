@@ -76,7 +76,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [searchParams] = useSearchParams()
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
+  const [diagnoseRunning, setDiagnoseRunning] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
+  const autoDiagnoseLockRef = React.useRef(false)
   const [deployHealth, setDeployHealth] = useState<{
     state: DeployHealthState
     text: string
@@ -149,6 +151,69 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
   }
 
+  const runOneClickDiagnose = async (source: 'manual' | 'auto' = 'manual') => {
+    if (diagnoseRunning) return
+    setDiagnoseRunning(true)
+
+    const withTimeout = async (url: string, ms = 7000) => {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), ms)
+      try {
+        const res = await fetch(url, { cache: 'no-store', signal: controller.signal })
+        return res
+      } finally {
+        clearTimeout(timer)
+      }
+    }
+
+    try {
+      const checks = await Promise.allSettled([
+        withTimeout('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now()),
+        withTimeout('https://k2-galerie.vercel.app/api/build-info?t=' + Date.now()),
+        withTimeout('https://k2-galerie.vercel.app/api/gallery-data?t=' + Date.now()),
+        withTimeout('https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now()),
+        withTimeout('https://k2-galerie.vercel.app/api/blob-handle-virtual-tour?t=' + Date.now())
+      ])
+
+      const okOrHttp = (r: PromiseSettledResult<Response>) =>
+        r.status === 'fulfilled' ? `HTTP ${r.value.status}` : 'nicht erreichbar'
+
+      const allGood = checks.every((r) => r.status === 'fulfilled' && r.value.status < 500 && r.value.status !== 404)
+      const details = [
+        `build-info.json: ${okOrHttp(checks[0])}`,
+        `api/build-info: ${okOrHttp(checks[1])}`,
+        `api/gallery-data: ${okOrHttp(checks[2])}`,
+        `gallery-data.json: ${okOrHttp(checks[3])}`,
+        `blob API: ${okOrHttp(checks[4])}`
+      ]
+
+      setDeployHealth((prev) => ({
+        ...prev,
+        state: allGood ? 'ok' : 'error',
+        text: allGood ? 'Diagnose grün' : 'Diagnose rot',
+        details: allGood
+          ? 'Alle kritischen Endpunkte erreichbar.'
+          : 'Mindestens ein kritischer Endpunkt ist rot.'
+      }))
+
+      if (source === 'manual') {
+        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}`)
+      }
+    } catch (err) {
+      setDeployHealth((prev) => ({
+        ...prev,
+        state: 'error',
+        text: 'Diagnose fehlgeschlagen',
+        details: err instanceof Error ? err.message : String(err)
+      }))
+      if (source === 'manual') {
+        alert('⚠️ Diagnose fehlgeschlagen.\n\nBitte erneut versuchen oder Netzwerk prüfen.')
+      }
+    } finally {
+      setDiagnoseRunning(false)
+    }
+  }
+
   const checkDeployAmpel = async () => {
     try {
       setDeployHealth((prev) => ({
@@ -218,6 +283,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         details: 'Server-Stand ist älter als dein lokaler Stand. Bitte Code-Update (Git) ausführen.',
         serverTimestamp: serverTs
       })
+      if (!autoDiagnoseLockRef.current) {
+        autoDiagnoseLockRef.current = true
+        void runOneClickDiagnose('auto').finally(() => {
+          autoDiagnoseLockRef.current = false
+        })
+      }
     } catch (err) {
       setDeployHealth({
         state: 'error',
@@ -225,6 +296,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         details: err instanceof Error ? err.message : String(err),
         serverTimestamp: null
       })
+      if (!autoDiagnoseLockRef.current) {
+        autoDiagnoseLockRef.current = true
+        void runOneClickDiagnose('auto').finally(() => {
+          autoDiagnoseLockRef.current = false
+        })
+      }
     }
   }
 
@@ -1551,27 +1628,27 @@ end tell`
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            checkVercelStatus()
+            void runOneClickDiagnose('manual')
           }}
-          disabled={checkingVercel}
+          disabled={diagnoseRunning}
           style={{
             padding: '0.5rem 1rem',
-            background: checkingVercel ? 'rgba(255, 140, 66, 0.3)' : 'rgba(255, 140, 66, 0.2)',
+            background: diagnoseRunning ? 'rgba(255, 140, 66, 0.3)' : 'rgba(255, 140, 66, 0.2)',
             color: 'var(--k2-accent)',
             border: '1px solid rgba(255, 140, 66, 0.4)',
             borderRadius: '6px',
             fontSize: '0.9rem',
-            cursor: checkingVercel ? 'wait' : 'pointer',
+            cursor: diagnoseRunning ? 'wait' : 'pointer',
             fontWeight: '500',
-            opacity: checkingVercel ? 0.7 : 1,
-            pointerEvents: checkingVercel ? 'none' : 'auto',
+            opacity: diagnoseRunning ? 0.7 : 1,
+            pointerEvents: diagnoseRunning ? 'none' : 'auto',
             minWidth: '150px',
             position: 'relative',
             zIndex: 1000 // Sicherstellen dass Button immer klickbar ist
           }}
-          title="Vercel-Deployment-Status prüfen - funktioniert IMMER, auch während Veröffentlichung"
+          title="Ein Klick Diagnose für Vercel/API/Cache starten"
         >
-          {checkingVercel ? '⏳ Prüfe...' : '🔍 Vercel-Status'}
+          {diagnoseRunning ? '⏳ Diagnose…' : '🩺 Ein-Klick Diagnose'}
         </button>
         <div
           style={{
