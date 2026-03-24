@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Entdecken Eingangstor-Bild (Admin „Bild wählen“):** Bisher nur **GitHub aus dem Browser** → auf Vercel ohne Token **tote Funktion**. **Neu:** API **`/api/upload-entdecken-hero`** (Server **`GITHUB_TOKEN`**, optional **`WRITE_GALLERY_API_KEY`** wie Veröffentlichen) + **`uploadEntdeckenHero.ts`**; Design-Toolbar: **Vorschau-Miniatur** + Link **„Entdecken prüfen“**; Fehlertext statt stillem Misserfolg. Lokal weiter mit **`VITE_GITHUB_TOKEN`** möglich. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+
 **Letzter Stand:** 24.03.26 – **Hängeordner / Themenmappen nur auf Texte-Schreibtisch:** SmartPanel **ohne** Mappe-Flip (zurück auf Stand vor dem Experiment). **`TexteSchreibtischPage`:** pro Schublade **Zettel-Anzahl** als Badge, **einklappbar**, innen **blättern** (Vor/Zurück) + **„Diese Seite öffnen“**; Zettel weiter **ziehbar** in die Mitte. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline` prüfen.
 
 **Letzter Stand:** 24.03.26 – **Schreibtisch-Board (Mitte):** Komponente **`TexteSchreibtischBoard.tsx`** – **Schweben** (fixiert, Griff verschieben, Ecke resize), **Eigenes Fenster** (`/projects/k2-galerie/texte-schreibtisch-board`) für zweiten Monitor; **storage**-Sync zwischen Fenstern; Geometrie `k2-texte-schreibtisch-board-geom`. Route + **`TexteSchreibtischBoardPage.tsx`**, **`navigation.texteSchreibtischBoard`**. `tsc -b` grün. **Nächster Schritt:** Commit + Push (Build beim Push).

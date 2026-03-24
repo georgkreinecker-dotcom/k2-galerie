@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE } from '../src/config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE, ENTDECKEN_ROUTE } from '../src/config/navigation'
 import { buildQrUrlWithBust } from '../src/hooks/useServerBuildTimestamp'
 import { APP_BASE_URL } from '../src/config/externalUrls'
 import ZertifikatTab from './tabs/ZertifikatTab'
@@ -11586,32 +11586,58 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Titel */}
             <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
-            {!tenant.isOeffentlich && !tenant.isVk2 && (
+            {!tenant.isOeffentlich && !tenant.isVk2 && (() => {
+              const entdeckenHeroVorschauSrc =
+                (entdeckenForm.heroImageUrl || getPageContentEntdecken().heroImageUrl || '').trim() ||
+                '/img/oeffentlich/entdecken-hero.jpg'
+              return (
               <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
-                <span style={{ fontSize: '0.9rem', color: s.muted, marginRight: '0.75rem' }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
-                <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
-                  const f = e.target.files?.[0]
-                  e.target.value = ''
-                  if (!f) return
-                  setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
-                  try {
-                    // Aushängeschild: bewusst schärfer als Standard-Hero, aber weiterhin komprimiert.
-                    const dataUrl = await compressImageForStorage(f, { context: 'pageHero', maxWidth: 2200, quality: 0.88 })
-                    const res = await fetch(dataUrl)
-                    const blob = await res.blob()
-                    const fileToUpload = new File([blob], 'entdecken-hero.jpg', { type: blob.type || 'image/jpeg' })
-                    const { uploadPageImage } = await import('../src/utils/githubImageUpload')
-                    await uploadPageImage(fileToUpload, 'oeffentlich', 'entdecken-hero.jpg', () => {})
-                    setImageUploadStatus('✅ Entdecken-Seite: Bild gespeichert – in ca. 2 Min. sichtbar')
-                    setTimeout(() => setImageUploadStatus(null), 6000)
-                  } catch (_) {
-                    setImageUploadStatus('⚠️ Speichern fehlgeschlagen – bitte erneut versuchen')
-                    setTimeout(() => setImageUploadStatus(null), 5000)
-                  }
-                }} />
-                <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem 0.75rem' }}>
+                  <span style={{ fontSize: '0.9rem', color: s.muted }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
+                  <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
+                    const f = e.target.files?.[0]
+                    e.target.value = ''
+                    if (!f) return
+                    setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
+                    try {
+                      const { uploadEntdeckenHeroImage } = await import('../src/utils/uploadEntdeckenHero')
+                      await uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
+                      const path = '/img/oeffentlich/entdecken-hero.jpg'
+                      const withBust = `${path}?v=${Date.now()}`
+                      setPageContentEntdecken({ heroImageUrl: withBust })
+                      setEntdeckenForm(prev => ({ ...prev, heroImageUrl: withBust }))
+                      setImageUploadStatus('✅ Gespeichert. Unten Vorschau – nach Deploy (~1–2 Min) für alle sichtbar. „Entdecken prüfen“ öffnet /entdecken.')
+                      setTimeout(() => setImageUploadStatus(null), 8000)
+                    } catch (err) {
+                      const msg = err instanceof Error ? err.message : String(err)
+                      setImageUploadStatus(`⚠️ ${msg}`)
+                      setTimeout(() => setImageUploadStatus(null), 10000)
+                    }
+                  }} />
+                  <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.65rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.78rem', color: s.muted }}>So siehst du’s sofort (lokal / nach Speichern):</span>
+                  <img
+                    src={entdeckenHeroVorschauSrc}
+                    alt=""
+                    style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: `1px solid ${String(s.accent)}44` }}
+                  />
+                  <Link
+                    to={ENTDECKEN_ROUTE}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontSize: '0.82rem', fontWeight: 700, color: s.accent }}
+                  >
+                    Entdecken prüfen (neuer Tab)
+                  </Link>
+                </div>
+                <p style={{ margin: '0.45rem 0 0', fontSize: '0.72rem', color: s.muted, lineHeight: 1.45 }}>
+                  Auf Vercel läuft der Upload über den Server (GITHUB_TOKEN) – nicht über den Browser. Wenn etwas fehlschlägt: Meldung oben lesen; ggf. VITE_WRITE_GALLERY_API_KEY wie bei „Veröffentlichen“.
+                </p>
               </div>
-            )}
+              )
+            })()}
             {/* 3-Schritt-Workflow */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               {/* Schritt 1 */}
