@@ -189,7 +189,13 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
 
   /** In der APf: URL mit page=handbuch & doc=… setzen, sonst öffnet sich der Kompass nicht. */
   const openTeamHandbuchDoc = (docFile: string) => {
+    const handbuchApfUrl = `/projects/k2-galerie?page=handbuch&doc=${encodeURIComponent(docFile)}`
     if (onNavigate) {
+      // Hart auf die APf-URL navigieren: verhindert Race, bei dem nur das Index-Dokument erscheint.
+      if (typeof window !== 'undefined' && window.self === window.top) {
+        window.location.href = handbuchApfUrl
+        return
+      }
       setSearchParams(
         (prev) => {
           const next = new URLSearchParams(prev)
@@ -203,7 +209,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
       return
     }
     if (typeof window !== 'undefined' && window.self === window.top) {
-      window.location.href = `/k2team-handbuch?doc=${encodeURIComponent(docFile)}`
+      window.location.href = handbuchApfUrl
     }
   }
   // Aktiven Button per URL erkennen – überschreibt den prop wenn Seite direkt per URL geöffnet wurde
