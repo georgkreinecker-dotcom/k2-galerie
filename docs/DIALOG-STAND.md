@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Entdecken „Entdecken prüfen“ = altes Bild:** Die JPG auf dem Server ist erst **nach Vercel-Deploy** neu; `?v=` umgeht nur Browser-Cache. **Fix:** nach Upload komprimiertes Bild als **localStorage-Overlay** (`k2-entdecken-hero-dataurl-overlay`, max. 48 h) + **`getEntdeckenHeroDisplayUrl`** in **EntdeckenPage** und Admin-Vorschau; **`uploadEntdeckenHeroImage`** liefert `{ path, dataUrl }`. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+
+**Letzter Stand:** 24.03.26 – **Entdecken „Bild wählen“: sofort Vorschau:** Bisher zeigte die Miniatur erst die **Server-URL** – während des Uploads wirkte es wie **keine Vorschau**. **Fix:** direkt nach Dateiwahl **`URL.createObjectURL`** → State **`entdeckenHeroLocalPreview`**; nach erfolgreichem Upload **`revokeObjectURL`** und Wechsel auf `?v=…`-Pfad; Vorschau **140×88** px; Text **„Lokal gewählt – wird hochgeladen …“**. Bei Fehler bleibt die **lokale** Vorschau. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+
 **Letzter Stand:** 24.03.26 – **Entdecken Eingangstor-Bild (Admin „Bild wählen“):** Bisher nur **GitHub aus dem Browser** → auf Vercel ohne Token **tote Funktion**. **Neu:** API **`/api/upload-entdecken-hero`** (Server **`GITHUB_TOKEN`**, optional **`WRITE_GALLERY_API_KEY`** wie Veröffentlichen) + **`uploadEntdeckenHero.ts`**; Design-Toolbar: **Vorschau-Miniatur** + Link **„Entdecken prüfen“**; Fehlertext statt stillem Misserfolg. Lokal weiter mit **`VITE_GITHUB_TOKEN`** möglich. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
 
 **Letzter Stand:** 24.03.26 – **Hängeordner / Themenmappen nur auf Texte-Schreibtisch:** SmartPanel **ohne** Mappe-Flip (zurück auf Stand vor dem Experiment). **`TexteSchreibtischPage`:** pro Schublade **Zettel-Anzahl** als Badge, **einklappbar**, innen **blättern** (Vor/Zurück) + **„Diese Seite öffnen“**; Zettel weiter **ziehbar** in die Mitte. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline` prüfen.
@@ -86,11 +90,11 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** **Push** dieses Stands (Hängeordner Texte-Schreibtisch + SmartPanel-Revert); Georg: **`/projects/k2-galerie/texte-schreibtisch`** – Schubladen Badge, Einklappen, Blättern, Öffnen testen.
+**Was wir JETZT tun:** Admin → **Design** → **Vorschau** → **Bild wählen** → **Entdecken prüfen**: gleiches neues Bild wie in der Miniatur (dieses Gerät); nach Deploy: JPG für alle.
+
+**Einordnung:** **Entdecken-Hero** = Eingangstor – **sofortige Vorschau** nach „Bild wählen“. **Texte-Schreibtisch** = Hängeordner/Themenmappen am richtigen Ort (nicht Smart-Panel). **Parallel:** Einladung/Notizen, Endphase/Markt, Ready-to-go.
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
-
-**Einordnung:** **Texte-Schreibtisch** = richtiger Ort für **Hängeordner-Themenmappen** (nicht Smart-Panel-Arbeitsmappen). Zettel-Workflow: Übersicht ohne sofort volle Seite; Öffnen bewusst. **Parallel:** Einladung/Notizen, Endphase/Markt, Ready-to-go.
 
 **Vorher:** 22.03.26 – **Werkkatalog vs. Werke-Zahl (Georg):** Hinweisbox im **Werkkatalog**, sobald Filter aktiv sind, die die Liste gegenüber **Werke verwalten** einschränken (z. B. **nur Online-Galerie**, Kategorie, Suche, Preis, Datum). **WerkkatalogTab.tsx**. Tests + Build grün. **Commit-Tipp:** `git log -3 --oneline` (Hinweis **4d26ae5** + DIALOG-STAND); **Push:** Git-Button Cursor.
 

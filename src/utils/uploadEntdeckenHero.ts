@@ -9,20 +9,24 @@ function getDevGithubToken(): string {
   return (import.meta.env.VITE_GITHUB_TOKEN as string) || ''
 }
 
+export type UploadEntdeckenHeroResult = { path: string; dataUrl: string }
+
 export async function uploadEntdeckenHeroImage(
   file: File,
   onStatus?: (msg: string) => void
-): Promise<string> {
+): Promise<UploadEntdeckenHeroResult> {
   const token = getDevGithubToken()
   const useClientGitHub = import.meta.env.DEV && Boolean(token)
 
-  if (useClientGitHub) {
-    const { uploadPageImage } = await import('./githubImageUpload')
-    return uploadPageImage(file, 'oeffentlich', 'entdecken-hero.jpg', onStatus)
-  }
-
   onStatus?.('Bild wird vorbereitet…')
   const dataUrl = await compressImageForStorage(file, { context: 'pageHero', maxWidth: 2200, quality: 0.88 })
+
+  if (useClientGitHub) {
+    const { uploadPageImage } = await import('./githubImageUpload')
+    const path = await uploadPageImage(file, 'oeffentlich', 'entdecken-hero.jpg', onStatus)
+    return { path, dataUrl }
+  }
+
   const contentBase64 = dataUrl.replace(/^data:image\/\w+;base64,/, '')
 
   const apiKey =
@@ -46,5 +50,7 @@ export async function uploadEntdeckenHeroImage(
   }
 
   onStatus?.('✅ Im Repo – Vercel deployt (~1–2 Min)')
-  return typeof j.path === 'string' && j.path.startsWith('/') ? j.path : '/img/oeffentlich/entdecken-hero.jpg'
+  const path =
+    typeof j.path === 'string' && j.path.startsWith('/') ? j.path : '/img/oeffentlich/entdecken-hero.jpg'
+  return { path, dataUrl }
 }

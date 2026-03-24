@@ -7,13 +7,18 @@
  * Am Ende: verblüffender Moment – „Das ist deine Galerie."
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
+import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
-import { getPageContentEntdecken, getEntdeckenColorsFromK2Design } from '../config/pageContentEntdecken'
+import {
+  getPageContentEntdecken,
+  getEntdeckenColorsFromK2Design,
+  getEntdeckenHeroDisplayUrl,
+} from '../config/pageContentEntdecken'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
 export const ERKUNDUNGS_NOTIZEN_KEY = 'k2-erkundungs-notizen'
@@ -616,6 +621,7 @@ export default function EntdeckenPage() {
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
   /** Eingangsseite-Design aus Admin (Design → Eingangsseite); bei Update neu laden */
   const [entdeckenContent, setEntdeckenContent] = useState(() => getPageContentEntdecken())
+  const prevHeroUrlRef = useRef<string>('')
   useEffect(() => {
     const onUpdate = () => setEntdeckenContent(getPageContentEntdecken())
     window.addEventListener('k2-page-content-entdecken-updated', onUpdate)
@@ -634,7 +640,13 @@ export default function EntdeckenPage() {
   const text = '#2a1f14'
   const textLight = k2Colors.textLight
   const muted = '#7a6a58'
-  const heroImageUrl = entdeckenContent.heroImageUrl?.trim() || '/img/oeffentlich/entdecken-hero.jpg'
+  const heroImageUrl = useMemo(() => getEntdeckenHeroDisplayUrl(entdeckenContent), [entdeckenContent])
+  useEffect(() => {
+    if (prevHeroUrlRef.current !== heroImageUrl) {
+      prevHeroUrlRef.current = heroImageUrl
+      setHeroImageSrc('primary')
+    }
+  }, [heroImageUrl])
   const T_hero = {
     heroTag: entdeckenContent.heroTag?.trim() || T_DEFAULTS.heroTag,
     heroTitle: entdeckenContent.heroTitle?.trim() || T_DEFAULTS.heroTitle,
@@ -648,12 +660,8 @@ export default function EntdeckenPage() {
 
   /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
   const openByChoice = (weg: 'solo' | 'verein') => {
-    try {
-      // Fremde-Test: alte Admin/APf-Session-Flags nicht mit auf die Muster-Galerie nehmen (sonst fehlt der grüne Balken).
-      sessionStorage.removeItem('k2-galerie-from-admin')
-      sessionStorage.removeItem('k2-oek2-from-apf')
-      sessionStorage.setItem('k2-from-entdecken', '1')
-    } catch (_) {}
+    // Einheitlicher Standard: jede Besucher-Session frisch setzen
+    prepareFreshOek2VisitorSession()
     const url = weg === 'verein'
       ? PROJECT_ROUTES.vk2.galerie
       : PROJECT_ROUTES['k2-galerie'].galerieOeffentlich

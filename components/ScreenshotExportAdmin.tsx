@@ -44,7 +44,13 @@ import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
 import { getPageTexts, setPageTexts, defaultPageTexts, getGaleriePageTextsBaseline, type PageTextsConfig } from '../src/config/pageTexts'
 import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie } from '../src/config/pageContentGalerie'
-import { getPageContentEntdecken, setPageContentEntdecken, type PageContentEntdecken } from '../src/config/pageContentEntdecken'
+import {
+  getPageContentEntdecken,
+  setPageContentEntdecken,
+  getEntdeckenHeroDisplayUrl,
+  setEntdeckenHeroOverlayDataUrl,
+  type PageContentEntdecken,
+} from '../src/config/pageContentEntdecken'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1834,6 +1840,34 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const virtualTourImageInputRef = React.useRef<HTMLInputElement>(null)
   /** Nur K2: Entdecken-Seite (Landing) Hero-Bild – ein Klick = Bild wählen, sofortiger Upload */
   const entdeckenHeroInputRef = React.useRef<HTMLInputElement>(null)
+  /** Blob-URL: sofort nach „Bild wählen“ sichtbar (noch vor Server-Upload) */
+  const [entdeckenHeroLocalPreview, setEntdeckenHeroLocalPreview] = useState<string | null>(null)
+  const entdeckenHeroBlobRevokeRef = React.useRef<string | null>(null)
+  const revokeEntdeckenHeroBlob = useCallback(() => {
+    const u = entdeckenHeroBlobRevokeRef.current
+    if (u) {
+      try {
+        URL.revokeObjectURL(u)
+      } catch {
+        /* ignore */
+      }
+      entdeckenHeroBlobRevokeRef.current = null
+    }
+    setEntdeckenHeroLocalPreview(null)
+  }, [])
+  useEffect(() => {
+    return () => {
+      const u = entdeckenHeroBlobRevokeRef.current
+      if (u) {
+        try {
+          URL.revokeObjectURL(u)
+        } catch {
+          /* ignore */
+        }
+        entdeckenHeroBlobRevokeRef.current = null
+      }
+    }
+  }, [])
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
@@ -11588,8 +11622,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
             {!tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
-                (entdeckenForm.heroImageUrl || getPageContentEntdecken().heroImageUrl || '').trim() ||
-                '/img/oeffentlich/entdecken-hero.jpg'
+                entdeckenHeroLocalPreview || getEntdeckenHeroDisplayUrl(entdeckenForm)
               return (
               <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem 0.75rem' }}>
@@ -11598,15 +11631,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     const f = e.target.files?.[0]
                     e.target.value = ''
                     if (!f) return
+                    revokeEntdeckenHeroBlob()
+                    const blobUrl = URL.createObjectURL(f)
+                    entdeckenHeroBlobRevokeRef.current = blobUrl
+                    setEntdeckenHeroLocalPreview(blobUrl)
                     setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
                     try {
                       const { uploadEntdeckenHeroImage } = await import('../src/utils/uploadEntdeckenHero')
-                      await uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
-                      const path = '/img/oeffentlich/entdecken-hero.jpg'
+                      const { path, dataUrl } = await uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
+                      setEntdeckenHeroOverlayDataUrl(dataUrl)
                       const withBust = `${path}?v=${Date.now()}`
+                      revokeEntdeckenHeroBlob()
                       setPageContentEntdecken({ heroImageUrl: withBust })
                       setEntdeckenForm(prev => ({ ...prev, heroImageUrl: withBust }))
-                      setImageUploadStatus('✅ Gespeichert. Unten Vorschau – nach Deploy (~1–2 Min) für alle sichtbar. „Entdecken prüfen“ öffnet /entdecken.')
+                      setImageUploadStatus('✅ Gespeichert. „Entdecken prüfen“ zeigt auf diesem Gerät sofort das neue Bild; für alle anderen nach Vercel-Deploy (~1–2 Min).')
                       setTimeout(() => setImageUploadStatus(null), 8000)
                     } catch (err) {
                       const msg = err instanceof Error ? err.message : String(err)
@@ -11618,10 +11656,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.65rem', flexWrap: 'wrap' }}>
                   <span style={{ fontSize: '0.78rem', color: s.muted }}>So siehst du’s sofort (lokal / nach Speichern):</span>
+                  {entdeckenHeroLocalPreview ? (
+                    <span style={{ fontSize: '0.72rem', color: s.muted, fontWeight: 600 }}>Lokal gewählt – wird hochgeladen …</span>
+                  ) : null}
                   <img
+                    key={entdeckenHeroVorschauSrc}
                     src={entdeckenHeroVorschauSrc}
                     alt=""
-                    style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 8, border: `1px solid ${String(s.accent)}44` }}
+                    style={{ width: 140, height: 88, objectFit: 'cover', borderRadius: 8, border: `1px solid ${String(s.accent)}44`, background: 'rgba(0,0,0,0.06)' }}
                   />
                   <Link
                     to={ENTDECKEN_ROUTE}
