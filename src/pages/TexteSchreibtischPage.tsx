@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -14,7 +15,6 @@ type Zettel = {
   titel: string
   zweck: string
   to: string
-  /** leichtes „Drehen“ wie am echten Schreibtisch */
   rotateDeg?: number
 }
 
@@ -23,7 +23,6 @@ type Bereich = {
   titel: string
   untertitel: string
   akzent: string
-  /** Hintergrund für die „Schreibtisch-Zone“ */
   zoneBg: string
   zettel: Zettel[]
 }
@@ -230,15 +229,16 @@ export default function TexteSchreibtischPage() {
           ← Zur APf
         </Link>
 
-        <header style={{ marginBottom: '1.5rem' }}>
+        <header style={{ marginBottom: '1.25rem' }}>
           <h1 style={{ margin: '0 0 0.35rem', fontSize: 'clamp(1.35rem, 3vw, 1.75rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
             🪑 Texte-Schreibtisch
           </h1>
           <p style={{ margin: 0, fontSize: '0.95rem', color: '#5c5650', maxWidth: 52 * 16 }}>
-            Wie auf deinem echten Tisch: zu einem Thema liegt mehr zusammen. Klicke einen Zettel – kein Weg durch lange Listen, sondern
-            räumlich sortiert. Vergleichen, einen wählen oder Inhalte später zusammenführen wie mit den Entwürfen zur Eröffnung.
+            Drumherum liegen die Themen-Zonen wie Zettelstapel. In der <strong>Mitte</strong> arbeitest du: reinziehen, schreiben, ablegen, ansehen, versenden – normaler Tagesablauf.
           </p>
         </header>
+
+        <TexteSchreibtischBoard variant="page" />
 
         <div
           style={{

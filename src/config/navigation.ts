@@ -137,6 +137,8 @@ export const PROJECT_ROUTES = {
     vitaGeorg: '/projects/k2-galerie/vita/georg',
     /** Große Arbeitsfläche: Texte wie auf dem Schreibtisch (Bereiche + Zettel, kein Listen-Navi) */
     texteSchreibtisch: '/projects/k2-galerie/texte-schreibtisch',
+    /** Nur Board-Mitte – eigenes Fenster für 2. Monitor */
+    texteSchreibtischBoard: '/projects/k2-galerie/texte-schreibtisch-board',
     /** Georgs persönliche Notizen (Diverses, Briefe, Vermächtnis) – One-Click aus Smart Panel */
     notizen: '/projects/k2-galerie/notizen',
     /** Schreiben an August (technischer Softwarestand, Profi-Blick) */

@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **Schreibtisch-Board (Mitte):** Komponente **`TexteSchreibtischBoard.tsx`** – **Schweben** (fixiert, Griff verschieben, Ecke resize), **Eigenes Fenster** (`/projects/k2-galerie/texte-schreibtisch-board`) für zweiten Monitor; **storage**-Sync zwischen Fenstern; Geometrie `k2-texte-schreibtisch-board-geom`. Route + **`TexteSchreibtischBoardPage.tsx`**, **`navigation.texteSchreibtischBoard`**. `tsc -b` grün. **Nächster Schritt:** Commit + Push (Build beim Push).
+
+**Letzter Stand:** 24.03.26 – **Texte-Schreibtisch – Mitte des Tischs (tägliche Arbeit):** Oben auf der Seite: **Gerade daran** mit Auto-Speicher (nur dieses Gerät), **Ablegen** ins Archiv, **Mitte leeren**, **Vorschau**, **Bild holen** → Admin Design, **Datei** / Drag&Drop (Namen + Text), **Notizen**, **Kopieren**, **Versenden** (mailto). Ablage mit „Zur Mitte“ / „Weg“. `TexteSchreibtischPage.tsx`. Tests + Build grün.
+
 **Letzter Stand:** 24.03.26 – **Texte-Schreibtisch (Vision Schreibtisch):** Eigene große Seite **`/projects/k2-galerie/texte-schreibtisch`** – Bereiche wie Zonen auf dem Tisch, Entwürfe als **Zettel-Karten** (Farbbalken, leichte Drehung), nicht als Navigationsliste. Smart Panel: **🪑 Texte-Schreibtisch** unter Schnellzugriff; **📋 Kompass als Tabelle** klein darunter. DevView-Tab, `navigation.texteSchreibtisch`, `TexteSchreibtischPage.tsx`. Tests + Build grün. **Nächster Schritt:** Push + Georg im Browser ansehen.
 
 **Letzter Stand:** 24.03.26 – **Smart Panel: Texte-Kompass oben:** Direkt unter „Schnellzugriff“ (immer sichtbar). Klick setzt **`?page=handbuch&doc=24-TEXTE-BRIEFE-KOMPASS.md`** + öffnet Handbuch (vorher fehlte `doc` in der APf). Vermächtnis: Hinweis + Zentrale Themen/Notfall ebenfalls per `openTeamHandbuchDoc`. Commit: `edf7967`; Push: Git-Button.
