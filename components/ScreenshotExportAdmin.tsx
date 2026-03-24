@@ -11613,7 +11613,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   if (!f) return
                   setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
                   try {
-                    const dataUrl = await compressImageForStorage(f, { context: 'pageHero' })
+                    // Aushängeschild: bewusst schärfer als Standard-Hero, aber weiterhin komprimiert.
+                    const dataUrl = await compressImageForStorage(f, { context: 'pageHero', maxWidth: 2200, quality: 0.88 })
                     const res = await fetch(dataUrl)
                     const blob = await res.blob()
                     const fileToUpload = new File([blob], 'entdecken-hero.jpg', { type: blob.type || 'image/jpeg' })

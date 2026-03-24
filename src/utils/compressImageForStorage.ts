@@ -13,6 +13,10 @@ export interface CompressImageOptions {
   maxWidth?: number
   /** JPEG-Qualität 0–1 (überschreibt context) */
   quality?: number
+  /** Harte Obergrenze für Ausgabegröße in Bytes */
+  maxBytes?: number
+  /** Untergrenze für adaptive Qualitätsreduktion */
+  minQuality?: number
 }
 
 /**
@@ -20,11 +24,15 @@ export interface CompressImageOptions {
  * desktop: allgemeine Admin-Vorschau, z. B. kleine Avatare.
  * pageHero: wenige große Flächen (Willkommen, Galerie-Karte, Virtual Tour, VK2-Eingangskarten) – schärfer auf Retina/Fullscreen.
  */
-const DEFAULTS: Record<CompressContext, { maxWidth: number; quality: number }> = {
+type CompressDefaults = { maxWidth: number; quality: number; maxBytes?: number; minQuality?: number }
+const DEFAULTS: Record<CompressContext, CompressDefaults> = {
   mobile: { maxWidth: 560, quality: 0.48 },
   desktop: { maxWidth: 760, quality: 0.6 },
-  /** Für Werke: stark komprimieren (localStorage, Upload) – viele Werke, schnelle Speicherung. */
-  artwork: { maxWidth: 520, quality: 0.5 },
+  /**
+   * Für Werke: sichtbar schärfer bei Vergrößerung, aber mit Größenbremse.
+   * So bleibt der Speicher stabil, obwohl die Qualität etwas angehoben ist.
+   */
+  artwork: { maxWidth: 960, quality: 0.72, maxBytes: 420_000, minQuality: 0.5 },
   pageHero: { maxWidth: 1920, quality: 0.82 }
 }
 
@@ -37,10 +45,19 @@ export function compressImageForStorage(
   options: CompressImageOptions = {}
 ): Promise<string> {
   const context = options.context ?? 'desktop'
-  const { maxWidth: optW, quality: optQ } = options
+  const { maxWidth: optW, quality: optQ, maxBytes: optMaxBytes, minQuality: optMinQuality } = options
   const defs = DEFAULTS[context as keyof typeof DEFAULTS] ?? DEFAULTS.desktop
   const maxWidth = optW ?? defs.maxWidth
   const quality = optQ ?? defs.quality
+  const maxBytes = optMaxBytes ?? defs.maxBytes ?? 0
+  const minQuality = optMinQuality ?? defs.minQuality ?? 0.45
+
+  const estimateBytes = (dataUrl: string) => {
+    const comma = dataUrl.indexOf(',')
+    if (comma < 0) return dataUrl.length
+    const b64 = dataUrl.slice(comma + 1)
+    return Math.floor((b64.length * 3) / 4)
+  }
 
   return new Promise((resolve, reject) => {
     const run = (dataUrl: string) => {
@@ -61,7 +78,16 @@ export function compressImageForStorage(
           return
         }
         ctx.drawImage(img, 0, 0, w, h)
-        resolve(canvas.toDataURL('image/jpeg', quality))
+        let output = canvas.toDataURL('image/jpeg', quality)
+        if (maxBytes > 0 && estimateBytes(output) > maxBytes) {
+          // Sanft reduzieren, bis die Dateigröße wieder in der sicheren Grenze liegt.
+          let q = quality
+          while (q > minQuality && estimateBytes(output) > maxBytes) {
+            q = Math.max(minQuality, q - 0.06)
+            output = canvas.toDataURL('image/jpeg', q)
+          }
+        }
+        resolve(output)
       }
       img.onerror = reject
       img.src = dataUrl
