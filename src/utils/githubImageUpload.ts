@@ -150,6 +150,36 @@ function virtualTourBlobPathname(subfolder: 'k2' | 'oeffentlich'): string {
   return subfolder === 'oeffentlich' ? 'oeffentlich/site-virtual-tour.mp4' : 'k2/site-virtual-tour.mp4'
 }
 
+async function uploadVirtualTourVideoViaBlob(
+  file: File,
+  subfolder: 'k2' | 'oeffentlich',
+  onStatus?: (msg: string) => void
+): Promise<string> {
+  const { upload } = await import('@vercel/blob/client')
+  const pathname = virtualTourBlobPathname(subfolder)
+  onStatus?.('Video wird hochgeladen…')
+  try {
+    const blob = await upload(pathname, file, {
+      access: 'public',
+      handleUploadUrl: '/api/blob-handle-virtual-tour',
+      contentType: file.type || 'video/mp4',
+      multipart: true,
+    })
+    const url = blob?.url?.trim()
+    if (!url) throw new Error('Keine Blob-URL nach Upload')
+    onStatus?.('✅ Video gespeichert – in der Galerie abspielbar.')
+    return url
+  } catch (e) {
+    const raw = e instanceof Error ? e.message : String(e)
+    if (/Failed to\s+retrieve the client token|retrieve the client token/i.test(raw)) {
+      throw new Error(
+        'Video-Server (Blob) antwortet nicht – in Vercel: Storage → Blob anlegen, BLOB_READ_WRITE_TOKEN für Production prüfen, neu deployen.'
+      )
+    }
+    throw e instanceof Error ? e : new Error(raw)
+  }
+}
+
 /** Lädt ein Video hoch: lokal mit Token → GitHub (Repo-Pfad /img/…); sonst → Vercel Blob (HTTPS-URL).
  *  subfolder: 'k2' | 'oeffentlich' – für ök2-Demo dauerhafte URL statt blob (blob ist nur session-gebunden). */
 export async function uploadVideoToGitHub(
@@ -170,29 +200,7 @@ export async function uploadVideoToGitHub(
         'Lokal ohne GitHub-Token: Video auf k2-galerie.vercel.app hochladen, oder VITE_GITHUB_TOKEN in .env setzen (nur Dev), oder „vercel dev“ für Blob-API.'
       )
     }
-    const { upload } = await import('@vercel/blob/client')
-    const pathname = virtualTourBlobPathname(subfolder)
-    onStatus?.('Video wird hochgeladen…')
-    try {
-      const blob = await upload(pathname, file, {
-        access: 'public',
-        handleUploadUrl: '/api/blob-handle-virtual-tour',
-        contentType: file.type || 'video/mp4',
-        multipart: true,
-      })
-      const url = blob?.url?.trim()
-      if (!url) throw new Error('Keine Blob-URL nach Upload')
-      onStatus?.('✅ Video gespeichert – in der Galerie abspielbar.')
-      return url
-    } catch (e) {
-      const raw = e instanceof Error ? e.message : String(e)
-      if (/Failed to\s+retrieve the client token|retrieve the client token/i.test(raw)) {
-        throw new Error(
-          'Video-Server (Blob) antwortet nicht – in Vercel: Storage → Blob anlegen, BLOB_READ_WRITE_TOKEN für Production prüfen, neu deployen.'
-        )
-      }
-      throw e instanceof Error ? e : new Error(raw)
-    }
+    return uploadVirtualTourVideoViaBlob(file, subfolder, onStatus)
   }
 
   onStatus?.('Video wird vorbereitet…')
@@ -245,7 +253,12 @@ export async function uploadVideoToGitHub(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error((err as { message?: string }).message || `Upload fehlgeschlagen (${res.status})`)
+    const msg = (err as { message?: string }).message || `Upload fehlgeschlagen (${res.status})`
+    if (/bad credentials|unauthorized|forbidden|cors|failed to fetch/i.test(msg)) {
+      onStatus?.('GitHub-Zugang abgelehnt – wechsle auf Blob…')
+      return uploadVirtualTourVideoViaBlob(file, subfolder, onStatus)
+    }
+    throw new Error(msg)
   }
 
   onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
