@@ -167,6 +167,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
 
     try {
+      const vercelDashboardUrl = 'https://vercel.com/dashboard'
       const checks = await Promise.allSettled([
         withTimeout('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now()),
         withTimeout('https://k2-galerie.vercel.app/api/build-info?t=' + Date.now()),
@@ -197,7 +198,13 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       }))
 
       if (source === 'manual') {
-        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}`)
+        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}\n\nVercel Dashboard:\n${vercelDashboardUrl}`)
+        if (!allGood) {
+          const openDashboard = window.confirm('Soll ich das Vercel-Dashboard jetzt direkt öffnen?')
+          if (openDashboard) {
+            window.open(vercelDashboardUrl, '_blank', 'noopener,noreferrer')
+          }
+        }
       }
     } catch (err) {
       setDeployHealth((prev) => ({
