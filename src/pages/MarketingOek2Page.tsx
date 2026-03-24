@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
@@ -16,7 +16,7 @@ import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsU
 
 /** Einheitliche Eröffnungs-URLs (wie in docs/MARKETING-EROEFFNUNG-K2-OEK2.md Abschnitt Links & QR) */
 const URL_K2_GALERIE = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].galerie}`
-const URL_MUSTER_WILLKOMMEN = `${BASE_APP_URL}${WILLKOMMEN_ROUTE}`
+const URL_MUSTER_EINGANGSTOR = `${BASE_APP_URL}${OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}`
 const URL_VK2 = `${BASE_APP_URL}${PROJECT_ROUTES.vk2.home}`
 
 const MOK2_SLOGAN_KEY = 'k2-mok2-werbeslogan'
@@ -127,6 +127,12 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
   /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes). Alle QR/Links „für Michael“ zeigen darauf – nie auf die Galerie. */
   const pilotSchreibenAufHandyUrl = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const urlK2GalerieLive = buildQrUrlWithBust(URL_K2_GALERIE, qrVersionTs)
+  const urlMusterEingangstorLive = buildQrUrlWithBust(URL_MUSTER_EINGANGSTOR, qrVersionTs)
+  const urlVk2Live = buildQrUrlWithBust(URL_VK2, qrVersionTs)
+  /** Kompass + Kampagne: volle URLs für PDF/Druck und Weiterleitung (Mail, Messenger) */
+  const urlTexteBriefeKompass = `${BASE_APP_URL}/k2team-handbuch?doc=24-TEXTE-BRIEFE-KOMPASS.md`
+  const urlKampagneMarketingStrategieLive = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie}`
   const [pilotHandyLinkQrUrl, setPilotHandyLinkQrUrl] = useState('')
   useEffect(() => {
     if (!pilotSchreibenAufHandyUrl.startsWith('http')) return
@@ -273,7 +279,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-lizenz-pakete-aussen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz-Pakete für Außen</strong> (Werbung, Pitch, Flyer)</a></li>
             <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform – K2-Familie)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
-            <li><Link to={WILLKOMMEN_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Willkommensseite</strong> (Zugangsbereich, AGB-Bestätigung)</Link></li>
+            <li><Link to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Eingangstor</strong> (Zugangsbereich, Demo-Einstieg)</Link></li>
             <li><Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>11. K2 Softwareentwicklung</strong> (Sicherheit, Vor Veröffentlichung, Auth, RLS)</Link></li>
             <li><a href="#mok2-12" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>12. Musterbilder für die ök2-Galerie</strong> (zum Einfügen)</a></li>
@@ -789,9 +795,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Links &amp; QR – einheitlich für alle Materialien</h3>
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Diese URLs überall verwenden; QR für dieselben Adressen (z. B. in APf/Eröffnung).</p>
           <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.6 }}>
-            <li><strong>K2 Galerie:</strong>{' '}<a href={URL_K2_GALERIE} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_K2_GALERIE}</a></li>
-            <li><strong>Demo / Willkommen (ök2):</strong>{' '}<a href={URL_MUSTER_WILLKOMMEN} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_WILLKOMMEN}</a></li>
-            <li><strong>VK2:</strong>{' '}<a href={URL_VK2} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
+            <li><strong>K2 Galerie:</strong>{' '}<a href={urlK2GalerieLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_K2_GALERIE}</a></li>
+            <li><strong>Demo / Eingangstor (ök2):</strong>{' '}<a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_EINGANGSTOR}</a></li>
+            <li><strong>VK2:</strong>{' '}<a href={urlVk2Live} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
           </ul>
         </div>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}><strong>Medienstudio K2:</strong> <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/MEDIENSTUDIO-K2.md</code> – Presse-Standard, Medienkit, Redaktionsplan. Ablauf: PRESSEARBEIT-STANDARD · Verteiler: MEDIENVERTEILER-EROEFFNUNG.</p>
@@ -832,7 +838,56 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.75)' }}>Eintrag: Name, Kurzbeschreibung, Adresse, Website, Öffnungszeiten, Kontakt.</p>
         </div>
         <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)' }}><strong>Braucht dich:</strong> <strong>2</strong> Google Business anlegen · <strong>3</strong> Social Bio/Post (Doc §3) · <strong>6</strong> Presse versenden (Vorlage oben) · <strong>7</strong> Verzeichnisse eintragen (Liste oben).</p>
-        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.88)' }}><strong>Kommunikations-Vorlagen (Phase 1):</strong> Ansprache Künstler:in/Verein, Flyer/Handout, E-Mail (nach Kauf, Einladung) – alle als bearbeitbare Dokumente in der <strong>Kampagne</strong> hinterlegt. Einstieg: <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md</code> · Kampagne-Index: <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/kampagne-marketing-strategie/00-INDEX.md</code> → Abschnitt „Kommunikations-Vorlagen“.</p>
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            background: 'rgba(95,251,241,0.08)',
+            borderRadius: '8px',
+            border: '1px solid rgba(95,251,241,0.25)',
+            marginTop: '0.75rem',
+            breakInside: 'avoid' as const,
+            pageBreakInside: 'avoid' as const,
+          }}
+        >
+          <h3 style={{ fontSize: '1rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>
+            Texte &amp; Briefe – Kompass (Druck, PDF, Weiterleitung)
+          </h3>
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.88)' }}>
+            Eine Schnellwahl: welches Dokument für welchen Anlass. Pflege zentral in{' '}
+            <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/</code>, öffentlicher Spiegel mit{' '}
+            <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>npm run sync:texte-oeffentlich</code>.
+            Kommunikations-Vorlagen Phase 1 siehe Struktur-Dokument und Kampagne unten.
+          </p>
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.78)' }}>
+            <strong>Zum Kopieren / E-Mail / PDF</strong> – volle Adressen (wie bei Links &amp; QR):
+          </p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
+            <li>
+              <strong>Texte &amp; Briefe Kompass (Handbuch):</strong>{' '}
+              <a href={urlTexteBriefeKompass} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {urlTexteBriefeKompass}
+              </a>
+              {' · '}
+              <Link to="/k2team-handbuch?doc=24-TEXTE-BRIEFE-KOMPASS.md" style={{ color: '#5ffbf1', textDecoration: 'underline', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                in der App öffnen
+              </Link>
+            </li>
+            <li>
+              <strong>Kampagne Marketing &amp; Strategie (App):</strong>{' '}
+              <a href={urlKampagneMarketingStrategieLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>
+                {urlKampagneMarketingStrategieLive}
+              </a>
+              {' · '}
+              <Link to={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} style={{ color: '#5ffbf1', textDecoration: 'underline', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                in der App öffnen
+              </Link>
+            </li>
+            <li>
+              <strong>Vorlagen-Struktur (Repo):</strong>{' '}
+              <code style={{ fontSize: '0.82em', color: '#5ffbf1' }}>docs/KOMMUNIKATION-DOKUMENTE-STRUKTUR.md</code>
+            </li>
+          </ul>
+        </div>
       </section>
       {/* Eröffnung K2 + ök2 + VK2 – Marketinglinie, gemeinsame Lounge */}
       <section id="mok2-eroeffnung-k2-oek2" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
@@ -858,8 +913,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)' }}>Diese URLs in Einladung, Presse, Social und Lounge verwenden; QR-Codes für dieselben Adressen generieren.</p>
           <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.85rem', lineHeight: 1.6 }}>
             <li><strong>Zur K2 Galerie:</strong>{' '}<a href={URL_K2_GALERIE} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_K2_GALERIE}</a></li>
-            <li><strong>Zu den Musterseiten / Demo (ök2):</strong>{' '}<a href={URL_MUSTER_WILLKOMMEN} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_WILLKOMMEN}</a></li>
-            <li><strong>Zur Vereinsplattform VK2:</strong>{' '}<a href={URL_VK2} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
+            <li><strong>Zu den Musterseiten / Demo (ök2):</strong>{' '}<a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_MUSTER_EINGANGSTOR}</a></li>
+            <li><strong>Zur Vereinsplattform VK2:</strong>{' '}<a href={urlVk2Live} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', wordBreak: 'break-all' }}>{URL_VK2}</a></li>
           </ul>
         </div>
         <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)' }}>
@@ -923,7 +978,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h3 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '1rem 0 0.5rem', borderBottom: '1px solid rgba(95,251,241,0.2)', paddingBottom: '0.25rem' }}>4. QR-Strategie</h3>
         <ul style={{ margin: 0, paddingLeft: '1.2em', fontSize: '0.88rem', lineHeight: 1.6, color: 'rgba(255,255,255,0.9)' }}>
           <li><strong>Lokal (Tasche/Flyer K2-Seite):</strong> QR → K2 Galerie / Willkommen / Eröffnung ({URL_K2_GALERIE}).</li>
-          <li><strong>Großer Markt (ök2-Seite oder reine ök2-Flyer):</strong> QR → nur Demo / Entdecken ({URL_MUSTER_WILLKOMMEN}) – kein Link zur physischen Galerie.</li>
+          <li><strong>Großer Markt (ök2-Seite oder reine ök2-Flyer):</strong> QR → nur Demo / Entdecken ({URL_MUSTER_EINGANGSTOR}) – kein Link zur physischen Galerie.</li>
         </ul>
         <p style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>Diese Entwürfe in den Modals (Presse, Flyer, Plakat, Social) verwenden: Abschnitt kopieren, in das jeweilige Modal einfügen, QR und Bilder aus der App ergänzen.</p>
       </section>
@@ -944,10 +999,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </li>
           <li>
             <strong>Landing / CTA:</strong> Eine klare Einstiegs-URL für alle Texte (Flyer, Social, E-Mail-Signatur).{' '}
-            <a href={`${BASE_APP_URL}${WILLKOMMEN_ROUTE}`} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>
-              {BASE_APP_URL}{WILLKOMMEN_ROUTE}
+            <a href={urlMusterEingangstorLive} target="_blank" rel="noopener noreferrer" style={{ color: '#5ffbf1', fontWeight: 600 }}>
+              {BASE_APP_URL}{OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
             </a>
-            {' '}(Willkommensseite – Demo, Vorschau, Lizenz anfragen).
+            {' '}(Eingangstor – Demo, Vorschau, Lizenz anfragen).
           </li>
         </ol>
       </section>
