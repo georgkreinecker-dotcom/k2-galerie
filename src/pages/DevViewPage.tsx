@@ -65,6 +65,7 @@ function getPersistentBoolean(key: string): boolean {
 }
 
 type ViewMode = 'mobile' | 'tablet' | 'desktop' | 'split'
+type DeployHealthState = 'unknown' | 'ok' | 'stale' | 'missing_api' | 'error'
 
 type PageSection = 
   | { id: string; name: string; icon: string; scrollTo: string }
@@ -76,6 +77,17 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
   const [isPublishing, setIsPublishing] = useState(false)
+  const [deployHealth, setDeployHealth] = useState<{
+    state: DeployHealthState
+    text: string
+    details: string
+    serverTimestamp: number | null
+  }>({
+    state: 'unknown',
+    text: 'Stand noch nicht geprüft',
+    details: 'Bitte einmal "Jetzt prüfen" klicken.',
+    serverTimestamp: null
+  })
   
   // WICHTIG: publishMobile Funktion muss außerhalb des useEffect definiert werden
   // damit sie von Event-Listenern aufgerufen werden kann
@@ -136,6 +148,82 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       alert('⚠️ Vercel-Check Fehler:\n\n' + (error instanceof Error ? error.message : String(error)))
     }
   }
+
+  const checkDeployAmpel = async () => {
+    try {
+      setDeployHealth((prev) => ({
+        ...prev,
+        text: 'Prüfe aktuellen Stand…',
+        details: 'Vergleiche lokalen Build mit Vercel.'
+      }))
+
+      const [buildInfoRes, blobApiOptionsRes] = await Promise.all([
+        fetch('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now(), { cache: 'no-store' }),
+        fetch('https://k2-galerie.vercel.app/api/blob-handle-virtual-tour', { method: 'OPTIONS', cache: 'no-store' })
+      ])
+
+      const blobApiOk = blobApiOptionsRes.ok
+      if (!blobApiOk) {
+        setDeployHealth({
+          state: 'missing_api',
+          text: 'Nicht aktuell: Video-API fehlt live',
+          details: `API /api/blob-handle-virtual-tour antwortet mit ${blobApiOptionsRes.status}.`,
+          serverTimestamp: null
+        })
+        return
+      }
+
+      if (!buildInfoRes.ok) {
+        setDeployHealth({
+          state: 'error',
+          text: 'Vercel-Stand nicht lesbar',
+          details: `build-info.json antwortet mit ${buildInfoRes.status}.`,
+          serverTimestamp: null
+        })
+        return
+      }
+
+      const buildInfo = await buildInfoRes.json().catch(() => null) as { timestamp?: number; label?: string } | null
+      const serverTs = typeof buildInfo?.timestamp === 'number' ? buildInfo.timestamp : null
+      if (!serverTs) {
+        setDeployHealth({
+          state: 'error',
+          text: 'Vercel-Stand unklar',
+          details: 'build-info.json enthält keinen timestamp.',
+          serverTimestamp: null
+        })
+        return
+      }
+
+      if (serverTs >= BUILD_TIMESTAMP) {
+        setDeployHealth({
+          state: 'ok',
+          text: 'Aktuell auf Vercel',
+          details: `Server-Stand ${buildInfo?.label || 'ok'} ist gleich/neu gegenüber lokal.`,
+          serverTimestamp: serverTs
+        })
+        return
+      }
+
+      setDeployHealth({
+        state: 'stale',
+        text: 'Nicht aktuell: Push fehlt',
+        details: 'Server-Stand ist älter als dein lokaler Stand. Bitte Code-Update (Git) ausführen.',
+        serverTimestamp: serverTs
+      })
+    } catch (err) {
+      setDeployHealth({
+        state: 'error',
+        text: 'Prüfung fehlgeschlagen',
+        details: err instanceof Error ? err.message : String(err),
+        serverTimestamp: null
+      })
+    }
+  }
+
+  useEffect(() => {
+    checkDeployAmpel()
+  }, [])
   
   // Auto-Desktop für localhost
   const isLocalhost = typeof window !== 'undefined' && (
@@ -1478,6 +1566,60 @@ end tell`
         >
           {checkingVercel ? '⏳ Prüfe...' : '🔍 Vercel-Status'}
         </button>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.45rem 0.65rem',
+            borderRadius: '8px',
+            border: `1px solid ${
+              deployHealth.state === 'ok'
+                ? 'rgba(16,185,129,0.55)'
+                : deployHealth.state === 'unknown'
+                  ? 'rgba(255,255,255,0.25)'
+                  : 'rgba(239,68,68,0.55)'
+            }`,
+            background:
+              deployHealth.state === 'ok'
+                ? 'rgba(16,185,129,0.16)'
+                : deployHealth.state === 'unknown'
+                  ? 'rgba(255,255,255,0.08)'
+                  : 'rgba(239,68,68,0.14)',
+            color: '#fff',
+            maxWidth: '460px'
+          }}
+          title={deployHealth.details}
+        >
+          <span style={{ fontSize: '0.95rem' }}>
+            {deployHealth.state === 'ok' ? '🟢' : deployHealth.state === 'unknown' ? '⚪' : '🔴'}
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.05rem' }}>
+            <strong style={{ fontSize: '0.78rem', lineHeight: 1.2 }}>{deployHealth.text}</strong>
+            <span style={{ fontSize: '0.7rem', opacity: 0.9, lineHeight: 1.2 }}>{deployHealth.details}</span>
+          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              void checkDeployAmpel()
+            }}
+            style={{
+              marginLeft: '0.25rem',
+              padding: '0.3rem 0.55rem',
+              fontSize: '0.72rem',
+              borderRadius: '6px',
+              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(0,0,0,0.16)',
+              color: '#fff',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Jetzt prüfen
+          </button>
+        </div>
       </div>
 
       {/* Ansichten */}

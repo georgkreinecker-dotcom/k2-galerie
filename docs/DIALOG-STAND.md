@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 24.03.26 – **APf Deploy-Ampel eingebaut (Sicherheitsblick):** In `DevViewPage` gibt es jetzt eine feste Statusbox mit Ampel + „Jetzt prüfen“. Prüfung vergleicht lokalen Build mit `build-info.json` und prüft zusätzlich die Video-API `/api/blob-handle-virtual-tour` per OPTIONS. Zustände: **🟢 aktuell**, **🔴 Push fehlt/API fehlt/Fehler** mit klarer Ursache im Text. Tests + Build grün.
+
 **Letzter Stand:** 24.03.26 – **Video-Upload zeigte „Bad credentials“:** Ursache: In Dev mit Token lief der GitHub-Zweig und brach bei ungültigem Token ab. **Fix:** In `uploadVideoToGitHub` gibt es jetzt einen **Auto-Fallback auf Vercel Blob**, wenn GitHub `bad credentials`/`unauthorized`/`forbidden`/CORS liefert. So bleibt Video-Upload robust. Tests + Build grün.
 
 **Letzter Stand:** 24.03.26 – **Video-Upload meldete weiter „nur auf diesem Gerät“:** Ursache oft **GitHub-Zweig im Live-Bundle**, wenn **`VITE_GITHUB_TOKEN`** in Vercel gesetzt ist – **Browser → api.github.com** scheitert an **CORS**, Upload bricht ab. **Fix:** **Production** nutzt für Virtueller-Rundgang-Video **immer Vercel Blob**; GitHub nur noch **`import.meta.env.DEV` + Token**. **Fehlertexte:** Admin zeigt **konkrete Meldung** (inkl. Blob-Hinweis bei Token-Fehler). **`githubImageUpload.ts`**, **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Push:** Git-Button; **Vercel:** Storage → Blob, **BLOB_READ_WRITE_TOKEN** für Production. (Commit-Meldung: „Video-Upload: Production immer Vercel Blob …“)
