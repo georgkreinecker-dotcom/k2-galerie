@@ -66,4 +66,36 @@ describe('Veröffentlichen (POST) mit Mock', () => {
     )
     expect(hasBase64).toBe(false)
   })
+
+  it('Payload enthält pageContentGalerie mit virtualTourVideo (eiserne Schranke für Mobil-Sync)', async () => {
+    localStorage.setItem(
+      'k2-page-content-galerie',
+      JSON.stringify({
+        virtualTourVideo: 'https://blob.example.com/k2/site-virtual-tour.mp4',
+        virtualTourImage: '/img/k2/virtual-tour.jpg'
+      })
+    )
+
+    const artworks = [
+      {
+        number: '0100',
+        id: '0100',
+        title: 'Werk 100',
+        imageUrl: 'https://example.com/100.jpg',
+        updatedAt: new Date().toISOString()
+      }
+    ]
+
+    const result = await publishGalleryDataToServer(artworks)
+    expect(result.success).toBe(true)
+
+    const postCall = fetchCalls.find((c) => c.options.method === 'POST')
+    expect(postCall).toBeDefined()
+    const body = postCall?.options.body as string
+    const payload = JSON.parse(body)
+
+    expect(typeof payload.pageContentGalerie).toBe('string')
+    const pageContent = JSON.parse(payload.pageContentGalerie)
+    expect(pageContent.virtualTourVideo).toBe('https://blob.example.com/k2/site-virtual-tour.mp4')
+  })
 })
