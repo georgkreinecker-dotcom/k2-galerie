@@ -1,6 +1,13 @@
 import { useState, useRef, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+
+/** Team-Handbuch in der APf: gleicher Query-Parameter wie K2TeamHandbuchPage */
+const HANDBUCH_DOC_QUERY = 'doc' as const
+const HANDBUCH_DOC_KOMPASS = '24-TEXTE-BRIEFE-KOMPASS.md'
+const HANDBUCH_DOC_ZENTRALE_THEMEN = '16-ZENTRALE-THEMEN-FUER-NUTZER.md'
+const HANDBUCH_DOC_NOTFALL = '23-NOTFALL-CHECKLISTE.md'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE, ENTDECKEN_ROUTE } from '../config/navigation'
+import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 const GUIDE_KEY = 'k2-entdecken-guide-antworten'
 
 const WISHES_LAST_SEEN_KEY = 'k2-wishes-last-seen'
@@ -43,27 +50,11 @@ const GUIDE_WERT_LABELS: Record<string, string> = {
   email: 'E-Mail', telefon: 'Telefon', website: 'Website', galerie: 'Über Galerie',
 }
 
-/** Fremder-Modus: alle Session-/localStorage-Keys die einen "ersten Besuch" simulieren */
-const FREMDER_SESSION_KEYS = [
-  'k2-agb-accepted',
-  'k2-willkommen-name',
-  'k2-willkommen-entwurf',
-  'k2-admin-context',
-  'k2-shop-from-oeffentlich',
-  'k2-entdecken-q1',
-  'k2-entdecken-q2',
-  'k2-entdecken-guide-antworten',
-  'k2-empfehlung-offen',
-]
-
 function startFremderModus() {
   // Im iframe (Cursor Preview) kein location.href – verhindert Reload/Crash
   if (typeof window !== 'undefined' && window.self !== window.top) return
-  // Nur die relevanten Keys löschen – kein sessionStorage.clear() (würde Name-Übergabe killen)
-  FREMDER_SESSION_KEYS.forEach(k => {
-    try { sessionStorage.removeItem(k) } catch (_) {}
-    try { localStorage.removeItem(k) } catch (_) {}
-  })
+  // Einheitlicher Standard: frische ök2-Besucher-Session
+  prepareFreshOek2VisitorSession()
   // Zur Landingpage – echter Neustart
   window.location.href = ENTDECKEN_ROUTE
 }
@@ -156,6 +147,7 @@ type DiversesItem = {
 
 const DEFAULT_DIVERSES: DiversesItem[] = [
   { id: 'notizen-uebersicht', label: 'Georgs Notizen (Übersicht)', url: PROJECT_ROUTES['k2-galerie'].notizen, emoji: '📝' },
+  { id: 'august-softwarestand', label: 'Schreiben an August – Softwarestand', url: PROJECT_ROUTES['k2-galerie'].notizenAugustSoftwarestand, emoji: '🛠️' },
   { id: 'brief-august', label: 'Brief an August', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust, emoji: '✉️' },
   { id: 'brief-andreas', label: 'Brief an Andreas', url: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas, emoji: '✉️' },
   { id: 'einladung-eroeffnung-24', label: 'Einladung Freunde – Eröffnung 24.–26.04. · Mail + WhatsApp', url: PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24, emoji: '📅' },
@@ -168,7 +160,7 @@ function loadDiverses(): DiversesItem[] {
     if (v) {
       const items: DiversesItem[] = JSON.parse(v)
       // Fehlt "Brief an Andreas" oder ist die Liste kürzer als der Standard → auf Standard setzen (damit neue Einträge immer erscheinen)
-      if (!items.some((x) => x.id === 'brief-andreas') || !items.some((x) => x.id === 'einladung-eroeffnung-24') || items.length < DEFAULT_DIVERSES.length) {
+      if (!items.some((x) => x.id === 'august-softwarestand') || !items.some((x) => x.id === 'brief-andreas') || !items.some((x) => x.id === 'einladung-eroeffnung-24') || items.length < DEFAULT_DIVERSES.length) {
         saveDiverses(DEFAULT_DIVERSES)
         return DEFAULT_DIVERSES
       }
@@ -193,6 +185,27 @@ const K2_FAMILIE_HOME = PROJECT_ROUTES['k2-familie'].home
 
 export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps) {
   const navigate = useNavigate()
+  const [, setSearchParams] = useSearchParams()
+
+  /** In der APf: URL mit page=handbuch & doc=… setzen, sonst öffnet sich der Kompass nicht. */
+  const openTeamHandbuchDoc = (docFile: string) => {
+    if (onNavigate) {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('page', 'handbuch')
+          next.set(HANDBUCH_DOC_QUERY, docFile)
+          return next
+        },
+        { replace: true }
+      )
+      onNavigate('handbuch')
+      return
+    }
+    if (typeof window !== 'undefined' && window.self === window.top) {
+      window.location.href = `/k2team-handbuch?doc=${encodeURIComponent(docFile)}`
+    }
+  }
   // Aktiven Button per URL erkennen – überschreibt den prop wenn Seite direkt per URL geöffnet wurde
   const [browserPath, setBrowserPath] = useState(() => typeof window !== 'undefined' ? window.location.pathname : '')
   useEffect(() => {
@@ -213,6 +226,12 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
   }, [browserPath, currentPage])
 
   const nav = (page: string, url: string) => {
+    if (page === 'galerie-oeffentlich' || url.includes('/galerie-oeffentlich')) {
+      prepareFreshOek2VisitorSession()
+      if (onNavigate) onNavigate('entdecken')
+      else if (typeof window !== 'undefined' && window.self === window.top) window.location.href = ENTDECKEN_ROUTE
+      return
+    }
     if (onNavigate) onNavigate(page)
     else if (typeof window !== 'undefined' && window.self === window.top) window.location.href = url
   }
@@ -764,8 +783,9 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                     ) : (
                       <Link to="/k2team-handbuch" style={{ display: 'block', width: '100%', padding: '0.55rem 0.75rem', marginBottom: '0.4rem', background: 'rgba(95,251,241,0.1)', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '8px', color: '#5ffbf1', fontWeight: 600, fontSize: '0.85rem', textDecoration: 'none', fontFamily: 'inherit', textAlign: 'center', boxSizing: 'border-box' }}>🧠 Team-Handbuch (Vermächtnis)</Link>
                     )}
-                    <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=16-ZENTRALE-THEMEN-FUER-NUTZER.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
-                    <button type="button" onClick={() => nav('handbuch', '/k2team-handbuch?doc=23-NOTFALL-CHECKLISTE.md')} style={{ width: '100%', padding: '0.5rem 0.7rem', marginTop: '0.35rem', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '6px', color: '#fca5a5', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>🚨 Notfall-Checkliste</button>
+                    <p style={{ margin: '0.35rem 0 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>Texte-Kompass: oben unter „Schnellzugriff“.</p>
+                    <button type="button" onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_ZENTRALE_THEMEN)} style={{ width: '100%', padding: '0.5rem 0.7rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '6px', color: '#86efac', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>📌 Zentrale Themen</button>
+                    <button type="button" onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_NOTFALL)} style={{ width: '100%', padding: '0.5rem 0.7rem', marginTop: '0.35rem', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.35)', borderRadius: '6px', color: '#fca5a5', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', fontFamily: 'inherit' }}>🚨 Notfall-Checkliste</button>
                     <button
                       type="button"
                       onClick={() => {
