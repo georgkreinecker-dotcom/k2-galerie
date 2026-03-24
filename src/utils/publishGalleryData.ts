@@ -86,12 +86,20 @@ export async function publishGalleryDataToServer(
   // Nur URLs mitsenden – keine data: (Base64), sonst wird der Payload um MB groß (Speicher/Blob-Limit)
   const toUrlOrEmpty = (v: string | undefined): string => {
     if (!v || typeof v !== 'string') return ''
-    if (v.startsWith('data:')) return ''
+    if (v.startsWith('data:') || v.startsWith('blob:')) return ''
     return v
   }
   const welcome = (pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || ''
   const galerieCard = (pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || ''
   const virtualTour = (pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || ''
+  const virtualTourVideo = (pageContent?.virtualTourVideo as string) || ''
+  const pageContentForServer = {
+    ...pageContent,
+    welcomeImage: toUrlOrEmpty(pageContent?.welcomeImage as string),
+    galerieCardImage: toUrlOrEmpty(pageContent?.galerieCardImage as string),
+    virtualTourImage: toUrlOrEmpty(pageContent?.virtualTourImage as string),
+    virtualTourVideo: toUrlOrEmpty(virtualTourVideo),
+  }
   const data = {
     martina: getItemSafe('k2-stammdaten-martina', {}),
     georg: getItemSafe('k2-stammdaten-georg', {}),
@@ -104,6 +112,7 @@ export async function publishGalleryDataToServer(
     documents: (loadDocuments('k2') as any[]).slice(0, 100),
     designSettings: getItemSafe('k2-design-settings', {}),
     pageTexts: getItemSafe('k2-page-texts', null),
+    pageContentGalerie: JSON.stringify(pageContentForServer),
     version: Date.now(),
     buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
     exportedAt: new Date().toISOString(),
