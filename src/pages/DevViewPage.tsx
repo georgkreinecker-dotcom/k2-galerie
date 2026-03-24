@@ -66,6 +66,7 @@ function getPersistentBoolean(key: string): boolean {
 
 type ViewMode = 'mobile' | 'tablet' | 'desktop' | 'split'
 type DeployHealthState = 'unknown' | 'ok' | 'stale' | 'missing_api' | 'error'
+const VERCEL_DASHBOARD_URL = 'https://vercel.com/dashboard'
 
 type PageSection = 
   | { id: string; name: string; icon: string; scrollTo: string }
@@ -167,7 +168,6 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     }
 
     try {
-      const vercelDashboardUrl = 'https://vercel.com/dashboard'
       const checks = await Promise.allSettled([
         withTimeout('https://k2-galerie.vercel.app/build-info.json?t=' + Date.now()),
         withTimeout('https://k2-galerie.vercel.app/api/build-info?t=' + Date.now()),
@@ -198,11 +198,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       }))
 
       if (source === 'manual') {
-        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}\n\nVercel Dashboard:\n${vercelDashboardUrl}`)
+        alert(`${allGood ? '✅' : '⚠️'} Ein-Klick Diagnose\n\n${details.join('\n')}\n\nVercel Dashboard:\n${VERCEL_DASHBOARD_URL}`)
         if (!allGood) {
           const openDashboard = window.confirm('Soll ich das Vercel-Dashboard jetzt direkt öffnen?')
           if (openDashboard) {
-            window.open(vercelDashboardUrl, '_blank', 'noopener,noreferrer')
+            window.open(VERCEL_DASHBOARD_URL, '_blank', 'noopener,noreferrer')
           }
         }
       }
@@ -287,7 +287,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setDeployHealth({
         state: 'stale',
         text: 'Nicht aktuell: Push fehlt',
-        details: 'Server-Stand ist älter als dein lokaler Stand. Bitte Code-Update (Git) ausführen.',
+        details: 'Server-Stand ist älter als dein lokaler Stand. Ein-Klick Diagnose starten und bei Bedarf Vercel direkt öffnen.',
         serverTimestamp: serverTs
       })
       if (!autoDiagnoseLockRef.current) {
@@ -300,7 +300,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setDeployHealth({
         state: 'error',
         text: 'Prüfung fehlgeschlagen',
-        details: err instanceof Error ? err.message : String(err),
+        details: `${err instanceof Error ? err.message : String(err)} – Ein-Klick Diagnose nutzen.`,
         serverTimestamp: null
       })
       if (!autoDiagnoseLockRef.current) {
@@ -1657,6 +1657,16 @@ end tell`
         >
           {diagnoseRunning ? '⏳ Diagnose…' : '🩺 Ein-Klick Diagnose'}
         </button>
+        <span
+          style={{
+            fontSize: '0.72rem',
+            color: 'rgba(255,255,255,0.75)',
+            maxWidth: '280px',
+            lineHeight: 1.2
+          }}
+        >
+          Sportwagenmodus QS: Ein Klick prüft alles. Bei Rot startet Fehlersuche und führt direkt zu Vercel.
+        </span>
         <div
           style={{
             display: 'flex',
@@ -1709,6 +1719,28 @@ end tell`
             }}
           >
             Jetzt prüfen
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              window.open(VERCEL_DASHBOARD_URL, '_blank', 'noopener,noreferrer')
+            }}
+            style={{
+              marginLeft: '0.15rem',
+              padding: '0.3rem 0.55rem',
+              fontSize: '0.72rem',
+              borderRadius: '6px',
+              border: '1px solid rgba(255,255,255,0.3)',
+              background: 'rgba(0,0,0,0.16)',
+              color: '#fff',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}
+            title="Vercel Dashboard direkt öffnen"
+          >
+            Vercel öffnen
           </button>
         </div>
       </div>
