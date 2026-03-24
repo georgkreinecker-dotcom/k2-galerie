@@ -179,6 +179,16 @@ Damit wir als Team **maximale Lernkurve** erreichen und darauf **aufbauen bzw. s
 
 Wer später in den Raum kommt, soll verstehen, *warum* hier so gearbeitet wurde und was den Hebel ausmacht – nicht nur *dass* etwas gebaut wurde. Das ist Teil des Vermächtnisses.
 
+### Sportwagenmodus QS als persönlicher Vermächtnis-Kern (24.03.26)
+
+Der Sportwagenmodus-QS ist nicht nur Technik. Er ist Teil von Georgs persönlicher Arbeit und damit Teil seines Vermächtnisses.
+
+- Er ist an die APf-Arbeitsweise gekoppelt (Ein-Klick Diagnose, klare Ampel, direkter Weg in Vercel).
+- Er ist als zentraler Prozess verankert (`qs:sportwagen`), damit auch nach Wochen ohne Detailwissen mit einem Klick klar ist, was los ist.
+- Er ist kein beliebig kopierbares „Standardrezept“. Entscheidungshoheit über Weitergabe und Weiterarbeit liegt bei Georg.
+
+Referenz: `docs/SPORTWAGENMODUS-QS-ZENTRAL.md`.
+
 Wer auch immer diesen Raum betritt: er findet Wissen, Werte, Denkweise.
 Er sieht wie Georg gearbeitet hat. Wie er gedacht hat. Was ihm wichtig war.
 Das ist das Tiefste was man hinterlassen kann.
