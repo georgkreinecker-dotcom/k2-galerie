@@ -28,6 +28,9 @@ jobs:
       - name: Lint (ESLint)
         run: npm run lint
 
+      - name: Prozesssicherheit (harte Schranken)
+        run: npm run guard:all
+
       # Vollständiger QS-Lauf wie vor lokalem Commit: test + write-build-info + tsc + vite build
       - name: Tests und Build (npm run build)
         run: npm run build

@@ -58,6 +58,16 @@ async function checkGalleryDataApi() {
   ok('api/gallery-data', 'antwortet mit JSON')
 }
 
+async function checkBuildInfoApi() {
+  const res = await fetch(`${PRODUCTION_BASE}/api/build-info`, { cache: 'no-store' })
+  if (!res.ok) return fail('api/build-info erreichbar', `HTTP ${res.status}`)
+  const data = await res.json()
+  if (!data?.timestamp && !data?.buildTimestamp) {
+    return fail('api/build-info Inhalt', 'kein timestamp/buildTimestamp gefunden')
+  }
+  ok('api/build-info', 'antwortet mit Build-Daten')
+}
+
 async function checkBlobFunctionAlive() {
   const res = await fetch(`${PRODUCTION_BASE}/api/blob-handle-virtual-tour`, {
     method: 'POST',
@@ -92,6 +102,7 @@ async function run() {
   checkVercelConfigShape()
   await checkIndexAndCacheHeaders()
   await checkBuildInfo()
+  await checkBuildInfoApi()
   await checkGalleryDataApi()
   await checkBlobFunctionAlive()
 
