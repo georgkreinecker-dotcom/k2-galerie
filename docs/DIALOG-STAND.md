@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 24.03.26 – **Entdecken „Entdecken prüfen“ = altes Bild:** Die JPG auf dem Server ist erst **nach Vercel-Deploy** neu; `?v=` umgeht nur Browser-Cache. **Fix:** nach Upload komprimiertes Bild als **localStorage-Overlay** (`k2-entdecken-hero-dataurl-overlay`, max. 48 h) + **`getEntdeckenHeroDisplayUrl`** in **EntdeckenPage** und Admin-Vorschau; **`uploadEntdeckenHeroImage`** liefert `{ path, dataUrl }`. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+**Letzter Stand:** 24.03.26 – **Entdecken „Entdecken prüfen“ = altes Bild:** Die JPG auf dem Server ist erst **nach Vercel-Deploy** neu; `?v=` umgeht nur Browser-Cache. **Fix:** nach Upload komprimiertes Bild als **localStorage-Overlay** (`k2-entdecken-hero-dataurl-overlay`, max. 48 h) + **`getEntdeckenHeroDisplayUrl`** in **EntdeckenPage** und Admin-Vorschau; **`uploadEntdeckenHeroImage`** liefert `{ path, dataUrl }`. Tests + Build grün. **Commit:** `ac830b9` ✅ auf GitHub.
 
 **Letzter Stand:** 24.03.26 – **Entdecken „Bild wählen“: sofort Vorschau:** Bisher zeigte die Miniatur erst die **Server-URL** – während des Uploads wirkte es wie **keine Vorschau**. **Fix:** direkt nach Dateiwahl **`URL.createObjectURL`** → State **`entdeckenHeroLocalPreview`**; nach erfolgreichem Upload **`revokeObjectURL`** und Wechsel auf `?v=…`-Pfad; Vorschau **140×88** px; Text **„Lokal gewählt – wird hochgeladen …“**. Bei Fehler bleibt die **lokale** Vorschau. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
 
