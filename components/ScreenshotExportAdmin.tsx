@@ -2643,9 +2643,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         if (!tenant.isOeffentlich) localStorage.removeItem('k2-last-publish-signature')
         setVideoUploadStatus('done')
         setVideoUploadMsg(tenant.isOeffentlich ? '✅ Video gespeichert – bleibt in der Galerie sichtbar.' : '✅ Video hochgeladen – in ca. 2 Min. überall sichtbar.')
-      } catch {
+      } catch (err) {
         setVideoUploadStatus('error')
-        setVideoUploadMsg('Upload fehlgeschlagen – Video nur auf diesem Gerät sichtbar.')
+        const detail = err instanceof Error ? err.message.trim() : String(err)
+        setVideoUploadMsg(
+          [detail && detail.length < 320 ? detail : null, 'Video bleibt vorerst nur auf diesem Gerät (blob/Vorschau).']
+            .filter(Boolean)
+            .join(' ')
+        )
       }
     } catch {
       setVideoUploadStatus('error')
@@ -11711,8 +11716,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             const videoUrl = await uploadVideoToGitHub(videoFile, 'virtual-tour.mp4', (msg) => setImageUploadStatus('⏳ ' + msg), subfolder)
                             contentToSave = { ...contentToSave, virtualTourVideo: videoUrl }
                             setImageUploadStatus(null)
-                          } catch (_) {
-                            setImageUploadStatus('⚠️ Video-Upload fehlgeschlagen – nur lokal')
+                          } catch (uploadErr) {
+                            const d = uploadErr instanceof Error ? uploadErr.message : String(uploadErr)
+                            setImageUploadStatus(`⚠️ Video-Upload: ${d.slice(0, 220)}`)
                             setTimeout(() => setImageUploadStatus(null), 5000)
                           }
                         }

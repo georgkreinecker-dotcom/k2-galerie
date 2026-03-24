@@ -160,27 +160,39 @@ export async function uploadVideoToGitHub(
 ): Promise<string> {
   const token = getToken()
 
-  // Production / Handy: kein VITE_* Token im Bundle → Vercel Blob (API /api/blob-handle-virtual-tour).
-  // Reiner Vite-Devserver hat diese API nicht → ohne Token: klare Meldung (oder .env mit Token = GitHub-Zweig oben).
-  if (!token) {
+  // Nur im Vite-Devserver mit PAT: GitHub (optional). In Production niemals: Browser → api.github.com scheitert an CORS;
+  // außerdem darf kein VITE_*-Token ins Live-Bundle – dann wäre der GitHub-Zweig ohnehin falsch.
+  const useGitHubFromBrowser = import.meta.env.DEV && Boolean(token)
+
+  if (!useGitHubFromBrowser) {
     if (import.meta.env.DEV) {
       throw new Error(
-        'Lokal ohne GitHub-Token: Video bitte auf k2-galerie.vercel.app hochladen, oder VITE_GITHUB_TOKEN in .env setzen.'
+        'Lokal ohne GitHub-Token: Video auf k2-galerie.vercel.app hochladen, oder VITE_GITHUB_TOKEN in .env setzen (nur Dev), oder „vercel dev“ für Blob-API.'
       )
     }
     const { upload } = await import('@vercel/blob/client')
     const pathname = virtualTourBlobPathname(subfolder)
     onStatus?.('Video wird hochgeladen…')
-    const blob = await upload(pathname, file, {
-      access: 'public',
-      handleUploadUrl: '/api/blob-handle-virtual-tour',
-      contentType: file.type || 'video/mp4',
-      multipart: true,
-    })
-    const url = blob?.url?.trim()
-    if (!url) throw new Error('Keine Blob-URL nach Upload')
-    onStatus?.('✅ Video gespeichert – in der Galerie abspielbar.')
-    return url
+    try {
+      const blob = await upload(pathname, file, {
+        access: 'public',
+        handleUploadUrl: '/api/blob-handle-virtual-tour',
+        contentType: file.type || 'video/mp4',
+        multipart: true,
+      })
+      const url = blob?.url?.trim()
+      if (!url) throw new Error('Keine Blob-URL nach Upload')
+      onStatus?.('✅ Video gespeichert – in der Galerie abspielbar.')
+      return url
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e)
+      if (/Failed to\s+retrieve the client token|retrieve the client token/i.test(raw)) {
+        throw new Error(
+          'Video-Server (Blob) antwortet nicht – in Vercel: Storage → Blob anlegen, BLOB_READ_WRITE_TOKEN für Production prüfen, neu deployen.'
+        )
+      }
+      throw e instanceof Error ? e : new Error(raw)
+    }
   }
 
   onStatus?.('Video wird vorbereitet…')
