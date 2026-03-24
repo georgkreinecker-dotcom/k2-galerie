@@ -3,7 +3,10 @@
  * Ohne GitHub-Token im Browser – nutzt BLOB_READ_WRITE_TOKEN nur hier.
  * Pfad fest: k2/site-virtual-tour.mp4 | oeffentlich/site-virtual-tour.mp4
  */
-import { handleUpload } from '@vercel/blob/client'
+// WICHTIG: In Vercel-Functions wurde bei Subpath '@vercel/blob/client'
+// teils fälschlich der CJS-Pfad (client.cjs) aufgelöst.
+// Wir importieren deshalb die ESM-Datei explizit, damit die Function stabil läuft.
+import { handleUpload } from '@vercel/blob/dist/client.js'
 
 const ALLOWED = new Set(['k2/site-virtual-tour.mp4', 'oeffentlich/site-virtual-tour.mp4'])
 
