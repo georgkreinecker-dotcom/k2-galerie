@@ -18,6 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "guard:kritische-prozesse": "node scripts/guard-kritische-prozesse.mjs",
     "guard:all": "npm run test && npm run test:kritische-schranken && npm run guard:kritische-prozesse",
+    "diagnose:stand": "node scripts/diagnose-stand.mjs",
     "build": "npm run test && node scripts/write-build-info.js --inject-html && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
