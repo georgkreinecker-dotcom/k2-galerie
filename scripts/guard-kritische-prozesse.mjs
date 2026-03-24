@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs'
 
 const PRODUCTION_BASE = 'https://k2-galerie.vercel.app'
+const NO_CACHE_EXPECTED = 'no-cache'
 
 function ok(label, details = '') {
   console.log(`✅ ${label}${details ? `: ${details}` : ''}`)
@@ -22,12 +23,37 @@ async function checkBuildInfo() {
   ok('build-info.json', `${data.label}`)
 }
 
+async function checkIndexAndCacheHeaders() {
+  const urls = ['/index.html', '/build-info.json', '/gallery-data.json', '/api/gallery-data']
+  for (const path of urls) {
+    const res = await fetch(`${PRODUCTION_BASE}${path}`, { cache: 'no-store' })
+    if (!res.ok) {
+      fail(`Header-Check ${path}`, `HTTP ${res.status}`)
+      continue
+    }
+    const cacheControl = (res.headers.get('cache-control') || '').toLowerCase()
+    if (!cacheControl.includes(NO_CACHE_EXPECTED) && !path.includes('gallery-data.json')) {
+      fail(`Header-Check ${path}`, `cache-control ohne no-cache (${cacheControl || 'leer'})`)
+      continue
+    }
+    if (path.includes('/gallery-data.json') && !cacheControl.includes('no-cache')) {
+      fail(`Header-Check ${path}`, `cache-control ohne no-cache (${cacheControl || 'leer'})`)
+      continue
+    }
+    ok(`Header-Check ${path}`, cacheControl || 'ok')
+  }
+}
+
 async function checkGalleryDataApi() {
   const res = await fetch(`${PRODUCTION_BASE}/api/gallery-data`, { cache: 'no-store' })
   if (!res.ok) return fail('api/gallery-data erreichbar', `HTTP ${res.status}`)
   const data = await res.json()
   if (!data || typeof data !== 'object') {
     return fail('api/gallery-data Inhalt', 'ungültiges JSON')
+  }
+  const payloadString = JSON.stringify(data)
+  if (payloadString.includes('blob:') || payloadString.includes('data:image/')) {
+    return fail('api/gallery-data Bilddaten', 'enthaelt blob:/data:image (verboten im Server-Payload)')
   }
   ok('api/gallery-data', 'antwortet mit JSON')
 }
@@ -64,6 +90,7 @@ function checkVercelConfigShape() {
 async function run() {
   console.log('🔒 Kritische Prozess-Schranken (Live-Check)')
   checkVercelConfigShape()
+  await checkIndexAndCacheHeaders()
   await checkBuildInfo()
   await checkGalleryDataApi()
   await checkBlobFunctionAlive()
