@@ -3,25 +3,9 @@
  * Ohne GitHub-Token im Browser – nutzt BLOB_READ_WRITE_TOKEN nur hier.
  * Pfad fest: k2/site-virtual-tour.mp4 | oeffentlich/site-virtual-tour.mp4
  */
+import { handleUpload } from '@vercel/blob/dist/client.js'
+
 const ALLOWED = new Set(['k2/site-virtual-tour.mp4', 'oeffentlich/site-virtual-tour.mp4'])
-
-async function loadHandleUpload() {
-  const candidates = ['@vercel/blob/client', '@vercel/blob/dist/client.js', '@vercel/blob']
-  const errors = []
-
-  for (const spec of candidates) {
-    try {
-      const mod = await import(spec)
-      if (typeof mod?.handleUpload === 'function') return mod.handleUpload
-      errors.push(`${spec}: handleUpload fehlt`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      errors.push(`${spec}: ${msg}`)
-    }
-  }
-
-  throw new Error(`Blob SDK nicht ladbar: ${errors.join(' | ')}`)
-}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -41,7 +25,6 @@ export default async function handler(req, res) {
   if (!body || typeof body !== 'object') return res.status(400).json({ error: 'Leerer Body' })
 
   try {
-    const handleUpload = await loadHandleUpload()
     const jsonResponse = await handleUpload({
       request: req,
       body,
