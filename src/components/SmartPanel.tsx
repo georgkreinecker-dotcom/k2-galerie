@@ -374,6 +374,28 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#8fa0c9' }}>
           Schnellzugriff
         </p>
+        <button
+          type="button"
+          onClick={() => openTeamHandbuchDoc(HANDBUCH_DOC_KOMPASS)}
+          style={{
+            width: '100%',
+            marginTop: '0.65rem',
+            padding: '0.65rem 0.85rem',
+            background: 'linear-gradient(135deg, rgba(59,130,246,0.28), rgba(37,99,235,0.15))',
+            border: '1px solid rgba(96,165,250,0.55)',
+            borderRadius: '10px',
+            color: '#93c5fd',
+            fontWeight: 800,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            textAlign: 'center',
+            boxShadow: '0 0 14px rgba(59,130,246,0.12)',
+          }}
+          title="Welches Dokument für welchen Anlass - sofort im Handbuch"
+        >
+          🧭 Texte-Kompass
+        </button>
       </div>
 
       {/* ── Arbeitsmappen (Themen gebündelt) ───────────────────────────── */}
