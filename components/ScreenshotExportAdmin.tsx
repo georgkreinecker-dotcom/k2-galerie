@@ -15991,28 +15991,28 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               Kurzvariante, Vollversion, Prospekt/Flyer und Plakat Galerieeröffnung (A3): Links öffnen, im Browser als PDF drucken. Vorschau, kein Bearbeiten in der App.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Kurzvariante
               </Link>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Kurzvariante (neuer Tab)
               </a>
-              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Vollversion
               </Link>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Vollversion (neuer Tab)
               </a>
-              <Link to={'/prospekt-k2-galerie' + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <Link to={'/prospekt-k2-galerie' + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Prospekt/Flyer
               </Link>
-              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + pmTabQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Prospekt/Flyer (neuer Tab)
               </a>
-              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Plakat Galerieeröffnung (A3)
               </Link>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Plakat A3 (neuer Tab)
               </a>
             </div>
@@ -21603,6 +21603,7 @@ ${name}`
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                             <Link
                                               to={PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
+                                              onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
                                               state={{ returnTo: location.pathname + location.search }}
                                               style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
                                             >
@@ -21610,6 +21611,7 @@ ${name}`
                                             </Link>
                                             <a
                                               href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
+                                              onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
                                               target="_blank"
                                               rel="noopener noreferrer"
                                               style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
@@ -21621,25 +21623,25 @@ ${name}`
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Kurzvariante
                                               </Link>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Vollversion
                                               </Link>
-                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 In neuem Tab
                                               </a>
-                                              <Link to={'/prospekt-k2-galerie' + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <Link to={'/prospekt-k2-galerie' + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Prospekt/Flyer
                                               </Link>
-                                              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + mappeCtxQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Prospekt/Flyer (neuer Tab)
                                               </a>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Plakat Eröffnung (A3)
                                               </Link>
-                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Plakat A3 (neuer Tab)
                                               </a>
                                             </div>
