@@ -27,6 +27,7 @@ import {
 } from '../config/tenantConfig'
 import { getEntdeckenColorsFromK2Design, getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 
 const ROOT = 'flyer-k2-oek2-vierer'
 const TEAL_DARK = '#0c5c55'
@@ -65,13 +66,17 @@ const styles = `
   .${ROOT} .cell-front .front-main {
     flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: stretch;
   }
-  .${ROOT} .cell-front .thumb {
-    flex: 0 0 40%; max-width: 40%; min-height: 0; align-self: stretch;
+  .${ROOT} .cell-front .thumb-strip {
+    flex: 0 0 50%; max-width: 50%; min-height: 0; align-self: stretch;
+    display: flex; flex-direction: row; gap: 1.2mm; min-width: 0;
+  }
+  .${ROOT} .cell-front .thumb-strip .thumb {
+    flex: 1 1 0; min-width: 0; min-height: 0;
     border-radius: 2mm; overflow: hidden;
     background: #f0ebe4; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
     display: flex; align-items: center; justify-content: center;
   }
-  .${ROOT} .cell-front .thumb img {
+  .${ROOT} .cell-front .thumb-strip .thumb img {
     display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; min-height: 0;
     object-fit: contain; object-position: center;
   }
@@ -283,6 +288,33 @@ function loadStammdatenForTenant(tenant: 'k2' | 'oeffentlich'): {
   }
 }
 
+/** Ein Martina-Werk für die Flyer-Vorschau: Malerei/Grafik, K2-M-*, oder Künstler:in Martina. */
+function pickMartinaShowcaseWork(artworks: unknown[]): Record<string, unknown> | null {
+  if (!Array.isArray(artworks) || artworks.length === 0) return null
+  const withUrl = (a: Record<string, unknown>) => {
+    const u = a?.imageUrl
+    return typeof u === 'string' && u.trim().length > 0
+  }
+  const list = artworks.filter((x): x is Record<string, unknown> => {
+    if (typeof x !== 'object' || x === null) return false
+    return withUrl(x as Record<string, unknown>)
+  })
+  if (list.length === 0) return null
+  const martinaLike = (a: Record<string, unknown>) => {
+    const cat = String(a?.category || '').toLowerCase()
+    const num = String(a?.number || '')
+    const artist = String(a?.artist || '').toLowerCase()
+    if (artist.includes('martina')) return true
+    if (cat === 'malerei' || cat === 'grafik') return true
+    if (/^K2-M-/i.test(num)) return true
+    return false
+  }
+  const pool = list.filter(martinaLike)
+  const useList = pool.length ? pool : list
+  const mal = useList.find((a) => String(a?.category || '').toLowerCase() === 'malerei')
+  return mal ?? useList[0] ?? null
+}
+
 const SLOTS = [0, 1, 2, 3] as const
 
 const K2_GALERIE_PATH = PROJECT_ROUTES['k2-galerie'].galerie
@@ -303,6 +335,8 @@ export default function FlyerK2Oek2TorViererPage() {
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
   const [welcomeThumb, setWelcomeThumb] = useState('')
+  const [martinaPortraitUrl, setMartinaPortraitUrl] = useState('/img/k2/galerie-card.jpg')
+  const [martinaWerkUrl, setMartinaWerkUrl] = useState('/img/k2/werk-K2-M-0001.jpg')
   const [intro, setIntro] = useState('')
   const [galleryTitle, setGalleryTitle] = useState(() => K2_STAMMDATEN_DEFAULTS.gallery.name)
   const [stammdaten, setStammdaten] = useState(() => loadStammdatenForTenant('k2'))
@@ -369,8 +403,23 @@ export default function FlyerK2Oek2TorViererPage() {
       } else if (isMounted) {
         setWelcomeThumb('/img/k2/willkommen.jpg')
       }
+      const card = images.galerieCardImage
+      if (
+        card &&
+        typeof card === 'string' &&
+        card.trim().length > 10 &&
+        card.length < 2 * 1024 * 1024 &&
+        isMounted
+      ) {
+        setMartinaPortraitUrl(card.trim())
+      } else if (isMounted) {
+        setMartinaPortraitUrl('/img/k2/galerie-card.jpg')
+      }
     } catch {
-      if (isMounted) setWelcomeThumb('/img/k2/willkommen.jpg')
+      if (isMounted) {
+        setWelcomeThumb('/img/k2/willkommen.jpg')
+        setMartinaPortraitUrl('/img/k2/galerie-card.jpg')
+      }
     }
 
     try {
@@ -387,6 +436,23 @@ export default function FlyerK2Oek2TorViererPage() {
     }
 
     setStammdaten(loadStammdatenForTenant('k2'))
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  /** Rechtes Bild: Martina-Werk aus K2 (aufgelöste imageUrl). */
+  useEffect(() => {
+    let isMounted = true
+    readArtworksForContextWithResolvedImages(false, false)
+      .then((list) => {
+        const w = pickMartinaShowcaseWork(list)
+        const url = w?.imageUrl
+        if (isMounted && typeof url === 'string' && url.trim()) {
+          setMartinaWerkUrl(url.trim())
+        }
+      })
+      .catch(() => {})
     return () => {
       isMounted = false
     }
@@ -470,7 +536,8 @@ export default function FlyerK2Oek2TorViererPage() {
         <h1>Vierer-Flyer K2 + ök2 Eingangstor</h1>
         <p>
           <strong>Vorderseite:</strong> vier Streifen – <strong>nur echte Galerie</strong> (Name + „{K2_TAGLINE}“ aus K2-Stammdaten),
-          Einladungstext, Foto, Adresse, QR zur Galerie. <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
+          Einladungstext, <strong>drei Fotos</strong> (Galerie-Karte Martina, Willkommen, Martina-Werk), Adresse, QR zur Galerie.{' '}
+          <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
           <br />
           <strong>Rückseite:</strong> <strong>ök2 Eingangstor</strong> – wie <code>/entdecken</code> (Farben aus K2-Design, Tor-Bild), kgm-Werbezeilen, QR <code>/entdecken</code>.
         </p>
@@ -495,11 +562,17 @@ export default function FlyerK2Oek2TorViererPage() {
               </div>
             </div>
             <div className="front-main">
-              {welcomeThumb ? (
+              <div className="thumb-strip">
                 <div className="thumb">
-                  <img src={welcomeThumb} alt="" />
+                  <img src={martinaPortraitUrl} alt="" />
                 </div>
-              ) : null}
+                <div className="thumb">
+                  <img src={welcomeThumb || '/img/k2/willkommen.jpg'} alt="" />
+                </div>
+                <div className="thumb">
+                  <img src={martinaWerkUrl} alt="" />
+                </div>
+              </div>
               <div className="text">
                 <p className="intro">{intro}</p>
                 <p className="addr">
