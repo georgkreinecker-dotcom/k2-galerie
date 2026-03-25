@@ -11,19 +11,36 @@ function getDevGithubToken(): string {
 
 export type UploadEntdeckenHeroResult = { path: string; dataUrl: string }
 
+export type UploadEntdeckenHeroOptions = {
+  /** Bereits komprimierte Data-URL – vermeidet zweites Dekodieren/Komprimieren (UI friert nicht ein). */
+  preparedDataUrl?: string
+}
+
 export async function uploadEntdeckenHeroImage(
   file: File,
-  onStatus?: (msg: string) => void
+  onStatus?: (msg: string) => void,
+  options?: UploadEntdeckenHeroOptions
 ): Promise<UploadEntdeckenHeroResult> {
   const token = getDevGithubToken()
   const useClientGitHub = import.meta.env.DEV && Boolean(token)
 
-  onStatus?.('Bild wird vorbereitet…')
-  const dataUrl = await compressImageForStorage(file, { context: 'pageHero', maxWidth: 2200, quality: 0.88 })
+  const pre = options?.preparedDataUrl?.trim() ?? ''
+  let dataUrl: string
+  if (pre.startsWith('data:image/')) {
+    dataUrl = pre
+  } else {
+    onStatus?.('Bild wird vorbereitet…')
+    dataUrl = await compressImageForStorage(file, { context: 'pageHero', maxWidth: 1920, quality: 0.82 })
+  }
 
   if (useClientGitHub) {
-    const { uploadPageImage } = await import('./githubImageUpload')
-    const path = await uploadPageImage(file, 'oeffentlich', 'entdecken-hero.jpg', onStatus)
+    const { uploadCompressedPageImageDataUrl } = await import('./githubImageUpload')
+    const path = await uploadCompressedPageImageDataUrl(
+      dataUrl,
+      'oeffentlich',
+      'entdecken-hero.jpg',
+      onStatus
+    )
     return { path, dataUrl }
   }
 

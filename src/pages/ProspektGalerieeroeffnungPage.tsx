@@ -12,25 +12,7 @@ import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
-
-/** Datum formatieren (YYYY-MM-DD → DD.MM.YYYY). */
-function formatDate(iso: string): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  const day = String(d.getDate()).padStart(2, '0')
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day}.${month}.${year}`
-}
-
-/** Ein Event-Datum oder Bereich (date + endDate) lesbar formatieren. */
-function formatEventDate(date?: string, endDate?: string): string {
-  if (!date) return ''
-  const d = formatDate(date)
-  if (!endDate || endDate === date) return d
-  return `${d} – ${formatDate(endDate)}`
-}
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const printStyles = `
   @media print {
@@ -155,8 +137,8 @@ export default function ProspektGalerieeroeffnungPage() {
               <p style={{ fontSize: '1.05rem', fontWeight: 600, color: '#1c1a18', marginTop: '1rem', marginBottom: '0.25rem' }}>
                 {eventForProspekt.title || 'Galerieeröffnung'}
               </p>
-              <p style={{ fontSize: '0.95rem', color: '#5c5650', margin: 0 }}>
-                {formatEventDate(eventForProspekt.date, eventForProspekt.endDate)}
+              <p style={{ fontSize: '0.95rem', color: '#5c5650', margin: 0, whiteSpace: 'pre-line' }}>
+                {formatEventTerminKomplett(eventForProspekt, { mode: 'compact' })}
               </p>
               {eventForProspekt.description && (
                 <p style={{ fontSize: '0.9rem', lineHeight: 1.5, color: '#1c1a18', marginTop: '0.5rem' }}>

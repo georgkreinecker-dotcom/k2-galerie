@@ -101,6 +101,61 @@ export async function uploadImageToGitHub(
   return `/img/${subfolder}/${filename}`
 }
 
+/**
+ * Bereits komprimierte JPEG-Data-URL hochladen – kein zweites compress (Hauptthread entlasten).
+ */
+export async function uploadCompressedJpegDataUrlToGitHub(
+  jpegDataUrl: string,
+  filename: string,
+  onStatus?: (msg: string) => void,
+  subfolder: 'k2' | 'oeffentlich' = 'k2'
+): Promise<string> {
+  const token = getToken()
+  if (!token) throw new Error('Kein GitHub Token konfiguriert')
+  if (!jpegDataUrl.startsWith('data:image/')) throw new Error('Erwarte Bild-Data-URL')
+
+  const base64 = jpegDataUrl.replace(/^data:image\/\w+;base64,/, '')
+  const path = `public/img/${subfolder}/${filename}`
+
+  onStatus?.('Prüfe vorhandene Datei…')
+  const sha = await getFileSha(path, token)
+
+  onStatus?.('Bild wird hochgeladen…')
+  const body: Record<string, unknown> = {
+    message: `Bild aktualisiert: ${filename}`,
+    content: base64,
+    branch: BRANCH,
+  }
+  if (sha) body.sha = sha
+
+  const res = await fetch(`${GITHUB_API}/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${token}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error((err as { message?: string }).message || `Upload fehlgeschlagen (${res.status})`)
+  }
+
+  onStatus?.('✅ Hochgeladen – Vercel deployt (~2 Min)')
+  return `/img/${subfolder}/${filename}`
+}
+
+export async function uploadCompressedPageImageDataUrl(
+  dataUrl: string,
+  context: PageImageContext,
+  filename: string = 'willkommen.jpg',
+  onStatus?: (msg: string) => void
+): Promise<string> {
+  return uploadCompressedJpegDataUrlToGitHub(dataUrl, filename, onStatus, contextToSubfolder(context))
+}
+
 /** Löscht eine Datei im Repo via GitHub API (nötig: SHA). Gibt true wenn gelöscht oder 404. */
 async function deleteFileInRepo(path: string, token: string): Promise<boolean> {
   const sha = await getFileSha(path, token)

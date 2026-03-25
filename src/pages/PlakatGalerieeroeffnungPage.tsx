@@ -8,23 +8,7 @@ import { loadEvents } from '../utils/eventsStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 import { getPlakatPosterPrintCss, PLAKAT_PDF_ACCENT_FALLBACK } from '../config/marketingWerbelinie'
-
-function formatDate(iso: string): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  if (isNaN(d.getTime())) return iso
-  const day = String(d.getDate()).padStart(2, '0')
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const year = d.getFullYear()
-  return `${day}.${month}.${year}`
-}
-
-function formatEventDateRange(date?: string, endDate?: string): string {
-  if (!date) return ''
-  const start = formatDate(date)
-  const end = endDate && endDate !== date ? formatDate(endDate) : ''
-  return end ? `${start} – ${end}` : start
-}
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const screenStyles = `
   .plakat-wrap {
@@ -157,7 +141,7 @@ export default function PlakatGalerieeroeffnungPage() {
   const phone = (gallery?.phone && String(gallery.phone).trim()) || ''
 
   const titel = eventForPlakat?.title || `${galleryName} – Galerieeröffnung`
-  const datum = formatEventDateRange(eventForPlakat?.date, eventForPlakat?.endDate) || 'Datum folgt'
+  const datum = formatEventTerminKomplett(eventForPlakat, { mode: 'compact', emptyFallback: 'Datum folgt' })
   const ort = eventForPlakat?.location || address
   const kurztext =
     (eventForPlakat?.type === 'galerieeröffnung'
@@ -196,7 +180,7 @@ export default function PlakatGalerieeroeffnungPage() {
           <p>{galleryName}</p>
 
           <div className="event-info">
-            <strong>{datum}</strong>
+            <strong style={{ whiteSpace: 'pre-line' }}>{datum}</strong>
             <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{ort}</p>
             {kurztext && (
               <p style={{ marginTop: '1.25rem', marginBottom: 0, whiteSpace: 'pre-wrap', color: '#1c1a18' }}>

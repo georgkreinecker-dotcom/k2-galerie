@@ -11,6 +11,7 @@ import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
@@ -156,22 +157,6 @@ function getUpcomingEventsVk2(): any[] {
     return upcoming.slice(0, 8)
   } catch {
     return []
-  }
-}
-
-/** Event-Datum für Anzeige formatieren (z. B. "24. April 2025" oder "24.–26. April 2025") */
-function formatEventDateRange(dateStr: string, endDateStr?: string): string {
-  try {
-    const d = new Date(dateStr)
-    const toDe = (x: Date) => x.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-    if (!endDateStr || endDateStr === dateStr) return toDe(d)
-    const end = new Date(endDateStr)
-    if (d.getMonth() === end.getMonth() && d.getFullYear() === end.getFullYear()) {
-      return `${d.getDate()}.–${end.getDate()}. ${end.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}`
-    }
-    return `${toDe(d)} – ${toDe(end)}`
-  } catch {
-    return ''
   }
 }
 
@@ -3109,8 +3094,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
                         <strong>{ev.title}</strong>
                         {ev.date && (
-                          <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
-                            {' — '}{formatEventDateRange(ev.date, ev.endDate)}
+                          <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
+                            {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
                           </span>
                         )}
                       </li>
@@ -3512,8 +3497,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                     <li key={ev.id || ev.date} style={{ marginBottom: (ev.documents?.length || hasFlyer) ? '0.5rem' : 0, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <strong>{ev.title}</strong>
                       {ev.date && (
-                        <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400' }}>
-                          {' — '}{formatEventDateRange(ev.date, ev.endDate)}
+                        <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
+                          {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
                         </span>
                       )}
                       {hasFlyer && (

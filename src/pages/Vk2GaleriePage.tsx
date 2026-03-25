@@ -9,6 +9,7 @@ import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import '../App.css'
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
@@ -69,19 +70,11 @@ function decodeDocHtml(doc: any): string | null {
 /** Minimaler VK2-Flyer-HTML wenn kein gespeichertes Dokument (z. B. Demo) */
 function buildMinimalVk2FlyerHtml(ev: any, stammdaten: Vk2Stammdaten | null): string {
   const title = ev?.title || 'Vernissage'
-  const dateStr = ev?.date ? formatDate(ev.date) : ''
+  const dateStr = ev?.date ? formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' }) : ''
   const location = ev?.location || stammdaten?.verein?.address || ''
   const vName = stammdaten?.verein?.name || 'Kunstverein'
   const esc = (s: string) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Flyer – ${esc(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:1.5rem;color:#1c1a18;line-height:1.6}.title{font-size:1.5rem;text-align:center;margin-bottom:0.5rem}.sub{text-align:center;color:#5c5650;margin-bottom:1rem}.meta{text-align:center;font-size:0.9rem;color:#5c5650}</style></head><body><p class="title">${esc(title)}</p><p class="sub">${esc(vName)}</p><p class="meta">${esc(dateStr)}${location ? ' · ' + esc(location) : ''}</p><p style="margin-top:1.5rem;">Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;">${stammdaten?.verein?.email ? esc(stammdaten.verein.email) : ''}</p></body></html>`
-}
-
-function formatDate(dateStr: string): string {
-  try {
-    return new Date(dateStr).toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
-  } catch {
-    return dateStr
-  }
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Flyer – ${esc(title)}</title><style>body{font-family:system-ui,sans-serif;max-width:600px;margin:2rem auto;padding:1.5rem;color:#1c1a18;line-height:1.6}.title{font-size:1.5rem;text-align:center;margin-bottom:0.5rem}.sub{text-align:center;color:#5c5650;margin-bottom:1rem}.meta{text-align:center;font-size:0.9rem;color:#5c5650}</style></head><body><p class="title">${esc(title)}</p><p class="sub">${esc(vName)}</p><p class="meta" style="white-space:pre-line">${esc(dateStr)}</p>${location ? `<p class="meta">${esc(location)}</p>` : ''}<p style="margin-top:1.5rem;">Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;">${stammdaten?.verein?.email ? esc(stammdaten.verein.email) : ''}</p></body></html>`
 }
 
 const VK2_VERCEL_BASE = BASE_APP_URL
@@ -354,7 +347,12 @@ const Vk2GaleriePage: React.FC = () => {
               {upcomingEvents.map((ev: any) => (
                 <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <strong>{ev.title}</strong>
-                  {ev.date && <span style={{ color: C.textMid, fontWeight: 400 }}> – {formatDate(ev.date)}</span>}
+                  {ev.date && (
+                    <span style={{ color: C.textMid, fontWeight: 400, whiteSpace: 'pre-line' }}>
+                      {' – '}
+                      {formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => openEventFlyer(ev)}

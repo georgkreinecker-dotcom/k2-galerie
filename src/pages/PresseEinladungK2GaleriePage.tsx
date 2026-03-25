@@ -4,6 +4,7 @@ import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbe
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const DOC_CLASS = 'presse-k2-page'
 
@@ -13,21 +14,6 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   finissage: 'Finissage',
   öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
   sonstiges: 'Veranstaltung',
-}
-
-function formatEventDate(dateStr: string, endDateStr?: string): string {
-  try {
-    const d = new Date(dateStr)
-    const toDe = (x: Date) => x.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-    if (!endDateStr || endDateStr === dateStr) return toDe(d)
-    const end = new Date(endDateStr)
-    if (d.getMonth() === end.getMonth() && d.getFullYear() === end.getFullYear()) {
-      return `${d.getDate()}.–${end.getDate()}. ${end.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}`
-    }
-    return `${toDe(d)} – ${toDe(end)}`
-  } catch {
-    return ''
-  }
 }
 
 function usePresseTenant(): 'k2' | 'oeffentlich' {
@@ -73,7 +59,7 @@ export default function PresseEinladungK2GaleriePage() {
           setEvent({
             title: ev.title || 'Einladung',
             type: ev.type || 'sonstiges',
-            date: formatEventDate(ev.date || '', ev.endDate),
+            date: formatEventTerminKomplett(ev, { mode: 'compact' }),
             location: location.trim(),
             description: (ev.description || 'Wir freuen uns auf deinen Besuch.').trim(),
           })
@@ -103,7 +89,7 @@ export default function PresseEinladungK2GaleriePage() {
           <div className="line" />
           <div className="presse-block">
             <p className="presse-label">Termin</p>
-            <p className="presse-body">{event?.date || 'Datum folgt in Kürze.'}</p>
+            <p className="presse-body" style={{ whiteSpace: 'pre-line' }}>{event?.date || 'Datum folgt in Kürze.'}</p>
           </div>
           {location && (
             <div className="presse-block">

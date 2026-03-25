@@ -1990,25 +1990,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       window.removeEventListener('k2-page-content-entdecken-updated', h)
     }
   }, [])
-  const persistEntdeckenHeroOverlayFromFile = useCallback(async (file: File) => {
-    try {
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => {
-          const result = typeof reader.result === 'string' ? reader.result : ''
-          if (result.startsWith('data:image/')) resolve(result)
-          else reject(new Error('Keine gueltige Bilddaten-URL'))
-        }
-        reader.onerror = () => reject(reader.error ?? new Error('Datei konnte nicht gelesen werden'))
-        reader.readAsDataURL(file)
-      })
-      await persistEntdeckenHeroOverlay(dataUrl)
-      setEntdeckenHeroIdbPreview(dataUrl)
-    } catch {
-      // Fallback bleibt Blob-Vorschau; Overlay ist optional.
-    }
-  }, [])
-  /** Ein Ablauf für Datei-Dialog und Drag-and-Drop (wie bei anderen Design-Bildern). */
+  /**
+   * Entdecken-Hero: nicht parallel „volle Datei als Data-URL“ + Komprimierung/Upload (Hauptthread-Block).
+   * Reihenfolge: Blob-Vorschau → 2× rAF (Browser darf malen) → einmal compress → Overlay → Upload mit preparedDataUrl (kein doppeltes compress bei GitHub).
+   */
   const applyEntdeckenHeroFile = useCallback(
     async (f: File | undefined | null) => {
       if (!f) return
@@ -2024,12 +2009,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const blobUrl = URL.createObjectURL(f)
       entdeckenHeroBlobRevokeRef.current = blobUrl
       setEntdeckenHeroLocalPreview(blobUrl)
-      void persistEntdeckenHeroOverlayFromFile(f)
-      setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
+      setImageUploadStatus('⏳ Vorschau ist da – Bild wird vorbereitet (kurz) …')
       try {
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+        })
+        const dataUrl = await compressImageForStorage(f, { context: 'pageHero', maxWidth: 1920, quality: 0.82 })
+        await persistEntdeckenHeroOverlay(dataUrl)
+        setEntdeckenHeroIdbPreview(dataUrl)
+        setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert …')
         const { uploadEntdeckenHeroImage } = await import('../src/utils/uploadEntdeckenHero')
         let uploadTimeoutId: ReturnType<typeof setTimeout> | undefined
-        const uploadPromise = uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
+        const uploadPromise = uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m), {
+          preparedDataUrl: dataUrl,
+        })
           .then((r) => {
             if (uploadTimeoutId !== undefined) clearTimeout(uploadTimeoutId)
             return r
@@ -2047,13 +2040,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             )
           }, 120_000)
         })
-        const { path, dataUrl } = await Promise.race([uploadPromise, timeoutPromise])
+        const { path, dataUrl: dataUrlOut } = await Promise.race([uploadPromise, timeoutPromise])
         const withBust = `${path}?v=${Date.now()}`
         revokeEntdeckenHeroBlob()
-        await persistEntdeckenHeroOverlay(dataUrl, withBust)
+        await persistEntdeckenHeroOverlay(dataUrlOut, withBust)
         setPageContentEntdecken({ heroImageUrl: withBust })
         setEntdeckenForm((prev) => ({ ...prev, heroImageUrl: withBust }))
-        setEntdeckenHeroIdbPreview(dataUrl)
+        setEntdeckenHeroIdbPreview(dataUrlOut)
         setImageUploadStatus('✅ Gespeichert. „Entdecken prüfen“ zeigt auf diesem Gerät sofort das neue Bild; für alle anderen nach Vercel-Deploy (~1–2 Min).')
         setTimeout(() => setImageUploadStatus(null), 8000)
       } catch (err) {
@@ -2062,7 +2055,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         setTimeout(() => setImageUploadStatus(null), 10000)
       }
     },
-    [persistEntdeckenHeroOverlayFromFile, revokeEntdeckenHeroBlob]
+    [persistEntdeckenHeroOverlay, revokeEntdeckenHeroBlob]
   )
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')

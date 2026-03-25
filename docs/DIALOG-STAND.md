@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Session-Ende 25.03.26 (Abend):** Tests + Build grün; Stand auf **main** gepusht. **GitHub:** komprimierte JPEG-Data-URL direkt hochladen ohne zweite Komprimierung (`uploadCompressedJpegDataUrlToGitHub`, `uploadCompressedPageImageDataUrl`); **Entdecken-Hero** (`uploadEntdeckenHero`); **Event-Termine** vereinheitlicht mit `formatEventTerminKomplett` (Galerie, VK2, Presse/Prospekt/Plakat); Admin-Upload-UI; Testprotokoll Doku; Build-Artefakte. **Verifizieren:** `git log -1 --oneline` auf **main** = dieser Push (25.03.26 Abend, Message: GitHub-Upload / Session-Ende Doku). ✅ GitHub
+
+**Nächster Einstieg:** Flyer Vierer – vier Bilder nacheinander testen; optional Hero Eingangsseite + Flyer-Rückseite (Einträge unten).
+
+---
+
 **Letzter Stand:** 25.03.26 – **Flyer Vierer: 4. Foto / „Theater“:** Mitte + Rückseite lagen in **sessionStorage** (~5 MB-Limit); beim vierten großen Bild oft **Quota** → stiller Fehler. **Fix:** eigene **IndexedDB** `flyerViererFileStorage.ts`, Migration aus altem sessionStorage; Komprimierung **`flyerVierer`** (max ~320 KB pro Bild); **Hydration-Flag** damit nicht vor dem Laden geleert wird; **Alert** wenn Speichern scheitert. **`FlyerK2Oek2TorViererPage.tsx`**, **`compressImageForStorage.ts`**. **Commit:** `3455288` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: alle vier Bilder/Fotos nacheinander setzen – sollte stabil bleiben.
