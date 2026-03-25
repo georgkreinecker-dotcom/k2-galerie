@@ -33,6 +33,12 @@ import {
   getPageContentEntdecken,
 } from '../config/pageContentEntdecken'
 import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
+import { compressImageForStorage } from '../utils/compressImageForStorage'
+import {
+  clearAllFlyerViererFileSlots,
+  loadFlyerViererFileSlot,
+  saveFlyerViererFileSlot,
+} from '../utils/flyerViererFileStorage'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 
@@ -495,50 +501,6 @@ const K2_BAND_SUBTITLE = 'Martina & Georg Kreinecker'
 
 const K2_TAGLINE = TENANT_CONFIGS.k2.tagline
 
-/** Fotodatei → JPEG-Daten-URL (max. Breite, damit Speicher/Druck ok bleibt). */
-function fileToCompressedDataUrl(file: File): Promise<string> {
-  const maxW = 1600
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const data = reader.result
-      if (typeof data !== 'string') {
-        reject(new Error('read'))
-        return
-      }
-      const img = new Image()
-      img.onload = () => {
-        const w = img.naturalWidth
-        const h = img.naturalHeight
-        if (!w || !h) {
-          reject(new Error('size'))
-          return
-        }
-        const scale = w > maxW ? maxW / w : 1
-        const cw = Math.max(1, Math.round(w * scale))
-        const ch = Math.max(1, Math.round(h * scale))
-        const canvas = document.createElement('canvas')
-        canvas.width = cw
-        canvas.height = ch
-        const ctx = canvas.getContext('2d')
-        if (!ctx) {
-          reject(new Error('canvas'))
-          return
-        }
-        ctx.drawImage(img, 0, 0, cw, ch)
-        resolve(canvas.toDataURL('image/jpeg', 0.82))
-      }
-      img.onerror = () => reject(new Error('decode'))
-      img.src = data
-    }
-    reader.onerror = () => reject(reader.error ?? new Error('read'))
-    reader.readAsDataURL(file)
-  })
-}
-
-const SS_FLYER_WELCOME_FILE = 'k2-flyer-vierer-welcome-file-data'
-const SS_FLYER_TOR_FILE = 'k2-flyer-vierer-tor-file-data'
-
 function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
   try {
     const raw = localStorage.getItem(FLYER_IMG_OVERRIDES_KEY)
@@ -662,6 +624,8 @@ export default function FlyerK2Oek2TorViererPage() {
   const [torIdbLoading, setTorIdbLoading] = useState(true)
   const [welcomeCompressing, setWelcomeCompressing] = useState(false)
   const [torCompressing, setTorCompressing] = useState(false)
+  /** Erst nach IDB-Laden: sonst würde „leer speichern“ die Slots vor dem Restore löschen. */
+  const [flyerFileSessionReady, setFlyerFileSessionReady] = useState(false)
   const welcomeFileInputRef = useRef<HTMLInputElement>(null)
   const torFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -679,33 +643,50 @@ export default function FlyerK2Oek2TorViererPage() {
   }, [eventHinweisActive, eventHinweisHeadline, eventHinweisBody])
 
   useEffect(() => {
-    try {
-      const w = sessionStorage.getItem(SS_FLYER_WELCOME_FILE)
-      if (w && w.startsWith('data:')) setWelcomeFromFile(w)
-      const t = sessionStorage.getItem(SS_FLYER_TOR_FILE)
-      if (t && t.startsWith('data:')) setTorFromFile(t)
-    } catch {
-      /* */
+    let cancelled = false
+    void (async () => {
+      try {
+        const [w, t] = await Promise.all([
+          loadFlyerViererFileSlot('welcome'),
+          loadFlyerViererFileSlot('tor'),
+        ])
+        if (cancelled) return
+        if (w) setWelcomeFromFile(w)
+        if (t) setTorFromFile(t)
+      } catch {
+        /* */
+      } finally {
+        if (!cancelled) setFlyerFileSessionReady(true)
+      }
+    })()
+    return () => {
+      cancelled = true
     }
   }, [])
 
   useEffect(() => {
-    try {
-      if (welcomeFromFile) sessionStorage.setItem(SS_FLYER_WELCOME_FILE, welcomeFromFile)
-      else sessionStorage.removeItem(SS_FLYER_WELCOME_FILE)
-    } catch {
-      /* Quota */
-    }
-  }, [welcomeFromFile])
+    if (!flyerFileSessionReady) return
+    void (async () => {
+      const { ok, message } = await saveFlyerViererFileSlot('welcome', welcomeFromFile)
+      if (!ok && welcomeFromFile) {
+        window.alert(
+          `Flyer Mitte: Zwischenspeichern fehlgeschlagen (${message ?? 'unbekannt'}). Das Bild siehst du weiter, bis du die Seite neu lädst. Tipp: etwas kleineres Foto oder nur ein Foto weniger gleichzeitig.`
+        )
+      }
+    })()
+  }, [welcomeFromFile, flyerFileSessionReady])
 
   useEffect(() => {
-    try {
-      if (torFromFile) sessionStorage.setItem(SS_FLYER_TOR_FILE, torFromFile)
-      else sessionStorage.removeItem(SS_FLYER_TOR_FILE)
-    } catch {
-      /* Quota */
-    }
-  }, [torFromFile])
+    if (!flyerFileSessionReady) return
+    void (async () => {
+      const { ok, message } = await saveFlyerViererFileSlot('tor', torFromFile)
+      if (!ok && torFromFile) {
+        window.alert(
+          `Flyer Rückseite: Zwischenspeichern fehlgeschlagen (${message ?? 'unbekannt'}). Das Bild siehst du weiter, bis du die Seite neu lädst.`
+        )
+      }
+    })()
+  }, [torFromFile, flyerFileSessionReady])
 
   /** URL einmalig: flyerLeft / flyerWerk / flyerWelcome / flyerTor (kurz fl, fk, fw, ft); fc → links (Alt) */
   useEffect(() => {
@@ -988,10 +969,10 @@ export default function FlyerK2Oek2TorViererPage() {
         : imgOverride.tor?.trim()
           ? 'Quelle: eigene URL im Textfeld Rückseite.'
           : torIdbLoading
-            ? 'Entdecken-Speicher wird gelesen – Bild kann gleich wechseln.'
+            ? 'Rückseite wird ermittelt (Design-Hero + ggf. Entdecken-Upload) …'
             : torHeroIdb
-              ? 'Quelle: wie Seite Entdecken – Bild aus Speicher.'
-              : 'Quelle: wie Seite Entdecken – Standard aus Design.'
+              ? 'Quelle: Entdecken-Upload im Browser (kurz, nur dort) – nicht dieselbe Datei wie unter Design → Eingangsseite.'
+              : 'Quelle: Hero-Bild/URL aus Design → Eingangsseite (wie /entdecken, ohne Entdecken-Upload).'
     return { leftSub, welcomeSub, rightSub, torSub }
   }, [
     artworkChoicesLoading,
@@ -1258,7 +1239,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 if (!f || !f.type.startsWith('image/')) return
                 setWelcomeCompressing(true)
                 try {
-                  const dataUrl = await fileToCompressedDataUrl(f)
+                  const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
                   setWelcomeFromFile(dataUrl)
                 } catch {
                   window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
@@ -1358,7 +1339,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 if (!f || !f.type.startsWith('image/')) return
                 setTorCompressing(true)
                 try {
-                  const dataUrl = await fileToCompressedDataUrl(f)
+                  const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
                   setTorFromFile(dataUrl)
                 } catch {
                   window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
@@ -1396,11 +1377,10 @@ export default function FlyerK2Oek2TorViererPage() {
               setTorFromFile(null)
               try {
                 localStorage.removeItem(FLYER_IMG_OVERRIDES_KEY)
-                sessionStorage.removeItem(SS_FLYER_WELCOME_FILE)
-                sessionStorage.removeItem(SS_FLYER_TOR_FILE)
               } catch {
                 /* */
               }
+              void clearAllFlyerViererFileSlots()
             }}
             style={{
               padding: '0.45rem 0.75rem',
