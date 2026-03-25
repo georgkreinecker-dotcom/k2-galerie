@@ -1819,8 +1819,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [verteilerNewsletterAddName, setVerteilerNewsletterAddName] = useState('')
   const [verteilerNewsletterAddEmail, setVerteilerNewsletterAddEmail] = useState('')
   const [verteilerNewsletterPasteText, setVerteilerNewsletterPasteText] = useState('')
-  /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig). blobUrl bei sehr großem HTML (Blob statt srcDoc). */
-  const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string; blobUrl?: string } | null>(null)
+  /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig). */
+  const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string; blobUrl?: string; src?: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -8450,17 +8450,21 @@ ${'='.repeat(60)}
     return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Zu einem kleinen Umtrunk und Häppchen laden wir Sie herzlich ein. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
+  const clearInAppViewerBlob = () => {
+    try {
+      if (inAppViewerBlobRef.current) {
+        URL.revokeObjectURL(inAppViewerBlobRef.current)
+        inAppViewerBlobRef.current = null
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
   // Ein Standard für alle Dokumente: immer im In-App-Viewer. Große HTML-Strings: Blob-URL + doppeltes rAF (Klick-Handler zuerst fertig).
   const openDocumentInApp = (html: string, title: string) => {
     const apply = () => {
-      try {
-        if (inAppViewerBlobRef.current) {
-          URL.revokeObjectURL(inAppViewerBlobRef.current)
-          inAppViewerBlobRef.current = null
-        }
-      } catch {
-        /* ignore */
-      }
+      clearInAppViewerBlob()
       const wrapped = html.length > IN_APP_VIEWER_HTML_LARGE_LEN ? html : wrapDocumentWithPrintFooter(html)
       try {
         if (wrapped.length > IN_APP_VIEWER_HTML_LARGE_LEN && typeof Blob !== 'undefined') {
@@ -8484,6 +8488,18 @@ ${'='.repeat(60)}
     }
   }
 
+  const openDocumentUrlInApp = (src: string, title: string) => {
+    const apply = () => {
+      clearInAppViewerBlob()
+      setInAppDocumentViewer({ html: '', title, src })
+    }
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => requestAnimationFrame(apply))
+    } else {
+      setTimeout(apply, 0)
+    }
+  }
+
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any, event?: any) => {
     try {
@@ -8496,13 +8512,7 @@ ${'='.repeat(60)}
       const absUrl = (typeof window !== 'undefined' && window.location.origin && !hasOwnScheme)
         ? window.location.origin + (docUrl.startsWith('/') ? docUrl : '/' + docUrl)
         : docUrl
-      const wrapper =
-        '<html><head><meta charset="utf-8"><title>' +
-        (docTitle).replace(/</g, '&lt;') +
-        '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
-        absUrl.replace(/"/g, '&quot;') +
-        '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
-      openDocumentInApp(wrapper, docTitle)
+      openDocumentUrlInApp(absUrl, docTitle)
       return
     }
     const fileType = document.fileType || document.type || ''
@@ -8538,12 +8548,7 @@ ${'='.repeat(60)}
     // Gespeichertes HTML (data:-URL): Große URLs nicht decodieren (atob/Regex friert UI). iframe + optional kleine Social/Newsletter-Parse.
     if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
       const htmlDataUrl = fileData
-      const makeIframeWrapper = () =>
-        '<html><head><meta charset="utf-8"><title>' +
-        docTitle.replace(/</g, '&lt;') +
-        '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
-        htmlDataUrl.replace(/"/g, '&quot;') +
-        '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
+      const openDataUrlDirect = () => openDocumentUrlInApp(htmlDataUrl, docTitle)
 
       if (htmlDataUrl.length <= MAX_EVENT_DOC_DATA_URL_DECODE_LEN) {
         const htmlDecoded = decodeHtmlDataUrl(htmlDataUrl)
@@ -8583,7 +8588,7 @@ ${'='.repeat(60)}
           }
         }
       }
-      openDocumentInApp(makeIframeWrapper(), docTitle)
+      openDataUrlDirect()
       return
     }
     // Kein gespeicherter Inhalt, aber Event vorhanden: aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“)
@@ -8639,8 +8644,7 @@ ${'='.repeat(60)}
     }
     try {
       if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-        const wrapperIframe = `<html><head><title>${(docTitle).replace(/</g, '&lt;')}</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="${fileData}" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>`
-        openDocumentInApp(wrapperIframe, docTitle)
+        openDocumentUrlInApp(String(fileData), docTitle)
       } else {
         const bodyContent = fileType?.includes('pdf')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
@@ -12789,14 +12793,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     const docs = loadDocuments()
                     setDocuments(docs)
                   } catch (_) {}
-                  try {
-                    if (inAppViewerBlobRef.current) {
-                      URL.revokeObjectURL(inAppViewerBlobRef.current)
-                      inAppViewerBlobRef.current = null
-                    }
-                  } catch {
-                    /* ignore */
-                  }
+                  clearInAppViewerBlob()
                   setInAppDocumentViewer(null)
                 }}
                 aria-label="Dokument schließen und zurück"
@@ -12829,8 +12826,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     } else {
                       const w = window.open('', '_blank')
                       if (w) {
-                        w.document.write(inAppDocumentViewer.html)
-                        w.document.close()
+                        if (inAppDocumentViewer.src) {
+                          w.location.href = inAppDocumentViewer.src
+                        } else {
+                          w.document.write(inAppDocumentViewer.html)
+                          w.document.close()
+                        }
                         w.focus()
                         w.print()
                       } else {
@@ -12851,11 +12852,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {documentSaveFeedback === 'ok' && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
             </div>
             <iframe
-              key={inAppDocumentViewer.blobUrl ?? `srcdoc-${inAppDocumentViewer.title}-${inAppDocumentViewer.html.length}`}
+              key={inAppDocumentViewer.src ?? inAppDocumentViewer.blobUrl ?? `srcdoc-${inAppDocumentViewer.title}-${inAppDocumentViewer.html.length}`}
               ref={inAppViewerIframeRef}
               title={inAppDocumentViewer.title}
-              src={inAppDocumentViewer.blobUrl ?? undefined}
-              srcDoc={inAppDocumentViewer.blobUrl ? undefined : inAppDocumentViewer.html}
+              src={inAppDocumentViewer.src ?? inAppDocumentViewer.blobUrl ?? undefined}
+              srcDoc={inAppDocumentViewer.src || inAppDocumentViewer.blobUrl ? undefined : inAppDocumentViewer.html}
               style={{
                 flex: 1, width: '100%', border: 'none', background: '#fff'
               }}

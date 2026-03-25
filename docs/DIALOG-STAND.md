@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Medienplaner „alles eingefroren“ – zweite Stufe:** `handleViewEventDocument`: HTML-`data:` nur noch bis **380k** mit `decodeHtmlDataUrl` (Social/Newsletter-Modal); darüber **immer** iframe-Wrapper ohne Decodieren. `wrapDocumentWithPrintFooter`: ab **380k** kein Volltext-`includes`/`replace`. `openDocumentInApp`: **doppeltes rAF**, bei großem HTML **Blob + `src`** statt `srcDoc`, **revoke** beim Schließen/Unmount (`inAppViewerBlobRef`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `afd3619` ✅ auf GitHub
+**Letzter Stand:** 25.03.26 – **Medienplaner „keine Reaktion“ – Ursachenfix statt Versuch:** In-App-Viewer kann Dokumente jetzt **direkt per `src`** öffnen (`openDocumentUrlInApp`) statt riesige Wrapper-HTML-Strings zu bauen. Das gilt für `documentUrl` und große `data:text/html`-Dokumente. Dadurch entfällt die blockierende String-Erzeugung im Klickpfad. Viewer-State erweitert um `src`, Print/iframe darauf angepasst, Blob-Cleanup zentral über `clearInAppViewerBlob`. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
 
-**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit → **Ansehen** (auch große Social/Newsletter-Speicherstände: nur Anzeige per iframe; Bearbeiten weiter über **Bearbeiten**).
+**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit → **Ansehen** erneut prüfen (muss sofort reagieren, auch bei sehr großen gespeicherten HTML-Dokumenten).
 
 **Letzter Stand:** 25.03.26 – **Medienplaner „nach erstem Klick hängt“ weiter abgesichert:** In `handleViewEventDocument` bei großen HTML-`data:`-Dokumenten Performance-Schutz eingebaut. Nicht-editierbare, große Inhalte werden direkt als `iframe` im In-App-Viewer geöffnet statt vollständig zu decodieren/parsen (Hauptthread-Entlastung). Social/Newsletter-Redaktion bleibt unverändert. Tests + Build grün. **Commit:** (nach Push) ✅
 
