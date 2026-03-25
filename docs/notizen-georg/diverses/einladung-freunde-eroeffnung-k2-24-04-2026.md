@@ -22,7 +22,7 @@ Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – 
 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
 
-- **Willkommen:** https://k2-galerie.vercel.app/willkommen  
+- **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken
 ![QR-Code Willkommen](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen)
 - **Galerie:** https://k2-galerie.vercel.app/projects/k2-galerie/galerie  
 ![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie)
@@ -83,7 +83,7 @@ Test-Pilot: georg.kreinecker@kgm.at · Grüße Martina & Georg
 
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
-- Homepage: https://k2-galerie.vercel.app/willkommen · https://k2-galerie.vercel.app/projects/k2-galerie/galerie  
+- Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/projects/k2-galerie/galerie
 - Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 

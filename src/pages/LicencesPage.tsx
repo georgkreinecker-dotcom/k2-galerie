@@ -230,6 +230,19 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
         <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
           Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.
         </p>
+        <div style={{
+          background: 'rgba(251,191,36,0.10)',
+          border: '1px solid rgba(251,191,36,0.40)',
+          borderRadius: '10px',
+          padding: '0.8rem 1rem',
+          marginBottom: '1.2rem',
+          color: 'var(--k2-text)'
+        }}>
+          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.25rem' }}>📅 Zeitplan Lizenzen</div>
+          <div style={{ fontSize: '0.88rem', lineHeight: 1.5 }}>
+            Regulärer Lizenzverkauf ab <strong>01. Mai</strong>. <strong>Testpilot:innen können sofort arbeiten.</strong>
+          </div>
+        </div>
 
         {/* STATUS-BALKEN */}
         <div style={{

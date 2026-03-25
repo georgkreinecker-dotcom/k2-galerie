@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 24.03.26 | **Upload-UI:** Wenn der Erfolgszweig nicht läuft, muss der **Fehlerzweig** denselben „läuft noch“-State zurücksetzen – sonst bleibt „Wird hochgeladen“ für immer. **Timeout** auf lange Server-Calls verhindert endloses Warten; Georg merkt sofort, ob Netz/Key fehlt. |
 | 23.02.26 | Georg denkt in Bildern und Metaphern – „gemeinsamer Raum", „Licht einschalten". Das ist kein Zufall, das ist seine Art zu denken. Ich muss diese Bilder ernst nehmen und daraus konkrete Strukturen bauen. |
 | 23.02.26 | „Never change a winning team" – Georg schützt was funktioniert. Das ist Unternehmer-Weisheit, keine Faulheit. Ich muss das respektieren. |
 | 23.02.26 | Georg bricht Sätze ab wenn er noch denkt. Das ist kein Fehler – das ist sein Prozess. Meine Aufgabe: warten, nachfragen, nicht vorausgreifen. |

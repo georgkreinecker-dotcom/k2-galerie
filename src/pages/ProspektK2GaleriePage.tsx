@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
 import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
@@ -16,7 +16,7 @@ const TEAL_DARK = '#0c5c55' /* kräftiger Brand-Bereich (Druck + Bildschirm) */
 const TEAL_LIGHT = '#0d9488'
 
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
-const OEK2_WILLKOMMEN_URL = BASE_APP_URL + '/willkommen'
+const OEK2_EINGANGSTOR_URL = BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE
 const VK2_URL = BASE_APP_URL + '/projects/vk2'
 
 const printStyles = `
@@ -142,7 +142,7 @@ export default function ProspektK2GaleriePage() {
               <div style={{ fontSize: '0.8rem', color: '#1c1a18' }}>
                 <strong style={{ color: TEAL_LIGHT }}>ök2 – Demo-Galerie</strong><br />
                 <a href={buildQrUrlWithBust(OEK2_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all', fontSize: '0.75rem' }}>{OEK2_URL}</a><br />
-                <span style={{ fontSize: '0.7rem', color: '#5c5650' }}>Willkommen: <a href={buildQrUrlWithBust(OEK2_WILLKOMMEN_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_WILLKOMMEN_URL}</a></span>
+                <span style={{ fontSize: '0.7rem', color: '#5c5650' }}>Eingangstor: <a href={buildQrUrlWithBust(OEK2_EINGANGSTOR_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_EINGANGSTOR_URL}</a></span>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>

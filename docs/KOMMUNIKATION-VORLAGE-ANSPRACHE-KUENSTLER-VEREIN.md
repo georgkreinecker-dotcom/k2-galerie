@@ -17,7 +17,7 @@
 >
 > wir laden dich ein, **ök2** selbst anzuschauen – die Plattform, mit der Künstler:innen ihre Werke, Vita und Galerie im Netz präsentieren. Galerie, Kasse und Presse aus einer Hand, ohne Stückwerk.
 >
-> Demo und Willkommensseite: https://k2-galerie.vercel.app/willkommen
+> Demo und Eingangstor: https://k2-galerie.vercel.app/entdecken
 >
 > Wenn du magst, probier es aus und sag uns, was fehlt oder was dir auffällt. Wir freuen uns auf dein Feedback.
 >

@@ -58,7 +58,7 @@ Kostenlos. Wirkt in Google-Suche „Galerie [Ort]“.
 **Bio (Instagram/Facebook, ca. 150 Zeichen):**  
 `K2 Galerie – Kunst & Keramik. Werke, Galerie, Plattform für Künstler:innen. 👇 Galerie & Demo`
 
-**Link in Bio:** https://k2-galerie.vercel.app/willkommen
+**Link in Bio:** https://k2-galerie.vercel.app/entdecken
 
 **1. Post (Eröffnung / Vorstellung):**  
 `Wir sind die K2 Galerie – Kunst & Keramik von Martina und Georg. Hier zeigen wir unsere Werke und die Plattform, mit der Künstler:innen und Galerien ihre Galerie im Netz präsentieren. Galerie & Demo: [Link willkommen]`
@@ -79,7 +79,7 @@ Kostenlos. Wirkt in Google-Suche „Galerie [Ort]“.
 | Zweck | URL |
 |-------|-----|
 | K2 Galerie | https://k2-galerie.vercel.app/projects/k2-galerie/galerie |
-| Demo / Willkommen (ök2) | https://k2-galerie.vercel.app/willkommen |
+| Demo / Eingangstor (ök2) | https://k2-galerie.vercel.app/entdecken |
 | VK2 | https://k2-galerie.vercel.app/projects/vk2 |
 
 QR-Codes für diese URLs auf Einladung, Presse, Social, in der Lounge. Nicht andere URLs verwenden.

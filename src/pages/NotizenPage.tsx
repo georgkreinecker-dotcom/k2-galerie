@@ -9,6 +9,7 @@ const sections: { id: string; title: string; desc: string; items: NotizItem[] }[
     title: '📁 Diverses',
     desc: 'Briefe an Freunde, Gedanken über Gott und die Welt',
     items: [
+      { label: 'Schreiben an August – Softwarestand (Profi-Blick)', to: PROJECT_ROUTES['k2-galerie'].notizenAugustSoftwarestand },
       { label: 'Brief an August', to: PROJECT_ROUTES['k2-galerie'].notizenBriefAugust },
       { label: 'Brief an Andreas', to: PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas },
       { label: 'Einladung Freunde – Eröffnung K2 (24.–26.04.2026) · Mail + WhatsApp', to: PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24 },

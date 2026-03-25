@@ -88,6 +88,19 @@ export default function LizenzKaufenPage() {
         <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '1.75rem' }}>
           Produkt anklicken – Name und E-Mail eintragen – Zahlung per Karte (Stripe). Nach dem Kauf ist deine Lizenz aktiv.
         </p>
+        <div style={{
+          background: 'rgba(251,191,36,0.14)',
+          border: '1px solid rgba(251,191,36,0.45)',
+          borderRadius: '12px',
+          padding: '0.8rem 1rem',
+          marginBottom: '1.25rem',
+          color: text
+        }}>
+          <div style={{ fontWeight: 700, color: accentDeep, marginBottom: '0.2rem' }}>📅 Hinweis</div>
+          <div style={{ fontSize: '0.88rem', lineHeight: 1.45 }}>
+            Regulärer Lizenzverkauf ist ab <strong>01. Mai</strong> vorgesehen. <strong>Testpilot:innen können sofort starten.</strong>
+          </div>
+        </div>
 
         {/* 1. Produkt per Klick auswählen */}
         <div style={{ marginBottom: '1.75rem' }}>

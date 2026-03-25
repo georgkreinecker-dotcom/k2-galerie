@@ -29,6 +29,7 @@ export default function K2TeamHandbuchPage() {
     { id: '19-martina-muna', name: 'Martina & Muna (Archiv)', file: '19-MARTINA-MUNA-BESUCH-OEK2-VK2.md' },
     { id: '20-pilot-zettel', name: 'Pilot-Zettel – Drucken', file: '20-PILOT-ZETTEL-OEK2-VK2.md' },
     { id: '23-notfall', name: 'Notfall-Checkliste (Cursor, Dialog, Parallelstrukturen)', file: '23-NOTFALL-CHECKLISTE.md' },
+    { id: '24-texte-briefe-kompass', name: 'Texte & Briefe Kompass', file: '24-TEXTE-BRIEFE-KOMPASS.md' },
   ]
 
   useEffect(() => {

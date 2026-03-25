@@ -186,7 +186,7 @@ Werke, Raum, Begegnung – und Einblick in die K2-Plattform (K2 · ök2 · VK2).
 
 **Links (einheitlich):**  
 K2 Galerie: https://k2-galerie.vercel.app/projects/k2-galerie/galerie  
-ök2 Demo: https://k2-galerie.vercel.app/willkommen  
+ök2 Demo: https://k2-galerie.vercel.app/entdecken
 VK2: https://k2-galerie.vercel.app/projects/vk2
 
 ---

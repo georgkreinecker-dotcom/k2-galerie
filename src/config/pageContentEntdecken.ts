@@ -3,12 +3,10 @@
  * Bild + Texte: Admin → Design → Eingangsseite. Farben: automatisch aus K2-Design (k2-design-settings).
  */
 
+import { saveEntdeckenHeroOverlay } from '../utils/entdeckenHeroOverlayStorage'
+
 const STORAGE_KEY = 'k2-page-content-entdecken'
 const KEY_K2_DESIGN = 'k2-design-settings'
-/** Bis der nächste Vercel-Deploy die neue `entdecken-hero.jpg` ausliefert, zeigen wir dasselbe komprimierte Bild aus localStorage (neuer Tab / Entdecken prüfen). */
-const HERO_OVERLAY_KEY = 'k2-entdecken-hero-dataurl-overlay'
-const HERO_OVERLAY_TS_KEY = 'k2-entdecken-hero-overlay-ts'
-const HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 
 export interface PageContentEntdecken {
   heroImageUrl?: string
@@ -66,42 +64,21 @@ export function setPageContentEntdecken(data: Partial<PageContentEntdecken>): bo
   }
 }
 
-/**
- * Hero-Bild-URL für die Entdecken-Seite: zuerst frisches Upload-Overlay (nach „Bild wählen“),
- * sonst gespeicherter Pfad. Ohne Overlay liefert Vercel bis zum Deploy noch die alte JPG – deshalb Overlay.
- */
-export function getEntdeckenHeroDisplayUrl(mergedOverrides?: Partial<PageContentEntdecken>): string {
-  try {
-    if (typeof window !== 'undefined') {
-      const ts = parseInt(localStorage.getItem(HERO_OVERLAY_TS_KEY) || '0', 10)
-      const overlay = localStorage.getItem(HERO_OVERLAY_KEY)
-      if (overlay && overlay.startsWith('data:image/') && ts > 0 && Date.now() - ts < HERO_OVERLAY_MAX_MS) {
-        return overlay
-      }
-      if (overlay && ts > 0 && Date.now() - ts >= HERO_OVERLAY_MAX_MS) {
-        localStorage.removeItem(HERO_OVERLAY_KEY)
-        localStorage.removeItem(HERO_OVERLAY_TS_KEY)
-      }
-    }
-  } catch (_) {
-    /* ignore */
-  }
+/** Gespeicherter Pfad / Standard-JPG (ohne IndexedDB-Overlay – das lädt die Seite asynchron). */
+export function getEntdeckenHeroPathUrl(mergedOverrides?: Partial<PageContentEntdecken>): string {
   const base = getPageContentEntdecken()
   const merged = mergedOverrides ? { ...base, ...mergedOverrides } : base
   return (merged.heroImageUrl || '').trim() || '/img/oeffentlich/entdecken-hero.jpg'
 }
 
-/** Nach erfolgreichem Upload: gleiches Bild wie in der Admin-Vorschau auch unter /entdecken (alle Tabs dieses Geräts). */
-export function setEntdeckenHeroOverlayDataUrl(dataUrl: string): void {
-  try {
-    if (typeof window === 'undefined') return
-    if (!dataUrl.startsWith('data:image/')) return
-    localStorage.setItem(HERO_OVERLAY_KEY, dataUrl)
-    localStorage.setItem(HERO_OVERLAY_TS_KEY, String(Date.now()))
-    window.dispatchEvent(new CustomEvent('k2-page-content-entdecken-updated'))
-  } catch (e) {
-    console.warn('Entdecken-Heldbild Sofort-Anzeige (Overlay) fehlgeschlagen:', e)
-  }
+/**
+ * Nach Upload: Overlay in IndexedDB (Mac: zuverlässig; localStorage oft zu klein für data-URLs).
+ */
+export async function persistEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
+  if (typeof window === 'undefined') return
+  if (!dataUrl.startsWith('data:image/')) return
+  await saveEntdeckenHeroOverlay(dataUrl)
+  window.dispatchEvent(new CustomEvent('k2-page-content-entdecken-updated'))
 }
 
 /** Farben für die Eingangsseite: immer aus K2-Design (k2-design-settings). Keine eigenen Farben mehr. */

@@ -7,7 +7,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL, WILLKOMMEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { PROJECT_ROUTES, BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, SOCIAL_MEDIA_FORMATE, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
@@ -78,7 +78,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
     setBotschaft(loadBotschaft())
   }, [])
 
-  const willkommenBaseUrl = BASE_APP_URL + WILLKOMMEN_ROUTE
+  const willkommenBaseUrl = BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE
   const willkommenFullUrl = buildQrUrlWithBust(willkommenBaseUrl, qrVersionTs)
   // Eisernes Gesetz: Im Modus ök2/Demo keine K2-Galerie-URL – nur Demo-Galerie
   const galerieBaseUrl = modus === 'oek2'
@@ -172,6 +172,21 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
           <h2 className={PRINT_HIDE} style={{ fontFamily: s.fontHeading, fontSize: '1.35rem', color: s.accent, marginBottom: '1rem', borderBottom: `1px solid ${s.accentSoft}`, paddingBottom: '0.5rem' }}>
             1. Prospekt
           </h2>
+
+          <div className={PRINT_HIDE} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung + (modus === 'oek2' ? '?context=oeffentlich' : '')}
+              style={{ padding: '0.5rem 0.85rem', background: s.bgCard, border: `1px solid ${s.accentSoft}`, borderRadius: 8, textDecoration: 'none', color: s.text, fontWeight: 600 }}
+            >
+              🧾 Prospekt Galerieeröffnung (A4)
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + (modus === 'oek2' ? '?context=oeffentlich' : '')}
+              style={{ padding: '0.5rem 0.85rem', background: s.bgCard, border: `1px solid ${s.accentSoft}`, borderRadius: 8, textDecoration: 'none', color: s.text, fontWeight: 600 }}
+            >
+              🖨️ Plakat Galerieeröffnung (A3)
+            </Link>
+          </div>
 
           {/* Deckblatt */}
           <div className="präsentationsmappe-seite" style={{ width: '210mm', maxWidth: '100%', minHeight: '297mm', background: s.gradient, borderRadius: s.radius, padding: '18mm 20mm', marginBottom: '1.5rem', boxShadow: s.shadow, position: 'relative', overflow: 'hidden' }}>
@@ -283,27 +298,37 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               </ul>
             </div>
           </div>
+          <p className={PRINT_HIDE} style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.5 }}>
+            <strong>K2 Galerie + ök2-Tor (Vierer-Bogen A4):</strong>{' '}
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + (modus === 'oek2' ? '?context=oeffentlich' : '')}
+              style={{ color: s.accent, fontWeight: 600 }}
+            >
+              Vierer-Flyer öffnen
+            </Link>
+            {' '}– vier Streifen pro Seite, Vorderseite K2, Rückseite Eingangstor mit QR.
+          </p>
         </section>
 
-        {/* Weiterführender Link & QR-Code zur Willkommensseite (Zugangsbereich) */}
+        {/* Weiterführender Link & QR-Code zum Eingangstor (Zugangsbereich) */}
         <section style={{ marginBottom: '2rem' }}>
           <h2 className={PRINT_HIDE} style={{ fontFamily: s.fontHeading, fontSize: '1.35rem', color: s.accent, marginBottom: '1rem', borderBottom: `1px solid ${s.accentSoft}`, paddingBottom: '0.5rem' }}>
             4. Weiterführender Link & QR-Code
           </h2>
           <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Auf Flyer, Präsentation oder Social Media: Link oder QR-Code führen zur Willkommensseite. Dort können Nutzer:innen nur zur Ansicht eintreten, anmelden oder mit Namen den ersten Entwurf ansehen.
+            Auf Flyer, Präsentation oder Social Media: Link oder QR-Code führen zum Eingangstor. Dort starten Nutzer:innen direkt in den öffentlichen Einstieg.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '1.5rem', padding: '1.25rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
             <div>
               {willkommenQrUrl ? (
-                <img src={willkommenQrUrl} alt="QR-Code Willkommensseite" style={{ width: 160, height: 160, display: 'block', borderRadius: 4 }} />
+                <img src={willkommenQrUrl} alt="QR-Code Eingangstor" style={{ width: 160, height: 160, display: 'block', borderRadius: 4 }} />
               ) : (
                 <div style={{ width: 160, height: 160, background: s.bgElevated, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', color: s.muted }}>QR wird geladen…</div>
               )}
-              <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>QR scannen → Willkommensseite</p>
+              <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>QR scannen → Eingangstor</p>
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: s.muted }}>Link zur Willkommensseite (Zugangsbereich):</p>
+              <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: s.muted }}>Link zum Eingangstor:</p>
               <a
                 href={willkommenFullUrl}
                 target="_blank"

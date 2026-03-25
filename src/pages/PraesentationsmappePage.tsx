@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
 import {
   PRODUCT_COPYRIGHT,
   PRODUCT_LIZENZ_ANFRAGE_EMAIL,
@@ -51,7 +51,7 @@ const printStyles = `
 `
 
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
-const OEK2_WILLKOMMEN_URL = BASE_APP_URL + '/willkommen'
+const OEK2_EINGANGSTOR_URL = BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE
 const VK2_URL = BASE_APP_URL + '/projects/vk2'
 
 export default function PraesentationsmappePage() {
@@ -150,7 +150,7 @@ export default function PraesentationsmappePage() {
             <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>
               <strong style={{ color: TEAL_LIGHT }}>ök2 – Demo-Galerie</strong><br />
               <a href={buildQrUrlWithBust(OEK2_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_URL}</a><br />
-              <span style={{ fontSize: '0.8rem', color: '#5c5650' }}>Willkommen: <a href={buildQrUrlWithBust(OEK2_WILLKOMMEN_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_WILLKOMMEN_URL}</a></span>
+              <span style={{ fontSize: '0.8rem', color: '#5c5650' }}>Eingangstor: <a href={buildQrUrlWithBust(OEK2_EINGANGSTOR_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_EINGANGSTOR_URL}</a></span>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

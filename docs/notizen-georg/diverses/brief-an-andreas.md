@@ -89,7 +89,7 @@ https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich
 ![QR-Code Demo-Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie-oeffentlich)
 
 **Willkommen** (Zugangsbereich / Erster Entwurf):  
-https://k2-galerie.vercel.app/willkommen  
+https://k2-galerie.vercel.app/entdecken
 
 ![QR-Code Willkommen](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen)
 

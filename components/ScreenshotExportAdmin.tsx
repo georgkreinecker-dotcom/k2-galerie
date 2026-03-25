@@ -12710,87 +12710,90 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         </div>
       )}
 
-      {/* In-App-Dokument-Viewer bei blockiertem Pop-up (kein Fenster nötig) */}
-      {inAppDocumentViewer && (
-        <div style={{
-          position: 'fixed', inset: 0, zIndex: 100002,
-          background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column',
-          fontFamily: 'system-ui, sans-serif'
-        }}>
+      {/* In-App-Dokument-Viewer: Portal nach document.body – bei APf (DevView) sitzt der Admin in transform:scale + overflow:hidden; position:fixed wäre sonst am falschen Stapel abgeschnitten („es kommt nichts“). z-index über Vita-Modal (999999). */}
+      {inAppDocumentViewer && typeof document !== 'undefined' && createPortal(
+        (
           <div style={{
-            flexShrink: 0, padding: '0.75rem 1rem', background: '#1c1a18', color: '#fff',
-            display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap'
+            position: 'fixed', inset: 0, zIndex: 2000000,
+            background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column',
+            fontFamily: 'system-ui, sans-serif'
           }}>
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  const docs = loadDocuments()
-                  setDocuments(docs)
-                } catch (_) {}
-                setInAppDocumentViewer(null)
-              }}
-              aria-label="Dokument schließen und zurück"
-              style={{
-                padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
-                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
-              }}
-            >← Zurück</button>
-            <button
-              type="button"
-              onClick={() => {
-                try {
-                  const iframeEl = inAppViewerIframeRef.current
-                  const win = iframeEl?.contentWindow
-                  if (win && iframeEl) {
-                    const doPrint = () => {
-                      try {
-                        win.focus()
-                        win.print()
-                      } catch (err) {
-                        console.error('Iframe-Druck fehlgeschlagen:', err)
+            <div style={{
+              flexShrink: 0, padding: '0.75rem 1rem', background: '#1c1a18', color: '#fff',
+              display: 'flex', alignItems: 'center', gap: '0.75rem', borderBottom: '1px solid rgba(255,255,255,0.15)', flexWrap: 'wrap'
+            }}>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const docs = loadDocuments()
+                    setDocuments(docs)
+                  } catch (_) {}
+                  setInAppDocumentViewer(null)
+                }}
+                aria-label="Dokument schließen und zurück"
+                style={{
+                  padding: '0.4rem 0.8rem', background: '#b54a1e', color: '#fff', border: 'none', borderRadius: 8,
+                  fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                }}
+              >← Zurück</button>
+              <button
+                type="button"
+                onClick={() => {
+                  try {
+                    const iframeEl = inAppViewerIframeRef.current
+                    const win = iframeEl?.contentWindow
+                    if (win && iframeEl) {
+                      const doPrint = () => {
+                        try {
+                          win.focus()
+                          win.print()
+                        } catch (err) {
+                          console.error('Iframe-Druck fehlgeschlagen:', err)
+                        }
+                      }
+                      const isReady = iframeEl.contentDocument?.readyState === 'complete'
+                      if (isReady) {
+                        doPrint()
+                      } else {
+                        iframeEl.addEventListener('load', doPrint, { once: true })
+                      }
+                    } else {
+                      const w = window.open('', '_blank')
+                      if (w) {
+                        w.document.write(inAppDocumentViewer.html)
+                        w.document.close()
+                        w.focus()
+                        w.print()
+                      } else {
+                        alert('Drucken: Bitte Pop-ups erlauben oder „Als PDF drucken“ im Druckdialog wählen.')
                       }
                     }
-                    const isReady = iframeEl.contentDocument?.readyState === 'complete'
-                    if (isReady) {
-                      doPrint()
-                    } else {
-                      iframeEl.addEventListener('load', doPrint, { once: true })
-                    }
-                  } else {
-                    const w = window.open('', '_blank')
-                    if (w) {
-                      w.document.write(inAppDocumentViewer.html)
-                      w.document.close()
-                      w.focus()
-                      w.print()
-                    } else {
-                      alert('Drucken: Bitte Pop-ups erlauben oder „Als PDF drucken“ im Druckdialog wählen.')
-                    }
+                  } catch (e) {
+                    console.error('Drucken:', e)
+                    alert('Drucken fehlgeschlagen. Bitte „Als PDF drucken“ im Druckdialog versuchen.')
                   }
-                } catch (e) {
-                  console.error('Drucken:', e)
-                  alert('Drucken fehlgeschlagen. Bitte „Als PDF drucken“ im Druckdialog versuchen.')
-                }
-              }}
+                }}
+                style={{
+                  padding: '0.4rem 0.8rem', background: '#2d5a2d', color: '#fff', border: 'none', borderRadius: 8,
+                  fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                }}
+              >Drucken</button>
+              <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', flex: 1 }}>{inAppDocumentViewer.title}</span>
+              {documentSaveFeedback === 'ok' && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
+            </div>
+            <iframe
+              ref={inAppViewerIframeRef}
+              title={inAppDocumentViewer.title}
+              srcDoc={inAppDocumentViewer.html}
               style={{
-                padding: '0.4rem 0.8rem', background: '#2d5a2d', color: '#fff', border: 'none', borderRadius: 8,
-                fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer'
+                flex: 1, width: '100%', border: 'none', background: '#fff'
               }}
-            >Drucken</button>
-            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', flex: 1 }}>{inAppDocumentViewer.title}</span>
-            {documentSaveFeedback === 'ok' && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
+              sandbox="allow-same-origin allow-scripts allow-modals"
+            />
           </div>
-          <iframe
-            ref={inAppViewerIframeRef}
-            title={inAppDocumentViewer.title}
-            srcDoc={inAppDocumentViewer.html}
-            style={{
-              flex: 1, width: '100%', border: 'none', background: '#fff'
-            }}
-            sandbox="allow-same-origin allow-scripts allow-modals"
-          />
-        </div>
+        ),
+        document.body
       )}
 
       {/* ── Zurück zur Übersicht (Hub = „der Guide“; auf Admin bewusst kein zweiter Guide – „Was möchtest du tun?“ ist selbsterklärend) ── */}

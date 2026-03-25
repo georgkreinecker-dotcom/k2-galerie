@@ -17,6 +17,7 @@ import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
 import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '../utils/galerieOek2Referrer'
+import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
@@ -356,7 +357,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const [showWelcomeModal, setShowWelcomeModal] = useState(() => {
     if (typeof sessionStorage === 'undefined') return false
     try {
-      if (sessionStorage.getItem('k2-from-entdecken') === '1') return false
+      if (hasFreshOek2EntrySession()) return false
       if (sessionStorage.getItem(KEY_GALERIE_WELCOME_SEEN) === '1') return false
     } catch (_) {}
     return false
@@ -448,7 +449,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1') return false
       // Einstieg „Meine eigene Plattform“ (Entdecken → Muster-Galerie): vor fromAdmin / KEY_FROM_ADMIN prüfen,
       // sonst ist nach „Galerie ansehen“ vom Admin nur noch der Sparten-Block sichtbar (Orientierungsverlust).
-      if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-from-entdecken') === '1') return true
+      if (hasFreshOek2EntrySession()) return true
       if ((location.state as { fromAdmin?: boolean } | null)?.fromAdmin) return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1') return false
       if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') return false
@@ -468,9 +469,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     try {
       if (new URLSearchParams(window.location.search).get('embedded') === '1') return
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
-      if (sessionStorage.getItem('k2-from-entdecken') === '1') return
-      const ref = document.referrer || ''
-      if (ref.includes('/entdecken') || ref.includes('/willkommen')) return
+      if (hasFreshOek2EntrySession()) return
       navigate(ENTDECKEN_ROUTE, { replace: true })
     } catch (_) {}
   }, [musterOnly, navigate, location.state])
@@ -1093,11 +1092,23 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     if (musterOnly) { setIsRefreshing(false); return }
     setIsRefreshing(true)
     try {
-      // KRITISCH: Kompletter Cache-Clear für Mobile
+      // Nur technische Refresh-Keys löschen – kein globales sessionStorage.clear(),
+      // damit Admin-/Kontext-Infos nicht "hängen" oder ungewollt verschwinden.
       localStorage.removeItem('k2-last-loaded-timestamp')
       localStorage.removeItem('k2-last-loaded-version')
       localStorage.removeItem('k2-last-build-id')
-      sessionStorage.clear() // Kompletter Session-Cache-Clear
+      const refreshSessionKeys = [
+        'k2-session-id',
+        'k2-last-load-time',
+        'k2-shop-from-oeffentlich',
+      ] as const
+      refreshSessionKeys.forEach((key) => {
+        try {
+          sessionStorage.removeItem(key)
+        } catch (_) {
+          // ignore
+        }
+      })
       
       // Erhöhe Versionsnummer für maximales Cache-Busting
       const currentVersion = parseInt(localStorage.getItem('k2-data-version') || '0')
@@ -2050,17 +2061,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       .then(async data => {
         if (!isMounted || !data) return
         try {
-          // Werke: gleiche Schutzregeln wie K2 (kein Überschreiben mit leer, Merge)
-          if (Array.isArray(data.artworks) && data.artworks.length > 0) {
-            const localRaw = localStorage.getItem('k2-oeffentlich-artworks')
-            const local = localRaw ? JSON.parse(localRaw) : []
-            const localArr = Array.isArray(local) ? local : []
-            const lokalAnzahl = localArr.length
-            if (data.artworks.length < lokalAnzahl * 0.5) return // 50%-Regel
-            const { merged } = mergeServerWithLocal(data.artworks, localArr, { onlyAddLocalIfMobileAndVeryNew: true, serverAsSoleTruth: true })
-            const withImages = preserveLocalImageData(merged, localArr)
-            await saveArtworksForContextWithImageStore(true, false, withImages, { allowReduce: false })
-            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: withImages.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
+          // öK2 öffentlich: Server ist Wahrheit (keine lokalen Altbestände zurückmischen).
+          if (Array.isArray(data.artworks)) {
+            await saveArtworksForContextWithImageStore(true, false, data.artworks, { allowReduce: true })
+            window.dispatchEvent(new CustomEvent('artworks-updated', { detail: { count: data.artworks.length, fromGaleriePage: true, oeffentlichFromServer: true } }))
           }
           if (Array.isArray(data.events) && data.events.length > 0) {
             const existing = loadEvents('oeffentlich')

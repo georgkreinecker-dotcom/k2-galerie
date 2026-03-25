@@ -115,7 +115,7 @@ Am Eröffnungstag können Gäste in einer **gemeinsamen Lounge** die **K2-Plattf
 | Zweck | URL | Verwendung |
 |-------|-----|------------|
 | **Zur K2 Galerie** (echte Galerie, Werke, Öffnungszeiten) | `https://k2-galerie.vercel.app/projects/k2-galerie/galerie` | Einladung „Galerie online“, Presse „Website“, Social, QR in der Lounge für „unsere Galerie“. |
-| **Zu den Musterseiten / Demo (ök2)** (Plattform ausprobieren, Lizenz anfragen) | `https://k2-galerie.vercel.app/willkommen` | Einladung „Plattform entdecken“, Presse „Demo“, Social „Mehr zur Plattform“, QR in der Lounge für „ök2 / Demo“. |
+| **Zu den Musterseiten / Demo (ök2)** (Plattform ausprobieren, Lizenz anfragen) | `https://k2-galerie.vercel.app/entdecken` | Einladung „Plattform entdecken“, Presse „Demo“, Social „Mehr zur Plattform“, QR in der Lounge für „ök2 / Demo“. |
 | **Zur Vereinsplattform VK2** (Beispiel für Vereine) | `https://k2-galerie.vercel.app/projects/vk2` | Optional in Lounge oder Presse, wenn VK2 explizit gezeigt wird. |
 
 **Regel:** In allen Eröffnungs- und Marketing-Texten dieselben Links verwenden; QR-Codes immer auf diese URLs (nicht auf lokale oder andere Adressen). Bei Änderung der Produktions-URL nur hier anpassen – dann überall konsistent.

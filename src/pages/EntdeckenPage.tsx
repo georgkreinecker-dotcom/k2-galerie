@@ -17,8 +17,9 @@ import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbel
 import {
   getPageContentEntdecken,
   getEntdeckenColorsFromK2Design,
-  getEntdeckenHeroDisplayUrl,
+  getEntdeckenHeroPathUrl,
 } from '../config/pageContentEntdecken'
+import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
 export const ERKUNDUNGS_NOTIZEN_KEY = 'k2-erkundungs-notizen'
@@ -621,11 +622,22 @@ export default function EntdeckenPage() {
   const [heroImageSrc, setHeroImageSrc] = useState<'primary' | 'svg' | 'none'>('primary')
   /** Eingangsseite-Design aus Admin (Design → Eingangsseite); bei Update neu laden */
   const [entdeckenContent, setEntdeckenContent] = useState(() => getPageContentEntdecken())
+  const [heroIdbUrl, setHeroIdbUrl] = useState<string | null>(null)
   const prevHeroUrlRef = useRef<string>('')
   useEffect(() => {
-    const onUpdate = () => setEntdeckenContent(getPageContentEntdecken())
-    window.addEventListener('k2-page-content-entdecken-updated', onUpdate)
-    return () => window.removeEventListener('k2-page-content-entdecken-updated', onUpdate)
+    let cancelled = false
+    const refresh = () => {
+      setEntdeckenContent(getPageContentEntdecken())
+      void loadEntdeckenHeroOverlayIfFresh().then((u) => {
+        if (!cancelled) setHeroIdbUrl(u)
+      })
+    }
+    refresh()
+    window.addEventListener('k2-page-content-entdecken-updated', refresh)
+    return () => {
+      cancelled = true
+      window.removeEventListener('k2-page-content-entdecken-updated', refresh)
+    }
   }, [])
 
   /** Farben immer aus K2-Design (Farbe ändern im Admin) – keine eigenen Eingangsseiten-Farben */
@@ -640,7 +652,8 @@ export default function EntdeckenPage() {
   const text = '#2a1f14'
   const textLight = k2Colors.textLight
   const muted = '#7a6a58'
-  const heroImageUrl = useMemo(() => getEntdeckenHeroDisplayUrl(entdeckenContent), [entdeckenContent])
+  const heroPathUrl = useMemo(() => getEntdeckenHeroPathUrl(entdeckenContent), [entdeckenContent])
+  const heroImageUrl = heroIdbUrl ?? heroPathUrl
   useEffect(() => {
     if (prevHeroUrlRef.current !== heroImageUrl) {
       prevHeroUrlRef.current = heroImageUrl

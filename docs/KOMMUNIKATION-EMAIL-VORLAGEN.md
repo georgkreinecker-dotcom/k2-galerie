@@ -43,7 +43,7 @@
 >
 > wir laden dich ein, die K2-Demo selbst auszuprobieren – Galerie, Kasse, Presse aus einer Hand. Kein Account nötig zum Anschauen.
 >
-> **Demo / Willkommen:** https://k2-galerie.vercel.app/willkommen  
+> **Demo / Eingangstor:** https://k2-galerie.vercel.app/entdecken
 > **VK2 (Vereine):** https://k2-galerie.vercel.app/projects/vk2
 >
 > Wenn du magst, sag uns danach kurz, was dir auffällt oder fehlt. Wir freuen uns auf dein Feedback.

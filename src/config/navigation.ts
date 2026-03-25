@@ -125,6 +125,10 @@ export const PROJECT_ROUTES = {
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Prospekt K2 Kunst und Keramik – Galerieeröffnung (1 Seite, druckbar) */
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
+    /** Plakat (A3) – Galerieeröffnung (druckbar) */
+    plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
+    /** Vierer-Bogen A4: K2 vorn, ök2 Eingangstor + QR hinten (4 Flyer pro Seite) */
+    flyerK2Oek2TorVierer: '/projects/k2-galerie/flyer-k2-oek2-tor-vierer',
     /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
@@ -194,6 +198,8 @@ export const PROJECT_ROUTES = {
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
+    plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
+    flyerK2Oek2TorVierer: '/projects/k2-galerie/flyer-k2-oek2-tor-vierer',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
     lizenzKaufen: '/projects/k2-galerie/lizenz-kaufen',
@@ -235,6 +241,8 @@ export const PROJECT_ROUTES = {
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
+    plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
+    flyerK2Oek2TorVierer: '/projects/k2-galerie/flyer-k2-oek2-tor-vierer',
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',

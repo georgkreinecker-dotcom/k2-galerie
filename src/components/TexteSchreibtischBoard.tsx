@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { archivSnippetForPreview, renderSchreibtischMarkdownPreview } from '../utils/schreibtischPaperMarkdown'
 
 const R = PROJECT_ROUTES['k2-galerie']
 
@@ -134,6 +135,14 @@ export function TexteSchreibtischBoard({ variant }: Props) {
   const resizeSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isFloating = variant === 'page' && geom.floating
+
+  /** APf lädt Seiten oft im iframe: fixed/schweben bleibt nur im Rahmen; echtes Mac-Fenster = neuer Tab / window.top.open */
+  const inApfIframe = useMemo(
+    () => typeof window !== 'undefined' && window.self !== window.top,
+    []
+  )
+
+  const boardOnlyUrl = useMemo(() => `${typeof window !== 'undefined' ? window.location.origin : ''}${R.texteSchreibtischBoard}`, [])
 
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
@@ -326,14 +335,19 @@ export function TexteSchreibtischBoard({ variant }: Props) {
   }
 
   const openSecondWindow = () => {
-    const path = R.texteSchreibtischBoard
-    const url = `${window.location.origin}${path}`
+    const url = `${window.location.origin}${R.texteSchreibtischBoard}`
     try {
-      const w = window.open(url, 'k2SchreibtischBoard', 'noopener,noreferrer,width=880,height=700')
-      if (!w) hinweis('Popup blockiert – im Browser erlauben oder Adresse manuell öffnen.')
+      const topWin = window.top ?? window
+      const w = topWin.open(url, 'k2SchreibtischBoard', 'noopener,noreferrer,width=880,height=700')
+      if (!w) hinweis('Popup blockiert – unten „Neuer Tab“ nutzen oder Adresse manuell öffnen.')
     } catch {
-      hinweis('Zweites Fenster ging nicht.')
+      hinweis('Zweites Fenster ging nicht – „Neuer Tab“ probieren.')
     }
+  }
+
+  const onHangordnerDragStart = (e: React.DragEvent, volltext: string) => {
+    e.dataTransfer.setData('text/plain', volltext)
+    e.dataTransfer.effectAllowed = 'copy'
   }
 
   const onDragHandlePointerDown = (e: React.PointerEvent) => {
@@ -430,14 +444,40 @@ export function TexteSchreibtischBoard({ variant }: Props) {
             lineHeight: 1.45,
           }}
         >
-          <strong>Board schwebt:</strong> Ziehen am Griff links oben, Größe an der Ecke (resize). Für einen zweiten Monitor:{' '}
+          <strong>Board schwebt</strong> (nur im APf-Panel). Ziehen am Griff, Größe an der Ecke. Zweiter Monitor:{' '}
           <button type="button" style={{ ...BTN_SEC, padding: '0.2rem 0.5rem', fontSize: '0.78rem' }} onClick={openSecondWindow}>
             eigenes Fenster
           </button>
           {' · '}
+          <a href={boardOnlyUrl} target="_blank" rel="noopener noreferrer" style={{ ...BTN_SEC, padding: '0.2rem 0.5rem', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-block' }}>
+            Neuer Tab
+          </a>
+          {' · '}
           <button type="button" style={{ ...BTN_PRIM, padding: '0.2rem 0.55rem', fontSize: '0.78rem' }} onClick={einbetten}>
             wieder einbetten
           </button>
+        </div>
+      )}
+
+      {inApfIframe && variant === 'page' && (
+        <div
+          style={{
+            marginBottom: '0.75rem',
+            padding: '0.55rem 0.75rem',
+            background: 'rgba(254, 243, 199, 0.95)',
+            border: '1px solid rgba(180, 83, 9, 0.35)',
+            borderRadius: 10,
+            fontSize: '0.82rem',
+            color: '#1c1a18',
+            lineHeight: 1.5,
+          }}
+        >
+          <strong>APf-Rahmen:</strong> Schweben bleibt im eingebetteten Fenster – nicht auf den ganzen Mac-Bildschirm.{' '}
+          <strong>Raus auf den Mac:</strong>{' '}
+          <a href={boardOnlyUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#b54a1e', fontWeight: 700 }}>
+            Neuer Tab
+          </a>{' '}
+          oder <strong>🖥️ Eigenes Fenster</strong> – dann das Browserfenster auf den zweiten Monitor ziehen.
         </div>
       )}
 
@@ -473,34 +513,60 @@ export function TexteSchreibtischBoard({ variant }: Props) {
         <p style={{ margin: '0 0 0.75rem', fontSize: '0.84rem', color: '#5c5650', lineHeight: 1.45 }}>
           {variant === 'standalone' ? (
             <>
-              Eigenes Fenster – auf den zweiten Bildschirm ziehen und hier ablegen. Gleiche Daten wie auf dem Schreibtisch (
-              <strong>dieses Gerät</strong>, localStorage). Änderungen erscheinen im anderen Fenster mit kurzer Verzögerung.
+              Eigenes Browserfenster – auf den zweiten Monitor ziehen. Gleiche Daten wie auf dem Schreibtisch (
+              <strong>dieses Gerät</strong>). <strong>Vorschau</strong> zeigt Markdown formatiert (# Überschrift, **fett**, Listen mit - ).
             </>
           ) : (
             <>
-              Hierher ziehst du Gedanken, Dateinamen oder Text. Alles nur auf <strong>diesem Gerät</strong> gespeichert.{' '}
-              <strong>Schweben:</strong> frei positionieren und vergrößern; <strong>eigenes Fenster:</strong> für zweiten Monitor.
+              <strong>Mitte:</strong> schreiben oder reinziehen. <strong>Vorschau</strong> = formatiert lesen (Markdown).{' '}
+              <strong>Hängordner</strong> = Ablage als Zettel, zur Mitte ziehen oder doppelklicken. Nur auf <strong>diesem Gerät</strong>.
+              {inApfIframe && (
+                <>
+                  {' '}
+                  Raus aus dem APf-Kasten: <strong>Neuer Tab</strong> oder <strong>Eigenes Fenster</strong>.
+                </>
+              )}
             </>
           )}
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.55rem' }}>
           {variant === 'page' && (
-            <button type="button" style={BTN_SEC} onClick={toggleFloating} title={isFloating ? 'Am Schreibtisch fest einbetten' : 'Board schwebend, positionierbar'}>
-              {isFloating ? '📌 Einbetten' : '🪟 Schweben'}
+            <button
+              type="button"
+              style={BTN_SEC}
+              onClick={toggleFloating}
+              title={
+                inApfIframe
+                  ? 'Nur innerhalb des APf-Panels – für den ganzen Bildschirm: Neuer Tab'
+                  : isFloating
+                    ? 'Am Schreibtisch fest einbetten'
+                    : 'Board schwebend im Seitenbereich'
+              }
+            >
+              {inApfIframe ? '🪟 Schweben (Panel)' : isFloating ? '📌 Einbetten' : '🪟 Schweben'}
             </button>
           )}
           <button type="button" style={BTN_SEC} onClick={openSecondWindow} title="Board in eigenem Browserfenster (z. B. 2. Monitor)">
             🖥️ Eigenes Fenster
           </button>
+          <a
+            href={boardOnlyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ ...BTN_SEC, textDecoration: 'none', display: 'inline-block' }}
+            title="Öffnet in neuem Tab – raus aus dem APf-Rahmen"
+          >
+            🔗 Neuer Tab
+          </a>
           <button type="button" style={BTN_PRIM} onClick={ablegen} title="Aktuellen Text in die Ablage legen und Mitte freimachen">
             📥 Ablegen
           </button>
           <button type="button" style={BTN_SEC} onClick={loeschenMitte} title="Mitte leeren (ohne Ablage)">
             🗑️ Mitte leeren
           </button>
-          <button type="button" style={BTN_SEC} onClick={() => setVorschau((v) => !v)} title="Ergebnis lesen">
-            👁️ {vorschau ? 'Bearbeiten' : 'Vorschau'}
+          <button type="button" style={BTN_SEC} onClick={() => setVorschau((v) => !v)} title="Formatiert lesen (Markdown)">
+            👁️ {vorschau ? 'Bearbeiten' : 'Vorschau (Markdown)'}
           </button>
           <Link to="/admin?tab=design" style={{ ...BTN_SEC, textDecoration: 'none', display: 'inline-block' }} title="Bilder: Galerie gestalten">
             🖼️ Bild holen
@@ -530,11 +596,61 @@ export function TexteSchreibtischBoard({ variant }: Props) {
           )}
         </div>
 
+        {archiv.length > 0 && (
+          <div style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 800, color: '#5c3d2e', marginBottom: '0.45rem' }}>
+              📎 Hängordner – Zettel zur Mitte ziehen (oder doppelklicken)
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.65rem',
+                overflowX: 'auto',
+                paddingBottom: '0.35rem',
+                scrollbarWidth: 'thin',
+              }}
+            >
+              {archiv.map((a) => (
+                <div
+                  key={a.id}
+                  role="button"
+                  tabIndex={0}
+                  draggable
+                  onDragStart={(e) => onHangordnerDragStart(e, a.volltext)}
+                  onDoubleClick={() => archivWiederMitte(a)}
+                  style={{
+                    flex: '0 0 auto',
+                    width: 140,
+                    aspectRatio: '210 / 297',
+                    background: 'linear-gradient(180deg, #fffefb 0%, #f5f0e8 100%)',
+                    border: '1px solid rgba(138,90,43,0.35)',
+                    borderRadius: 6,
+                    boxShadow: '0 4px 12px rgba(40,28,14,0.15), inset 0 1px 0 rgba(255,255,255,0.9)',
+                    padding: '0.4rem 0.45rem',
+                    overflow: 'hidden',
+                    cursor: 'grab',
+                    fontSize: '0.52rem',
+                    lineHeight: 1.35,
+                  }}
+                  title={`${new Date(a.gespeichertAm).toLocaleString('de-AT')} – Doppelklick oder in die Mitte ziehen`}
+                >
+                  <div style={{ fontWeight: 800, color: '#78716c', marginBottom: '0.2rem', fontSize: '0.48rem' }}>
+                    {new Date(a.gespeichertAm).toLocaleDateString('de-AT')}
+                  </div>
+                  <div style={{ color: '#1c1a18' }}>{renderSchreibtischMarkdownPreview(archivSnippetForPreview(a.volltext, 650))}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {!vorschau ? (
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, MAX_TEXT))}
-            placeholder="Schreib hier, was gerade dein Fokus ist … Oder zieh eine Datei / Text hier rein."
+            placeholder={
+              'Schreiben oder reinziehen.\n\nMarkdown: # Titel  ## Untertitel  **fett**  - Listenpunkt'
+            }
             style={{
               width: '100%',
               boxSizing: 'border-box',
@@ -561,11 +677,14 @@ export function TexteSchreibtischBoard({ variant }: Props) {
               background: '#fffefb',
               border: '1px solid rgba(28,26,24,0.1)',
               borderRadius: 10,
-              whiteSpace: 'pre-wrap',
               overflow: 'auto',
             }}
           >
-            {text.trim() || <span style={{ color: '#9ca3af' }}>Noch leer.</span>}
+            {text.trim() ? (
+              <div style={{ maxWidth: 720 }}>{renderSchreibtischMarkdownPreview(text)}</div>
+            ) : (
+              <span style={{ color: '#9ca3af' }}>Noch leer.</span>
+            )}
           </div>
         )}
 

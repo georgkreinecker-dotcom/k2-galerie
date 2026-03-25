@@ -10,7 +10,7 @@
 |--------|------|
 | **Galerie öffnen** (Einstieg, dann „Galerie betreten“) | https://k2-galerie.vercel.app/projects/k2-galerie/galerie |
 | **Vorschau** (Werke, Admin-Zugang möglich) | https://k2-galerie.vercel.app/projects/k2-galerie/galerie-vorschau |
-| **Willkommensseite** | https://k2-galerie.vercel.app/willkommen |
+| **Eingangstor (ök2)** | https://k2-galerie.vercel.app/entdecken |
 | **Cache umgehen** (falls alter Stand) | https://k2-galerie.vercel.app/refresh.html |
 
 **Auf dem iPad:** Einen der Links als Lesezeichen speichern oder „Zum Home-Bildschirm hinzufügen“ (PWA).  

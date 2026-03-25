@@ -1,40 +1,56 @@
 import { type CSSProperties, type ReactNode } from 'react'
 
+/** Schreibtisch (warm) – kein dunkles Vollbild; Text liegt auf „Papier“ im Container. */
 export const georgsNotizPageStyle: CSSProperties = {
   minHeight: '100vh',
-  background: 'linear-gradient(180deg, #1a1b2e 0%, #16213e 100%)',
-  color: '#e9d5ff',
-  padding: '2rem 1.5rem 3rem',
-  fontFamily: 'Georgia, serif',
+  background: 'linear-gradient(165deg, #e8dcc8 0%, #f0e6d4 35%, #ebe0cf 70%, #e2d3bc 100%)',
+  color: '#1c1a18',
+  padding: '1.25rem 1rem 2.5rem',
+  fontFamily: 'Georgia, "Times New Roman", serif',
 }
 
+/** A4-nah: helles Blatt, Schatten, gut lesbar (wie Lesepapier, nicht Textwand-Nachtmodus). */
 export const georgsNotizContainerStyle: CSSProperties = {
-  maxWidth: 560,
+  maxWidth: 720,
   margin: '0 auto',
-  lineHeight: 1.7,
+  lineHeight: 1.65,
   fontSize: '1.05rem',
+  background: '#fffefb',
+  borderRadius: 14,
+  border: '1px solid rgba(28,26,24,0.1)',
+  boxShadow: '0 10px 40px rgba(28,26,24,0.1), 0 2px 10px rgba(28,26,24,0.06)',
+  padding: '1.5rem 1.35rem 2rem',
+  boxSizing: 'border-box',
 }
 
 export const georgsNotizBackLinkStyle: CSSProperties = {
-  color: 'rgba(233,213,255,0.7)',
+  color: '#5c5650',
   fontSize: '0.9rem',
   textDecoration: 'none',
   display: 'inline-block',
-  marginBottom: '1.5rem',
+  marginBottom: '1rem',
+  fontWeight: 600,
 }
 
 export const georgsNotizBaseStyles = {
-  h1: { margin: '0 0 0.5rem' as const, fontSize: '1.75rem' as const, fontWeight: 700 as const, color: '#fff' },
-  h2: { margin: '1.5rem 0 0.5rem' as const, fontSize: '1.35rem' as const, fontWeight: 600 as const, color: '#c4b5fd' },
-  p: { margin: '0 0 1rem' as const, color: 'rgba(233,213,255,0.95)' },
-  hr: { border: 'none', borderTop: '1px solid rgba(196,181,253,0.3)', margin: '1.5rem 0' },
+  h1: { margin: '0 0 0.5rem' as const, fontSize: '1.65rem' as const, fontWeight: 800 as const, color: '#1c1a18', lineHeight: 1.25 as const },
+  h2: { margin: '1.35rem 0 0.5rem' as const, fontSize: '1.15rem' as const, fontWeight: 700 as const, color: '#b54a1e' },
+  p: { margin: '0 0 1rem' as const, color: '#1c1a18' },
+  hr: { border: 'none', borderTop: '1px solid rgba(28,26,24,0.12)', margin: '1.35rem 0' },
   ul: { margin: '0.5rem 0 1rem 1.5rem', paddingLeft: '1rem' },
   li: { marginBottom: '0.35rem' },
   table: { width: '100%', borderCollapse: 'collapse' as const, margin: '0.75rem 0', fontSize: '0.95rem' },
-  th: { border: '1px solid rgba(196,181,253,0.35)', padding: '0.5rem 0.75rem', textAlign: 'left' as const, background: 'rgba(196,181,253,0.1)', color: '#c4b5fd', fontWeight: 600 },
-  td: { border: '1px solid rgba(196,181,253,0.25)', padding: '0.5rem 0.75rem', color: 'rgba(233,213,255,0.9)' },
-  a: { color: '#a78bfa', textDecoration: 'underline' },
-  strong: { fontWeight: 600, color: '#e9d5ff' },
+  th: {
+    border: '1px solid rgba(28,26,24,0.12)',
+    padding: '0.5rem 0.75rem',
+    textAlign: 'left' as const,
+    background: 'rgba(181,74,30,0.08)',
+    color: '#1c1a18',
+    fontWeight: 700,
+  },
+  td: { border: '1px solid rgba(28,26,24,0.1)', padding: '0.5rem 0.75rem', color: '#1c1a18' },
+  a: { color: '#b54a1e', textDecoration: 'underline' },
+  strong: { fontWeight: 700, color: '#1c1a18' },
   em: { fontStyle: 'italic' as const },
 }
 
