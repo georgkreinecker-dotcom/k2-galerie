@@ -8663,6 +8663,7 @@ ${'='.repeat(60)}
           if (ev) generatePlakatForEvent(ev)
           return
         case 'event-flyer':
+          closeOeffentlichkeitsarbeitFullscreenOverlay()
           generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
           return
         case 'presse':
@@ -8672,6 +8673,7 @@ ${'='.repeat(60)}
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
         case 'praesentationsmappe-kurz': {
+          closeOeffentlichkeitsarbeitFullscreenOverlay()
           const mappeQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
           const r = PROJECT_ROUTES['k2-galerie']
           const link = (path: string, label: string) =>
