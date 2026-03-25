@@ -57,34 +57,34 @@ const styles = `
   .${ROOT} .cell-front .front-accent { width: 0.9mm; flex-shrink: 0; border-radius: 1mm; background: linear-gradient(180deg, ${TEAL_DARK} 0%, ${TEAL} 100%); }
   .${ROOT} .cell-front .front-head { flex: 1; min-width: 0; text-align: left; padding: 0.5mm 0 0 0; }
   .${ROOT} .cell-front .front-head h2 {
-    margin: 0; font-family: ${FONT_SERIF}; font-size: 11pt; font-weight: 700; color: #1a1816; letter-spacing: -0.02em; line-height: 1.12;
+    margin: 0; font-family: ${FONT_SERIF}; font-size: 12pt; font-weight: 700; color: #1a1816; letter-spacing: -0.02em; line-height: 1.12;
   }
   .${ROOT} .cell-front .front-head .sub {
-    margin: 0.8mm 0 0; font-size: 6.5pt; color: #5c5650; font-weight: 500;
+    margin: 0.8mm 0 0; font-size: 7.2pt; color: #5c5650; font-weight: 500;
   }
   .${ROOT} .cell-front .front-main {
-    flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: center;
+    flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: stretch;
   }
   .${ROOT} .cell-front .thumb {
-    flex: 0 0 38%; max-width: 38%; max-height: 100%;
+    flex: 0 0 40%; max-width: 40%; min-height: 0; align-self: stretch;
     border-radius: 2mm; overflow: hidden;
     background: #f0ebe4; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
-    display: flex; align-items: center; justify-content: center; min-height: 0;
+    display: flex; align-items: center; justify-content: center;
   }
   .${ROOT} .cell-front .thumb img {
-    display: block; max-width: 100%; max-height: 34mm; width: auto; height: auto;
+    display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; min-height: 0;
     object-fit: contain; object-position: center;
   }
   .${ROOT} .cell-front .text { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .${ROOT} .cell-front .intro {
-    margin: 0; font-size: 7pt; line-height: 1.42; color: #2c2825; font-weight: 400;
+    margin: 0; font-size: 8.2pt; line-height: 1.4; color: #2c2825; font-weight: 400;
   }
   .${ROOT} .cell-front .addr {
-    margin: 1.5mm 0 0; font-size: 6pt; line-height: 1.4; color: #5c5650;
+    margin: 1.5mm 0 0; font-size: 7pt; line-height: 1.4; color: #5c5650;
   }
   .${ROOT} .cell-front .front-kunst {
     margin: 1.5mm 0 0; padding-top: 1.5mm; border-top: 1px solid rgba(12,92,85,0.1);
-    font-size: 7pt; font-weight: 700; color: ${TEAL_DARK}; letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 7.5pt; font-weight: 700; color: ${TEAL_DARK}; letter-spacing: 0.06em; text-transform: uppercase;
     text-align: left;
   }
   .${ROOT} .cell-front .k2qr-row {
@@ -98,9 +98,9 @@ const styles = `
   }
   .${ROOT} .cell-front .k2qr img { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
   .${ROOT} .cell-front .k2qr-cap {
-    font-size: 5.8pt; color: #3d3835; line-height: 1.3; flex: 1; min-width: 0; font-weight: 500;
+    font-size: 6.5pt; color: #3d3835; line-height: 1.3; flex: 1; min-width: 0; font-weight: 500;
   }
-  .${ROOT} .cell-front .k2qr-cap .k2qr-cta { font-family: ${FONT_SERIF}; font-size: 6.5pt; color: ${TEAL_DARK}; display: block; margin-bottom: 0.3mm; }
+  .${ROOT} .cell-front .k2qr-cap .k2qr-cta { font-family: ${FONT_SERIF}; font-size: 7.2pt; color: ${TEAL_DARK}; display: block; margin-bottom: 0.3mm; }
   .${ROOT} .cell-front .foot {
     margin-top: auto; padding-top: 1.2mm; font-size: 4.5pt; color: #8a8278; line-height: 1.35;
     text-align: left; writing-mode: horizontal-tb;
@@ -125,21 +125,16 @@ const styles = `
   .${ROOT} .cell-back .back-right {
     flex: 0 0 44%; min-width: 0; display: flex; align-items: center; justify-content: center;
   }
-  .${ROOT} .cell-back .kicker {
-    margin: 0; font-size: 5pt; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-weight: 600;
-  }
-  .${ROOT} .cell-back h3 {
-    margin: 0.5mm 0 0; font-family: ${FONT_SERIF}; font-size: 9pt; font-weight: 700; color: rgba(255,248,240,0.95); line-height: 1.2;
-  }
   .${ROOT} .cell-back .back-claims {
-    margin: 1.5mm 0 0; flex: 1; min-height: 0;
-    font-size: 6.2pt; font-weight: 600; line-height: 1.42; color: rgba(255,248,240,0.92);
+    margin: 0; flex: 1; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center; gap: 1.8mm;
+    font-weight: 600; line-height: 1.38; color: rgba(255,248,240,0.92);
   }
   .${ROOT} .cell-back .back-claims .claim-a {
-    font-family: ${FONT_SERIF}; font-size: 6.8pt; font-weight: 700; color: #fff; line-height: 1.35; margin: 0 0 1mm 0;
+    font-family: ${FONT_SERIF}; font-size: 9pt; font-weight: 700; color: #fff; line-height: 1.28; margin: 0;
   }
   .${ROOT} .cell-back .back-claims .claim-b {
-    margin: 0; font-size: 6pt; font-weight: 500; color: #d4a574; line-height: 1.45;
+    margin: 0; font-size: 8pt; font-weight: 500; color: #d4a574; line-height: 1.42;
   }
   /* Tablet-Rahmen wie Entdecken-Hero (rechte Spalte) */
   .${ROOT} .cell-back .tor-tablet {
@@ -159,8 +154,8 @@ const styles = `
   }
   .${ROOT} .cell-back .qr { width: 14mm; height: 14mm; margin: 0; padding: 0; background: transparent; }
   .${ROOT} .cell-back .qr img { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
-  .${ROOT} .cell-back .scan { margin: 0.6mm 0 0; font-size: 4.8pt; color: #3d3835; font-weight: 600; line-height: 1.2; }
-  .${ROOT} .cell-back .scan-sub { margin: 0.2mm 0 0; font-size: 4.3pt; color: #6b6560; font-weight: 400; }
+  .${ROOT} .cell-back .scan { margin: 0.6mm 0 0; font-size: 6pt; color: #3d3835; font-weight: 600; line-height: 1.25; }
+  .${ROOT} .cell-back .scan-sub { margin: 0.35mm 0 0; font-size: 5.5pt; color: #5c5650; font-weight: 500; line-height: 1.25; }
   .${ROOT} .cell-back .brand { margin: 1mm 0 0; font-size: 4.5pt; color: rgba(255,255,255,0.45); line-height: 1.25; }
 
   @media print {
@@ -519,7 +514,6 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="inner">
               <div className="back-left">
                 <div>
-                  <p className="kicker">ök2 · Eingangstor</p>
                   <div className="back-claims">
                     <p className="claim-a">{PRODUCT_WERBESLOGAN}</p>
                     <p className="claim-b">{PRODUCT_WERBESLOGAN_2}</p>
@@ -536,8 +530,8 @@ export default function FlyerK2Oek2TorViererPage() {
                         QR…
                       </div>
                     )}
-                    <p className="scan">Demo ök2 – Eingangstor</p>
-                    <p className="scan-sub">Code scannen · gleicher Start wie &quot;Als Fremder eintreten&quot;</p>
+                    <p className="scan">Demo ök2</p>
+                    <p className="scan-sub">Code scannen - eintreten</p>
                   </div>
                   <p className="brand">
                     {PRODUCT_BRAND_NAME}
