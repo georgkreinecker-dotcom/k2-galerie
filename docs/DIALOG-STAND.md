@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit Event-Flyer:** Vierer-Bogen nicht mehr als eigene Kachel-Buttons, sondern als **`erstellenVarianten`** wie Presse: **Handzettel zum Event** | **Vierer-Bogen A4** | **Vierer-Bogen – neuer Tab** (K2/ök2; VK2 nur Handzettel). **`ScreenshotExportAdmin.tsx`**. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Event- und Medienplanung → Event-Flyer-Karte – drei Optionen prüfen.
+
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer Rückseite (Georg):** Tor-Bild wie **`/entdecken`**: **`loadEntdeckenHeroOverlayIfFresh`** + Event **`k2-page-content-entdecken-updated`** (nicht nur Repo-JPG). Slogans **größer** (11pt / 9,25pt), Zusatz-Werbetext **kleiner** (4,85pt, dezenter). Layout: **`back-claims-wrap`** zentriert nur die zwei Slogan-Zeilen. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `4542503` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Flyer Rückseite – Tor wie auf Entdecken? Druck/Vorschau.

@@ -19,6 +19,7 @@ import {
   DEFAULT_KATALOG_SPALTEN_K2_OEK2,
   DEFAULT_KATALOG_SPALTEN_VK2,
 } from '../src/utils/werkkatalogPreferences'
+import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
 function isProductionLikeUrl(url: string | undefined): boolean {
@@ -5210,73 +5211,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => { cancelled = true }
   }, [redactionEvent, redactionPresseQrShow, redactionPresseQrUrl])
 
-  // Hilfsfunktion: Alle Termindaten formatieren
-  const formatEventDates = (event: any): string => {
-    if (!event || !event.date) {
-      return 'Datum folgt'
-    }
-    try {
-      const startDate = new Date(event.date)
-      if (isNaN(startDate.getTime())) {
-        return 'Datum folgt'
-      }
-      let endDate = event.endDate ? new Date(event.endDate) : null
-      if (endDate && isNaN(endDate.getTime())) {
-        // EndDate ist ungültig, ignoriere es
-        endDate = null
-      }
-    
-    let dateStr = startDate.toLocaleDateString('de-DE', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-    
-    if (endDate && endDate.getTime() !== startDate.getTime()) {
-      dateStr += ` - ${endDate.toLocaleDateString('de-DE', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })}`
-    }
-    
-    // Zeiten hinzufügen
-    if (event.dailyTimes && Object.keys(event.dailyTimes).length > 0) {
-      // Mehrteiliges Event mit täglichen Zeiten
-      const times: string[] = []
-      const days = getEventDays(event.date, event.endDate || event.date)
-      days.forEach(day => {
-        const dayTime = event.dailyTimes[day]
-        if (dayTime) {
-          const dayDate = new Date(day)
-          if (typeof dayTime === 'string') {
-            // Altes Format (nur Startzeit)
-            times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${dayTime}`)
-          } else if (dayTime.start || dayTime.end) {
-            // Neues Format (Start- und Endzeit)
-            const timeStr = dayTime.start 
-              ? (dayTime.end ? `${dayTime.start} - ${dayTime.end} Uhr` : `${dayTime.start} Uhr`)
-              : (dayTime.end ? `bis ${dayTime.end} Uhr` : '')
-            if (timeStr) {
-              times.push(`${dayDate.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })}: ${timeStr}`)
-            }
-          }
-        }
-      })
-      if (times.length > 0) {
-        dateStr += '\n\nZeiten:\n' + times.join('\n')
-      }
-    } else if (event.startTime) {
-      dateStr += `\n🕐 ${event.startTime}${event.endTime ? ` - ${event.endTime}` : ''} Uhr`
-    }
-    
-    return dateStr
-    } catch (error) {
-      console.error('Fehler beim Formatieren der Event-Daten:', error)
-      return 'Datum folgt'
-    }
-  }
+  /** Alle Termindaten formatieren (lange Datumszeile + dailyTimes / Uhrzeiten) – zentral in eventTerminFormat. */
+  const formatEventDates = (event: any): string =>
+    formatEventTerminKomplett(event, { mode: 'long', emptyFallback: 'Datum folgt', withClockEmojiSingle: true })
 
   // Beide Ausgangsgeschichten aus mök2 (MEDIENSTUDIO-K2 §1a / §1b) – für Presseaussendung
   const STORY_1A_HUMAN_PRESSE =
@@ -21437,16 +21374,51 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Handzettel + Vierer-Bogen A4 (K2 vorn, ök2-Tor QR hinten)',
+                                beschreibung:
+                                  'Jetzt erstellen: Handzettel aus Event-Daten — oder Vierer-Bogen A4 (Galerie vorn, Demo-Einstieg hinten).',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (!ev) return
-                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                  generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
-                                }
+                                erstellenVarianten: [
+                                  {
+                                    label: 'Handzettel zum Event',
+                                    onErstellen: () => {
+                                      const ev = events.find((e: any) => e.id === event.id)
+                                      if (!ev) return
+                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                      generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
+                                    },
+                                  },
+                                  ...(tenant.isVk2
+                                    ? []
+                                    : [
+                                        {
+                                          label: 'Vierer-Bogen A4 (K2 / ök2-Tor)',
+                                          onErstellen: () => {
+                                            navigateFromOeffentlichkeitsarbeitOverlay(
+                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
+                                            )
+                                          },
+                                        },
+                                        {
+                                          label: 'Vierer-Bogen – neuer Tab',
+                                          onErstellen: () => {
+                                            closeOeffentlichkeitsarbeitFullscreenOverlay()
+                                            try {
+                                              window.open(
+                                                BASE_APP_URL +
+                                                  PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer +
+                                                  mappeCtxQs,
+                                                '_blank',
+                                                'noopener,noreferrer'
+                                              )
+                                            } catch {
+                                              /* noop */
+                                            }
+                                          },
+                                        },
+                                      ]),
+                                ],
                               },
                               {
                                 typ: 'presse' as const,
@@ -21609,7 +21581,6 @@ ${name}`
                                     })
                                     .map(karte => {
                                     const istPraesentationsmappen = karte.typ === 'praesentationsmappen'
-                                    const istEventFlyer = karte.typ === 'event-flyer'
                                     const hatDokumente = karte.docs.length > 0
                                     return (
                                       <div
@@ -21646,31 +21617,6 @@ ${name}`
                                           </span>
                                         </div>
 
-                                        {istEventFlyer && !tenant.isVk2 && (
-                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                            <button
-                                              type="button"
-                                              onClick={(e) =>
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs,
-                                                  e
-                                                )
-                                              }
-                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                            >
-                                              Vierer-Flyer A4 (K2 / ök2-Tor)
-                                            </button>
-                                            <a
-                                              href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
-                                              onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
-                                              target="_blank"
-                                              rel="noopener noreferrer"
-                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
-                                            >
-                                              Vierer-Flyer (neuer Tab)
-                                            </a>
-                                          </div>
-                                        )}
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
