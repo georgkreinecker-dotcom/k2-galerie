@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Admin-Tab „Präsentationsmappen“ gleicher Sportwagenmodus:** Dieselben gleich-Tab-Links (Kurzvariante, Vollversion, Prospekt, Plakat A3) nutzen jetzt **`navigateFromOeffentlichkeitsarbeitOverlay`** wie im Öffentlichkeitsarbeit-Vollbild – kein `<Link>` mehr. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Admin-Tab „Präsentationsmappen“ gleicher Sportwagenmodus:** Dieselben gleich-Tab-Links (Kurzvariante, Vollversion, Prospekt, Plakat A3) nutzen jetzt **`navigateFromOeffentlichkeitsarbeitOverlay`** wie im Öffentlichkeitsarbeit-Vollbild – kein `<Link>` mehr. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `94f80cd` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Gleicher Tab: Vierer-Flyer + Präsentationsmappen (inkl. Plakat A3) ohne Race:** `<Link>` + `closeOeffentlichkeitsarbeitFullscreenOverlay`/`replaceState` und React Router haben sich gegenseitig gestört → Tab wirkte „hängend“. **Fix:** Ein Standard **`navigateFromOeffentlichkeitsarbeitOverlay`**: `flushSync` schließt das Vollbild-Modal sofort; bei `openModal=1` erst `navigate(..., replace)` zum Bereinigen, dann `navigate(Ziel)`; sonst `queueMicrotask` zum Ziel. **Vierer-Flyer**, **Kurzvariante**, **Vollversion**, **Prospekt/Flyer**, **Plakat Eröffnung (A3)** = `<button>` + dieser Helper (neuer Tab unverändert `<a target="_blank">`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `5baa9b1` ✅ auf GitHub
 
