@@ -164,11 +164,16 @@ export default function FlyerK2Oek2TorViererPage() {
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const [welcomeThumb, setWelcomeThumb] = useState('')
   const [intro, setIntro] = useState('')
-  const [subtitle, setSubtitle] = useState('')
   const [galleryTitle, setGalleryTitle] = useState(() => K2_STAMMDATEN_DEFAULTS.gallery.name)
   const [stammdaten, setStammdaten] = useState(() => loadStammdatenForTenant('k2'))
   const [qrEntdeckenDataUrl, setQrEntdeckenDataUrl] = useState('')
   const [qrK2GalerieDataUrl, setQrK2GalerieDataUrl] = useState('')
+  const [torTheme, setTorTheme] = useState(() => ({
+    bgDark: '#120a06',
+    bgMid: '#1e1008',
+    accent: '#b54a1e',
+  }))
+  const [torHeroUrl, setTorHeroUrl] = useState('/img/oeffentlich/entdecken-hero.jpg')
 
   const entdeckenBustUrl = buildQrUrlWithBust(BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, qrVersionTs)
   const k2GalerieBustUrl = buildQrUrlWithBust(BASE_APP_URL + K2_GALERIE_PATH, qrVersionTs)
@@ -231,9 +236,7 @@ export default function FlyerK2Oek2TorViererPage() {
     try {
       const texts = getPageTexts(undefined)
       const g = texts.galerie
-      const names = loadStammdatenForTenant('k2')
       if (isMounted) {
-        setSubtitle(`${names.martinaName} & ${names.georgName}`)
         setIntro(
           (g?.welcomeIntroText || '').trim().slice(0, 220) ||
             'Kunst & Keramik – wir freuen uns auf deinen Besuch.'
