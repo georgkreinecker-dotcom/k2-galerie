@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Medienplaner / Öffentlichkeitsarbeit Vollbild – Modals lagen dahinter:** Vollbild-Overlay **z-index 99999**; Redaktions-Modals (Presse, Social, Newsletter, Plakat, Flyer, Veröffentlichen-Hinweise, Guide-Leiste) hatten **99998** → Inhalt unsichtbar, Seite wirkte gesperrt. **Fix:** **100100** (über Vollbild, unter In-App-Dokument-Viewer 2 000 000); **Vorlage Vergangenheit** **99996 → 100100**. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Medienplaner / Öffentlichkeitsarbeit Vollbild – Modals lagen dahinter:** Vollbild-Overlay **z-index 99999**; Redaktions-Modals (Presse, Social, Newsletter, Plakat, Flyer, Veröffentlichen-Hinweise, Guide-Leiste) hatten **99998** → Inhalt unsichtbar, Seite wirkte gesperrt. **Fix:** **100100** (über Vollbild, unter In-App-Dokument-Viewer 2 000 000); **Vorlage Vergangenheit** **99996 → 100100**. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `00fab63` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit (auch „Vollbild zum Testen“) → **Ansehen** bei Newsletter/Social/Presse/Flyer kurz prüfen.
 
