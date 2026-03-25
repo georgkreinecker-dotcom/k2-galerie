@@ -80,6 +80,11 @@ const styles = `
   .${ROOT} { font-family: ${FONT_SANS}; background: linear-gradient(180deg, #f0ebe4 0%, #e5e0d8 100%); padding: 16px; margin: 0; box-sizing: border-box; min-height: 100vh; }
   .${ROOT} * { box-sizing: border-box; }
   .${ROOT} .flyer-vierer-toolbar { max-width: 720px; margin: 0 auto 16px; padding: 0.75rem 0; border-bottom: 1px solid ${TEAL_LIGHT}40; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; color: #1c1a18; }
+  .${ROOT} .flyer-print-hint {
+    max-width: 720px; margin: -8px auto 14px; padding: 10px 12px; background: #fff8f0; border: 1px solid #d4a574;
+    border-radius: 8px; font-size: 0.78rem; color: #3d3835; line-height: 1.45;
+  }
+  .${ROOT} .flyer-print-hint strong { color: #1c1a18; }
   .${ROOT} .flyer-img-panel {
     max-width: 720px; margin: 0 auto 16px; padding: 12px 14px; background: #fffefb; border: 1px solid rgba(15,118,110,0.22);
     border-radius: 10px; font-size: 0.82rem; color: #1c1a18;
@@ -267,8 +272,9 @@ const styles = `
   @media print {
     /*
      * Genau 2 Druckseiten: Vorderbogen + Rückbogen (je 4 Streifen auf einem A4).
-     * @page mit kleinem Rand: linker Rand oft abgeschnitten → etwas Luft links/rechts.
-     * Keine fixe 210mm-Breite auf dem Root: 100% der bedruckbaren Fläche nutzen.
+     * Höhe MUSS unter die bedruckbare Fläche passen: index.css @page hat z. B. 10mm oben + 14mm unten
+     * → ~273mm Inhalt – sonst bricht Safari den Bogen auf 2 Seiten (fast leere „Zwischenseite“).
+     * Grid statt Flex-Spalte: stabileres Umbruchverhalten in WebKit beim Drucken.
      */
     @page { size: A4 portrait; margin: 3mm 4mm 3mm 5mm; }
     html, body {
@@ -287,38 +293,48 @@ const styles = `
       min-height: 0 !important;
       width: 100% !important;
       max-width: 100% !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .${ROOT} .flyer-vierer-toolbar { display: none !important; }
     .${ROOT} .flyer-img-panel { display: none !important; }
-    /* Eine Bogen-Seite = exakt eine Druckseite (Höhe an bedruckbare Fläche angepasst) */
     .${ROOT} .sheet {
       box-sizing: border-box !important;
       box-shadow: none !important;
       margin: 0 !important;
       width: 100% !important;
-      height: 286mm !important;
-      max-height: 286mm !important;
-      min-height: 286mm !important;
+      /* 268mm: Reserve zu global @page (10+14mm) + Safari-Toleranz – ein Bogen = eine Seite */
+      height: 268mm !important;
+      max-height: 268mm !important;
+      min-height: 268mm !important;
       overflow: hidden !important;
+      display: grid !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+      align-content: stretch !important;
       page-break-after: always !important;
       break-after: page !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
-      flex-shrink: 0 !important;
     }
     .${ROOT} .sheet:last-of-type {
       page-break-after: auto !important;
       break-after: auto !important;
     }
-    .${ROOT} .cell {
-      flex: 0 0 calc(286mm / 4) !important;
-      height: calc(286mm / 4) !important;
-      max-height: calc(286mm / 4) !important;
+    .${ROOT} .sheet > .cell {
+      flex: unset !important;
       min-height: 0 !important;
+      height: 100% !important;
+      max-height: 100% !important;
       overflow: hidden !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
     }
+    .${ROOT} .cell-front {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .${ROOT} .cell-front .front-main { min-height: 0 !important; }
+    .${ROOT} .cell-front .thumb-strip { min-height: 0 !important; }
     .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back .tor-tablet { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -951,6 +967,12 @@ export default function FlyerK2Oek2TorViererPage() {
           Benutzerhandbuch
         </Link>
       </div>
+      <p className="flyer-print-hint no-print" role="note">
+        <strong>Drucken (Safari / Mac):</strong> Im Druckdialog <strong>„Hintergrundgrafiken“</strong> aktivieren – sonst
+        fehlen Farbflächen und helle Schrift auf der Rückseite fast komplett. Geplant sind{' '}
+        <strong>zwei</strong> Druckseiten (Vorderbogen + Rückbogen), jeweils ein A4 mit vier gleichen Streifen – keine
+        vier Einzelseiten.
+      </p>
 
       <div className="flyer-img-panel no-print" aria-label="Flyer-Bilder wählen">
         <h2>Bilder für diesen Flyer</h2>
