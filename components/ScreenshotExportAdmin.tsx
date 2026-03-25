@@ -1858,11 +1858,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       /* noop */
     }
   }
+  /** Immer aufrufen bevor Redaktions-Modals/Dokument-Viewer darüber liegen – sonst bleibt Vollbild (z-index) aktiv und die APf wirkt „eingefroren“. */
   const closeOeffentlichkeitsarbeitFullscreenOverlay = () => {
-    if (!showOeffentlichkeitsarbeitModal) return
     setShowOeffentlichkeitsarbeitModal(false)
     try {
       const u = new URL(window.location.href)
+      if (!u.searchParams.has('openModal')) return
       u.searchParams.delete('openModal')
       navigate(u.pathname + u.search, { replace: true })
     } catch {
@@ -5051,6 +5052,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Presseaussendung: Redaktions-Modal (Split-Ansicht). optionalOverride = z. B. frisch generiert neutral/lokal; sonst Vorschlag aus k2-pr-suggestions oder Standard. */
   const openRedaction = (event: any, optionalOverride?: any) => {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     const defaultQr = BASE_APP_URL + (tenant.isVk2 ? PROJECT_ROUTES.vk2.galerie : tenant.isOeffentlich ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich : PROJECT_ROUTES['k2-galerie'].galerie)
     try {
       const raw = localStorage.getItem('k2-pr-suggestions') || '[]'
@@ -5075,6 +5077,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Social-Media-Redaktion öffnen (zweigeteilte Ansicht: links bearbeiten, rechts Vorschau). eventLike = Event oder { id, title, date }; doc = bestehendes Dokument oder null. */
   const openSocialRedaction = (eventLike: any, doc: any, socialContent: { instagram?: string; facebook?: string; whatsapp?: string; imageDataUrl?: string }) => {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     setSocialRedactionEvent(eventLike)
     setSocialRedactionDocument(doc ?? null)
     setSocialRedactionInstagram(socialContent?.instagram ?? '')
@@ -5085,6 +5088,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Newsletter-Redaktion öffnen (zweigeteilte Ansicht). Bei Eröffnung immer frischen Inhalt (starker Text, Termine aus Event). */
   const openNewsletterRedaction = (eventLike: any, doc: any, content: { subject?: string; body?: string }) => {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     setNewsletterRedactionEvent(eventLike)
     setNewsletterRedactionDocument(doc ?? null)
     const useContent = eventLike?.type === 'galerieeröffnung'
@@ -5096,6 +5100,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Plakat-Redaktion: wie Newsletter, links Felder, rechts Vorschau mit Format-Leiste */
   const openPlakatRedaction = (event: any) => {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     if (!event) return
     setPlakatRedactionEvent(event)
     setPlakatRedactionDoc(null)
@@ -5139,6 +5144,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   /** Flyer-Redaktion: wie Newsletter */
   const openFlyerRedaction = (event: any) => {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     if (!event) return
     setFlyerRedactionEvent(event)
     setFlyerRedactionDoc(null)
@@ -8558,6 +8564,7 @@ ${'='.repeat(60)}
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any, event?: any) => {
     try {
+    closeOeffentlichkeitsarbeitFullscreenOverlay()
     const fileDataOrUrl = document.fileData || document.data
     const docTitle = document.name || 'Dokument'
     // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. iframe src = absolute URL.
@@ -8663,7 +8670,6 @@ ${'='.repeat(60)}
           if (ev) generatePlakatForEvent(ev)
           return
         case 'event-flyer':
-          closeOeffentlichkeitsarbeitFullscreenOverlay()
           generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
           return
         case 'presse':
@@ -8673,7 +8679,6 @@ ${'='.repeat(60)}
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
         case 'praesentationsmappe-kurz': {
-          closeOeffentlichkeitsarbeitFullscreenOverlay()
           const mappeQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
           const r = PROJECT_ROUTES['k2-galerie']
           const link = (path: string, label: string) =>
@@ -22740,17 +22745,6 @@ ${name}`
         const patchPlakat = (partial: Partial<typeof plakatRedaction>) => {
           setPlakatRedaction((prev) => (prev ? { ...prev, ...partial } : null))
         }
-        const closeOeffentlichkeitsarbeitFullscreenIfOpen = () => {
-          if (!showOeffentlichkeitsarbeitModal) return
-          setShowOeffentlichkeitsarbeitModal(false)
-          try {
-            const u = new URL(window.location.href)
-            u.searchParams.delete('openModal')
-            navigate(u.pathname + u.search, { replace: true })
-          } catch {
-            /* noop */
-          }
-        }
         const savePlakatRedaction = () => {
           try {
             const list: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -22809,7 +22803,7 @@ ${name}`
             setPlakatRedaction(null)
             // Falls der Vollbild-Container aktiv ist, direkt schließen:
             // verhindert "unsichtbar blockierte" Klickflächen nach dem ersten Durchlauf.
-            closeOeffentlichkeitsarbeitFullscreenIfOpen()
+            closeOeffentlichkeitsarbeitFullscreenOverlay()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -22873,7 +22867,7 @@ ${name}`
                   setPlakatRedactionEvent(null)
                   setPlakatRedactionDoc(null)
                   setPlakatRedaction(null)
-                  closeOeffentlichkeitsarbeitFullscreenIfOpen()
+                  closeOeffentlichkeitsarbeitFullscreenOverlay()
                 }}
                 style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
               >

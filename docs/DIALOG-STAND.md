@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **„Event hängt noch immer“ – Vollbild + „Neu erstellen“:** `onErstellen` auf den Werbematerial-Karten rief **direkt** `generateEditableNewsletterPDF` / `generatePlakatForEvent` / Presse / `openSocialRedaction` auf – **ohne** `handleViewEventDocument` → Vollbild-Overlay blieb mit hohem z-index aktiv. **Fix:** (1) `closeOeffentlichkeitsarbeitFullscreenOverlay` schließt immer das Modal (`setShow… false`), `navigate` nur wenn `openModal` in der URL. (2) **Am Anfang** von `handleViewEventDocument` immer schließen. (3) **Am Anfang** von `openRedaction`, `openSocialRedaction`, `openNewsletterRedaction`, `openPlakatRedaction`, `openFlyerRedaction`. (4) Doppelte lokale `closeOeffentlichkeitsarbeitFullscreenIfOpen` am Plakat-Modal → zentraler Helper. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit **im Vollbild** (`openModal=1`) → je Karte **„Neu erstellen“** und **„Ansehen“** – APf muss danach überall klickbar bleiben.
+
 **Letzter Stand:** 25.03.26 – **Rest-Sperre bei Flyer + Präsentationsmappen gefixt:** Diese zwei liefen in `handleViewEventDocument` über Sonderzweige (`event-flyer`, `praesentationsmappe-kurz`) ohne vorheriges Schließen des Öffentlichkeitsarbeit-Vollbilds. **Fix:** in beiden Zweigen jetzt zuerst `closeOeffentlichkeitsarbeitFullscreenOverlay()`, dann Öffnen/Generieren. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit → **Flyer** + **Präsentationsmappen** je „Ansehen“, danach muss APf frei bedienbar bleiben.
