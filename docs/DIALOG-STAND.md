@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Rückseite (Georg):** Tor-Bild wie **`/entdecken`**: **`loadEntdeckenHeroOverlayIfFresh`** + Event **`k2-page-content-entdecken-updated`** (nicht nur Repo-JPG). Slogans **größer** (11pt / 9,25pt), Zusatz-Werbetext **kleiner** (4,85pt, dezenter). Layout: **`back-claims-wrap`** zentriert nur die zwei Slogan-Zeilen. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `4542503` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Flyer Rückseite – Tor wie auf Entdecken? Druck/Vorschau.
+
 **Letzter Stand:** 25.03.26 – **CI / GitHub-Mails:** `FlyerK2GaleriePage` importierte `../utils/eventTerminFormat`, die Datei fehlte im Repo → **Tests + Build auf GitHub rot** bei jedem Push (viele gleiche Meldungen). **Fix:** `src/utils/eventTerminFormat.ts` + `src/tests/eventTerminFormat.test.ts`. **Commit:** `921da17` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer:** **Links und rechts** je **Werk aus Liste** (Dropdown + URL wie rechts); `leftWerk` + Migration alter `card`; große Hinweis-Box entfernt; Panel-Hinweistext gekürzt/weg; Tor wieder **Foto-Datei** wählbar. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `7c0418d` ✅ auf GitHub
