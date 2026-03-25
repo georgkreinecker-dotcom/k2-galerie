@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { createPortal } from 'react-dom'
+import { createPortal, flushSync } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
@@ -1871,6 +1871,36 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       /* noop */
     }
   }
+  /**
+   * Gleicher Tab aus Öffentlichkeitsarbeit-Vollbild: kein <Link> + replaceState (Race mit React Router).
+   * Modal sofort per flushSync zu, optional openModal per navigate(replace), dann Zielroute.
+   */
+  const navigateFromOeffentlichkeitsarbeitOverlay = useCallback(
+    (to: string, e?: React.MouseEvent) => {
+      e?.preventDefault()
+      e?.stopPropagation()
+      const returnTo = `${location.pathname}${location.search}${location.hash || ''}`
+      flushSync(() => {
+        setShowOeffentlichkeitsarbeitModal(false)
+      })
+      const sp = new URLSearchParams(location.search)
+      const hadOpenModal = sp.get('openModal') === '1'
+      if (hadOpenModal) {
+        sp.delete('openModal')
+        const qs = sp.toString()
+        const cleaned = `${location.pathname}${qs ? `?${qs}` : ''}${location.hash || ''}`
+        navigate(cleaned, { replace: true })
+        window.setTimeout(() => {
+          navigate(to, { state: { returnTo } })
+        }, 0)
+      } else {
+        queueMicrotask(() => {
+          navigate(to, { state: { returnTo } })
+        })
+      }
+    },
+    [location.pathname, location.search, location.hash, navigate]
+  )
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') forceCloseBlockingOverlays()
@@ -21602,14 +21632,18 @@ ${name}`
 
                                         {istEventFlyer && !tenant.isVk2 && (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                            <Link
-                                              to={PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
-                                              onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
-                                              state={{ returnTo: location.pathname + location.search }}
-                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                            <button
+                                              type="button"
+                                              onClick={(e) =>
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs,
+                                                  e
+                                                )
+                                              }
+                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                                             >
                                               Vierer-Flyer A4 (K2 / ök2-Tor)
-                                            </Link>
+                                            </button>
                                             <a
                                               href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
                                               onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
@@ -21624,24 +21658,57 @@ ${name}`
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs,
+                                                    e
+                                                  )
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
                                                 Kurzvariante
-                                              </Link>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + mappeCtxQs,
+                                                    e
+                                                  )
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
                                                 Vollversion
-                                              </Link>
+                                              </button>
                                               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 In neuem Tab
                                               </a>
-                                              <Link to={'/prospekt-k2-galerie' + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay('/prospekt-k2-galerie' + mappeCtxQs, e)
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
                                                 Prospekt/Flyer
-                                              </Link>
+                                              </button>
                                               <a href={BASE_APP_URL + '/prospekt-k2-galerie' + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Prospekt/Flyer (neuer Tab)
                                               </a>
-                                              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                                    PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs,
+                                                    e
+                                                  )
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
                                                 Plakat Eröffnung (A3)
-                                              </Link>
+                                              </button>
                                               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Plakat A3 (neuer Tab)
                                               </a>

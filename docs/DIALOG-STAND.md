@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Gleicher Tab: Vierer-Flyer + Präsentationsmappen (inkl. Plakat A3) ohne Race:** `<Link>` + `closeOeffentlichkeitsarbeitFullscreenOverlay`/`replaceState` und React Router haben sich gegenseitig gestört → Tab wirkte „hängend“. **Fix:** Ein Standard **`navigateFromOeffentlichkeitsarbeitOverlay`**: `flushSync` schließt das Vollbild-Modal sofort; bei `openModal=1` erst `navigate(..., replace)` zum Bereinigen, dann `navigate(Ziel)`; sonst `queueMicrotask` zum Ziel. **Vierer-Flyer**, **Kurzvariante**, **Vollversion**, **Prospekt/Flyer**, **Plakat Eröffnung (A3)** = `<button>` + dieser Helper (neuer Tab unverändert `<a target="_blank">`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit Vollbild → obige Links **gleicher Tab**; muss zuverlässig zur Seite wechseln.
+
 **Letzter Stand:** 25.03.26 – **Letzter Hänger „Vierer-Flyer A4 (K2/ök2 Tor)“ gezielt gefixt:** Ursache war ein Race im Klickpfad: `closeOeffentlichkeitsarbeitFullscreenOverlay()` machte bei Link-Klicks ein Router-`navigate(..., replace)` und konnte dadurch die eigentliche Link-Navigation überlagern/abfangen. **Fix:** openModal-Bereinigung jetzt per `window.history.replaceState` (ohne Router-Navigation), sowohl im zentralen Close-Helper als auch im Force-Close-Pfad. Damit bleibt der Klick auf **Vierer-Flyer A4** stabil. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
 
 **Was wir JETZT tun:** Georg: Event- und Medienplanung → **Vierer-Flyer A4 (K2/ök2 Tor)** direkt klicken (gleicher Tab) + danach zurück; es darf nichts mehr blockieren.
