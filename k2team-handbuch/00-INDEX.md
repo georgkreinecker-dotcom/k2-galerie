@@ -20,5 +20,7 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 10 | [Links & QR-Codes – Register](21-LINKS-QR-CODES-REGISTER.md) | Alle QR und zentralen Links: wo sie vorkommen, wohin sie führen, wofür sie da sind |
 | 11 | [Medienplanung – Flyer & Werbung (mök2)](22-MEDIENPLANUNG-FLYER-WERBUNG-MOK2.md) | Wo was liegt, Checkliste Flyer/Werbung, Kontext mök2 – gut arbeiten bei Medienplanung |
 | 12 | [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md) | Cursor aus? Dialog tot? Parallelstrukturen: DIALOG-STAND, Briefing, Backup – zentral im Smart Panel |
+| 13 | [Texte & Briefe Kompass](24-TEXTE-BRIEFE-KOMPASS.md) | Schnellwahl: welcher Text/Brief wofür; ein Zweck = ein Hauptdokument |
+| 14 | [Lizenz: Eigene URL ab Pro](25-LIZENZ-EIGENE-URL-AB-PRO.md) | Custom Domain/URL pro Lizenznehmer: was es ist, wie es online wird, wie Veröffentlichen dazu passt |
 
 **Weitere Kapitel** (bei Bedarf): [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)
