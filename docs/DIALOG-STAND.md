@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Plakat bei Eröffnung abgelegt:** **Plakat Galerieeröffnung (A3)** zusätzlich auf dem **Texte-Schreibtisch** (Zone „Eröffnung & Freund:innen“) und in **Admin → Eventplanung → Öffentlichkeitsarbeit** bei jedem Event unter **Präsentationsmappen** (inkl. neuem Tab), außerdem im Tab **Präsentationsmappen** im Hub. Korrekturen: **Event bearbeiten** / **Stammdaten**, dann Plakat-Seite neu laden. **`TexteSchreibtischPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+**Letzter Stand:** 25.03.26 – **Plakat bei Eröffnung abgelegt:** **Plakat Galerieeröffnung (A3)** zusätzlich auf dem **Texte-Schreibtisch** (Zone „Eröffnung & Freund:innen“) und in **Admin → Eventplanung → Öffentlichkeitsarbeit** bei jedem Event unter **Präsentationsmappen** (inkl. neuem Tab), außerdem im Tab **Präsentationsmappen** im Hub. Korrekturen: **Event bearbeiten** / **Stammdaten**, dann Plakat-Seite neu laden. **`TexteSchreibtischPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `0580be8` ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nächster Schritt **Öffentlichkeitsarbeit Launch** nach Georg; Plakat unter **Eröffnung** + **Event-Karte** auffindbar.
 
