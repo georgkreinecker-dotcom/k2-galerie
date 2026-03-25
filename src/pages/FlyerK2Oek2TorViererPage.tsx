@@ -102,6 +102,30 @@ const styles = `
   .${ROOT} .flyer-img-panel .file-row button.danger { background: #fff; color: #8b4513; border-color: #d4a574; }
   .${ROOT} .flyer-img-panel .file-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #d4cfc7; }
   .${ROOT} .flyer-img-panel .hint { margin: 8px 0 0; font-size: 0.78rem; color: #5c5650; line-height: 1.45; }
+  .${ROOT} .flyer-img-panel .flyer-panel-preview {
+    margin-top: 12px; margin-bottom: 14px; padding: 12px 12px 14px; background: #faf8f5; border: 1px solid #e5e0d8; border-radius: 10px;
+  }
+  .${ROOT} .flyer-img-panel .flyer-panel-preview > h3 { margin: 0 0 4px; font-size: 0.88rem; font-weight: 600; color: #1c1a18; }
+  .${ROOT} .flyer-img-panel .flyer-panel-preview > .flyer-panel-preview-lead { margin: 0 0 10px; font-size: 0.74rem; color: #5c5650; line-height: 1.4; }
+  .${ROOT} .flyer-img-panel .flyer-panel-preview-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  @media (max-width: 700px) {
+    .${ROOT} .flyer-img-panel .flyer-panel-preview-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-slot { min-width: 0; }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-frame {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #e8e4dd; border: 1px solid #d4cfc7;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-placeholder {
+    font-size: 0.7rem; color: #5c5650; text-align: center; padding: 10px 8px; line-height: 1.35;
+  }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-cap { margin-top: 6px; font-size: 0.76rem; font-weight: 600; color: #1c1a18; }
+  .${ROOT} .flyer-img-panel .flyer-panel-thumb-sub { margin-top: 2px; font-size: 0.68rem; color: #5c5650; line-height: 1.35; }
+  .${ROOT} .flyer-img-panel .flyer-load-banner {
+    margin: 0 0 10px; padding: 8px 10px; background: rgba(13,148,136,0.08); border: 1px solid rgba(13,148,136,0.22);
+    border-radius: 8px; font-size: 0.78rem; color: #0f766e; font-weight: 500;
+  }
   .${ROOT} .sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.07); display: flex; flex-direction: column; overflow: hidden; }
   .${ROOT} .cell { flex: 1 1 0; min-height: 0; border-bottom: 1px dashed rgba(28,26,24,0.12); display: flex; flex-direction: column; padding: 2.5mm 3.5mm; }
   .${ROOT} .cell:last-child { border-bottom: none; }
@@ -476,6 +500,40 @@ function saveFlyerOverridesToStorage(o: FlyerImgOverrides) {
   }
 }
 
+/** Vorschau-Kachel im Panel: sofort sichtbar, was im Flyer landet. */
+function FlyerPanelPreviewThumb({
+  src,
+  label,
+  sub,
+  busy,
+}: {
+  src?: string
+  label: string
+  sub: string
+  busy?: boolean
+}) {
+  const [imgErr, setImgErr] = useState(false)
+  useEffect(() => {
+    setImgErr(false)
+  }, [src])
+  const showPlaceholder = Boolean(busy) || !src || imgErr
+  return (
+    <div className="flyer-panel-thumb-slot">
+      <div className="flyer-panel-thumb-frame" aria-busy={busy || undefined}>
+        {showPlaceholder ? (
+          <div className="flyer-panel-thumb-placeholder">
+            {busy ? '⏳ Bitte kurz warten …' : !src ? '—' : 'Bild lässt sich nicht laden.'}
+          </div>
+        ) : (
+          <img src={src} alt="" onError={() => setImgErr(true)} decoding="async" />
+        )}
+      </div>
+      <div className="flyer-panel-thumb-cap">{label}</div>
+      <div className="flyer-panel-thumb-sub">{sub}</div>
+    </div>
+  )
+}
+
 export default function FlyerK2Oek2TorViererPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -510,6 +568,11 @@ export default function FlyerK2Oek2TorViererPage() {
   /** Mitte / Rückseite: Bild aus gewählter Fotodatei (Session – siehe sessionStorage). */
   const [welcomeFromFile, setWelcomeFromFile] = useState<string | null>(null)
   const [torFromFile, setTorFromFile] = useState<string | null>(null)
+  /** UX: sichtbares Feedback statt „nichts passiert“ bei Auflösung/Komprimierung. */
+  const [artworkChoicesLoading, setArtworkChoicesLoading] = useState(true)
+  const [torIdbLoading, setTorIdbLoading] = useState(true)
+  const [welcomeCompressing, setWelcomeCompressing] = useState(false)
+  const [torCompressing, setTorCompressing] = useState(false)
   const welcomeFileInputRef = useRef<HTMLInputElement>(null)
   const torFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -621,9 +684,14 @@ export default function FlyerK2Oek2TorViererPage() {
     let cancelled = false
     const refresh = () => {
       setTorHeroPath(getEntdeckenHeroPathUrl(getPageContentEntdecken()))
-      void loadEntdeckenHeroOverlayIfFresh().then((u) => {
-        if (!cancelled) setTorHeroIdb(u)
-      })
+      setTorIdbLoading(true)
+      void loadEntdeckenHeroOverlayIfFresh()
+        .then((u) => {
+          if (!cancelled) setTorHeroIdb(u)
+        })
+        .finally(() => {
+          if (!cancelled) setTorIdbLoading(false)
+        })
     }
     refresh()
     window.addEventListener('k2-page-content-entdecken-updated', refresh)
@@ -677,6 +745,7 @@ export default function FlyerK2Oek2TorViererPage() {
   /** Werk-Liste + Vorschlags-Werk für rechtes Bild (K2). */
   useEffect(() => {
     let isMounted = true
+    setArtworkChoicesLoading(true)
     readArtworksForContextWithResolvedImages(false, false)
       .then((list) => {
         if (!isMounted) return
@@ -705,6 +774,9 @@ export default function FlyerK2Oek2TorViererPage() {
         setRightWerkAuto(rightUrl)
       })
       .catch(() => {})
+      .finally(() => {
+        if (isMounted) setArtworkChoicesLoading(false)
+      })
     return () => {
       isMounted = false
     }
@@ -740,6 +812,70 @@ export default function FlyerK2Oek2TorViererPage() {
     if (!o) return false
     return !artworkChoices.some((c) => c.imageUrl === o)
   }, [imgOverride.werk, artworkChoices])
+
+  const flyerLoadingBannerParts = useMemo(() => {
+    const parts: string[] = []
+    if (artworkChoicesLoading) parts.push('Werke werden aus der Galerie geladen …')
+    if (torIdbLoading) parts.push('Entdecken-Torbild wird geladen …')
+    if (welcomeCompressing) parts.push('Willkommens-Foto wird vorbereitet …')
+    if (torCompressing) parts.push('Torbild wird vorbereitet …')
+    return parts
+  }, [artworkChoicesLoading, torIdbLoading, welcomeCompressing, torCompressing])
+
+  const flyerPreviewMeta = useMemo(() => {
+    const leftSub = artworkChoicesLoading
+      ? 'Galerie-Werke werden noch aufgelöst – Vorschlag kann gleich wechseln.'
+      : imgOverride.leftWerk?.trim()
+        ? leftWerkIsManualUrl
+          ? 'Quelle: eigene URL im Feld „Werk-Bild-URL links“.'
+          : `Quelle: Liste – ${leftWerkSelectValue || 'Werk'}.`
+        : 'Quelle: automatischer Vorschlag aus deiner Galerie.'
+    const welcomeSub = welcomeCompressing
+      ? 'Foto wird komprimiert und eingebunden …'
+      : welcomeFromFile
+        ? 'Quelle: Foto von diesem Gerät (Mitte).'
+        : imgOverride.welcome?.trim()
+          ? 'Quelle: eigene URL im Textfeld Mitte.'
+          : welcomeThumb
+            ? 'Quelle: Willkommensbild aus Galerie-Design.'
+            : 'Quelle: Standard-Willkommensbild.'
+    const rightSub = artworkChoicesLoading
+      ? 'Galerie-Werke werden noch aufgelöst – Vorschlag kann gleich wechseln.'
+      : imgOverride.werk?.trim()
+        ? rightWerkIsManualUrl
+          ? 'Quelle: eigene URL im Feld „Werk-Bild-URL rechts“.'
+          : `Quelle: Liste – ${rightWerkSelectValue || 'Werk'}.`
+        : 'Quelle: automatischer Vorschlag aus deiner Galerie.'
+    const torSub = torCompressing
+      ? 'Foto wird komprimiert und eingebunden …'
+      : torFromFile
+        ? 'Quelle: Foto von diesem Gerät (Rückseite).'
+        : imgOverride.tor?.trim()
+          ? 'Quelle: eigene URL im Textfeld Rückseite.'
+          : torIdbLoading
+            ? 'Entdecken-Speicher wird gelesen – Bild kann gleich wechseln.'
+            : torHeroIdb
+              ? 'Quelle: wie Seite Entdecken – Bild aus Speicher.'
+              : 'Quelle: wie Seite Entdecken – Standard aus Design.'
+    return { leftSub, welcomeSub, rightSub, torSub }
+  }, [
+    artworkChoicesLoading,
+    imgOverride.leftWerk,
+    imgOverride.welcome,
+    imgOverride.werk,
+    imgOverride.tor,
+    leftWerkIsManualUrl,
+    rightWerkIsManualUrl,
+    leftWerkSelectValue,
+    rightWerkSelectValue,
+    welcomeCompressing,
+    welcomeFromFile,
+    welcomeThumb,
+    torCompressing,
+    torFromFile,
+    torIdbLoading,
+    torHeroIdb,
+  ])
 
   const addrLine = [stammdaten.address, [stammdaten.city, stammdaten.country].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
   const kontaktKurz = [stammdaten.phone, stammdaten.email].filter(Boolean).join(' · ')
@@ -818,11 +954,48 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <div className="flyer-img-panel no-print" aria-label="Flyer-Bilder wählen">
         <h2>Bilder für diesen Flyer</h2>
+        {flyerLoadingBannerParts.length > 0 ? (
+          <div className="flyer-load-banner" role="status" aria-live="polite">
+            {flyerLoadingBannerParts.join(' ')}
+          </div>
+        ) : null}
+        <div className="flyer-panel-preview">
+          <h3>Live-Vorschau der vier Motive</h3>
+          <p className="flyer-panel-preview-lead">
+            Hier siehst du sofort, was im gedruckten Flyer landet – inklusive kurzer Quellenzeile pro Bild.
+          </p>
+          <div className="flyer-panel-preview-grid">
+            <FlyerPanelPreviewThumb
+              label="Links (Werk)"
+              src={effectiveLeftWerk}
+              sub={flyerPreviewMeta.leftSub}
+            />
+            <FlyerPanelPreviewThumb
+              label="Mitte (Willkommen)"
+              src={welcomeCompressing ? undefined : effectiveWelcome}
+              sub={flyerPreviewMeta.welcomeSub}
+              busy={welcomeCompressing}
+            />
+            <FlyerPanelPreviewThumb
+              label="Rechts (Werk)"
+              src={effectiveRightWerk}
+              sub={flyerPreviewMeta.rightSub}
+            />
+            <FlyerPanelPreviewThumb
+              label="Rückseite (Tor)"
+              src={torCompressing ? undefined : effectiveTor}
+              sub={flyerPreviewMeta.torSub}
+              busy={torCompressing}
+            />
+          </div>
+        </div>
         <div className="row">
           <label htmlFor="flyer-sel-left-werk">Werk (links)</label>
           <div>
             <select
               id="flyer-sel-left-werk"
+              disabled={artworkChoicesLoading}
+              aria-busy={artworkChoicesLoading}
               value={leftWerkSelectValue}
               onChange={(e) => {
                 const v = e.target.value
@@ -881,17 +1054,24 @@ export default function FlyerK2Oek2TorViererPage() {
                 const f = e.target.files?.[0]
                 e.target.value = ''
                 if (!f || !f.type.startsWith('image/')) return
+                setWelcomeCompressing(true)
                 try {
                   const dataUrl = await fileToCompressedDataUrl(f)
                   setWelcomeFromFile(dataUrl)
                 } catch {
                   window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                } finally {
+                  setWelcomeCompressing(false)
                 }
               }}
             />
             <div className="file-row">
-              <button type="button" onClick={() => welcomeFileInputRef.current?.click()}>
-                Foto von diesem Gerät wählen …
+              <button
+                type="button"
+                disabled={welcomeCompressing}
+                onClick={() => welcomeFileInputRef.current?.click()}
+              >
+                {welcomeCompressing ? 'Foto wird vorbereitet …' : 'Foto von diesem Gerät wählen …'}
               </button>
               {welcomeFromFile ? (
                 <>
@@ -914,6 +1094,8 @@ export default function FlyerK2Oek2TorViererPage() {
           <div>
             <select
               id="flyer-sel-werk"
+              disabled={artworkChoicesLoading}
+              aria-busy={artworkChoicesLoading}
               value={rightWerkSelectValue}
               onChange={(e) => {
                 const v = e.target.value
@@ -972,17 +1154,24 @@ export default function FlyerK2Oek2TorViererPage() {
                 const f = e.target.files?.[0]
                 e.target.value = ''
                 if (!f || !f.type.startsWith('image/')) return
+                setTorCompressing(true)
                 try {
                   const dataUrl = await fileToCompressedDataUrl(f)
                   setTorFromFile(dataUrl)
                 } catch {
                   window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                } finally {
+                  setTorCompressing(false)
                 }
               }}
             />
             <div className="file-row">
-              <button type="button" onClick={() => torFileInputRef.current?.click()}>
-                Foto von diesem Gerät wählen …
+              <button
+                type="button"
+                disabled={torCompressing}
+                onClick={() => torFileInputRef.current?.click()}
+              >
+                {torCompressing ? 'Foto wird vorbereitet …' : 'Foto von diesem Gerät wählen …'}
               </button>
               {torFromFile ? (
                 <>
