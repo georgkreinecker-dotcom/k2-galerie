@@ -1853,7 +1853,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     try {
       const u = new URL(window.location.href)
       u.searchParams.delete('openModal')
-      navigate(u.pathname + u.search, { replace: true })
+      window.history.replaceState({}, '', u.pathname + u.search)
     } catch {
       /* noop */
     }
@@ -1865,7 +1865,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const u = new URL(window.location.href)
       if (!u.searchParams.has('openModal')) return
       u.searchParams.delete('openModal')
-      navigate(u.pathname + u.search, { replace: true })
+      // Kein Router-Navigate hier: sonst kollidiert es mit Link-Klicks (Race) und wirkt wie "hängt".
+      window.history.replaceState({}, '', u.pathname + u.search)
     } catch {
       /* noop */
     }

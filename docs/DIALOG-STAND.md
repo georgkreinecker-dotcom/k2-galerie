@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Letzter Hänger „Vierer-Flyer A4 (K2/ök2 Tor)“ gezielt gefixt:** Ursache war ein Race im Klickpfad: `closeOeffentlichkeitsarbeitFullscreenOverlay()` machte bei Link-Klicks ein Router-`navigate(..., replace)` und konnte dadurch die eigentliche Link-Navigation überlagern/abfangen. **Fix:** openModal-Bereinigung jetzt per `window.history.replaceState` (ohne Router-Navigation), sowohl im zentralen Close-Helper als auch im Force-Close-Pfad. Damit bleibt der Klick auf **Vierer-Flyer A4** stabil. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Event- und Medienplanung → **Vierer-Flyer A4 (K2/ök2 Tor)** direkt klicken (gleicher Tab) + danach zurück; es darf nichts mehr blockieren.
+
 **Letzter Stand:** 25.03.26 – **„Event hängt noch immer“ – Vollbild + „Neu erstellen“:** `onErstellen` auf den Werbematerial-Karten rief **direkt** `generateEditableNewsletterPDF` / `generatePlakatForEvent` / Presse / `openSocialRedaction` auf – **ohne** `handleViewEventDocument` → Vollbild-Overlay blieb mit hohem z-index aktiv. **Fix:** (1) `closeOeffentlichkeitsarbeitFullscreenOverlay` schließt immer das Modal (`setShow… false`), `navigate` nur wenn `openModal` in der URL. (2) **Am Anfang** von `handleViewEventDocument` immer schließen. (3) **Am Anfang** von `openRedaction`, `openSocialRedaction`, `openNewsletterRedaction`, `openPlakatRedaction`, `openFlyerRedaction`. (4) Doppelte lokale `closeOeffentlichkeitsarbeitFullscreenIfOpen` am Plakat-Modal → zentraler Helper. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `cf2c441` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit **im Vollbild** (`openModal=1`) → je Karte **„Neu erstellen“** und **„Ansehen“** – APf muss danach überall klickbar bleiben.
