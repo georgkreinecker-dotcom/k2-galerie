@@ -215,8 +215,8 @@ const styles = `
     margin: 0; font-size: 9.25pt; font-weight: 600; color: #d4a574; line-height: 1.38;
   }
   .${ROOT} .cell-back .back-flyer-werbetext {
-    margin: 1mm 0 0; flex: 0 0 auto; max-width: 50mm; align-self: flex-start;
-    font-size: 4.85pt; font-weight: 400; line-height: 1.32; color: rgba(255,248,240,0.72);
+    margin: 1mm 0 0; flex: 0 0 auto; max-width: 52mm; align-self: flex-start;
+    font-size: 5.5pt; font-weight: 500; line-height: 1.35; color: rgba(255,248,240,0.84);
   }
   /* Tablet-Rahmen wie Entdecken-Hero (rechte Spalte) */
   .${ROOT} .cell-back .tor-tablet {
