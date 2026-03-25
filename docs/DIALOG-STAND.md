@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer Druck (Safari):** Bogen-Höhe **268 mm** + **Grid** statt Flex beim Druck (verhindert Bruch auf 4 Seiten / leere Zwischenseite bei globalen `@page`-Rändern). **`index.css`:** Auf Flyer-Seite **kein** `#print-footer` + kein `#root`-Padding unten. Hinweis-Box: **Hintergrundgrafiken** in Safari. **`FlyerK2Oek2TorViererPage.tsx`**, **`index.css`**. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Druck (Safari):** Bogen-Höhe **268 mm** + **Grid** statt Flex beim Druck (verhindert Bruch auf 4 Seiten / leere Zwischenseite bei globalen `@page`-Rändern). **`index.css`:** Auf Flyer-Seite **kein** `#print-footer` + kein `#root`-Padding unten. Hinweis-Box: **Hintergrundgrafiken** in Safari. **`FlyerK2Oek2TorViererPage.tsx`**, **`index.css`**. **Commit:** `6a341cc` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Vierer-Flyer erneut **Druckvorschau** – 2 Seiten, Hintergrund an.
 
