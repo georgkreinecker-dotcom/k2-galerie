@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Medienplaner „nach erstem Klick hängt“ weiter abgesichert:** In `handleViewEventDocument` bei großen HTML-`data:`-Dokumenten Performance-Schutz eingebaut. Nicht-editierbare, große Inhalte werden direkt als `iframe` im In-App-Viewer geöffnet statt vollständig zu decodieren/parsen (Hauptthread-Entlastung). Social/Newsletter-Redaktion bleibt unverändert. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Medienplaner erneut testen (erster Klick auf „Ansehen“ bei großem Dokument).
+
 **Letzter Stand:** 25.03.26 – **Medienplaner Freeze nach erstem Klick:** Beim ersten Fix wurden auch **nicht-betroffene Overlays** hochgezogen (Guide-Leiste, Publish-Modal, Fehler-Modal, Vergangenheit-Modal). Folge: Interaktionen konnten blockiert wirken. **Korrektur:** Nur echte Redaktions-Modals (Presse/Social/Newsletter/Plakat/Flyer) bleiben auf **100100**; andere Ebenen zurück auf vorherige Werte (**99998/99996**). Tests + Build grün. **Commit:** (nach Push) ✅
 
 **Was wir JETZT tun:** Georg: Medienplaner erneut testen (erster Klick, dann zweiter Klick auf weitere Aktion).

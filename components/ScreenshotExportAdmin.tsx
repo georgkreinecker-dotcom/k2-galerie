@@ -8487,7 +8487,21 @@ ${'='.repeat(60)}
     const fileData = fileDataOrUrl
     // Gespeichertes HTML (data:-URL: base64 oder utf-8 mit Komma wie Muster in tenantConfig)
     if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
-      const htmlDecoded = decodeHtmlDataUrl(fileData)
+      const htmlDataUrl = fileData
+      const isEditableMarketingDoc = (document.werbematerialTyp === 'social' || document.werbematerialTyp === 'newsletter') && !!document.id
+      // Performance-Schutz: Sehr große data:-Dokumente nicht erst vollständig decodieren/parsen.
+      // Sonst hängt die Oberfläche nach dem ersten Klick spürbar.
+      if (!isEditableMarketingDoc && htmlDataUrl.length > 600000) {
+        const wrapper = '<html><head><meta charset="utf-8"><title>' +
+          (docTitle).replace(/</g, '&lt;') +
+          '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
+          htmlDataUrl.replace(/"/g, '&quot;') +
+          '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
+        openDocumentInApp(wrapper, docTitle)
+        return
+      }
+
+      const htmlDecoded = decodeHtmlDataUrl(htmlDataUrl)
       if (htmlDecoded) {
         try {
           // Social-Media-Dokument: immer mit neuer Vorlage (Dokument bearbeiten, Bild einfügen) öffnen, Inhalte aus gespeichertem HTML übernehmen
