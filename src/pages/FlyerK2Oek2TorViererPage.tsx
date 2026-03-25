@@ -1,5 +1,7 @@
 /**
  * Vierer-Bogen A4: doppelseitig drucken, 4 gleiche Flyer pro Seite.
+ * Optional: Hinweisnotiz zur Eventeröffnung auf der Vorderseite (umschaltbar, Text in localStorage).
+ * URL (einmalig): ?eventHinweis=1 & ehh=… & eht=… (Kurz: eh, eventHinweisHeadline, eventHinweisText).
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild wie EntdeckenPage (Pfad + IndexedDB-Overlay), K2-Slogans groß, Werbetext klein darunter, QR /entdecken.
  */
@@ -37,6 +39,8 @@ import { readArtworksForContextWithResolvedImages } from '../utils/artworksStora
 const ROOT = 'flyer-k2-oek2-vierer'
 /** Manuelle Bild-URLs (leer = aus K2/Galerie). Persistiert für nächsten Besuch. */
 const FLYER_IMG_OVERRIDES_KEY = 'k2-flyer-vierer-image-overrides'
+/** Option „Event-Hinweis“ auf der Vorderseite jedes Streifens (wiederverwendbarer Bogen). */
+const FLYER_EVENT_HINWEIS_KEY = 'k2-flyer-vierer-event-hinweis'
 type FlyerImgOverrides = {
   /** Linkes Streifenfoto: Bild-URL zum gewählten Werk (wie rechts). */
   leftWerk?: string
@@ -139,6 +143,37 @@ const styles = `
   .${ROOT} .cell-front {
     background: #fdfcfa;
     background-image: linear-gradient(180deg, #fffefb 0%, #f7f4ef 100%);
+  }
+  /* Option: Hinweis zur Eventeröffnung oben auf dem Streifen (wie aufgeklebte Notiz) */
+  .${ROOT} .cell-front .front-event-strip {
+    flex-shrink: 0;
+    margin: 0 0 1.8mm 0;
+    padding: 1.4mm 2.2mm;
+    background: linear-gradient(90deg, rgba(212,165,116,0.28) 0%, rgba(15,118,110,0.1) 100%);
+    border: 1px solid rgba(12,92,85,0.22);
+    border-radius: 1.5mm;
+    box-shadow: 0 0.5mm 1.5mm rgba(28,26,24,0.06);
+    max-height: 11mm;
+    overflow: hidden;
+  }
+  .${ROOT} .cell-front .front-event-strip .front-event-head {
+    margin: 0 0 0.35mm;
+    font-size: 7pt;
+    font-weight: 700;
+    color: ${TEAL_DARK};
+    line-height: 1.12;
+    font-family: ${FONT_SANS};
+  }
+  .${ROOT} .cell-front .front-event-strip .front-event-body {
+    margin: 0;
+    font-size: 6pt;
+    line-height: 1.22;
+    color: #2c2825;
+    white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .${ROOT} .cell-front .front-top {
     display: flex; align-items: stretch; gap: 2.5mm; margin: 0 0 2mm 0; min-height: 0;
@@ -335,6 +370,13 @@ const styles = `
     }
     .${ROOT} .cell-front .front-main { min-height: 0 !important; }
     .${ROOT} .cell-front .thumb-strip { min-height: 0 !important; }
+    .${ROOT} .cell-front .front-event-strip {
+      max-height: 10mm !important;
+      margin-bottom: 1mm !important;
+      transform: none !important;
+    }
+    .${ROOT} .cell-front .front-event-strip .front-event-head { font-size: 6.5pt !important; }
+    .${ROOT} .cell-front .front-event-strip .front-event-body { font-size: 5.5pt !important; }
     .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back .tor-tablet { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -516,6 +558,36 @@ function saveFlyerOverridesToStorage(o: FlyerImgOverrides) {
   }
 }
 
+type FlyerEventHinweisStored = { active: boolean; headline: string; body: string }
+
+function loadFlyerEventHinweisFromStorage(): FlyerEventHinweisStored {
+  try {
+    const raw = localStorage.getItem(FLYER_EVENT_HINWEIS_KEY)
+    if (!raw || raw.length > 12000) return { active: false, headline: 'Einladung · Event', body: '' }
+    const j = JSON.parse(raw) as {
+      active?: boolean
+      headline?: string
+      body?: string
+      text?: string
+    }
+    const headline =
+      typeof j.headline === 'string' && j.headline.trim() ? j.headline.trim() : 'Einladung · Event'
+    let body = typeof j.body === 'string' ? j.body : ''
+    if (!body && typeof j.text === 'string') body = j.text
+    return { active: Boolean(j.active), headline, body }
+  } catch {
+    return { active: false, headline: 'Einladung · Event', body: '' }
+  }
+}
+
+function saveFlyerEventHinweisToStorage(s: FlyerEventHinweisStored) {
+  try {
+    localStorage.setItem(FLYER_EVENT_HINWEIS_KEY, JSON.stringify(s))
+  } catch {
+    /* Quota */
+  }
+}
+
 /** Vorschau-Kachel im Panel: sofort sichtbar, was im Flyer landet. */
 function FlyerPanelPreviewThumb({
   src,
@@ -555,6 +627,7 @@ export default function FlyerK2Oek2TorViererPage() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const urlParamsApplied = useRef(false)
+  const eventUrlParamsApplied = useRef(false)
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
 
   useEffect(() => {
@@ -591,6 +664,19 @@ export default function FlyerK2Oek2TorViererPage() {
   const [torCompressing, setTorCompressing] = useState(false)
   const welcomeFileInputRef = useRef<HTMLInputElement>(null)
   const torFileInputRef = useRef<HTMLInputElement>(null)
+
+  const initialEventHinweis = useMemo(() => loadFlyerEventHinweisFromStorage(), [])
+  const [eventHinweisActive, setEventHinweisActive] = useState(initialEventHinweis.active)
+  const [eventHinweisHeadline, setEventHinweisHeadline] = useState(initialEventHinweis.headline)
+  const [eventHinweisBody, setEventHinweisBody] = useState(initialEventHinweis.body)
+
+  useEffect(() => {
+    saveFlyerEventHinweisToStorage({
+      active: eventHinweisActive,
+      headline: eventHinweisHeadline,
+      body: eventHinweisBody,
+    })
+  }, [eventHinweisActive, eventHinweisHeadline, eventHinweisBody])
 
   useEffect(() => {
     try {
@@ -640,6 +726,34 @@ export default function FlyerK2Oek2TorViererPage() {
       }))
     }
     urlParamsApplied.current = true
+  }, [searchParams])
+
+  /** URL einmalig: eventHinweis=1, eventHinweisText/eht, optional eventHinweisHeadline/ehh (aus Event-Flyer im Admin). */
+  useEffect(() => {
+    if (eventUrlParamsApplied.current) return
+    const eh = searchParams.get('eventHinweis') || searchParams.get('eh')
+    if (eh === '1' || eh === 'true' || eh === 'yes') {
+      setEventHinweisActive(true)
+      const ehh = searchParams.get('eventHinweisHeadline') || searchParams.get('ehh')
+      const eht = searchParams.get('eventHinweisText') || searchParams.get('eht')
+      if (ehh) {
+        try {
+          const d = decodeURIComponent(ehh.replace(/\+/g, ' '))
+          if (d.trim()) setEventHinweisHeadline(d.trim().slice(0, 120))
+        } catch {
+          if (ehh.trim()) setEventHinweisHeadline(ehh.trim().slice(0, 120))
+        }
+      }
+      if (eht) {
+        try {
+          const d = decodeURIComponent(eht.replace(/\+/g, ' '))
+          if (d.trim()) setEventHinweisBody(d.trim().slice(0, 2000))
+        } catch {
+          if (eht.trim()) setEventHinweisBody(eht.trim().slice(0, 2000))
+        }
+      }
+    }
+    eventUrlParamsApplied.current = true
   }, [searchParams])
 
   useEffect(() => {
@@ -976,6 +1090,61 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <div className="flyer-img-panel no-print" aria-label="Flyer-Bilder wählen">
         <h2>Bilder für diesen Flyer</h2>
+        <div
+          className="row"
+          style={{ gridTemplateColumns: '1fr', marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid #e5e0d8' }}
+        >
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontWeight: 600 }}>
+              <input
+                type="checkbox"
+                checked={eventHinweisActive}
+                onChange={(e) => setEventHinweisActive(e.target.checked)}
+              />
+              Hinweis zur Eventeröffnung auf der Vorderseite (jeder Streifen)
+            </label>
+            <p className="hint" style={{ marginTop: 6 }}>
+              Abschaltbar – derselbe Bogen bleibt ohne Häkchen neutral. Text wird gespeichert (dieses Gerät). Vom
+              Event-Bereich aus kann ein Link mit Textfüllung geöffnet werden.
+            </p>
+            {eventHinweisActive ? (
+              <>
+                <div className="row" style={{ gridTemplateColumns: '140px 1fr', marginTop: 10 }}>
+                  <label htmlFor="flyer-ev-head">Überschrift</label>
+                  <input
+                    id="flyer-ev-head"
+                    type="text"
+                    maxLength={120}
+                    value={eventHinweisHeadline}
+                    onChange={(e) => setEventHinweisHeadline(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="row" style={{ gridTemplateColumns: '140px 1fr', alignItems: 'start' }}>
+                  <label htmlFor="flyer-ev-body" style={{ paddingTop: 6 }}>
+                    Kurztext
+                  </label>
+                  <textarea
+                    id="flyer-ev-body"
+                    rows={4}
+                    maxLength={2000}
+                    value={eventHinweisBody}
+                    onChange={(e) => setEventHinweisBody(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '6px 8px',
+                      border: '1px solid #d4cfc7',
+                      borderRadius: 6,
+                      fontSize: '0.8rem',
+                      resize: 'vertical',
+                      minHeight: 72,
+                    }}
+                  />
+                </div>
+              </>
+            ) : null}
+          </div>
+        </div>
         {flyerLoadingBannerParts.length > 0 ? (
           <div className="flyer-load-banner" role="status" aria-live="polite">
             {flyerLoadingBannerParts.join(' ')}
@@ -985,6 +1154,12 @@ export default function FlyerK2Oek2TorViererPage() {
           <h3>Live-Vorschau der vier Motive</h3>
           <p className="flyer-panel-preview-lead">
             Hier siehst du sofort, was im gedruckten Flyer landet – inklusive kurzer Quellenzeile pro Bild.
+            {eventHinweisActive ? (
+              <>
+                {' '}
+                <strong>Event-Hinweis</strong> ist an – oben auf jedem Vorder-Streifen erscheint die Notiz beim Drucken.
+              </>
+            ) : null}
           </p>
           <div className="flyer-panel-preview-grid">
             <FlyerPanelPreviewThumb
@@ -1240,7 +1415,18 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <section className="sheet" aria-label="Vorderseite vier Flyer K2 Galerie">
         {SLOTS.map((i) => (
-          <div key={`f-${i}`} className="cell cell-front">
+          <div
+            key={`f-${i}`}
+            className={`cell cell-front${eventHinweisActive ? ' has-event-strip' : ''}`}
+          >
+            {eventHinweisActive ? (
+              <div className="front-event-strip" role="note">
+                <p className="front-event-head">{eventHinweisHeadline.trim() || 'Einladung · Event'}</p>
+                {eventHinweisBody.trim() ? (
+                  <p className="front-event-body">{eventHinweisBody.trim()}</p>
+                ) : null}
+              </div>
+            ) : null}
             <div className="front-top">
               <div className="front-accent" aria-hidden />
               <div className="front-head">

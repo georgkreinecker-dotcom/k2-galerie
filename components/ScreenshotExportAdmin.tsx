@@ -21417,6 +21417,67 @@ ${name}`
                                             }
                                           },
                                         },
+                                        {
+                                          label: 'Vierer-Bogen mit Event-Hinweis',
+                                          onErstellen: () => {
+                                            const ev = events.find((e: any) => e.id === event.id)
+                                            if (!ev) return
+                                            const dateStr = formatEventTerminKomplett(ev, {
+                                              mode: 'long',
+                                              emptyFallback: 'Datum folgt',
+                                              withClockEmojiSingle: true,
+                                            })
+                                            const title = String(ev.title || 'Veranstaltung').trim()
+                                            const hHead = (title || 'Einladung · Veranstaltung').slice(0, 80)
+                                            const body = `${title}\n${dateStr}`.slice(0, 280)
+                                            const base =
+                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
+                                            const joiner = base.includes('?') ? '&' : '?'
+                                            const pathWithQs =
+                                              base +
+                                              joiner +
+                                              'eventHinweis=1&ehh=' +
+                                              encodeURIComponent(hHead) +
+                                              '&eht=' +
+                                              encodeURIComponent(body)
+                                            navigateFromOeffentlichkeitsarbeitOverlay(pathWithQs)
+                                          },
+                                        },
+                                        {
+                                          label: 'Vierer-Bogen mit Event-Hinweis – neuer Tab',
+                                          onErstellen: () => {
+                                            const ev = events.find((e: any) => e.id === event.id)
+                                            if (!ev) return
+                                            const dateStr = formatEventTerminKomplett(ev, {
+                                              mode: 'long',
+                                              emptyFallback: 'Datum folgt',
+                                              withClockEmojiSingle: true,
+                                            })
+                                            const title = String(ev.title || 'Veranstaltung').trim()
+                                            const hHead = (title || 'Einladung · Veranstaltung').slice(0, 80)
+                                            const body = `${title}\n${dateStr}`.slice(0, 280)
+                                            const base =
+                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
+                                            const joiner = base.includes('?') ? '&' : '?'
+                                            const pathWithQs =
+                                              base +
+                                              joiner +
+                                              'eventHinweis=1&ehh=' +
+                                              encodeURIComponent(hHead) +
+                                              '&eht=' +
+                                              encodeURIComponent(body)
+                                            closeOeffentlichkeitsarbeitFullscreenOverlay()
+                                            try {
+                                              window.open(
+                                                BASE_APP_URL + pathWithQs,
+                                                '_blank',
+                                                'noopener,noreferrer'
+                                              )
+                                            } catch {
+                                              /* noop */
+                                            }
+                                          },
+                                        },
                                       ]),
                                 ],
                               },
