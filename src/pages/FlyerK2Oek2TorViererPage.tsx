@@ -159,12 +159,48 @@ const styles = `
   .${ROOT} .cell-back .brand { margin: 1mm 0 0; font-size: 4.5pt; color: rgba(255,255,255,0.45); line-height: 1.25; }
 
   @media print {
-    @page { size: A4; margin: 0; }
-    .${ROOT} { padding: 0 !important; background: #fff !important; min-height: 0 !important; }
+    /* Genau 2 Druckseiten: Vorderbogen + Rückbogen (je 4 Streifen auf einem A4). Kein Aufbrechen in 4 Seiten. */
+    @page { size: A4 portrait; margin: 0; }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      background: #fff !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .${ROOT} {
+      padding: 0 !important;
+      margin: 0 auto !important;
+      background: #fff !important;
+      min-height: 0 !important;
+      width: 210mm !important;
+      max-width: 210mm !important;
+    }
     .${ROOT} .flyer-vierer-toolbar { display: none !important; }
     .${ROOT} .hint-screen { display: none !important; }
-    .${ROOT} .sheet { box-shadow: none !important; margin: 0 !important; page-break-after: always; }
-    .${ROOT} .sheet:last-of-type { page-break-after: auto; }
+    .${ROOT} .sheet {
+      box-shadow: none !important;
+      margin: 0 !important;
+      width: 210mm !important;
+      height: 297mm !important;
+      max-height: 297mm !important;
+      min-height: 297mm !important;
+      overflow: hidden !important;
+      page-break-after: always !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      flex-shrink: 0 !important;
+    }
+    .${ROOT} .sheet:last-of-type { page-break-after: auto !important; }
+    .${ROOT} .cell {
+      flex: 0 0 calc(297mm / 4) !important;
+      height: calc(297mm / 4) !important;
+      max-height: calc(297mm / 4) !important;
+      min-height: 0 !important;
+      overflow: hidden !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
     .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back .tor-tablet { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
