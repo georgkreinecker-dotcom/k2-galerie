@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer Bild-Panel UX:** Live-Vorschau (4 Kacheln + Quellenzeile), Status-Banner (Werke laden, Entdecken-Tor, Komprimierung), Dropdowns während Werke-Laden deaktiviert, Foto-Buttons mit „wird vorbereitet …“. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Bild-Panel UX:** Live-Vorschau (4 Kacheln + Quellenzeile), Status-Banner (Werke laden, Entdecken-Tor, Komprimierung), Dropdowns während Werke-Laden deaktiviert, Foto-Buttons mit „wird vorbereitet …“. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `38dc63b` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Flyer-Seite – Bildauswahl: siehst du sofort, was passiert?
 
