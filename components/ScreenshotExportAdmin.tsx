@@ -47,10 +47,12 @@ import { getPageContentGalerie, setPageContentGalerie, type PageContentGalerie }
 import {
   getPageContentEntdecken,
   setPageContentEntdecken,
-  getEntdeckenHeroDisplayUrl,
-  setEntdeckenHeroOverlayDataUrl,
+  getEntdeckenHeroPathUrl,
+  getEntdeckenColorsFromK2Design,
+  persistEntdeckenHeroOverlay,
   type PageContentEntdecken,
 } from '../src/config/pageContentEntdecken'
+import { loadEntdeckenHeroOverlayIfFresh } from '../src/utils/entdeckenHeroOverlayStorage'
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
@@ -1842,6 +1844,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const entdeckenHeroInputRef = React.useRef<HTMLInputElement>(null)
   /** Blob-URL: sofort nach „Bild wählen“ sichtbar (noch vor Server-Upload) */
   const [entdeckenHeroLocalPreview, setEntdeckenHeroLocalPreview] = useState<string | null>(null)
+  /** File-Input neu mounten, damit dieselbe Datei erneut wählen onChange zuverlässig auslöst. */
+  const [entdeckenHeroFileInputKey, setEntdeckenHeroFileInputKey] = useState(0)
   const entdeckenHeroBlobRevokeRef = React.useRef<string | null>(null)
   const revokeEntdeckenHeroBlob = useCallback(() => {
     const u = entdeckenHeroBlobRevokeRef.current
@@ -1868,6 +1872,100 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       }
     }
   }, [])
+  /** Entdecken-Hero aus IndexedDB (localStorage-Overlay war am Mac oft zu groß / fehlgeschlagen). */
+  const [entdeckenHeroIdbPreview, setEntdeckenHeroIdbPreview] = useState<string | null>(null)
+  const [entdeckenHeroDragOver, setEntdeckenHeroDragOver] = useState(false)
+  /** Design-Tab: Eingangstor-Block standardmäßig zu – selten nötig, sonst blockiert die große Vorschau das Scrollen. */
+  const [designEingangstorPanelOpen, setDesignEingangstorPanelOpen] = useState(false)
+  useEffect(() => {
+    let alive = true
+    const pull = () => {
+      void loadEntdeckenHeroOverlayIfFresh().then((u) => {
+        if (alive) setEntdeckenHeroIdbPreview(u)
+      })
+    }
+    pull()
+    const h = () => pull()
+    window.addEventListener('k2-page-content-entdecken-updated', h)
+    return () => {
+      alive = false
+      window.removeEventListener('k2-page-content-entdecken-updated', h)
+    }
+  }, [])
+  const persistEntdeckenHeroOverlayFromFile = useCallback(async (file: File) => {
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const result = typeof reader.result === 'string' ? reader.result : ''
+          if (result.startsWith('data:image/')) resolve(result)
+          else reject(new Error('Keine gueltige Bilddaten-URL'))
+        }
+        reader.onerror = () => reject(reader.error ?? new Error('Datei konnte nicht gelesen werden'))
+        reader.readAsDataURL(file)
+      })
+      await persistEntdeckenHeroOverlay(dataUrl)
+      setEntdeckenHeroIdbPreview(dataUrl)
+    } catch {
+      // Fallback bleibt Blob-Vorschau; Overlay ist optional.
+    }
+  }, [])
+  /** Ein Ablauf für Datei-Dialog und Drag-and-Drop (wie bei anderen Design-Bildern). */
+  const applyEntdeckenHeroFile = useCallback(
+    async (f: File | undefined | null) => {
+      if (!f) return
+      const nameLower = (f.name || '').toLowerCase()
+      const looksImageByExt = /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif|svg|tiff?)$/.test(nameLower)
+      const looksImage = (f.type && f.type.startsWith('image/')) || looksImageByExt
+      if (!looksImage) {
+        setImageUploadStatus('⚠️ Bitte eine Bilddatei wählen (z. B. JPG oder PNG).')
+        setTimeout(() => setImageUploadStatus(null), 8000)
+        return
+      }
+      revokeEntdeckenHeroBlob()
+      const blobUrl = URL.createObjectURL(f)
+      entdeckenHeroBlobRevokeRef.current = blobUrl
+      setEntdeckenHeroLocalPreview(blobUrl)
+      void persistEntdeckenHeroOverlayFromFile(f)
+      setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
+      try {
+        const { uploadEntdeckenHeroImage } = await import('../src/utils/uploadEntdeckenHero')
+        let uploadTimeoutId: ReturnType<typeof setTimeout> | undefined
+        const uploadPromise = uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
+          .then((r) => {
+            if (uploadTimeoutId !== undefined) clearTimeout(uploadTimeoutId)
+            return r
+          })
+          .catch((e) => {
+            if (uploadTimeoutId !== undefined) clearTimeout(uploadTimeoutId)
+            throw e
+          })
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          uploadTimeoutId = setTimeout(() => {
+            reject(
+              new Error(
+                'Zeitüberschreitung (2 Min): Server antwortet nicht. Prüfe Netz, VITE_WRITE_GALLERY_API_KEY (Vercel) oder lokal VITE_GITHUB_TOKEN in .env – sonst bleibt der Upload ohne Erfolgsmeldung hängen.'
+              )
+            )
+          }, 120_000)
+        })
+        const { path, dataUrl } = await Promise.race([uploadPromise, timeoutPromise])
+        await persistEntdeckenHeroOverlay(dataUrl)
+        setEntdeckenHeroIdbPreview(dataUrl)
+        const withBust = `${path}?v=${Date.now()}`
+        revokeEntdeckenHeroBlob()
+        setPageContentEntdecken({ heroImageUrl: withBust })
+        setEntdeckenForm((prev) => ({ ...prev, heroImageUrl: withBust }))
+        setImageUploadStatus('✅ Gespeichert. „Entdecken prüfen“ zeigt auf diesem Gerät sofort das neue Bild; für alle anderen nach Vercel-Deploy (~1–2 Min).')
+        setTimeout(() => setImageUploadStatus(null), 8000)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        setImageUploadStatus(`⚠️ Upload abgebrochen: ${msg} – Bild bleibt auf diesem Gerät sichtbar.`)
+        setTimeout(() => setImageUploadStatus(null), 10000)
+      }
+    },
+    [persistEntdeckenHeroOverlayFromFile, revokeEntdeckenHeroBlob]
+  )
   const [backupTimestamps, setBackupTimestamps] = useState<string[]>([])
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
   const [isRestoringWerkeFromPublished, setIsRestoringWerkeFromPublished] = useState(false)
@@ -11622,61 +11720,215 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
             {!tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
-                entdeckenHeroLocalPreview || getEntdeckenHeroDisplayUrl(entdeckenForm)
+                entdeckenHeroLocalPreview ||
+                entdeckenHeroIdbPreview ||
+                getEntdeckenHeroPathUrl(entdeckenForm)
+              const k2c = getEntdeckenColorsFromK2Design()
+              const { accent, accentGlow, bgDark, bgMid, textLight } = k2c
+              const ec = entdeckenForm
+              const T_heroMini = {
+                heroTag: ec.heroTag?.trim() || PRODUCT_WERBESLOGAN,
+                heroTitle: ec.heroTitle?.trim() || PRODUCT_WERBESLOGAN_2,
+                heroSub: ec.heroSub?.trim() || 'Wähle deinen Weg – dann siehst du sofort, was dich erwartet.',
+                heroDeviceHint: ec.heroDeviceHint?.trim() || 'Am besten auf Tablet oder PC – dann siehst du alles auf einen Blick.',
+                cta: ec.cta?.trim() || 'Jetzt entdecken →',
+                ctaSub: ec.ctaSub?.trim() || 'Kostenlos · Keine Anmeldung · 1 Minute',
+              }
+              const fh = WERBEUNTERLAGEN_STIL.fontHeading
+              const fb = WERBEUNTERLAGEN_STIL.fontBody
               return (
-              <div style={{ marginBottom: '1rem', padding: '0.6rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem 0.75rem' }}>
-                  <span style={{ fontSize: '0.9rem', color: s.muted }}>Entdecken-Seite (Landing) – Bild, das Fremde zuerst sehen:</span>
-                  <input type="file" accept="image/*" ref={entdeckenHeroInputRef} style={{ display: 'none' }} onChange={async (e) => {
-                    const f = e.target.files?.[0]
-                    e.target.value = ''
-                    if (!f) return
-                    revokeEntdeckenHeroBlob()
-                    const blobUrl = URL.createObjectURL(f)
-                    entdeckenHeroBlobRevokeRef.current = blobUrl
-                    setEntdeckenHeroLocalPreview(blobUrl)
-                    setImageUploadStatus('⏳ Entdecken-Bild wird gespeichert…')
-                    try {
-                      const { uploadEntdeckenHeroImage } = await import('../src/utils/uploadEntdeckenHero')
-                      const { path, dataUrl } = await uploadEntdeckenHeroImage(f, (m) => setImageUploadStatus(m))
-                      setEntdeckenHeroOverlayDataUrl(dataUrl)
-                      const withBust = `${path}?v=${Date.now()}`
-                      revokeEntdeckenHeroBlob()
-                      setPageContentEntdecken({ heroImageUrl: withBust })
-                      setEntdeckenForm(prev => ({ ...prev, heroImageUrl: withBust }))
-                      setImageUploadStatus('✅ Gespeichert. „Entdecken prüfen“ zeigt auf diesem Gerät sofort das neue Bild; für alle anderen nach Vercel-Deploy (~1–2 Min).')
-                      setTimeout(() => setImageUploadStatus(null), 8000)
-                    } catch (err) {
-                      const msg = err instanceof Error ? err.message : String(err)
-                      setImageUploadStatus(`⚠️ ${msg}`)
-                      setTimeout(() => setImageUploadStatus(null), 10000)
-                    }
-                  }} />
-                  <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.4rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginTop: '0.65rem', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '0.78rem', color: s.muted }}>So siehst du’s sofort (lokal / nach Speichern):</span>
-                  {entdeckenHeroLocalPreview ? (
-                    <span style={{ fontSize: '0.72rem', color: s.muted, fontWeight: 600 }}>Lokal gewählt – wird hochgeladen …</span>
-                  ) : null}
-                  <img
-                    key={entdeckenHeroVorschauSrc}
-                    src={entdeckenHeroVorschauSrc}
-                    alt=""
-                    style={{ width: 140, height: 88, objectFit: 'cover', borderRadius: 8, border: `1px solid ${String(s.accent)}44`, background: 'rgba(0,0,0,0.06)' }}
-                  />
-                  <Link
-                    to={ENTDECKEN_ROUTE}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: '0.82rem', fontWeight: 700, color: s.accent }}
+              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem 0.75rem', marginBottom: designEingangstorPanelOpen ? '0.5rem' : 0 }}>
+                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text }}>🚪 Eingangstor (Seite „Entdecken“)</span>
+                  <button
+                    type="button"
+                    onClick={() => setDesignEingangstorPanelOpen((o) => !o)}
+                    style={{
+                      padding: '0.45rem 1rem',
+                      fontSize: '0.88rem',
+                      fontWeight: 600,
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                    }}
                   >
-                    Entdecken prüfen (neuer Tab)
-                  </Link>
+                    {designEingangstorPanelOpen ? 'Eingangstor einklappen' : 'Eingangstor öffnen (Bild & Vorschau)'}
+                  </button>
+                </div>
+                {!designEingangstorPanelOpen ? (
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
+                    Nur bei Bedarf – dann kannst du hier das Tor-Bild setzen. Die übrige Galerie-Gestaltung scrollst du normal darunter.
+                  </p>
+                ) : null}
+                {designEingangstorPanelOpen ? (
+                <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                    <input
+                      key={entdeckenHeroFileInputKey}
+                      type="file"
+                      accept="image/*"
+                      ref={entdeckenHeroInputRef}
+                      style={{ display: 'none' }}
+                      onChange={async (e) => {
+                        const input = e.currentTarget
+                        const f = input.files?.[0]
+                        input.value = ''
+                        await applyEntdeckenHeroFile(f)
+                        setEntdeckenHeroFileInputKey((k) => k + 1)
+                      }}
+                    />
+                    <button type="button" onClick={() => entdeckenHeroInputRef.current?.click()} style={{ padding: '0.45rem 1rem', fontSize: '0.9rem', fontWeight: 600, background: s.accent, color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>Bild wählen</button>
+                    <Link
+                      to={ENTDECKEN_ROUTE}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: '0.82rem', fontWeight: 700, color: s.accent }}
+                    >
+                      Seite im neuen Tab
+                    </Link>
+                </div>
+                <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: s.muted, lineHeight: 1.45 }}>
+                  <strong style={{ color: s.text }}>So sieht das Eingangstor aus</strong> (wie bei Besuchern: links Text, rechts dein Foto).{' '}
+                  Nur die <strong style={{ color: s.text }}>rechte Bildhälfte</strong>: Foto reinziehen, klicken oder „Bild wählen“.
+                </p>
+                {/* Miniatur = gleiches Split-Layout wie EntdeckenPage (step === 'hero') */}
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    flexWrap: 'wrap',
+                    alignItems: 'stretch',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    border: `1px solid ${String(s.accent)}44`,
+                    minHeight: 240,
+                    maxHeight: typeof window !== 'undefined' ? Math.min(380, Math.round(window.innerHeight * 0.38)) : 320,
+                    background: `linear-gradient(160deg, ${bgDark} 0%, ${bgMid} 100%)`,
+                  }}
+                >
+                  <div
+                    style={{
+                      flex: '1 1 46%',
+                      minWidth: 200,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      padding: '0.85rem 1rem',
+                      position: 'relative',
+                      pointerEvents: 'none',
+                      userSelect: 'none',
+                    }}
+                  >
+                    <div style={{ position: 'absolute', top: '15%', left: '-8%', width: '55%', height: '55%', background: `radial-gradient(ellipse, ${accentGlow}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ fontFamily: fh, fontSize: '0.72rem', fontWeight: 700, color: textLight, marginBottom: '0.45rem', lineHeight: 1.35, letterSpacing: '-0.02em', maxWidth: 280 }}>
+                        {T_heroMini.heroTag}
+                        <br />
+                        {T_heroMini.heroTitle}
+                      </div>
+                      <p style={{ fontSize: '0.62rem', color: '#d4a574', lineHeight: 1.55, maxWidth: 260, margin: '0 0 0.35rem' }}>{T_heroMini.heroSub}</p>
+                      <p style={{ fontSize: '0.56rem', color: 'rgba(255,248,240,0.82)', lineHeight: 1.5, maxWidth: 270, margin: '0 0 0.35rem', borderLeft: `2px solid ${accentGlow}88`, paddingLeft: '0.45rem' }}>
+                        <strong style={{ color: textLight }}>Galerie gestalten</strong> ist der Mittelpunkt: Hier legst du dein <strong style={{ color: textLight }}>Corporate Design</strong> fest – eine durchgängige Linie für die Website, Einladungen und alles, was du druckst.
+                      </p>
+                      <p style={{ fontSize: '0.54rem', color: 'rgba(212,165,116,0.85)', lineHeight: 1.45, maxWidth: 260, margin: '0 0 0.55rem' }}>{T_heroMini.heroDeviceHint}</p>
+                      <div
+                        style={{
+                          display: 'inline-block',
+                          padding: '0.35rem 0.75rem',
+                          background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`,
+                          color: '#fff',
+                          borderRadius: 999,
+                          fontWeight: 700,
+                          fontFamily: fb,
+                          fontSize: '0.58rem',
+                          boxShadow: `0 4px 14px ${accentGlow}44`,
+                        }}
+                      >
+                        {T_heroMini.cta}
+                      </div>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.5rem', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em' }}>{T_heroMini.ctaSub}</p>
+                    </div>
+                  </div>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Tor-Bild: Foto ablegen oder wählen"
+                    onKeyDown={(ev) => {
+                      if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault()
+                        entdeckenHeroInputRef.current?.click()
+                      }
+                    }}
+                    onClick={() => entdeckenHeroInputRef.current?.click()}
+                    onDragOver={(ev) => {
+                      ev.preventDefault()
+                      ev.dataTransfer.dropEffect = 'copy'
+                      setEntdeckenHeroDragOver(true)
+                    }}
+                    onDragLeave={() => setEntdeckenHeroDragOver(false)}
+                    onDrop={async (ev) => {
+                      ev.preventDefault()
+                      setEntdeckenHeroDragOver(false)
+                      const f = ev.dataTransfer.files?.[0]
+                      await applyEntdeckenHeroFile(f)
+                    }}
+                    style={{
+                      flex: '1 1 42%',
+                      minWidth: 160,
+                      position: 'relative',
+                      minHeight: 200,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      outline: entdeckenHeroDragOver ? `3px solid #b54a1e` : 'none',
+                      outlineOffset: -2,
+                    }}
+                  >
+                    <img
+                      key={entdeckenHeroVorschauSrc}
+                      src={entdeckenHeroVorschauSrc}
+                      alt=""
+                      draggable={false}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center',
+                        pointerEvents: 'none',
+                        opacity: entdeckenHeroVorschauSrc ? 0.75 : 0.35,
+                      }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 38%)`, pointerEvents: 'none' }} />
+                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark} 0%, transparent 42%)`, pointerEvents: 'none' }} />
+                    {entdeckenHeroDragOver ? (
+                      <div style={{ position: 'absolute', inset: 0, background: 'rgba(181,74,30,0.2)', pointerEvents: 'none' }} />
+                    ) : null}
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 8,
+                        right: 8,
+                        left: 8,
+                        textAlign: 'right',
+                        pointerEvents: 'none',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        color: 'rgba(255,255,255,0.92)',
+                        textShadow: '0 1px 4px rgba(0,0,0,0.85)',
+                      }}
+                    >
+                      {entdeckenHeroLocalPreview ? '⏳ Wird hochgeladen …' : 'Foto hierher · Klick = wählen'}
+                    </div>
+                  </div>
                 </div>
                 <p style={{ margin: '0.45rem 0 0', fontSize: '0.72rem', color: s.muted, lineHeight: 1.45 }}>
-                  Auf Vercel läuft der Upload über den Server (GITHUB_TOKEN) – nicht über den Browser. Wenn etwas fehlschlägt: Meldung oben lesen; ggf. VITE_WRITE_GALLERY_API_KEY wie bei „Veröffentlichen“.
+                  Upload wie bei Veröffentlichen (Server). Fehler? Meldung oben; ggf. VITE_WRITE_GALLERY_API_KEY prüfen.
                 </p>
+                </>
+                ) : null}
               </div>
               )
             })()}
