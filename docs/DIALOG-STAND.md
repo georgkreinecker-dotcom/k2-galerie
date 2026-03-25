@@ -1,5 +1,15 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer:** **Links und rechts** je **Werk aus Liste** (Dropdown + URL wie rechts); `leftWerk` + Migration alter `card`; große Hinweis-Box entfernt; Panel-Hinweistext gekürzt/weg; Tor wieder **Foto-Datei** wählbar. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `7c0418d` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Flyer-Seite – links/rechts Werke wählen, Druck prüfen.
+
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Vorderseite:** Drei Bilder nebeneinander – **Galerie-Karte (Martina)**, **Willkommensfoto**, **Martina-Werk** aus K2 (`readArtworksForContextWithResolvedImages` + `pickMartinaShowcaseWork`). **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `ed323da` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Vierer-Flyer im Browser **drucken/Vorschau** – ob die drei Spalten im Streifen gut wirken.
+
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2 – Druck wie Sportwagenmodus:** Oben dieselbe Leiste wie Präsentationsmappe: **Zurück** (`returnTo` oder `navigate(-1)`), **QR aktualisieren** (`refetchQrStand`), **Als PDF drucken** (`window.print()`), **Benutzerhandbuch**; Leiste beim Druck ausgeblendet. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2:** Vorderseite Band **„Martina & Georg Kreinecker“** fest; Rückseite **Eingangstor** wie `/entdecken` (**getEntdeckenColorsFromK2Design** + **getEntdeckenHeroPathUrl**, Tablet-Rahmen, Verläufe); Zeile **„Demo · …“** entfernt. **`FlyerK2Oek2TorViererPage.tsx`**, **`FlyerK2GaleriePage.tsx`** (K2-Subtitle fest). Tests grün. **Commit:** `2509b91` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Entdecken Hero (Flyer-Layout):** Kasten **„Galerie gestalten … Corporate Design“** entfernt; **QR** zu `/entdecken` mit **`buildQrUrlWithBust`** + **`useQrVersionTimestamp`**; rechts **Tablet-Rahmen** um das Tor-Bild. **`EntdeckenPage.tsx`**. Tests grün. **Commit:** `9d9366f` ✅ auf GitHub
@@ -14,7 +24,7 @@
 
 **Letzter Stand:** 25.03.26 – **Gleicher Tab: Vierer-Flyer + Präsentationsmappen (inkl. Plakat A3) ohne Race:** `<Link>` + `closeOeffentlichkeitsarbeitFullscreenOverlay`/`replaceState` und React Router haben sich gegenseitig gestört → Tab wirkte „hängend“. **Fix:** Ein Standard **`navigateFromOeffentlichkeitsarbeitOverlay`**: `flushSync` schließt das Vollbild-Modal sofort; bei `openModal=1` erst `navigate(..., replace)` zum Bereinigen, dann `navigate(Ziel)`; sonst `queueMicrotask` zum Ziel. **Vierer-Flyer**, **Kurzvariante**, **Vollversion**, **Prospekt/Flyer**, **Plakat Eröffnung (A3)** = `<button>` + dieser Helper (neuer Tab unverändert `<a target="_blank">`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `5baa9b1` ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit Vollbild → obige Links **gleicher Tab**; muss zuverlässig zur Seite wechseln.
+**Was wir JETZT tun:** Georg: Vierer-Flyer-Seite – **Als PDF drucken** testen; bei Bedarf weiter verfeinern.
 
 **Letzter Stand:** 25.03.26 – **Letzter Hänger „Vierer-Flyer A4 (K2/ök2 Tor)“ gezielt gefixt:** Ursache war ein Race im Klickpfad: `closeOeffentlichkeitsarbeitFullscreenOverlay()` machte bei Link-Klicks ein Router-`navigate(..., replace)` und konnte dadurch die eigentliche Link-Navigation überlagern/abfangen. **Fix:** openModal-Bereinigung jetzt per `window.history.replaceState` (ohne Router-Navigation), sowohl im zentralen Close-Helper als auch im Force-Close-Pfad. Damit bleibt der Klick auf **Vierer-Flyer A4** stabil. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
 
