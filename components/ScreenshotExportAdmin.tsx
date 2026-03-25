@@ -8442,7 +8442,8 @@ ${'='.repeat(60)}
     // Gespeicherte Daten haben Vorrang; documentUrl nur nutzen wenn kein Inhalt. iframe src = absolute URL.
     if (!fileDataOrUrl && document.documentUrl && !String(document.documentUrl).startsWith('blob:')) {
       const docUrl = String(document.documentUrl)
-      const absUrl = (typeof window !== 'undefined' && window.location.origin)
+      const hasOwnScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(docUrl)
+      const absUrl = (typeof window !== 'undefined' && window.location.origin && !hasOwnScheme)
         ? window.location.origin + (docUrl.startsWith('/') ? docUrl : '/' + docUrl)
         : docUrl
       const wrapper =
@@ -8547,6 +8548,23 @@ ${'='.repeat(60)}
         case 'social':
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
+        case 'praesentationsmappe-kurz': {
+          const mappeQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+          const r = PROJECT_ROUTES['k2-galerie']
+          const link = (path: string, label: string) =>
+            `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${mappeQs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
+          const helperHtml =
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Präsentationsmappen</title><style>body{font-family:system-ui,sans-serif;padding:1.75rem;max-width:560px;line-height:1.55;color:#1c1a18}</style></head><body>' +
+            '<h1 style="font-size:1.2rem;margin-top:0">Präsentationsmappen</h1>' +
+            '<p>Kein gespeicherter HTML-Inhalt – die Vorschau läuft über die festen Seiten der App:</p>' +
+            link(r.praesentationsmappe, 'Kurzvariante') +
+            link(r.praesentationsmappeVollversion, 'Vollversion') +
+            link('/prospekt-k2-galerie', 'Prospekt / Flyer') +
+            link(r.plakatGalerieeroeffnung, 'Plakat Galerieeröffnung (A3)') +
+            '</body></html>'
+          openDocumentInApp(helperHtml, docTitle)
+          return
+        }
         default:
           break
       }
@@ -12695,7 +12713,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       {/* In-App-Dokument-Viewer bei blockiertem Pop-up (kein Fenster nötig) */}
       {inAppDocumentViewer && (
         <div style={{
-          position: 'fixed', inset: 0, zIndex: 100000,
+          position: 'fixed', inset: 0, zIndex: 100002,
           background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column',
           fontFamily: 'system-ui, sans-serif'
         }}>
@@ -21210,7 +21228,7 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Handzettel für persönliche Einladung',
+                                beschreibung: 'Handzettel + Vierer-Bogen A4 (K2 vorn, ök2-Tor QR hinten)',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21382,6 +21400,7 @@ ${name}`
                                     })
                                     .map(karte => {
                                     const istPraesentationsmappen = karte.typ === 'praesentationsmappen'
+                                    const istEventFlyer = karte.typ === 'event-flyer'
                                     const hatDokumente = karte.docs.length > 0
                                     return (
                                       <div
@@ -21418,6 +21437,25 @@ ${name}`
                                           </span>
                                         </div>
 
+                                        {istEventFlyer && !tenant.isVk2 && (
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                            <Link
+                                              to={PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
+                                              state={{ returnTo: location.pathname + location.search }}
+                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                            >
+                                              Vierer-Flyer A4 (K2 / ök2-Tor)
+                                            </Link>
+                                            <a
+                                              href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                            >
+                                              Vierer-Flyer (neuer Tab)
+                                            </a>
+                                          </div>
+                                        )}
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -21449,6 +21487,25 @@ ${name}`
                                           const primaryDoc = karte.docs[0]
                                           return (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                              <button
+                                                type="button"
+                                                onClick={() => karte.onOpen(primaryDoc)}
+                                                style={{
+                                                  width: '100%',
+                                                  textAlign: 'center',
+                                                  padding: '0.55rem 0.7rem',
+                                                  background: '#fff',
+                                                  border: `1px solid ${s.accent}`,
+                                                  borderRadius: '8px',
+                                                  cursor: 'pointer',
+                                                  fontSize: '0.84rem',
+                                                  color: s.accent,
+                                                  fontWeight: 700
+                                                }}
+                                                title="Dokument im Viewer öffnen (gleicher Tab)"
+                                              >
+                                                Ansehen
+                                              </button>
                                               {!istPraesentationsmappen && (
                                                 <button
                                                   type="button"
