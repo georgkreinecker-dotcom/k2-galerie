@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Entdecken-/Flyer-Torbild stabil:** IndexedDB-Overlay speichert jetzt **`heroImageUrl`** (Pfad zum Zeitpunkt des Uploads); beim Laden wird es mit dem **aktuellen** Design-Pfad verglichen – bei Wechsel des Hero-Bildes kein altes Overlay mehr. Zusätzlich **Load-Generation** (Flyer Vierer, EntdeckenPage, Admin-Design-Vorschau), damit langsame async Loads den Stand nicht zurücksetzen. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`EntdeckenPage.tsx`**, **`ScreenshotExportAdmin.tsx`**, Test `entdeckenHeroOverlayStorage.test.ts`. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Entdecken-/Flyer-Torbild stabil:** IndexedDB-Overlay speichert jetzt **`heroImageUrl`** (Pfad zum Zeitpunkt des Uploads); beim Laden wird es mit dem **aktuellen** Design-Pfad verglichen – bei Wechsel des Hero-Bildes kein altes Overlay mehr. Zusätzlich **Load-Generation** (Flyer Vierer, EntdeckenPage, Admin-Design-Vorschau), damit langsame async Loads den Stand nicht zurücksetzen. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`EntdeckenPage.tsx`**, **`ScreenshotExportAdmin.tsx`**, Test `entdeckenHeroOverlayStorage.test.ts`. **Commit:** `cc5ccad` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Eingangsseite Hero wechseln + Flyer Rückseite – nur noch passendes Tor- bzw. Upload-Bild.
 
