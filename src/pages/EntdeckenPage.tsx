@@ -9,7 +9,9 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, AGB_ROUTE } from '../config/navigation'
+import QRCode from 'qrcode'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { prepareFreshOek2VisitorSession } from '../utils/oek2FreshStart'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, PRODUCT_LIZENZ_ANFRAGE_BETREFF } from '../config/tenantConfig'
@@ -671,6 +673,17 @@ export default function EntdeckenPage() {
   const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
   const fontBody = WERBEUNTERLAGEN_STIL.fontBody
 
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const [heroQrDataUrl, setHeroQrDataUrl] = useState('')
+  useEffect(() => {
+    let cancelled = false
+    const url = buildQrUrlWithBust(BASE_APP_URL + ENTDECKEN_ROUTE, qrVersionTs)
+    QRCode.toDataURL(url, { width: 200, margin: 1 })
+      .then((dataUrl) => { if (!cancelled) setHeroQrDataUrl(dataUrl) })
+      .catch(() => { if (!cancelled) setHeroQrDataUrl('') })
+    return () => { cancelled = true }
+  }, [qrVersionTs])
+
   /** Nach Galerie-Entscheidung: Fremde zuerst auf die ök2-/VK2-Willkommensseite („WILLKOMMEN BEI Galerie Muster“) – nirgends sonst */
   const openByChoice = (weg: 'solo' | 'verein') => {
     // Einheitlicher Standard: jede Besucher-Session frisch setzen
@@ -758,12 +771,19 @@ export default function EntdeckenPage() {
                 <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: '#d4a574', lineHeight: 1.7, maxWidth: 420, marginBottom: '0.75rem' }}>
                   {T_hero.heroSub}
                 </p>
-                <p style={{ fontSize: 'clamp(0.82rem, 1.85vw, 0.95rem)', color: 'rgba(255,248,240,0.82)', lineHeight: 1.65, maxWidth: 460, marginBottom: '0.85rem', borderLeft: `3px solid ${accentGlow}88`, paddingLeft: '0.85rem' }}>
-                  <strong style={{ color: textLight }}>Galerie gestalten</strong> ist der Mittelpunkt: Hier legst du dein <strong style={{ color: textLight }}>Corporate Design</strong> fest – eine durchgängige Linie für die Website, Einladungen und alles, was du druckst.
-                </p>
-                <p style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'rgba(212,165,116,0.85)', lineHeight: 1.5, maxWidth: 420, marginBottom: '2.5rem' }}>
+                <p style={{ fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: 'rgba(212,165,116,0.85)', lineHeight: 1.5, maxWidth: 420, marginBottom: '1.25rem' }}>
                   {T_hero.heroDeviceHint}
                 </p>
+                {heroQrDataUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(0.75rem, 2vw, 1.25rem)', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                    <div style={{ flexShrink: 0, padding: '8px', background: '#fff', borderRadius: '12px', boxShadow: '0 8px 28px rgba(0,0,0,0.25)' }}>
+                      <img src={heroQrDataUrl} alt="QR-Code zum Einstieg Entdecken" style={{ width: 'clamp(88px, 22vw, 120px)', height: 'clamp(88px, 22vw, 120px)', display: 'block' }} />
+                    </div>
+                    <p style={{ margin: 0, fontSize: 'clamp(0.78rem, 1.65vw, 0.88rem)', color: 'rgba(255,248,240,0.75)', lineHeight: 1.5, maxWidth: 220 }}>
+                      Zum Scannen: öffnet diesen Einstieg auf dem Handy – ideal parallel zum Tablet.
+                    </p>
+                  </div>
+                )}
                 <button type="button" onClick={() => setStep('q1')}
                   style={{ display: 'inline-block', padding: 'clamp(0.85rem, 2vw, 1.05rem) clamp(2rem, 4vw, 2.75rem)', background: `linear-gradient(135deg, ${accentGlow} 0%, ${accent} 100%)`, color: '#fff', border: 'none', borderRadius: '50px', fontWeight: 700, cursor: 'pointer', fontFamily: fontBody, fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', letterSpacing: '0.01em', boxShadow: `0 8px 32px ${accentGlow}44`, transition: 'all 0.2s' }}
                   onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
@@ -774,35 +794,53 @@ export default function EntdeckenPage() {
               </div>
             </div>
 
-            {/* Rechte Seite: Hero-Bild (Admin → Design → „Bild wählen“) – Fallback ohne Fragezeichen-Icon */}
+            {/* Rechte Seite: Tablet-Rahmen + Hero-Bild (wie zweite Flyer-Seite: Gerät statt reiner Vollfläche) */}
             <div style={{
-              flex: '1 1 320px', position: 'relative', minHeight: 320, overflow: 'hidden',
+              flex: '1 1 320px', position: 'relative', minHeight: 320, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: 'clamp(1rem, 3vw, 2rem)', overflow: 'hidden',
             }}>
-              {heroImageSrc === 'primary' && (
-                <img
-                  src={heroImageUrl}
-                  alt="Galerie Vorschau"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.75 }}
-                  onError={() => setHeroImageSrc('svg')}
-                />
-              )}
-              {heroImageSrc === 'svg' && (
-                <img
-                  src="/img/oeffentlich/willkommen.svg"
-                  alt="Galerie Vorschau"
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.75 }}
-                  onError={() => setHeroImageSrc('none')}
-                />
-              )}
-              {heroImageSrc === 'none' && (
-                <div style={{ position: 'absolute', inset: 0, background: `${bgDark}ee`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>
-                  Bild in Admin → Design → Eingangsseite wählen
+              <div style={{
+                width: 'min(94%, 440px)',
+                maxHeight: 'min(72vh, 520px)',
+                background: 'linear-gradient(165deg, #3a3d42 0%, #1c1e22 45%, #121418 100%)',
+                borderRadius: 'clamp(22px, 4vw, 30px)',
+                padding: 'clamp(10px, 1.8vw, 14px)',
+                boxShadow: '0 28px 70px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)',
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
+                  width: '44px', height: '5px', borderRadius: '3px', background: 'rgba(0,0,0,0.45)', zIndex: 2,
+                }} aria-hidden />
+                <div style={{
+                  position: 'relative', width: '100%', borderRadius: 'clamp(14px, 2.5vw, 18px)', overflow: 'hidden',
+                  aspectRatio: '4 / 3', background: '#0a0a0c',
+                }}>
+                  {heroImageSrc === 'primary' && (
+                    <img
+                      src={heroImageUrl}
+                      alt="Galerie auf dem Tablet"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
+                      onError={() => setHeroImageSrc('svg')}
+                    />
+                  )}
+                  {heroImageSrc === 'svg' && (
+                    <img
+                      src="/img/oeffentlich/willkommen.svg"
+                      alt="Galerie auf dem Tablet"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
+                      onError={() => setHeroImageSrc('none')}
+                    />
+                  )}
+                  {heroImageSrc === 'none' && (
+                    <div style={{ position: 'absolute', inset: 0, background: `${bgDark}ee`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem' }}>
+                      Bild in Admin → Design → Eingangsseite wählen
+                    </div>
+                  )}
+                  <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark}cc 0%, transparent 38%)`, pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark}aa 0%, transparent 35%)`, pointerEvents: 'none' }} />
                 </div>
-              )}
-              {/* Gradient-Übergang links zum Text */}
-              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 35%)`, pointerEvents: 'none' }} />
-              {/* Gradient unten */}
-              <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark} 0%, transparent 40%)`, pointerEvents: 'none' }} />
+              </div>
             </div>
           </div>
         </div>
