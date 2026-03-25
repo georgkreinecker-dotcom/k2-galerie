@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Vierer-Bogen: optionale Event-Hinweisnotiz** auf der Vorderseite jedes Streifens (Checkbox + Überschrift + Kurztext, `localStorage` `k2-flyer-vierer-event-hinweis`). URL `?eventHinweis=1&ehh=…&eht=…` (Kurz `eh`, `eht`). **Marketing → Event-Flyer:** zwei neue Varianten **„Vierer-Bogen mit Event-Hinweis“** (gleicher Tab / neuer Tab), vorbefüllt mit Titel + `formatEventTerminKomplett`. **`FlyerK2Oek2TorViererPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Bogen: optionale Event-Hinweisnotiz** auf der Vorderseite jedes Streifens (Checkbox + Überschrift + Kurztext, `localStorage` `k2-flyer-vierer-event-hinweis`). URL `?eventHinweis=1&ehh=…&eht=…` (Kurz `eh`, `eht`). **Marketing → Event-Flyer:** zwei neue Varianten **„Vierer-Bogen mit Event-Hinweis“** (gleicher Tab / neuer Tab), vorbefüllt mit Titel + `formatEventTerminKomplett`. **`FlyerK2Oek2TorViererPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. **Commit:** `7753052` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Event-Flyer-Karte → neue Varianten testen; auf Flyer-Seite Häkchen aus = neutraler Bogen ohne Notiz.
 
