@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2:** Vorderseite Band **„Martina & Georg Kreinecker“** fest; Rückseite **Eingangstor** wie `/entdecken` (**getEntdeckenColorsFromK2Design** + **getEntdeckenHeroPathUrl**, Tablet-Rahmen, Verläufe); Zeile **„Demo · …“** entfernt. **`FlyerK2Oek2TorViererPage.tsx`**, **`FlyerK2GaleriePage.tsx`** (K2-Subtitle fest). Tests grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer K2/ök2:** Vorderseite Band **„Martina & Georg Kreinecker“** fest; Rückseite **Eingangstor** wie `/entdecken` (**getEntdeckenColorsFromK2Design** + **getEntdeckenHeroPathUrl**, Tablet-Rahmen, Verläufe); Zeile **„Demo · …“** entfernt. **`FlyerK2Oek2TorViererPage.tsx`**, **`FlyerK2GaleriePage.tsx`** (K2-Subtitle fest). Tests grün. **Commit:** `2509b91` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Entdecken Hero (Flyer-Layout):** Kasten **„Galerie gestalten … Corporate Design“** entfernt; **QR** zu `/entdecken` mit **`buildQrUrlWithBust`** + **`useQrVersionTimestamp`**; rechts **Tablet-Rahmen** um das Tor-Bild. **`EntdeckenPage.tsx`**. Tests grün. **Commit:** `9d9366f` ✅ auf GitHub
 
