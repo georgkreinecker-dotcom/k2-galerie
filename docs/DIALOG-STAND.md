@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit Event-Flyer:** Vierer-Bogen nicht mehr als eigene Kachel-Buttons, sondern als **`erstellenVarianten`** wie Presse: **Handzettel zum Event** | **Vierer-Bogen A4** | **Vierer-Bogen – neuer Tab** (K2/ök2; VK2 nur Handzettel). **`ScreenshotExportAdmin.tsx`**. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit Event-Flyer:** Vierer-Bogen nicht mehr als eigene Kachel-Buttons, sondern als **`erstellenVarianten`** wie Presse: **Handzettel zum Event** | **Vierer-Bogen A4** | **Vierer-Bogen – neuer Tab** (K2/ök2; VK2 nur Handzettel). **`ScreenshotExportAdmin.tsx`**. **Commit:** `a660e2e` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Event- und Medienplanung → Event-Flyer-Karte – drei Optionen prüfen.
 
