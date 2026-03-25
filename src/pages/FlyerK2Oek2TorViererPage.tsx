@@ -4,8 +4,14 @@
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild (getEntdeckenHeroPathUrl), kgm-Slogans, QR /entdecken.
  */
 import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, PROJECT_ROUTES } from '../config/navigation'
+import {
+  BASE_APP_URL,
+  BENUTZER_HANDBUCH_ROUTE,
+  OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE,
+  PROJECT_ROUTES,
+} from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
@@ -25,54 +31,125 @@ import { loadStammdaten } from '../utils/stammdatenStorage'
 const ROOT = 'flyer-k2-oek2-vierer'
 const TEAL_DARK = '#0c5c55'
 const TEAL = '#0f766e'
-const ROW_MM = 297 / 4
+const TEAL_LIGHT = '#0d9488'
+/** Lesbare Serif für Galerie-Titel (ohne Webfont-Request – druckt überall gleich). */
+const FONT_SERIF = "Georgia, 'Times New Roman', Times, serif"
+const FONT_SANS = "system-ui, -apple-system, 'Segoe UI', sans-serif"
 
 const styles = `
-  .${ROOT} { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #e8e6e2; padding: 16px; margin: 0; box-sizing: border-box; min-height: 100vh; }
+  .${ROOT} { font-family: ${FONT_SANS}; background: linear-gradient(180deg, #f0ebe4 0%, #e5e0d8 100%); padding: 16px; margin: 0; box-sizing: border-box; min-height: 100vh; }
   .${ROOT} * { box-sizing: border-box; }
+  .${ROOT} .flyer-vierer-toolbar { max-width: 720px; margin: 0 auto 16px; padding: 0.75rem 0; border-bottom: 1px solid ${TEAL_LIGHT}40; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; color: #1c1a18; }
   .${ROOT} .hint-screen { max-width: 720px; margin: 0 auto 20px; padding: 14px 16px; background: #fffefb; border: 1px solid rgba(15,118,110,0.25); border-radius: 10px; color: #1c1a18; font-size: 0.9rem; line-height: 1.5; }
   .${ROOT} .hint-screen h1 { font-size: 1.1rem; margin: 0 0 8px; color: ${TEAL}; }
-  .${ROOT} .sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; overflow: hidden; }
-  .${ROOT} .cell { flex: 1 1 0; min-height: 0; border-bottom: 1px dashed rgba(0,0,0,0.15); display: flex; flex-direction: column; padding: 2mm 3mm; }
+  .${ROOT} .sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.07); display: flex; flex-direction: column; overflow: hidden; }
+  .${ROOT} .cell { flex: 1 1 0; min-height: 0; border-bottom: 1px dashed rgba(28,26,24,0.12); display: flex; flex-direction: column; padding: 2.5mm 3.5mm; }
   .${ROOT} .cell:last-child { border-bottom: none; }
-  .${ROOT} .cell-front { background: #fffefb; }
-  .${ROOT} .cell-front .band { background: ${TEAL_DARK}; color: #fff; margin: -2mm -3mm 2mm -3mm; padding: 2mm 3mm; text-align: center; }
-  .${ROOT} .cell-front .band h2 { margin: 0; font-size: 10pt; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
-  .${ROOT} .cell-front .band .tagline { margin: 1mm 0 0; font-size: 8pt; font-weight: 700; color: rgba(255,255,255,0.95); }
-  .${ROOT} .cell-front .band .sub { margin: 0.6mm 0 0; font-size: 7pt; opacity: 0.95; }
-  .${ROOT} .cell-front .body { flex: 1; display: flex; gap: 2mm; font-size: 6.5pt; line-height: 1.35; color: #1c1a18; }
-  .${ROOT} .cell-front .body .thumb { flex-shrink: 0; width: 22mm; height: 22mm; border-radius: 4px; overflow: hidden; background: #f0ebe4; }
-  .${ROOT} .cell-front .body .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .${ROOT} .cell-front .body .text { flex: 1; min-width: 0; }
-  .${ROOT} .cell-front .body .intro { margin: 0 0 1mm; color: #3d3835; }
-  .${ROOT} .cell-front .body .addr { margin: 0; color: #5c5650; font-size: 6pt; }
-  .${ROOT} .cell-front .k2qr-row { margin-top: 1.5mm; display: flex; align-items: center; gap: 2mm; flex-wrap: nowrap; }
-  .${ROOT} .cell-front .k2qr { flex-shrink: 0; width: 18mm; height: 18mm; background: #fff; padding: 0.8mm; border-radius: 3px; border: 1px solid rgba(12,92,85,0.2); }
-  .${ROOT} .cell-front .k2qr img { width: 100%; height: 100%; display: block; }
-  .${ROOT} .cell-front .k2qr-cap { font-size: 5.5pt; color: #3d3835; line-height: 1.25; flex: 1; min-width: 0; }
-  .${ROOT} .cell-front .foot { margin-top: auto; padding-top: 1mm; font-size: 5pt; color: #7a726a; line-height: 1.25; }
-  .${ROOT} .cell-back { color: #f0faf9; justify-content: flex-start; align-items: center; text-align: center; padding-top: 1mm; }
-  .${ROOT} .cell-back .inner { max-width: 96%; }
-  .${ROOT} .cell-back .kicker { margin: 0; font-size: 6pt; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(95,251,241,0.85); }
-  .${ROOT} .cell-back h3 { margin: 0.8mm 0 0; font-size: 9pt; font-weight: 700; color: #fff; line-height: 1.2; }
-  .${ROOT} .cell-back .back-claim { margin: 0.8mm 0 0; font-size: 6pt; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,0.93); }
-  .${ROOT} .cell-back .tor-frame { margin: 1.4mm auto 0; width: 26mm; padding: 1.2mm; border-radius: 3mm; background: linear-gradient(165deg, #3a3d42 0%, #1c1e22 55%, #121418 100%); box-shadow: 0 1mm 2.5mm rgba(0,0,0,0.45), inset 0 0.2mm 0 rgba(255,255,255,0.06); flex-shrink: 0; }
-  .${ROOT} .cell-back .tor-screen { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 1.8mm; overflow: hidden; background: #0a0a0c; }
+
+  /* —— Vorderseite: editorial, viel Luft, kein „Excel-Kasten“ —— */
+  .${ROOT} .cell-front {
+    background: #fdfcfa;
+    background-image: linear-gradient(180deg, #fffefb 0%, #f7f4ef 100%);
+  }
+  .${ROOT} .cell-front .front-top {
+    display: flex; align-items: stretch; gap: 2.5mm; margin: 0 0 2mm 0; min-height: 0;
+  }
+  .${ROOT} .cell-front .front-accent { width: 0.9mm; flex-shrink: 0; border-radius: 1mm; background: linear-gradient(180deg, ${TEAL_DARK} 0%, ${TEAL} 100%); }
+  .${ROOT} .cell-front .front-head { flex: 1; min-width: 0; text-align: left; padding: 0.5mm 0 0 0; }
+  .${ROOT} .cell-front .front-head h2 {
+    margin: 0; font-family: ${FONT_SERIF}; font-size: 11pt; font-weight: 700; color: #1a1816; letter-spacing: -0.02em; line-height: 1.12;
+  }
+  .${ROOT} .cell-front .front-head .tagline {
+    margin: 1mm 0 0; font-size: 7.5pt; font-weight: 600; color: ${TEAL_DARK}; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .${ROOT} .cell-front .front-head .sub {
+    margin: 0.5mm 0 0; font-size: 6.5pt; color: #5c5650; font-weight: 500;
+  }
+  .${ROOT} .cell-front .front-main {
+    flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: stretch;
+  }
+  .${ROOT} .cell-front .thumb {
+    flex: 0 0 38%; max-width: 38%; border-radius: 2mm; overflow: hidden;
+    background: #ece6de; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
+  }
+  .${ROOT} .cell-front .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 28mm; }
+  .${ROOT} .cell-front .text { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+  .${ROOT} .cell-front .intro {
+    margin: 0; font-size: 7pt; line-height: 1.42; color: #2c2825; font-weight: 400;
+  }
+  .${ROOT} .cell-front .addr {
+    margin: 1.5mm 0 0; font-size: 6pt; line-height: 1.4; color: #5c5650;
+  }
+  .${ROOT} .cell-front .k2qr-row {
+    margin-top: 2mm; padding-top: 2mm; border-top: 1px solid rgba(12,92,85,0.12);
+    display: flex; align-items: center; gap: 2.5mm; flex-wrap: nowrap;
+  }
+  .${ROOT} .cell-front .k2qr {
+    flex-shrink: 0; width: 17mm; height: 17mm; background: #fff; padding: 0.7mm;
+    border-radius: 2mm; border: 1px solid rgba(12,92,85,0.18);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .${ROOT} .cell-front .k2qr img { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
+  .${ROOT} .cell-front .k2qr-cap {
+    font-size: 5.8pt; color: #3d3835; line-height: 1.3; flex: 1; min-width: 0; font-weight: 500;
+  }
+  .${ROOT} .cell-front .k2qr-cap .k2qr-cta { font-family: ${FONT_SERIF}; font-size: 6.5pt; color: ${TEAL_DARK}; display: block; margin-bottom: 0.3mm; }
+  .${ROOT} .cell-front .foot {
+    margin-top: auto; padding-top: 1.2mm; font-size: 4.5pt; color: #8a8278; line-height: 1.35;
+    text-align: left; writing-mode: horizontal-tb;
+  }
+
+  /* —— Rückseite: ein Bild, ein QR, keine „Tablet-Leiche“ —— */
+  .${ROOT} .cell-back {
+    color: #f5f2ed; justify-content: flex-start; align-items: stretch; text-align: center;
+    padding: 2mm 2.5mm 2.5mm;
+  }
+  .${ROOT} .cell-back .inner { max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; align-items: center; min-height: 0; flex: 1; }
+  .${ROOT} .cell-back .kicker {
+    margin: 0; font-size: 5.5pt; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.72); font-weight: 600;
+  }
+  .${ROOT} .cell-back h3 {
+    margin: 0.6mm 0 0; font-family: ${FONT_SERIF}; font-size: 10pt; font-weight: 700; color: #fff; line-height: 1.15;
+  }
+  .${ROOT} .cell-back .back-claims {
+    margin: 1.2mm 2mm 0; padding: 0 1mm;
+    font-size: 5.8pt; font-weight: 500; line-height: 1.38; color: rgba(255,255,255,0.92);
+    max-height: 14mm; overflow: hidden;
+  }
+  .${ROOT} .cell-back .back-claims p { margin: 0 0 0.8mm; }
+  .${ROOT} .cell-back .back-claims p:last-child { margin-bottom: 0; }
+  /* Tor: nur Bild, schmaler Rahmen – kein dunkler Geräterahmen */
+  .${ROOT} .cell-back .tor-wrap {
+    margin: 1.5mm auto 0; width: 88%; max-width: 52mm; flex-shrink: 0;
+    border-radius: 2mm; overflow: hidden;
+    box-shadow: 0 2mm 5mm rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+  }
+  .${ROOT} .cell-back .tor-screen { position: relative; width: 100%; aspect-ratio: 16 / 10; background: #1a1512; }
   .${ROOT} .cell-back .tor-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .${ROOT} .cell-back .tor-screen .tor-grad-l { position: absolute; inset: 0; background: linear-gradient(to right, rgba(18,10,6,0.88) 0%, transparent 42%); pointer-events: none; }
-  .${ROOT} .cell-back .tor-screen .tor-grad-t { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,10,6,0.55) 0%, transparent 38%); pointer-events: none; }
-  .${ROOT} .cell-back .qr { margin: 1.5mm auto 0; width: 20mm; height: 20mm; background: #fff; padding: 1mm; border-radius: 4px; }
-  .${ROOT} .cell-back .qr img { width: 100%; height: 100%; display: block; }
-  .${ROOT} .cell-back .scan { margin: 1.5mm 0 0; font-size: 6pt; color: rgba(255,255,255,0.8); }
-  .${ROOT} .cell-back .brand { margin: 1.5mm 0 0; font-size: 5pt; color: rgba(255,255,255,0.55); line-height: 1.25; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-l { position: absolute; inset: 0; background: linear-gradient(to right, rgba(12,8,6,0.5) 0%, transparent 50%); pointer-events: none; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-t { position: absolute; inset: 0; background: linear-gradient(to top, rgba(12,8,6,0.45) 0%, transparent 45%); pointer-events: none; }
+  .${ROOT} .cell-back .qr-block {
+    margin: 2mm auto 0; padding: 1.2mm 2mm 1.5mm; background: #fff; border-radius: 2.5mm;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  }
+  .${ROOT} .cell-back .qr { width: 18mm; height: 18mm; margin: 0 auto; padding: 0; background: transparent; }
+  .${ROOT} .cell-back .qr img { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
+  .${ROOT} .cell-back .scan { margin: 1mm 0 0; font-size: 5.5pt; color: #3d3835; font-weight: 600; line-height: 1.25; }
+  .${ROOT} .cell-back .scan-sub { margin: 0.3mm 0 0; font-size: 4.8pt; color: #6b6560; font-weight: 400; }
+  .${ROOT} .cell-back .brand { margin: 1.2mm 0 0; font-size: 4.8pt; color: rgba(255,255,255,0.5); line-height: 1.3; }
+
   @media print {
     @page { size: A4; margin: 0; }
     .${ROOT} { padding: 0 !important; background: #fff !important; min-height: 0 !important; }
+    .${ROOT} .flyer-vierer-toolbar { display: none !important; }
     .${ROOT} .hint-screen { display: none !important; }
     .${ROOT} .sheet { box-shadow: none !important; margin: 0 !important; page-break-after: always; }
     .${ROOT} .sheet:last-of-type { page-break-after: auto; }
-    .${ROOT} .cell-front .band { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .${ROOT} .cell-back .tor-wrap { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .${ROOT} .cell-back .qr-block { box-shadow: none !important; border: 1px solid #ddd; }
   }
 `
 
@@ -161,7 +238,15 @@ const K2_BAND_SUBTITLE = 'Martina & Georg Kreinecker'
 const K2_TAGLINE = TENANT_CONFIGS.k2.tagline
 
 export default function FlyerK2Oek2TorViererPage() {
-  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
+
+  useEffect(() => {
+    refetchQrStand()
+  }, [refetchQrStand])
+
+  const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
   const [welcomeThumb, setWelcomeThumb] = useState('')
   const [intro, setIntro] = useState('')
   const [galleryTitle, setGalleryTitle] = useState(() => K2_STAMMDATEN_DEFAULTS.gallery.name)
@@ -258,6 +343,74 @@ export default function FlyerK2Oek2TorViererPage() {
   return (
     <div className={ROOT}>
       <style>{styles}</style>
+      <div className="flyer-vierer-toolbar">
+        {returnTo ? (
+          <Link to={returnTo} style={{ color: TEAL_LIGHT, textDecoration: 'none', fontWeight: 500 }}>
+            ← Zurück
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: TEAL_LIGHT,
+              fontWeight: 500,
+              cursor: 'pointer',
+              padding: 0,
+            }}
+          >
+            ← Zurück
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => refetchQrStand()}
+          style={{
+            padding: '0.4rem 0.75rem',
+            background: '#f0fdfa',
+            color: TEAL_LIGHT,
+            border: `1px solid ${TEAL_LIGHT}60`,
+            borderRadius: '6px',
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+          }}
+        >
+          QR aktualisieren
+        </button>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          style={{
+            padding: '0.4rem 0.75rem',
+            background: TEAL,
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          Als PDF drucken
+        </button>
+        <Link
+          to={BENUTZER_HANDBUCH_ROUTE}
+          style={{
+            padding: '0.4rem 0.75rem',
+            background: '#f0fdfa',
+            color: TEAL_LIGHT,
+            border: `1px solid ${TEAL_LIGHT}60`,
+            borderRadius: '6px',
+            fontSize: '0.85rem',
+            textDecoration: 'none',
+            fontWeight: 500,
+          }}
+        >
+          Benutzerhandbuch
+        </Link>
+      </div>
       <div className="hint-screen no-print">
         <h1>Vierer-Flyer K2 + ök2 Eingangstor</h1>
         <p>
@@ -279,12 +432,15 @@ export default function FlyerK2Oek2TorViererPage() {
       <section className="sheet" aria-label="Vorderseite vier Flyer K2 Galerie">
         {SLOTS.map((i) => (
           <div key={`f-${i}`} className="cell cell-front">
-            <div className="band">
-              <h2>{galleryTitle}</h2>
-              <p className="tagline">{K2_TAGLINE}</p>
-              <p className="sub">{K2_BAND_SUBTITLE}</p>
+            <div className="front-top">
+              <div className="front-accent" aria-hidden />
+              <div className="front-head">
+                <h2>{galleryTitle}</h2>
+                <p className="tagline">{K2_TAGLINE}</p>
+                <p className="sub">{K2_BAND_SUBTITLE}</p>
+              </div>
             </div>
-            <div className="body">
+            <div className="front-main">
               {welcomeThumb ? (
                 <div className="thumb">
                   <img src={welcomeThumb} alt="" />
@@ -313,11 +469,10 @@ export default function FlyerK2Oek2TorViererPage() {
                   QR…
                 </div>
               )}
-              <p className="k2qr-cap">
-                <strong>Zur Galerie</strong>
-                <br />
-                Code scannen – K2 Galerie online ({K2_GALERIE_PATH})
-              </p>
+              <div className="k2qr-cap">
+                <span className="k2qr-cta">Zur Galerie</span>
+                Code scannen – die Galerie online öffnen.
+              </div>
             </div>
             <div className="foot">
               {PRODUCT_COPYRIGHT_BRAND_ONLY}
@@ -340,25 +495,30 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="inner">
               <p className="kicker">ök2</p>
               <h3>Eingangstor</h3>
-              <p className="back-claim">{PRODUCT_WERBESLOGAN}</p>
-              <p className="back-claim">{PRODUCT_WERBESLOGAN_2}</p>
-              <div className="tor-frame">
+              <div className="back-claims">
+                <p>{PRODUCT_WERBESLOGAN}</p>
+                <p>{PRODUCT_WERBESLOGAN_2}</p>
+              </div>
+              <div className="tor-wrap">
                 <div className="tor-screen">
                   <img src={torHeroUrl} alt="" />
                   <div className="tor-grad-l" />
                   <div className="tor-grad-t" />
                 </div>
               </div>
-              {qrEntdeckenDataUrl ? (
-                <div className="qr">
-                  <img src={qrEntdeckenDataUrl} alt="QR-Code ök2 Eingangstor" />
-                </div>
-              ) : (
-                <div className="qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#333' }}>
-                  QR…
-                </div>
-              )}
-              <p className="scan">Code scannen – {OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}</p>
+              <div className="qr-block">
+                {qrEntdeckenDataUrl ? (
+                  <div className="qr">
+                    <img src={qrEntdeckenDataUrl} alt="QR-Code ök2 Eingangstor" />
+                  </div>
+                ) : (
+                  <div className="qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#333', minHeight: 48 }}>
+                    QR…
+                  </div>
+                )}
+                <p className="scan">Demo ök2 – hier entlang</p>
+                <p className="scan-sub">Code scannen · Eingangstor im Browser</p>
+              </div>
               <p className="brand">
                 {PRODUCT_BRAND_NAME}
                 <br />
