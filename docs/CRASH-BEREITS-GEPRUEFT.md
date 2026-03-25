@@ -4,6 +4,22 @@
 
 **ro5:** Wenn Georg „ro5“ schreibt = Reopen nach Code 5. KI: kurz hier eintragen („ro5 – [Datum]“), dann wie bei „ro“ weitermachen. **Kernregel für ro5/Reopen:** .cursor/rules/ro5-kern.mdc (dort: was ro5 bedeutet, Missetäter, Verweise).
 
+---
+
+## Mac Kernel-Panic (WebKit.GPU / IOSurface) – nicht ro5, kein Dauerthema
+
+**Abgrenzung:** Ein **Kernel-Panic** im Log mit `com.apple.WebKit.GPU`, `IOSurface`, z. B. `os_refcnt: underflow` ist **nicht** dasselbe wie **Code 5 / Cursor-Reopen (ro5)**. ro5 = Cursor/Electron-Prozess bricht weg; Kernel-Panic = **macOS-Kernel + Grafik + WebKit** (Browser-Engine in Safari/Electron).
+
+**Damit das nicht zum zweiten ro5 wird (keine Endlosschleife aus Analyse):**
+
+1. **Nicht** bei jedem solchen Panic das ganze Repo nach „Ursache“ durchsuchen – der Hebel ist **Nutzung**: Galerie **im externen Browser** testen, **Cursor-Preview zu**, weniger parallele GPU-Last; **Cursor + macOS** aktuell halten.
+2. **Nicht** mit der ro5-Checkliste (Reload, setInterval, write-build-info …) vermischen – das ist eine **andere Fehlerklasse**.
+3. **Eine** kurze Einordnung pro Vorfall reicht; keine wiederholte „Crash-Show“ in jeder Session (siehe auch `.cursor/rules/code-5-keine-wiederholte-checks.mdc` sinngemäß: nicht leiern).
+
+**Referenz Georg:** 25.03.26 – Soll nicht Dauer-Thema werden wie ro5; Anker hier.
+
+---
+
 | Datum   | ro5 gemeldet |
 |--------|---------------|
 | 05.03.26 | ro5-Konvention vereinbart (Georg schreibt ro5, KI weiß es war Code 5, dokumentiert, macht weiter). |
