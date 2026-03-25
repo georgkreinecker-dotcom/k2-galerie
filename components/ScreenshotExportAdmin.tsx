@@ -1858,6 +1858,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       /* noop */
     }
   }
+  const closeOeffentlichkeitsarbeitFullscreenOverlay = () => {
+    if (!showOeffentlichkeitsarbeitModal) return
+    setShowOeffentlichkeitsarbeitModal(false)
+    try {
+      const u = new URL(window.location.href)
+      u.searchParams.delete('openModal')
+      navigate(u.pathname + u.search, { replace: true })
+    } catch {
+      /* noop */
+    }
+  }
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') forceCloseBlockingOverlays()
@@ -22051,12 +22062,7 @@ ${name}`
                     <strong style={{ color: s.text }}>Öffentlichkeitsarbeit – Vollbild (zum Testen in K2)</strong>
                     <button
                       type="button"
-                      onClick={() => {
-                        setShowOeffentlichkeitsarbeitModal(false)
-                        const u = new URL(window.location.href)
-                        u.searchParams.delete('openModal')
-                        navigate(u.pathname + u.search, { replace: true })
-                      }}
+                      onClick={closeOeffentlichkeitsarbeitFullscreenOverlay}
                       style={{
                         padding: '0.5rem 1rem',
                         background: s.accent,
@@ -22265,27 +22271,34 @@ ${name}`
             const fr = new FileReader()
             fr.onloadend = () => {
               const data = fr.result as string
-              const current = loadDocuments()
-              const docPayload = {
-                id: docId,
-                name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse', 'Presseaussendung'),
-                type: 'text/html',
-                size: blob.size,
-                data,
-                fileName: `presseaussendung-${(ev.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                uploadedAt: new Date().toISOString(),
-                isPDF: false,
-                isPlaceholder: false,
-                category: 'pr-dokumente',
-                eventId: ev.id,
-                eventTitle: ev.title,
-                werbematerialTyp: 'presse'
-              }
-              saveDocuments([...current, docPayload])
-              setDocuments([...current, docPayload])
+              deferHeavyUiWork(() => {
+                try {
+                  const current = loadDocuments()
+                  const docPayload = {
+                    id: docId,
+                    name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse', 'Presseaussendung'),
+                    type: 'text/html',
+                    size: blob.size,
+                    fileData: data,
+                    fileName: `presseaussendung-${(ev.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                    uploadedAt: new Date().toISOString(),
+                    isPDF: false,
+                    isPlaceholder: false,
+                    category: 'pr-dokumente',
+                    eventId: ev.id,
+                    eventTitle: ev.title,
+                    werbematerialTyp: 'presse'
+                  }
+                  saveDocuments([...current, docPayload])
+                } catch (err) {
+                  console.error('Presseaussendung speichern:', err)
+                  alert('Presseaussendung speichern fehlgeschlagen (nach Vorbereitung).')
+                }
+              })
             }
             fr.readAsDataURL(blob)
             setRedactionEvent(null)
+            closeOeffentlichkeitsarbeitFullscreenOverlay()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -22318,7 +22331,10 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Presseaussendung – {redactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
-                onClick={() => setRedactionEvent(null)}
+                onClick={() => {
+                  setRedactionEvent(null)
+                  closeOeffentlichkeitsarbeitFullscreenOverlay()
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   background: (s?.accent) ?? '#0d9488',
@@ -22539,6 +22555,7 @@ ${name}`
             reader.readAsDataURL(blob)
             setSocialRedactionEvent(null)
             setSocialRedactionDocument(null)
+            closeOeffentlichkeitsarbeitFullscreenOverlay()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -22580,7 +22597,11 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Social-Media-Posts – {socialRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
-                onClick={() => { setSocialRedactionEvent(null); setSocialRedactionDocument(null) }}
+                onClick={() => {
+                  setSocialRedactionEvent(null)
+                  setSocialRedactionDocument(null)
+                  closeOeffentlichkeitsarbeitFullscreenOverlay()
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   background: (s?.accent) ?? '#0d9488',
@@ -23016,6 +23037,7 @@ ${name}`
             setFlyerRedactionEvent(null)
             setFlyerRedactionDoc(null)
             setFlyerRedaction(null)
+            closeOeffentlichkeitsarbeitFullscreenOverlay()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -23064,7 +23086,12 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Flyer – {flyerRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
-                onClick={() => { setFlyerRedactionEvent(null); setFlyerRedactionDoc(null); setFlyerRedaction(null) }}
+                onClick={() => {
+                  setFlyerRedactionEvent(null)
+                  setFlyerRedactionDoc(null)
+                  setFlyerRedaction(null)
+                  closeOeffentlichkeitsarbeitFullscreenOverlay()
+                }}
                 style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
               >
                 × OK
@@ -23193,6 +23220,7 @@ ${name}`
             reader.readAsDataURL(blob)
             setNewsletterRedactionEvent(null)
             setNewsletterRedactionDocument(null)
+            closeOeffentlichkeitsarbeitFullscreenOverlay()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -23221,7 +23249,11 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Newsletter – {newsletterRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
-                onClick={() => { setNewsletterRedactionEvent(null); setNewsletterRedactionDocument(null) }}
+                onClick={() => {
+                  setNewsletterRedactionEvent(null)
+                  setNewsletterRedactionDocument(null)
+                  closeOeffentlichkeitsarbeitFullscreenOverlay()
+                }}
                 style={{
                   padding: '0.5rem 1rem',
                   background: (s?.accent) ?? '#0d9488',

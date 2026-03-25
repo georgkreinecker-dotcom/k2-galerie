@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Öffentlichkeitsarbeit weiter gesperrt (außer Plakat) behoben:** Gleiches Entsperr-Muster jetzt auch für **Presse, Social, Newsletter, Flyer**. Neuer Helper `closeOeffentlichkeitsarbeitFullscreenOverlay()` schließt Vollbild + entfernt `openModal`; wird bei **× OK** und nach **Speichern** aufgerufen. Zusätzlich Presse-Speichern wie die anderen auf `deferHeavyUiWork` umgestellt und auf `fileData` vereinheitlicht (kein doppeltes `data`). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: In Öffentlichkeitsarbeit **Presse/Social/Newsletter/Flyer** je einmal öffnen/speichern/schließen; danach muss die APf frei klickbar bleiben.
+
 **Letzter Stand:** 25.03.26 – **APf „alles lahm“, Entsperren half nicht:** Ein **Browser-Tab = ein Hauptthread**. Nach **Speichern** von Plakat/Flyer/Social/Newsletter lief im `FileReader`-Callback sofort **`loadDocuments` + `JSON.stringify`** (teilweise **doppeltes** `data` + `fileData` = doppelte Größe) → **ganzer Tab** eingefroren, kein Klick mehr. **Fix:** `deferHeavyUiWork` (`setTimeout(0)`), schwere Arbeit **einen Tick später**; Payload nur noch **`fileData`**; doppeltes `setDocuments` entfernt (`saveDocuments` aktualisiert den State). **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `cd4b6a9` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: **Plakat (oder Flyer) → Speichern** → kurz warten; Oberfläche muss wieder bedienbar sein. **🔓** nur falls noch ein Overlay hängen bleibt.
