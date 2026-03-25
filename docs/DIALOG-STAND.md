@@ -1,10 +1,16 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Plakat bei Eröffnung abgelegt:** **Plakat Galerieeröffnung (A3)** zusätzlich auf dem **Texte-Schreibtisch** (Zone „Eröffnung & Freund:innen“) und in **Admin → Eventplanung → Öffentlichkeitsarbeit** bei jedem Event unter **Präsentationsmappen** (inkl. neuem Tab), außerdem im Tab **Präsentationsmappen** im Hub. Korrekturen: **Event bearbeiten** / **Stammdaten**, dann Plakat-Seite neu laden. **`TexteSchreibtischPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `0580be8` ✅ auf GitHub.
+**Letzter Stand:** 25.03.26 – **Mediengenerator – Dokumente öffnen:** Ursachen: (1) In-App-Viewer z-index 100000 unter dynamischem Mandanten-Lade-Overlay 100001 → unsichtbar. (2) Öffnen nur im zugeklappten „Weitere Dokumente“-Details. (3) `praesentationsmappe-kurz` ohne `fileData` fiel in leeren Text. **Fix:** Viewer **zIndex 100002**, Button **„Ansehen“** pro Karte (Hauptdokument), Switch-Fall **Präsentationsmappen** mit Link-Hilfsseite. **Commit:** `f2a838c` ✅
 
-**Was wir JETZT tun:** Nächster Schritt **Öffentlichkeitsarbeit Launch** nach Georg; Plakat unter **Eröffnung** + **Event-Karte** auffindbar.
+**Was wir JETZT tun:** Georg: Admin → Event- und Medienplanung → Werbematerial: **Ansehen** testen.
 
-**Einordnung:** Gleiche Datenquelle wie Prospekt (Event + Stammdaten); viele Einstiege, eine Logik 💚
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4 (K2 vorn, ök2-Tor QR hinten):** Druckseite **`FlyerK2Oek2TorViererPage`** → **`/projects/k2-galerie/flyer-k2-oek2-tor-vierer`** – vier Streifen pro Seite (je ca. 21 × 74 mm), Rückseite QR mit **`buildQrUrlWithBust`** → **`/entdecken`**. **Admin → Eventplanung → Event-Flyer:** Vierer-Flyer-Links (K2/ök2, nicht VK2). **Werbeunterlagen** Flyer-A5-Abschnitt: Link dazu. **`navigation.ts`**, **`App.tsx`**, **`ScreenshotExportAdmin.tsx`**, **`WerbeunterlagenPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg: Vierer-Flyer drucken/Duplex kurz prüfen; **Öffentlichkeitsarbeit Launch** weiter nach Bedarf.
+
+**Einordnung:** Event-Werbung + Demo-Einstieg getrennt (Vorderseite K2-Stammdaten, Rückseite nur ök2-Tor/QR) 💚
+
+**Letzter Stand:** 25.03.26 – **Plakat bei Eröffnung abgelegt:** **Plakat Galerieeröffnung (A3)** auf **Texte-Schreibtisch** (Zone „Eröffnung & Freund:innen“) und **Admin → Eventplanung → Präsentationsmappen** (+ Hub-Tab). **Commit:** `0580be8` ✅ auf GitHub.
 
 **Letzter Stand:** 25.03.26 – **Benutzerhandbuch Lizenz (Kapitel 06):** Neuer Abschnitt **„Wichtige Daten: ausdrucken oder abspeichern“** – Lizenzbestätigung (Druck/PDF), Galerie-URL notieren, Stammdaten/Empfehlungslink, **Vollbackup**; Verweise auf **[Einstellungen](10-EINSTELLUNGEN.md)**; **Kurz zusammengefasst** um eine Zeile ergänzt. Datei: **`public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md`**. Tests + Build grün. **Commit:** `1df0cba` ✅ auf GitHub.
 
