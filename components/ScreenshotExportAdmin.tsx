@@ -16022,27 +16022,43 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               Kurzvariante, Vollversion, Prospekt/Flyer und Plakat Galerieeröffnung (A3): Links öffnen, im Browser als PDF drucken. Vorschau, kein Bearbeiten in der App.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
                 Kurzvariante
-              </Link>
+              </button>
               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Kurzvariante (neuer Tab)
               </a>
-              <Link to={PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
                 Vollversion
-              </Link>
+              </button>
               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Vollversion (neuer Tab)
               </a>
-              <Link to={'/prospekt-k2-galerie' + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay('/prospekt-k2-galerie' + pmTabQs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
                 Prospekt/Flyer
-              </Link>
+              </button>
               <a href={BASE_APP_URL + '/prospekt-k2-galerie' + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Prospekt/Flyer (neuer Tab)
               </a>
-              <Link to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} state={{ returnTo: location.pathname + location.search }} style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
                 Plakat Galerieeröffnung (A3)
-              </Link>
+              </button>
               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Plakat A3 (neuer Tab)
               </a>
