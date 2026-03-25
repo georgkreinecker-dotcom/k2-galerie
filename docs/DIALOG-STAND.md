@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **CI / GitHub-Mails:** `FlyerK2GaleriePage` importierte `../utils/eventTerminFormat`, die Datei fehlte im Repo → **Tests + Build auf GitHub rot** bei jedem Push (viele gleiche Meldungen). **Fix:** `src/utils/eventTerminFormat.ts` + `src/tests/eventTerminFormat.test.ts`. **Commit:** `921da17` ✅ auf GitHub
+
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer:** **Links und rechts** je **Werk aus Liste** (Dropdown + URL wie rechts); `leftWerk` + Migration alter `card`; große Hinweis-Box entfernt; Panel-Hinweistext gekürzt/weg; Tor wieder **Foto-Datei** wählbar. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `7c0418d` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Flyer-Seite – links/rechts Werke wählen, Druck prüfen.
