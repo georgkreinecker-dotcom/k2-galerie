@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 25.03.26 – **Vierer-Flyer Zuordnung:** Vorderseite **Galeriename + Kunst & Keramik** (keine kgm-Slogans); Rückseite **ök2** mit **Werbeslogans**, **Demo-Foto**, QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Zuordnung:** Vorderseite **Galeriename + Kunst & Keramik** (keine kgm-Slogans); Rückseite **ök2** mit **Werbeslogans**, **Demo-Foto**, QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** `40583fe` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Vierer-Flyer A4:** Vorderseite nur **K2 Galerie Kunst & Keramik** (immer K2-Stammdaten), **ohne Termine**, mit **QR** zur Galerie-URL (`buildQrUrlWithBust`). Rückseite nur **ök2 Eingangstor** `/entdecken` mit QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
 
