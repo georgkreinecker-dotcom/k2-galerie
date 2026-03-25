@@ -12889,7 +12889,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             style={{
               position: 'sticky',
               top: fromHub ? 44 : 0,
-              zIndex: 99998,
+              zIndex: 100100,
               padding: '0.85rem clamp(1rem, 3vw, 1.5rem)',
               background: 'linear-gradient(135deg, #15803d, #22c55e)',
               borderBottom: '2px solid #15803d',
@@ -21947,7 +21947,7 @@ ${name}`
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 99996,
+            zIndex: 100100,
             background: 'rgba(15, 20, 25, 0.55)',
             display: 'flex',
             alignItems: 'center',
@@ -22165,7 +22165,7 @@ ${name}`
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 99998,
+              zIndex: 100100,
               background: (s?.bgDark) ?? '#0f1419',
               overflow: 'auto',
               padding: '1rem',
@@ -22421,7 +22421,7 @@ ${name}`
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 99998,
+              zIndex: 100100,
               background: (s?.bgDark) ?? '#0f1419',
               overflow: 'auto',
               padding: '1rem',
@@ -22668,7 +22668,7 @@ ${name}`
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 99998,
+              zIndex: 100100,
               background: (s?.bgDark) ?? '#0f1419',
               overflow: 'auto',
               padding: '1rem',
@@ -22876,7 +22876,7 @@ ${name}`
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 99998,
+              zIndex: 100100,
               background: (s?.bgDark) ?? '#0f1419',
               overflow: 'auto',
               padding: '1rem',
@@ -23027,7 +23027,7 @@ ${name}`
             style={{
               position: 'fixed',
               inset: 0,
-              zIndex: 99998,
+              zIndex: 100100,
               background: (s?.bgDark) ?? '#0f1419',
               overflow: 'auto',
               padding: '1rem',
@@ -23256,7 +23256,7 @@ ${name}`
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 99998,
+            zIndex: 100100,
             padding: '1rem'
           }}
           onClick={() => setPublishSuccessModal(null)}
@@ -23344,7 +23344,7 @@ ${name}`
       {/* Modal: „An Server senden“ fehlgeschlagen – Daten sind lokal gespeichert */}
       {publishErrorMsg && (
         <div
-          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99998, padding: '1rem' }}
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100100, padding: '1rem' }}
           onClick={() => setPublishErrorMsg(null)}
         >
           <div

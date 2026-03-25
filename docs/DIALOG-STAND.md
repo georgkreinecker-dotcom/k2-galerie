@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Medienplaner / Öffentlichkeitsarbeit Vollbild – Modals lagen dahinter:** Vollbild-Overlay **z-index 99999**; Redaktions-Modals (Presse, Social, Newsletter, Plakat, Flyer, Veröffentlichen-Hinweise, Guide-Leiste) hatten **99998** → Inhalt unsichtbar, Seite wirkte gesperrt. **Fix:** **100100** (über Vollbild, unter In-App-Dokument-Viewer 2 000 000); **Vorlage Vergangenheit** **99996 → 100100**. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Öffentlichkeitsarbeit (auch „Vollbild zum Testen“) → **Ansehen** bei Newsletter/Social/Presse/Flyer kurz prüfen.
+
 **Letzter Stand:** 25.03.26 – **Sauberer Sammel-Commit + Push:** Alle offenen Änderungen gebündelt (Vierer-Flyer K2/ök2-Tor, Entdecken-Hero/Overlay, Plakat Eröffnung, Mediengenerator **Ansehen**, Texte-Schreibtisch/Markdown, Galerie ök2-Hilfen, Doku, Sitemap/build-info). **Tests + Build grün.** **Commit:** `5146f58` ✅ auf GitHub.
 
 **Was wir JETZT tun:** Vercel „Ready“ abwarten; Georg: Mediengenerator **Ansehen** + Vierer-Flyer Druck kurz prüfen.
