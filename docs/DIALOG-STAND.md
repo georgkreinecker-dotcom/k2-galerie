@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Flyer Vierer: 4. Foto / „Theater“:** Mitte + Rückseite lagen in **sessionStorage** (~5 MB-Limit); beim vierten großen Bild oft **Quota** → stiller Fehler. **Fix:** eigene **IndexedDB** `flyerViererFileStorage.ts`, Migration aus altem sessionStorage; Komprimierung **`flyerVierer`** (max ~320 KB pro Bild); **Hydration-Flag** damit nicht vor dem Laden geleert wird; **Alert** wenn Speichern scheitert. **`FlyerK2Oek2TorViererPage.tsx`**, **`compressImageForStorage.ts`**. **Commit:** `3455288` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: alle vier Bilder/Fotos nacheinander setzen – sollte stabil bleiben.
+
 **Letzter Stand:** 25.03.26 – **Bugfix: Hero Eingangsseite „lädt nicht neu“:** Nach GitHub-Upload wurde **`persistEntdeckenHeroOverlay`** **vor** `setPageContentEntdecken` aufgerufen – Overlay hatte alte URL, localStorage danach **`?v=`**-Bust → Abgleich schlug fehl, Bild wirkte „weg“. **Fix:** Overlay mit **`withBust`** speichern; Abgleich **`normalizeHeroImageUrlForOverlayMatch`** (Query ignorieren). **`entdeckenHeroOverlayStorage.ts`**, **`pageContentEntdecken.ts`**, **`ScreenshotExportAdmin.tsx`**, Tests. **Commit:** `c925893` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Design → Eingangsseite – neues Hero hochladen; `/entdecken` + Flyer Rückseite prüfen.
