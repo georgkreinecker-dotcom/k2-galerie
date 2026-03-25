@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer Zuordnung:** Vorderseite **Galeriename + Kunst & Keramik** (keine kgm-Slogans); Rückseite **ök2** mit **Werbeslogans**, **Demo-Foto**, QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
+**Letzter Stand:** 25.03.26 – **Vierer-Flyer A4:** Vorderseite nur **K2 Galerie Kunst & Keramik** (immer K2-Stammdaten), **ohne Termine**, mit **QR** zur Galerie-URL (`buildQrUrlWithBust`). Rückseite nur **ök2 Eingangstor** `/entdecken` mit QR. **`FlyerK2Oek2TorViererPage.tsx`**. Tests + Build grün. **Commit:** (nach Push) ✅
+
 **Letzter Stand:** 25.03.26 – **FEHLERANALYSEPROTOKOLL:** Fehlerklasse + Protokoll-Eintrag **Öffentlichkeitsarbeit Vollbild / gleicher Tab hängt** (Router vs. `replaceState`, Standard `navigateFromOeffentlichkeitsarbeitOverlay`; Commits `5baa9b1`, `94f80cd`). **Commit:** `3b2bdc9` ✅ auf GitHub
 
 **Letzter Stand:** 25.03.26 – **Admin-Tab „Präsentationsmappen“ gleicher Sportwagenmodus:** Dieselben gleich-Tab-Links (Kurzvariante, Vollversion, Prospekt, Plakat A3) nutzen jetzt **`navigateFromOeffentlichkeitsarbeitOverlay`** wie im Öffentlichkeitsarbeit-Vollbild – kein `<Link>` mehr. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** `94f80cd` ✅ auf GitHub
