@@ -6,6 +6,7 @@ import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
+import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const DOC_CLASS = 'flyer-k2-page'
 /** Gleiches Erscheinungsbild wie Kurzvariante (Präsentationsmappe) – Teal/Weiß. */
@@ -60,21 +61,6 @@ function useFlyerTenant(): 'k2' | 'oeffentlich' {
   const fromUrl = searchParams.get('context') === 'oeffentlich'
   const fromStorage = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'oeffentlich'
   return fromUrl || fromStorage ? 'oeffentlich' : 'k2'
-}
-
-function formatEventDate(dateStr: string, endDateStr?: string): string {
-  try {
-    const d = new Date(dateStr)
-    const toDe = (x: Date) => x.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })
-    if (!endDateStr || endDateStr === dateStr) return toDe(d)
-    const end = new Date(endDateStr)
-    if (d.getMonth() === end.getMonth() && d.getFullYear() === end.getFullYear()) {
-      return `${d.getDate()}.–${end.getDate()}. ${end.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}`
-    }
-    return `${toDe(d)} – ${toDe(end)}`
-  } catch {
-    return ''
-  }
 }
 
 function loadStammdatenForTenant(tenant: 'k2' | 'oeffentlich'): {
@@ -161,7 +147,11 @@ export default function FlyerK2GaleriePage() {
       if (g && isMounted) {
         setTagline('Kunst & Keramik')
         const names = loadStammdatenForTenant(tenant)
-        setSubtitle(`${names.martinaName} & ${names.georgName}`)
+        setSubtitle(
+          tenant === 'oeffentlich'
+            ? `${names.martinaName} & ${names.georgName}`
+            : 'Martina & Georg Kreinecker'
+        )
         setIntro((g.welcomeIntroText || '').trim() || 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.')
       }
     } catch (_) {}
@@ -172,7 +162,7 @@ export default function FlyerK2GaleriePage() {
         const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
         const event = eroeffnung || list.find((e: any) => e?.date)
         if (event?.date && isMounted) {
-          const text = formatEventDate(event.date, event.endDate)
+          const text = formatEventTerminKomplett(event, { mode: 'compact', emptyFallback: '' })
           if (text) setEventDateText(text)
         }
       }

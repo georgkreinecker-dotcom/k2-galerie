@@ -1,7 +1,7 @@
 /**
  * Vierer-Bogen A4: doppelseitig drucken, 4 gleiche Flyer pro Seite.
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
- * Rückseite: ök2 Eingangstor – kgm-Slogans (PRODUCT_WERBESLOGAN), Demo-Motiv (getOek2WelcomeImageEffective), QR /entdecken.
+ * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild (getEntdeckenHeroPathUrl), kgm-Slogans, QR /entdecken.
  */
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
@@ -10,7 +10,6 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getPageTexts } from '../config/pageTexts'
 import {
-  getOek2WelcomeImageEffective,
   K2_STAMMDATEN_DEFAULTS,
   MUSTER_TEXTE,
   PRODUCT_BRAND_NAME,
@@ -20,6 +19,7 @@ import {
   PRODUCT_WERBESLOGAN_2,
   TENANT_CONFIGS,
 } from '../config/tenantConfig'
+import { getEntdeckenColorsFromK2Design, getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 
 const ROOT = 'flyer-k2-oek2-vierer'
@@ -51,14 +51,16 @@ const styles = `
   .${ROOT} .cell-front .k2qr img { width: 100%; height: 100%; display: block; }
   .${ROOT} .cell-front .k2qr-cap { font-size: 5.5pt; color: #3d3835; line-height: 1.25; flex: 1; min-width: 0; }
   .${ROOT} .cell-front .foot { margin-top: auto; padding-top: 1mm; font-size: 5pt; color: #7a726a; line-height: 1.25; }
-  .${ROOT} .cell-back { background: linear-gradient(165deg, #1a2f2e 0%, #0d1f1e 55%, #0a1817 100%); color: #f0faf9; justify-content: flex-start; align-items: center; text-align: center; padding-top: 1mm; }
+  .${ROOT} .cell-back { color: #f0faf9; justify-content: flex-start; align-items: center; text-align: center; padding-top: 1mm; }
   .${ROOT} .cell-back .inner { max-width: 96%; }
   .${ROOT} .cell-back .kicker { margin: 0; font-size: 6pt; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(95,251,241,0.85); }
   .${ROOT} .cell-back h3 { margin: 0.8mm 0 0; font-size: 9pt; font-weight: 700; color: #fff; line-height: 1.2; }
   .${ROOT} .cell-back .back-claim { margin: 0.8mm 0 0; font-size: 6pt; font-weight: 600; line-height: 1.3; color: rgba(255,255,255,0.93); }
-  .${ROOT} .cell-back .tag { margin: 1mm 0 0; font-size: 6pt; color: rgba(255,255,255,0.82); line-height: 1.25; }
-  .${ROOT} .cell-back .back-thumb { margin: 1.2mm auto 0; width: 20mm; height: 20mm; border-radius: 4px; overflow: hidden; background: #0a1514; flex-shrink: 0; }
-  .${ROOT} .cell-back .back-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .${ROOT} .cell-back .tor-frame { margin: 1.4mm auto 0; width: 26mm; padding: 1.2mm; border-radius: 3mm; background: linear-gradient(165deg, #3a3d42 0%, #1c1e22 55%, #121418 100%); box-shadow: 0 1mm 2.5mm rgba(0,0,0,0.45), inset 0 0.2mm 0 rgba(255,255,255,0.06); flex-shrink: 0; }
+  .${ROOT} .cell-back .tor-screen { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 1.8mm; overflow: hidden; background: #0a0a0c; }
+  .${ROOT} .cell-back .tor-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-l { position: absolute; inset: 0; background: linear-gradient(to right, rgba(18,10,6,0.88) 0%, transparent 42%); pointer-events: none; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-t { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,10,6,0.55) 0%, transparent 38%); pointer-events: none; }
   .${ROOT} .cell-back .qr { margin: 1.5mm auto 0; width: 20mm; height: 20mm; background: #fff; padding: 1mm; border-radius: 4px; }
   .${ROOT} .cell-back .qr img { width: 100%; height: 100%; display: block; }
   .${ROOT} .cell-back .scan { margin: 1.5mm 0 0; font-size: 6pt; color: rgba(255,255,255,0.8); }
@@ -153,8 +155,8 @@ const SLOTS = [0, 1, 2, 3] as const
 
 const K2_GALERIE_PATH = PROJECT_ROUTES['k2-galerie'].galerie
 
-/** ök2-Demo-Motiv für Rückseite (kein K2-Foto; stabile URL aus tenantConfig). */
-const OEK2_FLYER_THUMB_URL = getOek2WelcomeImageEffective(undefined)
+/** Vorderseite Band: feste Namenszeile (K2). */
+const K2_BAND_SUBTITLE = 'Martina & Georg Kreinecker'
 
 const K2_TAGLINE = TENANT_CONFIGS.k2.tagline
 
@@ -198,6 +200,13 @@ export default function FlyerK2Oek2TorViererPage() {
       ok = false
     }
   }, [k2GalerieBustUrl])
+
+  /** Rückseite: gleiche Farben + Tor-Bild wie /entdecken (Eingangstor). */
+  useEffect(() => {
+    const c = getEntdeckenColorsFromK2Design()
+    setTorTheme({ bgDark: c.bgDark, bgMid: c.bgMid, accent: c.accent })
+    setTorHeroUrl(getEntdeckenHeroPathUrl())
+  }, [])
 
   /** Vorderseite immer echte K2-Galerie (Kunst & Keramik), unabhängig von Admin-Kontext (ök2-Tab). */
   useEffect(() => {
@@ -252,7 +261,7 @@ export default function FlyerK2Oek2TorViererPage() {
           <strong>Vorderseite:</strong> vier Streifen – <strong>nur echte Galerie</strong> (Name + „{K2_TAGLINE}“ aus K2-Stammdaten),
           Einladungstext, Foto, Adresse, QR zur Galerie. <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
           <br />
-          <strong>Rückseite:</strong> <strong>ök2 Eingangstor</strong> – kgm-Werbezeilen, Demo-Motiv, QR <code>/entdecken</code>.
+          <strong>Rückseite:</strong> <strong>ök2 Eingangstor</strong> – wie <code>/entdecken</code> (Farben aus K2-Design, Tor-Bild), kgm-Werbezeilen, QR <code>/entdecken</code>.
         </p>
         <p>
           Drucken: <strong>zwei Seiten</strong> – erst Vorderseite, dann <strong>Duplex (lange Kante)</strong> auf
@@ -270,7 +279,7 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="band">
               <h2>{galleryTitle}</h2>
               <p className="tagline">{K2_TAGLINE}</p>
-              {subtitle ? <p className="sub">{subtitle}</p> : null}
+              <p className="sub">{K2_BAND_SUBTITLE}</p>
             </div>
             <div className="body">
               {welcomeThumb ? (
@@ -318,15 +327,24 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <section className="sheet" aria-label="Rückseite vier QR Eingangstor">
         {SLOTS.map((i) => (
-          <div key={`b-${i}`} className="cell cell-back">
+          <div
+            key={`b-${i}`}
+            className="cell cell-back"
+            style={{
+              background: `linear-gradient(160deg, ${torTheme.bgDark} 0%, ${torTheme.bgMid} 55%, ${torTheme.accent}22 100%)`,
+            }}
+          >
             <div className="inner">
               <p className="kicker">ök2</p>
               <h3>Eingangstor</h3>
               <p className="back-claim">{PRODUCT_WERBESLOGAN}</p>
               <p className="back-claim">{PRODUCT_WERBESLOGAN_2}</p>
-              <p className="tag">Demo · Zugangsbereich · ohne Anmeldung</p>
-              <div className="back-thumb">
-                <img src={OEK2_FLYER_THUMB_URL} alt="" />
+              <div className="tor-frame">
+                <div className="tor-screen">
+                  <img src={torHeroUrl} alt="" />
+                  <div className="tor-grad-l" />
+                  <div className="tor-grad-t" />
+                </div>
               </div>
               {qrEntdeckenDataUrl ? (
                 <div className="qr">
