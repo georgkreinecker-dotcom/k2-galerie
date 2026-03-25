@@ -3,8 +3,8 @@
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild (getEntdeckenHeroPathUrl), kgm-Slogans, QR /entdecken.
  */
-import { useEffect, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import {
   BASE_APP_URL,
@@ -30,6 +30,9 @@ import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 
 const ROOT = 'flyer-k2-oek2-vierer'
+/** Manuelle Bild-URLs (leer = aus K2/Galerie). Persistiert für nächsten Besuch. */
+const FLYER_IMG_OVERRIDES_KEY = 'k2-flyer-vierer-image-overrides'
+type FlyerImgOverrides = { card?: string; welcome?: string; werk?: string; tor?: string }
 const TEAL_DARK = '#0c5c55'
 const TEAL = '#0f766e'
 const TEAL_LIGHT = '#0d9488'
@@ -41,6 +44,21 @@ const styles = `
   .${ROOT} { font-family: ${FONT_SANS}; background: linear-gradient(180deg, #f0ebe4 0%, #e5e0d8 100%); padding: 16px; margin: 0; box-sizing: border-box; min-height: 100vh; }
   .${ROOT} * { box-sizing: border-box; }
   .${ROOT} .flyer-vierer-toolbar { max-width: 720px; margin: 0 auto 16px; padding: 0.75rem 0; border-bottom: 1px solid ${TEAL_LIGHT}40; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; font-size: 0.85rem; color: #1c1a18; }
+  .${ROOT} .flyer-img-panel {
+    max-width: 720px; margin: 0 auto 16px; padding: 12px 14px; background: #fffefb; border: 1px solid rgba(15,118,110,0.22);
+    border-radius: 10px; font-size: 0.82rem; color: #1c1a18;
+  }
+  .${ROOT} .flyer-img-panel h2 { margin: 0 0 8px; font-size: 0.95rem; color: ${TEAL}; font-weight: 600; }
+  .${ROOT} .flyer-img-panel .row { display: grid; grid-template-columns: 140px 1fr; gap: 6px 10px; align-items: center; margin-bottom: 8px; }
+  .${ROOT} .flyer-img-panel label { color: #5c5650; font-weight: 500; }
+  .${ROOT} .flyer-img-panel input[type="text"] {
+    width: 100%; padding: 6px 8px; border: 1px solid #d4cfc7; border-radius: 6px; font-size: 0.8rem; color: #1c1a18;
+  }
+  .${ROOT} .flyer-img-panel select {
+    width: 100%; padding: 6px 8px; border: 1px solid #d4cfc7; border-radius: 6px; font-size: 0.8rem; color: #1c1a18;
+  }
+  .${ROOT} .flyer-img-panel .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .${ROOT} .flyer-img-panel .hint { margin: 8px 0 0; font-size: 0.78rem; color: #5c5650; line-height: 1.45; }
   .${ROOT} .hint-screen { max-width: 720px; margin: 0 auto 20px; padding: 14px 16px; background: #fffefb; border: 1px solid rgba(15,118,110,0.25); border-radius: 10px; color: #1c1a18; font-size: 0.9rem; line-height: 1.5; }
   .${ROOT} .hint-screen h1 { font-size: 1.1rem; margin: 0 0 8px; color: ${TEAL}; }
   .${ROOT} .sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.07); display: flex; flex-direction: column; overflow: hidden; }
@@ -164,43 +182,56 @@ const styles = `
   .${ROOT} .cell-back .brand { margin: 1mm 0 0; font-size: 4.5pt; color: rgba(255,255,255,0.45); line-height: 1.25; }
 
   @media print {
-    /* Genau 2 Druckseiten: Vorderbogen + Rückbogen (je 4 Streifen auf einem A4). Kein Aufbrechen in 4 Seiten. */
-    @page { size: A4 portrait; margin: 0; }
+    /*
+     * Genau 2 Druckseiten: Vorderbogen + Rückbogen (je 4 Streifen auf einem A4).
+     * @page mit kleinem Rand: linker Rand oft abgeschnitten → etwas Luft links/rechts.
+     * Keine fixe 210mm-Breite auf dem Root: 100% der bedruckbaren Fläche nutzen.
+     */
+    @page { size: A4 portrait; margin: 3mm 4mm 3mm 5mm; }
     html, body {
       margin: 0 !important;
       padding: 0 !important;
       background: #fff !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
+      width: 100% !important;
+      height: auto !important;
     }
     .${ROOT} {
       padding: 0 !important;
-      margin: 0 auto !important;
+      margin: 0 !important;
       background: #fff !important;
       min-height: 0 !important;
-      width: 210mm !important;
-      max-width: 210mm !important;
+      width: 100% !important;
+      max-width: 100% !important;
     }
     .${ROOT} .flyer-vierer-toolbar { display: none !important; }
+    .${ROOT} .flyer-img-panel { display: none !important; }
     .${ROOT} .hint-screen { display: none !important; }
+    /* Eine Bogen-Seite = exakt eine Druckseite (Höhe an bedruckbare Fläche angepasst) */
     .${ROOT} .sheet {
+      box-sizing: border-box !important;
       box-shadow: none !important;
       margin: 0 !important;
-      width: 210mm !important;
-      height: 297mm !important;
-      max-height: 297mm !important;
-      min-height: 297mm !important;
+      width: 100% !important;
+      height: 286mm !important;
+      max-height: 286mm !important;
+      min-height: 286mm !important;
       overflow: hidden !important;
       page-break-after: always !important;
+      break-after: page !important;
       page-break-inside: avoid !important;
       break-inside: avoid !important;
       flex-shrink: 0 !important;
     }
-    .${ROOT} .sheet:last-of-type { page-break-after: auto !important; }
+    .${ROOT} .sheet:last-of-type {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
     .${ROOT} .cell {
-      flex: 0 0 calc(297mm / 4) !important;
-      height: calc(297mm / 4) !important;
-      max-height: calc(297mm / 4) !important;
+      flex: 0 0 calc(286mm / 4) !important;
+      height: calc(286mm / 4) !important;
+      max-height: calc(286mm / 4) !important;
       min-height: 0 !important;
       overflow: hidden !important;
       page-break-inside: avoid !important;
@@ -324,9 +355,30 @@ const K2_BAND_SUBTITLE = 'Martina & Georg Kreinecker'
 
 const K2_TAGLINE = TENANT_CONFIGS.k2.tagline
 
+function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
+  try {
+    const raw = localStorage.getItem(FLYER_IMG_OVERRIDES_KEY)
+    if (!raw || raw.length > 80000) return {}
+    const p = JSON.parse(raw) as FlyerImgOverrides
+    return p && typeof p === 'object' ? p : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveFlyerOverridesToStorage(o: FlyerImgOverrides) {
+  try {
+    localStorage.setItem(FLYER_IMG_OVERRIDES_KEY, JSON.stringify(o))
+  } catch {
+    /* Quota */
+  }
+}
+
 export default function FlyerK2Oek2TorViererPage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const [searchParams] = useSearchParams()
+  const urlParamsApplied = useRef(false)
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
 
   useEffect(() => {
@@ -348,6 +400,43 @@ export default function FlyerK2Oek2TorViererPage() {
     accent: '#b54a1e',
   }))
   const [torHeroUrl, setTorHeroUrl] = useState('/img/oeffentlich/entdecken-hero.jpg')
+  const [imgOverride, setImgOverride] = useState<FlyerImgOverrides>(() => loadFlyerOverridesFromStorage())
+  const [artworkChoices, setArtworkChoices] = useState<Array<{ number: string; title: string; imageUrl: string }>>([])
+
+  /** URL einmalig: ?flyerWelcome= &flyerCard= &flyerWerk= &flyerTor= (oder kurz fw, fc, fk, ft) */
+  useEffect(() => {
+    if (urlParamsApplied.current) return
+    const w = searchParams.get('flyerWelcome') || searchParams.get('fw')
+    const c = searchParams.get('flyerCard') || searchParams.get('fc')
+    const k = searchParams.get('flyerWerk') || searchParams.get('fk')
+    const t = searchParams.get('flyerTor') || searchParams.get('ft')
+    if (w || c || k || t) {
+      setImgOverride((prev) => ({
+        ...prev,
+        ...(w?.trim() ? { welcome: w.trim() } : {}),
+        ...(c?.trim() ? { card: c.trim() } : {}),
+        ...(k?.trim() ? { werk: k.trim() } : {}),
+        ...(t?.trim() ? { tor: t.trim() } : {}),
+      }))
+    }
+    urlParamsApplied.current = true
+  }, [searchParams])
+
+  useEffect(() => {
+    saveFlyerOverridesToStorage(imgOverride)
+  }, [imgOverride])
+
+  const setOverrideField = (key: keyof FlyerImgOverrides, val: string) => {
+    const v = val.trim()
+    setImgOverride((prev) => {
+      if (!v) {
+        const next = { ...prev }
+        delete next[key]
+        return next
+      }
+      return { ...prev, [key]: v }
+    })
+  }
 
   const entdeckenBustUrl = buildQrUrlWithBust(BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, qrVersionTs)
   const k2GalerieBustUrl = buildQrUrlWithBust(BASE_APP_URL + K2_GALERIE_PATH, qrVersionTs)
@@ -384,7 +473,8 @@ export default function FlyerK2Oek2TorViererPage() {
   useEffect(() => {
     const c = getEntdeckenColorsFromK2Design()
     setTorTheme({ bgDark: c.bgDark, bgMid: c.bgMid, accent: c.accent })
-    setTorHeroUrl(getEntdeckenHeroPathUrl())
+    const hero = getEntdeckenHeroPathUrl()
+    setTorHeroUrl(hero)
   }, [])
 
   /** Vorderseite immer echte K2-Galerie (Kunst & Keramik), unabhängig von Admin-Kontext (ök2-Tab). */
@@ -441,14 +531,27 @@ export default function FlyerK2Oek2TorViererPage() {
     }
   }, [])
 
-  /** Rechtes Bild: Martina-Werk aus K2 (aufgelöste imageUrl). */
+  /** Werk-Liste + Vorschlags-Werk für rechtes Bild (K2). */
   useEffect(() => {
     let isMounted = true
     readArtworksForContextWithResolvedImages(false, false)
       .then((list) => {
+        if (!isMounted) return
+        const choices = list
+          .map((a) => {
+            const rec = a as Record<string, unknown>
+            const imageUrl = rec.imageUrl
+            if (typeof imageUrl !== 'string' || !imageUrl.trim()) return null
+            const number = String(rec.number ?? rec.id ?? '').trim()
+            if (!number) return null
+            const title = String(rec.title ?? '').trim()
+            return { number, title, imageUrl: imageUrl.trim() }
+          })
+          .filter((x): x is { number: string; title: string; imageUrl: string } => x != null)
+        setArtworkChoices(choices)
         const w = pickMartinaShowcaseWork(list)
         const url = w?.imageUrl
-        if (isMounted && typeof url === 'string' && url.trim()) {
+        if (typeof url === 'string' && url.trim()) {
           setMartinaWerkUrl(url.trim())
         }
       })
@@ -457,6 +560,25 @@ export default function FlyerK2Oek2TorViererPage() {
       isMounted = false
     }
   }, [])
+
+  const effectiveCard = imgOverride.card?.trim() || martinaPortraitUrl
+  const effectiveWelcome = imgOverride.welcome?.trim() || welcomeThumb || '/img/k2/willkommen.jpg'
+  const effectiveWerk = imgOverride.werk?.trim() || martinaWerkUrl
+  const effectiveTor = imgOverride.tor?.trim() || torHeroUrl
+
+  /** Abgleich Dropdown: Nummer wenn Bild aus Liste, sonst leer (dann ggf. manuelle URL). */
+  const werkSelectValue = useMemo(() => {
+    const o = imgOverride.werk?.trim()
+    const eff = o || martinaWerkUrl
+    const hit = artworkChoices.find((c) => c.imageUrl === eff)
+    return hit?.number ?? ''
+  }, [imgOverride.werk, artworkChoices, martinaWerkUrl])
+
+  const werkIsManualUrl = useMemo(() => {
+    const o = imgOverride.werk?.trim()
+    if (!o) return false
+    return !artworkChoices.some((c) => c.imageUrl === o)
+  }, [imgOverride.werk, artworkChoices])
 
   const addrLine = [stammdaten.address, [stammdaten.city, stammdaten.country].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
   const kontaktKurz = [stammdaten.phone, stammdaten.email].filter(Boolean).join(' · ')
@@ -532,12 +654,123 @@ export default function FlyerK2Oek2TorViererPage() {
           Benutzerhandbuch
         </Link>
       </div>
+
+      <div className="flyer-img-panel no-print" aria-label="Flyer-Bilder wählen">
+        <h2>Bilder für diesen Flyer</h2>
+        <p className="hint" style={{ marginTop: 0 }}>
+          Leere Felder = Stand aus <strong>K2 Galerie / Design</strong> (bzw. automatisches Martina-Werk). Änderungen werden auf{' '}
+          <strong>diesem Gerät</strong> gespeichert. Optional per URL:{' '}
+          <code style={{ fontSize: '0.76rem' }}>?flyerCard=&amp;flyerWelcome=&amp;flyerWerk=&amp;flyerTor=</code> (oder{' '}
+          <code style={{ fontSize: '0.76rem' }}>fc, fw, fk, ft</code>) – z.&nbsp;B. <code style={{ fontSize: '0.76rem' }}>/img/k2/willkommen.jpg</code>.
+        </p>
+        <div className="row">
+          <label htmlFor="flyer-in-card">Galerie-Karte (links)</label>
+          <input
+            id="flyer-in-card"
+            type="text"
+            placeholder="Leer = Galerie-Karte aus Design"
+            value={imgOverride.card ?? ''}
+            onChange={(e) => setOverrideField('card', e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="row">
+          <label htmlFor="flyer-in-welcome">Willkommen (Mitte)</label>
+          <input
+            id="flyer-in-welcome"
+            type="text"
+            placeholder="Leer = Willkommensbild aus Design"
+            value={imgOverride.welcome ?? ''}
+            onChange={(e) => setOverrideField('welcome', e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="row">
+          <label htmlFor="flyer-sel-werk">Werk (rechts)</label>
+          <div>
+            <select
+              id="flyer-sel-werk"
+              value={werkSelectValue}
+              onChange={(e) => {
+                const v = e.target.value
+                if (!v) {
+                  setOverrideField('werk', '')
+                  return
+                }
+                const row = artworkChoices.find((c) => c.number === v)
+                if (row) setOverrideField('werk', row.imageUrl)
+              }}
+            >
+              <option value="">Automatisch (Vorschlag Martina-Werk)</option>
+              {artworkChoices.map((c) => (
+                <option key={c.number} value={c.number}>
+                  {c.number}
+                  {c.title ? ` – ${c.title}` : ''}
+                </option>
+              ))}
+            </select>
+            {werkIsManualUrl ? (
+              <p className="hint" style={{ margin: '4px 0 0' }}>
+                Aktuell: <strong>eigene URL</strong> im Feld „Werk-Bild-URL“ – Liste steuert dann nicht.
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="row">
+          <label htmlFor="flyer-in-werk">Werk-Bild-URL (optional)</label>
+          <input
+            id="flyer-in-werk"
+            type="text"
+            placeholder="Überschreibt die Liste; leer = wie oben"
+            value={imgOverride.werk ?? ''}
+            onChange={(e) => setOverrideField('werk', e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="row">
+          <label htmlFor="flyer-in-tor">Rückseite Tor / Hero</label>
+          <input
+            id="flyer-in-tor"
+            type="text"
+            placeholder="Leer = Entdecken-Bild wie /entdecken"
+            value={imgOverride.tor ?? ''}
+            onChange={(e) => setOverrideField('tor', e.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div className="btn-row">
+          <button
+            type="button"
+            onClick={() => {
+              setImgOverride({})
+              try {
+                localStorage.removeItem(FLYER_IMG_OVERRIDES_KEY)
+              } catch {
+                /* */
+              }
+            }}
+            style={{
+              padding: '0.45rem 0.75rem',
+              background: '#fff',
+              color: '#1c1a18',
+              border: '1px solid #b54a1e',
+              borderRadius: '6px',
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Alle manuellen Bilder zurücksetzen
+          </button>
+        </div>
+      </div>
+
       <div className="hint-screen no-print">
         <h1>Vierer-Flyer K2 + ök2 Eingangstor</h1>
         <p>
           <strong>Vorderseite:</strong> vier Streifen – <strong>nur echte Galerie</strong> (Name + „{K2_TAGLINE}“ aus K2-Stammdaten),
-          Einladungstext, <strong>drei Fotos</strong> (Galerie-Karte Martina, Willkommen, Martina-Werk), Adresse, QR zur Galerie.{' '}
-          <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
+          Einladungstext, <strong>drei Fotos</strong>, Adresse, QR zur Galerie. Bilder kannst du oben unter{' '}
+          <strong>Bilder für diesen Flyer</strong> wählen oder URLs eintragen. <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
           <br />
           <strong>Rückseite:</strong> <strong>ök2 Eingangstor</strong> – wie <code>/entdecken</code> (Farben aus K2-Design, Tor-Bild), kgm-Werbezeilen, QR <code>/entdecken</code>.
         </p>
@@ -564,13 +797,13 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="front-main">
               <div className="thumb-strip">
                 <div className="thumb">
-                  <img src={martinaPortraitUrl} alt="" />
+                  <img src={effectiveCard} alt="" />
                 </div>
                 <div className="thumb">
-                  <img src={welcomeThumb || '/img/k2/willkommen.jpg'} alt="" />
+                  <img src={effectiveWelcome} alt="" />
                 </div>
                 <div className="thumb">
-                  <img src={martinaWerkUrl} alt="" />
+                  <img src={effectiveWerk} alt="" />
                 </div>
               </div>
               <div className="text">
@@ -652,7 +885,7 @@ export default function FlyerK2Oek2TorViererPage() {
               <div className="back-right">
                 <div className="tor-tablet">
                   <div className="tor-screen">
-                    <img src={torHeroUrl} alt="" />
+                    <img src={effectiveTor} alt="" />
                     <div className="tor-grad-l" />
                     <div className="tor-grad-t" />
                   </div>
