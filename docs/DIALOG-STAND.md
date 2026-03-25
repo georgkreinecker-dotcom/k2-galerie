@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Sauberer Sammel-Commit + Push:** Alle offenen Änderungen gebündelt (Vierer-Flyer K2/ök2-Tor, Entdecken-Hero/Overlay, Plakat Eröffnung, Mediengenerator **Ansehen**, Texte-Schreibtisch/Markdown, Galerie ök2-Hilfen, Doku, Sitemap/build-info). **Tests + Build grün.** **Commit:** `5146f58` ✅ auf GitHub.
+
+**Was wir JETZT tun:** Vercel „Ready“ abwarten; Georg: Mediengenerator **Ansehen** + Vierer-Flyer Druck kurz prüfen.
+
 **Letzter Stand:** 25.03.26 – **Mediengenerator – Dokumente öffnen:** Ursachen: (1) In-App-Viewer z-index 100000 unter dynamischem Mandanten-Lade-Overlay 100001 → unsichtbar. (2) Öffnen nur im zugeklappten „Weitere Dokumente“-Details. (3) `praesentationsmappe-kurz` ohne `fileData` fiel in leeren Text. **Fix:** Viewer **zIndex 100002**, Button **„Ansehen“** pro Karte (Hauptdokument), Switch-Fall **Präsentationsmappen** mit Link-Hilfsseite. **Commit:** `f2a838c` ✅
 
 **Was wir JETZT tun:** Georg: Admin → Event- und Medienplanung → Werbematerial: **Ansehen** testen.
