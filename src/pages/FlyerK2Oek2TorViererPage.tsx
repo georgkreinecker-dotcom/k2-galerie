@@ -1,7 +1,7 @@
 /**
  * Vierer-Bogen A4: doppelseitig drucken, 4 gleiche Flyer pro Seite.
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
- * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild (getEntdeckenHeroPathUrl), kgm-Slogans, QR /entdecken.
+ * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild wie EntdeckenPage (Pfad + IndexedDB-Overlay), K2-Slogans groß, Werbetext klein darunter, QR /entdecken.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
@@ -25,7 +25,12 @@ import {
   PRODUCT_WERBESLOGAN_2,
   TENANT_CONFIGS,
 } from '../config/tenantConfig'
-import { getEntdeckenColorsFromK2Design, getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
+import {
+  getEntdeckenColorsFromK2Design,
+  getEntdeckenHeroPathUrl,
+  getPageContentEntdecken,
+} from '../config/pageContentEntdecken'
+import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 
@@ -67,6 +72,9 @@ const TEAL_LIGHT = '#0d9488'
 /** Lesbare Serif für Galerie-Titel (ohne Webfont-Request – druckt überall gleich). */
 const FONT_SERIF = "Georgia, 'Times New Roman', Times, serif"
 const FONT_SANS = "system-ui, -apple-system, 'Segoe UI', sans-serif"
+/** Unter den K2-Werbeslogans: prägnant Software, Sparten, VK2 (ök2 nur im QR-Bereich). */
+const FLYER_RUECKSEITE_WERBETEXT =
+  'Ihre Galerie-Software: Sparten und Werke, Galerie und Kasse — Kunstvereine mit VK2. Scannen und als Gast durchklicken.'
 
 const styles = `
   .${ROOT} { font-family: ${FONT_SANS}; background: linear-gradient(180deg, #f0ebe4 0%, #e5e0d8 100%); padding: 16px; margin: 0; box-sizing: border-box; min-height: 100vh; }
@@ -186,20 +194,29 @@ const styles = `
   }
   .${ROOT} .cell-back .back-left > div:first-child {
     flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    justify-content: flex-start;
+  }
+  .${ROOT} .cell-back .back-claims-wrap {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+    justify-content: center;
   }
   .${ROOT} .cell-back .back-right {
     flex: 0 0 44%; min-width: 0; display: flex; align-items: center; justify-content: center;
   }
   .${ROOT} .cell-back .back-claims {
-    margin: 0; flex: 1; min-height: 0;
-    display: flex; flex-direction: column; justify-content: center; gap: 1.8mm;
+    margin: 0; flex: 0 0 auto;
+    display: flex; flex-direction: column; gap: 1.8mm;
     font-weight: 600; line-height: 1.38; color: rgba(255,248,240,0.92);
   }
   .${ROOT} .cell-back .back-claims .claim-a {
-    font-family: ${FONT_SERIF}; font-size: 9pt; font-weight: 700; color: #fff; line-height: 1.28; margin: 0;
+    font-family: ${FONT_SERIF}; font-size: 11pt; font-weight: 700; color: #fff; line-height: 1.22; margin: 0;
   }
   .${ROOT} .cell-back .back-claims .claim-b {
-    margin: 0; font-size: 8pt; font-weight: 500; color: #d4a574; line-height: 1.42;
+    margin: 0; font-size: 9.25pt; font-weight: 600; color: #d4a574; line-height: 1.38;
+  }
+  .${ROOT} .cell-back .back-flyer-werbetext {
+    margin: 1mm 0 0; flex: 0 0 auto; max-width: 50mm; align-self: flex-start;
+    font-size: 4.85pt; font-weight: 400; line-height: 1.32; color: rgba(255,248,240,0.72);
   }
   /* Tablet-Rahmen wie Entdecken-Hero (rechte Spalte) */
   .${ROOT} .cell-back .tor-tablet {
@@ -484,7 +501,10 @@ export default function FlyerK2Oek2TorViererPage() {
     bgMid: '#1e1008',
     accent: '#b54a1e',
   }))
-  const [torHeroUrl, setTorHeroUrl] = useState('/img/oeffentlich/entdecken-hero.jpg')
+  /** Pfad aus Design → Eingangsseite (ohne IndexedDB-Upload). */
+  const [torHeroPath, setTorHeroPath] = useState(() => getEntdeckenHeroPathUrl())
+  /** Wie /entdecken: aktuelles Tor-Bild aus IndexedDB, wenn dort gespeichert. */
+  const [torHeroIdb, setTorHeroIdb] = useState<string | null>(null)
   const [imgOverride, setImgOverride] = useState<FlyerImgOverrides>(() => loadFlyerOverridesFromStorage())
   const [artworkChoices, setArtworkChoices] = useState<Array<{ number: string; title: string; imageUrl: string }>>([])
   /** Mitte / Rückseite: Bild aus gewählter Fotodatei (Session – siehe sessionStorage). */
@@ -590,12 +610,27 @@ export default function FlyerK2Oek2TorViererPage() {
     }
   }, [k2GalerieBustUrl])
 
-  /** Rückseite: gleiche Farben + Tor-Bild wie /entdecken (Eingangstor). */
+  /** Rückseite: Farben wie K2-Design. */
   useEffect(() => {
     const c = getEntdeckenColorsFromK2Design()
     setTorTheme({ bgDark: c.bgDark, bgMid: c.bgMid, accent: c.accent })
-    const hero = getEntdeckenHeroPathUrl()
-    setTorHeroUrl(hero)
+  }, [])
+
+  /** Tor-Bild wie /entdecken: Pfad + IndexedDB-Overlay, bei Änderung der Eingangsseite neu laden. */
+  useEffect(() => {
+    let cancelled = false
+    const refresh = () => {
+      setTorHeroPath(getEntdeckenHeroPathUrl(getPageContentEntdecken()))
+      void loadEntdeckenHeroOverlayIfFresh().then((u) => {
+        if (!cancelled) setTorHeroIdb(u)
+      })
+    }
+    refresh()
+    window.addEventListener('k2-page-content-entdecken-updated', refresh)
+    return () => {
+      cancelled = true
+      window.removeEventListener('k2-page-content-entdecken-updated', refresh)
+    }
   }, [])
 
   /** Vorderseite immer echte K2-Galerie (Kunst & Keramik), unabhängig von Admin-Kontext (ök2-Tab). */
@@ -682,7 +717,7 @@ export default function FlyerK2Oek2TorViererPage() {
     welcomeThumb ||
     '/img/k2/willkommen.jpg'
   const effectiveRightWerk = imgOverride.werk?.trim() || rightWerkAuto
-  const effectiveTor = torFromFile || imgOverride.tor?.trim() || torHeroUrl
+  const effectiveTor = torFromFile || imgOverride.tor?.trim() || torHeroIdb || torHeroPath
 
   const leftWerkSelectValue = useMemo(
     () => werkNumberFromOverrideUrl(artworkChoices, imgOverride.leftWerk, leftWerkAuto),
@@ -1064,10 +1099,13 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="inner">
               <div className="back-left">
                 <div>
-                  <div className="back-claims">
-                    <p className="claim-a">{PRODUCT_WERBESLOGAN}</p>
-                    <p className="claim-b">{PRODUCT_WERBESLOGAN_2}</p>
+                  <div className="back-claims-wrap">
+                    <div className="back-claims">
+                      <p className="claim-a">{PRODUCT_WERBESLOGAN}</p>
+                      <p className="claim-b">{PRODUCT_WERBESLOGAN_2}</p>
+                    </div>
                   </div>
+                  <p className="back-flyer-werbetext">{FLYER_RUECKSEITE_WERBETEXT}</p>
                 </div>
                 <div>
                   <div className="qr-block">
