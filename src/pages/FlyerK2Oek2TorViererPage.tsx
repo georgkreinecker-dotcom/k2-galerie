@@ -59,20 +59,22 @@ const styles = `
   .${ROOT} .cell-front .front-head h2 {
     margin: 0; font-family: ${FONT_SERIF}; font-size: 11pt; font-weight: 700; color: #1a1816; letter-spacing: -0.02em; line-height: 1.12;
   }
-  .${ROOT} .cell-front .front-head .tagline {
-    margin: 1mm 0 0; font-size: 7.5pt; font-weight: 600; color: ${TEAL_DARK}; letter-spacing: 0.04em; text-transform: uppercase;
-  }
   .${ROOT} .cell-front .front-head .sub {
-    margin: 0.5mm 0 0; font-size: 6.5pt; color: #5c5650; font-weight: 500;
+    margin: 0.8mm 0 0; font-size: 6.5pt; color: #5c5650; font-weight: 500;
   }
   .${ROOT} .cell-front .front-main {
-    flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: stretch;
+    flex: 1; display: flex; gap: 2.5mm; min-height: 0; align-items: center;
   }
   .${ROOT} .cell-front .thumb {
-    flex: 0 0 38%; max-width: 38%; border-radius: 2mm; overflow: hidden;
-    background: #ece6de; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
+    flex: 0 0 38%; max-width: 38%; max-height: 100%;
+    border-radius: 2mm; overflow: hidden;
+    background: #f0ebe4; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
+    display: flex; align-items: center; justify-content: center; min-height: 0;
   }
-  .${ROOT} .cell-front .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 28mm; }
+  .${ROOT} .cell-front .thumb img {
+    display: block; max-width: 100%; max-height: 34mm; width: auto; height: auto;
+    object-fit: contain; object-position: center;
+  }
   .${ROOT} .cell-front .text { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .${ROOT} .cell-front .intro {
     margin: 0; font-size: 7pt; line-height: 1.42; color: #2c2825; font-weight: 400;
@@ -80,8 +82,13 @@ const styles = `
   .${ROOT} .cell-front .addr {
     margin: 1.5mm 0 0; font-size: 6pt; line-height: 1.4; color: #5c5650;
   }
+  .${ROOT} .cell-front .front-kunst {
+    margin: 1.5mm 0 0; padding-top: 1.5mm; border-top: 1px solid rgba(12,92,85,0.1);
+    font-size: 7pt; font-weight: 700; color: ${TEAL_DARK}; letter-spacing: 0.06em; text-transform: uppercase;
+    text-align: left;
+  }
   .${ROOT} .cell-front .k2qr-row {
-    margin-top: 2mm; padding-top: 2mm; border-top: 1px solid rgba(12,92,85,0.12);
+    margin-top: 1.5mm; padding-top: 1.5mm; border-top: 1px solid rgba(12,92,85,0.12);
     display: flex; align-items: center; gap: 2.5mm; flex-wrap: nowrap;
   }
   .${ROOT} .cell-front .k2qr {
@@ -99,45 +106,62 @@ const styles = `
     text-align: left; writing-mode: horizontal-tb;
   }
 
-  /* —— Rückseite: ein Bild, ein QR, keine „Tablet-Leiche“ —— */
+  /* Gold-Akzent wie Entdecken-Hero (/entdecken, „Als Fremder eintreten“) */
   .${ROOT} .cell-back {
-    color: #f5f2ed; justify-content: flex-start; align-items: stretch; text-align: center;
-    padding: 2mm 2.5mm 2.5mm;
+    color: #fff8f0; justify-content: stretch; align-items: stretch;
+    padding: 2mm 2mm 2mm 2.5mm;
   }
-  .${ROOT} .cell-back .inner { max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; align-items: center; min-height: 0; flex: 1; }
+  .${ROOT} .cell-back .inner {
+    flex: 1; min-height: 0; width: 100%;
+    display: flex; flex-direction: row; align-items: stretch; gap: 2mm;
+  }
+  .${ROOT} .cell-back .back-left {
+    flex: 1 1 52%; min-width: 0; display: flex; flex-direction: column; justify-content: space-between;
+    text-align: left; padding: 0.5mm 1mm 0 0;
+  }
+  .${ROOT} .cell-back .back-left > div:first-child {
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+  }
+  .${ROOT} .cell-back .back-right {
+    flex: 0 0 44%; min-width: 0; display: flex; align-items: center; justify-content: center;
+  }
   .${ROOT} .cell-back .kicker {
-    margin: 0; font-size: 5.5pt; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.72); font-weight: 600;
+    margin: 0; font-size: 5pt; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.45); font-weight: 600;
   }
   .${ROOT} .cell-back h3 {
-    margin: 0.6mm 0 0; font-family: ${FONT_SERIF}; font-size: 10pt; font-weight: 700; color: #fff; line-height: 1.15;
+    margin: 0.5mm 0 0; font-family: ${FONT_SERIF}; font-size: 9pt; font-weight: 700; color: rgba(255,248,240,0.95); line-height: 1.2;
   }
   .${ROOT} .cell-back .back-claims {
-    margin: 1.2mm 2mm 0; padding: 0 1mm;
-    font-size: 5.8pt; font-weight: 500; line-height: 1.38; color: rgba(255,255,255,0.92);
-    max-height: 14mm; overflow: hidden;
+    margin: 1.5mm 0 0; flex: 1; min-height: 0;
+    font-size: 6.2pt; font-weight: 600; line-height: 1.42; color: rgba(255,248,240,0.92);
   }
-  .${ROOT} .cell-back .back-claims p { margin: 0 0 0.8mm; }
-  .${ROOT} .cell-back .back-claims p:last-child { margin-bottom: 0; }
-  /* Tor: nur Bild, schmaler Rahmen – kein dunkler Geräterahmen */
-  .${ROOT} .cell-back .tor-wrap {
-    margin: 1.5mm auto 0; width: 88%; max-width: 52mm; flex-shrink: 0;
-    border-radius: 2mm; overflow: hidden;
-    box-shadow: 0 2mm 5mm rgba(0,0,0,0.35);
-    border: 1px solid rgba(255,255,255,0.12);
+  .${ROOT} .cell-back .back-claims .claim-a {
+    font-family: ${FONT_SERIF}; font-size: 6.8pt; font-weight: 700; color: #fff; line-height: 1.35; margin: 0 0 1mm 0;
   }
-  .${ROOT} .cell-back .tor-screen { position: relative; width: 100%; aspect-ratio: 16 / 10; background: #1a1512; }
-  .${ROOT} .cell-back .tor-screen img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .${ROOT} .cell-back .tor-screen .tor-grad-l { position: absolute; inset: 0; background: linear-gradient(to right, rgba(12,8,6,0.5) 0%, transparent 50%); pointer-events: none; }
-  .${ROOT} .cell-back .tor-screen .tor-grad-t { position: absolute; inset: 0; background: linear-gradient(to top, rgba(12,8,6,0.45) 0%, transparent 45%); pointer-events: none; }
+  .${ROOT} .cell-back .back-claims .claim-b {
+    margin: 0; font-size: 6pt; font-weight: 500; color: #d4a574; line-height: 1.45;
+  }
+  /* Tablet-Rahmen wie Entdecken-Hero (rechte Spalte) */
+  .${ROOT} .cell-back .tor-tablet {
+    width: 100%; height: 100%; max-height: 100%;
+    background: linear-gradient(165deg, #3a3d42 0%, #1c1e22 45%, #121418 100%);
+    border-radius: 2.5mm; padding: 1mm;
+    box-shadow: 0 2mm 6mm rgba(0,0,0,0.45), inset 0 0.3mm 0 rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .${ROOT} .cell-back .tor-screen { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 1.5mm; overflow: hidden; background: #0a0a0c; }
+  .${ROOT} .cell-back .tor-screen img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-l { position: absolute; inset: 0; background: linear-gradient(to right, rgba(18,10,6,0.55) 0%, transparent 42%); pointer-events: none; }
+  .${ROOT} .cell-back .tor-screen .tor-grad-t { position: absolute; inset: 0; background: linear-gradient(to top, rgba(18,10,6,0.5) 0%, transparent 38%); pointer-events: none; }
   .${ROOT} .cell-back .qr-block {
-    margin: 2mm auto 0; padding: 1.2mm 2mm 1.5mm; background: #fff; border-radius: 2.5mm;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    margin: 1.5mm 0 0; padding: 1mm 1.2mm; background: #fff; border-radius: 2mm;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.22); align-self: flex-start;
   }
-  .${ROOT} .cell-back .qr { width: 18mm; height: 18mm; margin: 0 auto; padding: 0; background: transparent; }
+  .${ROOT} .cell-back .qr { width: 14mm; height: 14mm; margin: 0; padding: 0; background: transparent; }
   .${ROOT} .cell-back .qr img { width: 100%; height: 100%; display: block; image-rendering: crisp-edges; }
-  .${ROOT} .cell-back .scan { margin: 1mm 0 0; font-size: 5.5pt; color: #3d3835; font-weight: 600; line-height: 1.25; }
-  .${ROOT} .cell-back .scan-sub { margin: 0.3mm 0 0; font-size: 4.8pt; color: #6b6560; font-weight: 400; }
-  .${ROOT} .cell-back .brand { margin: 1.2mm 0 0; font-size: 4.8pt; color: rgba(255,255,255,0.5); line-height: 1.3; }
+  .${ROOT} .cell-back .scan { margin: 0.6mm 0 0; font-size: 4.8pt; color: #3d3835; font-weight: 600; line-height: 1.2; }
+  .${ROOT} .cell-back .scan-sub { margin: 0.2mm 0 0; font-size: 4.3pt; color: #6b6560; font-weight: 400; }
+  .${ROOT} .cell-back .brand { margin: 1mm 0 0; font-size: 4.5pt; color: rgba(255,255,255,0.45); line-height: 1.25; }
 
   @media print {
     @page { size: A4; margin: 0; }
@@ -148,7 +172,7 @@ const styles = `
     .${ROOT} .sheet:last-of-type { page-break-after: auto; }
     .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .${ROOT} .cell-back .tor-wrap { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .${ROOT} .cell-back .tor-tablet { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back .qr-block { box-shadow: none !important; border: 1px solid #ddd; }
   }
 `
@@ -436,7 +460,6 @@ export default function FlyerK2Oek2TorViererPage() {
               <div className="front-accent" aria-hidden />
               <div className="front-head">
                 <h2>{galleryTitle}</h2>
-                <p className="tagline">{K2_TAGLINE}</p>
                 <p className="sub">{K2_BAND_SUBTITLE}</p>
               </div>
             </div>
@@ -459,6 +482,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 </p>
               </div>
             </div>
+            <p className="front-kunst">{K2_TAGLINE}</p>
             <div className="k2qr-row">
               {qrK2GalerieDataUrl ? (
                 <div className="k2qr">
@@ -493,37 +517,44 @@ export default function FlyerK2Oek2TorViererPage() {
             }}
           >
             <div className="inner">
-              <p className="kicker">ök2</p>
-              <h3>Eingangstor</h3>
-              <div className="back-claims">
-                <p>{PRODUCT_WERBESLOGAN}</p>
-                <p>{PRODUCT_WERBESLOGAN_2}</p>
-              </div>
-              <div className="tor-wrap">
-                <div className="tor-screen">
-                  <img src={torHeroUrl} alt="" />
-                  <div className="tor-grad-l" />
-                  <div className="tor-grad-t" />
+              <div className="back-left">
+                <div>
+                  <p className="kicker">ök2 · Eingangstor</p>
+                  <div className="back-claims">
+                    <p className="claim-a">{PRODUCT_WERBESLOGAN}</p>
+                    <p className="claim-b">{PRODUCT_WERBESLOGAN_2}</p>
+                  </div>
+                </div>
+                <div>
+                  <div className="qr-block">
+                    {qrEntdeckenDataUrl ? (
+                      <div className="qr">
+                        <img src={qrEntdeckenDataUrl} alt="QR-Code ök2 Eingangstor" />
+                      </div>
+                    ) : (
+                      <div className="qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#333', minHeight: 40 }}>
+                        QR…
+                      </div>
+                    )}
+                    <p className="scan">Demo ök2 – Eingangstor</p>
+                    <p className="scan-sub">Code scannen · gleicher Start wie &quot;Als Fremder eintreten&quot;</p>
+                  </div>
+                  <p className="brand">
+                    {PRODUCT_BRAND_NAME}
+                    <br />
+                    {PRODUCT_COPYRIGHT_BRAND_ONLY}
+                  </p>
                 </div>
               </div>
-              <div className="qr-block">
-                {qrEntdeckenDataUrl ? (
-                  <div className="qr">
-                    <img src={qrEntdeckenDataUrl} alt="QR-Code ök2 Eingangstor" />
+              <div className="back-right">
+                <div className="tor-tablet">
+                  <div className="tor-screen">
+                    <img src={torHeroUrl} alt="" />
+                    <div className="tor-grad-l" />
+                    <div className="tor-grad-t" />
                   </div>
-                ) : (
-                  <div className="qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 6, color: '#333', minHeight: 48 }}>
-                    QR…
-                  </div>
-                )}
-                <p className="scan">Demo ök2 – hier entlang</p>
-                <p className="scan-sub">Code scannen · Eingangstor im Browser</p>
+                </div>
               </div>
-              <p className="brand">
-                {PRODUCT_BRAND_NAME}
-                <br />
-                {PRODUCT_COPYRIGHT_BRAND_ONLY}
-              </p>
             </div>
           </div>
         ))}
