@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Entdecken-/Flyer-Torbild stabil:** IndexedDB-Overlay speichert jetzt **`heroImageUrl`** (Pfad zum Zeitpunkt des Uploads); beim Laden wird es mit dem **aktuellen** Design-Pfad verglichen – bei Wechsel des Hero-Bildes kein altes Overlay mehr. Zusätzlich **Load-Generation** (Flyer Vierer, EntdeckenPage, Admin-Design-Vorschau), damit langsame async Loads den Stand nicht zurücksetzen. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`EntdeckenPage.tsx`**, **`ScreenshotExportAdmin.tsx`**, Test `entdeckenHeroOverlayStorage.test.ts`. **Commit:** (nach Push) ✅
+
+**Was wir JETZT tun:** Georg: Eingangsseite Hero wechseln + Flyer Rückseite – nur noch passendes Tor- bzw. Upload-Bild.
+
 **Letzter Stand:** 25.03.26 – **Vierer-Bogen: optionale Event-Hinweisnotiz** auf der Vorderseite jedes Streifens (Checkbox + Überschrift + Kurztext, `localStorage` `k2-flyer-vierer-event-hinweis`). URL `?eventHinweis=1&ehh=…&eht=…` (Kurz `eh`, `eht`). **Marketing → Event-Flyer:** zwei neue Varianten **„Vierer-Bogen mit Event-Hinweis“** (gleicher Tab / neuer Tab), vorbefüllt mit Titel + `formatEventTerminKomplett`. **`FlyerK2Oek2TorViererPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. **Commit:** `7753052` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Event-Flyer-Karte → neue Varianten testen; auf Flyer-Seite Häkchen aus = neutraler Bogen ohne Notiz.

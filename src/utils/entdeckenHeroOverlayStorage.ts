@@ -9,12 +9,29 @@ const STORE = 'overlay'
 const ROW_ID = 'current' as const
 /** Fallback wenn IDB blockiert / fehlschlägt (gleicher Browser, auch neuer Tab). */
 const LS_FALLBACK_KEY = 'k2-entdecken-hero-overlay-fallback'
+/** Gleicher Key wie in pageContentEntdecken.ts – ohne Zyklus importieren. */
+const ENTDECKEN_PAGE_STORAGE_KEY = 'k2-page-content-entdecken'
+const DEFAULT_HERO_PATH = '/img/oeffentlich/entdecken-hero.jpg'
 
 export const ENTDECKEN_HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 
-type OverlayRow = { id: typeof ROW_ID; dataUrl: string; ts: number }
+/** heroImageUrl = Basis-Pfad zum Hero zum Speicherzeitpunkt; bei anderem Pfad Overlay ignorieren (kein „altes“ Bild). */
+type OverlayRow = { id: typeof ROW_ID; dataUrl: string; ts: number; heroImageUrl?: string }
 
-type LsPayload = { dataUrl: string; ts: number }
+type LsPayload = { dataUrl: string; ts: number; heroImageUrl?: string }
+
+/** Aktueller Hero-Pfad aus Design (Eingangsseite) – für Abgleich mit gespeichertem Overlay. */
+export function readEntdeckenHeroPathFromLocalStorage(): string {
+  if (typeof window === 'undefined') return DEFAULT_HERO_PATH
+  try {
+    const raw = localStorage.getItem(ENTDECKEN_PAGE_STORAGE_KEY)
+    if (!raw) return DEFAULT_HERO_PATH
+    const parsed = JSON.parse(raw) as { heroImageUrl?: string }
+    return (parsed.heroImageUrl || '').trim() || DEFAULT_HERO_PATH
+  } catch {
+    return DEFAULT_HERO_PATH
+  }
+}
 
 let dbOpenPromise: Promise<IDBDatabase> | null = null
 
@@ -78,7 +95,7 @@ function clearLegacyLocalStorageOverlay(): void {
   }
 }
 
-function readLsFallback(): string | null {
+function readLsFallback(): LsPayload | null {
   try {
     const raw = localStorage.getItem(LS_FALLBACK_KEY)
     if (!raw) return null
@@ -88,15 +105,15 @@ function readLsFallback(): string | null {
       localStorage.removeItem(LS_FALLBACK_KEY)
       return null
     }
-    return o.dataUrl
+    return o
   } catch {
     return null
   }
 }
 
-function writeLsFallback(dataUrl: string, ts: number): void {
+function writeLsFallback(dataUrl: string, ts: number, heroImageUrl: string): void {
   try {
-    localStorage.setItem(LS_FALLBACK_KEY, JSON.stringify({ dataUrl, ts } satisfies LsPayload))
+    localStorage.setItem(LS_FALLBACK_KEY, JSON.stringify({ dataUrl, ts, heroImageUrl } satisfies LsPayload))
   } catch {
     /* Quota – nur IDB */
   }
@@ -117,7 +134,8 @@ function isFresh(ts: number): boolean {
 export async function saveEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
   if (!dataUrl.startsWith('data:image/')) return
   const ts = Date.now()
-  const row: OverlayRow = { id: ROW_ID, dataUrl, ts }
+  const heroImageUrl = readEntdeckenHeroPathFromLocalStorage()
+  const row: OverlayRow = { id: ROW_ID, dataUrl, ts, heroImageUrl }
 
   let idbSaved = false
   try {
@@ -131,10 +149,16 @@ export async function saveEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
   if (idbSaved) {
     clearLsFallback()
   } else {
-    writeLsFallback(dataUrl, ts)
+    writeLsFallback(dataUrl, ts, heroImageUrl)
   }
 
   clearLegacyLocalStorageOverlay()
+}
+
+function overlayMatchesCurrentHero(row: Pick<OverlayRow, 'heroImageUrl'> | LsPayload): boolean {
+  const current = readEntdeckenHeroPathFromLocalStorage()
+  if (!row.heroImageUrl) return true
+  return row.heroImageUrl === current
 }
 
 export async function loadEntdeckenHeroOverlayIfFresh(): Promise<string | null> {
@@ -146,6 +170,9 @@ export async function loadEntdeckenHeroOverlayIfFresh(): Promise<string | null> 
         await clearEntdeckenHeroOverlay()
         return null
       }
+      if (!overlayMatchesCurrentHero(row)) {
+        return null
+      }
       return row.dataUrl
     }
   } catch {
@@ -153,7 +180,12 @@ export async function loadEntdeckenHeroOverlayIfFresh(): Promise<string | null> 
   }
 
   const fromLs = readLsFallback()
-  if (fromLs) return fromLs
+  if (fromLs) {
+    if (!overlayMatchesCurrentHero(fromLs)) {
+      return null
+    }
+    return fromLs.dataUrl
+  }
 
   return null
 }

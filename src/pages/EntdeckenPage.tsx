@@ -626,12 +626,16 @@ export default function EntdeckenPage() {
   const [entdeckenContent, setEntdeckenContent] = useState(() => getPageContentEntdecken())
   const [heroIdbUrl, setHeroIdbUrl] = useState<string | null>(null)
   const prevHeroUrlRef = useRef<string>('')
+  const heroOverlayLoadGenRef = useRef(0)
   useEffect(() => {
     let cancelled = false
     const refresh = () => {
+      const gen = ++heroOverlayLoadGenRef.current
       setEntdeckenContent(getPageContentEntdecken())
+      setHeroIdbUrl(null)
       void loadEntdeckenHeroOverlayIfFresh().then((u) => {
-        if (!cancelled) setHeroIdbUrl(u)
+        if (cancelled || gen !== heroOverlayLoadGenRef.current) return
+        setHeroIdbUrl(u)
       })
     }
     refresh()

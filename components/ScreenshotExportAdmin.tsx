@@ -1971,11 +1971,15 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [entdeckenHeroDragOver, setEntdeckenHeroDragOver] = useState(false)
   /** Design-Tab: Eingangstor-Block standardmäßig zu – selten nötig, sonst blockiert die große Vorschau das Scrollen. */
   const [designEingangstorPanelOpen, setDesignEingangstorPanelOpen] = useState(false)
+  const entdeckenOverlayPullGenRef = React.useRef(0)
   useEffect(() => {
     let alive = true
     const pull = () => {
+      const gen = ++entdeckenOverlayPullGenRef.current
+      setEntdeckenHeroIdbPreview(null)
       void loadEntdeckenHeroOverlayIfFresh().then((u) => {
-        if (alive) setEntdeckenHeroIdbPreview(u)
+        if (!alive || gen !== entdeckenOverlayPullGenRef.current) return
+        setEntdeckenHeroIdbPreview(u)
       })
     }
     pull()

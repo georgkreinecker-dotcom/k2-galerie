@@ -810,17 +810,22 @@ export default function FlyerK2Oek2TorViererPage() {
   }, [])
 
   /** Tor-Bild wie /entdecken: Pfad + IndexedDB-Overlay, bei Änderung der Eingangsseite neu laden. */
+  const torOverlayLoadGenRef = useRef(0)
   useEffect(() => {
     let cancelled = false
     const refresh = () => {
+      const gen = ++torOverlayLoadGenRef.current
       setTorHeroPath(getEntdeckenHeroPathUrl(getPageContentEntdecken()))
+      setTorHeroIdb(null)
       setTorIdbLoading(true)
       void loadEntdeckenHeroOverlayIfFresh()
         .then((u) => {
-          if (!cancelled) setTorHeroIdb(u)
+          if (cancelled || gen !== torOverlayLoadGenRef.current) return
+          setTorHeroIdb(u)
         })
         .finally(() => {
-          if (!cancelled) setTorIdbLoading(false)
+          if (cancelled || gen !== torOverlayLoadGenRef.current) return
+          setTorIdbLoading(false)
         })
     }
     refresh()
