@@ -179,8 +179,14 @@ function textToHtmlWithLinks(text: string): string {
  * → in Cursor/Vorschau die „schwarze“ Platzhalter-Seite statt zurück zum Admin.
  */
 
+/** Ab dieser Länge: kein Fußzeilen-Scan über den ganzen String; Viewer nutzt Blob-URL statt srcDoc (UI-Thread entlasten). */
+const IN_APP_VIEWER_HTML_LARGE_LEN = 380_000
+/** data:-HTML nur decodieren/regex-parsen wenn die URL noch handlich ist (sonst iframe-Anzeige). */
+const MAX_EVENT_DOC_DATA_URL_DECODE_LEN = 380_000
+
 /** Fügt Druck-Fußzeile in jedes Dokument: Dokumentenersteller, Druckdatum, Seitenzahl (für In-App-Viewer-Drucke). */
 function wrapDocumentWithPrintFooter(html: string): string {
+  if (html.length > IN_APP_VIEWER_HTML_LARGE_LEN) return html
   const brandEsc = PRODUCT_BRAND_NAME.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
   const printStyle = '<style id="k2-print-footer-style">@media print{@page{margin-bottom:14mm}@page{@bottom-right{content:"Seite " counter(page) " von " counter(pages);font-size:8pt;color:#666;font-family:system-ui,sans-serif}}body{padding-bottom:12mm !important}#doc-print-footer{position:fixed;bottom:0;left:0;right:0;padding:4px 10mm;font-size:8pt;color:#666;font-family:system-ui,sans-serif}}</style>'
   const footerScript = '<div id="doc-print-footer" aria-hidden="true"></div><script>(function(){var el=document.getElementById("doc-print-footer");if(el)el.textContent=\'' + brandEsc + ' | Druck: \'+new Date().toLocaleDateString("de-AT")+"";})();<\/script>'
@@ -1813,8 +1819,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [verteilerNewsletterAddName, setVerteilerNewsletterAddName] = useState('')
   const [verteilerNewsletterAddEmail, setVerteilerNewsletterAddEmail] = useState('')
   const [verteilerNewsletterPasteText, setVerteilerNewsletterPasteText] = useState('')
-  /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig) */
-  const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string } | null>(null)
+  /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig). blobUrl bei sehr großem HTML (Blob statt srcDoc). */
+  const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string; blobUrl?: string } | null>(null)
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -2358,6 +2364,19 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const inAppViewerIframeRef = useRef<HTMLIFrameElement>(null)
+  const inAppViewerBlobRef = useRef<string | null>(null)
+  useEffect(() => {
+    return () => {
+      try {
+        if (inAppViewerBlobRef.current) {
+          URL.revokeObjectURL(inAppViewerBlobRef.current)
+          inAppViewerBlobRef.current = null
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [])
   /** Pending-Bild beim Ersetzen: bleibt erhalten, auch wenn State (selectedFile/previewUrl) kurz nicht aktualisiert ist */
   const pendingImageDataUrlRef = useRef<string | null>(null)
   
@@ -8431,8 +8450,39 @@ ${'='.repeat(60)}
     return headStart + 'Flyer – ' + esc(eventTitle) + '</title><style>' + flyerStyle + '</style></head><body><p class="flyer-title">' + esc(eventTitle) + '</p><p class="flyer-sub">' + esc(vName) + '</p><p class="meta" style="text-align:center;">' + esc(eventDate) + ' · ' + esc(adresse) + '</p><p style="margin-top:1.5rem;">' + esc(kuenstlerListe) + '</p>' + flyerKurzBlock + '<p style="margin-top:1rem;">Zu einem kleinen Umtrunk und Häppchen laden wir Sie herzlich ein. Wir freuen uns auf Ihren Besuch.</p><p class="meta" style="margin-top:2rem;text-align:center;">' + esc(verein.email || '') + ' · ' + esc(verein.website || '') + '</p>' + bodyEnd
   }
 
-  // Ein Standard für alle Dokumente: immer im In-App-Viewer (gleicher Tab, gleiche Leiste, gleiches Verhalten). Mit Druck-Fußzeile (Ersteller, Datum, Seitenzahl).
-  const openDocumentInApp = (html: string, title: string) => setInAppDocumentViewer({ html: wrapDocumentWithPrintFooter(html), title })
+  // Ein Standard für alle Dokumente: immer im In-App-Viewer. Große HTML-Strings: Blob-URL + doppeltes rAF (Klick-Handler zuerst fertig).
+  const openDocumentInApp = (html: string, title: string) => {
+    const apply = () => {
+      try {
+        if (inAppViewerBlobRef.current) {
+          URL.revokeObjectURL(inAppViewerBlobRef.current)
+          inAppViewerBlobRef.current = null
+        }
+      } catch {
+        /* ignore */
+      }
+      const wrapped = html.length > IN_APP_VIEWER_HTML_LARGE_LEN ? html : wrapDocumentWithPrintFooter(html)
+      try {
+        if (wrapped.length > IN_APP_VIEWER_HTML_LARGE_LEN && typeof Blob !== 'undefined') {
+          const blob = new Blob([wrapped], { type: 'text/html;charset=utf-8' })
+          const blobUrl = URL.createObjectURL(blob)
+          inAppViewerBlobRef.current = blobUrl
+          setInAppDocumentViewer({ html: wrapped, title, blobUrl })
+        } else {
+          setInAppDocumentViewer({ html: wrapped, title })
+        }
+      } catch (e) {
+        console.error('openDocumentInApp:', e)
+        const fallbackHtml = html.length > IN_APP_VIEWER_HTML_LARGE_LEN ? html : wrapDocumentWithPrintFooter(html)
+        setInAppDocumentViewer({ html: fallbackHtml, title })
+      }
+    }
+    if (typeof requestAnimationFrame !== 'undefined') {
+      requestAnimationFrame(() => requestAnimationFrame(apply))
+    } else {
+      setTimeout(apply, 0)
+    }
+  }
 
   // Dokument öffnen/anschauen (documentUrl = Link zum Projekt-Flyer, z. B. K2 Galerie Flyer). Unterstützt auch data/fileData aus globalem Speicher.
   const handleViewEventDocument = (document: any, event?: any) => {
@@ -8485,60 +8535,56 @@ ${'='.repeat(60)}
       return
     }
     const fileData = fileDataOrUrl
-    // Gespeichertes HTML (data:-URL: base64 oder utf-8 mit Komma wie Muster in tenantConfig)
+    // Gespeichertes HTML (data:-URL): Große URLs nicht decodieren (atob/Regex friert UI). iframe + optional kleine Social/Newsletter-Parse.
     if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
       const htmlDataUrl = fileData
-      const isEditableMarketingDoc = (document.werbematerialTyp === 'social' || document.werbematerialTyp === 'newsletter') && !!document.id
-      // Performance-Schutz: Sehr große data:-Dokumente nicht erst vollständig decodieren/parsen.
-      // Sonst hängt die Oberfläche nach dem ersten Klick spürbar.
-      if (!isEditableMarketingDoc && htmlDataUrl.length > 600000) {
-        const wrapper = '<html><head><meta charset="utf-8"><title>' +
-          (docTitle).replace(/</g, '&lt;') +
-          '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
-          htmlDataUrl.replace(/"/g, '&quot;') +
-          '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
-        openDocumentInApp(wrapper, docTitle)
-        return
-      }
+      const makeIframeWrapper = () =>
+        '<html><head><meta charset="utf-8"><title>' +
+        docTitle.replace(/</g, '&lt;') +
+        '</title><style>html,body{margin:0;height:100%;}</style></head><body><iframe src="' +
+        htmlDataUrl.replace(/"/g, '&quot;') +
+        '" style="width:100%;height:100%;border:none;display:block;"></iframe></body></html>'
 
-      const htmlDecoded = decodeHtmlDataUrl(htmlDataUrl)
-      if (htmlDecoded) {
-        try {
-          // Social-Media-Dokument: immer mit neuer Vorlage (Dokument bearbeiten, Bild einfügen) öffnen, Inhalte aus gespeichertem HTML übernehmen
-          if (document.werbematerialTyp === 'social' && document.id) {
-            const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
-            const fromDiv = (m: RegExpMatchArray | null) => m && m[1] ? unesc(m[1].replace(/<br\s*\/?>/gi, '\n')) : ''
-            const instagramMatch = htmlDecoded.match(/id="instagram-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Instagram Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
-            const facebookMatch = htmlDecoded.match(/id="facebook-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Facebook Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
-            const whatsappMatch = htmlDecoded.match(/id="whatsapp-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>WhatsApp[^<]*<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
-            const imgMatch = htmlDecoded.match(/<img[^>]+src="(data:image[^"]+)"[^>]*(?:alt=""|Post-Vorschau)/i) || htmlDecoded.match(/Bild \(Post-Vorschau\)[\s\S]*?<img[^>]+src="(data:image[^"]+)"/i)
-            const eventTitle = event?.title ?? document.eventTitle ?? 'Event'
-            const eventDate = event?.date ?? document.eventDate ?? ''
-            const eventLike = event ?? { id: document.eventId, title: eventTitle, date: eventDate }
-            const instagram = (instagramMatch && instagramMatch[1]) ? (instagramMatch[0].includes('textarea') ? unesc(instagramMatch[1]) : fromDiv(instagramMatch)) : ''
-            const facebook = (facebookMatch && facebookMatch[1]) ? (facebookMatch[0].includes('textarea') ? unesc(facebookMatch[1]) : fromDiv(facebookMatch)) : ''
-            const whatsapp = (whatsappMatch && whatsappMatch[1]) ? (whatsappMatch[0].includes('textarea') ? unesc(whatsappMatch[1]) : fromDiv(whatsappMatch)) : ''
-            const imageDataUrl = (imgMatch && imgMatch[1]) ? imgMatch[1] : ''
-            openSocialRedaction(eventLike, document, { instagram, facebook, whatsapp, imageDataUrl })
+      if (htmlDataUrl.length <= MAX_EVENT_DOC_DATA_URL_DECODE_LEN) {
+        const htmlDecoded = decodeHtmlDataUrl(htmlDataUrl)
+        if (htmlDecoded) {
+          try {
+            if (document.werbematerialTyp === 'social' && document.id) {
+              const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+              const fromDiv = (m: RegExpMatchArray | null) => m && m[1] ? unesc(m[1].replace(/<br\s*\/?>/gi, '\n')) : ''
+              const instagramMatch = htmlDecoded.match(/id="instagram-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Instagram Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+              const facebookMatch = htmlDecoded.match(/id="facebook-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>Facebook Post<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+              const whatsappMatch = htmlDecoded.match(/id="whatsapp-post"[^>]*>([\s\S]*?)<\/textarea>/i) || htmlDecoded.match(/<h2>WhatsApp[^<]*<\/h2>\s*<div[^>]*>([\s\S]*?)<\/div>/i)
+              const imgMatch = htmlDecoded.match(/<img[^>]+src="(data:image[^"]+)"[^>]*(?:alt=""|Post-Vorschau)/i) || htmlDecoded.match(/Bild \(Post-Vorschau\)[\s\S]*?<img[^>]+src="(data:image[^"]+)"/i)
+              const eventTitle = event?.title ?? document.eventTitle ?? 'Event'
+              const eventDate = event?.date ?? document.eventDate ?? ''
+              const eventLike = event ?? { id: document.eventId, title: eventTitle, date: eventDate }
+              const instagram = (instagramMatch && instagramMatch[1]) ? (instagramMatch[0].includes('textarea') ? unesc(instagramMatch[1]) : fromDiv(instagramMatch)) : ''
+              const facebook = (facebookMatch && facebookMatch[1]) ? (facebookMatch[0].includes('textarea') ? unesc(facebookMatch[1]) : fromDiv(facebookMatch)) : ''
+              const whatsapp = (whatsappMatch && whatsappMatch[1]) ? (whatsappMatch[0].includes('textarea') ? unesc(whatsappMatch[1]) : fromDiv(whatsappMatch)) : ''
+              const imageDataUrl = (imgMatch && imgMatch[1]) ? imgMatch[1] : ''
+              openSocialRedaction(eventLike, document, { instagram, facebook, whatsapp, imageDataUrl })
+              return
+            }
+            if (document.werbematerialTyp === 'newsletter' && document.id) {
+              const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
+              const subjectMatch = htmlDecoded.match(/class="newsletter-subject-line"[^>]*>([\s\S]*?)<\/div>/i)
+              const bodyMatch = htmlDecoded.match(/class="presse-body"[^>]*style="[^"]*white-space:pre-wrap[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
+              const subject = subjectMatch && subjectMatch[1] ? unesc(subjectMatch[1].trim()) : ''
+              const body = bodyMatch && bodyMatch[1] ? unesc(bodyMatch[1].replace(/<br\s*\/?>/gi, '\n').trim()) : ''
+              const eventLike = event ?? { id: document.eventId, title: document.eventTitle ?? 'Event', date: document.eventDate }
+              openNewsletterRedaction(eventLike, document, { subject, body })
+              return
+            }
+            openDocumentInApp(htmlDecoded, docTitle)
             return
+          } catch {
+            /* iframe unten */
           }
-          // Newsletter-Dokument: Modal öffnen, Betreff/Inhalt aus View-HTML parsen
-          if (document.werbematerialTyp === 'newsletter' && document.id) {
-            const unesc = (s: string) => String(s ?? '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
-            const subjectMatch = htmlDecoded.match(/class="newsletter-subject-line"[^>]*>([\s\S]*?)<\/div>/i)
-            const bodyMatch = htmlDecoded.match(/class="presse-body"[^>]*style="[^"]*white-space:pre-wrap[^"]*"[^>]*>([\s\S]*?)<\/div>/i)
-            const subject = subjectMatch && subjectMatch[1] ? unesc(subjectMatch[1].trim()) : ''
-            const body = bodyMatch && bodyMatch[1] ? unesc(bodyMatch[1].replace(/<br\s*\/?>/gi, '\n').trim()) : ''
-            const eventLike = event ?? { id: document.eventId, title: document.eventTitle ?? 'Event', date: document.eventDate }
-            openNewsletterRedaction(eventLike, document, { subject, body })
-            return
-          }
-          openDocumentInApp(htmlDecoded, docTitle)
-          return
-        } catch (_) {
-          // Fallback unten
         }
       }
+      openDocumentInApp(makeIframeWrapper(), docTitle)
+      return
     }
     // Kein gespeicherter Inhalt, aber Event vorhanden: aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“)
     if (!fileData && event) {
@@ -12743,6 +12789,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     const docs = loadDocuments()
                     setDocuments(docs)
                   } catch (_) {}
+                  try {
+                    if (inAppViewerBlobRef.current) {
+                      URL.revokeObjectURL(inAppViewerBlobRef.current)
+                      inAppViewerBlobRef.current = null
+                    }
+                  } catch {
+                    /* ignore */
+                  }
                   setInAppDocumentViewer(null)
                 }}
                 aria-label="Dokument schließen und zurück"
@@ -12797,9 +12851,11 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {documentSaveFeedback === 'ok' && <span style={{ fontSize: '0.85rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
             </div>
             <iframe
+              key={inAppDocumentViewer.blobUrl ?? `srcdoc-${inAppDocumentViewer.title}-${inAppDocumentViewer.html.length}`}
               ref={inAppViewerIframeRef}
               title={inAppDocumentViewer.title}
-              srcDoc={inAppDocumentViewer.html}
+              src={inAppDocumentViewer.blobUrl ?? undefined}
+              srcDoc={inAppDocumentViewer.blobUrl ? undefined : inAppDocumentViewer.html}
               style={{
                 flex: 1, width: '100%', border: 'none', background: '#fff'
               }}
