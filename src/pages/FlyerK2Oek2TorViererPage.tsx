@@ -32,7 +32,35 @@ import { readArtworksForContextWithResolvedImages } from '../utils/artworksStora
 const ROOT = 'flyer-k2-oek2-vierer'
 /** Manuelle Bild-URLs (leer = aus K2/Galerie). Persistiert für nächsten Besuch. */
 const FLYER_IMG_OVERRIDES_KEY = 'k2-flyer-vierer-image-overrides'
-type FlyerImgOverrides = { card?: string; welcome?: string; werk?: string; tor?: string }
+type FlyerImgOverrides = {
+  /** Linkes Streifenfoto: Bild-URL zum gewählten Werk (wie rechts). */
+  leftWerk?: string
+  welcome?: string
+  /** Rechtes Streifenfoto */
+  werk?: string
+  tor?: string
+  /** Alt: wurde zu leftWerk migriert */
+  card?: string
+}
+
+function migrateFlyerOverrides(raw: FlyerImgOverrides): FlyerImgOverrides {
+  const o = { ...raw }
+  const cardT = o.card?.trim()
+  if (cardT && !o.leftWerk?.trim()) o.leftWerk = cardT
+  delete o.card
+  return o
+}
+
+function werkNumberFromOverrideUrl(
+  choices: Array<{ number: string; imageUrl: string }>,
+  overrideUrl: string | undefined,
+  fallbackUrl: string
+): string {
+  const o = overrideUrl?.trim()
+  const eff = o || fallbackUrl
+  const hit = choices.find((c) => c.imageUrl === eff)
+  return hit?.number ?? ''
+}
 const TEAL_DARK = '#0c5c55'
 const TEAL = '#0f766e'
 const TEAL_LIGHT = '#0d9488'
@@ -58,9 +86,14 @@ const styles = `
     width: 100%; padding: 6px 8px; border: 1px solid #d4cfc7; border-radius: 6px; font-size: 0.8rem; color: #1c1a18;
   }
   .${ROOT} .flyer-img-panel .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .${ROOT} .flyer-img-panel .file-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+  .${ROOT} .flyer-img-panel .file-row button {
+    padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; cursor: pointer; font-weight: 500;
+    background: #f0fdfa; color: ${TEAL}; border: 1px solid ${TEAL_LIGHT}55;
+  }
+  .${ROOT} .flyer-img-panel .file-row button.danger { background: #fff; color: #8b4513; border-color: #d4a574; }
+  .${ROOT} .flyer-img-panel .file-thumb { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #d4cfc7; }
   .${ROOT} .flyer-img-panel .hint { margin: 8px 0 0; font-size: 0.78rem; color: #5c5650; line-height: 1.45; }
-  .${ROOT} .hint-screen { max-width: 720px; margin: 0 auto 20px; padding: 14px 16px; background: #fffefb; border: 1px solid rgba(15,118,110,0.25); border-radius: 10px; color: #1c1a18; font-size: 0.9rem; line-height: 1.5; }
-  .${ROOT} .hint-screen h1 { font-size: 1.1rem; margin: 0 0 8px; color: ${TEAL}; }
   .${ROOT} .sheet { width: 210mm; height: 297mm; margin: 0 auto 24px; background: #fff; box-shadow: 0 8px 32px rgba(0,0,0,0.07); display: flex; flex-direction: column; overflow: hidden; }
   .${ROOT} .cell { flex: 1 1 0; min-height: 0; border-bottom: 1px dashed rgba(28,26,24,0.12); display: flex; flex-direction: column; padding: 2.5mm 3.5mm; }
   .${ROOT} .cell:last-child { border-bottom: none; }
@@ -86,17 +119,26 @@ const styles = `
   }
   .${ROOT} .cell-front .thumb-strip {
     flex: 0 0 50%; max-width: 50%; min-height: 0; align-self: stretch;
-    display: flex; flex-direction: row; gap: 1.2mm; min-width: 0;
+    display: flex; flex-direction: row; gap: 0; min-width: 0;
+    align-items: stretch;
   }
+  /* Drei gleich große Kacheln, Bild füllt die Fläche (kein Letterboxing). */
   .${ROOT} .cell-front .thumb-strip .thumb {
-    flex: 1 1 0; min-width: 0; min-height: 0;
-    border-radius: 2mm; overflow: hidden;
-    background: #f0ebe4; box-shadow: inset 0 0 0 1px rgba(28,26,24,0.06);
-    display: flex; align-items: center; justify-content: center;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    background: #e8e4dd;
   }
   .${ROOT} .cell-front .thumb-strip .thumb img {
-    display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; min-height: 0;
-    object-fit: contain; object-position: center;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    object-position: center;
   }
   .${ROOT} .cell-front .text { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
   .${ROOT} .cell-front .intro {
@@ -207,7 +249,6 @@ const styles = `
     }
     .${ROOT} .flyer-vierer-toolbar { display: none !important; }
     .${ROOT} .flyer-img-panel { display: none !important; }
-    .${ROOT} .hint-screen { display: none !important; }
     /* Eine Bogen-Seite = exakt eine Druckseite (Höhe an bedruckbare Fläche angepasst) */
     .${ROOT} .sheet {
       box-sizing: border-box !important;
@@ -355,12 +396,56 @@ const K2_BAND_SUBTITLE = 'Martina & Georg Kreinecker'
 
 const K2_TAGLINE = TENANT_CONFIGS.k2.tagline
 
+/** Fotodatei → JPEG-Daten-URL (max. Breite, damit Speicher/Druck ok bleibt). */
+function fileToCompressedDataUrl(file: File): Promise<string> {
+  const maxW = 1600
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const data = reader.result
+      if (typeof data !== 'string') {
+        reject(new Error('read'))
+        return
+      }
+      const img = new Image()
+      img.onload = () => {
+        const w = img.naturalWidth
+        const h = img.naturalHeight
+        if (!w || !h) {
+          reject(new Error('size'))
+          return
+        }
+        const scale = w > maxW ? maxW / w : 1
+        const cw = Math.max(1, Math.round(w * scale))
+        const ch = Math.max(1, Math.round(h * scale))
+        const canvas = document.createElement('canvas')
+        canvas.width = cw
+        canvas.height = ch
+        const ctx = canvas.getContext('2d')
+        if (!ctx) {
+          reject(new Error('canvas'))
+          return
+        }
+        ctx.drawImage(img, 0, 0, cw, ch)
+        resolve(canvas.toDataURL('image/jpeg', 0.82))
+      }
+      img.onerror = () => reject(new Error('decode'))
+      img.src = data
+    }
+    reader.onerror = () => reject(reader.error ?? new Error('read'))
+    reader.readAsDataURL(file)
+  })
+}
+
+const SS_FLYER_WELCOME_FILE = 'k2-flyer-vierer-welcome-file-data'
+const SS_FLYER_TOR_FILE = 'k2-flyer-vierer-tor-file-data'
+
 function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
   try {
     const raw = localStorage.getItem(FLYER_IMG_OVERRIDES_KEY)
     if (!raw || raw.length > 80000) return {}
     const p = JSON.parse(raw) as FlyerImgOverrides
-    return p && typeof p === 'object' ? p : {}
+    return p && typeof p === 'object' ? migrateFlyerOverrides(p) : {}
   } catch {
     return {}
   }
@@ -387,8 +472,8 @@ export default function FlyerK2Oek2TorViererPage() {
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
   const [welcomeThumb, setWelcomeThumb] = useState('')
-  const [martinaPortraitUrl, setMartinaPortraitUrl] = useState('/img/k2/galerie-card.jpg')
-  const [martinaWerkUrl, setMartinaWerkUrl] = useState('/img/k2/werk-K2-M-0001.jpg')
+  const [leftWerkAuto, setLeftWerkAuto] = useState('/img/k2/werk-K2-M-0001.jpg')
+  const [rightWerkAuto, setRightWerkAuto] = useState('/img/k2/werk-K2-M-0001.jpg')
   const [intro, setIntro] = useState('')
   const [galleryTitle, setGalleryTitle] = useState(() => K2_STAMMDATEN_DEFAULTS.gallery.name)
   const [stammdaten, setStammdaten] = useState(() => loadStammdatenForTenant('k2'))
@@ -402,19 +487,55 @@ export default function FlyerK2Oek2TorViererPage() {
   const [torHeroUrl, setTorHeroUrl] = useState('/img/oeffentlich/entdecken-hero.jpg')
   const [imgOverride, setImgOverride] = useState<FlyerImgOverrides>(() => loadFlyerOverridesFromStorage())
   const [artworkChoices, setArtworkChoices] = useState<Array<{ number: string; title: string; imageUrl: string }>>([])
+  /** Mitte / Rückseite: Bild aus gewählter Fotodatei (Session – siehe sessionStorage). */
+  const [welcomeFromFile, setWelcomeFromFile] = useState<string | null>(null)
+  const [torFromFile, setTorFromFile] = useState<string | null>(null)
+  const welcomeFileInputRef = useRef<HTMLInputElement>(null)
+  const torFileInputRef = useRef<HTMLInputElement>(null)
 
-  /** URL einmalig: ?flyerWelcome= &flyerCard= &flyerWerk= &flyerTor= (oder kurz fw, fc, fk, ft) */
+  useEffect(() => {
+    try {
+      const w = sessionStorage.getItem(SS_FLYER_WELCOME_FILE)
+      if (w && w.startsWith('data:')) setWelcomeFromFile(w)
+      const t = sessionStorage.getItem(SS_FLYER_TOR_FILE)
+      if (t && t.startsWith('data:')) setTorFromFile(t)
+    } catch {
+      /* */
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      if (welcomeFromFile) sessionStorage.setItem(SS_FLYER_WELCOME_FILE, welcomeFromFile)
+      else sessionStorage.removeItem(SS_FLYER_WELCOME_FILE)
+    } catch {
+      /* Quota */
+    }
+  }, [welcomeFromFile])
+
+  useEffect(() => {
+    try {
+      if (torFromFile) sessionStorage.setItem(SS_FLYER_TOR_FILE, torFromFile)
+      else sessionStorage.removeItem(SS_FLYER_TOR_FILE)
+    } catch {
+      /* Quota */
+    }
+  }, [torFromFile])
+
+  /** URL einmalig: flyerLeft / flyerWerk / flyerWelcome / flyerTor (kurz fl, fk, fw, ft); fc → links (Alt) */
   useEffect(() => {
     if (urlParamsApplied.current) return
     const w = searchParams.get('flyerWelcome') || searchParams.get('fw')
+    const l = searchParams.get('flyerLeft') || searchParams.get('fl')
     const c = searchParams.get('flyerCard') || searchParams.get('fc')
     const k = searchParams.get('flyerWerk') || searchParams.get('fk')
     const t = searchParams.get('flyerTor') || searchParams.get('ft')
-    if (w || c || k || t) {
+    if (w || l || c || k || t) {
       setImgOverride((prev) => ({
         ...prev,
         ...(w?.trim() ? { welcome: w.trim() } : {}),
-        ...(c?.trim() ? { card: c.trim() } : {}),
+        ...(l?.trim() ? { leftWerk: l.trim() } : {}),
+        ...(c?.trim() && !l?.trim() ? { leftWerk: c.trim() } : {}),
         ...(k?.trim() ? { werk: k.trim() } : {}),
         ...(t?.trim() ? { tor: t.trim() } : {}),
       }))
@@ -493,22 +614,9 @@ export default function FlyerK2Oek2TorViererPage() {
       } else if (isMounted) {
         setWelcomeThumb('/img/k2/willkommen.jpg')
       }
-      const card = images.galerieCardImage
-      if (
-        card &&
-        typeof card === 'string' &&
-        card.trim().length > 10 &&
-        card.length < 2 * 1024 * 1024 &&
-        isMounted
-      ) {
-        setMartinaPortraitUrl(card.trim())
-      } else if (isMounted) {
-        setMartinaPortraitUrl('/img/k2/galerie-card.jpg')
-      }
     } catch {
       if (isMounted) {
         setWelcomeThumb('/img/k2/willkommen.jpg')
-        setMartinaPortraitUrl('/img/k2/galerie-card.jpg')
       }
     }
 
@@ -550,10 +658,16 @@ export default function FlyerK2Oek2TorViererPage() {
           .filter((x): x is { number: string; title: string; imageUrl: string } => x != null)
         setArtworkChoices(choices)
         const w = pickMartinaShowcaseWork(list)
-        const url = w?.imageUrl
-        if (typeof url === 'string' && url.trim()) {
-          setMartinaWerkUrl(url.trim())
-        }
+        const leftUrl =
+          (typeof w?.imageUrl === 'string' ? w.imageUrl.trim() : '') ||
+          choices[0]?.imageUrl ||
+          '/img/k2/werk-K2-M-0001.jpg'
+        const wNum = String(w?.number ?? '').trim()
+        const second =
+          choices.find((c) => wNum && c.number !== wNum) || choices[1] || choices[0]
+        const rightUrl = second?.imageUrl?.trim() || leftUrl
+        setLeftWerkAuto(leftUrl)
+        setRightWerkAuto(rightUrl)
       })
       .catch(() => {})
     return () => {
@@ -561,20 +675,32 @@ export default function FlyerK2Oek2TorViererPage() {
     }
   }, [])
 
-  const effectiveCard = imgOverride.card?.trim() || martinaPortraitUrl
-  const effectiveWelcome = imgOverride.welcome?.trim() || welcomeThumb || '/img/k2/willkommen.jpg'
-  const effectiveWerk = imgOverride.werk?.trim() || martinaWerkUrl
-  const effectiveTor = imgOverride.tor?.trim() || torHeroUrl
+  const effectiveLeftWerk = imgOverride.leftWerk?.trim() || leftWerkAuto
+  const effectiveWelcome =
+    welcomeFromFile ||
+    imgOverride.welcome?.trim() ||
+    welcomeThumb ||
+    '/img/k2/willkommen.jpg'
+  const effectiveRightWerk = imgOverride.werk?.trim() || rightWerkAuto
+  const effectiveTor = torFromFile || imgOverride.tor?.trim() || torHeroUrl
 
-  /** Abgleich Dropdown: Nummer wenn Bild aus Liste, sonst leer (dann ggf. manuelle URL). */
-  const werkSelectValue = useMemo(() => {
-    const o = imgOverride.werk?.trim()
-    const eff = o || martinaWerkUrl
-    const hit = artworkChoices.find((c) => c.imageUrl === eff)
-    return hit?.number ?? ''
-  }, [imgOverride.werk, artworkChoices, martinaWerkUrl])
+  const leftWerkSelectValue = useMemo(
+    () => werkNumberFromOverrideUrl(artworkChoices, imgOverride.leftWerk, leftWerkAuto),
+    [imgOverride.leftWerk, artworkChoices, leftWerkAuto]
+  )
 
-  const werkIsManualUrl = useMemo(() => {
+  const rightWerkSelectValue = useMemo(
+    () => werkNumberFromOverrideUrl(artworkChoices, imgOverride.werk, rightWerkAuto),
+    [imgOverride.werk, artworkChoices, rightWerkAuto]
+  )
+
+  const leftWerkIsManualUrl = useMemo(() => {
+    const o = imgOverride.leftWerk?.trim()
+    if (!o) return false
+    return !artworkChoices.some((c) => c.imageUrl === o)
+  }, [imgOverride.leftWerk, artworkChoices])
+
+  const rightWerkIsManualUrl = useMemo(() => {
     const o = imgOverride.werk?.trim()
     if (!o) return false
     return !artworkChoices.some((c) => c.imageUrl === o)
@@ -657,40 +783,103 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <div className="flyer-img-panel no-print" aria-label="Flyer-Bilder wählen">
         <h2>Bilder für diesen Flyer</h2>
-        <p className="hint" style={{ marginTop: 0 }}>
-          Leere Felder = Stand aus <strong>K2 Galerie / Design</strong> (bzw. automatisches Martina-Werk). Änderungen werden auf{' '}
-          <strong>diesem Gerät</strong> gespeichert. Optional per URL:{' '}
-          <code style={{ fontSize: '0.76rem' }}>?flyerCard=&amp;flyerWelcome=&amp;flyerWerk=&amp;flyerTor=</code> (oder{' '}
-          <code style={{ fontSize: '0.76rem' }}>fc, fw, fk, ft</code>) – z.&nbsp;B. <code style={{ fontSize: '0.76rem' }}>/img/k2/willkommen.jpg</code>.
-        </p>
         <div className="row">
-          <label htmlFor="flyer-in-card">Galerie-Karte (links)</label>
+          <label htmlFor="flyer-sel-left-werk">Werk (links)</label>
+          <div>
+            <select
+              id="flyer-sel-left-werk"
+              value={leftWerkSelectValue}
+              onChange={(e) => {
+                const v = e.target.value
+                if (!v) {
+                  setOverrideField('leftWerk', '')
+                  return
+                }
+                const row = artworkChoices.find((c) => c.number === v)
+                if (row) setOverrideField('leftWerk', row.imageUrl)
+              }}
+            >
+              <option value="">Automatisch (Vorschlag)</option>
+              {artworkChoices.map((c) => (
+                <option key={`L-${c.number}`} value={c.number}>
+                  {c.number}
+                  {c.title ? ` – ${c.title}` : ''}
+                </option>
+              ))}
+            </select>
+            {leftWerkIsManualUrl ? (
+              <p className="hint" style={{ margin: '4px 0 0' }}>
+                Aktuell: <strong>eigene URL</strong> im Feld darunter – Liste steuert dann nicht.
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <div className="row">
+          <label htmlFor="flyer-in-left-werk">Werk-Bild-URL links (optional)</label>
           <input
-            id="flyer-in-card"
+            id="flyer-in-left-werk"
             type="text"
-            placeholder="Leer = Galerie-Karte aus Design"
-            value={imgOverride.card ?? ''}
-            onChange={(e) => setOverrideField('card', e.target.value)}
+            placeholder="Überschreibt die Liste; leer = wie oben"
+            value={imgOverride.leftWerk ?? ''}
+            onChange={(e) => setOverrideField('leftWerk', e.target.value)}
             autoComplete="off"
           />
         </div>
         <div className="row">
           <label htmlFor="flyer-in-welcome">Willkommen (Mitte)</label>
-          <input
-            id="flyer-in-welcome"
-            type="text"
-            placeholder="Leer = Willkommensbild aus Design"
-            value={imgOverride.welcome ?? ''}
-            onChange={(e) => setOverrideField('welcome', e.target.value)}
-            autoComplete="off"
-          />
+          <div>
+            <input
+              id="flyer-in-welcome"
+              type="text"
+              placeholder="Leer = Willkommensbild aus Design (oder Foto wählen)"
+              value={imgOverride.welcome ?? ''}
+              onChange={(e) => setOverrideField('welcome', e.target.value)}
+              autoComplete="off"
+            />
+            <input
+              ref={welcomeFileInputRef}
+              type="file"
+              accept="image/*"
+              className="no-print"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (!f || !f.type.startsWith('image/')) return
+                try {
+                  const dataUrl = await fileToCompressedDataUrl(f)
+                  setWelcomeFromFile(dataUrl)
+                } catch {
+                  window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                }
+              }}
+            />
+            <div className="file-row">
+              <button type="button" onClick={() => welcomeFileInputRef.current?.click()}>
+                Foto von diesem Gerät wählen …
+              </button>
+              {welcomeFromFile ? (
+                <>
+                  <img className="file-thumb" src={welcomeFromFile} alt="" />
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => setWelcomeFromFile(null)}
+                  >
+                    Foto entfernen
+                  </button>
+                  <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Aktiv: Datei (geht vor Textfeld)</span>
+                </>
+              ) : null}
+            </div>
+          </div>
         </div>
         <div className="row">
           <label htmlFor="flyer-sel-werk">Werk (rechts)</label>
           <div>
             <select
               id="flyer-sel-werk"
-              value={werkSelectValue}
+              value={rightWerkSelectValue}
               onChange={(e) => {
                 const v = e.target.value
                 if (!v) {
@@ -701,23 +890,23 @@ export default function FlyerK2Oek2TorViererPage() {
                 if (row) setOverrideField('werk', row.imageUrl)
               }}
             >
-              <option value="">Automatisch (Vorschlag Martina-Werk)</option>
+              <option value="">Automatisch (Vorschlag)</option>
               {artworkChoices.map((c) => (
-                <option key={c.number} value={c.number}>
+                <option key={`R-${c.number}`} value={c.number}>
                   {c.number}
                   {c.title ? ` – ${c.title}` : ''}
                 </option>
               ))}
             </select>
-            {werkIsManualUrl ? (
+            {rightWerkIsManualUrl ? (
               <p className="hint" style={{ margin: '4px 0 0' }}>
-                Aktuell: <strong>eigene URL</strong> im Feld „Werk-Bild-URL“ – Liste steuert dann nicht.
+                Aktuell: <strong>eigene URL</strong> im Feld darunter – Liste steuert dann nicht.
               </p>
             ) : null}
           </div>
         </div>
         <div className="row">
-          <label htmlFor="flyer-in-werk">Werk-Bild-URL (optional)</label>
+          <label htmlFor="flyer-in-werk">Werk-Bild-URL rechts (optional)</label>
           <input
             id="flyer-in-werk"
             type="text"
@@ -729,22 +918,60 @@ export default function FlyerK2Oek2TorViererPage() {
         </div>
         <div className="row">
           <label htmlFor="flyer-in-tor">Rückseite Tor / Hero</label>
-          <input
-            id="flyer-in-tor"
-            type="text"
-            placeholder="Leer = Entdecken-Bild wie /entdecken"
-            value={imgOverride.tor ?? ''}
-            onChange={(e) => setOverrideField('tor', e.target.value)}
-            autoComplete="off"
-          />
+          <div>
+            <input
+              id="flyer-in-tor"
+              type="text"
+              placeholder="Leer = Entdecken-Bild wie /entdecken (oder Foto wählen)"
+              value={imgOverride.tor ?? ''}
+              onChange={(e) => setOverrideField('tor', e.target.value)}
+              autoComplete="off"
+            />
+            <input
+              ref={torFileInputRef}
+              type="file"
+              accept="image/*"
+              className="no-print"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const f = e.target.files?.[0]
+                e.target.value = ''
+                if (!f || !f.type.startsWith('image/')) return
+                try {
+                  const dataUrl = await fileToCompressedDataUrl(f)
+                  setTorFromFile(dataUrl)
+                } catch {
+                  window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                }
+              }}
+            />
+            <div className="file-row">
+              <button type="button" onClick={() => torFileInputRef.current?.click()}>
+                Foto von diesem Gerät wählen …
+              </button>
+              {torFromFile ? (
+                <>
+                  <img className="file-thumb" src={torFromFile} alt="" />
+                  <button type="button" className="danger" onClick={() => setTorFromFile(null)}>
+                    Foto entfernen
+                  </button>
+                  <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Aktiv: Datei (geht vor Textfeld)</span>
+                </>
+              ) : null}
+            </div>
+          </div>
         </div>
         <div className="btn-row">
           <button
             type="button"
             onClick={() => {
               setImgOverride({})
+              setWelcomeFromFile(null)
+              setTorFromFile(null)
               try {
                 localStorage.removeItem(FLYER_IMG_OVERRIDES_KEY)
+                sessionStorage.removeItem(SS_FLYER_WELCOME_FILE)
+                sessionStorage.removeItem(SS_FLYER_TOR_FILE)
               } catch {
                 /* */
               }
@@ -765,25 +992,6 @@ export default function FlyerK2Oek2TorViererPage() {
         </div>
       </div>
 
-      <div className="hint-screen no-print">
-        <h1>Vierer-Flyer K2 + ök2 Eingangstor</h1>
-        <p>
-          <strong>Vorderseite:</strong> vier Streifen – <strong>nur echte Galerie</strong> (Name + „{K2_TAGLINE}“ aus K2-Stammdaten),
-          Einladungstext, <strong>drei Fotos</strong>, Adresse, QR zur Galerie. Bilder kannst du oben unter{' '}
-          <strong>Bilder für diesen Flyer</strong> wählen oder URLs eintragen. <strong>Ohne</strong> kgm-Werbeslogans (die stehen auf der Rückseite).
-          <br />
-          <strong>Rückseite:</strong> <strong>ök2 Eingangstor</strong> – wie <code>/entdecken</code> (Farben aus K2-Design, Tor-Bild), kgm-Werbezeilen, QR <code>/entdecken</code>.
-        </p>
-        <p>
-          Drucken: <strong>zwei Seiten</strong> – erst Vorderseite, dann <strong>Duplex (lange Kante)</strong> auf
-          dieselbe Ausrichtung oder Blatt wenden und Rückseite drucken. Anschließend an den gestrichelten Linien
-          zuschneiden.
-        </p>
-        <p style={{ marginBottom: 0, fontSize: '0.85rem', color: '#5c5650' }}>
-          Auch unter Eventplanung → Öffentlichkeitsarbeit → <strong>Event-Flyer</strong> verlinkt.
-        </p>
-      </div>
-
       <section className="sheet" aria-label="Vorderseite vier Flyer K2 Galerie">
         {SLOTS.map((i) => (
           <div key={`f-${i}`} className="cell cell-front">
@@ -797,13 +1005,13 @@ export default function FlyerK2Oek2TorViererPage() {
             <div className="front-main">
               <div className="thumb-strip">
                 <div className="thumb">
-                  <img src={effectiveCard} alt="" />
+                  <img src={effectiveLeftWerk} alt="" />
                 </div>
                 <div className="thumb">
                   <img src={effectiveWelcome} alt="" />
                 </div>
                 <div className="thumb">
-                  <img src={effectiveWerk} alt="" />
+                  <img src={effectiveRightWerk} alt="" />
                 </div>
               </div>
               <div className="text">
