@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Benutzerhandbuch Lizenz (Kapitel 06):** Neuer Abschnitt **„Wichtige Daten: ausdrucken oder abspeichern“** – Lizenzbestätigung (Druck/PDF), Galerie-URL notieren, Stammdaten/Empfehlungslink, **Vollbackup**; Verweise auf **[Einstellungen](10-EINSTELLUNGEN.md)**; **Kurz zusammengefasst** um eine Zeile ergänzt. Datei: **`public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline` prüfen ✅.
+
+**Letzter Stand:** 24.03.26 – **Session-Ende / Entdecken-Upload-Feedback:** UI blieb auf **„Wird hochgeladen“** ohne Erfolg, wenn der **Server nicht antwortete** oder ein **Fehler** kam (Vorschau-State wurde nicht zurückgesetzt). **Fix:** **`catch`** ruft **`revokeEntdeckenHeroBlob()`**; **Timeout 2 Min** um **`uploadEntdeckenHeroImage`** mit verständlicher Fehlermeldung (Netz, **VITE_WRITE_GALLERY_API_KEY**, lokal **VITE_GITHUB_TOKEN**). **Davor umgesetzt:** Vorschau im Admin als **echtes Split-Layout** wie **`/entdecken`** (links Text, rechts Tor-Bild). **`ScreenshotExportAdmin.tsx`**. **Tests:** `npm run test` grün. **Commit:** nach Push `git log -1 --oneline`.
+
 **Letzter Stand:** 24.03.26 – **Entdecken „Entdecken prüfen“ = altes Bild:** Die JPG auf dem Server ist erst **nach Vercel-Deploy** neu; `?v=` umgeht nur Browser-Cache. **Fix:** nach Upload komprimiertes Bild als **localStorage-Overlay** (`k2-entdecken-hero-dataurl-overlay`, max. 48 h) + **`getEntdeckenHeroDisplayUrl`** in **EntdeckenPage** und Admin-Vorschau; **`uploadEntdeckenHeroImage`** liefert `{ path, dataUrl }`. Tests + Build grün. **Commit:** `ac830b9` ✅ auf GitHub.
 
 **Letzter Stand:** 24.03.26 – **Entdecken „Bild wählen“: sofort Vorschau:** Bisher zeigte die Miniatur erst die **Server-URL** – während des Uploads wirkte es wie **keine Vorschau**. **Fix:** direkt nach Dateiwahl **`URL.createObjectURL`** → State **`entdeckenHeroLocalPreview`**; nach erfolgreichem Upload **`revokeObjectURL`** und Wechsel auf `?v=…`-Pfad; Vorschau **140×88** px; Text **„Lokal gewählt – wird hochgeladen …“**. Bei Fehler bleibt die **lokale** Vorschau. **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
@@ -90,9 +94,9 @@
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
 
-**Was wir JETZT tun:** Admin → **Design** → **Vorschau** → **Bild wählen** → **Entdecken prüfen**: gleiches neues Bild wie in der Miniatur (dieses Gerät); nach Deploy: JPG für alle.
+**Was wir JETZT tun:** **Benutzerhandbuch 06** beschreibt jetzt **wichtige Daten drucken/abspeichern** (Lizenz, URL, Stammdaten, Empfehlungslink, Vollbackup). Nächster Einstieg: **Commit/Push** dieses Stands; sonst weiter wie zuvor: Entdecken-Tor testen, bei Upload-Problemen Keys/Netz prüfen.
 
-**Einordnung:** **Entdecken-Hero** = Eingangstor – **sofortige Vorschau** nach „Bild wählen“. **Texte-Schreibtisch** = Hängeordner/Themenmappen am richtigen Ort (nicht Smart-Panel). **Parallel:** Einladung/Notizen, Endphase/Markt, Ready-to-go.
+**Einordnung:** Lizenznutzer sollen **Nachweise und Unterlagen** ohne Suche wiederfinden – Handbuch-Text, kein Feature-Code. Passt zu **Wunsch-URL** und **Einstellungen** im selben Kapitel 💚
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 

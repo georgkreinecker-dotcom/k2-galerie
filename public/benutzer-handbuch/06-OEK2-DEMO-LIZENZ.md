@@ -63,6 +63,35 @@ Keine Anrufe, keine E-Mail-Schleife: Sie kaufen, zahlen, fertig.
 
 ---
 
+## Wunsch-URL einmalig angeben (wichtig)
+
+Damit Ihre Galerie im Netz unter **Ihrer** Adresse sichtbar ist, geben Sie die Wunsch-URL **einmalig** an:
+
+- **Variante A (einfach):** Wunschname für Subdomain, z. B. `mueller` → `https://mueller.k2-galerie.app`
+- **Variante B (eigene Domain):** z. B. `https://galerie-mueller.at`
+
+**Wichtig:** Diese Angabe ist nur einmal nötig. Danach bleibt die Adresse fix, und Sie veröffentlichen wie gewohnt auf Ihre Galerie.
+
+Bei eigener Domain ist zusätzlich eine einmalige Domain-Zuordnung beim Provider nötig (DNS). Danach läuft der Betrieb normal weiter.
+
+---
+
+## Wichtige Daten: ausdrucken oder abspeichern
+
+Damit Sie Angaben, die Sie **immer wieder brauchen**, nicht jedes Mal suchen müssen, können Sie sie **ausdrucken** oder als **Datei auf Ihrem Gerät** sichern:
+
+| Was | Wie Sie es sicher haben |
+|-----|-------------------------|
+| **Lizenzbestätigung** | Nach dem Kauf **ausdrucken** oder als PDF speichern (über den Druckdialog des Browsers: **Drucken** → **Als PDF speichern**, je nach Gerät). |
+| **Ihre Galerie-URL** | **Lesezeichen** im Browser oder **Notiz** auf dem Handy; die **genaue Adresse** (z. B. nach der Wunsch-URL) einmal festhalten. |
+| **Stammdaten** (Kontakt, Adresse, Galerie) | Im **Admin** unter **[Einstellungen](10-EINSTELLUNGEN.md)** → **Stammdaten** pflegen; bei Bedarf Seiten aus der App **drucken** oder Angaben in Ihre **eigene** Dokumentation übernehmen. |
+| **Empfehlungslink** (falls vorhanden) | Im Admin unter dem Bereich **Empfehlung** / **Lizenz** anzeigen, **Link kopieren** und z. B. in einer Notiz oder Textdatei speichern. |
+| **Vollständige Datensicherung** | **Admin** → **[Einstellungen](10-EINSTELLUNGEN.md)** → **Backup & Wiederherstellung** → **Vollbackup herunterladen**. Die Datei **auf einem zweiten Gerät oder externen Speicher** ablegen (z. B. USB-Stick, Cloud-Ordner). |
+
+**Merksatz:** Was Sie **auf Papier oder als Datei** haben, können Sie auch ohne die App sofort wiederfinden – sinnvoll für Steuerberaterin, Bank oder einfach für Ihre Unterlagen.
+
+---
+
 ## Lizenz beenden – jederzeit aussteigen, keine Bindung
 
 So einfach der Einstieg ist, so einfach ist der **Ausstieg**. Es gibt **keine Bindung** und keine Zwangsbeglückung.
@@ -80,5 +109,7 @@ Wir wollen niemanden „festhalten“. Wer einsteigt, soll sich wohl fühlen –
 - **Demo** = Vorschau mit Beispieldaten zum Ausprobieren; ideal vor einer Lizenz.
 - **Bearbeiten in der Demo** = „Erster Entwurf“ oder voller Admin über „Mein Bereich“ / Admin-Button; nur wenn ein Galerie-Passwort gesetzt ist, dieses eingeben (kein Passkey).
 - **Eigene Galerie** = Lizenz online kaufen → Zahlung (Stripe) → Lizenz sofort aktiv, Bestätigung druckbar.
+- **Wunsch-URL** = einmalig angeben (Subdomain oder eigene Domain), danach bleibt die Galerie unter dieser Adresse erreichbar.
+- **Wichtige Daten** = Lizenzbestätigung drucken/PDF, URL notieren, Stammdaten in Einstellungen, optional Vollbackup als Datei – siehe Abschnitt oben.
 - **Lizenz kaufen** = Im Admin unter Einstellungen → „Lizenz online kaufen“ → Lizenz wählen → Name & E-Mail → bezahlen → fertig. Alles eigenständig, ohne Rückfragen.
 - **Lizenz beenden** = Jederzeit aussteigen möglich, keine Bindung. So einfach wie der Einstieg – keine Zwangsbeglückung. Daten vorher exportieren/sichern (Backup im Admin).
