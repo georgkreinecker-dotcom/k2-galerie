@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 25.03.26 – **Plakat bei Eröffnung abgelegt:** **Plakat Galerieeröffnung (A3)** zusätzlich auf dem **Texte-Schreibtisch** (Zone „Eröffnung & Freund:innen“) und in **Admin → Eventplanung → Öffentlichkeitsarbeit** bei jedem Event unter **Präsentationsmappen** (inkl. neuem Tab), außerdem im Tab **Präsentationsmappen** im Hub. Korrekturen: **Event bearbeiten** / **Stammdaten**, dann Plakat-Seite neu laden. **`TexteSchreibtischPage.tsx`**, **`ScreenshotExportAdmin.tsx`**. Tests + Build grün. **Commit:** nach Push `git log -1 --oneline`.
+
+**Was wir JETZT tun:** Nächster Schritt **Öffentlichkeitsarbeit Launch** nach Georg; Plakat unter **Eröffnung** + **Event-Karte** auffindbar.
+
+**Einordnung:** Gleiche Datenquelle wie Prospekt (Event + Stammdaten); viele Einstiege, eine Logik 💚
+
 **Letzter Stand:** 25.03.26 – **Benutzerhandbuch Lizenz (Kapitel 06):** Neuer Abschnitt **„Wichtige Daten: ausdrucken oder abspeichern“** – Lizenzbestätigung (Druck/PDF), Galerie-URL notieren, Stammdaten/Empfehlungslink, **Vollbackup**; Verweise auf **[Einstellungen](10-EINSTELLUNGEN.md)**; **Kurz zusammengefasst** um eine Zeile ergänzt. Datei: **`public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md`**. Tests + Build grün. **Commit:** `1df0cba` ✅ auf GitHub.
 
 **Letzter Stand:** 24.03.26 – **Session-Ende / Entdecken-Upload-Feedback:** UI blieb auf **„Wird hochgeladen“** ohne Erfolg, wenn der **Server nicht antwortete** oder ein **Fehler** kam (Vorschau-State wurde nicht zurückgesetzt). **Fix:** **`catch`** ruft **`revokeEntdeckenHeroBlob()`**; **Timeout 2 Min** um **`uploadEntdeckenHeroImage`** mit verständlicher Fehlermeldung (Netz, **VITE_WRITE_GALLERY_API_KEY**, lokal **VITE_GITHUB_TOKEN**). **Davor umgesetzt:** Vorschau im Admin als **echtes Split-Layout** wie **`/entdecken`** (links Text, rechts Tor-Bild). **`ScreenshotExportAdmin.tsx`**. **Tests:** `npm run test` grün. **Commit:** nach Push `git log -1 --oneline`.
@@ -93,10 +99,6 @@
 **Vorher:** 22.03.26 – **„Alle Kategorien“: Reihenfolge Kategorie für Kategorie, Nummern fortlaufend (Georg):** Früher Round-Robin (**interleave**) mischte M/K/M in der Vorschau. Jetzt **`sortArtworksCategoryBlocksThenNumberAsc`** in **GalerieVorschauPage** (Tab „alle“) + **WerkkatalogTab** (Tabelle/Druck): Reihenfolge **malerei → keramik → grafik → skulptur → sonstiges**, dann weitere Kategorien alphabetisch; innerhalb Block **Nummer aufsteigend**. Tests **artworkSort.test.ts**. Build grün. **Commit/Push:** wie üblich.
 
 **Vorher:** 22.03.26 – **Echtheitszertifikat-Tab: Künstler:in wie Werkkatalog (BUG-042, Georg):** **ZertifikatTab** nutzte für **jedes** Werk nur **Martina-Stammdaten** → falsche Zuordnung (z. B. Keramik Georg). **Fix:** pro Werk **`resolveArtistLabelForGalerieStatistik`** + **`readKuenstlerFallbackGalerieKarten(isOeffentlich, isVk2)`** – gleicher Standard wie Werkkatalog/Statistik; ök2 nur oeffentlich-Keys; VK2 `artwork.artist`. **ein-standard-problem.mdc** Tabelle ergänzt; **GELOESTE-BUGS BUG-042**. Tests + Build grün. **Commit:** lokal ✅ (Nachricht: *Echtheitszertifikat: Künstler:in pro Werk wie Werkkatalog (BUG-042)*); Hash mit `git log -1 --oneline` prüfen. **Push:** Git-Button Cursor (Remote-Auth von hier nicht möglich).
-
-**Was wir JETZT tun:** **Benutzerhandbuch 06** beschreibt jetzt **wichtige Daten drucken/abspeichern** (Lizenz, URL, Stammdaten, Empfehlungslink, Vollbackup). Nächster Einstieg: **Commit/Push** dieses Stands; sonst weiter wie zuvor: Entdecken-Tor testen, bei Upload-Problemen Keys/Netz prüfen.
-
-**Einordnung:** Lizenznutzer sollen **Nachweise und Unterlagen** ohne Suche wiederfinden – Handbuch-Text, kein Feature-Code. Passt zu **Wunsch-URL** und **Einstellungen** im selben Kapitel 💚
 
 **Vorher:** Nach **Push** auf **main**: Vercel „Ready“; testen **`/`** und **`/projects/k2-galerie`** → **`/entdecken`** (auch **localhost** wie Vercel); Georg: APf-Lesezeichen **`…/projects/k2-galerie?apf=1`** oder **`/platform`**.
 

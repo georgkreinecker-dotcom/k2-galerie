@@ -57,6 +57,13 @@ const BEREICHE: Bereich[] = [
         to: R.prospektGalerieeroeffnung,
         rotateDeg: -0.3,
       },
+      {
+        id: 'plakat',
+        titel: 'Plakat Galerieeröffnung',
+        zweck: 'A3, aus Event & Stammdaten',
+        to: R.plakatGalerieeroeffnung,
+        rotateDeg: 0.28,
+      },
     ],
   },
   {
