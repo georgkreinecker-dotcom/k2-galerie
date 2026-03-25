@@ -74,10 +74,13 @@ export function getEntdeckenHeroPathUrl(mergedOverrides?: Partial<PageContentEnt
 /**
  * Nach Upload: Overlay in IndexedDB (Mac: zuverlässig; localStorage oft zu klein für data-URLs).
  */
-export async function persistEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
+export async function persistEntdeckenHeroOverlay(
+  dataUrl: string,
+  heroImageUrlOverride?: string
+): Promise<void> {
   if (typeof window === 'undefined') return
   if (!dataUrl.startsWith('data:image/')) return
-  await saveEntdeckenHeroOverlay(dataUrl)
+  await saveEntdeckenHeroOverlay(dataUrl, heroImageUrlOverride)
   window.dispatchEvent(new CustomEvent('k2-page-content-entdecken-updated'))
 }
 

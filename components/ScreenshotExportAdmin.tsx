@@ -2048,12 +2048,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           }, 120_000)
         })
         const { path, dataUrl } = await Promise.race([uploadPromise, timeoutPromise])
-        await persistEntdeckenHeroOverlay(dataUrl)
-        setEntdeckenHeroIdbPreview(dataUrl)
         const withBust = `${path}?v=${Date.now()}`
         revokeEntdeckenHeroBlob()
+        await persistEntdeckenHeroOverlay(dataUrl, withBust)
         setPageContentEntdecken({ heroImageUrl: withBust })
         setEntdeckenForm((prev) => ({ ...prev, heroImageUrl: withBust }))
+        setEntdeckenHeroIdbPreview(dataUrl)
         setImageUploadStatus('✅ Gespeichert. „Entdecken prüfen“ zeigt auf diesem Gerät sofort das neue Bild; für alle anderen nach Vercel-Deploy (~1–2 Min).')
         setTimeout(() => setImageUploadStatus(null), 8000)
       } catch (err) {

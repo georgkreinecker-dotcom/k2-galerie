@@ -15,6 +15,14 @@ const DEFAULT_HERO_PATH = '/img/oeffentlich/entdecken-hero.jpg'
 
 export const ENTDECKEN_HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 
+/** Abgleich Overlay ↔ Hero: Cache-Bust `?v=` ignorieren (sonst verwirft load nach Upload das frische Overlay). */
+export function normalizeHeroImageUrlForOverlayMatch(url: string): string {
+  const t = (url || '').trim()
+  if (!t) return ''
+  const q = t.indexOf('?')
+  return q >= 0 ? t.slice(0, q) : t
+}
+
 /** heroImageUrl = Basis-Pfad zum Hero zum Speicherzeitpunkt; bei anderem Pfad Overlay ignorieren (kein „altes“ Bild). */
 type OverlayRow = { id: typeof ROW_ID; dataUrl: string; ts: number; heroImageUrl?: string }
 
@@ -131,10 +139,16 @@ function isFresh(ts: number): boolean {
   return Date.now() - ts < ENTDECKEN_HERO_OVERLAY_MAX_MS
 }
 
-export async function saveEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
+export async function saveEntdeckenHeroOverlay(
+  dataUrl: string,
+  heroImageUrlOverride?: string
+): Promise<void> {
   if (!dataUrl.startsWith('data:image/')) return
   const ts = Date.now()
-  const heroImageUrl = readEntdeckenHeroPathFromLocalStorage()
+  const heroImageUrl =
+    (heroImageUrlOverride != null && String(heroImageUrlOverride).trim() !== ''
+      ? String(heroImageUrlOverride).trim()
+      : readEntdeckenHeroPathFromLocalStorage())
   const row: OverlayRow = { id: ROW_ID, dataUrl, ts, heroImageUrl }
 
   let idbSaved = false
@@ -158,7 +172,10 @@ export async function saveEntdeckenHeroOverlay(dataUrl: string): Promise<void> {
 function overlayMatchesCurrentHero(row: Pick<OverlayRow, 'heroImageUrl'> | LsPayload): boolean {
   const current = readEntdeckenHeroPathFromLocalStorage()
   if (!row.heroImageUrl) return true
-  return row.heroImageUrl === current
+  return (
+    normalizeHeroImageUrlForOverlayMatch(row.heroImageUrl) ===
+    normalizeHeroImageUrlForOverlayMatch(current)
+  )
 }
 
 export async function loadEntdeckenHeroOverlayIfFresh(): Promise<string | null> {
