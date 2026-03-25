@@ -224,6 +224,15 @@ function decodeHtmlDataUrl(fileData: string): string | null {
   }
 }
 
+/**
+ * FileReader liefert oft sehr große Base64-Strings. Direkt im onloadend-Ende
+ * loadDocuments + JSON.stringify blockieren den ganzen Tab (APf „tot“, 🔓 reagiert nicht).
+ * Ein Macrotask später: erst Paint / React-Commit, dann schwere Arbeit.
+ */
+function deferHeavyUiWork(fn: () => void): void {
+  setTimeout(fn, 0)
+}
+
 const HTML2PDF_WERBEMITTEL_BASE = {
   margin: [6, 6, 6, 6] as [number, number, number, number],
   image: { type: 'jpeg' as const, quality: 0.96 },
@@ -1821,6 +1830,41 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [verteilerNewsletterPasteText, setVerteilerNewsletterPasteText] = useState('')
   /** Bei blockiertem Pop-up: Dokument im gleichen Tab anzeigen (kein Fenster nötig). */
   const [inAppDocumentViewer, setInAppDocumentViewer] = useState<{ html: string; title: string; blobUrl?: string; src?: string } | null>(null)
+  // Notfall-Entsperrung: schließt alle überlagernden Modals/Overlays in einem Zug.
+  const forceCloseBlockingOverlays = () => {
+    try { clearInAppViewerBlob() } catch { /* noop */ }
+    setInAppDocumentViewer(null)
+    setPastDocTemplateModal(null)
+    setShowOeffentlichkeitsarbeitModal(false)
+    setShowEventModal(false)
+    setShowDocumentModal(false)
+    setShowUploadModal(false)
+    setRedactionEvent(null)
+    setSocialRedactionEvent(null)
+    setSocialRedactionDocument(null)
+    setNewsletterRedactionEvent(null)
+    setNewsletterRedactionDocument(null)
+    setPlakatRedactionEvent(null)
+    setPlakatRedactionDoc(null)
+    setPlakatRedaction(null)
+    setFlyerRedactionEvent(null)
+    setFlyerRedactionDoc(null)
+    setFlyerRedaction(null)
+    try {
+      const u = new URL(window.location.href)
+      u.searchParams.delete('openModal')
+      navigate(u.pathname + u.search, { replace: true })
+    } catch {
+      /* noop */
+    }
+  }
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') forceCloseBlockingOverlays()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -8545,8 +8589,11 @@ ${'='.repeat(60)}
       return
     }
     const fileData = fileDataOrUrl
+    const isHtmlDataUrl = typeof fileData === 'string' && /^data:text\/html[;,]/i.test(fileData)
+    const isGenericDataUrl = typeof fileData === 'string' && fileData.startsWith('data:')
     // Gespeichertes HTML (data:-URL): Große URLs nicht decodieren (atob/Regex friert UI). iframe + optional kleine Social/Newsletter-Parse.
-    if (fileData && fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+    // Wichtig: Manche ältere Dokumente haben keinen/inkorrekten fileType, aber korrektes data:text/html.
+    if (fileData && (isHtmlDataUrl || (fileType?.includes('html') && isGenericDataUrl))) {
       const htmlDataUrl = fileData
       const openDataUrlDirect = () => openDocumentUrlInApp(htmlDataUrl, docTitle)
 
@@ -8643,14 +8690,14 @@ ${'='.repeat(60)}
       return
     }
     try {
-      if (fileType?.includes('html') && typeof fileData === 'string' && fileData.startsWith('data:')) {
+      if (isHtmlDataUrl || (fileType?.includes('html') && isGenericDataUrl)) {
         openDocumentUrlInApp(String(fileData), docTitle)
       } else {
         const bodyContent = fileType?.includes('pdf')
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
           : fileType?.includes('image')
           ? `<img src="${fileData}" style="max-width:100%; height:auto;" />`
-          : fileType?.includes('html')
+          : fileType?.includes('html') || isHtmlDataUrl
           ? `<iframe src="${fileData}" style="width:100%; height:100vh; border:none;"></iframe>`
           : `<a href="${fileData}" download="${(document.fileName || document.name || '').replace(/</g, '&lt;')}">Download: ${(docTitle).replace(/</g, '&lt;')}</a>`
         const wrapperBody =
@@ -12759,6 +12806,29 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       fontFamily: s.fontBody
     }}>
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
+
+      <button
+        type="button"
+        onClick={forceCloseBlockingOverlays}
+        title="Wenn etwas blockiert: alle Overlays schließen"
+        style={{
+          position: 'fixed',
+          right: '0.75rem',
+          bottom: '0.75rem',
+          zIndex: 2500000,
+          padding: '0.5rem 0.8rem',
+          borderRadius: '999px',
+          border: `1px solid ${s.accent}66`,
+          background: '#b54a1e',
+          color: '#fff',
+          fontSize: '0.8rem',
+          fontWeight: 700,
+          cursor: 'pointer',
+          boxShadow: '0 8px 20px rgba(0,0,0,0.28)'
+        }}
+      >
+        🔓 Entsperren
+      </button>
 
       {/* Dynamischer Mandant: Ladeanzeige bis Daten von API da sind */}
       {tenant.dynamicTenantId && dynamicTenantLoading && (
@@ -22439,26 +22509,32 @@ ${name}`
             const reader = new FileReader()
             reader.onloadend = () => {
               const data = reader.result as string
-              const current = loadDocuments()
-              const existing = current.find((d: any) => d.id === socialDocId)
-              const docPayload = {
-                id: socialDocId,
-                name: socialRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'social', 'Social Media'),
-                type: 'text/html',
-                size: blob.size,
-                data,
-                fileName: socialRedactionDocument?.fileName || `social-media-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                uploadedAt: new Date().toISOString(),
-                isPDF: false,
-                isPlaceholder: false,
-                category: 'pr-dokumente',
-                eventId: event?.id,
-                eventTitle: event?.title,
-                werbematerialTyp: 'social'
-              }
-              const updated = existing ? current.map((d: any) => d.id === socialDocId ? { ...d, ...docPayload } : d) : [...current, docPayload]
-              saveDocuments(updated)
-              setDocuments(updated)
+              deferHeavyUiWork(() => {
+                try {
+                  const current = loadDocuments()
+                  const existing = current.find((d: any) => d.id === socialDocId)
+                  const docPayload = {
+                    id: socialDocId,
+                    name: socialRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'social', 'Social Media'),
+                    type: 'text/html',
+                    size: blob.size,
+                    fileData: data,
+                    fileName: socialRedactionDocument?.fileName || `social-media-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                    uploadedAt: new Date().toISOString(),
+                    isPDF: false,
+                    isPlaceholder: false,
+                    category: 'pr-dokumente',
+                    eventId: event?.id,
+                    eventTitle: event?.title,
+                    werbematerialTyp: 'social'
+                  }
+                  const updated = existing ? current.map((d: any) => d.id === socialDocId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+                  saveDocuments(updated)
+                } catch (err) {
+                  console.error('Social-Dokument speichern:', err)
+                  alert('Speichern fehlgeschlagen (nach Vorbereitung).')
+                }
+              })
             }
             reader.readAsDataURL(blob)
             setSocialRedactionEvent(null)
@@ -22641,6 +22717,17 @@ ${name}`
         const patchPlakat = (partial: Partial<typeof plakatRedaction>) => {
           setPlakatRedaction((prev) => (prev ? { ...prev, ...partial } : null))
         }
+        const closeOeffentlichkeitsarbeitFullscreenIfOpen = () => {
+          if (!showOeffentlichkeitsarbeitModal) return
+          setShowOeffentlichkeitsarbeitModal(false)
+          try {
+            const u = new URL(window.location.href)
+            u.searchParams.delete('openModal')
+            navigate(u.pathname + u.search, { replace: true })
+          } catch {
+            /* noop */
+          }
+        }
         const savePlakatRedaction = () => {
           try {
             const list: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -22666,32 +22753,40 @@ ${name}`
             const reader = new FileReader()
             reader.onloadend = () => {
               const data = reader.result as string
-              const current = loadDocuments()
-              const existing = current.find((d: any) => d.id === docId)
-              const docPayload = {
-                id: docId,
-                name: plakatRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
-                type: 'text/html',
-                size: blob.size,
-                data,
-                fileData: data,
-                fileName: plakatRedactionDoc?.fileName || `plakat-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                uploadedAt: new Date().toISOString(),
-                isPDF: false,
-                isPlaceholder: false,
-                category: 'pr-dokumente',
-                eventId: event.id,
-                eventTitle: event.title,
-                werbematerialTyp: 'plakat'
-              }
-              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
-              saveDocuments(updated)
-              setDocuments(updated)
+              deferHeavyUiWork(() => {
+                try {
+                  const current = loadDocuments()
+                  const existing = current.find((d: any) => d.id === docId)
+                  const docPayload = {
+                    id: docId,
+                    name: plakatRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
+                    type: 'text/html',
+                    size: blob.size,
+                    fileData: data,
+                    fileName: plakatRedactionDoc?.fileName || `plakat-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                    uploadedAt: new Date().toISOString(),
+                    isPDF: false,
+                    isPlaceholder: false,
+                    category: 'pr-dokumente',
+                    eventId: event.id,
+                    eventTitle: event.title,
+                    werbematerialTyp: 'plakat'
+                  }
+                  const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+                  saveDocuments(updated)
+                } catch (err) {
+                  console.error('Plakat speichern:', err)
+                  alert('Plakat speichern fehlgeschlagen (nach Vorbereitung).')
+                }
+              })
             }
             reader.readAsDataURL(blob)
             setPlakatRedactionEvent(null)
             setPlakatRedactionDoc(null)
             setPlakatRedaction(null)
+            // Falls der Vollbild-Container aktiv ist, direkt schließen:
+            // verhindert "unsichtbar blockierte" Klickflächen nach dem ersten Durchlauf.
+            closeOeffentlichkeitsarbeitFullscreenIfOpen()
           } catch (e) {
             alert('Speichern fehlgeschlagen: ' + (e instanceof Error ? e.message : String(e)))
           }
@@ -22751,7 +22846,12 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Plakat – {plakatRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
-                onClick={() => { setPlakatRedactionEvent(null); setPlakatRedactionDoc(null); setPlakatRedaction(null) }}
+                onClick={() => {
+                  setPlakatRedactionEvent(null)
+                  setPlakatRedactionDoc(null)
+                  setPlakatRedaction(null)
+                  closeOeffentlichkeitsarbeitFullscreenIfOpen()
+                }}
                 style={{ padding: '0.5rem 1rem', background: (s?.accent) ?? '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
               >
                 × OK
@@ -22885,27 +22985,32 @@ ${name}`
             const reader = new FileReader()
             reader.onloadend = () => {
               const data = reader.result as string
-              const current = loadDocuments()
-              const existing = current.find((d: any) => d.id === docId)
-              const docPayload = {
-                id: docId,
-                name: flyerRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'flyer', 'Flyer'),
-                type: 'text/html',
-                size: blob.size,
-                data,
-                fileData: data,
-                fileName: flyerRedactionDoc?.fileName || `flyer-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                uploadedAt: new Date().toISOString(),
-                isPDF: false,
-                isPlaceholder: false,
-                category: 'pr-dokumente',
-                eventId: event.id,
-                eventTitle: event.title,
-                werbematerialTyp: 'flyer'
-              }
-              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
-              saveDocuments(updated)
-              setDocuments(updated)
+              deferHeavyUiWork(() => {
+                try {
+                  const current = loadDocuments()
+                  const existing = current.find((d: any) => d.id === docId)
+                  const docPayload = {
+                    id: docId,
+                    name: flyerRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'flyer', 'Flyer'),
+                    type: 'text/html',
+                    size: blob.size,
+                    fileData: data,
+                    fileName: flyerRedactionDoc?.fileName || `flyer-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                    uploadedAt: new Date().toISOString(),
+                    isPDF: false,
+                    isPlaceholder: false,
+                    category: 'pr-dokumente',
+                    eventId: event.id,
+                    eventTitle: event.title,
+                    werbematerialTyp: 'flyer'
+                  }
+                  const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+                  saveDocuments(updated)
+                } catch (err) {
+                  console.error('Flyer speichern:', err)
+                  alert('Flyer speichern fehlgeschlagen (nach Vorbereitung).')
+                }
+              })
             }
             reader.readAsDataURL(blob)
             setFlyerRedactionEvent(null)
@@ -23058,26 +23163,32 @@ ${name}`
             const reader = new FileReader()
             reader.onloadend = () => {
               const data = reader.result as string
-              const current = loadDocuments()
-              const existing = current.find((d: any) => d.id === docId)
-              const docPayload = {
-                id: docId,
-                name: newsletterRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'newsletter', 'Newsletter'),
-                type: 'text/html',
-                size: blob.size,
-                data,
-                fileName: newsletterRedactionDocument?.fileName || `newsletter-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
-                uploadedAt: new Date().toISOString(),
-                isPDF: false,
-                isPlaceholder: false,
-                category: 'pr-dokumente',
-                eventId: event?.id,
-                eventTitle: event?.title,
-                werbematerialTyp: 'newsletter'
-              }
-              const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
-              saveDocuments(updated)
-              setDocuments(updated)
+              deferHeavyUiWork(() => {
+                try {
+                  const current = loadDocuments()
+                  const existing = current.find((d: any) => d.id === docId)
+                  const docPayload = {
+                    id: docId,
+                    name: newsletterRedactionDocument?.name || getNextWerbematerialVorschlagName(event?.id, event?.title, 'newsletter', 'Newsletter'),
+                    type: 'text/html',
+                    size: blob.size,
+                    fileData: data,
+                    fileName: newsletterRedactionDocument?.fileName || `newsletter-${(event?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                    uploadedAt: new Date().toISOString(),
+                    isPDF: false,
+                    isPlaceholder: false,
+                    category: 'pr-dokumente',
+                    eventId: event?.id,
+                    eventTitle: event?.title,
+                    werbematerialTyp: 'newsletter'
+                  }
+                  const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
+                  saveDocuments(updated)
+                } catch (err) {
+                  console.error('Newsletter speichern:', err)
+                  alert('Newsletter speichern fehlgeschlagen (nach Vorbereitung).')
+                }
+              })
             }
             reader.readAsDataURL(blob)
             setNewsletterRedactionEvent(null)
