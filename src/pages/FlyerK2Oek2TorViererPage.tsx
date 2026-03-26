@@ -733,22 +733,20 @@ export default function FlyerK2Oek2TorViererPage() {
     })()
   }, [torFromFile, flyerFileSessionReady])
 
-  /** URL einmalig: flyerLeft / flyerWerk / flyerWelcome / flyerTor (kurz fl, fk, fw, ft); fc → links (Alt) */
+  /** URL einmalig: flyerLeft / flyerWerk / flyerWelcome (kurz fl, fk, fw); fc → links (Alt). */
   useEffect(() => {
     if (urlParamsApplied.current) return
     const w = searchParams.get('flyerWelcome') || searchParams.get('fw')
     const l = searchParams.get('flyerLeft') || searchParams.get('fl')
     const c = searchParams.get('flyerCard') || searchParams.get('fc')
     const k = searchParams.get('flyerWerk') || searchParams.get('fk')
-    const t = searchParams.get('flyerTor') || searchParams.get('ft')
-    if (w || l || c || k || t) {
+    if (w || l || c || k) {
       setImgOverride((prev) => ({
         ...prev,
         ...(w?.trim() ? { welcome: w.trim() } : {}),
         ...(l?.trim() ? { leftWerk: l.trim() } : {}),
         ...(c?.trim() && !l?.trim() ? { leftWerk: c.trim() } : {}),
         ...(k?.trim() ? { werk: k.trim() } : {}),
-        ...(t?.trim() ? { tor: t.trim() } : {}), // nur diese Sitzung; wird nicht persistent gespeichert
       }))
     }
     urlParamsApplied.current = true
