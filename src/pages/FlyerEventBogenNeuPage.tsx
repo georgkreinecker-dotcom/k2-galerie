@@ -1,7 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import {
@@ -13,6 +12,7 @@ import {
   PRODUCT_WERBESLOGAN_2,
 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
+import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
@@ -25,9 +25,6 @@ function getK2Basics() {
   const defaults = K2_STAMMDATEN_DEFAULTS
   return {
     galleryName: gallery.name || defaults.gallery.name || 'K2 Galerie',
-    intro:
-      getPageTexts().galerie.welcomeIntroText ||
-      'Kunst und Keramik in einer klaren, ruhigen Galerie-Präsentation.',
     subtitle: `${martina.name || defaults.martina.name || 'Martina'} & ${georg.name || defaults.georg.name || 'Georg'}`,
     address: gallery.address || defaults.gallery.address || '',
     city: gallery.city || defaults.gallery.city || '',
@@ -49,12 +46,14 @@ export default function FlyerEventBogenNeuPage() {
   const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
-  const defaultTor = getEntdeckenHeroPathUrl() || '/img/oeffentlich/eingangstor.jpg'
+  const defaultTor = getEntdeckenHeroPathUrl() || '/img/k2/willkommen.jpg'
 
   const [leftSrc, setLeftSrc] = useState(defaultLeft)
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
   const [torSrc, setTorSrc] = useState(defaultTor)
+  const [leftWerkLabel, setLeftWerkLabel] = useState('Werk links (K2)')
+  const [rightWerkLabel, setRightWerkLabel] = useState('Werk rechts (K2)')
   const [torStatus, setTorStatus] = useState('Bereit')
   const [torEvents, setTorEvents] = useState(0)
 
@@ -62,10 +61,32 @@ export default function FlyerEventBogenNeuPage() {
     () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
     [versionTimestamp]
   )
-  const entdeckenQr = useMemo(
-    () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
+  const k2Qr = useMemo(
+    () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
     [versionTimestamp]
   )
+
+  useEffect(() => {
+    let active = true
+    void readArtworksForContextWithResolvedImages(false, false).then((list) => {
+      if (!active || !Array.isArray(list)) return
+      const withImage = list.filter((a) => typeof a?.imageUrl === 'string' && a.imageUrl.trim().length > 0)
+      if (withImage[0]?.imageUrl) {
+        setLeftSrc(withImage[0].imageUrl)
+        setLeftWerkLabel(withImage[0].number ? `Werk links: ${withImage[0].number}` : 'Werk links (K2)')
+      }
+      if (withImage[1]?.imageUrl) {
+        setRightSrc(withImage[1].imageUrl)
+        setRightWerkLabel(withImage[1].number ? `Werk rechts: ${withImage[1].number}` : 'Werk rechts (K2)')
+      } else if (withImage[0]?.imageUrl) {
+        setRightSrc(withImage[0].imageUrl)
+        setRightWerkLabel(withImage[0].number ? `Werk rechts: ${withImage[0].number}` : 'Werk rechts (K2)')
+      }
+    })
+    return () => {
+      active = false
+    }
+  }, [])
 
   const handleFrontUpload = (slot: 'left' | 'middle' | 'right', file: File | null) => {
     if (!file) return
@@ -120,7 +141,7 @@ export default function FlyerEventBogenNeuPage() {
         <h3>{PRODUCT_BRAND_NAME}</h3>
         <p>{PRODUCT_WERBESLOGAN}</p>
         <p>{PRODUCT_WERBESLOGAN_2}</p>
-        <img src={entdeckenQr} alt="QR Eingang" className="qr" />
+        <img src={k2Qr} alt="QR K2 Galerie" className="qr" />
         <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
         <small>{PRODUCT_URHEBER_ANWENDUNG}</small>
       </div>
@@ -173,16 +194,14 @@ export default function FlyerEventBogenNeuPage() {
 
       <div className="editor">
         <label>
-          Bild links (Seite 1)
-          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('left', e.currentTarget.files?.[0] || null)} />
-        </label>
-        <label>
           Bild mitte (Seite 1)
           <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)} />
         </label>
         <label>
-          Bild rechts (Seite 1)
-          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('right', e.currentTarget.files?.[0] || null)} />
+          {leftWerkLabel}
+        </label>
+        <label>
+          {rightWerkLabel}
         </label>
         <label>
           Tor-Bild (Seite 2, nur JPG/PNG/WEBP)
