@@ -30,16 +30,19 @@ describe('entdeckenHeroOverlayStorage – Hero-Pfad aus localStorage', () => {
 })
 
 describe('normalizeHeroImageUrlForOverlayMatch', () => {
-  it('entfernt Cache-Bust-Query', () => {
-    expect(normalizeHeroImageUrlForOverlayMatch('/img/x.jpg?v=123')).toBe('/img/x.jpg')
+  it('behält stabilen Versionsparameter v', () => {
+    expect(normalizeHeroImageUrlForOverlayMatch('/img/x.jpg?v=123')).toBe('/img/x.jpg?v=123')
   })
   it('lässt Pfad ohne Query unverändert', () => {
     expect(normalizeHeroImageUrlForOverlayMatch('/img/x.jpg')).toBe('/img/x.jpg')
   })
-  it('normiert absolute URL auf pathname (gleicher Abgleich wie bei /img/...)', () => {
+  it('normiert absolute URL auf pathname + v (gleicher Abgleich wie bei /img/...)', () => {
     expect(normalizeHeroImageUrlForOverlayMatch('https://k2-galerie.vercel.app/img/k2/tor.jpg?v=9')).toBe(
-      '/img/k2/tor.jpg'
+      '/img/k2/tor.jpg?v=9'
     )
     expect(normalizeHeroImageUrlForOverlayMatch('/img/k2/tor.jpg')).toBe('/img/k2/tor.jpg')
+  })
+  it('ignoriert fluechtigen _-Parameter', () => {
+    expect(normalizeHeroImageUrlForOverlayMatch('/img/k2/tor.jpg?v=9&_=123')).toBe('/img/k2/tor.jpg?v=9')
   })
 })

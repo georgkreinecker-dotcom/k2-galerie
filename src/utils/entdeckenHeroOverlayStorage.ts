@@ -16,21 +16,30 @@ const DEFAULT_HERO_PATH = '/img/oeffentlich/entdecken-hero.jpg'
 export const ENTDECKEN_HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 
 /**
- * Abgleich Overlay ↔ Hero: Cache-Bust `?v=` ignorieren; **http(s)-URLs** auf **pathname** normieren,
- * damit dieselbe Datei als `/img/…` und als `https://…/img/…` erkannt wird (Flyer/Entdecken/andere Tabs).
+ * Abgleich Overlay ↔ Hero:
+ * - absolute/relative URL auf denselben Pfad normieren
+ * - nur den stabilen Versions-Parameter `v` berücksichtigen
+ * - flüchtige Parameter (z. B. `_`) ignorieren
+ *
+ * So matcht `/img/x.jpg?v=1` mit `https://host/img/x.jpg?v=1`,
+ * aber nicht mit `/img/x.jpg?v=2` (wichtig gegen „altes Overlay bleibt aktiv“).
  */
 export function normalizeHeroImageUrlForOverlayMatch(url: string): string {
   const t = (url || '').trim()
   if (!t) return ''
-  const noQuery = t.indexOf('?') >= 0 ? t.slice(0, t.indexOf('?')) : t
-  if (noQuery.startsWith('http://') || noQuery.startsWith('https://')) {
-    try {
-      return new URL(noQuery).pathname || ''
-    } catch {
-      return noQuery
-    }
+  try {
+    const u = new URL(t, 'https://k2.local')
+    const path = u.pathname || ''
+    const v = (u.searchParams.get('v') || '').trim()
+    return v ? `${path}?v=${v}` : path
+  } catch {
+    const noHash = t.split('#')[0] || ''
+    const [path, query = ''] = noHash.split('?')
+    if (!query) return path
+    const parts = query.split('&').filter(Boolean)
+    const vPart = parts.find((p) => p.startsWith('v='))
+    return vPart ? `${path}?${vPart}` : path
   }
-  return noQuery
 }
 
 /** heroImageUrl = Basis-Pfad zum Hero zum Speicherzeitpunkt; bei anderem Pfad Overlay ignorieren (kein „altes“ Bild). */
