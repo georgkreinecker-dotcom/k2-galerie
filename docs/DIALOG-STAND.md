@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.03.26 – **Vierer-Flyer Tor wie Eingangstor (Datenfluss):** Problem war **nicht** die Foto-Größe, sondern (1) Overlay-Abgleich: **absolute URL vs. `/img/…`** → Overlay wirkte „weg“; **Fix:** `normalizeHeroImageUrlForOverlayMatch` normiert http(s) auf **pathname**. (2) Flyer-Tab bekam Änderungen aus **anderem Tab/Admin** nicht: **`storage`** auf `k2-page-content-entdecken` → Tor neu laden. (3) Flyer-Fotos: dieselbe Kompression wie Eingangsseite (**`pageHero`**), kein separates „Flyer-Kachel“-Profil mehr. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`entdeckenHeroOverlayStorage.test.ts`**. **Commit:** _nach Push_
+**Letzter Stand:** 26.03.26 – **Vierer-Flyer Tor wie Eingangstor (Datenfluss):** Problem war **nicht** die Foto-Größe, sondern (1) Overlay-Abgleich: **absolute URL vs. `/img/…`** → Overlay wirkte „weg“; **Fix:** `normalizeHeroImageUrlForOverlayMatch` normiert http(s) auf **pathname**. (2) Flyer-Tab bekam Änderungen aus **anderem Tab/Admin** nicht: **`storage`** auf `k2-page-content-entdecken` → Tor neu laden. (3) Flyer-Fotos: dieselbe Kompression wie Eingangsseite (**`pageHero`**), kein separates „Flyer-Kachel“-Profil mehr. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`entdeckenHeroOverlayStorage.test.ts`**. **Commit:** `4780e2d` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Eingangstor in Design ändern oder anderes Tab – Flyer neu öffnen: Rückseite = wie /entdecken; optional Foto Mitte/Tor erneut wählen (Qualität wie zuvor am Tor).
 
