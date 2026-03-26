@@ -1,6 +1,6 @@
 /**
  * Vierer-Bogen A4: doppelseitig drucken, 4 gleiche Flyer pro Seite.
- * Optional: Hinweisnotiz zur Eventeröffnung auf der Vorderseite (umschaltbar, Text in localStorage).
+ * Optional: Hinweisnotiz zur Eventeröffnung neben dem Galerie-QR in Signalfarbe (umschaltbar, Text in localStorage).
  * URL (einmalig): ?eventHinweis=1 & ehh=… & eht=… (Kurz: eh, eventHinweisHeadline, eventHinweisText).
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild wie EntdeckenPage (Pfad + IndexedDB-Overlay), K2-Slogans groß, Werbetext klein darunter, QR /entdecken.
@@ -45,7 +45,7 @@ import { readArtworksForContextWithResolvedImages } from '../utils/artworksStora
 const ROOT = 'flyer-k2-oek2-vierer'
 /** Manuelle Bild-URLs (leer = aus K2/Galerie). Persistiert für nächsten Besuch. */
 const FLYER_IMG_OVERRIDES_KEY = 'k2-flyer-vierer-image-overrides'
-/** Option „Event-Hinweis“ auf der Vorderseite jedes Streifens (wiederverwendbarer Bogen). */
+/** Option „Event-Hinweis“ neben dem Galerie-QR auf jedem Streifen (wiederverwendbarer Bogen). */
 const FLYER_EVENT_HINWEIS_KEY = 'k2-flyer-vierer-event-hinweis'
 type FlyerImgOverrides = {
   /** Linkes Streifenfoto: Bild-URL zum gewählten Werk (wie rechts). */
@@ -150,34 +150,30 @@ const styles = `
     background: #fdfcfa;
     background-image: linear-gradient(180deg, #fffefb 0%, #f7f4ef 100%);
   }
-  /* Option: Hinweis zur Eventeröffnung oben auf dem Streifen (wie aufgeklebte Notiz) */
-  .${ROOT} .cell-front .front-event-strip {
+  /* Event-Hinweis rechts neben dem Galerie-QR (Signalfarbe, gut lesbar auf hellem Grund) */
+  .${ROOT} .cell-front .front-event-beside-qr {
     flex-shrink: 0;
-    margin: 0 0 1.8mm 0;
-    padding: 1.4mm 2.2mm;
-    background: linear-gradient(90deg, rgba(212,165,116,0.28) 0%, rgba(15,118,110,0.1) 100%);
-    border: 1px solid rgba(12,92,85,0.22);
-    border-radius: 1.5mm;
-    box-shadow: 0 0.5mm 1.5mm rgba(28,26,24,0.06);
-    max-height: 11mm;
-    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
-  .${ROOT} .cell-front .front-event-strip .front-event-head {
+  .${ROOT} .cell-front .front-event-beside-qr .front-event-head {
     margin: 0 0 0.35mm;
     font-size: 7pt;
     font-weight: 700;
-    color: ${TEAL_DARK};
-    line-height: 1.12;
+    color: #b54a1e;
+    line-height: 1.15;
     font-family: ${FONT_SANS};
   }
-  .${ROOT} .cell-front .front-event-strip .front-event-body {
+  .${ROOT} .cell-front .front-event-beside-qr .front-event-body {
     margin: 0;
     font-size: 6pt;
-    line-height: 1.22;
-    color: #2c2825;
+    line-height: 1.25;
+    color: #9a3412;
     white-space: pre-wrap;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -232,7 +228,10 @@ const styles = `
   }
   .${ROOT} .cell-front .k2qr-row {
     margin-top: 1.5mm; padding-top: 1.5mm; border-top: 1px solid rgba(12,92,85,0.12);
-    display: flex; align-items: center; gap: 2.5mm; flex-wrap: nowrap;
+    display: flex; align-items: flex-start; gap: 2mm; flex-wrap: nowrap;
+  }
+  .${ROOT} .cell-front .k2qr-row-main {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.2mm; justify-content: center;
   }
   .${ROOT} .cell-front .k2qr {
     flex-shrink: 0; width: 17mm; height: 17mm; background: #fff; padding: 0.7mm;
@@ -376,13 +375,18 @@ const styles = `
     }
     .${ROOT} .cell-front .front-main { min-height: 0 !important; }
     .${ROOT} .cell-front .thumb-strip { min-height: 0 !important; }
-    .${ROOT} .cell-front .front-event-strip {
-      max-height: 10mm !important;
-      margin-bottom: 1mm !important;
-      transform: none !important;
+    .${ROOT} .cell-front .front-event-beside-qr .front-event-head {
+      font-size: 6.5pt !important;
+      color: #b54a1e !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
-    .${ROOT} .cell-front .front-event-strip .front-event-head { font-size: 6.5pt !important; }
-    .${ROOT} .cell-front .front-event-strip .front-event-body { font-size: 5.5pt !important; }
+    .${ROOT} .cell-front .front-event-beside-qr .front-event-body {
+      font-size: 5.5pt !important;
+      color: #9a3412 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
     .${ROOT} .cell-front .front-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .${ROOT} .cell-back .tor-tablet { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -628,6 +632,9 @@ export default function FlyerK2Oek2TorViererPage() {
   const [flyerFileSessionReady, setFlyerFileSessionReady] = useState(false)
   const welcomeFileInputRef = useRef<HTMLInputElement>(null)
   const torFileInputRef = useRef<HTMLInputElement>(null)
+  /** Schutz gegen Race: späteres IDB-Load darf eine frische Nutzer-Auswahl nicht überschreiben. */
+  const welcomeFileTouchedRef = useRef(false)
+  const torFileTouchedRef = useRef(false)
 
   const initialEventHinweis = useMemo(() => loadFlyerEventHinweisFromStorage(), [])
   const [eventHinweisActive, setEventHinweisActive] = useState(initialEventHinweis.active)
@@ -651,8 +658,8 @@ export default function FlyerK2Oek2TorViererPage() {
           loadFlyerViererFileSlot('tor'),
         ])
         if (cancelled) return
-        if (w) setWelcomeFromFile(w)
-        if (t) setTorFromFile(t)
+        if (w && !welcomeFileTouchedRef.current) setWelcomeFromFile(w)
+        if (t && !torFileTouchedRef.current) setTorFromFile(t)
       } catch {
         /* */
       } finally {
@@ -1087,7 +1094,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 checked={eventHinweisActive}
                 onChange={(e) => setEventHinweisActive(e.target.checked)}
               />
-              Hinweis zur Eventeröffnung auf der Vorderseite (jeder Streifen)
+              Hinweis zur Eventeröffnung neben dem Galerie-QR (jeder Streifen)
             </label>
             <p className="hint" style={{ marginTop: 6 }}>
               Abschaltbar – derselbe Bogen bleibt ohne Häkchen neutral. Text wird gespeichert (dieses Gerät). Vom
@@ -1143,7 +1150,7 @@ export default function FlyerK2Oek2TorViererPage() {
             {eventHinweisActive ? (
               <>
                 {' '}
-                <strong>Event-Hinweis</strong> ist an – oben auf jedem Vorder-Streifen erscheint die Notiz beim Drucken.
+                <strong>Event-Hinweis</strong> ist an – neben dem Galerie-QR (Signalfarbe) erscheint die Notiz beim Drucken.
               </>
             ) : null}
           </p>
@@ -1237,6 +1244,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 const f = e.target.files?.[0]
                 e.target.value = ''
                 if (!f || !f.type.startsWith('image/')) return
+                welcomeFileTouchedRef.current = true
                 setWelcomeCompressing(true)
                 try {
                   const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
@@ -1262,7 +1270,10 @@ export default function FlyerK2Oek2TorViererPage() {
                   <button
                     type="button"
                     className="danger"
-                    onClick={() => setWelcomeFromFile(null)}
+                    onClick={() => {
+                      welcomeFileTouchedRef.current = true
+                      setWelcomeFromFile(null)
+                    }}
                   >
                     Foto entfernen
                   </button>
@@ -1337,6 +1348,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 const f = e.target.files?.[0]
                 e.target.value = ''
                 if (!f || !f.type.startsWith('image/')) return
+                torFileTouchedRef.current = true
                 setTorCompressing(true)
                 try {
                   const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
@@ -1359,7 +1371,14 @@ export default function FlyerK2Oek2TorViererPage() {
               {torFromFile ? (
                 <>
                   <img className="file-thumb" src={torFromFile} alt="" />
-                  <button type="button" className="danger" onClick={() => setTorFromFile(null)}>
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() => {
+                      torFileTouchedRef.current = true
+                      setTorFromFile(null)
+                    }}
+                  >
                     Foto entfernen
                   </button>
                   <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Aktiv: Datei (geht vor Textfeld)</span>
@@ -1372,6 +1391,8 @@ export default function FlyerK2Oek2TorViererPage() {
           <button
             type="button"
             onClick={() => {
+              welcomeFileTouchedRef.current = true
+              torFileTouchedRef.current = true
               setImgOverride({})
               setWelcomeFromFile(null)
               setTorFromFile(null)
@@ -1400,18 +1421,7 @@ export default function FlyerK2Oek2TorViererPage() {
 
       <section className="sheet" aria-label="Vorderseite vier Flyer K2 Galerie">
         {SLOTS.map((i) => (
-          <div
-            key={`f-${i}`}
-            className={`cell cell-front${eventHinweisActive ? ' has-event-strip' : ''}`}
-          >
-            {eventHinweisActive ? (
-              <div className="front-event-strip" role="note">
-                <p className="front-event-head">{eventHinweisHeadline.trim() || 'Einladung · Event'}</p>
-                {eventHinweisBody.trim() ? (
-                  <p className="front-event-body">{eventHinweisBody.trim()}</p>
-                ) : null}
-              </div>
-            ) : null}
+          <div key={`f-${i}`} className="cell cell-front">
             <div className="front-top">
               <div className="front-accent" aria-hidden />
               <div className="front-head">
@@ -1455,9 +1465,19 @@ export default function FlyerK2Oek2TorViererPage() {
                   QR…
                 </div>
               )}
-              <div className="k2qr-cap">
-                <span className="k2qr-cta">Zur Galerie</span>
-                Code scannen – die Galerie online öffnen.
+              <div className="k2qr-row-main">
+                {eventHinweisActive ? (
+                  <div className="front-event-beside-qr" role="note">
+                    <p className="front-event-head">{eventHinweisHeadline.trim() || 'Einladung · Event'}</p>
+                    {eventHinweisBody.trim() ? (
+                      <p className="front-event-body">{eventHinweisBody.trim()}</p>
+                    ) : null}
+                  </div>
+                ) : null}
+                <div className="k2qr-cap">
+                  <span className="k2qr-cta">Zur Galerie</span>
+                  Code scannen – die Galerie online öffnen.
+                </div>
               </div>
             </div>
             <div className="foot">
