@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
-import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import {
   K2_STAMMDATEN_DEFAULTS,
   PRODUCT_BRAND_NAME,
@@ -25,6 +25,9 @@ function getK2Basics() {
   const defaults = K2_STAMMDATEN_DEFAULTS
   return {
     galleryName: gallery.name || defaults.gallery.name || 'K2 Galerie',
+    intro:
+      getPageTexts().galerie.welcomeIntroText ||
+      'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
     subtitle: `${martina.name || defaults.martina.name || 'Martina'} & ${georg.name || defaults.georg.name || 'Georg'}`,
     address: gallery.address || defaults.gallery.address || '',
     city: gallery.city || defaults.gallery.city || '',
@@ -37,6 +40,13 @@ function normalizeFileToUrl(file: File): string {
   return URL.createObjectURL(file)
 }
 
+function isAllowedTorFile(file: File): boolean {
+  const mime = (file.type || '').toLowerCase()
+  if (mime === 'image/jpeg' || mime === 'image/png' || mime === 'image/webp') return true
+  const name = (file.name || '').toLowerCase()
+  return /\.(jpg|jpeg|png|webp)$/i.test(name)
+}
+
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -46,7 +56,7 @@ export default function FlyerEventBogenNeuPage() {
   const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
-  const defaultTor = getEntdeckenHeroPathUrl() || '/img/k2/willkommen.jpg'
+  const defaultTor = '/img/k2/tor-rueckseite-k2.png'
 
   const [leftSrc, setLeftSrc] = useState(defaultLeft)
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
@@ -99,7 +109,7 @@ export default function FlyerEventBogenNeuPage() {
 
   const handleTorUpload = (file: File | null) => {
     if (!file) return
-    const ok = ['image/jpeg', 'image/png', 'image/webp'].includes((file.type || '').toLowerCase())
+    const ok = isAllowedTorFile(file)
     if (!ok) {
       setTorStatus('Nur JPG/PNG/WEBP erlaubt')
       return
@@ -122,15 +132,7 @@ export default function FlyerEventBogenNeuPage() {
           <img src={middleSrc} alt="" />
           <img src={rightSrc} alt="" />
         </div>
-        <p className="sub">Martina &amp; Georg Kreinecker</p>
-        <div className="row">
-          <img src={galleryQr} alt="QR Galerie" className="qr" />
-          <div>
-            <p>Zur Galerie</p>
-            <p>Code scannen - die Galerie online öffnen.</p>
-            <p>{base.address} · {[base.city, base.phone].filter(Boolean).join(' · ')} · {base.email}</p>
-          </div>
-        </div>
+        <p className="intro">{base.intro}</p>
       </div>
     </div>
   )
