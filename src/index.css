@@ -83,9 +83,6 @@ a {
   /* Standard: Nur #root anzeigen (Flyer/Seiten drucken) */
   body > * { display: none !important; }
   #root { display: block !important; min-height: auto !important; padding-bottom: 12mm !important; }
-  /* Vierer-Flyer A4: keine fixe Fußzeile – sonst weniger Platz + riskante Seitenumbrüche in Safari */
-  body:has(.flyer-k2-oek2-vierer) #root { padding-bottom: 0 !important; }
-  body:has(.flyer-k2-oek2-vierer) #print-footer { display: none !important; }
   /* Globale Druck-Fußzeile: Dokumentenersteller | Druckdatum (Inhalt wird per JS gesetzt) */
   #print-footer {
     display: flex !important;

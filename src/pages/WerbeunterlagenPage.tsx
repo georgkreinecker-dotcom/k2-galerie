@@ -298,16 +298,6 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               </ul>
             </div>
           </div>
-          <p className={PRINT_HIDE} style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.5 }}>
-            <strong>K2 Galerie + ök2-Tor (Vierer-Bogen A4):</strong>{' '}
-            <Link
-              to={PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + (modus === 'oek2' ? '?context=oeffentlich' : '')}
-              style={{ color: s.accent, fontWeight: 600 }}
-            >
-              Vierer-Flyer öffnen
-            </Link>
-            {' '}– vier Streifen pro Seite, Vorderseite K2, Rückseite Eingangstor mit QR.
-          </p>
         </section>
 
         {/* Weiterführender Link & QR-Code zum Eingangstor (Zugangsbereich) */}

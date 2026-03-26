@@ -4,7 +4,7 @@
  * artwork = für Werke in localStorage (viele Bilder → klein halten).
  */
 
-export type CompressContext = 'mobile' | 'desktop' | 'artwork' | 'pageHero' | 'flyerVierer'
+export type CompressContext = 'mobile' | 'desktop' | 'artwork' | 'pageHero'
 
 export interface CompressImageOptions {
   /** Kontext: mobile = stärker, desktop = Standard, artwork = für Werke (localStorage) */
@@ -34,8 +34,6 @@ const DEFAULTS: Record<CompressContext, CompressDefaults> = {
    */
   artwork: { maxWidth: 960, quality: 0.72, maxBytes: 420_000, minQuality: 0.5 },
   pageHero: { maxWidth: 1920, quality: 0.82 },
-  /** Vierer-Flyer Mitte/Tor: klein genug für IDB, aber für Druck noch ok (Regel: komprimieren). */
-  flyerVierer: { maxWidth: 1000, quality: 0.68, maxBytes: 320_000, minQuality: 0.45 },
 }
 
 /**

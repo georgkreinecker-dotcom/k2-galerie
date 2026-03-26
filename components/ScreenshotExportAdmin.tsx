@@ -21388,8 +21388,7 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung:
-                                  'Jetzt erstellen: Handzettel aus Event-Daten — oder Vierer-Bogen A4 (Galerie vorn, Demo-Einstieg hinten).',
+                                beschreibung: 'Jetzt erstellen: Handzettel aus Event-Daten.',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21403,96 +21402,6 @@ ${name}`
                                       generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
                                     },
                                   },
-                                  ...(tenant.isVk2
-                                    ? []
-                                    : [
-                                        {
-                                          label: 'Vierer-Bogen A4 (K2 / ök2-Tor)',
-                                          onErstellen: () => {
-                                            navigateFromOeffentlichkeitsarbeitOverlay(
-                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
-                                            )
-                                          },
-                                        },
-                                        {
-                                          label: 'Vierer-Bogen – neuer Tab',
-                                          onErstellen: () => {
-                                            closeOeffentlichkeitsarbeitFullscreenOverlay()
-                                            try {
-                                              window.open(
-                                                BASE_APP_URL +
-                                                  PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer +
-                                                  mappeCtxQs,
-                                                '_blank',
-                                                'noopener,noreferrer'
-                                              )
-                                            } catch {
-                                              /* noop */
-                                            }
-                                          },
-                                        },
-                                        {
-                                          label: 'Vierer-Bogen mit Event-Hinweis',
-                                          onErstellen: () => {
-                                            const ev = events.find((e: any) => e.id === event.id)
-                                            if (!ev) return
-                                            const dateStr = formatEventTerminKomplett(ev, {
-                                              mode: 'long',
-                                              emptyFallback: 'Datum folgt',
-                                              withClockEmojiSingle: true,
-                                            })
-                                            const title = String(ev.title || 'Veranstaltung').trim()
-                                            const hHead = (title || 'Einladung · Veranstaltung').slice(0, 80)
-                                            const body = `${title}\n${dateStr}`.slice(0, 280)
-                                            const base =
-                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
-                                            const joiner = base.includes('?') ? '&' : '?'
-                                            const pathWithQs =
-                                              base +
-                                              joiner +
-                                              'eventHinweis=1&ehh=' +
-                                              encodeURIComponent(hHead) +
-                                              '&eht=' +
-                                              encodeURIComponent(body)
-                                            navigateFromOeffentlichkeitsarbeitOverlay(pathWithQs)
-                                          },
-                                        },
-                                        {
-                                          label: 'Vierer-Bogen mit Event-Hinweis – neuer Tab',
-                                          onErstellen: () => {
-                                            const ev = events.find((e: any) => e.id === event.id)
-                                            if (!ev) return
-                                            const dateStr = formatEventTerminKomplett(ev, {
-                                              mode: 'long',
-                                              emptyFallback: 'Datum folgt',
-                                              withClockEmojiSingle: true,
-                                            })
-                                            const title = String(ev.title || 'Veranstaltung').trim()
-                                            const hHead = (title || 'Einladung · Veranstaltung').slice(0, 80)
-                                            const body = `${title}\n${dateStr}`.slice(0, 280)
-                                            const base =
-                                              PROJECT_ROUTES['k2-galerie'].flyerK2Oek2TorVierer + mappeCtxQs
-                                            const joiner = base.includes('?') ? '&' : '?'
-                                            const pathWithQs =
-                                              base +
-                                              joiner +
-                                              'eventHinweis=1&ehh=' +
-                                              encodeURIComponent(hHead) +
-                                              '&eht=' +
-                                              encodeURIComponent(body)
-                                            closeOeffentlichkeitsarbeitFullscreenOverlay()
-                                            try {
-                                              window.open(
-                                                BASE_APP_URL + pathWithQs,
-                                                '_blank',
-                                                'noopener,noreferrer'
-                                              )
-                                            } catch {
-                                              /* noop */
-                                            }
-                                          },
-                                        },
-                                      ]),
                                 ],
                               },
                               {
