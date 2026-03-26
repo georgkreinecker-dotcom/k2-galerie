@@ -33,6 +33,7 @@ import PraesentationsmappePage from './pages/PraesentationsmappePage'
 import PraesentationsmappeVollversionPage from './pages/PraesentationsmappeVollversionPage'
 import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage'
 import PlakatGalerieeroeffnungPage from './pages/PlakatGalerieeroeffnungPage'
+import FlyerEventBogenNeuPage from './pages/FlyerEventBogenNeuPage'
 import PilotStartPage from './pages/PilotStartPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
@@ -840,6 +841,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung} element={<ProspektGalerieeroeffnungPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung} element={<PlakatGalerieeroeffnungPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} element={<FlyerEventBogenNeuPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />

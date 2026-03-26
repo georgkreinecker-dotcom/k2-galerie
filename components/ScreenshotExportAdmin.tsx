@@ -21388,7 +21388,7 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Jetzt erstellen: Handzettel aus Event-Daten.',
+                                beschreibung: 'Jetzt erstellen: Handzettel aus Event-Daten oder neuer Event-Bogen.',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21402,6 +21402,18 @@ ${name}`
                                       generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
                                     },
                                   },
+                                  ...(tenant.isVk2
+                                    ? []
+                                    : [
+                                        {
+                                          label: 'Event-Bogen (Neuaufbau)',
+                                          onErstellen: () => {
+                                            navigateFromOeffentlichkeitsarbeitOverlay(
+                                              PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                            )
+                                          },
+                                        },
+                                      ]),
                                 ],
                               },
                               {
