@@ -1,6 +1,6 @@
 /**
  * Vierer-Bogen A4: doppelseitig drucken, 4 gleiche Flyer pro Seite.
- * Optional: Hinweisnotiz zur Eventeröffnung neben dem Galerie-QR in Signalfarbe (umschaltbar, Text in localStorage).
+ * Optional: Hinweisnotiz zur Eventeröffnung unten rechts (eigenes Feld, Signalfarbe; umschaltbar, Text in localStorage).
  * URL (einmalig): ?eventHinweis=1 & ehh=… & eht=… (Kurz: eh, eventHinweisHeadline, eventHinweisText).
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild wie EntdeckenPage (Pfad + IndexedDB-Overlay), K2-Slogans groß, Werbetext klein darunter, QR /entdecken.
@@ -45,7 +45,7 @@ import { readArtworksForContextWithResolvedImages } from '../utils/artworksStora
 const ROOT = 'flyer-k2-oek2-vierer'
 /** Manuelle Bild-URLs (leer = aus K2/Galerie). Persistiert für nächsten Besuch. */
 const FLYER_IMG_OVERRIDES_KEY = 'k2-flyer-vierer-image-overrides'
-/** Option „Event-Hinweis“ neben dem Galerie-QR auf jedem Streifen (wiederverwendbarer Bogen). */
+/** Option „Event-Hinweis“ unten rechts auf jedem Streifen (wiederverwendbarer Bogen). */
 const FLYER_EVENT_HINWEIS_KEY = 'k2-flyer-vierer-event-hinweis'
 type FlyerImgOverrides = {
   /** Linkes Streifenfoto: Bild-URL zum gewählten Werk (wie rechts). */
@@ -150,15 +150,33 @@ const styles = `
     background: #fdfcfa;
     background-image: linear-gradient(180deg, #fffefb 0%, #f7f4ef 100%);
   }
-  /* Event-Hinweis rechts neben dem Galerie-QR (Signalfarbe, gut lesbar auf hellem Grund) */
-  .${ROOT} .cell-front .front-event-beside-qr {
+  /* Event-Hinweis: eigenes Feld unten rechts (nicht in der QR-Zeile) */
+  .${ROOT} .cell-front .front-bottom {
+    margin-top: 1.5mm;
+    padding-top: 1.5mm;
+    border-top: 1px solid rgba(12,92,85,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.2mm;
     flex-shrink: 0;
+    min-height: 0;
+  }
+  .${ROOT} .cell-front .front-event-corner {
+    align-self: flex-end;
+    max-width: 46mm;
+    min-width: 0;
     margin: 0;
-    padding: 0;
+    padding: 1.1mm 1.4mm;
+    background: rgba(255, 254, 251, 0.95);
+    border: 1px solid rgba(181, 74, 30, 0.38);
+    border-radius: 1.5mm;
+    box-shadow: 0 0.4mm 1.2mm rgba(28, 26, 24, 0.06);
+    text-align: left;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  .${ROOT} .cell-front .front-event-beside-qr .front-event-head {
+  .${ROOT} .cell-front .front-event-corner .front-event-head {
     margin: 0 0 0.35mm;
     font-size: 7pt;
     font-weight: 700;
@@ -166,14 +184,14 @@ const styles = `
     line-height: 1.15;
     font-family: ${FONT_SANS};
   }
-  .${ROOT} .cell-front .front-event-beside-qr .front-event-body {
+  .${ROOT} .cell-front .front-event-corner .front-event-body {
     margin: 0;
     font-size: 6pt;
     line-height: 1.25;
     color: #9a3412;
     white-space: pre-wrap;
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -227,11 +245,10 @@ const styles = `
     text-align: left;
   }
   .${ROOT} .cell-front .k2qr-row {
-    margin-top: 1.5mm; padding-top: 1.5mm; border-top: 1px solid rgba(12,92,85,0.12);
+    margin: 0;
+    padding: 0;
+    border: none;
     display: flex; align-items: flex-start; gap: 2mm; flex-wrap: nowrap;
-  }
-  .${ROOT} .cell-front .k2qr-row-main {
-    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1.2mm; justify-content: center;
   }
   .${ROOT} .cell-front .k2qr {
     flex-shrink: 0; width: 17mm; height: 17mm; background: #fff; padding: 0.7mm;
@@ -375,13 +392,17 @@ const styles = `
     }
     .${ROOT} .cell-front .front-main { min-height: 0 !important; }
     .${ROOT} .cell-front .thumb-strip { min-height: 0 !important; }
-    .${ROOT} .cell-front .front-event-beside-qr .front-event-head {
+    .${ROOT} .cell-front .front-event-corner {
+      max-width: 44mm !important;
+      padding: 1mm 1.2mm !important;
+    }
+    .${ROOT} .cell-front .front-event-corner .front-event-head {
       font-size: 6.5pt !important;
       color: #b54a1e !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    .${ROOT} .cell-front .front-event-beside-qr .front-event-body {
+    .${ROOT} .cell-front .front-event-corner .front-event-body {
       font-size: 5.5pt !important;
       color: #9a3412 !important;
       -webkit-print-color-adjust: exact !important;
@@ -797,7 +818,7 @@ export default function FlyerK2Oek2TorViererPage() {
     setTorTheme({ bgDark: c.bgDark, bgMid: c.bgMid, accent: c.accent })
   }, [])
 
-  /** Tor-Bild wie /entdecken: Pfad + IndexedDB-Overlay, bei Änderung der Eingangsseite neu laden. */
+  /** Tor-Bild wie /entdecken: Pfad + IndexedDB-Overlay; gleicher Ablauf wie EntdeckenPage + Tab-Wechsel. */
   const torOverlayLoadGenRef = useRef(0)
   useEffect(() => {
     let cancelled = false
@@ -818,9 +839,15 @@ export default function FlyerK2Oek2TorViererPage() {
     }
     refresh()
     window.addEventListener('k2-page-content-entdecken-updated', refresh)
+    /** Anderes Tab/Fenster: Admin speichert localStorage → ohne diesen Listener bleibt der Flyer auf altem Tor. */
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'k2-page-content-entdecken') refresh()
+    }
+    window.addEventListener('storage', onStorage)
     return () => {
       cancelled = true
       window.removeEventListener('k2-page-content-entdecken-updated', refresh)
+      window.removeEventListener('storage', onStorage)
     }
   }, [])
 
@@ -1002,12 +1029,7 @@ export default function FlyerK2Oek2TorViererPage() {
 
   const addrLine = [stammdaten.address, [stammdaten.city, stammdaten.country].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
   const kontaktKurz = [stammdaten.phone, stammdaten.email].filter(Boolean).join(' · ')
-  const estimateDataUrlBytes = (dataUrl: string) => {
-    const comma = dataUrl.indexOf(',')
-    if (comma < 0) return dataUrl.length
-    const b64 = dataUrl.slice(comma + 1)
-    return Math.floor((b64.length * 3) / 4)
-  }
+  /** Wie Design → Eingangsseite (pageHero): gleiche Qualität wie Eingangstor, nicht extra „Flyer-Kachel“-Profil. */
   const prepareFlyerFileDataUrl = async (file: File): Promise<string> => {
     const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> =>
       new Promise<T>((resolve, reject) => {
@@ -1022,12 +1044,7 @@ export default function FlyerK2Oek2TorViererPage() {
             reject(e)
           })
       })
-    const dataUrl = await withTimeout(compressImageForStorage(file, { context: 'flyerVierer' }), 15000)
-    const bytes = estimateDataUrlBytes(dataUrl)
-    if (bytes > 420_000) {
-      throw new Error('Bild ist trotz Komprimierung noch zu groß')
-    }
-    return dataUrl
+    return withTimeout(compressImageForStorage(file, { context: 'pageHero' }), 90_000)
   }
 
   return (
@@ -1121,7 +1138,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 checked={eventHinweisActive}
                 onChange={(e) => setEventHinweisActive(e.target.checked)}
               />
-              Hinweis zur Eventeröffnung neben dem Galerie-QR (jeder Streifen)
+              Hinweis zur Eventeröffnung unten rechts (jeder Streifen)
             </label>
             <p className="hint" style={{ marginTop: 6 }}>
               Abschaltbar – derselbe Bogen bleibt ohne Häkchen neutral. Text wird gespeichert (dieses Gerät). Vom
@@ -1177,7 +1194,7 @@ export default function FlyerK2Oek2TorViererPage() {
             {eventHinweisActive ? (
               <>
                 {' '}
-                <strong>Event-Hinweis</strong> ist an – neben dem Galerie-QR (Signalfarbe) erscheint die Notiz beim Drucken.
+                <strong>Event-Hinweis</strong> ist an – unten rechts erscheint ein eigenes Feld (Signalfarbe) beim Drucken.
               </>
             ) : null}
           </p>
@@ -1486,30 +1503,30 @@ export default function FlyerK2Oek2TorViererPage() {
               </div>
             </div>
             <p className="front-kunst">{K2_TAGLINE}</p>
-            <div className="k2qr-row">
-              {qrK2GalerieDataUrl ? (
-                <div className="k2qr">
-                  <img src={qrK2GalerieDataUrl} alt="" />
-                </div>
-              ) : (
-                <div className="k2qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5, color: '#666' }}>
-                  QR…
-                </div>
-              )}
-              <div className="k2qr-row-main">
-                {eventHinweisActive ? (
-                  <div className="front-event-beside-qr" role="note">
-                    <p className="front-event-head">{eventHinweisHeadline.trim() || 'Einladung · Event'}</p>
-                    {eventHinweisBody.trim() ? (
-                      <p className="front-event-body">{eventHinweisBody.trim()}</p>
-                    ) : null}
+            <div className="front-bottom">
+              <div className="k2qr-row">
+                {qrK2GalerieDataUrl ? (
+                  <div className="k2qr">
+                    <img src={qrK2GalerieDataUrl} alt="" />
                   </div>
-                ) : null}
+                ) : (
+                  <div className="k2qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 5, color: '#666' }}>
+                    QR…
+                  </div>
+                )}
                 <div className="k2qr-cap">
                   <span className="k2qr-cta">Zur Galerie</span>
                   Code scannen – die Galerie online öffnen.
                 </div>
               </div>
+              {eventHinweisActive ? (
+                <div className="front-event-corner" role="note">
+                  <p className="front-event-head">{eventHinweisHeadline.trim() || 'Einladung · Event'}</p>
+                  {eventHinweisBody.trim() ? (
+                    <p className="front-event-body">{eventHinweisBody.trim()}</p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
             <div className="foot">
               {PRODUCT_COPYRIGHT_BRAND_ONLY}

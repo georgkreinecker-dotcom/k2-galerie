@@ -15,12 +15,22 @@ const DEFAULT_HERO_PATH = '/img/oeffentlich/entdecken-hero.jpg'
 
 export const ENTDECKEN_HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 
-/** Abgleich Overlay ↔ Hero: Cache-Bust `?v=` ignorieren (sonst verwirft load nach Upload das frische Overlay). */
+/**
+ * Abgleich Overlay ↔ Hero: Cache-Bust `?v=` ignorieren; **http(s)-URLs** auf **pathname** normieren,
+ * damit dieselbe Datei als `/img/…` und als `https://…/img/…` erkannt wird (Flyer/Entdecken/andere Tabs).
+ */
 export function normalizeHeroImageUrlForOverlayMatch(url: string): string {
   const t = (url || '').trim()
   if (!t) return ''
-  const q = t.indexOf('?')
-  return q >= 0 ? t.slice(0, q) : t
+  const noQuery = t.indexOf('?') >= 0 ? t.slice(0, t.indexOf('?')) : t
+  if (noQuery.startsWith('http://') || noQuery.startsWith('https://')) {
+    try {
+      return new URL(noQuery).pathname || ''
+    } catch {
+      return noQuery
+    }
+  }
+  return noQuery
 }
 
 /** heroImageUrl = Basis-Pfad zum Hero zum Speicherzeitpunkt; bei anderem Pfad Overlay ignorieren (kein „altes“ Bild). */

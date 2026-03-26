@@ -36,4 +36,10 @@ describe('normalizeHeroImageUrlForOverlayMatch', () => {
   it('lässt Pfad ohne Query unverändert', () => {
     expect(normalizeHeroImageUrlForOverlayMatch('/img/x.jpg')).toBe('/img/x.jpg')
   })
+  it('normiert absolute URL auf pathname (gleicher Abgleich wie bei /img/...)', () => {
+    expect(normalizeHeroImageUrlForOverlayMatch('https://k2-galerie.vercel.app/img/k2/tor.jpg?v=9')).toBe(
+      '/img/k2/tor.jpg'
+    )
+    expect(normalizeHeroImageUrlForOverlayMatch('/img/k2/tor.jpg')).toBe('/img/k2/tor.jpg')
+  })
 })
