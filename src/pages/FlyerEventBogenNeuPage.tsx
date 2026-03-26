@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import {
@@ -20,6 +20,8 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 
 const ROOT = 'flyer-event-bogen-neu'
 const SLOTS = [1, 2, 3, 4] as const
+const LEFT_WORK_KEY = 'k2-flyer-event-bogen-left-work'
+const RIGHT_WORK_KEY = 'k2-flyer-event-bogen-right-work'
 
 function getK2Basics() {
   const gallery = loadStammdaten('k2', 'gallery')
@@ -75,17 +77,15 @@ export default function FlyerEventBogenNeuPage() {
   const [frontQrDataUrl, setFrontQrDataUrl] = useState('')
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
   const [eventDateLine, setEventDateLine] = useState('Termin folgt')
+  const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
+  const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
-  const galleryQr = useMemo(
-    () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
-    [versionTimestamp]
-  )
   const k2Qr = useMemo(
-    () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
+    () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
     [versionTimestamp]
   )
   const oek2TorQr = useMemo(
-    () => buildQrUrlWithBust(window.location.origin + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
+    () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
     [versionTimestamp]
   )
 
@@ -121,20 +121,27 @@ export default function FlyerEventBogenNeuPage() {
       if (!active || !Array.isArray(list)) return
       const withImage = list.filter((a) => typeof a?.imageUrl === 'string' && a.imageUrl.trim().length > 0)
       setK2Works(withImage)
-      if (withImage[0]?.imageUrl) {
-        setLeftSrc(withImage[0].imageUrl)
-        const n = withImage[0].number || ''
+      const savedLeft = localStorage.getItem(LEFT_WORK_KEY) || ''
+      const savedRight = localStorage.getItem(RIGHT_WORK_KEY) || ''
+      const leftItem =
+        withImage.find((w) => String(w?.number || '') === savedLeft) ||
+        withImage[0] ||
+        null
+      const rightItem =
+        withImage.find((w) => String(w?.number || '') === savedRight) ||
+        withImage[1] ||
+        withImage[0] ||
+        null
+
+      if (leftItem?.imageUrl) {
+        setLeftSrc(leftItem.imageUrl)
+        const n = String(leftItem.number || '')
         setLeftWorkNumber(n)
         setLeftWerkLabel(n ? `Werk links: ${n}` : 'Werk links (K2)')
       }
-      if (withImage[1]?.imageUrl) {
-        setRightSrc(withImage[1].imageUrl)
-        const n = withImage[1].number || ''
-        setRightWorkNumber(n)
-        setRightWerkLabel(n ? `Werk rechts: ${n}` : 'Werk rechts (K2)')
-      } else if (withImage[0]?.imageUrl) {
-        setRightSrc(withImage[0].imageUrl)
-        const n = withImage[0].number || ''
+      if (rightItem?.imageUrl) {
+        setRightSrc(rightItem.imageUrl)
+        const n = String(rightItem.number || '')
         setRightWorkNumber(n)
         setRightWerkLabel(n ? `Werk rechts: ${n}` : 'Werk rechts (K2)')
       }
@@ -167,6 +174,7 @@ export default function FlyerEventBogenNeuPage() {
 
   const handleLeftWorkSelect = (number: string) => {
     setLeftWorkNumber(number)
+    localStorage.setItem(LEFT_WORK_KEY, number)
     const item = k2Works.find((w) => String(w?.number || '') === number)
     if (!item?.imageUrl) return
     setLeftSrc(item.imageUrl)
@@ -175,6 +183,7 @@ export default function FlyerEventBogenNeuPage() {
 
   const handleRightWorkSelect = (number: string) => {
     setRightWorkNumber(number)
+    localStorage.setItem(RIGHT_WORK_KEY, number)
     const item = k2Works.find((w) => String(w?.number || '') === number)
     if (!item?.imageUrl) return
     setRightSrc(item.imageUrl)
@@ -182,25 +191,41 @@ export default function FlyerEventBogenNeuPage() {
   }
 
   const frontCard = (
-    <div className="card front">
+    <div className={`card front front-variant-${frontVariant}`}>
       <div className="hero">
-        <h2>{base.galleryName}</h2>
-        <p>{PRODUCT_WERBESLOGAN}</p>
-        <p>{PRODUCT_WERBESLOGAN_2}</p>
+        <h2>K2 Galerie Kunst&amp;Keramik</h2>
+        <p className="hero-sub">Martina &amp; Georg Kreinecker</p>
       </div>
       <div className="content">
-        <div className="front-3img">
-          <img src={leftSrc} alt="" />
-          <img src={middleSrc} alt="" />
-          <img src={rightSrc} alt="" />
+        <div className="front-main">
+          <div className="front-3img">
+            <div className="img-box img-left">
+              <span className="img-badge">Öffentlichkeitsarbeit (K2)</span>
+              <img src={leftSrc} alt="" />
+            </div>
+            <div className="img-box">
+              <img src={middleViewSrc} alt="" />
+            </div>
+            <div className="img-box">
+              <img src={rightSrc} alt="" />
+            </div>
+          </div>
+          <div className="front-text-right">
+            <p className="intro-text">
+              Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst
+              zum Leben erwacht.
+            </p>
+          </div>
         </div>
         <div className="front-bottom">
           <div className="front-bottom-left">
             {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="qr" /> : <div className="qr-placeholder">QR</div>}
+            <p className="qr-caption">Zur Galerie online</p>
           </div>
           <div className="front-bottom-right">
             <p className="invite">Einladung Galerieeröffnung</p>
-            <p className="date">{eventDateLine}</p>
+            <p className="invite-meta">{eventDateLine}</p>
+            <p className="invite-meta">{base.address} · {base.city}</p>
           </div>
         </div>
       </div>
@@ -210,18 +235,22 @@ export default function FlyerEventBogenNeuPage() {
   const backCard = (
     <div className="card back">
       <div className="back-left">
-        <h3>{PRODUCT_BRAND_NAME}</h3>
-        <p className="marketing-line">für Menschen mit Ideen, die gesehen werden wollen.</p>
-        <p className="marketing-sub">Deine Ideen und Werke verdienen mehr als einen Instagram-Post.</p>
+        <div className="back-hero">
+          <h3>K2 Galerie</h3>
+          <p className="back-hero-slogan">für Menschen mit Ideen, die gesehen werden wollen.</p>
+          <p className="back-hero-power">Deine Ideen verdienen mehr als einen Instagram-Post.</p>
+        </div>
+        <p className="marketing-sub">ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.</p>
         <div className="back-left-bottom">
           {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" /> : <div className="qr-placeholder">QR</div>}
+          <p className="back-qr-invite">Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.</p>
+        </div>
+        <div className="back-copyright">
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
-          <small>{PRODUCT_URHEBER_ANWENDUNG}</small>
         </div>
       </div>
       <div className="back-right">
         <img src={torSrc} alt="" />
-        <div className="back-invite">Einladung Galerieeröffnung</div>
       </div>
     </div>
   )
@@ -230,32 +259,164 @@ export default function FlyerEventBogenNeuPage() {
     <div className={ROOT}>
       <style>{`
         .${ROOT}{padding:16px;background:#f6f4f0;color:#1c1a18}
+        .${ROOT}{
+          --k2-green:#0f6f66;
+          --k2-green-text:#eaf7f5;
+        }
         .${ROOT} .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px}
         .${ROOT} .editor{display:grid;gap:8px;max-width:760px;margin-bottom:16px}
-        .${ROOT} .sheet{width:210mm;height:297mm;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.12);margin:0 auto 16px;padding:6mm;display:grid;grid-template-rows:repeat(4,1fr);gap:3mm}
-        .${ROOT} .card{border:1px solid #d8d2c9;border-radius:2mm;overflow:hidden;display:grid;grid-template-columns:1fr}
-        .${ROOT} .front .hero{background:#0c5c55;color:#fff;padding:3mm}
-        .${ROOT} .front .hero h2{margin:0;font-size:13px}
-        .${ROOT} .front .hero p{margin:0;font-size:9px}
-        .${ROOT} .front .content{padding:3mm;display:grid;gap:2mm}
-        .${ROOT} .front .content img{width:100%;height:26mm;object-fit:cover;border-radius:1mm}
-        .${ROOT} .front .front-3img{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2mm}
-        .${ROOT} .front .front-3img img{height:22mm}
-        .${ROOT} .front .front-bottom{display:grid;grid-template-columns:20mm 1fr;gap:2mm;align-items:end}
-        .${ROOT} .front .front-bottom-right .invite{margin:0;font-size:8px;font-weight:700;color:#0c5c55}
-        .${ROOT} .front .front-bottom-right .date{margin:0;font-size:7px;color:#1c1a18}
+        .${ROOT} .sheet{
+          width:210mm;
+          height:297mm;
+          background:#fff;
+          box-shadow:0 4px 18px rgba(0,0,0,.12);
+          margin:0 auto 16px;
+          padding:6mm;
+          display:grid;
+          grid-template-rows:repeat(4,1fr);
+          gap:3mm;
+          box-sizing:border-box;
+          overflow:hidden;
+        }
+        .${ROOT} .card{
+          border:1px solid #d8d2c9;
+          border-radius:2mm;
+          overflow:hidden;
+          display:grid;
+          grid-template-columns:1fr;
+          height:100%;
+        }
+        .${ROOT} .front .hero{background:var(--k2-green);color:var(--k2-green-text);padding:2.8mm 3mm 2.4mm}
+        .${ROOT} .front .hero h2{margin:0;font-size:12.3px;font-weight:760;letter-spacing:.03em}
+        .${ROOT} .front .hero .hero-sub{margin:.2mm 0 0;font-size:7.7px;font-weight:620;line-height:1.22;opacity:1}
+        .${ROOT} .front .content{padding:2.8mm 3mm 2.6mm;display:grid;gap:2.2mm}
+        .${ROOT} .front .front-main{display:grid;grid-template-columns:62% 38%;gap:2.4mm;align-items:start}
+        .${ROOT} .front .front-3img{
+          display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+          background:transparent;border-radius:1.2mm;padding:0;overflow:hidden;height:27.5mm
+        }
+        .${ROOT} .front .front-3img .img-box{
+          position:relative;background:transparent;border-radius:0;overflow:hidden;height:27.5mm
+        }
+        .${ROOT} .front .front-3img .img-box img{
+          width:100%;height:100%;object-fit:cover;object-position:center;background:transparent;transform:none
+        }
+        .${ROOT} .front .front-3img .img-left .img-badge{
+          position:absolute;left:1mm;top:1mm;background:rgba(255,255,255,.94);color:#2f312e;
+          font-size:6.2px;font-weight:700;padding:.55mm 1mm;border-radius:.8mm;z-index:2
+        }
+        .${ROOT} .front .front-text-right{
+          background:transparent;border-radius:0;padding:.35mm 0 0;color:#dfe7f4;
+          display:grid;gap:.8mm;min-height:27.5mm;align-content:start
+        }
+        .${ROOT} .front .front-text-right .intro-text{
+          margin:0;
+          font-size:9.1px;
+          line-height:1.42;
+          color:#ffffff;
+          font-weight:780;
+        }
+        .${ROOT} .front .front-bottom{display:grid;grid-template-columns:30mm 1fr;gap:2.6mm;align-items:end}
+        .${ROOT} .front .front-bottom-left{display:grid;grid-template-columns:12mm 1fr;gap:.9mm;align-items:start}
+        .${ROOT} .front .front-bottom-left .qr{width:12mm;height:12mm;object-fit:contain}
+        .${ROOT} .front .front-bottom-left .qr-placeholder{width:12mm;height:12mm}
+        .${ROOT} .front .front-bottom-left .qr-caption{
+          margin:.1mm 0 0;font-size:5.8px;line-height:1.13;font-weight:620;color:#eaf1ff
+        }
+        .${ROOT} .front .front-bottom-right{
+          display:grid;gap:.55mm;justify-content:flex-start;align-content:end;min-height:12mm
+        }
+        .${ROOT} .front .front-bottom-right .invite{
+          margin:0;
+          padding:.75mm 1.9mm;
+          font-size:8.2px;
+          font-weight:900;
+          color:var(--k2-green-text);
+          background:var(--k2-green);
+          border-radius:1mm;
+          box-shadow:0 1px 3px rgba(0,0,0,.22);
+          letter-spacing:.01em;
+        }
+        .${ROOT} .front .front-bottom-right .invite-meta{
+          margin:0;
+          font-size:7.1px;
+          line-height:1.24;
+          color:#f3f7ff;
+          font-weight:700;
+        }
+        .${ROOT} .front.front-variant-A .front-main{grid-template-columns:62% 38%}
+        .${ROOT} .front.front-variant-A .front-3img{height:27.5mm}
+        .${ROOT} .front.front-variant-A .front-3img .img-box{height:27.5mm}
+        .${ROOT} .front.front-variant-A .front-text-right .intro-text{font-size:8.1px;line-height:1.36}
+
+        .${ROOT} .front.front-variant-B .front-main{grid-template-columns:60% 40%}
+        .${ROOT} .front.front-variant-B .front-3img{height:29mm}
+        .${ROOT} .front.front-variant-B .front-3img .img-box{height:29mm}
+        .${ROOT} .front.front-variant-B .front-text-right .intro-text{font-size:8.6px;line-height:1.38}
+        .${ROOT} .front.front-variant-B .front-bottom-right .invite{
+          padding:.85mm 2.1mm;
+          font-size:8.6px;
+          box-shadow:0 2px 5px rgba(0,0,0,.24);
+        }
         .${ROOT} .row{display:grid;grid-template-columns:20mm 1fr;gap:2mm;align-items:center}
         .${ROOT} .qr{width:20mm;height:20mm;object-fit:contain}
         .${ROOT} .qr-placeholder{width:20mm;height:20mm;border:1px dashed #b8b2aa;display:flex;align-items:center;justify-content:center;font-size:7px;color:#6b665f}
         .${ROOT} .row p{margin:0;font-size:7px;line-height:1.3}
         .${ROOT} .back{grid-template-columns:1fr 1fr}
-        .${ROOT} .back-left{padding:3mm;background:#faf8f5;display:flex;flex-direction:column;justify-content:space-between}
+        .${ROOT} .back-left{
+          padding:3mm;
+          background:#faf8f5;
+          display:grid;
+          grid-template-rows:auto auto 1fr auto;
+          gap:2.1mm;
+          align-items:start;
+        }
         .${ROOT} .back-left h3,.${ROOT} .back-left small{margin:0}
-        .${ROOT} .back-left h3{font-size:10px}
-        .${ROOT} .back-left .marketing-line{margin:0;font-size:7px;line-height:1.35;color:#1c1a18}
-        .${ROOT} .back-left .marketing-sub{margin:0;font-size:6.5px;line-height:1.35;color:#5c5650}
-        .${ROOT} .back-left .back-left-bottom{display:grid;gap:1mm;align-content:end}
-        .${ROOT} .back-left small{font-size:6px}
+        .${ROOT} .back-left .back-hero{
+          display:grid;
+          gap:.7mm;
+          border-left:1.1mm solid #0f6f66;
+          padding-left:1.6mm;
+        }
+        .${ROOT} .back-left h3{font-size:12.8px;line-height:1.08;color:#1c1a18;letter-spacing:.01em}
+        .${ROOT} .back-left .back-hero-slogan{margin:0;font-size:7.8px;line-height:1.24;font-weight:650;color:#2d2a27}
+        .${ROOT} .back-left .back-hero-power{margin:0;font-size:8.2px;line-height:1.28;font-weight:800;color:#0f6f66}
+        .${ROOT} .back-left .marketing-sub{
+          margin:0;
+          font-size:7.35px;
+          line-height:1.35;
+          color:#4f4942;
+          max-width:42ch;
+        }
+        .${ROOT} .back-left .back-left-bottom{
+          display:grid;
+          gap:1.4mm;
+          align-content:center;
+          justify-items:center;
+          text-align:center;
+          height:100%;
+          background:#f1ece6;
+          border:1px solid #dfd8cf;
+          border-radius:1.4mm;
+          padding:1.2mm 1.4mm;
+        }
+        .${ROOT} .back-left .back-left-bottom .qr,
+        .${ROOT} .back-left .back-left-bottom .qr-placeholder{
+          width:17mm;
+          height:17mm;
+        }
+        .${ROOT} .back-left .back-left-bottom .back-qr-invite{
+          margin:0;
+          font-size:7.6px;
+          line-height:1.3;
+          color:#1f1d1b;
+          font-weight:760;
+        }
+        .${ROOT} .back-left .back-copyright{
+          width:100%;
+          text-align:center;
+        }
+        .${ROOT} .back-left small{font-size:6px;color:#6a6258}
         .${ROOT} .back-right{position:relative}
         .${ROOT} .back-right img{width:100%;height:100%;object-fit:cover}
         .${ROOT} .back-right .back-invite{
@@ -265,10 +426,91 @@ export default function FlyerEventBogenNeuPage() {
           font-size:6.5px;font-weight:600;line-height:1.2;
         }
         @media print{
-          @page{size:A4;margin:6mm}
+          /* Fester 4er-Nutzen pro A4 mit berechneter Zeilenhöhe */
+          .${ROOT}{
+            --print-page-h:297mm;
+            --print-sheet-padding:3mm;
+            --print-row-gap:0.8mm;
+            --print-row-height:calc((var(--print-page-h) - (2 * var(--print-sheet-padding)) - (3 * var(--print-row-gap))) / 4);
+          }
+          @page{size:A4;margin:0}
+          html, body{
+            margin:0 !important;
+            padding:0 !important;
+            width:210mm;
+            height:var(--print-page-h);
+          }
+          .${ROOT}, .${ROOT} *{
+            -webkit-print-color-adjust:exact !important;
+            print-color-adjust:exact !important;
+          }
           .${ROOT}{padding:0;background:#fff}
           .${ROOT} .toolbar,.${ROOT} .editor{display:none}
-          .${ROOT} .sheet{box-shadow:none;margin:0 auto 6mm}
+          .${ROOT} .sheet{
+            box-shadow:none;
+            margin:0;
+            width:210mm;
+            height:294mm;
+            padding:var(--print-sheet-padding);
+            display:grid;
+            grid-template-rows:repeat(4,var(--print-row-height));
+            gap:var(--print-row-gap);
+            box-sizing:border-box;
+            overflow:hidden;
+            page-break-after:always;
+            break-after:page;
+          }
+          .${ROOT} .sheet > div{
+            min-height:0;
+            height:auto;
+            overflow:hidden;
+            break-inside:avoid;
+          }
+          .${ROOT} .sheet .card{
+            border-width:.2mm;
+            height:100%;
+            overflow:hidden;
+            min-height:0;
+          }
+          .${ROOT} .front .hero{padding:2mm 2.2mm 1.8mm}
+          .${ROOT} .front .content{padding:2mm 2.2mm 1.8mm;gap:1.5mm}
+          .${ROOT} .front .front-3img{height:24mm}
+          .${ROOT} .front .front-3img .img-box{height:24mm}
+          .${ROOT} .front .front-text-right .intro-text{font-size:8.2px;line-height:1.32}
+          .${ROOT} .front .front-bottom{gap:1.8mm}
+          .${ROOT} .front .front-bottom-right .invite{font-size:7.6px;padding:.55mm 1.4mm}
+          .${ROOT} .front .front-bottom-right .invite-meta{font-size:6.1px;line-height:1.18}
+          /* Print-Norm-Anpassung Seite 2: Inhalte auf feste Nutzenhöhe verdichten */
+          .${ROOT} .back-left{
+            padding:1.7mm;
+            gap:1mm;
+            grid-template-rows:auto auto 1fr auto;
+          }
+          .${ROOT} .back-left .back-hero{gap:.4mm;padding-left:1.2mm;border-left:.8mm solid #0f6f66}
+          .${ROOT} .back-left h3{font-size:10.2px;line-height:1.03}
+          .${ROOT} .back-left .back-hero-slogan{font-size:6.4px;line-height:1.14}
+          .${ROOT} .back-left .back-hero-power{font-size:6.7px;line-height:1.16}
+          .${ROOT} .back-left .marketing-sub{font-size:6.05px;line-height:1.18}
+          .${ROOT} .back-left .back-left-bottom{
+            padding:.6mm .8mm;
+            gap:.65mm;
+          }
+          .${ROOT} .back-left .back-left-bottom .qr,
+          .${ROOT} .back-left .back-left-bottom .qr-placeholder{
+            width:10.5mm;
+            height:10.5mm;
+          }
+          .${ROOT} .back-left .back-left-bottom .back-qr-invite{
+            font-size:5.7px;
+            line-height:1.12;
+            font-weight:680;
+          }
+          .${ROOT} .back-left .back-copyright small{font-size:5.1px}
+          .${ROOT} .back-right img{object-fit:cover}
+          .${ROOT} .sheet:last-of-type{
+            page-break-after:auto;
+            break-after:auto;
+          }
         }
       `}</style>
 
@@ -279,6 +521,13 @@ export default function FlyerEventBogenNeuPage() {
       </div>
 
       <div className="editor">
+        <label>
+          Satz-Variante
+          <select value={frontVariant} onChange={(e) => setFrontVariant(e.target.value === 'B' ? 'B' : 'A')}>
+            <option value="A">A - ruhig / klassisch</option>
+            <option value="B">B - kräftiger / präsenter</option>
+          </select>
+        </label>
         <label>
           Bild mitte (Seite 1)
           <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)} />
