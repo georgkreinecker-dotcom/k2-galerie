@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.03.26 – **Vierer-Flyer Tor wie Eingangstor (Datenfluss):** Problem war **nicht** die Foto-Größe, sondern (1) Overlay-Abgleich: **absolute URL vs. `/img/…`** → Overlay wirkte „weg“; **Fix:** `normalizeHeroImageUrlForOverlayMatch` normiert http(s) auf **pathname**. (2) Flyer-Tab bekam Änderungen aus **anderem Tab/Admin** nicht: **`storage`** auf `k2-page-content-entdecken` → Tor neu laden. (3) Flyer-Fotos: dieselbe Kompression wie Eingangsseite (**`pageHero`**), kein separates „Flyer-Kachel“-Profil mehr. **`entdeckenHeroOverlayStorage.ts`**, **`FlyerK2Oek2TorViererPage.tsx`**, **`entdeckenHeroOverlayStorage.test.ts`**. **Commit:** `4780e2d` ✅ auf GitHub
+**Letzter Stand:** 26.03.26 – **Fehleranalyse umgesetzt (gleiche Klasse wie Eingangstor):** Das gespeicherte Flyer-Tor-Foto durfte das echte Eingangstor ungefragt übersteuern (falsche Quelle mit Priorität). **Fix:** Tor-Datei ist nur noch aktiv nach bewusster Aktivierung in dieser Session (`torFileActive`); gespeicherte Datei wird geladen, aber standardmäßig **inaktiv**. Rückseite folgt damit wieder Eingangstor `/entdecken` als Standard. UI: Toggle „Datei aktivieren / Datei deaktivieren (Eingangstor nutzen)“. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _nach Push_
 
-**Was wir JETZT tun:** Georg: Eingangstor in Design ändern oder anderes Tab – Flyer neu öffnen: Rückseite = wie /entdecken; optional Foto Mitte/Tor erneut wählen (Qualität wie zuvor am Tor).
+**Was wir JETZT tun:** Georg: Flyer öffnen → Rückseite muss ohne Aktivierung der Datei das echte Eingangstor zeigen; nur bei „Datei aktivieren“ die manuelle Tor-Datei.
 
 ---
 

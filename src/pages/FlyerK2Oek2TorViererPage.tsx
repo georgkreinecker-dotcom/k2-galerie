@@ -644,6 +644,11 @@ export default function FlyerK2Oek2TorViererPage() {
   /** Mitte / Rückseite: Bild aus gewählter Fotodatei (Session – siehe sessionStorage). */
   const [welcomeFromFile, setWelcomeFromFile] = useState<string | null>(null)
   const [torFromFile, setTorFromFile] = useState<string | null>(null)
+  /**
+   * Wichtig für den Datenfluss: Ein aus der Session geladenes Tor-Foto soll das echte Eingangstor
+   * nicht ungefragt überschreiben. Aktiv wird Datei nur nach bewusster Auswahl in dieser Session.
+   */
+  const [torFileActive, setTorFileActive] = useState(false)
   /** UX: sichtbares Feedback statt „nichts passiert“ bei Auflösung/Komprimierung. */
   const [artworkChoicesLoading, setArtworkChoicesLoading] = useState(true)
   const [torIdbLoading, setTorIdbLoading] = useState(true)
@@ -680,7 +685,10 @@ export default function FlyerK2Oek2TorViererPage() {
         ])
         if (cancelled) return
         if (w && !welcomeFileTouchedRef.current) setWelcomeFromFile(w)
-        if (t && !torFileTouchedRef.current) setTorFromFile(t)
+        if (t && !torFileTouchedRef.current) {
+          setTorFromFile(t)
+          setTorFileActive(false)
+        }
       } catch {
         /* */
       } finally {
@@ -939,7 +947,8 @@ export default function FlyerK2Oek2TorViererPage() {
     welcomeThumb ||
     '/img/k2/willkommen.jpg'
   const effectiveRightWerk = imgOverride.werk?.trim() || rightWerkAuto
-  const effectiveTor = torFromFile || imgOverride.tor?.trim() || torHeroIdb || torHeroPath
+  const effectiveTor =
+    (torFileActive ? torFromFile : null) || imgOverride.tor?.trim() || torHeroIdb || torHeroPath
 
   const leftWerkSelectValue = useMemo(
     () => werkNumberFromOverrideUrl(artworkChoices, imgOverride.leftWerk, leftWerkAuto),
@@ -998,8 +1007,10 @@ export default function FlyerK2Oek2TorViererPage() {
         : 'Quelle: automatischer Vorschlag aus deiner Galerie.'
     const torSub = torCompressing
       ? 'Foto wird komprimiert und eingebunden …'
-      : torFromFile
+      : torFromFile && torFileActive
         ? 'Quelle: Foto von diesem Gerät (Rückseite).'
+        : torFromFile
+          ? 'Gespeichertes Tor-Foto vorhanden, aber nicht aktiv (nutzt aktuell Eingangstor wie /entdecken).'
         : imgOverride.tor?.trim()
           ? 'Quelle: eigene URL im Textfeld Rückseite.'
           : torIdbLoading
@@ -1399,6 +1410,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 try {
                   const dataUrl = await prepareFlyerFileDataUrl(f)
                   setTorFromFile(dataUrl)
+                  setTorFileActive(true)
                 } catch {
                   window.alert(
                     'Tor-Foto konnte nicht geladen werden. Bitte JPG/PNG wählen (oder kleineres Bild verwenden).'
@@ -1421,15 +1433,35 @@ export default function FlyerK2Oek2TorViererPage() {
                   <img className="file-thumb" src={torFromFile} alt="" />
                   <button
                     type="button"
+                    onClick={() => setTorFileActive((v) => !v)}
+                    style={{
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: 6,
+                      border: '1px solid #d4cfc7',
+                      background: '#fff',
+                      color: '#1c1a18',
+                      cursor: 'pointer',
+                      fontSize: '0.76rem',
+                    }}
+                  >
+                    {torFileActive ? 'Datei deaktivieren (Eingangstor nutzen)' : 'Datei aktivieren'}
+                  </button>
+                  <button
+                    type="button"
                     className="danger"
                     onClick={() => {
                       torFileTouchedRef.current = true
                       setTorFromFile(null)
+                      setTorFileActive(false)
                     }}
                   >
                     Foto entfernen
                   </button>
-                  <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Aktiv: Datei (geht vor Textfeld)</span>
+                  <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>
+                    {torFileActive
+                      ? 'Aktiv: Datei (geht vor Textfeld und Eingangstor)'
+                      : 'Inaktiv: Eingangstor wie /entdecken ist aktiv'}
+                  </span>
                 </>
               ) : null}
             </div>
@@ -1444,6 +1476,7 @@ export default function FlyerK2Oek2TorViererPage() {
               setImgOverride({})
               setWelcomeFromFile(null)
               setTorFromFile(null)
+              setTorFileActive(false)
               try {
                 localStorage.removeItem(FLYER_IMG_OVERRIDES_KEY)
               } catch {
