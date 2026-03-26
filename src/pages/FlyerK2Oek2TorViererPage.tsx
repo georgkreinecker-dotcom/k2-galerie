@@ -641,8 +641,8 @@ export default function FlyerK2Oek2TorViererPage() {
   const [backTorCustomImage, setBackTorCustomImage] = useState<string | null>(null)
   const [backTorFileName, setBackTorFileName] = useState('')
   const [torRuntimeInfo, setTorRuntimeInfo] = useState('ℹ️ Bereit: bitte Datei auswählen oder hineinziehen.')
+  const [torInputEvents, setTorInputEvents] = useState(0)
   const [torSelftestClicks, setTorSelftestClicks] = useState(0)
-  const [torDropActive, setTorDropActive] = useState(false)
   /** UX: sichtbares Feedback statt „nichts passiert“ bei Auflösung/Komprimierung. */
   const [artworkChoicesLoading, setArtworkChoicesLoading] = useState(true)
   const [welcomeCompressing, setWelcomeCompressing] = useState(false)
@@ -999,10 +999,13 @@ export default function FlyerK2Oek2TorViererPage() {
       r.readAsDataURL(file)
     })
 
-  const isLikelyImageFile = (file: File) => {
-    if (file.type && file.type.startsWith('image/')) return true
+  const isAllowedTorImage = (file: File) => {
+    if (file.type) {
+      const allowedMime = ['image/jpeg', 'image/png', 'image/webp']
+      if (allowedMime.includes(file.type.toLowerCase())) return true
+    }
     const name = (file.name || '').toLowerCase()
-    return /\.(jpg|jpeg|png|webp|gif|bmp|heic|heif|avif)$/i.test(name)
+    return /\.(jpg|jpeg|png|webp)$/i.test(name)
   }
 
   /** Harte Rücksetzung nur für Tor-Rückseite (Datei + URL-Override), ohne die 3 Vorderseitenbilder anzufassen. */
@@ -1040,15 +1043,15 @@ export default function FlyerK2Oek2TorViererPage() {
     setTorSelftestImage()
   }
 
-  const applyBackTorFile = async (file: File) => {
-    if (!isLikelyImageFile(file)) {
-      window.alert('Bitte ein Bild wählen (JPG, PNG, WEBP, HEIC …).')
-      setTorRuntimeInfo('❌ Keine Bilddatei erkannt.')
+  const applyBackTorFile = (file: File) => {
+    if (!isAllowedTorImage(file)) {
+      window.alert('Bitte nur JPG, PNG oder WEBP verwenden.')
+      setTorRuntimeInfo('❌ Format gesperrt. Erlaubt: JPG, PNG, WEBP.')
       return
     }
     torFileTouchedRef.current = true
     setBackTorFileName(file.name || 'Bilddatei')
-    setTorRuntimeInfo(`📥 Datei erkannt: ${file.type || 'unbekannter Typ'}`)
+    setTorRuntimeInfo(`📥 Datei erkannt: ${file.name || 'Bilddatei'}`)
     setTorCompressing(true)
     if (torPreviewObjectUrlRef.current) {
       try {
@@ -1059,46 +1062,14 @@ export default function FlyerK2Oek2TorViererPage() {
     }
     const objectUrl = URL.createObjectURL(file)
     torPreviewObjectUrlRef.current = objectUrl
-    // Primär: schnelles blob-Rendering
     setBackTorCustomImage(objectUrl)
-
-    // Verifikation + Fallback: wenn blob im Browser nicht lädt, auf data: umstellen.
-    const probe = new Image()
-    const loaded = await new Promise<boolean>((resolve) => {
-      probe.onload = () => resolve(true)
-      probe.onerror = () => resolve(false)
-      probe.src = objectUrl
-    })
-
-    if (!loaded) {
-      setTorRuntimeInfo('⚠️ blob nicht darstellbar – data: Fallback läuft …')
-      try {
-        const dataUrl = await readFileAsDataUrl(file)
-        const dataProbe = new Image()
-        const dataLoaded = await new Promise<boolean>((resolve) => {
-          dataProbe.onload = () => resolve(true)
-          dataProbe.onerror = () => resolve(false)
-          dataProbe.src = dataUrl
-        })
-        if (dataLoaded) {
-          setBackTorCustomImage(dataUrl)
-          setTorRuntimeInfo('✅ Bild fixiert (data: Fallback).')
-        } else {
-          setTorRuntimeInfo('❌ Datei nicht darstellbar (Format nicht unterstützt).')
-          window.alert('Datei erkannt, aber vom Browser nicht darstellbar. Bitte JPG oder PNG wählen.')
-        }
-      } catch {
-        setTorRuntimeInfo('❌ Datei konnte nicht gelesen werden.')
-        window.alert('Datei gewählt, aber Bild konnte nicht angezeigt werden. Bitte anderes Format testen.')
-      }
-    } else {
-      setTorRuntimeInfo('✅ Bild fixiert (blob).')
-    }
+    setTorRuntimeInfo('✅ Bild fixiert (nativer Datei-Pfad).')
     setTorCompressing(false)
   }
 
   const handleTorFileSelection = (file: File | null | undefined) => {
     if (!file) return
+    setTorInputEvents((n) => n + 1)
     applyBackTorFile(file)
   }
 
@@ -1314,8 +1285,8 @@ export default function FlyerK2Oek2TorViererPage() {
                   }
                 }}
                 style={{
-                  border: torDropActive ? '2px dashed #0f766e' : undefined,
-                  background: torDropActive ? 'rgba(15,118,110,0.08)' : undefined,
+                  border: '1px solid #d4cfc7',
+                  background: 'transparent',
                   cursor: 'pointer',
                 }}
               >
@@ -1519,8 +1490,8 @@ export default function FlyerK2Oek2TorViererPage() {
               aria-label="Bildkachel für Seite 2"
               style={{
                 marginTop: 10,
-                border: torDropActive ? '2px dashed #0f766e' : '1px dashed #b54a1e66',
-                background: torDropActive ? 'rgba(15,118,110,0.08)' : '#faf8f5',
+                border: '1px dashed #b54a1e66',
+                background: '#faf8f5',
                 borderRadius: 10,
                 minHeight: 120,
                 padding: '10px 12px',
@@ -1565,8 +1536,8 @@ export default function FlyerK2Oek2TorViererPage() {
               className="hint"
               style={{
                 marginTop: 8,
-                border: torDropActive ? '2px dashed #0f766e' : '1px dashed #b54a1e66',
-                background: torDropActive ? 'rgba(15,118,110,0.08)' : 'transparent',
+                border: '1px dashed #b54a1e66',
+                background: 'transparent',
                 borderRadius: 8,
                 padding: '8px 10px',
               }}
@@ -1598,6 +1569,7 @@ export default function FlyerK2Oek2TorViererPage() {
                 Testbild setzen
               </button>
               <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Klicks: {torSelftestClicks}</span>
+              <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Input-Events: {torInputEvents}</span>
               {effectiveTor ? (
                 <>
                   <img className="file-thumb" src={effectiveTor} alt="" />
