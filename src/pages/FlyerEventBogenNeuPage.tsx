@@ -62,6 +62,9 @@ export default function FlyerEventBogenNeuPage() {
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
   const [torSrc, setTorSrc] = useState(defaultTor)
+  const [k2Works, setK2Works] = useState<any[]>([])
+  const [leftWorkNumber, setLeftWorkNumber] = useState('')
+  const [rightWorkNumber, setRightWorkNumber] = useState('')
   const [leftWerkLabel, setLeftWerkLabel] = useState('Werk links (K2)')
   const [rightWerkLabel, setRightWerkLabel] = useState('Werk rechts (K2)')
   const [torStatus, setTorStatus] = useState('Bereit')
@@ -81,16 +84,23 @@ export default function FlyerEventBogenNeuPage() {
     void readArtworksForContextWithResolvedImages(false, false).then((list) => {
       if (!active || !Array.isArray(list)) return
       const withImage = list.filter((a) => typeof a?.imageUrl === 'string' && a.imageUrl.trim().length > 0)
+      setK2Works(withImage)
       if (withImage[0]?.imageUrl) {
         setLeftSrc(withImage[0].imageUrl)
-        setLeftWerkLabel(withImage[0].number ? `Werk links: ${withImage[0].number}` : 'Werk links (K2)')
+        const n = withImage[0].number || ''
+        setLeftWorkNumber(n)
+        setLeftWerkLabel(n ? `Werk links: ${n}` : 'Werk links (K2)')
       }
       if (withImage[1]?.imageUrl) {
         setRightSrc(withImage[1].imageUrl)
-        setRightWerkLabel(withImage[1].number ? `Werk rechts: ${withImage[1].number}` : 'Werk rechts (K2)')
+        const n = withImage[1].number || ''
+        setRightWorkNumber(n)
+        setRightWerkLabel(n ? `Werk rechts: ${n}` : 'Werk rechts (K2)')
       } else if (withImage[0]?.imageUrl) {
         setRightSrc(withImage[0].imageUrl)
-        setRightWerkLabel(withImage[0].number ? `Werk rechts: ${withImage[0].number}` : 'Werk rechts (K2)')
+        const n = withImage[0].number || ''
+        setRightWorkNumber(n)
+        setRightWerkLabel(n ? `Werk rechts: ${n}` : 'Werk rechts (K2)')
       }
     })
     return () => {
@@ -119,6 +129,22 @@ export default function FlyerEventBogenNeuPage() {
     setTorStatus(`Datei gesetzt: ${file.name || 'Bild'}`)
   }
 
+  const handleLeftWorkSelect = (number: string) => {
+    setLeftWorkNumber(number)
+    const item = k2Works.find((w) => String(w?.number || '') === number)
+    if (!item?.imageUrl) return
+    setLeftSrc(item.imageUrl)
+    setLeftWerkLabel(`Werk links: ${number}`)
+  }
+
+  const handleRightWorkSelect = (number: string) => {
+    setRightWorkNumber(number)
+    const item = k2Works.find((w) => String(w?.number || '') === number)
+    if (!item?.imageUrl) return
+    setRightSrc(item.imageUrl)
+    setRightWerkLabel(`Werk rechts: ${number}`)
+  }
+
   const frontCard = (
     <div className="card front">
       <div className="hero">
@@ -141,14 +167,15 @@ export default function FlyerEventBogenNeuPage() {
     <div className="card back">
       <div className="back-left">
         <h3>{PRODUCT_BRAND_NAME}</h3>
-        <p>{PRODUCT_WERBESLOGAN}</p>
-        <p>{PRODUCT_WERBESLOGAN_2}</p>
-        <img src={k2Qr} alt="QR K2 Galerie" className="qr" />
-        <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
-        <small>{PRODUCT_URHEBER_ANWENDUNG}</small>
+        <div className="back-left-bottom">
+          <img src={k2Qr} alt="QR K2 Galerie" className="qr" />
+          <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
+          <small>{PRODUCT_URHEBER_ANWENDUNG}</small>
+        </div>
       </div>
       <div className="back-right">
         <img src={torSrc} alt="" />
+        <div className="back-invite">Einladung Galerieeröffnung</div>
       </div>
     </div>
   )
@@ -174,12 +201,19 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .qr{width:20mm;height:20mm;object-fit:contain}
         .${ROOT} .row p{margin:0;font-size:7px;line-height:1.3}
         .${ROOT} .back{grid-template-columns:1fr 1fr}
-        .${ROOT} .back-left{padding:3mm;background:#faf8f5;display:grid;gap:1.5mm;align-content:start}
-        .${ROOT} .back-left h3,.${ROOT} .back-left p,.${ROOT} .back-left small{margin:0}
+        .${ROOT} .back-left{padding:3mm;background:#faf8f5;display:flex;flex-direction:column;justify-content:space-between}
+        .${ROOT} .back-left h3,.${ROOT} .back-left small{margin:0}
         .${ROOT} .back-left h3{font-size:10px}
-        .${ROOT} .back-left p{font-size:8px}
+        .${ROOT} .back-left .back-left-bottom{display:grid;gap:1mm;align-content:end}
         .${ROOT} .back-left small{font-size:6px}
+        .${ROOT} .back-right{position:relative}
         .${ROOT} .back-right img{width:100%;height:100%;object-fit:cover}
+        .${ROOT} .back-right .back-invite{
+          position:absolute;right:2mm;bottom:2mm;
+          background:rgba(12,92,85,.82);color:#fff;
+          padding:1mm 1.6mm;border-radius:1mm;
+          font-size:6.5px;font-weight:600;line-height:1.2;
+        }
         @media print{
           @page{size:A4;margin:6mm}
           .${ROOT}{padding:0;background:#fff}
@@ -200,10 +234,26 @@ export default function FlyerEventBogenNeuPage() {
           <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)} />
         </label>
         <label>
-          {leftWerkLabel}
+          Werk links (K2-Auswahl)
+          <select value={leftWorkNumber} onChange={(e) => handleLeftWorkSelect(e.target.value)}>
+            <option value="">Bitte wählen</option>
+            {k2Works.map((w) => (
+              <option key={`left-${String(w?.number || '')}`} value={String(w?.number || '')}>
+                {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
-          {rightWerkLabel}
+          Werk rechts (K2-Auswahl)
+          <select value={rightWorkNumber} onChange={(e) => handleRightWorkSelect(e.target.value)}>
+            <option value="">Bitte wählen</option>
+            {k2Works.map((w) => (
+              <option key={`right-${String(w?.number || '')}`} value={String(w?.number || '')}>
+                {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
+              </option>
+            ))}
+          </select>
         </label>
         <label>
           Tor-Bild (Seite 2, nur JPG/PNG/WEBP)
@@ -213,7 +263,7 @@ export default function FlyerEventBogenNeuPage() {
             onChange={(e) => handleTorUpload(e.currentTarget.files?.[0] || null)}
           />
         </label>
-        <div>Status: {torStatus} · Input-Events: {torEvents}</div>
+        <div>Status: {torStatus} · Input-Events: {torEvents} · {leftWerkLabel} · {rightWerkLabel}</div>
       </div>
 
       <section className="sheet" aria-label="Vorderseite vierfach">
