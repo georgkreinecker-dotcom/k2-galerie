@@ -531,7 +531,14 @@ function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
     const raw = localStorage.getItem(FLYER_IMG_OVERRIDES_KEY)
     if (!raw || raw.length > 80000) return {}
     const p = JSON.parse(raw) as FlyerImgOverrides
-    return p && typeof p === 'object' ? migrateFlyerOverrides(p) : {}
+    if (!p || typeof p !== 'object') return {}
+    const next = migrateFlyerOverrides(p)
+    /**
+     * Regression-Fix (Datenfluss): Rückseiten-Tor nie „sticky“ aus altem localStorage übernehmen.
+     * Standard ist immer Eingangstor wie /entdecken; manuelle Tor-URL gilt nur in der aktuellen Sitzung.
+     */
+    if (typeof next.tor === 'string' && next.tor.trim()) delete next.tor
+    return next
   } catch {
     return {}
   }
@@ -539,7 +546,9 @@ function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
 
 function saveFlyerOverridesToStorage(o: FlyerImgOverrides) {
   try {
-    localStorage.setItem(FLYER_IMG_OVERRIDES_KEY, JSON.stringify(o))
+    /** tor bewusst nicht persistent speichern (siehe loadFlyerOverridesFromStorage). */
+    const { tor: _tor, ...persistable } = o
+    localStorage.setItem(FLYER_IMG_OVERRIDES_KEY, JSON.stringify(persistable))
   } catch {
     /* Quota */
   }
@@ -739,7 +748,7 @@ export default function FlyerK2Oek2TorViererPage() {
         ...(l?.trim() ? { leftWerk: l.trim() } : {}),
         ...(c?.trim() && !l?.trim() ? { leftWerk: c.trim() } : {}),
         ...(k?.trim() ? { werk: k.trim() } : {}),
-        ...(t?.trim() ? { tor: t.trim() } : {}),
+        ...(t?.trim() ? { tor: t.trim() } : {}), // nur diese Sitzung; wird nicht persistent gespeichert
       }))
     }
     urlParamsApplied.current = true

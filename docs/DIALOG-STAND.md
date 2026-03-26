@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.03.26 – **Fehleranalyse umgesetzt (gleiche Klasse wie Eingangstor):** Das gespeicherte Flyer-Tor-Foto durfte das echte Eingangstor ungefragt übersteuern (falsche Quelle mit Priorität). **Fix:** Tor-Datei ist nur noch aktiv nach bewusster Aktivierung in dieser Session (`torFileActive`); gespeicherte Datei wird geladen, aber standardmäßig **inaktiv**. Rückseite folgt damit wieder Eingangstor `/entdecken` als Standard. UI: Toggle „Datei aktivieren / Datei deaktivieren (Eingangstor nutzen)“. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _nach Push_
+**Letzter Stand:** 26.03.26 – **Regression gründlich gefixt (Live-Vorschau-Zeit):** Zusätzlich zur Datei-Aktivierung war ein zweiter „sticky“-Pfad aktiv: `imgOverride.tor` aus `k2-flyer-vierer-image-overrides` (localStorage) übersteuerte das Eingangstor dauerhaft. **Fix jetzt richtig:** `tor` wird aus Storage **nicht mehr geladen** und **nicht mehr persistent gespeichert**; `flyerTor/ft` aus URL bleibt nur **einmalig in dieser Sitzung**. Standardquelle ist wieder Eingangstor wie `/entdecken`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _nach Push_
 
-**Was wir JETZT tun:** Georg: Flyer öffnen → Rückseite muss ohne Aktivierung der Datei das echte Eingangstor zeigen; nur bei „Datei aktivieren“ die manuelle Tor-Datei.
+**Was wir JETZT tun:** Georg: Flyer neu öffnen (ohne manuelle Rückseiten-Aktion) → Rückseite muss das aktuelle Eingangstor zeigen; manuelle Tor-URL/Foto nur noch bewusst pro Sitzung aktiv.
 
 ---
 
