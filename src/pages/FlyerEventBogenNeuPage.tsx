@@ -101,10 +101,6 @@ export default function FlyerEventBogenNeuPage() {
           <img src={middleSrc} alt="" />
           <img src={rightSrc} alt="" />
         </div>
-        <p className="intro">
-          Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum,
-          wo Kunst zum Leben erwacht.
-        </p>
         <p className="sub">Martina &amp; Georg Kreinecker</p>
         <div className="row">
           <img src={galleryQr} alt="QR Galerie" className="qr" />
