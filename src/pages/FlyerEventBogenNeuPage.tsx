@@ -8,6 +8,7 @@ import {
   K2_STAMMDATEN_DEFAULTS,
   PRODUCT_BRAND_NAME,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_URHEBER_ANWENDUNG,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
 } from '../config/tenantConfig'
@@ -45,10 +46,14 @@ export default function FlyerEventBogenNeuPage() {
   const base = getK2Basics()
   const gallery = loadStammdaten('k2', 'gallery')
   const galerieImages = getGalerieImages(gallery)
-  const defaultWelcome = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
+  const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
+  const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
+  const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultTor = getEntdeckenHeroPathUrl() || '/img/oeffentlich/eingangstor.jpg'
 
-  const [welcomeSrc, setWelcomeSrc] = useState(defaultWelcome)
+  const [leftSrc, setLeftSrc] = useState(defaultLeft)
+  const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
+  const [rightSrc, setRightSrc] = useState(defaultRight)
   const [torSrc, setTorSrc] = useState(defaultTor)
   const [torStatus, setTorStatus] = useState('Bereit')
   const [torEvents, setTorEvents] = useState(0)
@@ -62,10 +67,13 @@ export default function FlyerEventBogenNeuPage() {
     [versionTimestamp]
   )
 
-  const handleWelcomeUpload = (file: File | null) => {
+  const handleFrontUpload = (slot: 'left' | 'middle' | 'right', file: File | null) => {
     if (!file) return
     if (!file.type.startsWith('image/')) return
-    setWelcomeSrc(normalizeFileToUrl(file))
+    const url = normalizeFileToUrl(file)
+    if (slot === 'left') setLeftSrc(url)
+    if (slot === 'middle') setMiddleSrc(url)
+    if (slot === 'right') setRightSrc(url)
   }
 
   const handleTorUpload = (file: File | null) => {
@@ -88,15 +96,22 @@ export default function FlyerEventBogenNeuPage() {
         <p>{PRODUCT_WERBESLOGAN_2}</p>
       </div>
       <div className="content">
-        <img src={welcomeSrc} alt="" />
-        <p className="intro">{base.intro}</p>
-        <p className="sub">{base.subtitle}</p>
+        <div className="front-3img">
+          <img src={leftSrc} alt="" />
+          <img src={middleSrc} alt="" />
+          <img src={rightSrc} alt="" />
+        </div>
+        <p className="intro">
+          Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum,
+          wo Kunst zum Leben erwacht.
+        </p>
+        <p className="sub">Martina &amp; Georg Kreinecker</p>
         <div className="row">
           <img src={galleryQr} alt="QR Galerie" className="qr" />
           <div>
-            <p>{base.address}</p>
-            <p>{[base.city, base.phone].filter(Boolean).join(' · ')}</p>
-            <p>{base.email}</p>
+            <p>Zur Galerie</p>
+            <p>Code scannen - die Galerie online öffnen.</p>
+            <p>{base.address} · {[base.city, base.phone].filter(Boolean).join(' · ')} · {base.email}</p>
           </div>
         </div>
       </div>
@@ -111,6 +126,7 @@ export default function FlyerEventBogenNeuPage() {
         <p>{PRODUCT_WERBESLOGAN_2}</p>
         <img src={entdeckenQr} alt="QR Eingang" className="qr" />
         <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
+        <small>{PRODUCT_URHEBER_ANWENDUNG}</small>
       </div>
       <div className="back-right">
         <img src={torSrc} alt="" />
@@ -131,6 +147,8 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .front .hero p{margin:0;font-size:9px}
         .${ROOT} .front .content{padding:3mm;display:grid;gap:2mm}
         .${ROOT} .front .content img{width:100%;height:26mm;object-fit:cover;border-radius:1mm}
+        .${ROOT} .front .front-3img{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2mm}
+        .${ROOT} .front .front-3img img{height:22mm}
         .${ROOT} .front .intro{font-size:8px;margin:0}
         .${ROOT} .front .sub{font-size:8px;font-weight:600;margin:0}
         .${ROOT} .row{display:grid;grid-template-columns:20mm 1fr;gap:2mm;align-items:center}
@@ -159,8 +177,16 @@ export default function FlyerEventBogenNeuPage() {
 
       <div className="editor">
         <label>
-          Willkommen-Bild (Seite 1)
-          <input type="file" accept="image/*" onChange={(e) => handleWelcomeUpload(e.currentTarget.files?.[0] || null)} />
+          Bild links (Seite 1)
+          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('left', e.currentTarget.files?.[0] || null)} />
+        </label>
+        <label>
+          Bild mitte (Seite 1)
+          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)} />
+        </label>
+        <label>
+          Bild rechts (Seite 1)
+          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('right', e.currentTarget.files?.[0] || null)} />
         </label>
         <label>
           Tor-Bild (Seite 2, nur JPG/PNG/WEBP)
