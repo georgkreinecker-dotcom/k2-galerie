@@ -5,7 +5,7 @@
  * Vorderseite: Galerienamen + „Kunst & Keramik“ (K2-Stammdaten), Einladung, Foto, Adresse, QR – keine kgm-Werbeslogans.
  * Rückseite: ök2 Eingangstor – wie /entdecken: Farben aus K2-Design, Tor-Bild wie EntdeckenPage (Pfad + IndexedDB-Overlay), K2-Slogans groß, Werbetext klein darunter, QR /entdecken.
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import {
@@ -27,12 +27,7 @@ import {
   PRODUCT_WERBESLOGAN_2,
   TENANT_CONFIGS,
 } from '../config/tenantConfig'
-import {
-  getEntdeckenColorsFromK2Design,
-  getEntdeckenHeroPathUrl,
-  getPageContentEntdecken,
-} from '../config/pageContentEntdecken'
-import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
+import { getEntdeckenColorsFromK2Design } from '../config/pageContentEntdecken'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import {
   clearAllFlyerViererFileSlots,
@@ -53,7 +48,6 @@ type FlyerImgOverrides = {
   welcome?: string
   /** Rechtes Streifenfoto */
   werk?: string
-  tor?: string
   /** Alt: wurde zu leftWerk migriert */
   card?: string
 }
@@ -96,8 +90,10 @@ const styles = `
   }
   .${ROOT} .flyer-print-hint strong { color: #1c1a18; }
   .${ROOT} .flyer-img-panel {
-    max-width: 720px; margin: 0 auto 16px; padding: 12px 14px; background: #fffefb; border: 1px solid rgba(15,118,110,0.22);
+    max-width: 760px; margin: 0 auto; padding: 12px 14px; background: #fffefb; border: 1px solid rgba(15,118,110,0.22);
     border-radius: 10px; font-size: 0.82rem; color: #1c1a18;
+    position: relative; max-height: none; overflow: visible;
+    z-index: 1; pointer-events: auto;
   }
   .${ROOT} .flyer-img-panel h2 { margin: 0 0 8px; font-size: 0.95rem; color: ${TEAL}; font-weight: 600; }
   .${ROOT} .flyer-img-panel .row { display: grid; grid-template-columns: 140px 1fr; gap: 6px 10px; align-items: center; margin-bottom: 8px; }
@@ -533,11 +529,6 @@ function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
     const p = JSON.parse(raw) as FlyerImgOverrides
     if (!p || typeof p !== 'object') return {}
     const next = migrateFlyerOverrides(p)
-    /**
-     * Regression-Fix (Datenfluss): Rückseiten-Tor nie „sticky“ aus altem localStorage übernehmen.
-     * Standard ist immer Eingangstor wie /entdecken; manuelle Tor-URL gilt nur in der aktuellen Sitzung.
-     */
-    if (typeof next.tor === 'string' && next.tor.trim()) delete next.tor
     return next
   } catch {
     return {}
@@ -546,9 +537,7 @@ function loadFlyerOverridesFromStorage(): FlyerImgOverrides {
 
 function saveFlyerOverridesToStorage(o: FlyerImgOverrides) {
   try {
-    /** tor bewusst nicht persistent speichern (siehe loadFlyerOverridesFromStorage). */
-    const { tor: _tor, ...persistable } = o
-    localStorage.setItem(FLYER_IMG_OVERRIDES_KEY, JSON.stringify(persistable))
+    localStorage.setItem(FLYER_IMG_OVERRIDES_KEY, JSON.stringify(o))
   } catch {
     /* Quota */
   }
@@ -644,29 +633,25 @@ export default function FlyerK2Oek2TorViererPage() {
     bgMid: '#1e1008',
     accent: '#b54a1e',
   }))
-  /** Pfad aus Design → Eingangsseite (ohne IndexedDB-Upload). */
-  const [torHeroPath, setTorHeroPath] = useState(() => getEntdeckenHeroPathUrl())
-  /** Wie /entdecken: aktuelles Tor-Bild aus IndexedDB, wenn dort gespeichert. */
-  const [torHeroIdb, setTorHeroIdb] = useState<string | null>(null)
   const [imgOverride, setImgOverride] = useState<FlyerImgOverrides>(() => loadFlyerOverridesFromStorage())
   const [artworkChoices, setArtworkChoices] = useState<Array<{ number: string; title: string; imageUrl: string }>>([])
   /** Mitte / Rückseite: Bild aus gewählter Fotodatei (Session – siehe sessionStorage). */
   const [welcomeFromFile, setWelcomeFromFile] = useState<string | null>(null)
-  const [torFromFile, setTorFromFile] = useState<string | null>(null)
-  /**
-   * Wichtig für den Datenfluss: Ein aus der Session geladenes Tor-Foto soll das echte Eingangstor
-   * nicht ungefragt überschreiben. Aktiv wird Datei nur nach bewusster Auswahl in dieser Session.
-   */
-  const [torFileActive, setTorFileActive] = useState(false)
+  /** Rückseite Seite 2: nur eigenes Foto, sonst leer. */
+  const [backTorCustomImage, setBackTorCustomImage] = useState<string | null>(null)
+  const [backTorFileName, setBackTorFileName] = useState('')
+  const [torRuntimeInfo, setTorRuntimeInfo] = useState('ℹ️ Bereit: bitte Datei auswählen oder hineinziehen.')
+  const [torSelftestClicks, setTorSelftestClicks] = useState(0)
+  const [torDropActive, setTorDropActive] = useState(false)
   /** UX: sichtbares Feedback statt „nichts passiert“ bei Auflösung/Komprimierung. */
   const [artworkChoicesLoading, setArtworkChoicesLoading] = useState(true)
-  const [torIdbLoading, setTorIdbLoading] = useState(true)
   const [welcomeCompressing, setWelcomeCompressing] = useState(false)
   const [torCompressing, setTorCompressing] = useState(false)
   /** Erst nach IDB-Laden: sonst würde „leer speichern“ die Slots vor dem Restore löschen. */
   const [flyerFileSessionReady, setFlyerFileSessionReady] = useState(false)
   const welcomeFileInputRef = useRef<HTMLInputElement>(null)
   const torFileInputRef = useRef<HTMLInputElement>(null)
+  const torPreviewObjectUrlRef = useRef<string | null>(null)
   /** Schutz gegen Race: späteres IDB-Load darf eine frische Nutzer-Auswahl nicht überschreiben. */
   const welcomeFileTouchedRef = useRef(false)
   const torFileTouchedRef = useRef(false)
@@ -688,16 +673,9 @@ export default function FlyerK2Oek2TorViererPage() {
     let cancelled = false
     void (async () => {
       try {
-        const [w, t] = await Promise.all([
-          loadFlyerViererFileSlot('welcome'),
-          loadFlyerViererFileSlot('tor'),
-        ])
+        const w = await loadFlyerViererFileSlot('welcome')
         if (cancelled) return
         if (w && !welcomeFileTouchedRef.current) setWelcomeFromFile(w)
-        if (t && !torFileTouchedRef.current) {
-          setTorFromFile(t)
-          setTorFileActive(false)
-        }
       } catch {
         /* */
       } finally {
@@ -720,18 +698,6 @@ export default function FlyerK2Oek2TorViererPage() {
       }
     })()
   }, [welcomeFromFile, flyerFileSessionReady])
-
-  useEffect(() => {
-    if (!flyerFileSessionReady) return
-    void (async () => {
-      const { ok, message } = await saveFlyerViererFileSlot('tor', torFromFile)
-      if (!ok && torFromFile) {
-        window.alert(
-          `Flyer Rückseite: Zwischenspeichern fehlgeschlagen (${message ?? 'unbekannt'}). Das Bild siehst du weiter, bis du die Seite neu lädst.`
-        )
-      }
-    })()
-  }, [torFromFile, flyerFileSessionReady])
 
   /** URL einmalig: flyerLeft / flyerWerk / flyerWelcome (kurz fl, fk, fw); fc → links (Alt). */
   useEffect(() => {
@@ -833,39 +799,6 @@ export default function FlyerK2Oek2TorViererPage() {
     setTorTheme({ bgDark: c.bgDark, bgMid: c.bgMid, accent: c.accent })
   }, [])
 
-  /** Tor-Bild wie /entdecken: Pfad + IndexedDB-Overlay; gleicher Ablauf wie EntdeckenPage + Tab-Wechsel. */
-  const torOverlayLoadGenRef = useRef(0)
-  useEffect(() => {
-    let cancelled = false
-    const refresh = () => {
-      const gen = ++torOverlayLoadGenRef.current
-      setTorHeroPath(getEntdeckenHeroPathUrl(getPageContentEntdecken()))
-      setTorHeroIdb(null)
-      setTorIdbLoading(true)
-      void loadEntdeckenHeroOverlayIfFresh()
-        .then((u) => {
-          if (cancelled || gen !== torOverlayLoadGenRef.current) return
-          setTorHeroIdb(u)
-        })
-        .finally(() => {
-          if (cancelled || gen !== torOverlayLoadGenRef.current) return
-          setTorIdbLoading(false)
-        })
-    }
-    refresh()
-    window.addEventListener('k2-page-content-entdecken-updated', refresh)
-    /** Anderes Tab/Fenster: Admin speichert localStorage → ohne diesen Listener bleibt der Flyer auf altem Tor. */
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'k2-page-content-entdecken') refresh()
-    }
-    window.addEventListener('storage', onStorage)
-    return () => {
-      cancelled = true
-      window.removeEventListener('k2-page-content-entdecken-updated', refresh)
-      window.removeEventListener('storage', onStorage)
-    }
-  }, [])
-
   /** Vorderseite immer echte K2-Galerie (Kunst & Keramik), unabhängig von Admin-Kontext (ök2-Tab). */
   useEffect(() => {
     let isMounted = true
@@ -954,8 +887,13 @@ export default function FlyerK2Oek2TorViererPage() {
     welcomeThumb ||
     '/img/k2/willkommen.jpg'
   const effectiveRightWerk = imgOverride.werk?.trim() || rightWerkAuto
-  const effectiveTor =
-    (torFileActive ? torFromFile : null) || imgOverride.tor?.trim() || torHeroIdb || torHeroPath
+  /** Seite 2: leer bis ein neues Foto gewählt wurde. */
+  const effectiveTor = backTorCustomImage || ''
+  const torSelectionStatus = torCompressing
+    ? '⏳ Wird geladen …'
+    : backTorCustomImage
+      ? `✅ Datei gewählt: ${backTorFileName || 'Bild'}`
+      : '⚪ Noch keine Datei gewählt.'
 
   const leftWerkSelectValue = useMemo(
     () => werkNumberFromOverrideUrl(artworkChoices, imgOverride.leftWerk, leftWerkAuto),
@@ -982,11 +920,10 @@ export default function FlyerK2Oek2TorViererPage() {
   const flyerLoadingBannerParts = useMemo(() => {
     const parts: string[] = []
     if (artworkChoicesLoading) parts.push('Werke werden aus der Galerie geladen …')
-    if (torIdbLoading) parts.push('Entdecken-Torbild wird geladen …')
     if (welcomeCompressing) parts.push('Willkommens-Foto wird vorbereitet …')
     if (torCompressing) parts.push('Torbild wird vorbereitet …')
     return parts
-  }, [artworkChoicesLoading, torIdbLoading, welcomeCompressing, torCompressing])
+  }, [artworkChoicesLoading, welcomeCompressing, torCompressing])
 
   const flyerPreviewMeta = useMemo(() => {
     const leftSub = artworkChoicesLoading
@@ -1012,26 +949,14 @@ export default function FlyerK2Oek2TorViererPage() {
           ? 'Quelle: eigene URL im Feld „Werk-Bild-URL rechts“.'
           : `Quelle: Liste – ${rightWerkSelectValue || 'Werk'}.`
         : 'Quelle: automatischer Vorschlag aus deiner Galerie.'
-    const torSub = torCompressing
-      ? 'Foto wird komprimiert und eingebunden …'
-      : torFromFile && torFileActive
-        ? 'Quelle: Foto von diesem Gerät (Rückseite).'
-        : torFromFile
-          ? 'Gespeichertes Tor-Foto vorhanden, aber nicht aktiv (nutzt aktuell Eingangstor wie /entdecken).'
-        : imgOverride.tor?.trim()
-          ? 'Quelle: eigene URL im Textfeld Rückseite.'
-          : torIdbLoading
-            ? 'Rückseite wird ermittelt (Design-Hero + ggf. Entdecken-Upload) …'
-            : torHeroIdb
-              ? 'Quelle: Entdecken-Upload im Browser (kurz, nur dort) – nicht dieselbe Datei wie unter Design → Eingangsseite.'
-              : 'Quelle: Hero-Bild/URL aus Design → Eingangsseite (wie /entdecken, ohne Entdecken-Upload).'
+    const torSub = effectiveTor ? 'Quelle: neues Foto für Seite 2.' : 'Leer – bitte neues Foto wählen.'
     return { leftSub, welcomeSub, rightSub, torSub }
   }, [
     artworkChoicesLoading,
     imgOverride.leftWerk,
     imgOverride.welcome,
     imgOverride.werk,
-    imgOverride.tor,
+    backTorCustomImage,
     leftWerkIsManualUrl,
     rightWerkIsManualUrl,
     leftWerkSelectValue,
@@ -1040,9 +965,6 @@ export default function FlyerK2Oek2TorViererPage() {
     welcomeFromFile,
     welcomeThumb,
     torCompressing,
-    torFromFile,
-    torIdbLoading,
-    torHeroIdb,
   ])
 
   const addrLine = [stammdaten.address, [stammdaten.city, stammdaten.country].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
@@ -1062,8 +984,153 @@ export default function FlyerK2Oek2TorViererPage() {
             reject(e)
           })
       })
-    return withTimeout(compressImageForStorage(file, { context: 'pageHero' }), 90_000)
+    return withTimeout(compressImageForStorage(file, { context: 'flyerVierer' }), 90_000)
   }
+
+  const readFileAsDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = (ev) => {
+        const v = ev.target?.result
+        if (typeof v === 'string' && v.startsWith('data:image/')) resolve(v)
+        else reject(new Error('Datei konnte nicht gelesen werden'))
+      }
+      r.onerror = () => reject(r.error ?? new Error('Datei konnte nicht gelesen werden'))
+      r.readAsDataURL(file)
+    })
+
+  const isLikelyImageFile = (file: File) => {
+    if (file.type && file.type.startsWith('image/')) return true
+    const name = (file.name || '').toLowerCase()
+    return /\.(jpg|jpeg|png|webp|gif|bmp|heic|heif|avif)$/i.test(name)
+  }
+
+  /** Harte Rücksetzung nur für Tor-Rückseite (Datei + URL-Override), ohne die 3 Vorderseitenbilder anzufassen. */
+  const clearTorState = () => {
+    torFileTouchedRef.current = true
+    setBackTorCustomImage(null)
+    setBackTorFileName('')
+  }
+
+  const resetTorOnly = async () => {
+    clearTorState()
+  }
+
+  const setTorSelftestImage = () => {
+    setTorSelftestClicks((n) => n + 1)
+    // Sehr leichtes Testbild (SVG) statt Canvas/PNG:
+    // verhindert Render-/Speicherhaenger auf schwaecheren Systemen.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#2563eb"/>
+          <stop offset="100%" stop-color="#16a34a"/>
+        </linearGradient>
+      </defs>
+      <rect width="640" height="480" fill="url(#g)"/>
+      <text x="320" y="220" text-anchor="middle" fill="#ffffff" font-size="38" font-family="Arial" font-weight="700">SEITE 2 TESTBILD</text>
+      <text x="320" y="268" text-anchor="middle" fill="#ffffff" font-size="22" font-family="Arial">Klick kam an</text>
+    </svg>`
+    setBackTorCustomImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+    setBackTorFileName(`SELBSTTEST-BILD-${Date.now()}`)
+    setTorCompressing(false)
+  }
+
+  const runTorSelftest = () => {
+    setTorSelftestImage()
+  }
+
+  const applyBackTorFile = async (file: File) => {
+    if (!isLikelyImageFile(file)) {
+      window.alert('Bitte ein Bild wählen (JPG, PNG, WEBP, HEIC …).')
+      setTorRuntimeInfo('❌ Keine Bilddatei erkannt.')
+      return
+    }
+    torFileTouchedRef.current = true
+    setBackTorFileName(file.name || 'Bilddatei')
+    setTorRuntimeInfo(`📥 Datei erkannt: ${file.type || 'unbekannter Typ'}`)
+    setTorCompressing(true)
+    if (torPreviewObjectUrlRef.current) {
+      try {
+        URL.revokeObjectURL(torPreviewObjectUrlRef.current)
+      } catch {
+        /* ignore */
+      }
+    }
+    const objectUrl = URL.createObjectURL(file)
+    torPreviewObjectUrlRef.current = objectUrl
+    // Primär: schnelles blob-Rendering
+    setBackTorCustomImage(objectUrl)
+
+    // Verifikation + Fallback: wenn blob im Browser nicht lädt, auf data: umstellen.
+    const probe = new Image()
+    const loaded = await new Promise<boolean>((resolve) => {
+      probe.onload = () => resolve(true)
+      probe.onerror = () => resolve(false)
+      probe.src = objectUrl
+    })
+
+    if (!loaded) {
+      setTorRuntimeInfo('⚠️ blob nicht darstellbar – data: Fallback läuft …')
+      try {
+        const dataUrl = await readFileAsDataUrl(file)
+        const dataProbe = new Image()
+        const dataLoaded = await new Promise<boolean>((resolve) => {
+          dataProbe.onload = () => resolve(true)
+          dataProbe.onerror = () => resolve(false)
+          dataProbe.src = dataUrl
+        })
+        if (dataLoaded) {
+          setBackTorCustomImage(dataUrl)
+          setTorRuntimeInfo('✅ Bild fixiert (data: Fallback).')
+        } else {
+          setTorRuntimeInfo('❌ Datei nicht darstellbar (Format nicht unterstützt).')
+          window.alert('Datei erkannt, aber vom Browser nicht darstellbar. Bitte JPG oder PNG wählen.')
+        }
+      } catch {
+        setTorRuntimeInfo('❌ Datei konnte nicht gelesen werden.')
+        window.alert('Datei gewählt, aber Bild konnte nicht angezeigt werden. Bitte anderes Format testen.')
+      }
+    } else {
+      setTorRuntimeInfo('✅ Bild fixiert (blob).')
+    }
+    setTorCompressing(false)
+  }
+
+  const handleTorFileSelection = (file: File | null | undefined) => {
+    if (!file) return
+    applyBackTorFile(file)
+  }
+
+  const openTorFilePicker = () => {
+    setTorRuntimeInfo('🖱️ Klick erkannt – Dateidialog wird geöffnet …')
+    if (!torFileInputRef.current) return
+    torFileInputRef.current.value = ''
+    torFileInputRef.current.click()
+  }
+
+  const handleTorInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const f = e.currentTarget.files?.[0]
+    e.currentTarget.value = ''
+    if (!f) {
+      setTorRuntimeInfo('ℹ️ Keine Datei ausgewählt.')
+      return
+    }
+    setTorRuntimeInfo(`📂 Dateidialog liefert Datei: ${f.name || 'ohne Namen'}`)
+    handleTorFileSelection(f)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (!torPreviewObjectUrlRef.current) return
+      try {
+        URL.revokeObjectURL(torPreviewObjectUrlRef.current)
+      } catch {
+        /* ignore */
+      }
+      torPreviewObjectUrlRef.current = null
+    }
+  }, [])
 
   return (
     <div className={ROOT}>
@@ -1233,12 +1300,38 @@ export default function FlyerK2Oek2TorViererPage() {
               src={effectiveRightWerk}
               sub={flyerPreviewMeta.rightSub}
             />
-            <FlyerPanelPreviewThumb
-              label="Rückseite (Tor)"
-              src={torCompressing ? undefined : effectiveTor}
-              sub={flyerPreviewMeta.torSub}
-              busy={torCompressing}
-            />
+            <div className="flyer-panel-thumb-slot">
+              <div
+                className="flyer-panel-thumb-frame"
+                role="button"
+                tabIndex={0}
+                aria-label="Rückseite-Tor: klicken oder Bild hierher ziehen"
+                onClick={openTorFilePicker}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    openTorFilePicker()
+                  }
+                }}
+                style={{
+                  border: torDropActive ? '2px dashed #0f766e' : undefined,
+                  background: torDropActive ? 'rgba(15,118,110,0.08)' : undefined,
+                  cursor: 'pointer',
+                }}
+              >
+                {effectiveTor ? (
+                  <img src={effectiveTor} alt="" />
+                ) : (
+                  <div className="flyer-panel-thumb-placeholder">
+                    ⬆ Rückseite wählen
+                    <br />
+                    klicken oder ziehen
+                  </div>
+                )}
+              </div>
+              <div className="flyer-panel-thumb-cap">Rückseite (Tor)</div>
+              <div className="flyer-panel-thumb-sub">{flyerPreviewMeta.torSub}</div>
+            </div>
           </div>
         </div>
         <div className="row">
@@ -1392,82 +1485,141 @@ export default function FlyerK2Oek2TorViererPage() {
           />
         </div>
         <div className="row">
-          <label htmlFor="flyer-in-tor">Rückseite Tor / Hero</label>
+          <label>Rückseite (Seite 2)</label>
           <div>
-            <input
-              id="flyer-in-tor"
-              type="text"
-              placeholder="Leer = Entdecken-Bild wie /entdecken (oder Foto wählen)"
-              value={imgOverride.tor ?? ''}
-              onChange={(e) => setOverrideField('tor', e.target.value)}
-              autoComplete="off"
-            />
+            <p className="hint" style={{ marginBottom: 8 }}>Leeres Fenster. Neues Foto rein, fertig.</p>
             <input
               ref={torFileInputRef}
               type="file"
               accept="image/*"
               className="no-print"
-              style={{ display: 'none' }}
-              onChange={async (e) => {
-                const f = e.target.files?.[0]
-                e.target.value = ''
-                if (!f || !f.type.startsWith('image/')) return
+              style={{ display: 'block', marginBottom: 8 }}
+              aria-label="Torbild wählen"
+              onChange={handleTorInputChange}
+            />
+            <div className="file-row">
+              <button type="button" onClick={openTorFilePicker}>
+                {torCompressing ? 'Foto wird vorbereitet …' : 'Datei auswählen'}
+              </button>
+              <span
+                aria-live="polite"
+                style={{
+                  fontSize: '0.76rem',
+                  color: torCompressing ? '#0f766e' : backTorFileName ? '#166534' : '#5c5650',
+                  fontWeight: 600,
+                }}
+              >
+                {torSelectionStatus}
+              </span>
+              <span aria-live="polite" style={{ fontSize: '0.72rem', color: '#5c5650', fontWeight: 600 }}>
+                {torRuntimeInfo}
+              </span>
+            </div>
+            <div
+              aria-label="Bildkachel für Seite 2"
+              style={{
+                marginTop: 10,
+                border: torDropActive ? '2px dashed #0f766e' : '1px dashed #b54a1e66',
+                background: torDropActive ? 'rgba(15,118,110,0.08)' : '#faf8f5',
+                borderRadius: 10,
+                minHeight: 120,
+                padding: '10px 12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                cursor: 'default',
+              }}
+            >
+              {effectiveTor ? (
+                <img className="file-thumb" src={effectiveTor} alt="" style={{ width: 70, height: 70 }} />
+              ) : (
+                <div
+                  style={{
+                    width: 70,
+                    height: 70,
+                    borderRadius: 8,
+                    background: '#e5e0d8',
+                    border: '1px solid #d4cfc7',
+                  }}
+                />
+              )}
+              <div style={{ fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.4 }}>
+                <strong style={{ color: '#1c1a18' }}>Bildkachel Seite 2</strong>
+                <br />
+                Hier klicken oder Bild hierher ziehen.
+                <br />
+                <span
+                  aria-live="polite"
+                  style={{
+                    display: 'inline-block',
+                    marginTop: 4,
+                    color: '#1f2937',
+                    fontWeight: 600,
+                  }}
+                >
+                  {torRuntimeInfo}
+                </span>
+              </div>
+            </div>
+            <div
+              className="hint"
+              style={{
+                marginTop: 8,
+                border: torDropActive ? '2px dashed #0f766e' : '1px dashed #b54a1e66',
+                background: torDropActive ? 'rgba(15,118,110,0.08)' : 'transparent',
+                borderRadius: 8,
+                padding: '8px 10px',
+              }}
+              onPaste={async (e) => {
+                const file = Array.from(e.clipboardData?.items ?? [])
+                  .find((item) => item.type.startsWith('image/'))
+                  ?.getAsFile()
+                if (!file) return
+                e.preventDefault()
                 torFileTouchedRef.current = true
-                setTorCompressing(true)
+                setTorCompressing(false)
                 try {
-                  const dataUrl = await prepareFlyerFileDataUrl(f)
-                  setTorFromFile(dataUrl)
-                  setTorFileActive(true)
+                  const directDataUrl = await readFileAsDataUrl(file)
+                  setBackTorCustomImage(directDataUrl)
+                  setBackTorFileName(file.name || 'Bild aus Zwischenablage')
                 } catch {
-                  window.alert(
-                    'Tor-Foto konnte nicht geladen werden. Bitte JPG/PNG wählen (oder kleineres Bild verwenden).'
-                  )
-                } finally {
-                  setTorCompressing(false)
+                  window.alert('Bild aus Zwischenablage konnte nicht übernommen werden.')
                 }
               }}
-            />
+            >
+              Optional: Bild per Zwischenablage einfügen (Cmd+V / Ctrl+V).
+            </div>
             <div className="file-row">
               <button
                 type="button"
-                disabled={torCompressing}
-                onClick={() => torFileInputRef.current?.click()}
+                onClick={runTorSelftest}
+                style={{ pointerEvents: 'auto', touchAction: 'manipulation' }}
               >
-                {torCompressing ? 'Foto wird vorbereitet …' : 'Foto von diesem Gerät wählen …'}
+                Testbild setzen
               </button>
-              {torFromFile ? (
+              <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>Klicks: {torSelftestClicks}</span>
+              {effectiveTor ? (
                 <>
-                  <img className="file-thumb" src={torFromFile} alt="" />
-                  <button
-                    type="button"
-                    onClick={() => setTorFileActive((v) => !v)}
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: 6,
-                      border: '1px solid #d4cfc7',
-                      background: '#fff',
-                      color: '#1c1a18',
-                      cursor: 'pointer',
-                      fontSize: '0.76rem',
-                    }}
-                  >
-                    {torFileActive ? 'Datei deaktivieren (Eingangstor nutzen)' : 'Datei aktivieren'}
-                  </button>
+                  <img className="file-thumb" src={effectiveTor} alt="" />
                   <button
                     type="button"
                     className="danger"
                     onClick={() => {
-                      torFileTouchedRef.current = true
-                      setTorFromFile(null)
-                      setTorFileActive(false)
+                      void resetTorOnly()
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault()
+                      void resetTorOnly()
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault()
+                      void resetTorOnly()
                     }}
                   >
                     Foto entfernen
                   </button>
                   <span style={{ fontSize: '0.76rem', color: '#5c5650' }}>
-                    {torFileActive
-                      ? 'Aktiv: Datei (geht vor Textfeld und Eingangstor)'
-                      : 'Inaktiv: Eingangstor wie /entdecken ist aktiv'}
+                    Aktiv: eigenes Tor-Foto für Seite 2
                   </span>
                 </>
               ) : null}
@@ -1482,8 +1634,8 @@ export default function FlyerK2Oek2TorViererPage() {
               torFileTouchedRef.current = true
               setImgOverride({})
               setWelcomeFromFile(null)
-              setTorFromFile(null)
-              setTorFileActive(false)
+              setBackTorCustomImage(null)
+              setBackTorFileName('')
               try {
                 localStorage.removeItem(FLYER_IMG_OVERRIDES_KEY)
               } catch {
@@ -1621,9 +1773,9 @@ export default function FlyerK2Oek2TorViererPage() {
               <div className="back-right">
                 <div className="tor-tablet">
                   <div className="tor-screen">
-                    <img src={effectiveTor} alt="" />
-                    <div className="tor-grad-l" />
-                    <div className="tor-grad-t" />
+                    {effectiveTor ? <img src={effectiveTor} alt="" /> : null}
+                    {effectiveTor ? <div className="tor-grad-l" /> : null}
+                    {effectiveTor ? <div className="tor-grad-t" /> : null}
                   </div>
                 </div>
               </div>

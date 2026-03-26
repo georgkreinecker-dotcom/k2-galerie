@@ -1909,6 +1909,23 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [])
+  /** APf (DevView) sendet postMessage – gleiche Notfall-Entsperrung wie Escape / 🔓 Entsperren */
+  const forceCloseBlockingOverlaysRef = React.useRef(forceCloseBlockingOverlays)
+  forceCloseBlockingOverlaysRef.current = forceCloseBlockingOverlays
+  React.useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type === 'k2-devview-escape') {
+        forceCloseBlockingOverlaysRef.current()
+      }
+    }
+    const onForceUnblock = () => forceCloseBlockingOverlaysRef.current()
+    window.addEventListener('message', onMsg)
+    window.addEventListener('k2-force-unblock', onForceUnblock as EventListener)
+    return () => {
+      window.removeEventListener('message', onMsg)
+      window.removeEventListener('k2-force-unblock', onForceUnblock as EventListener)
+    }
+  }, [])
   const previewContainerRef = React.useRef<HTMLDivElement>(null)
   const welcomeImageInputRef = React.useRef<HTMLInputElement>(null)
 

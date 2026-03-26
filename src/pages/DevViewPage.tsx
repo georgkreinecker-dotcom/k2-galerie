@@ -477,6 +477,36 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   })
   const [grafikerNotizGespeichert, setGrafikerNotizGespeichert] = useState(false)
 
+  /** Gleiche Entsperrung wie im Admin (🔓): Vollbild Öffentlichkeitsarbeit u. a. Overlays im iframe schließen */
+  const postEntsperrenToProjectIframes = React.useCallback(() => {
+    try {
+      document.querySelectorAll('iframe').forEach((el) => {
+        try {
+          ;(el as HTMLIFrameElement).contentWindow?.postMessage({ type: 'k2-devview-escape' }, '*')
+        } catch {
+          /* ignore */
+        }
+      })
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  /** Escape: zuerst Grafiker-Tisch, sonst Admin-iframe entsperren (Fokus oft im iframe – dort hilft 🔓 APf entsperren) */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (grafikerTischOpen) {
+        e.preventDefault()
+        setGrafikerTischOpen(false)
+        return
+      }
+      postEntsperrenToProjectIframes()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
+  }, [grafikerTischOpen, postEntsperrenToProjectIframes])
+
   const grafikerNotizSpeichern = () => {
     if (!grafikerNotizText.trim()) return
     const datum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
@@ -1660,6 +1690,27 @@ end tell`
           title="Ein Klick Diagnose für Vercel/API/Cache starten"
         >
           {diagnoseRunning ? '⏳ Diagnose…' : '🩺 Ein-Klick Diagnose'}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            postEntsperrenToProjectIframes()
+          }}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#b54a1e',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            fontWeight: 600,
+          }}
+          title="Schließt im eingebetteten Admin blockierende Vollbild-Overlays (z. B. Öffentlichkeitsarbeit) – wie 🔓 Entsperren im Admin"
+        >
+          🔓 APf entsperren
         </button>
         <span
           style={{

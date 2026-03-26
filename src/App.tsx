@@ -378,6 +378,25 @@ function StandBadgeSync() {
       ? 'Tippen = Seite neu laden (immer neueste Version). Siehst du noch Blau oder alte Bilder? Einmal tippen.'
       : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
 
+  const forceUnblockUi = () => {
+    try { setShowStandHelp(false) } catch { /* ignore */ }
+    try {
+      const u = new URL(window.location.href)
+      if (u.searchParams.has('openModal')) {
+        u.searchParams.delete('openModal')
+        window.history.replaceState({}, '', u.pathname + (u.search ? u.search : '') + (u.hash || ''))
+      }
+    } catch { /* ignore */ }
+    try { window.dispatchEvent(new CustomEvent('k2-force-unblock')) } catch { /* ignore */ }
+    try {
+      document.querySelectorAll('iframe').forEach((el) => {
+        try {
+          ;(el as HTMLIFrameElement).contentWindow?.postMessage({ type: 'k2-devview-escape' }, '*')
+        } catch { /* ignore */ }
+      })
+    } catch { /* ignore */ }
+  }
+
   return (
     <>
       {/* Auf Mobile: Deutlicher Hinweis wenn neuer Stand, damit Reload nicht übersehen wird */}
@@ -533,6 +552,31 @@ function StandBadgeSync() {
           }}
         >
           ?
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); forceUnblockUi() }}
+          aria-label="Klicks entsperren"
+          title="Wenn nichts reagiert: blockierende Overlays schließen"
+          style={{
+            flexShrink: 0,
+            minWidth: isMobile ? 40 : 34,
+            height: isMobile ? 40 : 34,
+            padding: isMobile ? '0 10px' : '0 8px',
+            fontSize: isMobile ? 14 : 12,
+            fontWeight: 700,
+            lineHeight: 1,
+            color: '#fff',
+            background: '#b54a1e',
+            border: '1px solid rgba(255,255,255,0.25)',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontFamily: 'system-ui, sans-serif',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            pointerEvents: 'auto',
+          }}
+        >
+          🔓
         </button>
       </div>
     </>
