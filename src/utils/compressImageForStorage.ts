@@ -88,6 +88,24 @@ export function compressImageForStorage(
             q = Math.max(minQuality, q - 0.06)
             output = canvas.toDataURL('image/jpeg', q)
           }
+          // Falls Qualität allein nicht reicht: Fläche schrittweise verkleinern.
+          if (estimateBytes(output) > maxBytes) {
+            let shrinkW = w
+            let shrinkH = h
+            let safety = 0
+            while (estimateBytes(output) > maxBytes && safety < 8 && shrinkW > 360 && shrinkH > 360) {
+              safety += 1
+              shrinkW = Math.max(360, Math.round(shrinkW * 0.88))
+              shrinkH = Math.max(360, Math.round(shrinkH * 0.88))
+              const shrinkCanvas = document.createElement('canvas')
+              shrinkCanvas.width = shrinkW
+              shrinkCanvas.height = shrinkH
+              const shrinkCtx = shrinkCanvas.getContext('2d')
+              if (!shrinkCtx) break
+              shrinkCtx.drawImage(img, 0, 0, shrinkW, shrinkH)
+              output = shrinkCanvas.toDataURL('image/jpeg', minQuality)
+            }
+          }
         }
         resolve(output)
       }

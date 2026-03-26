@@ -1002,6 +1002,33 @@ export default function FlyerK2Oek2TorViererPage() {
 
   const addrLine = [stammdaten.address, [stammdaten.city, stammdaten.country].filter(Boolean).join(' ')].filter(Boolean).join(' · ')
   const kontaktKurz = [stammdaten.phone, stammdaten.email].filter(Boolean).join(' · ')
+  const estimateDataUrlBytes = (dataUrl: string) => {
+    const comma = dataUrl.indexOf(',')
+    if (comma < 0) return dataUrl.length
+    const b64 = dataUrl.slice(comma + 1)
+    return Math.floor((b64.length * 3) / 4)
+  }
+  const prepareFlyerFileDataUrl = async (file: File): Promise<string> => {
+    const withTimeout = <T,>(promise: Promise<T>, ms: number): Promise<T> =>
+      new Promise<T>((resolve, reject) => {
+        const timer = window.setTimeout(() => reject(new Error('Komprimierung dauert zu lange')), ms)
+        promise
+          .then((v) => {
+            window.clearTimeout(timer)
+            resolve(v)
+          })
+          .catch((e) => {
+            window.clearTimeout(timer)
+            reject(e)
+          })
+      })
+    const dataUrl = await withTimeout(compressImageForStorage(file, { context: 'flyerVierer' }), 15000)
+    const bytes = estimateDataUrlBytes(dataUrl)
+    if (bytes > 420_000) {
+      throw new Error('Bild ist trotz Komprimierung noch zu groß')
+    }
+    return dataUrl
+  }
 
   return (
     <div className={ROOT}>
@@ -1247,10 +1274,12 @@ export default function FlyerK2Oek2TorViererPage() {
                 welcomeFileTouchedRef.current = true
                 setWelcomeCompressing(true)
                 try {
-                  const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
+                  const dataUrl = await prepareFlyerFileDataUrl(f)
                   setWelcomeFromFile(dataUrl)
                 } catch {
-                  window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                  window.alert(
+                    'Foto konnte nicht geladen werden. Bitte JPG/PNG wählen (oder kleineres Bild verwenden).'
+                  )
                 } finally {
                   setWelcomeCompressing(false)
                 }
@@ -1351,10 +1380,12 @@ export default function FlyerK2Oek2TorViererPage() {
                 torFileTouchedRef.current = true
                 setTorCompressing(true)
                 try {
-                  const dataUrl = await compressImageForStorage(f, { context: 'flyerVierer' })
+                  const dataUrl = await prepareFlyerFileDataUrl(f)
                   setTorFromFile(dataUrl)
                 } catch {
-                  window.alert('Foto konnte nicht geladen werden – bitte JPG oder PNG wählen.')
+                  window.alert(
+                    'Tor-Foto konnte nicht geladen werden. Bitte JPG/PNG wählen (oder kleineres Bild verwenden).'
+                  )
                 } finally {
                   setTorCompressing(false)
                 }

@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 26.03.26 – **Vierer-Flyer Event-Hinweis:** Balken **oben** entfernt; Text **rechts neben dem Galerie-QR** (`k2qr-row-main`), **Signalfarbe** Überschrift `#b54a1e`, Fließtext `#9a3412`, Druck `print-color-adjust`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `97bcb4f` ✅ auf GitHub
+**Letzter Stand:** 26.03.26 – **Tor/Hero-Foto stabilisiert (Vierer-Flyer):** Upload-Hänger bei großen Bildern abgefangen. `compressImageForStorage` komprimiert bei `maxBytes` jetzt zusätzlich stufenweise über kleinere Fläche (nicht nur Qualität). Auf der Flyer-Seite zusätzlich Timeout + Größen-Deckel im Datei-Flow (`prepareFlyerFileDataUrl`), damit die Seite nicht mehr festläuft, wenn ein Bild zu schwer ist. **`src/utils/compressImageForStorage.ts`**, **`src/pages/FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _pending_
 
-**Was wir JETZT tun:** Georg: Flyer-Seite mit Event-Häkchen – Layout neben QR prüfen, Druckvorschau.
+**Was wir JETZT tun:** Georg: Tor/Hero-Foto mehrfach testen (auch große iPhone-Fotos) – Seite soll ohne Reload bedienbar bleiben.
 
 ---
 
