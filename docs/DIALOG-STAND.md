@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 26.03.26 – **Vierer-Flyer Event-Hinweis:** Balken **oben** entfernt; Text **rechts neben dem Galerie-QR** (`k2qr-row-main`), **Signalfarbe** Überschrift `#b54a1e`, Fließtext `#9a3412`, Druck `print-color-adjust`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** `97bcb4f` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Flyer-Seite mit Event-Häkchen – Layout neben QR prüfen, Druckvorschau.
+
+---
+
 **Session-Ende 25.03.26 (Abend):** Tests + Build grün; Stand auf **main** gepusht. **GitHub:** komprimierte JPEG-Data-URL direkt hochladen ohne zweite Komprimierung (`uploadCompressedJpegDataUrlToGitHub`, `uploadCompressedPageImageDataUrl`); **Entdecken-Hero** (`uploadEntdeckenHero`); **Event-Termine** vereinheitlicht mit `formatEventTerminKomplett` (Galerie, VK2, Presse/Prospekt/Plakat); Admin-Upload-UI; Testprotokoll Doku; Build-Artefakte. **Verifizieren:** `git log -1 --oneline` auf **main** = dieser Push (25.03.26 Abend, Message: GitHub-Upload / Session-Ende Doku). ✅ GitHub
 
 **Nächster Einstieg:** Flyer Vierer – vier Bilder nacheinander testen; optional Hero Eingangsseite + Flyer-Rückseite (Einträge unten).
