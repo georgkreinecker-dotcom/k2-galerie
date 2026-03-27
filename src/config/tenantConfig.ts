@@ -66,7 +66,12 @@ Gesamter Markt – Ideen und Produkte professionell zeigen und vermarkten. Kunst
 
 Welche Sparten?
 
-Unter „Mein Weg“ eine von sechs Sparten: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. Eine Plattform, Kategorien und Texte passend zur Sparte.
+Kunst & Galerie
+Handwerk & Manufaktur
+Design & Möbel
+Mode & Kleinserien
+Food & Genuss
+Dienstleister & Portfolio
 
 Der QR-Code auf dieser Seite führt direkt in die Demo.`
 

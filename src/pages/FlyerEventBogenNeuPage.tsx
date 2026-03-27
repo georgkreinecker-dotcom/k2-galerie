@@ -20,7 +20,8 @@ import {
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
-const SLOTS = [1, 2, 3, 4] as const
+/** Zwei Flyer-Hälften pro A4-Seite (Vorder- und Rückseite je ein 2er-Bogen). */
+const SLOTS = [1, 2] as const
 const LEFT_WORK_KEY = 'k2-flyer-event-bogen-left-work'
 const RIGHT_WORK_KEY = 'k2-flyer-event-bogen-right-work'
 
@@ -73,6 +74,26 @@ function formatGalleryOpeningHoursBlock(gallery: {
   return lines.join('\n')
 }
 
+/** Event-Eröffnung: eigene Zeiten (tagesweise oder ein Start/Ende) – dann stehen sie bereits in formatEventTerminKomplett. */
+function eventHasFlyerZeiten(e: EventTerminLike | null | undefined): boolean {
+  if (!e) return false
+  if (String(e.startTime || '').trim() || String(e.endTime || '').trim()) return true
+  const dt = e.dailyTimes
+  if (dt && typeof dt === 'object' && !Array.isArray(dt)) {
+    return Object.keys(dt).some((k) => {
+      const v = (dt as Record<string, unknown>)[k]
+      if (v == null) return false
+      if (typeof v === 'string') return String(v).trim().length > 0
+      if (typeof v === 'object' && v !== null) {
+        const o = v as { start?: string; end?: string }
+        return Boolean(String(o.start || '').trim() || String(o.end || '').trim())
+      }
+      return false
+    })
+  }
+  return false
+}
+
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -80,8 +101,10 @@ export default function FlyerEventBogenNeuPage() {
   const layoutFromUrl: 'standard' | 'variant2' =
     searchParams.get('layout') === 'variant2' ? 'variant2' : 'standard'
   const { versionTimestamp } = useQrVersionTimestamp()
+  /** Neu laden bei Event-/Stammdaten-Änderung (Admin, anderes Tab, Tab-Rückkehr). */
+  const [flyerDataTick, setFlyerDataTick] = useState(0)
   const base = getK2Basics()
-  const gallery = loadStammdaten('k2', 'gallery')
+  const gallery = useMemo(() => loadStammdaten('k2', 'gallery'), [flyerDataTick])
   const galerieImages = getGalerieImages(gallery)
   const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
@@ -120,7 +143,7 @@ export default function FlyerEventBogenNeuPage() {
       }),
     [eroeffnungEvent]
   )
-  const openingHoursBlock = formatGalleryOpeningHoursBlock(gallery)
+  const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
 
   const k2Qr = useMemo(
     () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
@@ -159,6 +182,27 @@ export default function FlyerEventBogenNeuPage() {
         withClockEmojiSingle: true,
       })
       if (full) setEventDateLine(full.replace(/\s+/g, ' ').trim())
+    } else {
+      setEroeffnungEvent(null)
+      setEventDateLine('Termin folgt')
+    }
+  }, [flyerDataTick])
+
+  useEffect(() => {
+    const bump = () => setFlyerDataTick((t) => t + 1)
+    window.addEventListener('k2-events-updated', bump)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'k2-events' || e.key === 'k2-stammdaten-galerie') bump()
+    }
+    window.addEventListener('storage', onStorage)
+    const onVis = () => {
+      if (document.visibilityState === 'visible') bump()
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      window.removeEventListener('k2-events-updated', bump)
+      window.removeEventListener('storage', onStorage)
+      document.removeEventListener('visibilitychange', onVis)
     }
   }, [])
 
@@ -227,15 +271,15 @@ export default function FlyerEventBogenNeuPage() {
 
   const frontCardStandard = (
     <div className={`card front front-variant-${frontVariant}`}>
-      <div className="hero">
-        <h2>K2 Galerie Kunst&amp;Keramik</h2>
-        <p className="hero-sub">Martina &amp; Georg Kreinecker</p>
+      <div className="hero hero-standard-event">
+        <p className="hero-brand-line">K2 Galerie Kunst&amp;Keramik</p>
+        <p className="hero-brand-sub">Martina &amp; Georg Kreinecker</p>
+        <h2 className="hero-opening-word">Galerieeröffnung</h2>
       </div>
       <div className="content">
         <div className="front-main">
           <div className="front-3img">
             <div className="img-box img-left">
-              <span className="img-badge">Öffentlichkeitsarbeit (K2)</span>
               <img src={leftSrc} alt="" />
             </div>
             <div className="img-box">
@@ -258,9 +302,9 @@ export default function FlyerEventBogenNeuPage() {
             <p className="qr-caption">Zur Galerie online</p>
           </div>
           <div className="front-bottom-right">
-            <p className="invite">Einladung Galerieeröffnung</p>
+            <p className="invite">Herzliche Einladung</p>
             <p className="invite-meta">{eventDateLine}</p>
-            <p className="invite-meta">{base.address} · {base.city}</p>
+            <p className="invite-meta invite-address">{base.address} · {base.city}</p>
           </div>
         </div>
       </div>
@@ -269,15 +313,15 @@ export default function FlyerEventBogenNeuPage() {
 
   const frontCardV2 = (
     <div className="card front front-layout-v2">
-      <div className="hero hero-v2">
-        <h2>K2 Galerie Kunst&amp;Keramik</h2>
-        <p className="hero-sub">Martina &amp; Georg Kreinecker</p>
+      <div className="hero hero-v2 hero-v2-event">
+        <p className="hero-v2-brand">K2 Galerie Kunst&amp;Keramik</p>
+        <p className="hero-v2-names">Martina &amp; Georg Kreinecker</p>
+        <h2 className="hero-v2-opening-word">Galerieeröffnung</h2>
       </div>
       <div className="content content-v2">
         <div className="v2-main">
           <div className="v2-img-col">
             <div className="img-box v2-single-img">
-              <span className="img-badge">Öffentlichkeitsarbeit (K2)</span>
               <img src={leftSrc} alt="" />
             </div>
           </div>
@@ -285,12 +329,11 @@ export default function FlyerEventBogenNeuPage() {
             <p className="v2-intro">{base.intro}</p>
             <div className="v2-invite-panel" role="region" aria-label="Einladung">
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
-              <h3 className="v2-invite-title">Galerieeröffnung</h3>
               <div className="v2-termin">{terminKomplettV2}</div>
               <p className="v2-address">
                 {base.address} · {base.city}
               </p>
-              {openingHoursBlock ? (
+              {openingHoursBlock && !eventHasFlyerZeiten(eroeffnungEvent) ? (
                 <div className="v2-hours-wrap">
                   <p className="v2-hours-heading">Öffnungszeiten Galerie</p>
                   <div className="v2-hours-body">{openingHoursBlock}</div>
@@ -364,7 +407,7 @@ export default function FlyerEventBogenNeuPage() {
           margin:0 auto 16px;
           padding:6mm;
           display:grid;
-          grid-template-rows:repeat(4,1fr);
+          grid-template-rows:repeat(2,1fr);
           gap:3mm;
           box-sizing:border-box;
           overflow:hidden;
@@ -378,8 +421,28 @@ export default function FlyerEventBogenNeuPage() {
           height:100%;
         }
         .${ROOT} .front .hero{background:var(--k2-green);color:var(--k2-green-text);padding:2.8mm 3mm 2.4mm}
-        .${ROOT} .front .hero h2{margin:0;font-size:12.3px;font-weight:760;letter-spacing:.03em}
-        .${ROOT} .front .hero .hero-sub{margin:.2mm 0 0;font-size:7.7px;font-weight:620;line-height:1.22;opacity:1}
+        .${ROOT} .front .hero.hero-standard-event{text-align:center}
+        .${ROOT} .front .hero.hero-standard-event .hero-brand-line{
+          margin:0 auto;
+          max-width:22ch;
+          font-size:28px;
+          font-weight:900;
+          letter-spacing:.015em;
+          line-height:1.02;
+          text-shadow:0 2px 8px rgba(0,0,0,.22);
+        }
+        .${ROOT} .front .hero.hero-standard-event .hero-brand-sub{
+          margin:.35mm auto 0;max-width:28ch;font-size:7.4px;font-weight:620;line-height:1.22;opacity:.92
+        }
+        .${ROOT} .front .hero.hero-standard-event .hero-opening-word{
+          margin:.55mm auto 0;
+          max-width:18ch;
+          font-size:28px;
+          font-weight:900;
+          letter-spacing:.015em;
+          line-height:1.02;
+          text-shadow:0 2px 8px rgba(0,0,0,.22);
+        }
         .${ROOT} .front .content{padding:2.8mm 3mm 2.6mm;display:grid;gap:2.2mm}
         .${ROOT} .front .front-main{display:grid;grid-template-columns:62% 38%;gap:2.4mm;align-items:start}
         .${ROOT} .front .front-3img{
@@ -391,10 +454,6 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT} .front .front-3img .img-box img{
           width:100%;height:100%;object-fit:cover;object-position:center;background:transparent;transform:none
-        }
-        .${ROOT} .front .front-3img .img-left .img-badge{
-          position:absolute;left:1mm;top:1mm;background:rgba(255,255,255,.94);color:#2f312e;
-          font-size:6.2px;font-weight:700;padding:.55mm 1mm;border-radius:.8mm;z-index:2
         }
         .${ROOT} .front .front-text-right{
           background:transparent;border-radius:0;padding:.35mm 0 0;color:#dfe7f4;
@@ -435,6 +494,11 @@ export default function FlyerEventBogenNeuPage() {
           color:#f3f7ff;
           font-weight:700;
         }
+        .${ROOT} .front .front-bottom-right .invite-meta.invite-address{
+          font-size:14.2px;
+          line-height:1.22;
+          font-weight:750;
+        }
         .${ROOT} .front.front-variant-A .front-main{grid-template-columns:62% 38%}
         .${ROOT} .front.front-variant-A .front-3img{height:27.5mm}
         .${ROOT} .front.front-variant-A .front-3img .img-box{height:27.5mm}
@@ -455,18 +519,34 @@ export default function FlyerEventBogenNeuPage() {
           grid-template-rows:auto 1fr;
           min-height:0;
         }
-        .${ROOT} .front.front-layout-v2 .hero-v2{padding:3mm 3.2mm 2.6mm}
-        .${ROOT} .front.front-layout-v2 .hero-v2 h2{
-          margin:0;font-size:23px;font-weight:800;letter-spacing:.02em;line-height:1.08
+        .${ROOT} .front.front-layout-v2 .hero-v2.hero-v2-event{
+          padding:2.8mm 3.2mm 2.4mm;
+          text-align:center;
         }
-        .${ROOT} .front.front-layout-v2 .hero-v2 .hero-sub{
-          margin:.35mm 0 0;font-size:14.5px;font-weight:680;line-height:1.2
+        .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-brand{
+          margin:0;
+          font-size:38px;
+          font-weight:900;
+          letter-spacing:.02em;
+          line-height:1.02;
+          text-shadow:0 2px 12px rgba(0,0,0,.28);
+        }
+        .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-names{
+          margin:.35mm 0 0;font-size:13px;font-weight:680;line-height:1.2;opacity:.94
+        }
+        .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-opening-word{
+          margin:.5mm 0 0;
+          font-size:38px;
+          font-weight:900;
+          letter-spacing:.02em;
+          line-height:1.02;
+          text-shadow:0 2px 12px rgba(0,0,0,.28);
         }
         .${ROOT} .front.front-layout-v2 .content-v2{
-          padding:2.2mm 2.6mm 2mm;
+          padding:2.4mm 2.8mm 2.2mm;
           display:flex;
           flex-direction:column;
-          gap:1.6mm;
+          gap:1.8mm;
           min-height:0;
           flex:1;
           background:#16242f;
@@ -474,34 +554,35 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .front.front-layout-v2 .v2-main{
           display:grid;
           grid-template-columns:34% 1fr;
-          gap:2.4mm;
-          align-items:stretch;
+          gap:2.8mm;
+          align-items:start;
           min-height:0;
           flex:1;
         }
-        .${ROOT} .front.front-layout-v2 .v2-img-col{min-height:0;display:flex}
+        .${ROOT} .front.front-layout-v2 .v2-img-col{min-height:0;display:flex;align-self:stretch}
         .${ROOT} .front.front-layout-v2 .v2-single-img{
           position:relative;
+          width:100%;
           flex:1;
           min-height:52mm;
-          border-radius:1mm;
+          border-radius:1.2mm;
           overflow:hidden;
           background:#0d1a22;
-        }
-        .${ROOT} .front.front-layout-v2 .v2-single-img .img-badge{
-          position:absolute;left:1mm;top:1mm;background:rgba(255,255,255,.95);color:#1c1a18;
-          font-size:11px;font-weight:800;padding:.6mm 1.2mm;border-radius:.9mm;z-index:2
+          border:1px solid rgba(255,255,255,.08);
         }
         .${ROOT} .front.front-layout-v2 .v2-single-img img{width:100%;height:100%;object-fit:cover;display:block}
         .${ROOT} .front.front-layout-v2 .v2-text-col{
           display:flex;
           flex-direction:column;
-          gap:1.4mm;
+          gap:1.6mm;
           min-height:0;
           overflow:hidden;
+          justify-content:flex-start;
         }
         .${ROOT} .front.front-layout-v2 .v2-intro{
           margin:0;
+          padding-bottom:1mm;
+          border-bottom:1px solid rgba(255,255,255,.12);
           font-size:17px;
           line-height:1.32;
           color:#f2f7fc;
@@ -511,18 +592,14 @@ export default function FlyerEventBogenNeuPage() {
           background:linear-gradient(145deg, rgba(15,111,102,.98) 0%, rgba(12,85,78,.99) 100%);
           color:var(--k2-green-text);
           border-radius:1.4mm;
-          padding:2mm 2.4mm;
+          padding:2.2mm 2.5mm;
           box-shadow:0 2px 10px rgba(0,0,0,.35);
           display:grid;
-          gap:1mm;
-          border:1px solid rgba(255,255,255,.18);
+          gap:1.1mm;
+          border:1px solid rgba(255,255,255,.22);
         }
         .${ROOT} .front.front-layout-v2 .v2-invite-kicker{
           margin:0;font-size:13px;font-weight:780;letter-spacing:.04em;text-transform:uppercase;opacity:.95
-        }
-        .${ROOT} .front.front-layout-v2 .v2-invite-title{
-          margin:0;font-size:22px;font-weight:900;letter-spacing:.02em;line-height:1.1;
-          text-shadow:0 1px 2px rgba(0,0,0,.2);
         }
         .${ROOT} .front.front-layout-v2 .v2-termin{
           margin:0;
@@ -532,7 +609,7 @@ export default function FlyerEventBogenNeuPage() {
           white-space:pre-line;
         }
         .${ROOT} .front.front-layout-v2 .v2-address{
-          margin:0;font-size:12px;font-weight:720;line-height:1.3;opacity:.96
+          margin:0;font-size:24px;font-weight:750;line-height:1.28;opacity:.98
         }
         .${ROOT} .front.front-layout-v2 .v2-hours-wrap{
           margin-top:.6mm;padding-top:1mm;border-top:1px solid rgba(255,255,255,.28)
@@ -543,7 +620,14 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .front.front-layout-v2 .v2-hours-body{
           margin:0;font-size:11.5px;line-height:1.38;font-weight:680;white-space:pre-line
         }
-        .${ROOT} .front.front-layout-v2 .v2-footer{display:flex;align-items:center;gap:2mm;flex-shrink:0}
+        .${ROOT} .front.front-layout-v2 .v2-footer{
+          display:flex;
+          align-items:center;
+          gap:2mm;
+          flex-shrink:0;
+          padding-top:1mm;
+          border-top:1px solid rgba(255,255,255,.1);
+        }
         .${ROOT} .front.front-layout-v2 .v2-footer-qr{display:grid;grid-template-columns:14mm 1fr;gap:1mm;align-items:center}
         .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr{width:14mm;height:14mm}
         .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr-placeholder{width:14mm;height:14mm}
@@ -617,6 +701,7 @@ export default function FlyerEventBogenNeuPage() {
           font-size:7.05px;
           line-height:1.38;
           color:#2d2a27;
+          white-space:pre-line;
         }
         .${ROOT} .back.back-page-2 .back-mkt-body{font-size:14.1px;line-height:1.34}
         .${ROOT} .back-left{
@@ -674,12 +759,12 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT} .back-left small{font-size:6px;color:#6a6258}
         @media print{
-          /* Fester 4er-Nutzen pro A4 mit berechneter Zeilenhöhe */
+          /* Zwei Flyer-Nutzen pro A4 mit berechneter Zeilenhöhe */
           .${ROOT}{
             --print-page-h:297mm;
             --print-sheet-padding:3mm;
             --print-row-gap:0.8mm;
-            --print-row-height:calc((var(--print-page-h) - (2 * var(--print-sheet-padding)) - (3 * var(--print-row-gap))) / 4);
+            --print-row-height:calc((var(--print-page-h) - (2 * var(--print-sheet-padding)) - (1 * var(--print-row-gap))) / 2);
           }
           @page{size:A4;margin:0}
           html, body{
@@ -701,7 +786,7 @@ export default function FlyerEventBogenNeuPage() {
             height:294mm;
             padding:var(--print-sheet-padding);
             display:grid;
-            grid-template-rows:repeat(4,var(--print-row-height));
+            grid-template-rows:repeat(2,var(--print-row-height));
             gap:var(--print-row-gap);
             box-sizing:border-box;
             overflow:hidden;
@@ -721,6 +806,9 @@ export default function FlyerEventBogenNeuPage() {
             min-height:0;
           }
           .${ROOT} .front .hero{padding:2mm 2.2mm 1.8mm}
+          .${ROOT} .front .hero.hero-standard-event .hero-brand-line{font-size:19px;line-height:1.02}
+          .${ROOT} .front .hero.hero-standard-event .hero-brand-sub{font-size:6.2px}
+          .${ROOT} .front .hero.hero-standard-event .hero-opening-word{font-size:19px;margin-top:.35mm;line-height:1.02}
           .${ROOT} .front .content{padding:2mm 2.2mm 1.8mm;gap:1.5mm}
           .${ROOT} .front .front-3img{height:24mm}
           .${ROOT} .front .front-3img .img-box{height:24mm}
@@ -728,20 +816,20 @@ export default function FlyerEventBogenNeuPage() {
           .${ROOT} .front .front-bottom{gap:1.8mm}
           .${ROOT} .front .front-bottom-right .invite{font-size:7.6px;padding:.55mm 1.4mm}
           .${ROOT} .front .front-bottom-right .invite-meta{font-size:6.1px;line-height:1.18}
-          .${ROOT} .front.front-layout-v2 .hero-v2{padding:1.8mm 2mm 1.5mm}
-          .${ROOT} .front.front-layout-v2 .hero-v2 h2{font-size:17px}
-          .${ROOT} .front.front-layout-v2 .hero-v2 .hero-sub{font-size:11px}
+          .${ROOT} .front .front-bottom-right .invite-meta.invite-address{font-size:12.2px;line-height:1.2}
+          .${ROOT} .front.front-layout-v2 .hero-v2.hero-v2-event{padding:1.6mm 2mm 1.4mm}
+          .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-brand{font-size:26px;line-height:1.02}
+          .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-names{font-size:10.5px}
+          .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-opening-word{font-size:26px;margin-top:.35mm;line-height:1.02}
           .${ROOT} .front.front-layout-v2 .content-v2{padding:1.6mm 2mm 1.4mm;gap:1.2mm}
           .${ROOT} .front.front-layout-v2 .v2-main{gap:1.8mm}
           .${ROOT} .front.front-layout-v2 .v2-single-img{min-height:38mm}
-          .${ROOT} .front.front-layout-v2 .v2-single-img .img-badge{font-size:8px;padding:.45mm .8mm}
           .${ROOT} .front.front-layout-v2 .v2-text-col{gap:1mm}
           .${ROOT} .front.front-layout-v2 .v2-intro{font-size:13px;line-height:1.28}
           .${ROOT} .front.front-layout-v2 .v2-invite-panel{padding:1.4mm 1.8mm;gap:.75mm}
           .${ROOT} .front.front-layout-v2 .v2-invite-kicker{font-size:9px}
-          .${ROOT} .front.front-layout-v2 .v2-invite-title{font-size:16px}
           .${ROOT} .front.front-layout-v2 .v2-termin{font-size:10px;line-height:1.32}
-          .${ROOT} .front.front-layout-v2 .v2-address{font-size:9px}
+          .${ROOT} .front.front-layout-v2 .v2-address{font-size:18px;line-height:1.28}
           .${ROOT} .front.front-layout-v2 .v2-hours-heading{font-size:10px}
           .${ROOT} .front.front-layout-v2 .v2-hours-body{font-size:9px;line-height:1.3}
           .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr,
@@ -884,10 +972,10 @@ export default function FlyerEventBogenNeuPage() {
         </div>
       </div>
 
-      <section className="sheet" aria-label="Vorderseite vierfach">
+      <section className="sheet" aria-label="Vorderseite – zwei Flyer pro Seite">
         {SLOTS.map((i) => <div key={`f-${i}`}>{frontCard}</div>)}
       </section>
-      <section className="sheet" aria-label="Rückseite vierfach">
+      <section className="sheet" aria-label="Rückseite – zwei Flyer pro Seite">
         {SLOTS.map((i) => <div key={`b-${i}`}>{backCard}</div>)}
       </section>
     </div>
