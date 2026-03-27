@@ -60,6 +60,9 @@ Arbeiten in der ök2 (Admin von der Willkommensseite „Galerie öffentlich“) 
   Wenn du den Admin von der **ök2-Willkommensseite** aus öffnest (`/admin?context=oeffentlich`), läuft der Admin im **ök2-Kontext**.  
   Wenn du den Admin von der **K2-Galerie** aus öffnest, läuft er im **K2-Kontext**.
 
+- **APf-Projekt „K2 Galerie“ (`/projects/k2-galerie/…`):**  
+  Auf der **Plattform-Instanz** gilt dieselbe `?context=`-Logik wie beim Admin: Mit `?context=oeffentlich` (oder `vk2` / `k2`) kommt der Mandant aus der URL; `sessionStorage` wird passend gesetzt. **mök2-/Werbeunterlagen-Links** zu Flyer, Plakat usw. nutzen `?context=oeffentlich`, damit nicht versehentlich K2-Session und ök2-Daten vermischt werden. **Lizenznehmer-Instanzen** ignorieren `?context=` in der URL (immer K2). Umsetzung: `TenantContext.tsx` (`deriveTenantId`, `syncStorageFromUrl`).
+
 - **Getrennte localStorage-Keys:**
 
   | Daten              | K2 (echte Galerie)      | ök2 (Demo)                        |

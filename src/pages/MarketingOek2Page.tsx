@@ -1223,22 +1223,34 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           </p>
           <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.65 }}>
             <li>
-              <Link to={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+              <Link
+                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich`}
+                style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+              >
                 Flyer-Bogen öffnen (A4 / 2× A5) →
               </Link>
             </li>
             <li>
-              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a3&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+              <Link
+                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=a3&layout=variant2`}
+                style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+              >
                 Plakat A3 hochkant öffnen →
               </Link>
             </li>
             <li>
-              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a6&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+              <Link
+                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=a6&layout=variant2`}
+                style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+              >
                 Flyer A6 quer öffnen →
               </Link>
             </li>
             <li>
-              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=card&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+              <Link
+                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=card&layout=variant2`}
+                style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+              >
                 Visitenkarte 55 × 85 öffnen →
               </Link>
             </li>
@@ -1248,7 +1260,10 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           Die <strong>Präsentationsmappen</strong> (Kurzfassungen ök2/VK2 zum Link-Mitsenden) sind unter Werbeunterlagen verlinkt. Für eine <strong>richtige Präsentationsmappe</strong> (wie ein Handbuch aufgebaut, Marketing-Stil, mit Produktbildern) gibt es Konzept und Struktur: <code>docs/PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md</code>.
         </p>
         <p>
-          <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+          <Link
+            to={`${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`}
+            style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
+          >
             📁 Werbeunterlagen öffnen & Texte bearbeiten →
           </Link>
         </p>

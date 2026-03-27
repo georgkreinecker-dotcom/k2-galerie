@@ -12,6 +12,8 @@ import { useLocation } from 'react-router-dom'
 import { isPlatformInstance } from '../config/tenantConfig'
 
 const ADMIN_CONTEXT_KEY = 'k2-admin-context'
+/** APf-Projekt „K2 Galerie“: gleiche ?context=-Logik wie /admin (nur Plattform-Instanz). */
+const K2_GALERIE_PROJECT_PREFIX = '/projects/k2-galerie'
 
 export type AdminTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -59,10 +61,10 @@ function deriveTenantId(pathname: string, search: string): AdminTenantId {
   return getTenantFromStorage()
 }
 
-/** Sync: Wenn wir auf /admin sind und URL hat ?context=, in sessionStorage schreiben. Auf Lizenznehmer-Instanz niemals oeffentlich/vk2 schreiben. */
+/** Sync: /admin und /projects/k2-galerie/* mit ?context= → sessionStorage. Auf Lizenznehmer-Instanz niemals oeffentlich/vk2 schreiben. Ohne ?context= unter Projekt-Pfaden sessionStorage nicht überschreiben (kein Kontext-Vergiften). */
 function syncStorageFromUrl(pathname: string, search: string): void {
   try {
-    if (pathname !== '/admin' || typeof sessionStorage === 'undefined') return
+    if (typeof sessionStorage === 'undefined') return
     if (!isPlatformInstance()) {
       const s = sessionStorage.getItem(ADMIN_CONTEXT_KEY)
       if (s === 'oeffentlich' || s === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
@@ -71,10 +73,18 @@ function syncStorageFromUrl(pathname: string, search: string): void {
     const params = new URLSearchParams(search || '')
     const raw = params.get('context')
     const ctx = raw != null ? raw.toLowerCase().trim() : null
-    if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
-    else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
-    else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
-    else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+    if (pathname === '/admin') {
+      if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      else sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+      return
+    }
+    if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) {
+      if (ctx === 'oeffentlich') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'oeffentlich')
+      else if (ctx === 'vk2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'vk2')
+      else if (ctx === 'k2') sessionStorage.setItem(ADMIN_CONTEXT_KEY, 'k2')
+    }
   } catch (_) {}
 }
 

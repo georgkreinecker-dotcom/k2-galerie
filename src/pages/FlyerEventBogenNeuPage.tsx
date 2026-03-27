@@ -315,6 +315,21 @@ export default function FlyerEventBogenNeuPage() {
   const [masterIntroRailOpen, setMasterIntroRailOpen] = useState(true)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
+  /** Interne Varianten-Links: ?context=oeffentlich mitschleifen, damit ök2-Speicher/Keys stabil bleiben. */
+  const buildFlyerEventSelfUrl = useCallback(
+    (extra: Record<string, string>) => {
+      const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
+      const sp = new URLSearchParams()
+      if (isOeffentlich) sp.set('context', 'oeffentlich')
+      Object.entries(extra).forEach(([k, v]) => {
+        if (v !== undefined && v !== '') sp.set(k, v)
+      })
+      const q = sp.toString()
+      return q ? `${base}?${q}` : base
+    },
+    [isOeffentlich],
+  )
+
   const handleSaveFlyerMaster = useCallback(() => {
     const payload: FlyerEventBogenPersistedV1 = {
       v: 1,
@@ -340,12 +355,16 @@ export default function FlyerEventBogenNeuPage() {
         return
       }
       localStorage.setItem(flyerStorageKey, json)
-      navigate(PROJECT_ROUTES['k2-galerie'].werbeunterlagen)
+      navigate(
+        isOeffentlich
+          ? `${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`
+          : PROJECT_ROUTES['k2-galerie'].werbeunterlagen,
+      )
     } catch {
       setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
       window.setTimeout(() => setFlyerSaveMessage(''), 5000)
     }
-  }, [flyerStorageKey, leftSrc, leftWerkLabel, masterText, navigate])
+  }, [flyerStorageKey, isOeffentlich, leftSrc, leftWerkLabel, masterText, navigate])
 
   const oek2MarketingBlocks = useMemo(
     () =>
@@ -2309,12 +2328,20 @@ export default function FlyerEventBogenNeuPage() {
 
       <div className="toolbar">
         <Link
-          to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
+          to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}${isOeffentlich ? '?context=oeffentlich' : ''}#mok2-9`}
           className="toolbar-back-mok2"
         >
           ← Zurück zum mök2 (Werbeunterlagen)
         </Link>
-        <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
+        <Link
+          to={
+            isOeffentlich
+              ? `${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`
+              : PROJECT_ROUTES['k2-galerie'].werbeunterlagen
+          }
+        >
+          Werbeunterlagen
+        </Link>
         <button
           type="button"
           onClick={handleSaveFlyerMaster}
@@ -2338,38 +2365,25 @@ export default function FlyerEventBogenNeuPage() {
           Schwarzweiß Druckcheck ein/aus
         </button>
         {!isA3Mode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a3&layout=variant2`}>
-            A3 Ableitung ansehen
-          </Link>
+          <Link to={buildFlyerEventSelfUrl({ mode: 'a3', layout: 'variant2' })}>A3 Ableitung ansehen</Link>
         ) : (
-          <Link
-            className="link-back-to-master"
-            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
-          >
+          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
             Zurück zum Master
           </Link>
         )}
         {!isA6Mode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a6&layout=variant2`}>
-            A6 Ableitung ansehen
-          </Link>
+          <Link to={buildFlyerEventSelfUrl({ mode: 'a6', layout: 'variant2' })}>A6 Ableitung ansehen</Link>
         ) : (
-          <Link
-            className="link-back-to-master"
-            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
-          >
+          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
             Zurück zum Master
           </Link>
         )}
         {!isCardMode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=card&layout=variant2`}>
+          <Link to={buildFlyerEventSelfUrl({ mode: 'card', layout: 'variant2' })}>
             Visitenkarten-Ableitung ansehen
           </Link>
         ) : (
-          <Link
-            className="link-back-to-master"
-            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
-          >
+          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
             Zurück zum Master
           </Link>
         )}
