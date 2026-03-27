@@ -6141,7 +6141,11 @@ ${'='.repeat(60)}
 </html>`
   }
 
-  const generateEditableSocialMediaPDF = (socialMedia: any, event: any) => {
+  const generateEditableSocialMediaPDF = (
+    socialMedia: any,
+    event: any,
+    opts?: { skipOpenWindow?: boolean }
+  ): void | Promise<void> => {
     let blob: Blob | null = null
     let socialDocId: string | null = null
     const isVk2 = tenant.isVk2
@@ -6161,7 +6165,7 @@ ${'='.repeat(60)}
         whatsapp: socialMedia?.whatsapp || ''
       },
       eventLike,
-      imageDataUrl: undefined,
+      imageDataUrl: (socialMedia as { imageDataUrl?: string })?.imageDataUrl,
       options: {
         socialDocId: socialDocIdForHtml,
         adminReturnUrl: getAdminReturnUrl(activeTab, eventplanSubTab),
@@ -6194,6 +6198,39 @@ ${'='.repeat(60)}
       const existingSocial = loadDocuments()
       saveDocuments([...existingSocial, socialPlaceholder])
       setDocuments([...existingSocial, socialPlaceholder])
+
+      const finishSocialBlobToDoc = (): Promise<void> =>
+        new Promise((resolve, reject) => {
+          if (!socialDocId || !blob) {
+            resolve()
+            return
+          }
+          const docId = socialDocId
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            try {
+              const current = loadDocuments()
+              const updated = current.map((d: any) =>
+                d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d
+              )
+              saveDocuments(updated)
+              setDocuments(updated)
+              resolve()
+            } catch (e) {
+              reject(e)
+            }
+          }
+          reader.onerror = () => {
+            console.error('Fehler beim Lesen des Blobs')
+            reject(new Error('Social-Dokument: Lesen fehlgeschlagen'))
+          }
+          reader.readAsDataURL(blob)
+        })
+
+      if (opts?.skipOpenWindow) {
+        return finishSocialBlobToDoc()
+      }
+
       const url = URL.createObjectURL(blob)
       const pdfWindow = window.open(url, '_blank', 'noopener,noreferrer')
       if (pdfWindow) try { pdfWindow.focus() } catch (_) { }
@@ -6216,20 +6253,7 @@ ${'='.repeat(60)}
           })
         }
       }, 100)
-      if (socialDocId) {
-        const docId = socialDocId
-        const reader = new FileReader()
-        reader.onloadend = () => {
-          const current = loadDocuments()
-          const updated = current.map((d: any) => d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d)
-          saveDocuments(updated)
-          setDocuments(updated)
-        }
-        reader.onerror = () => {
-          console.error('Fehler beim Lesen des Blobs')
-        }
-        reader.readAsDataURL(blob!)
-      }
+      void finishSocialBlobToDoc()
     } catch (error) {
       console.error('Fehler beim Generieren des PDFs:', error)
       alert('Fehler beim Generieren des PDFs. Bitte versuche es erneut.')
@@ -7381,7 +7405,10 @@ ${'='.repeat(60)}
   }
 
   // E-Mail-Newsletter für spezifisches Event generieren
-  const generateEmailNewsletterForEvent = (event: any) => {
+  const generateEmailNewsletterForEvent = (
+    event: any,
+    opts?: { skipOpenAndAlert?: boolean }
+  ): void | Promise<void> => {
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -7512,18 +7539,18 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    openDocumentInApp(html, 'Presseaussendung')
-    
-    // Speichere auch in Dokumente-Sektion
-    const reader = new FileReader()
-    reader.onloadend = () => {
+    if (!opts?.skipOpenAndAlert) {
+      openDocumentInApp(html, 'Presseaussendung')
+    }
+
+    const persistNewsletterDoc = (dataUrl: string) => {
       const documentData = {
         id: `pr-newsletter-${event.id}-${Date.now()}`,
         name: getNextWerbematerialVorschlagName(event.id, event.title, 'newsletter', 'Newsletter'),
         type: 'text/html',
         size: blob.size,
-        fileData: reader.result as string,
-        data: reader.result as string,
+        fileData: dataUrl,
+        data: dataUrl,
         fileName: `newsletter-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
         uploadedAt: new Date().toISOString(),
         isPDF: false,
@@ -7536,9 +7563,29 @@ ${'='.repeat(60)}
       const existingDocs = loadDocuments()
       const updated = [...existingDocs, documentData]
       saveDocuments(updated)
+      setDocuments(updated)
     }
+
+    if (opts?.skipOpenAndAlert) {
+      return new Promise<void>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          try {
+            persistNewsletterDoc(reader.result as string)
+            resolve()
+          } catch (e) {
+            reject(e)
+          }
+        }
+        reader.onerror = () => reject(new Error('Newsletter speichern: Lesen fehlgeschlagen'))
+        reader.readAsDataURL(blob)
+      })
+    }
+
+    const reader = new FileReader()
+    reader.onloadend = () => persistNewsletterDoc(reader.result as string)
     reader.readAsDataURL(blob)
-    
+
     alert('✅ Newsletter generiert! HTML-Code kann kopiert werden.')
   }
 
@@ -8323,7 +8370,7 @@ ${'='.repeat(60)}
   <div class="wrap">
     <h1>Medienpaket – Vorschlag zur Weiterbearbeitung</h1>
     <div class="meta">Event: <strong>${esc(event.title || '')}</strong> · ${esc(formatEventDates(event) || '')}${event.location ? ` · ${esc(event.location)}` : ''}</div>
-    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Dieses Dokument dient zum Lesen und Kopieren. Für druckfertige Einzelmedien nutze in der Event-Karte die jeweilige Karte „Neu erstellen“.</div>
+    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Lesen und kopieren hier. Gespeicherte Karten auf einmal: Button <strong>Paket übernehmen</strong> bzw. <strong>Paket in Event-Karten übernehmen</strong> (mit Abfrage). Sonst je Karte „Neu erstellen“.</div>
     <section><h2>1. Presseaussendung</h2><p style="margin:0 0 0.5rem;font-size:0.88rem;font-weight:600">${esc(presse?.title || '')}</p>${pre(typeof presse?.content === 'string' ? presse.content : '')}</section>
     <section><h2>2. Social Media</h2><p style="margin:0 0 0.35rem;font-size:0.85rem;font-weight:600">Instagram</p>${pre(social?.instagram || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">Facebook</p>${pre(social?.facebook || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">WhatsApp</p>${pre(social?.whatsapp || '')}</section>
     <section><h2>3. Newsletter</h2><p style="margin:0 0 0.35rem;font-size:0.85rem">Betreff</p>${pre(subj)}${greet ? `<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Anrede</p>${pre(greet)}` : ''}<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Text</p>${pre(bodyNl)}</section>
@@ -8342,6 +8389,274 @@ ${'='.repeat(60)}
         ? `Medienpaket – ${String(event.title || 'Event').slice(0, 48)}`
         : 'Medienpaket-Vorschlag'
     openDocumentInApp(html, docLabel)
+  }
+
+  /** Nach Bestätigung: Werbemittel-Dokumente dieses Events (Presse, Social, Newsletter, Plakat, Flyer, Sammel-PDF) löschen und wie Medienpaket-Vorschau neu als speicherbare Einträge anlegen – öffnen/bearbeiten über die Event-Karten. */
+  const applyMedienpaketAlsGespeicherteWerbemittel = async (forEvent?: any) => {
+    const raw =
+      forEvent != null ? resolveEventForMediengeneratorCard(events, forEvent) : getDefaultEventForMediengeneratorButtons(events)
+    const event = raw
+    if (!event) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const eidNorm = String(event.id)
+    const titel = String(event.title || 'Event')
+    const typSet = new Set(['presse', 'social', 'newsletter', 'plakat', 'event-flyer', 'flyer', 'pr-alle'])
+    const ok = window.confirm(
+      [
+        'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
+        'Danach werden sie neu aus dem gleichen Stand wie die Medienpaket-Vorschau angelegt.',
+        'Du kannst sie in den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.',
+        '',
+        `Event: ${titel}`,
+        '',
+        'Jetzt ausführen?',
+      ].join('\n')
+    )
+    if (!ok) return
+
+    const readBlobAsDataUrl = (blob: Blob) =>
+      new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onloadend = () => resolve(String(r.result ?? ''))
+        r.onerror = () => reject(new Error('Datei lesen fehlgeschlagen'))
+        r.readAsDataURL(blob)
+      })
+
+    try {
+      const currentAll = loadDocuments()
+      const kept = currentAll.filter(
+        (d: any) =>
+          !(
+            d.category === 'pr-dokumente' &&
+            d.eventId != null &&
+            String(d.eventId) === eidNorm &&
+            typSet.has(String(d.werbematerialTyp || ''))
+          )
+      )
+      saveDocuments(kept)
+      setDocuments(kept)
+
+      const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
+      const sugList: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+      const evSug = sugList.find((sg: any) => String(sg.eventId) === eidNorm)
+      const presse = evSug?.presseaussendung || generatePresseaussendungContent(event, presseVariant)
+      const social = evSug?.socialMedia || generateSocialMediaContent(event)
+
+      const freshGalleryData = (() => {
+        if (tenant.isOeffentlich) return galleryData || {}
+        if (tenant.isVk2) {
+          const v = vk2Stammdaten?.verein
+          return v
+            ? {
+                name: v.name,
+                address: v.address,
+                city: v.city,
+                website: v.website || '',
+                phone: (v as { phone?: string }).phone || '',
+                email: v.email || '',
+              }
+            : {}
+        }
+        return loadStammdaten('k2', 'gallery') as Record<string, unknown>
+      })()
+
+      let plakatContent: any = evSug?.plakat || generatePlakatContent(event)
+      if (!plakatContent || typeof plakatContent !== 'object') plakatContent = generatePlakatContent(event)
+      plakatContent.title = event.title || plakatContent.title || 'Event'
+      plakatContent.date = formatEventDates(event) || plakatContent.date || 'Datum folgt'
+      plakatContent.location = event.location || plakatContent.location || String((freshGalleryData as { address?: string }).address || '')
+      plakatContent.description = event.description || plakatContent.description || ''
+      const websiteUrlPlakat =
+        (freshGalleryData as { website?: string }).website &&
+        isProductionLikeUrl((freshGalleryData as { website?: string }).website)
+          ? (freshGalleryData as { website?: string }).website
+          : FALLBACK_GALERIE_URL_WERBEMITTEL
+      plakatContent.qrCode = plakatContent.qrCode || websiteUrlPlakat
+      const eventTypeNamesPlakat: Record<string, string> = {
+        galerieeröffnung: 'Galerieeröffnung',
+        vernissage: 'Vernissage',
+        finissage: 'Finissage',
+        öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+        sonstiges: 'Veranstaltung',
+      }
+      plakatContent.type = eventTypeNamesPlakat[event.type] || plakatContent.type || 'Veranstaltung'
+
+      const flyerRaw = evSug?.flyer
+      const flyerForBuild: {
+        headline: string
+        date: string
+        location: string
+        description: string
+        type: string
+        qrCode: string
+        contact?: { phone?: string; email?: string; address?: string }
+      } =
+        flyerRaw && typeof flyerRaw === 'object' && typeof (flyerRaw as { headline?: string }).headline === 'string'
+          ? {
+              headline: String((flyerRaw as { headline?: string }).headline || ''),
+              date: String((flyerRaw as { date?: string }).date || ''),
+              location: String((flyerRaw as { location?: string }).location || ''),
+              description: String((flyerRaw as { description?: string }).description || ''),
+              type: String((flyerRaw as { type?: string }).type || 'sonstiges'),
+              qrCode: String((flyerRaw as { qrCode?: string }).qrCode || ''),
+              contact:
+                (flyerRaw as { contact?: { phone?: string; email?: string; address?: string } }).contact ||
+                { phone: '', email: '', address: '' },
+            }
+          : (() => {
+              const g = generateFlyerContent(event)
+              return {
+                headline: g.headline,
+                date: g.date,
+                location: g.location,
+                description: g.description,
+                type: String(g.type ?? 'sonstiges'),
+                qrCode: g.qrCode,
+                contact: g.contact,
+              }
+            })()
+
+      const pd = designToPlakatVars(designSettings)
+      const plakatQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(String(plakatContent.qrCode || ''))}`
+      const flyerQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(String(flyerForBuild.qrCode || ''))}`
+
+      const gDataFlyer = (() => {
+        if (tenant.isOeffentlich) {
+          const g = galleryData || {}
+          return { name: g.name, address: g.address, phone: g.phone, email: g.email }
+        }
+        if (tenant.isVk2) {
+          const v = vk2Stammdaten?.verein
+          return v ? { name: v.name, address: v.address, phone: (v as { phone?: string }).phone, email: v.email } : {}
+        }
+        const g = loadStammdaten('k2', 'gallery') as { name?: string; address?: string; phone?: string; email?: string }
+        return { name: g?.name, address: g?.address, phone: g?.phone, email: g?.email }
+      })()
+
+      const isVk2P = tenant.isVk2
+      const prDocClassP = isVk2P ? 'vk2-pr-doc' : 'k2-pr-doc'
+      const prDocCssP = isVk2P ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+      const galleryNameP = isVk2P
+        ? vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+        : galleryData?.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+      const eventDateStrP = formatEventDates(event) || ''
+
+      let imageBlockP = ''
+      if (presse?.imageUrl) {
+        imageBlockP = `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${String(presse.imageUrl).replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>`
+      }
+      let qrBlockP = ''
+      if (presse?.qrShow && presse?.qrUrl) {
+        try {
+          const qrD = await QRCode.toDataURL(presse.qrUrl, { width: 120, margin: 1 })
+          qrBlockP = `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${qrD.replace(/"/g, '&quot;')}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>`
+        } catch (_) {
+          /* Presse ohne QR-Block */
+        }
+      }
+
+      const fullPresseHtml = buildPresseaussendungRedactionPreviewHtml(
+        {
+          prDocClass: prDocClassP,
+          prDocCss: prDocCssP,
+          galleryName: galleryNameP,
+          eventTitle: event?.title || '',
+          eventDateStr: eventDateStrP,
+          presseTitle: presse?.title ?? '',
+          presseContent: typeof presse?.content === 'string' ? presse.content : '',
+          imageBlock: imageBlockP,
+          qrBlock: qrBlockP,
+        },
+        { iframePreview: false }
+      )
+
+      const presseBlob = new Blob([fullPresseHtml], { type: 'text/html;charset=utf-8' })
+      const presseDocId = `pr-editable-presseaussendung-${event.id}-${Date.now()}`
+      const presseDataUrl = await readBlobAsDataUrl(presseBlob)
+      const ev = event
+      let cur = loadDocuments()
+      const pressePayload = {
+        id: presseDocId,
+        name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse', 'Presseaussendung'),
+        type: 'text/html',
+        size: presseBlob.size,
+        fileData: presseDataUrl,
+        data: presseDataUrl,
+        fileName: `presseaussendung-${(ev.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: ev.id,
+        eventTitle: ev.title,
+        werbematerialTyp: 'presse',
+      }
+      saveDocuments([...cur, pressePayload])
+      setDocuments([...cur, pressePayload])
+
+      const socialWait = generateEditableSocialMediaPDF(social, event, { skipOpenWindow: true })
+      if (socialWait instanceof Promise) await socialWait
+
+      const nlWait = generateEmailNewsletterForEvent(event, { skipOpenAndAlert: true })
+      if (nlWait instanceof Promise) await nlWait
+
+      const plakatHtml = buildPlakatWerbemittelHtml(plakatContent, freshGalleryData, pd, plakatQrUrl)
+      const plakatBlob = new Blob([plakatHtml], { type: 'text/html;charset=utf-8' })
+      const plakatDocId = `pr-plakat-${event.id}-${Date.now()}`
+      const plakatDataUrl = await readBlobAsDataUrl(plakatBlob)
+      cur = loadDocuments()
+      const plakatPayload = {
+        id: plakatDocId,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
+        type: 'text/html',
+        size: plakatBlob.size,
+        fileData: plakatDataUrl,
+        data: plakatDataUrl,
+        fileName: `plakat-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title,
+        werbematerialTyp: 'plakat',
+      }
+      saveDocuments([...cur, plakatPayload])
+      setDocuments([...cur, plakatPayload])
+
+      const flyerHtml = buildFlyerWerbemittelHtml(flyerForBuild, gDataFlyer, pd, flyerQrUrl)
+      const flyerBlob = new Blob([flyerHtml], { type: 'text/html;charset=utf-8' })
+      const flyerDocId = `pr-flyer-${event.id}-${Date.now()}`
+      const flyerDataUrl = await readBlobAsDataUrl(flyerBlob)
+      cur = loadDocuments()
+      const flyerPayload = {
+        id: flyerDocId,
+        name: getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Flyer'),
+        type: 'text/html',
+        size: flyerBlob.size,
+        fileData: flyerDataUrl,
+        data: flyerDataUrl,
+        fileName: `flyer-${(event.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+        uploadedAt: new Date().toISOString(),
+        isPDF: false,
+        isPlaceholder: false,
+        category: 'pr-dokumente',
+        eventId: event.id,
+        eventTitle: event.title,
+        werbematerialTyp: 'event-flyer',
+      }
+      saveDocuments([...cur, flyerPayload])
+      setDocuments([...cur, flyerPayload])
+
+      alert(
+        `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
+      )
+    } catch (err) {
+      console.error('Medienpaket übernehmen:', err)
+      alert('Medienpaket übernehmen fehlgeschlagen. Bitte erneut versuchen oder einzeln „Neu erstellen“ nutzen.')
+    }
   }
 
   // Katalog generieren
@@ -21426,8 +21741,25 @@ ${name}`
                 >
                   📑 Alle Medien als Vorschau-Paket
                 </button>
+                <button
+                  type="button"
+                  onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel()}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: '#b54a1e',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.88rem',
+                  }}
+                  title="Ersetzt alle Werbemittel-Karten zu diesem Event durch neu erzeugte Dokumente (mit Sicherheitsabfrage)"
+                >
+                  💾 Paket in Event-Karten übernehmen
+                </button>
                 <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '520px' }}>
-                  Ein Dokument mit Presse, Social, Newsletter, Flyer, Plakat – Standard-Event wie Flyer-Master; bei gespeicherten PR-Vorschlägen werden deren Texte genutzt. Anderes Event: in der jeweiligen Event-Rubrik <strong>Medienpaket (dieses Event)</strong>. Druckfertig: je Karte „Neu erstellen“.
+                  Vorschau = nur lesen/kopieren. <strong>Paket übernehmen</strong> legt Presse, Social, Newsletter, Plakat und Flyer unter dem Standard-Event neu an (alte Einträge zu diesem Event werden nach Bestätigung ersetzt). Anderes Event: gleicher Button in der Event-Rubrik neben „Medienpaket“. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
                 </span>
               </div>
             </div>
@@ -21954,6 +22286,24 @@ ${name}`
                                       title="Presse, Social, Newsletter, Flyer, Plakat – ein Vorschau-Dokument für genau dieses Event"
                                     >
                                       📑 Medienpaket (dieses Event)
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel(event)}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        background: '#b54a1e',
+                                        border: '1px solid #b54a1e',
+                                        borderRadius: '8px',
+                                        color: '#fff',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                      title="Werbemittel-Karten zu diesem Event ersetzen (wie Medienpaket-Inhalt) – mit Sicherheitsabfrage"
+                                    >
+                                      💾 Paket übernehmen
                                     </button>
                                     <button
                                       onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}

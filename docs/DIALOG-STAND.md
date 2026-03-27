@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Medienpaket → Event-Karten übernehmen + Build-Fix:** **`applyMedienpaketAlsGespeicherteWerbemittel`**: nach Bestätigung alte **`pr-dokumente`** zu dieser **`eventId`** (Typen Presse, Social, Newsletter, Plakat, Flyer, PR-alle) ersetzen durch neu erzeugte gespeicherte Werbemittel – danach wie gewohnt **Ansehen** / **Neu erstellen** unter den Karten. Buttons **„Paket in Event-Karten übernehmen“** / **„Paket übernehmen“**. **TS:** `flyerForBuild.type` immer **`string`** (`String(… ?? 'sonstiges')`), **`buildFlyerWerbemittelHtml`** typkorrekt. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push eintragen_ ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Event wählen → Medienpaket-Vorschau ansehen → **Paket übernehmen** bestätigen → Karten prüfen (neue Einträge, öffnen/bearbeiten).
+
+---
+
 **Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 3 – Einzel-Karten + Event je Rubrik:** Hilfsfunktion **`resolveEventForMediengeneratorCard`** (String-ID): Newsletter-, Presse-, Social-**Neu erstellen** und **PR-PDF** ohne leises `find`-Scheitern; **`k2-pr-suggestions`** per **`String(eventId)`** gematcht. **`openMedienpaketVorschlagDocument(event?)`**: optional pro Event; inhaltlich wie Einzel-Karten inkl. PR-Vorschläge. Pro Event-Rubrik: Button **„Medienpaket (dieses Event)“**. Dokument neu aus Liste ohne Datei: Presse mit **neutral/lokal**-Fallback. **`orderMediengeneratorEventList`:** Primär-Event-Filter per String-ID. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `9d099fa` ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: je Event-Rubrik Medienpaket-Button und „Neu erstellen“ auf K2/ök2 kurz testen.
+**Was wir JETZT tun:** (siehe oberster Eintrag – Paket übernehmen testen)
 
 ---
 
