@@ -21465,7 +21465,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Einzige Pflegequelle ist A5 (Vorderseite + Rückseite auf A4). A3, A6 und Visitenkarten sind reine Ableitungen zur Ansicht.',
+                                  'Einzige Pflegequelle ist A5 (vorne ein Bild, hinten nur Text auf A4). A3, A6 und Visitenkarten sind reine Ableitungen zur Ansicht.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21473,7 +21473,7 @@ ${name}`
                                   {
                                     titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
                                     hinweis:
-                                      'Einzige Bearbeitung mit technischem Freiraum. Alle anderen Formate sind nur Ableitungen zur Ansicht.',
+                                      'Aktives Muster: vorne ein Bild, hinten nur Text. Einzige Bearbeitung mit technischem Freiraum.',
                                     varianten: [
                                       {
                                         label: 'Master bearbeiten',
@@ -21482,7 +21482,7 @@ ${name}`
                                             PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
                                           const join = path.includes('?') ? '&' : '?'
                                           navigateFromOeffentlichkeitsarbeitOverlay(
-                                            `${path}${join}layout=standard`
+                                            `${path}${join}layout=variant2`
                                           )
                                         },
                                       },
@@ -21501,7 +21501,7 @@ ${name}`
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
                                                 const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a3&layout=standard`
+                                                  `${path}${join}mode=a3&layout=variant2`
                                                 )
                                               },
                                             },
@@ -21517,7 +21517,7 @@ ${name}`
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
                                                 const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a6&layout=standard`
+                                                  `${path}${join}mode=a6&layout=variant2`
                                                 )
                                               },
                                             },
@@ -21533,7 +21533,7 @@ ${name}`
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
                                                 const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=card&layout=standard`
+                                                  `${path}${join}mode=card&layout=variant2`
                                                 )
                                               },
                                             },
