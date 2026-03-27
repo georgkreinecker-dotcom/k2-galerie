@@ -188,6 +188,10 @@ export const K2_STAMMDATEN_DEFAULTS = {
     focusDirections: [] as string[],
     /** Produktstory / Idee-Story für Presse & PR (ök2 andere Sparten); bei Kunst = Vita. */
     story: '',
+    /** Öffentliche Kanal-URLs – eine Quelle mit Impressum/Kontakt (Admin → Einstellungen → Galerie). */
+    socialYoutubeUrl: '',
+    socialInstagramUrl: '',
+    socialFeaturedVideoUrl: '',
   },
 }
 
@@ -312,6 +316,10 @@ export interface Vk2Stammdaten {
     vereinsnummer: string
     email: string
     website: string
+    /** Öffentliche Social-/Video-URLs (Admin → Einstellungen → Verein) – Anzeige VK2-Galerie. */
+    socialYoutubeUrl?: string
+    socialInstagramUrl?: string
+    socialFeaturedVideoUrl?: string
     /** Für Rechnungen (Vereins-Kasse): Bankverbindung und IBAN – optional */
     bankverbindung?: string
     iban?: string
@@ -385,6 +393,9 @@ export const VK2_STAMMDATEN_DEFAULTS: Vk2Stammdaten = {
     vereinsnummer: '',
     email: '',
     website: '',
+    socialYoutubeUrl: '',
+    socialInstagramUrl: '',
+    socialFeaturedVideoUrl: '',
     bankverbindung: '',
     iban: '',
   },
@@ -763,6 +774,19 @@ export function getOek2DefaultArtworkImage(categoryId: string | undefined): stri
   return OEK2_DEFAULT_ARTWORK_IMAGES[id] || OEK2_DEFAULT_ARTWORK_IMAGES.sonstiges
 }
 
+/**
+ * ök2-Demo: funktionierende Social-/Video-Links (öffentliche Ziele, keine Logins).
+ * Nutzer können „YouTube / Instagram / Highlight-Video“ auf der Willkommensfläche sofort testen.
+ */
+export const OEK2_DEMO_SOCIAL_URLS = {
+  /** Offizieller YouTube-Kanal (dauerhaft erreichbar). */
+  youtube: 'https://www.youtube.com/@YouTube',
+  /** Offizielles Instagram-Profil (dauerhaft erreichbar). */
+  instagram: 'https://www.instagram.com/instagram/',
+  /** Kurzes klassisches YouTube-Video (öffentlich, stabil). */
+  featuredVideo: 'https://www.youtube.com/watch?v=jNQXAC9IVRw',
+} as const
+
 /** Mustertexte für Öffentliches Projekt (ök2) – keine echten personenbezogenen Daten, vollständige Basis für Impressum/Shop/Demo. Zwei Künstler:innen mit Namen und Gesicht (Demo-Fotos). */
 export const MUSTER_TEXTE = {
   martina: {
@@ -804,6 +828,9 @@ export const MUSTER_TEXTE = {
     /** Eine Sparte – Standard für Demo/Lizenz-Einstieg (nicht leer, nicht Food). */
     focusDirections: ['kunst'],
     story: '',
+    socialYoutubeUrl: OEK2_DEMO_SOCIAL_URLS.youtube,
+    socialInstagramUrl: OEK2_DEMO_SOCIAL_URLS.instagram,
+    socialFeaturedVideoUrl: OEK2_DEMO_SOCIAL_URLS.featuredVideo,
   },
   welcomeText: 'Für Künstler:innen – eine Galerie für Werke, Ideen und Produkte. Ein Modell: Bilder und Skulptur in einem Raum.',
   artist1Bio: 'Lena Berg: Malerei, Grafik, Mischtechnik. Studium Bildende Kunst, seit über zwanzig Jahren freischaffend. Landschaften und Atelierblicke – kräftige Farben, reduzierte Formen. Ausstellungen im In- und Ausland, Arbeiten in privaten Sammlungen.',
