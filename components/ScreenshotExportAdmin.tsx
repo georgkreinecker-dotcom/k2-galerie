@@ -21465,7 +21465,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Alles zur Wand, zur Karte und zum Mitgeben: bearbeitbares Plakat (Formate in der Vorschau) plus Event-Bogen A4, A3, A6 und Visitenkarten.',
+                                  'Master zuerst: A5 Vorderseite + Rückseite auf einer A4-Übersicht pflegen. Daraus A3, A6 und Visitenkarten ableiten.',
                                 docs: byTyp['plakat'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21488,16 +21488,29 @@ ${name}`
                                     ? []
                                     : [
                                         {
-                                          titel: 'Event-Bogen · Flyerformat (A4)',
+                                          titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
+                                          hinweis:
+                                            'Das ist der Startpunkt: Inhalte einmal pflegen, danach die anderen Formate ableiten.',
                                           varianten: [
                                             {
-                                              label: 'Standard',
+                                              label: 'Standard öffnen',
                                               onErstellen: () => {
                                                 const path =
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
                                                 const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
                                                   `${path}${join}layout=standard`
+                                                )
+                                              },
+                                            },
+                                            {
+                                              label: 'Variante 2 öffnen',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}layout=variant2`
                                                 )
                                               },
                                             },
