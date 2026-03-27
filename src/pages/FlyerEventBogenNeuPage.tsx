@@ -255,7 +255,7 @@ function pickOpeningEvent(events: any[]): any | null {
 
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
-  const { isOeffentlich } = useTenant()
+  const { isOeffentlich, isVk2 } = useTenant()
   const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich)
   const [searchParams] = useSearchParams()
   const isA3Mode = searchParams.get('mode') === 'a3'
@@ -2327,12 +2327,14 @@ export default function FlyerEventBogenNeuPage() {
       `}</style>
 
       <div className="toolbar">
-        <Link
-          to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}${isOeffentlich ? '?context=oeffentlich' : ''}#mok2-9`}
-          className="toolbar-back-mok2"
-        >
-          ← Zurück zum mök2 (Werbeunterlagen)
-        </Link>
+        {!isVk2 ? (
+          <Link
+            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}${isOeffentlich ? '?context=oeffentlich' : ''}#mok2-9`}
+            className="toolbar-back-mok2"
+          >
+            ← Zurück zum mök2 (Werbeunterlagen)
+          </Link>
+        ) : null}
         <Link
           to={
             isOeffentlich
