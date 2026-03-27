@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Medienpaket: nur ein „Paket übernehmen“-Button:** Doppelter Weg entfernt (oben **„Paket in Event-Karten übernehmen“** weg – wirkte wie zweimal übernehmen). **Speichern nur noch:** in der Event-Zeile **„Paket übernehmen“** neben **„Medienpaket“**. Mediengenerator: nur Vorschau-Paket + Hinweistext. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Medienpaket: nur ein „Paket übernehmen“-Button:** Doppelter Weg entfernt (oben **„Paket in Event-Karten übernehmen“** weg – wirkte wie zweimal übernehmen). **Speichern nur noch:** in der Event-Zeile **„Paket übernehmen“** neben **„Medienpaket“**. Mediengenerator: nur Vorschau-Paket + Hinweistext. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `4244ab5` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: gewünschtes Event → einmal **Paket übernehmen** → Karten prüfen.
 
