@@ -6,9 +6,12 @@ import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
+  MUSTER_TEXTE,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
+  TENANT_CONFIGS,
 } from '../config/tenantConfig'
+import { useTenant } from '../context/TenantContext'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import {
@@ -213,6 +216,7 @@ function pickOpeningEvent(events: any[]): any | null {
 
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
+  const { isOeffentlich } = useTenant()
   const [searchParams] = useSearchParams()
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
@@ -259,6 +263,7 @@ export default function FlyerEventBogenNeuPage() {
   const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
   const [flyerSaveMessage, setFlyerSaveMessage] = useState('')
+  const [masterIntroRailOpen, setMasterIntroRailOpen] = useState(true)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
   const handleSaveFlyerMaster = useCallback(() => {
@@ -286,13 +291,12 @@ export default function FlyerEventBogenNeuPage() {
         return
       }
       localStorage.setItem(FLYER_EVENT_BOGEN_STORAGE_KEY, json)
-      setFlyerSaveMessage('Gespeichert – Master, A3, A6 und Visitenkarte nutzen diesen Stand.')
-      window.setTimeout(() => setFlyerSaveMessage(''), 4000)
+      navigate(PROJECT_ROUTES['k2-galerie'].werbeunterlagen)
     } catch {
       setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
       window.setTimeout(() => setFlyerSaveMessage(''), 5000)
     }
-  }, [leftSrc, leftWerkLabel, masterText])
+  }, [leftSrc, leftWerkLabel, masterText, navigate])
 
   const oek2MarketingBlocks = useMemo(
     () =>
@@ -745,16 +749,133 @@ export default function FlyerEventBogenNeuPage() {
           --flyer-row-h:calc((var(--flyer-page-h) - (2 * var(--flyer-sheet-pad)) - (1 * var(--flyer-row-gap))) / 2);
           --back-qr-box:29mm;
         }
-        .${ROOT} .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+        .${ROOT} .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+        .${ROOT} .toolbar .toolbar-back-mok2{
+          display:inline-flex;
+          align-items:center;
+          padding:0.35rem 0.7rem;
+          border-radius:8px;
+          background:#ebe8e2;
+          color:#1c1a18;
+          font-weight:600;
+          text-decoration:none;
+          border:1px solid #d4cfc4;
+          font-size:0.95rem;
+        }
+        .${ROOT} .toolbar .toolbar-back-mok2:hover{
+          background:#e0ddd6;
+          border-color:#c9c2b6;
+        }
+        .${ROOT} .toolbar .link-back-to-master{
+          color:#b54a1e;
+          font-weight:800;
+          text-decoration:none;
+          padding:0.2rem 0.35rem;
+          border-radius:6px;
+          border:1px solid rgba(181,74,30,0.45);
+          background:rgba(181,74,30,0.08);
+        }
+        .${ROOT} .toolbar .link-back-to-master:hover{
+          background:rgba(181,74,30,0.16);
+          border-color:rgba(181,74,30,0.65);
+        }
         .${ROOT} .editor{display:grid;gap:8px;max-width:760px;margin-bottom:16px}
         .${ROOT} .master-workspace{
           display:grid;
-          grid-template-columns:1fr;
-          gap:0.75rem;
+          grid-template-columns:minmax(200px,248px) minmax(0,1fr);
+          gap:0.65rem;
           align-items:start;
-          max-width:min(1180px,100%);
+          max-width:min(1420px,100%);
           margin:0 auto 16px;
           padding:0 4px;
+        }
+        .${ROOT} .master-workspace.master-workspace--rail-closed{
+          grid-template-columns:auto minmax(0,1fr);
+        }
+        .${ROOT} .master-intro-rail{
+          position:sticky;
+          top:10px;
+          align-self:start;
+          max-height:calc(100vh - 24px);
+          display:flex;
+          flex-direction:column;
+          min-width:0;
+        }
+        .${ROOT} .master-intro-rail-inner{
+          position:relative;
+          max-height:calc(100vh - 28px);
+          overflow-y:auto;
+          padding:0.55rem 0.65rem 0.65rem;
+          border-radius:12px;
+          border:1px solid rgba(15,111,102,0.22);
+          background:rgba(255,255,255,0.97);
+          box-shadow:0 4px 18px rgba(15,111,102,0.08);
+        }
+        .${ROOT} .master-intro-rail-close{
+          position:absolute;
+          top:6px;
+          right:6px;
+          z-index:1;
+          width:1.65rem;
+          height:1.65rem;
+          padding:0;
+          border:1px solid rgba(181,74,30,0.35);
+          border-radius:8px;
+          background:rgba(255,255,255,0.95);
+          color:#b54a1e;
+          font-size:1.15rem;
+          line-height:1;
+          font-weight:700;
+          cursor:pointer;
+        }
+        .${ROOT} .master-intro-rail-close:hover{
+          background:rgba(181,74,30,0.12);
+        }
+        .${ROOT} .master-intro-rail-reopen{
+          position:sticky;
+          top:10px;
+          align-self:start;
+          writing-mode:vertical-rl;
+          text-orientation:mixed;
+          transform:rotate(180deg);
+          padding:0.55rem 0.35rem;
+          min-height:5.5rem;
+          border:1px solid rgba(15,111,102,0.28);
+          border-radius:10px;
+          background:rgba(255,255,255,0.95);
+          color:#0f4f48;
+          font-size:0.78rem;
+          font-weight:800;
+          letter-spacing:0.06em;
+          cursor:pointer;
+          box-shadow:0 2px 10px rgba(0,0,0,0.06);
+        }
+        .${ROOT} .master-intro-rail-reopen:hover{
+          background:rgba(15,111,102,0.08);
+        }
+        @media (max-width:900px){
+          .${ROOT} .master-workspace{
+            grid-template-columns:1fr;
+          }
+          .${ROOT} .master-workspace.master-workspace--rail-closed{
+            grid-template-columns:1fr;
+          }
+          .${ROOT} .master-intro-rail{
+            position:relative;
+            top:0;
+            max-height:none;
+          }
+          .${ROOT} .master-intro-rail-inner{
+            max-height:none;
+          }
+          .${ROOT} .master-intro-rail-reopen{
+            writing-mode:horizontal-tb;
+            transform:none;
+            width:100%;
+            min-height:0;
+            padding:0.45rem 0.65rem;
+            margin-bottom:0.35rem;
+          }
         }
         @media (max-width:1100px){
           .${ROOT} .master-preview-col{position:relative !important;top:0 !important}
@@ -832,6 +953,35 @@ export default function FlyerEventBogenNeuPage() {
           border:1px solid rgba(181,74,30,0.14);
           max-width:min(100%,20rem);
           line-height:1.35;
+        }
+        .${ROOT} .master-intro-explainer{
+          margin:0;
+          padding:0;
+          background:transparent;
+          border:none;
+          font-size:0.78rem;
+          color:#1c1a18;
+          line-height:1.45;
+        }
+        .${ROOT} .master-intro-explainer h3{
+          margin:0 0 0.3rem;
+          font-size:0.82rem;
+          font-weight:800;
+          color:#0f4f48;
+        }
+        .${ROOT} .master-intro-explainer h3:not(:first-child){
+          margin-top:0.65rem;
+        }
+        .${ROOT} .master-intro-explainer ul{
+          margin:0.2rem 0 0.15rem;
+          padding-left:1.15rem;
+        }
+        .${ROOT} .master-intro-explainer li{margin:0.18rem 0}
+        .${ROOT} .master-intro-explainer-note{
+          margin:0.45rem 0 0;
+          font-size:0.78rem;
+          color:#5c5650;
+          line-height:1.42;
         }
         .${ROOT} .master-preview-inner{
           overflow:auto;
@@ -1472,13 +1622,19 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT} .back-left small{font-size:6px;color:#6a6258}
         @media print{
-          /* Typo/Abstände = wie Bildschirm (oben); hier nur Druck-Rahmenbedingungen */
           ${isCardMode ? '@page{size:55mm 85mm;margin:0}' : isA6Mode ? '@page{size:A6 landscape;margin:0}' : isA3Mode ? '@page{size:A3 portrait;margin:0}' : '@page{size:A4;margin:0}'}
           html, body{
             margin:0 !important;
             padding:0 !important;
-            width:210mm;
-            height:var(--flyer-page-h);
+            ${
+              isCardMode
+                ? 'width:55mm;min-height:0;height:auto;'
+                : isA6Mode
+                  ? 'width:148mm;min-height:0;height:auto;'
+                  : isA3Mode
+                    ? 'width:297mm;height:420mm;overflow:hidden;'
+                    : 'width:210mm;height:297mm;overflow:hidden;'
+            }
           }
           .${ROOT}, .${ROOT} *{
             -webkit-print-color-adjust:exact !important;
@@ -1487,7 +1643,7 @@ export default function FlyerEventBogenNeuPage() {
           .${ROOT}{padding:0;background:#fff}
           .${ROOT} .master-hotspot{display:none !important}
           .${ROOT} .master-edit-backdrop,.${ROOT} .master-edit-modal{display:none !important}
-          .${ROOT} .toolbar,.${ROOT} .editor,.${ROOT} .master-editor-col,.${ROOT} .master-preview-header{display:none}
+          .${ROOT} .toolbar,.${ROOT} .editor,.${ROOT} .master-editor-col,.${ROOT} .master-preview-header,.${ROOT} .master-intro-rail,.${ROOT} .master-intro-rail-reopen{display:none}
           .${ROOT} .master-workspace{display:block !important;max-width:none;margin:0;padding:0}
           .${ROOT} .master-preview-col{
             position:static !important;
@@ -1519,8 +1675,10 @@ export default function FlyerEventBogenNeuPage() {
             gap:var(--flyer-row-gap);
             box-sizing:border-box;
             overflow:hidden;
-            page-break-after:always;
-            break-after:page;
+            page-break-inside:avoid;
+            break-inside:avoid;
+            page-break-after:auto;
+            break-after:auto;
           }
           .${ROOT} .sheet > div{
             min-height:0;
@@ -1589,12 +1747,96 @@ export default function FlyerEventBogenNeuPage() {
           .${ROOT}.bw-print small{
             color:#222 !important;
           }
-          .${ROOT} .sheet:last-of-type{
+          .${ROOT}.a3-mode .derivation-head,
+          .${ROOT}.a6-mode .derivation-head,
+          .${ROOT}.card-mode .derivation-head{display:none !important}
+          .${ROOT}.a3-mode .derivation-shell,
+          .${ROOT}.a6-mode .derivation-shell,
+          .${ROOT}.card-mode .derivation-shell{
+            border:none !important;
+            box-shadow:none !important;
+            background:#fff !important;
+            padding:0 !important;
+            margin:0 !important;
+            max-width:none !important;
+          }
+          .${ROOT}.a3-mode .derivation-preview-stage,
+          .${ROOT}.a3-mode .derivation-fullscreen-stage,
+          .${ROOT}.a6-mode .derivation-preview-stage,
+          .${ROOT}.a6-mode .derivation-fullscreen-stage,
+          .${ROOT}.card-mode .derivation-preview-stage,
+          .${ROOT}.card-mode .derivation-fullscreen-stage{
+            max-height:none !important;
+            overflow:visible !important;
+            padding:0 !important;
+          }
+          .${ROOT}.a3-mode .derivation-preview-scale{
+            transform:none !important;
+            width:297mm !important;
+            margin:0 !important;
+            margin-bottom:0 !important;
+          }
+          .${ROOT}.a6-mode .derivation-preview-scale{
+            transform:none !important;
+            width:148mm !important;
+            margin:0 !important;
+            margin-bottom:0 !important;
+          }
+          .${ROOT}.card-mode .derivation-preview-scale{
+            transform:none !important;
+            width:auto !important;
+            margin:0 !important;
+          }
+          .${ROOT}.a3-mode .a3-sheet{
+            margin:0 auto;
+            width:297mm;
+            height:420mm;
+            box-shadow:none;
+            padding:10mm;
+            box-sizing:border-box;
+            page-break-after:always;
+            break-after:page;
+            page-break-inside:avoid;
+            break-inside:avoid;
+          }
+          .${ROOT}.a3-mode .a3-sheet:last-of-type{
+            page-break-after:auto;
+            break-after:auto;
+          }
+          .${ROOT}.a6-mode .a6-sheet{
+            margin:0 auto;
+            width:148mm;
+            height:105mm;
+            box-shadow:none;
+            padding:4mm;
+            box-sizing:border-box;
+            page-break-after:always;
+            break-after:page;
+            page-break-inside:avoid;
+            break-inside:avoid;
+          }
+          .${ROOT}.a6-mode .a6-sheet:last-of-type{
+            page-break-after:auto;
+            break-after:auto;
+          }
+          .${ROOT}.card-mode .vc-sheet{
+            margin:0 auto;
+            width:55mm;
+            height:85mm;
+            box-shadow:none;
+            padding:2.2mm;
+            box-sizing:border-box;
+            page-break-after:always;
+            break-after:page;
+            page-break-inside:avoid;
+            break-inside:avoid;
+          }
+          .${ROOT}.card-mode .vc-sheet:last-of-type{
             page-break-after:auto;
             break-after:auto;
           }
           .${ROOT} .back.back-page-2 .back-right-marketing{
-            overflow:visible;
+            overflow:hidden;
             gap:1.1mm;
             justify-content:space-between;
           }
@@ -1957,57 +2199,15 @@ export default function FlyerEventBogenNeuPage() {
           color:#2a2622;
           white-space:pre-line;
         }
-        @media print{
-          .${ROOT}.a3-mode .toolbar{display:none}
-          .${ROOT}.a3-mode{padding:0;background:#fff}
-          .${ROOT}.a3-mode .a3-sheet{
-            margin:0;
-            width:297mm;
-            height:420mm;
-            box-shadow:none;
-            padding:10mm;
-            break-after:page;
-            page-break-after:always;
-          }
-          .${ROOT}.a3-mode .a3-sheet:last-of-type{
-            break-after:auto;
-            page-break-after:auto;
-          }
-          .${ROOT}.a6-mode .toolbar{display:none}
-          .${ROOT}.a6-mode{padding:0;background:#fff}
-          .${ROOT}.a6-mode .a6-sheet{
-            margin:0;
-            width:148mm;
-            height:105mm;
-            box-shadow:none;
-            padding:4mm;
-            break-after:page;
-            page-break-after:always;
-          }
-          .${ROOT}.a6-mode .a6-sheet:last-of-type{
-            break-after:auto;
-            page-break-after:auto;
-          }
-          .${ROOT}.card-mode .toolbar{display:none}
-          .${ROOT}.card-mode{padding:0;background:#fff}
-          .${ROOT}.card-mode .vc-sheet{
-            margin:0;
-            width:55mm;
-            height:85mm;
-            box-shadow:none;
-            padding:2.2mm;
-            break-after:page;
-            page-break-after:always;
-          }
-          .${ROOT}.card-mode .vc-sheet:last-of-type{
-            break-after:auto;
-            page-break-after:auto;
-          }
-        }
       `}</style>
 
       <div className="toolbar">
-        <button type="button" onClick={() => navigate(-1)}>Zurück</button>
+        <Link
+          to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
+          className="toolbar-back-mok2"
+        >
+          ← Zurück zum mök2 (Werbeunterlagen)
+        </Link>
         <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
         <button
           type="button"
@@ -2036,7 +2236,10 @@ export default function FlyerEventBogenNeuPage() {
             A3 Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+          <Link
+            className="link-back-to-master"
+            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
+          >
             Zurück zum Master
           </Link>
         )}
@@ -2045,7 +2248,10 @@ export default function FlyerEventBogenNeuPage() {
             A6 Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+          <Link
+            className="link-back-to-master"
+            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
+          >
             Zurück zum Master
           </Link>
         )}
@@ -2054,7 +2260,10 @@ export default function FlyerEventBogenNeuPage() {
             Visitenkarten-Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+          <Link
+            className="link-back-to-master"
+            to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}
+          >
             Zurück zum Master
           </Link>
         )}
@@ -2063,13 +2272,150 @@ export default function FlyerEventBogenNeuPage() {
             {flyerSaveMessage}
           </span>
         ) : null}
-        <span style={{ fontSize: '0.8rem', color: '#5c5650', maxWidth: '22rem' }}>
-          Im Druckdialog: <strong>Skalierung 100 %</strong> (nicht „An Seite anpassen“), damit die Vorschau zum Blatt passt.
-        </span>
       </div>
 
       {!isA3Mode && !isA6Mode && !isCardMode && (
-        <div className="master-workspace">
+        <div
+          className={`master-workspace${masterIntroRailOpen ? '' : ' master-workspace--rail-closed'}`}
+        >
+          {masterIntroRailOpen ? (
+            <aside
+              className="master-intro-rail"
+              aria-label={isOeffentlich ? 'Hilfe zum Demo-Flyer ök2' : 'Hilfe zum Master-Flyer'}
+            >
+              <div className="master-intro-rail-inner">
+                <button
+                  type="button"
+                  className="master-intro-rail-close"
+                  onClick={() => setMasterIntroRailOpen(false)}
+                  aria-label="Hilfe schließen"
+                >
+                  ×
+                </button>
+                <div className="master-intro-explainer">
+                  {isOeffentlich ? (
+                    <>
+                      <h3>Was du hier machst</h3>
+                      <ul>
+                        <li>
+                          Die Vorschau zeigt einen <strong>A4-Bogen</strong> mit zwei <strong>A5-Hälften</strong> (vorne
+                          Bild + Text, hinten Texte zur <strong>Demo-Galerie ök2</strong> – durchgängig{' '}
+                          <strong>Musterdaten</strong>, keine echte Galerie).
+                        </li>
+                        <li>
+                          <strong>Klicken</strong> auf Vorderseite, Werkbild, Rückseiten-Texte oder den großen
+                          Marketing-Block – es öffnet sich ein Fenster zum Bearbeiten.{' '}
+                          <strong>Kopfzeile ziehen</strong> verschiebt das Fenster, <strong>ESC</strong> schließt.
+                        </li>
+                        <li>
+                          <strong>Speichern</strong> in der oberen Leiste legt Texte und Werkbild auf{' '}
+                          <strong>diesem Gerät</strong> ab; Plakat A3, Flyer A6 und Visitenkarte beziehen sich auf{' '}
+                          <strong>dieselben Musterdaten</strong> der Mustergalerie.
+                        </li>
+                        <li>
+                          Zum <strong>PDF</strong>: hier <strong>Drucken</strong> nutzen oder nach dem Speichern unter{' '}
+                          <strong>Werbeunterlagen</strong> „Als PDF drucken“.
+                        </li>
+                      </ul>
+                      <h3>Was du hier nicht änderst</h3>
+                      <p className="master-intro-explainer-note">
+                        Diese Teile kommen aus den <strong>Muster-Stammdaten</strong> und der{' '}
+                        <strong>Demo-Eventplanung</strong> – damit der Flyer mit der öffentlichen Demo konsistent ist.
+                        Bearbeiten geht im Admin in den jeweiligen Bereichen (nicht in diesem Flyer-Fenster):
+                      </p>
+                      <ul>
+                        <li>
+                          <strong>
+                            Kopf „{TENANT_CONFIGS.oeffentlich.galleryName} …“, Demo-Namen, „Galerieeröffnung“:
+                          </strong>{' '}
+                          feste Vorlage dieses Layouts (nicht frei textlich editierbar). Angezeigt werden die
+                          Musternamen{' '}
+                          <strong>
+                            {MUSTER_TEXTE.martina.name} & {MUSTER_TEXTE.georg.name}
+                          </strong>{' '}
+                          wie in der Demo-Galerie.
+                        </li>
+                        <li>
+                          <strong>Termin / Einladung mit Datum und Uhrzeit:</strong> aus der{' '}
+                          <strong>Eventplanung der Demo</strong> (Eröffnungs-Event), Bereich <strong>Events</strong> im
+                          Admin – <strong>nicht</strong> aus Daten einer anderen Galerie.
+                        </li>
+                        <li>
+                          <strong>Adresse, Ort, Öffnungszeiten</strong> (wenn angezeigt): aus den{' '}
+                          <strong>Stammdaten der Mustergalerie</strong> (Einstellungen im Demo-Kontext).
+                        </li>
+                        <li>
+                          <strong>QR-Codes:</strong> verweisen auf die <strong>öffentliche Demo-Galerie</strong> bzw. das{' '}
+                          <strong>Eingangstor ök2</strong> – gebaut aus den aktuellen App-URLs (Demo-Stand).
+                        </li>
+                        <li>
+                          <strong>Copyright-Zeile:</strong> Produktstandard (kgm solution), zentral vorgegeben.
+                        </li>
+                      </ul>
+                    </>
+                  ) : (
+                    <>
+                      <h3>Was du hier machst</h3>
+                      <ul>
+                        <li>
+                          Die Vorschau zeigt einen <strong>A4-Bogen</strong> mit zwei <strong>A5-Hälften</strong> (vorne
+                          Bild + Text, hinten K2/ök2-Texte).
+                        </li>
+                        <li>
+                          <strong>Klicken</strong> auf Vorderseite, Werk­bild, Rückseiten-Texte oder den großen
+                          Marketing-Block – es öffnet sich ein Fenster zum Bearbeiten.{' '}
+                          <strong>Kopfzeile ziehen</strong> verschiebt das Fenster, <strong>ESC</strong> schließt.
+                        </li>
+                        <li>
+                          <strong>Speichern</strong> in der oberen Leiste legt Texte und Werk­bild auf{' '}
+                          <strong>diesem Gerät</strong> ab; Plakat A3, Flyer A6 und Visitenkarte übernehmen denselben
+                          Stand.
+                        </li>
+                        <li>
+                          Zum <strong>PDF</strong>: hier <strong>Drucken</strong> nutzen oder nach dem Speichern unter{' '}
+                          <strong>Werbeunterlagen</strong> „Als PDF drucken“.
+                        </li>
+                      </ul>
+                      <h3>Was du hier nicht änderst</h3>
+                      <p className="master-intro-explainer-note">
+                        Diese Teile kommen aus anderen Stellen der App – damit überall dieselben Daten gelten. Bearbeiten
+                        geht in der App in den jeweiligen Bereichen (nicht in diesem Flyer-Fenster):
+                      </p>
+                      <ul>
+                        <li>
+                          <strong>Kopf „K2 Galerie …“, Namen, „Galerieeröffnung“:</strong> feste Vorlage dieses Layouts
+                          (nicht frei textlich editierbar).
+                        </li>
+                        <li>
+                          <strong>Termin / Einladung mit Datum und Uhrzeit:</strong> aus der{' '}
+                          <strong>K2-Eventplanung</strong> (Eröffnungs-Event), Bereich <strong>Events</strong> in der App.
+                        </li>
+                        <li>
+                          <strong>Adresse, Ort, Öffnungszeiten</strong> (wenn angezeigt): aus den{' '}
+                          <strong>Galerie-Stammdaten</strong> (Einstellungen / Stammdaten).
+                        </li>
+                        <li>
+                          <strong>QR-Codes:</strong> verweisen auf die <strong>Online-Galerie</strong> bzw. das{' '}
+                          <strong>Eingangstor ök2</strong> – gebaut aus den aktuellen App-URLs (aktueller Stand).
+                        </li>
+                        <li>
+                          <strong>Copyright-Zeile:</strong> Produktstandard (kgm solution), zentral vorgegeben.
+                        </li>
+                      </ul>
+                    </>
+                  )}
+                </div>
+              </div>
+            </aside>
+          ) : (
+            <button
+              type="button"
+              className="master-intro-rail-reopen"
+              onClick={() => setMasterIntroRailOpen(true)}
+            >
+              Hilfe
+            </button>
+          )}
           <div className="master-preview-col">
             <div className="master-preview-header">
               <h2 className="master-preview-title">Master A5 – Live-Vorschau</h2>
@@ -2079,19 +2425,6 @@ export default function FlyerEventBogenNeuPage() {
                   : 'Bereich in der Vorschau anklicken – Fenster zum Bearbeiten'}
               </p>
             </div>
-            <p
-              style={{
-                margin: '0 0 0.5rem',
-                fontSize: '0.84rem',
-                color: '#5c5650',
-                lineHeight: 1.45,
-              }}
-            >
-              Vorne ein Bild, hinten nur Text. Klicke auf Intro, Bild, Rückseiten-Texte oder Marketing-Block – es lässt
-              sich verschieben (Kopfzeile ziehen). ESC schließt.{' '}
-              <strong>Speichern</strong> in der Leiste sichert Texte und Werkbild für Master und alle Ableitungen auf
-              diesem Gerät.
-            </p>
             <div className="master-preview-inner">
               <div className="master-preview-scale-wrap">
                 <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
