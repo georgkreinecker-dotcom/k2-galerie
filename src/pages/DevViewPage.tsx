@@ -438,7 +438,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'handbuch': return '/k2team-handbuch'
       case 'handbuch-galerie': return '/k2-galerie-handbuch'
       case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
-      case 'platzanordnung': return '/platzanordnung'
+      case 'platzanordnung': return PROJECT_ROUTES['k2-galerie'].platzanordnung
       case 'k2-familie': return PROJECT_ROUTES['k2-familie'].home
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
@@ -1566,34 +1566,7 @@ end tell`
 
         {/* Quick-Actions: Daten veröffentlichen + Code-Update (Git) nebeneinander */}
         <Link
-          to={currentPageData.id === 'galerie' ? PROJECT_ROUTES['k2-galerie'].galerie :
-              currentPageData.id === 'galerie-oeffentlich' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich :
-              currentPageData.id === 'galerie-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieVorschau :
-              currentPageData.id === 'galerie-oeffentlich-vorschau' ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau :
-              currentPageData.id === 'vk2' ? PROJECT_ROUTES.vk2.galerie :
-              currentPageData.id === 'vk2-kunden' ? PROJECT_ROUTES.vk2.kunden :
-              currentPageData.id === 'vk2-vorschau' ? PROJECT_ROUTES.vk2.galerieVorschau :
-              currentPageData.id === 'vk2-admin' ? PROJECT_ROUTES.vk2.vollversion :
-              currentPageData.id === 'mok2' ? PROJECT_ROUTES['k2-galerie'].marketingOek2 :
-              currentPageData.id === 'handbuch' ? '/k2team-handbuch' :
-              currentPageData.id === 'produkt-vorschau' ? PROJECT_ROUTES['k2-galerie'].produktVorschau :
-              currentPageData.id === 'marketing-oek2' ? PROJECT_ROUTES['k2-galerie'].marketingOek2 :
-              currentPageData.id === 'shop' ? PROJECT_ROUTES['k2-galerie'].shop :
-              currentPageData.id === 'control' ? PROJECT_ROUTES['k2-galerie'].controlStudio :
-              currentPageData.id === 'mission' ? PROJECT_ROUTES['k2-galerie'].plan :
-              currentPageData.id === 'admin' ? '/admin' :
-              currentPageData.id === 'projects' ? '/projects' :
-              currentPageData.id === 'k2-familie' ? PROJECT_ROUTES['k2-familie'].home :
-              currentPageData.id === 'uebersicht' ? PROJECT_ROUTES['k2-galerie'].uebersicht :
-              currentPageData.id === 'notizen' ? PROJECT_ROUTES['k2-galerie'].notizen :
-              currentPageData.id === 'texte-schreibtisch' ? PROJECT_ROUTES['k2-galerie'].texteSchreibtisch :
-              currentPageData.id === 'kampagne' ? PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie :
-              currentPageData.id === 'k2-markt' ? PROJECT_ROUTES['k2-markt'].home :
-              currentPageData.id === 'presse' ? '/admin?tab=presse' :
-              currentPageData.id === 'oeffentlichkeitsarbeit' ? '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1' :
-              currentPageData.id === 'softwareentwicklung' ? PROJECT_ROUTES['k2-galerie'].softwareentwicklung :
-              currentPageData.id === 'mobile-connect' ? PROJECT_ROUTES['k2-galerie'].mobileConnect :
-              currentPageData.id === 'admin-einstellungen' ? '/admin?tab=einstellungen' : '/'}
+          to={getPathForPage(currentPageData.id)}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',
