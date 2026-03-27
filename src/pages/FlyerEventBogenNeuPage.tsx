@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
@@ -8,6 +8,7 @@ import {
   K2_STAMMDATEN_DEFAULTS,
   MUSTER_ARTWORKS,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
@@ -22,8 +23,6 @@ const ROOT = 'flyer-event-bogen-neu'
 const SLOTS = [1, 2, 3, 4] as const
 const LEFT_WORK_KEY = 'k2-flyer-event-bogen-left-work'
 const RIGHT_WORK_KEY = 'k2-flyer-event-bogen-right-work'
-const BACK_OEK2_WORK_KEY = 'k2-flyer-event-bogen-back-oek2-work'
-const BACK_TOR_KIND_KEY = 'k2-flyer-event-bogen-back-tor-kind'
 
 function getK2Basics() {
   const gallery = loadStammdaten('k2', 'gallery')
@@ -45,13 +44,6 @@ function getK2Basics() {
 
 function normalizeFileToUrl(file: File): string {
   return URL.createObjectURL(file)
-}
-
-function isAllowedTorFile(file: File): boolean {
-  const mime = (file.type || '').toLowerCase()
-  if (mime === 'image/jpeg' || mime === 'image/png' || mime === 'image/webp') return true
-  const name = (file.name || '').toLowerCase()
-  return /\.(jpg|jpeg|png|webp)$/i.test(name)
 }
 
 /** Öffnungszeiten für Flyer: Freitext + optional Wochentabelle (Sa explizit). */
@@ -94,24 +86,15 @@ export default function FlyerEventBogenNeuPage() {
   const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
-  const defaultTor = '/img/k2/tor-rueckseite-k2.png'
 
   const [leftSrc, setLeftSrc] = useState(defaultLeft)
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
-  const [torSrc, setTorSrc] = useState(defaultTor)
   const [k2Works, setK2Works] = useState<any[]>([])
   const [leftWorkNumber, setLeftWorkNumber] = useState('')
   const [rightWorkNumber, setRightWorkNumber] = useState('')
   const [leftWerkLabel, setLeftWerkLabel] = useState('Werk links (K2)')
   const [rightWerkLabel, setRightWerkLabel] = useState('Werk rechts (K2)')
-  const [torStatus, setTorStatus] = useState('Bereit')
-  const [torEvents, setTorEvents] = useState(0)
-  const [oek2Works, setOek2Works] = useState<any[]>([])
-  const [backOek2WorkNumber, setBackOek2WorkNumber] = useState('')
-  const [backTorKind, setBackTorKind] = useState<'default' | 'oek2' | 'upload'>('default')
-  const [backOek2Label, setBackOek2Label] = useState('Seite 2 Bild: Standard-Tor')
-  const torUploadObjectUrlRef = useRef<string | null>(null)
   const [frontQrDataUrl, setFrontQrDataUrl] = useState('')
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
   const [eventDateLine, setEventDateLine] = useState('Termin folgt')
@@ -119,6 +102,14 @@ export default function FlyerEventBogenNeuPage() {
   const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>(layoutFromUrl)
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
+
+  const oek2MarketingBlocks = useMemo(
+    () =>
+      PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER.split(/\n\n+/)
+        .map((s: string) => s.trim())
+        .filter(Boolean),
+    []
+  )
 
   const terminKomplettV2 = useMemo(
     () =>
@@ -207,56 +198,6 @@ export default function FlyerEventBogenNeuPage() {
     }
   }, [])
 
-  const revokeTorUploadObjectUrl = useCallback(() => {
-    const u = torUploadObjectUrlRef.current
-    if (u) {
-      try {
-        URL.revokeObjectURL(u)
-      } catch {
-        /* noop */
-      }
-      torUploadObjectUrlRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      revokeTorUploadObjectUrl()
-    }
-  }, [revokeTorUploadObjectUrl])
-
-  useEffect(() => {
-    let active = true
-    void readArtworksForContextWithResolvedImages(true, false).then((list) => {
-      if (!active) return
-      const raw = Array.isArray(list) && list.length > 0 ? list : MUSTER_ARTWORKS
-      const withImage = raw.filter((a) => typeof a?.imageUrl === 'string' && String(a.imageUrl).trim().length > 0)
-      setOek2Works(withImage)
-      if (torUploadObjectUrlRef.current) return
-      const kind = (localStorage.getItem(BACK_TOR_KIND_KEY) || 'default') as 'default' | 'oek2'
-      const savedNum = localStorage.getItem(BACK_OEK2_WORK_KEY) || ''
-      if (kind === 'oek2' && savedNum) {
-        const w = withImage.find((x) => String(x?.number || '') === savedNum)
-        if (w?.imageUrl) {
-          setTorSrc(String(w.imageUrl))
-          setBackTorKind('oek2')
-          setBackOek2WorkNumber(savedNum)
-          setBackOek2Label(`Seite 2 Bild: ök2 ${savedNum}`)
-          return
-        }
-        localStorage.removeItem(BACK_OEK2_WORK_KEY)
-        localStorage.setItem(BACK_TOR_KIND_KEY, 'default')
-      }
-      setTorSrc(defaultTor)
-      setBackTorKind('default')
-      setBackOek2WorkNumber('')
-      setBackOek2Label('Seite 2 Bild: Standard-Tor')
-    })
-    return () => {
-      active = false
-    }
-  }, [])
-
   const handleFrontUpload = (slot: 'left' | 'middle' | 'right', file: File | null) => {
     if (!file) return
     if (!file.type.startsWith('image/')) return
@@ -264,46 +205,6 @@ export default function FlyerEventBogenNeuPage() {
     if (slot === 'left') setLeftSrc(url)
     if (slot === 'middle') setMiddleSrc(url)
     if (slot === 'right') setRightSrc(url)
-  }
-
-  const handleTorUpload = (file: File | null) => {
-    if (!file) return
-    const ok = isAllowedTorFile(file)
-    if (!ok) {
-      setTorStatus('Nur JPG/PNG/WEBP erlaubt')
-      return
-    }
-    revokeTorUploadObjectUrl()
-    const url = normalizeFileToUrl(file)
-    torUploadObjectUrlRef.current = url
-    setTorEvents((v) => v + 1)
-    setTorSrc(url)
-    setBackTorKind('upload')
-    setBackOek2WorkNumber('')
-    localStorage.removeItem(BACK_OEK2_WORK_KEY)
-    localStorage.removeItem(BACK_TOR_KIND_KEY)
-    setBackOek2Label('Seite 2 Bild: hochgeladen')
-    setTorStatus(`Datei gesetzt: ${file.name || 'Bild'}`)
-  }
-
-  const handleBackOek2WorkSelect = (number: string) => {
-    revokeTorUploadObjectUrl()
-    setBackOek2WorkNumber(number)
-    if (!number) {
-      setTorSrc(defaultTor)
-      setBackTorKind('default')
-      localStorage.removeItem(BACK_OEK2_WORK_KEY)
-      localStorage.setItem(BACK_TOR_KIND_KEY, 'default')
-      setBackOek2Label('Seite 2 Bild: Standard-Tor')
-      return
-    }
-    const item = oek2Works.find((w) => String(w?.number || '') === number)
-    if (!item?.imageUrl) return
-    setTorSrc(String(item.imageUrl))
-    setBackTorKind('oek2')
-    localStorage.setItem(BACK_OEK2_WORK_KEY, number)
-    localStorage.setItem(BACK_TOR_KIND_KEY, 'oek2')
-    setBackOek2Label(`Seite 2 Bild: ök2 ${number}`)
   }
 
   const handleLeftWorkSelect = (number: string) => {
@@ -427,9 +328,20 @@ export default function FlyerEventBogenNeuPage() {
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
         </div>
       </div>
-      <div className="back-right">
-        {backTorKind === 'oek2' ? <span className="back-right-badge">Musterwerk ök2</span> : null}
-        <img src={torSrc} alt="" />
+      <div className="back-right back-right-marketing" role="region" aria-label="Was ist ök2 – Marketingtext">
+        {oek2MarketingBlocks.map((block: string, idx: number) => {
+          const t = block.trim()
+          const isShortQuestion = /^[^\n]{1,120}\?$/.test(t) && !t.includes('\n')
+          return isShortQuestion ? (
+            <h4 key={`mkt-h-${idx}`} className="back-mkt-heading">
+              {t}
+            </h4>
+          ) : (
+            <p key={`mkt-p-${idx}`} className="back-mkt-body">
+              {t}
+            </p>
+          )
+        })}
       </div>
     </div>
   )
@@ -675,18 +587,38 @@ export default function FlyerEventBogenNeuPage() {
           line-height:1.32;
         }
         .${ROOT} .back.back-page-2 .back-left .back-copyright small{font-size:12px}
-        .${ROOT} .back.back-page-2 .back-right .back-right-badge{
-          position:absolute;
-          left:2mm;
-          top:2mm;
-          z-index:2;
-          background:rgba(255,255,255,.94);
-          color:#1c1a18;
-          font-size:12px;
-          font-weight:800;
-          padding:.6mm 1.2mm;
-          border-radius:1mm;
+        .${ROOT} .back-right.back-right-marketing{
+          display:flex;
+          flex-direction:column;
+          gap:1.4mm;
+          padding:2.4mm 2.2mm;
+          background:#fffefb;
+          border:1px solid #e8e2d9;
+          border-radius:1.2mm;
+          overflow:auto;
+          align-content:flex-start;
+          min-height:0;
         }
+        .${ROOT} .back.back-page-2 .back-right-marketing{
+          gap:1.8mm;
+          padding:3mm 2.6mm;
+        }
+        .${ROOT} .back-mkt-heading{
+          margin:0;
+          font-size:10.5px;
+          line-height:1.12;
+          font-weight:850;
+          color:#0f6f66;
+          letter-spacing:.015em;
+        }
+        .${ROOT} .back.back-page-2 .back-mkt-heading{font-size:21px;line-height:1.1}
+        .${ROOT} .back-mkt-body{
+          margin:0;
+          font-size:7.05px;
+          line-height:1.38;
+          color:#2d2a27;
+        }
+        .${ROOT} .back.back-page-2 .back-mkt-body{font-size:14.1px;line-height:1.34}
         .${ROOT} .back-left{
           padding:3mm;
           background:#faf8f5;
@@ -741,14 +673,6 @@ export default function FlyerEventBogenNeuPage() {
           text-align:center;
         }
         .${ROOT} .back-left small{font-size:6px;color:#6a6258}
-        .${ROOT} .back-right{position:relative}
-        .${ROOT} .back-right img{width:100%;height:100%;object-fit:cover}
-        .${ROOT} .back-right .back-invite{
-          position:absolute;right:2mm;bottom:2mm;
-          background:rgba(12,92,85,.82);color:#fff;
-          padding:1mm 1.6mm;border-radius:1mm;
-          font-size:6.5px;font-weight:600;line-height:1.2;
-        }
         @media print{
           /* Fester 4er-Nutzen pro A4 mit berechneter Zeilenhöhe */
           .${ROOT}{
@@ -876,8 +800,12 @@ export default function FlyerEventBogenNeuPage() {
             line-height:1.14;
           }
           .${ROOT} .back.back-page-2 .back-left .back-copyright small{font-size:10.2px}
-          .${ROOT} .back.back-page-2 .back-right .back-right-badge{font-size:9px;padding:.45mm .9mm}
-          .${ROOT} .back-right img{object-fit:cover}
+          .${ROOT} .back.back-page-2 .back-right-marketing{
+            gap:1.1mm;
+            padding:1.7mm 1.6mm;
+          }
+          .${ROOT} .back.back-page-2 .back-mkt-heading{font-size:21px;line-height:1.1}
+          .${ROOT} .back.back-page-2 .back-mkt-body{font-size:14.1px;line-height:1.34}
           .${ROOT} .sheet:last-of-type{
             page-break-after:auto;
             break-after:auto;
@@ -948,38 +876,11 @@ export default function FlyerEventBogenNeuPage() {
             ))}
           </select>
         </label>
-        <label>
-          Musterwerk ök2 (Seite 2 rechts)
-          <select
-            value={backTorKind === 'upload' ? '__upload__' : backOek2WorkNumber || ''}
-            onChange={(e) => {
-              const v = e.target.value
-              if (v === '__upload__') return
-              handleBackOek2WorkSelect(v)
-            }}
-          >
-            <option value="">Standard-Torbild (K2)</option>
-            {backTorKind === 'upload' ? (
-              <option value="__upload__">Aktuell: eigenes Bild (Upload)</option>
-            ) : null}
-            {oek2Works.map((w) => (
-              <option key={`oek2-back-${String(w?.number || w?.id || '')}`} value={String(w?.number || '')}>
-                ök2 {String(w?.number || '')}
-                {w?.title ? ` – ${String(w.title)}` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Eigenes Bild Seite 2 (JPG/PNG/WEBP, ersetzt Auswahl oben)
-          <input
-            type="file"
-            accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
-            onChange={(e) => handleTorUpload(e.currentTarget.files?.[0] || null)}
-          />
-        </label>
-        <div>
-          Status: {torStatus} · Input-Events: {torEvents} · {backOek2Label} · {leftWerkLabel} · {rightWerkLabel}
+        <p style={{ margin: 0, fontSize: '0.85rem', color: '#5c5650', maxWidth: '42rem' }}>
+          Seite 2 rechts: ausführlicher Erklärungstext zu ök2 – einheitlich mit der Produktbeschreibung gepflegt (eine Quelle im Projekt).
+        </p>
+        <div style={{ fontSize: '0.8rem', color: '#5c5650' }}>
+          Vorschau Werke: {leftWerkLabel} · {rightWerkLabel}
         </div>
       </div>
 
