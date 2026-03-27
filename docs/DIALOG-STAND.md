@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 (Abend) – **Session beendet – Sammelstand committed:** Alles Lokale mit **Test + Build grün** gebündelt: u. a. **VK2 Präsentationsmappe Vollversion** (`public/praesentationsmappe-vk2-vollversion/`), **Plakat Galerieeröffnung → Redirect** (alte Page entfernt), **TextsA4Page**, **Praesentationsmappe** / Vollversion, **tenantConfig**, **navigation**, **stammdatenStorage** / **documentsStorage**, **DevView**, **GalerieVorschau**, **Vk2Galerie**, **useServerBuildTimestamp**, Doku/Handbuch, Build-Dateien. **Commit:** `25003b5`
+**Letzter Stand:** 27.03.26 (Abend) – **Session beendet – Sammelstand committed:** Alles Lokale mit **Test + Build grün** gebündelt: u. a. **VK2 Präsentationsmappe Vollversion** (`public/praesentationsmappe-vk2-vollversion/`), **Plakat Galerieeröffnung → Redirect** (alte Page entfernt), **TextsA4Page**, **Praesentationsmappe** / Vollversion, **tenantConfig**, **navigation**, **stammdatenStorage** / **documentsStorage**, **DevView**, **GalerieVorschau**, **Vk2Galerie**, **useServerBuildTimestamp**, Doku/Handbuch, Build-Dateien. **Commit:** `c2305c9` ✅ auf GitHub
 
 **Was wir JETZT tun:** Nächster Tag: `npm run briefing`, DIALOG-STAND lesen; Stand = **GitHub/Vercel** nach Deployment „Ready“.
 
