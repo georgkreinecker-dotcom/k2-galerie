@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Event-Bogen Seite 2 (Rückseite):** Alle **Texte doppelt so groß** (Klasse `back-page-2`). **Bild rechts** wählbar: **Musterwerke ök2** (`readArtworksForContextWithResolvedImages(true)` + Fallback `MUSTER_ARTWORKS`), **Standard-Torbild**, oder **eigenes Upload** (ersetzt Auswahl; Blob-URL beim Wechsel widerrufen). Badge „Musterwerk ök2“ bei Auswahl. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Event-Bogen Seite 2 (Rückseite):** Alle **Texte doppelt so groß** (Klasse `back-page-2`). **Bild rechts** wählbar: **Musterwerke ök2** (`readArtworksForContextWithResolvedImages(true)` + Fallback `MUSTER_ARTWORKS`), **Standard-Torbild**, oder **eigenes Upload** (ersetzt Auswahl; Blob-URL beim Wechsel widerrufen). Badge „Musterwerk ök2“ bei Auswahl. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** `56e7bac` ✅ auf GitHub
 
 ---
 
