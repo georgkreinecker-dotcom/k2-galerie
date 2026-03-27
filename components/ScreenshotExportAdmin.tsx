@@ -21465,21 +21465,25 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Master zuerst: A5 Vorderseite + Rückseite auf einer A4-Übersicht pflegen. Daraus A3, A6 und Visitenkarten ableiten.',
-                                docs: byTyp['plakat'] || [],
+                                  'Einzige Pflegequelle ist A5 (Vorderseite + Rückseite auf A4). A3, A6 und Visitenkarten sind reine Ableitungen zur Ansicht.',
+                                docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 erstellenGruppen: [
                                   {
-                                    titel: 'Aus der App (bearbeiten)',
+                                    titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
                                     hinweis:
-                                      'In der Druckvorschau Format wählen: A4, A3 oder A5 – wie bei Flyer und Newsletter.',
+                                      'Einzige Bearbeitung mit technischem Freiraum. Alle anderen Formate sind nur Ableitungen zur Ansicht.',
                                     varianten: [
                                       {
-                                        label: 'Plakat öffnen',
+                                        label: 'Master bearbeiten',
                                         onErstellen: () => {
-                                          const ev = events.find((e: any) => e.id === event.id)
-                                          if (ev) generatePlakatForEvent(ev)
+                                          const path =
+                                            PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                          const join = path.includes('?') ? '&' : '?'
+                                          navigateFromOeffentlichkeitsarbeitOverlay(
+                                            `${path}${join}layout=standard`
+                                          )
                                         },
                                       },
                                     ],
@@ -21488,39 +21492,10 @@ ${name}`
                                     ? []
                                     : [
                                         {
-                                          titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
-                                          hinweis:
-                                            'Das ist der Startpunkt: Inhalte einmal pflegen, danach die anderen Formate ableiten.',
+                                          titel: 'Ableitung · Großformat (A3, nur Ansicht)',
                                           varianten: [
                                             {
-                                              label: 'Standard öffnen',
-                                              onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}layout=standard`
-                                                )
-                                              },
-                                            },
-                                            {
-                                              label: 'Variante 2 öffnen',
-                                              onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}layout=variant2`
-                                                )
-                                              },
-                                            },
-                                          ],
-                                        },
-                                        {
-                                          titel: 'Event-Bogen · Großformat (A3)',
-                                          varianten: [
-                                            {
-                                              label: 'Standard',
+                                              label: 'Ansehen',
                                               onErstellen: () => {
                                                 const path =
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
@@ -21530,24 +21505,13 @@ ${name}`
                                                 )
                                               },
                                             },
-                                            {
-                                              label: 'Variante 2',
-                                              onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a3&layout=variant2`
-                                                )
-                                              },
-                                            },
                                           ],
                                         },
                                         {
-                                          titel: 'Event-Bogen · Karte A6',
+                                          titel: 'Ableitung · Karte A6 (nur Ansicht)',
                                           varianten: [
                                             {
-                                              label: 'Standard',
+                                              label: 'Ansehen',
                                               onErstellen: () => {
                                                 const path =
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
@@ -21557,24 +21521,13 @@ ${name}`
                                                 )
                                               },
                                             },
-                                            {
-                                              label: 'Variante 2',
-                                              onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a6&layout=variant2`
-                                                )
-                                              },
-                                            },
                                           ],
                                         },
                                         {
-                                          titel: 'Event-Bogen · Visitenkarten',
+                                          titel: 'Ableitung · Visitenkarten (nur Ansicht)',
                                           varianten: [
                                             {
-                                              label: 'Standard',
+                                              label: 'Ansehen',
                                               onErstellen: () => {
                                                 const path =
                                                   PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
@@ -21584,40 +21537,9 @@ ${name}`
                                                 )
                                               },
                                             },
-                                            {
-                                              label: 'Variante 2',
-                                              onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=card&layout=variant2`
-                                                )
-                                              },
-                                            },
                                           ],
                                         },
                                       ]),
-                                ],
-                              },
-                              {
-                                typ: 'event-flyer' as const,
-                                icon: '📄',
-                                titel: 'Event-Flyer',
-                                beschreibung: 'Handzettel PDF (bearbeitbar).',
-                                docs: byTyp['event-flyer'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                erstellenVarianten: [
-                                  {
-                                    label: 'Handzettel zum Event',
-                                    onErstellen: () => {
-                                      const ev = events.find((e: any) => e.id === event.id)
-                                      if (!ev) return
-                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                      generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
-                                    },
-                                  },
                                 ],
                               },
                               {
