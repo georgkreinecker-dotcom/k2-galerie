@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Event-Bogen Seite 2 (Rückseite rechts):** Statt Foto **Marketing-Text zu ök2** aus **`PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER`** (`tenantConfig.ts`), Absätze als Überschrift (Frage mit `?`) oder Fließtext. **Build-Fix:** Konstante in **`FlyerEventBogenNeuPage.tsx`** importiert, `map`-Parameter typisiert. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Event-Bogen Rückseite „Welche Sparten?“:** Nur noch **Auflistung** der sechs `FOCUS_DIRECTIONS`-Labels (eine Zeile pro Sparte). **`white-space: pre-line`** auf `.back-mkt-body`, damit Zeilenumbrüche im Druck sichtbar sind. **`tenantConfig.ts`**, **`FlyerEventBogenNeuPage.tsx`**. **Commit:** `030130b` ✅ auf GitHub
+
+---
+
+**Letzter Stand:** 27.03.26 – **Event-Bogen Seite 2 (Rückseite rechts):** Statt Foto **Marketing-Text zu ök2** aus **`PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER`** (`tenantConfig.ts`), Absätze als Überschrift (Frage mit `?`) oder Fließtext. **Build-Fix:** Konstante in **`FlyerEventBogenNeuPage.tsx`** importiert, `map`-Parameter typisiert. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** _älterer Stand_
 
 ---
 
@@ -10,7 +14,7 @@
 
 **Letzter Stand:** 27.03.26 – **Event-Bogen neu, Layout „Variante 2“:** Seite 1 optional **ein Bild links** (Werk links), **größere Schriften**, **Einladungsblock** (Kicker + „Galerieeröffnung“) mit **`formatEventTerminKomplett`** mehrzeilig (alle Event-Tage inkl. Samstag, wenn `dailyTimes` im Event). Zusätzlich **Öffnungszeiten Galerie** aus Stammdaten (`openingHours` + optional `openingHoursWeek` mit Sa). Editor: **Layout Seite 1** Standard vs. Variante 2; bei V2 sind Satz-Variante A/B, Bild mitte und Werk rechts deaktiviert. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** `cccc711` ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: Event-Bogen → **Seite 2** rechts: langer ök2-Marketingtext (Druck/Vorschau); Text zentral in `tenantConfig` anpassbar.
+**Was wir JETZT tun:** Event-Bogen bei Bedarf **Druck/Vorschau** prüfen (Rückseite rechts: Sparten-Liste + Strategietext). Text weiter zentral in `tenantConfig` (`PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER`).
 
 ---
 
