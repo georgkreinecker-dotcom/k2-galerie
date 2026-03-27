@@ -3,7 +3,17 @@ import { createPortal, flushSync } from 'react-dom'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTenant } from '../src/context/TenantContext'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, WILLKOMMEN_ROUTE, BENUTZER_HANDBUCH_ROUTE, VK2_HANDBUCH_ROUTE, ENTDECKEN_ROUTE } from '../src/config/navigation'
+import {
+  PROJECT_ROUTES,
+  AGB_ROUTE,
+  BASE_APP_URL,
+  WILLKOMMEN_ROUTE,
+  BENUTZER_HANDBUCH_ROUTE,
+  VK2_HANDBUCH_ROUTE,
+  ENTDECKEN_ROUTE,
+  flyerEventBogenUrl,
+  type FlyerEventBogenTenantContext,
+} from '../src/config/navigation'
 import { buildQrUrlWithBust } from '../src/hooks/useServerBuildTimestamp'
 import { APP_BASE_URL } from '../src/config/externalUrls'
 import ZertifikatTab from './tabs/ZertifikatTab'
@@ -8639,11 +8649,22 @@ ${'='.repeat(60)}
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
         case 'praesentationsmappe-kurz': {
-          const mappeQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+          const mappeQs = tenant.isOeffentlich
+            ? '?context=oeffentlich'
+            : tenant.isVk2
+              ? '?context=vk2'
+              : ''
+          const pmHelperFlyerT: FlyerEventBogenTenantContext = tenant.isOeffentlich
+            ? 'oeffentlich'
+            : tenant.isVk2
+              ? 'vk2'
+              : 'k2'
           const vk2Qs = '?variant=vk2'
           const r = PROJECT_ROUTES['k2-galerie']
           const link = (path: string, label: string) =>
             `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${mappeQs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
+          const linkFull = (pathWithQuery: string, label: string) =>
+            `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${pathWithQuery}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
           const linkVk2 = (path: string, label: string) =>
             `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${vk2Qs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
           const helperHtml =
@@ -8655,7 +8676,7 @@ ${'='.repeat(60)}
             linkVk2(r.praesentationsmappe, 'VK2 Kurzversion') +
             linkVk2(r.praesentationsmappeVollversion, 'VK2 Vollversion') +
             link('/prospekt-k2-galerie', 'Prospekt / Flyer') +
-            link(r.plakatGalerieeroeffnung, 'Plakat Galerieeröffnung (A3)') +
+            linkFull(flyerEventBogenUrl({ mode: 'a3', tenant: pmHelperFlyerT }), 'Plakat A3 (Ableitung vom Flyer-Master)') +
             '</body></html>'
           openDocumentInApp(helperHtml, docTitle)
           return
@@ -15968,7 +15989,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
         {/* Präsentationsmappen – eigener Tab (von Hub erreichbar) */}
         {activeTab === 'praesentationsmappen' && (() => {
-          const pmTabQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+          const pmTabQs = tenant.isOeffentlich
+            ? '?context=oeffentlich'
+            : tenant.isVk2
+              ? '?context=vk2'
+              : ''
+          const pmFlyerTenant: FlyerEventBogenTenantContext = tenant.isOeffentlich
+            ? 'oeffentlich'
+            : tenant.isVk2
+              ? 'vk2'
+              : 'k2'
+          const pmA3Flyer = flyerEventBogenUrl({ mode: 'a3', tenant: pmFlyerTenant })
           const pmVk2Qs = '?variant=vk2'
           return (
           <section style={{
@@ -15983,7 +16014,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               📁 Präsentationsmappen
             </h2>
             <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Kurzvariante, Vollversion, Prospekt/Flyer und Plakat Galerieeröffnung (A3): Links öffnen, im Browser als PDF drucken. Vorschau, kein Bearbeiten in der App.
+              Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (dieselbe Route wie der Flyer-Master, nur Ableitung): im Browser öffnen, als PDF drucken. Bearbeiten des Plakats nur über den Flyer-Master.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               <button
@@ -16038,12 +16069,12 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </a>
               <button
                 type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs, e)}
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmA3Flyer, e)}
                 style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
               >
-                Plakat Galerieeröffnung (A3)
+                Plakat A3 (Flyer-Master-Ableitung)
               </button>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+              <a href={BASE_APP_URL + pmA3Flyer} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Plakat A3 (neuer Tab)
               </a>
             </div>
@@ -21419,7 +21450,16 @@ ${name}`
                           const normalizedTyp = rawTyp === 'flyer' ? 'event-flyer' : rawTyp
                           if (normalizedTyp && byTyp[normalizedTyp]) byTyp[normalizedTyp].push(d)
                         })
-                        const mappeCtxQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+                        const flyerTenant: FlyerEventBogenTenantContext = tenant.isOeffentlich
+                          ? 'oeffentlich'
+                          : tenant.isVk2
+                            ? 'vk2'
+                            : 'k2'
+                        const mappeCtxQs = tenant.isOeffentlich
+                          ? '?context=oeffentlich'
+                          : tenant.isVk2
+                            ? '?context=vk2'
+                            : ''
                         const listItemStyle = {
                           padding: '0.5rem 0.75rem',
                           background: s.bgElevated,
@@ -21465,7 +21505,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Einzige Pflegequelle ist A5 (vorne ein Bild, hinten nur Text auf A4). A3, A6 und Visitenkarten sind reine Ableitungen zur Ansicht.',
+                                  'Ein Weg: Master A5 (Muster/Galerie + Event) auf einer A4-Übersicht. A3, A6 und Visitenkarten sind nur Ableitungen zum Ansehen/Drucken – keine zweite Plakat-Seite, keine Inhalte aus mök2.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21473,16 +21513,13 @@ ${name}`
                                   {
                                     titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
                                     hinweis:
-                                      'Aktives Muster: vorne ein Bild, hinten nur Text. Einzige Bearbeitung mit technischem Freiraum.',
+                                      'Daten aus Muster-Galerie und Event (Demo: MUSTER_EVENTS). Vorne Bild, hinten nur Text – einzige Bearbeitungsstelle.',
                                     varianten: [
                                       {
                                         label: 'Master bearbeiten',
                                         onErstellen: () => {
-                                          const path =
-                                            PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                          const join = path.includes('?') ? '&' : '?'
                                           navigateFromOeffentlichkeitsarbeitOverlay(
-                                            `${path}${join}layout=variant2`
+                                            flyerEventBogenUrl({ tenant: flyerTenant }),
                                           )
                                         },
                                       },
@@ -21497,11 +21534,8 @@ ${name}`
                                             {
                                               label: 'Ansehen',
                                               onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a3&layout=variant2`
+                                                  flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant }),
                                                 )
                                               },
                                             },
@@ -21513,11 +21547,8 @@ ${name}`
                                             {
                                               label: 'Ansehen',
                                               onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=a6&layout=variant2`
+                                                  flyerEventBogenUrl({ mode: 'a6', tenant: flyerTenant }),
                                                 )
                                               },
                                             },
@@ -21529,11 +21560,8 @@ ${name}`
                                             {
                                               label: 'Ansehen',
                                               onErstellen: () => {
-                                                const path =
-                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                                const join = path.includes('?') ? '&' : '?'
                                                 navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  `${path}${join}mode=card&layout=variant2`
+                                                  flyerEventBogenUrl({ mode: 'card', tenant: flyerTenant }),
                                                 )
                                               },
                                             },
@@ -21592,7 +21620,7 @@ ${name}`
                                 typ: 'praesentationsmappen' as const,
                                 icon: '📁',
                                 titel: 'Präsentationsmappen',
-                                beschreibung: 'Vorschau: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat Galerieeröffnung (A3) über die Links öffnen, im Browser als PDF drucken. Texte/Daten im Event und unter Stammdaten korrigieren, dann Seite neu laden. Nicht wie Flyer oder Presse in der App erzeugbar; keine Inhaltsbearbeitung hier.',
+                                beschreibung: 'Vorschau: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (gleiche Flyer-Master-Route, nur A3-Ansicht) – im Browser drucken. Plakat-Inhalt kommt aus dem Flyer-Master/Muster, nicht aus mök2. Keine getrennte Plakat-Seite mehr.',
                                 docs: byTyp['praesentationsmappe-kurz'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21778,15 +21806,15 @@ ${name}`
                                                 type="button"
                                                 onClick={(e) =>
                                                   navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs,
+                                                    flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant }),
                                                     e
                                                   )
                                                 }
                                                 style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
                                               >
-                                                Plakat Eröffnung (A3)
+                                                Plakat A3 (Master-Ableitung)
                                               </button>
-                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <a href={BASE_APP_URL + flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant })} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 Plakat A3 (neuer Tab)
                                               </a>
                                             </div>

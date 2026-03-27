@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { TexteSchreibtischBoard } from '../components/TexteSchreibtischBoard'
 
 const R = PROJECT_ROUTES['k2-galerie']
+const TEXTS_A4_BASE = '/projects/k2-galerie/texts-a4'
+const textsA4 = (doc: string) => `${TEXTS_A4_BASE}?doc=${encodeURIComponent(doc)}`
 
 /** Handbuch-Dokument in der APf (Smart Panel rechts) – gleicher Mechanismus wie beim Kompass */
 function handbuchApf(docFile: string) {
@@ -29,6 +31,87 @@ type Bereich = {
 }
 
 const BEREICHE: Bereich[] = [
+  {
+    id: 'texts-kommunikation',
+    titel: 'Texts – Kommunikation',
+    untertitel: 'Hauptfokus: Kommunikation nach außen. Hier liegen die Mappen und Handbücher, die du direkt zum Lesen, Zeigen und Senden brauchst.',
+    akzent: '#6d28d9',
+    zoneBg: 'linear-gradient(145deg, rgba(124,58,237,0.08), rgba(245,243,255,0.98))',
+    zettel: [
+      {
+        id: 'texts-pm-kurz',
+        titel: 'Präsentationsmappe Kurz',
+        zweck: 'Kommunikation kompakt, direkt versendbar',
+        to: textsA4('pm-kurz'),
+        rotateDeg: 0.3,
+      },
+      {
+        id: 'texts-pm-voll',
+        titel: 'Präsentationsmappe Voll',
+        zweck: 'Kommunikation vollständig, druckbar',
+        to: textsA4('pm-voll'),
+        rotateDeg: -0.3,
+      },
+      {
+        id: 'texts-pm-vk2-kurz',
+        titel: 'Präsentationsmappe VK2 Kurz',
+        zweck: 'Vereins-Kommunikation kompakt',
+        to: textsA4('pm-vk2-kurz'),
+        rotateDeg: 0.15,
+      },
+      {
+        id: 'texts-pm-vk2-voll',
+        titel: 'Präsentationsmappe VK2 Voll',
+        zweck: 'Vereins-Kommunikation vollständig',
+        to: textsA4('pm-vk2-voll'),
+        rotateDeg: -0.2,
+      },
+      {
+        id: 'texts-benutzer-handbuch',
+        titel: 'Handbuch Benutzer',
+        zweck: 'Alltag, Einstieg, Kommunikation mit Nutzer:innen',
+        to: textsA4('hb-benutzer'),
+        rotateDeg: 0.2,
+      },
+      {
+        id: 'texts-vk2-handbuch',
+        titel: 'Handbuch VK2',
+        zweck: 'Vereins-Handbuch für Kommunikation und Ablauf',
+        to: textsA4('hb-vk2'),
+        rotateDeg: -0.15,
+      },
+    ],
+  },
+  {
+    id: 'texts-grundlagen',
+    titel: 'Texts – Grundlagen',
+    untertitel: 'Komplette Handbücher als Referenz. Kommunikation bleibt im Vordergrund, diese Schublade ist die ruhige Basis im Hintergrund.',
+    akzent: '#4338ca',
+    zoneBg: 'linear-gradient(145deg, rgba(67,56,202,0.08), rgba(238,242,255,0.98))',
+    zettel: [
+      {
+        id: 'texts-k2team-handbuch',
+        titel: 'Handbuch Team',
+        zweck: 'K2Team Handbuch – Gesamtüberblick',
+        to: textsA4('hb-team'),
+        rotateDeg: -0.3,
+      },
+      {
+        id: 'texts-k2-galerie-handbuch',
+        titel: 'Handbuch K2 Galerie',
+        zweck: 'Systematische Referenz zur Galerie',
+        to: textsA4('hb-k2-galerie'),
+        rotateDeg: 0.25,
+      },
+      {
+        id: 'texts-k2-familie-handbuch',
+        titel: 'Handbuch K2 Familie',
+        zweck: 'Referenz für den Familienbereich',
+        to: textsA4('hb-k2-familie'),
+        rotateDeg: -0.2,
+      },
+    ],
+  },
   {
     id: 'eroeffnung',
     titel: 'Eröffnung & Freund:innen',
@@ -59,9 +142,9 @@ const BEREICHE: Bereich[] = [
       },
       {
         id: 'plakat',
-        titel: 'Plakat Galerieeröffnung',
-        zweck: 'A3, aus Event & Stammdaten',
-        to: R.plakatGalerieeroeffnung,
+        titel: 'Plakat A3',
+        zweck: 'Gleiche Route wie Flyer-Master, nur A3 – Muster/Event & Stammdaten',
+        to: flyerEventBogenUrl({ mode: 'a3', tenant: 'k2' }),
         rotateDeg: 0.28,
       },
     ],
@@ -239,7 +322,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
             margin: 0,
             fontSize: '0.96rem',
             fontWeight: 800,
-            color: '#1c1a18',
+            color: '#0f172a',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '0.35rem',
@@ -247,14 +330,26 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
             flexWrap: 'wrap',
           }}
         >
-          <span style={{ width: 7, height: 7, borderRadius: 999, background: b.akzent, flexShrink: 0, marginTop: '0.35rem' }} aria-hidden />
-          <span style={{ flex: '1 1 auto', minWidth: 0 }}>{b.titel}</span>
+          <span style={{ width: 8, height: 8, borderRadius: 999, background: b.akzent, flexShrink: 0, marginTop: '0.35rem', boxShadow: '0 0 0 1px rgba(255,255,255,0.7)' }} aria-hidden />
+          <span
+            style={{
+              flex: '1 1 auto',
+              minWidth: 0,
+              padding: '0.12rem 0.35rem',
+              borderRadius: 6,
+              background: 'rgba(255,255,255,0.8)',
+              border: '1px solid rgba(28,26,24,0.12)',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+            }}
+          >
+            {b.titel}
+          </span>
           <span
             style={{
               fontSize: '0.72rem',
               fontWeight: 700,
-              color: '#5c5650',
-              background: 'rgba(255,254,251,0.75)',
+              color: '#334155',
+              background: 'rgba(255,254,251,0.92)',
               padding: '0.15rem 0.45rem',
               borderRadius: 999,
               border: '1px solid rgba(28,26,24,0.1)',
@@ -273,9 +368,13 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
       <p
         style={{
           margin: '0 0 0.65rem',
-          fontSize: '0.72rem',
-          color: '#5c5650',
-          lineHeight: 1.42,
+          fontSize: '0.74rem',
+          color: '#334155',
+          lineHeight: 1.46,
+          background: 'rgba(255,255,255,0.68)',
+          border: '1px solid rgba(28,26,24,0.1)',
+          borderRadius: 8,
+          padding: '0.35rem 0.45rem',
           ...(eingeklappt
             ? {
                 display: '-webkit-box',

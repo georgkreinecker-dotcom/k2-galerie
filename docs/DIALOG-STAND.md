@@ -1,8 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Flyer/Master A5 (VK2):** Link „← Zurück zum mök2 (Werbeunterlagen)“ wird **nicht** gerendert, wenn **`useTenant().isVk2`** – VK2-Nutzer haben keinen Berechtigungsweg in mök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** `54a3a86` ✅ auf GitHub.
+**Letzter Stand:** 27.03.26 – **Ein Weg Flyer-Master / keine zweite Plakat-Route in der UI:** Alle Links auf **Plakat A3** und Event-Druckformate nutzen **`flyerEventBogenUrl`** (eine Route `/flyer-event-bogen-neu`, `layout=variant2`). **Admin:** Hilfs-HTML Präsentationsmappen, Tab Präsentationsmappen, Overlay-Karten, DOKUMENT_KARTEN-Beschreibung; **VK2** in `mappeQs`/`pmTabQs` wo nötig. **WerbeunterlagenPage, TexteSchreibtischPage, MarketingOek2Page §9:** Texte **roter Faden** (Master zuerst, A3/A6/Karte nur Ableitungen; Demo/Muster, nicht Strategietexte als Datenquelle). Alte Route **plakat-galerieeroeffnung** nur noch Redirect. **Commit:** `00e2aec` ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg prüft VK2 → Flyer-Bogen: kein mök2-Zurück; K2/ök2 weiterhin mit Link.
+**Was wir JETZT tun:** Georg kurz im Browser: mök2 §9 Links, Werbeunterlagen Plakat-Button, Admin Präsentationsmappen.
+
+---
+
+**Letzter Stand:** 27.03.26 – **Flyer-Toolbar (K2 nur):** „← Zurück zum mök2“ und „Werbeunterlagen“ nur bei **`!isVk2 && !isOeffentlich`** (nur echte K2-Arbeitskontext-Toolbar). **VK2 und ök2:** beide Links ausgeblendet; mök2-Link braucht kein `?context=oeffentlich` mehr (nur K2). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** (nach Push eintragen).
+
+**Was wir JETZT tun:** Georg prüft ök2- und VK2-Flyer: keine beiden Links; K2 weiter mit beiden.
 
 ---
 

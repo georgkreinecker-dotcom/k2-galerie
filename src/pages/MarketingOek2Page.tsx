@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, AGB_ROUTE, BASE_APP_URL, PILOT_SCHREIBEN_ROUTE, K2_GALERIE_APF_EINSTIEG, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, flyerEventBogenUrl } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { mok2Groups } from '../config/mok2Structure'
 import { PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_BOTSCHAFT_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SOCIAL, PRODUCT_KERN_EIGENER_ORT, PRODUCT_POSITIONING_SWEET_SPOT, FOCUS_DIRECTIONS } from '../config/tenantConfig'
@@ -1206,52 +1206,52 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           9. Werbeunterlagen (mök2)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Prospekt, Social-Media-Masken und Flyer gehören zu mök2. Dort sind die Texte (Slogan, Botschaft) <strong>bearbeitbar</strong>; Änderungen erscheinen auch hier oben.
+          Prospekt, Social-Media-Masken und bearbeitbare Slogan-/Botschaftstexte gehören zu dieser Seite (mök2). <strong>Druckfertige Event-Formate</strong> laufen über <strong>einen</strong> Einstieg in der Galerie-App: den <strong>Flyer-Master</strong> (A4 mit zwei A5-Seiten). Alles Weitere ist nur eine andere Ansicht derselben Daten – <strong>kein zweiter Bau</strong>, kein eigener Plakat-Pfad. In der Demo nutzt du <strong>Muster-Stammdaten und Muster-Event</strong>; Inhalte kommen aus der App, nicht aus den Strategietexten hier.
         </p>
         <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
           <li><strong>Prospekt</strong> – Deckblatt, Kernbotschaften, USPs (A4, 1 Seite, druckbar)</li>
           <li><strong>Social-Media-Masken</strong> – Instagram Quadrat/Story, Facebook, LinkedIn (Standardformate)</li>
-          <li><strong>Flyer-Bogen (A4, 2× A5)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
-          <li><strong>Plakat Galerieeröffnung (A3 hochkant)</strong> – aus Seite 1 abgeleitet, druckfertig</li>
-          <li><strong>Flyer A6 (quer)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
-          <li><strong>Visitenkarte (55 × 85 mm, stehend)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
-          <li><strong>Flyer A5</strong> – Produkt-Flyer mit Slogan und Botschaft</li>
+          <li><strong>Flyer-Master (A4, 2× A5)</strong> – eine Quelle; in der Demo Muster-Galerie links, Plattform rechts</li>
+          <li><strong>Plakat A3 hochkant</strong> – nur Ableitung vom Flyer-Master, druckfertig</li>
+          <li><strong>Flyer A6 quer</strong> – nur Ableitung vom Flyer-Master</li>
+          <li><strong>Visitenkarte (55 × 85 mm)</strong> – nur Ableitung vom Flyer-Master</li>
+          <li><strong>Flyer A5 Produkt</strong> – Slogan und Botschaft (separates Format auf Werbeunterlagen-Seite)</li>
         </ol>
         <div style={{ marginBottom: '1rem', padding: '0.7rem 0.8rem', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '10px', background: 'rgba(95,251,241,0.08)' }}>
           <p style={{ margin: '0 0 0.45rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.95)' }}>
-            <strong>Fertige Werbemittel (druckbereit):</strong>
+            <strong>Fertige Werbemittel (Demo / Muster, druckbereit) – roter Faden:</strong> zuerst Master öffnen, dann bei Bedarf A3, A6 oder Karte.
           </p>
           <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.65 }}>
             <li>
               <Link
-                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich`}
+                to={flyerEventBogenUrl({ tenant: 'oeffentlich' })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
-                Flyer-Bogen öffnen (A4 / 2× A5) →
+                Flyer-Master öffnen (A4 / 2× A5) →
               </Link>
             </li>
             <li>
               <Link
-                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=a3&layout=variant2`}
+                to={flyerEventBogenUrl({ mode: 'a3', tenant: 'oeffentlich' })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
-                Plakat A3 hochkant öffnen →
+                Plakat A3 (vom Master) →
               </Link>
             </li>
             <li>
               <Link
-                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=a6&layout=variant2`}
+                to={flyerEventBogenUrl({ mode: 'a6', tenant: 'oeffentlich' })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
-                Flyer A6 quer öffnen →
+                Flyer A6 quer (vom Master) →
               </Link>
             </li>
             <li>
               <Link
-                to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?context=oeffentlich&mode=card&layout=variant2`}
+                to={flyerEventBogenUrl({ mode: 'card', tenant: 'oeffentlich' })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
-                Visitenkarte 55 × 85 öffnen →
+                Visitenkarte 55 × 85 (vom Master) →
               </Link>
             </li>
           </ul>

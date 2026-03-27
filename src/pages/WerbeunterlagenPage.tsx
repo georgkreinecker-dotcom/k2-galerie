@@ -7,8 +7,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
-import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { PROJECT_ROUTES, BASE_APP_URL, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../config/navigation'
+import { useQrVersionTimestamp, useStableQrBustedUrl } from '../hooks/useServerBuildTimestamp'
 import { PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_BOTSCHAFT_2, PRODUCT_COPYRIGHT } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, SOCIAL_MEDIA_FORMATE, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { loadStammdaten } from '../utils/stammdatenStorage'
@@ -79,12 +79,12 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
   }, [])
 
   const willkommenBaseUrl = BASE_APP_URL + OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE
-  const willkommenFullUrl = buildQrUrlWithBust(willkommenBaseUrl, qrVersionTs)
+  const { qrUrl: willkommenFullUrl, refreshQrUrl: refreshWillkommenQrUrl } = useStableQrBustedUrl(willkommenBaseUrl, qrVersionTs)
   // Eisernes Gesetz: Im Modus ök2/Demo keine K2-Galerie-URL – nur Demo-Galerie
   const galerieBaseUrl = modus === 'oek2'
     ? BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau
     : BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie
-  const galerieFullUrl = buildQrUrlWithBust(galerieBaseUrl, qrVersionTs)
+  const { qrUrl: galerieFullUrl, refreshQrUrl: refreshGalerieQrUrl } = useStableQrBustedUrl(galerieBaseUrl, qrVersionTs)
 
   useEffect(() => {
     QRCode.toDataURL(willkommenFullUrl, { width: 200, margin: 1 })
@@ -138,6 +138,9 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
           <button type="button" onClick={() => window.print()} style={{ padding: '0.6rem 1.2rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: s.radius, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             📄 Als PDF drucken
           </button>
+          <button type="button" onClick={() => { refreshWillkommenQrUrl(); refreshGalerieQrUrl() }} style={{ padding: '0.6rem 1rem', background: s.bgCard, color: s.text, border: `1px solid ${s.accentSoft}`, borderRadius: s.radius, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+            🔄 QR neu erzeugen
+          </button>
         </div>
 
         {/* Bearbeitbare Texte (mök2) */}
@@ -181,10 +184,13 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               🧾 Prospekt Galerieeröffnung (A4)
             </Link>
             <Link
-              to={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung + (modus === 'oek2' ? '?context=oeffentlich' : '')}
+              to={flyerEventBogenUrl({
+                mode: 'a3',
+                tenant: modus === 'oek2' ? 'oeffentlich' : 'k2',
+              })}
               style={{ padding: '0.5rem 0.85rem', background: s.bgCard, border: `1px solid ${s.accentSoft}`, borderRadius: 8, textDecoration: 'none', color: s.text, fontWeight: 600 }}
             >
-              🖨️ Plakat Galerieeröffnung (A3)
+              🖨️ Plakat A3 (vom Flyer-Master abgeleitet)
             </Link>
           </div>
 
@@ -340,7 +346,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             5. Präsentationsmappen – Links zum Mitsenden
           </h2>
           <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel). Als Link in E-Mail, Chat oder Werbedokument einfügen.
+            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel). Zusätzlich eigene VK2-Kurz- und Vollversion. Als Link in E-Mail, Chat oder Werbedokument einfügen.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
@@ -350,6 +356,14 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
               <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe (Vollversion)</p>
               <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe VK2 (Kurzversion)</p>
+              <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?variant=vk2`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?variant=vk2</a>
+            </div>
+            <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', fontWeight: 600, color: s.accent }}>Präsentationsmappe VK2 (Vollversion)</p>
+              <a href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.8rem', color: s.text, wordBreak: 'break-all' }}>{BASE_APP_URL}{PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?variant=vk2</a>
             </div>
           </div>
         </section>
