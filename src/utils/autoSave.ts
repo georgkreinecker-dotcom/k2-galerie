@@ -14,7 +14,7 @@ import {
   mergeStammdatenPerson,
   mergeStammdatenGallery,
 } from './stammdatenStorage'
-import { loadEvents, saveEvents } from './eventsStorage'
+import { loadEvents, saveEvents, mergeEventTimesFromLocal } from './eventsStorage'
 import { loadDocuments, saveDocuments } from './documentsStorage'
 import { sanitizePageContentForVk2Publish } from '../config/pageContentGalerie'
 
@@ -104,7 +104,8 @@ export function startAutoSave(getData: () => AutoSaveData) {
           if (allIdsAreVk2) {
             console.warn('⚠️ Auto-Save: Events nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
           } else if (!hasExisting || !incomingEmpty) {
-            saveEvents('k2', incoming)
+            const mergedEv = mergeEventTimesFromLocal(incoming, existingArr)
+            saveEvents('k2', mergedEv)
           }
         } catch (e) {
           console.warn('⚠️ Events zu groß für Auto-Save')
@@ -196,7 +197,8 @@ export async function saveNow(getData: () => AutoSaveData) {
         if (allIdsAreVk2) {
           console.warn('⚠️ saveNow: Events nicht geschrieben – Daten sehen nach VK2 aus (K2 geschützt)')
         } else if (!hasExisting || !incomingEmpty) {
-          saveEvents('k2', incoming)
+          const mergedEv = mergeEventTimesFromLocal(incoming, existing)
+          saveEvents('k2', mergedEv)
         }
       } catch (e) {
         console.warn('⚠️ Events zu groß für Sofort-Save')

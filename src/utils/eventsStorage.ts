@@ -23,26 +23,78 @@ function isEventIdInVk2List(event: { id?: string }, vk2List: any[]): boolean {
   return vk2List.some((v) => v && v.id === id)
 }
 
+function nzStr(v: unknown): string {
+  return typeof v === 'string' && v.trim() ? v.trim() : ''
+}
+
+/** Ein Tag in dailyTimes: fehlende Uhrzeiten aus lokalem Stand ergänzen (Server oft nur teilweise). */
+function mergeDailyTimesSlot(sv: any, lv: any): any {
+  if (typeof sv === 'string' && sv.trim()) return sv
+  if (typeof lv === 'string' && lv.trim()) return lv
+  if (sv && typeof sv === 'object' && !Array.isArray(sv)) {
+    const ss = nzStr(sv.start)
+    const se = nzStr(sv.end)
+    const ls = lv && typeof lv === 'object' && !Array.isArray(lv) ? nzStr(lv.start) : ''
+    const le = lv && typeof lv === 'object' && !Array.isArray(lv) ? nzStr(lv.end) : ''
+    const start = ss || ls
+    const end = se || le
+    if (start || end) return { start, end }
+  }
+  if (lv && typeof lv === 'object' && !Array.isArray(lv)) {
+    const ls = nzStr(lv.start)
+    const le = nzStr(lv.end)
+    if (ls || le) return { start: ls, end: le }
+  }
+  return undefined
+}
+
+function mergeDailyTimesDict(se: any, le: any): Record<string, any> {
+  const s = se && typeof se === 'object' && !Array.isArray(se) ? (se as Record<string, any>) : {}
+  const l = le && typeof le === 'object' && !Array.isArray(le) ? (le as Record<string, any>) : {}
+  const keys = new Set([...Object.keys(s), ...Object.keys(l)])
+  const out: Record<string, any> = {}
+  for (const k of keys) {
+    const merged = mergeDailyTimesSlot(s[k], l[k])
+    if (merged !== undefined && merged !== null && merged !== '') {
+      if (typeof merged === 'object' && !Array.isArray(merged) && Object.keys(merged).length === 0) continue
+      out[k] = merged
+    }
+  }
+  return out
+}
+
 /**
- * Beim Laden vom Server: Zeiten (startTime, endTime, dailyTimes) aus lokalen Events
- * in die Server-Events übernehmen, wenn sie dort fehlen. Verhindert, dass „Aktuellen Stand holen“
- * die im Admin gepflegten Zeiten überschreibt (z. B. wenn gallery-data.json älter ist).
+ * Zeiten aus lokalem Event in den „Server-/Ziel-Stand“ mergen, **feldweise**:
+ * fehlende startTime/endTime und fehlende Tages-Slots in dailyTimes werden aus local ergänzt.
+ *
+ * Vorher: Merge nur wenn der Server **gar keine** Zeiten hatte – bei teilweise leeren
+ * gallery-data-/Server-Daten gingen gepflegte Zeiten verloren (Dokumente/Flyer unvollständig).
+ * Aufruf: Server-Laden (applyServerEvents) und Auto-Save (State + Speicher zusammenführen).
  */
 export function mergeEventTimesFromLocal(serverEvents: any[], localEvents: any[]): any[] {
   if (!Array.isArray(serverEvents) || !Array.isArray(localEvents)) return serverEvents
   const localById = new Map<string, any>()
-  localEvents.forEach((e: any) => { if (e?.id) localById.set(String(e.id), e) })
+  localEvents.forEach((e: any) => {
+    if (e?.id) localById.set(String(e.id), e)
+  })
   return serverEvents.map((se: any) => {
     const local = se?.id ? localById.get(String(se.id)) : null
     if (!local) return se
-    const hasLocalTimes = !!(local.startTime || local.endTime || (local.dailyTimes && Object.keys(local.dailyTimes || {}).length > 0))
-    const serverMissingTimes = !se.startTime && !se.endTime && (!se.dailyTimes || Object.keys(se.dailyTimes || {}).length === 0)
-    if (!hasLocalTimes || !serverMissingTimes) return se
+    const sStart = nzStr(se.startTime)
+    const sEnd = nzStr(se.endTime)
+    const lStart = nzStr(local.startTime)
+    const lEnd = nzStr(local.endTime)
+    const startTime = sStart || lStart || ''
+    const endTime = sEnd || lEnd || ''
+    const dailyMerged = mergeDailyTimesDict(se.dailyTimes, local.dailyTimes)
+    const dmKeys = Object.keys(dailyMerged)
+    const dailyTimes =
+      dmKeys.length > 0 ? dailyMerged : se.dailyTimes && Object.keys(se.dailyTimes || {}).length > 0 ? se.dailyTimes : local.dailyTimes || {}
     return {
       ...se,
-      startTime: se.startTime || local.startTime || '',
-      endTime: se.endTime || local.endTime || '',
-      dailyTimes: (se.dailyTimes && Object.keys(se.dailyTimes).length > 0) ? se.dailyTimes : (local.dailyTimes || {})
+      startTime,
+      endTime,
+      dailyTimes: dailyTimes && typeof dailyTimes === 'object' ? dailyTimes : {},
     }
   })
 }
