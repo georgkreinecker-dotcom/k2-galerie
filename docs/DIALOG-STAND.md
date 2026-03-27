@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Medienpaket → Event-Karten übernehmen + Build-Fix:** **`applyMedienpaketAlsGespeicherteWerbemittel`**: nach Bestätigung alte **`pr-dokumente`** zu dieser **`eventId`** (Typen Presse, Social, Newsletter, Plakat, Flyer, PR-alle) ersetzen durch neu erzeugte gespeicherte Werbemittel – danach wie gewohnt **Ansehen** / **Neu erstellen** unter den Karten. Buttons **„Paket in Event-Karten übernehmen“** / **„Paket übernehmen“**. **TS:** `flyerForBuild.type` immer **`string`** (`String(… ?? 'sonstiges')`), **`buildFlyerWerbemittelHtml`** typkorrekt. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push eintragen_ ✅ auf GitHub
+**Letzter Stand:** 27.03.26 – **Medienpaket → Event-Karten übernehmen + Build-Fix:** **`applyMedienpaketAlsGespeicherteWerbemittel`**: nach Bestätigung alte **`pr-dokumente`** zu dieser **`eventId`** (Typen Presse, Social, Newsletter, Plakat, Flyer, PR-alle) ersetzen durch neu erzeugte gespeicherte Werbemittel – danach wie gewohnt **Ansehen** / **Neu erstellen** unter den Karten. Buttons **„Paket in Event-Karten übernehmen“** / **„Paket übernehmen“**. **TS:** `flyerForBuild.type` immer **`string`** (`String(… ?? 'sonstiges')`), **`buildFlyerWerbemittelHtml`** typkorrekt. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `a9f3635` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Event wählen → Medienpaket-Vorschau ansehen → **Paket übernehmen** bestätigen → Karten prüfen (neue Einträge, öffnen/bearbeiten).
 
