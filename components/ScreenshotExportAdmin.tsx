@@ -1505,9 +1505,19 @@ function orderMediengeneratorEventList(eventsList: any[]): any[] {
   if (!Array.isArray(eventsList) || eventsList.length === 0) return []
   const primary = pickOpeningEventForWerbemittel(eventsList)
   if (!primary) return [...eventsList]
-  const pid = primary.id
-  const rest = eventsList.filter((e: any) => e?.id !== pid)
+  const pidStr = primary.id != null ? String(primary.id) : ''
+  const rest = eventsList.filter((e: any) => e == null || String(e?.id) !== pidStr)
   return [primary, ...rest]
+}
+
+/** Event aus der Liste per ID (String-Vergleich); sonst Referenz – vermeidet leises Abbrechen bei „Neu erstellen“. */
+function resolveEventForMediengeneratorCard(eventsList: any[], eventRef: any): any {
+  if (eventRef == null) return eventRef
+  const idStr = eventRef.id != null ? String(eventRef.id) : ''
+  if (!idStr) return eventRef
+  const list = Array.isArray(eventsList) ? eventsList : []
+  const found = list.find((e: any) => e != null && String(e.id) === idStr)
+  return found != null ? found : eventRef
 }
 
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
@@ -8263,18 +8273,22 @@ ${'='.repeat(60)}
     alert('✅ Website-Content generiert!')
   }
 
-  /** Ein Dokument: alle Medienvorschläge aus denselben Generatoren wie die Einzel-Buttons (Standard-Event = Flyer-Master-Logik). */
-  const openMedienpaketVorschlagDocument = () => {
-    const event = getDefaultEventForMediengeneratorButtons(events)
+  /** Ein Dokument: alle Medienvorschläge wie die Einzel-Karten (optional k2-pr-suggestions). Ohne Argument: Standard-Event = Flyer-Master-Logik. */
+  const openMedienpaketVorschlagDocument = (forEvent?: any) => {
+    const raw =
+      forEvent != null ? resolveEventForMediengeneratorCard(events, forEvent) : getDefaultEventForMediengeneratorButtons(events)
+    const event = raw
     if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
     const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
-    const presse = generatePresseaussendungContent(event, presseVariant)
-    const social = generateSocialMediaContent(event)
-    const newsletter = generateNewsletterContent(event)
-    const flyerMail = generateEventFlyerContent(event)
+    const sugList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const evSug = sugList.find((sg: any) => String(sg.eventId) === String(event.id))
+    const presse = evSug?.presseaussendung || generatePresseaussendungContent(event, presseVariant)
+    const social = evSug?.socialMedia || generateSocialMediaContent(event)
+    const newsletter = evSug?.newsletter || generateNewsletterContent(event)
+    const flyerMail = evSug?.flyer || generateEventFlyerContent(event)
     const flyerCard = generateFlyerContent(event)
     const plakat = generatePlakatContent(event)
     const sd = designToPlakatVars(designSettings)
@@ -8323,7 +8337,11 @@ ${'='.repeat(60)}
   </div>
 </body>
 </html>`
-    openDocumentInApp(html, 'Medienpaket-Vorschlag')
+    const docLabel =
+      forEvent != null
+        ? `Medienpaket – ${String(event.title || 'Event').slice(0, 48)}`
+        : 'Medienpaket-Vorschlag'
+    openDocumentInApp(html, docLabel)
   }
 
   // Katalog generieren
@@ -8841,9 +8859,10 @@ ${'='.repeat(60)}
     }
     // Kein gespeicherter Inhalt, aber Event vorhanden: aus Event + Typ neu erzeugen und öffnen (wie „Neu erstellen“)
     if (!fileData && event) {
-      const ev = events.find((e: any) => e.id === event.id) || event
+      const ev = resolveEventForMediengeneratorCard(events, event)
       const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-      const evSug = suggestionsList.find((sg: any) => sg.eventId === event.id)
+      const evSug = suggestionsList.find((sg: any) => String(sg.eventId) === String(event.id))
+      const presseVar = tenant.isOeffentlich ? 'neutral' : 'lokal'
       const typ = document.werbematerialTyp || document.typ
       switch (typ) {
         case 'newsletter':
@@ -8857,7 +8876,11 @@ ${'='.repeat(60)}
           generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
           return
         case 'presse':
-          generateEditablePresseaussendungPDF(evSug?.presseaussendung || generatePresseaussendungContent(ev), ev)
+          generateEditablePresseaussendungPDF(
+            evSug?.presseaussendung || generatePresseaussendungContent(ev, presseVar),
+            ev,
+            ''
+          )
           return
         case 'social':
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
@@ -21403,8 +21426,8 @@ ${name}`
                 >
                   📑 Alle Medien als Vorschau-Paket
                 </button>
-                <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '480px' }}>
-                  Ein Dokument mit Presse, Social, Newsletter, Flyer, Plakat – aus demselben Standard-Event wie der Flyer-Master. Zum Freigeben und Verfeinern: in der Event-Karte je Medium „Neu erstellen“.
+                <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '520px' }}>
+                  Ein Dokument mit Presse, Social, Newsletter, Flyer, Plakat – Standard-Event wie Flyer-Master; bei gespeicherten PR-Vorschlägen werden deren Texte genutzt. Anderes Event: in der jeweiligen Event-Rubrik <strong>Medienpaket (dieses Event)</strong>. Druckfertig: je Karte „Neu erstellen“.
                 </span>
               </div>
             </div>
@@ -21818,9 +21841,8 @@ ${name}`
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (!ev) return
-                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  const ev = resolveEventForMediengeneratorCard(events, event)
+                                  const evSug = suggestions.find((sg: any) => String(sg.eventId) === String(ev.id))
                                   generateEditableNewsletterPDF(evSug?.newsletter || generateNewsletterContent(ev), ev)
                                 }
                               },
@@ -21854,9 +21876,8 @@ ${name}`
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (!ev) return
-                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  const ev = resolveEventForMediengeneratorCard(events, event)
+                                  const evSug = suggestions.find((sg: any) => String(sg.eventId) === String(ev.id))
                                   const variant = tenant.isOeffentlich ? 'neutral' : 'lokal'
                                   const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, variant)
                                   generateEditablePresseaussendungPDF(presse, ev, '')
@@ -21872,9 +21893,8 @@ ${name}`
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (!ev) return
-                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  const ev = resolveEventForMediengeneratorCard(events, event)
+                                  const evSug = suggestions.find((sg: any) => String(sg.eventId) === String(ev.id))
                                   openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
                                 }
                               },
@@ -21917,6 +21937,24 @@ ${name}`
                                     </div>
                                   </div>
                                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => openMedienpaketVorschlagDocument(event)}
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        background: `${s.accent}14`,
+                                        border: `1px solid ${s.accent}55`,
+                                        borderRadius: '8px',
+                                        color: s.accent,
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                      title="Presse, Social, Newsletter, Flyer, Plakat – ein Vorschau-Dokument für genau dieses Event"
+                                    >
+                                      📑 Medienpaket (dieses Event)
+                                    </button>
                                     <button
                                       onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
                                       style={{
@@ -22383,20 +22421,22 @@ ${name}`
                                   <button
                                     onClick={() => {
                                       const sug = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                      const evSug = sug.find((sg: any) => sg.eventId === event.id)
+                                      const ev = resolveEventForMediengeneratorCard(events, event)
+                                      const evSug = sug.find((sg: any) => String(sg.eventId) === String(ev.id))
+                                      const presseVar = tenant.isOeffentlich ? 'neutral' : 'lokal'
                                       if (evSug) {
-                                        generateEditablePRSuggestionsPDF(evSug, event)
+                                        generateEditablePRSuggestionsPDF(evSug, ev)
                                       } else {
                                         // Ohne PR-Assistent: aus Event generierte Inhalte als PDF öffnen (damit sich etwas öffnet)
                                         const fallback = {
-                                          eventId: event.id,
-                                          eventTitle: event.title,
-                                          presseaussendung: generatePresseaussendungContent(event),
-                                          socialMedia: generateSocialMediaContent(event),
-                                          newsletter: generateEmailNewsletterContent(event),
-                                          flyer: generateEventFlyerContent(event)
+                                          eventId: ev.id,
+                                          eventTitle: ev.title,
+                                          presseaussendung: generatePresseaussendungContent(ev, presseVar),
+                                          socialMedia: generateSocialMediaContent(ev),
+                                          newsletter: generateEmailNewsletterContent(ev),
+                                          flyer: generateEventFlyerContent(ev)
                                         }
-                                        generateEditablePRSuggestionsPDF(fallback, event)
+                                        generateEditablePRSuggestionsPDF(fallback, ev)
                                       }
                                     }}
                                     style={{

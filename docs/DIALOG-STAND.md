@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 3 – Einzel-Karten + Event je Rubrik:** Hilfsfunktion **`resolveEventForMediengeneratorCard`** (String-ID): Newsletter-, Presse-, Social-**Neu erstellen** und **PR-PDF** ohne leises `find`-Scheitern; **`k2-pr-suggestions`** per **`String(eventId)`** gematcht. **`openMedienpaketVorschlagDocument(event?)`**: optional pro Event; inhaltlich wie Einzel-Karten inkl. PR-Vorschläge. Pro Event-Rubrik: Button **„Medienpaket (dieses Event)“**. Dokument neu aus Liste ohne Datei: Presse mit **neutral/lokal**-Fallback. **`orderMediengeneratorEventList`:** Primär-Event-Filter per String-ID. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg: je Event-Rubrik Medienpaket-Button und „Neu erstellen“ auf K2/ök2 kurz testen.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 2 – Paket + Reihenfolge + Vorlagen-Default:** **`orderMediengeneratorEventList`** sortiert das Werbemittel-Hauptevent nach vorn (Flyer-Tab-Liste). **Vorlagen aus Vergangenheit:** Default-Ziel-Event = **`pickOpeningEventForWerbemittel(upcoming) || upcoming[0]`**. **Button** „Alle Medien als Vorschau-Paket“ unter Mediengenerator & Verteiler → **`openMedienpaketVorschlagDocument`** (ein HTML: Presse, Social, Newsletter, Flyer-Mailtext, Plakat-Kernfelder, Flyer-Karte). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `77e84a0` ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: Admin → Marketing → Mediengenerator: Button testen; Flyer-Event-Reihenfolge und Vorlagen-Modal prüfen. Optional: weitere Generator-Karten auf gleiche Event-Linie prüfen.
+**Was wir JETZT tun:** (Schritt 3 siehe oben)
 
 ---
 
