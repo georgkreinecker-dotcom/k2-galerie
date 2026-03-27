@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **APf „↗️ Vollbild“:** Link nutzt jetzt **`getPathForPage(currentPageData.id)`** statt langer Ternärkette mit Fallback **`/`**. **`/`** wurde von der Root-Logik nach **Entdecken (Eingangstor)** umgeleitet – bei fehlenden Tab-Zuordnungen (z. B. Plattform Start, Mission Control, Handbuch Galerie) landete man dort. Zusätzlich: **Platzanordnung** in `getPathForPage` auf **`PROJECT_ROUTES['k2-galerie'].platzanordnung`**. **Commit:** `fc3aac6` ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg testet APf: Tab wählen (z. B. ök2-Galerie, Plattform Start) → **↗️ Vollbild** → soll die passende Seite im neuen Tab öffnen, nicht das Eingangstor.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Ök2-Kontext für Flyer/mök2 (URL + TenantContext):** Unter `/projects/k2-galerie/*` wirkt `?context=oeffentlich` wie bei `/admin` (nur Plattform-Instanz; Lizenznehmer: URL ignoriert). mök2-Links zu Flyer-Bogen, A3/A6/Karte und Werbeunterlagen mit `context=oeffentlich`; Flyer-Toolbar-Varianten und Speichern→Werbeunterlagen behalten ök2. Doku: `docs/K2-OEK2-DATENTRENNUNG.md`. **Commit:** `caadbdd` ✅ auf GitHub. **Rollback:** `git revert caadbdd` (ein Commit, nur diese vier Dateien).
 
 **Was wir JETZT tun:** Georg testet: mök2 → Flyer-Bogen öffnen → Seite soll **Muster**/ök2-Keys nutzen (nicht K2), Varianten-Links bleiben im ök2-Kontext.
