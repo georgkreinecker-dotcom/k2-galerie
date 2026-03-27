@@ -8370,7 +8370,7 @@ ${'='.repeat(60)}
   <div class="wrap">
     <h1>Medienpaket – Vorschlag zur Weiterbearbeitung</h1>
     <div class="meta">Event: <strong>${esc(event.title || '')}</strong> · ${esc(formatEventDates(event) || '')}${event.location ? ` · ${esc(event.location)}` : ''}</div>
-    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Lesen und kopieren hier. Gespeicherte Karten auf einmal: Button <strong>Paket übernehmen</strong> bzw. <strong>Paket in Event-Karten übernehmen</strong> (mit Abfrage). Sonst je Karte „Neu erstellen“.</div>
+    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Lesen und kopieren hier. In die Event-Karten speichern: in der Eventplanung bei <strong>diesem Event</strong> einmal <strong>Paket übernehmen</strong> (mit Abfrage). Sonst je Karte „Neu erstellen“.</div>
     <section><h2>1. Presseaussendung</h2><p style="margin:0 0 0.5rem;font-size:0.88rem;font-weight:600">${esc(presse?.title || '')}</p>${pre(typeof presse?.content === 'string' ? presse.content : '')}</section>
     <section><h2>2. Social Media</h2><p style="margin:0 0 0.35rem;font-size:0.85rem;font-weight:600">Instagram</p>${pre(social?.instagram || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">Facebook</p>${pre(social?.facebook || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">WhatsApp</p>${pre(social?.whatsapp || '')}</section>
     <section><h2>3. Newsletter</h2><p style="margin:0 0 0.35rem;font-size:0.85rem">Betreff</p>${pre(subj)}${greet ? `<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Anrede</p>${pre(greet)}` : ''}<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Text</p>${pre(bodyNl)}</section>
@@ -21741,25 +21741,8 @@ ${name}`
                 >
                   📑 Alle Medien als Vorschau-Paket
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel()}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: '#b54a1e',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontSize: '0.88rem',
-                  }}
-                  title="Ersetzt alle Werbemittel-Karten zu diesem Event durch neu erzeugte Dokumente (mit Sicherheitsabfrage)"
-                >
-                  💾 Paket in Event-Karten übernehmen
-                </button>
-                <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '520px' }}>
-                  Vorschau = nur lesen/kopieren. <strong>Paket übernehmen</strong> legt Presse, Social, Newsletter, Plakat und Flyer unter dem Standard-Event neu an (alte Einträge zu diesem Event werden nach Bestätigung ersetzt). Anderes Event: gleicher Button in der Event-Rubrik neben „Medienpaket“. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
+                <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '560px' }}>
+                  Vorschau = nur lesen/kopieren. <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken; es gibt nur diesen einen Button. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
                 </span>
               </div>
             </div>
