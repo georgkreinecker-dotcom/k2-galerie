@@ -21465,7 +21465,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Alles zur Wand, zur Karte und zum Mitgeben: bearbeitbares Plakat (Formate in der Vorschau) plus Event-Bogen A3, A6 und Visitenkarten.',
+                                  'Alles zur Wand, zur Karte und zum Mitgeben: bearbeitbares Plakat (Formate in der Vorschau) plus Event-Bogen A4, A3, A6 und Visitenkarten.',
                                 docs: byTyp['plakat'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21487,6 +21487,22 @@ ${name}`
                                   ...(tenant.isVk2
                                     ? []
                                     : [
+                                        {
+                                          titel: 'Event-Bogen · Flyerformat (A4)',
+                                          varianten: [
+                                            {
+                                              label: 'Standard',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}layout=standard`
+                                                )
+                                              },
+                                            },
+                                          ],
+                                        },
                                         {
                                           titel: 'Event-Bogen · Großformat (A3)',
                                           varianten: [
@@ -21575,7 +21591,7 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Handzettel PDF (bearbeitbar) und Flyer-Bogen.',
+                                beschreibung: 'Handzettel PDF (bearbeitbar).',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21589,20 +21605,6 @@ ${name}`
                                       generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
                                     },
                                   },
-                                  ...(tenant.isVk2
-                                    ? []
-                                    : [
-                                        {
-                                          label: 'Event-Bogen (Standard)',
-                                          onErstellen: () => {
-                                            const path = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                            const join = path.includes('?') ? '&' : '?'
-                                            navigateFromOeffentlichkeitsarbeitOverlay(
-                                              `${path}${join}layout=standard`
-                                            )
-                                          },
-                                        },
-                                      ]),
                                 ],
                               },
                               {
