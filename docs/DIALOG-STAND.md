@@ -1,5 +1,30 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Flyer Event-Bogen (ök2):** Kopfzeilen, Namen, Rückseiten-Titel, Intro und QR aus **Mustergalerie** / `getOek2MusterBasics`, Events aus `loadEvents('oeffentlich')` mit Fallback **`MUSTER_EVENTS`**, Vorder-QR → Demo-Galerie, separates **localStorage**-Key für ök2-Flyer. Datei: `FlyerEventBogenNeuPage.tsx`. `tsc` ✅; vollständiger Build bei Push.
+
+**Was wir JETZT tun:** Georg prüft den Demo-Flyer im ök2-Kontakt (Überschrift Vernissage, Galerie Muster, Lena & Paul).
+
+---
+
+**Letzter Stand:** 27.03.26 – **Texte-Schreibtisch: neue Schublade „Texts“ angelegt** mit den aktuellen Versionen:
+- Handbücher: Team, Benutzer, VK2, K2 Galerie, K2 Familie
+- Präsentationsmappen: Kurz, Voll, VK2 Kurz (`?variant=vk2`), VK2 Voll (`?variant=vk2`)
+Datei: `src/pages/TexteSchreibtischPage.tsx`. Build ✅.
+
+**Was wir JETZT tun:** Georg prüft im Texte-Schreibtisch die neue Schublade „Texts“ und ob alle Links direkt aufgehen.
+
+---
+
+**Letzter Stand:** 27.03.26 – **VK2 eigene Präsentationsmappen fertig:**  
+- **Kurzversion:** `PraesentationsmappePage` mit `?variant=vk2` (eigener Titel, eigener VK2-Textblock, QR-Fokus auf VK2).  
+- **Vollversion:** `PraesentationsmappeVollversionPage` mit `?variant=vk2` und eigener Kapitelquelle `public/praesentationsmappe-vk2-vollversion/*` (Index + 8 Kapitel).  
+- **Links ergänzt:** Admin `Präsentationsmappen`, Eventplanung-Karte und `WerbeunterlagenPage` zeigen jetzt zusätzlich **VK2 Kurz** + **VK2 Voll**.  
+**Build/Test:** `npm run test` ✅, `npm run build` ✅.  
+
+**Was wir JETZT tun:** Georg prüft beide VK2-Varianten im Browser (Kurz + Vollversion) auf Text und Druckansicht.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Präsentationsmappe Event ergänzt:** In `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` neuer Praxisblock **„Beispiel: Event-Eroeffnung in 1 Tag“** (Zeitablauf von Event anlegen bis Verteiler). Index `00-INDEX.md` dazu ergänzt. **Commit:** _nach Push_
 
 **Was wir JETZT tun:** Georg kann die Vollversion prüfen; bei Bedarf als Nächstes analog ein VK2-Beispiel ergänzen.

@@ -6,6 +6,7 @@ import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
+  MUSTER_EVENTS,
   MUSTER_TEXTE,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
@@ -23,7 +24,12 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 const ROOT = 'flyer-event-bogen-neu'
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
 
-const FLYER_EVENT_BOGEN_STORAGE_KEY = 'k2-flyer-event-bogen-neu-v1'
+const FLYER_EVENT_BOGEN_STORAGE_KEY_K2 = 'k2-flyer-event-bogen-neu-v1'
+const FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF = 'k2-oeffentlich-flyer-event-bogen-neu-v1'
+
+function getFlyerEventBogenStorageKey(isOeffentlich: boolean): string {
+  return isOeffentlich ? FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF : FLYER_EVENT_BOGEN_STORAGE_KEY_K2
+}
 const FLYER_SAVE_MAX_BYTES = 4_200_000
 
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
@@ -53,9 +59,9 @@ type FlyerEventBogenPersistedV1 = {
   savedAt: number
 }
 
-function loadFlyerEventBogenPersisted(): Partial<FlyerEventBogenPersistedV1> | null {
+function loadFlyerEventBogenPersisted(storageKey: string): Partial<FlyerEventBogenPersistedV1> | null {
   try {
-    const raw = localStorage.getItem(FLYER_EVENT_BOGEN_STORAGE_KEY)
+    const raw = localStorage.getItem(storageKey)
     if (!raw) return null
     const p = JSON.parse(raw) as Partial<FlyerEventBogenPersistedV1>
     if (p?.v !== 1 || typeof p.masterText !== 'object' || !p.masterText) return null
@@ -65,8 +71,8 @@ function loadFlyerEventBogenPersisted(): Partial<FlyerEventBogenPersistedV1> | n
   }
 }
 
-function defaultMasterTextFromBase(): FlyerEventBogenPersistedV1['masterText'] {
-  const b = getK2Basics()
+function defaultMasterTextFromBase(isOeffentlich: boolean): FlyerEventBogenPersistedV1['masterText'] {
+  const b = isOeffentlich ? getOek2MusterBasics() : getK2Basics()
   return {
     intro: b.intro,
     backSlogan: 'für Menschen mit Ideen, die gesehen werden wollen.',
@@ -78,9 +84,10 @@ function defaultMasterTextFromBase(): FlyerEventBogenPersistedV1['masterText'] {
 }
 
 function mergeMasterTextFromPersisted(
-  persisted: Partial<FlyerEventBogenPersistedV1> | null
+  persisted: Partial<FlyerEventBogenPersistedV1> | null,
+  isOeffentlich: boolean,
 ): FlyerEventBogenPersistedV1['masterText'] {
-  const d = defaultMasterTextFromBase()
+  const d = defaultMasterTextFromBase(isOeffentlich)
   if (!persisted?.masterText) return d
   const m = persisted.masterText
   return {
@@ -115,16 +122,48 @@ function getK2Basics() {
   const martinaFirst = firstName(martina.name || defaults.martina.name || '', 'Martina')
   const georgFirst = firstName(georg.name || defaults.georg.name || '', 'Georg')
   const familyName = lastName(georg.name || defaults.georg.name || '', 'Kreinecker')
+  const subtitle = `${martinaFirst} & ${georgFirst} ${familyName}`.trim()
   return {
     galleryName: gallery.name || defaults.gallery.name || 'K2 Galerie',
+    brandLine: 'K2 Galerie Kunst&Keramik',
+    brandSub: subtitle,
+    backCardTitle: 'K2 Galerie',
     intro:
       getPageTexts().galerie.welcomeIntroText ||
       'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
-    subtitle: `${martinaFirst} & ${georgFirst} ${familyName}`.trim(),
+    subtitle,
     address: gallery.address || defaults.gallery.address || '',
     city: gallery.city || defaults.gallery.city || '',
     phone: gallery.phone || defaults.gallery.phone || '',
     email: gallery.email || defaults.gallery.email || '',
+  }
+}
+
+/** Flyer-Basis für ök2 / Mustergalerie – keine K2-Echtdaten. */
+function getOek2MusterBasics() {
+  const gallery = loadStammdaten('oeffentlich', 'gallery')
+  const martina = loadStammdaten('oeffentlich', 'martina')
+  const georg = loadStammdaten('oeffentlich', 'georg')
+  const o = TENANT_CONFIGS.oeffentlich
+  const mt = MUSTER_TEXTE
+  const galleryName = String(gallery.name || o.galleryName || 'Galerie Muster').trim()
+  const mName = String(martina.name || mt.martina.name || 'Lena Berg').trim()
+  const gName = String(georg.name || mt.georg.name || 'Paul Weber').trim()
+  const subtitle = `${mName} & ${gName}`
+  const pt = getPageTexts('oeffentlich')
+  const introDefault =
+    'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.'
+  return {
+    galleryName,
+    brandLine: `${galleryName} ${o.tagline}`.replace(/\s+/g, ' ').trim(),
+    brandSub: subtitle,
+    backCardTitle: galleryName,
+    intro: String(pt.galerie?.welcomeIntroText || '').trim() || introDefault,
+    subtitle,
+    address: gallery.address || mt.gallery.address || '',
+    city: gallery.city || mt.gallery.city || '',
+    phone: gallery.phone || mt.gallery.phone || '',
+    email: gallery.email || mt.gallery.email || '',
   }
 }
 
@@ -217,6 +256,7 @@ function pickOpeningEvent(events: any[]): any | null {
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { isOeffentlich } = useTenant()
+  const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich)
   const [searchParams] = useSearchParams()
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
@@ -226,27 +266,33 @@ export default function FlyerEventBogenNeuPage() {
   const { versionTimestamp } = useQrVersionTimestamp()
   /** Neu laden bei Event-/Stammdaten-Änderung (Admin, anderes Tab, Tab-Rückkehr). */
   const [flyerDataTick, setFlyerDataTick] = useState(0)
-  const base = getK2Basics()
-  const gallery = useMemo(() => loadStammdaten('k2', 'gallery'), [flyerDataTick])
+  const base = useMemo(
+    () => (isOeffentlich ? getOek2MusterBasics() : getK2Basics()),
+    [isOeffentlich, flyerDataTick],
+  )
+  const gallery = useMemo(
+    () => loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery'),
+    [flyerDataTick, isOeffentlich],
+  )
   const galerieImages = getGalerieImages(gallery)
   const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
 
   const [leftSrc, setLeftSrc] = useState(() => {
-    const p = loadFlyerEventBogenPersisted()
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))
     const s = p?.leftSrc
     if (typeof s === 'string' && s.length > 0 && !s.startsWith('blob:')) {
       return s
     }
-    const gallery = loadStammdaten('k2', 'gallery')
-    const gi = getGalerieImages(gallery)
+    const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+    const gi = getGalerieImages(g)
     return gi.galerieCardImage || gi.welcomeImage || '/img/k2/willkommen.jpg'
   })
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
   const [leftWerkLabel, setLeftWerkLabel] = useState(() => {
-    const p = loadFlyerEventBogenPersisted()?.leftWerkLabel
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))?.leftWerkLabel
     return typeof p === 'string' && p.trim() ? p : 'Bild aus Datei'
   })
   const [isLeftDropActive, setIsLeftDropActive] = useState(false)
@@ -257,7 +303,10 @@ export default function FlyerEventBogenNeuPage() {
   const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>(layoutFromUrl)
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const [masterText, setMasterText] = useState(() =>
-    mergeMasterTextFromPersisted(loadFlyerEventBogenPersisted()),
+    mergeMasterTextFromPersisted(
+      loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich)),
+      isOeffentlich,
+    ),
   )
   const [masterEditField, setMasterEditField] = useState<MasterEditKey | null>(null)
   const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
@@ -290,13 +339,13 @@ export default function FlyerEventBogenNeuPage() {
         window.setTimeout(() => setFlyerSaveMessage(''), 5000)
         return
       }
-      localStorage.setItem(FLYER_EVENT_BOGEN_STORAGE_KEY, json)
+      localStorage.setItem(flyerStorageKey, json)
       navigate(PROJECT_ROUTES['k2-galerie'].werbeunterlagen)
     } catch {
       setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
       window.setTimeout(() => setFlyerSaveMessage(''), 5000)
     }
-  }, [leftSrc, leftWerkLabel, masterText, navigate])
+  }, [flyerStorageKey, leftSrc, leftWerkLabel, masterText, navigate])
 
   const oek2MarketingBlocks = useMemo(
     () =>
@@ -324,11 +373,30 @@ export default function FlyerEventBogenNeuPage() {
       }),
     [eroeffnungEvent]
   )
+  /** ök2: Überschrift aus Muster-Event (z. B. Vernissage); K2: unverändert „Galerieeröffnung“. */
+  const heroOpeningWord = useMemo(() => {
+    if (isOeffentlich && eroeffnungEvent) {
+      const t = String(
+        (eroeffnungEvent as { title?: string; name?: string }).title ||
+          (eroeffnungEvent as { title?: string; name?: string }).name ||
+          '',
+      ).trim()
+      if (t) return t
+    }
+    return 'Galerieeröffnung'
+  }, [isOeffentlich, eroeffnungEvent])
   const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
 
-  const k2Qr = useMemo(
-    () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
-    [versionTimestamp]
+  const frontGalleryQr = useMemo(
+    () =>
+      buildQrUrlWithBust(
+        BASE_APP_URL +
+          (isOeffentlich
+            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+            : PROJECT_ROUTES['k2-galerie'].galerie),
+        versionTimestamp,
+      ),
+    [isOeffentlich, versionTimestamp],
   )
   const oek2TorQr = useMemo(
     () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
@@ -337,7 +405,7 @@ export default function FlyerEventBogenNeuPage() {
 
   useEffect(() => {
     let active = true
-    void QRCode.toDataURL(k2Qr, { width: 400, margin: 1 })
+    void QRCode.toDataURL(frontGalleryQr, { width: 400, margin: 1 })
       .then((url) => {
         if (active) setFrontQrDataUrl(url)
       })
@@ -350,10 +418,14 @@ export default function FlyerEventBogenNeuPage() {
     return () => {
       active = false
     }
-  }, [k2Qr, oek2TorQr])
+  }, [frontGalleryQr, oek2TorQr])
 
   useEffect(() => {
-    const evts = loadEvents('k2')
+    const tenant = isOeffentlich ? 'oeffentlich' : 'k2'
+    let evts = loadEvents(tenant)
+    if (isOeffentlich && (!Array.isArray(evts) || evts.length === 0)) {
+      evts = MUSTER_EVENTS as unknown[]
+    }
     const eroeffnung = pickOpeningEvent(Array.isArray(evts) ? evts : [])
     if (eroeffnung) {
       setEroeffnungEvent(eroeffnung as EventTerminLike)
@@ -367,13 +439,18 @@ export default function FlyerEventBogenNeuPage() {
       setEroeffnungEvent(null)
       setEventDateLine('Termin folgt')
     }
-  }, [flyerDataTick])
+  }, [flyerDataTick, isOeffentlich])
 
   useEffect(() => {
     const bump = () => setFlyerDataTick((t) => t + 1)
     window.addEventListener('k2-events-updated', bump)
     const onStorage = (e: StorageEvent) => {
-      if (e.key === 'k2-events' || e.key === 'k2-stammdaten-galerie') bump()
+      if (!e.key) return
+      if (isOeffentlich) {
+        if (e.key === 'k2-oeffentlich-events' || e.key === 'k2-oeffentlich-stammdaten-galerie') bump()
+      } else if (e.key === 'k2-events' || e.key === 'k2-stammdaten-galerie') {
+        bump()
+      }
     }
     window.addEventListener('storage', onStorage)
     const onVis = () => {
@@ -385,7 +462,7 @@ export default function FlyerEventBogenNeuPage() {
       window.removeEventListener('storage', onStorage)
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [])
+  }, [isOeffentlich])
 
   useEffect(() => {
     setShowDerivationFullscreen(false)
@@ -439,9 +516,9 @@ export default function FlyerEventBogenNeuPage() {
   const frontCardStandard = (
     <div className={`card front front-variant-${frontVariant}`}>
       <div className="hero hero-standard-event">
-        <p className="hero-brand-line">K2 Galerie Kunst&amp;Keramik</p>
-        <p className="hero-brand-sub">Martina &amp; Georg Kreinecker</p>
-        <p className="hero-opening-word">Galerieeröffnung</p>
+        <p className="hero-brand-line">{base.brandLine}</p>
+        <p className="hero-brand-sub">{base.brandSub}</p>
+        <p className="hero-opening-word">{heroOpeningWord}</p>
       </div>
       <div className="content">
         <div className="front-main">
@@ -457,15 +534,20 @@ export default function FlyerEventBogenNeuPage() {
             </div>
           </div>
           <div className="front-text-right">
-            <p className="intro-text">
-              Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst
-              zum Leben erwacht.
-            </p>
+            <p className="intro-text">{masterText.intro}</p>
           </div>
         </div>
         <div className="front-bottom">
           <div className="front-bottom-left">
-            {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="qr" /> : <div className="qr-placeholder">QR</div>}
+            {frontQrDataUrl ? (
+              <img
+                src={frontQrDataUrl}
+                alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+                className="qr"
+              />
+            ) : (
+              <div className="qr-placeholder">QR</div>
+            )}
             <p className="qr-caption">Zur Galerie online</p>
           </div>
           <div className="front-bottom-right">
@@ -481,9 +563,9 @@ export default function FlyerEventBogenNeuPage() {
   const renderFrontCardV2 = (interactive: boolean) => (
     <div className="card front front-layout-v2">
       <div className="hero hero-v2 hero-v2-event">
-        <p className="hero-v2-brand">K2 Galerie Kunst&amp;Keramik</p>
-        <p className="hero-v2-opening-word">Galerieeröffnung</p>
-        <p className="hero-v2-names">Martina &amp; Georg Kreinecker</p>
+        <p className="hero-v2-brand">{base.brandLine}</p>
+        <p className="hero-v2-opening-word">{heroOpeningWord}</p>
+        <p className="hero-v2-names">{base.brandSub}</p>
       </div>
       <div className="content content-v2">
         <div className="v2-main">
@@ -542,8 +624,8 @@ export default function FlyerEventBogenNeuPage() {
   const posterA3Card = (
     <div className={`a3-poster a3-layout-${page1Layout}`}>
       <div className="a3-hero">
-        <p className="a3-brand">K2 Galerie Kunst&amp;Keramik</p>
-        <p className="a3-opening">Galerieeröffnung</p>
+        <p className="a3-brand">{base.brandLine}</p>
+        <p className="a3-opening">{heroOpeningWord}</p>
         <p className="a3-names">{base.subtitle}</p>
       </div>
       <div className="a3-main">
@@ -567,7 +649,15 @@ export default function FlyerEventBogenNeuPage() {
       </div>
       <div className="a3-footer">
         <div className="a3-qr-wrap">
-          {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="a3-qr" /> : <div className="a3-qr-ph">QR</div>}
+          {frontQrDataUrl ? (
+            <img
+              src={frontQrDataUrl}
+              alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+              className="a3-qr"
+            />
+          ) : (
+            <div className="a3-qr-ph">QR</div>
+          )}
           <p className="a3-qr-caption">Zur Galerie online</p>
         </div>
         <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
@@ -576,10 +666,10 @@ export default function FlyerEventBogenNeuPage() {
   )
 
   const posterA6Card = (
-    <div className="a6-poster" aria-label="A6 Werbekarte K2 Galerie">
+    <div className="a6-poster" aria-label="A6 Werbekarte Galerie">
       <div className="a6-hero">
-        <p className="a6-brand">K2 Galerie Kunst&amp;Keramik</p>
-        <p className="a6-opening">Galerieeröffnung</p>
+        <p className="a6-brand">{base.brandLine}</p>
+        <p className="a6-opening">{heroOpeningWord}</p>
         <p className="a6-names">{base.subtitle}</p>
       </div>
       <div className="a6-image-wrap">
@@ -594,7 +684,15 @@ export default function FlyerEventBogenNeuPage() {
         </div>
       </div>
       <div className="a6-footer">
-        {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="a6-qr" /> : <div className="a6-qr-ph">QR</div>}
+        {frontQrDataUrl ? (
+          <img
+            src={frontQrDataUrl}
+            alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+            className="a6-qr"
+          />
+        ) : (
+          <div className="a6-qr-ph">QR</div>
+        )}
         <div className="a6-footer-text">
           <p>Zur Galerie online</p>
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
@@ -612,7 +710,7 @@ export default function FlyerEventBogenNeuPage() {
   const businessCardFront = (
     <div className="vc-front" aria-label="Visitenkarte Vorderseite">
       <div className="vc-hero">
-        <p className="vc-brand">K2 Galerie Kunst&amp;Keramik</p>
+        <p className="vc-brand">{base.brandLine}</p>
         <p className="vc-names">{base.subtitle}</p>
       </div>
       <div className="vc-image-wrap">
@@ -620,7 +718,15 @@ export default function FlyerEventBogenNeuPage() {
       </div>
       <p className="vc-intro">{masterText.intro}</p>
       <div className="vc-footer">
-        {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="vc-qr" /> : <div className="vc-qr-ph">QR</div>}
+        {frontQrDataUrl ? (
+          <img
+            src={frontQrDataUrl}
+            alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+            className="vc-qr"
+          />
+        ) : (
+          <div className="vc-qr-ph">QR</div>
+        )}
         <div className="vc-footer-text">
           <p>Zur Galerie online</p>
           <small>{base.address} · {base.city}</small>
@@ -632,7 +738,7 @@ export default function FlyerEventBogenNeuPage() {
   const businessCardBack = (
     <div className="vc-back" aria-label="Visitenkarte Rückseite">
       <div className="vc-back-hero">
-        <h3>K2 Galerie</h3>
+        <h3>{base.backCardTitle}</h3>
         <p className="vc-back-slogan">{masterText.backSlogan}</p>
         <p className="vc-back-power">{masterText.backPower}</p>
       </div>
@@ -651,7 +757,7 @@ export default function FlyerEventBogenNeuPage() {
     <div className="card back back-page-2">
       <div className="back-left">
         <div className="back-hero">
-          <h3>K2 Galerie</h3>
+          <h3>{base.backCardTitle}</h3>
           <div className={interactive ? 'master-hotspot-parent back-hero-line' : undefined}>
             {interactive ? (
               <button
@@ -2326,14 +2432,12 @@ export default function FlyerEventBogenNeuPage() {
                       <ul>
                         <li>
                           <strong>
-                            Kopf „{TENANT_CONFIGS.oeffentlich.galleryName} …“, Demo-Namen, „Galerieeröffnung“:
+                            Kopfzeile und Namen wie in der Mustergalerie; Überschrift zur Veranstaltung (z. B. Vernissage)
+                            aus dem Demo-Event:
                           </strong>{' '}
-                          feste Vorlage dieses Layouts (nicht frei textlich editierbar). Angezeigt werden die
-                          Musternamen{' '}
-                          <strong>
-                            {MUSTER_TEXTE.martina.name} & {MUSTER_TEXTE.georg.name}
-                          </strong>{' '}
-                          wie in der Demo-Galerie.
+                          Markenzeile und Namen entsprechen den Stammdaten der Demo; die mittlere Überschrift kommt aus
+                          dem <strong>Eröffnungs- bzw. Vernissage-Event</strong> (Muster-Event oder Einträge in der
+                          Demo-Eventplanung) – nicht frei textlich im Flyer editierbar.
                         </li>
                         <li>
                           <strong>Termin / Einladung mit Datum und Uhrzeit:</strong> aus der{' '}
