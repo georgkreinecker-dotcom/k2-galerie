@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 1 – eine Event-Quelle:** Globale Buttons (Presseaussendung, Social, Event-Flyer, Newsletter, Plakat, Website-Content) nutzen nicht mehr den kaputten `find(… || events[0])`, sondern **`pickOpeningEventForWerbemittel`** über Hilfsfunktion **`getDefaultEventForMediengeneratorButtons`** – dieselbe Logik wie Flyer/Presse-Seiten (Eröffnung/Vernissage bevorzugt). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `4c40700` ✅ auf GitHub
+
+**Was wir JETZT tun:** Nächster Schritt Prozess: weitere Generator-Stellen prüfen (pro Event-Karte) + später Paket „alle Medien“.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Sportwagenregel verankert:** Tabelle **ein-standard-problem.mdc** ergänzt: **ök2 Muster-Event** → `oek2MusterEventLinie.ts` (Pflicht vor neuer ök2-Werbemittel-Logik). **Commit:** `77feb74` ✅ auf GitHub
 
 ---
