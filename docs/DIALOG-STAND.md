@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Flyer-Master A5 = Herzstück Mediengenerator (Datenbasis):** URL-Parameter **`eventId`** vom Event aus Marketing/Admin (`flyerEventBogenUrl`); Master und Ableitungen (A3/A6/Karte) behalten Kontext + Event. **Live-Vorschau:** `k2-tenant-stammdaten-updated`, `k2-gallery-stammdaten-updated`, erweiterte **storage**-Keys (Martina/Georg, ök2-Stammdaten, VK2-Events/Stammdaten), VK2-Stam-Events. **Toolbar:** ein Link **„← Zurück zum Flyer-Master (A5 · Live-Vorschau)“**. Hilfe-Spalte: Herzstück-Satz. **Dateien:** `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx` (bereits `navigation.ts` eventId, `stammdatenStorage` CustomEvent). **Commit:** `1f3035d` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: vom gewünschten Event **Master bearbeiten** / **Neu erstellen** → gleiches Event in Flyer; Stammdaten/Event im Admin ändern → Vorschau aktualisiert (ohne Tab-Wechsel).
+
+---
+
 **Letzter Stand:** 27.03.26 – **Flyer-Master A5 / Live-Vorschau wieder klar erreichbar:** Die Seite `FlyerEventBogenNeuPage` (Überschrift **Master A5 – Live-Vorschau**) erscheint nur **ohne** `?mode=a3|a6|card`. Viele Einstiege verlinkten nur A3 → wirkte „weg“. **Werbeunterlagen:** Button **Flyer-Master (A4, 2× A5)** bei Abschnitt 1 Prospekt + Text/Button bei Abschnitt 3 Flyer A5. **Texte-Schreibtisch:** Zettel **Flyer-Master A5**. Dateien: `WerbeunterlagenPage.tsx`, `TexteSchreibtischPage.tsx`. **Commit:** `037b357` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Werbeunterlagen → orangefarbenen **Flyer-Master**-Button testen; von A3-Ansicht **Zurück zum Master** in der Flyer-Leiste.

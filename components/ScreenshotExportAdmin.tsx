@@ -37,6 +37,31 @@ function isProductionLikeUrl(url: string | undefined): boolean {
   const u = url.trim()
   return u.length > 0 && u.startsWith('https://') && !u.toLowerCase().includes('localhost')
 }
+
+/** Gespeichertes Werbemittel (data-URL) → HTML für iframe-Vorschau in der Karte. */
+function decodeWerbemittelDataUrlToHtml(src: string | undefined | null): string | null {
+  if (!src || typeof src !== 'string') return null
+  const t = src.trim()
+  if (t.startsWith('<!DOCTYPE') || t.startsWith('<html')) return t
+  if (!t.startsWith('data:')) return null
+  const comma = t.indexOf(',')
+  if (comma < 0) return null
+  const header = t.slice(5, comma).toLowerCase()
+  const payload = t.slice(comma + 1)
+  if (!header.includes('text/html')) return null
+  try {
+    if (header.includes(';base64') || header.includes('base64')) {
+      const binary = atob(payload)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+      return new TextDecoder('utf-8').decode(bytes)
+    }
+    return decodeURIComponent(payload.replace(/\+/g, ' '))
+  } catch {
+    return null
+  }
+}
+
 /** Feste Galerie-URL für Etiketten-QR (APP_BASE_URL = Vercel oder VITE_APP_BASE_URL) */
 const GALERIE_QR_BASE = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
 /** Fallback für QR/Links in Werbemitteln (Flyer, Plakat, Newsletter) – immer Produktion, nie localhost */
@@ -6196,8 +6221,9 @@ ${'='.repeat(60)}
         werbematerialTyp: 'social'
       }
       const existingSocial = loadDocuments()
-      saveDocuments([...existingSocial, socialPlaceholder])
-      setDocuments([...existingSocial, socialPlaceholder])
+      if (!saveDocuments([...existingSocial, socialPlaceholder])) {
+        throw new Error('Social-Dokument: Speichern fehlgeschlagen')
+      }
 
       const finishSocialBlobToDoc = (): Promise<void> =>
         new Promise((resolve, reject) => {
@@ -6213,8 +6239,10 @@ ${'='.repeat(60)}
               const updated = current.map((d: any) =>
                 d.id === docId ? { ...d, fileData: reader.result as string, data: reader.result as string } : d
               )
-              saveDocuments(updated)
-              setDocuments(updated)
+              if (!saveDocuments(updated)) {
+                reject(new Error('Social-Dokument: Speichern fehlgeschlagen'))
+                return
+              }
               resolve()
             } catch (e) {
               reject(e)
@@ -7409,13 +7437,14 @@ ${'='.repeat(60)}
     event: any,
     opts?: { skipOpenAndAlert?: boolean }
   ): void | Promise<void> => {
-    
+    const gGal = galleryData || {}
+
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const eventSuggestion = suggestions.find((s: any) => s.eventId === event.id)
-    
+    const eventSuggestion = suggestions.find((s: any) => String(s.eventId) === String(event.id))
+
     const newsletterContent = eventSuggestion?.newsletter || generateNewsletterContent(event)
-    
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -7524,13 +7553,13 @@ ${'='.repeat(60)}
         ${newsletterContent.body.replace(/\n/g, '<br>')}
       </div>
       
-      <a href="${(galleryData.website && isProductionLikeUrl(galleryData.website)) ? galleryData.website : FALLBACK_GALERIE_URL_WERBEMITTEL}" class="button">Mehr erfahren →</a>
+      <a href="${(gGal.website && isProductionLikeUrl(gGal.website)) ? gGal.website : FALLBACK_GALERIE_URL_WERBEMITTEL}" class="button">Mehr erfahren →</a>
       
       <div class="footer">
-        <p><strong>${galleryData.name || 'K2 Galerie'}</strong></p>
+        <p><strong>${gGal.name || 'K2 Galerie'}</strong></p>
         ${fullAddressFromStammdaten ? `<p>${fullAddressFromStammdaten}</p>` : ''}
-        ${galleryData.phone ? `<p>Tel: ${galleryData.phone}</p>` : ''}
-        ${galleryData.email ? `<p>E-Mail: ${galleryData.email}</p>` : ''}
+        ${gGal.phone ? `<p>Tel: ${gGal.phone}</p>` : ''}
+        ${gGal.email ? `<p>E-Mail: ${gGal.email}</p>` : ''}
       </div>
     </div>
   </div>
@@ -7562,8 +7591,9 @@ ${'='.repeat(60)}
       }
       const existingDocs = loadDocuments()
       const updated = [...existingDocs, documentData]
-      saveDocuments(updated)
-      setDocuments(updated)
+      if (!saveDocuments(updated)) {
+        throw new Error('Newsletter: Speichern fehlgeschlagen')
+      }
     }
 
     if (opts?.skipOpenAndAlert) {
@@ -7649,7 +7679,15 @@ ${'='.repeat(60)}
       : `var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
     function setFormat(f) {
       var p = document.getElementById('print-page-size');
-      if (p) p.textContent = '@media print { @page { size: ' + (f === 'a4' ? 'A4' : f === 'a3' ? 'A3' : 'A5') + '; margin: 10mm; } }';
+      if (!p) return;
+      var size = 'A3';
+      var margin = '10mm';
+      if (f === 'a4') size = 'A4';
+      else if (f === 'a3') size = 'A3';
+      else if (f === 'a5') size = 'A5';
+      else if (f === 'a6') size = '105mm 148mm';
+      else if (f === 'card') { size = '85mm 55mm'; margin = '4mm'; }
+      p.textContent = '@media print { @page { size: ' + size + '; margin: ' + margin + '; } }';
     }
     function goBack() {
       var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.location.origin + '/admin');
@@ -7666,8 +7704,10 @@ ${'='.repeat(60)}
     <button type="button" onclick="setFormat('a4'); return false;">A4</button>
     <button type="button" onclick="setFormat('a3'); return false;">A3</button>
     <button type="button" onclick="setFormat('a5'); return false;">A5</button>
+    <button type="button" onclick="setFormat('a6'); return false;">A6</button>
+    <button type="button" onclick="setFormat('card'); return false;">Visitenkarte</button>
     <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
-    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design, druckbar als A4 / A3 / A5.</p>
+    <p style="font-size: 0.85rem; margin: 0.35rem 0 0; color: #666;">Galerie-Design: dieselbe Vorlage, Druckformat wählbar (A4–A6, Visitenkarte).</p>
   </div>`
     const gName = currentGalleryData.name
     const gAddr = currentGalleryData.address
@@ -7801,6 +7841,54 @@ ${'='.repeat(60)}
   <\/script>
 </body>
 </html>`
+  }
+
+  /** Plakat-Master wie beim Speichern – nur für Vorschau (iframe), gleiche CD-Optik + Event-Daten. */
+  const getPlakatMasterPreviewHtmlForEvent = (ev: any): string => {
+    if (!ev) return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/></head><body></body></html>'
+    const eidNorm = String(ev.id)
+    const sugList: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+    const evSug = sugList.find((sg: any) => String(sg.eventId) === eidNorm)
+    const freshGalleryData = (() => {
+      if (tenant.isOeffentlich) return galleryData || {}
+      if (tenant.isVk2) {
+        const v = vk2Stammdaten?.verein
+        return v
+          ? {
+              name: v.name,
+              address: v.address,
+              city: v.city,
+              website: v.website || '',
+              phone: (v as { phone?: string }).phone || '',
+              email: v.email || '',
+            }
+          : {}
+      }
+      return loadStammdaten('k2', 'gallery') as Record<string, unknown>
+    })()
+    let plakatContent: any = evSug?.plakat || generatePlakatContent(ev)
+    if (!plakatContent || typeof plakatContent !== 'object') plakatContent = generatePlakatContent(ev)
+    plakatContent.title = ev.title || plakatContent.title || 'Event'
+    plakatContent.date = formatEventDates(ev) || plakatContent.date || 'Datum folgt'
+    plakatContent.location = ev.location || plakatContent.location || String((freshGalleryData as { address?: string }).address || '')
+    plakatContent.description = ev.description || plakatContent.description || ''
+    const websiteUrlPlakat =
+      (freshGalleryData as { website?: string }).website &&
+      isProductionLikeUrl((freshGalleryData as { website?: string }).website)
+        ? (freshGalleryData as { website?: string }).website
+        : FALLBACK_GALERIE_URL_WERBEMITTEL
+    plakatContent.qrCode = plakatContent.qrCode || websiteUrlPlakat
+    const eventTypeNamesPlakat: Record<string, string> = {
+      galerieeröffnung: 'Galerieeröffnung',
+      vernissage: 'Vernissage',
+      finissage: 'Finissage',
+      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
+      sonstiges: 'Veranstaltung',
+    }
+    plakatContent.type = eventTypeNamesPlakat[ev.type] || plakatContent.type || 'Veranstaltung'
+    const pd = designToPlakatVars(designSettings)
+    const plakatQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(String(plakatContent.qrCode || ''))}`
+    return buildPlakatWerbemittelHtml(plakatContent, freshGalleryData, pd, plakatQrUrl, { iframePreview: true })
   }
 
   const generatePlakatForEvent = (event: any) => {
@@ -8425,6 +8513,9 @@ ${'='.repeat(60)}
       })
 
     try {
+      const escH = (s: string) =>
+        String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+
       const currentAll = loadDocuments()
       const kept = currentAll.filter(
         (d: any) =>
@@ -8435,8 +8526,7 @@ ${'='.repeat(60)}
             typSet.has(String(d.werbematerialTyp || ''))
           )
       )
-      saveDocuments(kept)
-      setDocuments(kept)
+      if (!saveDocuments(kept)) return
 
       const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
       const sugList: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -9964,15 +10054,22 @@ ${'='.repeat(60)}
     alert('✅ Stammdaten übernommen (komplette Adresse + ggf. Kontakt in Beschreibung)!')
   }
 
-  // Dokumente speichern – immer über documentsStorage (ein Schreibweg, alle Schutzmechanismen)
-  const saveDocuments = (docs: any[]) => {
+  // Dokumente speichern – immer über documentsStorage (ein Schreibweg, alle Schutzmechanismen). Rückgabe: true wenn geschrieben.
+  const saveDocuments = (docs: any[]): boolean => {
     try {
       const ok = saveDocumentsToStorage(tenant.tenantId, docs)
       if (ok) {
         setDocuments(docs)
         setDocumentSaveFeedback('ok')
         setTimeout(() => setDocumentSaveFeedback(null), 3000)
-      } else setDocuments(loadDocumentsFromStorage(tenant.tenantId))
+        return true
+      }
+      console.warn('saveDocumentsToStorage: Schreiben abgelehnt (Größe, Schutzregel oder Quota).', tenant.tenantId)
+      setDocuments(loadDocuments())
+      alert(
+        'Speichern der Dokumente wurde abgebrochen (z. B. Daten zu groß für den Browser-Speicher oder Sicherheitsregel). Tritt das nach „Paket übernehmen“ auf: einzelne Werbemittel mit „Neu erstellen“ anlegen oder Texte/Bilder kürzen. Details in der Konsole (F12).'
+      )
+      return false
     } catch (error: any) {
       console.error('Fehler beim Speichern:', error)
       if (error?.name === 'QuotaExceededError') {
@@ -9980,15 +10077,20 @@ ${'='.repeat(60)}
         if (freed > 0) {
           try {
             const ok2 = saveDocumentsToStorage(tenant.tenantId, docs)
-            if (ok2) setDocuments(docs)
-            else setDocuments(loadDocumentsFromStorage(tenant.tenantId))
-            return
+            if (ok2) {
+              setDocuments(docs)
+              return true
+            }
+            setDocuments(loadDocuments())
+            return false
           } catch (_) {}
         }
         alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       } else {
         alert('Fehler beim Speichern. Möglicherweise ist der Speicher voll.')
       }
+      setDocuments(loadDocuments())
+      return false
     }
   }
 
@@ -22166,12 +22268,14 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  '„Neu erstellen“ zeigt den Überblick: Flyer-Master und Ableitungen. „Master neu erstellen“ öffnet die A4-Bearbeitung. Beim Versand wählst du, welche gespeicherten Vorschläge mitgehen.',
+                                  'Mit Dokumenten: große Vorschau des Plakat-Masters (CD wie in der App, mit Event-Daten). Flyer-Master A4 und Ableitungen A3/A6/Karte über die Buttons. Versand: mehrere Dateien wählbar.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
                                 plakatMasterNeuErstellen: () => {
-                                  navigateFromOeffentlichkeitsarbeitOverlay(flyerEventBogenUrl({ tenant: flyerTenant }))
+                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                    flyerEventBogenUrl({ tenant: flyerTenant, eventId: event?.id }),
+                                  )
                                 },
                                 onErstellen: () => {
                                   setPlakatDruckformateInfoModal({
@@ -22448,7 +22552,11 @@ ${name}`
                                                 type="button"
                                                 onClick={(e) =>
                                                   navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant }),
+                                                    flyerEventBogenUrl({
+                                                      mode: 'a3',
+                                                      tenant: flyerTenant,
+                                                      eventId: event?.id,
+                                                    }),
                                                     e
                                                   )
                                                 }
@@ -22456,7 +22564,29 @@ ${name}`
                                               >
                                                 Plakat A3 (Master-Ableitung)
                                               </button>
-                                              <a href={BASE_APP_URL + flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant })} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                              <a
+                                                href={
+                                                  BASE_APP_URL +
+                                                  flyerEventBogenUrl({
+                                                    mode: 'a3',
+                                                    tenant: flyerTenant,
+                                                    eventId: event?.id,
+                                                  })
+                                                }
+                                                onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                  padding: '0.45rem 0.7rem',
+                                                  background: '#fff',
+                                                  border: '1px solid rgba(13,148,136,0.2)',
+                                                  borderRadius: '8px',
+                                                  fontSize: '0.8rem',
+                                                  color: '#0d9488',
+                                                  textDecoration: 'none',
+                                                  fontWeight: 500,
+                                                }}
+                                              >
                                                 Plakat A3 (neuer Tab)
                                               </a>
                                             </div>
@@ -22464,8 +22594,45 @@ ${name}`
                                         )}
                                         {hatDokumente && (() => {
                                           const primaryDoc = karte.docs[0]
+                                          const plakatOnlyDoc =
+                                            karte.typ === 'plakat'
+                                              ? karte.docs.find((d: any) => String(d?.werbematerialTyp) === 'plakat')
+                                              : null
+                                          const plakatPreviewHtml =
+                                            karte.typ === 'plakat'
+                                              ? decodeWerbemittelDataUrlToHtml(plakatOnlyDoc?.fileData || plakatOnlyDoc?.data) ||
+                                                getPlakatMasterPreviewHtmlForEvent(event)
+                                              : null
                                           return (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                              {karte.typ === 'plakat' && plakatPreviewHtml ? (
+                                                <div
+                                                  style={{
+                                                    borderRadius: 8,
+                                                    overflow: 'hidden',
+                                                    border: '1px solid rgba(0,0,0,0.1)',
+                                                    background: '#0d1426',
+                                                  }}
+                                                >
+                                                  <div
+                                                    style={{
+                                                      fontSize: '0.72rem',
+                                                      padding: '0.3rem 0.55rem',
+                                                      color: '#94a3b8',
+                                                      background: '#0f172a',
+                                                      fontWeight: 600,
+                                                    }}
+                                                  >
+                                                    Vorschau: Plakat-Master (Galerie-Design, mit Event gefüllt)
+                                                  </div>
+                                                  <iframe
+                                                    title="Plakat-Vorschau"
+                                                    sandbox="allow-same-origin"
+                                                    srcDoc={plakatPreviewHtml}
+                                                    style={{ width: '100%', height: 220, border: 'none', display: 'block' }}
+                                                  />
+                                                </div>
+                                              ) : null}
                                               <button
                                                 type="button"
                                                 onClick={() => karte.onOpen(primaryDoc)}
@@ -23067,7 +23234,7 @@ ${name}`
                 onClick={e => e.stopPropagation()}
                 style={{
                   width: '100%',
-                  maxWidth: '28rem',
+                  maxWidth: 'min(42rem, 96vw)',
                   background: WERBEUNTERLAGEN_STIL.bgCard,
                   border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
                   borderRadius: '12px',
@@ -23080,8 +23247,38 @@ ${name}`
                 <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
                   Plakat &amp; Druckformate – Überblick
                 </h3>
+                <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
+                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – <strong>Plakat-Master</strong> (Galerie-Design) mit den aktuellen Event- und Stammdaten:
+                </p>
+                <div
+                  style={{
+                    marginBottom: '0.85rem',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    border: '1px solid rgba(0,0,0,0.12)',
+                    background: '#0d1426',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.6rem',
+                      color: '#94a3b8',
+                      background: '#0f172a',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Live-Vorschau – dieselbe Vorlage wie in „Ansehen“ / Druck
+                  </div>
+                  <iframe
+                    title="Plakat-Master-Vorschau"
+                    sandbox="allow-same-origin"
+                    srcDoc={getPlakatMasterPreviewHtmlForEvent(plakatDruckformateInfoModal.event)}
+                    style={{ width: '100%', height: 260, border: 'none', display: 'block' }}
+                  />
+                </div>
                 <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ gehört ein gemeinsamer Flyer-Master auf A4 (A5 vorne/hinten). Daraus entstehen:
+                  Zusätzlich: gemeinsamer <strong>Flyer-Master</strong> auf A4 (A5 vorne/hinten). Daraus entstehen:
                 </p>
                 <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.2rem', fontSize: '0.88rem', color: '#1c1a18', lineHeight: 1.55 }}>
                   <li>Master: eine Bearbeitungsstelle für Texte und Bilder</li>
@@ -23102,7 +23299,10 @@ ${name}`
                     onClick={() => {
                       setPlakatDruckformateInfoModal(null)
                       navigateFromOeffentlichkeitsarbeitOverlay(
-                        flyerEventBogenUrl({ tenant: plakatDruckformateInfoModal.flyerTenant }),
+                        flyerEventBogenUrl({
+                          tenant: plakatDruckformateInfoModal.flyerTenant,
+                          eventId: plakatDruckformateInfoModal.event?.id,
+                        }),
                       )
                     }}
                     style={{
@@ -23121,7 +23321,11 @@ ${name}`
                   {!plakatDruckformateInfoModal.hideAbleitungen ? (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
                       <a
-                        href={flyerEventBogenUrl({ mode: 'a3', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        href={flyerEventBogenUrl({
+                          mode: 'a3',
+                          tenant: plakatDruckformateInfoModal.flyerTenant,
+                          eventId: plakatDruckformateInfoModal.event?.id,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -23138,7 +23342,11 @@ ${name}`
                         A3 (neuer Tab)
                       </a>
                       <a
-                        href={flyerEventBogenUrl({ mode: 'a6', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        href={flyerEventBogenUrl({
+                          mode: 'a6',
+                          tenant: plakatDruckformateInfoModal.flyerTenant,
+                          eventId: plakatDruckformateInfoModal.event?.id,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{
@@ -23155,7 +23363,11 @@ ${name}`
                         A6 (neuer Tab)
                       </a>
                       <a
-                        href={flyerEventBogenUrl({ mode: 'card', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        href={flyerEventBogenUrl({
+                          mode: 'card',
+                          tenant: plakatDruckformateInfoModal.flyerTenant,
+                          eventId: plakatDruckformateInfoModal.event?.id,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{

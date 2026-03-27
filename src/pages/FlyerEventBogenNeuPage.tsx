@@ -226,6 +226,8 @@ export default function FlyerEventBogenNeuPage() {
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
   const isCardMode = searchParams.get('mode') === 'card'
+  /** Aus Marketing/Admin: gleiches Event wie auf der Event-Karte (Herzstück = Master-Datenbasis). */
+  const eventIdFromUrl = useMemo(() => (searchParams.get('eventId') || '').trim(), [searchParams])
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
   const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -280,19 +282,21 @@ export default function FlyerEventBogenNeuPage() {
   const [masterIntroRailOpen, setMasterIntroRailOpen] = useState(true)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
-  /** Interne Varianten-Links: ?context=oeffentlich mitschleifen, damit ök2-Speicher/Keys stabil bleiben. */
+  /** Interne Varianten-Links: Kontext + eventId mitschleifen (Master ↔ Ableitungen eine Datenbasis). */
   const buildFlyerEventSelfUrl = useCallback(
     (extra: Record<string, string>) => {
       const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
       const sp = new URLSearchParams()
       if (isOeffentlich) sp.set('context', 'oeffentlich')
+      if (isVk2 && !isOeffentlich) sp.set('context', 'vk2')
+      if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
       })
       const q = sp.toString()
       return q ? `${base}?${q}` : base
     },
-    [isOeffentlich],
+    [isOeffentlich, isVk2, eventIdFromUrl],
   )
 
   const handleSaveFlyerMaster = useCallback(() => {
@@ -405,11 +409,21 @@ export default function FlyerEventBogenNeuPage() {
   }, [frontGalleryQr, oek2TorQr])
 
   useEffect(() => {
-    const tenant = isOeffentlich ? 'oeffentlich' : 'k2'
-    const evts = isOeffentlich ? getOeffentlichEventsWithMusterFallback() : loadEvents(tenant)
-    const eroeffnung = pickOpeningEventForWerbemittel(Array.isArray(evts) ? evts : [])
+    const evts = isOeffentlich
+      ? getOeffentlichEventsWithMusterFallback()
+      : loadEvents(isVk2 ? 'vk2' : 'k2')
+    const list = Array.isArray(evts) ? evts : []
+    let eroeffnung: EventTerminLike | null = null
+    if (eventIdFromUrl) {
+      const found = list.find((e: { id?: string }) => String(e?.id ?? '') === eventIdFromUrl)
+      if (found) eroeffnung = found as EventTerminLike
+    }
+    if (!eroeffnung) {
+      const picked = pickOpeningEventForWerbemittel(list)
+      eroeffnung = picked ? (picked as EventTerminLike) : null
+    }
     if (eroeffnung) {
-      setEroeffnungEvent(eroeffnung as EventTerminLike)
+      setEroeffnungEvent(eroeffnung)
       const full = formatEventTerminKomplett(eroeffnung, {
         mode: 'long',
         emptyFallback: 'Termin folgt',
@@ -420,16 +434,47 @@ export default function FlyerEventBogenNeuPage() {
       setEroeffnungEvent(null)
       setEventDateLine('Termin folgt')
     }
-  }, [flyerDataTick, isOeffentlich])
+  }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl])
 
   useEffect(() => {
     const bump = () => setFlyerDataTick((t) => t + 1)
     window.addEventListener('k2-events-updated', bump)
+    const onTenantStam = (ev: Event) => {
+      const ce = ev as CustomEvent<{ tenant?: string }>
+      const t = ce.detail?.tenant
+      if (isOeffentlich && t === 'oeffentlich') bump()
+      if (!isOeffentlich && !isVk2 && t === 'k2') bump()
+    }
+    window.addEventListener('k2-tenant-stammdaten-updated', onTenantStam as EventListener)
+    const onGalleryStam = (ev: Event) => {
+      const ce = ev as CustomEvent<{ tenant?: string }>
+      const t = ce.detail?.tenant
+      if (isOeffentlich && t === 'oeffentlich') bump()
+      if (!isOeffentlich && !isVk2 && t === 'k2') bump()
+    }
+    window.addEventListener('k2-gallery-stammdaten-updated', onGalleryStam as EventListener)
+    const onVk2Stam = () => {
+      if (isVk2) bump()
+    }
+    window.addEventListener('k2-vk2-stammdaten-updated', onVk2Stam)
+    window.addEventListener('vk2-stammdaten-updated', onVk2Stam)
     const onStorage = (e: StorageEvent) => {
       if (!e.key) return
       if (isOeffentlich) {
-        if (e.key === 'k2-oeffentlich-events' || e.key === 'k2-oeffentlich-stammdaten-galerie') bump()
-      } else if (e.key === 'k2-events' || e.key === 'k2-stammdaten-galerie') {
+        if (
+          e.key === 'k2-oeffentlich-events' ||
+          e.key.startsWith('k2-oeffentlich-stammdaten-')
+        ) {
+          bump()
+        }
+      } else if (isVk2) {
+        if (e.key === 'k2-vk2-events' || e.key === 'k2-vk2-stammdaten') bump()
+      } else if (
+        e.key === 'k2-events' ||
+        e.key === 'k2-stammdaten-galerie' ||
+        e.key === 'k2-stammdaten-martina' ||
+        e.key === 'k2-stammdaten-georg'
+      ) {
         bump()
       }
     }
@@ -440,10 +485,14 @@ export default function FlyerEventBogenNeuPage() {
     document.addEventListener('visibilitychange', onVis)
     return () => {
       window.removeEventListener('k2-events-updated', bump)
+      window.removeEventListener('k2-tenant-stammdaten-updated', onTenantStam as EventListener)
+      window.removeEventListener('k2-gallery-stammdaten-updated', onGalleryStam as EventListener)
+      window.removeEventListener('k2-vk2-stammdaten-updated', onVk2Stam)
+      window.removeEventListener('vk2-stammdaten-updated', onVk2Stam)
       window.removeEventListener('storage', onStorage)
       document.removeEventListener('visibilitychange', onVis)
     }
-  }, [isOeffentlich])
+  }, [isOeffentlich, isVk2])
 
   useEffect(() => {
     setShowDerivationFullscreen(false)
@@ -2322,29 +2371,22 @@ export default function FlyerEventBogenNeuPage() {
         >
           Schwarzweiß Druckcheck ein/aus
         </button>
+        {(isA3Mode || isA6Mode || isCardMode) && (
+          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
+            ← Zurück zum Flyer-Master (A5 · Live-Vorschau)
+          </Link>
+        )}
         {!isA3Mode ? (
           <Link to={buildFlyerEventSelfUrl({ mode: 'a3', layout: 'variant2' })}>A3 Ableitung ansehen</Link>
-        ) : (
-          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
-            Zurück zum Master
-          </Link>
-        )}
+        ) : null}
         {!isA6Mode ? (
           <Link to={buildFlyerEventSelfUrl({ mode: 'a6', layout: 'variant2' })}>A6 Ableitung ansehen</Link>
-        ) : (
-          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
-            Zurück zum Master
-          </Link>
-        )}
+        ) : null}
         {!isCardMode ? (
           <Link to={buildFlyerEventSelfUrl({ mode: 'card', layout: 'variant2' })}>
             Visitenkarten-Ableitung ansehen
           </Link>
-        ) : (
-          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
-            Zurück zum Master
-          </Link>
-        )}
+        ) : null}
         {flyerSaveMessage ? (
           <span style={{ fontSize: '0.85rem', color: '#0f6f66', fontWeight: 650, maxWidth: '28rem' }}>
             {flyerSaveMessage}
@@ -2433,6 +2475,11 @@ export default function FlyerEventBogenNeuPage() {
                     <>
                       <h3>Was du hier machst</h3>
                       <ul>
+                        <li>
+                          <strong>Herzstück des Mediengenerators:</strong> Wenn hier Eventzeiten, Stammdaten und
+                          QR-Codes stimmen, stimmen Design und Daten auch bei Plakat A3, Flyer A6 und Visitenkarte –
+                          alles eine gemeinsame Basis (dieser A5-Master).
+                        </li>
                         <li>
                           Die Vorschau zeigt einen <strong>A4-Bogen</strong> mit zwei <strong>A5-Hälften</strong> (vorne
                           Bild + Text, hinten K2/ök2-Texte).
