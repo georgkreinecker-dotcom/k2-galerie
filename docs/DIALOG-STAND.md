@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 2 – Paket + Reihenfolge + Vorlagen-Default:** **`orderMediengeneratorEventList`** sortiert das Werbemittel-Hauptevent nach vorn (Flyer-Tab-Liste). **Vorlagen aus Vergangenheit:** Default-Ziel-Event = **`pickOpeningEventForWerbemittel(upcoming) || upcoming[0]`**. **Button** „Alle Medien als Vorschau-Paket“ unter Mediengenerator & Verteiler → **`openMedienpaketVorschlagDocument`** (ein HTML: Presse, Social, Newsletter, Flyer-Mailtext, Plakat-Kernfelder, Flyer-Karte). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push eintragen_ ✅
+
+**Was wir JETZT tun:** Georg: Admin → Marketing → Mediengenerator: Button testen; Flyer-Event-Reihenfolge und Vorlagen-Modal prüfen. Optional: weitere Generator-Karten auf gleiche Event-Linie prüfen.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 1 – eine Event-Quelle:** Globale Buttons (Presseaussendung, Social, Event-Flyer, Newsletter, Plakat, Website-Content) nutzen nicht mehr den kaputten `find(… || events[0])`, sondern **`pickOpeningEventForWerbemittel`** über Hilfsfunktion **`getDefaultEventForMediengeneratorButtons`** – dieselbe Logik wie Flyer/Presse-Seiten (Eröffnung/Vernissage bevorzugt). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `4c40700` ✅ auf GitHub
 
-**Was wir JETZT tun:** Nächster Schritt Prozess: weitere Generator-Stellen prüfen (pro Event-Karte) + später Paket „alle Medien“.
+**Was wir JETZT tun:** (Schritt 2 siehe oben)
 
 ---
 

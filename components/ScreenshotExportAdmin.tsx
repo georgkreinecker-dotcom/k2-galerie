@@ -1500,6 +1500,16 @@ function getDefaultEventForMediengeneratorButtons(eventsList: unknown): any | nu
   return pickOpeningEventForWerbemittel(Array.isArray(eventsList) ? eventsList : [])
 }
 
+/** UI-Reihenfolge: Haupt-Event für Werbemittel zuerst, Rest wie übergeben. */
+function orderMediengeneratorEventList(eventsList: any[]): any[] {
+  if (!Array.isArray(eventsList) || eventsList.length === 0) return []
+  const primary = pickOpeningEventForWerbemittel(eventsList)
+  if (!primary) return [...eventsList]
+  const pid = primary.id
+  const rest = eventsList.filter((e: any) => e?.id !== pid)
+  return [primary, ...rest]
+}
+
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
 // Wird nur noch manuell aufgerufen, nicht automatisch. Tenant aus useTenant().
 function cleanupUnnecessaryData(tenant: ReturnType<typeof useTenant>) {
@@ -8253,6 +8263,69 @@ ${'='.repeat(60)}
     alert('✅ Website-Content generiert!')
   }
 
+  /** Ein Dokument: alle Medienvorschläge aus denselben Generatoren wie die Einzel-Buttons (Standard-Event = Flyer-Master-Logik). */
+  const openMedienpaketVorschlagDocument = () => {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
+      alert('Bitte zuerst ein Event erstellen')
+      return
+    }
+    const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
+    const presse = generatePresseaussendungContent(event, presseVariant)
+    const social = generateSocialMediaContent(event)
+    const newsletter = generateNewsletterContent(event)
+    const flyerMail = generateEventFlyerContent(event)
+    const flyerCard = generateFlyerContent(event)
+    const plakat = generatePlakatContent(event)
+    const sd = designToPlakatVars(designSettings)
+    const esc = (t: string) =>
+      String(t ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+    const pre = (t: string) =>
+      `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.92rem;line-height:1.55;margin:0;color:${sd.text}">${esc(t)}</pre>`
+    const subj = (newsletter as { subject?: string })?.subject || ''
+    const bodyNl = (newsletter as { body?: string; greeting?: string })?.body || ''
+    const greet = (newsletter as { greeting?: string })?.greeting || ''
+    const html = `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Medienpaket-Vorschlag – ${esc(event.title || 'Event')}</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: ${sd.font}; background: ${sd.bodyBg}; color: ${sd.text}; margin: 0; padding: 1.75rem 1.25rem 3rem; min-height: 100vh; }
+    .wrap { max-width: 820px; margin: 0 auto; }
+    h1 { font-size: 1.55rem; color: ${sd.accent}; margin: 0 0 0.35rem; line-height: 1.25; }
+    .meta { font-size: 0.88rem; opacity: 0.88; margin-bottom: 1rem; }
+    .hint { font-size: 0.82rem; line-height: 1.5; padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid ${sd.border}; background: ${sd.pageBg}; margin-bottom: 1.25rem; }
+    section { margin-bottom: 1.5rem; padding: 1rem 1.1rem; border-radius: 12px; border: 1px solid ${sd.border}; background: ${sd.pageBg}; break-inside: avoid; }
+    h2 { font-size: 1.08rem; color: ${sd.accent}; margin: 0 0 0.65rem; }
+    @media print { body { padding: 12mm; } .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Medienpaket – Vorschlag zur Weiterbearbeitung</h1>
+    <div class="meta">Event: <strong>${esc(event.title || '')}</strong> · ${esc(formatEventDates(event) || '')}${event.location ? ` · ${esc(event.location)}` : ''}</div>
+    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Dieses Dokument dient zum Lesen und Kopieren. Für druckfertige Einzelmedien nutze in der Event-Karte die jeweilige Karte „Neu erstellen“.</div>
+    <section><h2>1. Presseaussendung</h2><p style="margin:0 0 0.5rem;font-size:0.88rem;font-weight:600">${esc(presse?.title || '')}</p>${pre(typeof presse?.content === 'string' ? presse.content : '')}</section>
+    <section><h2>2. Social Media</h2><p style="margin:0 0 0.35rem;font-size:0.85rem;font-weight:600">Instagram</p>${pre(social?.instagram || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">Facebook</p>${pre(social?.facebook || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">WhatsApp</p>${pre(social?.whatsapp || '')}</section>
+    <section><h2>3. Newsletter</h2><p style="margin:0 0 0.35rem;font-size:0.85rem">Betreff</p>${pre(subj)}${greet ? `<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Anrede</p>${pre(greet)}` : ''}<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Text</p>${pre(bodyNl)}</section>
+    <section><h2>4. Event-Flyer (Mail-Betreff &amp; Kurztext)</h2><p style="margin:0 0 0.35rem;font-size:0.85rem">Betreff</p>${pre(flyerMail?.subject || '')}<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Text</p>${pre(flyerMail?.body || '')}</section>
+    <section><h2>5. Plakat / Ankündigung (Kernfelder)</h2>${pre(
+      ['Titel: ' + (plakat?.title || ''), 'Typ: ' + (plakat?.type || ''), 'Datum: ' + (plakat?.date || ''), 'Ort: ' + (plakat?.location || ''), '', String(plakat?.description || '')].join('\n')
+    )}</section>
+    <section><h2>6. Flyer-Karte (Headline &amp; Beschreibung)</h2>${pre(
+      ['Headline: ' + (flyerCard?.headline || ''), 'Datum: ' + (flyerCard?.date || ''), 'Ort: ' + (flyerCard?.location || ''), '', String(flyerCard?.description || '')].join('\n')
+    )}</section>
+  </div>
+</body>
+</html>`
+    openDocumentInApp(html, 'Medienpaket-Vorschlag')
+  }
+
   // Katalog generieren
   const generateKatalog = () => {
     const artworks = loadArtworks(tenant)
@@ -9710,10 +9783,11 @@ ${'='.repeat(60)}
       alert('Lege zuerst ein geplantes Event in der Eventplanung an – dann kannst du die Vorlage dort übernehmen.')
       return
     }
+    const defaultTarget = pickOpeningEventForWerbemittel(upcoming) || upcoming[0]
     setPastDocTemplateModal({
       sourceDoc,
       sourceEvent,
-      targetEventId: String(upcoming[0].id)
+      targetEventId: String(defaultTarget.id)
     })
   }
 
@@ -21312,6 +21386,27 @@ ${name}`
               <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
                 Hier erzeugst du deine Werbedokumente pro Event und verwaltest direkt den Verteiler für Medien und Newsletter – alles in einem Ablauf.
               </div>
+              <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.55rem' }}>
+                <button
+                  type="button"
+                  onClick={() => openMedienpaketVorschlagDocument()}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: s.gradientAccent,
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.88rem',
+                  }}
+                >
+                  📑 Alle Medien als Vorschau-Paket
+                </button>
+                <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '480px' }}>
+                  Ein Dokument mit Presse, Social, Newsletter, Flyer, Plakat – aus demselben Standard-Event wie der Flyer-Master. Zum Freigeben und Verfeinern: in der Event-Karte je Medium „Neu erstellen“.
+                </span>
+              </div>
             </div>
 
             {/* Medienspiegel: direkt im Werbematerial-Ablauf */}
@@ -21631,8 +21726,9 @@ ${name}`
                 tenant.isOeffentlich && upcomingEvents.length === 0
                   ? eventsSorted.find((e: any) => e && String(e.id) === 'muster-event-1')
                   : null
+              const upcomingOrdered = orderMediengeneratorEventList(upcomingEvents)
               const flyerTabUpcomingList =
-                upcomingEvents.length > 0 ? upcomingEvents : oek2FlyerFallbackMuster ? [oek2FlyerFallbackMuster] : []
+                upcomingEvents.length > 0 ? upcomingOrdered : oek2FlyerFallbackMuster ? [oek2FlyerFallbackMuster] : []
 
               if (eventsSorted.length > 0) {
                 return (
