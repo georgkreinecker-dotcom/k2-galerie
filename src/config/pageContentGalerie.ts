@@ -24,6 +24,12 @@ export interface PageContentGalerie {
   /** Größe des Virtual-Tour-Videos in Bytes (für Anzeige „X MB“ im Admin). */
   virtualTourVideoSizeBytes?: number
   welcomeIntroText?: string
+  /** Öffentliche Kanal-/Profil-URL (YouTube) – eine Quelle, Anzeige in Galerie. */
+  socialYoutubeUrl?: string
+  /** Öffentliche Profil-URL (Instagram). */
+  socialInstagramUrl?: string
+  /** Optional: Link zu einem Highlight-Video (z. B. YouTube-Video-URL) – als Link, nicht Embed (MVP). */
+  socialFeaturedVideoUrl?: string
 }
 
 const defaults: PageContentGalerie = {}
@@ -148,7 +154,17 @@ export function mergePageContentGalerieFromServer(serverJson: string, tenantId?:
     } catch {
       return
     }
-    const keys: (keyof PageContentGalerie)[] = ['welcomeImage', 'galerieCardImage', 'virtualTourImage', 'virtualTourVideo', 'virtualTourVideoSizeBytes', 'welcomeIntroText']
+    const keys: (keyof PageContentGalerie)[] = [
+      'welcomeImage',
+      'galerieCardImage',
+      'virtualTourImage',
+      'virtualTourVideo',
+      'virtualTourVideoSizeBytes',
+      'welcomeIntroText',
+      'socialYoutubeUrl',
+      'socialInstagramUrl',
+      'socialFeaturedVideoUrl',
+    ]
     const merged: Partial<PageContentGalerie> = {}
     for (const k of keys) {
       let l = local[k]

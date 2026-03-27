@@ -7,6 +7,7 @@ import { getPageTexts } from '../config/pageTexts'
 import { loadEvents } from '../utils/eventsStorage'
 import { loadDocuments } from '../utils/documentsStorage'
 import { getPageContentGalerie, getVk2SafeDisplayImageUrl } from '../config/pageContentGalerie'
+import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
@@ -103,10 +104,12 @@ const Vk2GaleriePage: React.FC = () => {
     window.addEventListener('storage', reload)
     window.addEventListener('vk2-stammdaten-updated', reload)
     window.addEventListener('page-texts-updated', reload)
+    window.addEventListener('k2-page-content-updated', reload)
     return () => {
       window.removeEventListener('storage', reload)
       window.removeEventListener('vk2-stammdaten-updated', reload)
       window.removeEventListener('page-texts-updated', reload)
+      window.removeEventListener('k2-page-content-updated', reload)
     }
   }, [])
 
@@ -334,6 +337,12 @@ const Vk2GaleriePage: React.FC = () => {
         <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
           {introText}
         </p>
+        <GalerieSocialLinks
+          youtubeUrl={pageContent.socialYoutubeUrl}
+          instagramUrl={pageContent.socialInstagramUrl}
+          featuredVideoUrl={pageContent.socialFeaturedVideoUrl}
+          variant="vk2Warm"
+        />
       </div>
 
       {/* ── EVENTS ── */}

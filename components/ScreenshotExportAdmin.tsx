@@ -64,7 +64,7 @@ import {
   patchK2LocalStorageAfterArtworkRenames,
 } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
 import { mergeAllMissingKeramikK2KFromServerArtworks } from '../src/utils/mergeMissingK2KeramikFromGalleryData'
-import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup } from '../src/utils/eventsStorage'
+import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup, mergeEventTimesFromLocal } from '../src/utils/eventsStorage'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
@@ -1331,10 +1331,21 @@ function loadArtworks(tenant: ReturnType<typeof useTenant>): any[] {
   }
 }
 
-// localStorage-Funktionen für Events (Key abhängig von K2 vs. ök2). Tenant aus useTenant().
+// Event-Speicher nur über zentrale eventsStorage-Schicht (kein direkter localStorage-Write).
 function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
   try {
-    localStorage.setItem(tenant.getEventsKey(), JSON.stringify(events))
+    if (tenant.isOeffentlich) {
+      saveEventsToStorage('oeffentlich', events)
+      return
+    }
+    if (tenant.isVk2) {
+      saveEventsToStorage('vk2', events)
+      return
+    }
+    // K2: Feldweise Zeit-Sicherung gegen Teil-Überschreiben (z. B. Samstag-Startzeit).
+    const localBefore = loadEventsFromStorage('k2')
+    const safeMerged = mergeEventTimesFromLocal(Array.isArray(events) ? events : [], localBefore)
+    saveEventsToStorage('k2', safeMerged)
   } catch (error) {
     console.error('Fehler beim Speichern der Events:', error)
   }
@@ -1342,19 +1353,11 @@ function saveEvents(tenant: ReturnType<typeof useTenant>, events: any[]): void {
 
 function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
   try {
-    // ök2: Muster-Events + k2-oeffentlich-events mergen (wie loadDocuments) – sonst verschwinden neue Events nach Reload trotz Speichern
+    // ök2: Muster-Events + k2-oeffentlich-events mergen (wie loadDocuments).
     if (tenant.isOeffentlich) {
       const muster = JSON.parse(JSON.stringify(MUSTER_EVENTS)) as any[]
-      const key = tenant.getEventsKey()
-      const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
-      if (!raw || !raw.trim()) return muster
-      let stored: any[] = []
-      try {
-        const parsed = JSON.parse(raw)
-        stored = Array.isArray(parsed) ? parsed : []
-      } catch {
-        return muster
-      }
+      const stored = loadEventsFromStorage('oeffentlich')
+      if (!Array.isArray(stored) || stored.length === 0) return muster
       if (stored.length === 0) return muster
       const musterIds = new Set(muster.map((e: any) => e?.id).filter(Boolean))
       const mergedMuster = muster.map((e: any) => {
@@ -1366,11 +1369,11 @@ function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
       combined.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
       return combined
     }
-    if (tenant.isVk2) initVk2DemoEventAndDocumentsIfEmpty()
-    const key = tenant.getEventsKey()
-    const stored = localStorage.getItem(key)
-    if (!stored || stored === '[]') return []
-    return JSON.parse(stored)
+    if (tenant.isVk2) {
+      initVk2DemoEventAndDocumentsIfEmpty()
+      return loadEventsFromStorage('vk2')
+    }
+    return loadEventsFromStorage('k2')
   } catch (error) {
     console.error('Fehler beim Laden der Events:', error)
     return []
@@ -12768,6 +12771,58 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       </div>
                     )}
                   </div>
+                  {/* Öffentliche Social-Links – eine Quelle (pageContent), Anzeige in Galerie */}
+                  <div style={{ marginTop: 16, padding: 16, background: 'var(--k2-card-bg-2)', borderRadius: 12, border: '1px solid var(--k2-muted)' }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>YouTube & Instagram</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', marginBottom: 12, lineHeight: 1.45 }}>
+                      Öffentliche Kanal- oder Profil-URLs (https://…). Erscheinen unter dem Willkommenstext in der Galerie. Optional: Link zu einem Highlight-Video.
+                    </p>
+                    {(() => {
+                      const designTenantSocial = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
+                      const applySocial = (partial: Partial<PageContentGalerie>) => {
+                        const next = { ...pageContent, ...partial }
+                        setPageContent(next)
+                        setPageContentGalerie(next, designTenantSocial)
+                      }
+                      return (
+                        <>
+                          <label htmlFor="social-youtube-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>YouTube</label>
+                          <input
+                            id="social-youtube-url"
+                            type="text"
+                            inputMode="url"
+                            autoComplete="url"
+                            placeholder="https://www.youtube.com/@…"
+                            value={pageContent.socialYoutubeUrl ?? ''}
+                            onChange={(e) => applySocial({ socialYoutubeUrl: e.target.value })}
+                            style={{ width: '100%', marginBottom: 10, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
+                          />
+                          <label htmlFor="social-instagram-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>Instagram</label>
+                          <input
+                            id="social-instagram-url"
+                            type="text"
+                            inputMode="url"
+                            autoComplete="url"
+                            placeholder="https://www.instagram.com/…"
+                            value={pageContent.socialInstagramUrl ?? ''}
+                            onChange={(e) => applySocial({ socialInstagramUrl: e.target.value })}
+                            style={{ width: '100%', marginBottom: 10, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
+                          />
+                          <label htmlFor="social-featured-video-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>Highlight-Video (optional)</label>
+                          <input
+                            id="social-featured-video-url"
+                            type="text"
+                            inputMode="url"
+                            autoComplete="url"
+                            placeholder="https://www.youtube.com/watch?v=…"
+                            value={pageContent.socialFeaturedVideoUrl ?? ''}
+                            onChange={(e) => applySocial({ socialFeaturedVideoUrl: e.target.value })}
+                            style={{ width: '100%', marginBottom: 0, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
+                          />
+                        </>
+                      )
+                    })()}
+                  </div>
                 </section>
               </main>
             </div>
@@ -20101,10 +20156,10 @@ ${name}`
                                       const newValue = typeof current === 'string' 
                                         ? { start: e.target.value, end: '' }
                                         : { ...current, start: e.target.value }
-                                      setEventDailyTimes({
-                                        ...eventDailyTimes,
+                                      setEventDailyTimes((prev) => ({
+                                        ...prev,
                                         [day]: newValue
-                                      })
+                                      }))
                                     }}
                                     placeholder="Start"
                                     style={{
@@ -20142,10 +20197,10 @@ ${name}`
                                       const newValue = typeof current === 'string'
                                         ? { start: current, end: e.target.value }
                                         : { ...current, end: e.target.value }
-                                      setEventDailyTimes({
-                                        ...eventDailyTimes,
+                                      setEventDailyTimes((prev) => ({
+                                        ...prev,
                                         [day]: newValue
-                                      })
+                                      }))
                                     }}
                                     placeholder="Ende"
                                     style={{
@@ -20162,9 +20217,11 @@ ${name}`
                                 {(eventDailyTimes[day] && (typeof eventDailyTimes[day] === 'string' || eventDailyTimes[day].start || eventDailyTimes[day].end)) && (
                                   <button
                                     onClick={() => {
-                                      const newDailyTimes = { ...eventDailyTimes }
-                                      delete newDailyTimes[day]
-                                      setEventDailyTimes(newDailyTimes)
+                                      setEventDailyTimes((prev) => {
+                                        const newDailyTimes = { ...prev }
+                                        delete newDailyTimes[day]
+                                        return newDailyTimes
+                                      })
                                     }}
                                     style={{
                                       padding: '0.4rem 0.6rem',

@@ -127,7 +127,7 @@ export const PROJECT_ROUTES = {
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     /** Plakat (A3) – Galerieeröffnung (druckbar) */
     plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
-    /** Neuer 4er-Bogen (Neuaufbau): Event-Flyer K2 Vorderseite + Eingangstor Rückseite */
+    /** Event-Bogen (Neuaufbau): zwei Flyer pro A4-Seite – K2 Vorderseite + Eingangstor Rückseite */
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
     /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
     pilotStart: '/projects/k2-galerie/pilot-start',

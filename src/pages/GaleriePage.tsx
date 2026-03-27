@@ -6,6 +6,7 @@ import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
+import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { getPageTexts, cleanK2PageTextsFromVk2, type GaleriePageTexts } from '../config/pageTexts'
 import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
@@ -772,6 +773,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (
         e.key === 'k2-oeffentlich-page-content-galerie' ||
         e.key === 'k2-page-content-galerie' ||
+        e.key === 'k2-vk2-page-content-galerie' ||
         e.key === 'k2-oeffentlich-images-updated'
       ) {
         setPageContentVersion((v) => v + 1)
@@ -818,6 +820,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       virtualTourVideo: pc.virtualTourVideo || '/img/k2/virtual-tour.mp4'
     }
   }, [musterOnly, galleryData, pageContentVersion])
+
+  const socialFromPageContent = useMemo(() => {
+    const tid = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : undefined
+    return getPageContentGalerie(tid)
+  }, [musterOnly, vk2, pageContentVersion])
 
   // K2 Impressum: Stammdaten immer anzeigen – Quelle State, sonst localStorage, sonst Repo-Defaults (VK2-Überarbeitung darf K2-Impressum nicht leeren)
   const impressumStammdatenK2 = React.useMemo(() => {
@@ -3373,6 +3380,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : k2DefaultIntro)
                 })()}
               </p>
+              <GalerieSocialLinks
+                youtubeUrl={socialFromPageContent.socialYoutubeUrl}
+                instagramUrl={socialFromPageContent.socialInstagramUrl}
+                featuredVideoUrl={socialFromPageContent.socialFeaturedVideoUrl}
+                variant={musterOnly ? 'oek2' : 'darkOnHero'}
+              />
             </div>
           )}
 
@@ -3400,6 +3413,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 return intro || (vk2 ? 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.' : k2DefaultIntro)
               })()}
             </p>
+            <GalerieSocialLinks
+              youtubeUrl={socialFromPageContent.socialYoutubeUrl}
+              instagramUrl={socialFromPageContent.socialInstagramUrl}
+              featuredVideoUrl={socialFromPageContent.socialFeaturedVideoUrl}
+              variant={musterOnly ? 'oek2' : 'darkOnHero'}
+            />
           </section>
           )}
           {/* Anker auch ohne Bild */}

@@ -1211,8 +1211,39 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ol style={{ lineHeight: 1.7, paddingLeft: '1.5em', margin: '0 0 1rem' }}>
           <li><strong>Prospekt</strong> – Deckblatt, Kernbotschaften, USPs (A4, 1 Seite, druckbar)</li>
           <li><strong>Social-Media-Masken</strong> – Instagram Quadrat/Story, Facebook, LinkedIn (Standardformate)</li>
+          <li><strong>Flyer-Bogen (A4, 2× A5)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
+          <li><strong>Plakat Galerieeröffnung (A3 hochkant)</strong> – aus Seite 1 abgeleitet, druckfertig</li>
+          <li><strong>Flyer A6 (quer)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
+          <li><strong>Visitenkarte (55 × 85 mm, stehend)</strong> – Seite 1 K2, Seite 2 ök2; druckfertig</li>
           <li><strong>Flyer A5</strong> – Produkt-Flyer mit Slogan und Botschaft</li>
         </ol>
+        <div style={{ marginBottom: '1rem', padding: '0.7rem 0.8rem', border: '1px solid rgba(95,251,241,0.3)', borderRadius: '10px', background: 'rgba(95,251,241,0.08)' }}>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.95)' }}>
+            <strong>Fertige Werbemittel (druckbereit):</strong>
+          </p>
+          <ul style={{ margin: 0, paddingLeft: '1.2em', lineHeight: 1.65 }}>
+            <li>
+              <Link to={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+                Flyer-Bogen öffnen (A4 / 2× A5) →
+              </Link>
+            </li>
+            <li>
+              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a3&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+                Plakat A3 hochkant öffnen →
+              </Link>
+            </li>
+            <li>
+              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a6&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+                Flyer A6 quer öffnen →
+              </Link>
+            </li>
+            <li>
+              <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=card&layout=variant2`} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+                Visitenkarte 55 × 85 öffnen →
+              </Link>
+            </li>
+          </ul>
+        </div>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.88)' }}>
           Die <strong>Präsentationsmappen</strong> (Kurzfassungen ök2/VK2 zum Link-Mitsenden) sind unter Werbeunterlagen verlinkt. Für eine <strong>richtige Präsentationsmappe</strong> (wie ein Handbuch aufgebaut, Marketing-Stil, mit Produktbildern) gibt es Konzept und Struktur: <code>docs/PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md</code>.
         </p>

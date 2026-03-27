@@ -1,0 +1,56 @@
+---
+description: Druck-/PDF-Export – dieselbe Datenwahrheit wie im echten Browser; niemals blind exportieren
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL – Druck- und PDF-Export (Datenwahrheit)
+
+## Das Problem (Lehre 27.03.26)
+
+**Kopflose Browser (Playwright, Chromium PDF, CI)** starten **ohne** Georgs echten Browser-Kontext.  
+`localStorage`, Session und teils geladene Daten sind **leer oder anders** als auf dem Mac in der laufenden App.
+
+**Folge ohne Absicherung:**
+
+- falsches oder Standard-Bild statt gewähltem Werk
+- **„Termin folgt“** statt echter Event-Termine
+- unvollständige oder veraltete Texte im PDF
+
+Das ist **kein Zufall** und **kein „nochmal exportieren“** – es ist ein **systematischer Fehler**, wenn der Export nicht dieselbe Datenquelle wie die echte Nutzung hat.
+
+---
+
+## Unveränderliche Regel
+
+**Jeder automatische Druck-/PDF-Export muss dieselbe Datenwahrheit liefern wie die App bei Georg am Mac – oder die fehlenden Daten werden vor dem Rendern explizit und nachprüfbar gesetzt.**
+
+**Verboten:**
+
+- PDF erzeugen und **annehmen**, dass ein leerer Headless-Browser dieselben `localStorage`-Werte hat wie Georgs Safari/Chrome
+- Export nur mit „hoffentlich stimmt es“ ohne **Verifikation** des gerenderten Inhalts
+
+**Pflicht:**
+
+1. **Vor dem Export:** Klären, woher Daten kommen (Keys, Events, Bildwahl). Entweder:
+   - dieselben Keys setzen wie in der App (`k2-events`, `k2-flyer-event-bogen-*-work`, Seitengestaltung, …), **oder**
+   - einen **einen** dokumentierten Injektionsweg nutzen (Skript/Parameter), der mit dem gewünschten Stand übereinstimmt.
+
+2. **Event / Eröffnung:** Nicht von einer einzigen exakten `type`-Zeichenkette abhängig sein. **Robuste Zuordnung** (normalisierte Schreibweisen, Titel-Fallback) – siehe Code: `pickOpeningEvent` / gleiche Logik überall.
+
+3. **Werknummern:** Kanonische Form nutzen (z. B. `K2-M-0001`), nicht abgekürzte Varianten ohne Absprache.
+
+4. **Nach dem Export (verbindlich):** Mindestens **eine maschinelle Prüfung**, dass kritische Inhalte **nicht** Platzhalter sind, z. B.:
+   - A6/Flyer: Termin-Block enthält **nicht** nur „Termin folgt“ / „Datum folgt“, wenn ein Event mit Datum existieren soll
+   - oder: erwarteter Teilstring (Datum/Jahr) ist im gerenderten Text vorhanden
+
+5. **Dokumentation:** Neue Export-Skripte oder geänderte Exportpfade kurz in **docs/** oder im Skript-Kommentar festhalten: welche Keys, welche Verifikation.
+
+---
+
+## Kurzfassung
+
+**Druck-/PDF-Export = keine zweite Welt.** Ohne gleiche Daten (oder explizite Injektion + Check) sind falsches Bild und fehlende Termine **vorhersehbar** – und inakzeptabel.
+
+**Eiserne Regel:** Export nur mit Datenwahrheit + Verifikation; nie blind.
+
+Verknüpfung: **ein-standard-problem.mdc** (ein Ablauf für „Druckfertig exportieren“), **fehlersuche-zuerst-struktur-datenfluss.mdc** (woher kommen die Daten?).
