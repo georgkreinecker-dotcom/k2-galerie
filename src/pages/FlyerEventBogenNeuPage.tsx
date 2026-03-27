@@ -176,14 +176,22 @@ export default function FlyerEventBogenNeuPage() {
   const [eroeffnungEvent, setEroeffnungEvent] = useState<EventTerminLike | null>(null)
   const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>(layoutFromUrl)
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
+  const [masterText, setMasterText] = useState(() => ({
+    intro: base.intro,
+    backSlogan: 'für Menschen mit Ideen, die gesehen werden wollen.',
+    backPower: 'Deine Ideen verdienen mehr als einen Instagram-Post.',
+    backSub: 'ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.',
+    backInvite: 'Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.',
+    marketingBlocksRaw: PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
+  }))
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
   const oek2MarketingBlocks = useMemo(
     () =>
-      PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER.split(/\n\n+/)
+      masterText.marketingBlocksRaw.split(/\n\n+/)
         .map((s: string) => s.trim())
         .filter(Boolean),
-    []
+    [masterText.marketingBlocksRaw]
   )
 
   const terminKomplettV2 = useMemo(
@@ -387,7 +395,7 @@ export default function FlyerEventBogenNeuPage() {
             </div>
           </div>
           <div className="v2-text-col">
-            <p className="v2-intro">{base.intro}</p>
+            <p className="v2-intro">{masterText.intro}</p>
             <div className="v2-invite-panel" role="region" aria-label="Einladung">
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
               <div className="v2-termin">{terminKomplettV2}</div>
@@ -427,7 +435,7 @@ export default function FlyerEventBogenNeuPage() {
           <img src={leftSrc} alt="" className="a3-image" />
         </div>
         <div className="a3-right">
-          <p className="a3-intro">{base.intro}</p>
+          <p className="a3-intro">{masterText.intro}</p>
           <div className="a3-invite">
             <p className="a3-kicker">Sie sind herzlich eingeladen</p>
             <p className="a3-termin">{terminKomplettV2}</p>
@@ -462,7 +470,7 @@ export default function FlyerEventBogenNeuPage() {
         <img src={leftSrc} alt="" className="a6-image" />
       </div>
       <div className="a6-right">
-        <p className="a6-intro">{base.intro}</p>
+        <p className="a6-intro">{masterText.intro}</p>
         <div className="a6-invite">
           <p className="a6-kicker">Sie sind herzlich eingeladen</p>
           <p className="a6-termin">{a6EventDateLine}</p>
@@ -494,7 +502,7 @@ export default function FlyerEventBogenNeuPage() {
       <div className="vc-image-wrap">
         <img src={leftSrc} alt="" className="vc-image" />
       </div>
-      <p className="vc-intro">{base.intro}</p>
+      <p className="vc-intro">{masterText.intro}</p>
       <div className="vc-footer">
         {frontQrDataUrl ? <img src={frontQrDataUrl} alt="QR K2 Galerie" className="vc-qr" /> : <div className="vc-qr-ph">QR</div>}
         <div className="vc-footer-text">
@@ -509,13 +517,13 @@ export default function FlyerEventBogenNeuPage() {
     <div className="vc-back" aria-label="Visitenkarte Rückseite">
       <div className="vc-back-hero">
         <h3>K2 Galerie</h3>
-        <p className="vc-back-slogan">für Menschen mit Ideen, die gesehen werden wollen.</p>
-        <p className="vc-back-power">Deine Ideen verdienen mehr als einen Instagram-Post.</p>
+        <p className="vc-back-slogan">{masterText.backSlogan}</p>
+        <p className="vc-back-power">{masterText.backPower}</p>
       </div>
-      <p className="vc-back-sub">ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.</p>
+      <p className="vc-back-sub">{masterText.backSub}</p>
       <div className="vc-back-qr-wrap">
         {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="vc-back-qr" /> : <div className="vc-back-qr-ph">QR</div>}
-        <p className="vc-back-invite">Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.</p>
+        <p className="vc-back-invite">{masterText.backInvite}</p>
       </div>
       <div className="vc-back-copy">
         <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
@@ -528,13 +536,13 @@ export default function FlyerEventBogenNeuPage() {
       <div className="back-left">
         <div className="back-hero">
           <h3>K2 Galerie</h3>
-          <p className="back-hero-slogan">für Menschen mit Ideen, die gesehen werden wollen.</p>
-          <p className="back-hero-power">Deine Ideen verdienen mehr als einen Instagram-Post.</p>
+          <p className="back-hero-slogan">{masterText.backSlogan}</p>
+          <p className="back-hero-power">{masterText.backPower}</p>
         </div>
-        <p className="marketing-sub">ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.</p>
+        <p className="marketing-sub">{masterText.backSub}</p>
         <div className="back-left-bottom">
           {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" /> : <div className="qr-placeholder">QR</div>}
-          <p className="back-qr-invite">Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.</p>
+          <p className="back-qr-invite">{masterText.backInvite}</p>
         </div>
         <div className="back-copyright">
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
@@ -1560,22 +1568,85 @@ export default function FlyerEventBogenNeuPage() {
         <p style={{ margin: 0, fontSize: '0.92rem', color: '#1f2937', fontWeight: 600 }}>
           Master A5 (fix): vorne ein Bild, hinten nur Text
         </p>
-        <label>
-          Werk links (K2-Auswahl)
-          <select value={leftWorkNumber} onChange={(e) => handleLeftWorkSelect(e.target.value)}>
-            <option value="">Bitte wählen</option>
-            {k2Works.map((w) => (
-              <option key={`left-${String(w?.number || '')}`} value={String(w?.number || '')}>
-                {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
-        <p style={{ margin: 0, fontSize: '0.85rem', color: '#5c5650', maxWidth: '42rem' }}>
-          Bearbeitung nur im Master. A3, A6 und Visitenkarten oben nur zur Ansicht öffnen.
-        </p>
-        <div style={{ fontSize: '0.8rem', color: '#5c5650' }}>
-          Vorschau Werkbild (Master): {leftWerkLabel}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(280px, 1fr) minmax(220px, 0.7fr)',
+            gap: '0.8rem',
+            alignItems: 'start',
+          }}
+        >
+          <div style={{ display: 'grid', gap: '0.55rem' }}>
+            <label>
+              Text Vorderseite (Intro)
+              <textarea
+                value={masterText.intro}
+                onChange={(e) => setMasterText((prev) => ({ ...prev, intro: e.target.value }))}
+                rows={3}
+              />
+            </label>
+            <label>
+              Rückseite Slogan
+              <input
+                type="text"
+                value={masterText.backSlogan}
+                onChange={(e) => setMasterText((prev) => ({ ...prev, backSlogan: e.target.value }))}
+              />
+            </label>
+            <label>
+              Rückseite Kernaussage
+              <input
+                type="text"
+                value={masterText.backPower}
+                onChange={(e) => setMasterText((prev) => ({ ...prev, backPower: e.target.value }))}
+              />
+            </label>
+            <label>
+              Rückseite Unterzeile
+              <input
+                type="text"
+                value={masterText.backSub}
+                onChange={(e) => setMasterText((prev) => ({ ...prev, backSub: e.target.value }))}
+              />
+            </label>
+            <label>
+              Rückseite Einladung
+              <textarea
+                value={masterText.backInvite}
+                onChange={(e) => setMasterText((prev) => ({ ...prev, backInvite: e.target.value }))}
+                rows={2}
+              />
+            </label>
+            <label>
+              Rückseite Fließtext (Absätze mit Leerzeile trennen)
+              <textarea
+                value={masterText.marketingBlocksRaw}
+                onChange={(e) =>
+                  setMasterText((prev) => ({ ...prev, marketingBlocksRaw: e.target.value }))
+                }
+                rows={8}
+              />
+            </label>
+          </div>
+          <div style={{ display: 'grid', gap: '0.55rem' }}>
+            <label>
+              Werkbild Vorderseite (K2-Auswahl)
+              <select value={leftWorkNumber} onChange={(e) => handleLeftWorkSelect(e.target.value)}>
+                <option value="">Bitte wählen</option>
+                {k2Works.map((w) => (
+                  <option key={`left-${String(w?.number || '')}`} value={String(w?.number || '')}>
+                    {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#5c5650' }}>
+              Bearbeitung nur im Master. A3, A6 und Visitenkarten oben nur zur Ansicht öffnen.
+            </p>
+            <div style={{ fontSize: '0.8rem', color: '#5c5650' }}>
+              Vorschau Werkbild (Master): {leftWerkLabel}
+            </div>
+          </div>
         </div>
       </div>}
 
