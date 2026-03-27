@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Galerie Social & Videos (Sportwagenmodus):** Drei optionale URLs in **Seitengestaltung** (`PageContentGalerie`): `socialYoutubeUrl`, `socialInstagramUrl`, `socialFeaturedVideoUrl`. Merge + Publish über bestehendes `pageContent`. Anzeige: **`GalerieSocialLinks`** unter dem Willkommenstext auf **GaleriePage** (K2/ök2/VK2-Kontext) und **Vk2GaleriePage**; Admin **Design** → Block nach Virtueller Rundgang. **`safeExternalHref`** (nur http/https, kein `javascript:`). **Dateien:** `pageContentGalerie.ts`, `GalerieSocialLinks.tsx`, `socialExternalUrls.ts`, `GaleriePage.tsx`, `Vk2GaleriePage.tsx`, `ScreenshotExportAdmin.tsx`, `socialExternalUrls.test.ts`. **Commit:** `558ed06` ✅ (nach Push auf GitHub)
+
+**Was wir JETZT tun:** Georg: Admin → Design → URLs eintragen → öffentliche Galerie/VK2-Galerie prüfen (Links öffnen in neuem Tab).
+
+---
+
 **Letzter Stand:** 27.03.26 – **Event-Bogen Rückseite „Welche Sparten?“:** Nur noch **Auflistung** der sechs `FOCUS_DIRECTIONS`-Labels (eine Zeile pro Sparte). **`white-space: pre-line`** auf `.back-mkt-body`, damit Zeilenumbrüche im Druck sichtbar sind. **`tenantConfig.ts`**, **`FlyerEventBogenNeuPage.tsx`**. **Commit:** `030130b` ✅ auf GitHub
 
 ---
