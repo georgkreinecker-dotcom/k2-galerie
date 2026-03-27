@@ -757,12 +757,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     }
   }, [vk2])
 
-  // ök2: Stammdaten immer auf Musterdaten halten (auch bei Navigation von normaler Galerie)
+  // ök2: Stammdaten aus Speicher/Muster (nicht nur MUSTER_TEXTE – sonst fehlen z. B. Social-URLs aus „Meine Daten“)
   React.useEffect(() => {
     if (musterOnly) {
-      setMartinaData({ ...MUSTER_TEXTE.martina })
-      setGeorgData({ ...MUSTER_TEXTE.georg })
-      setGalleryData({ ...MUSTER_TEXTE.gallery })
+      setMartinaData({ ...loadStammdaten('oeffentlich', 'martina') })
+      setGeorgData({ ...loadStammdaten('oeffentlich', 'georg') })
+      setGalleryData({ ...loadStammdaten('oeffentlich', 'gallery') })
     }
   }, [musterOnly])
 
@@ -791,6 +791,21 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       window.removeEventListener('k2-page-content-updated', onUpdate)
     }
   }, [])
+
+  // K2/ök2: Galerie-Stammdaten (inkl. Social-URLs) aus Admin-Tab „Meine Daten“ – gleicher Tab ohne storage-Event
+  useEffect(() => {
+    if (vk2) return
+    const onGalleryStamUpdated = () => {
+      try {
+        const tenant = musterOnly ? 'oeffentlich' : 'k2'
+        const loaded = loadStammdaten(tenant, 'gallery')
+        setGalleryData((prev) => ({ ...prev, ...loaded }))
+      } catch (_) {}
+    }
+    window.addEventListener('k2-gallery-stammdaten-updated', onGalleryStamUpdated)
+    return () => window.removeEventListener('k2-gallery-stammdaten-updated', onGalleryStamUpdated)
+  }, [vk2, musterOnly])
+
   const displayImages = useMemo(() => {
     if (musterOnly) {
       // ök2: immer frisch aus localStorage lesen
@@ -823,8 +838,30 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
   const socialFromPageContent = useMemo(() => {
     const tid = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : undefined
-    return getPageContentGalerie(tid)
-  }, [musterOnly, vk2, pageContentVersion])
+    const pc = getPageContentGalerie(tid)
+    const pick = (stam: string | undefined, fallback: string | undefined) =>
+      (typeof stam === 'string' && stam.trim() !== '' ? stam.trim() : undefined) ?? fallback
+    if (vk2 && vk2Stammdaten?.verein) {
+      const v = vk2Stammdaten.verein
+      return {
+        ...pc,
+        socialYoutubeUrl: pick(v.socialYoutubeUrl, pc.socialYoutubeUrl),
+        socialInstagramUrl: pick(v.socialInstagramUrl, pc.socialInstagramUrl),
+        socialFeaturedVideoUrl: pick(v.socialFeaturedVideoUrl, pc.socialFeaturedVideoUrl),
+      }
+    }
+    const g = galleryData as {
+      socialYoutubeUrl?: string
+      socialInstagramUrl?: string
+      socialFeaturedVideoUrl?: string
+    }
+    return {
+      ...pc,
+      socialYoutubeUrl: pick(g?.socialYoutubeUrl, pc.socialYoutubeUrl),
+      socialInstagramUrl: pick(g?.socialInstagramUrl, pc.socialInstagramUrl),
+      socialFeaturedVideoUrl: pick(g?.socialFeaturedVideoUrl, pc.socialFeaturedVideoUrl),
+    }
+  }, [musterOnly, vk2, pageContentVersion, vk2Stammdaten, galleryData])
 
   // K2 Impressum: Stammdaten immer anzeigen – Quelle State, sonst localStorage, sonst Repo-Defaults (VK2-Überarbeitung darf K2-Impressum nicht leeren)
   const impressumStammdatenK2 = React.useMemo(() => {
@@ -1995,24 +2032,46 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         if (galleryStored) {
           const data = JSON.parse(galleryStored)
           setGalleryData(prev => {
+            const prevSocial = prev as typeof prev & {
+              socialYoutubeUrl?: string
+              socialInstagramUrl?: string
+              socialFeaturedVideoUrl?: string
+            }
             const contactChanged = prev.address !== data.address || prev.city !== data.city || prev.country !== data.country || prev.phone !== data.phone || prev.email !== data.email || prev.website !== data.website
             // Bilder aus localStorage immer übernehmen – verhindert Verlust wenn State mal mit '' überschrieben wurde
             const welcomeImage = data.welcomeImage ?? prev.welcomeImage ?? ''
             const virtualTourImage = data.virtualTourImage ?? prev.virtualTourImage ?? ''
             const galerieCardImage = data.galerieCardImage ?? prev.galerieCardImage ?? ''
+            const socialYoutubeUrl = (data as any).socialYoutubeUrl ?? prevSocial.socialYoutubeUrl ?? ''
+            const socialInstagramUrl = (data as any).socialInstagramUrl ?? prevSocial.socialInstagramUrl ?? ''
+            const socialFeaturedVideoUrl = (data as any).socialFeaturedVideoUrl ?? prevSocial.socialFeaturedVideoUrl ?? ''
+            const socialChanged =
+              (prevSocial.socialYoutubeUrl || '') !== (socialYoutubeUrl || '') ||
+              (prevSocial.socialInstagramUrl || '') !== (socialInstagramUrl || '') ||
+              (prevSocial.socialFeaturedVideoUrl || '') !== (socialFeaturedVideoUrl || '')
             if (contactChanged) {
               return {
+                ...prev,
                 address: data.address || '', city: data.city || '', country: data.country || '',
                 phone: data.phone || '', email: data.email || '',
                 website: data.website || 'www.k2-galerie.at', internetadresse: data.internetadresse || data.website || '',
                 openingHours: (data as any).openingHours ?? prev.openingHours ?? '',
                 adminPassword: data.adminPassword || '',
-                welcomeImage, virtualTourImage, galerieCardImage
+                welcomeImage, virtualTourImage, galerieCardImage,
+                socialYoutubeUrl, socialInstagramUrl, socialFeaturedVideoUrl,
               }
             }
-            // Auch ohne Kontaktänderung: Bilder aus localStorage in State zurückschreiben (Wiederherstellung)
-            if (prev.welcomeImage !== welcomeImage || prev.virtualTourImage !== virtualTourImage || prev.galerieCardImage !== galerieCardImage) {
-              return { ...prev, welcomeImage, virtualTourImage, galerieCardImage }
+            // Auch ohne Kontaktänderung: Bilder + Social aus localStorage (nur Social geändert → sonst unsichtbar)
+            if (prev.welcomeImage !== welcomeImage || prev.virtualTourImage !== virtualTourImage || prev.galerieCardImage !== galerieCardImage || socialChanged) {
+              return {
+                ...prev,
+                welcomeImage,
+                virtualTourImage,
+                galerieCardImage,
+                socialYoutubeUrl,
+                socialInstagramUrl,
+                socialFeaturedVideoUrl,
+              }
             }
             return prev
           })
