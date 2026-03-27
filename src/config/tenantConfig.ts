@@ -51,24 +51,24 @@ export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
 export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz.'
 
 /**
- * Event-Bogen Rückseite (Spalte rechts): ausführliche Erklärung, was **ök2** ist.
- * Nur Marketing/Demo-Beschreibung – keine K2-Stammdaten. Absätze durch Leerzeile getrennt.
+ * Event-Bogen Rückseite (Spalte rechts): kurz und klar, was **ök2** ist.
+ * Nur Marketing/Demo – keine K2-Stammdaten. Absätze durch Leerzeile getrennt.
+ * Inhalt abstimmen mit: PRODUCT_ZIELGRUPPE, PRODUKT-VISION (Leitbotschaft, Zielgruppe),
+ * docs/MARKETING-STRATEGIE-AUTOMATISIERTER-VERTRIEB.md §2.1, FOCUS_DIRECTIONS (sechs Sparten / „Mein Weg“).
  */
 export const PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER = `Was ist ök2?
 
-ök2 ist die öffentliche Demo-Galerie der Plattform kgm solution. Sie zeigt an einem durchgestalteten Beispiel, wie Werke, Texte, Galerie-Seite und Außenauftritt professionell zusammen wirken – mit Mustertexten und Musterwerken, nicht mit Daten einer realen Galerie.
+ök2 ist die öffentliche Demo der Galerie-Software von kgm solution: fertige Online-Galerie mit Mustertexten und Musterwerken – ausprobieren ohne echte Galerie-Daten. Statt nur verstreut in sozialen Netzwerken: ein professioneller eigener Auftritt.
 
-Für wen ist das gedacht?
+Zielgruppe?
 
-Für Künstler:innen, kleine Galerien, Kunstvereine und alle, die Ideen oder Produkte sichtbar machen wollen – ohne erst Technik oder teure Einzel-Lösungen zusammenzubauen. ${PRODUCT_ZIELGRUPPE}
+Gesamter Markt – Ideen und Produkte professionell zeigen und vermarkten. Kunst & Galerie ist Einstieg und Herkunft, nicht die Grenze.
 
-Warum nicht nur Social Media?
+Welche Sparten?
 
-${PRODUCT_POSITIONING_SOCIAL} ${PRODUCT_KERN_EIGENER_ORT} ${PRODUCT_POSITIONING_SWEET_SPOT}
+Unter „Mein Weg“ eine von sechs Sparten: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. Eine Plattform, Kategorien und Texte passend zur Sparte.
 
-Wie geht es weiter?
-
-Wer die Demo überzeugt, kann eine eigene Instanz mit eigener Galerie anfragen – mit klarer Struktur, eigenem Auftritt und dem gleichen durchdachten Ablauf. Der QR-Code auf dieser Seite führt zur ök2-Demo-Galerie zum Ausprobieren.`
+Der QR-Code auf dieser Seite führt direkt in die Demo.`
 
 /** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
 export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
