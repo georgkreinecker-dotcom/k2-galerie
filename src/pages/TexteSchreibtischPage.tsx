@@ -141,6 +141,13 @@ const BEREICHE: Bereich[] = [
         rotateDeg: -0.3,
       },
       {
+        id: 'flyer-master',
+        titel: 'Flyer-Master A5',
+        zweck: 'A4 mit 2× A5, Live-Vorschau, bearbeiten, Event & Stammdaten',
+        to: flyerEventBogenUrl({ tenant: 'k2' }),
+        rotateDeg: -0.22,
+      },
+      {
         id: 'plakat',
         titel: 'Plakat A3',
         zweck: 'Gleiche Route wie Flyer-Master, nur A3 – Muster/Event & Stammdaten',

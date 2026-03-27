@@ -185,6 +185,14 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             </Link>
             <Link
               to={flyerEventBogenUrl({
+                tenant: modus === 'oek2' ? 'oeffentlich' : 'k2',
+              })}
+              style={{ padding: '0.5rem 0.85rem', background: '#b54a1e', border: '1px solid #8a3a18', borderRadius: 8, textDecoration: 'none', color: '#fff', fontWeight: 700 }}
+            >
+              📐 Flyer-Master (A4, 2× A5) – Live-Vorschau &amp; Bearbeiten
+            </Link>
+            <Link
+              to={flyerEventBogenUrl({
                 mode: 'a3',
                 tenant: modus === 'oek2' ? 'oeffentlich' : 'k2',
               })}
@@ -286,6 +294,19 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
           <h2 className={PRINT_HIDE} style={{ fontFamily: s.fontHeading, fontSize: '1.35rem', color: s.accent, marginBottom: '1rem', borderBottom: `1px solid ${s.accentSoft}`, paddingBottom: '0.5rem' }}>
             3. Flyer (A5)
           </h2>
+          <p className={PRINT_HIDE} style={{ color: s.muted, marginBottom: '0.75rem', fontSize: '0.9rem', maxWidth: '42rem' }}>
+            Die <strong>App mit Master A5 und Live-Vorschau</strong> (zwei A5-Seiten auf einem A4-Bogen, Event- und Stammdaten, QR, Ableitungen A3/A6/Karte) öffnest du hier – nicht nur die statische Vorschau unten.
+          </p>
+          <div className={PRINT_HIDE} style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            <Link
+              to={flyerEventBogenUrl({
+                tenant: modus === 'oek2' ? 'oeffentlich' : 'k2',
+              })}
+              style={{ padding: '0.5rem 0.85rem', background: '#b54a1e', border: '1px solid #8a3a18', borderRadius: 8, textDecoration: 'none', color: '#fff', fontWeight: 700 }}
+            >
+              Flyer-Master in der App öffnen →
+            </Link>
+          </div>
 
           <div className="flyer-a5" style={{ width: '148mm', maxWidth: '100%', minHeight: '210mm', background: s.gradient, borderRadius: s.radius, padding: '12mm 14mm', marginBottom: '1rem', boxShadow: s.shadow, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: 0, right: 0, width: '80%', height: '60%', background: `radial-gradient(ellipse at 100% 0%, ${s.accentSoft}, transparent 60%)`, pointerEvents: 'none' }} />
