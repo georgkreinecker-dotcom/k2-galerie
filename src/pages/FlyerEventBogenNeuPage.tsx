@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { getPageTexts } from '../config/pageTexts'
@@ -83,6 +83,10 @@ function formatGalleryOpeningHoursBlock(gallery: {
 
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  /** Von Admin Event-Flyer: ?layout=variant2 oder ?layout=standard (Default ohne Param = Standard) */
+  const layoutFromUrl: 'standard' | 'variant2' =
+    searchParams.get('layout') === 'variant2' ? 'variant2' : 'standard'
   const { versionTimestamp } = useQrVersionTimestamp()
   const base = getK2Basics()
   const gallery = loadStammdaten('k2', 'gallery')
@@ -112,7 +116,7 @@ export default function FlyerEventBogenNeuPage() {
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
   const [eventDateLine, setEventDateLine] = useState('Termin folgt')
   const [eroeffnungEvent, setEroeffnungEvent] = useState<EventTerminLike | null>(null)
-  const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>('standard')
+  const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>(layoutFromUrl)
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 

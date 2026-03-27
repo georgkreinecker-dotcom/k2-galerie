@@ -21388,7 +21388,7 @@ ${name}`
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Jetzt erstellen: Handzettel aus Event-Daten oder neuer Event-Bogen.',
+                                beschreibung: 'Handzettel PDF, Event-Bogen Standard oder Variante 2 – alles hier starten.',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21406,10 +21406,22 @@ ${name}`
                                     ? []
                                     : [
                                         {
-                                          label: 'Event-Bogen (Neuaufbau)',
+                                          label: 'Event-Bogen (Standard)',
                                           onErstellen: () => {
+                                            const path = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                            const join = path.includes('?') ? '&' : '?'
                                             navigateFromOeffentlichkeitsarbeitOverlay(
-                                              PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                              `${path}${join}layout=standard`
+                                            )
+                                          },
+                                        },
+                                        {
+                                          label: 'Event-Bogen Variante 2',
+                                          onErstellen: () => {
+                                            const path = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                            const join = path.includes('?') ? '&' : '?'
+                                            navigateFromOeffentlichkeitsarbeitOverlay(
+                                              `${path}${join}layout=variant2`
                                             )
                                           },
                                         },
