@@ -26,6 +26,32 @@ Event- und Medienplanung ist nicht nur ein Zusatz. Fuer viele Galerien und Verei
 - Das Team bleibt im gleichen Arbeitsfluss statt zwischen Tools zu springen.
 - Die gleiche Struktur passt fuer Galerie, Demo und Vereinsplattform.
 
+## Beispiel: Event-Eroeffnung in 1 Tag
+
+**Ausgangslage:** Heute Vormittag steht fest: Morgen Abend ist Galerie-Eroeffnung.
+
+**09:00 Uhr – Event anlegen**
+- Titel, Datum, Uhrzeit, Ort, Kurztext eintragen.
+- Optional: Besonderheiten wie Live-Musik oder Begruessung ergaenzen.
+
+**09:30 Uhr – Einladungs- und Flyer-Variante erzeugen**
+- Aus dem Event direkt Einladung/Flyer erstellen.
+- PDF fuer Druck speichern (Aushang, Theke, Schaufenster).
+
+**10:30 Uhr – Presse- und Social-Text erstellen**
+- Aus denselben Eventdaten einen kurzen Pressetext erzeugen.
+- Social-Kurzfassung fuer Instagram/Facebook vorbereiten.
+
+**11:00 Uhr – Verteiler ausspielen**
+- Newsletter-Empfaenger und Medienkontakte waehlen.
+- Aussendung mit einem Ablauf versenden.
+
+**Nachmittag – Feinschliff**
+- Kleine Textanpassungen direkt im Event vornehmen.
+- Dokumente neu erzeugen (ohne alles neu zu schreiben).
+
+**Ergebnis am selben Tag:** Event steht, Werbemittel sind fertig, Verteiler ist bedient, Druck ist bereit – ohne Tool-Wechsel und ohne doppelte Dateneingabe.
+
 ![Admin – Event- und Medienplanung](/img/oeffentlich/pm-admin-uebersicht.png)
 
 *Quelle: Admin -> Bereich „Event- und Medienplanung“ (Mediengenerator & Verteiler).*
