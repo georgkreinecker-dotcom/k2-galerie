@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
@@ -20,6 +20,9 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 const ROOT = 'flyer-event-bogen-neu'
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
 
+const FLYER_EVENT_BOGEN_STORAGE_KEY = 'k2-flyer-event-bogen-neu-v1'
+const FLYER_SAVE_MAX_BYTES = 4_200_000
+
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
 
 const MASTER_EDIT_LABELS: Record<MasterEditKey, string> = {
@@ -30,6 +33,62 @@ const MASTER_EDIT_LABELS: Record<MasterEditKey, string> = {
   backSub: 'Rückseite Unterzeile',
   backInvite: 'Rückseite Einladung (neben QR)',
   marketing: 'Rückseite Fließtext (Absätze mit Leerzeile)',
+}
+
+type FlyerEventBogenPersistedV1 = {
+  v: 1
+  masterText: {
+    intro: string
+    backSlogan: string
+    backPower: string
+    backSub: string
+    backInvite: string
+    marketingBlocksRaw: string
+  }
+  leftSrc: string
+  leftWerkLabel: string
+  savedAt: number
+}
+
+function loadFlyerEventBogenPersisted(): Partial<FlyerEventBogenPersistedV1> | null {
+  try {
+    const raw = localStorage.getItem(FLYER_EVENT_BOGEN_STORAGE_KEY)
+    if (!raw) return null
+    const p = JSON.parse(raw) as Partial<FlyerEventBogenPersistedV1>
+    if (p?.v !== 1 || typeof p.masterText !== 'object' || !p.masterText) return null
+    return p
+  } catch {
+    return null
+  }
+}
+
+function defaultMasterTextFromBase(): FlyerEventBogenPersistedV1['masterText'] {
+  const b = getK2Basics()
+  return {
+    intro: b.intro,
+    backSlogan: 'für Menschen mit Ideen, die gesehen werden wollen.',
+    backPower: 'Deine Ideen verdienen mehr als einen Instagram-Post.',
+    backSub: 'ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.',
+    backInvite: 'Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.',
+    marketingBlocksRaw: PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
+  }
+}
+
+function mergeMasterTextFromPersisted(
+  persisted: Partial<FlyerEventBogenPersistedV1> | null
+): FlyerEventBogenPersistedV1['masterText'] {
+  const d = defaultMasterTextFromBase()
+  if (!persisted?.masterText) return d
+  const m = persisted.masterText
+  return {
+    intro: typeof m.intro === 'string' ? m.intro : d.intro,
+    backSlogan: typeof m.backSlogan === 'string' ? m.backSlogan : d.backSlogan,
+    backPower: typeof m.backPower === 'string' ? m.backPower : d.backPower,
+    backSub: typeof m.backSub === 'string' ? m.backSub : d.backSub,
+    backInvite: typeof m.backInvite === 'string' ? m.backInvite : d.backInvite,
+    marketingBlocksRaw:
+      typeof m.marketingBlocksRaw === 'string' ? m.marketingBlocksRaw : d.marketingBlocksRaw,
+  }
 }
 
 function firstName(value: string, fallback: string): string {
@@ -170,10 +229,22 @@ export default function FlyerEventBogenNeuPage() {
   const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
 
-  const [leftSrc, setLeftSrc] = useState(defaultLeft)
+  const [leftSrc, setLeftSrc] = useState(() => {
+    const p = loadFlyerEventBogenPersisted()
+    const s = p?.leftSrc
+    if (typeof s === 'string' && s.length > 0 && !s.startsWith('blob:')) {
+      return s
+    }
+    const gallery = loadStammdaten('k2', 'gallery')
+    const gi = getGalerieImages(gallery)
+    return gi.galerieCardImage || gi.welcomeImage || '/img/k2/willkommen.jpg'
+  })
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
-  const [leftWerkLabel, setLeftWerkLabel] = useState('Bild aus Datei')
+  const [leftWerkLabel, setLeftWerkLabel] = useState(() => {
+    const p = loadFlyerEventBogenPersisted()?.leftWerkLabel
+    return typeof p === 'string' && p.trim() ? p : 'Bild aus Datei'
+  })
   const [isLeftDropActive, setIsLeftDropActive] = useState(false)
   const [frontQrDataUrl, setFrontQrDataUrl] = useState('')
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
@@ -181,18 +252,47 @@ export default function FlyerEventBogenNeuPage() {
   const [eroeffnungEvent, setEroeffnungEvent] = useState<EventTerminLike | null>(null)
   const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>(layoutFromUrl)
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
-  const [masterText, setMasterText] = useState(() => ({
-    intro: base.intro,
-    backSlogan: 'für Menschen mit Ideen, die gesehen werden wollen.',
-    backPower: 'Deine Ideen verdienen mehr als einen Instagram-Post.',
-    backSub: 'ök2 macht Ideen sichtbar: klar, professionell und ohne Umwege.',
-    backInvite: 'Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.',
-    marketingBlocksRaw: PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
-  }))
+  const [masterText, setMasterText] = useState(() =>
+    mergeMasterTextFromPersisted(loadFlyerEventBogenPersisted()),
+  )
   const [masterEditField, setMasterEditField] = useState<MasterEditKey | null>(null)
   const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
+  const [flyerSaveMessage, setFlyerSaveMessage] = useState('')
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
+
+  const handleSaveFlyerMaster = useCallback(() => {
+    const payload: FlyerEventBogenPersistedV1 = {
+      v: 1,
+      masterText: {
+        intro: masterText.intro,
+        backSlogan: masterText.backSlogan,
+        backPower: masterText.backPower,
+        backSub: masterText.backSub,
+        backInvite: masterText.backInvite,
+        marketingBlocksRaw: masterText.marketingBlocksRaw,
+      },
+      leftSrc,
+      leftWerkLabel,
+      savedAt: Date.now(),
+    }
+    try {
+      const json = JSON.stringify(payload)
+      if (json.length > FLYER_SAVE_MAX_BYTES) {
+        setFlyerSaveMessage(
+          'Zu groß zum Speichern – Bild verkleinern oder Galerie-Bild statt riesiger Datei.',
+        )
+        window.setTimeout(() => setFlyerSaveMessage(''), 5000)
+        return
+      }
+      localStorage.setItem(FLYER_EVENT_BOGEN_STORAGE_KEY, json)
+      setFlyerSaveMessage('Gespeichert – Master, A3, A6 und Visitenkarte nutzen diesen Stand.')
+      window.setTimeout(() => setFlyerSaveMessage(''), 4000)
+    } catch {
+      setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
+      window.setTimeout(() => setFlyerSaveMessage(''), 5000)
+    }
+  }, [leftSrc, leftWerkLabel, masterText])
 
   const oek2MarketingBlocks = useMemo(
     () =>
@@ -1909,6 +2009,21 @@ export default function FlyerEventBogenNeuPage() {
       <div className="toolbar">
         <button type="button" onClick={() => navigate(-1)}>Zurück</button>
         <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
+        <button
+          type="button"
+          onClick={handleSaveFlyerMaster}
+          style={{
+            background: '#b54a1e',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '8px',
+            padding: '0.45rem 0.85rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Speichern
+        </button>
         <button type="button" onClick={() => window.print()}>Drucken</button>
         <button
           type="button"
@@ -1943,6 +2058,11 @@ export default function FlyerEventBogenNeuPage() {
             Zurück zum Master
           </Link>
         )}
+        {flyerSaveMessage ? (
+          <span style={{ fontSize: '0.85rem', color: '#0f6f66', fontWeight: 650, maxWidth: '28rem' }}>
+            {flyerSaveMessage}
+          </span>
+        ) : null}
         <span style={{ fontSize: '0.8rem', color: '#5c5650', maxWidth: '22rem' }}>
           Im Druckdialog: <strong>Skalierung 100 %</strong> (nicht „An Seite anpassen“), damit die Vorschau zum Blatt passt.
         </span>
@@ -1968,7 +2088,9 @@ export default function FlyerEventBogenNeuPage() {
               }}
             >
               Vorne ein Bild, hinten nur Text. Klicke auf Intro, Bild, Rückseiten-Texte oder Marketing-Block – es lässt
-              sich verschieben (Kopfzeile ziehen). ESC schließt.
+              sich verschieben (Kopfzeile ziehen). ESC schließt.{' '}
+              <strong>Speichern</strong> in der Leiste sichert Texte und Werkbild für Master und alle Ableitungen auf
+              diesem Gerät.
             </p>
             <div className="master-preview-inner">
               <div className="master-preview-scale-wrap">
