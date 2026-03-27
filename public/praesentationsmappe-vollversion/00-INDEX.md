@@ -42,7 +42,7 @@ Warenkorb für Besucher, Zahlungswunsch ohne automatische Online-Abbuchung; Kass
 
 10. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Ein Bereich fuer Planung, Mediengenerator und Verteiler – von Event bis Aussendung in einem Fluss.
+Ein zentraler Produktionsbereich: Event erfassen, Werbemittel erzeugen, Verteiler ansteuern, drucken und digital ausspielen – alles in einem Ablauf.
 
 11. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 

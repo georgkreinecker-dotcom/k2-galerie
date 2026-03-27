@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Präsentationsmappe: Event- und Medienplanung ausgebaut:** Vollversion-Kapitel `08-EVENTS-OEFFENTLICHKEITSARBEIT.md` deutlich erweitert (Nutzen, Praxisablauf, Ergebnis), Index-Text in `public/praesentationsmappe-vollversion/00-INDEX.md` geschärft, Kurzform `PraesentationsmappePage.tsx` um eigenen Abschnitt „Event- und Medienplanung“ ergänzt. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg prüft die Präsentationsmappe; bei Bedarf noch mehr Fokus auf Verteiler/Mediengenerator.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Handbuch Kap. 10 sichtbar + Erste Schritte:** Einstellungen mit **eigener Überschrift** „YouTube, Instagram und Highlight-Video“, Einleitung erwähnt Social; **01-Erste Schritte** und **00-INDEX** mit Verweis. **Commit:** `44cc4bc` ✅ auf GitHub
 
 ---

@@ -143,6 +143,12 @@ export default function PraesentationsmappePage() {
             Über die öffentliche Galerie können Besucher in den <strong>Warenkorb</strong> legen und bestellen; die gewählte Zahlungsart ist ein <strong>Wunsch</strong> – in der App gibt es <strong>keine</strong> automatische Online-Abbuchung für den Kunstwerk-Warenkorb. Die <strong>Kasse</strong> im Admin bleibt der Weg für den Verkauf <strong>vor Ort</strong>. Ausführlich im Benutzerhandbuch (Kapitel Shop) und in der Präsentationsmappe Vollversion.
           </p>
           <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+            Event- und Medienplanung
+          </h2>
+          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+            Der Bereich verbindet <strong>Veranstaltung</strong> und <strong>Kommunikation</strong> in einem durchgehenden Ablauf: Event erfassen, passende Werbemittel erzeugen, Verteiler nutzen und als PDF oder fuer digitale Kanaele ausgeben. Dadurch bleibt alles auf einer Datenquelle (Stammdaten + Eventdaten), ohne doppeltes Tippen in mehreren Tools.
+          </p>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
             Social Media und Videos im Willkommensbereich
           </h2>
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
