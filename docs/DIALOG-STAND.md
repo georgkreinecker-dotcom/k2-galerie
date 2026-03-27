@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Ein Weg Flyer-Master / keine zweite Plakat-Route in der UI:** Alle Links auf **Plakat A3** und Event-Druckformate nutzen **`flyerEventBogenUrl`** (eine Route `/flyer-event-bogen-neu`, `layout=variant2`). **Admin:** Hilfs-HTML Präsentationsmappen, Tab Präsentationsmappen, Overlay-Karten, DOKUMENT_KARTEN-Beschreibung; **VK2** in `mappeQs`/`pmTabQs` wo nötig. **WerbeunterlagenPage, TexteSchreibtischPage, MarketingOek2Page §9:** Texte **roter Faden** (Master zuerst, A3/A6/Karte nur Ableitungen; Demo/Muster, nicht Strategietexte als Datenquelle). Alte Route **plakat-galerieeroeffnung** nur noch Redirect. **Commit:** `c4b0eaa` ✅ auf GitHub.
+**Letzter Stand:** 27.03.26 – **Ein Weg Flyer-Master / keine zweite Plakat-Route in der UI:** Alle Links auf **Plakat A3** und Event-Druckformate nutzen **`flyerEventBogenUrl`** (eine Route `/flyer-event-bogen-neu`, `layout=variant2`). **Admin:** Hilfs-HTML Präsentationsmappen, Tab Präsentationsmappen, Overlay-Karten, DOKUMENT_KARTEN-Beschreibung; **VK2** in `mappeQs`/`pmTabQs` wo nötig. **WerbeunterlagenPage, TexteSchreibtischPage, MarketingOek2Page §9:** Texte **roter Faden** (Master zuerst, A3/A6/Karte nur Ableitungen; Demo/Muster, nicht Strategietexte als Datenquelle). Alte Route **plakat-galerieeroeffnung** nur noch Redirect. **Commits:** `c4b0eaa` (Feature), `8bb7bb9` (DIALOG-STAND Hash) ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg kurz im Browser: mök2 §9 Links, Werbeunterlagen Plakat-Button, Admin Präsentationsmappen.
 
