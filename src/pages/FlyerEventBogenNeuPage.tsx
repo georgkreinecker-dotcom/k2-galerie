@@ -6,12 +6,10 @@ import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
-  MUSTER_ARTWORKS,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
-import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import {
   type EventTerminLike,
@@ -21,8 +19,18 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 
 const ROOT = 'flyer-event-bogen-neu'
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
-const LEFT_WORK_KEY = 'k2-flyer-event-bogen-left-work'
-const RIGHT_WORK_KEY = 'k2-flyer-event-bogen-right-work'
+
+type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
+
+const MASTER_EDIT_LABELS: Record<MasterEditKey, string> = {
+  intro: 'Text Vorderseite (Intro)',
+  image: 'Werkbild aus Datei',
+  backSlogan: 'Rückseite Slogan',
+  backPower: 'Rückseite Kernaussage',
+  backSub: 'Rückseite Unterzeile',
+  backInvite: 'Rückseite Einladung (neben QR)',
+  marketing: 'Rückseite Fließtext (Absätze mit Leerzeile)',
+}
 
 function firstName(value: string, fallback: string): string {
   const normalized = String(value || '').trim()
@@ -165,11 +173,8 @@ export default function FlyerEventBogenNeuPage() {
   const [leftSrc, setLeftSrc] = useState(defaultLeft)
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
-  const [k2Works, setK2Works] = useState<any[]>([])
-  const [leftWorkNumber, setLeftWorkNumber] = useState('')
-  const [rightWorkNumber, setRightWorkNumber] = useState('')
-  const [leftWerkLabel, setLeftWerkLabel] = useState('Werk links (K2)')
-  const [rightWerkLabel, setRightWerkLabel] = useState('Werk rechts (K2)')
+  const [leftWerkLabel, setLeftWerkLabel] = useState('Bild aus Datei')
+  const [isLeftDropActive, setIsLeftDropActive] = useState(false)
   const [frontQrDataUrl, setFrontQrDataUrl] = useState('')
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
   const [eventDateLine, setEventDateLine] = useState('Termin folgt')
@@ -184,6 +189,9 @@ export default function FlyerEventBogenNeuPage() {
     backInvite: 'Erlebe Ideen, Werke und starke Präsentation in einer modernen Online-Galerie.',
     marketingBlocksRaw: PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
   }))
+  const [masterEditField, setMasterEditField] = useState<MasterEditKey | null>(null)
+  const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
+  const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
   const oek2MarketingBlocks = useMemo(
@@ -276,40 +284,38 @@ export default function FlyerEventBogenNeuPage() {
   }, [])
 
   useEffect(() => {
-    let active = true
-    void readArtworksForContextWithResolvedImages(false, false).then((list) => {
-      if (!active || !Array.isArray(list)) return
-      const withImage = list.filter((a) => typeof a?.imageUrl === 'string' && a.imageUrl.trim().length > 0)
-      setK2Works(withImage)
-      const savedLeft = localStorage.getItem(LEFT_WORK_KEY) || ''
-      const savedRight = localStorage.getItem(RIGHT_WORK_KEY) || ''
-      const leftItem =
-        withImage.find((w) => String(w?.number || '') === savedLeft) ||
-        withImage[0] ||
-        null
-      const rightItem =
-        withImage.find((w) => String(w?.number || '') === savedRight) ||
-        withImage[1] ||
-        withImage[0] ||
-        null
+    setShowDerivationFullscreen(false)
+  }, [isA3Mode, isA6Mode, isCardMode])
 
-      if (leftItem?.imageUrl) {
-        setLeftSrc(leftItem.imageUrl)
-        const n = String(leftItem.number || '')
-        setLeftWorkNumber(n)
-        setLeftWerkLabel(n ? `Werk links: ${n}` : 'Werk links (K2)')
-      }
-      if (rightItem?.imageUrl) {
-        setRightSrc(rightItem.imageUrl)
-        const n = String(rightItem.number || '')
-        setRightWorkNumber(n)
-        setRightWerkLabel(n ? `Werk rechts: ${n}` : 'Werk rechts (K2)')
-      }
-    })
-    return () => {
-      active = false
+  useEffect(() => {
+    if (masterEditField === null) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMasterEditField(null)
     }
-  }, [])
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [masterEditField])
+
+  const onModalHeadPointerDown = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.master-edit-close')) return
+    e.preventDefault()
+    const startX = e.clientX
+    const startY = e.clientY
+    setModalPos((pos) => {
+      const ox = pos.x
+      const oy = pos.y
+      const onMove = (ev: MouseEvent) => {
+        setModalPos({ x: ox + ev.clientX - startX, y: oy + ev.clientY - startY })
+      }
+      const onUp = () => {
+        window.removeEventListener('mousemove', onMove)
+        window.removeEventListener('mouseup', onUp)
+      }
+      window.addEventListener('mousemove', onMove)
+      window.addEventListener('mouseup', onUp)
+      return pos
+    })
+  }
 
   const handleFrontUpload = (slot: 'left' | 'middle' | 'right', file: File | null) => {
     if (!file) return
@@ -320,22 +326,10 @@ export default function FlyerEventBogenNeuPage() {
     if (slot === 'right') setRightSrc(url)
   }
 
-  const handleLeftWorkSelect = (number: string) => {
-    setLeftWorkNumber(number)
-    localStorage.setItem(LEFT_WORK_KEY, number)
-    const item = k2Works.find((w) => String(w?.number || '') === number)
-    if (!item?.imageUrl) return
-    setLeftSrc(item.imageUrl)
-    setLeftWerkLabel(`Werk links: ${number}`)
-  }
-
-  const handleRightWorkSelect = (number: string) => {
-    setRightWorkNumber(number)
-    localStorage.setItem(RIGHT_WORK_KEY, number)
-    const item = k2Works.find((w) => String(w?.number || '') === number)
-    if (!item?.imageUrl) return
-    setRightSrc(item.imageUrl)
-    setRightWerkLabel(`Werk rechts: ${number}`)
+  const handleLeftImageFile = (file: File | null) => {
+    if (!file || !file.type.startsWith('image/')) return
+    handleFrontUpload('left', file)
+    setLeftWerkLabel(file.name || 'Bild aus Datei')
   }
 
   const frontCardStandard = (
@@ -380,7 +374,7 @@ export default function FlyerEventBogenNeuPage() {
     </div>
   )
 
-  const frontCardV2 = (
+  const renderFrontCardV2 = (interactive: boolean) => (
     <div className="card front front-layout-v2">
       <div className="hero hero-v2 hero-v2-event">
         <p className="hero-v2-brand">K2 Galerie Kunst&amp;Keramik</p>
@@ -390,12 +384,30 @@ export default function FlyerEventBogenNeuPage() {
       <div className="content content-v2">
         <div className="v2-main">
           <div className="v2-img-col">
-            <div className="img-box v2-single-img">
+            <div className={`img-box v2-single-img${interactive ? ' master-hotspot-parent' : ''}`}>
+              {interactive ? (
+                <button
+                  type="button"
+                  className="master-hotspot"
+                  aria-label={MASTER_EDIT_LABELS.image}
+                  onClick={() => setMasterEditField('image')}
+                />
+              ) : null}
               <img src={leftSrc} alt="" />
             </div>
           </div>
           <div className="v2-text-col">
-            <p className="v2-intro">{masterText.intro}</p>
+            <div className={interactive ? 'master-hotspot-parent v2-intro-wrap' : undefined}>
+              {interactive ? (
+                <button
+                  type="button"
+                  className="master-hotspot"
+                  aria-label={MASTER_EDIT_LABELS.intro}
+                  onClick={() => setMasterEditField('intro')}
+                />
+              ) : null}
+              <p className="v2-intro">{masterText.intro}</p>
+            </div>
             <div className="v2-invite-panel" role="region" aria-label="Einladung">
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
               <div className="v2-termin">{terminKomplettV2}</div>
@@ -421,7 +433,7 @@ export default function FlyerEventBogenNeuPage() {
     </div>
   )
 
-  const frontCard = page1Layout === 'variant2' ? frontCardV2 : frontCardStandard
+  const frontCard = page1Layout === 'variant2' ? renderFrontCardV2(false) : frontCardStandard
 
   const posterA3Card = (
     <div className={`a3-poster a3-layout-${page1Layout}`}>
@@ -531,24 +543,76 @@ export default function FlyerEventBogenNeuPage() {
     </div>
   )
 
-  const backCard = (
+  const renderBackCard = (interactive: boolean) => (
     <div className="card back back-page-2">
       <div className="back-left">
         <div className="back-hero">
           <h3>K2 Galerie</h3>
-          <p className="back-hero-slogan">{masterText.backSlogan}</p>
-          <p className="back-hero-power">{masterText.backPower}</p>
+          <div className={interactive ? 'master-hotspot-parent back-hero-line' : undefined}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-hotspot"
+                aria-label={MASTER_EDIT_LABELS.backSlogan}
+                onClick={() => setMasterEditField('backSlogan')}
+              />
+            ) : null}
+            <p className="back-hero-slogan">{masterText.backSlogan}</p>
+          </div>
+          <div className={interactive ? 'master-hotspot-parent back-hero-line' : undefined}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-hotspot"
+                aria-label={MASTER_EDIT_LABELS.backPower}
+                onClick={() => setMasterEditField('backPower')}
+              />
+            ) : null}
+            <p className="back-hero-power">{masterText.backPower}</p>
+          </div>
         </div>
-        <p className="marketing-sub">{masterText.backSub}</p>
+        <div className={interactive ? 'master-hotspot-parent' : undefined}>
+          {interactive ? (
+            <button
+              type="button"
+              className="master-hotspot"
+              aria-label={MASTER_EDIT_LABELS.backSub}
+              onClick={() => setMasterEditField('backSub')}
+            />
+          ) : null}
+          <p className="marketing-sub">{masterText.backSub}</p>
+        </div>
         <div className="back-left-bottom">
           {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" /> : <div className="qr-placeholder">QR</div>}
-          <p className="back-qr-invite">{masterText.backInvite}</p>
+          <div className={interactive ? 'master-hotspot-parent back-invite-wrap' : undefined}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-hotspot"
+                aria-label={MASTER_EDIT_LABELS.backInvite}
+                onClick={() => setMasterEditField('backInvite')}
+              />
+            ) : null}
+            <p className="back-qr-invite">{masterText.backInvite}</p>
+          </div>
         </div>
         <div className="back-copyright">
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
         </div>
       </div>
-      <div className="back-right back-right-marketing" role="region" aria-label="Was ist ök2 – Marketingtext">
+      <div
+        className={`back-right back-right-marketing${interactive ? ' master-hotspot-parent' : ''}`}
+        role="region"
+        aria-label="Was ist ök2 – Marketingtext"
+      >
+        {interactive ? (
+          <button
+            type="button"
+            className="master-hotspot"
+            aria-label={MASTER_EDIT_LABELS.marketing}
+            onClick={() => setMasterEditField('marketing')}
+          />
+        ) : null}
         {oek2MarketingBlocks.map((block: string, idx: number) => {
           const t = block.trim()
           const isShortQuestion = /^[^\n]{1,120}\?$/.test(t) && !t.includes('\n')
@@ -566,6 +630,8 @@ export default function FlyerEventBogenNeuPage() {
     </div>
   )
 
+  const backCard = renderBackCard(false)
+
   return (
     <div className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}`}>
       <style>{`
@@ -581,6 +647,302 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT} .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px}
         .${ROOT} .editor{display:grid;gap:8px;max-width:760px;margin-bottom:16px}
+        .${ROOT} .master-workspace{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:0.75rem;
+          align-items:start;
+          max-width:min(1180px,100%);
+          margin:0 auto 16px;
+          padding:0 4px;
+        }
+        @media (max-width:1100px){
+          .${ROOT} .master-preview-col{position:relative !important;top:0 !important}
+          .${ROOT} .master-preview-inner{max-height:min(78vh,640px)}
+        }
+        .${ROOT} .master-editor-col.editor{max-width:none;margin-bottom:0}
+        .${ROOT} .master-editor-col{
+          background:linear-gradient(165deg,#fffefb 0%,#f3ebe7 52%,#fffef8 100%);
+          border-radius:16px;
+          padding:1rem 1.15rem 1.15rem;
+          border:1px solid rgba(181,74,30,0.16);
+          box-shadow:0 6px 22px rgba(15,111,102,0.08);
+        }
+        .${ROOT} .master-kicker{
+          display:inline-block;
+          font-size:0.72rem;
+          letter-spacing:0.06em;
+          text-transform:uppercase;
+          font-weight:750;
+          color:#0f6f66;
+          background:rgba(15,111,102,0.11);
+          padding:0.28rem 0.6rem;
+          border-radius:999px;
+          margin-bottom:0.4rem;
+        }
+        .${ROOT} .master-editor-col .editor-sections{
+          display:grid;
+          gap:1rem;
+          margin-top:0.5rem;
+        }
+        @media (min-width:700px){
+          .${ROOT} .master-editor-col .editor-sections{grid-template-columns:1fr 1fr;align-items:start}
+        }
+        .${ROOT} .master-editor-col .editor-inner{display:grid;gap:0.75rem}
+        .${ROOT} .master-field-label{
+          font-size:0.8rem;
+          letter-spacing:0.04em;
+          text-transform:uppercase;
+          color:#5c5650;
+          font-weight:700;
+        }
+        .${ROOT} .master-preview-col{
+          position:sticky;
+          top:10px;
+          align-self:start;
+          background:linear-gradient(165deg,#e8f8f5 0%,#fdf6f0 42%,#ffffff 100%);
+          border-radius:16px;
+          padding:0.75rem 0.9rem 1rem;
+          border:2px solid rgba(15,111,102,0.22);
+          box-shadow:0 10px 32px rgba(15,111,102,0.11);
+        }
+        .${ROOT} .master-preview-header{
+          display:flex;
+          flex-wrap:wrap;
+          align-items:center;
+          justify-content:space-between;
+          gap:0.5rem;
+          margin-bottom:0.45rem;
+          padding-bottom:0.4rem;
+          border-bottom:1px dashed rgba(15,111,102,0.22);
+        }
+        .${ROOT} .master-preview-title{
+          margin:0;
+          font-size:1.05rem;
+          font-weight:800;
+          color:#0f4f48;
+        }
+        .${ROOT} .master-focus-pill{
+          margin:0;
+          font-size:0.78rem;
+          color:#4a4540;
+          background:rgba(255,255,255,0.88);
+          padding:0.3rem 0.6rem;
+          border-radius:10px;
+          border:1px solid rgba(181,74,30,0.14);
+          max-width:min(100%,20rem);
+          line-height:1.35;
+        }
+        .${ROOT} .master-preview-inner{
+          overflow:auto;
+          max-height:calc(100vh - 200px);
+          padding:0.2rem;
+          display:flex;
+          justify-content:center;
+          align-items:flex-start;
+        }
+        .${ROOT} .master-preview-scale-wrap{
+          width:210mm;
+          height:297mm;
+          margin:0 auto;
+          transform:scale(0.78);
+          transform-origin:top center;
+          margin-bottom:calc(-1 * (297mm * 0.22));
+        }
+        .${ROOT} .master-hotspot-parent{position:relative}
+        .${ROOT} .master-hotspot{
+          position:absolute;
+          inset:0;
+          z-index:2;
+          margin:0;
+          padding:0;
+          border:0;
+          border-radius:6px;
+          cursor:pointer;
+          background:transparent;
+        }
+        .${ROOT} .master-hotspot:hover,
+        .${ROOT} .master-hotspot:focus-visible{
+          background:rgba(181,74,30,0.07);
+          box-shadow:inset 0 0 0 2px rgba(181,74,30,0.35);
+        }
+        .${ROOT} .v2-intro-wrap{min-height:2.8em}
+        .${ROOT} .back-hero-line{display:block;position:relative}
+        .${ROOT} .back-invite-wrap{position:relative;flex:1;min-width:0}
+        .${ROOT} .master-edit-backdrop{
+          position:fixed;
+          inset:0;
+          z-index:2000;
+          background:rgba(28,26,24,0.28);
+        }
+        .${ROOT} .master-edit-modal{
+          position:fixed;
+          z-index:2001;
+          width:min(420px,calc(100vw - 28px));
+          max-height:min(88vh,520px);
+          display:flex;
+          flex-direction:column;
+          background:#fffefb;
+          color:#1c1a18;
+          border-radius:14px;
+          border:1px solid rgba(181,74,30,0.22);
+          box-shadow:0 10px 40px rgba(15,111,102,0.18);
+          overflow:hidden;
+        }
+        .${ROOT} .master-edit-head{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:0.5rem;
+          padding:0.55rem 0.65rem;
+          background:linear-gradient(165deg,#e8f8f5 0%,#fdf6f0 100%);
+          border-bottom:1px solid rgba(15,111,102,0.15);
+          cursor:grab;
+          font-size:0.88rem;
+          font-weight:750;
+          color:#0f4f48;
+          user-select:none;
+        }
+        .${ROOT} .master-edit-head:active{cursor:grabbing}
+        .${ROOT} .master-edit-close{
+          background:#b54a1e;
+          color:#fff;
+          border:0;
+          border-radius:8px;
+          width:2rem;
+          height:2rem;
+          font-size:1.2rem;
+          line-height:1;
+          cursor:pointer;
+          flex-shrink:0;
+        }
+        .${ROOT} .master-edit-close:hover{background:#d4622a}
+        .${ROOT} .master-edit-body{
+          padding:0.75rem 0.85rem 1rem;
+          overflow:auto;
+          display:grid;
+          gap:0.65rem;
+        }
+        .${ROOT} .master-edit-body label{
+          font-size:0.82rem;
+          font-weight:650;
+          color:#5c5650;
+          display:grid;
+          gap:0.35rem;
+        }
+        .${ROOT} .master-edit-body textarea,
+        .${ROOT} .master-edit-body input[type="text"]{
+          width:100%;
+          font-size:0.95rem;
+          line-height:1.45;
+          padding:0.55rem 0.6rem;
+          border-radius:8px;
+          border:1px solid #c8c0b5;
+          box-sizing:border-box;
+          color:#1c1a18;
+          background:#fff;
+        }
+        .${ROOT} .master-edit-body textarea{resize:vertical;min-height:4rem}
+        .${ROOT} .master-edit-drop{
+          border:1px dashed #bda998;
+          border-radius:10px;
+          padding:0.75rem;
+          font-size:0.86rem;
+          color:#5c5650;
+          background:rgba(255,255,255,0.85);
+        }
+        .${ROOT} .master-edit-drop.master-edit-drop-active{
+          border-color:#0f6f66;
+          background:rgba(15,111,102,0.08);
+        }
+        .${ROOT} .master-preview-scale-wrap .sheet{
+          margin:0;
+        }
+        .${ROOT} .derivation-shell{
+          max-width:1820px;
+          margin:0 auto 16px;
+          border-radius:16px;
+          border:2px solid rgba(15,111,102,.2);
+          background:linear-gradient(165deg,#eef7f6 0%,#fff9f3 44%,#fff 100%);
+          box-shadow:0 10px 32px rgba(15,111,102,.1);
+          padding:.8rem .95rem 1rem;
+        }
+        .${ROOT} .derivation-head{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          gap:.7rem;
+          flex-wrap:wrap;
+          border-bottom:1px dashed rgba(15,111,102,.22);
+          padding-bottom:.45rem;
+          margin-bottom:.55rem;
+        }
+        .${ROOT} .derivation-title{
+          margin:0;
+          font-size:1.02rem;
+          color:#0f4f48;
+          font-weight:800;
+        }
+        .${ROOT} .derivation-sub{
+          margin:.12rem 0 0;
+          font-size:.82rem;
+          color:#5c5650;
+        }
+        .${ROOT} .derivation-toggle{
+          border:1px solid rgba(15,111,102,.3);
+          background:#fff;
+          color:#0f4f48;
+          border-radius:10px;
+          font-size:.86rem;
+          padding:.42rem .7rem;
+          cursor:pointer;
+          font-weight:700;
+        }
+        .${ROOT} .derivation-preview-stage{
+          max-height:calc(100vh - 210px);
+          overflow:auto;
+          display:flex;
+          justify-content:center;
+          align-items:flex-start;
+          padding:.1rem;
+        }
+        .${ROOT} .derivation-preview-scale{
+          transform-origin:top center;
+        }
+        .${ROOT} .derivation-shell.mode-a3 .derivation-preview-scale{
+          transform:scale(.34);
+          width:297mm;
+          margin-bottom:calc(-1 * (420mm * .66));
+        }
+        .${ROOT} .derivation-shell.mode-a6 .derivation-preview-scale{
+          transform:scale(.95);
+          width:148mm;
+          margin-bottom:calc(-1 * (105mm * .05));
+        }
+        .${ROOT} .derivation-shell.mode-card .derivation-preview-scale{
+          transform:scale(1);
+          width:112mm;
+        }
+        .${ROOT} .derivation-fullscreen-stage{
+          overflow:auto;
+          max-height:none;
+          display:flex;
+          justify-content:center;
+          align-items:flex-start;
+          padding:.1rem;
+        }
+        .${ROOT} .derivation-fullscreen-stage .derivation-preview-scale{
+          transform:none !important;
+          width:auto !important;
+          margin:0 !important;
+        }
+        @media (max-width:1100px){
+          .${ROOT} .derivation-preview-stage{max-height:min(70vh,520px)}
+          .${ROOT} .derivation-shell.mode-a3 .derivation-preview-scale{
+            transform:scale(.24);
+            margin-bottom:calc(-1 * (420mm * .76));
+          }
+        }
         .${ROOT} .sheet{
           width:210mm;
           height:var(--flyer-page-h);
@@ -1023,7 +1385,29 @@ export default function FlyerEventBogenNeuPage() {
             print-color-adjust:exact !important;
           }
           .${ROOT}{padding:0;background:#fff}
-          .${ROOT} .toolbar,.${ROOT} .editor{display:none}
+          .${ROOT} .master-hotspot{display:none !important}
+          .${ROOT} .master-edit-backdrop,.${ROOT} .master-edit-modal{display:none !important}
+          .${ROOT} .toolbar,.${ROOT} .editor,.${ROOT} .master-editor-col,.${ROOT} .master-preview-header{display:none}
+          .${ROOT} .master-workspace{display:block !important;max-width:none;margin:0;padding:0}
+          .${ROOT} .master-preview-col{
+            position:static !important;
+            background:transparent !important;
+            border:none !important;
+            box-shadow:none !important;
+            padding:0 !important;
+            margin:0 !important;
+          }
+          .${ROOT} .master-preview-inner{
+            max-height:none !important;
+            overflow:visible !important;
+            padding:0 !important;
+          }
+          .${ROOT} .master-preview-scale-wrap{
+            transform:none !important;
+            margin:0 !important;
+            width:auto !important;
+            height:auto !important;
+          }
           .${ROOT} .sheet{
             box-shadow:none;
             margin:0;
@@ -1564,122 +1948,241 @@ export default function FlyerEventBogenNeuPage() {
         </span>
       </div>
 
-      {!isA3Mode && !isA6Mode && !isCardMode && <div className="editor">
-        <p style={{ margin: 0, fontSize: '0.92rem', color: '#1f2937', fontWeight: 600 }}>
-          Master A5 (fix): vorne ein Bild, hinten nur Text
-        </p>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(280px, 1fr) minmax(220px, 0.7fr)',
-            gap: '0.8rem',
-            alignItems: 'start',
-          }}
-        >
-          <div style={{ display: 'grid', gap: '0.55rem' }}>
-            <label>
-              Text Vorderseite (Intro)
-              <textarea
-                value={masterText.intro}
-                onChange={(e) => setMasterText((prev) => ({ ...prev, intro: e.target.value }))}
-                rows={3}
-              />
-            </label>
-            <label>
-              Rückseite Slogan
-              <input
-                type="text"
-                value={masterText.backSlogan}
-                onChange={(e) => setMasterText((prev) => ({ ...prev, backSlogan: e.target.value }))}
-              />
-            </label>
-            <label>
-              Rückseite Kernaussage
-              <input
-                type="text"
-                value={masterText.backPower}
-                onChange={(e) => setMasterText((prev) => ({ ...prev, backPower: e.target.value }))}
-              />
-            </label>
-            <label>
-              Rückseite Unterzeile
-              <input
-                type="text"
-                value={masterText.backSub}
-                onChange={(e) => setMasterText((prev) => ({ ...prev, backSub: e.target.value }))}
-              />
-            </label>
-            <label>
-              Rückseite Einladung
-              <textarea
-                value={masterText.backInvite}
-                onChange={(e) => setMasterText((prev) => ({ ...prev, backInvite: e.target.value }))}
-                rows={2}
-              />
-            </label>
-            <label>
-              Rückseite Fließtext (Absätze mit Leerzeile trennen)
-              <textarea
-                value={masterText.marketingBlocksRaw}
-                onChange={(e) =>
-                  setMasterText((prev) => ({ ...prev, marketingBlocksRaw: e.target.value }))
-                }
-                rows={8}
-              />
-            </label>
-          </div>
-          <div style={{ display: 'grid', gap: '0.55rem' }}>
-            <label>
-              Werkbild Vorderseite (K2-Auswahl)
-              <select value={leftWorkNumber} onChange={(e) => handleLeftWorkSelect(e.target.value)}>
-                <option value="">Bitte wählen</option>
-                {k2Works.map((w) => (
-                  <option key={`left-${String(w?.number || '')}`} value={String(w?.number || '')}>
-                    {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p style={{ margin: 0, fontSize: '0.85rem', color: '#5c5650' }}>
-              Bearbeitung nur im Master. A3, A6 und Visitenkarten oben nur zur Ansicht öffnen.
+      {!isA3Mode && !isA6Mode && !isCardMode && (
+        <div className="master-workspace">
+          <div className="master-preview-col">
+            <div className="master-preview-header">
+              <h2 className="master-preview-title">Master A5 – Live-Vorschau</h2>
+              <p className="master-focus-pill">
+                {masterEditField
+                  ? `Bearbeiten: ${MASTER_EDIT_LABELS[masterEditField]}`
+                  : 'Bereich in der Vorschau anklicken – Fenster zum Bearbeiten'}
+              </p>
+            </div>
+            <p
+              style={{
+                margin: '0 0 0.5rem',
+                fontSize: '0.84rem',
+                color: '#5c5650',
+                lineHeight: 1.45,
+              }}
+            >
+              Vorne ein Bild, hinten nur Text. Klicke auf Intro, Bild, Rückseiten-Texte oder Marketing-Block – es lässt
+              sich verschieben (Kopfzeile ziehen). ESC schließt.
             </p>
-            <div style={{ fontSize: '0.8rem', color: '#5c5650' }}>
-              Vorschau Werkbild (Master): {leftWerkLabel}
+            <div className="master-preview-inner">
+              <div className="master-preview-scale-wrap">
+                <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
+                  <div>{renderFrontCardV2(true)}</div>
+                  <div>{renderBackCard(true)}</div>
+                </section>
+              </div>
             </div>
           </div>
         </div>
-      </div>}
-
-      {!isA3Mode && !isA6Mode && !isCardMode ? (
-        <>
-          <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
-            <div>{frontCard}</div>
-            <div>{backCard}</div>
-          </section>
-        </>
-      ) : isA3Mode ? (
-        <section className="a3-sheet" aria-label="A3 Plakat Seite 1">
-          {posterA3Card}
-        </section>
-      ) : isCardMode ? (
-        <>
-          <section className="vc-sheet" aria-label="Visitenkarte Seite 1">
-            {businessCardFront}
-          </section>
-          <section className="vc-sheet" aria-label="Visitenkarte Seite 2">
-            {businessCardBack}
-          </section>
-        </>
-      ) : (
-        <>
-          <section className="a6-sheet" aria-label="A6 Werbekarte Seite 1">
-            {posterA6Card}
-          </section>
-          <section className="a6-sheet" aria-label="A6 Werbekarte Seite 2">
-            {posterA6BackCard()}
-          </section>
-        </>
       )}
+
+      {masterEditField ? (
+        <>
+          <div
+            className="master-edit-backdrop"
+            role="presentation"
+            onClick={() => setMasterEditField(null)}
+            aria-hidden
+          />
+          <div
+            className="master-edit-modal"
+            style={{ left: modalPos.x, top: modalPos.y }}
+            role="dialog"
+            aria-labelledby="master-edit-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="master-edit-head" onMouseDown={onModalHeadPointerDown}>
+              <span id="master-edit-title">{MASTER_EDIT_LABELS[masterEditField]}</span>
+              <button
+                type="button"
+                className="master-edit-close"
+                onClick={() => setMasterEditField(null)}
+                aria-label="Schließen"
+              >
+                ×
+              </button>
+            </div>
+            <div className="master-edit-body">
+              {masterEditField === 'intro' ? (
+                <label>
+                  Text Vorderseite (Intro)
+                  <textarea
+                    value={masterText.intro}
+                    onChange={(e) => setMasterText((prev) => ({ ...prev, intro: e.target.value }))}
+                    rows={5}
+                  />
+                </label>
+              ) : null}
+              {masterEditField === 'image' ? (
+                <>
+                  <label>
+                    Werkbild aus Datei
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleLeftImageFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                  <div
+                    className={`master-edit-drop${isLeftDropActive ? ' master-edit-drop-active' : ''}`}
+                    onDragOver={(e) => {
+                      e.preventDefault()
+                      setIsLeftDropActive(true)
+                    }}
+                    onDragLeave={() => setIsLeftDropActive(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setIsLeftDropActive(false)
+                      const file = e.dataTransfer?.files?.[0] || null
+                      handleLeftImageFile(file)
+                    }}
+                  >
+                    Bild hier reinziehen (Drag &amp; Drop)
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#5c5650' }}>
+                    Aktuelles Vorderseitenbild: {leftWerkLabel}
+                  </p>
+                </>
+              ) : null}
+              {masterEditField === 'backSlogan' ? (
+                <label>
+                  Rückseite Slogan
+                  <input
+                    type="text"
+                    value={masterText.backSlogan}
+                    onChange={(e) => setMasterText((prev) => ({ ...prev, backSlogan: e.target.value }))}
+                  />
+                </label>
+              ) : null}
+              {masterEditField === 'backPower' ? (
+                <label>
+                  Rückseite Kernaussage
+                  <input
+                    type="text"
+                    value={masterText.backPower}
+                    onChange={(e) => setMasterText((prev) => ({ ...prev, backPower: e.target.value }))}
+                  />
+                </label>
+              ) : null}
+              {masterEditField === 'backSub' ? (
+                <label>
+                  Rückseite Unterzeile
+                  <input
+                    type="text"
+                    value={masterText.backSub}
+                    onChange={(e) => setMasterText((prev) => ({ ...prev, backSub: e.target.value }))}
+                  />
+                </label>
+              ) : null}
+              {masterEditField === 'backInvite' ? (
+                <label>
+                  Rückseite Einladung
+                  <textarea
+                    value={masterText.backInvite}
+                    onChange={(e) => setMasterText((prev) => ({ ...prev, backInvite: e.target.value }))}
+                    rows={5}
+                  />
+                </label>
+              ) : null}
+              {masterEditField === 'marketing' ? (
+                <label>
+                  Rückseite Fließtext (Absätze mit Leerzeile trennen)
+                  <textarea
+                    value={masterText.marketingBlocksRaw}
+                    onChange={(e) =>
+                      setMasterText((prev) => ({ ...prev, marketingBlocksRaw: e.target.value }))
+                    }
+                    rows={14}
+                  />
+                </label>
+              ) : null}
+            </div>
+          </div>
+        </>
+      ) : null}
+
+      {isA3Mode ? (
+        <div className="derivation-shell mode-a3">
+          <div className="derivation-head">
+            <div>
+              <p className="derivation-title">A3 Ableitung – Live-Vorschau</p>
+              <p className="derivation-sub">Standard: kompakte Vorschau. Vollbild nur bei Bedarf.</p>
+            </div>
+            <button
+              type="button"
+              className="derivation-toggle"
+              onClick={() => setShowDerivationFullscreen((prev) => !prev)}
+            >
+              {showDerivationFullscreen ? 'Zurück zur Live-Vorschau' : 'Vollbild ansehen'}
+            </button>
+          </div>
+          <div className={showDerivationFullscreen ? 'derivation-fullscreen-stage' : 'derivation-preview-stage'}>
+            <div className="derivation-preview-scale">
+              <section className="a3-sheet" aria-label="A3 Plakat Seite 1">
+                {posterA3Card}
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : isCardMode ? (
+        <div className="derivation-shell mode-card">
+          <div className="derivation-head">
+            <div>
+              <p className="derivation-title">Visitenkarten-Ableitung – Live-Vorschau</p>
+              <p className="derivation-sub">Standard: kompakte Vorschau. Vollbild nur bei Bedarf.</p>
+            </div>
+            <button
+              type="button"
+              className="derivation-toggle"
+              onClick={() => setShowDerivationFullscreen((prev) => !prev)}
+            >
+              {showDerivationFullscreen ? 'Zurück zur Live-Vorschau' : 'Vollbild ansehen'}
+            </button>
+          </div>
+          <div className={showDerivationFullscreen ? 'derivation-fullscreen-stage' : 'derivation-preview-stage'}>
+            <div className="derivation-preview-scale">
+              <section className="vc-sheet" aria-label="Visitenkarte Seite 1">
+                {businessCardFront}
+              </section>
+              <section className="vc-sheet" aria-label="Visitenkarte Seite 2">
+                {businessCardBack}
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : isA6Mode ? (
+        <div className="derivation-shell mode-a6">
+          <div className="derivation-head">
+            <div>
+              <p className="derivation-title">A6 Ableitung – Live-Vorschau</p>
+              <p className="derivation-sub">Standard: kompakte Vorschau. Vollbild nur bei Bedarf.</p>
+            </div>
+            <button
+              type="button"
+              className="derivation-toggle"
+              onClick={() => setShowDerivationFullscreen((prev) => !prev)}
+            >
+              {showDerivationFullscreen ? 'Zurück zur Live-Vorschau' : 'Vollbild ansehen'}
+            </button>
+          </div>
+          <div className={showDerivationFullscreen ? 'derivation-fullscreen-stage' : 'derivation-preview-stage'}>
+            <div className="derivation-preview-scale">
+              <section className="a6-sheet" aria-label="A6 Werbekarte Seite 1">
+                {posterA6Card}
+              </section>
+              <section className="a6-sheet" aria-label="A6 Werbekarte Seite 2">
+                {posterA6BackCard()}
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
