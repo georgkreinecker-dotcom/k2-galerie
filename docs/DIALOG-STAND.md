@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Plakat & Druckformate – Neu/Master/Versand:** Karte hat **„Neu erstellen“** (Überblick-Modal: Master, Ableitungen A3/A6/Karte als Links, VK2 ohne große Ableitungen) und **„Master neu erstellen“** (Flyer-Master-Route). **Grüner Button** und **Senden** pro Zeile öffnen **Auswahl-Modal** mit Checkboxen (Plakat + Event-Flyer); **Bundle-Versand** per `sendPlakatDruckformateBundlePerMail` / `tryShareWerbemittelPdfs`. Modals per **Portal**, **z-index 100100**. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `88df5d8` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg testet Öffentlichkeitsarbeit → Plakat-Karte: Überblick, Master, Druckerei mit Auswahl.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Presseaussendung eine Linie + ök2 alte PR-IDs raus:** Karte **Presseaussendung** hat nur noch **einen** „Neu erstellen“-Weg (wie Newsletter); **ök2** nutzt intern **`neutral`**, **K2/VK2** weiter **`lokal`**. Beim Laden ök2-Dokumente werden Einträge mit **`OEK2_DEPRECATED_MUSTER_PR_DOC_IDS`** (`muster-pr-*`) aus dem Merge gefiltert – Anzeige folgt **`getOek2MusterPrDocuments()`** (`oek2-pr-linie-*`). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `69d8fac` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: ök2-Admin → Event → Öffentlichkeitsarbeit: Presse nur ein Button; bei nur alten IDs im Speicher erscheinen die neuen Musterdokumente.
