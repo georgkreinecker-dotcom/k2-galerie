@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Sportwagenregel verankert:** Tabelle **ein-standard-problem.mdc** ergänzt: **ök2 Muster-Event** → `oek2MusterEventLinie.ts` (Pflicht vor neuer ök2-Werbemittel-Logik). **Commit:** `77feb74` ✅ auf GitHub
+
+---
+
 **Letzter Stand:** 27.03.26 – **ök2 rote Linie / Muster-Event Sportwagen:** Neue Utility **`src/utils/oek2MusterEventLinie.ts`**: `getOeffentlichEventsWithMusterFallback()` (leerer Speicher → `MUSTER_EVENTS`) + `pickOpeningEventForWerbemittel()` (Vernissage/Eröffnung wie Flyer-Master). Angebunden: **FlyerEventBogenNeuPage**, **GaleriePage** (`getUpcomingEventsOeffentlich`), **ProspektGalerieeroeffnungPage**, **PresseEinladungK2GaleriePage**, **FlyerK2GaleriePage**. Tests: `oek2MusterEventLinie.test.ts`. **Commit:** `1232716` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg kurz ök2 ohne Events im Speicher: Prospekt, Presse-Einladung, K2-Flyer, Galerie-Banner zeigen dieselbe **Vernissage – Neue Arbeiten**-Linie.
