@@ -1,8 +1,20 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Presseaussendung eine Linie + ök2 alte PR-IDs raus:** Karte **Presseaussendung** hat nur noch **einen** „Neu erstellen“-Weg (wie Newsletter); **ök2** nutzt intern **`neutral`**, **K2/VK2** weiter **`lokal`**. Beim Laden ök2-Dokumente werden Einträge mit **`OEK2_DEPRECATED_MUSTER_PR_DOC_IDS`** (`muster-pr-*`) aus dem Merge gefiltert – Anzeige folgt **`getOek2MusterPrDocuments()`** (`oek2-pr-linie-*`). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_ ✅
+
+**Was wir JETZT tun:** Georg: ök2-Admin → Event → Öffentlichkeitsarbeit: Presse nur ein Button; bei nur alten IDs im Speicher erscheinen die neuen Musterdokumente.
+
+---
+
+**Letzter Stand:** 27.03.26 – **Präsentationsmappen nur noch K2 im Admin:** In **ök2** und **VK2** entfallen **Admin-Tab** „Präsentationsmappen“, die **PM-Karte** im Öffentlichkeitsarbeit-Modal (`DOKUMENT_KARTEN`), der Werbematerial-Typ **`praesentationsmappe-kurz`** dort sowie das Hilfs-HTML beim Dokument-Öffnen (kurzer Hinweis auf Werbeunterlagen). **K2** unverändert mit Tab, Karte und vollem Ablauf. **Mappe-Seiten**, **Werbeunterlagen**-Links und **mök2** bleiben erreichbar. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push eintragen_ ✅
+
+**Was wir JETZT tun:** Georg optional: ök2/VK2-Admin → Eventplan → Öffentlichkeitsarbeit: keine PM-Karte; K2 weiter mit PM.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Ein Weg Flyer-Master / keine zweite Plakat-Route in der UI:** Alle Links auf **Plakat A3** und Event-Druckformate nutzen **`flyerEventBogenUrl`** (eine Route `/flyer-event-bogen-neu`, `layout=variant2`). **Admin:** Hilfs-HTML Präsentationsmappen, Tab Präsentationsmappen, Overlay-Karten, DOKUMENT_KARTEN-Beschreibung; **VK2** in `mappeQs`/`pmTabQs` wo nötig. **WerbeunterlagenPage, TexteSchreibtischPage, MarketingOek2Page §9:** Texte **roter Faden** (Master zuerst, A3/A6/Karte nur Ableitungen; Demo/Muster, nicht Strategietexte als Datenquelle). Alte Route **plakat-galerieeroeffnung** nur noch Redirect. **Commits:** `c4b0eaa` (Feature), `8bb7bb9` (DIALOG-STAND Hash) ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg kurz im Browser: mök2 §9 Links, Werbeunterlagen Plakat-Button, Admin Präsentationsmappen.
+**Was wir JETZT tun:** (durch PM-Trennung K2/ök2/VK2 ergänzt – siehe oberster Eintrag)
 
 ---
 

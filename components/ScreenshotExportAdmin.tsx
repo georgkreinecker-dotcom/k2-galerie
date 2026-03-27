@@ -49,7 +49,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -1516,6 +1516,8 @@ type AdminProps = {
 function ScreenshotExportAdmin(props?: AdminProps) {
   const { forceTab, forceEventplanSubTab, forceOeffentlichkeitsarbeitModal } = props ?? {}
   const tenant = useTenant()
+  /** Präsentationsmappen-Tab und PM-Karte in Öffentlichkeitsarbeit nur K2 – nicht ök2/VK2. */
+  const showPraesentationsmappenAdmin = !tenant.isOeffentlich && !tenant.isVk2
   const navigate = useNavigate()
   const location = useLocation()
   // Singleton-Check: Verhindere doppeltes Mounten - KRITISCH gegen Crashes
@@ -1589,12 +1591,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const gt = params.get('guidetab')
       const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
+      if (gt === 'praesentationsmappen' && !showPraesentationsmappenAdmin) return
       if (gt && (validTabs as readonly string[]).includes(gt)) {
         setActiveTab(gt as AdminTab)
         window.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch { /* ignore */ }
-  }, [location.search])
+  }, [location.search, showPraesentationsmappenAdmin])
 
   // Öffentlichkeitsarbeit: Bei openModal=1 in der URL Modal öffnen (Einstieg z. B. von APf)
   React.useEffect(() => {
@@ -1720,17 +1723,29 @@ function ScreenshotExportAdmin(props?: AdminProps) {
 
   // Klare Admin-Struktur: Werke | Eventplanung | Design | Einstellungen. Bei Aufruf aus APf (forceTab) hat Props Vorrang vor URL.
   const initialTab = ((): AdminTabType => {
-    if (forceTab) return forceTab
+    if (forceTab) {
+      if (!showPraesentationsmappenAdmin && forceTab === 'praesentationsmappen') return 'werke'
+      return forceTab
+    }
     try {
       const params = new URLSearchParams(window.location.search)
       const validTabs = ['werke','katalog','statistik','zertifikat','newsletter','pressemappe','eventplan','presse','design','veroeffentlichen','praesentationsmappen','einstellungen'] as const
       type AdminTab = typeof validTabs[number]
       const t = params.get('tab') || params.get('guidetab')
-      if (t && validTabs.includes(t as AdminTab)) return t as AdminTab
+      if (t && validTabs.includes(t as AdminTab)) {
+        if (!showPraesentationsmappenAdmin && t === 'praesentationsmappen') return 'werke'
+        return t as AdminTab
+      }
     } catch { /* ignore */ }
     return 'werke'
   })()
   const [activeTab, setActiveTab] = useState<AdminTabType>(initialTab)
+
+  React.useEffect(() => {
+    if (!showPraesentationsmappenAdmin && activeTab === 'praesentationsmappen') {
+      setActiveTab('werke')
+    }
+  }, [showPraesentationsmappenAdmin, activeTab])
   const initialEventplanSubTab = ((): 'events' | 'öffentlichkeitsarbeit' => {
     if (forceEventplanSubTab) return forceEventplanSubTab
     try {
@@ -4775,7 +4790,12 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       // ök2: Muster-Dokumente + Einträge aus localStorage mergen (sonst verschwinden neu erzeugte PR-Dokumente nach Reload)
       if (tenant.isOeffentlich) {
         const muster = getOek2MusterPrDocuments()
-        const stored = loadDocumentsFromStorage('oeffentlich')
+        const storedRaw = loadDocumentsFromStorage('oeffentlich')
+        const stored = Array.isArray(storedRaw)
+          ? storedRaw.filter(
+              (x: { id?: string }) => !x?.id || !OEK2_DEPRECATED_MUSTER_PR_DOC_IDS.has(String(x.id))
+            )
+          : []
         if (!Array.isArray(stored) || stored.length === 0) return muster
         const musterIds = new Set(muster.map((d: { id: string }) => d.id))
         const mergedMuster = muster.map((d: Record<string, unknown>) => {
@@ -8649,6 +8669,13 @@ ${'='.repeat(60)}
           openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
           return
         case 'praesentationsmappe-kurz': {
+          if (tenant.isOeffentlich || tenant.isVk2) {
+            openDocumentInApp(
+              '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Präsentationsmappen</title></head><body style="font-family:system-ui,sans-serif;padding:1.75rem;max-width:520px;line-height:1.55;color:#1c1a18"><p>Präsentationsmappen sind in der Demo- und Vereins-Ansicht hier nicht eingebunden. Feste Seiten und Links findest du unter <strong>Werbeunterlagen</strong> in der APf bzw. über die direkten Mappe-URLs.</p></body></html>',
+              docTitle
+            )
+            return
+          }
           const mappeQs = tenant.isOeffentlich
             ? '?context=oeffentlich'
             : tenant.isVk2
@@ -8722,7 +8749,16 @@ ${'='.repeat(60)}
     }
   }
 
-  const getWerbemittelMailActionLabel = (typ: string): string => {
+  /** Plakat-Karte: enthält plakat + event-flyer – Betreff/Text am echten Dokument-Typ ausrichten. */
+  const effectiveWerbemittelMailTyp = (kartenTyp: string, doc?: any): string => {
+    if (kartenTyp !== 'plakat' || !doc) return kartenTyp
+    const w = String(doc.werbematerialTyp || doc.typ || '').trim()
+    const norm = w === 'flyer' ? 'event-flyer' : w
+    return norm === 'event-flyer' ? 'event-flyer' : 'plakat'
+  }
+
+  const getWerbemittelMailActionLabel = (kartenTyp: string, doc?: any): string => {
+    const typ = effectiveWerbemittelMailTyp(kartenTyp, doc)
     if (typ === 'presse') return '📰 An Medien – 1 Klick'
     if (typ === 'plakat') return '🖨️ An Druckerei – 1 Klick'
     if (typ === 'event-flyer') return '📄 Flyer senden – 1 Klick'
@@ -8766,7 +8802,9 @@ ${'='.repeat(60)}
         return
       }
 
-      const usesPresseRecipients = typ === 'presse'
+      const mailTyp = effectiveWerbemittelMailTyp(typ, doc)
+
+      const usesPresseRecipients = mailTyp === 'presse'
       const allRecipients = usesPresseRecipients ? medienspiegel : verteilerNewsletter
       const selectedByCheck = usesPresseRecipients
         ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
@@ -8908,20 +8946,21 @@ ${'='.repeat(60)}
       const evSug = ev?.id ? suggestionsList.find((sg: any) => sg.eventId === ev.id) : null
 
       // Mail muss sofort aufgehen; PDF-Erzeugung daher erst danach im Hintergrund.
-      const shouldPreparePdf = typ === 'plakat' || typ === 'event-flyer' || typ === 'newsletter' || typ === 'presse'
+      const shouldPreparePdf =
+        mailTyp === 'plakat' || mailTyp === 'event-flyer' || mailTyp === 'newsletter' || mailTyp === 'presse'
       // mailto: kann keine Dateianhänge setzen – ehrlicher Hinweis im Fließtext (vorher war attachmentInfo immer null → irreführende „Vorschau anhängen“-Texte).
       const pdfMailHinweis = shouldPreparePdf
         ? 'Hinweis: Unterstützt dein Gerät „Teilen“ mit Datei (z. B. iPhone/iPad), kann die PDF direkt in die Mail – sonst legen wir die PDF in „Downloads" und die E-Mail-App öffnet sich separat (mailto kann keinen Anhang setzen).'
         : ''
 
-      if (ev && typ === 'newsletter') {
+      if (ev && mailTyp === 'newsletter') {
         const newsletterRaw = evSug?.newsletter || generateEmailNewsletterContent(ev)
         const newsletter = newsletterRaw && typeof newsletterRaw === 'object' ? newsletterRaw : null
         betreff = String(newsletter?.subject || fallbackBetreff).trim()
         plainBody = [String(newsletter?.body || '').trim(), pdfMailHinweis].filter(Boolean).join('\n\n').trim()
       }
 
-      if (ev && typ === 'event-flyer') {
+      if (ev && mailTyp === 'event-flyer') {
         const flyerRaw = evSug?.flyer || generateEventFlyerContent(ev)
         const flyer = flyerRaw && typeof flyerRaw === 'object' ? flyerRaw : null
         betreff = String(flyer?.subject || fallbackBetreff).trim()
@@ -8935,7 +8974,7 @@ ${'='.repeat(60)}
           .trim()
       }
 
-      if (ev && typ === 'plakat') {
+      if (ev && mailTyp === 'plakat') {
         betreff = `Plakat – ${ev?.title || 'Veranstaltung'}`
         plainBody = [
           `Hier kommt das Plakat für „${ev?.title || 'Veranstaltung'}“.`,
@@ -8948,8 +8987,8 @@ ${'='.repeat(60)}
       }
 
       if (
-        typ !== 'plakat' &&
-        typ !== 'event-flyer' &&
+        mailTyp !== 'plakat' &&
+        mailTyp !== 'event-flyer' &&
         fileData &&
         typeof fileData === 'string' &&
         fileData.startsWith('data:') &&
@@ -8967,7 +9006,7 @@ ${'='.repeat(60)}
         }
       }
 
-      if (!plainBody.trim() && ev?.id && typ === 'presse') {
+      if (!plainBody.trim() && ev?.id && mailTyp === 'presse') {
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
         const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
         plainBody = [(presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim(), pdfMailHinweis]
@@ -8982,7 +9021,7 @@ ${'='.repeat(60)}
 
       // Presse: Text kann schon aus HTML kommen – PDF-Hinweis trotzdem anhängen, wenn noch nicht drin.
       if (
-        typ === 'presse' &&
+        mailTyp === 'presse' &&
         shouldPreparePdf &&
         pdfMailHinweis &&
         !plainBody.includes('Gleich wird eine druckfertige PDF-Datei')
@@ -8992,10 +9031,10 @@ ${'='.repeat(60)}
 
       plainBody = normalizeMailBody(betreff, plainBody)
 
-      if (typ === 'plakat') {
+      if (mailTyp === 'plakat') {
         // Keine zusätzlichen Textblöcke: Plakat-Mail bleibt bewusst kurz.
       }
-      if (typ === 'event-flyer') {
+      if (mailTyp === 'event-flyer') {
         // Keine zusätzlichen Textblöcke: Flyer-Mail bleibt bewusst kurz.
       }
 
@@ -9062,7 +9101,7 @@ ${'='.repeat(60)}
                 ...(doc || {}),
                 fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
                 fileType: 'text/html',
-                fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+                fileName: `${mailTyp || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
               }
             }
             const rawData = attachmentSource?.fileData || attachmentSource?.data
@@ -9168,7 +9207,7 @@ ${'='.repeat(60)}
               ...(doc || {}),
               fileData: `data:text/html;charset=utf-8,${encodeURIComponent(htmlFallback)}`,
               fileType: 'text/html',
-              fileName: `${typ || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+              fileName: `${mailTyp || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
             }
           }
 
@@ -13009,7 +13048,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
                activeTab === 'statistik' ? '📋📊 Statistik/Werkkatalog' :
-               activeTab === 'praesentationsmappen' ? '📁 Präsentationsmappen' :
+               activeTab === 'praesentationsmappen'
+                 ? (showPraesentationsmappenAdmin ? '📁 Präsentationsmappen' : (tenant.isVk2 ? '🖼️ Vereinsmitglieder' : '🖼️ Werke hinzufügen und bearbeiten'))
+                 :
                activeTab === 'einstellungen' ? '⚙️ Einstellungen' :
                activeTab}
             </strong>
@@ -15988,7 +16029,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         )}
 
         {/* Präsentationsmappen – eigener Tab (von Hub erreichbar) */}
-        {activeTab === 'praesentationsmappen' && (() => {
+        {activeTab === 'praesentationsmappen' && showPraesentationsmappenAdmin && (() => {
           const pmTabQs = tenant.isOeffentlich
             ? '?context=oeffentlich'
             : tenant.isVk2
@@ -21442,7 +21483,9 @@ ${name}`
                           if (d.eventTitle === event.title && (d.eventId == null || !allEventIds.has(String(d.eventId)))) return true
                           return false
                         })
-                        const WERBEMATERIAL_TYPEN = ['newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz'] as const
+                        const WERBEMATERIAL_TYPEN: readonly string[] = tenant.isOeffentlich || tenant.isVk2
+                          ? ['newsletter', 'plakat', 'event-flyer', 'presse', 'social']
+                          : ['newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz']
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
                         prDocsForEvent.forEach((d: any) => {
@@ -21489,7 +21532,8 @@ ${name}`
                                 typ: 'newsletter' as const,
                                 icon: '📧',
                                 titel: 'Newsletter',
-                                beschreibung: 'E-Mail an Stammkunden',
+                                beschreibung:
+                                  'Einladung aus Event-Daten als PDF/HTML. Speichern mit „Neu erstellen“, versenden mit dem grünen Button an den Newsletter-Verteiler.',
                                 docs: byTyp['newsletter'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21505,7 +21549,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Ein Weg: Master A5 (Muster/Galerie + Event) auf einer A4-Übersicht. A3, A6 und Visitenkarten sind nur Ableitungen zum Ansehen/Drucken – keine zweite Plakat-Seite, keine Inhalte aus mök2.',
+                                  'Ein Master auf A4 (A5 vorne/hinten aus Galerie + Event). A3, A6 und Karten sind nur zum Ansehen und Drucken – Formate unten aufklappen.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21574,38 +21618,26 @@ ${name}`
                                 typ: 'presse' as const,
                                 icon: '📰',
                                 titel: 'Presseaussendung',
-                                beschreibung: 'Neutral (ohne Personendaten) oder lokal (mit Personenstory). Medienkit: Event- und Medienplanung.',
+                                beschreibung:
+                                  'Presstext aus Event und Stammdaten (Demo: Muster). Ein Weg wie bei Newsletter: „Neu erstellen“ öffnet die Bearbeitung, grüner Button sendet an den Medienspiegel.',
                                 docs: byTyp['presse'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                erstellenVarianten: [
-                                  {
-                                    label: 'Neutral (ohne Personendaten)',
-                                    onErstellen: () => {
-                                      const ev = events.find((e: any) => e.id === event.id)
-                                      if (!ev) return
-                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                      const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'neutral')
-                                      generateEditablePresseaussendungPDF(presse, ev, ' (neutral)')
-                                    }
-                                  },
-                                  {
-                                    label: 'Lokal (mit Personenstory)',
-                                    onErstellen: () => {
-                                      const ev = events.find((e: any) => e.id === event.id)
-                                      if (!ev) return
-                                      const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
-                                      const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, 'lokal')
-                                      generateEditablePresseaussendungPDF(presse, ev, ' (lokal)')
-                                    }
-                                  }
-                                ]
+                                onErstellen: () => {
+                                  const ev = events.find((e: any) => e.id === event.id)
+                                  if (!ev) return
+                                  const evSug = suggestions.find((sg: any) => sg.eventId === event.id)
+                                  const variant = tenant.isOeffentlich ? 'neutral' : 'lokal'
+                                  const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, variant)
+                                  generateEditablePresseaussendungPDF(presse, ev, '')
+                                },
                               },
                               {
                                 typ: 'social' as const,
                                 icon: '📱',
                                 titel: 'Social Media',
-                                beschreibung: 'Instagram, Facebook, WhatsApp',
+                                beschreibung:
+                                  'Texte für Instagram, Facebook und WhatsApp. Nach „Neu erstellen“: grüner Button kopiert alles und kann WhatsApp öffnen (kein Mail-Verteiler).',
                                 docs: byTyp['social'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21616,22 +21648,29 @@ ${name}`
                                   openSocialRedaction(ev, null, { ...(evSug?.socialMedia || generateSocialMediaContent(ev)), imageDataUrl: (evSug?.socialMedia as any)?.imageDataUrl ?? '' })
                                 }
                               },
-                              {
-                                typ: 'praesentationsmappen' as const,
-                                icon: '📁',
-                                titel: 'Präsentationsmappen',
-                                beschreibung: 'Vorschau: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (gleiche Flyer-Master-Route, nur A3-Ansicht) – im Browser drucken. Plakat-Inhalt kommt aus dem Flyer-Master/Muster, nicht aus mök2. Keine getrennte Plakat-Seite mehr.',
-                                docs: byTyp['praesentationsmappe-kurz'] || [],
-                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: null as null | (() => void)
-                              }
+                              ...(tenant.isOeffentlich || tenant.isVk2
+                                ? []
+                                : [
+                                    {
+                                      typ: 'praesentationsmappen' as const,
+                                      icon: '📁',
+                                      titel: 'Präsentationsmappen',
+                                      beschreibung:
+                                        'Vorschau: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (gleiche Flyer-Master-Route, nur A3-Ansicht) – im Browser drucken. Plakat-Inhalt kommt aus dem Flyer-Master/Muster, nicht aus mök2. Keine getrennte Plakat-Seite mehr.',
+                                      docs: byTyp['praesentationsmappe-kurz'] || [],
+                                      onOpen: (doc: any) => handleViewEventDocument(doc, event),
+                                      onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                      onErstellen: null as null | (() => void)
+                                    }
+                                  ])
                             ]
 
                             const kartenFuerFortschritt = DOKUMENT_KARTEN.filter(k => k.typ !== 'praesentationsmappen' || (k.docs && k.docs.length > 0))
                             const fertigAnzahl = kartenFuerFortschritt.filter(k => k.docs.length > 0).length
                             const gesamtAnzahl = kartenFuerFortschritt.length
                             const progressPct = gesamtAnzahl ? Math.round((fertigAnzahl / gesamtAnzahl) * 100) : 0
+                            const werbemittelKartenFussHinweis =
+                              'Gleicher Ablauf: Ansehen = Vorschau. Grüner Button = Mail mit Text in der Zwischenablage; druckfertige PDF liegt bei Bedarf in Downloads. Neu unten = Dokument neu anlegen.'
 
                             return (
                               <div>
@@ -21861,7 +21900,7 @@ ${name}`
                                                   }}
                                                   title="Hauptaktion für diese Karte"
                                                 >
-                                                  {getWerbemittelMailActionLabel(karte.typ)}
+                                                  {getWerbemittelMailActionLabel(karte.typ, primaryDoc)}
                                                 </button>
                                               )}
                                               <details style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.45rem 0.5rem' }}>
@@ -21915,90 +21954,97 @@ ${name}`
                                                   ))}
                                                 </div>
                                               </details>
-                                              <div style={{ marginTop: '0.1rem', fontSize: '0.75rem', color: s.muted }}>
-                                                {karte.typ === 'presse'
-                                                  ? 'Pressepaket: Einheitlich erzeugt, getrennt gesendet (Mailtext + PDF).'
-                                                  : 'Hauptaktion oben: schnell senden. Details unten im Aufklapper.'}
-                                              </div>
+                                              {!istPraesentationsmappen && (
+                                                <div style={{ marginTop: '0.1rem', fontSize: '0.75rem', color: s.muted }}>
+                                                  {werbemittelKartenFussHinweis}
+                                                </div>
+                                              )}
                                             </div>
                                           )
                                         })()}
 
                                         <>
                                         {(karte as any).erstellenGruppen ? (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                                            {(karte as any).erstellenGruppen.map(
-                                              (
-                                                grp: {
-                                                  titel: string
-                                                  hinweis?: string
-                                                  varianten: { label: string; onErstellen: () => void }[]
-                                                },
-                                                gidx: number
-                                              ) => (
-                                                <div
-                                                  key={gidx}
-                                                  style={{
-                                                    padding: '0.5rem 0.55rem',
-                                                    background: 'rgba(0,0,0,0.03)',
-                                                    borderRadius: '8px',
-                                                    border: '1px solid rgba(0,0,0,0.06)',
-                                                  }}
-                                                >
-                                                  <div
-                                                    style={{
-                                                      fontSize: '0.7rem',
-                                                      fontWeight: 700,
-                                                      color: s.text,
-                                                      letterSpacing: '0.04em',
-                                                      textTransform: 'uppercase',
-                                                      marginBottom: grp.hinweis ? '0.25rem' : '0.4rem',
-                                                    }}
+                                          <details
+                                            open={!hatDokumente}
+                                            style={{
+                                              background: '#fff',
+                                              border: '1px solid rgba(0,0,0,0.08)',
+                                              borderRadius: 8,
+                                              padding: '0.45rem 0.55rem',
+                                            }}
+                                          >
+                                            <summary
+                                              style={{
+                                                cursor: 'pointer',
+                                                fontSize: '0.78rem',
+                                                fontWeight: 600,
+                                                color: s.text,
+                                                listStyle: 'none',
+                                              }}
+                                            >
+                                              {(() => {
+                                                const n = ((karte as any).erstellenGruppen as unknown[]).length
+                                                return `Format${n === 1 ? '' : 'e'} in ${n} ${n === 1 ? 'Schritt' : 'Schritten'} – Master bearbeiten, Ableitungen nur ansehen`
+                                              })()}
+                                            </summary>
+                                            <ol
+                                              style={{
+                                                margin: '0.5rem 0 0',
+                                                paddingLeft: '1.2rem',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.55rem',
+                                              }}
+                                            >
+                                              {(karte as any).erstellenGruppen.map(
+                                                (
+                                                  grp: {
+                                                    titel: string
+                                                    hinweis?: string
+                                                    varianten: { label: string; onErstellen: () => void }[]
+                                                  },
+                                                  gidx: number
+                                                ) => (
+                                                  <li
+                                                    key={gidx}
+                                                    style={{ fontSize: '0.74rem', color: s.muted, lineHeight: 1.45 }}
                                                   >
-                                                    {grp.titel}
-                                                  </div>
-                                                  {grp.hinweis ? (
-                                                    <p
-                                                      style={{
-                                                        margin: '0 0 0.45rem',
-                                                        fontSize: '0.72rem',
-                                                        color: s.muted,
-                                                        lineHeight: 1.45,
-                                                      }}
-                                                    >
-                                                      {grp.hinweis}
-                                                    </p>
-                                                  ) : null}
-                                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                                    {grp.varianten.map(
-                                                      (
-                                                        v: { label: string; onErstellen: () => void },
-                                                        idx: number
-                                                      ) => (
-                                                        <button
-                                                          key={idx}
-                                                          type="button"
-                                                          onClick={v.onErstellen}
-                                                          style={{
-                                                            padding: '0.45rem 0.75rem',
-                                                            background: hatDokumente ? 'transparent' : s.accent,
-                                                            border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
-                                                            borderRadius: '8px',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.78rem',
-                                                            color: hatDokumente ? s.accent : '#fff',
-                                                            fontWeight: 600,
-                                                          }}
-                                                        >
-                                                          {hatDokumente ? `Neu: ${v.label}` : v.label}
-                                                        </button>
-                                                      )
-                                                    )}
-                                                  </div>
-                                                </div>
-                                              )
-                                            )}
-                                          </div>
+                                                    <span style={{ color: s.text, fontWeight: 600 }}>{grp.titel}</span>
+                                                    {grp.hinweis ? (
+                                                      <div style={{ marginTop: '0.2rem', fontWeight: 400 }}>{grp.hinweis}</div>
+                                                    ) : null}
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.35rem' }}>
+                                                      {grp.varianten.map(
+                                                        (
+                                                          v: { label: string; onErstellen: () => void },
+                                                          idx: number
+                                                        ) => (
+                                                          <button
+                                                            key={idx}
+                                                            type="button"
+                                                            onClick={v.onErstellen}
+                                                            style={{
+                                                              padding: '0.4rem 0.65rem',
+                                                              background: hatDokumente ? 'transparent' : s.accent,
+                                                              border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
+                                                              borderRadius: '8px',
+                                                              cursor: 'pointer',
+                                                              fontSize: '0.76rem',
+                                                              color: hatDokumente ? s.accent : '#fff',
+                                                              fontWeight: 600,
+                                                            }}
+                                                          >
+                                                            {hatDokumente ? `Neu: ${v.label}` : v.label}
+                                                          </button>
+                                                        )
+                                                      )}
+                                                    </div>
+                                                  </li>
+                                                )
+                                              )}
+                                            </ol>
+                                          </details>
                                         ) : (karte as any).erstellenVarianten ? (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                             {(karte as any).erstellenVarianten.map((v: { label: string, onErstellen: () => void }, idx: number) => (
