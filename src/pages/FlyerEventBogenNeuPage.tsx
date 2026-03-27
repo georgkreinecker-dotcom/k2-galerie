@@ -6,7 +6,6 @@ import { getPageTexts } from '../config/pageTexts'
 import { getGalerieImages } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
-  MUSTER_EVENTS,
   MUSTER_TEXTE,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
@@ -15,6 +14,7 @@ import {
 import { useTenant } from '../context/TenantContext'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
+import { getOeffentlichEventsWithMusterFallback, pickOpeningEventForWerbemittel } from '../utils/oek2MusterEventLinie'
 import {
   type EventTerminLike,
   formatEventTerminKomplett,
@@ -218,41 +218,6 @@ function eventHasFlyerZeiten(e: EventTerminLike | null | undefined): boolean {
   return false
 }
 
-function normalizeOpeningKey(value: unknown): string {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/ä/g, 'ae')
-    .replace(/ö/g, 'oe')
-    .replace(/ü/g, 'ue')
-    .replace(/ß/g, 'ss')
-    .replace(/[^a-z0-9]/g, '')
-}
-
-function pickOpeningEvent(events: any[]): any | null {
-  if (!Array.isArray(events) || events.length === 0) return null
-  const exactKeys = new Set([
-    'galerieeroeffnung',
-    'eroeffnung',
-    'opening',
-    'vernissage',
-  ])
-  const byType = events.find((e) => exactKeys.has(normalizeOpeningKey(e?.type)))
-  if (byType) return byType
-
-  const byTitle = events.find((e) => {
-    const t = normalizeOpeningKey(e?.title || e?.name || e?.label)
-    return (
-      t.includes('galerieeroeffnung') ||
-      t.includes('eroeffnung') ||
-      t.includes('opening') ||
-      t.includes('vernissage')
-    )
-  })
-  if (byTitle) return byTitle
-
-  return events.find((e) => Boolean(e?.date)) || null
-}
-
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { isOeffentlich, isVk2 } = useTenant()
@@ -441,11 +406,8 @@ export default function FlyerEventBogenNeuPage() {
 
   useEffect(() => {
     const tenant = isOeffentlich ? 'oeffentlich' : 'k2'
-    let evts = loadEvents(tenant)
-    if (isOeffentlich && (!Array.isArray(evts) || evts.length === 0)) {
-      evts = MUSTER_EVENTS as unknown[]
-    }
-    const eroeffnung = pickOpeningEvent(Array.isArray(evts) ? evts : [])
+    const evts = isOeffentlich ? getOeffentlichEventsWithMusterFallback() : loadEvents(tenant)
+    const eroeffnung = pickOpeningEventForWerbemittel(Array.isArray(evts) ? evts : [])
     if (eroeffnung) {
       setEroeffnungEvent(eroeffnung as EventTerminLike)
       const full = formatEventTerminKomplett(eroeffnung, {
@@ -2327,23 +2289,17 @@ export default function FlyerEventBogenNeuPage() {
       `}</style>
 
       <div className="toolbar">
-        {!isVk2 ? (
+        {!isVk2 && !isOeffentlich ? (
           <Link
-            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}${isOeffentlich ? '?context=oeffentlich' : ''}#mok2-9`}
+            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
             className="toolbar-back-mok2"
           >
             ← Zurück zum mök2 (Werbeunterlagen)
           </Link>
         ) : null}
-        <Link
-          to={
-            isOeffentlich
-              ? `${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`
-              : PROJECT_ROUTES['k2-galerie'].werbeunterlagen
-          }
-        >
-          Werbeunterlagen
-        </Link>
+        {!isVk2 && !isOeffentlich ? (
+          <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
+        ) : null}
         <button
           type="button"
           onClick={handleSaveFlyerMaster}

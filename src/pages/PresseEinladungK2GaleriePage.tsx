@@ -4,6 +4,7 @@ import { getWerbelinieCss, WERBELINIE_FONTS_URL } from '../config/marketingWerbe
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
+import { getOeffentlichEventsWithMusterFallback, pickOpeningEventForWerbemittel } from '../utils/oek2MusterEventLinie'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const DOC_CLASS = 'presse-k2-page'
@@ -50,10 +51,9 @@ export default function PresseEinladungK2GaleriePage() {
   useEffect(() => {
     let isMounted = true
     try {
-      const list = loadEvents(isOeffentlich ? 'oeffentlich' : 'k2')
+      const list = isOeffentlich ? getOeffentlichEventsWithMusterFallback() : loadEvents('k2')
       if (Array.isArray(list) && list.length > 0) {
-        const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
-        const ev = eroeffnung || list.find((e: any) => e?.date) || list[0]
+        const ev = pickOpeningEventForWerbemittel(list) || list[0]
         if (ev && isMounted) {
           const location = ev.location || ''
           setEvent({

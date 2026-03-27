@@ -12,6 +12,7 @@ import { appendToHistory } from '../utils/artworkHistory'
 import { readArtworksRawForContext, saveArtworksForContextWithImageStore } from '../utils/artworksStorage'
 import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge'
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
+import { getOeffentlichEventsWithMusterFallback } from '../utils/oek2MusterEventLinie'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
@@ -103,10 +104,10 @@ function getUpcomingEvents(): any[] {
   }
 }
 
-/** ök2: Nächste Events aus k2-oeffentlich-events; wenn leer, MUSTER_EVENTS (Phase 1.4: über Schicht). */
+/** ök2: Nächste Events aus k2-oeffentlich-events; wenn leer, MUSTER_EVENTS (eine Quelle: oek2MusterEventLinie). */
 function getUpcomingEventsOeffentlich(): any[] {
   try {
-    const list = loadEvents('oeffentlich')
+    const list = getOeffentlichEventsWithMusterFallback()
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     if (Array.isArray(list) && list.length > 0) {

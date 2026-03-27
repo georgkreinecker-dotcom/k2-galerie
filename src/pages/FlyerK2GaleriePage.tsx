@@ -6,6 +6,7 @@ import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
+import { getOeffentlichEventsWithMusterFallback, pickOpeningEventForWerbemittel } from '../utils/oek2MusterEventLinie'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
 const DOC_CLASS = 'flyer-k2-page'
@@ -157,10 +158,9 @@ export default function FlyerK2GaleriePage() {
     } catch (_) {}
 
     try {
-      const list = loadEvents(isOeffentlich ? 'oeffentlich' : 'k2')
+      const list = isOeffentlich ? getOeffentlichEventsWithMusterFallback() : loadEvents('k2')
       if (Array.isArray(list) && list.length > 0 && isMounted) {
-        const eroeffnung = list.find((e: any) => e?.type === 'galerieeröffnung' && e?.date)
-        const event = eroeffnung || list.find((e: any) => e?.date)
+        const event = pickOpeningEventForWerbemittel(list) || list.find((e: any) => e?.date)
         if (event?.date && isMounted) {
           const text = formatEventTerminKomplett(event, { mode: 'compact', emptyFallback: '' })
           if (text) setEventDateText(text)

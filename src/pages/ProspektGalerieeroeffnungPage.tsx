@@ -10,7 +10,8 @@ import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { PRODUCT_COPYRIGHT, PRODUCT_LIZENZ_ANFRAGE_EMAIL, K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
-import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { getOeffentlichEventsWithMusterFallback, pickOpeningEventForWerbemittel } from '../utils/oek2MusterEventLinie'
+import { useQrVersionTimestamp, useStableQrBustedUrl } from '../hooks/useServerBuildTimestamp'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 
@@ -56,13 +57,12 @@ export default function ProspektGalerieeroeffnungPage() {
     ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'georg') as Record<string, string>
     : (isOeffentlich ? MUSTER_TEXTE.georg : K2_STAMMDATEN_DEFAULTS.georg) as Record<string, string>
 
-  const eventsList = typeof window !== 'undefined' ? loadEvents(isOeffentlich ? 'oeffentlich' : 'k2') : []
+  const eventsList = typeof window !== 'undefined'
+    ? (isOeffentlich ? getOeffentlichEventsWithMusterFallback() : loadEvents('k2'))
+    : []
   const eventForProspekt = useMemo(() => {
     if (!Array.isArray(eventsList) || eventsList.length === 0) return null
-    const withDate = eventsList.filter((e: any) => e && e.date)
-    if (withDate.length === 0) return eventsList[0]
-    withDate.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    return withDate[0]
+    return pickOpeningEventForWerbemittel(eventsList)
   }, [eventsList])
 
   const defaultName = isOeffentlich ? 'Galerie Muster' : 'K2 Kunst und Keramik'
@@ -74,13 +74,15 @@ export default function ProspektGalerieeroeffnungPage() {
   const georgName = georg?.name || (isOeffentlich ? MUSTER_TEXTE.georg.name : 'Georg Kreinecker')
 
   const galerieUrl = isOeffentlich ? OEK2_GALERIE_URL : K2_GALERIE_URL
+  const { qrUrl: galerieQrUrl, refreshQrUrl } = useStableQrBustedUrl(galerieUrl, qrVersionTs)
   useEffect(() => {
-    QRCode.toDataURL(buildQrUrlWithBust(galerieUrl, qrVersionTs), { width: 110, margin: 1 })
+    QRCode.toDataURL(galerieQrUrl, { width: 110, margin: 1 })
       .then(setQrK2).catch(() => setQrK2(''))
-  }, [qrVersionTs, galerieUrl])
+  }, [galerieQrUrl])
 
   const handleQrAktualisieren = () => {
     refetchQrStand()
+    refreshQrUrl()
   }
 
   return (
@@ -177,7 +179,7 @@ export default function ProspektGalerieeroeffnungPage() {
             {qrK2 && <img src={qrK2} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} />}
             <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>
               <strong style={{ color: '#0d9488' }}>{isOeffentlich ? 'ök2 Demo – Galerie' : 'K2 Galerie – Online'}</strong><br />
-              <a href={buildQrUrlWithBust(galerieUrl, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: '#0d9488', wordBreak: 'break-all' }}>{galerieUrl}</a>
+              <a href={galerieQrUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0d9488', wordBreak: 'break-all' }}>{galerieUrl}</a>
               <p style={{ fontSize: '0.8rem', color: '#5c5650', margin: '0.35rem 0 0' }}>
                 QR und Link verweisen auf die aktuelle Version. Nach neuem Veröffentlichen: diese Seite neu laden, dann drucken.
               </p>
