@@ -8,7 +8,7 @@ Willkommen. Das Handbuch dient zum Nachschlagen.
 
 1. [Erste Schritte](01-ERSTE-SCHRITTE.md)
 
-App öffnen, **PC und Handy: dieselbe Internet-Adresse** (Link teilen, Lesezeichen, QR-Code), Galerie ansehen, in den Admin kommen.
+App öffnen, **PC und Handy: dieselbe Internet-Adresse** (Link teilen, Lesezeichen, QR-Code), Galerie ansehen (optional YouTube/Instagram/Video im Willkommensbereich), in den Admin kommen; **Social-Links** unter Einstellungen → Stammdaten, Details in Kapitel 10.
 
 2. [Admin im Überblick](03-ADMIN-UEBERBLICK.md)
 
@@ -44,7 +44,7 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 10. [Einstellungen](10-EINSTELLUNGEN.md)
 
-Stammdaten (Galerie/Verein, Kontakt, Adresse, optional YouTube/Instagram/Highlight-Video), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
+Stammdaten (Galerie/Verein, Kontakt, Adresse). **Eigener Abschnitt:** YouTube, Instagram, Highlight-Video für die Galerie (Stammdaten, nicht Design). Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
 
 11. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 

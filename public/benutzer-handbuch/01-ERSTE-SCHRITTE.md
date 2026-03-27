@@ -53,6 +53,7 @@ Haben Sie am **einen** Gerät Werke oder Design geändert: **Veröffentlichen** 
 
 Sobald die App geladen ist, sehen Sie in der Regel zuerst die **Galerie**. Das ist die Seite, die später auch Ihre Besucherinnen und Besucher sehen: Werke, Willkommensbild, Informationen zu Ihrer Galerie oder Ihrem Verein.
 
+- **YouTube, Instagram, Video:** Wenn Sie (oder Ihre Galerie) das eingerichtet haben, können im **Willkommensbereich** unter dem Text **Links zu YouTube, Instagram** und ein **Highlight-Video** erscheinen. Die Pflege dieser Adressen erfolgt im Admin unter **Einstellungen → Stammdaten** (Bereich Galerie) – **nicht** im Tab Design. Ausführlich im Kapitel **[Einstellungen](10-EINSTELLUNGEN.md)**.
 - **Auf dem Handy:** Wischen Sie bei Bedarf nach oben oder unten, um alles zu sehen.
 - **Auf dem Rechner:** Scrollen Sie mit der Maus oder dem Touchpad.
 
@@ -68,7 +69,7 @@ Wenn Sie **Ihre Galerie bearbeiten** oder **Werke anlegen** möchten, brauchen S
 2. Klicken oder tippen Sie darauf.
 3. Falls ein **Passwort** abgefragt wird: Geben Sie das Passwort ein, das Sie von Ihrer Galerie oder Ihrem Verein erhalten haben. Dann gelangen Sie in den Admin.
 
-Im Admin sehen Sie mehrere **Tabs** (Registerkarten) – z. B. „Werke“, „Design“, „Einstellungen“. Mit einem Klick auf einen Tab wechseln Sie zu dem Bereich, den Sie bearbeiten möchten. Die nächsten Kapitel erklären, was Sie dort tun können.
+Im Admin sehen Sie mehrere **Tabs** (Registerkarten) – z. B. „Werke“, „Design“, „Einstellungen“. Mit einem Klick auf einen Tab wechseln Sie zu dem Bereich, den Sie bearbeiten möchten. Unter **Einstellungen → Stammdaten** legen Sie u. a. **Kontakt und Galerie** fest und optional die **YouTube-/Instagram-/Video-Links** für die öffentliche Galerie (siehe Kapitel **Einstellungen**). Die nächsten Kapitel erklären, was Sie dort tun können.
 
 ---
 
@@ -76,5 +77,5 @@ Im Admin sehen Sie mehrere **Tabs** (Registerkarten) – z. B. „Werke“, „D
 
 - **App öffnen** = Link im Browser öffnen.
 - **PC und Handy** = **dieselbe** Internet-Adresse auf beiden Geräten (Link teilen, Lesezeichen, oder QR-Code scannen); nicht `localhost` auf dem Handy erwarten.
-- **Galerie ansehen** = einfach durchscrollen, wie Besucherinnen und Besucher.
+- **Galerie ansehen** = einfach durchscrollen, wie Besucherinnen und Besucher; optional **Social-Links** (YouTube, Instagram, Video) im Willkommensbereich, gepflegt unter **Einstellungen → Stammdaten**.
 - **Bearbeiten** = Button „Admin“ (oder „Bearbeiten“) tippen, bei Bedarf Passwort eingeben, dann in den Tabs arbeiten.

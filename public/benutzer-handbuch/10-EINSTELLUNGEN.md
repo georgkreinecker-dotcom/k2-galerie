@@ -2,7 +2,7 @@
 
 # Einstellungen – Stammdaten, Backup, Drucker, Veröffentlichen
 
-Unter **„Einstellungen“** im Admin richten Sie alles ein, was Ihre Galerie oder Ihren Verein betrifft: Kontaktdaten, Sicherung, Veröffentlichen, Passwort und Drucker. Alles an einem Ort.
+Unter **„Einstellungen“** im Admin richten Sie alles ein, was Ihre Galerie oder Ihren Verein betrifft: Kontaktdaten, **optional YouTube-, Instagram- und Video-Links** für den Willkommensbereich der öffentlichen Galerie, Sicherung, Veröffentlichen, Passwort und Drucker. Die Social-Links pflegen Sie unter **Stammdaten** (Bereich Galerie), **nicht** im Tab **Design**. Alles an einem Ort.
 
 ---
 
@@ -19,8 +19,15 @@ Unter **Stammdaten** pflegen Sie die **Kontaktdaten und Angaben**, die auf Ihrer
 **Für Galerien (K2, Demo):**
 
 - **Galerie:** Name der Galerie, Adresse (Straße, PLZ/Ort, Land), E-Mail, Telefon, Website, Öffnungszeiten.
-- **YouTube, Instagram, Highlight-Video:** Optional die **öffentlichen Links** zu Ihrem YouTube-Kanal, Ihrem Instagram-Profil und zu einem **kurzen Highlight-Video** (YouTube-URL). Diese Felder stehen hier bei den **Stammdaten der Galerie** – **nicht** im Tab **Design**. Wenn Sie sie ausfüllen, erscheinen die Links im **Willkommensbereich** der öffentlichen Galerie für Besucher (einheitliche Quelle für Web und Außenkommunikation).
 - **Kontaktpersonen:** Name, E-Mail und Telefon der verantwortlichen Personen (z. B. Galerie-Inhaberin, Künstler). Diese Angaben werden z. B. auf Einladungen oder im Impressum verwendet.
+
+### YouTube, Instagram und Highlight-Video (sichtbar auf der Galerie)
+
+Hier im Handbuch als **eigener Abschnitt**, damit Sie den Eintrag sofort finden:
+
+- Optional tragen Sie die **öffentlichen Links** zu Ihrem **YouTube-Kanal**, Ihrem **Instagram-Profil** und zu einem **kurzen Highlight-Video** ein (YouTube-URL zum Einbetten/Aufrufen).
+- **Wo in der App:** Admin → **Einstellungen** → **Stammdaten** → Bereich **Galerie** (Felder zu Social/Video). **Nicht** unter **Design** – dort gehören Willkommensbild, Texte und Erscheinungsbild hin, die Kanal-URLs aber zu den **Stammdaten**.
+- **Was Besucher sehen:** Im **Willkommensbereich** der öffentlichen Galerie erscheinen die Links, sobald Sie sie gespeichert und (falls nötig) **veröffentlicht** haben – eine Quelle für Web und dieselben Angaben in Flyer oder Social-Bios.
 
 **Für Vereine (VK2):**
 
