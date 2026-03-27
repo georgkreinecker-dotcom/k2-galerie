@@ -15,7 +15,10 @@ import {
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 import { loadEvents } from '../utils/eventsStorage'
-import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
+import {
+  type EventTerminLike,
+  formatEventTerminKomplett,
+} from '../utils/eventTerminFormat'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
@@ -52,6 +55,33 @@ function isAllowedTorFile(file: File): boolean {
   return /\.(jpg|jpeg|png|webp)$/i.test(name)
 }
 
+/** Öffnungszeiten für Flyer: Freitext + optional Wochentabelle (Sa explizit). */
+function formatGalleryOpeningHoursBlock(gallery: {
+  openingHours?: string
+  openingHoursWeek?: Record<string, string>
+}): string {
+  const lines: string[] = []
+  const oh = String(gallery?.openingHours || '').trim()
+  if (oh) lines.push(oh)
+  const w = gallery?.openingHoursWeek
+  if (w && typeof w === 'object' && !Array.isArray(w)) {
+    const dayOrder: [string, string][] = [
+      ['montag', 'Mo'],
+      ['dienstag', 'Di'],
+      ['mittwoch', 'Mi'],
+      ['donnerstag', 'Do'],
+      ['freitag', 'Fr'],
+      ['samstag', 'Sa'],
+      ['sonntag', 'So'],
+    ]
+    for (const [key, label] of dayOrder) {
+      const val = w[key]
+      if (val != null && String(val).trim()) lines.push(`${label}: ${String(val).trim()}`)
+    }
+  }
+  return lines.join('\n')
+}
+
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -77,8 +107,21 @@ export default function FlyerEventBogenNeuPage() {
   const [frontQrDataUrl, setFrontQrDataUrl] = useState('')
   const [backQrDataUrl, setBackQrDataUrl] = useState('')
   const [eventDateLine, setEventDateLine] = useState('Termin folgt')
+  const [eroeffnungEvent, setEroeffnungEvent] = useState<EventTerminLike | null>(null)
+  const [page1Layout, setPage1Layout] = useState<'standard' | 'variant2'>('standard')
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
+
+  const terminKomplettV2 = useMemo(
+    () =>
+      formatEventTerminKomplett(eroeffnungEvent, {
+        mode: 'long',
+        emptyFallback: 'Termin folgt',
+        withClockEmojiSingle: true,
+      }),
+    [eroeffnungEvent]
+  )
+  const openingHoursBlock = formatGalleryOpeningHoursBlock(gallery)
 
   const k2Qr = useMemo(
     () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerie, versionTimestamp),
@@ -110,8 +153,13 @@ export default function FlyerEventBogenNeuPage() {
     const evts = loadEvents('k2')
     const eroeffnung = Array.isArray(evts) ? evts.find((e: any) => e?.type === 'galerieeröffnung') : null
     if (eroeffnung) {
-      const line = formatEventTerminKomplett(eroeffnung, { mode: 'long', emptyFallback: 'Termin folgt', withClockEmojiSingle: true })
-      if (line) setEventDateLine(line)
+      setEroeffnungEvent(eroeffnung as EventTerminLike)
+      const full = formatEventTerminKomplett(eroeffnung, {
+        mode: 'long',
+        emptyFallback: 'Termin folgt',
+        withClockEmojiSingle: true,
+      })
+      if (full) setEventDateLine(full.replace(/\s+/g, ' ').trim())
     }
   }, [])
 
@@ -190,7 +238,7 @@ export default function FlyerEventBogenNeuPage() {
     setRightWerkLabel(`Werk rechts: ${number}`)
   }
 
-  const frontCard = (
+  const frontCardStandard = (
     <div className={`card front front-variant-${frontVariant}`}>
       <div className="hero">
         <h2>K2 Galerie Kunst&amp;Keramik</h2>
@@ -231,6 +279,50 @@ export default function FlyerEventBogenNeuPage() {
       </div>
     </div>
   )
+
+  const frontCardV2 = (
+    <div className="card front front-layout-v2">
+      <div className="hero hero-v2">
+        <h2>K2 Galerie Kunst&amp;Keramik</h2>
+        <p className="hero-sub">Martina &amp; Georg Kreinecker</p>
+      </div>
+      <div className="content content-v2">
+        <div className="v2-main">
+          <div className="v2-img-col">
+            <div className="img-box v2-single-img">
+              <span className="img-badge">Öffentlichkeitsarbeit (K2)</span>
+              <img src={leftSrc} alt="" />
+            </div>
+          </div>
+          <div className="v2-text-col">
+            <p className="v2-intro">{base.intro}</p>
+            <div className="v2-invite-panel" role="region" aria-label="Einladung">
+              <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
+              <h3 className="v2-invite-title">Galerieeröffnung</h3>
+              <div className="v2-termin">{terminKomplettV2}</div>
+              <p className="v2-address">
+                {base.address} · {base.city}
+              </p>
+              {openingHoursBlock ? (
+                <div className="v2-hours-wrap">
+                  <p className="v2-hours-heading">Öffnungszeiten Galerie</p>
+                  <div className="v2-hours-body">{openingHoursBlock}</div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+        <div className="v2-footer">
+          <div className="v2-footer-qr">
+            {frontQrDataUrl ? <img src={frontQrDataUrl} alt="" className="qr" /> : <div className="qr-placeholder">QR</div>}
+            <p className="qr-caption">Zur Galerie online</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const frontCard = page1Layout === 'variant2' ? frontCardV2 : frontCardStandard
 
   const backCard = (
     <div className="card back">
@@ -358,6 +450,108 @@ export default function FlyerEventBogenNeuPage() {
           font-size:8.6px;
           box-shadow:0 2px 5px rgba(0,0,0,.24);
         }
+
+        .${ROOT} .front.front-layout-v2{
+          display:grid;
+          grid-template-rows:auto 1fr;
+          min-height:0;
+        }
+        .${ROOT} .front.front-layout-v2 .hero-v2{padding:3mm 3.2mm 2.6mm}
+        .${ROOT} .front.front-layout-v2 .hero-v2 h2{
+          margin:0;font-size:23px;font-weight:800;letter-spacing:.02em;line-height:1.08
+        }
+        .${ROOT} .front.front-layout-v2 .hero-v2 .hero-sub{
+          margin:.35mm 0 0;font-size:14.5px;font-weight:680;line-height:1.2
+        }
+        .${ROOT} .front.front-layout-v2 .content-v2{
+          padding:2.2mm 2.6mm 2mm;
+          display:flex;
+          flex-direction:column;
+          gap:1.6mm;
+          min-height:0;
+          flex:1;
+          background:#16242f;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-main{
+          display:grid;
+          grid-template-columns:34% 1fr;
+          gap:2.4mm;
+          align-items:stretch;
+          min-height:0;
+          flex:1;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-img-col{min-height:0;display:flex}
+        .${ROOT} .front.front-layout-v2 .v2-single-img{
+          position:relative;
+          flex:1;
+          min-height:52mm;
+          border-radius:1mm;
+          overflow:hidden;
+          background:#0d1a22;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-single-img .img-badge{
+          position:absolute;left:1mm;top:1mm;background:rgba(255,255,255,.95);color:#1c1a18;
+          font-size:11px;font-weight:800;padding:.6mm 1.2mm;border-radius:.9mm;z-index:2
+        }
+        .${ROOT} .front.front-layout-v2 .v2-single-img img{width:100%;height:100%;object-fit:cover;display:block}
+        .${ROOT} .front.front-layout-v2 .v2-text-col{
+          display:flex;
+          flex-direction:column;
+          gap:1.4mm;
+          min-height:0;
+          overflow:hidden;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-intro{
+          margin:0;
+          font-size:17px;
+          line-height:1.32;
+          color:#f2f7fc;
+          font-weight:760;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-invite-panel{
+          background:linear-gradient(145deg, rgba(15,111,102,.98) 0%, rgba(12,85,78,.99) 100%);
+          color:var(--k2-green-text);
+          border-radius:1.4mm;
+          padding:2mm 2.4mm;
+          box-shadow:0 2px 10px rgba(0,0,0,.35);
+          display:grid;
+          gap:1mm;
+          border:1px solid rgba(255,255,255,.18);
+        }
+        .${ROOT} .front.front-layout-v2 .v2-invite-kicker{
+          margin:0;font-size:13px;font-weight:780;letter-spacing:.04em;text-transform:uppercase;opacity:.95
+        }
+        .${ROOT} .front.front-layout-v2 .v2-invite-title{
+          margin:0;font-size:22px;font-weight:900;letter-spacing:.02em;line-height:1.1;
+          text-shadow:0 1px 2px rgba(0,0,0,.2);
+        }
+        .${ROOT} .front.front-layout-v2 .v2-termin{
+          margin:0;
+          font-size:13.5px;
+          line-height:1.35;
+          font-weight:750;
+          white-space:pre-line;
+        }
+        .${ROOT} .front.front-layout-v2 .v2-address{
+          margin:0;font-size:12px;font-weight:720;line-height:1.3;opacity:.96
+        }
+        .${ROOT} .front.front-layout-v2 .v2-hours-wrap{
+          margin-top:.6mm;padding-top:1mm;border-top:1px solid rgba(255,255,255,.28)
+        }
+        .${ROOT} .front.front-layout-v2 .v2-hours-heading{
+          margin:0 0 .4mm;font-size:12.5px;font-weight:900;letter-spacing:.02em
+        }
+        .${ROOT} .front.front-layout-v2 .v2-hours-body{
+          margin:0;font-size:11.5px;line-height:1.38;font-weight:680;white-space:pre-line
+        }
+        .${ROOT} .front.front-layout-v2 .v2-footer{display:flex;align-items:center;gap:2mm;flex-shrink:0}
+        .${ROOT} .front.front-layout-v2 .v2-footer-qr{display:grid;grid-template-columns:14mm 1fr;gap:1mm;align-items:center}
+        .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr{width:14mm;height:14mm}
+        .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr-placeholder{width:14mm;height:14mm}
+        .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr-caption{
+          margin:0;font-size:11px;line-height:1.15;font-weight:650;color:#dbe8f5
+        }
+
         .${ROOT} .row{display:grid;grid-template-columns:20mm 1fr;gap:2mm;align-items:center}
         .${ROOT} .qr{width:20mm;height:20mm;object-fit:contain}
         .${ROOT} .qr-placeholder{width:20mm;height:20mm;border:1px dashed #b8b2aa;display:flex;align-items:center;justify-content:center;font-size:7px;color:#6b665f}
@@ -480,6 +674,25 @@ export default function FlyerEventBogenNeuPage() {
           .${ROOT} .front .front-bottom{gap:1.8mm}
           .${ROOT} .front .front-bottom-right .invite{font-size:7.6px;padding:.55mm 1.4mm}
           .${ROOT} .front .front-bottom-right .invite-meta{font-size:6.1px;line-height:1.18}
+          .${ROOT} .front.front-layout-v2 .hero-v2{padding:1.8mm 2mm 1.5mm}
+          .${ROOT} .front.front-layout-v2 .hero-v2 h2{font-size:17px}
+          .${ROOT} .front.front-layout-v2 .hero-v2 .hero-sub{font-size:11px}
+          .${ROOT} .front.front-layout-v2 .content-v2{padding:1.6mm 2mm 1.4mm;gap:1.2mm}
+          .${ROOT} .front.front-layout-v2 .v2-main{gap:1.8mm}
+          .${ROOT} .front.front-layout-v2 .v2-single-img{min-height:38mm}
+          .${ROOT} .front.front-layout-v2 .v2-single-img .img-badge{font-size:8px;padding:.45mm .8mm}
+          .${ROOT} .front.front-layout-v2 .v2-text-col{gap:1mm}
+          .${ROOT} .front.front-layout-v2 .v2-intro{font-size:13px;line-height:1.28}
+          .${ROOT} .front.front-layout-v2 .v2-invite-panel{padding:1.4mm 1.8mm;gap:.75mm}
+          .${ROOT} .front.front-layout-v2 .v2-invite-kicker{font-size:9px}
+          .${ROOT} .front.front-layout-v2 .v2-invite-title{font-size:16px}
+          .${ROOT} .front.front-layout-v2 .v2-termin{font-size:10px;line-height:1.32}
+          .${ROOT} .front.front-layout-v2 .v2-address{font-size:9px}
+          .${ROOT} .front.front-layout-v2 .v2-hours-heading{font-size:10px}
+          .${ROOT} .front.front-layout-v2 .v2-hours-body{font-size:9px;line-height:1.3}
+          .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr,
+          .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr-placeholder{width:11mm;height:11mm}
+          .${ROOT} .front.front-layout-v2 .v2-footer-qr .qr-caption{font-size:8.5px}
           /* Print-Norm-Anpassung Seite 2: Inhalte auf feste Nutzenhöhe verdichten */
           .${ROOT} .back-left{
             padding:1.7mm;
@@ -522,15 +735,34 @@ export default function FlyerEventBogenNeuPage() {
 
       <div className="editor">
         <label>
-          Satz-Variante
-          <select value={frontVariant} onChange={(e) => setFrontVariant(e.target.value === 'B' ? 'B' : 'A')}>
+          Layout Seite 1 (Vorderseite Bogen)
+          <select
+            value={page1Layout}
+            onChange={(e) => setPage1Layout(e.target.value === 'variant2' ? 'variant2' : 'standard')}
+          >
+            <option value="standard">Standard – drei Bilder, Satz-Variante A/B</option>
+            <option value="variant2">Variante 2 – ein Bild links, große Texte, Einladung &amp; Öffnungszeiten</option>
+          </select>
+        </label>
+        <label>
+          Satz-Variante (nur Layout Standard)
+          <select
+            value={frontVariant}
+            disabled={page1Layout === 'variant2'}
+            onChange={(e) => setFrontVariant(e.target.value === 'B' ? 'B' : 'A')}
+          >
             <option value="A">A - ruhig / klassisch</option>
             <option value="B">B - kräftiger / präsenter</option>
           </select>
         </label>
         <label>
-          Bild mitte (Seite 1)
-          <input type="file" accept="image/*" onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)} />
+          Bild mitte (nur Layout Standard)
+          <input
+            type="file"
+            accept="image/*"
+            disabled={page1Layout === 'variant2'}
+            onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)}
+          />
         </label>
         <label>
           Werk links (K2-Auswahl)
@@ -544,8 +776,12 @@ export default function FlyerEventBogenNeuPage() {
           </select>
         </label>
         <label>
-          Werk rechts (K2-Auswahl)
-          <select value={rightWorkNumber} onChange={(e) => handleRightWorkSelect(e.target.value)}>
+          Werk rechts (nur Layout Standard)
+          <select
+            value={rightWorkNumber}
+            disabled={page1Layout === 'variant2'}
+            onChange={(e) => handleRightWorkSelect(e.target.value)}
+          >
             <option value="">Bitte wählen</option>
             {k2Works.map((w) => (
               <option key={`right-${String(w?.number || '')}`} value={String(w?.number || '')}>

@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Event-Bogen neu, Layout „Variante 2“:** Seite 1 optional **ein Bild links** (Werk links), **größere Schriften**, **Einladungsblock** (Kicker + „Galerieeröffnung“) mit **`formatEventTerminKomplett`** mehrzeilig (alle Event-Tage inkl. Samstag, wenn `dailyTimes` im Event). Zusätzlich **Öffnungszeiten Galerie** aus Stammdaten (`openingHours` + optional `openingHoursWeek` mit Sa). Editor: **Layout Seite 1** Standard vs. Variante 2; bei V2 sind Satz-Variante A/B, Bild mitte und Werk rechts deaktiviert. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg: Werbeunterlagen → Event-Bogen neu → Layout „Variante 2“ wählen, Druckvorschau prüfen; Event „Galerieeröffnung“ im Admin mit Tageszeiten pflegen.
+
+---
+
 **Letzter Stand:** 26.03.26 – **Regression gründlich gefixt (Live-Vorschau-Zeit):** Zusätzlich zur Datei-Aktivierung war ein zweiter „sticky“-Pfad aktiv: `imgOverride.tor` aus `k2-flyer-vierer-image-overrides` (localStorage) übersteuerte das Eingangstor dauerhaft. **Fix jetzt richtig:** `tor` wird aus Storage **nicht mehr geladen** und **nicht mehr persistent gespeichert**; `flyerTor/ft` aus URL bleibt nur **einmalig in dieser Sitzung**. Standardquelle ist wieder Eingangstor wie `/entdecken`. **`FlyerK2Oek2TorViererPage.tsx`**. **Commit:** _nach Push_
 
 **Was wir JETZT tun:** Georg: Flyer neu öffnen (ohne manuelle Rückseiten-Aktion) → Rückseite muss das aktuelle Eingangstor zeigen; manuelle Tor-URL/Foto nur noch bewusst pro Sitzung aktiv.
