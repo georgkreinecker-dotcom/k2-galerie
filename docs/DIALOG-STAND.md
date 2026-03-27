@@ -1,8 +1,20 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Doku: Social/Video – Pflege in Stammdaten:** Präsentationsmappe Kurzform, Vollversion (`04-WILLKOMMEN-UND-GALERIE` + Index), Benutzerhandbuch (`10`, `03`, `00-INDEX`), Marketingstrategie (`docs` + `public/kampagne`), Prospekt `K2-GALERIE-PRAESENTATIONSMAPPE` §3. Überall klar: **Einstellungen → Stammdaten (Galerie)**, nicht Design-Tab. **Commit:** `5e07a46` ✅ auf GitHub
+
+**Was wir JETZT tun:** Bei Bedarf Handbuch in der App öffnen und Kapitel Einstellungen kurz prüfen.
+
+---
+
+**Letzter Stand:** 27.03.26 – **ök2 Muster: SM-Links auch bei altem localStorage:** `k2-oeffentlich-stammdaten-galerie` mit **leeren** `social*` wurde unverändert geladen → keine Demo-URLs. **`loadStammdaten('oeffentlich','gallery')`** ergänzt jetzt die drei Social-Felder aus **`MUSTER_TEXTE.gallery`**, **nur wenn alle drei leer** sind (kein Überschreiben bei teilweise gesetzten URLs). **`stammdatenStorage.ts`**. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg: ök2-Galerie (`/galerie-oeffentlich`) neu laden → unter Willkommen YouTube / Instagram / Highlight-Video sichtbar.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Willkommen: Social-Links sichtbar (Fix):** ök2 setzte `galleryData` nur auf **MUSTER_TEXTE** – URLs aus **„Meine Daten“** (`loadStammdaten('oeffentlich', …)`) kamen nicht in den State. **K2:** Alle 2 s `checkStammdatenUpdate` hat bei Kontaktänderung ein **unvollständiges** `galleryData`-Objekt zurückgegeben → **Social-Felder gingen verloren**; ergänzt um Merge mit `…prev` + Social aus `k2-stammdaten-galerie`, inkl. reiner Social-Änderung. **`GaleriePage.tsx`**. **Commit:** `0b41cc1` ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: ök2-Galerie neu laden → YouTube/Instagram/Video unter dem Willkommenstext prüfen (nach Eintrag in Admin → Meine Daten).
+**Was wir JETZT tun:** (abgelöst durch Eintrag oben) ök2-Galerie prüfen.
 
 ---
 
