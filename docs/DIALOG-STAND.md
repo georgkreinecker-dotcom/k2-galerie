@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Presseaussendung eine Linie + ök2 alte PR-IDs raus:** Karte **Presseaussendung** hat nur noch **einen** „Neu erstellen“-Weg (wie Newsletter); **ök2** nutzt intern **`neutral`**, **K2/VK2** weiter **`lokal`**. Beim Laden ök2-Dokumente werden Einträge mit **`OEK2_DEPRECATED_MUSTER_PR_DOC_IDS`** (`muster-pr-*`) aus dem Merge gefiltert – Anzeige folgt **`getOek2MusterPrDocuments()`** (`oek2-pr-linie-*`). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_ ✅
+**Letzter Stand:** 27.03.26 – **Presseaussendung eine Linie + ök2 alte PR-IDs raus:** Karte **Presseaussendung** hat nur noch **einen** „Neu erstellen“-Weg (wie Newsletter); **ök2** nutzt intern **`neutral`**, **K2/VK2** weiter **`lokal`**. Beim Laden ök2-Dokumente werden Einträge mit **`OEK2_DEPRECATED_MUSTER_PR_DOC_IDS`** (`muster-pr-*`) aus dem Merge gefiltert – Anzeige folgt **`getOek2MusterPrDocuments()`** (`oek2-pr-linie-*`). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `69d8fac` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: ök2-Admin → Event → Öffentlichkeitsarbeit: Presse nur ein Button; bei nur alten IDs im Speicher erscheinen die neuen Musterdokumente.
 
