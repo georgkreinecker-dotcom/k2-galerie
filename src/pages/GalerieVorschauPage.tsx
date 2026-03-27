@@ -75,6 +75,7 @@ async function loadArtworksResolvedForDisplay(): Promise<any[]> {
 const KEY_PWA_ICON_HINT_CLOSED = 'k2-pwa-icon-hint-closed'
 /** SessionStorage: Von Admin/APf zur Galerie – dann Guide nicht anzeigen (nur für Fremde) */
 const KEY_GALERIE_FROM_ADMIN = 'k2-galerie-from-admin'
+const KEY_OEK2_FROM_APF = 'k2-oek2-from-apf'
 
 /** Nummern der Seed-Musterwerke (ök2) – dürfen nie in K2-Galerie oder Backup landen. */
 const MUSTER_NUMMERN = new Set(['M1', 'M2', 'M3', 'M4', 'M5', 'G1', 'S1', 'O1'])
@@ -240,7 +241,7 @@ async function saveArtworks(artworks: any[]): Promise<boolean> {
 /** Filter: alle oder eine Kategorie-ID (Kunst, Produkt, Idee – getCategoryLabel deckt alle ab) */
   type Filter = 'alle' | string
 
-const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean }) => {
+const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, fromApf = false }: { initialFilter?: Filter; musterOnly?: boolean; vk2?: boolean; fromApf?: boolean }) => {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -313,12 +314,17 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   const [ersteAktionDismissed, setErsteAktionDismissed] = useState(() => {
     try { return sessionStorage.getItem('k2-oek2-erste-aktion-dismissed') === '1' } catch { return false }
   })
-  /** Immer anzeigen für ök2-Besucher (Fremde), bis sie schließen – „So könnte dein Auftritt aussehen“ */
-  const showErsteAktionBanner = musterOnly && !ersteAktionDismissed
-
-  /** Guide nur für Fremde (Besucher), nicht für User/Besitzer die von Admin/APf kommen */
-  const isGalerieUser = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_GALERIE_FROM_ADMIN) === '1')
+  /** „So könnte dein Auftritt …“ – nur für Fremde, nicht in der APf (Programmierarbeit) */
+  const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
+  /** Guide nur für Fremde (Besucher), nicht für Programmier-APf (fromApf / embedded) oder Admin */
+  const isGalerieUser =
+    fromApf === true ||
+    embeddedInApf ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') ||
+    (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_GALERIE_FROM_ADMIN) === '1')
   const isFremder = !isGalerieUser
+  const showErsteAktionBanner = musterOnly && !ersteAktionDismissed && isFremder
 
   /** Fremde: Direktaufruf der ök2-Vorschau → zuerst ök2-Willkommensseite. Ausnahme: Klick „Galerie betreten“ von galerie-oeffentlich (State oder Referrer). */
   useEffect(() => {
@@ -348,6 +354,10 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
   }, [musterOnly, willkommenName, willkommenBannerDismissed])
   useEffect(() => {
     if (!musterOnly) return
+    if (fromApf) return
+    try {
+      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+    } catch (_) {}
     try {
       // 1. URL-Parameter (zuverlässig auch nach sessionStorage.clear)
       const params = new URLSearchParams(window.location.search)
@@ -366,7 +376,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false }:
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
       if (n && n.trim() && e === '1') setWillkommenName(n.trim())
     } catch (_) {}
-  }, [musterOnly])
+  }, [musterOnly, fromApf])
   const dismissWillkommenBanner = () => {
     setWillkommenBannerDismissed(true)
     try {

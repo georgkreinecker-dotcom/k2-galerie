@@ -126,6 +126,9 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 27.03.26 (Abend) | **Schluss für heute** = nicht nur nett gemeint: alles Offene **testen, bauen, committen, pushen** – dann ist der Raum wirklich aufgeräumt und Georg morgen nicht zwischen Mac und Vercel raten. |
+| 27.03.26 | Für Georg ist „in Zukunft unter texts ablegen“ ein klarer Arbeitsort-Befehl: nicht verstreuen, sondern eine eigene Schublade im Texte-Schreibtisch als feste Standard-Ablage bauen. |
+| 27.03.26 | **Eigene Varianten statt Mischlösung:** Für VK2 kurze und volle Präsentationsmappe als klare eigene Varianten (`?variant=vk2`) plus eigene Vollversions-Quelle bauen ist sauberer als K2/ök2-Texte zu verbiegen; die Nutzer sehen sofort den richtigen Kontext. |
 | 25.03.26 (Abend) | **Session sauber zu Ende:** Georg sagt „Schluss für heute“ → **test, build, DIALOG-STAND, WIR-PROZESS, commit, push** in einem Rutsch; dann ist der Raum für morgen klar und **GitHub/Vercel = Mac**. |
 | 24.03.26 | **Upload-UI:** Wenn der Erfolgszweig nicht läuft, muss der **Fehlerzweig** denselben „läuft noch“-State zurücksetzen – sonst bleibt „Wird hochgeladen“ für immer. **Timeout** auf lange Server-Calls verhindert endloses Warten; Georg merkt sofort, ob Netz/Key fehlt. |
 | 23.02.26 | Georg denkt in Bildern und Metaphern – „gemeinsamer Raum", „Licht einschalten". Das ist kein Zufall, das ist seine Art zu denken. Ich muss diese Bilder ernst nehmen und daraus konkrete Strukturen bauen. |

@@ -16,6 +16,7 @@ Unter **Stammdaten** pflegen Sie die **Vereinsdaten**, die auf der Vereinsgaleri
 
 - **Verein:** Vereinsname, Vereinsnummer (z. B. ZVR), Adresse, E-Mail, Website.
 - **Vorstand, Kasse, Schriftführung:** Namen der Ansprechpartner. Sie erscheinen auf der Vereinsgalerie und auf Drucken.
+- **Social Media (YouTube, Instagram, Highlight-Video):** Diese Links pflegen Sie ebenfalls in den Stammdaten. Sie werden auf der Vereinsgalerie im Bereich **„Social Media“** angezeigt.
 - **Kategorien / Kunstrichtungen für Mitglieder:** Das sind die **Kategorien eures Vereins**. **Ablauf: 1. Verein anlegen** (Vereinsname, Adresse, Vorstand) → **2. Kategorien hier definieren**. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern. **Standard:** z. B. Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt bei der Standard-Liste bleiben oder eigene Kategorien festlegen. Mit „Wieder Standard nutzen“ setzt ihr auf die vorgegebene Liste zurück.
 - **Kommunikation (WhatsApp):** Optional WhatsApp-Gruppen-Link und Vorstand-Telefonnummer für direkte Nachrichten. Diese Links werden auf der Vereinsgalerie angezeigt.
 
@@ -69,6 +70,7 @@ Details zum **Belegdruck** (Kassabon, Rechnung) stehen im Kapitel [Mitglieder in
 ## Kurz zusammengefasst
 
 - **Stammdaten** = Verein, Vorstand, Kategorien, optional Kommunikation (WhatsApp).
+- **Social Media** = YouTube, Instagram, Highlight-Video in den Stammdaten pflegen; sichtbar auf der Vereinsgalerie unter „Social Media“.
 - **Backup** = Vollbackup herunterladen (regelmäßig empfohlen), aus Datei oder letztem Backup wiederherstellen.
 - **Veröffentlichen** = Lokale Änderungen auf den Server übertragen; danach überall sichtbar.
 - **Zugang Admin** = Vorstand: Name + PIN; PIN vergessen → Vorstand/IT im Verein.

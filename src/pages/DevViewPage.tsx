@@ -96,6 +96,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   // WICHTIG: publishMobile Funktion muss außerhalb des useEffect definiert werden
   // damit sie von Event-Listenern aufgerufen werden kann
   const publishMobileRef = React.useRef<(() => Promise<void>) | null>(null)
+  /** Vollbild = exakt dieselbe URL wie im APf-iframe (nach In-App-Navigation z. B. Admin, nicht Dropdown-Tab) */
+  const apfIframeMobileRef = React.useRef<HTMLIFrameElement | null>(null)
+  const apfIframeDesktopRef = React.useRef<HTMLIFrameElement | null>(null)
   
   // KEINE automatische Vercel-Prüfung mehr - verursacht Abstürze!
   // Verwende nur den manuellen "🔍 Vercel-Status" Button
@@ -453,6 +456,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'admin-einstellungen': return '/admin?tab=einstellungen'
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
     }
+  }
+  /** Vollbild neuer Tab: ök2-Routen mit ?embedded=1 wie der APf-iframe – keine Guide-/Banner wie für Fremde */
+  const vollbildPathForPage = (pageId: string): string => {
+    const base = getPathForPage(pageId)
+    if (!base.includes('galerie-oeffentlich')) return base
+    return base.includes('?') ? `${base}&embedded=1` : `${base}?embedded=1`
   }
   const getGrafikerLabel = (): string => {
     switch (currentPage) {
@@ -1059,6 +1068,33 @@ end tell`
     ? { id: 'desktop-leer', name: 'Desktop', component: () => null }
     : (pagesFiltered.find(p => p.id === effectiveCurrentPage) || pagesFiltered[0])
   const CurrentComponent = currentPageData.component
+
+  const handleOpenVollbild = () => {
+    const readIframeHref = (iframe: HTMLIFrameElement | null): string | null => {
+      try {
+        const loc = iframe?.contentWindow?.location
+        if (!loc?.href) return null
+        const h = loc.href
+        if (h === 'about:blank' || h.startsWith('about:')) return null
+        return h
+      } catch {
+        return null
+      }
+    }
+    let href: string | null = null
+    if (viewMode === 'mobile' || viewMode === 'tablet') {
+      href = readIframeHref(apfIframeMobileRef.current)
+    } else if (viewMode === 'desktop') {
+      href = readIframeHref(apfIframeDesktopRef.current)
+    } else {
+      href = readIframeHref(apfIframeDesktopRef.current) || readIframeHref(apfIframeMobileRef.current)
+    }
+    if (!href) {
+      const path = vollbildPathForPage(effectiveCurrentPage)
+      href = `${window.location.origin}${path.startsWith('/') ? path : `/${path}`}`
+    }
+    window.open(href, '_blank', 'noopener,noreferrer')
+  }
   
   // Render-Komponente mit Props für GaleriePage
   // WICHTIG: Admin-Komponente nur einmal rendern (verhindert doppeltes Mounten)
@@ -1114,7 +1150,7 @@ end tell`
       return <GaleriePage key={componentKey} musterOnly={true} fromApf />
     }
     if (pageToRender === 'galerie-vorschau') {
-      return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} />
+      return <GalerieVorschauPage key={componentKey} initialFilter={galerieFilter} fromApf />
     }
     if (pageToRender === 'galerie-oeffentlich-vorschau') {
       const inCursorPreview = window.self !== window.top
@@ -1126,7 +1162,7 @@ end tell`
           </div>
         )
       }
-      return <GalerieVorschauPage key={componentKey} musterOnly={true} initialFilter={galerieFilter} />
+      return <GalerieVorschauPage key={componentKey} musterOnly={true} initialFilter={galerieFilter} fromApf />
     }
     // VK2 Seiten
     if (pageToRender === 'vk2') {
@@ -1565,20 +1601,22 @@ end tell`
         </select>
 
         {/* Quick-Actions: Daten veröffentlichen + Code-Update (Git) nebeneinander */}
-        <Link
-          to={getPathForPage(currentPageData.id)}
+        <button
+          type="button"
+          onClick={handleOpenVollbild}
           style={{
             padding: '0.5rem 1rem',
             background: '#33a1ff',
             color: '#fff',
             textDecoration: 'none',
             borderRadius: '6px',
-            fontSize: '0.9rem'
+            fontSize: '0.9rem',
+            border: 'none',
+            cursor: 'pointer'
           }}
-          target="_blank"
         >
           ↗️ Vollbild
-        </Link>
+        </button>
         {(currentPageData.id === 'galerie-oeffentlich' || currentPageData.id === 'galerie-oeffentlich-vorschau') && (
           <Link
             to="/admin?context=oeffentlich&fromApf=1"
@@ -1819,6 +1857,7 @@ end tell`
                 {/* iframe = echte App: Admin-Klick öffnet Admin in derselben iPhone-Ansicht. Parameter embedded=1 sagt main.tsx: App laden (kein Platzhalter). */}
                 {typeof window !== 'undefined' && window.self === window.top ? (
                   <iframe
+                    ref={apfIframeMobileRef}
                     key={`mobile-${effectiveCurrentPage}`}
                     src={`${window.location.origin}${getPathForPage(effectiveCurrentPage)}${getPathForPage(effectiveCurrentPage).includes('?') ? '&' : '?'}embedded=1`}
                     title="App (iPhone-Ansicht)"
@@ -1873,6 +1912,7 @@ end tell`
                 {/* iframe = alles bleibt am Desktop, kein Vollbild – Mappen/Links öffnen nur im Frame */}
                 {typeof window !== 'undefined' && window.self === window.top ? (
                   <iframe
+                    ref={apfIframeDesktopRef}
                     key={`desktop-${effectiveCurrentPage}`}
                     src={`${window.location.origin}${getPathForPage(effectiveCurrentPage)}${getPathForPage(effectiveCurrentPage).includes('?') ? '&' : '?'}embedded=1`}
                     title={currentPageData?.name ?? 'Desktop'}

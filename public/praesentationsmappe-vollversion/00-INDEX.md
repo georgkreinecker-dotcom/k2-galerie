@@ -42,7 +42,7 @@ Warenkorb für Besucher, Zahlungswunsch ohne automatische Online-Abbuchung; Kass
 
 10. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Ein zentraler Produktionsbereich: Event erfassen, Werbemittel erzeugen, Verteiler ansteuern, drucken und digital ausspielen – alles in einem Ablauf, inkl. Beispiel „Eroeffnung in 1 Tag“.
+Ein zentraler Produktionsbereich: Event erfassen, Werbemittel erzeugen, Verteiler ansteuern, drucken und digital ausspielen – alles in einem Ablauf, inkl. Beispiel „Eroeffnung in 1 Tag“ und „VK2 Vereinsausstellung in 1 Tag“.
 
 11. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 

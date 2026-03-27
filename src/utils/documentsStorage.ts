@@ -84,7 +84,8 @@ export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): bo
       }
     }
     const json = JSON.stringify(list)
-    if (json.length > 10_000_000) {
+    // Werbemittel: mehrere HTML-Dokumente als data-URL überschreiten schnell 10 MB (Medienpaket übernehmen).
+    if (json.length > 32_000_000) {
       console.error('❌ documentsStorage: Daten zu groß')
       return false
     }

@@ -80,6 +80,15 @@ export function mergeStammdatenGallery(
     focusDirections: (() => { const arr = Array.isArray(incoming?.focusDirections) ? incoming.focusDirections.filter((id: unknown) => typeof id === 'string') : (Array.isArray((e as any)?.focusDirections) ? (e as any).focusDirections : []); return arr.length > 0 ? [arr[0]] : []; })(),
     /** Produktstory / Idee-Story für Presse & PR (ök2 andere Sparten); bei Kunst ungenutzt. Kein Leer überschreiben (kein-datenverlust). */
     story: (incoming?.story != null && String(incoming.story).trim()) ? String(incoming.story).trim() : ((e as any)?.story ?? ''),
+    socialYoutubeUrl: (incoming?.socialYoutubeUrl != null && String(incoming.socialYoutubeUrl).trim())
+      ? String(incoming.socialYoutubeUrl).trim()
+      : ((e as any)?.socialYoutubeUrl ?? ''),
+    socialInstagramUrl: (incoming?.socialInstagramUrl != null && String(incoming.socialInstagramUrl).trim())
+      ? String(incoming.socialInstagramUrl).trim()
+      : ((e as any)?.socialInstagramUrl ?? ''),
+    socialFeaturedVideoUrl: (incoming?.socialFeaturedVideoUrl != null && String(incoming.socialFeaturedVideoUrl).trim())
+      ? String(incoming.socialFeaturedVideoUrl).trim()
+      : ((e as any)?.socialFeaturedVideoUrl ?? ''),
   }
 }
 
@@ -112,6 +121,9 @@ function getEmptyOeffentlich(type: StammdatenType): any {
     galerieCardImage: '',
     focusDirections: [],
     story: '',
+    socialYoutubeUrl: '',
+    socialInstagramUrl: '',
+    socialFeaturedVideoUrl: '',
   }
 }
 
@@ -124,6 +136,33 @@ function getDefaults(tenant: StammdatenTenantId, type: StammdatenType): any {
   if (type === 'martina') return K2_STAMMDATEN_DEFAULTS.martina
   if (type === 'georg') return K2_STAMMDATEN_DEFAULTS.georg
   return K2_STAMMDATEN_DEFAULTS.gallery
+}
+
+/**
+ * ök2 Galerie: Wenn alle Social-URL-Felder leer sind (älterer Speicher vor Demo-URLs),
+ * Muster-Demo aus MUSTER_TEXTE.gallery ergänzen – ohne bestehende Einträge zu überschreiben.
+ */
+function enrichOeffentlichGallerySocialIfAllEmpty(parsed: Record<string, unknown>): Record<string, unknown> {
+  const g = MUSTER_TEXTE.gallery
+  const y =
+    parsed.socialYoutubeUrl != null && String(parsed.socialYoutubeUrl).trim()
+      ? String(parsed.socialYoutubeUrl).trim()
+      : ''
+  const i =
+    parsed.socialInstagramUrl != null && String(parsed.socialInstagramUrl).trim()
+      ? String(parsed.socialInstagramUrl).trim()
+      : ''
+  const f =
+    parsed.socialFeaturedVideoUrl != null && String(parsed.socialFeaturedVideoUrl).trim()
+      ? String(parsed.socialFeaturedVideoUrl).trim()
+      : ''
+  if (y || i || f) return parsed
+  return {
+    ...parsed,
+    socialYoutubeUrl: g.socialYoutubeUrl,
+    socialInstagramUrl: g.socialInstagramUrl,
+    socialFeaturedVideoUrl: g.socialFeaturedVideoUrl,
+  }
 }
 
 /** Liest Stammdaten – eine Schicht. Leer/ungültig → Defaults. Für ök2 bei leerem Speicher: MUSTER_TEXTE (Normal = Muster; neuer User leert explizit). */
@@ -140,13 +179,14 @@ export function loadStammdaten(tenant: StammdatenTenantId, type: StammdatenType)
       const fd = Array.isArray((parsed as any).focusDirections)
         ? (parsed as any).focusDirections.filter((id: unknown) => typeof id === 'string')
         : []
+      let result: Record<string, unknown> = parsed as Record<string, unknown>
       if (fd.length === 0) {
-        return { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
+        result = { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
+      } else if (fd[0] === 'handwerk') {
+        // Demo-Muster = Sparte Kunst; verwaiste „Handwerk“-Einstellung aus frühen Tests nicht dauerhaft durchreichen.
+        result = { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
       }
-      // Demo-Muster = Sparte Kunst; verwaiste „Handwerk“-Einstellung aus frühen Tests nicht dauerhaft durchreichen.
-      if (fd[0] === 'handwerk') {
-        return { ...parsed, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] }
-      }
+      return enrichOeffentlichGallerySocialIfAllEmpty(result) as any
     }
     return parsed
   } catch {
@@ -178,7 +218,15 @@ export function saveStammdaten(
       console.error('❌ stammdatenStorage: Daten zu groß')
       return
     }
-    if (typeof window !== 'undefined') localStorage.setItem(key, json)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(key, json)
+      if (type === 'gallery') {
+        window.dispatchEvent(new CustomEvent('k2-gallery-stammdaten-updated', { detail: { tenant } }))
+      }
+      window.dispatchEvent(
+        new CustomEvent('k2-tenant-stammdaten-updated', { detail: { tenant, type } }),
+      )
+    }
   } catch (e) {
     console.error('❌ stammdatenStorage save:', e)
   }
@@ -203,7 +251,11 @@ export function saveVk2Stammdaten(data: any): void {
       console.error('❌ stammdatenStorage: VK2-Daten zu groß')
       return
     }
-    if (typeof window !== 'undefined') localStorage.setItem(VK2_STAMMDATEN_KEY, json)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(VK2_STAMMDATEN_KEY, json)
+      window.dispatchEvent(new Event('vk2-stammdaten-updated'))
+      window.dispatchEvent(new CustomEvent('k2-vk2-stammdaten-updated'))
+    }
   } catch (e) {
     console.error('❌ stammdatenStorage saveVk2:', e)
   }

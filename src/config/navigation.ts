@@ -125,7 +125,7 @@ export const PROJECT_ROUTES = {
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Prospekt K2 Kunst und Keramik – Galerieeröffnung (1 Seite, druckbar) */
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
-    /** Plakat (A3) – Galerieeröffnung (druckbar) */
+    /** Alias: leitet auf Flyer-Event-Bogen A3-Ableitung (ein Master, keine zweite Plakat-Seite). */
     plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
     /** Event-Bogen (Neuaufbau): zwei Flyer pro A4-Seite – K2 Vorderseite + Eingangstor Rückseite */
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
@@ -261,6 +261,31 @@ export const PROJECT_ROUTES = {
     k2MarktTor: '/projects/k2-markt/tor',
   },
 } as const
+
+/** Kontext für Flyer-Event-Bogen: ein Weg – Master A5 + Ableitungen nur aus demselben Muster. */
+export type FlyerEventBogenTenantContext = 'k2' | 'oeffentlich' | 'vk2'
+
+/**
+ * Einheitliche URL zum Event-Flyer (Master A5 auf einer A4-Übersicht, Variant 2) und zu Ableitungen A3/A6/Karte.
+ * Nicht mit mök2-Werbetexten mischen – Inhalte kommen aus Muster-Galerie / Event / Stammdaten je Kontext.
+ */
+export function flyerEventBogenUrl(params: {
+  mode?: 'a3' | 'a6' | 'card'
+  tenant?: FlyerEventBogenTenantContext
+  /** Aus Admin/Marketing: gleiches Event wie auf der Karte (sonst nur Eröffnungs-Heuristik). */
+  eventId?: string | number | null | undefined
+}): string {
+  const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
+  const q = new URLSearchParams()
+  const t = params.tenant ?? 'k2'
+  if (t === 'oeffentlich') q.set('context', 'oeffentlich')
+  if (t === 'vk2') q.set('context', 'vk2')
+  q.set('layout', 'variant2')
+  if (params.mode) q.set('mode', params.mode)
+  const eid = params.eventId != null ? String(params.eventId).trim() : ''
+  if (eid) q.set('eventId', eid)
+  return `${base}?${q.toString()}`
+}
 
 /**
  * **Eingangstor** für neue User / Fremde (Georg): immer **`/entdecken`** (EntdeckenPage –

@@ -57,6 +57,8 @@ const VK2_URL = BASE_APP_URL + '/projects/vk2'
 export default function PraesentationsmappePage() {
   const navigate = useNavigate()
   const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const isVk2Variante = searchParams.get('variant') === 'vk2'
   const printCtx = useWerbemittelPrintContext()
   const isOeffentlich = printCtx === 'oeffentlich'
 
@@ -78,13 +80,16 @@ export default function PraesentationsmappePage() {
   }, [qrVersionTs])
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
-  const leadText =
-    'Sechs Sparten, eine Plattform: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. In der Demo und Lizenz wählst du „Mein Weg“ in den Stammdaten – daraus folgen passende Werktypen, Kategorien und Texte. Für die Kunst gedacht, für den Markt gemacht. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+  const leadText = isVk2Variante
+    ? 'VK2 ist die Vereinsplattform für Kunstvereine: Mitglieder sichtbar machen, Arbeiten geordnet zeigen, Events planen, Unterlagen erstellen und die Kassa im Verein einfach führen. Eine Oberfläche, klarer Ablauf, keine doppelte Pflege. Für Vereine gedacht, für den Alltag gemacht.'
+    : 'Sechs Sparten, eine Plattform: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. In der Demo und Lizenz wählst du „Mein Weg“ in den Stammdaten – daraus folgen passende Werktypen, Kategorien und Texte. Für die Kunst gedacht, für den Markt gemacht. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
 
   const gallery = typeof window !== 'undefined'
     ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)
     : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as unknown as Record<string, string>
-  const coverTitle = isOeffentlich
+  const coverTitle = isVk2Variante
+    ? 'VK2 Vereinsplattform'
+    : isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
     : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || 'K2 Galerie').replace(/&/g, ' & ')
 
@@ -130,41 +135,68 @@ export default function PraesentationsmappePage() {
           <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
             {leadText}
           </p>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-            Statistik und Werkkatalog
-          </h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-            Im Admin führt der Bereich <strong>Statistik/Werkkatalog</strong> Verkaufs- und Lagerstatistik, den druckbaren Werkkatalog sowie PDF- und Speicherdaten-Exporte zusammen – inklusive schnellem Zugang zu Kundenadressen und zur Kassa. Details im Benutzerhandbuch und in der erweiterten Präsentationsmappe.
-          </p>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-            Shop und Internetbestellung
-          </h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-            Über die öffentliche Galerie können Besucher in den <strong>Warenkorb</strong> legen und bestellen; die gewählte Zahlungsart ist ein <strong>Wunsch</strong> – in der App gibt es <strong>keine</strong> automatische Online-Abbuchung für den Kunstwerk-Warenkorb. Die <strong>Kasse</strong> im Admin bleibt der Weg für den Verkauf <strong>vor Ort</strong>. Ausführlich im Benutzerhandbuch (Kapitel Shop) und in der Präsentationsmappe Vollversion.
-          </p>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-            Event- und Medienplanung
-          </h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-            Der Bereich verbindet <strong>Veranstaltung</strong> und <strong>Kommunikation</strong> in einem durchgehenden Ablauf: Event erfassen, passende Werbemittel erzeugen, Verteiler nutzen und als PDF oder fuer digitale Kanaele ausgeben. Dadurch bleibt alles auf einer Datenquelle (Stammdaten + Eventdaten), ohne doppeltes Tippen in mehreren Tools.
-          </p>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-            Social Media und Videos im Willkommensbereich
-          </h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-            Auf der <strong>öffentlichen Galerie</strong> können unter dem Willkommensbereich <strong>YouTube</strong>, <strong>Instagram</strong> und ein <strong>Highlight-Video</strong> erscheinen – als verlässliche Links für Besucher. Die Pflege erfolgt in den <strong>Stammdaten</strong> (Admin → <strong>Einstellungen</strong> → Stammdaten, Bereich Galerie), <strong>nicht</strong> im Tab Design. So gibt es <strong>eine Quelle</strong> für Web und passende Verweise in der Außenkommunikation.
-          </p>
+          {isVk2Variante ? (
+            <>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Mitglieder und Vereinsprofil
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Mitglieder werden einheitlich erfasst und in der Vereinsansicht sichtbar gemacht. Die Plattform bleibt dabei klar getrennt vom Galerie-Kontext und nutzt eigene Vereinsdaten.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Kassa und Verkauf im Verein
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                VK2 führt Kassa, Verkauf und Listen im selben Ablauf. Verkäufe bleiben nachvollziehbar, Drucke sind direkt verfügbar, und der Verein arbeitet mit einem klaren Standard statt mit mehreren Einzelwerkzeugen.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Event- und Medienplanung
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Aus Eventdaten entstehen direkt passende Unterlagen: Einladungen, Presse, Social und Flyer. Damit bleibt der Ablauf im Verein schnell, einheitlich und ohne doppeltes Eintippen.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Statistik und Werkkatalog
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Im Admin führt der Bereich <strong>Statistik/Werkkatalog</strong> Verkaufs- und Lagerstatistik, den druckbaren Werkkatalog sowie PDF- und Speicherdaten-Exporte zusammen – inklusive schnellem Zugang zu Kundenadressen und zur Kassa. Details im Benutzerhandbuch und in der erweiterten Präsentationsmappe.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Shop und Internetbestellung
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Über die öffentliche Galerie können Besucher in den <strong>Warenkorb</strong> legen und bestellen; die gewählte Zahlungsart ist ein <strong>Wunsch</strong> – in der App gibt es <strong>keine</strong> automatische Online-Abbuchung für den Kunstwerk-Warenkorb. Die <strong>Kasse</strong> im Admin bleibt der Weg für den Verkauf <strong>vor Ort</strong>. Ausführlich im Benutzerhandbuch (Kapitel Shop) und in der Präsentationsmappe Vollversion.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Event- und Medienplanung
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Der Bereich verbindet <strong>Veranstaltung</strong> und <strong>Kommunikation</strong> in einem durchgehenden Ablauf: Event erfassen, passende Werbemittel erzeugen, Verteiler nutzen und als PDF oder fuer digitale Kanaele ausgeben. Dadurch bleibt alles auf einer Datenquelle (Stammdaten + Eventdaten), ohne doppeltes Tippen in mehreren Tools.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                Social Media und Videos im Willkommensbereich
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                Auf der <strong>öffentlichen Galerie</strong> können unter dem Willkommensbereich <strong>YouTube</strong>, <strong>Instagram</strong> und ein <strong>Highlight-Video</strong> erscheinen – als verlässliche Links für Besucher. Die Pflege erfolgt in den <strong>Stammdaten</strong> (Admin → <strong>Einstellungen</strong> → Stammdaten, Bereich Galerie), <strong>nicht</strong> im Tab Design. So gibt es <strong>eine Quelle</strong> für Web und passende Verweise in der Außenkommunikation.
+              </p>
+            </>
+          )}
         </div>
 
         <div className="pm-qr-block" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${TEAL_LIGHT}40`, display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            {qrOek2 && <img src={qrOek2} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} />}
-            <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>
-              <strong style={{ color: TEAL_LIGHT }}>ök2 – Demo-Galerie</strong><br />
-              <a href={buildQrUrlWithBust(OEK2_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_URL}</a><br />
-              <span style={{ fontSize: '0.8rem', color: '#5c5650' }}>Eingangstor: <a href={buildQrUrlWithBust(OEK2_EINGANGSTOR_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_EINGANGSTOR_URL}</a></span>
+          {!isVk2Variante && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {qrOek2 && <img src={qrOek2} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} />}
+              <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>
+                <strong style={{ color: TEAL_LIGHT }}>ök2 – Demo-Galerie</strong><br />
+                <a href={buildQrUrlWithBust(OEK2_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_URL}</a><br />
+                <span style={{ fontSize: '0.8rem', color: '#5c5650' }}>Eingangstor: <a href={buildQrUrlWithBust(OEK2_EINGANGSTOR_URL, qrVersionTs)} target="_blank" rel="noopener noreferrer" style={{ color: TEAL_LIGHT, wordBreak: 'break-all' }}>{OEK2_EINGANGSTOR_URL}</a></span>
+              </div>
             </div>
-          </div>
+          )}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             {qrVk2 && <img src={qrVk2} alt="" width={110} height={110} style={{ display: 'block', flexShrink: 0 }} />}
             <div style={{ fontSize: '0.85rem', color: '#1c1a18' }}>

@@ -52,6 +52,32 @@ Event- und Medienplanung ist nicht nur ein Zusatz. Fuer viele Galerien und Verei
 
 **Ergebnis am selben Tag:** Event steht, Werbemittel sind fertig, Verteiler ist bedient, Druck ist bereit – ohne Tool-Wechsel und ohne doppelte Dateneingabe.
 
+## Beispiel: VK2 Vereinsausstellung in 1 Tag
+
+**Ausgangslage:** Der Kunstverein (VK2) plant kurzfristig eine Mitglieder-Ausstellung fuer das Wochenende.
+
+**08:30 Uhr – VK2-Event anlegen**
+- Veranstaltung mit Titel, Datum, Ort und Oeffnungszeiten erfassen.
+- Vereinsbezug klar markieren (VK2-Kontext).
+
+**09:00 Uhr – Vereins-Flyer und Einladung erzeugen**
+- Aus dem Event sofort die passenden Vereins-Werbemittel erstellen.
+- PDF fuer Aushang im Vereinslokal und bei Partnern drucken.
+
+**10:00 Uhr – Medien- und Mitgliederkommunikation vorbereiten**
+- Kurzen Pressetext fuer regionale Medien erzeugen.
+- Vereins-Text fuer Website und Social vorbereiten.
+
+**10:30 Uhr – Verteiler im VK2-Kontext nutzen**
+- Vereinskontakte, Presse und Mitgliederverteiler auswaehlen.
+- Aussendung direkt aus demselben Ablauf starten.
+
+**Nachmittag – Aktualisierung ohne Mehraufwand**
+- Falls sich Zeiten oder Programmpunkte aendern: Event aktualisieren.
+- Dokumente neu erzeugen, ohne Texte und Daten doppelt zu pflegen.
+
+**Ergebnis am selben Tag:** Die Vereinsausstellung ist kommunikativ komplett vorbereitet – Einladungen, Flyer, Medien-Text und Verteiler laufen im VK2-Kontext aus einer Quelle.
+
 ![Admin – Event- und Medienplanung](/img/oeffentlich/pm-admin-uebersicht.png)
 
 *Quelle: Admin -> Bereich „Event- und Medienplanung“ (Mediengenerator & Verteiler).*

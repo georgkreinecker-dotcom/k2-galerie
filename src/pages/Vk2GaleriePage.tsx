@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL, ENTDECKEN_ROUTE } from '../config/navigation'
@@ -12,6 +12,14 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
 import '../App.css'
+
+function normalizeSocialUrl(value?: string): string | undefined {
+  if (!value) return undefined
+  const trimmed = value.trim()
+  if (!trimmed) return undefined
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  return `https://${trimmed}`
+}
 
 // Lädt VK2-Stammdaten aus localStorage – NUR eigener Key, keine K2/ök2-Daten
 function loadVk2Stammdaten(): Vk2Stammdaten | null {
@@ -147,6 +155,21 @@ const Vk2GaleriePage: React.FC = () => {
   const introText = pageTexts.welcomeIntroText?.trim() || 'Die Mitglieder unseres Vereins – Künstler:innen mit Leidenschaft und Können.'
   const eventHeading = pageTexts.eventSectionHeading?.trim() || 'Vereinstermine & Events'
   const welcomeImage = getVk2SafeDisplayImageUrl(pageContent.welcomeImage) || ''
+
+  const socialLinksResolved = useMemo(() => {
+    const pc = pageContent
+    const v = stammdaten?.verein
+    const pick = (stam: string | undefined, fallback: string | undefined) =>
+      normalizeSocialUrl((typeof stam === 'string' && stam.trim() !== '' ? stam.trim() : undefined) ?? fallback)
+    return {
+      youtubeUrl: pick(v?.socialYoutubeUrl, pc.socialYoutubeUrl),
+      instagramUrl: pick(v?.socialInstagramUrl, pc.socialInstagramUrl),
+      featuredVideoUrl: pick(v?.socialFeaturedVideoUrl, pc.socialFeaturedVideoUrl),
+    }
+  }, [stammdaten, pageContent])
+  const hasSocialLinks = Boolean(
+    socialLinksResolved.youtubeUrl || socialLinksResolved.instagramUrl || socialLinksResolved.featuredVideoUrl
+  )
 
   // Events: nur zukünftige
   const today = new Date()
@@ -337,12 +360,22 @@ const Vk2GaleriePage: React.FC = () => {
         <p style={{ margin: 0, color: C.textMid, fontSize: '1.05rem', lineHeight: 1.75, fontWeight: 400 }}>
           {introText}
         </p>
-        <GalerieSocialLinks
-          youtubeUrl={pageContent.socialYoutubeUrl}
-          instagramUrl={pageContent.socialInstagramUrl}
-          featuredVideoUrl={pageContent.socialFeaturedVideoUrl}
-          variant="vk2Warm"
-        />
+        <div style={{ marginTop: '1rem', padding: '0.9rem 1rem', background: '#fff', border: `1px solid ${C.border}`, borderRadius: 12 }}>
+          <p style={{ margin: '0 0 0.45rem', fontSize: '0.78rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textLight, fontWeight: 700, fontFamily: 'system-ui, sans-serif' }}>
+            Social Media
+          </p>
+          <GalerieSocialLinks
+            youtubeUrl={socialLinksResolved.youtubeUrl}
+            instagramUrl={socialLinksResolved.instagramUrl}
+            featuredVideoUrl={socialLinksResolved.featuredVideoUrl}
+            variant="vk2Warm"
+          />
+          {!hasSocialLinks && (
+            <p style={{ margin: '0.35rem 0 0', color: C.textMid, fontSize: '0.9rem', lineHeight: 1.5, fontFamily: 'system-ui, sans-serif' }}>
+              Noch keine Social-Links hinterlegt. Im Admin unter <strong>Einstellungen → Stammdaten</strong> YouTube, Instagram oder Highlight-Video eintragen.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── EVENTS ── */}

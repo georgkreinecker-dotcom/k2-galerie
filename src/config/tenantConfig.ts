@@ -1201,13 +1201,52 @@ export const MUSTER_ARTWORKS = [
   { id: 'muster-5', number: 'I1', title: 'Kleines Feld', category: 'konzept', artist: 'Lena Berg', imageUrl: getOek2DefaultArtworkImage('konzept'), price: 95, description: 'Mischtechnik auf Papier, 25 × 25 cm. Farbige Flächen und Strukturen – experimentell, spielerisch.', inExhibition: true, inShop: true, createdAt: _musterTs, addedToGalleryAt: _musterTs, entryType: 'idea' as const },
 ]
 
+/** Einheitliche Demo-Event-Daten für ök2: MUSTER_EVENTS + alle PR-Muster-HTML (eine rote Linie). */
+export const OEK2_MUSTER_PR_EVENT_META = {
+  id: 'muster-event-1',
+  title: 'Vernissage – Neue Arbeiten',
+  date: '2026-03-15',
+  endDate: '2026-03-15',
+  description:
+    'Eröffnung der Ausstellung mit Malerei, Keramik, Grafik und Skulptur von Lena Berg und Paul Weber.',
+  type: 'vernissage' as const,
+  location: '',
+}
+
+export const MUSTER_EVENT_ID = OEK2_MUSTER_PR_EVENT_META.id
+
+/** Frühere Muster-PR-IDs – aus ök2-localStorage-Merge entfernt, damit die neue Einheit aus dem Code gilt. */
+export const OEK2_DEPRECATED_MUSTER_PR_DOC_IDS: ReadonlySet<string> = new Set([
+  'muster-pr-newsletter',
+  'muster-pr-plakat',
+  'muster-pr-flyer',
+  'muster-pr-presse',
+  'muster-pr-social',
+])
+
+function oek2MusterPrEventDatumZeitDe(): string {
+  try {
+    const d = new Date(OEK2_MUSTER_PR_EVENT_META.date + 'T12:00:00')
+    const dateStr = d.toLocaleDateString('de-DE', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+    return `${dateStr}, 18 Uhr`
+  } catch {
+    return 'Samstag, 15. März 2026, 18 Uhr'
+  }
+}
+
 /** Einladung Vernissage – HTML aus MUSTER_TEXTE (Stammdaten), für Demo/ök2. */
 function getMusterEinladungDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
+  const ev = OEK2_MUSTER_PR_EVENT_META
   const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung Vernissage</title><style>body{font-family:Georgia,serif;max-width:560px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#222}h1{font-size:1.5rem;border-bottom:2px solid #6b9080;padding-bottom:.5rem}p{margin:.75rem 0}.meta{color:#555;font-size:.95rem}</style></head><body><h1>Einladung zur Vernissage</h1><p><strong>Galerie Muster</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>Wir freuen uns auf Ihren Besuch. ${m} und ${p} präsentieren neue Arbeiten aus allen Sparten.</p><p>Um Anmeldung wird gebeten: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Einladung ${ev.title}</title><style>body{font-family:Georgia,serif;max-width:560px;margin:2rem auto;padding:0 1rem;line-height:1.6;color:#222}h1{font-size:1.5rem;border-bottom:2px solid #6b9080;padding-bottom:.5rem}p{margin:.75rem 0}.meta{color:#555;font-size:.95rem}</style></head><body><h1>Einladung zur Vernissage</h1><p><strong>Galerie Muster</strong> – Malerei, Keramik, Grafik &amp; Skulptur</p><p class="meta">${oek2MusterPrEventDatumZeitDe()}</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>Wir freuen uns auf Ihren Besuch. ${m} und ${p} präsentieren neue Arbeiten zu <strong>${ev.title}</strong>.</p><p>${ev.description}</p><p>Um Anmeldung wird gebeten: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -1225,7 +1264,8 @@ function getMusterPresseDataUrl(): string {
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
   const adresse = [g.address, g.city, g.country].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse Vernissage</title><style>body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.4rem}p{margin:.6rem 0}.meta{color:#555;font-size:.9rem}</style></head><body><h1>Presseinformation – Vernissage</h1><p><strong>Galerie Muster</strong> lädt zur Eröffnung der Ausstellung „Neue Arbeiten“ ein.</p><p class="meta">Samstag, 15. März 2026, 18 Uhr<br>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} (Malerei, Grafik) und ${p} (Keramik, Skulptur) zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur. Die Ausstellung ist im Anschluss zu den Öffnungszeiten zu sehen.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
+  const ev = OEK2_MUSTER_PR_EVENT_META
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presse ${ev.title}</title><style>body{font-family:Georgia,serif;max-width:600px;margin:2rem auto;padding:0 1rem;line-height:1.65;color:#222}h1{font-size:1.35rem;border-bottom:2px solid #6b9080;padding-bottom:.4rem}p{margin:.6rem 0}.meta{color:#555;font-size:.9rem}</style></head><body><h1>Presseinformation – Vernissage</h1><p><strong>Galerie Muster</strong> lädt zu <strong>${ev.title}</strong> ein.</p><p class="meta">${oek2MusterPrEventDatumZeitDe()}<br>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${ev.description}</p><p>${m} (Malerei, Grafik) und ${p} (Keramik, Skulptur) zeigen aktuelle Werke. Die Ausstellung ist im Anschluss zu den Öffnungszeiten zu sehen.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -1236,15 +1276,17 @@ function getMusterNewsletterDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
+  const ev = OEK2_MUSTER_PR_EVENT_META
   const adresse = [g.address, g.city].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Newsletter – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>E-Mail Newsletter</h1><p><strong>Galerie Muster</strong></p><p class="meta">Einladung: Vernissage – Neue Arbeiten · Samstag, 15. März 2026, 18 Uhr</p><p>Liebe Kunstfreundinnen und Kunstfreunde,</p><p>wir freuen uns, Sie persönlich zu unserer Veranstaltung einladen zu dürfen: <strong>Vernissage – Neue Arbeiten</strong>.</p><p>${adresse ? `📍 ${adresse}` : ''}</p><p>${m} und ${p} zeigen neue Arbeiten aus Malerei, Keramik, Grafik und Skulptur.</p><p>Anmeldung erwünscht: ${g.email || 'info@galerie-muster.example'}</p><p>Mit herzlichen Grüßen<br>${m} &amp; ${p}<br>Galerie Muster</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Newsletter – ${ev.title}</title><style>${MUSTER_CSS}</style></head><body><h1>E-Mail Newsletter</h1><p><strong>Galerie Muster</strong></p><p class="meta">Einladung: <strong>${ev.title}</strong> · ${oek2MusterPrEventDatumZeitDe()}</p><p>Liebe Kunstfreundinnen und Kunstfreunde,</p><p>wir freuen uns, Sie persönlich einzuladen zu <strong>${ev.title}</strong>.</p><p>${ev.description}</p><p>${adresse ? `📍 ${adresse}` : ''}</p><p>${m} und ${p} zeigen neue Arbeiten aus Malerei, Keramik, Grafik und Skulptur.</p><p>Anmeldung erwünscht: ${g.email || 'info@galerie-muster.example'}</p><p>Mit herzlichen Grüßen<br>${m} &amp; ${p}<br>Galerie Muster</p></body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
 /** Plakat Muster (ök2). */
 function getMusterPlakatDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plakat – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Vernissage – Neue Arbeiten</h1><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>Galerie Muster · ${g.address || 'Musterstraße 1'}, ${(g as any).city || '12345 Musterstadt'}</p><p>Lena Berg &amp; Paul Weber · Malerei, Keramik, Grafik &amp; Skulptur</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  const ev = OEK2_MUSTER_PR_EVENT_META
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Plakat – ${ev.title}</title><style>${MUSTER_CSS}</style></head><body><h1>${ev.title}</h1><p class="meta">${oek2MusterPrEventDatumZeitDe()}</p><p>Galerie Muster · ${g.address || 'Musterstraße 1'}, ${(g as any).city || '12345 Musterstadt'}</p><p>Lena Berg &amp; Paul Weber · Malerei, Keramik, Grafik &amp; Skulptur</p><p>${ev.description}</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}</p></body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -1253,8 +1295,9 @@ function getMusterEventFlyerDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
+  const ev = OEK2_MUSTER_PR_EVENT_META
   const adresse = [g.address, (g as any).city].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Event-Flyer – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Vernissage – Neue Arbeiten</h1><p class="meta">Samstag, 15. März 2026, 18 Uhr</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} präsentieren neue Arbeiten. Handzettel für persönliche Einladung.</p><p>${g.email ? `✉ ${g.email}` : ''} ${g.phone ? `☎ ${g.phone}` : ''}</p></body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Event-Flyer – ${ev.title}</title><style>${MUSTER_CSS}</style></head><body><h1>${ev.title}</h1><p class="meta">${oek2MusterPrEventDatumZeitDe()}</p><p>${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${ev.description}</p><p>${m} und ${p} präsentieren neue Arbeiten. Handzettel für persönliche Einladung.</p><p>${g.email ? `✉ ${g.email}` : ''} ${g.phone ? `☎ ${g.phone}` : ''}</p></body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
@@ -1263,39 +1306,37 @@ function getMusterPresseaussendungDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
   const m = MUSTER_TEXTE.martina.name
   const p = MUSTER_TEXTE.georg.name
+  const ev = OEK2_MUSTER_PR_EVENT_META
   const adresse = [g.address, (g as any).city].filter(Boolean).join(', ')
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>Galerie Muster</strong> – Vernissage – Neue Arbeiten</p><p class="meta">Samstag, 15. März 2026, 18 Uhr · ${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${m} und ${p} zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Presseaussendung – ${ev.title}</title><style>${MUSTER_CSS}</style></head><body><h1>PRESSEAUSSENDUNG</h1><p><strong>Galerie Muster</strong> – ${ev.title}</p><p class="meta">${oek2MusterPrEventDatumZeitDe()} · ${adresse || 'Musterstraße 1, 12345 Musterstadt'}</p><p>${ev.description}</p><p>${m} und ${p} zeigen aktuelle Werke in Malerei, Keramik, Grafik und Skulptur.</p><p>Kontakt: ${g.email || 'info@galerie-muster.example'}, ${g.phone || ''}</p>${getPresseLinksQrSnippet()}</body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
 /** Social Media Muster (ök2). */
 function getMusterSocialDataUrl(): string {
   const g = MUSTER_TEXTE.gallery
-  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Social Media – Vernissage</title><style>${MUSTER_CSS}</style></head><body><h1>Social Media Posts</h1><p><strong>Instagram / Facebook / WhatsApp</strong></p><p>✦ Vernissage – Neue Arbeiten</p><p>📅 Samstag, 15. März 2026, 18 Uhr</p><p>Galerie Muster – Lena Berg &amp; Paul Weber zeigen neue Werke.</p><p>✉ ${g.email || 'info@galerie-muster.example'}</p></body></html>`
+  const ev = OEK2_MUSTER_PR_EVENT_META
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Social Media – ${ev.title}</title><style>${MUSTER_CSS}</style></head><body><h1>Social Media Posts</h1><p><strong>Instagram / Facebook / WhatsApp</strong></p><p>✦ ${ev.title}</p><p>📅 ${oek2MusterPrEventDatumZeitDe()}</p><p>${ev.description}</p><p>Galerie Muster – Lena Berg &amp; Paul Weber.</p><p>✉ ${g.email || 'info@galerie-muster.example'}</p></body></html>`
   return 'data:text/html;charset=utf-8,' + encodeURIComponent(html)
 }
 
-const MUSTER_EVENT_ID = 'muster-event-1'
-
-/** Liefert 5 vorgefertigte PR-Musterdokumente für ök2 (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social). Mit MUSTER_TEXTE und einheitlichem Design. */
+/** Liefert 5 vorgefertigte PR-Musterdokumente für ök2 (Newsletter, Plakat, Event-Flyer, Presseaussendung, Social). Eine Quelle: OEK2_MUSTER_PR_EVENT_META + MUSTER_TEXTE. */
 export function getOek2MusterPrDocuments(): Array<{ id: string; name: string; eventId: string; category: string; werbematerialTyp: string; fileData: string; fileName: string; fileType: string }> {
+  const eid = OEK2_MUSTER_PR_EVENT_META.id
+  const t = OEK2_MUSTER_PR_EVENT_META.title
   return [
-    { id: 'muster-pr-newsletter', name: 'Newsletter – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'newsletter', fileData: getMusterNewsletterDataUrl(), fileName: 'newsletter-vernissage.html', fileType: 'text/html' },
-    { id: 'muster-pr-plakat', name: 'Plakat – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'plakat', fileData: getMusterPlakatDataUrl(), fileName: 'plakat-vernissage.html', fileType: 'text/html' },
-    { id: 'muster-pr-flyer', name: 'Event-Flyer – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'event-flyer', fileData: getMusterEventFlyerDataUrl(), fileName: 'event-flyer-vernissage.html', fileType: 'text/html' },
-    { id: 'muster-pr-presse', name: 'Presseaussendung – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'presse', fileData: getMusterPresseaussendungDataUrl(), fileName: 'presseaussendung-vernissage.html', fileType: 'text/html' },
-    { id: 'muster-pr-social', name: 'Social Media – Vernissage', eventId: MUSTER_EVENT_ID, category: 'pr-dokumente', werbematerialTyp: 'social', fileData: getMusterSocialDataUrl(), fileName: 'social-vernissage.html', fileType: 'text/html' },
+    { id: 'oek2-pr-linie-newsletter', name: `Newsletter – ${t}`, eventId: eid, category: 'pr-dokumente', werbematerialTyp: 'newsletter', fileData: getMusterNewsletterDataUrl(), fileName: 'newsletter-demo-event.html', fileType: 'text/html' },
+    { id: 'oek2-pr-linie-plakat', name: `Plakat – ${t}`, eventId: eid, category: 'pr-dokumente', werbematerialTyp: 'plakat', fileData: getMusterPlakatDataUrl(), fileName: 'plakat-demo-event.html', fileType: 'text/html' },
+    { id: 'oek2-pr-linie-flyer', name: `Event-Flyer – ${t}`, eventId: eid, category: 'pr-dokumente', werbematerialTyp: 'event-flyer', fileData: getMusterEventFlyerDataUrl(), fileName: 'event-flyer-demo-event.html', fileType: 'text/html' },
+    { id: 'oek2-pr-linie-presse', name: `Presseaussendung – ${t}`, eventId: eid, category: 'pr-dokumente', werbematerialTyp: 'presse', fileData: getMusterPresseaussendungDataUrl(), fileName: 'presseaussendung-demo-event.html', fileType: 'text/html' },
+    { id: 'oek2-pr-linie-social', name: `Social Media – ${t}`, eventId: eid, category: 'pr-dokumente', werbematerialTyp: 'social', fileData: getMusterSocialDataUrl(), fileName: 'social-demo-event.html', fileType: 'text/html' },
   ]
 }
 
 /** Muster-Events für ök2 (Vernissage mit Einladung + Presse). Wenn k2-oeffentlich-events leer ist, werden diese angezeigt. */
 export const MUSTER_EVENTS = [
   {
-    id: 'muster-event-1',
-    title: 'Vernissage – Neue Arbeiten',
-    date: '2026-03-15',
-    endDate: '2026-03-15',
-    description: 'Eröffnung der Ausstellung mit Malerei, Keramik, Grafik und Skulptur von Lena Berg und Paul Weber.',
+    ...OEK2_MUSTER_PR_EVENT_META,
     documents: [
       { id: 'muster-doc-1', name: 'Einladung zur Vernissage', fileName: 'einladung-vernissage.html', fileType: 'text/html', fileData: getMusterEinladungDataUrl() },
       { id: 'muster-doc-2', name: 'Presseinformation Vernissage', fileName: 'presse-vernissage.html', fileType: 'text/html', fileData: getMusterPresseDataUrl() },

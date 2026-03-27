@@ -10,6 +10,7 @@ import ProjectPlanPage from './pages/ProjectPlanPage'
 import NotizenPage from './pages/NotizenPage'
 import TexteSchreibtischPage from './pages/TexteSchreibtischPage'
 import TexteSchreibtischBoardPage from './pages/TexteSchreibtischBoardPage'
+import TextsA4Page from './pages/TextsA4Page'
 import BriefAnAugustPage from './pages/BriefAnAugustPage'
 import BriefAnAndreasPage from './pages/BriefAnAndreasPage'
 import EinladungFreundeEroeffnungNotizPage from './pages/EinladungFreundeEroeffnungNotizPage'
@@ -32,7 +33,7 @@ import MarketingOek2Page from './pages/MarketingOek2Page'
 import PraesentationsmappePage from './pages/PraesentationsmappePage'
 import PraesentationsmappeVollversionPage from './pages/PraesentationsmappeVollversionPage'
 import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage'
-import PlakatGalerieeroeffnungPage from './pages/PlakatGalerieeroeffnungPage'
+import PlakatGalerieeroeffnungRedirect from './pages/PlakatGalerieeroeffnungRedirect'
 import FlyerEventBogenNeuPage from './pages/FlyerEventBogenNeuPage'
 import PilotStartPage from './pages/PilotStartPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
@@ -829,6 +830,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].kunden} element={<KundenPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].plan} element={<ProjectPlanPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].texteSchreibtisch} element={<TexteSchreibtischPage />} />
+      <Route path="/projects/k2-galerie/texts-a4" element={<TextsA4Page />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].texteSchreibtischBoard} element={<TexteSchreibtischBoardPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenBriefAugust} element={<BriefAnAugustPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].notizenBriefAndreas} element={<BriefAnAndreasPage />} />
@@ -840,7 +842,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].produktVorschau} element={<ProduktVorschauPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].marketingOek2} element={<Mok2Layout><MarketingOek2Page embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].prospektGalerieeroeffnung} element={<ProspektGalerieeroeffnungPage />} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung} element={<PlakatGalerieeroeffnungPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].plakatGalerieeroeffnung} element={<PlakatGalerieeroeffnungRedirect />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} element={<FlyerEventBogenNeuPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />

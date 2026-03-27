@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 (Abend) – **Session beendet – Sammelstand committed:** Alles Lokale mit **Test + Build grün** gebündelt: u. a. **VK2 Präsentationsmappe Vollversion** (`public/praesentationsmappe-vk2-vollversion/`), **Plakat Galerieeröffnung → Redirect** (alte Page entfernt), **TextsA4Page**, **Praesentationsmappe** / Vollversion, **tenantConfig**, **navigation**, **stammdatenStorage** / **documentsStorage**, **DevView**, **GalerieVorschau**, **Vk2Galerie**, **useServerBuildTimestamp**, Doku/Handbuch, Build-Dateien. **Commit:** `25003b5`
+
+**Was wir JETZT tun:** Nächster Tag: `npm run briefing`, DIALOG-STAND lesen; Stand = **GitHub/Vercel** nach Deployment „Ready“.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Flyer-Master A5 = Herzstück Mediengenerator (Datenbasis):** URL-Parameter **`eventId`** vom Event aus Marketing/Admin (`flyerEventBogenUrl`); Master und Ableitungen (A3/A6/Karte) behalten Kontext + Event. **Live-Vorschau:** `k2-tenant-stammdaten-updated`, `k2-gallery-stammdaten-updated`, erweiterte **storage**-Keys (Martina/Georg, ök2-Stammdaten, VK2-Events/Stammdaten), VK2-Stam-Events. **Toolbar:** ein Link **„← Zurück zum Flyer-Master (A5 · Live-Vorschau)“**. Hilfe-Spalte: Herzstück-Satz. **Dateien:** `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx` (bereits `navigation.ts` eventId, `stammdatenStorage` CustomEvent). **Commit:** `4869eac` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: vom gewünschten Event **Master bearbeiten** / **Neu erstellen** → gleiches Event in Flyer; Stammdaten/Event im Admin ändern → Vorschau aktualisiert (ohne Tab-Wechsel).

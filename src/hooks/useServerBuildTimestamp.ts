@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 
 /** Produktions-API; localhost nutzt dieselbe URL, damit QR/Stand = immer Vercel-Stand (nicht 404 auf lokalem /api). */
@@ -56,4 +56,21 @@ export function buildQrUrlWithBust(baseUrl: string, versionTimestamp: number): s
 export function useQrVersionTimestamp(): { versionTimestamp: number; serverLabel: string; refetch: () => void } {
   const { timestamp, serverLabel, refetch } = useServerBuildTimestamp()
   return { versionTimestamp: timestamp ?? BUILD_TIMESTAMP, serverLabel, refetch }
+}
+
+/**
+ * Liefert eine stabile QR-URL (mit Cache-Bust), die sich nicht bei jedem Render ändert.
+ * Wichtig gegen Render-Loops auf Seiten mit QR-Code-Generierung.
+ */
+export function useStableQrBustedUrl(
+  baseUrl: string,
+  versionTimestamp: number
+): { qrUrl: string; refreshQrUrl: () => void } {
+  const [nonce, setNonce] = useState(0)
+  const refreshQrUrl = useCallback(() => setNonce((v) => v + 1), [])
+  const qrUrl = useMemo(
+    () => buildQrUrlWithBust(baseUrl, versionTimestamp),
+    [baseUrl, versionTimestamp, nonce]
+  )
+  return { qrUrl, refreshQrUrl }
 }
