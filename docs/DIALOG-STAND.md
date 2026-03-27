@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Handbuch Kap. 10 sichtbar + Erste Schritte:** Einstellungen mit **eigener Überschrift** „YouTube, Instagram und Highlight-Video“, Einleitung erwähnt Social; **01-Erste Schritte** und **00-INDEX** mit Verweis. **Commit:** `44cc4bc` ✅ auf GitHub
+
+---
+
 **Letzter Stand:** 27.03.26 – **Doku: Social/Video – Pflege in Stammdaten:** Präsentationsmappe Kurzform, Vollversion (`04-WILLKOMMEN-UND-GALERIE` + Index), Benutzerhandbuch (`10`, `03`, `00-INDEX`), Marketingstrategie (`docs` + `public/kampagne`), Prospekt `K2-GALERIE-PRAESENTATIONSMAPPE` §3. Überall klar: **Einstellungen → Stammdaten (Galerie)**, nicht Design-Tab. **Commit:** `5e07a46` ✅ auf GitHub
 
 **Was wir JETZT tun:** Bei Bedarf Handbuch in der App öffnen und Kapitel Einstellungen kurz prüfen.
