@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Event-Bogen Seite 2 (Rückseite):** Alle **Texte doppelt so groß** (Klasse `back-page-2`). **Bild rechts** wählbar: **Musterwerke ök2** (`readArtworksForContextWithResolvedImages(true)` + Fallback `MUSTER_ARTWORKS`), **Standard-Torbild**, oder **eigenes Upload** (ersetzt Auswahl; Blob-URL beim Wechsel widerrufen). Badge „Musterwerk ök2“ bei Auswahl. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** _nach Push_
+
+---
+
 **Letzter Stand:** 27.03.26 – **Event-Bogen neu, Layout „Variante 2“:** Seite 1 optional **ein Bild links** (Werk links), **größere Schriften**, **Einladungsblock** (Kicker + „Galerieeröffnung“) mit **`formatEventTerminKomplett`** mehrzeilig (alle Event-Tage inkl. Samstag, wenn `dailyTimes` im Event). Zusätzlich **Öffnungszeiten Galerie** aus Stammdaten (`openingHours` + optional `openingHoursWeek` mit Sa). Editor: **Layout Seite 1** Standard vs. Variante 2; bei V2 sind Satz-Variante A/B, Bild mitte und Werk rechts deaktiviert. **`FlyerEventBogenNeuPage.tsx`**. **Commit:** `cccc711` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Werbeunterlagen → Event-Bogen neu → Layout „Variante 2“ wählen, Druckvorschau prüfen; Event „Galerieeröffnung“ im Admin mit Tageszeiten pflegen.
