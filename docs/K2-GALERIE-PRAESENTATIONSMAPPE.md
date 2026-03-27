@@ -29,6 +29,7 @@ Dieser Prospekt fasst funktionale und technische Informationen für Präsentatio
 | Bereich | Inhalt |
 |--------|--------|
 | **Galerie** | Werke mit Foto, Titel, Preis, Kategorie; Vorschau; Veröffentlichen; gleicher Stand auf allen Geräten (Mac, iPad, Handy). |
+| **Willkommen – Social & Video** | Optional **YouTube**, **Instagram**, **Highlight-Video** im Willkommensbereich; gepflegt in **Stammdaten** (Einstellungen → Galerie), **nicht** im Tab Design – eine Quelle für Web und Außenkommunikation. |
 | **Admin** | Werke hinzufuegen/bearbeiten, Aussehen & Design, Einstellungen (Stammdaten, Backup, Lizenz), Schritt-fuer-Schritt-Assistent, **Statistik/Werkkatalog**, Event- und Medienplanung. |
 | **Statistik/Werkkatalog** | Verkaufs- und Lagerstatistik, druckbarer Werkkatalog, PDF- und Speicherdaten-Export, Kundenadressen; Kassa weiter über Verkauf/Shop. |
 | **Kassa & Kassabuch** | Verkauf erfassen (Shop oder „Als Kasse öffnen“); ab Pro: Kassabuch (Eingänge); ab Pro+: Kassausgänge, Bar, Beleg (QR/Foto), PDF-Export. Basic: keine Kassa. |

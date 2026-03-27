@@ -30,7 +30,7 @@ Unter **„Design“** richten Sie das Erscheinungsbild Ihrer Galerie ein: Willk
 
 ## Einstellungen
 
-Unter **„Einstellungen“** finden Sie Stammdaten, Backup, Veröffentlichen und Drucker; **Admin-Passwort** und **Zugang** hängen von **Galerie (K2)** vs. **Demo (ök2)** ab – siehe Kapitel [Einstellungen](10-EINSTELLUNGEN.md) (dort auch: Passwort **am Gerät oder im Browser speichern**, kein zentraler Reset-Link per E-Mail).
+Unter **„Einstellungen“** finden Sie Stammdaten, Backup, Veröffentlichen und Drucker; **Admin-Passwort** und **Zugang** hängen von **Galerie (K2)** vs. **Demo (ök2)** ab – siehe Kapitel [Einstellungen](10-EINSTELLUNGEN.md) (dort auch: Passwort **am Gerät oder im Browser speichern**, kein zentraler Reset-Link per E-Mail). **YouTube-, Instagram- und Video-Links** für die öffentliche Galerie pflegen Sie in den **Stammdaten** (Bereich Galerie), nicht unter Design.
 
 ---
 

@@ -19,6 +19,7 @@ Unter **Stammdaten** pflegen Sie die **Kontaktdaten und Angaben**, die auf Ihrer
 **Für Galerien (K2, Demo):**
 
 - **Galerie:** Name der Galerie, Adresse (Straße, PLZ/Ort, Land), E-Mail, Telefon, Website, Öffnungszeiten.
+- **YouTube, Instagram, Highlight-Video:** Optional die **öffentlichen Links** zu Ihrem YouTube-Kanal, Ihrem Instagram-Profil und zu einem **kurzen Highlight-Video** (YouTube-URL). Diese Felder stehen hier bei den **Stammdaten der Galerie** – **nicht** im Tab **Design**. Wenn Sie sie ausfüllen, erscheinen die Links im **Willkommensbereich** der öffentlichen Galerie für Besucher (einheitliche Quelle für Web und Außenkommunikation).
 - **Kontaktpersonen:** Name, E-Mail und Telefon der verantwortlichen Personen (z. B. Galerie-Inhaberin, Künstler). Diese Angaben werden z. B. auf Einladungen oder im Impressum verwendet.
 
 **Für Vereine (VK2):**

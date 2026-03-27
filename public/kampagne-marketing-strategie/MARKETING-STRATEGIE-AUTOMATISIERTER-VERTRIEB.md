@@ -53,10 +53,11 @@
 | Kanal | Nutzung der einen Quelle |
 |-------|---------------------------|
 | **Web** | Willkommensseite, Galerie-öffentlich (ök2), LicencesPage – Werbelinie + USPs + „Lizenz anfragen“ / Stripe-Checkout. |
+| **Galerie-Willkommen (Links)** | YouTube-, Instagram- und Highlight-Video-URLs kommen aus **Stammdaten** (Einstellungen → Stammdaten, Bereich Galerie) – **eine Quelle** für die öffentliche Galerie und für konsistente Verweise in Flyer, Visitenkarte oder Social-Bio; **nicht** im Design-Tab gepflegt. |
 | **Demo ök2** | Gleiche Werbelinie, gleiche USPs; klarer nächster Schritt: „Lizenz anfragen“ oder Empfehlungslink teilen. |
 | **QR** | QR führt auf Galerie oder Willkommensseite (je nach Kontext); Stand über Server + Cache-Bust (stand-qr-niemals-zurueck). |
 | **Prospekt / erweiterte Mappe** | K2-GALERIE-PRAESENTATIONSMAPPE + Handbuch-Kapitel; Werbelinie oben, dann Funktionen, Technik, Lizenzen. Druckbar als PDF aus mök2. |
-| **Social** | Kurzfassung Werbelinie + ein USP (z. B. „Alles in einer App“ oder „Empfehlungsprogramm – 10 % für dich und deine Freund:innen“). Kein eigener „Social-Slogan“. |
+| **Social** | Kurzfassung Werbelinie + ein USP (z. B. „Alles in einer App“ oder „Empfehlungsprogramm – 10 % für dich und deine Freund:innen“). Kein eigener „Social-Slogan“. Die **sichtbaren Kanal-Links auf der Galerie** (YouTube/Instagram/Video) stammen aus Stammdaten – dieselben URLs in Bios und Posts nutzen, damit eine Linie bleibt. |
 | **PR** | Pressearbeit (Medienstudio K2, PRESSEARBEIT-STANDARD) mit Werbelinie und USPs; Medienverteiler, keine individuelle Kundenansprache. |
 
 Alle Strategiepapiere (docs, Handbuch Vision & Strategie, MARKETING-EROEFFNUNG-K2-OEK2) sind auf diese Werbelinie ausgerichtet. Quelle: docs/PRODUKT-STANDARD-NACH-SPORTWAGEN.md (Marketing-Werbelinie), mök2 → Sektion „Promotion für alle Medien“.

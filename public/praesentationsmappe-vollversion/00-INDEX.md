@@ -18,7 +18,7 @@ Wer zu welcher **Sparte** passt; ök2/Lizenz und VK2 kurz eingeordnet.
 
 4. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
-Willkommen und Galerie; Filter passen zu **Mein Weg** / Sparte.
+Willkommen und Galerie; optional YouTube, Instagram und Highlight-Video aus **Stammdaten** (nicht Design); Filter passen zu **Mein Weg** / Sparte.
 
 5. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 

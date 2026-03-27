@@ -44,7 +44,7 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 10. [Einstellungen](10-EINSTELLUNGEN.md)
 
-Stammdaten (Galerie/Verein, Kontakt, Adresse), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
+Stammdaten (Galerie/Verein, Kontakt, Adresse, optional YouTube/Instagram/Highlight-Video), Backup & Wiederherstellung, Veröffentlichen, Passwort, Drucker; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, Kommunikation (WhatsApp).
 
 11. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
