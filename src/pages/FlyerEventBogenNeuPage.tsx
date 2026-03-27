@@ -151,9 +151,8 @@ export default function FlyerEventBogenNeuPage() {
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
   const isCardMode = searchParams.get('mode') === 'card'
-  /** Von Admin Event-Flyer: ?layout=variant2 oder ?layout=standard (Default ohne Param = Standard) */
-  const layoutFromUrl: 'standard' | 'variant2' =
-    searchParams.get('layout') === 'variant2' ? 'variant2' : 'standard'
+  /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
+  const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
   /** Neu laden bei Event-/Stammdaten-Änderung (Admin, anderes Tab, Tab-Rückkehr). */
   const [flyerDataTick, setFlyerDataTick] = useState(0)
@@ -1527,30 +1526,30 @@ export default function FlyerEventBogenNeuPage() {
           Schwarzweiß Druckcheck ein/aus
         </button>
         {!isA3Mode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a3&layout=${page1Layout}`}>
-            A3 Plakat (Seite 1) öffnen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a3&layout=variant2`}>
+            A3 Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=${page1Layout}`}>
-            Zurück zum Flyer-Bogen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+            Zurück zum Master
           </Link>
         )}
         {!isA6Mode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a6&layout=${page1Layout}`}>
-            A6 Variante öffnen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=a6&layout=variant2`}>
+            A6 Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=${page1Layout}`}>
-            Zurück zum Flyer-Bogen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+            Zurück zum Master
           </Link>
         )}
         {!isCardMode ? (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=card&layout=${page1Layout}`}>
-            Visitenkarten-Variante öffnen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?mode=card&layout=variant2`}>
+            Visitenkarten-Ableitung ansehen
           </Link>
         ) : (
-          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=${page1Layout}`}>
-            Zurück zum Flyer-Bogen
+          <Link to={`${PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu}?layout=variant2`}>
+            Zurück zum Master
           </Link>
         )}
         <span style={{ fontSize: '0.8rem', color: '#5c5650', maxWidth: '22rem' }}>
@@ -1559,36 +1558,9 @@ export default function FlyerEventBogenNeuPage() {
       </div>
 
       {!isA3Mode && !isA6Mode && !isCardMode && <div className="editor">
-        <label>
-          Layout Seite 1 (Vorderseite Bogen)
-          <select
-            value={page1Layout}
-            onChange={(e) => setPage1Layout(e.target.value === 'variant2' ? 'variant2' : 'standard')}
-          >
-            <option value="standard">Standard – drei Bilder, Satz-Variante A/B</option>
-            <option value="variant2">Variante 2 – ein Bild links, große Texte, Einladung &amp; Öffnungszeiten</option>
-          </select>
-        </label>
-        <label>
-          Satz-Variante (nur Layout Standard)
-          <select
-            value={frontVariant}
-            disabled={page1Layout === 'variant2'}
-            onChange={(e) => setFrontVariant(e.target.value === 'B' ? 'B' : 'A')}
-          >
-            <option value="A">A - ruhig / klassisch</option>
-            <option value="B">B - kräftiger / präsenter</option>
-          </select>
-        </label>
-        <label>
-          Bild mitte (nur Layout Standard)
-          <input
-            type="file"
-            accept="image/*"
-            disabled={page1Layout === 'variant2'}
-            onChange={(e) => handleFrontUpload('middle', e.currentTarget.files?.[0] || null)}
-          />
-        </label>
+        <p style={{ margin: 0, fontSize: '0.92rem', color: '#1f2937', fontWeight: 600 }}>
+          Master A5 (fix): vorne ein Bild, hinten nur Text
+        </p>
         <label>
           Werk links (K2-Auswahl)
           <select value={leftWorkNumber} onChange={(e) => handleLeftWorkSelect(e.target.value)}>
@@ -1600,26 +1572,11 @@ export default function FlyerEventBogenNeuPage() {
             ))}
           </select>
         </label>
-        <label>
-          Werk rechts (nur Layout Standard)
-          <select
-            value={rightWorkNumber}
-            disabled={page1Layout === 'variant2'}
-            onChange={(e) => handleRightWorkSelect(e.target.value)}
-          >
-            <option value="">Bitte wählen</option>
-            {k2Works.map((w) => (
-              <option key={`right-${String(w?.number || '')}`} value={String(w?.number || '')}>
-                {String(w?.number || 'Werk')} {w?.title ? `- ${String(w.title)}` : ''}
-              </option>
-            ))}
-          </select>
-        </label>
         <p style={{ margin: 0, fontSize: '0.85rem', color: '#5c5650', maxWidth: '42rem' }}>
-          Seite 2 rechts: ausführlicher Erklärungstext zu ök2 – einheitlich mit der Produktbeschreibung gepflegt (eine Quelle im Projekt).
+          Bearbeitung nur im Master. A3, A6 und Visitenkarten oben nur zur Ansicht öffnen.
         </p>
         <div style={{ fontSize: '0.8rem', color: '#5c5650' }}>
-          Vorschau Werke: {leftWerkLabel} · {rightWerkLabel}
+          Vorschau Werkbild (Master): {leftWerkLabel}
         </div>
       </div>}
 
