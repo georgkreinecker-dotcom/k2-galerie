@@ -75,6 +75,7 @@ import {
 } from '../src/utils/k2MalereiMartinaKtoMPrefixFix'
 import { mergeAllMissingKeramikK2KFromServerArtworks } from '../src/utils/mergeMissingK2KeramikFromGalleryData'
 import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage, loadK2EventsBackup, mergeEventTimesFromLocal } from '../src/utils/eventsStorage'
+import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
 import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
@@ -1489,6 +1490,14 @@ function loadEvents(tenant: ReturnType<typeof useTenant>): any[] {
     console.error('Fehler beim Laden der Events:', error)
     return []
   }
+}
+
+/**
+ * Standard-Event für globale Mediengenerator-Buttons (Presse, Social, Flyer, Newsletter, Plakat, Website-Content):
+ * gleiche Quelle wie Flyer-/Presse-Werbemittel – Eröffnung/Vernissage bevorzugen, sonst erstes mit Datum.
+ */
+function getDefaultEventForMediengeneratorButtons(eventsList: unknown): any | null {
+  return pickOpeningEventForWerbemittel(Array.isArray(eventsList) ? eventsList : [])
 }
 
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
@@ -7002,12 +7011,11 @@ ${'='.repeat(60)}
 
   // Presseaussendung generieren (mit App-Design)
   const generatePresseaussendung = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    const event = selectedEvent || events[0]
     
     // Prüfe ob Vorschläge vorhanden sind
     const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
@@ -7157,12 +7165,12 @@ ${'='.repeat(60)}
 
   // Social Media Posts generieren (mit App-Design) - Fallback
   const generateSocialMediaPosts = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    generateSocialMediaPostsForEvent(selectedEvent || events[0])
+    generateSocialMediaPostsForEvent(event)
   }
 
   /** Event-Flyer HTML (Modal-Vorschau + Druckfenster): einheitliche Toolbar A4/A3/A5 wie Newsletter. */
@@ -7344,12 +7352,12 @@ ${'='.repeat(60)}
 
   // Event-Flyer generieren (mit App-Design) - Fallback
   const generateEventFlyer = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    generateEventFlyerForEvent(selectedEvent || events[0])
+    generateEventFlyerForEvent(event)
   }
 
   // E-Mail-Newsletter für spezifisches Event generieren
@@ -7516,12 +7524,12 @@ ${'='.repeat(60)}
 
   // E-Mail-Newsletter generieren (mit App-Design) - Fallback
   const generateEmailNewsletter = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    generateEmailNewsletterForEvent(selectedEvent || events[0])
+    generateEmailNewsletterForEvent(event)
   }
 
   /** Plakat-HTML mit Format-Leiste (wie Flyer/Newsletter). */
@@ -7738,12 +7746,12 @@ ${'='.repeat(60)}
 
   // Plakat generieren (mit App-Design) - Fallback
   const generatePlakat = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    generatePlakatForEvent(selectedEvent || events[0])
+    generatePlakatForEvent(event)
   }
 
   // Pressemappe generieren
@@ -7998,12 +8006,11 @@ ${'='.repeat(60)}
 
   // Website-Content generieren
   const generateWebsiteContent = () => {
-    const selectedEvent = events.find(e => e.type === 'öffentlichkeitsarbeit' || events.length > 0 ? events[0] : null)
-    if (!selectedEvent && events.length === 0) {
+    const event = getDefaultEventForMediengeneratorButtons(events)
+    if (!event) {
       alert('Bitte zuerst ein Event erstellen')
       return
     }
-    const event = selectedEvent || events[0]
     
     const html = `
 <!DOCTYPE html>
