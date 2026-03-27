@@ -20,8 +20,7 @@ import {
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
-/** Zwei Flyer-Hälften pro A4-Seite (Vorder- und Rückseite je ein 2er-Bogen). */
-const SLOTS = [1, 2] as const
+/** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
 const LEFT_WORK_KEY = 'k2-flyer-event-bogen-left-work'
 const RIGHT_WORK_KEY = 'k2-flyer-event-bogen-right-work'
 
@@ -1582,11 +1581,9 @@ export default function FlyerEventBogenNeuPage() {
 
       {!isA3Mode && !isA6Mode && !isCardMode ? (
         <>
-          <section className="sheet" aria-label="Vorderseite – zwei Flyer pro Seite">
-            {SLOTS.map((i) => <div key={`f-${i}`}>{frontCard}</div>)}
-          </section>
-          <section className="sheet" aria-label="Rückseite – zwei Flyer pro Seite">
-            {SLOTS.map((i) => <div key={`b-${i}`}>{backCard}</div>)}
+          <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
+            <div>{frontCard}</div>
+            <div>{backCard}</div>
           </section>
         </>
       ) : isA3Mode ? (
