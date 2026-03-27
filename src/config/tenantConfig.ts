@@ -50,6 +50,26 @@ export const PRODUCT_KERN_EIGENER_ORT = 'Eigener Ort statt Miete bei anderen.'
 /** Positionierung Sweet-Spot – eine Quelle für Öffentlichkeitsarbeit, Prospekt, Presse. */
 export const PRODUCT_POSITIONING_SWEET_SPOT = 'Zu klein für die Großen, zu komplex für die Kleinen – genau unser Platz.'
 
+/**
+ * Event-Bogen Rückseite (Spalte rechts): ausführliche Erklärung, was **ök2** ist.
+ * Nur Marketing/Demo-Beschreibung – keine K2-Stammdaten. Absätze durch Leerzeile getrennt.
+ */
+export const PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER = `Was ist ök2?
+
+ök2 ist die öffentliche Demo-Galerie der Plattform kgm solution. Sie zeigt an einem durchgestalteten Beispiel, wie Werke, Texte, Galerie-Seite und Außenauftritt professionell zusammen wirken – mit Mustertexten und Musterwerken, nicht mit Daten einer realen Galerie.
+
+Für wen ist das gedacht?
+
+Für Künstler:innen, kleine Galerien, Kunstvereine und alle, die Ideen oder Produkte sichtbar machen wollen – ohne erst Technik oder teure Einzel-Lösungen zusammenzubauen. ${PRODUCT_ZIELGRUPPE}
+
+Warum nicht nur Social Media?
+
+${PRODUCT_POSITIONING_SOCIAL} ${PRODUCT_KERN_EIGENER_ORT} ${PRODUCT_POSITIONING_SWEET_SPOT}
+
+Wie geht es weiter?
+
+Wer die Demo überzeugt, kann eine eigene Instanz mit eigener Galerie anfragen – mit klarer Struktur, eigenem Auftritt und dem gleichen durchdachten Ablauf. Der QR-Code auf dieser Seite führt zur ök2-Demo-Galerie zum Ausprobieren.`
+
 /** E-Mail für „Lizenz anfragen“ (CTA nach Demo). mailto: wird damit gebaut. */
 export const PRODUCT_LIZENZ_ANFRAGE_EMAIL = 'info@kgm.at'
 
