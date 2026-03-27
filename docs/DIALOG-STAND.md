@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Willkommen: Social-Links sichtbar (Fix):** ök2 setzte `galleryData` nur auf **MUSTER_TEXTE** – URLs aus **„Meine Daten“** (`loadStammdaten('oeffentlich', …)`) kamen nicht in den State. **K2:** Alle 2 s `checkStammdatenUpdate` hat bei Kontaktänderung ein **unvollständiges** `galleryData`-Objekt zurückgegeben → **Social-Felder gingen verloren**; ergänzt um Merge mit `…prev` + Social aus `k2-stammdaten-galerie`, inkl. reiner Social-Änderung. **`GaleriePage.tsx`**. **Commit:** `0b41cc1` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: ök2-Galerie neu laden → YouTube/Instagram/Video unter dem Willkommenstext prüfen (nach Eintrag in Admin → Meine Daten).
+
+---
+
 **Letzter Stand:** 27.03.26 – **Galerie Social & Videos (Sportwagenmodus):** Drei optionale URLs in **Seitengestaltung** (`PageContentGalerie`): `socialYoutubeUrl`, `socialInstagramUrl`, `socialFeaturedVideoUrl`. Merge + Publish über bestehendes `pageContent`. Anzeige: **`GalerieSocialLinks`** unter dem Willkommenstext auf **GaleriePage** (K2/ök2/VK2-Kontext) und **Vk2GaleriePage**; Admin **Design** → Block nach Virtueller Rundgang. **`safeExternalHref`** (nur http/https, kein `javascript:`). **Dateien:** `pageContentGalerie.ts`, `GalerieSocialLinks.tsx`, `socialExternalUrls.ts`, `GaleriePage.tsx`, `Vk2GaleriePage.tsx`, `ScreenshotExportAdmin.tsx`, `socialExternalUrls.test.ts`. **Commit:** `558ed06` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Admin → Design → URLs eintragen → öffentliche Galerie/VK2-Galerie prüfen (Links öffnen in neuem Tab).
