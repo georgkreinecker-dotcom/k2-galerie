@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Flyer-Master A5 / Live-Vorschau wieder klar erreichbar:** Die Seite `FlyerEventBogenNeuPage` (Überschrift **Master A5 – Live-Vorschau**) erscheint nur **ohne** `?mode=a3|a6|card`. Viele Einstiege verlinkten nur A3 → wirkte „weg“. **Werbeunterlagen:** Button **Flyer-Master (A4, 2× A5)** bei Abschnitt 1 Prospekt + Text/Button bei Abschnitt 3 Flyer A5. **Texte-Schreibtisch:** Zettel **Flyer-Master A5**. Dateien: `WerbeunterlagenPage.tsx`, `TexteSchreibtischPage.tsx`.
+**Letzter Stand:** 27.03.26 – **Flyer-Master A5 / Live-Vorschau wieder klar erreichbar:** Die Seite `FlyerEventBogenNeuPage` (Überschrift **Master A5 – Live-Vorschau**) erscheint nur **ohne** `?mode=a3|a6|card`. Viele Einstiege verlinkten nur A3 → wirkte „weg“. **Werbeunterlagen:** Button **Flyer-Master (A4, 2× A5)** bei Abschnitt 1 Prospekt + Text/Button bei Abschnitt 3 Flyer A5. **Texte-Schreibtisch:** Zettel **Flyer-Master A5**. Dateien: `WerbeunterlagenPage.tsx`, `TexteSchreibtischPage.tsx`. **Commit:** `037b357` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Werbeunterlagen → orangefarbenen **Flyer-Master**-Button testen; von A3-Ansicht **Zurück zum Master** in der Flyer-Leiste.
 
