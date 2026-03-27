@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **ök2 rote Linie / Muster-Event Sportwagen:** Neue Utility **`src/utils/oek2MusterEventLinie.ts`**: `getOeffentlichEventsWithMusterFallback()` (leerer Speicher → `MUSTER_EVENTS`) + `pickOpeningEventForWerbemittel()` (Vernissage/Eröffnung wie Flyer-Master). Angebunden: **FlyerEventBogenNeuPage**, **GaleriePage** (`getUpcomingEventsOeffentlich`), **ProspektGalerieeroeffnungPage**, **PresseEinladungK2GaleriePage**, **FlyerK2GaleriePage**. Tests: `oek2MusterEventLinie.test.ts`. **Commit:** `1232716` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg kurz ök2 ohne Events im Speicher: Prospekt, Presse-Einladung, K2-Flyer, Galerie-Banner zeigen dieselbe **Vernissage – Neue Arbeiten**-Linie.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Plakat & Druckformate – Neu/Master/Versand:** Karte hat **„Neu erstellen“** (Überblick-Modal: Master, Ableitungen A3/A6/Karte als Links, VK2 ohne große Ableitungen) und **„Master neu erstellen“** (Flyer-Master-Route). **Grüner Button** und **Senden** pro Zeile öffnen **Auswahl-Modal** mit Checkboxen (Plakat + Event-Flyer); **Bundle-Versand** per `sendPlakatDruckformateBundlePerMail` / `tryShareWerbemittelPdfs`. Modals per **Portal**, **z-index 100100**. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `88df5d8` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg testet Öffentlichkeitsarbeit → Plakat-Karte: Überblick, Master, Druckerei mit Auswahl.
