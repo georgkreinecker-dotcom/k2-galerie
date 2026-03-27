@@ -498,6 +498,36 @@ async function tryShareWerbemittelPdf(
   return true
 }
 
+/** Mehrere PDFs teilen (wo der Browser mitspielt) – sonst false, Caller macht mailto + Downloads. */
+async function tryShareWerbemittelPdfs(
+  files: File[],
+  title: string,
+  bodyText: string,
+  fullPacketForClipboard: string
+): Promise<boolean> {
+  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function' || files.length === 0) return false
+  try {
+    const textShort =
+      bodyText.length > 2800 ? `${bodyText.slice(0, 2800)}…\n\n[Volltext in Zwischenablage nach Teilen]` : bodyText
+    const data: ShareData = { title, text: textShort, files }
+    if (typeof navigator.canShare === 'function') {
+      try {
+        if (!navigator.canShare(data)) return false
+      } catch {
+        return false
+      }
+    }
+    await navigator.share(data)
+  } catch (e: unknown) {
+    const name = e && typeof e === 'object' && 'name' in e ? String((e as { name: string }).name) : ''
+    if (name === 'AbortError') return false
+    console.warn('tryShareWerbemittelPdfs', e)
+    return false
+  }
+  void navigator.clipboard?.writeText(fullPacketForClipboard)
+  return true
+}
+
 function downloadBlobAsFile(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -542,6 +572,77 @@ function htmlToPlainTextForClipboard(html: string): string {
     .replace(/\n\s+/g, '\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim()
+}
+
+/** Ein Werbemittel-Dokument (data-URL) → PDF-Blob; gleiche Pipeline wie „An Druckerei – 1 Klick“. */
+async function buildWerbemittelPdfBlobFromDoc(
+  doc: any,
+  capture?: WerbemittelPdfCaptureOptions,
+  fallbackPlainForPdf?: string
+): Promise<{ blob: Blob; fileName: string } | null> {
+  const rawData = doc?.fileData || doc?.data
+  const rawType = String(doc?.fileType || doc?.type || '')
+  const rawBaseName = String(doc?.fileName || doc?.name || 'werbemittel')
+  const baseName = rawBaseName.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[^\w\-]+/g, '_')
+  if (!rawData || typeof rawData !== 'string' || !rawData.startsWith('data:')) return null
+  const commaIdx = rawData.indexOf(',')
+  if (commaIdx < 0) return null
+  const header = rawData.slice(0, commaIdx)
+  const payload = rawData.slice(commaIdx + 1)
+  const mimeFromData = header.slice(5).split(';')[0] || ''
+  const mime = (rawType || mimeFromData || 'application/octet-stream').toLowerCase()
+  const isBase64 = /;base64/i.test(header)
+  const pdfName = `${baseName || 'werbemittel'}.pdf`
+
+  if (mime.includes('pdf')) {
+    let binBlob: Blob
+    if (isBase64) {
+      const binary = atob(payload)
+      const bytes = new Uint8Array(binary.length)
+      for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
+      binBlob = new Blob([bytes], { type: 'application/pdf' })
+    } else {
+      binBlob = new Blob([decodeURIComponent(payload)], { type: 'application/pdf' })
+    }
+    return { blob: binBlob, fileName: pdfName }
+  }
+
+  if (!mime.includes('html')) return null
+  const htmlDecoded = decodeHtmlDataUrl(rawData)
+  if (!htmlDecoded) return null
+
+  const styled = await renderStyledPdfBlobFromHtmlString(htmlDecoded, capture)
+  if (styled && styled.size > 0) return { blob: styled, fileName: pdfName }
+
+  try {
+    const plainFromHtml = htmlToPlainTextForClipboard(htmlDecoded).trim()
+    const fb = String(fallbackPlainForPdf || '').trim()
+    const safeText = plainFromHtml || fb || 'Dokument'
+    const safeTitle = String(rawBaseName || 'Werbemittel')
+    const jspdfModule = await import('jspdf')
+    const JsPdfCtor = (jspdfModule.jsPDF || (jspdfModule as any).default) as any
+    const pdf = new JsPdfCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' })
+    pdf.setFont('helvetica', 'normal')
+    pdf.setFontSize(15)
+    pdf.text(safeTitle, 12, 14)
+    pdf.setFontSize(11)
+    const lines = pdf.splitTextToSize(safeText, 185)
+    let y = 24
+    const pageHeight = 287
+    for (const line of lines) {
+      if (y > pageHeight) {
+        pdf.addPage()
+        y = 14
+      }
+      pdf.text(String(line), 12, y)
+      y += 5.5
+    }
+    const jb = pdf.output('blob') as Blob
+    if (jb && jb.size > 0) return { blob: jb, fileName: pdfName }
+  } catch {
+    /* ignore */
+  }
+  return null
 }
 
 function normalizeMailBody(betreff: string, body: string): string {
@@ -1808,6 +1909,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     qrCode: string
     contact: { phone?: string; email?: string; address?: string }
   } | null>(null)
+  /** Plakat & Druckformate: Überblick nach „Neu erstellen“; Versand mit Checkbox-Auswahl */
+  const [plakatDruckformateInfoModal, setPlakatDruckformateInfoModal] = useState<{
+    event: any
+    flyerTenant: FlyerEventBogenTenantContext
+    hideAbleitungen: boolean
+  } | null>(null)
+  const [plakatDruckformateSendModal, setPlakatDruckformateSendModal] = useState<{
+    event: any
+    docs: any[]
+  } | null>(null)
+  const [plakatDruckformateSendSelectedKeys, setPlakatDruckformateSendSelectedKeys] = useState<Set<string>>(new Set())
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'backup'>('stammdaten')
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
@@ -1876,6 +1988,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setPlakatRedactionEvent(null)
     setPlakatRedactionDoc(null)
     setPlakatRedaction(null)
+    setPlakatDruckformateInfoModal(null)
+    setPlakatDruckformateSendModal(null)
     setFlyerRedactionEvent(null)
     setFlyerRedactionDoc(null)
     setFlyerRedaction(null)
@@ -8760,7 +8874,7 @@ ${'='.repeat(60)}
   const getWerbemittelMailActionLabel = (kartenTyp: string, doc?: any): string => {
     const typ = effectiveWerbemittelMailTyp(kartenTyp, doc)
     if (typ === 'presse') return '📰 An Medien – 1 Klick'
-    if (typ === 'plakat') return '🖨️ An Druckerei – 1 Klick'
+    if (kartenTyp === 'plakat') return '🖨️ Druckerei – Auswahl treffen'
     if (typ === 'event-flyer') return '📄 Flyer senden – 1 Klick'
     if (typ === 'newsletter') return '📧 An Empfänger – 1 Klick'
     if (typ === 'social') return '📱 Social senden – 1 Klick'
@@ -9104,71 +9218,7 @@ ${'='.repeat(60)}
                 fileName: `${mailTyp || 'werbemittel'}-${(ev?.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
               }
             }
-            const rawData = attachmentSource?.fileData || attachmentSource?.data
-            const rawType = String(attachmentSource?.fileType || attachmentSource?.type || '')
-            const rawBaseName = String(attachmentSource?.fileName || attachmentSource?.name || 'werbemittel')
-            const baseName = rawBaseName
-              .replace(/\.[a-z0-9]{2,5}$/i, '')
-              .replace(/[^\w\-]+/g, '_')
-            if (!rawData || typeof rawData !== 'string' || !rawData.startsWith('data:')) return null
-            const commaIdx = rawData.indexOf(',')
-            if (commaIdx < 0) return null
-            const header = rawData.slice(0, commaIdx)
-            const payload = rawData.slice(commaIdx + 1)
-            const mimeFromData = header.slice(5).split(';')[0] || ''
-            const mime = (rawType || mimeFromData || 'application/octet-stream').toLowerCase()
-            const isBase64 = /;base64/i.test(header)
-            const pdfName = `${baseName || 'werbemittel'}.pdf`
-
-            if (mime.includes('pdf')) {
-              let binBlob: Blob
-              if (isBase64) {
-                const binary = atob(payload)
-                const bytes = new Uint8Array(binary.length)
-                for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i)
-                binBlob = new Blob([bytes], { type: 'application/pdf' })
-              } else {
-                binBlob = new Blob([decodeURIComponent(payload)], { type: 'application/pdf' })
-              }
-              return { blob: binBlob, fileName: pdfName }
-            }
-
-            if (!mime.includes('html')) return null
-            const htmlDecoded = decodeHtmlDataUrl(rawData)
-            if (!htmlDecoded) return null
-
-            const styled = await renderStyledPdfBlobFromHtmlString(htmlDecoded, werbemittelPdfCapture)
-            if (styled && styled.size > 0) return { blob: styled, fileName: pdfName }
-
-            try {
-              const plainFromHtml = htmlToPlainTextForClipboard(htmlDecoded).trim()
-              const fallbackPlain = String(plainBody || '').trim()
-              const safeText = plainFromHtml || fallbackPlain || 'Dokument'
-              const safeTitle = String(betreff || baseName || 'Werbemittel')
-              const jspdfModule = await import('jspdf')
-              const JsPdfCtor = (jspdfModule.jsPDF || (jspdfModule as any).default) as any
-              const pdf = new JsPdfCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' })
-              pdf.setFont('helvetica', 'normal')
-              pdf.setFontSize(15)
-              pdf.text(safeTitle, 12, 14)
-              pdf.setFontSize(11)
-              const lines = pdf.splitTextToSize(safeText, 185)
-              let y = 24
-              const pageHeight = 287
-              for (const line of lines) {
-                if (y > pageHeight) {
-                  pdf.addPage()
-                  y = 14
-                }
-                pdf.text(String(line), 12, y)
-                y += 5.5
-              }
-              const jb = pdf.output('blob') as Blob
-              if (jb && jb.size > 0) return { blob: jb, fileName: pdfName }
-            } catch {
-              /* ignore */
-            }
-            return null
+            return buildWerbemittelPdfBlobFromDoc(attachmentSource, werbemittelPdfCapture, plainBody)
           })()
         } catch (e) {
           console.warn('werbemittelPdfPack', e)
@@ -9233,6 +9283,133 @@ ${'='.repeat(60)}
       }
     } catch (e) {
       console.error('sendWerbemittelPerMail', e)
+      alert('Mail konnte nicht vorbereitet werden. Bitte erneut versuchen.')
+    }
+  }
+
+  /** Plakat-Karte: mehrere gespeicherte Vorschläge mit Checkbox-Auswahl an Druckerei-Verteiler. */
+  const sendPlakatDruckformateBundlePerMail = async (docs: any[], ev: any) => {
+    try {
+      if (!docs || docs.length === 0) {
+        alert('Bitte mindestens ein Dokument auswählen.')
+        return
+      }
+      if (docs.length === 1) {
+        await sendWerbemittelPerMail('plakat', docs[0], ev)
+        setPlakatDruckformateSendModal(null)
+        return
+      }
+
+      const selectedByCheck = verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
+      const selectedRecipients = selectedByCheck.length > 0 ? selectedByCheck : verteilerNewsletter
+
+      if (selectedRecipients.length === 0) {
+        setActiveTab('presse')
+        window.scrollTo({ top: 200, behavior: 'smooth' })
+        window.setTimeout(() => {
+          document.getElementById('admin-newsletter-verteiler-bcc')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 150)
+        alert(
+          'Bitte zuerst im Verteiler „Newsletter-Empfänger“ die gewünschten Adressen anhaken. Danach erneut senden.'
+        )
+        return
+      }
+
+      const pdfMailHinweis =
+        'Hinweis: Unterstützt dein Gerät „Teilen“ mit Datei (z. B. iPhone/iPad), können mehrere PDFs gemeinsam gewählt werden – sonst liegen die PDFs in „Downloads" und die E-Mail-App öffnet sich separat (mailto kann keinen Anhang setzen).'
+
+      const lines = docs.map((d, i) => `${i + 1}. ${d.name || d.fileName || 'Dokument'}`)
+      const betreff = `Plakat & Druckformate – ${ev?.title || 'Veranstaltung'} (${docs.length} Dateien)`
+      let plainBody = [
+        `Ausgewählte Formate für „${ev?.title || 'Veranstaltung'}“:`,
+        '',
+        ...lines,
+        '',
+        pdfMailHinweis,
+        '',
+        'Viele Grüße',
+      ].join('\n')
+      plainBody = normalizeMailBody(betreff, plainBody)
+
+      const werbemittelPdfCapture: WerbemittelPdfCaptureOptions | undefined = tenant.isVk2
+        ? undefined
+        : { prDocDesign: designSettings ?? null }
+
+      const packs = await Promise.all(docs.map(d => buildWerbemittelPdfBlobFromDoc(d, werbemittelPdfCapture)))
+      const ok = packs.filter((p): p is { blob: Blob; fileName: string } => !!p)
+      if (ok.length === 0) {
+        alert('Konnte keine PDFs erzeugen. Bitte Dokumente in der Vorschau prüfen.')
+        return
+      }
+      if (ok.length < docs.length) {
+        console.warn('Plakat-Bundle: nur', ok.length, 'von', docs.length, 'PDFs erzeugbar')
+      }
+
+      const recipientEmails = selectedRecipients.map(m => String(m.email || '').trim()).filter(Boolean)
+      const bcc = recipientEmails.join(',')
+      const mailtoTo = recipientEmails.length === 1 ? recipientEmails[0] : ''
+      const shortBody = 'Der volle Text liegt in der Zwischenablage. Bitte im Mailprogramm einfuegen.'
+      const empfaengerBlock = mailtoTo ? `AN:\n${mailtoTo}` : `BCC:\n${bcc}`
+      const fullPacket = `BETREFF:\n${betreff}\n\n${empfaengerBlock}\n\nTEXT:\n${plainBody}`
+
+      const bodyForMailto = plainBody.length > 2500 ? shortBody : plainBody
+      const mailtoWithBcc = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const mailtoWithTo = `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const mailtoPrimary = mailtoTo ? mailtoWithTo : mailtoWithBcc
+      const mailtoSubjectOnly = mailtoTo
+        ? `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}`
+        : `mailto:?subject=${encodeURIComponent(betreff)}`
+      const isLikelyTooLong = mailtoPrimary.length > 1800
+
+      const triggerMailClient = (url: string) => {
+        let triggered = false
+        try {
+          const a = document.createElement('a')
+          a.href = url
+          a.style.display = 'none'
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          triggered = true
+        } catch (_) {}
+
+        if (!triggered) {
+          try {
+            window.location.href = url
+            triggered = true
+          } catch (_) {}
+        }
+
+        if (!triggered) {
+          try {
+            if (typeof window !== 'undefined' && window.self !== window.top && window.top) {
+              window.top.location.href = url
+            }
+          } catch (_) {}
+        }
+      }
+
+      const files = ok.map(p => new File([p.blob], p.fileName, { type: 'application/pdf' }))
+      const shared = await tryShareWerbemittelPdfs(files, betreff, plainBody, fullPacket)
+      if (shared) {
+        setPlakatDruckformateSendModal(null)
+        return
+      }
+
+      triggerMailClient(isLikelyTooLong ? mailtoSubjectOnly : mailtoPrimary)
+      window.setTimeout(() => {
+        navigator.clipboard.writeText(fullPacket).catch(() => {})
+      }, 0)
+      ok.forEach(p => downloadBlobAsFile(p.blob, p.fileName))
+      setPlakatDruckformateSendModal(null)
+
+      if (isLikelyTooLong) {
+        window.setTimeout(() => {
+          alert('Mail geöffnet (kurzer Link). BCC und voller Text liegen in der Zwischenablage – bitte einfügen.')
+        }, 250)
+      }
+    } catch (e) {
+      console.error('sendPlakatDruckformateBundlePerMail', e)
       alert('Mail konnte nicht vorbereitet werden. Bitte erneut versuchen.')
     }
   }
@@ -21549,70 +21726,20 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Ein Master auf A4 (A5 vorne/hinten aus Galerie + Event). A3, A6 und Karten sind nur zum Ansehen und Drucken – Formate unten aufklappen.',
+                                  '„Neu erstellen“ zeigt den Überblick: Flyer-Master und Ableitungen. „Master neu erstellen“ öffnet die A4-Bearbeitung. Beim Versand wählst du, welche gespeicherten Vorschläge mitgehen.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                erstellenGruppen: [
-                                  {
-                                    titel: 'Master · A5 Vorderseite + Rückseite (A4 Übersicht)',
-                                    hinweis:
-                                      'Daten aus Muster-Galerie und Event (Demo: MUSTER_EVENTS). Vorne Bild, hinten nur Text – einzige Bearbeitungsstelle.',
-                                    varianten: [
-                                      {
-                                        label: 'Master bearbeiten',
-                                        onErstellen: () => {
-                                          navigateFromOeffentlichkeitsarbeitOverlay(
-                                            flyerEventBogenUrl({ tenant: flyerTenant }),
-                                          )
-                                        },
-                                      },
-                                    ],
-                                  },
-                                  ...(tenant.isVk2
-                                    ? []
-                                    : [
-                                        {
-                                          titel: 'Ableitung · Großformat (A3, nur Ansicht)',
-                                          varianten: [
-                                            {
-                                              label: 'Ansehen',
-                                              onErstellen: () => {
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  flyerEventBogenUrl({ mode: 'a3', tenant: flyerTenant }),
-                                                )
-                                              },
-                                            },
-                                          ],
-                                        },
-                                        {
-                                          titel: 'Ableitung · Karte A6 (nur Ansicht)',
-                                          varianten: [
-                                            {
-                                              label: 'Ansehen',
-                                              onErstellen: () => {
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  flyerEventBogenUrl({ mode: 'a6', tenant: flyerTenant }),
-                                                )
-                                              },
-                                            },
-                                          ],
-                                        },
-                                        {
-                                          titel: 'Ableitung · Visitenkarten (nur Ansicht)',
-                                          varianten: [
-                                            {
-                                              label: 'Ansehen',
-                                              onErstellen: () => {
-                                                navigateFromOeffentlichkeitsarbeitOverlay(
-                                                  flyerEventBogenUrl({ mode: 'card', tenant: flyerTenant }),
-                                                )
-                                              },
-                                            },
-                                          ],
-                                        },
-                                      ]),
-                                ],
+                                plakatMasterNeuErstellen: () => {
+                                  navigateFromOeffentlichkeitsarbeitOverlay(flyerEventBogenUrl({ tenant: flyerTenant }))
+                                },
+                                onErstellen: () => {
+                                  setPlakatDruckformateInfoModal({
+                                    event,
+                                    flyerTenant,
+                                    hideAbleitungen: tenant.isVk2,
+                                  })
+                                },
                               },
                               {
                                 typ: 'presse' as const,
@@ -21740,6 +21867,8 @@ ${name}`
                                     .map(karte => {
                                     const istPraesentationsmappen = karte.typ === 'praesentationsmappen'
                                     const hatDokumente = karte.docs.length > 0
+                                    const plakatDocRowKey = (d: any, i: number) =>
+                                      String(d?.id != null ? d.id : d?.fileName ?? d?.name ?? `idx-${i}`)
                                     return (
                                       <div
                                         key={karte.typ}
@@ -21885,7 +22014,15 @@ ${name}`
                                               {!istPraesentationsmappen && (
                                                 <button
                                                   type="button"
-                                                  onClick={() => void sendWerbemittelPerMail(karte.typ, primaryDoc, event)}
+                                                  onClick={() => {
+                                                    if (karte.typ === 'plakat') {
+                                                      const keys = karte.docs.map((d: any, i: number) => plakatDocRowKey(d, i))
+                                                      setPlakatDruckformateSendSelectedKeys(new Set(keys))
+                                                      setPlakatDruckformateSendModal({ event, docs: karte.docs })
+                                                    } else {
+                                                      void sendWerbemittelPerMail(karte.typ, primaryDoc, event)
+                                                    }
+                                                  }}
                                                   style={{
                                                     width: '100%',
                                                     textAlign: 'center',
@@ -21908,8 +22045,8 @@ ${name}`
                                                   Weitere Dokumente anzeigen ({karte.docs.length})
                                                 </summary>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.45rem' }}>
-                                                  {karte.docs.map((doc: any) => (
-                                                    <div key={doc.id || doc.name} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                  {karte.docs.map((doc: any, docIdx: number) => (
+                                                    <div key={doc.id || doc.name || plakatDocRowKey(doc, docIdx)} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onOpen(doc)}
@@ -21935,7 +22072,15 @@ ${name}`
                                                       {!istPraesentationsmappen && (
                                                         <button
                                                           type="button"
-                                                          onClick={() => void sendWerbemittelPerMail(karte.typ, doc, event)}
+                                                          onClick={() => {
+                                                            if (karte.typ === 'plakat') {
+                                                              const k = plakatDocRowKey(doc, docIdx)
+                                                              setPlakatDruckformateSendSelectedKeys(new Set([k]))
+                                                              setPlakatDruckformateSendModal({ event, docs: karte.docs })
+                                                            } else {
+                                                              void sendWerbemittelPerMail(karte.typ, doc, event)
+                                                            }
+                                                          }}
                                                           style={{ padding: '0.38rem 0.48rem', background: '#15803d', border: '1px solid rgba(21,128,61,0.35)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.74rem', color: '#fff', fontWeight: 600 }}
                                                           title="Dieses Dokument senden"
                                                         >
@@ -21964,7 +22109,44 @@ ${name}`
                                         })()}
 
                                         <>
-                                        {(karte as any).erstellenGruppen ? (
+                                        {karte.typ === 'plakat' && karte.onErstellen ? (
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                            <button
+                                              type="button"
+                                              onClick={karte.onErstellen}
+                                              style={{
+                                                width: '100%',
+                                                padding: '0.5rem 0.85rem',
+                                                background: hatDokumente ? 'transparent' : s.accent,
+                                                border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontSize: '0.85rem',
+                                                color: hatDokumente ? s.accent : '#fff',
+                                                fontWeight: 600
+                                              }}
+                                            >
+                                              {hatDokumente ? 'Neu erstellen' : 'Jetzt erstellen'}
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={(karte as any).plakatMasterNeuErstellen}
+                                              style={{
+                                                width: '100%',
+                                                padding: '0.45rem 0.85rem',
+                                                background: 'transparent',
+                                                border: `1px solid ${s.accent}55`,
+                                                borderRadius: '8px',
+                                                cursor: 'pointer',
+                                                fontSize: '0.82rem',
+                                                color: s.accent,
+                                                fontWeight: 600
+                                              }}
+                                            >
+                                              Master neu erstellen
+                                            </button>
+                                          </div>
+                                        ) : (karte as any).erstellenGruppen ? (
                                           <details
                                             open={!hatDokumente}
                                             style={{
@@ -22387,6 +22569,310 @@ ${name}`
 
         </main>
       </div>
+
+      {plakatDruckformateInfoModal && typeof document !== 'undefined' && document.body
+        ? createPortal(
+            <div
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setPlakatDruckformateInfoModal(null)}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 100100,
+                background: 'rgba(15, 20, 25, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+              }}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  width: '100%',
+                  maxWidth: '28rem',
+                  background: WERBEUNTERLAGEN_STIL.bgCard,
+                  border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
+                  borderRadius: '12px',
+                  padding: '1.25rem',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+                  maxHeight: '90vh',
+                  overflow: 'auto',
+                }}
+              >
+                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
+                  Plakat &amp; Druckformate – Überblick
+                </h3>
+                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
+                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ gehört ein gemeinsamer Flyer-Master auf A4 (A5 vorne/hinten). Daraus entstehen:
+                </p>
+                <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.2rem', fontSize: '0.88rem', color: '#1c1a18', lineHeight: 1.55 }}>
+                  <li>Master: eine Bearbeitungsstelle für Texte und Bilder</li>
+                  {!plakatDruckformateInfoModal.hideAbleitungen ? (
+                    <>
+                      <li>Ableitung A3 – Großformat, nur Ansehen/Drucken</li>
+                      <li>Ableitung A6 – Karte, nur Ansehen/Drucken</li>
+                      <li>Visitenkarten-Layout – nur Ansehen/Drucken</li>
+                    </>
+                  ) : (
+                    <li>VK2: Fokus auf dem Master; keine großen Druck-Ableitungen in diesem Überblick</li>
+                  )}
+                  <li>Gespeicherte Vorschläge Plakat und Event-Flyer erscheinen in der Karte – Versand mit Auswahl</li>
+                </ul>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPlakatDruckformateInfoModal(null)
+                      navigateFromOeffentlichkeitsarbeitOverlay(
+                        flyerEventBogenUrl({ tenant: plakatDruckformateInfoModal.flyerTenant }),
+                      )
+                    }}
+                    style={{
+                      padding: '0.55rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontSize: '0.88rem',
+                    }}
+                  >
+                    Master bearbeiten
+                  </button>
+                  {!plakatDruckformateInfoModal.hideAbleitungen ? (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                      <a
+                        href={flyerEventBogenUrl({ mode: 'a3', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: '0.45rem 0.65rem',
+                          background: '#fffefb',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          color: '#b54a1e',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        A3 (neuer Tab)
+                      </a>
+                      <a
+                        href={flyerEventBogenUrl({ mode: 'a6', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: '0.45rem 0.65rem',
+                          background: '#fffefb',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          color: '#b54a1e',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        A6 (neuer Tab)
+                      </a>
+                      <a
+                        href={flyerEventBogenUrl({ mode: 'card', tenant: plakatDruckformateInfoModal.flyerTenant })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          padding: '0.45rem 0.65rem',
+                          background: '#fffefb',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
+                          borderRadius: '8px',
+                          fontSize: '0.8rem',
+                          color: '#b54a1e',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                        }}
+                      >
+                        Visitenkarten (neuer Tab)
+                      </a>
+                    </div>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setPlakatDruckformateInfoModal(null)}
+                    style={{
+                      marginTop: '0.25rem',
+                      padding: '0.45rem 0.85rem',
+                      background: 'transparent',
+                      border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}55`,
+                      borderRadius: '8px',
+                      color: '#5c5650',
+                      cursor: 'pointer',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    Schließen
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+
+      {plakatDruckformateSendModal && typeof document !== 'undefined' && document.body
+        ? createPortal(
+            (() => {
+              const m = plakatDruckformateSendModal
+              const rowKey = (d: any, i: number) =>
+                String(d?.id != null ? d.id : d?.fileName ?? d?.name ?? `idx-${i}`)
+              const allKeys = m.docs.map((d, i) => rowKey(d, i))
+              const selectedCount = allKeys.filter(k => plakatDruckformateSendSelectedKeys.has(k)).length
+              return (
+                <div
+                  role="dialog"
+                  aria-modal="true"
+                  onClick={() => setPlakatDruckformateSendModal(null)}
+                  style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 100100,
+                    background: 'rgba(15, 20, 25, 0.45)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1rem',
+                  }}
+                >
+                  <div
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      width: '100%',
+                      maxWidth: '26rem',
+                      background: WERBEUNTERLAGEN_STIL.bgCard,
+                      border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
+                      borderRadius: '12px',
+                      padding: '1.25rem',
+                      boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+                      maxHeight: '90vh',
+                      overflow: 'auto',
+                    }}
+                  >
+                    <h3 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
+                      Druckerei – was mitsenden?
+                    </h3>
+                    <p style={{ margin: '0 0 0.85rem 0', fontSize: '0.85rem', color: '#5c5650', lineHeight: 1.45 }}>
+                      Event: „{m.event?.title || 'Veranstaltung'}“ – ankreuzen, welche PDFs vorbereitet werden.
+                    </p>
+                    <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setPlakatDruckformateSendSelectedKeys(new Set(allKeys))}
+                        style={{
+                          padding: '0.35rem 0.65rem',
+                          background: '#fffefb',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
+                          borderRadius: '6px',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          color: '#1c1a18',
+                        }}
+                      >
+                        Alle
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPlakatDruckformateSendSelectedKeys(new Set())}
+                        style={{
+                          padding: '0.35rem 0.65rem',
+                          background: '#fffefb',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
+                          borderRadius: '6px',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          color: '#1c1a18',
+                        }}
+                      >
+                        Keine
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
+                      {m.docs.map((d: any, i: number) => {
+                        const k = rowKey(d, i)
+                        return (
+                          <label
+                            key={k}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem',
+                              fontSize: '0.86rem',
+                              color: '#1c1a18',
+                              cursor: 'pointer',
+                              padding: '0.35rem 0.25rem',
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={plakatDruckformateSendSelectedKeys.has(k)}
+                              onChange={() =>
+                                setPlakatDruckformateSendSelectedKeys(prev => {
+                                  const next = new Set(prev)
+                                  if (next.has(k)) next.delete(k)
+                                  else next.add(k)
+                                  return next
+                                })
+                              }
+                            />
+                            <span>{d.name || d.fileName || 'Dokument'}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        disabled={selectedCount === 0}
+                        onClick={() => {
+                          const sel = m.docs.filter((d, i) => plakatDruckformateSendSelectedKeys.has(rowKey(d, i)))
+                          void sendPlakatDruckformateBundlePerMail(sel, m.event)
+                        }}
+                        style={{
+                          padding: '0.55rem 1rem',
+                          background: selectedCount === 0 ? '#ccc' : '#15803d',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontWeight: 700,
+                          cursor: selectedCount === 0 ? 'not-allowed' : 'pointer',
+                          fontSize: '0.88rem',
+                        }}
+                      >
+                        Mail vorbereiten{selectedCount > 0 ? ` (${selectedCount})` : ''}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPlakatDruckformateSendModal(null)}
+                        style={{
+                          padding: '0.45rem 0.85rem',
+                          background: 'transparent',
+                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}55`,
+                          borderRadius: '8px',
+                          color: '#5c5650',
+                          cursor: 'pointer',
+                          fontSize: '0.82rem',
+                        }}
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )
+            })(),
+            document.body,
+          )
+        : null}
 
       {/* Vorlage aus Vergangenheit → geplantes Event (Modal) */}
       {pastDocTemplateModal && (
