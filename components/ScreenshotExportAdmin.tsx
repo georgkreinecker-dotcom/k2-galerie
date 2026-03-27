@@ -3414,7 +3414,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const emptyPerson2 = { name: '', email: '', phone: '', website: '', category: 'keramik' as const, bio: '', vita: '' }
     const emptyGallery = {
       name: '', subtitle: '', description: '', address: '', city: '', country: '', phone: '', email: '', website: '', internetadresse: '', openingHours: '', bankverbindung: '', iban: '', bic: '', firmenname: '', ustIdNr: '', rechnungAddress: '', rechnungCity: '', rechnungCountry: '', adminPassword: '',
-      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] as string[], story: ''
+      soldArtworksDisplayDays: 30, welcomeImage: '', virtualTourImage: '', galerieCardImage: '', internetShopNotSetUp: true, focusDirections: [DEFAULT_OEK2_FOCUS_DIRECTION_ID] as string[], story: '',
+      socialYoutubeUrl: '', socialInstagramUrl: '', socialFeaturedVideoUrl: '',
     }
     setMartinaData(emptyPerson1)
     setGeorgData(emptyPerson2)
@@ -5051,33 +5052,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }
     
     return days
-  }
-
-  /** Anmeldung per WhatsApp – Text zum Kopieren oder wa.me-Link („Komme Fr/Sa, So leider nicht“). */
-  const getWhatsAppAnmeldungForEvent = (event: any): { text: string; waUrl: string | null } => {
-    if (!event?.title) return { text: '', waUrl: null }
-    const days = getEventDays(event.date || '', event.endDate || event.date || '')
-    const dayLines = days.length > 0
-      ? days.map((d: string) => {
-          const dd = new Date(d)
-          const label = dd.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'numeric' })
-          return `[ ] ${label}`
-        })
-      : [event.date ? `[ ] ${new Date(event.date).toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}` : '[ ] Datum']
-    const text = [
-      `${event.title} – Anmeldung`,
-      '',
-      'Ich komme:',
-      ...dayLines,
-      '[ ] Leider nicht',
-      '',
-      'Name: ___'
-    ].join('\n')
-    const rawPhone = (galleryData?.phone || martinaData?.phone || georgData?.phone || '').replace(/\s/g, '')
-    const digits = rawPhone.replace(/\D/g, '')
-    const normalized = digits.startsWith('0') ? '43' + digits.slice(1) : digits.length >= 9 ? (digits.startsWith('43') ? digits : '43' + digits) : ''
-    const waUrl = normalized.length >= 10 ? `https://wa.me/${normalized}?text=${encodeURIComponent(text)}` : null
-    return { text, waUrl }
   }
 
   // Automatische Vorschläge für neues Event generieren
@@ -8655,6 +8629,7 @@ ${'='.repeat(60)}
           if (ev) generatePlakatForEvent(ev)
           return
         case 'event-flyer':
+        case 'flyer':
           generateEditableNewsletterPDF(evSug?.flyer || generateEventFlyerContent(ev), ev)
           return
         case 'presse':
@@ -8665,15 +8640,20 @@ ${'='.repeat(60)}
           return
         case 'praesentationsmappe-kurz': {
           const mappeQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+          const vk2Qs = '?variant=vk2'
           const r = PROJECT_ROUTES['k2-galerie']
           const link = (path: string, label: string) =>
             `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${mappeQs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
+          const linkVk2 = (path: string, label: string) =>
+            `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${vk2Qs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
           const helperHtml =
             '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Präsentationsmappen</title><style>body{font-family:system-ui,sans-serif;padding:1.75rem;max-width:560px;line-height:1.55;color:#1c1a18}</style></head><body>' +
             '<h1 style="font-size:1.2rem;margin-top:0">Präsentationsmappen</h1>' +
             '<p>Kein gespeicherter HTML-Inhalt – die Vorschau läuft über die festen Seiten der App:</p>' +
             link(r.praesentationsmappe, 'Kurzvariante') +
             link(r.praesentationsmappeVollversion, 'Vollversion') +
+            linkVk2(r.praesentationsmappe, 'VK2 Kurzversion') +
+            linkVk2(r.praesentationsmappeVollversion, 'VK2 Vollversion') +
             link('/prospekt-k2-galerie', 'Prospekt / Flyer') +
             link(r.plakatGalerieeroeffnung, 'Plakat Galerieeröffnung (A3)') +
             '</body></html>'
@@ -12771,57 +12751,34 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       </div>
                     )}
                   </div>
-                  {/* Öffentliche Social-Links – eine Quelle (pageContent), Anzeige in Galerie */}
+                  {/* Social-Links: eine Quelle = Stammdaten (Einstellungen → Meine Daten), nicht Design */}
                   <div style={{ marginTop: 16, padding: 16, background: 'var(--k2-card-bg-2)', borderRadius: 12, border: '1px solid var(--k2-muted)' }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>YouTube & Instagram</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--k2-muted)', marginBottom: 12, lineHeight: 1.45 }}>
-                      Öffentliche Kanal- oder Profil-URLs (https://…). Erscheinen unter dem Willkommenstext in der Galerie. Optional: Link zu einem Highlight-Video.
+                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>YouTube, Instagram &amp; Highlight-Video</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginBottom: 12, lineHeight: 1.45 }}>
+                      Öffentliche URLs (https://…) pflegst du unter <strong>Einstellungen → Meine Daten</strong>
+                      {tenant.isVk2 ? ' im Block „Verein“' : ' bei den Galerie-Stammdaten'}
+                      . Sie erscheinen unter dem Willkommenstext in der Galerie – dieselbe Quelle wie Kontakt und Öffnungszeiten.
                     </p>
-                    {(() => {
-                      const designTenantSocial = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
-                      const applySocial = (partial: Partial<PageContentGalerie>) => {
-                        const next = { ...pageContent, ...partial }
-                        setPageContent(next)
-                        setPageContentGalerie(next, designTenantSocial)
-                      }
-                      return (
-                        <>
-                          <label htmlFor="social-youtube-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>YouTube</label>
-                          <input
-                            id="social-youtube-url"
-                            type="text"
-                            inputMode="url"
-                            autoComplete="url"
-                            placeholder="https://www.youtube.com/@…"
-                            value={pageContent.socialYoutubeUrl ?? ''}
-                            onChange={(e) => applySocial({ socialYoutubeUrl: e.target.value })}
-                            style={{ width: '100%', marginBottom: 10, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
-                          />
-                          <label htmlFor="social-instagram-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>Instagram</label>
-                          <input
-                            id="social-instagram-url"
-                            type="text"
-                            inputMode="url"
-                            autoComplete="url"
-                            placeholder="https://www.instagram.com/…"
-                            value={pageContent.socialInstagramUrl ?? ''}
-                            onChange={(e) => applySocial({ socialInstagramUrl: e.target.value })}
-                            style={{ width: '100%', marginBottom: 10, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
-                          />
-                          <label htmlFor="social-featured-video-url" style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--k2-text)', marginBottom: 4 }}>Highlight-Video (optional)</label>
-                          <input
-                            id="social-featured-video-url"
-                            type="text"
-                            inputMode="url"
-                            autoComplete="url"
-                            placeholder="https://www.youtube.com/watch?v=…"
-                            value={pageContent.socialFeaturedVideoUrl ?? ''}
-                            onChange={(e) => applySocial({ socialFeaturedVideoUrl: e.target.value })}
-                            style={{ width: '100%', marginBottom: 0, padding: '0.45rem 0.6rem', fontSize: '0.9rem', borderRadius: 8, border: '1px solid var(--k2-muted)', boxSizing: 'border-box', color: '#1c1a18', background: '#fffefb' }}
-                          />
-                        </>
-                      )
-                    })()}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTab('einstellungen')
+                        setSettingsSubTab('stammdaten')
+                        window.scrollTo({ top: 200, behavior: 'smooth' })
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.88rem',
+                        fontWeight: 600,
+                        borderRadius: 8,
+                        border: '1px solid var(--k2-accent)',
+                        background: 'var(--k2-accent)',
+                        color: '#fff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Zu Meine Daten
+                    </button>
                   </div>
                 </section>
               </main>
@@ -16012,6 +15969,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
         {/* Präsentationsmappen – eigener Tab (von Hub erreichbar) */}
         {activeTab === 'praesentationsmappen' && (() => {
           const pmTabQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
+          const pmVk2Qs = '?variant=vk2'
           return (
           <section style={{
             background: s.bgCard,
@@ -16047,6 +16005,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </button>
               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
                 Vollversion (neuer Tab)
+              </a>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmVk2Qs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                VK2 Kurzversion
+              </button>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmVk2Qs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                VK2 Kurzversion (neuer Tab)
+              </a>
+              <button
+                type="button"
+                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmVk2Qs, e)}
+                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                VK2 Vollversion
+              </button>
+              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmVk2Qs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                VK2 Vollversion (neuer Tab)
               </a>
               <button
                 type="button"
@@ -16259,7 +16237,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>👥</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Name, Kontakt, Adresse, Öffnungszeiten</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Name, Kontakt, Adresse, Öffnungszeiten, YouTube/Instagram</div>
               </button>
               {/* 2. Lizenzen – eine Karte, Hauptaktion Lizenzinformation, daneben Abschließen & Beenden (ök2); VK2/dynamisch nur Beenden */}
               {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
@@ -16777,6 +16755,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
                           <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field" style={{ gridColumn: '1 / -1' }}>
+                          <p style={{ margin: '0 0 0.45rem', fontSize: '0.82rem', fontWeight: 600, color: s.text }}>YouTube, Instagram &amp; Highlight-Video</p>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.76rem', color: s.muted, lineHeight: 1.45 }}>Öffentliche Kanal-URLs – eine Quelle mit Kontakt/Adresse; erscheinen unter dem Willkommenstext in der Vereins-Galerie.</p>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem' }}>YouTube</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/@…" value={vk2Stammdaten.verein.socialYoutubeUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialYoutubeUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem' }}>Instagram</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.instagram.com/…" value={vk2Stammdaten.verein.socialInstagramUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialInstagramUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
+                          <div className="field">
+                            <label style={{ fontSize: '0.8rem' }}>Highlight-Video (optional)</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/watch?v=…" value={vk2Stammdaten.verein.socialFeaturedVideoUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialFeaturedVideoUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
                         </div>
                         <div className="field" style={{ gridColumn: '1 / -1' }}>
                           <label style={{ fontSize: '0.85rem' }}>Bankverbindung (für Rechnungen, optional)</label>
@@ -17681,6 +17675,24 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
+                      {!tenant.isVk2 && (
+                        <div style={{ marginTop: '0.35rem', padding: '0.75rem', background: `${s.accent}08`, border: `1px solid ${s.accent}33`, borderRadius: 10 }}>
+                          <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', fontWeight: 600, color: s.text }}>YouTube, Instagram &amp; Highlight-Video</p>
+                          <p style={{ margin: '0 0 0.65rem', fontSize: '0.76rem', color: s.muted, lineHeight: 1.45 }}>Öffentliche Kanal-URLs – erscheinen unter dem Willkommenstext in der Galerie.</p>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem', color: s.text }}>YouTube</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/@…" value={galleryData.socialYoutubeUrl ?? ''} onChange={(e) => setGalleryData({ ...galleryData, socialYoutubeUrl: e.target.value })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          </div>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem', color: s.text }}>Instagram</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.instagram.com/…" value={galleryData.socialInstagramUrl ?? ''} onChange={(e) => setGalleryData({ ...galleryData, socialInstagramUrl: e.target.value })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          </div>
+                          <div className="field">
+                            <label style={{ fontSize: '0.8rem', color: s.text }}>Highlight-Video (optional)</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/watch?v=…" value={galleryData.socialFeaturedVideoUrl ?? ''} onChange={(e) => setGalleryData({ ...galleryData, socialFeaturedVideoUrl: e.target.value })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }} />
+                          </div>
+                        </div>
+                      )}
                       <div className="field">
                         <label style={{ fontSize: '0.85rem', color: s.text }}>Bankverbindung / Freitext (für Überweisung, z. B. Kontoinhaber, Verwendungszweck)</label>
                         <input
@@ -17868,6 +17880,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         <div className="field">
                           <label style={{ fontSize: '0.85rem' }}>Website</label>
                           <input type="url" value={vk2Stammdaten.verein.website} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, website: e.target.value } })} placeholder="https://..." style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                        </div>
+                        <div className="field" style={{ gridColumn: '1 / -1' }}>
+                          <p style={{ margin: '0 0 0.45rem', fontSize: '0.82rem', fontWeight: 600, color: s.text }}>YouTube, Instagram &amp; Highlight-Video</p>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.76rem', color: s.muted, lineHeight: 1.45 }}>Öffentliche Kanal-URLs – eine Quelle mit Kontakt/Adresse; erscheinen unter dem Willkommenstext in der Vereins-Galerie.</p>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem' }}>YouTube</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/@…" value={vk2Stammdaten.verein.socialYoutubeUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialYoutubeUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
+                          <div className="field" style={{ marginBottom: '0.45rem' }}>
+                            <label style={{ fontSize: '0.8rem' }}>Instagram</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.instagram.com/…" value={vk2Stammdaten.verein.socialInstagramUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialInstagramUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
+                          <div className="field">
+                            <label style={{ fontSize: '0.8rem' }}>Highlight-Video (optional)</label>
+                            <input type="text" inputMode="url" autoComplete="url" placeholder="https://www.youtube.com/watch?v=…" value={vk2Stammdaten.verein.socialFeaturedVideoUrl ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, socialFeaturedVideoUrl: e.target.value } })} style={{ width: '100%', boxSizing: 'border-box', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -21386,7 +21414,11 @@ ${name}`
                         const WERBEMATERIAL_TYPEN = ['newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz'] as const
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
-                        prDocsForEvent.forEach((d: any) => { if (d.werbematerialTyp && byTyp[d.werbematerialTyp]) byTyp[d.werbematerialTyp].push(d) })
+                        prDocsForEvent.forEach((d: any) => {
+                          const rawTyp = String(d?.werbematerialTyp || '').trim()
+                          const normalizedTyp = rawTyp === 'flyer' ? 'event-flyer' : rawTyp
+                          if (normalizedTyp && byTyp[normalizedTyp]) byTyp[normalizedTyp].push(d)
+                        })
                         const mappeCtxQs = tenant.isOeffentlich ? '?context=oeffentlich' : ''
                         const listItemStyle = {
                           padding: '0.5rem 0.75rem',
@@ -21431,21 +21463,119 @@ ${name}`
                               {
                                 typ: 'plakat' as const,
                                 icon: '🖼️',
-                                titel: 'Plakat',
-                                beschreibung: 'A3/A2 für Schaufenster & Wände',
+                                titel: 'Plakat & Druckformate',
+                                beschreibung:
+                                  'Alles zur Wand, zur Karte und zum Mitgeben: bearbeitbares Plakat (Formate in der Vorschau) plus Event-Bogen A3, A6 und Visitenkarten.',
                                 docs: byTyp['plakat'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                onErstellen: () => {
-                                  const ev = events.find((e: any) => e.id === event.id)
-                                  if (ev) generatePlakatForEvent(ev)
-                                }
+                                erstellenGruppen: [
+                                  {
+                                    titel: 'Aus der App (bearbeiten)',
+                                    hinweis:
+                                      'In der Druckvorschau Format wählen: A4, A3 oder A5 – wie bei Flyer und Newsletter.',
+                                    varianten: [
+                                      {
+                                        label: 'Plakat öffnen',
+                                        onErstellen: () => {
+                                          const ev = events.find((e: any) => e.id === event.id)
+                                          if (ev) generatePlakatForEvent(ev)
+                                        },
+                                      },
+                                    ],
+                                  },
+                                  ...(tenant.isVk2
+                                    ? []
+                                    : [
+                                        {
+                                          titel: 'Event-Bogen · Großformat (A3)',
+                                          varianten: [
+                                            {
+                                              label: 'Standard',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=a3&layout=standard`
+                                                )
+                                              },
+                                            },
+                                            {
+                                              label: 'Variante 2',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=a3&layout=variant2`
+                                                )
+                                              },
+                                            },
+                                          ],
+                                        },
+                                        {
+                                          titel: 'Event-Bogen · Karte A6',
+                                          varianten: [
+                                            {
+                                              label: 'Standard',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=a6&layout=standard`
+                                                )
+                                              },
+                                            },
+                                            {
+                                              label: 'Variante 2',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=a6&layout=variant2`
+                                                )
+                                              },
+                                            },
+                                          ],
+                                        },
+                                        {
+                                          titel: 'Event-Bogen · Visitenkarten',
+                                          varianten: [
+                                            {
+                                              label: 'Standard',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=card&layout=standard`
+                                                )
+                                              },
+                                            },
+                                            {
+                                              label: 'Variante 2',
+                                              onErstellen: () => {
+                                                const path =
+                                                  PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
+                                                const join = path.includes('?') ? '&' : '?'
+                                                navigateFromOeffentlichkeitsarbeitOverlay(
+                                                  `${path}${join}mode=card&layout=variant2`
+                                                )
+                                              },
+                                            },
+                                          ],
+                                        },
+                                      ]),
+                                ],
                               },
                               {
                                 typ: 'event-flyer' as const,
                                 icon: '📄',
                                 titel: 'Event-Flyer',
-                                beschreibung: 'Handzettel PDF, Event-Bogen Standard oder Variante 2 – alles hier starten.',
+                                beschreibung: 'Handzettel PDF (bearbeitbar) und Flyer-Bogen.',
                                 docs: byTyp['event-flyer'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -21469,16 +21599,6 @@ ${name}`
                                             const join = path.includes('?') ? '&' : '?'
                                             navigateFromOeffentlichkeitsarbeitOverlay(
                                               `${path}${join}layout=standard`
-                                            )
-                                          },
-                                        },
-                                        {
-                                          label: 'Event-Bogen Variante 2',
-                                          onErstellen: () => {
-                                            const path = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu + mappeCtxQs
-                                            const join = path.includes('?') ? '&' : '?'
-                                            navigateFromOeffentlichkeitsarbeitOverlay(
-                                              `${path}${join}layout=variant2`
                                             )
                                           },
                                         },
@@ -21597,37 +21717,6 @@ ${name}`
                                   </div>
                                 </div>
 
-                                {/* Anmeldung per WhatsApp – K2/VK2; in ök2 nicht anbieten (keine echte Galerie-Nummer / Demo) */}
-                                {!tenant.isOeffentlich && (() => {
-                                  const wa = getWhatsAppAnmeldungForEvent(event)
-                                  if (!wa.text) return null
-                                  return (
-                                    <div style={{ marginBottom: '1rem', padding: '0.65rem 0.85rem', background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.2)', borderRadius: 8, fontSize: '0.8rem' }}>
-                                      <div style={{ fontWeight: 600, color: s.text, marginBottom: '0.4rem' }}>📱 Anmeldung per WhatsApp</div>
-                                      <pre style={{ whiteSpace: 'pre-wrap', margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: s.muted, lineHeight: 1.4, fontFamily: 'inherit' }}>{wa.text}</pre>
-                                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                                        <button
-                                          type="button"
-                                          onClick={() => { navigator.clipboard.writeText(wa.text); alert('✅ Text kopiert – in WhatsApp einfügen und an Galerie-Nummer senden.') }}
-                                          style={{ padding: '0.35rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: 6, color: s.accent, cursor: 'pointer', fontSize: '0.75rem' }}
-                                        >
-                                          Text kopieren
-                                        </button>
-                                        {wa.waUrl && (
-                                          <a
-                                            href={wa.waUrl}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            style={{ padding: '0.35rem 0.6rem', background: 'rgba(37,211,102,0.15)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 6, color: '#16a34a', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'none' }}
-                                          >
-                                            Per WhatsApp senden
-                                          </a>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )
-                                })()}
-
                                 {tenant.isVk2 && (
                                   <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.78rem', color: s.muted }}>
                                     Dokument mit K2-Daten? Mit <strong>×</strong> entfernen, dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
@@ -21712,6 +21801,30 @@ ${name}`
                                               <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
                                                 In neuem Tab
                                               </a>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappe + '?variant=vk2',
+                                                    e
+                                                  )
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
+                                                VK2 Kurz
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={(e) =>
+                                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + '?variant=vk2',
+                                                    e
+                                                  )
+                                                }
+                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                              >
+                                                VK2 Voll
+                                              </button>
                                               <button
                                                 type="button"
                                                 onClick={(e) =>
@@ -21847,7 +21960,81 @@ ${name}`
                                         })()}
 
                                         <>
-                                        {(karte as any).erstellenVarianten ? (
+                                        {(karte as any).erstellenGruppen ? (
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
+                                            {(karte as any).erstellenGruppen.map(
+                                              (
+                                                grp: {
+                                                  titel: string
+                                                  hinweis?: string
+                                                  varianten: { label: string; onErstellen: () => void }[]
+                                                },
+                                                gidx: number
+                                              ) => (
+                                                <div
+                                                  key={gidx}
+                                                  style={{
+                                                    padding: '0.5rem 0.55rem',
+                                                    background: 'rgba(0,0,0,0.03)',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid rgba(0,0,0,0.06)',
+                                                  }}
+                                                >
+                                                  <div
+                                                    style={{
+                                                      fontSize: '0.7rem',
+                                                      fontWeight: 700,
+                                                      color: s.text,
+                                                      letterSpacing: '0.04em',
+                                                      textTransform: 'uppercase',
+                                                      marginBottom: grp.hinweis ? '0.25rem' : '0.4rem',
+                                                    }}
+                                                  >
+                                                    {grp.titel}
+                                                  </div>
+                                                  {grp.hinweis ? (
+                                                    <p
+                                                      style={{
+                                                        margin: '0 0 0.45rem',
+                                                        fontSize: '0.72rem',
+                                                        color: s.muted,
+                                                        lineHeight: 1.45,
+                                                      }}
+                                                    >
+                                                      {grp.hinweis}
+                                                    </p>
+                                                  ) : null}
+                                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                                    {grp.varianten.map(
+                                                      (
+                                                        v: { label: string; onErstellen: () => void },
+                                                        idx: number
+                                                      ) => (
+                                                        <button
+                                                          key={idx}
+                                                          type="button"
+                                                          onClick={v.onErstellen}
+                                                          style={{
+                                                            padding: '0.45rem 0.75rem',
+                                                            background: hatDokumente ? 'transparent' : s.accent,
+                                                            border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
+                                                            borderRadius: '8px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.78rem',
+                                                            color: hatDokumente ? s.accent : '#fff',
+                                                            fontWeight: 600,
+                                                          }}
+                                                        >
+                                                          {hatDokumente ? `Neu: ${v.label}` : v.label}
+                                                        </button>
+                                                      )
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              )
+                                            )}
+                                          </div>
+                                        ) : (karte as any).erstellenVarianten ? (
                                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                             {(karte as any).erstellenVarianten.map((v: { label: string, onErstellen: () => void }, idx: number) => (
                                               <button
@@ -23105,7 +23292,7 @@ ${name}`
                   const existing = current.find((d: any) => d.id === docId)
                   const docPayload = {
                     id: docId,
-                    name: flyerRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'flyer', 'Flyer'),
+                    name: flyerRedactionDoc?.name || getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Flyer'),
                     type: 'text/html',
                     size: blob.size,
                     fileData: data,
@@ -23116,7 +23303,7 @@ ${name}`
                     category: 'pr-dokumente',
                     eventId: event.id,
                     eventTitle: event.title,
-                    werbematerialTyp: 'flyer'
+                    werbematerialTyp: 'event-flyer'
                   }
                   const updated = existing ? current.map((d: any) => d.id === docId ? { ...d, ...docPayload } : d) : [...current, docPayload]
                   saveDocuments(updated)
