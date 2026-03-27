@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
@@ -354,6 +354,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   const [guideVisible, setGuideVisible] = useState(false)
   useEffect(() => {
     if (!musterOnly) return
+    if (fromApf) return
+    try {
+      if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+    } catch (_) {}
     try {
       const params = new URLSearchParams(window.location.search)
       const urlName = params.get('vorname')
@@ -372,14 +376,38 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       const e = sessionStorage.getItem(WILLKOMMEN_ENTWURF_KEY) || localStorage.getItem(WILLKOMMEN_ENTWURF_KEY)
       if (n && e === '1') { setGuideName(n.trim()); setGuideVisible(true) }
     } catch (_) {}
-  }, [musterOnly])
+  }, [musterOnly, fromApf])
 
   const KEY_FROM_ADMIN = 'k2-galerie-from-admin'
   const KEY_OEK2_FROM_APF = 'k2-oek2-from-apf'
 
-  /** Guide nur für Fremde (Besucher), nicht für User/Besitzer die von Admin/APf kommen */
-  const isGalerieUser = (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true || (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1')
+  /** Guide nur für Fremde (Besucher), nicht für Programmier-APf (fromApf / embedded) oder Admin */
+  const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
+  const referrerIndicatesApfSession = (() => {
+    try {
+      const path = getSameOriginReferrerPath()
+      return !!(path && isReferrerIndicatingApfStyleSession(path))
+    } catch (_) {}
+    return false
+  })()
+  const isGalerieUser =
+    fromApf === true ||
+    embeddedInApf ||
+    referrerIndicatesApfSession ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_OEK2_FROM_APF) === '1') ||
+    (location.state as { fromAdmin?: boolean } | null)?.fromAdmin === true ||
+    (typeof sessionStorage !== 'undefined' && sessionStorage.getItem(KEY_FROM_ADMIN) === '1')
   const isFremder = !isGalerieUser
+
+  /** APf / iframe: Flag so früh wie möglich setzen – bleibt bei Client-Navigation erhalten, wenn ?embedded=1 einmal fehlt. */
+  useLayoutEffect(() => {
+    if (!musterOnly) return
+    try {
+      if (fromApf || new URLSearchParams(window.location.search).get('embedded') === '1') {
+        sessionStorage.setItem(KEY_OEK2_FROM_APF, '1')
+      }
+    } catch (_) {}
+  }, [musterOnly, fromApf, location.search])
 
   /** Beim Einstieg von Admin: Flag setzen, damit Guide nicht erscheint (nur für Fremde) */
   useEffect(() => {
@@ -3174,10 +3202,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         ) : (
         <>
         {/*
-          ök2 Muster: Ohne großen Fremden-Balken (APf/intern) sonst keine Sparten – ein Block wie FOCUS_DIRECTIONS immer sichtbar.
-          Mit Fremden-Balken: dieselbe Liste zusätzlich im grünen Guide (eine Komponente renderOek2SpartenKasten).
+          ök2 Muster: Sparten-Guide nur für echte Fremde (grüner Balken). APf / embedded / fromAdmin: kein Sparten-Kasten oben – Georg arbeitet, kein „altes Guide-Fenster“.
         */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && (
+        {musterOnly && !showOek2FremdeOrientierungsBanner && !isGalerieUser && (
           <div
             style={{
               margin: '0 auto',
