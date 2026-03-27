@@ -1,8 +1,20 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Flyer/Master A5 (VK2):** Link „← Zurück zum mök2 (Werbeunterlagen)“ wird **nicht** gerendert, wenn **`useTenant().isVk2`** – VK2-Nutzer haben keinen Berechtigungsweg in mök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** `54a3a86` ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg prüft VK2 → Flyer-Bogen: kein mök2-Zurück; K2/ök2 weiterhin mit Link.
+
+---
+
+**Letzter Stand:** 27.03.26 – **ök2 von APf: kein Sparten-Guide oben mehr:** Der Block „Sparte und Mein Weg“ war bei `!showOek2FremdeOrientierungsBanner` **absichtlich immer** eingeblendet (für „intern“) – wirkte wie altes Guide-Fenster. Jetzt nur noch, wenn **`!isGalerieUser`** (echte Fremde ohne grünen Balken). Zusätzlich: **`useLayoutEffect`** setzt **`k2-oek2-from-apf`**, sobald **`fromApf`** oder **`?embedded=1`** – bleibt nach SPA-Navigation erhalten. **`isGalerieUser`** enthält dieselbe **Referrer-APf-Logik** wie der Fremden-Banner (`galerieOek2Referrer`). **Datei:** `GaleriePage.tsx`. **Commit:** `35d7486` ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg testet APf → ök2-Galerie (iframe + ggf. Vollbild): oben **kein** Sparten-Kasten; **„Galerie gestalten (CD)“**-Zeile wie bisher.
+
+---
+
 **Letzter Stand:** 27.03.26 – **APf „↗️ Vollbild“:** Link nutzt jetzt **`getPathForPage(currentPageData.id)`** statt langer Ternärkette mit Fallback **`/`**. **`/`** wurde von der Root-Logik nach **Entdecken (Eingangstor)** umgeleitet – bei fehlenden Tab-Zuordnungen (z. B. Plattform Start, Mission Control, Handbuch Galerie) landete man dort. Zusätzlich: **Platzanordnung** in `getPathForPage` auf **`PROJECT_ROUTES['k2-galerie'].platzanordnung`**. **Commit:** `fc3aac6` ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg testet APf: Tab wählen (z. B. ök2-Galerie, Plattform Start) → **↗️ Vollbild** → soll die passende Seite im neuen Tab öffnen, nicht das Eingangstor.
+**Was wir JETZT tun:** (teilweise abgelöst: Vollbild = iframe-URL lokal in DevViewPage, falls committed)
 
 ---
 
