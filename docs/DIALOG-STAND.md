@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 3 – Einzel-Karten + Event je Rubrik:** Hilfsfunktion **`resolveEventForMediengeneratorCard`** (String-ID): Newsletter-, Presse-, Social-**Neu erstellen** und **PR-PDF** ohne leises `find`-Scheitern; **`k2-pr-suggestions`** per **`String(eventId)`** gematcht. **`openMedienpaketVorschlagDocument(event?)`**: optional pro Event; inhaltlich wie Einzel-Karten inkl. PR-Vorschläge. Pro Event-Rubrik: Button **„Medienpaket (dieses Event)“**. Dokument neu aus Liste ohne Datei: Presse mit **neutral/lokal**-Fallback. **`orderMediengeneratorEventList`:** Primär-Event-Filter per String-ID. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_
+**Letzter Stand:** 27.03.26 – **Mediengenerator Schritt 3 – Einzel-Karten + Event je Rubrik:** Hilfsfunktion **`resolveEventForMediengeneratorCard`** (String-ID): Newsletter-, Presse-, Social-**Neu erstellen** und **PR-PDF** ohne leises `find`-Scheitern; **`k2-pr-suggestions`** per **`String(eventId)`** gematcht. **`openMedienpaketVorschlagDocument(event?)`**: optional pro Event; inhaltlich wie Einzel-Karten inkl. PR-Vorschläge. Pro Event-Rubrik: Button **„Medienpaket (dieses Event)“**. Dokument neu aus Liste ohne Datei: Presse mit **neutral/lokal**-Fallback. **`orderMediengeneratorEventList`:** Primär-Event-Filter per String-ID. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `9d099fa` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: je Event-Rubrik Medienpaket-Button und „Neu erstellen“ auf K2/ök2 kurz testen.
 
