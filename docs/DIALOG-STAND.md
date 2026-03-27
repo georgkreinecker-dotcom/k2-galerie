@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Ök2-Kontext für Flyer/mök2 (URL + TenantContext):** Unter `/projects/k2-galerie/*` wirkt `?context=oeffentlich` wie bei `/admin` (nur Plattform-Instanz; Lizenznehmer: URL ignoriert). mök2-Links zu Flyer-Bogen, A3/A6/Karte und Werbeunterlagen mit `context=oeffentlich`; Flyer-Toolbar-Varianten und Speichern→Werbeunterlagen behalten ök2. Doku: `docs/K2-OEK2-DATENTRENNUNG.md`. **Commit:** `caadbdd` ✅ auf GitHub. **Rollback:** `git revert caadbdd` (ein Commit, nur diese vier Dateien).
+
+**Was wir JETZT tun:** Georg testet: mök2 → Flyer-Bogen öffnen → Seite soll **Muster**/ök2-Keys nutzen (nicht K2), Varianten-Links bleiben im ök2-Kontext.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Flyer Event-Bogen (ök2):** Kopfzeilen, Namen, Rückseiten-Titel, Intro und QR aus **Mustergalerie** / `getOek2MusterBasics`, Events aus `loadEvents('oeffentlich')` mit Fallback **`MUSTER_EVENTS`**, Vorder-QR → Demo-Galerie, separates **localStorage**-Key für ök2-Flyer. Datei: `FlyerEventBogenNeuPage.tsx`. `tsc` ✅; vollständiger Build bei Push.
 
-**Was wir JETZT tun:** Georg prüft den Demo-Flyer im ök2-Kontakt (Überschrift Vernissage, Galerie Muster, Lena & Paul).
+**Was wir JETZT tun:** (abgelöst durch Eintrag oben – URL-Kontext für mök2-Einstieg)
 
 ---
 
