@@ -22361,7 +22361,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Mit Dokumenten: große Vorschau des Plakat-Masters (CD wie in der App, mit Event-Daten). Flyer-Master A4 und Ableitungen A3/A6/Karte über die Buttons. Versand: mehrere Dateien wählbar.',
+                                  'Mit Dokumenten: große Vorschau des Plakat-Masters. Farben und Schrift kommen aus Galerie gestalten (Tab Design); Termine und Texte aus dem Event. Flyer-Master A4 und Ableitungen A3/A6/Karte über die Buttons. Versand: mehrere Dateien wählbar.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -22716,7 +22716,7 @@ ${name}`
                                                       fontWeight: 600,
                                                     }}
                                                   >
-                                                    Vorschau: Plakat-Master (Galerie-Design, mit Event gefüllt)
+                                                    Vorschau: Plakat-Master (Design aus Galerie gestalten · Inhalt aus Event)
                                                   </div>
                                                   <iframe
                                                     title="Plakat-Vorschau"
@@ -23341,7 +23341,7 @@ ${name}`
                   Plakat &amp; Druckformate – Überblick
                 </h3>
                 <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – <strong>Plakat-Master</strong> (Galerie-Design) mit den aktuellen Event- und Stammdaten:
+                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – <strong>Plakat-Master</strong>: Farben und Schrift wie in <strong>Galerie gestalten</strong> (Tab Design); Texte und Termine aus Event und Stammdaten.
                 </p>
                 <div
                   style={{
@@ -23371,7 +23371,7 @@ ${name}`
                   />
                 </div>
                 <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Zusätzlich: gemeinsamer <strong>Flyer-Master</strong> auf A4 (A5 vorne/hinten). Daraus entstehen:
+                  Zusätzlich: gemeinsamer <strong>Flyer-Master</strong> auf A4 (A5 vorne/hinten) – derselbe Look wie der Plakat-Master (Design aus Galerie gestalten). Daraus entstehen:
                 </p>
                 <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.2rem', fontSize: '0.88rem', color: '#1c1a18', lineHeight: 1.55 }}>
                   <li>Master: eine Bearbeitungsstelle für Texte und Bilder</li>
