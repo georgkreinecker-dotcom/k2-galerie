@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 27.03.26 – **Flyer: QR-Hinweis nur am Master; Paket übernehmen vollständig:** Unter **A6** kein Galerie-QR-Hinweis mehr. **Nur Flyer-Master** (Layout Standard + V2): kurzer Text unter „Zur Galerie online“ (`master-qr-hint`). **Paket übernehmen:** Presse, Social, Plakat, Flyer immer aus den **Generatoren** (kein altes `k2-pr-suggestions`); danach **`k2-pr-suggestions`** für die Event-ID **überschrieben**, **`setPrSuggestionsRefresh`**. **ök2:** Speicher **`k2-oeffentlich-flyer-event-bogen-neu-v1`** leeren + Event **`k2-flyer-event-bogen-neu-reset`**; **FlyerEventBogenNeuPage** setzt State auf **Muster/Defaults**. **Dateien:** `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`. **Commit:** **114665e** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg: ök2 – **Paket übernehmen** mit offenem Flyer-Master testen; A6-Fuß ohne Zusatz-Hinweis; Master mit Hinweis drucken.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Flyer-Master A5: linke Hilfe-Spalte entfernt** – Commit: **32c94b2** ✅ auf GitHub. Erklärungen nur noch über **Kurzinfo (i)** über der Vorschau; Workspace nur noch **Live-Vorschau** (zentriert). Entfernt: `masterIntroRailOpen`, Aside, „Hilfe“-Button, `.master-intro-*`-CSS. **Datei:** `FlyerEventBogenNeuPage.tsx`.
 
 **Was wir JETZT tun:** Georg: Master A5 – kein Hilfefenster links; **i** für Kontext.
