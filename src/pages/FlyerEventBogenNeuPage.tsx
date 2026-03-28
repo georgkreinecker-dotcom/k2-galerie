@@ -20,17 +20,11 @@ import {
   formatEventTerminKomplett,
 } from '../utils/eventTerminFormat'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
+import { getFlyerEventBogenStorageKey } from '../utils/flyerEventBogenStorageKeys'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
-
-const FLYER_EVENT_BOGEN_STORAGE_KEY_K2 = 'k2-flyer-event-bogen-neu-v1'
-const FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF = 'k2-oeffentlich-flyer-event-bogen-neu-v1'
-
-function getFlyerEventBogenStorageKey(isOeffentlich: boolean): string {
-  return isOeffentlich ? FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF : FLYER_EVENT_BOGEN_STORAGE_KEY_K2
-}
 const FLYER_SAVE_MAX_BYTES = 4_200_000
 
 /** Data-URL / Blob-URL vor localStorage stark verkleinern (vermeidet QuotaExceeded / „Speicher voll“). */
@@ -409,13 +403,16 @@ export default function FlyerEventBogenNeuPage() {
       )
     }
 
-    const storageFullHint =
-      'Browser-Speicher voll oder zu knapp. Tipp: Admin → Einstellungen → Speicher entlasten (Werkbilder verkleinern) oder Platz schaffen.'
+    const storageFullHint = isOeffentlich
+      ? 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“). Bei der Demo sind meist wenige Daten – trotzdem zählt die Speicher-Grenze für die ganze Website (K2 und ök2 teilen sich dasselbe Kontingent im Browser).\n\nWas du tun kannst:\n• Kleineres Bild für die Vorderseite wählen oder nur ein Galerie-Bild per URL (kein riesiges eingebettetes Foto).\n• Lange Texte kürzen.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ (nur automatische Zwischensicherung, falls vorhanden) oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Im Browser: Speicher / Websitedaten für diese App prüfen.'
+      : 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“).\n\nWas du tun kannst:\n• Flyer-Bild verkleinern oder kürzere Texte.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Sonst im Browser Websitedaten für diese App freigeben – oft kommt der Platzbedarf von vielen Werken oder anderen Daten derselben Website.'
 
     try {
       if (json.length > FLYER_SAVE_MAX_BYTES) {
         setFlyerSaveMessage(
-          'Zu groß zum Speichern – Texte kürzen oder in Einstellungen Speicher entlasten.',
+          isOeffentlich
+            ? 'Zu groß zum Speichern – Texte kürzen, kleineres Flyer-Bild, oder in Einstellungen den Flyer-Master aus dem Browser entfernen.'
+            : 'Zu groß zum Speichern – Texte kürzen, Flyer-Bild verkleinern, oder Einstellungen → Backup (Flyer-Master / Speicher freigeben).',
         )
         window.setTimeout(() => setFlyerSaveMessage(''), 8000)
         return

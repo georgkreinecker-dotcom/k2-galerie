@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Flyer „Speicher voll“: Hinweise + echter Button:** Die Meldung verwies auf **„Speicher entlasten (Werkbilder verkleinern)“** – **existiert nicht** (`compressAllArtworkImages` ohne UI). **Neu:** sachliche Texte (ök2: gemeinsames Browser-Kontingent mit K2; kleineres Flyer-Bild; Backup). **Einstellungen → Backup:** Button **„Flyer-Master aus Browser-Speicher entfernen“** (nur Flyer-Key, mit Rückfrage). **SafeMode** `SPEICHER_VOLL_MELDUNG` und zwei Admin-Alerts angepasst. Schlüssel: `src/utils/flyerEventBogenStorageKeys.ts`. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg: ök2 Flyer speichern testen; bei Hinweis Einstellungen → neue Buttons prüfen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Flyer-Master A5: Schwarzweiß + Zurück:** **Schwarzweiß Druckcheck** galt nur in `@media print` → auf dem Bildschirm wirkungslos; Styles jetzt **auch für die Live-Vorschau**; Toggle per **`bwPrintPreview`** + Klasse **`bw-print`** am Root (kein `querySelector`). **Toolbar:** **← Zurück** = `navigate(-1)` wenn History, sonst **Werbeunterlagen** mit `?context=oeffentlich` / `vk2`. Datei: `FlyerEventBogenNeuPage.tsx`. **Commit:** `bf368ed` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Master A5 → Schwarzweiß ein/aus sichtbar prüfen; Zurück von Werbeunterlagen/Marketing testen.

@@ -124,4 +124,5 @@ export function tryFreeLocalStorageSpace(): number {
 }
 
 /** Einheitliche Meldung bei Speicher voll – Ursache oft Backup/Stammdaten, nicht nur Werke. */
-export const SPEICHER_VOLL_MELDUNG = 'Speicher voll (Browser-Speicherplatz).\n\nOft liegt es an vielen Werken mit großen Bildern oder am Vollbackup.\n\nTipps:\n• Einstellungen → Backup & Wiederherstellung → „Speicher entlasten – Werkbilder verkleinern“ (verkleinert alle Bilder, löscht nichts)\n• „Altes Backup löschen“ falls vorhanden\n• Oder Browser-Daten für diese Seite löschen'
+export const SPEICHER_VOLL_MELDUNG =
+  'Speicher voll (Browser-Speicherplatz).\n\nOft: große Bilder (Werke, Flyer, Design), die automatische Zwischensicherung im Browser, oder die Gesamtgrenze für diese Website ist erreicht.\n\nTipps:\n• Einstellungen → Backup: „🔓 Speicher freigeben“ (entfernt nur die automatische Zwischensicherung im Browser, falls vorhanden)\n• Flyer: „Flyer-Master aus Browser-Speicher entfernen“ (gleicher Bereich), falls du den Flyer zurücksetzen willst\n• Browser: Websitedaten / Speicher für diese App prüfen oder verkleinern'

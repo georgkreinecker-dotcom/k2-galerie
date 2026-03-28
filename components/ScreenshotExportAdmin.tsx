@@ -1172,7 +1172,8 @@ const OEF_DESIGN_DEFAULT = {
   cardBg2: 'rgba(246, 244, 240, 0.9)'
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
-import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext, compressAllArtworkImages } from '../src/utils/autoSave'
+import { getFlyerEventBogenStorageKey } from '../src/utils/flyerEventBogenStorageKeys'
+import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
@@ -1229,7 +1230,7 @@ async function saveArtworks(tenant: ReturnType<typeof useTenant>, artworks: any[
       } else alert('⚠️ ' + SPEICHER_VOLL_MELDUNG)
       return ok
     }
-    alert('⚠️ Zu viele Werke oder Speicher voll. Bitte Einstellungen → Speicher entlasten oder einige löschen.')
+    alert('⚠️ Zu viele Werke oder Speicher voll. Bitte Einstellungen → Backup: „Speicher freigeben“ oder „Flyer-Master entfernen“, ggf. Werke mit großen Bildern reduzieren.')
   }
   return ok
 }
@@ -4929,7 +4930,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       const toSave = stripBase64FromArtworks(afterPersist)
       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, { filterK2Only: true, allowReduce: true })
       if (!ok) {
-        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte „Speicher entlasten“ oder „Aus Backup-Datei wiederherstellen“ nutzen.')
+        alert('Die Daten konnten nicht gespeichert werden (z. B. Speicher voll). Bitte Einstellungen → Backup: „Speicher freigeben“ / „Flyer-Master entfernen“ oder im Browser Websitedaten prüfen.')
         return
       }
       const resolved = await loadArtworksWithResolvedImages(tenant)
@@ -19041,6 +19042,42 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         🔓 Speicher freigeben
                       </button>
                       <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Löscht nur die automatische Sicherung im Browser, um Platz zu machen. Deine Daten und eine selbst gespeicherte Sicherungsdatei bleiben unverändert.</p>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const key = getFlyerEventBogenStorageKey(tenant.isOeffentlich)
+                          if (!localStorage.getItem(key)) {
+                            alert(
+                              'Im Browser ist kein gespeicherter Flyer-Master hinterlegt (Schlüssel leer).\n\nWenn „Speichern“ trotzdem „Speicher voll“ meldet, liegt es oft an anderen Daten derselben Website (z. B. K2-Werke) oder am Browser-Kontingent – dann „Speicher freigeben“ oben probieren oder Websitedaten der App prüfen.',
+                            )
+                            return
+                          }
+                          const label = tenant.isOeffentlich ? 'ök2-Demo' : tenant.isVk2 ? 'VK2' : 'K2'
+                          if (
+                            !confirm(
+                              `Gespeicherten Flyer-Master (${label}) aus dem Browser-Speicher löschen?\n\nDanach startet der Flyer wieder ohne deinen letzten Speicherstand (Stammdaten/Galerie bleiben). Du kannst neu speichern.`,
+                            )
+                          ) {
+                            return
+                          }
+                          try {
+                            localStorage.removeItem(key)
+                            alert(
+                              '✅ Flyer-Master wurde aus dem Browser-Speicher entfernt.\n\nBeim nächsten Öffnen des Flyers ohne neuen Speichervorgang erscheint der Standard aus Galerie/Stammdaten.',
+                            )
+                          } catch (e) {
+                            alert('Konnte nicht löschen: ' + (e instanceof Error ? e.message : String(e)))
+                          }
+                        }}
+                        style={{ padding: '0.6rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '8px', color: s.text, fontSize: '0.85rem', fontWeight: '500', cursor: 'pointer' }}
+                      >
+                        🗑️ Flyer-Master aus Browser-Speicher entfernen
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>
+                        Nur der Event-Flyer-Master (gespeicherter Stand), keine Werke und kein Vollbackup. Hilft, wenn Speichern am Flyer scheitert; die Website (K2/ök2) nutzt im Browser ein gemeinsames Kontingent.
+                      </p>
                     </div>
                   </div>
                 </div>
