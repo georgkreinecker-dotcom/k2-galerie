@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Info als Fenster über Vorschau + Dummy stabil:** **i**-Klicks öffnen **Popover mit Halbtransparent-Hintergrund über der Live-Vorschau** (nicht mehr Zeile unter der Überschrift). **ök2/VK2-Dummy:** `useState`-Initializer ignoriert persistierte **URL-Bilder** nur **data:/blob:**; Normalisierungs-**useEffect** **ohne** `flyerDataTick` (kein Flackern bei Strict Mode / Event-Updates). **Datei:** `FlyerEventBogenNeuPage.tsx`.
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Info als Fenster über Vorschau + Dummy stabil** – Commit: **9d13b11** ✅ auf GitHub. **i**-Klicks → **Popover mit Halbtransparent-Hintergrund über der Live-Vorschau** (nicht mehr Zeile unter der Überschrift). **ESC** schließt Kurzinfo. **ök2/VK2-Dummy:** persistierte URL-Bilder werden ignoriert (nur **data:/blob:**); Normalisierungs-**useEffect** **ohne** `flyerDataTick`. **Datei:** `FlyerEventBogenNeuPage.tsx`.
 
 **Was wir JETZT tun:** Georg: ök2/VK2 – Dummy bleibt; **i** → Fenster über dem Blatt; **ESC** oder Hintergrundklick schließt.
 
