@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Plakat & Druckformate: Texte an echten Ablauf angepasst:** Statt vager „CD wie in der App“ steht jetzt klar: **Farben und Schrift** aus **Galerie gestalten** (Tab Design), **Inhalt** aus **Event** und Stammdaten; Flyer-Master = **derselbe Look**. Betroffen: Karten-Beschreibung, iframe-Titel der Vorschau, Modal „Plakat & Druckformate – Überblick“. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 28.03.26 – **Plakat & Druckformate: Texte an echten Ablauf angepasst:** Statt vager „CD wie in der App“ steht jetzt klar: **Farben und Schrift** aus **Galerie gestalten** (Tab Design), **Inhalt** aus **Event** und Stammdaten; Flyer-Master = **derselbe Look**. Betroffen: Karten-Beschreibung, iframe-Titel der Vorschau, Modal „Plakat & Druckformate – Überblick“. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** `97699cc` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Mediengenerator → Plakat-Karte: Texte kurz gegenlesen.
 
