@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Galerie gestalten → Hinweis Mediengenerator:** Unter **Design** (alle Untertabs Vorschau, Farben, Eingangsseite) ein kurzer Hinweis: **Farbdesign und Texte** gelten auch für Vorlagen unter **Marketing** (Presse, Flyer, Social Media, Newsletter). **Datei:** `ScreenshotExportAdmin.tsx` (nach `designDraftCssVars`). **Commit:** _(nach Push)_
+**Letzter Stand:** 28.03.26 – **Galerie gestalten → Hinweis Mediengenerator:** Unter **Design** (alle Untertabs Vorschau, Farben, Eingangsseite) ein kurzer Hinweis: **Farbdesign und Texte** gelten auch für Vorlagen unter **Marketing** (Presse, Flyer, Social Media, Newsletter). **Datei:** `ScreenshotExportAdmin.tsx` (nach `designDraftCssVars`). **Commit:** `fab5936` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Admin → Tab Design → Hinweis lesen; optional Marketing-Vorlage prüfen, ob Look zu Galerie-Design passt.
 
