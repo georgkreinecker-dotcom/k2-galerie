@@ -1,8 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5: K2 unverändert, ök2/VK2 Dummy + Hilfe erweitert:** **K2** wieder **Fallback** **`/img/k2/willkommen.jpg`** (wie zuvor). **ök2 und VK2:** Platzhalter **`/img/muster/malerei.svg`** statt Demo-JPEGs. **QR Vorderseite:** VK2 nutzt **`/projects/vk2/galerie`** (Server-Stand + Bust). **Hilfe-Leiste:** eigener VK2-Block; bei K2/ök2/VK2 ausführlich **Termin**, **QR-Routen**, **feste Satzteile**, **Öffnungszeiten** erklärt. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Git:** letzter Commit auf **main** mit Nachricht **„Flyer-Master A5: K2 willkommen.jpg …“**.
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Info als Fenster über Vorschau + Dummy stabil:** **i**-Klicks öffnen **Popover mit Halbtransparent-Hintergrund über der Live-Vorschau** (nicht mehr Zeile unter der Überschrift). **ök2/VK2-Dummy:** `useState`-Initializer ignoriert persistierte **URL-Bilder** nur **data:/blob:**; Normalisierungs-**useEffect** **ohne** `flyerDataTick` (kein Flackern bei Strict Mode / Event-Updates). **Datei:** `FlyerEventBogenNeuPage.tsx`.
 
-**Was wir JETZT tun:** Georg: K2-Flyer ohne Galeriebild → willkommen.jpg; ök2/VK2 → Dummy-SVG; Hilfe „Was du hier nicht änderst“ gegenlesen.
+**Was wir JETZT tun:** Georg: ök2/VK2 – Dummy bleibt; **i** → Fenster über dem Blatt; **ESC** oder Hintergrundklick schließt.
+
+---
+
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: K2 unverändert, ök2/VK2 Dummy + Hilfe erweitert:** **K2** wieder **Fallback** **`/img/k2/willkommen.jpg`** (wie zuvor). **ök2 und VK2:** Platzhalter **`/img/muster/malerei.svg`** statt Demo-JPEGs. **QR Vorderseite:** VK2 nutzt **`/projects/vk2/galerie`** (Server-Stand + Bust). **Hilfe-Leiste:** eigener VK2-Block; bei K2/ök2/VK2 ausführlich **Termin**, **QR-Routen**, **feste Satzteile**, **Öffnungszeiten** erklärt. **Datei:** `FlyerEventBogenNeuPage.tsx**. **Git:** letzter Commit auf **main** mit Nachricht **„Flyer-Master A5: K2 willkommen.jpg …“**.
+
+**Was wir JETZT tun:** _(siehe obersten Eintrag – Dummy + i-Klickinfos ergänzt)_
 
 ---
 

@@ -181,9 +181,10 @@ async function compressLeftSrcForFlyerStorage(leftSrc: string, aggressive: boole
 }
 
 function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean): string {
-  const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+  if (isOeffentlich || isVk2) return flyerImageFallbackPath(isOeffentlich, isVk2)
+  const g = loadStammdaten('k2', 'gallery')
   const gi = getGalerieImages(g)
-  return gi.galerieCardImage || gi.welcomeImage || flyerImageFallbackPath(isOeffentlich, isVk2)
+  return gi.galerieCardImage || gi.welcomeImage || K2_FLYER_BILD_FALLBACK
 }
 
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
@@ -421,12 +422,19 @@ export default function FlyerEventBogenNeuPage() {
   const [leftSrc, setLeftSrc] = useState(() => {
     const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))
     const s = p?.leftSrc
+    const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
+    const demo = isOeffentlich || isVk2
+    if (demo) {
+      if (typeof s === 'string' && s.length > 0 && (s.startsWith('data:image') || s.startsWith('blob:'))) {
+        return s
+      }
+      return fb
+    }
     if (typeof s === 'string' && s.length > 0 && !s.startsWith('blob:')) {
       return s
     }
-    const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+    const g = loadStammdaten('k2', 'gallery')
     const gi = getGalerieImages(g)
-    const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
     return gi.galerieCardImage || gi.welcomeImage || fb
   })
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
@@ -460,12 +468,22 @@ export default function FlyerEventBogenNeuPage() {
     [introFollowsGallery, base.intro, masterText.intro],
   )
   const [masterEditField, setMasterEditField] = useState<MasterEditKey | null>(null)
+  const [masterLiveInfo, setMasterLiveInfo] = useState<string | null>(null)
   const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
   const [flyerSaveMessage, setFlyerSaveMessage] = useState('')
   const [masterIntroRailOpen, setMasterIntroRailOpen] = useState(true)
   const [bwPrintPreview, setBwPrintPreview] = useState(false)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
+
+  /** ök2/VK2: URL-Pfade aus alter Persistenz ignorieren; Upload (data/blob) behalten. Ohne flyerDataTick – sonst Flackern bei React Strict Mode / Daten-Updates. */
+  useEffect(() => {
+    if (!isOeffentlich && !isVk2) return
+    setLeftSrc((prev) => {
+      if (typeof prev === 'string' && (prev.startsWith('data:image') || prev.startsWith('blob:'))) return prev
+      return flyerImgFallback
+    })
+  }, [isOeffentlich, isVk2, flyerImgFallback])
 
   const werbeunterlagenHref = useMemo(() => {
     const b = PROJECT_ROUTES['k2-galerie'].werbeunterlagen
@@ -558,7 +576,9 @@ export default function FlyerEventBogenNeuPage() {
       setLeftSrc(leftSrcToSave)
       if (leftSrcToSave === fallbackPath && leftSrc !== fallbackPath) {
         setFlyerSaveMessage(
-          'Gespeichert mit Galerie-Standardbild – dein Foto war zu groß für den Speicher (automatisch ersetzt).',
+          isOeffentlich || isVk2
+            ? 'Gespeichert mit neutralem Platzhalterbild – dein Foto war zu groß für den Speicher (automatisch ersetzt).'
+            : 'Gespeichert mit Galerie-Standardbild – dein Foto war zu groß für den Speicher (automatisch ersetzt).',
         )
         window.setTimeout(() => setFlyerSaveMessage(''), 7000)
       }
@@ -635,6 +655,56 @@ export default function FlyerEventBogenNeuPage() {
     return 'Galerieeröffnung'
   }, [isOeffentlich, eroeffnungEvent])
   const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
+
+  const masterClickInfoTexts = useMemo(() => {
+    const oh =
+      'Der Block „Öffnungszeiten Galerie“ erscheint nur, wenn beim Event keine eigenen Zeiten eingetragen sind – dann kommen die Öffnungszeiten aus den Galerie-Stammdaten.'
+    if (isOeffentlich) {
+      return {
+        hero:
+          'Kopfzeile: Galerietitel, Veranstaltungsart (z. B. Vernissage) und Namen aus Muster-Stammdaten bzw. gewähltem Demo-Event – hier nicht frei editierbar.',
+        invite: `Einladungsblock: fester Satz „Sie sind herzlich eingeladen“. Termin und Uhrzeit aus der Demo-Eventplanung (wie Event-Karte). Adresse und Ort aus Mustergalerie-Stammdaten. ${oh}`,
+        qrFooter: `QR „Zur Galerie online“: Route ${frontQrPathExplain}, URL mit Server-Stand und Cache-Bust (beim Scannen aktuelle Demo-Version).`,
+        image:
+          'Bild: Standard ist ein neutrales Platzhalter-SVG (kein echtes K2-Foto in der Demo). Die große Fläche öffnet die Bildauswahl aus Datei.',
+        intro:
+          'Text neben dem Bild: bearbeitbar oder live mit Willkommen aus Galerie gestalten – große Fläche öffnet das Bearbeiten-Fenster.',
+        backTitle: 'Rückseiten-Überschrift: fest aus der Stammdaten-Linie – in diesem Fenster nicht änderbar.',
+        qrBack: `QR neben der Einladung: Route ${backQrPathExplain} – öffentlicher Demo-Eingang (ök2), mit Server-Stand und Cache-Bust.`,
+        copyright: 'Copyright-Zeile: zentraler Produktstandard (kgm solution).',
+        marketing: 'Die Absätze rechts bearbeitest du über die große Fläche („Rückseite Fließtext“).',
+      }
+    }
+    if (isVk2) {
+      return {
+        hero:
+          'Kopfzeile: Galerietitel, Veranstaltungsüberschrift und Namen aus VK2-Stammdaten und dem gewählten Vereins-Event – hier nicht frei editierbar.',
+        invite: `Einladungsblock: fester Satz „Sie sind herzlich eingeladen“. Termin aus VK2-Eventplanung. Adresse und Ort aus Stammdaten dieses Kontexts. ${oh}`,
+        qrFooter: `QR „Zur Galerie online“: Route ${frontQrPathExplain} – VK2-Galerie online, mit Server-Stand und Cache-Bust.`,
+        image:
+          'Bild: Standard ist ein neutrales Platzhalter-SVG (kein K2-Foto). Die große Fläche öffnet die Bildauswahl aus Datei.',
+        intro:
+          'Text Vorderseite: wie in VK2 „Galerie gestalten“ verbunden oder eigen – große Fläche = Bearbeiten.',
+        backTitle: 'Rückseiten-Überschrift: fest aus den Stammdaten – hier nicht änderbar.',
+        qrBack: `QR: Route ${backQrPathExplain} – Demo-Galerie (ök2) für Besucher ohne VK2-Zugang, mit aktuellem Stand.`,
+        copyright: 'Copyright: Produktstandard (kgm solution).',
+        marketing: 'Marketing-Text rechts über die große Fläche bearbeiten.',
+      }
+    }
+    return {
+      hero:
+        'Kopfzeile: Galerietitel und Namen aus K2-Stammdaten; die Veranstaltungszeile aus dem Eröffnungs- bzw. Hauptevent der K2-Eventplanung.',
+      invite: `Einladungsblock: fester Satz „Sie sind herzlich eingeladen“. Termin aus K2-Events. Adresse und Ort aus K2-Galerie-Stammdaten. ${oh}`,
+      qrFooter: `QR „Zur Galerie online“: echte K2-Galerie, Route ${frontQrPathExplain}, mit Server-Stand und Cache-Bust.`,
+      image:
+        'Ohne eigenes Foto: Galerie-Karte oder Willkommensbild aus Galerie gestalten, sonst das feste K2-Standardbild. Große Fläche: eigenes Bild wählen.',
+      intro: 'Intro: live aus Willkommen oder eigener Text – große Fläche öffnet Bearbeiten.',
+      backTitle: 'Rückseiten-Überschrift: fest aus der K2-Stammdaten-Linie.',
+      qrBack: `QR: Route ${backQrPathExplain} – Demo-Galerie ök2 für Interessent:innen, mit aktuellem Stand.`,
+      copyright: 'Copyright: Produktstandard (kgm solution).',
+      marketing: 'Fließtext rechts über die große Fläche bearbeiten.',
+    }
+  }, [isOeffentlich, isVk2, frontQrPathExplain, backQrPathExplain])
 
   const frontGalleryQr = useMemo(() => {
     const path = isOeffentlich
@@ -771,12 +841,22 @@ export default function FlyerEventBogenNeuPage() {
 
   useEffect(() => {
     if (masterEditField === null) return
+    setMasterLiveInfo(null)
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMasterEditField(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [masterEditField])
+
+  useEffect(() => {
+    if (!masterLiveInfo) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMasterLiveInfo(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [masterLiveInfo])
 
   const onModalHeadPointerDown = (e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.master-edit-close')) return
@@ -863,7 +943,20 @@ export default function FlyerEventBogenNeuPage() {
 
   const renderFrontCardV2 = (interactive: boolean) => (
     <div className="card front front-layout-v2">
-      <div className="hero hero-v2 hero-v2-event">
+      <div className={`hero hero-v2 hero-v2-event${interactive ? ' master-hotspot-parent' : ''}`}>
+        {interactive ? (
+          <button
+            type="button"
+            className="master-info-hotspot"
+            aria-label="Info Kopfzeile"
+            onClick={(e) => {
+              e.stopPropagation()
+              setMasterLiveInfo(masterClickInfoTexts.hero)
+            }}
+          >
+            i
+          </button>
+        ) : null}
         <p className="hero-v2-brand">{base.brandLine}</p>
         <p className="hero-v2-opening-word">{heroOpeningWord}</p>
         <p className="hero-v2-names">{base.brandSub}</p>
@@ -873,12 +966,25 @@ export default function FlyerEventBogenNeuPage() {
           <div className="v2-img-col">
             <div className={`img-box v2-single-img${interactive ? ' master-hotspot-parent' : ''}`}>
               {interactive ? (
-                <button
-                  type="button"
-                  className="master-hotspot"
-                  aria-label={MASTER_EDIT_LABELS.image}
-                  onClick={() => setMasterEditField('image')}
-                />
+                <>
+                  <button
+                    type="button"
+                    className="master-hotspot"
+                    aria-label={MASTER_EDIT_LABELS.image}
+                    onClick={() => setMasterEditField('image')}
+                  />
+                  <button
+                    type="button"
+                    className="master-info-hotspot"
+                    aria-label="Info Werkbild"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setMasterLiveInfo(masterClickInfoTexts.image)
+                    }}
+                  >
+                    i
+                  </button>
+                </>
               ) : null}
               <img src={leftSrc} alt="" />
             </div>
@@ -886,16 +992,46 @@ export default function FlyerEventBogenNeuPage() {
           <div className="v2-text-col">
             <div className={interactive ? 'master-hotspot-parent v2-intro-wrap' : undefined}>
               {interactive ? (
-                <button
-                  type="button"
-                  className="master-hotspot"
-                  aria-label={MASTER_EDIT_LABELS.intro}
-                  onClick={() => setMasterEditField('intro')}
-                />
+                <>
+                  <button
+                    type="button"
+                    className="master-hotspot"
+                    aria-label={MASTER_EDIT_LABELS.intro}
+                    onClick={() => setMasterEditField('intro')}
+                  />
+                  <button
+                    type="button"
+                    className="master-info-hotspot"
+                    aria-label="Info Text Vorderseite"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setMasterLiveInfo(masterClickInfoTexts.intro)
+                    }}
+                  >
+                    i
+                  </button>
+                </>
               ) : null}
               <p className="v2-intro">{introForPreview}</p>
             </div>
-            <div className="v2-invite-panel" role="region" aria-label="Einladung">
+            <div
+              className={`v2-invite-panel${interactive ? ' master-info-hotspot-parent' : ''}`}
+              role="region"
+              aria-label="Einladung"
+            >
+              {interactive ? (
+                <button
+                  type="button"
+                  className="master-info-hotspot"
+                  aria-label="Info Einladung und Termin"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setMasterLiveInfo(masterClickInfoTexts.invite)
+                  }}
+                >
+                  i
+                </button>
+              ) : null}
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
               <div className="v2-termin">{terminKomplettV2}</div>
               <p className="v2-address">
@@ -911,7 +1047,20 @@ export default function FlyerEventBogenNeuPage() {
           </div>
         </div>
         <div className="v2-footer">
-          <div className="v2-footer-qr">
+          <div className={`v2-footer-qr${interactive ? ' master-info-hotspot-parent' : ''}`}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-info-hotspot"
+                aria-label="Info QR Vorderseite"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMasterLiveInfo(masterClickInfoTexts.qrFooter)
+                }}
+              >
+                i
+              </button>
+            ) : null}
             {frontQrDataUrl ? <img src={frontQrDataUrl} alt="" className="qr" /> : <div className="qr-placeholder">QR</div>}
             <p className="qr-caption">Zur Galerie online</p>
           </div>
@@ -1058,7 +1207,22 @@ export default function FlyerEventBogenNeuPage() {
     <div className="card back back-page-2">
       <div className="back-left">
         <div className="back-hero">
-          <h3>{base.backCardTitle}</h3>
+          <div className={interactive ? 'master-hotspot-parent back-hero-title-wrap' : undefined}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-info-hotspot"
+                aria-label="Info Rückseiten-Titel"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMasterLiveInfo(masterClickInfoTexts.backTitle)
+                }}
+              >
+                i
+              </button>
+            ) : null}
+            <h3>{base.backCardTitle}</h3>
+          </div>
           <div className={interactive ? 'master-hotspot-parent back-hero-line' : undefined}>
             {interactive ? (
               <button
@@ -1094,7 +1258,26 @@ export default function FlyerEventBogenNeuPage() {
           <p className="marketing-sub">{masterText.backSub}</p>
         </div>
         <div className="back-left-bottom">
-          {backQrDataUrl ? <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" /> : <div className="qr-placeholder">QR</div>}
+          <div className={interactive ? 'master-hotspot-parent back-qr-img-wrap' : undefined}>
+            {interactive ? (
+              <button
+                type="button"
+                className="master-info-hotspot"
+                aria-label="Info QR Rückseite"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMasterLiveInfo(masterClickInfoTexts.qrBack)
+                }}
+              >
+                i
+              </button>
+            ) : null}
+            {backQrDataUrl ? (
+              <img src={backQrDataUrl} alt="QR Eingangstor ök2" className="qr" />
+            ) : (
+              <div className="qr-placeholder">QR</div>
+            )}
+          </div>
           <div className={interactive ? 'master-hotspot-parent back-invite-wrap' : undefined}>
             {interactive ? (
               <button
@@ -1107,7 +1290,20 @@ export default function FlyerEventBogenNeuPage() {
             <p className="back-qr-invite">{masterText.backInvite}</p>
           </div>
         </div>
-        <div className="back-copyright">
+        <div className={`back-copyright${interactive ? ' master-hotspot-parent' : ''}`}>
+          {interactive ? (
+            <button
+              type="button"
+              className="master-info-hotspot"
+              aria-label="Info Copyright"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMasterLiveInfo(masterClickInfoTexts.copyright)
+              }}
+            >
+              i
+            </button>
+          ) : null}
           <small>{PRODUCT_COPYRIGHT_BRAND_ONLY}</small>
         </div>
       </div>
@@ -1117,12 +1313,25 @@ export default function FlyerEventBogenNeuPage() {
         aria-label="Was ist ök2 – Marketingtext"
       >
         {interactive ? (
-          <button
-            type="button"
-            className="master-hotspot"
-            aria-label={MASTER_EDIT_LABELS.marketing}
-            onClick={() => setMasterEditField('marketing')}
-          />
+          <>
+            <button
+              type="button"
+              className="master-hotspot"
+              aria-label={MASTER_EDIT_LABELS.marketing}
+              onClick={() => setMasterEditField('marketing')}
+            />
+            <button
+              type="button"
+              className="master-info-hotspot"
+              aria-label="Info Marketing-Text"
+              onClick={(e) => {
+                e.stopPropagation()
+                setMasterLiveInfo(masterClickInfoTexts.marketing)
+              }}
+            >
+              i
+            </button>
+          </>
         ) : null}
         {oek2MarketingBlocks.map((block: string, idx: number) => {
           const t = block.trim()
@@ -1394,6 +1603,7 @@ export default function FlyerEventBogenNeuPage() {
           line-height:1.42;
         }
         .${ROOT} .master-preview-inner{
+          position:relative;
           overflow:auto;
           max-height:calc(100vh - 200px);
           padding:0.2rem;
@@ -1426,6 +1636,90 @@ export default function FlyerEventBogenNeuPage() {
           background:rgba(181,74,30,0.07);
           box-shadow:inset 0 0 0 2px rgba(181,74,30,0.35);
         }
+        .${ROOT} .master-info-hotspot{
+          position:absolute;
+          top:4px;
+          right:4px;
+          z-index:4;
+          width:22px;
+          height:22px;
+          margin:0;
+          padding:0;
+          border:1px solid rgba(15,100,115,0.42);
+          border-radius:50%;
+          cursor:help;
+          background:rgba(230,252,255,0.94);
+          color:#0a5f6e;
+          font-size:11px;
+          font-weight:800;
+          line-height:1;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          box-shadow:0 1px 3px rgba(0,0,0,0.07);
+        }
+        .${ROOT} .master-info-hotspot:hover,
+        .${ROOT} .master-info-hotspot:focus-visible{
+          background:rgba(95,251,241,0.32);
+          outline:none;
+          box-shadow:0 0 0 2px rgba(15,100,115,0.22);
+        }
+        .${ROOT} .back-hero-title-wrap h3{margin:0}
+        .${ROOT} .back-qr-img-wrap{
+          position:relative;
+          display:inline-block;
+          flex-shrink:0;
+        }
+        .${ROOT} .v2-invite-panel.master-info-hotspot-parent,
+        .${ROOT} .v2-footer-qr.master-info-hotspot-parent{
+          position:relative;
+        }
+        .${ROOT} .master-live-info-backdrop{
+          position:absolute;
+          inset:0;
+          z-index:30;
+          background:rgba(28,26,24,0.2);
+          border-radius:12px;
+          cursor:pointer;
+        }
+        .${ROOT} .master-live-info-popover{
+          position:absolute;
+          left:50%;
+          top:50%;
+          transform:translate(-50%,-50%);
+          z-index:31;
+          width:min(380px,calc(100% - 1.5rem));
+          max-height:min(48vh,300px);
+          overflow:auto;
+          padding:0.85rem 1rem;
+          background:#fffefb;
+          border:1px solid rgba(181,74,30,0.22);
+          border-radius:14px;
+          box-shadow:0 12px 40px rgba(28,26,24,0.2);
+        }
+        .${ROOT} .master-live-info-popover-title{
+          margin:0 0 0.45rem;
+          font-size:0.82rem;
+          font-weight:800;
+          color:var(--k2-green-deep);
+        }
+        .${ROOT} .master-live-info-popover-body{
+          margin:0 0 0.75rem;
+          font-size:0.8rem;
+          line-height:1.45;
+          color:#1c1a18;
+        }
+        .${ROOT} .master-live-info-ok{
+          padding:0.32rem 0.85rem;
+          font-size:0.78rem;
+          font-weight:700;
+          border-radius:8px;
+          border:1px solid #b54a1e;
+          background:#b54a1e;
+          color:#fff;
+          cursor:pointer;
+        }
+        .${ROOT} .master-live-info-ok:hover{background:#d4622a;border-color:#d4622a}
         .${ROOT} .v2-intro-wrap{min-height:2.8em}
         .${ROOT} .back-hero-line{display:block;position:relative}
         .${ROOT} .back-invite-wrap{position:relative;flex:1;min-width:0}
@@ -2117,7 +2411,10 @@ export default function FlyerEventBogenNeuPage() {
             print-color-adjust:exact !important;
           }
           .${ROOT}{padding:0;background:#fff}
-          .${ROOT} .master-hotspot{display:none !important}
+          .${ROOT} .master-hotspot,
+          .${ROOT} .master-info-hotspot,
+          .${ROOT} .master-live-info-backdrop,
+          .${ROOT} .master-live-info-popover{display:none !important}
           .${ROOT} .master-edit-backdrop,.${ROOT} .master-edit-modal{display:none !important}
           .${ROOT} .toolbar,.${ROOT} .editor,.${ROOT} .master-editor-col,.${ROOT} .master-preview-header,.${ROOT} .master-intro-rail,.${ROOT} .master-intro-rail-reopen{display:none}
           .${ROOT} .master-workspace{display:block !important;max-width:none;margin:0;padding:0}
@@ -2729,6 +3026,11 @@ export default function FlyerEventBogenNeuPage() {
                   ×
                 </button>
                 <div className="master-intro-explainer">
+                  <p className="master-intro-explainer-note">
+                    In der <strong>Live-Vorschau</strong> rechts: kleines <strong>i</strong> auf festen Bereichen – ein
+                    Tipp öffnet ein <strong>Infofenster über der Vorschau</strong> (woher die Daten kommen, ohne
+                    Bearbeiten-Modal). Zum Ändern weiter auf die <strong>große Fläche</strong> tippen wie bisher.
+                  </p>
                   {isOeffentlich ? (
                     <>
                       <h3>Was du hier machst</h3>
@@ -2974,10 +3276,35 @@ export default function FlyerEventBogenNeuPage() {
               <p className="master-focus-pill">
                 {masterEditField
                   ? `Bearbeiten: ${MASTER_EDIT_LABELS[masterEditField]}`
-                  : 'Bereich in der Vorschau anklicken – Fenster zum Bearbeiten'}
+                  : 'Große Fläche = Bearbeiten · Kleines i = Kurzinfo über der Vorschau'}
               </p>
             </div>
             <div className="master-preview-inner">
+              {masterLiveInfo ? (
+                <>
+                  <div
+                    className="master-live-info-backdrop"
+                    role="presentation"
+                    onClick={() => setMasterLiveInfo(null)}
+                    aria-hidden
+                  />
+                  <div
+                    className="master-live-info-popover"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="master-live-info-heading"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <p id="master-live-info-heading" className="master-live-info-popover-title">
+                      Kurzinfo
+                    </p>
+                    <p className="master-live-info-popover-body">{masterLiveInfo}</p>
+                    <button type="button" className="master-live-info-ok" onClick={() => setMasterLiveInfo(null)}>
+                      OK
+                    </button>
+                  </div>
+                </>
+              ) : null}
               <div className="master-preview-scale-wrap">
                 <section className="sheet" aria-label="Masteransicht A4 – oben Vorderseite, unten Rückseite">
                   <div>{renderFrontCardV2(true)}</div>
