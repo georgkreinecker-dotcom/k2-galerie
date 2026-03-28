@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **ök2/VK2: Nach neuem Event Werbekarten automatisch (Flyer-Master zuerst, dann Paket-Logik):** Beim Speichern eines **neuen** Events (nicht K2): Demo-Flyer-Speicher leeren + Reset, nach **~0,9–1,2 s** dieselbe Logik wie **Paket übernehmen** ohne Rückfrage (`skipConfirm`). K2 unverändert. Mediengenerator-Hinweistext angepasst. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_.
+
+**Was wir JETZT tun:** Georg: ök2/VK2 – neues Event anlegen → kurz warten → Karten prüfen; bei Bedarf „Paket übernehmen“ zum Ersetzen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Flyer-Master PDF (Druckerei): Live-Route im versteckten iframe statt data-HTML:** `k2DocViewer=1` in **main.tsx** erlaubt SPA im iframe (wie `embedded=1`), damit **html2canvas** den aktuellen Flyer-Master einfängt (`captureFlyerMasterLiveRouteAsPdfBlob`, `pickFlyerMasterCaptureRoot`). **documentsStorage:** optionales **`allowEmptyWrite`** für kontrollierte Kurz-Schreibwege (noch ohne Aufrufer). **Commit:** **6437539** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Druckerei-Mail mit Flyer-Master-PDF testen; Cursor-Preview weiterhin ohne volle App im iframe außer Doc-Viewer-Parameter.

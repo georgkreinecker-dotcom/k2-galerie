@@ -5411,6 +5411,29 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     } else if (!editingEvent) {
       generateAutomaticSuggestions(eventData)
     }
+
+    /** ök2/VK2: kein K2 – nach neuem Event Flyer-Master zuerst (Demo-Speicher), dann gestaffelt dieselbe Logik wie „Paket übernehmen“. */
+    const scheduleAutoWerbemittelOek2Vk2 = () => {
+      if (editingEvent || (!tenant.isOeffentlich && !tenant.isVk2)) return
+      const evSnap = { ...eventData }
+      if (tenant.isOeffentlich && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF)
+        } catch {
+          /* ignore */
+        }
+        try {
+          window.dispatchEvent(new CustomEvent('k2-flyer-event-bogen-neu-reset'))
+        } catch {
+          /* ignore */
+        }
+      }
+      const pauseMs = tenant.isOeffentlich ? 900 : 1200
+      window.setTimeout(() => {
+        void applyMedienpaketAlsGespeicherteWerbemittel(evSnap, { skipConfirm: true })
+      }, pauseMs)
+    }
+    scheduleAutoWerbemittelOek2Vk2()
     
     // Zurücksetzen
     setShowEventModal(false)
@@ -5427,6 +5450,11 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     
     if (editingEvent) {
       alert('✅ Event aktualisiert!')
+    } else if (tenant.isOeffentlich || tenant.isVk2) {
+      setEventplanSubTab('öffentlichkeitsarbeit')
+      alert(
+        '✅ Event angelegt. Gleich erscheinen Presse, Social, Newsletter, Plakat und Flyer in den Karten – zuvor wird der Flyer-Master (Demo) vorbereitet. Einfach OK drücken.'
+      )
     } else {
       setEventplanSubTab('öffentlichkeitsarbeit')
       alert('✅ Event angelegt. Unten siehst du die neue Rubrik mit allen Werbe-Werkzeugen – Newsletter, Presse, Social Media, PDF.')
@@ -8722,7 +8750,10 @@ ${'='.repeat(60)}
   }
 
   /** Nach Bestätigung: Werbemittel-Dokumente dieses Events (Presse, Social, Newsletter, Plakat, Flyer, Sammel-PDF) löschen und wie Medienpaket-Vorschau neu als speicherbare Einträge anlegen – öffnen/bearbeiten über die Event-Karten. */
-  const applyMedienpaketAlsGespeicherteWerbemittel = async (forEvent?: any) => {
+  const applyMedienpaketAlsGespeicherteWerbemittel = async (
+    forEvent?: any,
+    opts?: { skipConfirm?: boolean }
+  ) => {
     const raw =
       forEvent != null ? resolveEventForMediengeneratorCard(events, forEvent) : getDefaultEventForMediengeneratorButtons(events)
     const event = raw
@@ -8733,20 +8764,22 @@ ${'='.repeat(60)}
     const eidNorm = String(event.id)
     const titel = String(event.title || 'Event')
     const typSet = new Set(['presse', 'social', 'newsletter', 'plakat', 'event-flyer', 'flyer', 'pr-alle'])
-    const ok = window.confirm(
-      [
-        'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
-        'Danach werden sie neu aus dem gleichen Stand wie die Medienpaket-Vorschau angelegt.',
-        'Dazu werden die Vorschläge für Plakat und Druckformate (Modal, „Neu erstellen“) auf denselben Stand gebracht.',
-        'In der Demo (ök2) wird der Flyer-Master im Browser auf die Muster-Basis zurückgesetzt.',
-        'Du kannst die Dateien in den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.',
-        '',
-        `Event: ${titel}`,
-        '',
-        'Jetzt ausführen?',
-      ].join('\n')
-    )
-    if (!ok) return
+    if (!opts?.skipConfirm) {
+      const ok = window.confirm(
+        [
+          'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
+          'Danach werden sie neu aus dem gleichen Stand wie die Medienpaket-Vorschau angelegt.',
+          'Dazu werden die Vorschläge für Plakat und Druckformate (Modal, „Neu erstellen“) auf denselben Stand gebracht.',
+          'In der Demo (ök2) wird der Flyer-Master im Browser auf die Muster-Basis zurückgesetzt.',
+          'Du kannst die Dateien in den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.',
+          '',
+          `Event: ${titel}`,
+          '',
+          'Jetzt ausführen?',
+        ].join('\n')
+      )
+      if (!ok) return
+    }
 
     const readBlobAsDataUrl = (blob: Blob) =>
       new Promise<string>((resolve, reject) => {
@@ -9010,12 +9043,22 @@ ${'='.repeat(60)}
       }
       setPrSuggestionsRefresh((r: number) => r + 1)
 
-      alert(
-        `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. Vorschläge für Plakat und Druckformate sind auf denselben Stand gebracht.${tenant.isOeffentlich ? ' Demo: Flyer-Master im Browser wurde auf die Muster-Basis zurückgesetzt.' : ''} In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
-      )
+      if (opts?.skipConfirm) {
+        alert(
+          `✅ Werbemittel für „${titel}“ automatisch angelegt (nach neuem Event): Presse, Social, Newsletter, Plakat, Flyer. In den Karten mit „Ansehen“ oder „Neu erstellen“.${tenant.isOeffentlich ? ' Flyer-Master (Demo) war zuvor auf Muster-Basis gesetzt.' : ''}`
+        )
+      } else {
+        alert(
+          `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. Vorschläge für Plakat und Druckformate sind auf denselben Stand gebracht.${tenant.isOeffentlich ? ' Demo: Flyer-Master im Browser wurde auf die Muster-Basis zurückgesetzt.' : ''} In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
+        )
+      }
     } catch (err) {
       console.error('Medienpaket übernehmen:', err)
-      alert('Medienpaket übernehmen fehlgeschlagen. Bitte erneut versuchen oder einzeln „Neu erstellen“ nutzen.')
+      alert(
+        opts?.skipConfirm
+          ? 'Automatische Werbemittel nach Event fehlgeschlagen. Bitte „Paket übernehmen“ in der Event-Zeile nutzen oder einzeln „Neu erstellen“.'
+          : 'Medienpaket übernehmen fehlgeschlagen. Bitte erneut versuchen oder einzeln „Neu erstellen“ nutzen.'
+      )
     }
   }
 
@@ -22201,7 +22244,17 @@ ${name}`
                   📑 Alle Medien als Vorschau-Paket
                 </button>
                 <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '560px' }}>
-                  <strong>Herzstück:</strong> zuerst Flyer-Master A5 fürs Standard-Event – dann stimmen Texte zu Plakat, A6 und QR. Vorschau-Paket = nur lesen/kopieren. <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
+                  <strong>Herzstück:</strong> zuerst Flyer-Master A5 fürs Standard-Event – dann stimmen Texte zu Plakat, A6 und QR. Vorschau-Paket = nur lesen/kopieren.{' '}
+                  {tenant.isOeffentlich || tenant.isVk2 ? (
+                    <>
+                      In <strong>ök2</strong> und <strong>VK2</strong> legt die App nach einem <strong>neuen Event</strong> die Werbekarten automatisch an (zuerst Flyer-Master vorbereiten, kurz danach Presse, Social, Newsletter, Plakat, Flyer). <strong>Paket übernehmen</strong> in der Event-Zeile = alles zu diesem Event ersetzen wie bisher.
+                    </>
+                  ) : (
+                    <>
+                      <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken.
+                    </>
+                  )}{' '}
+                  Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
                 </span>
               </div>
             </div>
