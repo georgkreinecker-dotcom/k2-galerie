@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master PDF (Druckerei): Live-Route im versteckten iframe statt data-HTML:** `k2DocViewer=1` in **main.tsx** erlaubt SPA im iframe (wie `embedded=1`), damit **html2canvas** den aktuellen Flyer-Master einfängt (`captureFlyerMasterLiveRouteAsPdfBlob`, `pickFlyerMasterCaptureRoot`). **documentsStorage:** optionales **`allowEmptyWrite`** für kontrollierte Kurz-Schreibwege (noch ohne Aufrufer). **Commit:** **913e009** ✅ auf GitHub.
+**Letzter Stand:** 28.03.26 – **Flyer-Master PDF (Druckerei): Live-Route im versteckten iframe statt data-HTML:** `k2DocViewer=1` in **main.tsx** erlaubt SPA im iframe (wie `embedded=1`), damit **html2canvas** den aktuellen Flyer-Master einfängt (`captureFlyerMasterLiveRouteAsPdfBlob`, `pickFlyerMasterCaptureRoot`). **documentsStorage:** optionales **`allowEmptyWrite`** für kontrollierte Kurz-Schreibwege (noch ohne Aufrufer). **Commit:** **6437539** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Druckerei-Mail mit Flyer-Master-PDF testen; Cursor-Preview weiterhin ohne volle App im iframe außer Doc-Viewer-Parameter.
 
