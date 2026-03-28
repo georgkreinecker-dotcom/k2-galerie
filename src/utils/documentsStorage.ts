@@ -41,14 +41,23 @@ function isSameAsOtherKey(list: any[], otherTenantId: DocumentsTenantId): boolea
   }
 }
 
+export type SaveDocumentsOptions = {
+  /** Nur für kontrollierte Abläufe (z. B. Medienpaket ersetzt Event-Zeile): kurz mit [] schreiben, obwohl noch viele Docs im Speicher stehen – direkt danach folgt der volle neue Stand. */
+  allowEmptyWrite?: boolean
+}
+
 /** Gibt true zurück wenn geschrieben wurde, false wenn Schutz gegriffen hat oder Fehler. */
-export function saveDocuments(tenantId: DocumentsTenantId, documents: any[]): boolean {
+export function saveDocuments(
+  tenantId: DocumentsTenantId,
+  documents: any[],
+  options?: SaveDocumentsOptions
+): boolean {
   try {
     const key = getDocumentsKey(tenantId)
     const list = Array.isArray(documents) ? documents : []
     if (typeof window !== 'undefined') {
       // EISERN (alle Kontexte): Nicht mit leerer Liste überschreiben, wenn 2+ Dokumente vorhanden (Schutz vor Löschung von außen). Ausnahme: Nutzer löscht letztes Dokument.
-      if (list.length === 0) {
+      if (list.length === 0 && !options?.allowEmptyWrite) {
         const current = loadDocuments(tenantId)
         if (current.length > 1) {
           console.warn(`⚠️ documentsStorage: Schreibvorgang abgebrochen – ${tenantId}-Dokumente nicht mit leerer Liste überschreiben (Schutz)`)

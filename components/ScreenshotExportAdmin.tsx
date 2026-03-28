@@ -328,6 +328,171 @@ function pickWerbemittelPdfRoot(body: HTMLElement): HTMLElement {
   return el || body
 }
 
+/** main.tsx lädt die SPA im iframe nur mit diesem Parameter (In-App-Viewer + versteckter PDF-Capture). */
+function appendK2DocViewerParamToSameOriginUrl(url: string): string {
+  if (typeof window === 'undefined' || !url) return url
+  try {
+    const u = new URL(url, window.location.origin)
+    if (u.origin !== window.location.origin) return url
+    u.searchParams.set('k2DocViewer', '1')
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
+/** Flyer-Master-Seite im versteckten Iframe: fokussierter Ausschnitt für PDF (A5 / A3 / A6 / Karten). */
+function pickFlyerMasterCaptureRoot(body: HTMLElement): HTMLElement {
+  const b = body.querySelector('.flyer-event-bogen-neu') as HTMLElement | null
+  if (!b) return pickWerbemittelPdfRoot(body)
+  const a3 = b.querySelector('.derivation-shell.mode-a3 .derivation-preview-scale') as HTMLElement | null
+  if (a3) return a3
+  const a6 = b.querySelector('.derivation-shell.mode-a6 .derivation-preview-scale') as HTMLElement | null
+  if (a6) return a6
+  const card = b.querySelector('.derivation-shell.mode-card .derivation-preview-scale') as HTMLElement | null
+  if (card) return card
+  const sheet = b.querySelector('.master-workspace .sheet') as HTMLElement | null
+  if (sheet) return sheet
+  const mw = b.querySelector('.master-workspace') as HTMLElement | null
+  if (mw) return mw
+  return b
+}
+
+async function waitForFlyerMasterRootInIframe(idoc: Document | null, timeoutMs: number): Promise<boolean> {
+  if (!idoc) return false
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    const root = idoc.querySelector('.flyer-event-bogen-neu')
+    if (root && root instanceof HTMLElement && root.scrollHeight > 100) return true
+    await new Promise<void>(r => setTimeout(r, 100))
+  }
+  return false
+}
+
+/**
+ * Gleiche App-Route wie Flyer-Master laden, DOM rasterisieren → PDF (Druckerei-Mail).
+ * Kein data:-HTML: immer aktueller Master-Stand.
+ */
+async function captureFlyerMasterLiveRouteAsPdfBlob(
+  absoluteUrl: string,
+  pdfFormat: 'a4' | 'a3',
+  capture: WerbemittelPdfCaptureOptions | undefined,
+  safeHtmlHint: string,
+): Promise<Blob | null> {
+  if (typeof document === 'undefined') return null
+  const iframeWidthPx = pdfFormat === 'a3' ? 1400 : 900
+  const iframeMinHeightPx = pdfFormat === 'a3' ? 2400 : 1600
+
+  const iframe = document.createElement('iframe')
+  iframe.setAttribute('title', 'flyer-master-pdf-capture')
+  iframe.style.cssText = `position:fixed;left:-9999px;top:0;width:${iframeWidthPx}px;height:${iframeMinHeightPx}px;border:none;margin:0;padding:0;background:#fff;`
+  document.body.appendChild(iframe)
+
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const t = window.setTimeout(() => resolve(), 20000)
+      iframe.onload = () => {
+        window.clearTimeout(t)
+        resolve()
+      }
+      iframe.onerror = () => {
+        window.clearTimeout(t)
+        reject(new Error('iframe onerror'))
+      }
+      iframe.src = appendK2DocViewerParamToSameOriginUrl(absoluteUrl)
+    })
+
+    const idoc = iframe.contentDocument
+    const ready = await waitForFlyerMasterRootInIframe(idoc, 14000)
+    if (!ready || !idoc?.body) return null
+
+    const rootBody = idoc.body
+    try {
+      rootBody.style.setProperty('-webkit-print-color-adjust', 'exact')
+      rootBody.style.setProperty('print-color-adjust', 'exact')
+      rootBody.style.setProperty('color-adjust', 'exact')
+    } catch {
+      /* ignore */
+    }
+
+    const head = idoc.head
+    if (head) {
+      const captureStyle = idoc.createElement('style')
+      captureStyle.setAttribute('id', 'k2-flyer-master-pdf-capture')
+      captureStyle.textContent = getWerbemittelHtml2canvasCaptureCss(safeHtmlHint, pdfFormat, capture)
+      head.appendChild(captureStyle)
+    }
+
+    const captureRoot = pickFlyerMasterCaptureRoot(rootBody)
+    await waitForWerbemittelIframePaint(idoc, 12000)
+    await new Promise<void>(r => setTimeout(r, 400))
+
+    const scrollH = Math.max(1, Math.ceil(captureRoot.scrollHeight))
+
+    const html2canvasMod = await import('html2canvas')
+    const runHtml2Canvas = (html2canvasMod as { default?: unknown }).default ?? html2canvasMod
+    if (typeof runHtml2Canvas !== 'function') return null
+
+    const h2cOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+      scale: pdfFormat === 'a3' ? 2.35 : 2.1,
+      windowWidth: iframeWidthPx,
+      windowHeight: Math.min(Math.max(scrollH + 120, iframeMinHeightPx), 10000),
+      scrollX: 0,
+      scrollY: 0,
+      logging: false,
+      letterRendering: true,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      allowTaint: true,
+      onclone: (clonedDoc: Document) => {
+        try {
+          clonedDoc.querySelectorAll('.no-print').forEach(n => {
+            ;(n as HTMLElement).style.setProperty('display', 'none', 'important')
+          })
+          applyWerbemittelCaptureToClone(clonedDoc, safeHtmlHint, pdfFormat, capture)
+        } catch {
+          /* ignore */
+        }
+      },
+    }
+
+    const canvas = await (runHtml2Canvas as (el: HTMLElement, o: typeof h2cOpts) => Promise<HTMLCanvasElement>)(
+      captureRoot,
+      h2cOpts,
+    )
+    if (!canvas || canvas.width < 1 || canvas.height < 1) return null
+
+    const html2pdfMod = await import('html2pdf.js')
+    const html2pdfRaw = (html2pdfMod as { default?: unknown }).default ?? html2pdfMod
+    if (typeof html2pdfRaw !== 'function') return null
+    const worker = (html2pdfRaw as unknown as () => Html2PdfWorker)()
+
+    const pdfOpts = {
+      ...HTML2PDF_WERBEMITTEL_BASE,
+      filename: 'flyer-master.pdf',
+      margin: (pdfFormat === 'a3' ? [1, 1, 1, 1] : [3, 3, 3, 3]) as [number, number, number, number],
+      jsPDF: {
+        unit: 'mm' as const,
+        format: pdfFormat,
+        orientation: 'portrait' as const,
+      },
+      html2canvas: {
+        ...HTML2PDF_WERBEMITTEL_BASE.html2canvas,
+        scale: pdfFormat === 'a3' ? 2.35 : 2.1,
+      },
+    }
+
+    const out = await worker.set(pdfOpts).from(canvas, 'canvas').outputPdf('blob')
+    return out instanceof Blob ? out : null
+  } catch (e) {
+    console.warn('captureFlyerMasterLiveRouteAsPdfBlob', e)
+    return null
+  } finally {
+    iframe.remove()
+  }
+}
+
 type Html2PdfWorker = {
   set: (o: object) => {
     /** Zweites Arg z. B. `'canvas'`, wenn Quelle schon ein gerendertes Canvas ist (kein DOM-Klon). */
@@ -606,6 +771,31 @@ async function buildWerbemittelPdfBlobFromDoc(
   capture?: WerbemittelPdfCaptureOptions,
   fallbackPlainForPdf?: string
 ): Promise<{ blob: Blob; fileName: string } | null> {
+  if (doc?.flyerMasterSlot && doc?.documentUrl && typeof window !== 'undefined') {
+    try {
+      const path = String(doc.documentUrl)
+      const hasOwnScheme = /^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(path)
+      const abs =
+        window.location.origin && !hasOwnScheme
+          ? window.location.origin + (path.startsWith('/') ? path : '/' + path)
+          : path
+      const pdfFormat: 'a4' | 'a3' = path.includes('mode=a3') ? 'a3' : 'a4'
+      const safeHtmlHint =
+        pdfFormat === 'a3'
+          ? '<div class="plakat flyer-event-bogen-neu"></div>'
+          : '<div class="flyer-event-bogen-neu"></div>'
+      const blob = await captureFlyerMasterLiveRouteAsPdfBlob(abs, pdfFormat, capture, safeHtmlHint)
+      if (blob && blob.size > 0) {
+        const rawBaseName = String(doc?.fileName || doc?.name || 'flyer-master')
+        const baseName = rawBaseName.replace(/\.[a-z0-9]{2,5}$/i, '').replace(/[^\w\-]+/g, '_')
+        return { blob, fileName: `${baseName || 'flyer-master'}.pdf` }
+      }
+    } catch (e) {
+      console.warn('buildWerbemittelPdfBlobFromDoc flyerMasterSlot', e)
+    }
+    return null
+  }
+
   const rawData = doc?.fileData || doc?.data
   const rawType = String(doc?.fileType || doc?.type || '')
   const rawBaseName = String(doc?.fileName || doc?.name || 'werbemittel')
@@ -1554,6 +1744,34 @@ function plakatDruckformateSendRowKey(ev: any, d: any, i: number): string {
   const eid = ev?.id != null ? String(ev.id) : 'no-event'
   const did = d?.id != null ? String(d.id) : String(d?.fileName ?? d?.name ?? `idx-${i}`)
   return `${eid}::${did}`
+}
+
+/** Vier Einträge = dieselben Routen wie Flyer-Master (A5 + A3/A6/Karte), nicht alte PR-Plakat-Dokumente. */
+function buildFlyerMasterPlakatVirtualDocs(ev: any, flyerTenant: FlyerEventBogenTenantContext): any[] {
+  const eid = ev?.id
+  if (eid == null || String(eid).trim() === '') return []
+  const titleShort = String(ev?.title || 'Event').trim() || 'Event'
+  const mk = (mode: undefined | 'a3' | 'a6' | 'card', label: string, fileStub: string) => {
+    const rel = flyerEventBogenUrl(
+      mode ? { tenant: flyerTenant, eventId: eid, mode } : { tenant: flyerTenant, eventId: eid },
+    )
+    return {
+      id: `flyer-master-slot-${eid}-${fileStub}`,
+      name: label,
+      fileName: `${fileStub}.pdf`,
+      documentUrl: rel,
+      category: 'pr-dokumente',
+      eventId: eid,
+      werbematerialTyp: 'flyer-master-derivation',
+      flyerMasterSlot: true,
+    }
+  }
+  return [
+    mk(undefined, `A5 Flyer-Master – ${titleShort}`, 'flyer-a5-master'),
+    mk('a3', `A3 Plakat – ${titleShort}`, 'flyer-a3-plakat'),
+    mk('a6', `A6 Werbekarte – ${titleShort}`, 'flyer-a6-karte'),
+    mk('card', `Visitenkarten – ${titleShort}`, 'flyer-visitenkarten'),
+  ]
 }
 
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
@@ -9210,7 +9428,7 @@ ${'='.repeat(60)}
   const openDocumentUrlInApp = (src: string, title: string) => {
     const apply = () => {
       clearInAppViewerBlob()
-      setInAppDocumentViewer({ html: '', title, src })
+      setInAppDocumentViewer({ html: '', title, src: appendK2DocViewerParamToSameOriginUrl(src) })
     }
     if (typeof requestAnimationFrame !== 'undefined') {
       requestAnimationFrame(() => requestAnimationFrame(apply))
@@ -22386,6 +22604,8 @@ ${name}`
                         >
                           {/* Arbeitsplattform-Header: Event + Fortschritt auf einen Blick */}
                           {(() => {
+                            const evForFlyerPlakat = resolveEventForMediengeneratorCard(events, event)
+                            const plakatFlyerMasterDocs = buildFlyerMasterPlakatVirtualDocs(evForFlyerPlakat, flyerTenant)
                             const DOKUMENT_KARTEN = [
                               {
                                 typ: 'newsletter' as const,
@@ -22407,10 +22627,13 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Kommt aus dem Flyer-Master – hier nur die gespeicherten PDFs ansehen und für die Druckerei auswählen. Bearbeiten nur im Flyer-Master.',
-                                docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
+                                  'Vier Formate wie im Flyer-Master (A5, A3, A6, Visitenkarten). Liste = dieselben Seiten wie „Flyer-Master öffnen“; für die Druckerei auswählen. Bearbeiten nur im Flyer-Master.',
+                                docs: plakatFlyerMasterDocs,
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
-                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onDelete: (doc: any) => {
+                                  if (doc?.flyerMasterSlot) return
+                                  handleDeleteWerbematerialDocument(doc.id)
+                                },
                                 onErstellen: () => {
                                   const ev = resolveEventForMediengeneratorCard(events, event)
                                   navigateFromOeffentlichkeitsarbeitOverlay(
@@ -22731,7 +22954,7 @@ ${name}`
                                             return (
                                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                                                 <p style={{ margin: 0, fontSize: '0.75rem', color: s.muted, lineHeight: 1.45 }}>
-                                                  Gespeicherte PDFs vom Flyer-Master – ansehen, ankreuzen, dann Druckerei.
+                                                  Vier Master-Ansichten (aktueller Stand) – ansehen, ankreuzen, dann Druckerei. Kein ×: stammt nicht aus dem PR-Speicher.
                                                 </p>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                                   {karte.docs.map((doc: any, docIdx: number) => {
@@ -22778,23 +23001,27 @@ ${name}`
                                                         >
                                                           {doc.name || doc.fileName || 'Dokument'}
                                                         </button>
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => karte.onDelete(doc)}
-                                                          style={{
-                                                            padding: '0.42rem 0.5rem',
-                                                            background: 'transparent',
-                                                            border: '1px solid rgba(220,38,38,0.2)',
-                                                            borderRadius: '6px',
-                                                            color: '#dc2626',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.88rem',
-                                                            lineHeight: 1,
-                                                          }}
-                                                          title="Dokument entfernen"
-                                                        >
-                                                          ×
-                                                        </button>
+                                                        {doc.flyerMasterSlot ? (
+                                                          <span style={{ width: '1.85rem', flexShrink: 0 }} aria-hidden />
+                                                        ) : (
+                                                          <button
+                                                            type="button"
+                                                            onClick={() => karte.onDelete(doc)}
+                                                            style={{
+                                                              padding: '0.42rem 0.5rem',
+                                                              background: 'transparent',
+                                                              border: '1px solid rgba(220,38,38,0.2)',
+                                                              borderRadius: '6px',
+                                                              color: '#dc2626',
+                                                              cursor: 'pointer',
+                                                              fontSize: '0.88rem',
+                                                              lineHeight: 1,
+                                                            }}
+                                                            title="Dokument entfernen"
+                                                          >
+                                                            ×
+                                                          </button>
+                                                        )}
                                                       </div>
                                                     )
                                                   })}

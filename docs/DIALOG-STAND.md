@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Flyer-Master PDF (Druckerei): Live-Route im versteckten iframe statt data-HTML:** `k2DocViewer=1` in **main.tsx** erlaubt SPA im iframe (wie `embedded=1`), damit **html2canvas** den aktuellen Flyer-Master einfängt (`captureFlyerMasterLiveRouteAsPdfBlob`, `pickFlyerMasterCaptureRoot`). **documentsStorage:** optionales **`allowEmptyWrite`** für kontrollierte Kurz-Schreibwege (noch ohne Aufrufer). **Commit:** **913e009** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg: Druckerei-Mail mit Flyer-Master-PDF testen; Cursor-Preview weiterhin ohne volle App im iframe außer Doc-Viewer-Parameter.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Plakat & Druckformate: nur Flyer-Master + gespeicherte PDFs, kein zweites Modal/iframe:** Doppeltes **Info-Modal** mit Live-iframe entfernt (verwies auf nicht existierenden State → Build-Fix). **Eine** Aktion „Flyer-Master öffnen“ statt zweitem „Master neu erstellen“. **Druckerei-Send-Modal:** dieselben Keys wie in der Karte – `plakatDruckformateSendRowKey(event, …)`; **Alle/Keine** nur für die PDFs dieses Events (Set merge/delete), nicht global leeren. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **9f95ce3** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Mediengenerator → Plakat-Karte: PDFs ansehen, kreuzen, grüner Button → Auswahl muss mit Modal übereinstimmen; Bearbeitung nur im Flyer-Master.
