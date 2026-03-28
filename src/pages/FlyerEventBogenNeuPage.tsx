@@ -46,6 +46,8 @@ const MASTER_EDIT_LABELS: Record<MasterEditKey, string> = {
 
 type FlyerEventBogenPersistedV1 = {
   v: 1
+  /** true/undefined: Vorderseiten-Intro = live aus Galerie-Willkommenstext (Admin/Design). false: fester Text in masterText.intro */
+  introFollowsGallery?: boolean
   masterText: {
     intro: string
     backSlogan: string
@@ -275,6 +277,17 @@ export default function FlyerEventBogenNeuPage() {
       isOeffentlich,
     ),
   )
+  const [introFollowsGallery, setIntroFollowsGallery] = useState(() => {
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich)) as
+      | (Partial<FlyerEventBogenPersistedV1> & { introFollowsGallery?: boolean })
+      | null
+    if (p && typeof p.introFollowsGallery === 'boolean') return p.introFollowsGallery
+    return true
+  })
+  const introForPreview = useMemo(
+    () => (introFollowsGallery ? base.intro : masterText.intro),
+    [introFollowsGallery, base.intro, masterText.intro],
+  )
   const [masterEditField, setMasterEditField] = useState<MasterEditKey | null>(null)
   const [modalPos, setModalPos] = useState({ x: 72, y: 64 })
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
@@ -302,8 +315,9 @@ export default function FlyerEventBogenNeuPage() {
   const handleSaveFlyerMaster = useCallback(() => {
     const payload: FlyerEventBogenPersistedV1 = {
       v: 1,
+      introFollowsGallery,
       masterText: {
-        intro: masterText.intro,
+        intro: introFollowsGallery ? base.intro : masterText.intro,
         backSlogan: masterText.backSlogan,
         backPower: masterText.backPower,
         backSub: masterText.backSub,
@@ -333,7 +347,16 @@ export default function FlyerEventBogenNeuPage() {
       setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
       window.setTimeout(() => setFlyerSaveMessage(''), 5000)
     }
-  }, [flyerStorageKey, isOeffentlich, leftSrc, leftWerkLabel, masterText, navigate])
+  }, [
+    base.intro,
+    flyerStorageKey,
+    introFollowsGallery,
+    isOeffentlich,
+    leftSrc,
+    leftWerkLabel,
+    masterText,
+    navigate,
+  ])
 
   const oek2MarketingBlocks = useMemo(
     () =>
@@ -564,7 +587,7 @@ export default function FlyerEventBogenNeuPage() {
             </div>
           </div>
           <div className="front-text-right">
-            <p className="intro-text">{masterText.intro}</p>
+            <p className="intro-text">{introForPreview}</p>
           </div>
         </div>
         <div className="front-bottom">
@@ -622,7 +645,7 @@ export default function FlyerEventBogenNeuPage() {
                   onClick={() => setMasterEditField('intro')}
                 />
               ) : null}
-              <p className="v2-intro">{masterText.intro}</p>
+              <p className="v2-intro">{introForPreview}</p>
             </div>
             <div className="v2-invite-panel" role="region" aria-label="Einladung">
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
@@ -663,7 +686,7 @@ export default function FlyerEventBogenNeuPage() {
           <img src={leftSrc} alt="" className="a3-image" />
         </div>
         <div className="a3-right">
-          <p className="a3-intro">{masterText.intro}</p>
+          <p className="a3-intro">{introForPreview}</p>
           <div className="a3-invite">
             <p className="a3-kicker">Sie sind herzlich eingeladen</p>
             <p className="a3-termin">{terminKomplettV2}</p>
@@ -706,7 +729,7 @@ export default function FlyerEventBogenNeuPage() {
         <img src={leftSrc} alt="" className="a6-image" />
       </div>
       <div className="a6-right">
-        <p className="a6-intro">{masterText.intro}</p>
+        <p className="a6-intro">{introForPreview}</p>
         <div className="a6-invite">
           <p className="a6-kicker">Sie sind herzlich eingeladen</p>
           <p className="a6-termin">{a6EventDateLine}</p>
@@ -746,7 +769,7 @@ export default function FlyerEventBogenNeuPage() {
       <div className="vc-image-wrap">
         <img src={leftSrc} alt="" className="vc-image" />
       </div>
-      <p className="vc-intro">{masterText.intro}</p>
+      <p className="vc-intro">{introForPreview}</p>
       <div className="vc-footer">
         {frontQrDataUrl ? (
           <img
@@ -1241,6 +1264,17 @@ export default function FlyerEventBogenNeuPage() {
           border-color:#0f6f66;
           background:rgba(15,111,102,0.08);
         }
+        .${ROOT} .master-edit-linkbtn{
+          font-size:0.82rem;
+          font-weight:600;
+          padding:0.35rem 0.65rem;
+          border-radius:8px;
+          border:1px solid #b54a1e;
+          background:#fff;
+          color:#b54a1e;
+          cursor:pointer;
+        }
+        .${ROOT} .master-edit-linkbtn:hover{background:#fff5f0}
         .${ROOT} .master-preview-scale-wrap .sheet{
           margin:0;
         }
@@ -2428,6 +2462,13 @@ export default function FlyerEventBogenNeuPage() {
                           <strong>Kopfzeile ziehen</strong> verschiebt das Fenster, <strong>ESC</strong> schließt.
                         </li>
                         <li>
+                          <strong>Live-Vorschau:</strong> der große Text neben dem Bild auf der Vorderseite folgt{' '}
+                          <strong>standardmäßig</strong> dem Willkommenstext aus <strong>Galerie gestalten</strong> und
+                          aktualisiert sich, wenn du im Admin Texte oder Stammdaten änderst. Nur wenn du dort im Fenster
+                          selbst tippst, wird der Text fix (Button „Mit Galerie-Willkommenstext verknüpfen“ holt die
+                          Live-Verbindung zurück).
+                        </li>
+                        <li>
                           <strong>Speichern</strong> in der oberen Leiste legt Texte und Werkbild auf{' '}
                           <strong>diesem Gerät</strong> ab; Plakat A3, Flyer A6 und Visitenkarte beziehen sich auf{' '}
                           <strong>dieselben Musterdaten</strong> der Mustergalerie.
@@ -2488,6 +2529,13 @@ export default function FlyerEventBogenNeuPage() {
                           <strong>Klicken</strong> auf Vorderseite, Werk­bild, Rückseiten-Texte oder den großen
                           Marketing-Block – es öffnet sich ein Fenster zum Bearbeiten.{' '}
                           <strong>Kopfzeile ziehen</strong> verschiebt das Fenster, <strong>ESC</strong> schließt.
+                        </li>
+                        <li>
+                          <strong>Live-Vorschau:</strong> der große Text neben dem Bild folgt{' '}
+                          <strong>standardmäßig</strong> dem Willkommenstext aus <strong>Galerie gestalten</strong> und
+                          aktualisiert sich bei Änderungen im Admin. Wenn du im Bearbeiten-Fenster selbst tippst, bleibt
+                          dein Text fix; „Mit Galerie-Willkommenstext verknüpfen“ stellt die Live-Verbindung wieder
+                          her.
                         </li>
                         <li>
                           <strong>Speichern</strong> in der oberen Leiste legt Texte und Werk­bild auf{' '}
@@ -2591,10 +2639,28 @@ export default function FlyerEventBogenNeuPage() {
                 <label>
                   Text Vorderseite (Intro)
                   <textarea
-                    value={masterText.intro}
-                    onChange={(e) => setMasterText((prev) => ({ ...prev, intro: e.target.value }))}
+                    value={introFollowsGallery ? base.intro : masterText.intro}
+                    onChange={(e) => {
+                      setIntroFollowsGallery(false)
+                      setMasterText((prev) => ({ ...prev, intro: e.target.value }))
+                    }}
                     rows={5}
                   />
+                  <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="master-edit-linkbtn"
+                      onClick={() => {
+                        setIntroFollowsGallery(true)
+                        setMasterText((prev) => ({ ...prev, intro: base.intro }))
+                      }}
+                    >
+                      Mit Galerie-Willkommenstext verknüpfen (live)
+                    </button>
+                    <span style={{ fontSize: '0.78rem', color: '#5c5650', maxWidth: '320px' }}>
+                      Standard: derselbe Text wie in Galerie gestalten – aktualisiert sich bei Änderungen im Admin.
+                    </span>
+                  </div>
                 </label>
               ) : null}
               {masterEditField === 'image' ? (

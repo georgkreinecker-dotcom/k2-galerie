@@ -8432,6 +8432,13 @@ ${'='.repeat(60)}
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
+    const flyerTenantPkg: FlyerEventBogenTenantContext = tenant.isOeffentlich
+      ? 'oeffentlich'
+      : tenant.isVk2
+        ? 'vk2'
+        : 'k2'
+    const masterA5Rel = flyerEventBogenUrl({ tenant: flyerTenantPkg, eventId: event.id })
+    const masterA5Href = esc(masterA5Rel)
     const pre = (t: string) =>
       `<pre style="white-space:pre-wrap;font-family:inherit;font-size:0.92rem;line-height:1.55;margin:0;color:${sd.text}">${esc(t)}</pre>`
     const subj = (newsletter as { subject?: string })?.subject || ''
@@ -8458,7 +8465,8 @@ ${'='.repeat(60)}
   <div class="wrap">
     <h1>Medienpaket – Vorschlag zur Weiterbearbeitung</h1>
     <div class="meta">Event: <strong>${esc(event.title || '')}</strong> · ${esc(formatEventDates(event) || '')}${event.location ? ` · ${esc(event.location)}` : ''}</div>
-    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. Lesen und kopieren hier. In die Event-Karten speichern: in der Eventplanung bei <strong>diesem Event</strong> einmal <strong>Paket übernehmen</strong> (mit Abfrage). Sonst je Karte „Neu erstellen“.</div>
+    <div class="hint no-print">Einheitliche Datenquelle wie Flyer/Presse-Master. <strong>Druckfein zuerst:</strong> <strong>Flyer-Master A5 (Abschnitt 0)</strong> – Plakat, A6 und QR nutzen dieselbe Event-ID. Lesen und kopieren hier. In die Event-Karten speichern: in der Eventplanung bei <strong>diesem Event</strong> einmal <strong>Paket übernehmen</strong> (mit Abfrage). Sonst je Karte „Neu erstellen“.</div>
+    <section class="no-print"><h2>0. Flyer-Master A5 (Herzstück)</h2><p style="margin:0 0 0.65rem;font-size:0.9rem;line-height:1.5">Hier stimmst du Eventzeit, Text und Layout ab – Plakat A3, A6 und Visitenkarte leiten sich davon ab.</p><p style="margin:0"><a href="${masterA5Href}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:0.45rem 0.85rem;border-radius:8px;background:${sd.accent};color:#fff;font-weight:700;text-decoration:none;font-size:0.88rem">Flyer-Master für dieses Event in der App öffnen</a></p></section>
     <section><h2>1. Presseaussendung</h2><p style="margin:0 0 0.5rem;font-size:0.88rem;font-weight:600">${esc(presse?.title || '')}</p>${pre(typeof presse?.content === 'string' ? presse.content : '')}</section>
     <section><h2>2. Social Media</h2><p style="margin:0 0 0.35rem;font-size:0.85rem;font-weight:600">Instagram</p>${pre(social?.instagram || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">Facebook</p>${pre(social?.facebook || '')}<p style="margin:0.85rem 0 0.35rem;font-size:0.85rem;font-weight:600">WhatsApp</p>${pre(social?.whatsapp || '')}</section>
     <section><h2>3. Newsletter</h2><p style="margin:0 0 0.35rem;font-size:0.85rem">Betreff</p>${pre(subj)}${greet ? `<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Anrede</p>${pre(greet)}` : ''}<p style="margin:0.65rem 0 0.35rem;font-size:0.85rem">Text</p>${pre(bodyNl)}</section>
@@ -21829,6 +21837,34 @@ ${name}`
               <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.55rem' }}>
                 <button
                   type="button"
+                  onClick={() => {
+                    const defEv = getDefaultEventForMediengeneratorButtons(events)
+                    if (!defEv) {
+                      alert('Bitte zuerst ein Event erstellen')
+                      return
+                    }
+                    const ft: FlyerEventBogenTenantContext = tenant.isOeffentlich
+                      ? 'oeffentlich'
+                      : tenant.isVk2
+                        ? 'vk2'
+                        : 'k2'
+                    navigate(flyerEventBogenUrl({ tenant: ft, eventId: defEv.id }))
+                  }}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: 'transparent',
+                    color: s.text,
+                    border: `2px solid ${s.accent}`,
+                    borderRadius: '8px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontSize: '0.88rem',
+                  }}
+                >
+                  📄 Flyer-Master A5 (Standard-Event)
+                </button>
+                <button
+                  type="button"
                   onClick={() => openMedienpaketVorschlagDocument()}
                   style={{
                     padding: '0.5rem 1rem',
@@ -21844,7 +21880,7 @@ ${name}`
                   📑 Alle Medien als Vorschau-Paket
                 </button>
                 <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '560px' }}>
-                  Vorschau = nur lesen/kopieren. <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken; es gibt nur diesen einen Button. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
+                  <strong>Herzstück:</strong> zuerst Flyer-Master A5 fürs Standard-Event – dann stimmen Texte zu Plakat, A6 und QR. Vorschau-Paket = nur lesen/kopieren. <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken. Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
                 </span>
               </div>
             </div>

@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5 Live-Vorschau (Intro) + Mediengenerator:** Vorderseiten-**Intro** folgt **standardmäßig** live dem Willkommenstext aus **Galerie gestalten** (`base.intro`, `flyerDataTick`); optional eigener Text im Modal; Speicherfeld **`introFollowsGallery`**; Button **Mit Galerie-Willkommenstext verknüpfen (live)**. **Medienpaket-HTML:** Abschnitt 0 Link zu Flyer-Master + **Bugfix** `esc` vor Definition. **Mediengenerator:** Button **Flyer-Master A5 (Standard-Event)**. Dateien: `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Georg: Admin → Galerie gestalten Willkommenstext ändern → Flyer-Master offen lassen → Intro soll mitgehen; bei fixem Text Modal nutzen bzw. Verknüpfen-Button.
+
+---
+
 **Letzter Stand:** 27.03.26 (Abend) – **Session beendet – Sammelstand committed:** Alles Lokale mit **Test + Build grün** gebündelt: u. a. **VK2 Präsentationsmappe Vollversion** (`public/praesentationsmappe-vk2-vollversion/`), **Plakat Galerieeröffnung → Redirect** (alte Page entfernt), **TextsA4Page**, **Praesentationsmappe** / Vollversion, **tenantConfig**, **navigation**, **stammdatenStorage** / **documentsStorage**, **DevView**, **GalerieVorschau**, **Vk2Galerie**, **useServerBuildTimestamp**, Doku/Handbuch, Build-Dateien. **Commit:** `c2305c9` ✅ auf GitHub
 
 **Was wir JETZT tun:** Nächster Tag: `npm run briefing`, DIALOG-STAND lesen; Stand = **GitHub/Vercel** nach Deployment „Ready“.
