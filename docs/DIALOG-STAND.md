@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **ök2/VK2: Nach neuem Event Werbekarten automatisch (Flyer-Master zuerst, dann Paket-Logik):** Beim Speichern eines **neuen** Events (nicht K2): Demo-Flyer-Speicher leeren + Reset, nach **~0,9–1,2 s** dieselbe Logik wie **Paket übernehmen** ohne Rückfrage (`skipConfirm`). K2 unverändert. Mediengenerator-Hinweistext angepasst. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_.
+**Letzter Stand:** 28.03.26 – **ök2/VK2: Nach neuem Event Werbekarten automatisch (Flyer-Master zuerst, dann Paket-Logik):** Beim Speichern eines **neuen** Events (nicht K2): Demo-Flyer-Speicher leeren + Reset, nach **~0,9–1,2 s** dieselbe Logik wie **Paket übernehmen** ohne Rückfrage (`skipConfirm`). K2 unverändert. Mediengenerator-Hinweistext angepasst. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **776b0f9** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: ök2/VK2 – neues Event anlegen → kurz warten → Karten prüfen; bei Bedarf „Paket übernehmen“ zum Ersetzen.
 
