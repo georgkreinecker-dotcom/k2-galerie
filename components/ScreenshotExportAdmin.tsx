@@ -1172,7 +1172,10 @@ const OEF_DESIGN_DEFAULT = {
   cardBg2: 'rgba(246, 244, 240, 0.9)'
 } as const
 import { checkLocalStorageSize, cleanupLargeImages, getLocalStorageReport, tryFreeLocalStorageSpace, SPEICHER_VOLL_MELDUNG } from './SafeMode'
-import { getFlyerEventBogenStorageKey } from '../src/utils/flyerEventBogenStorageKeys'
+import {
+  FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF,
+  getFlyerEventBogenStorageKey,
+} from '../src/utils/flyerEventBogenStorageKeys'
 import { startAutoSave, stopAutoSave, setupBeforeUnloadSave, pauseAutoSaveForMs, restoreFromBackup, restoreFromBackupFile, hasBackup, getBackupTimestamp, getBackupTimestamps, recordLastBackupDownloadExported, getLastBackupDownloadExported, createK2Backup, createOek2Backup, createVk2Backup, downloadBackupAsFile, restoreK2FromBackup, restoreOek2FromBackup, restoreVk2FromBackup, detectBackupKontext } from '../src/utils/autoSave'
 import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '../src/utils/artworkSort'
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
@@ -8504,7 +8507,9 @@ ${'='.repeat(60)}
       [
         'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
         'Danach werden sie neu aus dem gleichen Stand wie die Medienpaket-Vorschau angelegt.',
-        'Du kannst sie in den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.',
+        'Dazu werden die Vorschläge für Plakat und Druckformate (Modal, „Neu erstellen“) auf denselben Stand gebracht.',
+        'In der Demo (ök2) wird der Flyer-Master im Browser auf die Muster-Basis zurückgesetzt.',
+        'Du kannst die Dateien in den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.',
         '',
         `Event: ${titel}`,
         '',
@@ -8538,10 +8543,8 @@ ${'='.repeat(60)}
       if (!saveDocuments(kept)) return
 
       const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
-      const sugList: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-      const evSug = sugList.find((sg: any) => String(sg.eventId) === eidNorm)
-      const presse = evSug?.presseaussendung || generatePresseaussendungContent(event, presseVariant)
-      const social = evSug?.socialMedia || generateSocialMediaContent(event)
+      const presse: any = generatePresseaussendungContent(event, presseVariant)
+      const social = generateSocialMediaContent(event)
 
       const freshGalleryData = (() => {
         if (tenant.isOeffentlich) return galleryData || {}
@@ -8561,8 +8564,7 @@ ${'='.repeat(60)}
         return loadStammdaten('k2', 'gallery') as Record<string, unknown>
       })()
 
-      let plakatContent: any = evSug?.plakat || generatePlakatContent(event)
-      if (!plakatContent || typeof plakatContent !== 'object') plakatContent = generatePlakatContent(event)
+      let plakatContent: any = { ...generatePlakatContent(event) }
       plakatContent.title = event.title || plakatContent.title || 'Event'
       plakatContent.date = formatEventDates(event) || plakatContent.date || 'Datum folgt'
       plakatContent.location = event.location || plakatContent.location || String((freshGalleryData as { address?: string }).address || '')
@@ -8582,7 +8584,7 @@ ${'='.repeat(60)}
       }
       plakatContent.type = eventTypeNamesPlakat[event.type] || plakatContent.type || 'Veranstaltung'
 
-      const flyerRaw = evSug?.flyer
+      const flyerGen = generateFlyerContent(event)
       const flyerForBuild: {
         headline: string
         date: string
@@ -8591,31 +8593,15 @@ ${'='.repeat(60)}
         type: string
         qrCode: string
         contact?: { phone?: string; email?: string; address?: string }
-      } =
-        flyerRaw && typeof flyerRaw === 'object' && typeof (flyerRaw as { headline?: string }).headline === 'string'
-          ? {
-              headline: String((flyerRaw as { headline?: string }).headline || ''),
-              date: String((flyerRaw as { date?: string }).date || ''),
-              location: String((flyerRaw as { location?: string }).location || ''),
-              description: String((flyerRaw as { description?: string }).description || ''),
-              type: String((flyerRaw as { type?: string }).type || 'sonstiges'),
-              qrCode: String((flyerRaw as { qrCode?: string }).qrCode || ''),
-              contact:
-                (flyerRaw as { contact?: { phone?: string; email?: string; address?: string } }).contact ||
-                { phone: '', email: '', address: '' },
-            }
-          : (() => {
-              const g = generateFlyerContent(event)
-              return {
-                headline: g.headline,
-                date: g.date,
-                location: g.location,
-                description: g.description,
-                type: String(g.type ?? 'sonstiges'),
-                qrCode: g.qrCode,
-                contact: g.contact,
-              }
-            })()
+      } = {
+        headline: String(flyerGen.headline ?? ''),
+        date: String(flyerGen.date ?? ''),
+        location: String(flyerGen.location ?? ''),
+        description: String(flyerGen.description ?? ''),
+        type: String(flyerGen.type ?? 'sonstiges'),
+        qrCode: String(flyerGen.qrCode ?? ''),
+        contact: flyerGen.contact || { phone: '', email: '', address: '' },
+      }
 
       const pd = designToPlakatVars(designSettings)
       const plakatQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(String(plakatContent.qrCode || ''))}`
@@ -8749,8 +8735,48 @@ ${'='.repeat(60)}
       saveDocuments([...cur, flyerPayload])
       setDocuments([...cur, flyerPayload])
 
+      const newsletterGen = generateNewsletterContent(event)
+      try {
+        const rawSug = localStorage.getItem('k2-pr-suggestions') || '[]'
+        const sugOut: any[] = JSON.parse(rawSug)
+        const ix = sugOut.findIndex((sg: any) => String(sg.eventId) === eidNorm)
+        const prEntry = {
+          eventId: event.id,
+          eventTitle: event.title,
+          generatedAt: new Date().toISOString(),
+          presseaussendung: presse,
+          socialMedia: social,
+          newsletter: newsletterGen,
+          plakat: plakatContent,
+          flyer: {
+            headline: flyerForBuild.headline,
+            date: flyerForBuild.date,
+            location: flyerForBuild.location,
+            description: flyerForBuild.description,
+            type: flyerForBuild.type,
+            qrCode: flyerForBuild.qrCode,
+            contact: flyerForBuild.contact || { phone: '', email: '', address: '' },
+          },
+        }
+        if (ix >= 0) sugOut[ix] = { ...sugOut[ix], ...prEntry }
+        else sugOut.push(prEntry)
+        localStorage.setItem('k2-pr-suggestions', JSON.stringify(sugOut))
+      } catch (e) {
+        console.warn('Medienpaket: k2-pr-suggestions', e)
+      }
+
+      if (tenant.isOeffentlich && typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem(FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF)
+        } catch (_) {
+          /* ignore */
+        }
+        window.dispatchEvent(new CustomEvent('k2-flyer-event-bogen-neu-reset'))
+      }
+      setPrSuggestionsRefresh((r: number) => r + 1)
+
       alert(
-        `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
+        `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. Vorschläge für Plakat und Druckformate sind auf denselben Stand gebracht.${tenant.isOeffentlich ? ' Demo: Flyer-Master im Browser wurde auf die Muster-Basis zurückgesetzt.' : ''} In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
       )
     } catch (err) {
       console.error('Medienpaket übernehmen:', err)

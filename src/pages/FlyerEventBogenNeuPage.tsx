@@ -641,6 +641,16 @@ export default function FlyerEventBogenNeuPage() {
       }),
     [eroeffnungEvent]
   )
+  /** Kurztext neben dem QR auf A6 / Druck: eigene Galerie nach Lizenz vs. Demo/K2/VK2. */
+  const qrCodeGalerieDruckHinweis = useMemo(() => {
+    if (isOeffentlich) {
+      return 'Mit eigener Lizenz führt dieser QR-Code zu Ihrer neuen Online-Galerie. In der Demo öffnet er die Mustergalerie.'
+    }
+    if (isVk2) {
+      return 'Gescannt gelangen Besucher zur Online-Galerie Ihres Vereins.'
+    }
+    return 'Gescannt gelangen Besucher zur öffentlichen Online-Galerie – dort sind Ihre Werke sichtbar.'
+  }, [isOeffentlich, isVk2])
   /** ök2: Überschrift aus Muster-Event (z. B. Vernissage); K2: unverändert „Galerieeröffnung“. */
   const heroOpeningWord = useMemo(() => {
     if (isOeffentlich && eroeffnungEvent) {
@@ -762,6 +772,26 @@ export default function FlyerEventBogenNeuPage() {
       setEventDateLine('Termin folgt')
     }
   }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl])
+
+  /** Nach „Paket übernehmen“ im ök2-Admin: Browser-Speicher des Flyer-Masters ist leer – offene Seite sofort auf Muster/Defaults. */
+  useEffect(() => {
+    if (!isOeffentlich || typeof window === 'undefined') return
+    const onFlyerMasterReset = () => {
+      const fb = flyerImageFallbackPath(true, isVk2)
+      setFlyerDataTick((t) => t + 1)
+      setLeftSrc(fb)
+      const g = loadStammdaten('oeffentlich', 'gallery')
+      const gi = getGalerieImages(g)
+      setMiddleSrc(gi.welcomeImage || fb)
+      setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
+      setLeftWerkLabel('Bild aus Datei')
+      setIntroFollowsGallery(true)
+      setMasterText(mergeMasterTextFromPersisted(null, true))
+      setPage1Layout(layoutFromUrl)
+    }
+    window.addEventListener('k2-flyer-event-bogen-neu-reset', onFlyerMasterReset)
+    return () => window.removeEventListener('k2-flyer-event-bogen-neu-reset', onFlyerMasterReset)
+  }, [isOeffentlich, isVk2, layoutFromUrl])
 
   useEffect(() => {
     const bump = () => setFlyerDataTick((t) => t + 1)
@@ -928,7 +958,10 @@ export default function FlyerEventBogenNeuPage() {
             ) : (
               <div className="qr-placeholder">QR</div>
             )}
-            <p className="qr-caption">Zur Galerie online</p>
+            <div className="front-qr-text-block">
+              <p className="qr-caption">Zur Galerie online</p>
+              <p className="master-qr-hint">{qrCodeGalerieDruckHinweis}</p>
+            </div>
           </div>
           <div className="front-bottom-right">
             <p className="invite">Herzliche Einladung</p>
@@ -1062,6 +1095,7 @@ export default function FlyerEventBogenNeuPage() {
             ) : null}
             {frontQrDataUrl ? <img src={frontQrDataUrl} alt="" className="qr" /> : <div className="qr-placeholder">QR</div>}
             <p className="qr-caption">Zur Galerie online</p>
+            <p className="master-qr-hint master-qr-hint--v2">{qrCodeGalerieDruckHinweis}</p>
           </div>
         </div>
       </div>
@@ -1858,8 +1892,23 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .front .front-bottom-left{display:grid;grid-template-columns:12mm 1fr;gap:.9mm;align-items:start}
         .${ROOT} .front .front-bottom-left .qr{width:12mm;height:12mm;object-fit:contain}
         .${ROOT} .front .front-bottom-left .qr-placeholder{width:12mm;height:12mm}
+        .${ROOT} .front .front-bottom-left .front-qr-text-block{
+          display:flex;
+          flex-direction:column;
+          gap:.35mm;
+          min-width:0;
+          align-self:start;
+        }
         .${ROOT} .front .front-bottom-left .qr-caption{
-          margin:.1mm 0 0;font-size:5.8px;line-height:1.13;font-weight:620;color:#eaf1ff
+          margin:0;font-size:5.8px;line-height:1.13;font-weight:620;color:#eaf1ff
+        }
+        .${ROOT} .front .front-bottom-left .master-qr-hint{
+          margin:0;
+          font-size:4.5px;
+          line-height:1.22;
+          font-weight:600;
+          color:rgba(234,241,255,.88);
+          max-width:42mm;
         }
         .${ROOT} .front .front-bottom-right{
           display:grid;gap:.55mm;justify-content:flex-start;align-content:end;min-height:12mm
@@ -2073,6 +2122,15 @@ export default function FlyerEventBogenNeuPage() {
           color:var(--flyer-muted-caption);
           max-width:42ch;
         }
+        .${ROOT} .front.front-layout-v2 .v2-footer-qr .master-qr-hint--v2{
+          margin:0;
+          font-size:7.5px;
+          line-height:1.28;
+          font-weight:650;
+          color:var(--flyer-muted-caption);
+          max-width:38ch;
+          opacity:.95;
+        }
 
         .${ROOT} .row{display:grid;grid-template-columns:20mm 1fr;gap:2mm;align-items:center}
         .${ROOT} .qr{width:20mm;height:20mm;object-fit:contain}
@@ -2267,6 +2325,8 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT}.bw-print .qr-caption,
         .${ROOT}.bw-print .a3-qr-caption,
+        .${ROOT}.bw-print .master-qr-hint,
+        .${ROOT}.bw-print .master-qr-hint--v2,
         .${ROOT}.bw-print small{
           color:#222 !important;
         }
@@ -2573,8 +2633,21 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .a6-brand{margin:0;font-size:6.4mm;line-height:1.05;font-weight:900;letter-spacing:.01em}
         .${ROOT} .a6-opening{margin:0;font-size:5.2mm;line-height:1.06;font-weight:820}
         .${ROOT} .a6-names{margin:0;font-size:2.5mm;line-height:1.2;font-weight:650;opacity:.94}
-        .${ROOT} .a6-image-wrap{background:var(--flyer-img-hole)}
-        .${ROOT} .a6-image{width:100%;height:100%;object-fit:cover;display:block}
+        .${ROOT} .a6-image-wrap{
+          background:var(--flyer-img-hole);
+          min-height:0;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+        }
+        .${ROOT} .a6-image{
+          width:100%;
+          height:100%;
+          object-fit:contain;
+          object-position:center;
+          display:block;
+        }
         .${ROOT} .a6-right{
           display:grid;
           grid-template-rows:1fr auto;
@@ -3125,7 +3198,10 @@ export default function FlyerEventBogenNeuPage() {
           <div className="derivation-head">
             <div>
               <p className="derivation-title">A6 Ableitung – Live-Vorschau</p>
-              <p className="derivation-sub">Standard: kompakte Vorschau. Vollbild nur bei Bedarf.</p>
+              <p className="derivation-sub">
+                Standard: kompakte Vorschau. Vollbild nur bei Bedarf. Motiv vollständig sichtbar (nicht beschnitten);
+                bei manchen Fotos entsteht ein schmaler Rand am Bild.
+              </p>
             </div>
             <button
               type="button"
