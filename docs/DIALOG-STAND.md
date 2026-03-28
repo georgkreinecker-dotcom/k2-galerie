@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Schwarzweiß + Zurück:** **Schwarzweiß Druckcheck** galt nur in `@media print` → auf dem Bildschirm wirkungslos; Styles jetzt **auch für die Live-Vorschau**; Toggle per **`bwPrintPreview`** + Klasse **`bw-print`** am Root (kein `querySelector`). **Toolbar:** **← Zurück** = `navigate(-1)` wenn History, sonst **Werbeunterlagen** mit `?context=oeffentlich` / `vk2`. Datei: `FlyerEventBogenNeuPage.tsx`. **Commit:** `bf368ed` ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Master A5 → Schwarzweiß ein/aus sichtbar prüfen; Zurück von Werbeunterlagen/Marketing testen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Flyer-Master A5 Live-Vorschau (Intro) + Mediengenerator:** Vorderseiten-**Intro** folgt **standardmäßig** live dem Willkommenstext aus **Galerie gestalten** (`base.intro`, `flyerDataTick`); optional eigener Text im Modal; Speicherfeld **`introFollowsGallery`**; Button **Mit Galerie-Willkommenstext verknüpfen (live)**. **Medienpaket-HTML:** Abschnitt 0 Link zu Flyer-Master + **Bugfix** `esc` vor Definition. **Mediengenerator:** Button **Flyer-Master A5 (Standard-Event)**. Dateien: `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`. **Commit:** `65322d4` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Admin → Galerie gestalten Willkommenstext ändern → Flyer-Master offen lassen → Intro soll mitgehen; bei fixem Text Modal nutzen bzw. Verknüpfen-Button.
