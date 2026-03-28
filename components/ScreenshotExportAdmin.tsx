@@ -16365,6 +16365,26 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               )
             })()}
             <div style={designDraftCssVars}>
+            <p
+              role="note"
+              style={{
+                margin: 0,
+                marginBottom: designSubTab === 'vorschau' ? 0 : '0.85rem',
+                padding: '0.65rem 1rem',
+                fontSize: '0.82rem',
+                lineHeight: 1.5,
+                color: s.text,
+                background: `${s.accent}14`,
+                borderRadius: designSubTab === 'vorschau' ? 0 : 12,
+                ...(designSubTab === 'vorschau'
+                  ? { borderBottom: `1px solid ${s.accent}33` }
+                  : { border: `1px solid ${s.accent}33` }),
+              }}
+            >
+              <strong style={{ color: s.text }}>Mediengenerator:</strong>{' '}
+              Farbdesign und Texte, die du hier einstellst, gelten auch für Vorlagen unter{' '}
+              <strong style={{ color: s.text }}>Marketing</strong> – z. B. Presse, Flyer, Social Media und Newsletter.
+            </p>
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
               <>
@@ -23880,6 +23900,7 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Presseaussendung – {redactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
+                aria-label="Zurück zum Mediengenerator"
                 onClick={() => {
                   setRedactionEvent(null)
                   closeOeffentlichkeitsarbeitFullscreenOverlay()
@@ -23894,7 +23915,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × OK
+                ← Zurück
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -24146,6 +24167,7 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Social-Media-Posts – {socialRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
+                aria-label="Zurück zum Mediengenerator"
                 onClick={() => {
                   setSocialRedactionEvent(null)
                   setSocialRedactionDocument(null)
@@ -24161,7 +24183,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × OK
+                ← Zurück
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
@@ -24787,6 +24809,7 @@ ${name}`
               <strong style={{ color: s?.text ?? '#f0f6ff' }}>Newsletter – {newsletterRedactionEvent?.title ?? 'Event'}</strong>
               <button
                 type="button"
+                aria-label="Zurück zum Mediengenerator"
                 onClick={() => {
                   setNewsletterRedactionEvent(null)
                   setNewsletterRedactionDocument(null)
@@ -24802,7 +24825,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                × OK
+                ← Zurück
               </button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', flex: 1, minHeight: 0 }}>
