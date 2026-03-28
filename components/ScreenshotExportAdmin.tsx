@@ -16688,7 +16688,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   : { border: `1px solid ${s.accent}33` }),
               }}
             >
-              <strong style={{ color: s.text }}>Mediengenerator:</strong>{' '}
+              <strong style={{ color: s.text }}>
+                {tenant.isOeffentlich || tenant.isVk2 ? 'Werbematerial & Marketing:' : 'Mediengenerator:'}
+              </strong>{' '}
               Farbdesign und Texte, die du hier einstellst, gelten auch für Vorlagen unter{' '}
               <strong style={{ color: s.text }}>Marketing</strong> – z. B. Presse, Flyer, Social Media und Newsletter.
             </p>
@@ -20303,7 +20305,15 @@ ${name}`
             { id: 'kit', label: 'Medienkit mit Kernangaben', done: medienkitZeilen.length >= 2, hint: 'Name plus Kurztext, Adresse oder Kontakt – Stammdaten pflegen' },
             { id: 'story', label: 'Story für die Presse gewählt', done: presseStoryVariante === 'human' || presseStoryVariante === 'produkt', hint: 'Human Interest oder Produkt-Story in der Vorlage wählen' },
             { id: 'meta', label: 'Anlass, Datum oder Ort', done: Boolean(n(presseAnlass) || n(presseDatum) || n(presseOrt)), hint: 'Presse-Infos konkretisieren – wirkt professionell bei Medien' },
-            { id: 'medien', label: 'Medienspiegel mit Kontakten', done: medienspiegel.length > 0, hint: 'Eventplanung → Mediengenerator: Presse-E-Mails eintragen' },
+            {
+              id: 'medien',
+              label: 'Medienspiegel mit Kontakten',
+              done: medienspiegel.length > 0,
+              hint:
+                tenant.isOeffentlich || tenant.isVk2
+                  ? 'Marketing → Werbematerial → Medienspiegel: Presse-E-Mails eintragen'
+                  : 'Eventplanung → Mediengenerator: Presse-E-Mails eintragen',
+            },
           ]
           const presseMilestoneDone = presseMilestones.filter(m => m.done).length
           return (
@@ -20443,9 +20453,18 @@ ${name}`
               </p>
 
               <div style={{ marginBottom: '2rem', padding: '0.95rem 1rem', background: `${s.accent}10`, border: `1px solid ${s.accent}38`, borderRadius: '10px', fontSize: '0.85rem', color: s.text }}>
-                Der Verteiler (Medienspiegel + Newsletter) ist jetzt vollständig im Ablauf
-                <strong> Event- und Medienplanung → Mediengenerator &amp; Verteiler</strong> eingebunden – dort steht er bewusst
-                <strong> unter den Werbemitteln</strong> (zuerst Dokumente, dann Versand).
+                {tenant.isOeffentlich || tenant.isVk2 ? (
+                  <>
+                    Der Verteiler (Medienspiegel + Newsletter) steht unter{' '}
+                    <strong>Marketing → Werbematerial</strong> – bewusst <strong>unter den Event-Karten</strong> (zuerst Dokumente, dann Versand).
+                  </>
+                ) : (
+                  <>
+                    Der Verteiler (Medienspiegel + Newsletter) ist jetzt vollständig im Ablauf
+                    <strong> Event- und Medienplanung → Mediengenerator &amp; Verteiler</strong> eingebunden – dort steht er bewusst
+                    <strong> unter den Werbemitteln</strong> (zuerst Dokumente, dann Versand).
+                  </>
+                )}
               </div>
 
               <div style={{ marginBottom: '0.5rem', padding: '0.9rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
@@ -20501,8 +20520,14 @@ ${name}`
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📢</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Mediengenerator & Werbematerial</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Einladungen, Flyer, Presse, Social Media – ansehen & drucken</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>
+                  {tenant.isOeffentlich || tenant.isVk2 ? 'Werbematerial' : 'Mediengenerator & Werbematerial'}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>
+                  {tenant.isOeffentlich || tenant.isVk2
+                    ? 'Flyer, Presse, Social, Newsletter – pro Event; Medienspiegel darunter'
+                    : 'Einladungen, Flyer, Presse, Social Media – ansehen & drucken'}
+                </div>
               </button>
             </div>
             {eventplanSubTab === 'events' && (
@@ -22179,6 +22204,7 @@ ${name}`
             }}>
               📢 Hier sind deine Flyer und Werbedokumente – ansehen, bearbeiten …
             </h2>
+            {!(tenant.isOeffentlich || tenant.isVk2) && (
             <div style={{ marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)', padding: '0.7rem 0.8rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: s.bgCard }}>
               <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.45rem' }}>Schnellstart für neue Nutzer</div>
               <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
@@ -22192,7 +22218,9 @@ ${name}`
                 Inhaltlich gilt immer: eine Einheit, getrennt gesendet (kurzer Mailtext + druckfertiges PDF).
               </div>
             </div>
+            )}
 
+            {!(tenant.isOeffentlich || tenant.isVk2) && (
             <div style={{ marginBottom: '1rem', padding: '0.8rem 0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: `${s.accent}0c` }}>
               <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.35rem' }}>📣 Mediengenerator & Verteiler</div>
               <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
@@ -22245,19 +22273,31 @@ ${name}`
                 </button>
                 <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '560px' }}>
                   <strong>Herzstück:</strong> zuerst Flyer-Master A5 fürs Standard-Event – dann stimmen Texte zu Plakat, A6 und QR. Vorschau-Paket = nur lesen/kopieren.{' '}
-                  {tenant.isOeffentlich || tenant.isVk2 ? (
-                    <>
-                      In <strong>ök2</strong> und <strong>VK2</strong> legt die App nach einem <strong>neuen Event</strong> die Werbekarten automatisch an (zuerst Flyer-Master vorbereiten, kurz danach Presse, Social, Newsletter, Plakat, Flyer). <strong>Paket übernehmen</strong> in der Event-Zeile = alles zu diesem Event ersetzen wie bisher.
-                    </>
-                  ) : (
-                    <>
-                      <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken.
-                    </>
-                  )}{' '}
+                  <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken.{' '}
                   Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
                 </span>
               </div>
             </div>
+            )}
+
+            {(tenant.isOeffentlich || tenant.isVk2) && (
+              <div
+                style={{
+                  marginBottom: '1rem',
+                  padding: '0.65rem 0.85rem',
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: 10,
+                  background: `${s.accent}08`,
+                  fontSize: '0.8rem',
+                  color: s.muted,
+                  lineHeight: 1.5,
+                }}
+              >
+                <strong style={{ color: s.text }}>ök2 / VK2:</strong> Nach einem neuen Event sind die Werbekarten unten bei deinem Event schon angelegt. Flyer-Master über die Karte{' '}
+                <strong>Plakat &amp; Druckformate</strong> → „Flyer-Master öffnen“ oder über <strong>Werbeunterlagen</strong>.{' '}
+                <strong>Paket übernehmen</strong> ersetzt alle Werbemittel zu diesem Event, wenn du neu starten willst.
+              </div>
+            )}
 
             {/* Medienspiegel: direkt im Werbematerial-Ablauf */}
             <div id="admin-medienspiegel-bcc" style={{ order: 3, marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
@@ -22765,6 +22805,7 @@ ${name}`
                                     </div>
                                   </div>
                                   <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                                    {!(tenant.isOeffentlich || tenant.isVk2) && (
                                     <button
                                       type="button"
                                       onClick={() => openMedienpaketVorschlagDocument(event)}
@@ -22783,6 +22824,7 @@ ${name}`
                                     >
                                       📑 Medienpaket (dieses Event)
                                     </button>
+                                    )}
                                     <button
                                       type="button"
                                       onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel(event)}
