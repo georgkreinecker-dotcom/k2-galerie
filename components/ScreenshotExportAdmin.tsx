@@ -6173,8 +6173,8 @@ ${'='.repeat(60)}
   const generateEditableSocialMediaPDF = (
     socialMedia: any,
     event: any,
-    opts?: { skipOpenWindow?: boolean }
-  ): void | Promise<void> => {
+    opts?: { skipOpenWindow?: boolean; deferSave?: boolean }
+  ): void | Promise<void | Record<string, unknown>> => {
     let blob: Blob | null = null
     let socialDocId: string | null = null
     const isVk2 = tenant.isVk2
@@ -6224,6 +6224,26 @@ ${'='.repeat(60)}
         eventTitle: etitle,
         werbematerialTyp: 'social'
       }
+      if (opts?.deferSave) {
+        if (!blob) throw new Error('Social-Dokument: kein Inhalt')
+        return new Promise<Record<string, unknown>>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onloadend = () => {
+            try {
+              resolve({
+                ...socialPlaceholder,
+                fileData: reader.result as string,
+                data: reader.result as string,
+              })
+            } catch (e) {
+              reject(e)
+            }
+          }
+          reader.onerror = () => reject(new Error('Social-Dokument: Lesen fehlgeschlagen'))
+          reader.readAsDataURL(blob)
+        })
+      }
+
       const existingSocial = loadDocuments()
       if (!saveDocuments([...existingSocial, socialPlaceholder])) {
         throw new Error('Social-Dokument: Speichern fehlgeschlagen')
@@ -7439,15 +7459,21 @@ ${'='.repeat(60)}
   // E-Mail-Newsletter für spezifisches Event generieren
   const generateEmailNewsletterForEvent = (
     event: any,
-    opts?: { skipOpenAndAlert?: boolean }
-  ): void | Promise<void> => {
+    opts?: { skipOpenAndAlert?: boolean; deferSave?: boolean; newsletterContent?: ReturnType<typeof generateNewsletterContent> }
+  ): void | Promise<void | Record<string, unknown>> => {
     const gGal = galleryData || {}
 
-    // Prüfe ob Vorschläge vorhanden sind
-    const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const eventSuggestion = suggestions.find((s: any) => String(s.eventId) === String(event.id))
-
-    const newsletterContent = eventSuggestion?.newsletter || generateNewsletterContent(event)
+    const newsletterContent =
+      opts?.newsletterContent ??
+      (() => {
+        try {
+          const suggestions = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+          const eventSuggestion = suggestions.find((s: any) => String(s.eventId) === String(event.id))
+          return eventSuggestion?.newsletter || generateNewsletterContent(event)
+        } catch {
+          return generateNewsletterContent(event)
+        }
+      })()
 
     const html = `
 <!DOCTYPE html>
@@ -7572,6 +7598,39 @@ ${'='.repeat(60)}
     `
 
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+
+    if (opts?.deferSave) {
+      return new Promise<Record<string, unknown>>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onloadend = () => {
+          try {
+            const dataUrl = reader.result as string
+            const documentData = {
+              id: `pr-newsletter-${event.id}-${Date.now()}`,
+              name: getNextWerbematerialVorschlagName(event.id, event.title, 'newsletter', 'Newsletter'),
+              type: 'text/html',
+              size: blob.size,
+              fileData: dataUrl,
+              data: dataUrl,
+              fileName: `newsletter-${event.title.replace(/\s+/g, '-').toLowerCase()}.html`,
+              uploadedAt: new Date().toISOString(),
+              isPDF: false,
+              isPlaceholder: false,
+              category: 'pr-dokumente',
+              eventId: event.id,
+              eventTitle: event.title,
+              werbematerialTyp: 'newsletter',
+            }
+            resolve(documentData)
+          } catch (e) {
+            reject(e)
+          }
+        }
+        reader.onerror = () => reject(new Error('Newsletter speichern: Lesen fehlgeschlagen'))
+        reader.readAsDataURL(blob)
+      })
+    }
+
     if (!opts?.skipOpenAndAlert) {
       openDocumentInApp(html, 'Presseaussendung')
     }
@@ -7847,12 +7906,9 @@ ${'='.repeat(60)}
 </html>`
   }
 
-  /** Plakat-Master wie beim Speichern – nur für Vorschau (iframe), gleiche CD-Optik + Event-Daten. */
+  /** Plakat-Master-Vorschau: immer frisch aus Event + Stammdaten + Design – gleiche Basis wie Medienpaket / Flyer-Master-Zeile, nicht aus altem k2-pr-suggestions oder gespeichertem HTML. */
   const getPlakatMasterPreviewHtmlForEvent = (ev: any): string => {
     if (!ev) return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/></head><body></body></html>'
-    const eidNorm = String(ev.id)
-    const sugList: any[] = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-    const evSug = sugList.find((sg: any) => String(sg.eventId) === eidNorm)
     const freshGalleryData = (() => {
       if (tenant.isOeffentlich) return galleryData || {}
       if (tenant.isVk2) {
@@ -7870,8 +7926,7 @@ ${'='.repeat(60)}
       }
       return loadStammdaten('k2', 'gallery') as Record<string, unknown>
     })()
-    let plakatContent: any = evSug?.plakat || generatePlakatContent(ev)
-    if (!plakatContent || typeof plakatContent !== 'object') plakatContent = generatePlakatContent(ev)
+    let plakatContent: any = { ...generatePlakatContent(ev) }
     plakatContent.title = ev.title || plakatContent.title || 'Event'
     plakatContent.date = formatEventDates(ev) || plakatContent.date || 'Datum folgt'
     plakatContent.location = ev.location || plakatContent.location || String((freshGalleryData as { address?: string }).address || '')
@@ -8540,7 +8595,6 @@ ${'='.repeat(60)}
             typSet.has(String(d.werbematerialTyp || ''))
           )
       )
-      if (!saveDocuments(kept)) return
 
       const presseVariant = tenant.isOeffentlich ? 'neutral' : 'lokal'
       const presse: any = generatePresseaussendungContent(event, presseVariant)
@@ -8661,7 +8715,6 @@ ${'='.repeat(60)}
       const presseDocId = `pr-editable-presseaussendung-${event.id}-${Date.now()}`
       const presseDataUrl = await readBlobAsDataUrl(presseBlob)
       const ev = event
-      let cur = loadDocuments()
       const pressePayload = {
         id: presseDocId,
         name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse', 'Presseaussendung'),
@@ -8678,20 +8731,21 @@ ${'='.repeat(60)}
         eventTitle: ev.title,
         werbematerialTyp: 'presse',
       }
-      saveDocuments([...cur, pressePayload])
-      setDocuments([...cur, pressePayload])
 
-      const socialWait = generateEditableSocialMediaPDF(social, event, { skipOpenWindow: true })
-      if (socialWait instanceof Promise) await socialWait
-
-      const nlWait = generateEmailNewsletterForEvent(event, { skipOpenAndAlert: true })
-      if (nlWait instanceof Promise) await nlWait
+      const newsletterGen = generateNewsletterContent(event)
+      const [socialPayload, newsletterPayload] = await Promise.all([
+        generateEditableSocialMediaPDF(social, event, { skipOpenWindow: true, deferSave: true }) as Promise<Record<string, unknown>>,
+        generateEmailNewsletterForEvent(event, {
+          skipOpenAndAlert: true,
+          deferSave: true,
+          newsletterContent: newsletterGen,
+        }) as Promise<Record<string, unknown>>,
+      ])
 
       const plakatHtml = buildPlakatWerbemittelHtml(plakatContent, freshGalleryData, pd, plakatQrUrl)
       const plakatBlob = new Blob([plakatHtml], { type: 'text/html;charset=utf-8' })
       const plakatDocId = `pr-plakat-${event.id}-${Date.now()}`
       const plakatDataUrl = await readBlobAsDataUrl(plakatBlob)
-      cur = loadDocuments()
       const plakatPayload = {
         id: plakatDocId,
         name: getNextWerbematerialVorschlagName(event.id, event.title, 'plakat', 'Plakat'),
@@ -8708,14 +8762,11 @@ ${'='.repeat(60)}
         eventTitle: event.title,
         werbematerialTyp: 'plakat',
       }
-      saveDocuments([...cur, plakatPayload])
-      setDocuments([...cur, plakatPayload])
 
       const flyerHtml = buildFlyerWerbemittelHtml(flyerForBuild, gDataFlyer, pd, flyerQrUrl)
       const flyerBlob = new Blob([flyerHtml], { type: 'text/html;charset=utf-8' })
       const flyerDocId = `pr-flyer-${event.id}-${Date.now()}`
       const flyerDataUrl = await readBlobAsDataUrl(flyerBlob)
-      cur = loadDocuments()
       const flyerPayload = {
         id: flyerDocId,
         name: getNextWerbematerialVorschlagName(event.id, event.title, 'event-flyer', 'Flyer'),
@@ -8732,10 +8783,19 @@ ${'='.repeat(60)}
         eventTitle: event.title,
         werbematerialTyp: 'event-flyer',
       }
-      saveDocuments([...cur, flyerPayload])
-      setDocuments([...cur, flyerPayload])
 
-      const newsletterGen = generateNewsletterContent(event)
+      const mergedDocs = [
+        ...kept,
+        pressePayload,
+        socialPayload,
+        newsletterPayload,
+        plakatPayload,
+        flyerPayload,
+      ]
+      if (!saveDocuments(mergedDocs)) {
+        return
+      }
+
       try {
         const rawSug = localStorage.getItem('k2-pr-suggestions') || '[]'
         const sugOut: any[] = JSON.parse(rawSug)
@@ -10090,9 +10150,12 @@ ${'='.repeat(60)}
   }
 
   // Dokumente speichern – immer über documentsStorage (ein Schreibweg, alle Schutzmechanismen). Rückgabe: true wenn geschrieben.
-  const saveDocuments = (docs: any[]): boolean => {
+  const saveDocuments = (
+    docs: any[],
+    persistOpts?: { allowEmptyWrite?: boolean }
+  ): boolean => {
     try {
-      const ok = saveDocumentsToStorage(tenant.tenantId, docs)
+      const ok = saveDocumentsToStorage(tenant.tenantId, docs, persistOpts)
       if (ok) {
         setDocuments(docs)
         setDocumentSaveFeedback('ok')
@@ -10111,7 +10174,7 @@ ${'='.repeat(60)}
         const freed = tryFreeLocalStorageSpace()
         if (freed > 0) {
           try {
-            const ok2 = saveDocumentsToStorage(tenant.tenantId, docs)
+            const ok2 = saveDocumentsToStorage(tenant.tenantId, docs, persistOpts)
             if (ok2) {
               setDocuments(docs)
               return true
@@ -22387,7 +22450,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Mit Dokumenten: große Vorschau des Plakat-Masters. Farben und Schrift kommen aus Galerie gestalten (Tab Design); Termine und Texte aus dem Event. Flyer-Master A4 und Ableitungen A3/A6/Karte über die Buttons. Versand: mehrere Dateien wählbar.',
+                                  'Vorschau zeigt das aktuelle Event mit deinem Design. Ansehen, an die Druckerei senden oder im Flyer-Master A5 bearbeiten.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -22713,15 +22776,8 @@ ${name}`
                                         )}
                                         {hatDokumente && (() => {
                                           const primaryDoc = karte.docs[0]
-                                          const plakatOnlyDoc =
-                                            karte.typ === 'plakat'
-                                              ? karte.docs.find((d: any) => String(d?.werbematerialTyp) === 'plakat')
-                                              : null
                                           const plakatPreviewHtml =
-                                            karte.typ === 'plakat'
-                                              ? decodeWerbemittelDataUrlToHtml(plakatOnlyDoc?.fileData || plakatOnlyDoc?.data) ||
-                                                getPlakatMasterPreviewHtmlForEvent(event)
-                                              : null
+                                            karte.typ === 'plakat' ? getPlakatMasterPreviewHtmlForEvent(event) : null
                                           return (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                                               {karte.typ === 'plakat' && plakatPreviewHtml ? (
@@ -22742,7 +22798,7 @@ ${name}`
                                                       fontWeight: 600,
                                                     }}
                                                   >
-                                                    Vorschau: Plakat-Master (Design aus Galerie gestalten · Inhalt aus Event)
+                                                    Aktuell: Event + Design (wie Flyer-Master A5 / Standard-Event)
                                                   </div>
                                                   <iframe
                                                     title="Plakat-Vorschau"
@@ -22802,7 +22858,7 @@ ${name}`
                                               )}
                                               <details style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.45rem 0.5rem' }}>
                                                 <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: s.text, fontWeight: 600 }}>
-                                                  Weitere Dokumente anzeigen ({karte.docs.length})
+                                                  Gespeicherte Dateien – zum Versand wählen ({karte.docs.length})
                                                 </summary>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.45rem' }}>
                                                   {karte.docs.map((doc: any, docIdx: number) => (
@@ -23363,11 +23419,11 @@ ${name}`
                   overflow: 'auto',
                 }}
               >
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
-                  Plakat &amp; Druckformate – Überblick
+                <h3 style={{ margin: '0 0 0.65rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
+                  Plakat &amp; Druckformate – Vorschau &amp; Auswahl
                 </h3>
-                <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Zum Event „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – <strong>Plakat-Master</strong>: Farben und Schrift wie in <strong>Galerie gestalten</strong> (Tab Design); Texte und Termine aus Event und Stammdaten.
+                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.45 }}>
+                  „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – unten siehst du den <strong>aktuellen</strong> Stand (Event + Design). Speicherte Dateien in der Karte: zum Versand auswählen.
                 </p>
                 <div
                   style={{
@@ -23387,7 +23443,7 @@ ${name}`
                       fontWeight: 600,
                     }}
                   >
-                    Live-Vorschau – dieselbe Vorlage wie in „Ansehen“ / Druck
+                    Aktuell: Event + Design (wie Flyer-Master A5)
                   </div>
                   <iframe
                     title="Plakat-Master-Vorschau"
@@ -23396,22 +23452,6 @@ ${name}`
                     style={{ width: '100%', height: 260, border: 'none', display: 'block' }}
                   />
                 </div>
-                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Zusätzlich: gemeinsamer <strong>Flyer-Master</strong> auf A4 (A5 vorne/hinten) – derselbe Look wie der Plakat-Master (Design aus Galerie gestalten). Daraus entstehen:
-                </p>
-                <ul style={{ margin: '0 0 1rem 0', paddingLeft: '1.2rem', fontSize: '0.88rem', color: '#1c1a18', lineHeight: 1.55 }}>
-                  <li>Master: eine Bearbeitungsstelle für Texte und Bilder</li>
-                  {!plakatDruckformateInfoModal.hideAbleitungen ? (
-                    <>
-                      <li>Ableitung A3 – Großformat, nur Ansehen/Drucken</li>
-                      <li>Ableitung A6 – Karte, nur Ansehen/Drucken</li>
-                      <li>Visitenkarten-Layout – nur Ansehen/Drucken</li>
-                    </>
-                  ) : (
-                    <li>VK2: Fokus auf dem Master; keine großen Druck-Ableitungen in diesem Überblick</li>
-                  )}
-                  <li>Gespeicherte Vorschläge Plakat und Event-Flyer erscheinen in der Karte – Versand mit Auswahl</li>
-                </ul>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
                   <button
                     type="button"

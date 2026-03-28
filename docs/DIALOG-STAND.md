@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Plakat & Druckformate: Vorschau = aktuell (wie Flyer-Master), kein alter Stand:** `getPlakatMasterPreviewHtmlForEvent` nutzt **nur noch** `generatePlakatContent(ev)` + Event/Design – **kein** `k2-pr-suggestions.plakat` mehr. **Iframe in der Event-Karte** zeigt **immer** diese Live-Vorschau, **nicht** mehr dekodiertes HTML aus der ersten gespeicherten Plakat-Datei (das war oft „alt“). **Modal** gekürzt: Titel „Vorschau & Auswahl“, ein kurzer Satz statt Überblick + Bullet-Liste; **Karten-Beschreibung** und **details-Summary** auf „ansehen / Druckerei / gespeicherte Dateien zum Versand“. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** Branch **ahead 1** – nach **`git push`** Hash in `git log -1` prüfen; Vercel „Ready“ abwarten.
+
+**Was wir JETZT tun:** Georg: Eventplan → Plakat-Karte: Vorschau muss zum **aktuellen Event + Design** passen; Modal kurz lesen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Flyer-Master: Speichern bei Quota – Stufenkompression + klarere Meldung:** Beim Speichern wird das Vorderseitenbild nacheinander **normal → aggressiv → minimal** komprimiert, bis `localStorage` passt. **Catch (Quota):** erneut **minimal** versuchen; Hinweistext erklärt: Speichern = **Browser-Kopie** (Texte + eingebettetes Bild), kein „neue Server-Daten“ – aber **doppeltes Kontingent**, wenn dasselbe Motiv schon riesig in der Galerie liegt; Praxis: Bild per **URL** (`/img/…`) statt riesiges Base64; geteiltes Kontingent K2/ök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **f2c48a6** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Flyer speichern mit großem Vorderseitenbild testen; bei Meldung Texte gegenlesen.
