@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5 Live-Vorschau (Intro) + Mediengenerator:** Vorderseiten-**Intro** folgt **standardmäßig** live dem Willkommenstext aus **Galerie gestalten** (`base.intro`, `flyerDataTick`); optional eigener Text im Modal; Speicherfeld **`introFollowsGallery`**; Button **Mit Galerie-Willkommenstext verknüpfen (live)**. **Medienpaket-HTML:** Abschnitt 0 Link zu Flyer-Master + **Bugfix** `esc` vor Definition. **Mediengenerator:** Button **Flyer-Master A5 (Standard-Event)**. Dateien: `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`. **Commit:** _nach Push_
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5 Live-Vorschau (Intro) + Mediengenerator:** Vorderseiten-**Intro** folgt **standardmäßig** live dem Willkommenstext aus **Galerie gestalten** (`base.intro`, `flyerDataTick`); optional eigener Text im Modal; Speicherfeld **`introFollowsGallery`**; Button **Mit Galerie-Willkommenstext verknüpfen (live)**. **Medienpaket-HTML:** Abschnitt 0 Link zu Flyer-Master + **Bugfix** `esc` vor Definition. **Mediengenerator:** Button **Flyer-Master A5 (Standard-Event)**. Dateien: `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`. **Commit:** `65322d4` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Admin → Galerie gestalten Willkommenstext ändern → Flyer-Master offen lassen → Intro soll mitgehen; bei fixem Text Modal nutzen bzw. Verknüpfen-Button.
 
