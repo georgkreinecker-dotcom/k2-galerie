@@ -30,10 +30,20 @@ import {
 
 const ROOT = 'flyer-event-bogen-neu'
 
-/** Master A5 Live-Vorschau: echte Muster-JPEGs aus der Demo-Ablage – kein Fallback unter /img/k2/ (keine K2-Repo-Werbefotos). */
-const FLYER_MASTER_MUSTER_BILD_LINKS = '/img/oeffentlich/galerie-card.jpg'
-const FLYER_MASTER_MUSTER_BILD_MITTE = '/img/oeffentlich/willkommen-demo.jpg'
-const FLYER_MASTER_MUSTER_BILD_RECHTS = '/img/oeffentlich/virtual-tour.jpg'
+/** K2: unverändert Galerie-Standardbild aus dem K2-Bestand. */
+const K2_FLYER_BILD_FALLBACK = '/img/k2/willkommen.jpg'
+/** ök2 / VK2: neutrales Dummy-Bild statt K2-Fotos oder Demo-JPEGs. */
+const FLYER_DUMMY_BILD_OEK2_VK2 = '/img/muster/malerei.svg'
+
+function flyerImageFallbackPath(isOeffentlich: boolean, isVk2: boolean): string {
+  return isOeffentlich || isVk2 ? FLYER_DUMMY_BILD_OEK2_VK2 : K2_FLYER_BILD_FALLBACK
+}
+
+function flyerFrontQrAlt(isOeffentlich: boolean, isVk2: boolean): string {
+  if (isOeffentlich) return 'QR Demo-Galerie ök2'
+  if (isVk2) return 'QR VK2-Galerie'
+  return 'QR K2 Galerie'
+}
 
 function flyerDesignStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
   if (isOeffentlich) return 'k2-oeffentlich-design-settings'
@@ -170,10 +180,10 @@ async function compressLeftSrcForFlyerStorage(leftSrc: string, aggressive: boole
   }
 }
 
-function galleryFallbackImagePath(isOeffentlich: boolean): string {
+function galleryFallbackImagePath(isOeffentlich: boolean, isVk2: boolean): string {
   const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
   const gi = getGalerieImages(g)
-  return gi.galerieCardImage || gi.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
+  return gi.galerieCardImage || gi.welcomeImage || flyerImageFallbackPath(isOeffentlich, isVk2)
 }
 
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
@@ -368,6 +378,16 @@ export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { isOeffentlich, isVk2 } = useTenant()
   const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich)
+  const flyerImgFallback = useMemo(
+    () => flyerImageFallbackPath(isOeffentlich, isVk2),
+    [isOeffentlich, isVk2],
+  )
+  const frontQrPathExplain = useMemo(() => {
+    if (isOeffentlich) return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+    if (isVk2) return PROJECT_ROUTES.vk2.galerie
+    return PROJECT_ROUTES['k2-galerie'].galerie
+  }, [isOeffentlich, isVk2])
+  const backQrPathExplain = PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
   const [searchParams] = useSearchParams()
   const isA3Mode = searchParams.get('mode') === 'a3'
   const isA6Mode = searchParams.get('mode') === 'a6'
@@ -394,10 +414,9 @@ export default function FlyerEventBogenNeuPage() {
   )
   const galerieImages = getGalerieImages(gallery)
   const defaultLeft =
-    galerieImages.galerieCardImage || galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
-  const defaultMiddle = galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_MITTE
-  const defaultRight =
-    galerieImages.virtualTourImage || galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_RECHTS
+    galerieImages.galerieCardImage || galerieImages.welcomeImage || flyerImgFallback
+  const defaultMiddle = galerieImages.welcomeImage || flyerImgFallback
+  const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || flyerImgFallback
 
   const [leftSrc, setLeftSrc] = useState(() => {
     const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))
@@ -407,7 +426,8 @@ export default function FlyerEventBogenNeuPage() {
     }
     const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
     const gi = getGalerieImages(g)
-    return gi.galerieCardImage || gi.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
+    const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
+    return gi.galerieCardImage || gi.welcomeImage || fb
   })
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
@@ -506,7 +526,7 @@ export default function FlyerEventBogenNeuPage() {
       json = JSON.stringify(payload)
     }
 
-    const fallbackPath = galleryFallbackImagePath(isOeffentlich)
+    const fallbackPath = galleryFallbackImagePath(isOeffentlich, isVk2)
     if (json.length > FLYER_SAVE_MAX_BYTES) {
       payload = buildPayload(fallbackPath)
       json = JSON.stringify(payload)
@@ -569,6 +589,7 @@ export default function FlyerEventBogenNeuPage() {
     flyerStorageKey,
     introFollowsGallery,
     isOeffentlich,
+    isVk2,
     leftSrc,
     leftWerkLabel,
     masterText,
@@ -615,17 +636,14 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, eroeffnungEvent])
   const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
 
-  const frontGalleryQr = useMemo(
-    () =>
-      buildQrUrlWithBust(
-        BASE_APP_URL +
-          (isOeffentlich
-            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-            : PROJECT_ROUTES['k2-galerie'].galerie),
-        versionTimestamp,
-      ),
-    [isOeffentlich, versionTimestamp],
-  )
+  const frontGalleryQr = useMemo(() => {
+    const path = isOeffentlich
+      ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+      : isVk2
+        ? PROJECT_ROUTES.vk2.galerie
+        : PROJECT_ROUTES['k2-galerie'].galerie
+    return buildQrUrlWithBust(BASE_APP_URL + path, versionTimestamp)
+  }, [isOeffentlich, isVk2, versionTimestamp])
   const oek2TorQr = useMemo(
     () => buildQrUrlWithBust(BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, versionTimestamp),
     [versionTimestamp]
@@ -825,7 +843,7 @@ export default function FlyerEventBogenNeuPage() {
             {frontQrDataUrl ? (
               <img
                 src={frontQrDataUrl}
-                alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+                alt={flyerFrontQrAlt(isOeffentlich, isVk2)}
                 className="qr"
               />
             ) : (
@@ -935,7 +953,7 @@ export default function FlyerEventBogenNeuPage() {
           {frontQrDataUrl ? (
             <img
               src={frontQrDataUrl}
-              alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+              alt={flyerFrontQrAlt(isOeffentlich, isVk2)}
               className="a3-qr"
             />
           ) : (
@@ -970,7 +988,7 @@ export default function FlyerEventBogenNeuPage() {
         {frontQrDataUrl ? (
           <img
             src={frontQrDataUrl}
-            alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+            alt={flyerFrontQrAlt(isOeffentlich, isVk2)}
             className="a6-qr"
           />
         ) : (
@@ -1004,7 +1022,7 @@ export default function FlyerEventBogenNeuPage() {
         {frontQrDataUrl ? (
           <img
             src={frontQrDataUrl}
-            alt={isOeffentlich ? 'QR Demo-Galerie ök2' : 'QR K2 Galerie'}
+            alt={flyerFrontQrAlt(isOeffentlich, isVk2)}
             className="vc-qr"
           />
         ) : (
@@ -2693,7 +2711,13 @@ export default function FlyerEventBogenNeuPage() {
           {masterIntroRailOpen ? (
             <aside
               className="master-intro-rail"
-              aria-label={isOeffentlich ? 'Hilfe zum Demo-Flyer ök2' : 'Hilfe zum Master-Flyer'}
+              aria-label={
+                isOeffentlich
+                  ? 'Hilfe zum Demo-Flyer ök2'
+                  : isVk2
+                    ? 'Hilfe zum VK2-Flyer'
+                    : 'Hilfe zum Master-Flyer K2'
+              }
             >
               <div className="master-intro-rail-inner">
                 <button
@@ -2744,29 +2768,112 @@ export default function FlyerEventBogenNeuPage() {
                       </p>
                       <ul>
                         <li>
-                          <strong>
-                            Kopfzeile und Namen wie in der Mustergalerie; Überschrift zur Veranstaltung (z. B. Vernissage)
-                            aus dem Demo-Event:
-                          </strong>{' '}
-                          Markenzeile und Namen entsprechen den Stammdaten der Demo; die mittlere Überschrift kommt aus
-                          dem <strong>Eröffnungs- bzw. Vernissage-Event</strong> (Muster-Event oder Einträge in der
-                          Demo-Eventplanung) – nicht frei textlich im Flyer editierbar.
+                          <strong>Markenzeile oben, Künstler- bzw. Galerienamen:</strong> aus den{' '}
+                          <strong>Muster-Stammdaten</strong> der Demo (Martina/Georg/Galerie) – nicht im Flyer-Fenster
+                          frei editierbar.
                         </li>
                         <li>
-                          <strong>Termin / Einladung mit Datum und Uhrzeit:</strong> aus der{' '}
-                          <strong>Eventplanung der Demo</strong> (Eröffnungs-Event), Bereich <strong>Events</strong> im
-                          Admin – <strong>nicht</strong> aus Daten einer anderen Galerie.
+                          <strong>Überschrift zur Veranstaltung</strong> (z. B. Vernissage): aus dem gewählten bzw.
+                          erkannten <strong>Demo-Eröffnungs-Event</strong> (Muster-Eventlinie und Einträge unter{' '}
+                          <strong>Events</strong> im ök2-Admin).
                         </li>
                         <li>
-                          <strong>Adresse, Ort, Öffnungszeiten</strong> (wenn angezeigt): aus den{' '}
-                          <strong>Stammdaten der Mustergalerie</strong> (Einstellungen im Demo-Kontext).
+                          <strong>Terminblock auf der Vorderseite</strong> (Datum, ggf. Uhrzeit, mehrzeilig): wird aus
+                          denselben <strong>Demo-Events</strong> berechnet wie auf der Event-Karte – Quelle{' '}
+                          <strong>Eventplanung ök2</strong>, nicht frei im Flyer getippt.
                         </li>
                         <li>
-                          <strong>QR-Codes:</strong> verweisen auf die <strong>öffentliche Demo-Galerie</strong> bzw. das{' '}
-                          <strong>Eingangstor ök2</strong> – gebaut aus den aktuellen App-URLs (Demo-Stand).
+                          <strong>Adresse und Ort</strong> unter dem Termin: <strong>Muster-Galerie-Stammdaten</strong>{' '}
+                          (Demo-Kontext).
+                        </li>
+                        <li>
+                          <strong>Öffnungszeiten</strong> (Überschrift „Öffnungszeiten Galerie“ und Text darunter, nur
+                          wenn beim Event keine eigenen Zeiten hinterlegt sind): ebenfalls{' '}
+                          <strong>Stammdaten Mustergalerie</strong>.
+                        </li>
+                        <li>
+                          <strong>QR-Code Vorderseite „Zur Galerie online“:</strong> codiert die Route{' '}
+                          <code>{frontQrPathExplain}</code> – volle URL inkl. <strong>Server-Stand und Cache-Bust</strong>{' '}
+                          (aktueller Demo-Stand beim Anzeigen des Flyers).
+                        </li>
+                        <li>
+                          <strong>QR-Code Rückseite</strong> (Eingang ök2): codiert die Route{' '}
+                          <code>{backQrPathExplain}</code> – ebenfalls mit aktuellem Stand; Ziel ist die{' '}
+                          <strong>öffentliche Demo-Galerie</strong> / Eingangstor.
+                        </li>
+                        <li>
+                          <strong>Feste Satzteile</strong> (nicht im Bearbeiten-Fenster): z. B. „Sie sind herzlich
+                          eingeladen“, „Zur Galerie online“, im klassischen Layout auch „Herzliche Einladung“ –{' '}
+                          <strong>Layout-Vorgabe</strong> dieses Masters.
                         </li>
                         <li>
                           <strong>Copyright-Zeile:</strong> Produktstandard (kgm solution), zentral vorgegeben.
+                        </li>
+                      </ul>
+                    </>
+                  ) : isVk2 ? (
+                    <>
+                      <h3>Was du hier machst</h3>
+                      <ul>
+                        <li>
+                          <strong>Herzstück des Mediengenerators:</strong> Wenn hier Eventzeiten, Texte und QR stimmen,
+                          übernehmen Plakat A3, Flyer A6 und Visitenkarte denselben Stand (dieser A5-Master).
+                        </li>
+                        <li>
+                          Die Vorschau zeigt einen <strong>A4-Bogen</strong> mit zwei <strong>A5-Hälften</strong> (vorne
+                          Bild + Text, hinten Texte zum Verein / zur Demo-Galerie).
+                        </li>
+                        <li>
+                          <strong>Klicken</strong> auf Vorderseite, Werk­bild, Rückseiten-Texte oder den großen
+                          Marketing-Block – Bearbeiten-Fenster; <strong>Kopfzeile ziehen</strong>, <strong>ESC</strong>{' '}
+                          schließt.
+                        </li>
+                        <li>
+                          <strong>Live-Vorschau:</strong> der große Text neben dem Bild folgt standardmäßig dem
+                          Willkommenstext aus <strong>Galerie gestalten</strong> (VK2-Design-Kontext).
+                        </li>
+                        <li>
+                          <strong>Speichern</strong> legt den Stand auf <strong>diesem Gerät</strong> ab; Ableitungen
+                          nutzen dieselbe Basis.
+                        </li>
+                        <li>
+                          Zum <strong>PDF</strong>: <strong>Drucken</strong> oder unter Werbeunterlagen „Als PDF
+                          drucken“.
+                        </li>
+                      </ul>
+                      <h3>Was du hier nicht änderst</h3>
+                      <p className="master-intro-explainer-note">
+                        Feste Daten kommen aus VK2-Stammdaten, VK2-Events und Standard-Routen – Bearbeiten im VK2-Admin
+                        bzw. in den genannten Bereichen, nicht in diesem Flyer-Fenster:
+                      </p>
+                      <ul>
+                        <li>
+                          <strong>Kopfzeile, Namen, Veranstaltungsüberschrift:</strong> aus VK2-Stammdaten und dem
+                          gewählten <strong>Eröffnungs- bzw. Hauptevent</strong> (Eventplanung VK2).
+                        </li>
+                        <li>
+                          <strong>Terminblock</strong> (Datum, Uhrzeit, mehrzeilig): aus der{' '}
+                          <strong>VK2-Eventplanung</strong> – dieselbe Logik wie bei anderen Werbemitteln; wenn in der
+                          Flyer-Adresse eine Ereignis-ID steht, wird genau dieses Event genutzt.
+                        </li>
+                        <li>
+                          <strong>Adresse, Ort, Öffnungszeiten</strong> (wenn angezeigt): aus den{' '}
+                          <strong>Stammdaten</strong>, die der Flyer für diesen Kontext lädt (Verein / Galerie).
+                        </li>
+                        <li>
+                          <strong>QR Vorderseite „Zur Galerie online“:</strong> Route <code>{frontQrPathExplain}</code>{' '}
+                          – VK2-Öffentliche Galerie, URL mit <strong>Server-Stand und Cache-Bust</strong>.
+                        </li>
+                        <li>
+                          <strong>QR Rückseite</strong> (Demo-Eingang): Route <code>{backQrPathExplain}</code> –{' '}
+                          <strong>öffentliche Demo-Galerie ök2</strong> für Besucher:innen ohne VK2-Zugang.
+                        </li>
+                        <li>
+                          <strong>Feste Satzteile</strong> wie „Sie sind herzlich eingeladen“, „Zur Galerie online“:{' '}
+                          <strong>Layout-Vorgabe</strong>.
+                        </li>
+                        <li>
+                          <strong>Copyright-Zeile:</strong> Produktstandard (kgm solution).
                         </li>
                       </ul>
                     </>
@@ -2781,7 +2888,7 @@ export default function FlyerEventBogenNeuPage() {
                         </li>
                         <li>
                           Die Vorschau zeigt einen <strong>A4-Bogen</strong> mit zwei <strong>A5-Hälften</strong> (vorne
-                          Bild + Text, hinten K2/ök2-Texte).
+                          Bild + Text, hinten K2- und ök2-Bezugstexte).
                         </li>
                         <li>
                           <strong>Klicken</strong> auf Vorderseite, Werk­bild, Rückseiten-Texte oder den großen
@@ -2812,20 +2919,36 @@ export default function FlyerEventBogenNeuPage() {
                       </p>
                       <ul>
                         <li>
-                          <strong>Kopf „K2 Galerie …“, Namen, „Galerieeröffnung“:</strong> feste Vorlage dieses Layouts
-                          (nicht frei textlich editierbar).
+                          <strong>Kopfzeile, Galerienamen, Veranstaltungsüberschrift:</strong> aus{' '}
+                          <strong>K2-Stammdaten</strong> und dem <strong>Eröffnungs-Event</strong> aus der K2-Eventplanung
+                          – nicht frei im Flyer editierbar.
                         </li>
                         <li>
-                          <strong>Termin / Einladung mit Datum und Uhrzeit:</strong> aus der{' '}
-                          <strong>K2-Eventplanung</strong> (Eröffnungs-Event), Bereich <strong>Events</strong> in der App.
+                          <strong>Terminblock auf der Vorderseite</strong> (Datum, Uhrzeit, mehrzeilig): aus der{' '}
+                          <strong>K2-Eventplanung</strong> – dieselbe Auswahl wie bei Event-Karte und anderen
+                          Werbemitteln; wenn in der Flyer-Adresse eine Ereignis-ID steht, wird genau dieses Event
+                          genutzt.
                         </li>
                         <li>
-                          <strong>Adresse, Ort, Öffnungszeiten</strong> (wenn angezeigt): aus den{' '}
-                          <strong>Galerie-Stammdaten</strong> (Einstellungen / Stammdaten).
+                          <strong>Adresse, Ort</strong> unter dem Termin: <strong>K2-Galerie-Stammdaten</strong>.
                         </li>
                         <li>
-                          <strong>QR-Codes:</strong> verweisen auf die <strong>Online-Galerie</strong> bzw. das{' '}
-                          <strong>Eingangstor ök2</strong> – gebaut aus den aktuellen App-URLs (aktueller Stand).
+                          <strong>Öffnungszeiten</strong> (Überschrift „Öffnungszeiten Galerie“ und Text, wenn beim Event
+                          keine Zeiten hinterlegt): <strong>K2-Galerie-Stammdaten</strong>.
+                        </li>
+                        <li>
+                          <strong>QR-Code Vorderseite „Zur Galerie online“:</strong> Route{' '}
+                          <code>{frontQrPathExplain}</code> – echte K2-Galerie online, URL mit{' '}
+                          <strong>Server-Stand und Cache-Bust</strong> (Handy bekommt aktuellen Stand).
+                        </li>
+                        <li>
+                          <strong>QR-Code Rückseite</strong> (Eingang ök2 für Interessent:innen): Route{' '}
+                          <code>{backQrPathExplain}</code> – öffentliche <strong>Demo-Galerie ök2</strong>, ebenfalls mit
+                          aktuellem Stand.
+                        </li>
+                        <li>
+                          <strong>Feste Satzteile</strong> (z. B. „Sie sind herzlich eingeladen“, „Zur Galerie online“,
+                          „Herzliche Einladung“ im klassischen Layout): <strong>Layout-Vorgabe</strong> des Masters.
                         </li>
                         <li>
                           <strong>Copyright-Zeile:</strong> Produktstandard (kgm solution), zentral vorgegeben.
