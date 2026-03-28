@@ -333,7 +333,23 @@ export default function FlyerEventBogenNeuPage() {
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
   const [flyerSaveMessage, setFlyerSaveMessage] = useState('')
   const [masterIntroRailOpen, setMasterIntroRailOpen] = useState(true)
+  const [bwPrintPreview, setBwPrintPreview] = useState(false)
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
+
+  const werbeunterlagenHref = useMemo(() => {
+    const b = PROJECT_ROUTES['k2-galerie'].werbeunterlagen
+    if (isOeffentlich) return `${b}?context=oeffentlich`
+    if (isVk2) return `${b}?context=vk2`
+    return b
+  }, [isOeffentlich, isVk2])
+
+  const handleToolbarBack = useCallback(() => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      navigate(-1)
+      return
+    }
+    navigate(werbeunterlagenHref)
+  }, [navigate, werbeunterlagenHref])
 
   /** Interne Varianten-Links: Kontext + eventId mitschleifen (Master ↔ Ableitungen eine Datenbasis). */
   const buildFlyerEventSelfUrl = useCallback(
@@ -983,7 +999,9 @@ export default function FlyerEventBogenNeuPage() {
   const backCard = renderBackCard(false)
 
   return (
-    <div className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}`}>
+    <div
+      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}`}
+    >
       <style>{`
         .${ROOT}{padding:16px;background:#f6f4f0;color:#1c1a18}
         .${ROOT}{
@@ -1878,6 +1896,61 @@ export default function FlyerEventBogenNeuPage() {
           text-align:center;
         }
         .${ROOT} .back-left small{font-size:6px;color:#6a6258}
+        /* Schwarzweiß-Druckcheck: Bildschirm + Druck (nicht nur @media print – sonst wirkt der Toggle „leer“) */
+        .${ROOT}.bw-print .card,
+        .${ROOT}.bw-print .front,
+        .${ROOT}.bw-print .back{
+          background:#fff !important;
+          color:#111 !important;
+        }
+        .${ROOT}.bw-print .front .hero,
+        .${ROOT}.bw-print .a3-hero{
+          background:#efefef !important;
+          color:#111 !important;
+          text-shadow:none !important;
+        }
+        .${ROOT}.bw-print .front .hero p,
+        .${ROOT}.bw-print .a3-hero p{
+          color:#111 !important;
+          text-shadow:none !important;
+        }
+        .${ROOT}.bw-print .v2-invite-panel,
+        .${ROOT}.bw-print .a3-invite{
+          background:#f4f4f4 !important;
+          color:#111 !important;
+          border:0.35mm solid #8e8e8e !important;
+          box-shadow:none !important;
+        }
+        .${ROOT}.bw-print .v2-invite-panel p,
+        .${ROOT}.bw-print .v2-invite-panel div,
+        .${ROOT}.bw-print .a3-invite p,
+        .${ROOT}.bw-print .a3-invite div{
+          color:#111 !important;
+        }
+        .${ROOT}.bw-print .back-right-marketing,
+        .${ROOT}.bw-print .back-left,
+        .${ROOT}.bw-print .back-left-bottom{
+          background:#fff !important;
+          border-color:#a9a9a9 !important;
+        }
+        .${ROOT}.bw-print .back-mkt-heading,
+        .${ROOT}.bw-print .back-mkt-body,
+        .${ROOT}.bw-print .marketing-sub,
+        .${ROOT}.bw-print .back-hero-slogan,
+        .${ROOT}.bw-print .back-hero-power{
+          color:#111 !important;
+        }
+        .${ROOT}.bw-print .qr,
+        .${ROOT}.bw-print .a3-qr{
+          filter:grayscale(1) contrast(1.35);
+          background:#fff !important;
+          border:0.25mm solid #b5b5b5;
+        }
+        .${ROOT}.bw-print .qr-caption,
+        .${ROOT}.bw-print .a3-qr-caption,
+        .${ROOT}.bw-print small{
+          color:#222 !important;
+        }
         @media print{
           ${isCardMode ? '@page{size:55mm 85mm;margin:0}' : isA6Mode ? '@page{size:A6 landscape;margin:0}' : isA3Mode ? '@page{size:A3 portrait;margin:0}' : '@page{size:A4;margin:0}'}
           html, body{
@@ -1948,61 +2021,6 @@ export default function FlyerEventBogenNeuPage() {
             height:100%;
             overflow:hidden;
             min-height:0;
-          }
-          /* Schwarzweiß-Druckcheck: maximale Lesbarkeit auf einfachen Druckern */
-          .${ROOT}.bw-print .card,
-          .${ROOT}.bw-print .front,
-          .${ROOT}.bw-print .back{
-            background:#fff !important;
-            color:#111 !important;
-          }
-          .${ROOT}.bw-print .front .hero,
-          .${ROOT}.bw-print .a3-hero{
-            background:#efefef !important;
-            color:#111 !important;
-            text-shadow:none !important;
-          }
-          .${ROOT}.bw-print .front .hero p,
-          .${ROOT}.bw-print .a3-hero p{
-            color:#111 !important;
-            text-shadow:none !important;
-          }
-          .${ROOT}.bw-print .v2-invite-panel,
-          .${ROOT}.bw-print .a3-invite{
-            background:#f4f4f4 !important;
-            color:#111 !important;
-            border:0.35mm solid #8e8e8e !important;
-            box-shadow:none !important;
-          }
-          .${ROOT}.bw-print .v2-invite-panel p,
-          .${ROOT}.bw-print .v2-invite-panel div,
-          .${ROOT}.bw-print .a3-invite p,
-          .${ROOT}.bw-print .a3-invite div{
-            color:#111 !important;
-          }
-          .${ROOT}.bw-print .back-right-marketing,
-          .${ROOT}.bw-print .back-left,
-          .${ROOT}.bw-print .back-left-bottom{
-            background:#fff !important;
-            border-color:#a9a9a9 !important;
-          }
-          .${ROOT}.bw-print .back-mkt-heading,
-          .${ROOT}.bw-print .back-mkt-body,
-          .${ROOT}.bw-print .marketing-sub,
-          .${ROOT}.bw-print .back-hero-slogan,
-          .${ROOT}.bw-print .back-hero-power{
-            color:#111 !important;
-          }
-          .${ROOT}.bw-print .qr,
-          .${ROOT}.bw-print .a3-qr{
-            filter:grayscale(1) contrast(1.35);
-            background:#fff !important;
-            border:0.25mm solid #b5b5b5;
-          }
-          .${ROOT}.bw-print .qr-caption,
-          .${ROOT}.bw-print .a3-qr-caption,
-          .${ROOT}.bw-print small{
-            color:#222 !important;
           }
           .${ROOT}.a3-mode .derivation-head,
           .${ROOT}.a6-mode .derivation-head,
@@ -2459,6 +2477,25 @@ export default function FlyerEventBogenNeuPage() {
       `}</style>
 
       <div className="toolbar">
+        <button
+          type="button"
+          className="toolbar-back-history"
+          onClick={handleToolbarBack}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '0.35rem 0.7rem',
+            borderRadius: '8px',
+            background: '#ebe8e2',
+            color: '#1c1a18',
+            fontWeight: 600,
+            border: '1px solid #d4cfc4',
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+          }}
+        >
+          ← Zurück
+        </button>
         {!isVk2 && !isOeffentlich ? (
           <Link
             to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
@@ -2488,7 +2525,13 @@ export default function FlyerEventBogenNeuPage() {
         <button type="button" onClick={() => window.print()}>Drucken</button>
         <button
           type="button"
-          onClick={() => document.querySelector(`.${ROOT}`)?.classList.toggle('bw-print')}
+          aria-pressed={bwPrintPreview}
+          onClick={() => setBwPrintPreview((v) => !v)}
+          style={
+            bwPrintPreview
+              ? { boxShadow: 'inset 0 0 0 2px #0f6f66', fontWeight: 700 }
+              : undefined
+          }
         >
           Schwarzweiß Druckcheck ein/aus
         </button>
