@@ -549,14 +549,6 @@ export default function FlyerEventBogenNeuPage() {
       json = JSON.stringify(payload)
     }
 
-    const tryNavigate = () => {
-      navigate(
-        isOeffentlich
-          ? `${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`
-          : PROJECT_ROUTES['k2-galerie'].werbeunterlagen,
-      )
-    }
-
     const storageFullHint = isOeffentlich
       ? 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“). Bei der Demo sind meist wenige Daten – trotzdem zählt die Speicher-Grenze für die ganze Website (K2 und ök2 teilen sich dasselbe Kontingent im Browser).\n\nWas du tun kannst:\n• Kleineres Bild für die Vorderseite wählen oder nur ein Galerie-Bild per URL (kein riesiges eingebettetes Foto).\n• Lange Texte kürzen.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ (nur automatische Zwischensicherung, falls vorhanden) oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Im Browser: Speicher / Websitedaten für diese App prüfen.'
       : 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“).\n\nWas du tun kannst:\n• Flyer-Bild verkleinern oder kürzere Texte.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Sonst im Browser Websitedaten für diese App freigeben – oft kommt der Platzbedarf von vielen Werken oder anderen Daten derselben Website.'
@@ -580,8 +572,10 @@ export default function FlyerEventBogenNeuPage() {
             : 'Gespeichert mit Galerie-Standardbild – dein Foto war zu groß für den Speicher (automatisch ersetzt).',
         )
         window.setTimeout(() => setFlyerSaveMessage(''), 7000)
+      } else {
+        setFlyerSaveMessage('Gespeichert. Du bleibst auf dem Flyer-Master und kannst weiterbearbeiten.')
+        window.setTimeout(() => setFlyerSaveMessage(''), 6000)
       }
-      tryNavigate()
     } catch (e) {
       const quota =
         e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
@@ -594,7 +588,8 @@ export default function FlyerEventBogenNeuPage() {
           window.alert(
             `${quota ? 'Speicher knapp – ' : ''}Nur Texte und Galerie-Standardbild wurden gespeichert. Eigenes Foto war zu groß oder der Speicher ist voll.\n\n${storageFullHint}`,
           )
-          tryNavigate()
+          setFlyerSaveMessage('Gespeichert (reduziert). Du bleibst auf dem Flyer-Master.')
+          window.setTimeout(() => setFlyerSaveMessage(''), 8000)
           return
         }
       } catch {
@@ -612,7 +607,6 @@ export default function FlyerEventBogenNeuPage() {
     leftSrc,
     leftWerkLabel,
     masterText,
-    navigate,
   ])
 
   const oek2MarketingBlocks = useMemo(
