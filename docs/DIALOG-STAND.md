@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Plakat & Druckformate: nur Flyer-Master + gespeicherte PDFs, kein zweites Modal/iframe:** Doppeltes **Info-Modal** mit Live-iframe entfernt (verwies auf nicht existierenden State → Build-Fix). **Eine** Aktion „Flyer-Master öffnen“ statt zweitem „Master neu erstellen“. **Druckerei-Send-Modal:** dieselben Keys wie in der Karte – `plakatDruckformateSendRowKey(event, …)`; **Alle/Keine** nur für die PDFs dieses Events (Set merge/delete), nicht global leeren. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** nach `git push` mit `git log -1` prüfen.
+**Letzter Stand:** 27.03.26 – **Plakat & Druckformate: nur Flyer-Master + gespeicherte PDFs, kein zweites Modal/iframe:** Doppeltes **Info-Modal** mit Live-iframe entfernt (verwies auf nicht existierenden State → Build-Fix). **Eine** Aktion „Flyer-Master öffnen“ statt zweitem „Master neu erstellen“. **Druckerei-Send-Modal:** dieselben Keys wie in der Karte – `plakatDruckformateSendRowKey(event, …)`; **Alle/Keine** nur für die PDFs dieses Events (Set merge/delete), nicht global leeren. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **9f95ce3** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Mediengenerator → Plakat-Karte: PDFs ansehen, kreuzen, grüner Button → Auswahl muss mit Modal übereinstimmen; Bearbeitung nur im Flyer-Master.
 
