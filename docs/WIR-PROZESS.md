@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 28.03.26 (Abend) | **Schluss für heute:** Raum aufgeräumt – offene Build-/Stand-Dateien mitcommiten, **WIR-PROZESS** einen Satz; **ⓘ-Hilfen** im Admin (Eventplan, Presse, Veröffentlichen, Newsletter) klären zwei Welten (Presse-Tab vs. Eventplan, Einladungsliste vs. Verteiler) ohne neue Abläufe zu erfinden. |
 | 27.03.26 | **Eine Quelle für den Flyer-Master:** Plakat & Druckformate darf kein zweites iframe/Modal erfinden – nur gespeicherte PDFs, Auswahl, Versand; Keys im Send-Modal müssen dieselben sein wie in der Karte (`eventId::docId`). |
 | 27.03.26 (Abend) | **Schluss für heute** = nicht nur nett gemeint: alles Offene **testen, bauen, committen, pushen** – dann ist der Raum wirklich aufgeräumt und Georg morgen nicht zwischen Mac und Vercel raten. |
 | 27.03.26 | Für Georg ist „in Zukunft unter texts ablegen“ ein klarer Arbeitsort-Befehl: nicht verstreuen, sondern eine eigene Schublade im Texte-Schreibtisch als feste Standard-Ablage bauen. |

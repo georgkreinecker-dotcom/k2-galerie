@@ -2,7 +2,7 @@
 
 **Letzter Stand:** 28.03.26 – **Admin ⓘ-Hilfen (aufklappbar):** **Eventplan** – „Was gehört wohin?“ (Presse-Tab vs. Eventplan). **Presse & Medien** – „Wann hier bleiben, wann zum Eventplan?“. **Veröffentlichen** – Deployment, Stand-Badge, „Vom Server laden“. **Newsletter-Tab** – Einladungsliste (CSV/Druck) vs. **Newsletter-Empfänger** unter Eventplan → Werbematerial (BCC/Mail-Buttons). **Dateien:** `ScreenshotExportAdmin.tsx`, `NewsletterTab.tsx`. **Commit:** **3ed9e39** ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg: Die vier ⓘ-Zeilen im Admin kurz aufklappen und gegenlesen.
+**Was wir JETZT tun:** **Session 28.03. beendet** – nächster Einstieg: optional die vier ⓘ im Admin gegenlesen; sonst weiter wie im letzten fachlichen Stand.
 
 ---
 
