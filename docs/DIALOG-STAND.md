@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Flyer-Master A5 Speichern: kein Sprung ins mök2-Board mehr:** Nach **Speichern** wurde zu **Werbeunterlagen** navigiert – diese Route liegt in **`Mok2Layout`** (`App.tsx`), deshalb wirkte es wie „mök2 öffnet“. **Neu:** nach Speichern **auf dem Master bleiben** + kurze Meldung „Gespeichert … weiterbearbeiten“ (Notfall-Speichern mit Platzhalter unverändert). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** _(nach Push eintragen)_ ✅ auf GitHub.
+**Letzter Stand:** 27.03.26 – **Flyer-Master A5 Speichern: kein Sprung ins mök2-Board mehr:** Nach **Speichern** wurde zu **Werbeunterlagen** navigiert – diese Route liegt in **`Mok2Layout`** (`App.tsx`), deshalb wirkte es wie „mök2 öffnet“. **Neu:** nach Speichern **auf dem Master bleiben** + kurze Meldung „Gespeichert … weiterbearbeiten“ (Notfall-Speichern mit Platzhalter unverändert). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **7198ece** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Speichern am Master → keine Weiterleitung; Werbeunterlagen bei Bedarf über **Zurück** / Menü.
 
