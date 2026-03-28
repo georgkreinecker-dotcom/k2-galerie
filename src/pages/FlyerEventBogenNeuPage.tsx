@@ -30,6 +30,11 @@ import {
 
 const ROOT = 'flyer-event-bogen-neu'
 
+/** Master A5 Live-Vorschau: echte Muster-JPEGs aus der Demo-Ablage – kein Fallback unter /img/k2/ (keine K2-Repo-Werbefotos). */
+const FLYER_MASTER_MUSTER_BILD_LINKS = '/img/oeffentlich/galerie-card.jpg'
+const FLYER_MASTER_MUSTER_BILD_MITTE = '/img/oeffentlich/willkommen-demo.jpg'
+const FLYER_MASTER_MUSTER_BILD_RECHTS = '/img/oeffentlich/virtual-tour.jpg'
+
 function flyerDesignStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
   if (isOeffentlich) return 'k2-oeffentlich-design-settings'
   if (isVk2) return 'k2-vk2-design-settings'
@@ -168,7 +173,7 @@ async function compressLeftSrcForFlyerStorage(leftSrc: string, aggressive: boole
 function galleryFallbackImagePath(isOeffentlich: boolean): string {
   const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
   const gi = getGalerieImages(g)
-  return gi.galerieCardImage || gi.welcomeImage || '/img/k2/willkommen.jpg'
+  return gi.galerieCardImage || gi.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
 }
 
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
@@ -388,9 +393,11 @@ export default function FlyerEventBogenNeuPage() {
     [flyerDataTick, isOeffentlich],
   )
   const galerieImages = getGalerieImages(gallery)
-  const defaultLeft = galerieImages.galerieCardImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
-  const defaultMiddle = galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
-  const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || '/img/k2/willkommen.jpg'
+  const defaultLeft =
+    galerieImages.galerieCardImage || galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
+  const defaultMiddle = galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_MITTE
+  const defaultRight =
+    galerieImages.virtualTourImage || galerieImages.welcomeImage || FLYER_MASTER_MUSTER_BILD_RECHTS
 
   const [leftSrc, setLeftSrc] = useState(() => {
     const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))
@@ -400,7 +407,7 @@ export default function FlyerEventBogenNeuPage() {
     }
     const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
     const gi = getGalerieImages(g)
-    return gi.galerieCardImage || gi.welcomeImage || '/img/k2/willkommen.jpg'
+    return gi.galerieCardImage || gi.welcomeImage || FLYER_MASTER_MUSTER_BILD_LINKS
   })
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
