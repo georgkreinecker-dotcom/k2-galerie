@@ -22,8 +22,113 @@ import {
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { getFlyerEventBogenStorageKey } from '../utils/flyerEventBogenStorageKeys'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import {
+  DEFAULT_HOMEPAGE_DESIGN,
+  designToPlakatVars,
+  type HomepageDesign,
+} from '../config/marketingWerbelinie'
 
 const ROOT = 'flyer-event-bogen-neu'
+
+function flyerDesignStorageKey(isOeffentlich: boolean, isVk2: boolean): string {
+  if (isOeffentlich) return 'k2-oeffentlich-design-settings'
+  if (isVk2) return 'k2-vk2-design-settings'
+  return 'k2-design-settings'
+}
+
+function loadHomepageDesignForFlyer(isOeffentlich: boolean, isVk2: boolean): HomepageDesign | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(flyerDesignStorageKey(isOeffentlich, isVk2))
+    if (!raw) return null
+    const o = JSON.parse(raw) as HomepageDesign
+    return o && typeof o === 'object' ? o : null
+  } catch {
+    return null
+  }
+}
+
+function hexToRgbaFlyer(hex: string, alpha: number): string {
+  const h = hex.replace(/^#/, '')
+  if (h.length !== 6 && h.length !== 3) return `rgba(15, 111, 102, ${alpha})`
+  const r = h.length === 6 ? parseInt(h.slice(0, 2), 16) : parseInt(h[0] + h[0], 16)
+  const g = h.length === 6 ? parseInt(h.slice(2, 4), 16) : parseInt(h[1] + h[1], 16)
+  const b = h.length === 6 ? parseInt(h.slice(4, 6), 16) : parseInt(h[2] + h[2], 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function hexToRgbaFromHex(hex: string, alpha: number): string {
+  const h = hex.replace(/^#/, '')
+  if (h.length !== 6) return `rgba(253, 251, 248, ${alpha})`
+  const r = parseInt(h.slice(0, 2), 16)
+  const g = parseInt(h.slice(2, 4), 16)
+  const b = parseInt(h.slice(4, 6), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+function mixHexWithBlack(hex: string, amount: number): string {
+  const h = hex.replace(/^#/, '')
+  if (h.length !== 6) return '#0c5550'
+  const f = 1 - amount
+  const r = Math.round(parseInt(h.slice(0, 2), 16) * f)
+  const g = Math.round(parseInt(h.slice(2, 4), 16) * f)
+  const b = Math.round(parseInt(h.slice(4, 6), 16) * f)
+  return `#${[r, g, b].map((x) => x.toString(16).padStart(2, '0')).join('')}`
+}
+
+function relativeLuminanceHex(hex: string): number {
+  const h = hex.replace(/^#/, '')
+  if (h.length !== 6) return 0.35
+  const rgb = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255)
+  const lin = rgb.map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+  return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+}
+
+/** Text auf Akzentfläche (Hero, Invite-Panel): hell oder dunkel je nach Akzenthelligkeit. */
+function onAccentCaptionColor(accentHex: string): string {
+  return relativeLuminanceHex(accentHex) > 0.55 ? '#1a120c' : '#fdfbf8'
+}
+
+function buildFlyerThemeInject(homepageDesignForFlyer: HomepageDesign | null): { inject: string } {
+  const p = designToPlakatVars(homepageDesignForFlyer)
+  const d =
+    homepageDesignForFlyer && (homepageDesignForFlyer.accentColor || homepageDesignForFlyer.backgroundColor1)
+      ? homepageDesignForFlyer
+      : DEFAULT_HOMEPAGE_DESIGN
+  const accent = d.accentColor || DEFAULT_HOMEPAGE_DESIGN.accentColor!
+  const accentDeep = mixHexWithBlack(accent, 0.35)
+  const k2GreenText = onAccentCaptionColor(accent)
+  const bg1 = d.backgroundColor1 || DEFAULT_HOMEPAGE_DESIGN.backgroundColor1!
+  const bg2 = d.backgroundColor2 || DEFAULT_HOMEPAGE_DESIGN.backgroundColor2!
+  const h = (a: number) => hexToRgbaFlyer(accent, a)
+  const inviteGrad = `linear-gradient(145deg, ${h(0.98)} 0%, ${hexToRgbaFlyer(accentDeep, 0.99)} 100%)`
+  const imgHole = mixHexWithBlack(bg1, 0.22)
+  const inject = `
+          --k2-green:${accent};
+          --k2-green-deep:${accentDeep};
+          --k2-green-text:${k2GreenText};
+          --flyer-hero-names:${hexToRgbaFromHex(k2GreenText, 0.88)};
+          --flyer-hero-opening:${hexToRgbaFromHex(k2GreenText, 0.95)};
+          --flyer-accent-a08:${h(0.08)};
+          --flyer-accent-a10:${h(0.1)};
+          --flyer-accent-a11:${h(0.11)};
+          --flyer-accent-a15:${h(0.15)};
+          --flyer-accent-a18:${h(0.18)};
+          --flyer-accent-a20:${h(0.2)};
+          --flyer-accent-a22:${h(0.22)};
+          --flyer-accent-a28:${h(0.28)};
+          --flyer-accent-a30:${h(0.3)};
+          --flyer-invite-bg:${inviteGrad};
+          --flyer-content-v2-bg:${bg2};
+          --flyer-poster-surface:${bg1};
+          --flyer-img-hole:${imgHole};
+          --flyer-text-on-dark:${p.text};
+          --flyer-muted-caption:${p.muted};
+          --flyer-poster-text:${p.text};
+          font-family:${p.font};
+  `.trim()
+  return { inject }
+}
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
 const FLYER_SAVE_MAX_BYTES = 4_200_000
 
@@ -269,6 +374,11 @@ export default function FlyerEventBogenNeuPage() {
   const { versionTimestamp } = useQrVersionTimestamp()
   /** Neu laden bei Event-/Stammdaten-Änderung (Admin, anderes Tab, Tab-Rückkehr). */
   const [flyerDataTick, setFlyerDataTick] = useState(0)
+  const homepageDesignForFlyer = useMemo(
+    () => loadHomepageDesignForFlyer(isOeffentlich, isVk2),
+    [isOeffentlich, isVk2, flyerDataTick],
+  )
+  const flyerTheme = useMemo(() => buildFlyerThemeInject(homepageDesignForFlyer), [homepageDesignForFlyer])
   const base = useMemo(
     () => (isOeffentlich ? getOek2MusterBasics() : getK2Basics()),
     [isOeffentlich, flyerDataTick],
@@ -583,6 +693,14 @@ export default function FlyerEventBogenNeuPage() {
     window.addEventListener('vk2-stammdaten-updated', onVk2Stam)
     const onStorage = (e: StorageEvent) => {
       if (!e.key) return
+      if (
+        e.key === 'k2-design-settings' ||
+        e.key === 'k2-oeffentlich-design-settings' ||
+        e.key === 'k2-vk2-design-settings'
+      ) {
+        bump()
+        return
+      }
       if (isOeffentlich) {
         if (
           e.key === 'k2-oeffentlich-events' ||
@@ -602,6 +720,9 @@ export default function FlyerEventBogenNeuPage() {
       }
     }
     window.addEventListener('storage', onStorage)
+    const onDesignSaved = () => bump()
+    window.addEventListener('k2-design-saved-publish', onDesignSaved)
+    window.addEventListener('k2-page-content-updated', onDesignSaved)
     const onVis = () => {
       if (document.visibilityState === 'visible') bump()
     }
@@ -613,6 +734,8 @@ export default function FlyerEventBogenNeuPage() {
       window.removeEventListener('k2-vk2-stammdaten-updated', onVk2Stam)
       window.removeEventListener('vk2-stammdaten-updated', onVk2Stam)
       window.removeEventListener('storage', onStorage)
+      window.removeEventListener('k2-design-saved-publish', onDesignSaved)
+      window.removeEventListener('k2-page-content-updated', onDesignSaved)
       document.removeEventListener('visibilitychange', onVis)
     }
   }, [isOeffentlich, isVk2])
@@ -1000,10 +1123,11 @@ export default function FlyerEventBogenNeuPage() {
       className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}`}
     >
       <style>{`
-        .${ROOT}{padding:16px;background:#f6f4f0;color:#1c1a18}
         .${ROOT}{
-          --k2-green:#0f6f66;
-          --k2-green-text:#eaf7f5;
+          padding:16px;
+          background:#f6f4f0;
+          color:#1c1a18;
+          ${flyerTheme.inject}
           --flyer-page-h:297mm;
           --flyer-sheet-pad:3mm;
           --flyer-row-gap:0.8mm;
@@ -1068,9 +1192,9 @@ export default function FlyerEventBogenNeuPage() {
           overflow-y:auto;
           padding:0.55rem 0.65rem 0.65rem;
           border-radius:12px;
-          border:1px solid rgba(15,111,102,0.22);
+          border:1px solid var(--flyer-accent-a22);
           background:rgba(255,255,255,0.97);
-          box-shadow:0 4px 18px rgba(15,111,102,0.08);
+          box-shadow:0 4px 18px var(--flyer-accent-a08);
         }
         .${ROOT} .master-intro-rail-close{
           position:absolute;
@@ -1101,10 +1225,10 @@ export default function FlyerEventBogenNeuPage() {
           transform:rotate(180deg);
           padding:0.55rem 0.35rem;
           min-height:5.5rem;
-          border:1px solid rgba(15,111,102,0.28);
+          border:1px solid var(--flyer-accent-a28);
           border-radius:10px;
           background:rgba(255,255,255,0.95);
-          color:#0f4f48;
+          color:var(--k2-green-deep);
           font-size:0.78rem;
           font-weight:800;
           letter-spacing:0.06em;
@@ -1112,7 +1236,7 @@ export default function FlyerEventBogenNeuPage() {
           box-shadow:0 2px 10px rgba(0,0,0,0.06);
         }
         .${ROOT} .master-intro-rail-reopen:hover{
-          background:rgba(15,111,102,0.08);
+          background:var(--flyer-accent-a08);
         }
         @media (max-width:900px){
           .${ROOT} .master-workspace{
@@ -1148,7 +1272,7 @@ export default function FlyerEventBogenNeuPage() {
           border-radius:16px;
           padding:1rem 1.15rem 1.15rem;
           border:1px solid rgba(181,74,30,0.16);
-          box-shadow:0 6px 22px rgba(15,111,102,0.08);
+          box-shadow:0 6px 22px var(--flyer-accent-a08);
         }
         .${ROOT} .master-kicker{
           display:inline-block;
@@ -1156,8 +1280,8 @@ export default function FlyerEventBogenNeuPage() {
           letter-spacing:0.06em;
           text-transform:uppercase;
           font-weight:750;
-          color:#0f6f66;
-          background:rgba(15,111,102,0.11);
+          color:var(--k2-green);
+          background:var(--flyer-accent-a11);
           padding:0.28rem 0.6rem;
           border-radius:999px;
           margin-bottom:0.4rem;
@@ -1185,8 +1309,8 @@ export default function FlyerEventBogenNeuPage() {
           background:linear-gradient(165deg,#e8f8f5 0%,#fdf6f0 42%,#ffffff 100%);
           border-radius:16px;
           padding:0.75rem 0.9rem 1rem;
-          border:2px solid rgba(15,111,102,0.22);
-          box-shadow:0 10px 32px rgba(15,111,102,0.11);
+          border:2px solid var(--flyer-accent-a22);
+          box-shadow:0 10px 32px var(--flyer-accent-a11);
         }
         .${ROOT} .master-preview-header{
           display:flex;
@@ -1196,13 +1320,13 @@ export default function FlyerEventBogenNeuPage() {
           gap:0.5rem;
           margin-bottom:0.45rem;
           padding-bottom:0.4rem;
-          border-bottom:1px dashed rgba(15,111,102,0.22);
+          border-bottom:1px dashed var(--flyer-accent-a22);
         }
         .${ROOT} .master-preview-title{
           margin:0;
           font-size:1.05rem;
           font-weight:800;
-          color:#0f4f48;
+          color:var(--k2-green-deep);
         }
         .${ROOT} .master-focus-pill{
           margin:0;
@@ -1228,7 +1352,7 @@ export default function FlyerEventBogenNeuPage() {
           margin:0 0 0.3rem;
           font-size:0.82rem;
           font-weight:800;
-          color:#0f4f48;
+          color:var(--k2-green-deep);
         }
         .${ROOT} .master-intro-explainer h3:not(:first-child){
           margin-top:0.65rem;
@@ -1297,7 +1421,7 @@ export default function FlyerEventBogenNeuPage() {
           color:#1c1a18;
           border-radius:14px;
           border:1px solid rgba(181,74,30,0.22);
-          box-shadow:0 10px 40px rgba(15,111,102,0.18);
+          box-shadow:0 10px 40px var(--flyer-accent-a18);
           overflow:hidden;
         }
         .${ROOT} .master-edit-head{
@@ -1307,11 +1431,11 @@ export default function FlyerEventBogenNeuPage() {
           gap:0.5rem;
           padding:0.55rem 0.65rem;
           background:linear-gradient(165deg,#e8f8f5 0%,#fdf6f0 100%);
-          border-bottom:1px solid rgba(15,111,102,0.15);
+          border-bottom:1px solid var(--flyer-accent-a15);
           cursor:grab;
           font-size:0.88rem;
           font-weight:750;
-          color:#0f4f48;
+          color:var(--k2-green-deep);
           user-select:none;
         }
         .${ROOT} .master-edit-head:active{cursor:grabbing}
@@ -1363,8 +1487,8 @@ export default function FlyerEventBogenNeuPage() {
           background:rgba(255,255,255,0.85);
         }
         .${ROOT} .master-edit-drop.master-edit-drop-active{
-          border-color:#0f6f66;
-          background:rgba(15,111,102,0.08);
+          border-color:var(--k2-green);
+          background:var(--flyer-accent-a08);
         }
         .${ROOT} .master-edit-linkbtn{
           font-size:0.82rem;
@@ -1384,9 +1508,9 @@ export default function FlyerEventBogenNeuPage() {
           max-width:1820px;
           margin:0 auto 16px;
           border-radius:16px;
-          border:2px solid rgba(15,111,102,.2);
+          border:2px solid var(--flyer-accent-a20);
           background:linear-gradient(165deg,#eef7f6 0%,#fff9f3 44%,#fff 100%);
-          box-shadow:0 10px 32px rgba(15,111,102,.1);
+          box-shadow:0 10px 32px var(--flyer-accent-a10);
           padding:.8rem .95rem 1rem;
         }
         .${ROOT} .derivation-head{
@@ -1395,14 +1519,14 @@ export default function FlyerEventBogenNeuPage() {
           justify-content:space-between;
           gap:.7rem;
           flex-wrap:wrap;
-          border-bottom:1px dashed rgba(15,111,102,.22);
+          border-bottom:1px dashed var(--flyer-accent-a22);
           padding-bottom:.45rem;
           margin-bottom:.55rem;
         }
         .${ROOT} .derivation-title{
           margin:0;
           font-size:1.02rem;
-          color:#0f4f48;
+          color:var(--k2-green-deep);
           font-weight:800;
         }
         .${ROOT} .derivation-sub{
@@ -1411,9 +1535,9 @@ export default function FlyerEventBogenNeuPage() {
           color:#5c5650;
         }
         .${ROOT} .derivation-toggle{
-          border:1px solid rgba(15,111,102,.3);
+          border:1px solid var(--flyer-accent-a30);
           background:#fff;
-          color:#0f4f48;
+          color:var(--k2-green-deep);
           border-radius:10px;
           font-size:.86rem;
           padding:.42rem .7rem;
@@ -1598,7 +1722,7 @@ export default function FlyerEventBogenNeuPage() {
           letter-spacing:.02em;
           line-height:1.04;
           text-shadow:0 2px 12px rgba(0,0,0,.28);
-          color:rgba(243,252,251,.99);
+          color:var(--flyer-text-on-dark);
         }
         .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-names{
           margin:0;
@@ -1606,7 +1730,7 @@ export default function FlyerEventBogenNeuPage() {
           font-weight:680;
           line-height:1.22;
           opacity:.9;
-          color:rgba(234,247,245,.88);
+          color:var(--flyer-hero-names);
         }
         .${ROOT} .front.front-layout-v2 .hero-v2 .hero-v2-opening-word{
           margin:0;
@@ -1615,7 +1739,7 @@ export default function FlyerEventBogenNeuPage() {
           letter-spacing:.012em;
           line-height:1.1;
           text-shadow:0 2px 12px rgba(0,0,0,.28);
-          color:rgba(226,242,239,.95);
+          color:var(--flyer-hero-opening);
         }
         .${ROOT} .front.front-layout-v2 .content-v2{
           padding:1.6mm 2mm 1.4mm;
@@ -1624,7 +1748,7 @@ export default function FlyerEventBogenNeuPage() {
           gap:1.2mm;
           min-height:0;
           flex:1;
-          background:#16242f;
+          background:var(--flyer-content-v2-bg);
         }
         .${ROOT} .front.front-layout-v2 .v2-main{
           display:grid;
@@ -1647,7 +1771,7 @@ export default function FlyerEventBogenNeuPage() {
           min-height:38mm;
           border-radius:1.2mm;
           overflow:hidden;
-          background:#0d1a22;
+          background:var(--flyer-img-hole);
           border:1px solid rgba(255,255,255,.08);
         }
         .${ROOT} .front.front-layout-v2 .v2-single-img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1665,7 +1789,7 @@ export default function FlyerEventBogenNeuPage() {
           border-bottom:1px solid rgba(255,255,255,.14);
           font-size:17px;
           line-height:1.42;
-          color:#f5f9ff;
+          color:var(--flyer-text-on-dark);
           font-weight:780;
           display:flex;
           align-items:center;
@@ -1673,7 +1797,7 @@ export default function FlyerEventBogenNeuPage() {
           text-align:center;
         }
         .${ROOT} .front.front-layout-v2 .v2-invite-panel{
-          background:linear-gradient(145deg, rgba(15,111,102,.98) 0%, rgba(12,85,78,.99) 100%);
+          background:var(--flyer-invite-bg);
           color:var(--k2-green-text);
           border-radius:1.4mm;
           padding:1.7mm 2mm 1.8mm;
@@ -1748,7 +1872,7 @@ export default function FlyerEventBogenNeuPage() {
           font-size:10px;
           line-height:1.2;
           font-weight:700;
-          color:#e8f2fb;
+          color:var(--flyer-muted-caption);
           max-width:42ch;
         }
 
@@ -1827,7 +1951,7 @@ export default function FlyerEventBogenNeuPage() {
           font-size:10.5px;
           line-height:1.12;
           font-weight:850;
-          color:#0f6f66;
+          color:var(--k2-green);
           letter-spacing:.015em;
         }
         .${ROOT} .back.back-page-2 .back-mkt-heading{font-size:18.8px;line-height:1.16;margin-bottom:.08em}
@@ -1851,12 +1975,12 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .back-left .back-hero{
           display:grid;
           gap:.7mm;
-          border-left:1.1mm solid #0f6f66;
+          border-left:1.1mm solid var(--k2-green);
           padding-left:1.6mm;
         }
         .${ROOT} .back-left h3{font-size:12.8px;line-height:1.08;color:#1c1a18;letter-spacing:.01em}
         .${ROOT} .back-left .back-hero-slogan{margin:0;font-size:7.8px;line-height:1.24;font-weight:650;color:#2d2a27}
-        .${ROOT} .back-left .back-hero-power{margin:0;font-size:8.2px;line-height:1.28;font-weight:800;color:#0f6f66}
+        .${ROOT} .back-left .back-hero-power{margin:0;font-size:8.2px;line-height:1.28;font-weight:800;color:var(--k2-green)}
         .${ROOT} .back-left .marketing-sub{
           margin:0;
           font-size:7.35px;
@@ -2143,8 +2267,8 @@ export default function FlyerEventBogenNeuPage() {
           overflow:hidden;
           display:grid;
           grid-template-rows:auto 1fr auto;
-          background:#132230;
-          color:#f4f8ff;
+          background:var(--flyer-poster-surface);
+          color:var(--flyer-poster-text);
         }
         .${ROOT} .a3-hero{
           background:var(--k2-green);
@@ -2164,7 +2288,7 @@ export default function FlyerEventBogenNeuPage() {
           padding:8mm 10mm 7mm;
           min-height:0;
         }
-        .${ROOT} .a3-image-wrap{border-radius:2mm;overflow:hidden;background:#0d1a22}
+        .${ROOT} .a3-image-wrap{border-radius:2mm;overflow:hidden;background:var(--flyer-img-hole)}
         .${ROOT} .a3-image{width:100%;height:100%;object-fit:cover;display:block}
         .${ROOT} .a3-right{
           display:grid;
@@ -2185,7 +2309,7 @@ export default function FlyerEventBogenNeuPage() {
           padding-bottom:4mm;
         }
         .${ROOT} .a3-invite{
-          background:linear-gradient(145deg, rgba(15,111,102,.98) 0%, rgba(12,85,78,.99) 100%);
+          background:var(--flyer-invite-bg);
           border:0.35mm solid rgba(255,255,255,.26);
           border-radius:2mm;
           padding:6mm;
@@ -2209,8 +2333,8 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .a3-qr-wrap{display:flex;align-items:center;gap:4mm}
         .${ROOT} .a3-qr,.${ROOT} .a3-qr-ph{width:23mm;height:23mm;border-radius:1.2mm;background:#fff}
         .${ROOT} .a3-qr-ph{display:flex;align-items:center;justify-content:center;color:#5c5650}
-        .${ROOT} .a3-qr-caption{margin:0;font-size:4.5mm;line-height:1.2;font-weight:700;color:#eaf2ff}
-        .${ROOT} .a3-footer small{font-size:3.6mm;color:#d4deeb}
+        .${ROOT} .a3-qr-caption{margin:0;font-size:4.5mm;line-height:1.2;font-weight:700;color:var(--flyer-muted-caption)}
+        .${ROOT} .a3-footer small{font-size:3.6mm;color:var(--flyer-muted-caption)}
         .${ROOT}.a6-mode{
           padding:10px;
           background:#f6f4f0;
@@ -2233,8 +2357,8 @@ export default function FlyerEventBogenNeuPage() {
           display:grid;
           grid-template-columns:43% 57%;
           grid-template-rows:auto 1fr auto;
-          background:#132230;
-          color:#f4f8ff;
+          background:var(--flyer-poster-surface);
+          color:var(--flyer-poster-text);
         }
         .${ROOT} .a6-hero{
           background:var(--k2-green);
@@ -2248,7 +2372,7 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .a6-brand{margin:0;font-size:6.4mm;line-height:1.05;font-weight:900;letter-spacing:.01em}
         .${ROOT} .a6-opening{margin:0;font-size:5.2mm;line-height:1.06;font-weight:820}
         .${ROOT} .a6-names{margin:0;font-size:2.5mm;line-height:1.2;font-weight:650;opacity:.94}
-        .${ROOT} .a6-image-wrap{background:#0d1a22}
+        .${ROOT} .a6-image-wrap{background:var(--flyer-img-hole)}
         .${ROOT} .a6-image{width:100%;height:100%;object-fit:cover;display:block}
         .${ROOT} .a6-right{
           display:grid;
@@ -2272,7 +2396,7 @@ export default function FlyerEventBogenNeuPage() {
           padding:2.2mm 2.8mm;
           display:grid;
           gap:0.75mm;
-          background:linear-gradient(145deg, rgba(15,111,102,.98) 0%, rgba(12,85,78,.99) 100%);
+          background:var(--flyer-invite-bg);
           border-top:0.25mm solid rgba(255,255,255,.22);
         }
         .${ROOT} .a6-kicker{margin:0;font-size:2.2mm;font-weight:850;letter-spacing:.05em;text-transform:uppercase}
@@ -2289,7 +2413,7 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .a6-qr,.${ROOT} .a6-qr-ph{width:14mm;height:14mm;border-radius:0.8mm;background:#fff;flex-shrink:0}
         .${ROOT} .a6-qr-ph{display:flex;align-items:center;justify-content:center;color:#5c5650;font-size:2.1mm}
         .${ROOT} .a6-footer-text p{margin:0;font-size:2.35mm;line-height:1.2;font-weight:700}
-        .${ROOT} .a6-footer-text small{display:block;margin-top:0.3mm;font-size:1.8mm;color:#d4deeb}
+        .${ROOT} .a6-footer-text small{display:block;margin-top:0.3mm;font-size:1.8mm;color:var(--flyer-muted-caption)}
         .${ROOT} .a6-back-from-flyer{
           width:100%;
           height:100%;
@@ -2334,8 +2458,8 @@ export default function FlyerEventBogenNeuPage() {
           gap:1.3mm;
           align-content:start;
         }
-        .${ROOT} .a6-back-left h3{margin:0;font-size:4.2mm;line-height:1.12;color:#0f6f66}
-        .${ROOT} .a6-back-left h4{margin:0;font-size:3.1mm;line-height:1.2;color:#0f6f66}
+        .${ROOT} .a6-back-left h3{margin:0;font-size:4.2mm;line-height:1.12;color:var(--k2-green)}
+        .${ROOT} .a6-back-left h4{margin:0;font-size:3.1mm;line-height:1.2;color:var(--k2-green)}
         .${ROOT} .a6-back-left p{margin:0;font-size:2.45mm;line-height:1.34;color:#2a2622}
         .${ROOT} .a6-back-qr-wrap{
           margin-top:0.5mm;
@@ -2370,8 +2494,8 @@ export default function FlyerEventBogenNeuPage() {
           overflow:hidden;
           display:grid;
           grid-template-rows:auto 39mm 1fr auto;
-          background:#132230;
-          color:#f4f8ff;
+          background:var(--flyer-poster-surface);
+          color:var(--flyer-poster-text);
         }
         .${ROOT} .vc-hero{
           background:var(--k2-green);
@@ -2384,7 +2508,7 @@ export default function FlyerEventBogenNeuPage() {
         .${ROOT} .vc-brand{margin:0;font-size:3.45mm;line-height:1.04;font-weight:900;letter-spacing:.005em}
         .${ROOT} .vc-names{margin:0;font-size:1.86mm;line-height:1.2;font-weight:700;opacity:.95}
         .${ROOT} .vc-image-wrap{
-          background:#0d1a22;
+          background:var(--flyer-img-hole);
           display:flex;
           align-items:center;
           justify-content:center;
@@ -2418,7 +2542,7 @@ export default function FlyerEventBogenNeuPage() {
         }
         .${ROOT} .vc-qr-ph{display:flex;align-items:center;justify-content:center;color:#5c5650;font-size:1.5mm}
         .${ROOT} .vc-footer-text p{margin:0;font-size:1.9mm;line-height:1.18;font-weight:760}
-        .${ROOT} .vc-footer-text small{display:block;margin-top:0.85mm;font-size:1.75mm;line-height:1.16;font-weight:740;color:#d4deeb}
+        .${ROOT} .vc-footer-text small{display:block;margin-top:0.85mm;font-size:1.75mm;line-height:1.16;font-weight:740;color:var(--flyer-muted-caption)}
         .${ROOT} .vc-back{
           width:100%;
           height:100%;
@@ -2434,9 +2558,9 @@ export default function FlyerEventBogenNeuPage() {
           gap:1.25mm;
         }
         .${ROOT} .vc-back-hero{ text-align:center }
-        .${ROOT} .vc-back-hero h3{margin:0 0 0.65mm 0;color:#0f6f66;font-size:4.75mm;line-height:1.06}
+        .${ROOT} .vc-back-hero h3{margin:0 0 0.65mm 0;color:var(--k2-green);font-size:4.75mm;line-height:1.06}
         .${ROOT} .vc-back-slogan{margin:0.38mm 0 0.6mm 0;font-size:2.82mm;line-height:1.2;font-weight:760;text-align:center}
-        .${ROOT} .vc-back-power{margin:0.45mm 0 0.65mm 0;color:#0f6f66;font-size:3.24mm;line-height:1.15;font-weight:840;text-align:center}
+        .${ROOT} .vc-back-power{margin:0.45mm 0 0.65mm 0;color:var(--k2-green);font-size:3.24mm;line-height:1.15;font-weight:840;text-align:center}
         .${ROOT} .vc-back-sub{margin:0;font-size:2.82mm;line-height:1.2;color:#2a2622;text-align:center}
         .${ROOT} .vc-back-qr-wrap{
           display:grid;justify-items:center;align-content:end;gap:0.72mm;text-align:center;
@@ -2461,7 +2585,7 @@ export default function FlyerEventBogenNeuPage() {
           margin:0;
           font-size:3.15mm;
           line-height:1.16;
-          color:#0f6f66;
+          color:var(--k2-green);
           font-weight:840;
         }
         .${ROOT} .a6-back-body{
@@ -2526,7 +2650,7 @@ export default function FlyerEventBogenNeuPage() {
           onClick={() => setBwPrintPreview((v) => !v)}
           style={
             bwPrintPreview
-              ? { boxShadow: 'inset 0 0 0 2px #0f6f66', fontWeight: 700 }
+              ? { boxShadow: 'inset 0 0 0 2px var(--k2-green)', fontWeight: 700 }
               : undefined
           }
         >
@@ -2549,7 +2673,7 @@ export default function FlyerEventBogenNeuPage() {
           </Link>
         ) : null}
         {flyerSaveMessage ? (
-          <span style={{ fontSize: '0.85rem', color: '#0f6f66', fontWeight: 650, maxWidth: '28rem' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--k2-green)', fontWeight: 650, maxWidth: '28rem' }}>
             {flyerSaveMessage}
           </span>
         ) : null}
