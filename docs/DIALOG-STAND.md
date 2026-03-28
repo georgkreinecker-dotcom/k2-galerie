@@ -1,8 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Plakat & Druckformate: Vorschau = aktuell (wie Flyer-Master), kein alter Stand:** `getPlakatMasterPreviewHtmlForEvent` nutzt **nur noch** `generatePlakatContent(ev)` + Event/Design – **kein** `k2-pr-suggestions.plakat` mehr. **Iframe in der Event-Karte** zeigt **immer** diese Live-Vorschau, **nicht** mehr dekodiertes HTML aus der ersten gespeicherten Plakat-Datei (das war oft „alt“). **Modal** gekürzt: Titel „Vorschau & Auswahl“, ein kurzer Satz statt Überblick + Bullet-Liste; **Karten-Beschreibung** und **details-Summary** auf „ansehen / Druckerei / gespeicherte Dateien zum Versand“. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** Branch **ahead 1** – nach **`git push`** Hash in `git log -1` prüfen; Vercel „Ready“ abwarten.
+**Letzter Stand:** 27.03.26 – **Plakat & Druckformate: nur Flyer-Master + gespeicherte PDFs, kein zweites Modal/iframe:** Doppeltes **Info-Modal** mit Live-iframe entfernt (verwies auf nicht existierenden State → Build-Fix). **Eine** Aktion „Flyer-Master öffnen“ statt zweitem „Master neu erstellen“. **Druckerei-Send-Modal:** dieselben Keys wie in der Karte – `plakatDruckformateSendRowKey(event, …)`; **Alle/Keine** nur für die PDFs dieses Events (Set merge/delete), nicht global leeren. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** nach `git push` mit `git log -1` prüfen.
 
-**Was wir JETZT tun:** Georg: Eventplan → Plakat-Karte: Vorschau muss zum **aktuellen Event + Design** passen; Modal kurz lesen.
+**Was wir JETZT tun:** Georg: Mediengenerator → Plakat-Karte: PDFs ansehen, kreuzen, grüner Button → Auswahl muss mit Modal übereinstimmen; Bearbeitung nur im Flyer-Master.
+
+---
+
+**Letzter Stand:** 28.03.26 – **Plakat & Druckformate: Vorschau = aktuell (wie Flyer-Master), kein alter Stand:** (überholt – siehe oben: kein zweites Modal mehr, Fokus gespeicherte PDFs + Master-Link.) **Datei:** `ScreenshotExportAdmin.tsx`.
 
 ---
 

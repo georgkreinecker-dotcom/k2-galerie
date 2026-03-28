@@ -1549,6 +1549,13 @@ function resolveEventForMediengeneratorCard(eventsList: any[], eventRef: any): a
   return found != null ? found : eventRef
 }
 
+/** Plakat/Versand: Key pro Event + Dokument (mehrere Event-Karten ohne Key-Kollision). */
+function plakatDruckformateSendRowKey(ev: any, d: any, i: number): string {
+  const eid = ev?.id != null ? String(ev.id) : 'no-event'
+  const did = d?.id != null ? String(d.id) : String(d?.fileName ?? d?.name ?? `idx-${i}`)
+  return `${eid}::${did}`
+}
+
 // Minimale Cleanup-Funktion - komplett vereinfacht um Abstürze zu vermeiden
 // Wird nur noch manuell aufgerufen, nicht automatisch. Tenant aus useTenant().
 function cleanupUnnecessaryData(tenant: ReturnType<typeof useTenant>) {
@@ -1967,12 +1974,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     qrCode: string
     contact: { phone?: string; email?: string; address?: string }
   } | null>(null)
-  /** Plakat & Druckformate: Überblick nach „Neu erstellen“; Versand mit Checkbox-Auswahl */
-  const [plakatDruckformateInfoModal, setPlakatDruckformateInfoModal] = useState<{
-    event: any
-    flyerTenant: FlyerEventBogenTenantContext
-    hideAbleitungen: boolean
-  } | null>(null)
   const [plakatDruckformateSendModal, setPlakatDruckformateSendModal] = useState<{
     event: any
     docs: any[]
@@ -2046,7 +2047,6 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     setPlakatRedactionEvent(null)
     setPlakatRedactionDoc(null)
     setPlakatRedaction(null)
-    setPlakatDruckformateInfoModal(null)
     setPlakatDruckformateSendModal(null)
     setFlyerRedactionEvent(null)
     setFlyerRedactionDoc(null)
@@ -6226,6 +6226,7 @@ ${'='.repeat(60)}
       }
       if (opts?.deferSave) {
         if (!blob) throw new Error('Social-Dokument: kein Inhalt')
+        const blobForReader = blob
         return new Promise<Record<string, unknown>>((resolve, reject) => {
           const reader = new FileReader()
           reader.onloadend = () => {
@@ -6240,7 +6241,7 @@ ${'='.repeat(60)}
             }
           }
           reader.onerror = () => reject(new Error('Social-Dokument: Lesen fehlgeschlagen'))
-          reader.readAsDataURL(blob)
+          reader.readAsDataURL(blobForReader)
         })
       }
 
@@ -7904,50 +7905,6 @@ ${'='.repeat(60)}
   <\/script>
 </body>
 </html>`
-  }
-
-  /** Plakat-Master-Vorschau: immer frisch aus Event + Stammdaten + Design – gleiche Basis wie Medienpaket / Flyer-Master-Zeile, nicht aus altem k2-pr-suggestions oder gespeichertem HTML. */
-  const getPlakatMasterPreviewHtmlForEvent = (ev: any): string => {
-    if (!ev) return '<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"/></head><body></body></html>'
-    const freshGalleryData = (() => {
-      if (tenant.isOeffentlich) return galleryData || {}
-      if (tenant.isVk2) {
-        const v = vk2Stammdaten?.verein
-        return v
-          ? {
-              name: v.name,
-              address: v.address,
-              city: v.city,
-              website: v.website || '',
-              phone: (v as { phone?: string }).phone || '',
-              email: v.email || '',
-            }
-          : {}
-      }
-      return loadStammdaten('k2', 'gallery') as Record<string, unknown>
-    })()
-    let plakatContent: any = { ...generatePlakatContent(ev) }
-    plakatContent.title = ev.title || plakatContent.title || 'Event'
-    plakatContent.date = formatEventDates(ev) || plakatContent.date || 'Datum folgt'
-    plakatContent.location = ev.location || plakatContent.location || String((freshGalleryData as { address?: string }).address || '')
-    plakatContent.description = ev.description || plakatContent.description || ''
-    const websiteUrlPlakat =
-      (freshGalleryData as { website?: string }).website &&
-      isProductionLikeUrl((freshGalleryData as { website?: string }).website)
-        ? (freshGalleryData as { website?: string }).website
-        : FALLBACK_GALERIE_URL_WERBEMITTEL
-    plakatContent.qrCode = plakatContent.qrCode || websiteUrlPlakat
-    const eventTypeNamesPlakat: Record<string, string> = {
-      galerieeröffnung: 'Galerieeröffnung',
-      vernissage: 'Vernissage',
-      finissage: 'Finissage',
-      öffentlichkeitsarbeit: 'Öffentlichkeitsarbeit',
-      sonstiges: 'Veranstaltung',
-    }
-    plakatContent.type = eventTypeNamesPlakat[ev.type] || plakatContent.type || 'Veranstaltung'
-    const pd = designToPlakatVars(designSettings)
-    const plakatQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(String(plakatContent.qrCode || ''))}`
-    return buildPlakatWerbemittelHtml(plakatContent, freshGalleryData, pd, plakatQrUrl, { iframePreview: true })
   }
 
   const generatePlakatForEvent = (event: any) => {
@@ -22450,21 +22407,15 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Vorschau zeigt das aktuelle Event mit deinem Design. Ansehen, an die Druckerei senden oder im Flyer-Master A5 bearbeiten.',
+                                  'Kommt aus dem Flyer-Master – hier nur die gespeicherten PDFs ansehen und für die Druckerei auswählen. Bearbeiten nur im Flyer-Master.',
                                 docs: [...(byTyp['plakat'] || []), ...(byTyp['event-flyer'] || [])],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
-                                plakatMasterNeuErstellen: () => {
-                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                    flyerEventBogenUrl({ tenant: flyerTenant, eventId: event?.id }),
-                                  )
-                                },
                                 onErstellen: () => {
-                                  setPlakatDruckformateInfoModal({
-                                    event,
-                                    flyerTenant,
-                                    hideAbleitungen: tenant.isVk2,
-                                  })
+                                  const ev = resolveEventForMediengeneratorCard(events, event)
+                                  navigateFromOeffentlichkeitsarbeitOverlay(
+                                    flyerEventBogenUrl({ tenant: flyerTenant, eventId: ev?.id ?? event?.id }),
+                                  )
                                 },
                               },
                               {
@@ -22776,38 +22727,115 @@ ${name}`
                                         )}
                                         {hatDokumente && (() => {
                                           const primaryDoc = karte.docs[0]
-                                          const plakatPreviewHtml =
-                                            karte.typ === 'plakat' ? getPlakatMasterPreviewHtmlForEvent(event) : null
+                                          if (karte.typ === 'plakat') {
+                                            return (
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                                <p style={{ margin: 0, fontSize: '0.75rem', color: s.muted, lineHeight: 1.45 }}>
+                                                  Gespeicherte PDFs vom Flyer-Master – ansehen, ankreuzen, dann Druckerei.
+                                                </p>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                  {karte.docs.map((doc: any, docIdx: number) => {
+                                                    const sendK = plakatDruckformateSendRowKey(event, doc, docIdx)
+                                                    return (
+                                                      <div
+                                                        key={doc.id || doc.name || plakatDocRowKey(doc, docIdx)}
+                                                        style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                                      >
+                                                        <input
+                                                          type="checkbox"
+                                                          checked={plakatDruckformateSendSelectedKeys.has(sendK)}
+                                                          onChange={() =>
+                                                            setPlakatDruckformateSendSelectedKeys(prev => {
+                                                              const next = new Set(prev)
+                                                              if (next.has(sendK)) next.delete(sendK)
+                                                              else next.add(sendK)
+                                                              return next
+                                                            })
+                                                          }
+                                                          title="Für Druckerei-Mail"
+                                                          aria-label={`Auswahl ${doc.name || doc.fileName || 'Dokument'}`}
+                                                          style={{ flexShrink: 0, width: '1.05rem', height: '1.05rem', cursor: 'pointer' }}
+                                                        />
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => karte.onOpen(doc)}
+                                                          style={{
+                                                            flex: 1,
+                                                            textAlign: 'left',
+                                                            padding: '0.4rem 0.55rem',
+                                                            background: '#fff',
+                                                            border: '1px solid rgba(34,197,94,0.25)',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.78rem',
+                                                            color: '#166534',
+                                                            fontWeight: 500,
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            whiteSpace: 'nowrap',
+                                                          }}
+                                                          title={doc.name || doc.fileName}
+                                                        >
+                                                          {doc.name || doc.fileName || 'Dokument'}
+                                                        </button>
+                                                        <button
+                                                          type="button"
+                                                          onClick={() => karte.onDelete(doc)}
+                                                          style={{
+                                                            padding: '0.42rem 0.5rem',
+                                                            background: 'transparent',
+                                                            border: '1px solid rgba(220,38,38,0.2)',
+                                                            borderRadius: '6px',
+                                                            color: '#dc2626',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.88rem',
+                                                            lineHeight: 1,
+                                                          }}
+                                                          title="Dokument entfernen"
+                                                        >
+                                                          ×
+                                                        </button>
+                                                      </div>
+                                                    )
+                                                  })}
+                                                </div>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    const keys = karte.docs.map((d: any, i: number) =>
+                                                      plakatDruckformateSendRowKey(event, d, i),
+                                                    )
+                                                    const hasSel = keys.some(k => plakatDruckformateSendSelectedKeys.has(k))
+                                                    if (!hasSel) {
+                                                      setPlakatDruckformateSendSelectedKeys(prev => {
+                                                        const n = new Set(prev)
+                                                        keys.forEach(k => n.add(k))
+                                                        return n
+                                                      })
+                                                    }
+                                                    setPlakatDruckformateSendModal({ event, docs: karte.docs })
+                                                  }}
+                                                  style={{
+                                                    width: '100%',
+                                                    textAlign: 'center',
+                                                    padding: '0.55rem 0.7rem',
+                                                    background: '#15803d',
+                                                    border: '1px solid rgba(21,128,61,0.35)',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.84rem',
+                                                    color: '#fff',
+                                                    fontWeight: 700,
+                                                  }}
+                                                  title="Auswahl prüfen und Mail vorbereiten"
+                                                >
+                                                  {getWerbemittelMailActionLabel('plakat', primaryDoc)}
+                                                </button>
+                                              </div>
+                                            )
+                                          }
                                           return (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                                              {karte.typ === 'plakat' && plakatPreviewHtml ? (
-                                                <div
-                                                  style={{
-                                                    borderRadius: 8,
-                                                    overflow: 'hidden',
-                                                    border: '1px solid rgba(0,0,0,0.1)',
-                                                    background: '#0d1426',
-                                                  }}
-                                                >
-                                                  <div
-                                                    style={{
-                                                      fontSize: '0.72rem',
-                                                      padding: '0.3rem 0.55rem',
-                                                      color: '#94a3b8',
-                                                      background: '#0f172a',
-                                                      fontWeight: 600,
-                                                    }}
-                                                  >
-                                                    Aktuell: Event + Design (wie Flyer-Master A5 / Standard-Event)
-                                                  </div>
-                                                  <iframe
-                                                    title="Plakat-Vorschau"
-                                                    sandbox="allow-same-origin"
-                                                    srcDoc={plakatPreviewHtml}
-                                                    style={{ width: '100%', height: 220, border: 'none', display: 'block' }}
-                                                  />
-                                                </div>
-                                              ) : null}
                                               <button
                                                 type="button"
                                                 onClick={() => karte.onOpen(primaryDoc)}
@@ -22821,7 +22849,7 @@ ${name}`
                                                   cursor: 'pointer',
                                                   fontSize: '0.84rem',
                                                   color: s.accent,
-                                                  fontWeight: 700
+                                                  fontWeight: 700,
                                                 }}
                                                 title="Dokument im Viewer öffnen (gleicher Tab)"
                                               >
@@ -22831,13 +22859,7 @@ ${name}`
                                                 <button
                                                   type="button"
                                                   onClick={() => {
-                                                    if (karte.typ === 'plakat') {
-                                                      const keys = karte.docs.map((d: any, i: number) => plakatDocRowKey(d, i))
-                                                      setPlakatDruckformateSendSelectedKeys(new Set(keys))
-                                                      setPlakatDruckformateSendModal({ event, docs: karte.docs })
-                                                    } else {
-                                                      void sendWerbemittelPerMail(karte.typ, primaryDoc, event)
-                                                    }
+                                                    void sendWerbemittelPerMail(karte.typ, primaryDoc, event)
                                                   }}
                                                   style={{
                                                     width: '100%',
@@ -22849,7 +22871,7 @@ ${name}`
                                                     cursor: 'pointer',
                                                     fontSize: '0.84rem',
                                                     color: '#fff',
-                                                    fontWeight: 700
+                                                    fontWeight: 700,
                                                   }}
                                                   title="Hauptaktion für diese Karte"
                                                 >
@@ -22879,7 +22901,7 @@ ${name}`
                                                           fontWeight: 500,
                                                           overflow: 'hidden',
                                                           textOverflow: 'ellipsis',
-                                                          whiteSpace: 'nowrap'
+                                                          whiteSpace: 'nowrap',
                                                         }}
                                                         title={doc.name || doc.fileName}
                                                       >
@@ -22889,15 +22911,18 @@ ${name}`
                                                         <button
                                                           type="button"
                                                           onClick={() => {
-                                                            if (karte.typ === 'plakat') {
-                                                              const k = plakatDocRowKey(doc, docIdx)
-                                                              setPlakatDruckformateSendSelectedKeys(new Set([k]))
-                                                              setPlakatDruckformateSendModal({ event, docs: karte.docs })
-                                                            } else {
-                                                              void sendWerbemittelPerMail(karte.typ, doc, event)
-                                                            }
+                                                            void sendWerbemittelPerMail(karte.typ, doc, event)
                                                           }}
-                                                          style={{ padding: '0.38rem 0.48rem', background: '#15803d', border: '1px solid rgba(21,128,61,0.35)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.74rem', color: '#fff', fontWeight: 600 }}
+                                                          style={{
+                                                            padding: '0.38rem 0.48rem',
+                                                            background: '#15803d',
+                                                            border: '1px solid rgba(21,128,61,0.35)',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.74rem',
+                                                            color: '#fff',
+                                                            fontWeight: 600,
+                                                          }}
                                                           title="Dieses Dokument senden"
                                                         >
                                                           Senden
@@ -22906,7 +22931,16 @@ ${name}`
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onDelete(doc)}
-                                                        style={{ padding: '0.42rem 0.5rem', background: 'transparent', border: '1px solid rgba(220,38,38,0.2)', borderRadius: '6px', color: '#dc2626', cursor: 'pointer', fontSize: '0.88rem', lineHeight: 1 }}
+                                                        style={{
+                                                          padding: '0.42rem 0.5rem',
+                                                          background: 'transparent',
+                                                          border: '1px solid rgba(220,38,38,0.2)',
+                                                          borderRadius: '6px',
+                                                          color: '#dc2626',
+                                                          cursor: 'pointer',
+                                                          fontSize: '0.88rem',
+                                                          lineHeight: 1,
+                                                        }}
                                                         title="Dokument entfernen"
                                                       >
                                                         ×
@@ -22926,42 +22960,23 @@ ${name}`
 
                                         <>
                                         {karte.typ === 'plakat' && karte.onErstellen ? (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                                            <button
-                                              type="button"
-                                              onClick={karte.onErstellen}
-                                              style={{
-                                                width: '100%',
-                                                padding: '0.5rem 0.85rem',
-                                                background: hatDokumente ? 'transparent' : s.accent,
-                                                border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.85rem',
-                                                color: hatDokumente ? s.accent : '#fff',
-                                                fontWeight: 600
-                                              }}
-                                            >
-                                              {hatDokumente ? 'Neu erstellen' : 'Jetzt erstellen'}
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={(karte as any).plakatMasterNeuErstellen}
-                                              style={{
-                                                width: '100%',
-                                                padding: '0.45rem 0.85rem',
-                                                background: 'transparent',
-                                                border: `1px solid ${s.accent}55`,
-                                                borderRadius: '8px',
-                                                cursor: 'pointer',
-                                                fontSize: '0.82rem',
-                                                color: s.accent,
-                                                fontWeight: 600
-                                              }}
-                                            >
-                                              Master neu erstellen
-                                            </button>
-                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={karte.onErstellen}
+                                            style={{
+                                              width: '100%',
+                                              padding: '0.5rem 0.85rem',
+                                              background: hatDokumente ? 'transparent' : s.accent,
+                                              border: `1px solid ${hatDokumente ? s.accent + '44' : 'transparent'}`,
+                                              borderRadius: '8px',
+                                              cursor: 'pointer',
+                                              fontSize: '0.85rem',
+                                              color: hatDokumente ? s.accent : '#fff',
+                                              fontWeight: 600,
+                                            }}
+                                          >
+                                            Flyer-Master öffnen{hatDokumente ? ' (PDFs anpassen)' : ''}
+                                          </button>
                                         ) : (karte as any).erstellenGruppen ? (
                                           <details
                                             open={!hatDokumente}
@@ -23388,192 +23403,11 @@ ${name}`
         </main>
       </div>
 
-      {plakatDruckformateInfoModal && typeof document !== 'undefined' && document.body
-        ? createPortal(
-            <div
-              role="dialog"
-              aria-modal="true"
-              onClick={() => setPlakatDruckformateInfoModal(null)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                zIndex: 100100,
-                background: 'rgba(15, 20, 25, 0.45)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-              }}
-            >
-              <div
-                onClick={e => e.stopPropagation()}
-                style={{
-                  width: '100%',
-                  maxWidth: 'min(42rem, 96vw)',
-                  background: WERBEUNTERLAGEN_STIL.bgCard,
-                  border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
-                  borderRadius: '12px',
-                  padding: '1.25rem',
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
-                  maxHeight: '90vh',
-                  overflow: 'auto',
-                }}
-              >
-                <h3 style={{ margin: '0 0 0.65rem 0', fontSize: '1.05rem', color: '#1c1a18', fontWeight: 700 }}>
-                  Plakat &amp; Druckformate – Vorschau &amp; Auswahl
-                </h3>
-                <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.45 }}>
-                  „{plakatDruckformateInfoModal.event?.title || 'Veranstaltung'}“ – unten siehst du den <strong>aktuellen</strong> Stand (Event + Design). Speicherte Dateien in der Karte: zum Versand auswählen.
-                </p>
-                <div
-                  style={{
-                    marginBottom: '0.85rem',
-                    borderRadius: 10,
-                    overflow: 'hidden',
-                    border: '1px solid rgba(0,0,0,0.12)',
-                    background: '#0d1426',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '0.75rem',
-                      padding: '0.35rem 0.6rem',
-                      color: '#94a3b8',
-                      background: '#0f172a',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Aktuell: Event + Design (wie Flyer-Master A5)
-                  </div>
-                  <iframe
-                    title="Plakat-Master-Vorschau"
-                    sandbox="allow-same-origin"
-                    srcDoc={getPlakatMasterPreviewHtmlForEvent(plakatDruckformateInfoModal.event)}
-                    style={{ width: '100%', height: 260, border: 'none', display: 'block' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPlakatDruckformateInfoModal(null)
-                      navigateFromOeffentlichkeitsarbeitOverlay(
-                        flyerEventBogenUrl({
-                          tenant: plakatDruckformateInfoModal.flyerTenant,
-                          eventId: plakatDruckformateInfoModal.event?.id,
-                        }),
-                      )
-                    }}
-                    style={{
-                      padding: '0.55rem 1rem',
-                      background: '#b54a1e',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      fontSize: '0.88rem',
-                    }}
-                  >
-                    Master bearbeiten
-                  </button>
-                  {!plakatDruckformateInfoModal.hideAbleitungen ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                      <a
-                        href={flyerEventBogenUrl({
-                          mode: 'a3',
-                          tenant: plakatDruckformateInfoModal.flyerTenant,
-                          eventId: plakatDruckformateInfoModal.event?.id,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          padding: '0.45rem 0.65rem',
-                          background: '#fffefb',
-                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
-                          borderRadius: '8px',
-                          fontSize: '0.8rem',
-                          color: '#b54a1e',
-                          fontWeight: 600,
-                          textDecoration: 'none',
-                        }}
-                      >
-                        A3 (neuer Tab)
-                      </a>
-                      <a
-                        href={flyerEventBogenUrl({
-                          mode: 'a6',
-                          tenant: plakatDruckformateInfoModal.flyerTenant,
-                          eventId: plakatDruckformateInfoModal.event?.id,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          padding: '0.45rem 0.65rem',
-                          background: '#fffefb',
-                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
-                          borderRadius: '8px',
-                          fontSize: '0.8rem',
-                          color: '#b54a1e',
-                          fontWeight: 600,
-                          textDecoration: 'none',
-                        }}
-                      >
-                        A6 (neuer Tab)
-                      </a>
-                      <a
-                        href={flyerEventBogenUrl({
-                          mode: 'card',
-                          tenant: plakatDruckformateInfoModal.flyerTenant,
-                          eventId: plakatDruckformateInfoModal.event?.id,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          padding: '0.45rem 0.65rem',
-                          background: '#fffefb',
-                          border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}44`,
-                          borderRadius: '8px',
-                          fontSize: '0.8rem',
-                          color: '#b54a1e',
-                          fontWeight: 600,
-                          textDecoration: 'none',
-                        }}
-                      >
-                        Visitenkarten (neuer Tab)
-                      </a>
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => setPlakatDruckformateInfoModal(null)}
-                    style={{
-                      marginTop: '0.25rem',
-                      padding: '0.45rem 0.85rem',
-                      background: 'transparent',
-                      border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}55`,
-                      borderRadius: '8px',
-                      color: '#5c5650',
-                      cursor: 'pointer',
-                      fontSize: '0.82rem',
-                    }}
-                  >
-                    Schließen
-                  </button>
-                </div>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
-
       {plakatDruckformateSendModal && typeof document !== 'undefined' && document.body
         ? createPortal(
             (() => {
               const m = plakatDruckformateSendModal
-              const rowKey = (d: any, i: number) =>
-                String(d?.id != null ? d.id : d?.fileName ?? d?.name ?? `idx-${i}`)
-              const allKeys = m.docs.map((d, i) => rowKey(d, i))
+              const allKeys = m.docs.map((d, i) => plakatDruckformateSendRowKey(m.event, d, i))
               const selectedCount = allKeys.filter(k => plakatDruckformateSendSelectedKeys.has(k)).length
               return (
                 <div
@@ -23614,7 +23448,13 @@ ${name}`
                     <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
                       <button
                         type="button"
-                        onClick={() => setPlakatDruckformateSendSelectedKeys(new Set(allKeys))}
+                        onClick={() =>
+                          setPlakatDruckformateSendSelectedKeys(prev => {
+                            const next = new Set(prev)
+                            allKeys.forEach(k => next.add(k))
+                            return next
+                          })
+                        }
                         style={{
                           padding: '0.35rem 0.65rem',
                           background: '#fffefb',
@@ -23629,7 +23469,13 @@ ${name}`
                       </button>
                       <button
                         type="button"
-                        onClick={() => setPlakatDruckformateSendSelectedKeys(new Set())}
+                        onClick={() =>
+                          setPlakatDruckformateSendSelectedKeys(prev => {
+                            const next = new Set(prev)
+                            allKeys.forEach(k => next.delete(k))
+                            return next
+                          })
+                        }
                         style={{
                           padding: '0.35rem 0.65rem',
                           background: '#fffefb',
@@ -23645,7 +23491,7 @@ ${name}`
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
                       {m.docs.map((d: any, i: number) => {
-                        const k = rowKey(d, i)
+                        const k = plakatDruckformateSendRowKey(m.event, d, i)
                         return (
                           <label
                             key={k}
@@ -23681,7 +23527,9 @@ ${name}`
                         type="button"
                         disabled={selectedCount === 0}
                         onClick={() => {
-                          const sel = m.docs.filter((d, i) => plakatDruckformateSendSelectedKeys.has(rowKey(d, i)))
+                          const sel = m.docs.filter((d, i) =>
+                            plakatDruckformateSendSelectedKeys.has(plakatDruckformateSendRowKey(m.event, d, i)),
+                          )
                           void sendPlakatDruckformateBundlePerMail(sel, m.event)
                         }}
                         style={{
