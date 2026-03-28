@@ -1,8 +1,20 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Mediengenerator: „Zum Ansehen & Drucken“ oben neben Event bearbeiten:** Untere Leiste **„Alle PR-Vorschläge als PDF“** entfernt. Neuer Button **📄 Zum Ansehen & Drucken** in der Event-Kopfzeile öffnet eine Palette: **Sammel-PDF** (Presse, Social, Newsletter wie bisher) plus **Liste aller fertigen Einzeldokumente** aus den Karten (Öffnen → Drucken/PDF). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push eintragen)_.
+
+**Was wir JETZT tun:** Georg: Button testen; bei Bedarf Commit/Push.
+
+---
+
+**Letzter Stand:** 28.03.26 – **ök2/VK2: Zwischen-Dialog Mediengenerator entfällt, konsistente Texte:** Große Karten **Schnellstart** / **Mediengenerator & Verteiler** (Flyer-Master, Vorschau-Paket) nur noch **K2**. **ök2/VK2:** kurzer Hinweis-Kasten; Tab **Werbematerial** statt „Mediengenerator & Werbematerial“; Presse-Bereich + Meilenstein-Hinweis ohne veralteten Mediengenerator-Pfad; **„Medienpaket (dieses Event)“** nur **K2** (Auto nach neuem Event + **Paket übernehmen** bleiben). **Design-Hinweis:** ök2/VK2 **„Werbematerial & Marketing:“**. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **bcd0133** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg: ök2/VK2 Marketing kurz gegenlesen; bei Bedarf **Paket übernehmen** testen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **ök2/VK2: Nach neuem Event Werbekarten automatisch (Flyer-Master zuerst, dann Paket-Logik):** Beim Speichern eines **neuen** Events (nicht K2): Demo-Flyer-Speicher leeren + Reset, nach **~0,9–1,2 s** dieselbe Logik wie **Paket übernehmen** ohne Rückfrage (`skipConfirm`). K2 unverändert. Mediengenerator-Hinweistext angepasst. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **776b0f9** ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg: ök2/VK2 – neues Event anlegen → kurz warten → Karten prüfen; bei Bedarf „Paket übernehmen“ zum Ersetzen.
+**Was wir JETZT tun:** _(siehe obersten Eintrag)_
 
 ---
 

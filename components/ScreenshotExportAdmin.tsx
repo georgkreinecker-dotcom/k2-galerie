@@ -68,6 +68,12 @@ const GALERIE_QR_BASE = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
 const FALLBACK_GALERIE_URL_WERBEMITTEL = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
 /** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
 const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
+/** Werbemittel (Marketing): Fußhinweis – eine Quelle für K2 / ök2 / VK2 */
+const WERBEMITTEL_KARTEN_FUSS_HINWEIS =
+  'Gleicher Ablauf: Dokumentname antippen oder mit der Maus drauf = Vorschau. Grüner Button = Mail (Text in der Zwischenablage); PDF bei Bedarf in Downloads. Unten „Neu erstellen“ = Dokument neu anlegen.'
+/** Plakat-Karte: Master-Listen-Hinweis */
+const WERBEMITTEL_PLAKAT_MASTER_HINWEIS =
+  'Vier Master-Ansichten (aktueller Stand) – ansehen, ankreuzen, dann Druckerei. Kein ×: stammt nicht aus dem PR-Speicher.'
 /** API: gallery-data an Vercel senden (Blob + optional GitHub-Backup) – eine URL für alle Geräte */
 const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 /** Primäre Datenquelle: Vercel Blob (sofort verfügbar, kein Build nötig) */
@@ -1746,6 +1752,13 @@ function plakatDruckformateSendRowKey(ev: any, d: any, i: number): string {
   return `${eid}::${did}`
 }
 
+/** Newsletter/Presse/Social – Mail-Auswahl: Key inkl. Kartentyp (keine Kollision zu Plakat). */
+function werbemittelMailSendRowKey(ev: any, typ: string, d: any, i: number): string {
+  const eid = ev?.id != null ? String(ev.id) : 'no-event'
+  const did = d?.id != null ? String(d.id) : String(d?.fileName ?? d?.name ?? `idx-${i}`)
+  return `${eid}::mail::${typ}::${did}`
+}
+
 /** Vier Einträge = dieselben Routen wie Flyer-Master (A5 + A3/A6/Karte), nicht alte PR-Plakat-Dokumente. */
 function buildFlyerMasterPlakatVirtualDocs(ev: any, flyerTenant: FlyerEventBogenTenantContext): any[] {
   const eid = ev?.id
@@ -2197,6 +2210,9 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     docs: any[]
   } | null>(null)
   const [plakatDruckformateSendSelectedKeys, setPlakatDruckformateSendSelectedKeys] = useState<Set<string>>(new Set())
+  const [werbemittelMailSendSelectedKeys, setWerbemittelMailSendSelectedKeys] = useState<Set<string>>(new Set())
+  /** Mediengenerator: „Zum Ansehen & Drucken“-Palette pro Event (eine offen). */
+  const [werbemittelDruckpaletteEventKey, setWerbemittelDruckpaletteEventKey] = useState<string | null>(null)
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
   const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'backup'>('stammdaten')
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
@@ -9056,7 +9072,7 @@ ${'='.repeat(60)}
       console.error('Medienpaket übernehmen:', err)
       alert(
         opts?.skipConfirm
-          ? 'Automatische Werbemittel nach Event fehlgeschlagen. Bitte „Paket übernehmen“ in der Event-Zeile nutzen oder einzeln „Neu erstellen“.'
+          ? 'Automatische Werbemittel nach Event fehlgeschlagen. Bitte bei den Karten einzeln „Neu erstellen“ nutzen oder Event erneut speichern.'
           : 'Medienpaket übernehmen fehlgeschlagen. Bitte erneut versuchen oder einzeln „Neu erstellen“ nutzen.'
       )
     }
@@ -14057,7 +14073,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             Du schaust dir gerade an: <strong style={{ color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
               {activeTab === 'werke' ? (tenant.isVk2 ? '🖼️ Vereinsmitglieder' : '🖼️ Werke hinzufügen und bearbeiten') :
                activeTab === 'eventplan' ? '🎟️ Event- und Medienplanung' :
-               activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Event- und Medienplanung</> :
+               activeTab === 'presse' ? <><MedienstudioIcon size={20} /> Presse &amp; Medien</> :
                activeTab === 'design' ? (tenant.isVk2 ? '✨ Ausstellung gestalten und texten' : '✨ Galerie gestalten und texten') :
                activeTab === 'veroeffentlichen' ? '📤 Veröffentlichen' :
                activeTab === 'katalog' ? '📋 Werkkatalog' :
@@ -14097,7 +14113,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           eventplan: istVerein
             ? { titel: 'Event- und Medienplanung', text: 'Plant Vernissagen, Lesungen oder Ausstellungen. Hier erstellt ihr Einladungen, QR-Codes, Werbedokumente und nutzt den Verteiler direkt im gleichen Ablauf.' }
             : { titel: 'Event- und Medienplanung', text: 'Geplant eine Vernissage oder Ausstellung? Hier erstellst du Einladungen, Werbedokumente und nutzt den Verteiler in einem Schritt.' },
-          presse: { titel: 'Event- und Medienplanung', text: 'Der Bereich ist jetzt ein gemeinsamer Ablauf: Event planen, Werbematerial erzeugen und an Medien oder Newsletter-Empfänger senden.' },
+          presse: { titel: 'Presse & Medien', text: 'Hier nur Medienkit und Vorlage. Events, Werbemittel und Versand (Medienspiegel, Newsletter) erledigst du unter Event- und Medienplanung → Werbematerial.' },
           design: istVerein
             ? { titel: 'Ausstellung gestalten', text: 'So wird die Galerie euer Gesicht: Farben, Texte, Willkommensbild und Galerie-Karte. Alles, was Besucher zuerst sehen – hier stellt ihr es ein. Vorschau zeigt euch sofort, wie es wirkt.' }
             : { titel: 'Galerie gestalten', text: 'Hier gibst du deiner Galerie das Gesicht: Farben, Willkommensbild, Texte. Du siehst sofort in der Vorschau, wie es wirkt. Nichts Kompliziertes – anpassen, speichern, fertig.' },
@@ -14685,7 +14701,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {activeTab === 'newsletter' && '📬 Newsletter & Einladungen'}
                   {activeTab === 'pressemappe' && '📰 Pressemappe'}
                   {activeTab === 'eventplan' && (tenant.isVk2 ? '📢 Event- und Medienplanung (Verein)' : '📢 Event- und Medienplanung')}
-                  {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Event- und Medienplanung</> : <><MedienstudioIcon size={22} /> Event- und Medienplanung</>)}
+                  {activeTab === 'presse' && (tenant.isVk2 ? <><MedienstudioIcon size={22} /> Presse &amp; Medien</> : <><MedienstudioIcon size={22} /> Presse &amp; Medien</>)}
                   {activeTab === 'design' && (tenant.isVk2 ? '✨ Ausstellung gestalten und texten – nach euren Wünschen anpassen' : '✨ Galerie gestalten und texten – nach deinen Wünschen anpassen')}
                   {activeTab === 'veroeffentlichen' && '📤 Veröffentlichen – Aushängeschild sichtbar machen'}
                   {activeTab === 'einstellungen' && '⚙️ Einstellungen'}
@@ -16689,10 +16705,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}
             >
               <strong style={{ color: s.text }}>
-                {tenant.isOeffentlich || tenant.isVk2 ? 'Werbematerial & Marketing:' : 'Mediengenerator:'}
+                {tenant.isOeffentlich || tenant.isVk2 ? 'Eventplan → Werbematerial:' : 'Eventplan → Mediengenerator & Werbematerial:'}
               </strong>{' '}
-              Farbdesign und Texte, die du hier einstellst, gelten auch für Vorlagen unter{' '}
-              <strong style={{ color: s.text }}>Marketing</strong> – z. B. Presse, Flyer, Social Media und Newsletter.
+              Farben und Texte hier gelten für Vorlagen unter <strong style={{ color: s.text }}>Marketing</strong> – Presse, Flyer, Social Media und Newsletter.
             </p>
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
@@ -16892,11 +16907,30 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             }}>
               📤 Veröffentlichen
             </h2>
-            <p style={{ fontSize: '1rem', color: s.muted, lineHeight: 1.6, marginBottom: '1.5rem', maxWidth: '36rem' }}>
+            <p style={{ fontSize: '1rem', color: s.muted, lineHeight: 1.6, marginBottom: '1rem', maxWidth: '36rem' }}>
               <strong style={{ color: s.text }}>Speichern</strong> = am Arbeitsplatz. Deine Änderungen (Werke, Design, Texte) sind hier gesichert.
               <br />
               <strong style={{ color: s.text }}>Veröffentlichen</strong> = das Aushängeschild der Galerie sichtbar machen. Besucher und andere Geräte sehen dann den aktuellen Stand.
             </p>
+            <details
+              style={{
+                marginBottom: '1.25rem',
+                maxWidth: '38rem',
+                background: s.bgElevated,
+                border: `1px solid ${s.accent}33`,
+                borderRadius: '10px',
+                padding: '0.55rem 0.75rem',
+              }}
+            >
+              <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#1c1a18', fontSize: '0.88rem' }}>
+                ⓘ Nach dem Veröffentlichen / alter Stand am Handy
+              </summary>
+              <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.15rem', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.5 }}>
+                <li>Nach Push kurz warten, bis das Deployment auf dem Server fertig ist.</li>
+                <li>Am Handy oder Tablet: <strong style={{ color: '#1c1a18' }}>Stand-Badge</strong> unten links antippen, um bewusst neu zu laden (kein automatisches Neuladen im Hintergrund).</li>
+                <li>„Vom Server laden“ (K2): holt den gemeinsamen Stand auf diesen Arbeitsplatz – sinnvoll z. B. nach Arbeit am iPad.</li>
+              </ul>
+            </details>
             {/* Gamification Phase 2: Stand-Hinweis nur ök2/VK2 – kein Auto-Reload, keine Server-Abfrage */}
             {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (
               <div
@@ -20311,14 +20345,14 @@ ${name}`
               done: medienspiegel.length > 0,
               hint:
                 tenant.isOeffentlich || tenant.isVk2
-                  ? 'Marketing → Werbematerial → Medienspiegel: Presse-E-Mails eintragen'
-                  : 'Eventplanung → Mediengenerator: Presse-E-Mails eintragen',
+                  ? 'Eventplan → Werbematerial → Abschnitt Medienspiegel'
+                  : 'Eventplan → Mediengenerator & Werbematerial → Abschnitt Medienspiegel',
             },
           ]
           const presseMilestoneDone = presseMilestones.filter(m => m.done).length
           return (
             <section style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '24px', padding: 'clamp(2rem, 5vw, 3rem)', boxShadow: s.shadow, marginBottom: 'clamp(2rem, 5vw, 3rem)' }}>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Event- und Medienplanung</h2>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: s.text, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><MedienstudioIcon size={28} /> Presse &amp; Medien</h2>
               <p style={{ color: s.muted, marginBottom: tenant.isVk2 ? '0.5rem' : '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
                 {tenant.isVk2 ? 'Medienkit und Presse-Vorlage aus euren Vereinsdaten (Verein, Vorstand, Adresse) – zum Kopieren und Versand an Medien.' : 'Medienkit und Presse-Vorlage aus deinen Stammdaten – zum Kopieren und Versand an Medien.'}
               </p>
@@ -20332,6 +20366,24 @@ ${name}`
                   Demo – in deiner lizenzierten Galerie nutzt du deine eigenen Daten.
                 </p>
               )}
+              <details
+                style={{
+                  marginBottom: '1.25rem',
+                  maxWidth: '40rem',
+                  background: s.bgElevated,
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: '10px',
+                  padding: '0.55rem 0.75rem',
+                }}
+              >
+                <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#1c1a18', fontSize: '0.88rem' }}>
+                  ⓘ Wann hier bleiben, wann zum Eventplan?
+                </summary>
+                <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.55 }}>
+                  <strong style={{ color: '#1c1a18' }}>Hier</strong> bleibst du für Medienkit, Presse-Vorlage und Story-Wahl.{' '}
+                  <strong style={{ color: '#1c1a18' }}>Eventplan → Werbematerial</strong> (bzw. Mediengenerator &amp; Werbematerial) brauchst du für Event-Dokumente, Medienspiegel mit Redaktionen und Newsletter-Empfänger für den Versand – ein durchgängiger Ablauf.
+                </p>
+              </details>
 
               {/* Gamification: Presse & Medien – gleiche Bildsprache wie Öffentlichkeitsarbeit (eine SVG-Quelle) */}
               {showGamificationChecklists && (
@@ -20453,24 +20505,10 @@ ${name}`
               </p>
 
               <div style={{ marginBottom: '2rem', padding: '0.95rem 1rem', background: `${s.accent}10`, border: `1px solid ${s.accent}38`, borderRadius: '10px', fontSize: '0.85rem', color: s.text }}>
-                {tenant.isOeffentlich || tenant.isVk2 ? (
-                  <>
-                    Der Verteiler (Medienspiegel + Newsletter) steht unter{' '}
-                    <strong>Marketing → Werbematerial</strong> – bewusst <strong>unter den Event-Karten</strong> (zuerst Dokumente, dann Versand).
-                  </>
-                ) : (
-                  <>
-                    Der Verteiler (Medienspiegel + Newsletter) ist jetzt vollständig im Ablauf
-                    <strong> Event- und Medienplanung → Mediengenerator &amp; Verteiler</strong> eingebunden – dort steht er bewusst
-                    <strong> unter den Werbemitteln</strong> (zuerst Dokumente, dann Versand).
-                  </>
-                )}
-              </div>
-
-              <div style={{ marginBottom: '0.5rem', padding: '0.9rem 1rem', background: `${s.accent}0c`, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.85rem', color: s.muted }}>
-                <strong style={{ color: s.text }}>Vereinfacht:</strong> Dieser Bereich ist jetzt bewusst nur der <strong>Verteiler-Schlüssel</strong> (Medienspiegel + Newsletter-Empfänger).
-                {' '}
-                Alle Werbetexte und Werbedokumente (Einladung, Presseaussendung, Flyer, Social) erzeugst du im Bereich{' '}
+                <strong style={{ color: s.text }}>Ein Ablauf, zwei Einstiege:</strong>{' '}
+                <strong style={{ color: s.text }}>Hier</strong> nur Medienkit und allgemeine Presse-Vorlage (ohne konkretes Event).{' '}
+                <strong style={{ color: s.text }}>Werbemittel</strong> (Presseaussendung, Flyer, Social, Newsletter) und der{' '}
+                <strong style={{ color: s.text }}>Verteiler</strong> (Medienspiegel + Newsletter) liegen unter{' '}
                 <button
                   type="button"
                   onClick={() => setActiveTab('eventplan')}
@@ -20478,7 +20516,13 @@ ${name}`
                 >
                   Event- und Medienplanung
                 </button>
-                .
+                {' → '}
+                {tenant.isOeffentlich || tenant.isVk2 ? (
+                  <strong>Werbematerial</strong>
+                ) : (
+                  <strong>Mediengenerator &amp; Werbematerial</strong>
+                )}
+                {' – Verteiler absichtlich unter den Event-Karten (zuerst Dokumente, dann Versand).'}
               </div>
             </section>
           )
@@ -20503,17 +20547,40 @@ ${name}`
             }}>
               📢 Öffentlichkeitsarbeit & Eventplanung
             </h2>
-            <p style={{ color: s.muted, marginBottom: '1.5rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
-              Außenkommunikation: Eventplanung, Events, Flyer & Werbedokumente. Dokumente sind den Events zugeordnet (je Rubrik).
+            <p style={{ color: s.muted, marginBottom: '1rem', fontSize: 'clamp(0.9rem, 2vw, 1rem)' }}>
+              <strong style={{ color: s.text }}>Ablauf:</strong> Zuerst Events anlegen. Dann Werbematerial je Event (Presse, Flyer, Social, Newsletter …). Zum Schluss{' '}
+              <strong style={{ color: s.text }}>Medienspiegel</strong> und <strong style={{ color: s.text }}>Newsletter-Empfänger</strong> für den Versand (BCC).
             </p>
+            <details
+              style={{
+                marginBottom: '1.25rem',
+                maxWidth: '42rem',
+                background: s.bgElevated,
+                border: `1px solid ${s.accent}33`,
+                borderRadius: '10px',
+                padding: '0.55rem 0.75rem',
+              }}
+            >
+              <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#1c1a18', fontSize: '0.88rem' }}>
+                ⓘ Was gehört wohin? (Presse-Tab vs. dieser Bereich)
+              </summary>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.55 }}>
+                <p style={{ margin: '0 0 0.4rem' }}>
+                  <strong style={{ color: '#1c1a18' }}>Tab „Presse &amp; Medien“</strong> – Medienkit und Presse-Textvorlage aus Stammdaten (zum Kopieren). Keine Event-Liste dort.
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong style={{ color: '#1c1a18' }}>Hier (Eventplan)</strong> – Events, Werbemittel je Event, Medienspiegel und Newsletter-Empfänger für Mail-Buttons und BCC aus den Karten.
+                </p>
+              </div>
+            </details>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginBottom: '1.5rem' }}>
               <button type="button" onClick={() => setEventplanSubTab('events')} style={{ textAlign: 'left', cursor: 'pointer', background: eventplanSubTab === 'events' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${eventplanSubTab === 'events' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem 1.25rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = eventplanSubTab === 'events' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>📅</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Veranstaltung - Werbkampagne</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Events anlegen, bearbeiten, Termine verwalten</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Events &amp; Werbekampagne</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>Termine anlegen, bearbeiten, Kalender pflegen</div>
               </button>
               <button type="button" onClick={() => setEventplanSubTab('öffentlichkeitsarbeit')} style={{ textAlign: 'left', cursor: 'pointer', background: eventplanSubTab === 'öffentlichkeitsarbeit' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${eventplanSubTab === 'öffentlichkeitsarbeit' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem 1.25rem', transition: 'all 0.2s', fontFamily: 'inherit' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
@@ -20525,8 +20592,8 @@ ${name}`
                 </div>
                 <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem' }}>
                   {tenant.isOeffentlich || tenant.isVk2
-                    ? 'Flyer, Presse, Social, Newsletter – pro Event; Medienspiegel darunter'
-                    : 'Einladungen, Flyer, Presse, Social Media – ansehen & drucken'}
+                    ? 'Werbemittel je Event · unten Medienspiegel & Newsletter für den Versand'
+                    : 'Werbemittel je Event · „Zum Ansehen & Drucken“ in der Event-Zeile · unten Medienspiegel & Newsletter'}
                 </div>
               </button>
             </div>
@@ -22040,10 +22107,10 @@ ${name}`
         {((activeTab === 'eventplan' && eventplanSubTab === 'öffentlichkeitsarbeit') || showOeffentlichkeitsarbeitModal) && (() => {
           /** Gamification (leicht): echte Meilensteine aus Daten, keine Punkte-Währung */
           const oeffMilestones: { id: string; label: string; done: boolean; hint: string }[] = [
-            { id: 'event', label: 'Event in der Planung', done: events.length > 0, hint: 'Mindestens ein Termin in der Eventliste' },
-            { id: 'medien', label: 'Medienspiegel mit Kontakten', done: medienspiegel.length > 0, hint: 'Presse-E-Mails eintragen oder Hilfe: Beispiel-Medien' },
-            { id: 'dok', label: 'Mind. ein gespeichertes Dokument', done: documents.length > 0, hint: 'Flyer, Presse oder Social aus einem Event' },
-            { id: 'news', label: 'Newsletter-Verteiler (optional)', done: verteilerNewsletter.length > 0, hint: 'Empfänger für Einladungen' },
+            { id: 'event', label: 'Event in der Planung', done: events.length > 0, hint: 'Tab „Events & Werbekampagne“ – mindestens ein Termin' },
+            { id: 'medien', label: 'Medienspiegel mit Kontakten', done: medienspiegel.length > 0, hint: 'Unten: Abschnitt Medienspiegel – Presse-E-Mails (oder Hilfe: Beispiel-Medien)' },
+            { id: 'dok', label: 'Mind. ein gespeichertes Dokument', done: documents.length > 0, hint: 'Pro Event eine Werbekarte nutzen und speichern (Presse, Flyer, …)' },
+            { id: 'news', label: 'Newsletter-Verteiler (optional)', done: verteilerNewsletter.length > 0, hint: 'Unten: Newsletter-Empfänger für Einladungen' },
           ]
           const oeffMilestoneDone = oeffMilestones.filter(m => m.done).length
           const oeffSection = (
@@ -22119,7 +22186,7 @@ ${name}`
                   Öffentlichkeit mit Schwung
                 </h2>
                 <p style={{ margin: '0 0 0.75rem', fontSize: '0.86rem', color: '#5c5650', lineHeight: 1.5 }}>
-                  Jeder grüne Schritt ist ein echter Fortschritt – keine Spielerei, sondern Klarheit. Wenn alle Kreise grün sind, bist du für Medien und Gäste startklar.
+                  Vier Schritte: Event, Pressekontakte, mindestens ein gespeichertes Dokument, optional Newsletter. Grün = erledigt – Klarheit für Medien und Gäste, ohne Punktesammeln.
                 </p>
                 <div style={{ marginBottom: '0.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
@@ -22194,16 +22261,93 @@ ${name}`
             {documentSaveFeedback === 'ok' && (
               <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</div>
             )}
-            <h2 style={{
-              fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
-              fontWeight: '700',
-              color: s.text,
-              marginTop: 0,
-              marginBottom: '0.75rem',
-              letterSpacing: '-0.01em'
-            }}>
-              📢 Hier sind deine Flyer und Werbedokumente – ansehen, bearbeiten …
-            </h2>
+            {(tenant.isOeffentlich || tenant.isVk2) ? (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: '0.75rem',
+                  marginBottom: '0.75rem',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <h2
+                  style={{
+                    fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                    fontWeight: '700',
+                    color: s.text,
+                    margin: 0,
+                    letterSpacing: '-0.01em',
+                    flex: '1 1 12rem',
+                    minWidth: 0,
+                  }}
+                >
+                  📢 Werbematerial je Event – Vorschau, E-Mail, Druck
+                </h2>
+                <details
+                  style={{
+                    flexShrink: 0,
+                    alignSelf: 'flex-start',
+                    padding: '0.35rem 0.5rem',
+                    background: `${s.accent}10`,
+                    border: `1px solid ${s.accent}28`,
+                    borderRadius: 10,
+                  }}
+                >
+                  <summary
+                    style={{
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      color: s.accent,
+                      listStyle: 'none',
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    ⓘ
+                  </summary>
+                  <div
+                    style={{
+                      marginTop: '0.5rem',
+                      maxWidth: 'min(100vw - 2rem, 26rem)',
+                      fontSize: '0.78rem',
+                      color: s.muted,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <p style={{ margin: '0 0 0.5rem' }}>
+                      Nach einem <strong>neuen Event</strong> werden die Werbekarten automatisch angelegt. Zum manuellen Neustart: <strong>Neu erstellen</strong> oder Event erneut speichern.
+                    </p>
+                    <p style={{ margin: '0 0 0.5rem' }}>{WERBEMITTEL_KARTEN_FUSS_HINWEIS}</p>
+                    {tenant.isVk2 && (
+                      <p style={{ margin: '0 0 0.5rem' }}>
+                        Dokument mit K2-Daten? Mit <strong>×</strong> entfernen, dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
+                      </p>
+                    )}
+                    <p style={{ margin: 0 }}>
+                      <strong>Plakat:</strong> {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
+                    </p>
+                    <p style={{ margin: '0.5rem 0 0' }}>
+                      Zu jeder Karte: <strong>ⓘ</strong> neben dem Titel öffnet die Kurzerklärung.
+                    </p>
+                  </div>
+                </details>
+              </div>
+            ) : (
+              <h2
+                style={{
+                  fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+                  fontWeight: '700',
+                  color: s.text,
+                  marginTop: 0,
+                  marginBottom: '0.75rem',
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                📢 Werbematerial je Event – Vorschau, E-Mail, Druck
+              </h2>
+            )}
             {!(tenant.isOeffentlich || tenant.isVk2) && (
             <div style={{ marginBottom: 'clamp(1.25rem, 3vw, 1.75rem)', padding: '0.7rem 0.8rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: s.bgCard }}>
               <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.45rem' }}>Schnellstart für neue Nutzer</div>
@@ -22222,9 +22366,9 @@ ${name}`
 
             {!(tenant.isOeffentlich || tenant.isVk2) && (
             <div style={{ marginBottom: '1rem', padding: '0.8rem 0.9rem', border: `1px solid ${s.accent}33`, borderRadius: 10, background: `${s.accent}0c` }}>
-              <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.35rem' }}>📣 Mediengenerator & Verteiler</div>
+              <div style={{ fontSize: '0.86rem', color: s.text, fontWeight: 700, marginBottom: '0.35rem' }}>📣 Mediengenerator &amp; Verteiler</div>
               <div style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
-                Hier erzeugst du deine Werbedokumente pro Event und verwaltest direkt den Verteiler für Medien und Newsletter – alles in einem Ablauf.
+                Werbedokumente pro Event erzeugen; Medienspiegel und Newsletter-Empfänger weiter unten auf derselben Seite – ein durchgängiger Ablauf.
               </div>
               <div style={{ marginTop: '0.75rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.55rem' }}>
                 <button
@@ -22274,29 +22418,10 @@ ${name}`
                 <span style={{ fontSize: '0.78rem', color: s.muted, lineHeight: 1.45, maxWidth: '560px' }}>
                   <strong>Herzstück:</strong> zuerst Flyer-Master A5 fürs Standard-Event – dann stimmen Texte zu Plakat, A6 und QR. Vorschau-Paket = nur lesen/kopieren.{' '}
                   <strong>Einmal</strong> bei dem gewünschten Event auf <strong>Paket übernehmen</strong> (neben „Medienpaket“ in der Event-Zeile) – nicht zweimal klicken.{' '}
-                  Druckfein: in der Karte „Neu erstellen“ oder „Ansehen“.
+                  Druck &amp; PDF: in der Event-Zeile <strong>„Zum Ansehen &amp; Drucken“</strong> oder in der Karte <strong>„Neu erstellen“</strong>.
                 </span>
               </div>
             </div>
-            )}
-
-            {(tenant.isOeffentlich || tenant.isVk2) && (
-              <div
-                style={{
-                  marginBottom: '1rem',
-                  padding: '0.65rem 0.85rem',
-                  border: `1px solid ${s.accent}33`,
-                  borderRadius: 10,
-                  background: `${s.accent}08`,
-                  fontSize: '0.8rem',
-                  color: s.muted,
-                  lineHeight: 1.5,
-                }}
-              >
-                <strong style={{ color: s.text }}>ök2 / VK2:</strong> Nach einem neuen Event sind die Werbekarten unten bei deinem Event schon angelegt. Flyer-Master über die Karte{' '}
-                <strong>Plakat &amp; Druckformate</strong> → „Flyer-Master öffnen“ oder über <strong>Werbeunterlagen</strong>.{' '}
-                <strong>Paket übernehmen</strong> ersetzt alle Werbemittel zu diesem Event, wenn du neu starten willst.
-              </div>
             )}
 
             {/* Medienspiegel: direkt im Werbematerial-Ablauf */}
@@ -22327,7 +22452,7 @@ ${name}`
                     const next = [...medienspiegel, ...add]
                     setMedienspiegel(next)
                     try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                    alert(`✅ Hilfe aktiv: ${add.length} Beispiel-Medien eingefuegt.`)
+                    alert(`✅ Hilfe aktiv: ${add.length} Beispiel-Medien eingefügt.`)
                   }}
                   style={{ padding: '0.45rem 0.75rem', background: s.gradientAccent, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
                 >
@@ -22343,13 +22468,13 @@ ${name}`
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.9rem' }}>
                 <details style={{ width: '100%', maxWidth: '360px', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', padding: '0.55rem 0.7rem' }}>
                   <summary style={{ cursor: 'pointer', fontWeight: 700, color: s.text, fontSize: '0.85rem' }}>
-                    Optional: Schritt-Anleitung fuer sicheren Versand
+                    Optional: Schritt-für-Schritt für sicheren Versand
                   </summary>
                   <ol style={{ margin: '0.55rem 0 0', paddingLeft: '1.1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.45 }}>
-                    <li>Empfaenger im Medienspiegel erfassen oder per Liste einfuegen.</li>
-                    <li>Nur die Medien anhaeken, die diese Aussendung erhalten sollen.</li>
-                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfuegen (nicht in „An“).</li>
-                    <li>Betreff und Dokumenttext aus der Event- und Medienplanung uebernehmen.</li>
+                    <li>Empfänger im Medienspiegel erfassen oder per Liste einfügen.</li>
+                    <li>Nur die Medien anhaken, die diese Aussendung erhalten sollen.</li>
+                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfügen (nicht in „An“).</li>
+                    <li>Betreff und Dokumenttext aus der Event- und Medienplanung übernehmen.</li>
                     <li>Vor dem echten Versand: eine Testmail an die eigene Adresse senden.</li>
                   </ol>
                 </details>
@@ -22379,7 +22504,7 @@ ${name}`
                         const next = [...medienspiegel, ...added]
                         setMedienspiegel(next)
                         try { localStorage.setItem(getMedienspiegelStorageKey(tenant), JSON.stringify(next)) } catch (_) {}
-                        alert(`✅ ${added.length} Medien aus ${typ === 'regionalOoe' ? 'regional' : typ} eingefuegt.`)
+                        alert(`✅ ${added.length} Medien aus ${typ === 'regionalOoe' ? 'regional' : typ} eingefügt.`)
                       }
                     }
                   }} style={{ padding: '0.45rem 0.9rem', background: medienspiegelKategorieFilter === typ ? s.gradientAccent : s.bgElevated, color: medienspiegelKategorieFilter === typ ? '#fff' : s.text, border: `1px solid ${medienspiegelKategorieFilter === typ ? 'transparent' : s.accent + '44'}`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>
@@ -22404,7 +22529,7 @@ ${name}`
               </div>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', color: s.text, marginBottom: '0.35rem' }}>
-                  Aus Liste einfuegen (eine Zeile: Name, E-Mail oder nur E-Mail)
+                  Aus Liste einfügen (eine Zeile: Name, E-Mail oder nur E-Mail)
                 </label>
                 <textarea
                   value={medienspiegelPasteText}
@@ -22435,29 +22560,29 @@ ${name}`
                   }}
                   style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
                 >
-                  Einfuegen
+                  Einfügen
                 </button>
               </div>
               {medienspiegel.length > 0 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Eintraegen: E-Mail-Adressen kopieren</span>
-                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswaehlen</button>
-                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswaehlen</button>
+                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Einträgen: E-Mail-Adressen kopieren</span>
+                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
+                    <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
                     <button
                       type="button"
                       onClick={() => {
                         const selected = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
                         const emails = selected.map(m => m.email).filter(Boolean).join(', ')
                         if (!emails) {
-                          alert('Bitte zuerst Eintraege auswaehlen.')
+                          alert('Bitte zuerst Einträge auswählen.')
                           return
                         }
                         navigator.clipboard.writeText(emails)
-                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewaehlten Eintraegen kopiert.'))
+                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewählten Einträgen kopiert.'))
                           .catch(() => alert('Kopieren fehlgeschlagen.'))
                       }}
-                      title="Bei Eintraegen: E-Mail-Adressen kopieren"
+                      title="Bei Einträgen: E-Mail-Adressen kopieren"
                       style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
                     >
                       📋 E-Mail-Adressen kopieren
@@ -22490,13 +22615,13 @@ ${name}`
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.9rem' }}>
                 <details style={{ width: '100%', maxWidth: '360px', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', padding: '0.55rem 0.7rem' }}>
                   <summary style={{ cursor: 'pointer', fontWeight: 700, color: s.text, fontSize: '0.85rem' }}>
-                    Optional: Schritt-Anleitung fuer sicheren Versand
+                    Optional: Schritt-für-Schritt für sicheren Versand
                   </summary>
                   <ol style={{ margin: '0.55rem 0 0', paddingLeft: '1.1rem', fontSize: '0.8rem', color: s.muted, lineHeight: 1.45 }}>
-                    <li>Empfaenger erfassen oder per Liste einfuegen.</li>
-                    <li>Nur die gewuenschten Empfaenger anhaeken.</li>
-                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfuegen (nicht in „An“).</li>
-                    <li>Betreff und Newsletter-Text aus dem Dokument uebernehmen.</li>
+                    <li>Empfänger erfassen oder per Liste einfügen.</li>
+                    <li>Nur die gewünschten Empfänger anhaken.</li>
+                    <li>Im Mailprogramm in <strong style={{ color: s.text }}>BCC</strong> einfügen (nicht in „An“).</li>
+                    <li>Betreff und Newsletter-Text aus dem Dokument übernehmen.</li>
                     <li>Vor dem echten Versand: Testmail an die eigene Adresse senden.</li>
                   </ol>
                 </details>
@@ -22518,7 +22643,7 @@ ${name}`
               </div>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', color: s.text, marginBottom: '0.35rem' }}>
-                  Aus Liste einfuegen (eine Zeile: Name, E-Mail oder nur E-Mail)
+                  Aus Liste einfügen (eine Zeile: Name, E-Mail oder nur E-Mail)
                 </label>
                 <textarea
                   value={verteilerNewsletterPasteText}
@@ -22549,29 +22674,29 @@ ${name}`
                   }}
                   style={{ marginTop: '0.35rem', padding: '0.4rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '8px', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}
                 >
-                  Einfuegen
+                  Einfügen
                 </button>
               </div>
               {verteilerNewsletter.length > 0 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Eintraegen: E-Mail-Adressen kopieren</span>
-                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set(verteilerNewsletter.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswaehlen</button>
-                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswaehlen</button>
+                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Einträgen: E-Mail-Adressen kopieren</span>
+                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set(verteilerNewsletter.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
+                    <button type="button" onClick={() => setVerteilerNewsletterSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
                     <button
                       type="button"
                       onClick={() => {
                         const selected = verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
                         const emails = selected.map(m => m.email).filter(Boolean).join(', ')
                         if (!emails) {
-                          alert('Bitte zuerst Eintraege auswaehlen.')
+                          alert('Bitte zuerst Einträge auswählen.')
                           return
                         }
                         navigator.clipboard.writeText(emails)
-                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewaehlten Eintraegen kopiert.'))
+                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewählten Einträgen kopiert.'))
                           .catch(() => alert('Kopieren fehlgeschlagen.'))
                       }}
-                      title="Bei Eintraegen: E-Mail-Adressen kopieren"
+                      title="Bei Einträgen: E-Mail-Adressen kopieren"
                       style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
                     >
                       📋 E-Mail-Adressen kopieren
@@ -22592,7 +22717,7 @@ ${name}`
                   </ul>
                 </>
               )}
-              {verteilerNewsletter.length === 0 && <p style={{ fontSize: '0.82rem', color: s.muted }}>Noch keine Newsletter-Empfaenger vorhanden.</p>}
+              {verteilerNewsletter.length === 0 && <p style={{ fontSize: '0.82rem', color: s.muted }}>Noch keine Newsletter-Empfänger vorhanden.</p>}
             </div>
 
             {/* Alle Events: zuerst aktuell/geplant, dann Ordner „Veranstaltungen der Vergangenheit“ (Dokumente als Muster) */}
@@ -22628,11 +22753,66 @@ ${name}`
                     {/* Aktuelle und geplante Veranstaltungen (ök2: bei nur vergangenen Events = Muster-Rubrik) */}
                     {flyerTabUpcomingList.length > 0 && (
                       <div style={{ marginBottom: '2rem' }}>
-                        <h3 style={{ fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)', fontWeight: '600', color: s.text, marginBottom: '1rem' }}>
-                          {oek2FlyerFallbackMuster
-                            ? '📋 Demo – Muster-Veranstaltung (alle Werbemittel)'
-                            : '📅 Aktuelle und geplante Veranstaltungen'}
-                        </h3>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            justifyContent: 'space-between',
+                            gap: '0.5rem',
+                            flexWrap: 'wrap',
+                            marginBottom: '1rem',
+                          }}
+                        >
+                          <h3
+                            style={{
+                              fontSize: 'clamp(1.1rem, 2.5vw, 1.3rem)',
+                              fontWeight: '600',
+                              color: s.text,
+                              margin: 0,
+                              flex: '1 1 10rem',
+                              minWidth: 0,
+                            }}
+                          >
+                            {oek2FlyerFallbackMuster
+                              ? '📋 Demo – Muster-Veranstaltung (alle Werbemittel)'
+                              : '📅 Aktuelle und geplante Veranstaltungen'}
+                          </h3>
+                          {(tenant.isOeffentlich || tenant.isVk2) && (
+                            <details
+                              style={{
+                                flexShrink: 0,
+                                padding: '0.25rem 0.45rem',
+                                background: `${s.accent}10`,
+                                border: `1px solid ${s.accent}28`,
+                                borderRadius: 8,
+                              }}
+                            >
+                              <summary
+                                style={{
+                                  cursor: 'pointer',
+                                  fontSize: '0.95rem',
+                                  fontWeight: 700,
+                                  color: s.accent,
+                                  listStyle: 'none',
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                ⓘ
+                              </summary>
+                              <p
+                                style={{
+                                  margin: '0.45rem 0 0',
+                                  maxWidth: 'min(100vw - 2rem, 22rem)',
+                                  fontSize: '0.76rem',
+                                  color: s.muted,
+                                  lineHeight: 1.45,
+                                }}
+                              >
+                                Gesamthinweise zum Ablauf: <strong>ⓘ</strong> neben der großen Überschrift oben. Kurzerklärung pro Werbemittel: <strong>ⓘ</strong> neben dem jeweiligen Karten-Titel (Newsletter, Plakat …).
+                              </p>
+                            </details>
+                          )}
+                        </div>
                         {oek2FlyerFallbackMuster && (
                           <p style={{ fontSize: 'clamp(0.8rem, 2vw, 0.9rem)', color: s.muted, marginTop: '-0.5rem', marginBottom: '1rem', lineHeight: 1.5 }}>
                             Das Muster-Datum liegt in der Vergangenheit – hier siehst du trotzdem Newsletter, Plakat, Event-Flyer, Presse und Social wie bei einem aktiven Event. Unten unter „Veranstaltungen der Vergangenheit“ bleiben Einladung und Presseinfo als kompakte Liste.
@@ -22787,8 +22967,7 @@ ${name}`
                             const fertigAnzahl = kartenFuerFortschritt.filter(k => k.docs.length > 0).length
                             const gesamtAnzahl = kartenFuerFortschritt.length
                             const progressPct = gesamtAnzahl ? Math.round((fertigAnzahl / gesamtAnzahl) * 100) : 0
-                            const werbemittelKartenFussHinweis =
-                              'Gleicher Ablauf: Ansehen = Vorschau. Grüner Button = Mail mit Text in der Zwischenablage; druckfertige PDF liegt bei Bedarf in Downloads. Neu unten = Dokument neu anlegen.'
+                            const werbemittelKartenFussHinweis = WERBEMITTEL_KARTEN_FUSS_HINWEIS
 
                             return (
                               <div>
@@ -22825,6 +23004,7 @@ ${name}`
                                       📑 Medienpaket (dieses Event)
                                     </button>
                                     )}
+                                    {!(tenant.isOeffentlich || tenant.isVk2) && (
                                     <button
                                       type="button"
                                       onClick={() => void applyMedienpaketAlsGespeicherteWerbemittel(event)}
@@ -22843,6 +23023,7 @@ ${name}`
                                     >
                                       💾 Paket übernehmen
                                     </button>
+                                    )}
                                     <button
                                       onClick={() => { handleEditEvent(event); setActiveTab('eventplan') }}
                                       style={{
@@ -22859,8 +23040,167 @@ ${name}`
                                     >
                                       Event bearbeiten
                                     </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setWerbemittelDruckpaletteEventKey(prev =>
+                                          prev === eventIdStr ? null : eventIdStr,
+                                        )
+                                      }
+                                      style={{
+                                        padding: '0.4rem 0.75rem',
+                                        background:
+                                          werbemittelDruckpaletteEventKey === eventIdStr ? `${s.accent}18` : 'transparent',
+                                        border: `1px solid ${s.accent}55`,
+                                        borderRadius: '8px',
+                                        color: s.accent,
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 600,
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                      title="Alle fertigen Werbemittel zum Ansehen und als PDF drucken (Browser: Drucken → Als PDF speichern)"
+                                    >
+                                      📄 Zum Ansehen & Drucken
+                                      {werbemittelDruckpaletteEventKey === eventIdStr ? ' ▲' : ' ▼'}
+                                    </button>
                                   </div>
                                 </div>
+
+                                {werbemittelDruckpaletteEventKey === eventIdStr &&
+                                  (() => {
+                                    const alleFertigenDokumenteZumDruck = DOKUMENT_KARTEN.flatMap(karte =>
+                                      (karte.docs || []).map((doc: any) => ({
+                                        doc,
+                                        karteTitel: karte.titel,
+                                        onOpen: () => karte.onOpen(doc),
+                                      })),
+                                    )
+                                    const openAllePRAlsSammelPdf = () => {
+                                      const sug = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
+                                      const ev = resolveEventForMediengeneratorCard(events, event)
+                                      const evSug = sug.find((sg: any) => String(sg.eventId) === String(ev.id))
+                                      const presseVar = tenant.isOeffentlich ? 'neutral' : 'lokal'
+                                      if (evSug) {
+                                        generateEditablePRSuggestionsPDF(evSug, ev)
+                                      } else {
+                                        const fallback = {
+                                          eventId: ev.id,
+                                          eventTitle: ev.title,
+                                          presseaussendung: generatePresseaussendungContent(ev, presseVar),
+                                          socialMedia: generateSocialMediaContent(ev),
+                                          newsletter: generateEmailNewsletterContent(ev),
+                                          flyer: generateEventFlyerContent(ev),
+                                        }
+                                        generateEditablePRSuggestionsPDF(fallback, ev)
+                                      }
+                                    }
+                                    return (
+                                      <div
+                                        style={{
+                                          marginBottom: '1rem',
+                                          padding: '0.85rem 1rem',
+                                          background: s.bgElevated,
+                                          border: `1px solid ${s.accent}33`,
+                                          borderRadius: '10px',
+                                        }}
+                                      >
+                                        <p
+                                          style={{
+                                            margin: '0 0 0.65rem',
+                                            fontSize: '0.78rem',
+                                            color: s.muted,
+                                            lineHeight: 1.45,
+                                          }}
+                                        >
+                                          Alle <strong>fertigen</strong> Werbemittel zu diesem Event: öffnen, im Browser{' '}
+                                          <strong>Drucken</strong> → PDF oder Papier. Zum Versand: grüne Mail-Buttons in den
+                                          Karten oder Adressen aus dem <strong>Medienspiegel</strong> (BCC) weiter unten.
+                                        </p>
+                                        <button
+                                          type="button"
+                                          onClick={() => void openAllePRAlsSammelPdf()}
+                                          style={{
+                                            width: '100%',
+                                            maxWidth: '100%',
+                                            padding: '0.5rem 0.85rem',
+                                            marginBottom: '0.65rem',
+                                            background: 'transparent',
+                                            color: s.accent,
+                                            border: `1px solid ${s.accent}44`,
+                                            borderRadius: '8px',
+                                            fontSize: '0.82rem',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                          }}
+                                          title="Eine HTML-Datei mit Presse, Social und Newsletter nacheinander – druckbar als A4/A3/A5"
+                                        >
+                                          📑 Sammel-PDF: Presse, Social & Newsletter (eine Datei, bearbeitbar)
+                                        </button>
+                                        {alleFertigenDokumenteZumDruck.length > 0 ? (
+                                          <div>
+                                            <div
+                                              style={{
+                                                fontSize: '0.76rem',
+                                                fontWeight: 600,
+                                                color: s.text,
+                                                marginBottom: '0.4rem',
+                                              }}
+                                            >
+                                              Einzelne gespeicherte Dokumente ({alleFertigenDokumenteZumDruck.length})
+                                            </div>
+                                            <ul
+                                              style={{
+                                                margin: 0,
+                                                padding: 0,
+                                                listStyle: 'none',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '0.35rem',
+                                              }}
+                                            >
+                                              {alleFertigenDokumenteZumDruck.map((row, idx) => {
+                                                const label = row.doc?.name || row.doc?.fileName || 'Dokument'
+                                                const key = row.doc?.id != null ? String(row.doc.id) : `druck-${idx}-${label}`
+                                                return (
+                                                  <li key={key}>
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => row.onOpen()}
+                                                      style={{
+                                                        ...listItemStyle,
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'space-between',
+                                                        gap: '0.5rem',
+                                                      }}
+                                                      title="Öffnen – dann Drucken / Als PDF speichern"
+                                                    >
+                                                      <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                        <span style={{ color: s.muted, fontWeight: 500 }}>{row.karteTitel}:</span>{' '}
+                                                        {label}
+                                                      </span>
+                                                      <span style={{ flexShrink: 0, fontSize: '0.75rem', color: s.accent }}>
+                                                        Öffnen →
+                                                      </span>
+                                                    </button>
+                                                  </li>
+                                                )
+                                              })}
+                                            </ul>
+                                          </div>
+                                        ) : (
+                                          <p style={{ margin: 0, fontSize: '0.76rem', color: s.muted }}>
+                                            Noch keine einzelnen Werbemittel in den Karten – zuerst z. B. Newsletter oder Presse
+                                            erstellen. Das Sammel-PDF oben geht trotzdem aus den Event-Daten.
+                                          </p>
+                                        )}
+                                      </div>
+                                    )
+                                  })()}
 
                                 {/* Fortschritt: eine Zeile, klare Aussage */}
                                 <div style={{ marginBottom: '1.25rem' }}>
@@ -22876,12 +23216,6 @@ ${name}`
                                     <div style={{ width: `${progressPct}%`, height: '100%', background: fertigAnzahl === gesamtAnzahl ? '#16a34a' : s.accent, borderRadius: 3, transition: 'width 0.25s ease' }} />
                                   </div>
                                 </div>
-
-                                {tenant.isVk2 && (
-                                  <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: 8, fontSize: '0.78rem', color: s.muted }}>
-                                    Dokument mit K2-Daten? Mit <strong>×</strong> entfernen, dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
-                                  </div>
-                                )}
 
                                 {/* Karten-Grid: zwei Spalten auf breiten Bildschirmen */}
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
@@ -22912,11 +23246,46 @@ ${name}`
                                         }}
                                       >
                                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', minWidth: 0, flex: 1 }}>
                                             <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{karte.icon}</span>
-                                            <div style={{ minWidth: 0 }}>
-                                              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, lineHeight: 1.2 }}>{karte.titel}</div>
-                                              <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: '0.1rem' }}>{karte.beschreibung}</div>
+                                            <div style={{ minWidth: 0, flex: 1 }}>
+                                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap' }}>
+                                                <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, lineHeight: 1.2 }}>{karte.titel}</div>
+                                                {(tenant.isOeffentlich || tenant.isVk2) && (
+                                                  <details style={{ flexShrink: 0 }}>
+                                                    <summary
+                                                      style={{
+                                                        cursor: 'pointer',
+                                                        listStyle: 'none',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 700,
+                                                        color: s.accent,
+                                                        lineHeight: 1.2,
+                                                      }}
+                                                    >
+                                                      ⓘ
+                                                    </summary>
+                                                    <div
+                                                      style={{
+                                                        marginTop: '0.35rem',
+                                                        fontSize: '0.74rem',
+                                                        color: s.muted,
+                                                        lineHeight: 1.45,
+                                                      }}
+                                                    >
+                                                      {karte.beschreibung}
+                                                      {karte.typ === 'plakat' && (
+                                                        <p style={{ margin: '0.45rem 0 0' }}>
+                                                          <strong>Plakat-Liste:</strong> {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
+                                                        </p>
+                                                      )}
+                                                    </div>
+                                                  </details>
+                                                )}
+                                              </div>
+                                              {!(tenant.isOeffentlich || tenant.isVk2) && (
+                                                <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: '0.1rem' }}>{karte.beschreibung}</div>
+                                              )}
                                             </div>
                                           </div>
                                           <span style={{
@@ -23048,9 +23417,11 @@ ${name}`
                                           if (karte.typ === 'plakat') {
                                             return (
                                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
+                                                {!(tenant.isOeffentlich || tenant.isVk2) && (
                                                 <p style={{ margin: 0, fontSize: '0.75rem', color: s.muted, lineHeight: 1.45 }}>
-                                                  Vier Master-Ansichten (aktueller Stand) – ansehen, ankreuzen, dann Druckerei. Kein ×: stammt nicht aus dem PR-Speicher.
+                                                  {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
                                                 </p>
+                                                )}
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                                   {karte.docs.map((doc: any, docIdx: number) => {
                                                     const sendK = plakatDruckformateSendRowKey(event, doc, docIdx)
@@ -23077,6 +23448,14 @@ ${name}`
                                                         <button
                                                           type="button"
                                                           onClick={() => karte.onOpen(doc)}
+                                                          onMouseEnter={e => {
+                                                            e.currentTarget.style.background = 'rgba(34,197,94,0.14)'
+                                                            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'
+                                                          }}
+                                                          onMouseLeave={e => {
+                                                            e.currentTarget.style.background = '#fff'
+                                                            e.currentTarget.style.borderColor = 'rgba(34,197,94,0.25)'
+                                                          }}
                                                           style={{
                                                             flex: 1,
                                                             textAlign: 'left',
@@ -23091,8 +23470,9 @@ ${name}`
                                                             overflow: 'hidden',
                                                             textOverflow: 'ellipsis',
                                                             whiteSpace: 'nowrap',
+                                                            transition: 'background 0.15s ease, border-color 0.15s ease',
                                                           }}
-                                                          title={doc.name || doc.fileName}
+                                                          title={`${doc.name || doc.fileName || 'Dokument'} – tippen zum Ansehen`}
                                                         >
                                                           {doc.name || doc.fileName || 'Dokument'}
                                                         </button>
@@ -23158,58 +23538,49 @@ ${name}`
                                           }
                                           return (
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                                              <button
-                                                type="button"
-                                                onClick={() => karte.onOpen(primaryDoc)}
-                                                style={{
-                                                  width: '100%',
-                                                  textAlign: 'center',
-                                                  padding: '0.55rem 0.7rem',
-                                                  background: '#fff',
-                                                  border: `1px solid ${s.accent}`,
-                                                  borderRadius: '8px',
-                                                  cursor: 'pointer',
-                                                  fontSize: '0.84rem',
-                                                  color: s.accent,
-                                                  fontWeight: 700,
-                                                }}
-                                                title="Dokument im Viewer öffnen (gleicher Tab)"
-                                              >
-                                                Ansehen
-                                              </button>
-                                              {!istPraesentationsmappen && (
-                                                <button
-                                                  type="button"
-                                                  onClick={() => {
-                                                    void sendWerbemittelPerMail(karte.typ, primaryDoc, event)
-                                                  }}
+                                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                                                <div
                                                   style={{
-                                                    width: '100%',
-                                                    textAlign: 'center',
-                                                    padding: '0.55rem 0.7rem',
-                                                    background: '#15803d',
-                                                    border: '1px solid rgba(21,128,61,0.35)',
-                                                    borderRadius: '8px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '0.84rem',
-                                                    color: '#fff',
-                                                    fontWeight: 700,
+                                                    fontSize: '0.78rem',
+                                                    fontWeight: 600,
+                                                    color: s.text,
                                                   }}
-                                                  title="Hauptaktion für diese Karte"
                                                 >
-                                                  {getWerbemittelMailActionLabel(karte.typ, primaryDoc)}
-                                                </button>
-                                              )}
-                                              <details style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 8, padding: '0.45rem 0.5rem' }}>
-                                                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: s.text, fontWeight: 600 }}>
                                                   Gespeicherte Dateien – zum Versand wählen ({karte.docs.length})
-                                                </summary>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginTop: '0.45rem' }}>
-                                                  {karte.docs.map((doc: any, docIdx: number) => (
-                                                    <div key={doc.id || doc.name || plakatDocRowKey(doc, docIdx)} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                                                </div>
+                                                {karte.docs.map((doc: any, docIdx: number) => {
+                                                  const mailK = werbemittelMailSendRowKey(event, karte.typ, doc, docIdx)
+                                                  return (
+                                                    <div
+                                                      key={doc.id || doc.name || plakatDocRowKey(doc, docIdx)}
+                                                      style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                                                    >
+                                                      <input
+                                                        type="checkbox"
+                                                        checked={werbemittelMailSendSelectedKeys.has(mailK)}
+                                                        onChange={() =>
+                                                          setWerbemittelMailSendSelectedKeys(prev => {
+                                                            const next = new Set(prev)
+                                                            if (next.has(mailK)) next.delete(mailK)
+                                                            else next.add(mailK)
+                                                            return next
+                                                          })
+                                                        }
+                                                        title="Für Mail-Versand"
+                                                        aria-label={`Auswahl ${doc.name || doc.fileName || 'Dokument'}`}
+                                                        style={{ flexShrink: 0, width: '1.05rem', height: '1.05rem', cursor: 'pointer' }}
+                                                      />
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onOpen(doc)}
+                                                        onMouseEnter={e => {
+                                                          e.currentTarget.style.background = 'rgba(34,197,94,0.14)'
+                                                          e.currentTarget.style.borderColor = 'rgba(34,197,94,0.5)'
+                                                        }}
+                                                        onMouseLeave={e => {
+                                                          e.currentTarget.style.background = '#fff'
+                                                          e.currentTarget.style.borderColor = 'rgba(34,197,94,0.25)'
+                                                        }}
                                                         style={{
                                                           flex: 1,
                                                           textAlign: 'left',
@@ -23224,32 +23595,12 @@ ${name}`
                                                           overflow: 'hidden',
                                                           textOverflow: 'ellipsis',
                                                           whiteSpace: 'nowrap',
+                                                          transition: 'background 0.15s ease, border-color 0.15s ease',
                                                         }}
-                                                        title={doc.name || doc.fileName}
+                                                        title={`${doc.name || doc.fileName || 'Dokument'} – tippen zum Ansehen`}
                                                       >
                                                         {doc.name || doc.fileName || 'Dokument'}
                                                       </button>
-                                                      {!istPraesentationsmappen && (
-                                                        <button
-                                                          type="button"
-                                                          onClick={() => {
-                                                            void sendWerbemittelPerMail(karte.typ, doc, event)
-                                                          }}
-                                                          style={{
-                                                            padding: '0.38rem 0.48rem',
-                                                            background: '#15803d',
-                                                            border: '1px solid rgba(21,128,61,0.35)',
-                                                            borderRadius: '6px',
-                                                            cursor: 'pointer',
-                                                            fontSize: '0.74rem',
-                                                            color: '#fff',
-                                                            fontWeight: 600,
-                                                          }}
-                                                          title="Dieses Dokument senden"
-                                                        >
-                                                          Senden
-                                                        </button>
-                                                      )}
                                                       <button
                                                         type="button"
                                                         onClick={() => karte.onDelete(doc)}
@@ -23268,10 +23619,54 @@ ${name}`
                                                         ×
                                                       </button>
                                                     </div>
-                                                  ))}
-                                                </div>
-                                              </details>
+                                                  )
+                                                })}
+                                              </div>
                                               {!istPraesentationsmappen && (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    const keys = karte.docs.map((d: any, i: number) =>
+                                                      werbemittelMailSendRowKey(event, karte.typ, d, i),
+                                                    )
+                                                    const hasSel = keys.some(k => werbemittelMailSendSelectedKeys.has(k))
+                                                    let docToSend: any = null
+                                                    if (!hasSel && keys.length > 0) {
+                                                      setWerbemittelMailSendSelectedKeys(prev => {
+                                                        const n = new Set(prev)
+                                                        keys.forEach(k => n.add(k))
+                                                        return n
+                                                      })
+                                                      docToSend = karte.docs[0]
+                                                    } else {
+                                                      const firstK = keys.find(k => werbemittelMailSendSelectedKeys.has(k))
+                                                      docToSend =
+                                                        firstK != null ? karte.docs[keys.indexOf(firstK)] : null
+                                                    }
+                                                    if (!docToSend) {
+                                                      window.alert('Bitte mindestens eine Datei auswählen.')
+                                                      return
+                                                    }
+                                                    void sendWerbemittelPerMail(karte.typ, docToSend, event)
+                                                  }}
+                                                  style={{
+                                                    width: '100%',
+                                                    textAlign: 'center',
+                                                    padding: '0.55rem 0.7rem',
+                                                    background: '#15803d',
+                                                    border: '1px solid rgba(21,128,61,0.35)',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.84rem',
+                                                    color: '#fff',
+                                                    fontWeight: 700,
+                                                  }}
+                                                  title="Hauptaktion: erstes ausgewähltes Dokument (ohne Auswahl: alle anhaken wie bei Plakat, dann erstes)"
+                                                >
+                                                  {getWerbemittelMailActionLabel(karte.typ, primaryDoc)}
+                                                </button>
+                                              )}
+                                              {!istPraesentationsmappen && !(tenant.isOeffentlich || tenant.isVk2) && (
                                                 <div style={{ marginTop: '0.1rem', fontSize: '0.75rem', color: s.muted }}>
                                                   {werbemittelKartenFussHinweis}
                                                 </div>
@@ -23297,7 +23692,7 @@ ${name}`
                                               fontWeight: 600,
                                             }}
                                           >
-                                            Flyer-Master öffnen{hatDokumente ? ' (PDFs anpassen)' : ''}
+                                            Neu erstellen
                                           </button>
                                         ) : (karte as any).erstellenGruppen ? (
                                           <details
@@ -23427,44 +23822,6 @@ ${name}`
                                       </div>
                                     )
                                   })}
-                                </div>
-
-                                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                                  <button
-                                    onClick={() => {
-                                      const sug = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
-                                      const ev = resolveEventForMediengeneratorCard(events, event)
-                                      const evSug = sug.find((sg: any) => String(sg.eventId) === String(ev.id))
-                                      const presseVar = tenant.isOeffentlich ? 'neutral' : 'lokal'
-                                      if (evSug) {
-                                        generateEditablePRSuggestionsPDF(evSug, ev)
-                                      } else {
-                                        // Ohne PR-Assistent: aus Event generierte Inhalte als PDF öffnen (damit sich etwas öffnet)
-                                        const fallback = {
-                                          eventId: ev.id,
-                                          eventTitle: ev.title,
-                                          presseaussendung: generatePresseaussendungContent(ev, presseVar),
-                                          socialMedia: generateSocialMediaContent(ev),
-                                          newsletter: generateEmailNewsletterContent(ev),
-                                          flyer: generateEventFlyerContent(ev)
-                                        }
-                                        generateEditablePRSuggestionsPDF(fallback, ev)
-                                      }
-                                    }}
-                                    style={{
-                                      width: '100%',
-                                      padding: '0.55rem 1rem',
-                                      background: 'transparent',
-                                      color: s.accent,
-                                      border: `1px solid ${s.accent}44`,
-                                      borderRadius: '8px',
-                                      fontSize: '0.85rem',
-                                      fontWeight: 600,
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    Alle PR-Vorschläge als PDF anzeigen
-                                  </button>
                                 </div>
                               </div>
                             )

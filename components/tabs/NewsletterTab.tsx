@@ -105,6 +105,26 @@ export default function NewsletterTab({ onBack, isOeffentlich = false, isVk2 = f
         </p>
       </div>
 
+      <details
+        style={{
+          marginBottom: '1.25rem',
+          maxWidth: '40rem',
+          background: s.bgElevated,
+          border: `1px solid ${s.accent}33`,
+          borderRadius: '10px',
+          padding: '0.55rem 0.75rem',
+        }}
+      >
+        <summary style={{ cursor: 'pointer', fontWeight: 700, color: '#1c1a18', fontSize: '0.88rem' }}>
+          ⓘ Diese Liste vs. Newsletter-Empfänger im Eventplan
+        </summary>
+        <p style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.55 }}>
+          <strong style={{ color: '#1c1a18' }}>Hier</strong> pflegst du Kontakte für Übersicht, <strong style={{ color: '#1c1a18' }}>CSV-Export</strong> und <strong style={{ color: '#1c1a18' }}>Adressliste drucken</strong>.
+          Für den <strong style={{ color: '#1c1a18' }}>BCC-Versand</strong> aus den Werbematerial-Karten trägst du Empfänger unter{' '}
+          <strong style={{ color: '#1c1a18' }}>Marketing → Eventplan → Werbematerial</strong> im Abschnitt Newsletter-Empfänger ein – dort liegt der Verteiler für die Mail-Buttons.
+        </p>
+      </details>
+
       {/* Gamification Phase 2: Einladungsliste – nur ök2/VK2, nur Anzeige */}
       {showGamification && showGamificationChecklists && (
         <div
