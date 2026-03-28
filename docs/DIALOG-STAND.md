@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Farben aus Galerie-Design (K2 / ök2 / VK2):** Statt festem Teal (`#0f6f66`) liest die Seite **`k2-design-settings` / `k2-oeffentlich-design-settings` / `k2-vk2-design-settings`** und setzt CSS-Variablen über **`designToPlakatVars`** (eine Quelle wie Plakat/PR-Dokumente). Akzent, Flächen, Invite-Gradient, V2-Content, A3/A6-Poster, Schrift **`Space Grotesk`**-Pfad aus Werbelinie. **Live:** `storage` auf Design-Keys, **`k2-design-saved-publish`**, **`k2-page-content-updated`**, weiterhin Tab-Sichtbarkeit. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Farben aus Galerie-Design (K2 / ök2 / VK2):** Statt festem Teal (`#0f6f66`) liest die Seite **`k2-design-settings` / `k2-oeffentlich-design-settings` / `k2-vk2-design-settings`** und setzt CSS-Variablen über **`designToPlakatVars`** (eine Quelle wie Plakat/PR-Dokumente). Akzent, Flächen, Invite-Gradient, V2-Content, A3/A6-Poster, Schrift **`Space Grotesk`**-Pfad aus Werbelinie. **Live:** `storage` auf Design-Keys, **`k2-design-saved-publish`**, **`k2-page-content-updated`**, weiterhin Tab-Sichtbarkeit. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** `05235ec` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: ök2 und K2 – Design-Tab Farben ändern → Flyer-Master neu öffnen oder Seite fokussieren → Vorschau muss mitziehen.
 
