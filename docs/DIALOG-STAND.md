@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Flyer-Master: Speichern bei Quota – Stufenkompression + klarere Meldung:** Beim Speichern wird das Vorderseitenbild nacheinander **normal → aggressiv → minimal** komprimiert, bis `localStorage` passt. **Catch (Quota):** erneut **minimal** versuchen; Hinweistext erklärt: Speichern = **Browser-Kopie** (Texte + eingebettetes Bild), kein „neue Server-Daten“ – aber **doppeltes Kontingent**, wenn dasselbe Motiv schon riesig in der Galerie liegt; Praxis: Bild per **URL** (`/img/…`) statt riesiges Base64; geteiltes Kontingent K2/ök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **9f57aed** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Georg: Flyer speichern mit großem Vorderseitenbild testen; bei Meldung Texte gegenlesen.
+
+---
+
 **Letzter Stand:** 27.03.26 – **Flyer-Master A5 Speichern: kein Sprung ins mök2-Board mehr:** Nach **Speichern** wurde zu **Werbeunterlagen** navigiert – diese Route liegt in **`Mok2Layout`** (`App.tsx`), deshalb wirkte es wie „mök2 öffnet“. **Neu:** nach Speichern **auf dem Master bleiben** + kurze Meldung „Gespeichert … weiterbearbeiten“ (Notfall-Speichern mit Platzhalter unverändert). **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **7198ece** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Speichern am Master → keine Weiterleitung; Werbeunterlagen bei Bedarf über **Zurück** / Menü.

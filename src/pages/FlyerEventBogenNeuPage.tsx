@@ -147,25 +147,36 @@ function buildFlyerThemeInject(homepageDesignForFlyer: HomepageDesign | null): {
 /** Master-Ansicht: oben Vorderseite, unten Rückseite (jeweils einmal). */
 const FLYER_SAVE_MAX_BYTES = 4_200_000
 
+type FlyerLeftCompressMode = 'normal' | 'aggressive' | 'minimal'
+
 /** Data-URL / Blob-URL vor localStorage stark verkleinern (vermeidet QuotaExceeded / „Speicher voll“). */
-async function compressLeftSrcForFlyerStorage(leftSrc: string, aggressive: boolean): Promise<string> {
+async function compressLeftSrcForFlyerStorage(leftSrc: string, mode: FlyerLeftCompressMode): Promise<string> {
   if (!leftSrc) return leftSrc
   if (!leftSrc.startsWith('data:image') && !leftSrc.startsWith('blob:')) return leftSrc
-  const opts = aggressive
-    ? ({
-        context: 'artwork' as const,
-        maxWidth: 680,
-        quality: 0.55,
-        maxBytes: 220_000,
-        minQuality: 0.45,
-      } as const)
-    : ({
-        context: 'artwork' as const,
-        maxWidth: 1000,
-        quality: 0.68,
-        maxBytes: 400_000,
-        minQuality: 0.5,
-      } as const)
+  const opts =
+    mode === 'minimal'
+      ? ({
+          context: 'artwork' as const,
+          maxWidth: 480,
+          quality: 0.46,
+          maxBytes: 85_000,
+          minQuality: 0.36,
+        } as const)
+      : mode === 'aggressive'
+        ? ({
+            context: 'artwork' as const,
+            maxWidth: 680,
+            quality: 0.55,
+            maxBytes: 220_000,
+            minQuality: 0.45,
+          } as const)
+        : ({
+            context: 'artwork' as const,
+            maxWidth: 1000,
+            quality: 0.68,
+            maxBytes: 400_000,
+            minQuality: 0.5,
+          } as const)
   try {
     if (leftSrc.startsWith('data:image')) {
       return await compressImageForStorage(leftSrc, opts)
@@ -533,12 +544,18 @@ export default function FlyerEventBogenNeuPage() {
       savedAt: Date.now(),
     })
 
-    let leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, false)
+    let leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, 'normal')
     let payload = buildPayload(leftSrcToSave)
     let json = JSON.stringify(payload)
 
     if (json.length > FLYER_SAVE_MAX_BYTES) {
-      leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, true)
+      leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, 'aggressive')
+      payload = buildPayload(leftSrcToSave)
+      json = JSON.stringify(payload)
+    }
+
+    if (json.length > FLYER_SAVE_MAX_BYTES) {
+      leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, 'minimal')
       payload = buildPayload(leftSrcToSave)
       json = JSON.stringify(payload)
     }
@@ -550,8 +567,18 @@ export default function FlyerEventBogenNeuPage() {
     }
 
     const storageFullHint = isOeffentlich
-      ? 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“). Bei der Demo sind meist wenige Daten – trotzdem zählt die Speicher-Grenze für die ganze Website (K2 und ök2 teilen sich dasselbe Kontingent im Browser).\n\nWas du tun kannst:\n• Kleineres Bild für die Vorderseite wählen oder nur ein Galerie-Bild per URL (kein riesiges eingebettetes Foto).\n• Lange Texte kürzen.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ (nur automatische Zwischensicherung, falls vorhanden) oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Im Browser: Speicher / Websitedaten für diese App prüfen.'
-      : 'Der Browser kann den Flyer nicht speichern (oft „Speicher voll“).\n\nWas du tun kannst:\n• Flyer-Bild verkleinern oder kürzere Texte.\n• Admin → Einstellungen → Backup: „🔓 Speicher freigeben“ oder „Flyer-Master aus Browser-Speicher entfernen“.\n• Sonst im Browser Websitedaten für diese App freigeben – oft kommt der Platzbedarf von vielen Werken oder anderen Daten derselben Website.'
+      ? [
+          'Warum „Speichern“ trotzdem Platz braucht: Es landet eine Kopie des Flyer-Masters im Browser (Texte + Vorderseiten-Bild als eingebettete Daten). Das sind keine neuen Werke auf dem Server – aber im Browser zählt jedes große Bild extra. Steckt dasselbe Motiv schon riesig in der Galerie-Seite (eingebettet), wirkt es im Speicher wie eine zweite Kopie.',
+          '',
+          'Praxis: Große Bilder lieber hochladen und in der Galerie nur mit kurzer URL (z. B. /img/...) verknüpfen – dann bleibt der Flyer-Master klein. K2 und ök2 teilen sich im Browser dasselbe Kontingent.',
+          '',
+          'Was jetzt hilft: kleineres Foto auf der Vorderseite, kürzere Texte, oder Admin → Einstellungen → Backup: „Speicher freigeben“ / „Flyer-Master aus Browser-Speicher entfernen“. Sonst Browser → Websitedaten dieser App prüfen.',
+        ].join('\n')
+      : [
+          '„Speichern“ legt eine Kopie des Flyer-Masters im Browser ab (Texte + Bild). Das ist keine neue Werkdatei, braucht aber trotzdem eigenen Platz neben Galerie, Werken und Backups.',
+          '',
+          'Was hilft: Vorderseiten-Bild verkleinern, Texte kürzen, oder Admin → Einstellungen → Backup (Speicher freigeben / Flyer-Master entfernen).',
+        ].join('\n')
 
     try {
       if (json.length > FLYER_SAVE_MAX_BYTES) {
@@ -580,16 +607,37 @@ export default function FlyerEventBogenNeuPage() {
       const quota =
         e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
       try {
+        const tinyLeft = await compressLeftSrcForFlyerStorage(leftSrc, 'minimal')
+        const tinyPayload = buildPayload(tinyLeft)
+        const tinyJson = JSON.stringify(tinyPayload)
+        if (tinyJson.length <= FLYER_SAVE_MAX_BYTES) {
+          try {
+            localStorage.setItem(flyerStorageKey, tinyJson)
+            setLeftSrc(tinyLeft)
+            window.alert(
+              quota
+                ? 'Speicher im Browser ist knapp. Es wurde mit stark verkleinertem Vorderseiten-Bild gespeichert. Das sind keine „neuen Server-Daten“ – aber jede Kopie mit großem Foto braucht im Browser Platz. Ausführliche Tipps stehen in der Meldezeile auf der Seite.'
+                : 'Gespeichert mit verkleinertem Vorderseiten-Bild. Details stehen in der Meldezeile.',
+            )
+            setFlyerSaveMessage(storageFullHint)
+            window.setTimeout(() => setFlyerSaveMessage(''), 12000)
+            return
+          } catch {
+            /* weiter mit Nur-Text */
+          }
+        }
         const minimal = buildPayload(fallbackPath)
         const j2 = JSON.stringify(minimal)
         if (j2.length <= FLYER_SAVE_MAX_BYTES) {
           localStorage.setItem(flyerStorageKey, j2)
           setLeftSrc(fallbackPath)
           window.alert(
-            `${quota ? 'Speicher knapp – ' : ''}Nur Texte und Galerie-Standardbild wurden gespeichert. Eigenes Foto war zu groß oder der Speicher ist voll.\n\n${storageFullHint}`,
+            quota
+              ? 'Speicher im Browser ist knapp. Nur Texte und kleines Standardbild wurden gespeichert – das große Vorderseiten-Foto passte nicht mehr mit.\n\nKurz: Speichern = Kopie im Browser; eingebettete Fotos verdoppeln oft den Platzbedarf. Tipps in der Meldezeile.'
+              : 'Nur Texte und Standardbild wurden gespeichert. Details in der Meldezeile.',
           )
-          setFlyerSaveMessage('Gespeichert (reduziert). Du bleibst auf dem Flyer-Master.')
-          window.setTimeout(() => setFlyerSaveMessage(''), 8000)
+          setFlyerSaveMessage(storageFullHint)
+          window.setTimeout(() => setFlyerSaveMessage(''), 12000)
           return
         }
       } catch {
