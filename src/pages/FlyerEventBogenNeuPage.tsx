@@ -19,6 +19,7 @@ import {
   type EventTerminLike,
   formatEventTerminKomplett,
 } from '../utils/eventTerminFormat'
+import { compressImageForStorage } from '../utils/compressImageForStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const ROOT = 'flyer-event-bogen-neu'
@@ -31,6 +32,45 @@ function getFlyerEventBogenStorageKey(isOeffentlich: boolean): string {
   return isOeffentlich ? FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF : FLYER_EVENT_BOGEN_STORAGE_KEY_K2
 }
 const FLYER_SAVE_MAX_BYTES = 4_200_000
+
+/** Data-URL / Blob-URL vor localStorage stark verkleinern (vermeidet QuotaExceeded / „Speicher voll“). */
+async function compressLeftSrcForFlyerStorage(leftSrc: string, aggressive: boolean): Promise<string> {
+  if (!leftSrc) return leftSrc
+  if (!leftSrc.startsWith('data:image') && !leftSrc.startsWith('blob:')) return leftSrc
+  const opts = aggressive
+    ? ({
+        context: 'artwork' as const,
+        maxWidth: 680,
+        quality: 0.55,
+        maxBytes: 220_000,
+        minQuality: 0.45,
+      } as const)
+    : ({
+        context: 'artwork' as const,
+        maxWidth: 1000,
+        quality: 0.68,
+        maxBytes: 400_000,
+        minQuality: 0.5,
+      } as const)
+  try {
+    if (leftSrc.startsWith('data:image')) {
+      return await compressImageForStorage(leftSrc, opts)
+    }
+    const res = await fetch(leftSrc)
+    const blob = await res.blob()
+    if (!blob.type.startsWith('image/')) return leftSrc
+    const file = new File([blob], 'flyer-upload.jpg', { type: blob.type || 'image/jpeg' })
+    return await compressImageForStorage(file, opts)
+  } catch {
+    return leftSrc
+  }
+}
+
+function galleryFallbackImagePath(isOeffentlich: boolean): string {
+  const g = loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+  const gi = getGalerieImages(g)
+  return gi.galerieCardImage || gi.welcomeImage || '/img/k2/willkommen.jpg'
+}
 
 type MasterEditKey = 'intro' | 'image' | 'backSlogan' | 'backPower' | 'backSub' | 'backInvite' | 'marketing'
 
@@ -312,8 +352,8 @@ export default function FlyerEventBogenNeuPage() {
     [isOeffentlich, isVk2, eventIdFromUrl],
   )
 
-  const handleSaveFlyerMaster = useCallback(() => {
-    const payload: FlyerEventBogenPersistedV1 = {
+  const handleSaveFlyerMaster = useCallback(async () => {
+    const buildPayload = (src: string): FlyerEventBogenPersistedV1 => ({
       v: 1,
       introFollowsGallery,
       masterText: {
@@ -324,28 +364,75 @@ export default function FlyerEventBogenNeuPage() {
         backInvite: masterText.backInvite,
         marketingBlocksRaw: masterText.marketingBlocksRaw,
       },
-      leftSrc,
+      leftSrc: src,
       leftWerkLabel,
       savedAt: Date.now(),
+    })
+
+    let leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, false)
+    let payload = buildPayload(leftSrcToSave)
+    let json = JSON.stringify(payload)
+
+    if (json.length > FLYER_SAVE_MAX_BYTES) {
+      leftSrcToSave = await compressLeftSrcForFlyerStorage(leftSrc, true)
+      payload = buildPayload(leftSrcToSave)
+      json = JSON.stringify(payload)
     }
-    try {
-      const json = JSON.stringify(payload)
-      if (json.length > FLYER_SAVE_MAX_BYTES) {
-        setFlyerSaveMessage(
-          'Zu groß zum Speichern – Bild verkleinern oder Galerie-Bild statt riesiger Datei.',
-        )
-        window.setTimeout(() => setFlyerSaveMessage(''), 5000)
-        return
-      }
-      localStorage.setItem(flyerStorageKey, json)
+
+    const fallbackPath = galleryFallbackImagePath(isOeffentlich)
+    if (json.length > FLYER_SAVE_MAX_BYTES) {
+      payload = buildPayload(fallbackPath)
+      json = JSON.stringify(payload)
+    }
+
+    const tryNavigate = () => {
       navigate(
         isOeffentlich
           ? `${PROJECT_ROUTES['k2-galerie'].werbeunterlagen}?context=oeffentlich`
           : PROJECT_ROUTES['k2-galerie'].werbeunterlagen,
       )
-    } catch {
-      setFlyerSaveMessage('Speichern fehlgeschlagen (Speicher voll?).')
-      window.setTimeout(() => setFlyerSaveMessage(''), 5000)
+    }
+
+    const storageFullHint =
+      'Browser-Speicher voll oder zu knapp. Tipp: Admin → Einstellungen → Speicher entlasten (Werkbilder verkleinern) oder Platz schaffen.'
+
+    try {
+      if (json.length > FLYER_SAVE_MAX_BYTES) {
+        setFlyerSaveMessage(
+          'Zu groß zum Speichern – Texte kürzen oder in Einstellungen Speicher entlasten.',
+        )
+        window.setTimeout(() => setFlyerSaveMessage(''), 8000)
+        return
+      }
+      localStorage.setItem(flyerStorageKey, json)
+      setLeftSrc(leftSrcToSave)
+      if (leftSrcToSave === fallbackPath && leftSrc !== fallbackPath) {
+        setFlyerSaveMessage(
+          'Gespeichert mit Galerie-Standardbild – dein Foto war zu groß für den Speicher (automatisch ersetzt).',
+        )
+        window.setTimeout(() => setFlyerSaveMessage(''), 7000)
+      }
+      tryNavigate()
+    } catch (e) {
+      const quota =
+        e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22)
+      try {
+        const minimal = buildPayload(fallbackPath)
+        const j2 = JSON.stringify(minimal)
+        if (j2.length <= FLYER_SAVE_MAX_BYTES) {
+          localStorage.setItem(flyerStorageKey, j2)
+          setLeftSrc(fallbackPath)
+          window.alert(
+            `${quota ? 'Speicher knapp – ' : ''}Nur Texte und Galerie-Standardbild wurden gespeichert. Eigenes Foto war zu groß oder der Speicher ist voll.\n\n${storageFullHint}`,
+          )
+          tryNavigate()
+          return
+        }
+      } catch {
+        /* zweiter Versuch gescheitert */
+      }
+      setFlyerSaveMessage(quota ? storageFullHint : 'Speichern fehlgeschlagen. Bitte Seite neu laden und erneut versuchen.')
+      window.setTimeout(() => setFlyerSaveMessage(''), 10000)
     }
   }, [
     base.intro,
