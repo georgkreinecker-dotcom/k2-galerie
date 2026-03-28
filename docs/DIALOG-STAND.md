@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Musterbilder statt /img/k2/:** Live-Vorschau und Speicher-Fallback nutzen echte JPEGs unter **`/img/oeffentlich/`** (`galerie-card.jpg`, `willkommen-demo.jpg`, `virtual-tour.jpg`) – **kein** `/img/k2/willkommen.jpg` mehr als Default. Gespeicherte Galerie-Bilder aus dem Design bleiben unverändert Vorrang. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Musterbilder statt /img/k2/:** Live-Vorschau und Speicher-Fallback nutzen echte JPEGs unter **`/img/oeffentlich/`** (`galerie-card.jpg`, `willkommen-demo.jpg`, `virtual-tour.jpg`) – **kein** `/img/k2/willkommen.jpg` mehr als Default. Gespeicherte Galerie-Bilder aus dem Design bleiben unverändert Vorrang. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** `0754345` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Master A5 ohne eigene Fotos öffnen → Vorschau zeigt Muster-JPEGs; mit eigenen Galerie-Bildern → weiter wie bisher.
 
