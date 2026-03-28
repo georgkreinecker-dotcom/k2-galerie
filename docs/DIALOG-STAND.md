@@ -1,8 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Mediengenerator: „Zum Ansehen & Drucken“ oben neben Event bearbeiten:** Untere Leiste **„Alle PR-Vorschläge als PDF“** entfernt. Neuer Button **📄 Zum Ansehen & Drucken** in der Event-Kopfzeile öffnet eine Palette: **Sammel-PDF** (Presse, Social, Newsletter wie bisher) plus **Liste aller fertigen Einzeldokumente** aus den Karten (Öffnen → Drucken/PDF). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push eintragen)_.
+**Letzter Stand:** 28.03.26 – **Admin ⓘ-Hilfen (aufklappbar):** **Eventplan** – „Was gehört wohin?“ (Presse-Tab vs. Eventplan). **Presse & Medien** – „Wann hier bleiben, wann zum Eventplan?“. **Veröffentlichen** – Deployment, Stand-Badge, „Vom Server laden“. **Newsletter-Tab** – Einladungsliste (CSV/Druck) vs. **Newsletter-Empfänger** unter Eventplan → Werbematerial (BCC/Mail-Buttons). **Dateien:** `ScreenshotExportAdmin.tsx`, `NewsletterTab.tsx`. **Commit:** **3ed9e39** ✅ auf GitHub.
 
-**Was wir JETZT tun:** Georg: Button testen; bei Bedarf Commit/Push.
+**Was wir JETZT tun:** Georg: Die vier ⓘ-Zeilen im Admin kurz aufklappen und gegenlesen.
+
+---
+
+**Letzter Stand:** 28.03.26 – **Mediengenerator: „Zum Ansehen & Drucken“ oben neben Event bearbeiten:** Untere Leiste **„Alle PR-Vorschläge als PDF“** entfernt. Neuer Button **📄 Zum Ansehen & Drucken** in der Event-Kopfzeile öffnet eine Palette: **Sammel-PDF** (Presse, Social, Newsletter wie bisher) plus **Liste aller fertigen Einzeldokumente** aus den Karten (Öffnen → Drucken/PDF). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** siehe Historie auf main.
+
+**Was wir JETZT tun:** _(siehe obersten Eintrag)_
 
 ---
 
