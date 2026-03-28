@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master: Speichern bei Quota – Stufenkompression + klarere Meldung:** Beim Speichern wird das Vorderseitenbild nacheinander **normal → aggressiv → minimal** komprimiert, bis `localStorage` passt. **Catch (Quota):** erneut **minimal** versuchen; Hinweistext erklärt: Speichern = **Browser-Kopie** (Texte + eingebettetes Bild), kein „neue Server-Daten“ – aber **doppeltes Kontingent**, wenn dasselbe Motiv schon riesig in der Galerie liegt; Praxis: Bild per **URL** (`/img/…`) statt riesiges Base64; geteiltes Kontingent K2/ök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **9f57aed** ✅ auf GitHub.
+**Letzter Stand:** 28.03.26 – **Flyer-Master: Speichern bei Quota – Stufenkompression + klarere Meldung:** Beim Speichern wird das Vorderseitenbild nacheinander **normal → aggressiv → minimal** komprimiert, bis `localStorage` passt. **Catch (Quota):** erneut **minimal** versuchen; Hinweistext erklärt: Speichern = **Browser-Kopie** (Texte + eingebettetes Bild), kein „neue Server-Daten“ – aber **doppeltes Kontingent**, wenn dasselbe Motiv schon riesig in der Galerie liegt; Praxis: Bild per **URL** (`/img/…`) statt riesiges Base64; geteiltes Kontingent K2/ök2. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **f2c48a6** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Georg: Flyer speichern mit großem Vorderseitenbild testen; bei Meldung Texte gegenlesen.
 
