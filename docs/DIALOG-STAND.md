@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer „Speicher voll“: Hinweise + echter Button:** Die Meldung verwies auf **„Speicher entlasten (Werkbilder verkleinern)“** – **existiert nicht** (`compressAllArtworkImages` ohne UI). **Neu:** sachliche Texte (ök2: gemeinsames Browser-Kontingent mit K2; kleineres Flyer-Bild; Backup). **Einstellungen → Backup:** Button **„Flyer-Master aus Browser-Speicher entfernen“** (nur Flyer-Key, mit Rückfrage). **SafeMode** `SPEICHER_VOLL_MELDUNG` und zwei Admin-Alerts angepasst. Schlüssel: `src/utils/flyerEventBogenStorageKeys.ts`. **Commit:** _nach Push_
+**Letzter Stand:** 28.03.26 – **Flyer „Speicher voll“: Hinweise + echter Button:** Die Meldung verwies auf **„Speicher entlasten (Werkbilder verkleinern)“** – **existiert nicht** (`compressAllArtworkImages` ohne UI). **Neu:** sachliche Texte (ök2: gemeinsames Browser-Kontingent mit K2; kleineres Flyer-Bild; Backup). **Einstellungen → Backup:** Button **„Flyer-Master aus Browser-Speicher entfernen“** (nur Flyer-Key, mit Rückfrage). **SafeMode** `SPEICHER_VOLL_MELDUNG` und zwei Admin-Alerts angepasst. Schlüssel: `src/utils/flyerEventBogenStorageKeys.ts`. **Commit:** `149e9d5` ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: ök2 Flyer speichern testen; bei Hinweis Einstellungen → neue Buttons prüfen.
 
