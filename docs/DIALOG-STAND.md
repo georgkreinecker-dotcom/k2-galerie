@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Flyer-Master A5: Info als Fenster über Vorschau + Dummy stabil** – Commit: **9d13b11** ✅ auf GitHub. **i**-Klicks → **Popover mit Halbtransparent-Hintergrund über der Live-Vorschau** (nicht mehr Zeile unter der Überschrift). **ESC** schließt Kurzinfo. **ök2/VK2-Dummy:** persistierte URL-Bilder werden ignoriert (nur **data:/blob:**); Normalisierungs-**useEffect** **ohne** `flyerDataTick`. **Datei:** `FlyerEventBogenNeuPage.tsx`.
+**Letzter Stand:** 27.03.26 – **Flyer-Master A5: linke Hilfe-Spalte entfernt** – Erklärungen nur noch über **Kurzinfo (i)** über der Vorschau; Workspace nur noch **Live-Vorschau** (zentriert). State `masterIntroRailOpen`, Aside, „Hilfe“-Tab, zugehörige CSS. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Git:** nach Push Hash hier eintragen.
 
-**Was wir JETZT tun:** Georg: ök2/VK2 – Dummy bleibt; **i** → Fenster über dem Blatt; **ESC** oder Hintergrundklick schließt.
+**Was wir JETZT tun:** Georg: Master A5 – kein Hilfefenster links; **i** für Kontext.
 
 ---
 
