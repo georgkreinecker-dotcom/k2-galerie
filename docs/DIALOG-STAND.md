@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 27.03.26 – **Flyer-Master A5: linke Hilfe-Spalte entfernt** – Erklärungen nur noch über **Kurzinfo (i)** über der Vorschau; Workspace nur noch **Live-Vorschau** (zentriert). State `masterIntroRailOpen`, Aside, „Hilfe“-Tab, zugehörige CSS. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Git:** nach Push Hash hier eintragen.
+**Letzter Stand:** 27.03.26 – **Flyer-Master A5: linke Hilfe-Spalte entfernt** – Commit: **32c94b2** ✅ auf GitHub. Erklärungen nur noch über **Kurzinfo (i)** über der Vorschau; Workspace nur noch **Live-Vorschau** (zentriert). Entfernt: `masterIntroRailOpen`, Aside, „Hilfe“-Button, `.master-intro-*`-CSS. **Datei:** `FlyerEventBogenNeuPage.tsx`.
 
 **Was wir JETZT tun:** Georg: Master A5 – kein Hilfefenster links; **i** für Kontext.
 
