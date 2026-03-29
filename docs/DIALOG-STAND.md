@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Lehre: Vercel-Deploys stundenlang aus, unbemerkt:** Es sind **keine erfolgreichen Deployments** mehrere Stunden lang durchgegangen – **ohne dass es vorher auffiel** (lokal wirkt alles normal). **Das ist kein Kompliment** – Live und GitHub können auseinanderlaufen, ohne dass man es merkt. **Ab jetzt:** Nach **jedem** Push kurz **Vercel → Projekt → Deployments** ansehen: **Ready** / **Current** oder rot (Build Failed). Zusätzlich: Live-Seite **`/build-info.json`** oder **Stand-Badge** nur auf **Produktions-URL** (nicht localhost). **Doku:** [VERCEL-STAND-HANDY.md](VERCEL-STAND-HANDY.md), [DEPLOYMENT-EIN-BRANCH.md](DEPLOYMENT-EIN-BRANCH.md).
+**Letzter Stand:** 29.03.26 – **Lehre: Vercel-Deploys stundenlang aus, unbemerkt:** Es sind **keine erfolgreichen Deployments** mehrere Stunden lang durchgegangen – **ohne dass es vorher auffiel** (lokal wirkt alles normal). **Das ist kein Kompliment** – Live und GitHub können auseinanderlaufen, ohne dass man es merkt. **Ab jetzt:** Nach **jedem** Push kurz **Vercel → Projekt → Deployments** ansehen: **Ready** / **Current** oder rot (Build Failed). Zusätzlich: Live-Seite **`/build-info.json`** oder **Stand-Badge** nur auf **Produktions-URL** (nicht localhost). **Doku:** [VERCEL-STAND-HANDY.md](VERCEL-STAND-HANDY.md), [DEPLOYMENT-EIN-BRANCH.md](DEPLOYMENT-EIN-BRANCH.md). **Commit:** **0a113d1** ✅ auf GitHub
 
 **Was wir JETZT tun:** Wenn Deploys wieder laufen: letzten grünen Deployment-Zeitpunkt notieren; bei Build-Failure die Vercel-Logs als erste Quelle.
 
