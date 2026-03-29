@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **K2 echte Galerie (Besucher): Feinschliff nur Oberfläche:** `k2GaleriePublicPolish.css` eingebunden; Root **`k2-echte-galerie-public`** nur bei `!musterOnly && !vk2` (Antialiasing, **:focus-visible**, Event-Liste **k2-public-event-list**, Block **k2-public-events-wrap**, Künstler-Karten **k2-public-artist-card**). Keine Änderung an Speichern, Sync, Merge, Stammdaten. **Dateien:** `GaleriePage.tsx`, `src/styles/k2GaleriePublicPolish.css`. **Commit:** _(nach Push eintragen)_.
+**Letzter Stand:** 28.03.26 – **K2 echte Galerie (Besucher): Feinschliff nur Oberfläche:** `k2GaleriePublicPolish.css` eingebunden; Root **`k2-echte-galerie-public`** nur bei `!musterOnly && !vk2` (Antialiasing, **:focus-visible**, Event-Liste **k2-public-event-list**, Block **k2-public-events-wrap**, Künstler-Karten **k2-public-artist-card**). Keine Änderung an Speichern, Sync, Merge, Stammdaten. **Dateien:** `GaleriePage.tsx`, `src/styles/k2GaleriePublicPolish.css`. **Commit:** **ec7d03e** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nach Deploy: `/galerie` (K2) kurz – Fokus-Tastatur, Event-Zeilen-Hover, Karten; ök2/VK2 unverändert.
 
