@@ -10,6 +10,7 @@ import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { isAdminUnlocked } from '../utils/adminUnlockStorage'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
+import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import '../App.css'
 
 function normalizeSocialUrl(value?: string): string | undefined {
@@ -52,21 +53,52 @@ const VK2_VERCEL_BASE = BASE_APP_URL
 const Vk2GaleriePage: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const openVk2EventA3Plakat = useCallback(
-    (eventId: unknown) => {
-      const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
-      if (!eid) {
-        if (typeof window !== 'undefined' && window.alert) {
-          window.alert('Für diesen Termin ist keine Plakat-Ansicht verfügbar (Event ohne Kennung). Bitte im Admin das Event speichern.')
-        }
-        return
+  const [plakatOverlayUrl, setPlakatOverlayUrl] = useState<string | null>(null)
+  const openVk2EventA3Plakat = useCallback((eventId: unknown) => {
+    const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
+    if (!eid) {
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert('Für diesen Termin ist keine Plakat-Ansicht verfügbar (Event ohne Kennung). Bitte im Admin das Event speichern.')
       }
-      const url = flyerEventBogenUrl({ mode: 'a3', tenant: 'vk2', eventId: eid, fromPublicGalerie: true })
-      const w = typeof window !== 'undefined' ? window.open(url, '_blank', 'noopener,noreferrer') : null
-      if (!w) navigate(url)
-    },
-    [navigate],
-  )
+      return
+    }
+    const url = flyerEventBogenUrl({ mode: 'a3', tenant: 'vk2', eventId: eid, fromPublicGalerie: true })
+    setPlakatOverlayUrl(url)
+  }, [])
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return
+      if (e.data?.type === 'k2-close-public-plakat-overlay') setPlakatOverlayUrl(null)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  useEffect(() => {
+    if (!plakatOverlayUrl) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    try {
+      document.body.setAttribute('data-k2-plakat-overlay', '1')
+    } catch {
+      /* ignore */
+    }
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setPlakatOverlayUrl(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      try {
+        document.body.removeAttribute('data-k2-plakat-overlay')
+      } catch {
+        /* ignore */
+      }
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [plakatOverlayUrl])
+
   const [stammdaten, setStammdaten] = useState<Vk2Stammdaten | null>(() => loadVk2Stammdaten())
   const [pageTexts, setPageTexts] = useState(() => loadVk2PageTexts())
   const [pageContent, setPageContent] = useState(() => loadVk2PageContent())
@@ -355,6 +387,12 @@ const Vk2GaleriePage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => openVk2EventA3Plakat(ev.id)}
+                    title={eventPlakatMoreInfoTitle(ev)}
+                    aria-label={
+                      ev.date
+                        ? `${ev.title}, ${formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}. Plakat anzeigen.`
+                        : `${ev.title}. Plakat anzeigen.`
+                    }
                     style={{
                       background: 'none',
                       border: 'none',
@@ -369,12 +407,6 @@ const Vk2GaleriePage: React.FC = () => {
                     }}
                   >
                     <strong>{ev.title}</strong>
-                    {ev.date && (
-                      <span style={{ color: C.textMid, fontWeight: 400, whiteSpace: 'pre-line' }}>
-                        {' – '}
-                        {formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
-                      </span>
-                    )}
                   </button>
                 </li>
               ))}
@@ -474,6 +506,68 @@ const Vk2GaleriePage: React.FC = () => {
           <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>
       </footer>
+
+      {plakatOverlayUrl ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Plakat"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: '#0d0d0d',
+            zIndex: 10050,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: 0,
+            boxSizing: 'border-box',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          <button
+            type="button"
+            aria-label="Plakat schließen"
+            title="Schließen"
+            onClick={() => setPlakatOverlayUrl(null)}
+            style={{
+              position: 'fixed',
+              top: 10,
+              right: 10,
+              zIndex: 10056,
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              border: '1px solid rgba(255,255,255,0.35)',
+              background: 'rgba(0,0,0,0.55)',
+              color: '#fff',
+              fontSize: '1.35rem',
+              lineHeight: 1,
+              cursor: 'pointer',
+              fontFamily: 'system-ui, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+            }}
+          >
+            ✕
+          </button>
+          <iframe
+            key={plakatOverlayUrl}
+            title="Plakat"
+            src={plakatOverlayUrl}
+            style={{
+              width: '100%',
+              height: '100%',
+              flex: 1,
+              minHeight: 0,
+              border: 'none',
+              display: 'block',
+            }}
+          />
+        </div>
+      ) : null}
 
     </div>
   )

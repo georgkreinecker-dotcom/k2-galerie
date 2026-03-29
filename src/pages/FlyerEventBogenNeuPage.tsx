@@ -428,6 +428,13 @@ export default function FlyerEventBogenNeuPage() {
   const eventIdFromUrl = useMemo(() => (searchParams.get('eventId') || '').trim(), [searchParams])
   /** Von Galerie „Aktuelles“ (flyerEventBogenUrl fromPublicGalerie): Zurück = Galerie, nicht Werbeunterlagen. */
   const fromPublicGalerie = useMemo(() => (searchParams.get('from') || '') === 'publicGalerie', [searchParams])
+  /** URL-Flag für Galerie-Overlay (main.tsx lädt App im iframe). */
+  const plakatEmbedOnly = useMemo(() => searchParams.get('k2PlakatEmbed') === '1', [searchParams])
+  /** Nur im iframe: kein Rand, keine Toolbar – im eigenen Tab bleibt Zurück/Drucken. */
+  const plakatChromeHiddenInEmbed =
+    plakatEmbedOnly &&
+    typeof window !== 'undefined' &&
+    window.self !== window.top
   /** Nur Plakat/Karte zeigen – keine Flyer-Werkzeug-Leiste (Speichern, mök2, Master-Links …). */
   const publicPlakatViewer = fromPublicGalerie && (isA3Mode || isA6Mode || isCardMode)
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
@@ -587,6 +594,12 @@ export default function FlyerEventBogenNeuPage() {
 
   const handleToolbarBack = useCallback(() => {
     if (fromPublicGalerie) {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        try {
+          window.parent.postMessage({ type: 'k2-close-public-plakat-overlay' }, window.location.origin)
+        } catch (_) {}
+        return
+      }
       navigate(frontQrPathExplain)
       return
     }
@@ -603,12 +616,14 @@ export default function FlyerEventBogenNeuPage() {
       const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
       const sp = new URLSearchParams()
       if (isOeffentlich) sp.set('context', 'oeffentlich')
-      if (isVk2 && !isOeffentlich) sp.set('context', 'vk2')
+      else if (isVk2) sp.set('context', 'vk2')
+      else sp.set('context', 'k2')
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
       /** `from=publicGalerie` nur bei echten Ableitungs-URLs – nicht beim A5-Master (sonst Master-Bild ständig überschrieben). */
       const derivation =
         extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
       if (fromPublicGalerie && derivation) sp.set('from', 'publicGalerie')
+      if (fromPublicGalerie) sp.set('k2PlakatEmbed', '1')
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
       })
@@ -1538,7 +1553,7 @@ export default function FlyerEventBogenNeuPage() {
 
   return (
     <div
-      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${publicPlakatViewer ? ' public-plakat-viewer' : ''}`}
+      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${publicPlakatViewer ? ' public-plakat-viewer' : ''}${publicPlakatViewer && plakatChromeHiddenInEmbed ? ' public-plakat-embed-only' : ''}`}
     >
       <style>{`
         .${ROOT}{
@@ -1619,6 +1634,26 @@ export default function FlyerEventBogenNeuPage() {
           align-items:center;
           justify-content:center;
           padding:12px 10px 20px !important;
+        }
+        .${ROOT}.public-plakat-embed-only .derivation-preview-stage,
+        .${ROOT}.public-plakat-embed-only .derivation-fullscreen-stage{
+          flex:1 !important;
+          min-height:0 !important;
+          max-height:none !important;
+          height:100% !important;
+          overflow:hidden !important;
+          display:flex !important;
+          align-items:center !important;
+          justify-content:center !important;
+          background:#12161a !important;
+          padding:0 !important;
+        }
+        .${ROOT}.public-plakat-embed-only .derivation-shell.mode-a3{
+          background:transparent !important;
+          flex:1;
+          min-height:0;
+          display:flex;
+          flex-direction:column;
         }
         .${ROOT} .toolbar .toolbar-back-mok2{
           display:inline-flex;
@@ -2038,6 +2073,22 @@ export default function FlyerEventBogenNeuPage() {
             transform:scale(.24);
             margin-bottom:calc(-1 * (420mm * .76));
           }
+        }
+        /* Öffentliches A3: kein beiger Rand (a3-mode überschreibt sonst den Viewer). */
+        .${ROOT}.public-plakat-viewer.a3-mode{
+          padding:0 !important;
+          background:#12161a !important;
+        }
+        /* Nur Galerie-iframe: Plakat so groß wie das iframe, Rand nur dunkel – kein Extra-Padding. */
+        .${ROOT}.public-plakat-embed-only .derivation-shell.mode-a3 .derivation-preview-scale{
+          transform-origin:center center !important;
+          width:297mm !important;
+          margin:0 !important;
+          margin-bottom:0 !important;
+          transform:scale(min(1,calc(100vw/1122.52px),calc(100dvh/1587.4px))) !important;
+        }
+        .${ROOT}.public-plakat-embed-only .a3-sheet{
+          margin:0 auto !important;
         }
         .${ROOT} .sheet{
           width:210mm;
@@ -3090,14 +3141,16 @@ export default function FlyerEventBogenNeuPage() {
       `}</style>
 
       {publicPlakatViewer ? (
-        <div className="toolbar public-plakat-viewer-toolbar" role="toolbar" aria-label="Plakat">
-          <button type="button" className="ppv-back" onClick={handleToolbarBack}>
-            ← Zurück zur Galerie
-          </button>
-          <button type="button" className="ppv-print" onClick={() => window.print()}>
-            Drucken
-          </button>
-        </div>
+        plakatChromeHiddenInEmbed ? null : (
+          <div className="toolbar public-plakat-viewer-toolbar" role="toolbar" aria-label="Plakat">
+            <button type="button" className="ppv-back" onClick={handleToolbarBack}>
+              ← Zurück zur Galerie
+            </button>
+            <button type="button" className="ppv-print" onClick={() => window.print()}>
+              Drucken
+            </button>
+          </div>
+        )
       ) : (
         <div className="toolbar">
           <button

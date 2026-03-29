@@ -14,6 +14,7 @@ import { mergeServerWithLocal, preserveLocalImageData } from '../utils/syncMerge
 import { loadEvents, saveEvents } from '../utils/eventsStorage'
 import { getOeffentlichEventsWithMusterFallback } from '../utils/oek2MusterEventLinie'
 import { formatEventTerminKomplett } from '../utils/eventTerminFormat'
+import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
@@ -237,22 +238,53 @@ function applyDesignToDocument(design: Record<string, string> | null | undefined
 const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf = false }: { scrollToSection?: string; musterOnly?: boolean; vk2?: boolean; fromApf?: boolean }) => {
   const navigate = useNavigate()
   const location = useLocation()
-  /** A3-Plakat: zuerst neuer Tab; bei Pop-up-Block gleicher Tab (navigate) – mit from=publicGalerie für „Zurück zur Galerie“. */
-  const openEventA3Plakat = useCallback(
-    (tenant: FlyerEventBogenTenantContext, eventId: unknown) => {
-      const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
-      if (!eid) {
-        if (typeof window !== 'undefined' && window.alert) {
-          window.alert('Für diesen Termin ist keine Plakat-Ansicht verfügbar (Event ohne Kennung). Bitte im Admin das Event speichern.')
-        }
-        return
+  /** A3-Plakat: ein Overlay auf derselben Galerie-Seite (kein neuer Tab). „Zurück zur Galerie“ im iframe → postMessage schließt. */
+  const [plakatOverlayUrl, setPlakatOverlayUrl] = useState<string | null>(null)
+  const openEventA3Plakat = useCallback((tenant: FlyerEventBogenTenantContext, eventId: unknown) => {
+    const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
+    if (!eid) {
+      if (typeof window !== 'undefined' && window.alert) {
+        window.alert('Für diesen Termin ist keine Plakat-Ansicht verfügbar (Event ohne Kennung). Bitte im Admin das Event speichern.')
       }
-      const url = flyerEventBogenUrl({ mode: 'a3', tenant, eventId: eid, fromPublicGalerie: true })
-      const w = typeof window !== 'undefined' ? window.open(url, '_blank', 'noopener,noreferrer') : null
-      if (!w) navigate(url)
-    },
-    [navigate],
-  )
+      return
+    }
+    const url = flyerEventBogenUrl({ mode: 'a3', tenant, eventId: eid, fromPublicGalerie: true })
+    setPlakatOverlayUrl(url)
+  }, [])
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin !== window.location.origin) return
+      if (e.data?.type === 'k2-close-public-plakat-overlay') setPlakatOverlayUrl(null)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [])
+
+  useEffect(() => {
+    if (!plakatOverlayUrl) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    try {
+      document.body.setAttribute('data-k2-plakat-overlay', '1')
+    } catch {
+      /* ignore */
+    }
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setPlakatOverlayUrl(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prev
+      try {
+        document.body.removeAttribute('data-k2-plakat-overlay')
+      } catch {
+        /* ignore */
+      }
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [plakatOverlayUrl])
+
   // K2 / ök2 / VK2: Werke nur über Artworks-Schicht (Phase 5.2) getrennte Daten, keine Vermischung
   const tenantConfig = vk2 ? TENANT_CONFIGS.vk2 : musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
   const tenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
@@ -3153,6 +3185,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         <button
                           type="button"
                           onClick={() => openEventA3Plakat('vk2', ev.id)}
+                          title={eventPlakatMoreInfoTitle(ev)}
+                          aria-label={
+                            ev.date
+                              ? `${ev.title}, ${formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}. Plakat anzeigen.`
+                              : `${ev.title}. Plakat anzeigen.`
+                          }
                           style={{
                             background: 'none',
                             border: 'none',
@@ -3166,11 +3204,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                           }}
                         >
                           <strong>{ev.title}</strong>
-                          {ev.date && (
-                            <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
-                              {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
-                            </span>
-                          )}
                         </button>
                       </li>
                     ))}
@@ -3582,6 +3615,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       <button
                         type="button"
                         onClick={() => openEventA3Plakat(flyerTenant, ev.id)}
+                        title={eventPlakatMoreInfoTitle(ev)}
+                        aria-label={
+                          ev.date
+                            ? `${ev.title}, ${formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}. Plakat anzeigen.`
+                            : `${ev.title}. Plakat anzeigen.`
+                        }
                         style={{
                           background: 'none',
                           border: 'none',
@@ -3595,11 +3634,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                         }}
                       >
                         <strong>{ev.title}</strong>
-                        {ev.date && (
-                          <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
-                            {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
-                          </span>
-                        )}
                       </button>
                     </li>
                   )
@@ -4237,6 +4271,69 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             </div>
           </div>
         )}
+
+        {/* Plakat aus „Aktuelles“: gleiche Seite, iframe – kein neuer Tab */}
+        {plakatOverlayUrl ? (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Plakat"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: '#0d0d0d',
+              zIndex: 10050,
+              display: 'flex',
+              flexDirection: 'column',
+              padding: 0,
+              boxSizing: 'border-box',
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <button
+              type="button"
+              aria-label="Plakat schließen"
+              title="Schließen"
+              onClick={() => setPlakatOverlayUrl(null)}
+              style={{
+                position: 'fixed',
+                top: 10,
+                right: 10,
+                zIndex: 10056,
+                width: 44,
+                height: 44,
+                borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.35)',
+                background: 'rgba(0,0,0,0.55)',
+                color: '#fff',
+                fontSize: '1.35rem',
+                lineHeight: 1,
+                cursor: 'pointer',
+                fontFamily: 'system-ui, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
+              }}
+            >
+              ✕
+            </button>
+            <iframe
+              key={plakatOverlayUrl}
+              title="Plakat"
+              src={plakatOverlayUrl}
+              style={{
+                width: '100%',
+                height: '100%',
+                flex: 1,
+                minHeight: 0,
+                border: 'none',
+                display: 'block',
+              }}
+            />
+          </div>
+        ) : null}
 
         {/* Vollbild-Modal: Video oder Bild (Virtueller Rundgang) – Zoom (z. B. nach Stopp) + Weiter */}
         {fullscreenMedia && (
