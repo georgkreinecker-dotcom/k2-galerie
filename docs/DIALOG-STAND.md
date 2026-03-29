@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Lehre: Vercel-Deploys stundenlang aus, unbemerkt:** Es sind **keine erfolgreichen Deployments** mehrere Stunden lang durchgegangen – **ohne dass es vorher auffiel** (lokal wirkt alles normal). **Das ist kein Kompliment** – Live und GitHub können auseinanderlaufen, ohne dass man es merkt. **Ab jetzt:** Nach **jedem** Push kurz **Vercel → Projekt → Deployments** ansehen: **Ready** / **Current** oder rot (Build Failed). Zusätzlich: Live-Seite **`/build-info.json`** oder **Stand-Badge** nur auf **Produktions-URL** (nicht localhost). **Doku:** [VERCEL-STAND-HANDY.md](VERCEL-STAND-HANDY.md), [DEPLOYMENT-EIN-BRANCH.md](DEPLOYMENT-EIN-BRANCH.md).
+
+**Was wir JETZT tun:** Wenn Deploys wieder laufen: letzten grünen Deployment-Zeitpunkt notieren; bei Build-Failure die Vercel-Logs als erste Quelle.
+
+---
+
 **Letzter Stand:** 29.03.26 – **Stand-Badge (Impressum-Bereich): Mac vs. geteilter Link:** Auf **localhost** zeigt die App absichtlich **„Build lokal: …“** (letzter `npm run build` auf dem Mac), auf **Live (Vercel)** **„Stand: …“** vom Server (`/api/build-info`). Das sind zwei verschiedene Quellen – kein Datenfehler. **Klarstellung:** Tooltip am Badge + Kasten in der **?**-Hilfe („Stand auf dem Handy…“). **Datei:** `App.tsx` (`StandBadgeSync`). **Commit:** Nachricht auf main: „Stand-Badge: Build lokal vs. Stand Live erklären …“ (**ad99e92**) ✅ nach Push
 
 **Was wir JETZT tun:** Zum Vergleich mit Empfängern dieselbe **Produktions-URL** im Browser öffnen wie im Link (nicht localhost). Wenn beide schon Live und Zeiten weichen ab: Stand-Badge tippen bzw. Cache.
