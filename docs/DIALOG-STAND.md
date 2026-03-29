@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Vita Georg:** Kurzbiographie **redigiert** (lebendiger, weniger Amtsdeutsch) – `VITA-GEORG-K2-ENTWURF-2026-03.md`, HTML, PDF neu. **Commit:** **968519e** ✅ auf GitHub.
+**Letzter Stand:** 29.03.26 – **Vita Georg:** **kgm solution** klar als **Ruhestandsprojekt** (K2 + Plattform); **Bronze** ohne „intensiv“. Entwurf, HTML, PDF. **Commit:** **009f82f** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Optional Martina-Vita gleichen Ton prüfen; sonst weiter wie zuvor.
 
