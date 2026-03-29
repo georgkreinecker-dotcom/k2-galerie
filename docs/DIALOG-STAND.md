@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Vita Georg:** Kurzbiographie **redigiert** (lebendiger, weniger Amtsdeutsch) – `VITA-GEORG-K2-ENTWURF-2026-03.md`, HTML, PDF neu. **Commit:** **968519e** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Optional Martina-Vita gleichen Ton prüfen; sonst weiter wie zuvor.
+
+---
+
 **Letzter Stand:** 29.03.26 – **Texte-Schreibtisch: Vita-PDFs öffnen:** Vercel-Rewrite schloss `/texte-schreibtisch/` ein → SPA statt Datei. **Fix:** `vercel.json` negative lookahead `(?!texte-schreibtisch/)`. Zusätzlich **`<a target="_blank">`** für `.pdf`/`.html`-Zettel statt `Link` (keine SPA-Navigation). PDFs + HTML + Generator im Repo. **Commit:** **f5d968a** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nach Vercel „Ready“: Vita-Zettel testen; optional `npm run generate:vita-pdfs` bei Textänderungen.
