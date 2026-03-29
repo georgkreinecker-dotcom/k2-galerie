@@ -151,10 +151,10 @@ function main() {
   writePdf('vita-georg-k2-kurzbiographie-2026-03.pdf', (a) => {
     a.addTitle('Kurzbiographie Georg Kreinecker')
     a.addPara(
-      '1983 legte ich die Schlossermeisterprüfung ab. 1985 gründete ich als Unternehmer das Kreinecker Georg Maschinenbau (KGM). Daraus wurden über die Jahre die kgm consulting & trading GmbH, die kgm Immobilien GmbH und kgm solution.'
+      '1983 legte ich die Schlossermeisterprüfung ab. 1985 wagte ich mit dem Kreinecker Georg Maschinenbau (KGM) den Schritt in die Selbstständigkeit – aus dieser ersten Firma sind im Laufe der Jahre die kgm consulting & trading GmbH, die kgm Immobilien GmbH und kgm solution geworden.'
     )
     a.addPara(
-      'Meine künstlerischen Ambitionen erwachten 2009 in einem Kurs für Bildhauerei mit Steinbearbeitung; es folgten Versuche im Bronzeguss und schließlich die Leidenschaft für die Keramik. Ich besuchte Praxiskurse bei Georg Niemann, bei Sabine Classen und im Keramikzentrum Grenzhausen (Keramik-Kombinat). Umfangreiche Literatur und viel Experimentieren sind die Basis meiner keramischen Arbeit.'
+      'Mit Stein und Bildhauerei bin ich 2009 eingestiegen; Bronze war eine intensive, aber für mich zwischengelagerte Phase – bei der Keramik blieb ich hängen und wollte mehr. Praxiskurse bei Georg Niemann, bei Sabine Classen und im Keramikzentrum Grenzhausen (Keramik-Kombinat) haben mich weitergebracht. Ich lese viel dazu und probiere am Ton aus – das gehört für mich einfach zum Handwerk dazu.'
     )
     a.addHeading('Weblinks (Kurse & Werkstätten)')
     a.addPara('http://www.ceramic4you.com/')
