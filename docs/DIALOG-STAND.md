@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Eventplan → A3/A6/Karte = schlanke Vorschau:** `flyerEventBogenUrl` mit **`fromAdminDerivation`** setzt `from=adminFlyerDerivation`; **FlyerEventBogenNeuPage** wie Galerie-Ableitung (`derivationOnlyViewer`): keine Flyer-Master-Toolbar. **Zurück:** Browser-History oder `/admin?tab=eventplan` (+ `context` bei ök2/VK2). **Admin:** virtuelle Flyer-Dokumente, Plakat A3 (Öffentlichkeitsarbeit), Präsentationsmappen-Hilfe. **Seitentext-Default:** „Demnächst bei uns“ + K2-Migration alter Überschrift. **Dateien:** `navigation.ts`, `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`, `pageTexts.ts`. **Commit:** _(siehe git log)_ ✅ auf GitHub
+**Letzter Stand:** 29.03.26 – **Eventplan → A3/A6/Karte = schlanke Vorschau:** `flyerEventBogenUrl` mit **`fromAdminDerivation`** setzt `from=adminFlyerDerivation`; **FlyerEventBogenNeuPage** wie Galerie-Ableitung (`derivationOnlyViewer`): keine Flyer-Master-Toolbar. **Zurück:** Browser-History oder `/admin?tab=eventplan` (+ `context` bei ök2/VK2). **Admin:** virtuelle Flyer-Dokumente, Plakat A3 (Öffentlichkeitsarbeit), Präsentationsmappen-Hilfe. **Seitentext-Default:** „Demnächst bei uns“ + K2-Migration alter Überschrift. **Dateien:** `navigation.ts`, `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`, `pageTexts.ts`. **Commit:** **0f4b16b** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Eventplan → Plakat A3 / virtuelles Dokument – nur schmale Leiste wie von der Galerie prüfen.
 
