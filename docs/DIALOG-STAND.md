@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Öffentliche Galerie: echte Vitas in gallery-data.json:** Im Repo standen in `martina.vita` / `georg.vita` noch **ö2-Muster** (Lena Berg / Paul Weber). Ersetzt durch dieselben Langtexte wie **`K2_DEFAULT_VITA_MARTINA` / `K2_DEFAULT_VITA_GEORG`** (`tenantConfig.ts`, Entwürfe März 2026). Skript: `scripts/patch-gallery-data-k2-vitas.mjs`. **Commit:** **72a040a** ✅ auf GitHub.
+**Letzter Stand:** 28.03.26 – **Öffentliche Galerie: echte Vitas in gallery-data.json:** Im Repo standen in `martina.vita` / `georg.vita` noch **ök2-Muster** (Lena Berg / Paul Weber). Ersetzt durch dieselben Langtexte wie **`K2_DEFAULT_VITA_MARTINA` / `K2_DEFAULT_VITA_GEORG`** (`tenantConfig.ts`, Entwürfe März 2026). Skript: `scripts/patch-gallery-data-k2-vitas.mjs`. **Commit:** **72a040a** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Galerie auf Vercel nach Deploy testen (Stand-Badge tippen / Cache); optional Admin → Stammdaten speichern + Veröffentlichen, wenn du den lokalen Speicher dauerhaft angleichen willst.
 
