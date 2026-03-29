@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG, flyerEventBogenUrl } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
@@ -109,6 +109,43 @@ const BEREICHE: Bereich[] = [
         zweck: 'Referenz für den Familienbereich',
         to: textsA4('hb-k2-familie'),
         rotateDeg: -0.2,
+      },
+    ],
+  },
+  {
+    id: 'k2-viten',
+    titel: 'K2 – Kurzbiographien',
+    untertitel: 'Martina & Georg – redigierte Entwürfe März 2026 als PDF (zum Lesen, Drucken, Weitergeben).',
+    akzent: '#0c5c55',
+    zoneBg: 'linear-gradient(145deg, rgba(12,92,85,0.1), rgba(240,253,250,0.98))',
+    zettel: [
+      {
+        id: 'vita-martina-pdf',
+        titel: 'Vita Martina (PDF)',
+        zweck: 'Kurzbiographie · Mutprobe 2025 · Kurse',
+        to: '/texte-schreibtisch/vita-martina-k2-kurzbiographie-2026-03.pdf',
+        rotateDeg: 0.2,
+      },
+      {
+        id: 'vita-georg-pdf',
+        titel: 'Vita Georg (PDF)',
+        zweck: 'Werdegang · Keramik · Links zu Kursen',
+        to: '/texte-schreibtisch/vita-georg-k2-kurzbiographie-2026-03.pdf',
+        rotateDeg: -0.18,
+      },
+      {
+        id: 'vita-martina-html',
+        titel: 'Vita Martina (HTML)',
+        zweck: 'Vorschau im Browser / Drucken mit Cmd+P',
+        to: '/texte-schreibtisch/vita-martina-k2-2026-03.html',
+        rotateDeg: -0.12,
+      },
+      {
+        id: 'vita-georg-html',
+        titel: 'Vita Georg (HTML)',
+        zweck: 'Vorschau im Browser / Drucken mit Cmd+P',
+        to: '/texte-schreibtisch/vita-georg-k2-2026-03.html',
+        rotateDeg: 0.15,
       },
     ],
   },
@@ -257,6 +294,34 @@ const BEREICHE: Bereich[] = [
 
 function zettelDragPayload(z: Zettel): string {
   return `## ${z.titel}\n${z.zweck}\n\n[Öffnen](${z.to})`
+}
+
+/** PDF/HTML unter /public: kein React-Router-Link (sonst SPA-Navigation ohne echtes Dokument). */
+function isStaticDocumentHref(to: string): boolean {
+  return /\.(pdf|html)(\?|#|$)/i.test(to)
+}
+
+function ZettelOeffnenLink({
+  to,
+  children,
+  style,
+}: {
+  to: string
+  children: ReactNode
+  style: CSSProperties
+}) {
+  if (isStaticDocumentHref(to)) {
+    return (
+      <a href={to} target="_blank" rel="noopener noreferrer" style={style}>
+        {children}
+      </a>
+    )
+  }
+  return (
+    <Link to={to} style={style}>
+      {children}
+    </Link>
+  )
 }
 
 /** Eine Schublade im Hängeordner: Zettelzahl von außen sichtbar, einklappbar, innen blättern ohne sofort die volle Seite zu öffnen */
@@ -499,7 +564,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
             <div style={{ fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.4 }}>{z.zweck}</div>
           </div>
 
-          <Link
+          <ZettelOeffnenLink
             to={z.to}
             style={{
               display: 'block',
@@ -515,7 +580,7 @@ function HangeregisterSchublade({ b }: { b: Bereich }) {
             }}
           >
             Diese Seite öffnen →
-          </Link>
+          </ZettelOeffnenLink>
         </div>
       )}
     </section>

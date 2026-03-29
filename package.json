@@ -23,6 +23,7 @@
     "build": "npm run test && node scripts/write-build-info.js --inject-html && npm run check-exports && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "generate:vita-pdfs": "node scripts/generate-vita-schreibtisch-pdfs.mjs",
     "briefing": "node scripts/agenten-briefing.js",
     "sync:texte-oeffentlich": "bash scripts/sync-texte-oeffentliche-spiegel.sh",
     "electron": "electron .",
