@@ -279,6 +279,11 @@ export function flyerEventBogenUrl(params: {
    * „Zurück zur Galerie“ statt Werbeunterlagen, und bei blockiertem Pop-up: gleicher Tab.
    */
   fromPublicGalerie?: boolean
+  /**
+   * Aus Admin (Eventplan, Öffentlichkeitsarbeit): A3/A6/Karte = dieselbe schlanke Ableitungs-Vorschau
+   * wie von der Galerie (ohne Flyer-Master-Werkzeugleiste). Kein k2PlakatEmbed (nur Galerie-iframe).
+   */
+  fromAdminDerivation?: boolean
 }): string {
   const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
   const q = new URLSearchParams()
@@ -290,7 +295,13 @@ export function flyerEventBogenUrl(params: {
   if (params.mode) q.set('mode', params.mode)
   const eid = params.eventId != null ? String(params.eventId).trim() : ''
   if (eid) q.set('eventId', eid)
-  if (params.fromPublicGalerie) q.set('from', 'publicGalerie')
+  if (params.fromPublicGalerie) {
+    q.set('from', 'publicGalerie')
+    /** Gleiche Origin im iframe (Galerie-Overlay): main.tsx lädt sonst nur den Vorschau-Hinweis. */
+    q.set('k2PlakatEmbed', '1')
+  } else if (params.fromAdminDerivation && params.mode) {
+    q.set('from', 'adminFlyerDerivation')
+  }
   return `${base}?${q.toString()}`
 }
 

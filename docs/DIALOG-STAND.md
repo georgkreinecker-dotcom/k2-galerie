@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Eventplan → A3/A6/Karte = schlanke Vorschau:** `flyerEventBogenUrl` mit **`fromAdminDerivation`** setzt `from=adminFlyerDerivation`; **FlyerEventBogenNeuPage** wie Galerie-Ableitung (`derivationOnlyViewer`): keine Flyer-Master-Toolbar. **Zurück:** Browser-History oder `/admin?tab=eventplan` (+ `context` bei ök2/VK2). **Admin:** virtuelle Flyer-Dokumente, Plakat A3 (Öffentlichkeitsarbeit), Präsentationsmappen-Hilfe. **Seitentext-Default:** „Demnächst bei uns“ + K2-Migration alter Überschrift. **Dateien:** `navigation.ts`, `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`, `pageTexts.ts`. **Commit:** _(siehe git log)_ ✅ auf GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Eventplan → Plakat A3 / virtuelles Dokument – nur schmale Leiste wie von der Galerie prüfen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **K2 echte Galerie (Besucher): Feinschliff nur Oberfläche:** `k2GaleriePublicPolish.css` eingebunden; Root **`k2-echte-galerie-public`** nur bei `!musterOnly && !vk2` (Antialiasing, **:focus-visible**, Event-Liste **k2-public-event-list**, Block **k2-public-events-wrap**, Künstler-Karten **k2-public-artist-card**). Keine Änderung an Speichern, Sync, Merge, Stammdaten. **Dateien:** `GaleriePage.tsx`, `src/styles/k2GaleriePublicPolish.css`. **Commit:** **ec7d03e** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nach Deploy: `/galerie` (K2) kurz – Fokus-Tastatur, Event-Zeilen-Hover, Karten; ök2/VK2 unverändert.

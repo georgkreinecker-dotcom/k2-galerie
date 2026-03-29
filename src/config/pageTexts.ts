@@ -29,7 +29,7 @@ export interface GaleriePageTexts {
   welcomeSubtext: string
   /** Willkommenstext (Intro unter „Willkommen bei …“), editierbar aus Vorschau */
   welcomeIntroText: string
-  /** Überschrift über den Events (z. B. „Aktuelles aus den Eventplanungen“) */
+  /** Überschrift über den Events (öffentlich: z. B. „Demnächst bei uns“) */
   eventSectionHeading: string
   /** Überschrift der Sektion Kunstschaffende */
   kunstschaffendeHeading: string
@@ -98,7 +98,7 @@ const defaults: PageTextsConfig = {
     welcomeHeading: 'Willkommen bei',
     welcomeSubtext: 'Kunst & Keramik – Martina und Georg Kreinecker',
     welcomeIntroText: 'Ein Neuanfang mit Leidenschaft. Entdecke die Verbindung von Malerei und Keramik in einem Raum, wo Kunst zum Leben erwacht.',
-    eventSectionHeading: 'Aktuelles aus den Eventplanungen',
+    eventSectionHeading: 'Demnächst bei uns',
     kunstschaffendeHeading: 'Die Kunstschaffenden',
     martinaBio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
     georgBio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
@@ -199,6 +199,10 @@ export function cleanK2PageTextsFromVk2(): void {
       saved.galerie.eventSectionHeading = k2Galerie.eventSectionHeading
       dirty = true
     }
+    if (saved.galerie.eventSectionHeading === 'Aktuelles aus den Eventplanungen') {
+      saved.galerie.eventSectionHeading = k2Galerie.eventSectionHeading
+      dirty = true
+    }
     if (saved.galerie.kunstschaffendeHeading === 'Unsere Mitglieder') {
       saved.galerie.kunstschaffendeHeading = k2Galerie.kunstschaffendeHeading
       dirty = true
@@ -227,6 +231,10 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
       // ök2: K2-Echtnamen die durch alten Kontext-Bug hereingekommen sind → bereinigen
       if (tenantId === 'oeffentlich' && saved.galerie) {
         const oefDefaults = getOeffentlichGalerieDefaults()
+        if (saved.galerie.eventSectionHeading === 'Aktuelles aus den Eventplanungen') {
+          saved.galerie.eventSectionHeading = oefDefaults.eventSectionHeading
+          try { localStorage.setItem(key, JSON.stringify(saved)) } catch (_) {}
+        }
         const k2Names = ['K2 Galerie', 'Martina Kreinecker', 'Georg Kreinecker', 'Kunst & Keramik – Martina und Georg Kreinecker']
         if (saved.galerie.heroTitle && k2Names.includes(saved.galerie.heroTitle)) {
           saved.galerie.heroTitle = oefDefaults.heroTitle
@@ -264,6 +272,10 @@ export function getPageTexts(tenantId?: PageTextsTenantId): PageTextsConfig {
         }
         if (saved.galerie.galerieButtonText === 'Unsere Mitglieder') {
           saved.galerie.galerieButtonText = k2Galerie.galerieButtonText
+          dirty = true
+        }
+        if (saved.galerie.eventSectionHeading === 'Aktuelles aus den Eventplanungen') {
+          saved.galerie.eventSectionHeading = k2Galerie.eventSectionHeading
           dirty = true
         }
         if (saved.galerie.heroTitle && (saved.galerie.heroTitle.includes('Verein') || saved.galerie.heroTitle === 'Vereinsplattform')) {

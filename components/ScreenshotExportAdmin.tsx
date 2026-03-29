@@ -98,7 +98,7 @@ import { loadEntdeckenHeroOverlayIfFresh } from '../src/utils/entdeckenHeroOverl
 import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
-import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten } from '../src/utils/stammdatenStorage'
+import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten, buildK2PersonStateForAdmin } from '../src/utils/stammdatenStorage'
 import {
   applyK2MalereiMartinaKtoMBatch,
   computeK2MalereiMartinaCorrectedNumber,
@@ -1766,7 +1766,9 @@ function buildFlyerMasterPlakatVirtualDocs(ev: any, flyerTenant: FlyerEventBogen
   const titleShort = String(ev?.title || 'Event').trim() || 'Event'
   const mk = (mode: undefined | 'a3' | 'a6' | 'card', label: string, fileStub: string) => {
     const rel = flyerEventBogenUrl(
-      mode ? { tenant: flyerTenant, eventId: eid, mode } : { tenant: flyerTenant, eventId: eid },
+      mode
+        ? { tenant: flyerTenant, eventId: eid, mode, fromAdminDerivation: true }
+        : { tenant: flyerTenant, eventId: eid },
     )
     return {
       id: `flyer-master-slot-${eid}-${fileStub}`,
@@ -3189,33 +3191,37 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [eventDocumentName, setEventDocumentName] = useState('')
   const [eventDocumentType, setEventDocumentType] = useState<'flyer' | 'plakat' | 'presseaussendung' | 'sonstiges'>('flyer')
   
-  // Stammdaten – bei ök2 aus localStorage (damit „Musterdaten entfernen“ dauerhaft wirkt); K2 aus Defaults
-  const [martinaData, setMartinaData] = useState(() =>
-    tenant.isOeffentlich
-      ? (loadStammdaten('oeffentlich', 'martina') as any)
-      : {
-          name: K2_STAMMDATEN_DEFAULTS.martina.name,
-          category: 'malerei',
-          bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
-          email: K2_STAMMDATEN_DEFAULTS.martina.email,
-          phone: K2_STAMMDATEN_DEFAULTS.martina.phone,
-          website: K2_STAMMDATEN_DEFAULTS.martina.website || '',
-          vita: ''
-        }
-  )
-  const [georgData, setGeorgData] = useState(() =>
-    tenant.isOeffentlich
-      ? (loadStammdaten('oeffentlich', 'georg') as any)
-      : {
-          name: K2_STAMMDATEN_DEFAULTS.georg.name,
-          category: 'keramik',
-          bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
-          email: K2_STAMMDATEN_DEFAULTS.georg.email,
-          phone: K2_STAMMDATEN_DEFAULTS.georg.phone,
-          website: K2_STAMMDATEN_DEFAULTS.georg.website || '',
-          vita: ''
-        }
-  )
+  // Stammdaten – ök2 aus localStorage; K2 sofort aus k2-stammdaten-* (sonst Auto-Save vor useEffect mit Repo-Defaults → falsche Telefon-Merge)
+  const [martinaData, setMartinaData] = useState(() => {
+    if (tenant.isOeffentlich) return loadStammdaten('oeffentlich', 'martina') as any
+    if (tenant.isVk2) {
+      return {
+        name: K2_STAMMDATEN_DEFAULTS.martina.name,
+        category: 'malerei',
+        bio: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+        email: K2_STAMMDATEN_DEFAULTS.martina.email,
+        phone: K2_STAMMDATEN_DEFAULTS.martina.phone,
+        website: K2_STAMMDATEN_DEFAULTS.martina.website || '',
+        vita: '',
+      }
+    }
+    return buildK2PersonStateForAdmin('martina') as any
+  })
+  const [georgData, setGeorgData] = useState(() => {
+    if (tenant.isOeffentlich) return loadStammdaten('oeffentlich', 'georg') as any
+    if (tenant.isVk2) {
+      return {
+        name: K2_STAMMDATEN_DEFAULTS.georg.name,
+        category: 'keramik',
+        bio: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
+        email: K2_STAMMDATEN_DEFAULTS.georg.email,
+        phone: K2_STAMMDATEN_DEFAULTS.georg.phone,
+        website: K2_STAMMDATEN_DEFAULTS.georg.website || '',
+        vita: '',
+      }
+    }
+    return buildK2PersonStateForAdmin('georg') as any
+  })
   const [galleryData, setGalleryData] = useState<any>(() =>
     tenant.isOeffentlich
       ? (loadStammdaten('oeffentlich', 'gallery') as any)
@@ -3552,26 +3558,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         }
         
         const storedMartina = loadStammdaten('k2', 'martina') as Record<string, unknown>
-        const d = K2_STAMMDATEN_DEFAULTS.martina
-        let mergedMartina: any
-        if (storedMartina && typeof storedMartina === 'object' && JSON.stringify(storedMartina).length < 100000) {
-          const parsed = storedMartina
-          mergedMartina = {
-            ...parsed,
-            name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
-            email: (parsed.email && String(parsed.email).trim()) ? parsed.email : d.email,
-            phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
-            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || ''),
-            address: (parsed.address != null && String(parsed.address).trim()) ? parsed.address : (d.address ?? ''),
-            city: (parsed.city != null && String(parsed.city).trim()) ? parsed.city : (d.city ?? ''),
-            country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
-          }
-          if (!mergedMartina.vita || typeof mergedMartina.vita !== 'string' || !mergedMartina.vita.trim()) {
-            mergedMartina.vita = isPlatformInstance() ? K2_DEFAULT_VITA_MARTINA : ''
-          }
-        } else {
-          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'malerei', bio: '', vita: isPlatformInstance() ? K2_DEFAULT_VITA_MARTINA : '' }
-        }
+        const mergedMartina = buildK2PersonStateForAdmin('martina') as any
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder/Adresse reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Bio, Bilder verloren). Schicht: saveStammdaten.
         if (storedMartina && typeof storedMartina === 'object' && JSON.stringify(storedMartina).length < 100000) {
@@ -3588,26 +3575,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       
       try {
         const storedGeorg = loadStammdaten('k2', 'georg') as Record<string, unknown>
-        const d = K2_STAMMDATEN_DEFAULTS.georg
-        let mergedGeorg: any
-        if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
-          const parsed = storedGeorg
-          mergedGeorg = {
-            ...parsed,
-            name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
-            email: (parsed.email && String(parsed.email).trim()) ? parsed.email : d.email,
-            phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
-            website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || ''),
-            address: (parsed.address != null && String(parsed.address).trim()) ? parsed.address : (d.address ?? ''),
-            city: (parsed.city != null && String(parsed.city).trim()) ? parsed.city : (d.city ?? ''),
-            country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
-          }
-          if (!mergedGeorg.vita || typeof mergedGeorg.vita !== 'string' || !mergedGeorg.vita.trim()) {
-            mergedGeorg.vita = isPlatformInstance() ? K2_DEFAULT_VITA_GEORG : ''
-          }
-        } else {
-          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'keramik', bio: '', vita: isPlatformInstance() ? K2_DEFAULT_VITA_GEORG : '' }
-        }
+        const mergedGeorg = buildK2PersonStateForAdmin('georg') as any
         if (isMounted) setGeorgData(mergedGeorg)
         if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
           try {
@@ -9654,7 +9622,10 @@ ${'='.repeat(60)}
             linkVk2(r.praesentationsmappe, 'VK2 Kurzversion') +
             linkVk2(r.praesentationsmappeVollversion, 'VK2 Vollversion') +
             link('/prospekt-k2-galerie', 'Prospekt / Flyer') +
-            linkFull(flyerEventBogenUrl({ mode: 'a3', tenant: pmHelperFlyerT }), 'Plakat A3 (Ableitung vom Flyer-Master)') +
+            linkFull(
+              flyerEventBogenUrl({ mode: 'a3', tenant: pmHelperFlyerT, fromAdminDerivation: true }),
+              'Plakat A3 (Ableitung vom Flyer-Master)',
+            ) +
             '</body></html>'
           openDocumentInApp(helperHtml, docTitle)
           return
@@ -17115,7 +17086,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             : tenant.isVk2
               ? 'vk2'
               : 'k2'
-          const pmA3Flyer = flyerEventBogenUrl({ mode: 'a3', tenant: pmFlyerTenant })
+          const pmA3Flyer = flyerEventBogenUrl({ mode: 'a3', tenant: pmFlyerTenant, fromAdminDerivation: true })
           const pmVk2Qs = '?variant=vk2'
           return (
           <section style={{
@@ -19415,7 +19386,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <button
                         type="button"
                         onClick={() => {
-                          const key = getFlyerEventBogenStorageKey(tenant.isOeffentlich)
+                          const key = getFlyerEventBogenStorageKey(tenant.isOeffentlich, tenant.isVk2)
                           if (!localStorage.getItem(key)) {
                             alert(
                               'Im Browser ist kein gespeicherter Flyer-Master hinterlegt (Schlüssel leer).\n\nWenn „Speichern“ trotzdem „Speicher voll“ meldet, liegt es oft an anderen Daten derselben Website (z. B. K2-Werke) oder am Browser-Kontingent – dann „Speicher freigeben“ oben probieren oder Websitedaten der App prüfen.',
@@ -23381,6 +23352,7 @@ ${name}`
                                                       mode: 'a3',
                                                       tenant: flyerTenant,
                                                       eventId: event?.id,
+                                                      fromAdminDerivation: true,
                                                     }),
                                                     e
                                                   )
@@ -23396,6 +23368,7 @@ ${name}`
                                                     mode: 'a3',
                                                     tenant: flyerTenant,
                                                     eventId: event?.id,
+                                                    fromAdminDerivation: true,
                                                   })
                                                 }
                                                 onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}

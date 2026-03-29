@@ -428,6 +428,11 @@ export default function FlyerEventBogenNeuPage() {
   const eventIdFromUrl = useMemo(() => (searchParams.get('eventId') || '').trim(), [searchParams])
   /** Von Galerie „Aktuelles“ (flyerEventBogenUrl fromPublicGalerie): Zurück = Galerie, nicht Werbeunterlagen. */
   const fromPublicGalerie = useMemo(() => (searchParams.get('from') || '') === 'publicGalerie', [searchParams])
+  /** Admin/Eventplan: schlanke A3/A6/Karten-Ansicht wie Galerie, ohne Master-Toolbar. */
+  const fromAdminFlyerDerivation = useMemo(
+    () => (searchParams.get('from') || '') === 'adminFlyerDerivation',
+    [searchParams],
+  )
   /** URL-Flag für Galerie-Overlay (main.tsx lädt App im iframe). */
   const plakatEmbedOnly = useMemo(() => searchParams.get('k2PlakatEmbed') === '1', [searchParams])
   /** Nur im iframe: kein Rand, keine Toolbar – im eigenen Tab bleibt Zurück/Drucken. */
@@ -436,7 +441,8 @@ export default function FlyerEventBogenNeuPage() {
     typeof window !== 'undefined' &&
     window.self !== window.top
   /** Nur Plakat/Karte zeigen – keine Flyer-Werkzeug-Leiste (Speichern, mök2, Master-Links …). */
-  const publicPlakatViewer = fromPublicGalerie && (isA3Mode || isA6Mode || isCardMode)
+  const derivationOnlyViewer =
+    (fromPublicGalerie || fromAdminFlyerDerivation) && (isA3Mode || isA6Mode || isCardMode)
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
   const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -538,22 +544,22 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, isVk2, flyerImgFallback])
 
   /**
-   * Galerie „Aktuelles“ → A3/A6/Karte (`publicPlakatViewer`): Mittel-/rechtes Motiv an aktuelle
+   * Galerie „Aktuelles“ oder Admin-Ableitung (`derivationOnlyViewer`): Mittel-/rechtes Motiv an aktuelle
    * Seitengestaltung koppeln. **Linkes Motiv nicht** überschreiben – kommt aus Flyer-Master (Persistenz /
    * gewähltes Werk); sonst kurz richtiges Bild, dann Wechsel auf Galerie-Karte.
    */
   useEffect(() => {
-    if (!publicPlakatViewer || isOeffentlich || isVk2) return
+    if (!derivationOnlyViewer || isOeffentlich || isVk2) return
     const g = loadStammdaten('k2', 'gallery')
     const gi = getGalerieImages(g)
     const fb = flyerImgFallback
     setMiddleSrc(gi.welcomeImage || fb)
     setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
-  }, [publicPlakatViewer, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
+  }, [derivationOnlyViewer, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
 
   useEffect(() => {
-    if (publicPlakatViewer) setShowDerivationFullscreen(true)
-  }, [publicPlakatViewer])
+    if (derivationOnlyViewer) setShowDerivationFullscreen(true)
+  }, [derivationOnlyViewer])
 
   /** Werk aus Bestand für Vorderseite (K2 / ök2) – VK2 hat hier keinen Werk-Katalog in derselben Form. */
   useEffect(() => {
@@ -603,12 +609,35 @@ export default function FlyerEventBogenNeuPage() {
       navigate(frontQrPathExplain)
       return
     }
+    if (fromAdminFlyerDerivation) {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        try {
+          window.parent.postMessage({ type: 'k2-close-public-plakat-overlay' }, window.location.origin)
+        } catch (_) {}
+        return
+      }
+      if (typeof window !== 'undefined' && window.history.length > 1) {
+        navigate(-1)
+        return
+      }
+      const ctx = isOeffentlich ? 'oeffentlich' : isVk2 ? 'vk2' : ''
+      navigate(`/admin?tab=eventplan${ctx ? `&context=${ctx}` : ''}`)
+      return
+    }
     if (typeof window !== 'undefined' && window.history.length > 1) {
       navigate(-1)
       return
     }
     navigate(werbeunterlagenHref)
-  }, [navigate, werbeunterlagenHref, fromPublicGalerie, frontQrPathExplain])
+  }, [
+    navigate,
+    werbeunterlagenHref,
+    fromPublicGalerie,
+    fromAdminFlyerDerivation,
+    frontQrPathExplain,
+    isOeffentlich,
+    isVk2,
+  ])
 
   /** Interne Varianten-Links: Kontext + eventId mitschleifen (Master ↔ Ableitungen eine Datenbasis). */
   const buildFlyerEventSelfUrl = useCallback(
@@ -619,18 +648,19 @@ export default function FlyerEventBogenNeuPage() {
       else if (isVk2) sp.set('context', 'vk2')
       else sp.set('context', 'k2')
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
-      /** `from=publicGalerie` nur bei echten Ableitungs-URLs – nicht beim A5-Master (sonst Master-Bild ständig überschrieben). */
+      /** `from=publicGalerie` / `from=adminFlyerDerivation` nur bei Ableitungs-URLs – nicht beim A5-Master. */
       const derivation =
         extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
       if (fromPublicGalerie && derivation) sp.set('from', 'publicGalerie')
       if (fromPublicGalerie) sp.set('k2PlakatEmbed', '1')
+      if (!fromPublicGalerie && fromAdminFlyerDerivation && derivation) sp.set('from', 'adminFlyerDerivation')
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
       })
       const q = sp.toString()
       return q ? `${base}?${q}` : base
     },
-    [isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie],
+    [isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie, fromAdminFlyerDerivation],
   )
 
   /** Werk aus Raster: Vorderseite setzen; data:/blob: sofort für Flyer verkleinern (Speichern & Vorschau). */
@@ -1553,7 +1583,7 @@ export default function FlyerEventBogenNeuPage() {
 
   return (
     <div
-      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${publicPlakatViewer ? ' public-plakat-viewer' : ''}${publicPlakatViewer && plakatChromeHiddenInEmbed ? ' public-plakat-embed-only' : ''}`}
+      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${derivationOnlyViewer ? ' public-plakat-viewer' : ''}${derivationOnlyViewer && plakatChromeHiddenInEmbed ? ' public-plakat-embed-only' : ''}`}
     >
       <style>{`
         .${ROOT}{
@@ -3140,11 +3170,11 @@ export default function FlyerEventBogenNeuPage() {
         }
       `}</style>
 
-      {publicPlakatViewer ? (
+      {derivationOnlyViewer ? (
         plakatChromeHiddenInEmbed ? null : (
           <div className="toolbar public-plakat-viewer-toolbar" role="toolbar" aria-label="Plakat">
             <button type="button" className="ppv-back" onClick={handleToolbarBack}>
-              ← Zurück zur Galerie
+              {fromAdminFlyerDerivation ? '← Zurück' : '← Zurück zur Galerie'}
             </button>
             <button type="button" className="ppv-print" onClick={() => window.print()}>
               Drucken
