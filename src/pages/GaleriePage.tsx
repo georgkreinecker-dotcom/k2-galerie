@@ -1,8 +1,8 @@
-import React, { useEffect, useLayoutEffect, useState, useMemo } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
-import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE } from '../config/navigation'
+import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE, flyerEventBogenUrl, type FlyerEventBogenTenantContext } from '../config/navigation'
 import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
@@ -162,78 +162,6 @@ function getUpcomingEventsVk2(): any[] {
   }
 }
 
-/** Flyer-Dokument für ein Event aus Dokumentenliste holen (K2/ök2/VK2) */
-function getFlyerDocForEvent(docs: any[], eventId: string): any | null {
-  if (!Array.isArray(docs) || !eventId) return null
-  const flyer = docs.find((d: any) => d.category === 'pr-dokumente' && d.eventId === eventId && (d.werbematerialTyp === 'flyer' || (d.name && (String(d.name).toLowerCase().includes('flyer') || String(d.name).toLowerCase().includes('einladung')))))
-  return flyer || null
-}
-
-const PRESSE_QR_PLACEHOLDER = '<!-- QR_BLOCK -->'
-
-/** Event-Dokument in neuem Fenster öffnen (PDF/Bild/HTML/Download).
- * Wenn doc kein fileData hat: in fullDocsForEvent nach id/name suchen (z. B. nach Export nur Referenzen).
- * Bei Presse-HTML mit <!-- QR_BLOCK -->: qrOek2/qrVk2 optional – dann werden QR-Codes eingefügt. */
-function openEventDocument(
-  doc: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string; werbematerialTyp?: string },
-  fullDocsForEvent?: { id?: string; name?: string; fileData?: string; data?: string; fileName?: string; fileType?: string; werbematerialTyp?: string }[],
-  qrOek2?: string,
-  qrVk2?: string
-) {
-  let fileData = doc?.fileData || doc?.data
-  let useDoc = doc
-  if (!fileData && fullDocsForEvent && fullDocsForEvent.length > 0) {
-    const full = fullDocsForEvent.find(
-      (d: any) =>
-        (d.id && doc.id && d.id === doc.id) ||
-        (d.name && doc.name && String(d.name).trim() === String(doc.name).trim())
-    )
-    if (full && (full.fileData || full.data)) {
-      fileData = full.fileData || full.data
-      useDoc = full
-    }
-  }
-  if (!fileData) {
-    if (typeof window !== 'undefined' && window.alert) {
-      window.alert('Dokument konnte nicht geladen werden – Inhalt fehlt. Bitte im Admin prüfen (Event bearbeiten, Dokument erneut anlegen).')
-    }
-    return
-  }
-  const fileType = useDoc.fileType || ''
-  const isHtml = fileType.includes('html') || (typeof fileData === 'string' && fileData.startsWith('data:text/html'))
-  if (isHtml && typeof fileData === 'string' && fileData.includes(PRESSE_QR_PLACEHOLDER) && qrOek2 && qrVk2) {
-    try {
-      const decoded = decodeURIComponent(fileData.replace(/^data:text\/html;charset=utf-8,/, ''))
-      const qrBlock = `<p style="margin:0.5rem 0"><img src="${qrOek2}" alt="ök2" width="100" height="100" style="vertical-align:middle;margin-right:0.5rem"/> <strong>ök2 Demo</strong></p><p style="margin:0.5rem 0"><img src="${qrVk2}" alt="VK2" width="100" height="100" style="vertical-align:middle;margin-right:0.5rem"/> <strong>VK2 Vereinsplattform</strong></p>`
-      const injected = decoded.replace(PRESSE_QR_PLACEHOLDER, qrBlock)
-      fileData = 'data:text/html;charset=utf-8,' + encodeURIComponent(injected)
-    } catch (_) {
-      /* Fallback: ohne QR öffnen */
-    }
-  }
-  const w = window.open()
-  if (!w) {
-    if (typeof window !== 'undefined' && window.alert) {
-      window.alert('Neues Fenster wurde blockiert. Bitte Pop-ups für diese Seite erlauben und erneut klicken.')
-    }
-    return
-  }
-  const isPdf = fileType.includes('pdf')
-  const isImage = fileType.includes('image')
-  const safeTitle = (useDoc.name || useDoc.fileName || 'Dokument').replace(/</g, '&lt;')
-  if (isHtml) {
-    w.location.href = fileData
-    return
-  }
-  w.document.write(`
-    <!DOCTYPE html><html><head><title>${safeTitle}</title></head>
-    <body style="margin:0;padding:20px;background:#f5f5f5;">
-      ${isPdf ? `<iframe src="${fileData}" style="width:100%;height:100vh;border:none;"></iframe>` : isImage ? `<img src="${fileData}" alt="" style="max-width:100%;height:auto;" />` : `<a href="${fileData}" download="${(useDoc.fileName || '').replace(/</g, '&lt;')}">Download: ${safeTitle}</a>`}
-    </body></html>
-  `)
-  w.document.close()
-}
-
 /** Altes Blau-Theme? Dann K2-Standard = Terracotta (wie erste Vorlage). Verlauf weich. */
 const K2_ORANGE = {
   backgroundColor1: '#1c1210',
@@ -309,6 +237,22 @@ function applyDesignToDocument(design: Record<string, string> | null | undefined
 const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf = false }: { scrollToSection?: string; musterOnly?: boolean; vk2?: boolean; fromApf?: boolean }) => {
   const navigate = useNavigate()
   const location = useLocation()
+  /** A3-Plakat: zuerst neuer Tab; bei Pop-up-Block gleicher Tab (navigate) – mit from=publicGalerie für „Zurück zur Galerie“. */
+  const openEventA3Plakat = useCallback(
+    (tenant: FlyerEventBogenTenantContext, eventId: unknown) => {
+      const eid = eventId != null && String(eventId).trim() !== '' ? String(eventId).trim() : ''
+      if (!eid) {
+        if (typeof window !== 'undefined' && window.alert) {
+          window.alert('Für diesen Termin ist keine Plakat-Ansicht verfügbar (Event ohne Kennung). Bitte im Admin das Event speichern.')
+        }
+        return
+      }
+      const url = flyerEventBogenUrl({ mode: 'a3', tenant, eventId: eid, fromPublicGalerie: true })
+      const w = typeof window !== 'undefined' ? window.open(url, '_blank', 'noopener,noreferrer') : null
+      if (!w) navigate(url)
+    },
+    [navigate],
+  )
   // K2 / ök2 / VK2: Werke nur über Artworks-Schicht (Phase 5.2) getrennte Daten, keine Vermischung
   const tenantConfig = vk2 ? TENANT_CONFIGS.vk2 : musterOnly ? TENANT_CONFIGS.oeffentlich : TENANT_CONFIGS.k2
   const tenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
@@ -743,19 +687,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     }
   }, [vk2])
 
-  const eventDocumentsTenantId = vk2 ? 'vk2' : musterOnly ? 'oeffentlich' : 'k2'
-  const [eventDocuments, setEventDocuments] = useState<any[]>(() => loadDocuments(eventDocumentsTenantId))
-  useEffect(() => {
-    const load = () => setEventDocuments(loadDocuments(eventDocumentsTenantId))
-    load()
-    window.addEventListener('storage', load)
-    if (vk2) window.addEventListener('k2-vk2-data-updated', load)
-    return () => {
-      window.removeEventListener('storage', load)
-      if (vk2) window.removeEventListener('k2-vk2-data-updated', load)
-    }
-  }, [musterOnly, vk2])
-
   // VK2: Events (k2-vk2-events) und Willkommensbild (k2-vk2-welcomeImage)
   const [vk2UpcomingEvents, setVk2UpcomingEvents] = useState<any[]>(() => getUpcomingEventsVk2())
   const [vk2WelcomeImage, setVk2WelcomeImage] = useState(() => {
@@ -1122,26 +1053,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     return () => { cancelled = true }
   }, [vercelGalerieUrl, musterOnly, qrVersionTs, qrBustTick, qrRegenerateKey])
 
-  // QR für Presseaussendungen (ök2 + VK2) – beim Öffnen von Presse-Docs injizieren
-  const [qrOek2Presse, setQrOek2Presse] = useState('')
-  const [qrVk2Presse, setQrVk2Presse] = useState('')
-  const oek2UrlPresse = GALLERY_DATA_PUBLIC_URL + '/projects/k2-galerie/galerie-oeffentlich'
-  const vk2UrlPresse = GALLERY_DATA_PUBLIC_URL + '/projects/vk2'
-  useEffect(() => {
-    let cancelled = false
-    QRCode.toDataURL(buildQrUrlWithBust(oek2UrlPresse, qrVersionTs), { width: 100, margin: 1 })
-      .then((url) => { if (!cancelled) setQrOek2Presse(url) })
-      .catch(() => { if (!cancelled) setQrOek2Presse('') })
-    return () => { cancelled = true }
-  }, [qrVersionTs])
-  useEffect(() => {
-    let cancelled = false
-    QRCode.toDataURL(buildQrUrlWithBust(vk2UrlPresse, qrVersionTs), { width: 100, margin: 1 })
-      .then((url) => { if (!cancelled) setQrVk2Presse(url) })
-      .catch(() => { if (!cancelled) setQrVk2Presse('') })
-    return () => { cancelled = true }
-  }, [qrVersionTs])
-
   // Aktualisieren-Funktion für Mobile-Version - lädt neue Daten ohne Reload
   const [isRefreshing, setIsRefreshing] = React.useState(false)
   
@@ -1236,20 +1147,34 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         
         // Stammdaten: BESTEHENDE (prev/local) haben Vorrang – Server überschreibt nicht, was du schon korrigiert hast (kein-datenverlust)
         if (data.martina) {
-          setMartinaData((prev) => ({
-            name: (prev.name && String(prev.name).trim()) || (data.martina.name && String(data.martina.name).trim()) || '',
-            email: (prev.email && String(prev.email).trim()) || (data.martina.email && String(data.martina.email).trim()) || '',
-            phone: (prev.phone && String(prev.phone).trim()) || (data.martina.phone && String(data.martina.phone).trim()) || '',
-            website: (prev.website && String(prev.website).trim()) || (data.martina.website && String(data.martina.website).trim()) || ''
-          }))
+          setMartinaData((prev) => {
+            const prevV = (prev as { vita?: string }).vita
+            const prevVita = prevV && String(prevV).trim() ? String(prevV).trim() : ''
+            const srvV = (data.martina as { vita?: string }).vita
+            const srvVita = srvV && String(srvV).trim() ? String(srvV).trim() : ''
+            return {
+              name: (prev.name && String(prev.name).trim()) || (data.martina.name && String(data.martina.name).trim()) || '',
+              email: (prev.email && String(prev.email).trim()) || (data.martina.email && String(data.martina.email).trim()) || '',
+              phone: (prev.phone && String(prev.phone).trim()) || (data.martina.phone && String(data.martina.phone).trim()) || '',
+              website: (prev.website && String(prev.website).trim()) || (data.martina.website && String(data.martina.website).trim()) || '',
+              vita: prevVita || srvVita,
+            }
+          })
         }
         if (data.georg) {
-          setGeorgData((prev) => ({
-            name: (prev.name && String(prev.name).trim()) || (data.georg.name && String(data.georg.name).trim()) || '',
-            email: (prev.email && String(prev.email).trim()) || (data.georg.email && String(data.georg.email).trim()) || '',
-            phone: (prev.phone && String(prev.phone).trim()) || (data.georg.phone && String(data.georg.phone).trim()) || '',
-            website: (prev.website && String(prev.website).trim()) || (data.georg.website && String(data.georg.website).trim()) || ''
-          }))
+          setGeorgData((prev) => {
+            const prevV = (prev as { vita?: string }).vita
+            const prevVita = prevV && String(prevV).trim() ? String(prevV).trim() : ''
+            const srvV = (data.georg as { vita?: string }).vita
+            const srvVita = srvV && String(srvV).trim() ? String(srvV).trim() : ''
+            return {
+              name: (prev.name && String(prev.name).trim()) || (data.georg.name && String(data.georg.name).trim()) || '',
+              email: (prev.email && String(prev.email).trim()) || (data.georg.email && String(data.georg.email).trim()) || '',
+              phone: (prev.phone && String(prev.phone).trim()) || (data.georg.phone && String(data.georg.phone).trim()) || '',
+              website: (prev.website && String(prev.website).trim()) || (data.georg.website && String(data.georg.website).trim()) || '',
+              vita: prevVita || srvVita,
+            }
+          })
         }
         if (data.gallery) {
           setGalleryData((prev) => ({
@@ -1866,24 +1791,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       try {
         const dm = K2_STAMMDATEN_DEFAULTS.martina
         const martinaStored = localStorage.getItem('k2-stammdaten-martina')
-        let mergedMartina: { name: string; email: string; phone: string; website: string }
+        let mergedMartina: { name: string; email: string; phone: string; website: string; vita?: string }
+        const vitaFrom = (o: { vita?: string } | null | undefined) =>
+          o?.vita && String(o.vita).trim() ? String(o.vita).trim() : ''
         if (martinaStored) {
           const martinaLocal = JSON.parse(martinaStored)
           mergedMartina = {
             name: martinaLocal.name || dm.name,
             email: (martinaLocal.email && String(martinaLocal.email).trim()) ? martinaLocal.email : dm.email,
             phone: (martinaLocal.phone && String(martinaLocal.phone).trim()) ? martinaLocal.phone : dm.phone,
-            website: (martinaLocal.website && String(martinaLocal.website).trim()) ? martinaLocal.website : (dm.website || '')
+            website: (martinaLocal.website && String(martinaLocal.website).trim()) ? martinaLocal.website : (dm.website || ''),
+            vita: vitaFrom(martinaLocal) || vitaFrom(data?.martina as { vita?: string }),
           }
         } else if (data?.martina) {
           mergedMartina = {
             name: data.martina.name || dm.name,
             email: (data.martina.email && String(data.martina.email).trim()) ? data.martina.email : dm.email,
             phone: (data.martina.phone && String(data.martina.phone).trim()) ? data.martina.phone : dm.phone,
-            website: (data.martina.website && String(data.martina.website).trim()) ? data.martina.website : (dm.website || '')
+            website: (data.martina.website && String(data.martina.website).trim()) ? data.martina.website : (dm.website || ''),
+            vita: vitaFrom(data.martina as { vita?: string }),
           }
         } else {
-          mergedMartina = { name: dm.name, email: dm.email, phone: dm.phone, website: dm.website || '' }
+          mergedMartina = { name: dm.name, email: dm.email, phone: dm.phone, website: dm.website || '', vita: '' }
         }
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder in den Speicher schreiben – bestehende Daten (Bio etc.) nicht überschreiben
@@ -1901,24 +1830,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       try {
         const dg = K2_STAMMDATEN_DEFAULTS.georg
         const georgStored = localStorage.getItem('k2-stammdaten-georg')
-        let mergedGeorg: { name: string; email: string; phone: string; website: string }
+        let mergedGeorg: { name: string; email: string; phone: string; website: string; vita?: string }
+        const vitaFromG = (o: { vita?: string } | null | undefined) =>
+          o?.vita && String(o.vita).trim() ? String(o.vita).trim() : ''
         if (georgStored) {
           const georgLocal = JSON.parse(georgStored)
           mergedGeorg = {
             name: georgLocal.name || dg.name,
             email: (georgLocal.email && String(georgLocal.email).trim()) ? georgLocal.email : dg.email,
             phone: (georgLocal.phone && String(georgLocal.phone).trim()) ? georgLocal.phone : dg.phone,
-            website: (georgLocal.website && String(georgLocal.website).trim()) ? georgLocal.website : (dg.website || '')
+            website: (georgLocal.website && String(georgLocal.website).trim()) ? georgLocal.website : (dg.website || ''),
+            vita: vitaFromG(georgLocal) || vitaFromG(data?.georg as { vita?: string }),
           }
         } else if (data?.georg) {
           mergedGeorg = {
             name: data.georg.name || dg.name,
             email: (data.georg.email && String(data.georg.email).trim()) ? data.georg.email : dg.email,
             phone: (data.georg.phone && String(data.georg.phone).trim()) ? data.georg.phone : dg.phone,
-            website: (data.georg.website && String(data.georg.website).trim()) ? data.georg.website : (dg.website || '')
+            website: (data.georg.website && String(data.georg.website).trim()) ? data.georg.website : (dg.website || ''),
+            vita: vitaFromG(data.georg as { vita?: string }),
           }
         } else {
-          mergedGeorg = { name: dg.name, email: dg.email, phone: dg.phone, website: dg.website || '' }
+          mergedGeorg = { name: dg.name, email: dg.email, phone: dg.phone, website: dg.website || '', vita: '' }
         }
         if (isMounted) setGeorgData(mergedGeorg)
         if (georgStored) {
@@ -2037,8 +1970,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         if (martinaStored) {
           const data = JSON.parse(martinaStored)
           setMartinaData(prev => {
-            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
-              return { name: data.name || 'Martina Kreinecker', email: data.email || '', phone: data.phone || '', website: data.website ?? prev.website }
+            const v = data.vita != null ? String(data.vita) : (prev as { vita?: string }).vita
+            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name || (prev as { vita?: string }).vita !== v) {
+              return {
+                name: data.name || 'Martina Kreinecker',
+                email: data.email || '',
+                phone: data.phone || '',
+                website: data.website ?? prev.website,
+                vita: v,
+              }
             }
             return prev
           })
@@ -2049,8 +1989,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         if (georgStored) {
           const data = JSON.parse(georgStored)
           setGeorgData(prev => {
-            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name) {
-              return { name: data.name || 'Georg Kreinecker', email: data.email || '', phone: data.phone || '', website: data.website ?? prev.website }
+            const v = data.vita != null ? String(data.vita) : (prev as { vita?: string }).vita
+            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name || (prev as { vita?: string }).vita !== v) {
+              return {
+                name: data.name || 'Georg Kreinecker',
+                email: data.email || '',
+                phone: data.phone || '',
+                website: data.website ?? prev.website,
+                vita: v,
+              }
             }
             return prev
           })
@@ -2546,14 +2493,27 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         const key = personId === 'martina' ? 'k2-stammdaten-martina' : 'k2-stammdaten-georg'
         const raw = localStorage.getItem(key)
         const parsed = raw ? JSON.parse(raw) : {}
-        const savedVita = parsed.vita && String(parsed.vita).trim() ? String(parsed.vita).trim() : ''
+        const vitaFromLs = parsed.vita && String(parsed.vita).trim() ? String(parsed.vita).trim() : ''
+        const vitaFromState =
+          personId === 'martina'
+            ? (martinaData as { vita?: string }).vita && String((martinaData as { vita?: string }).vita).trim()
+              ? String((martinaData as { vita?: string }).vita).trim()
+              : ''
+            : (georgData as { vita?: string }).vita && String((georgData as { vita?: string }).vita).trim()
+              ? String((georgData as { vita?: string }).vita).trim()
+              : ''
+        const savedVita = vitaFromLs || vitaFromState
         const k2FallbackVita =
           personId === 'martina' ? K2_DEFAULT_VITA_MARTINA : K2_DEFAULT_VITA_GEORG
+        const card = personId === 'martina' ? martinaData : georgData
         data = {
-          name: parsed.name || (personId === 'martina' ? K2_STAMMDATEN_DEFAULTS.martina.name : K2_STAMMDATEN_DEFAULTS.georg.name),
-          email: parsed.email,
-          phone: parsed.phone,
-          website: parsed.website,
+          name:
+            (parsed.name && String(parsed.name).trim()) ||
+            (card.name && String(card.name).trim()) ||
+            (personId === 'martina' ? K2_STAMMDATEN_DEFAULTS.martina.name : K2_STAMMDATEN_DEFAULTS.georg.name),
+          email: parsed.email || card.email,
+          phone: parsed.phone || card.phone,
+          website: parsed.website || card.website,
           vita: savedVita || (isPlatformInstance() ? k2FallbackVita : ''),
         }
         const g = localStorage.getItem('k2-stammdaten-galerie')
@@ -3190,12 +3150,28 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   <ul style={{ margin: 0, paddingLeft: '1.25rem', color: '#fff', fontSize: 'clamp(0.95rem, 2vw, 1.05rem)', lineHeight: 1.6 }}>
                     {vk2UpcomingEvents.map((ev: any) => (
                       <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
-                        <strong>{ev.title}</strong>
-                        {ev.date && (
-                          <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
-                            {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
-                          </span>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => openEventA3Plakat('vk2', ev.id)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            padding: 0,
+                            margin: 0,
+                            cursor: 'pointer',
+                            color: 'inherit',
+                            font: 'inherit',
+                            textAlign: 'left',
+                            width: '100%',
+                          }}
+                        >
+                          <strong>{ev.title}</strong>
+                          {ev.date && (
+                            <span style={{ color: 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
+                              {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
+                            </span>
+                          )}
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -3600,56 +3576,31 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               </p>
               <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
                 {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => {
-                  const flyerDoc = getFlyerDocForEvent(eventDocuments, ev.id)
-                  const hasFlyer = flyerDoc && (flyerDoc.fileData || flyerDoc.data)
+                  const flyerTenant: FlyerEventBogenTenantContext = musterOnly ? 'oeffentlich' : vk2 ? 'vk2' : 'k2'
                   return (
-                    <li key={ev.id || ev.date} style={{ marginBottom: (ev.documents?.length || hasFlyer) ? '0.5rem' : 0, display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <strong>{ev.title}</strong>
-                      {ev.date && (
-                        <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
-                          {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
-                        </span>
-                      )}
-                      {hasFlyer && (
-                        <button
-                          type="button"
-                          onClick={() => openEventDocument({ name: flyerDoc.name, fileData: flyerDoc.fileData || flyerDoc.data, fileType: flyerDoc.fileType || 'text/html' }, undefined, qrOek2Presse, qrVk2Presse)}
-                          title="Flyer anzeigen"
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, padding: 0,
-                            border: 'none', borderRadius: 6, background: musterOnly ? 'rgba(107,144,128,0.2)' : vk2 ? 'rgba(255,140,66,0.2)' : 'rgba(184,184,255,0.2)',
-                            color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184,184,255,0.95)', cursor: 'pointer', fontSize: '0.95rem'
-                          }}
-                        >
-                          📄
-                        </button>
-                      )}
-                      {ev.documents && ev.documents.length > 0 && (
-                        <ul style={{ margin: '0.25rem 0 0 1rem', paddingLeft: '0.75rem', listStyle: 'none', fontSize: '0.95em', width: '100%' }}>
-                          {ev.documents.map((doc: any) => {
-                            const fullDocsForEvent = [...(ev.documents || []), ...(eventDocuments || []).filter((d: any) => d.eventId === ev.id)]
-                            return (
-                              <li key={doc.id || doc.name}>
-                                <button
-                                  type="button"
-                                  onClick={() => openEventDocument(doc, fullDocsForEvent, qrOek2Presse, qrVk2Presse)}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    padding: 0,
-                                    color: musterOnly ? '#6b9080' : vk2 ? 'var(--k2-accent)' : 'rgba(184, 184, 255, 0.95)',
-                                    textDecoration: 'underline',
-                                    cursor: 'pointer',
-                                    font: 'inherit'
-                                  }}
-                                >
-                                  📎 {doc.name || doc.fileName || 'Dokument'}
-                                </button>
-                              </li>
-                            )
-                          })}
-                        </ul>
-                      )}
+                    <li key={ev.id || ev.date} style={{ marginBottom: '0.5rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => openEventA3Plakat(flyerTenant, ev.id)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          margin: 0,
+                          cursor: 'pointer',
+                          color: 'inherit',
+                          font: 'inherit',
+                          textAlign: 'left',
+                          width: '100%',
+                        }}
+                      >
+                        <strong>{ev.title}</strong>
+                        {ev.date && (
+                          <span style={{ color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.85)', fontWeight: '400', whiteSpace: 'pre-line' }}>
+                            {' — '}{formatEventTerminKomplett(ev, { mode: 'compact', emptyFallback: '' })}
+                          </span>
+                        )}
+                      </button>
                     </li>
                   )
                 })}
@@ -4150,9 +4101,6 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       gap: '0.5rem',
                       alignItems: 'center'
                     }}>
-                      <p style={{ margin: '0 0 0.25rem', fontSize: 'clamp(0.7rem, 1.6vw, 0.8rem)', color: theme.text, fontWeight: 600 }}>
-                        📱 QR scannen → öffnet diese Galerie auf dem Handy
-                      </p>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
                         <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
                           <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>

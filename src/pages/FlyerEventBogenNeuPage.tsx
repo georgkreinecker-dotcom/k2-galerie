@@ -406,6 +406,8 @@ export default function FlyerEventBogenNeuPage() {
   const isCardMode = searchParams.get('mode') === 'card'
   /** Aus Marketing/Admin: gleiches Event wie auf der Event-Karte (Herzstück = Master-Datenbasis). */
   const eventIdFromUrl = useMemo(() => (searchParams.get('eventId') || '').trim(), [searchParams])
+  /** Von Galerie „Aktuelles“ (flyerEventBogenUrl fromPublicGalerie): Zurück = Galerie, nicht Werbeunterlagen. */
+  const fromPublicGalerie = useMemo(() => (searchParams.get('from') || '') === 'publicGalerie', [searchParams])
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
   const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -503,12 +505,16 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, isVk2])
 
   const handleToolbarBack = useCallback(() => {
+    if (fromPublicGalerie) {
+      navigate(frontQrPathExplain)
+      return
+    }
     if (typeof window !== 'undefined' && window.history.length > 1) {
       navigate(-1)
       return
     }
     navigate(werbeunterlagenHref)
-  }, [navigate, werbeunterlagenHref])
+  }, [navigate, werbeunterlagenHref, fromPublicGalerie, frontQrPathExplain])
 
   /** Interne Varianten-Links: Kontext + eventId mitschleifen (Master ↔ Ableitungen eine Datenbasis). */
   const buildFlyerEventSelfUrl = useCallback(
@@ -518,13 +524,14 @@ export default function FlyerEventBogenNeuPage() {
       if (isOeffentlich) sp.set('context', 'oeffentlich')
       if (isVk2 && !isOeffentlich) sp.set('context', 'vk2')
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
+      if (fromPublicGalerie) sp.set('from', 'publicGalerie')
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
       })
       const q = sp.toString()
       return q ? `${base}?${q}` : base
     },
-    [isOeffentlich, isVk2, eventIdFromUrl],
+    [isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie],
   )
 
   const handleSaveFlyerMaster = useCallback(async () => {
@@ -2931,7 +2938,7 @@ export default function FlyerEventBogenNeuPage() {
             cursor: 'pointer',
           }}
         >
-          ← Zurück
+          {fromPublicGalerie ? '← Zurück zur Galerie' : '← Zurück'}
         </button>
         {!isVk2 && !isOeffentlich ? (
           <Link

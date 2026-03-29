@@ -274,6 +274,11 @@ export function flyerEventBogenUrl(params: {
   tenant?: FlyerEventBogenTenantContext
   /** Aus Admin/Marketing: gleiches Event wie auf der Karte (sonst nur Eröffnungs-Heuristik). */
   eventId?: string | number | null | undefined
+  /**
+   * Von Galerie „Aktuelles“ (öffentlich): bleibt in URL für A3/A6/Karte; Flyer-Seite nutzt ihn für
+   * „Zurück zur Galerie“ statt Werbeunterlagen, und bei blockiertem Pop-up: gleicher Tab.
+   */
+  fromPublicGalerie?: boolean
 }): string {
   const base = PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu
   const q = new URLSearchParams()
@@ -284,6 +289,7 @@ export function flyerEventBogenUrl(params: {
   if (params.mode) q.set('mode', params.mode)
   const eid = params.eventId != null ? String(params.eventId).trim() : ''
   if (eid) q.set('eventId', eid)
+  if (params.fromPublicGalerie) q.set('from', 'publicGalerie')
   return `${base}?${q.toString()}`
 }
 
