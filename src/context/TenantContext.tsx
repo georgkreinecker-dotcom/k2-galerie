@@ -41,22 +41,35 @@ function getDynamicTenantIdFromUrl(search: string): string | null {
   }
 }
 
-/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin. Nur auf Plattform-Instanz werden oeffentlich/vk2 akzeptiert – sonst immer K2 (Hacker-/Lizenznehmer-Schutz). */
+/** Liest tenant aus URL (?context=) und sessionStorage. URL hat Vorrang bei /admin und bei /projects/k2-galerie/* (z. B. Flyer A3 aus neuem Tab – sonst bleibt tenantId auf K2 bis zum nächsten Render). Nur auf Plattform: oeffentlich/vk2; sonst K2. */
 function deriveTenantId(pathname: string, search: string): AdminTenantId {
   const onPlatform = isPlatformInstance()
   const params = new URLSearchParams(search || '')
   const raw = params.get('context')
   const urlContext = raw != null ? raw.toLowerCase().trim() : null
-  if (pathname === '/admin') {
+
+  const fromUrlContext = (): AdminTenantId | null => {
+    if (urlContext == null) return null
     if (!onPlatform) {
       if (urlContext === 'oeffentlich' || urlContext === 'vk2') return 'k2'
       if (urlContext === 'k2') return 'k2'
-      return 'k2'
+      return null
     }
     if (urlContext === 'oeffentlich') return 'oeffentlich'
     if (urlContext === 'vk2') return 'vk2'
     if (urlContext === 'k2') return 'k2'
+    return null
+  }
+
+  if (pathname === '/admin') {
+    const u = fromUrlContext()
+    if (u !== null) return u
     return 'k2'
+  }
+  if (pathname.startsWith(K2_GALERIE_PROJECT_PREFIX)) {
+    const u = fromUrlContext()
+    if (u !== null) return u
+    return getTenantFromStorage()
   }
   return getTenantFromStorage()
 }
