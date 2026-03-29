@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Stand-Badge (Impressum-Bereich): Mac vs. geteilter Link:** Auf **localhost** zeigt die App absichtlich **„Build lokal: …“** (letzter `npm run build` auf dem Mac), auf **Live (Vercel)** **„Stand: …“** vom Server (`/api/build-info`). Das sind zwei verschiedene Quellen – kein Datenfehler. **Klarstellung:** Tooltip am Badge + Kasten in der **?**-Hilfe („Stand auf dem Handy…“). **Datei:** `App.tsx` (`StandBadgeSync`). **Commit:** Nachricht auf main: „Stand-Badge: Build lokal vs. Stand Live erklären …“ ✅ nach Push
+**Letzter Stand:** 29.03.26 – **Stand-Badge (Impressum-Bereich): Mac vs. geteilter Link:** Auf **localhost** zeigt die App absichtlich **„Build lokal: …“** (letzter `npm run build` auf dem Mac), auf **Live (Vercel)** **„Stand: …“** vom Server (`/api/build-info`). Das sind zwei verschiedene Quellen – kein Datenfehler. **Klarstellung:** Tooltip am Badge + Kasten in der **?**-Hilfe („Stand auf dem Handy…“). **Datei:** `App.tsx` (`StandBadgeSync`). **Commit:** Nachricht auf main: „Stand-Badge: Build lokal vs. Stand Live erklären …“ (**ad99e92**) ✅ nach Push
 
 **Was wir JETZT tun:** Zum Vergleich mit Empfängern dieselbe **Produktions-URL** im Browser öffnen wie im Link (nicht localhost). Wenn beide schon Live und Zeiten weichen ab: Stand-Badge tippen bzw. Cache.
 
