@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Martina Telefon in gallery-data.json:** Im veröffentlichten **`public/gallery-data.json`** stand bei **`martina.phone`** noch **0676 7519162** (abweichend von Georg, Galerie und **`K2_STAMMDATEN_DEFAULTS`** = **0664 1046337**). Auf **0664 1046337** angeglichen, damit Live/„Vom Server laden“ und Repo-Defaults zusammenpassen. **Commit:** **d3639d5** ✅ auf GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Impressum/Galerie Martina-Zeile prüfen; falls am Mac noch alte Nummer in **localStorage**: Admin → Stammdaten Martina → speichern (oder „Vom Server laden“ nach Deploy).
+
+---
+
 **Letzter Stand:** 29.03.26 – **Gleicher Stand (Repo = Vercel-Ziel):** Alle ausstehenden lokalen Änderungen **gebündelt committed und auf `main` gepusht:** Stammdaten **`mergeStammdatenPerson` / `pickPersonScalar`** (gespeicherte Telefonnummer wird nicht durch Repo-Default überschrieben, wenn Auto-Save zu früh feuert), **`buildK2PersonStateForAdmin`** + Tests; **Flyer-Event-Bogen** Aufrufer (Texte-Schreibtisch, Werbeunterlagen, mök2, Plakat-Redirect) mit konsistenten Query-Parametern; **`eventPlakatTooltip`** (Galerie + VK2); dazu Build-Infos, kleine `main`-Anpassung, Vita-Martina-Entwurf in **docs/**, Testprotokoll-Zeile. **Nicht versioniert:** `src/utils/domFullscreen.ts` (derzeit keine Importe – kann später oder gelöscht). **Commit:** **be7679f** ✅ auf GitHub (nach `git push`).
 
 **Was wir JETZT tun:** **Vercel → Deployments** bis **Ready / Current** prüfen; dann Live-URL **`/build-info.json`** oder Stand-Badge mit Erwartung abgleichen.
