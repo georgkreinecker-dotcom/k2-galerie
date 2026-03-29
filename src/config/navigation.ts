@@ -284,7 +284,8 @@ export function flyerEventBogenUrl(params: {
   const q = new URLSearchParams()
   const t = params.tenant ?? 'k2'
   if (t === 'oeffentlich') q.set('context', 'oeffentlich')
-  if (t === 'vk2') q.set('context', 'vk2')
+  else if (t === 'vk2') q.set('context', 'vk2')
+  else q.set('context', 'k2')
   q.set('layout', 'variant2')
   if (params.mode) q.set('mode', params.mode)
   const eid = params.eventId != null ? String(params.eventId).trim() : ''

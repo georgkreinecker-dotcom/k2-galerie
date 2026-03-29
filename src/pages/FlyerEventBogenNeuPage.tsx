@@ -20,6 +20,7 @@ import {
   formatEventTerminKomplett,
 } from '../utils/eventTerminFormat'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
+import { readArtworksForContextWithResolvedImages } from '../utils/artworksStorage'
 import { getFlyerEventBogenStorageKey } from '../utils/flyerEventBogenStorageKeys'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import {
@@ -339,6 +340,25 @@ function normalizeFileToUrl(file: File): string {
   return URL.createObjectURL(file)
 }
 
+/**
+ * Thumbnail-Liste: blob: kurzzeitig ok (wird beim Antippen wie data: komprimiert).
+ * Kein künstliches 500-KB-Limit mehr – echte K2-Werke aus dem ImageStore sind oft größere data:-URLs;
+ * ohne sie erschien K2-M-0001 u. a. nicht oder ließ sich nicht zuverlässig übernehmen.
+ * Nur extrem große data:-Strings ausschließen (Browser/Stabilität).
+ */
+function isUsableArtworkUrlForFlyerPick(u: string): boolean {
+  const s = String(u || '').trim()
+  if (!s) return false
+  if (s.startsWith('data:image') && s.length > 25_000_000) return false
+  return (
+    s.startsWith('data:image') ||
+    s.startsWith('blob:') ||
+    s.startsWith('http://') ||
+    s.startsWith('https://') ||
+    s.startsWith('/')
+  )
+}
+
 /** Öffnungszeiten für Flyer: Freitext + optional Wochentabelle (Sa explizit). */
 function formatGalleryOpeningHoursBlock(gallery: {
   openingHours?: string
@@ -389,7 +409,7 @@ function eventHasFlyerZeiten(e: EventTerminLike | null | undefined): boolean {
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { isOeffentlich, isVk2 } = useTenant()
-  const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich)
+  const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich, isVk2)
   const flyerImgFallback = useMemo(
     () => flyerImageFallbackPath(isOeffentlich, isVk2),
     [isOeffentlich, isVk2],
@@ -408,6 +428,8 @@ export default function FlyerEventBogenNeuPage() {
   const eventIdFromUrl = useMemo(() => (searchParams.get('eventId') || '').trim(), [searchParams])
   /** Von Galerie „Aktuelles“ (flyerEventBogenUrl fromPublicGalerie): Zurück = Galerie, nicht Werbeunterlagen. */
   const fromPublicGalerie = useMemo(() => (searchParams.get('from') || '') === 'publicGalerie', [searchParams])
+  /** Nur Plakat/Karte zeigen – keine Flyer-Werkzeug-Leiste (Speichern, mök2, Master-Links …). */
+  const publicPlakatViewer = fromPublicGalerie && (isA3Mode || isA6Mode || isCardMode)
   /** Master ist fix: Variante 2 (vorne ein Bild, hinten nur Text). */
   const layoutFromUrl: 'standard' | 'variant2' = 'variant2'
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -433,7 +455,7 @@ export default function FlyerEventBogenNeuPage() {
   const defaultRight = galerieImages.virtualTourImage || galerieImages.welcomeImage || flyerImgFallback
 
   const [leftSrc, setLeftSrc] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2))
     const s = p?.leftSrc
     const fb = flyerImageFallbackPath(isOeffentlich, isVk2)
     const demo = isOeffentlich || isVk2
@@ -453,7 +475,7 @@ export default function FlyerEventBogenNeuPage() {
   const [middleSrc, setMiddleSrc] = useState(defaultMiddle)
   const [rightSrc, setRightSrc] = useState(defaultRight)
   const [leftWerkLabel, setLeftWerkLabel] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich))?.leftWerkLabel
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2))?.leftWerkLabel
     return typeof p === 'string' && p.trim() ? p : 'Bild aus Datei'
   })
   const [isLeftDropActive, setIsLeftDropActive] = useState(false)
@@ -465,12 +487,12 @@ export default function FlyerEventBogenNeuPage() {
   const [frontVariant, setFrontVariant] = useState<'A' | 'B'>('A')
   const [masterText, setMasterText] = useState(() =>
     mergeMasterTextFromPersisted(
-      loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich)),
+      loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2)),
       isOeffentlich,
     ),
   )
   const [introFollowsGallery, setIntroFollowsGallery] = useState(() => {
-    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich)) as
+    const p = loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2)) as
       | (Partial<FlyerEventBogenPersistedV1> & { introFollowsGallery?: boolean })
       | null
     if (p && typeof p.introFollowsGallery === 'boolean') return p.introFollowsGallery
@@ -486,6 +508,17 @@ export default function FlyerEventBogenNeuPage() {
   const [showDerivationFullscreen, setShowDerivationFullscreen] = useState(false)
   const [flyerSaveMessage, setFlyerSaveMessage] = useState('')
   const [bwPrintPreview, setBwPrintPreview] = useState(false)
+  const [flyerArtworksForPick, setFlyerArtworksForPick] = useState<unknown[]>([])
+  const [flyerArtworksPickLoading, setFlyerArtworksPickLoading] = useState(false)
+  /** Beim Antippen eines Werks: Komprimierung läuft (data/blob → Flyer-Größe). */
+  const [flyerArtworkPickBusy, setFlyerArtworkPickBusy] = useState(false)
+  const flyerArtworksPickableCount = useMemo(
+    () =>
+      flyerArtworksForPick.filter((row) =>
+        isUsableArtworkUrlForFlyerPick(String((row as { imageUrl?: string })?.imageUrl || '').trim()),
+      ).length,
+    [flyerArtworksForPick],
+  )
   const middleViewSrc = middleSrc || leftSrc || rightSrc || defaultMiddle
 
   /** ök2/VK2: URL-Pfade aus alter Persistenz ignorieren; Upload (data/blob) behalten. Ohne flyerDataTick – sonst Flackern bei React Strict Mode / Daten-Updates. */
@@ -498,25 +531,58 @@ export default function FlyerEventBogenNeuPage() {
   }, [isOeffentlich, isVk2, flyerImgFallback])
 
   /**
-   * Galerie „Aktuelles“ → A3/A6/Karte (`from=publicGalerie`, K2): Vorschau soll **aktuelle**
-   * Bilder aus „Galerie gestalten“ zeigen – nicht einen früher gespeicherten Flyer-Master aus
-   * localStorage (sonst wirkt das Plakat „veraltet“ mit falschem Motiv).
+   * Galerie „Aktuelles“ → A3/A6/Karte (`publicPlakatViewer`): Mittel-/rechtes Motiv an aktuelle
+   * Seitengestaltung koppeln. **Linkes Motiv nicht** überschreiben – kommt aus Flyer-Master (Persistenz /
+   * gewähltes Werk); sonst kurz richtiges Bild, dann Wechsel auf Galerie-Karte.
    */
   useEffect(() => {
-    if (!fromPublicGalerie || isOeffentlich || isVk2) return
+    if (!publicPlakatViewer || isOeffentlich || isVk2) return
     const g = loadStammdaten('k2', 'gallery')
     const gi = getGalerieImages(g)
     const fb = flyerImgFallback
-    setLeftSrc(gi.galerieCardImage || gi.welcomeImage || fb)
     setMiddleSrc(gi.welcomeImage || fb)
     setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
-  }, [fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
+  }, [publicPlakatViewer, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
+
+  useEffect(() => {
+    if (publicPlakatViewer) setShowDerivationFullscreen(true)
+  }, [publicPlakatViewer])
+
+  /** Werk aus Bestand für Vorderseite (K2 / ök2) – VK2 hat hier keinen Werk-Katalog in derselben Form. */
+  useEffect(() => {
+    if (masterEditField !== 'image') {
+      setFlyerArtworksForPick([])
+      return
+    }
+    if (isVk2) {
+      setFlyerArtworksForPick([])
+      setFlyerArtworksPickLoading(false)
+      return
+    }
+    let cancelled = false
+    setFlyerArtworksPickLoading(true)
+    void readArtworksForContextWithResolvedImages(isOeffentlich, false).then((raw) => {
+      if (cancelled) return
+      const list = Array.isArray(raw) ? [...raw] : []
+      list.sort((a: { number?: string; id?: string }, b: { number?: string; id?: string }) =>
+        String(a?.number ?? a?.id ?? '').localeCompare(String(b?.number ?? b?.id ?? ''), undefined, {
+          numeric: true,
+          sensitivity: 'base',
+        }),
+      )
+      setFlyerArtworksForPick(list)
+      setFlyerArtworksPickLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [masterEditField, isOeffentlich, isVk2])
 
   const werbeunterlagenHref = useMemo(() => {
     const b = PROJECT_ROUTES['k2-galerie'].werbeunterlagen
     if (isOeffentlich) return `${b}?context=oeffentlich`
     if (isVk2) return `${b}?context=vk2`
-    return b
+    return `${b}?context=k2`
   }, [isOeffentlich, isVk2])
 
   const handleToolbarBack = useCallback(() => {
@@ -539,7 +605,10 @@ export default function FlyerEventBogenNeuPage() {
       if (isOeffentlich) sp.set('context', 'oeffentlich')
       if (isVk2 && !isOeffentlich) sp.set('context', 'vk2')
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
-      if (fromPublicGalerie) sp.set('from', 'publicGalerie')
+      /** `from=publicGalerie` nur bei echten Ableitungs-URLs – nicht beim A5-Master (sonst Master-Bild ständig überschrieben). */
+      const derivation =
+        extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
+      if (fromPublicGalerie && derivation) sp.set('from', 'publicGalerie')
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
       })
@@ -548,6 +617,24 @@ export default function FlyerEventBogenNeuPage() {
     },
     [isOeffentlich, isVk2, eventIdFromUrl, fromPublicGalerie],
   )
+
+  /** Werk aus Raster: Vorderseite setzen; data:/blob: sofort für Flyer verkleinern (Speichern & Vorschau). */
+  const applyFlyerLeftFromArtworkPick = useCallback(async (rawUrl: string, label: string) => {
+    const u = String(rawUrl || '').trim()
+    if (!u) return
+    setFlyerArtworkPickBusy(true)
+    try {
+      let src = u
+      if (u.startsWith('data:image') || u.startsWith('blob:')) {
+        src = await compressLeftSrcForFlyerStorage(u, 'normal')
+      }
+      setLeftSrc(src)
+      setLeftWerkLabel(label)
+      setMasterEditField(null)
+    } finally {
+      setFlyerArtworkPickBusy(false)
+    }
+  }, [])
 
   const handleSaveFlyerMaster = useCallback(async () => {
     const buildPayload = (src: string): FlyerEventBogenPersistedV1 => ({
@@ -1451,7 +1538,7 @@ export default function FlyerEventBogenNeuPage() {
 
   return (
     <div
-      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}`}
+      className={`${ROOT}${isA3Mode ? ' a3-mode' : ''}${isA6Mode ? ' a6-mode' : ''}${isCardMode ? ' card-mode' : ''}${bwPrintPreview ? ' bw-print' : ''}${publicPlakatViewer ? ' public-plakat-viewer' : ''}`}
     >
       <style>{`
         .${ROOT}{
@@ -1466,6 +1553,73 @@ export default function FlyerEventBogenNeuPage() {
           --back-qr-box:29mm;
         }
         .${ROOT} .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+        .${ROOT}.public-plakat-viewer{
+          padding:0;
+          min-height:100vh;
+          background:#12161a;
+          display:flex;
+          flex-direction:column;
+          box-sizing:border-box;
+        }
+        .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar{
+          margin:0;
+          flex-shrink:0;
+          padding:10px 14px;
+          background:rgba(0,0,0,0.5);
+          border-bottom:1px solid rgba(255,255,255,0.1);
+          justify-content:space-between;
+          position:sticky;
+          top:0;
+          z-index:100;
+        }
+        .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar .ppv-back{
+          display:inline-flex;
+          align-items:center;
+          padding:0.4rem 0.85rem;
+          border-radius:8px;
+          background:#2a3038;
+          color:#f5f2ed;
+          font-weight:650;
+          border:1px solid rgba(255,255,255,0.12);
+          font-size:0.95rem;
+          cursor:pointer;
+        }
+        .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar .ppv-back:hover{background:#363d47}
+        .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar .ppv-print{
+          padding:0.4rem 0.85rem;
+          border-radius:8px;
+          background:#b54a1e;
+          color:#fff;
+          border:none;
+          font-weight:700;
+          font-size:0.92rem;
+          cursor:pointer;
+        }
+        .${ROOT}.public-plakat-viewer .toolbar.public-plakat-viewer-toolbar .ppv-print:hover{background:#d4622a}
+        .${ROOT}.public-plakat-viewer .derivation-shell{
+          flex:1;
+          min-height:0;
+          margin:0 auto;
+          max-width:none;
+          width:100%;
+          border:none;
+          border-radius:0;
+          box-shadow:none;
+          background:transparent;
+          padding:0;
+        }
+        .${ROOT}.public-plakat-viewer .derivation-head{display:none !important}
+        .${ROOT}.public-plakat-viewer .derivation-preview-stage,
+        .${ROOT}.public-plakat-viewer .derivation-fullscreen-stage{
+          flex:1;
+          min-height:0;
+          max-height:none !important;
+          overflow:auto;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          padding:12px 10px 20px !important;
+        }
         .${ROOT} .toolbar .toolbar-back-mok2{
           display:inline-flex;
           align-items:center;
@@ -2935,87 +3089,100 @@ export default function FlyerEventBogenNeuPage() {
         }
       `}</style>
 
-      <div className="toolbar">
-        <button
-          type="button"
-          className="toolbar-back-history"
-          onClick={handleToolbarBack}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            padding: '0.35rem 0.7rem',
-            borderRadius: '8px',
-            background: '#ebe8e2',
-            color: '#1c1a18',
-            fontWeight: 600,
-            border: '1px solid #d4cfc4',
-            fontSize: '0.95rem',
-            cursor: 'pointer',
-          }}
-        >
-          {fromPublicGalerie ? '← Zurück zur Galerie' : '← Zurück'}
-        </button>
-        {!isVk2 && !isOeffentlich ? (
-          <Link
-            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
-            className="toolbar-back-mok2"
+      {publicPlakatViewer ? (
+        <div className="toolbar public-plakat-viewer-toolbar" role="toolbar" aria-label="Plakat">
+          <button type="button" className="ppv-back" onClick={handleToolbarBack}>
+            ← Zurück zur Galerie
+          </button>
+          <button type="button" className="ppv-print" onClick={() => window.print()}>
+            Drucken
+          </button>
+        </div>
+      ) : (
+        <div className="toolbar">
+          <button
+            type="button"
+            className="toolbar-back-history"
+            onClick={handleToolbarBack}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: '0.35rem 0.7rem',
+              borderRadius: '8px',
+              background: '#ebe8e2',
+              color: '#1c1a18',
+              fontWeight: 600,
+              border: '1px solid #d4cfc4',
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+            }}
           >
-            ← Zurück zum mök2 (Werbeunterlagen)
-          </Link>
-        ) : null}
-        {!isVk2 && !isOeffentlich ? (
-          <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
-        ) : null}
-        <button
-          type="button"
-          onClick={handleSaveFlyerMaster}
-          style={{
-            background: '#b54a1e',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            padding: '0.45rem 0.85rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        >
-          Speichern
-        </button>
-        <button type="button" onClick={() => window.print()}>Drucken</button>
-        <button
-          type="button"
-          aria-pressed={bwPrintPreview}
-          onClick={() => setBwPrintPreview((v) => !v)}
-          style={
-            bwPrintPreview
-              ? { boxShadow: 'inset 0 0 0 2px var(--k2-green)', fontWeight: 700 }
-              : undefined
-          }
-        >
-          Schwarzweiß Druckcheck ein/aus
-        </button>
-        {(isA3Mode || isA6Mode || isCardMode) && (
-          <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
-            ← Zurück zum Flyer-Master (A5 · Live-Vorschau)
-          </Link>
-        )}
-        {!isA3Mode ? (
-          <Link to={buildFlyerEventSelfUrl({ mode: 'a3', layout: 'variant2' })}>A3 Ableitung ansehen</Link>
-        ) : null}
-        {!isA6Mode ? (
-          <Link to={buildFlyerEventSelfUrl({ mode: 'a6', layout: 'variant2' })}>A6 Ableitung ansehen</Link>
-        ) : null}
-        {!isCardMode ? (
-          <Link to={buildFlyerEventSelfUrl({ mode: 'card', layout: 'variant2' })}>
-            Visitenkarten-Ableitung ansehen
-          </Link>
-        ) : null}
-        {flyerSaveMessage ? (
-          <span style={{ fontSize: '0.85rem', color: 'var(--k2-green)', fontWeight: 650, maxWidth: '28rem' }}>
-            {flyerSaveMessage}
-          </span>
-        ) : null}
-      </div>
+            {fromPublicGalerie ? '← Zurück zur Galerie' : '← Zurück'}
+          </button>
+          {!isVk2 && !isOeffentlich ? (
+            <Link
+              to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-9`}
+              className="toolbar-back-mok2"
+            >
+              ← Zurück zum mök2 (Werbeunterlagen)
+            </Link>
+          ) : null}
+          {!isVk2 && !isOeffentlich ? (
+            <Link to={PROJECT_ROUTES['k2-galerie'].werbeunterlagen}>Werbeunterlagen</Link>
+          ) : null}
+          <button
+            type="button"
+            onClick={handleSaveFlyerMaster}
+            style={{
+              background: '#b54a1e',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.45rem 0.85rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+            }}
+          >
+            Speichern
+          </button>
+          <button type="button" onClick={() => window.print()}>
+            Drucken
+          </button>
+          <button
+            type="button"
+            aria-pressed={bwPrintPreview}
+            onClick={() => setBwPrintPreview((v) => !v)}
+            style={
+              bwPrintPreview
+                ? { boxShadow: 'inset 0 0 0 2px var(--k2-green)', fontWeight: 700 }
+                : undefined
+            }
+          >
+            Schwarzweiß Druckcheck ein/aus
+          </button>
+          {(isA3Mode || isA6Mode || isCardMode) && (
+            <Link className="link-back-to-master" to={buildFlyerEventSelfUrl({ layout: 'variant2' })}>
+              ← Zurück zum Flyer-Master (A5 · Live-Vorschau)
+            </Link>
+          )}
+          {!isA3Mode ? (
+            <Link to={buildFlyerEventSelfUrl({ mode: 'a3', layout: 'variant2' })}>A3 Ableitung ansehen</Link>
+          ) : null}
+          {!isA6Mode ? (
+            <Link to={buildFlyerEventSelfUrl({ mode: 'a6', layout: 'variant2' })}>A6 Ableitung ansehen</Link>
+          ) : null}
+          {!isCardMode ? (
+            <Link to={buildFlyerEventSelfUrl({ mode: 'card', layout: 'variant2' })}>
+              Visitenkarten-Ableitung ansehen
+            </Link>
+          ) : null}
+          {flyerSaveMessage ? (
+            <span style={{ fontSize: '0.85rem', color: 'var(--k2-green)', fontWeight: 650, maxWidth: '28rem' }}>
+              {flyerSaveMessage}
+            </span>
+          ) : null}
+        </div>
+      )}
 
       {!isA3Mode && !isA6Mode && !isCardMode && (
         <div className="master-workspace">
@@ -3146,7 +3313,93 @@ export default function FlyerEventBogenNeuPage() {
                   >
                     Bild hier reinziehen (Drag &amp; Drop)
                   </div>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: '#5c5650' }}>
+                  {!isVk2 ? (
+                    <div style={{ marginTop: '0.85rem' }}>
+                      <p style={{ margin: '0 0 0.4rem', fontSize: '0.85rem', fontWeight: 600, color: '#1c1a18' }}>
+                        Werk aus dem Bestand (Galerie)
+                      </p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.45 }}>
+                        Antippen übernimmt das Werkbild (große Fotos aus dem Bestand werden dabei für den Flyer verkleinert). Danach oben{' '}
+                        <strong>Flyer-Master speichern</strong>, damit es dauerhaft bleibt.
+                      </p>
+                      {flyerArtworkPickBusy ? (
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: '#b54a1e' }}>Bild wird für die Vorderseite vorbereitet…</p>
+                      ) : null}
+                      {flyerArtworksPickLoading ? (
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#5c5650' }}>Werke werden geladen…</p>
+                      ) : (
+                        <div
+                          className="flyer-artwork-pick-grid"
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))',
+                            gap: '0.45rem',
+                            maxHeight: 'min(40vh, 240px)',
+                            overflowY: 'auto',
+                            padding: '0.25rem 0',
+                          }}
+                        >
+                          {flyerArtworksForPick.flatMap((row, idx) => {
+                            const a = row as {
+                              imageUrl?: string
+                              number?: string
+                              title?: string
+                              id?: string
+                            }
+                            const u = String(a?.imageUrl || '').trim()
+                            if (!isUsableArtworkUrlForFlyerPick(u)) return []
+                            const label = String(a?.number || a?.title || `Werk ${idx + 1}`).trim()
+                            const key = String(a?.id ?? a?.number ?? label ?? idx)
+                            return [
+                              <button
+                                key={key}
+                                type="button"
+                                disabled={flyerArtworkPickBusy}
+                                onClick={() => {
+                                  void applyFlyerLeftFromArtworkPick(u, label)
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'stretch',
+                                  gap: 4,
+                                  padding: 6,
+                                  border: '1px solid #b54a1e44',
+                                  borderRadius: 8,
+                                  background: '#fffefb',
+                                  cursor: flyerArtworkPickBusy ? 'wait' : 'pointer',
+                                  opacity: flyerArtworkPickBusy ? 0.65 : 1,
+                                  fontSize: '0.65rem',
+                                  color: '#1c1a18',
+                                  textAlign: 'center',
+                                  lineHeight: 1.2,
+                                }}
+                              >
+                                <img
+                                  src={u}
+                                  alt=""
+                                  style={{
+                                    width: '100%',
+                                    aspectRatio: '1',
+                                    objectFit: 'cover',
+                                    borderRadius: 4,
+                                    background: '#ebe8e2',
+                                  }}
+                                />
+                                <span style={{ wordBreak: 'break-word' }}>{label}</span>
+                              </button>,
+                            ]
+                          })}
+                        </div>
+                      )}
+                      {!flyerArtworksPickLoading && flyerArtworksPickableCount === 0 ? (
+                        <p style={{ margin: '0.35rem 0 0', fontSize: '0.78rem', color: '#5c5650', lineHeight: 1.45 }}>
+                          Kein Werkbild wählbar (oder noch keine Werke mit Bild). Oben eine Datei wählen oder in der Galerie ein Werk mit Foto speichern.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  <p style={{ margin: '0.6rem 0 0', fontSize: '0.82rem', color: '#5c5650' }}>
                     Aktuelles Vorderseitenbild: {leftWerkLabel}
                   </p>
                 </>
