@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Texte-Schreibtisch: Vita-PDFs öffnen:** Vercel-Rewrite schloss `/texte-schreibtisch/` ein → SPA statt Datei. **Fix:** `vercel.json` negative lookahead `(?!texte-schreibtisch/)`. Zusätzlich **`<a target="_blank">`** für `.pdf`/`.html`-Zettel statt `Link` (keine SPA-Navigation). PDFs + HTML + Generator im Repo. **Commit:** **f5d968a** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Nach Vercel „Ready“: Vita-Zettel testen; optional `npm run generate:vita-pdfs` bei Textänderungen.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Admin ⓘ-Hilfen (aufklappbar):** **Eventplan** – „Was gehört wohin?“ (Presse-Tab vs. Eventplan). **Presse & Medien** – „Wann hier bleiben, wann zum Eventplan?“. **Veröffentlichen** – Deployment, Stand-Badge, „Vom Server laden“. **Newsletter-Tab** – Einladungsliste (CSV/Druck) vs. **Newsletter-Empfänger** unter Eventplan → Werbematerial (BCC/Mail-Buttons). **Dateien:** `ScreenshotExportAdmin.tsx`, `NewsletterTab.tsx`. **Commit:** **3ed9e39** ✅ auf GitHub.
 
 **Was wir JETZT tun:** **Session 28.03. beendet** – nächster Einstieg: optional die vier ⓘ im Admin gegenlesen; sonst weiter wie im letzten fachlichen Stand.
