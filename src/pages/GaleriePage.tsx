@@ -25,6 +25,7 @@ import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import '../App.css'
+import '../styles/k2GaleriePublicPolish.css'
 
 /** SessionStorage: Willkommens-Fenster auf Galerieseite (QR-Einstieg) schon gesehen */
 const KEY_GALERIE_WELCOME_SEEN = 'k2-galerie-welcome-seen'
@@ -2596,7 +2597,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   )
 
   return (
-    <div style={{ 
+    <div
+      className={!musterOnly && !vk2 ? 'k2-echte-galerie-public' : undefined}
+      style={{
       minHeight: '-webkit-fill-available',
       background: vk2
         ? 'linear-gradient(135deg, var(--k2-bg-1) 0%, var(--k2-bg-2) 65%, var(--k2-bg-3) 100%)'
@@ -2607,7 +2610,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       position: 'relative',
       overflowX: 'hidden',
       overflowY: 'visible'
-    }}>
+    }}
+    >
       {/* Gelbe Leiste nur, wenn Aufruf vom Admin (fromAdminTab) – für User verboten, zur APf zu führen */}
       {isVorschauModus && fromAdmin && (
         <div style={{
@@ -3591,14 +3595,17 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
           {/* Aktuelles aus den Eventplanungen – zwischen Foto und Kunstschaffende (K2, ök2, VK2) */}
           {((musterOnly && upcomingEventsOeffentlich.length > 0) || (!musterOnly && !vk2 && upcomingEvents.length > 0) || (vk2 && vk2UpcomingEvents.length > 0)) && (
-            <section style={{
+            <section
+              className={!musterOnly && !vk2 ? 'k2-public-events-wrap' : undefined}
+              style={{
               marginTop: 'clamp(2rem, 5vw, 3rem)',
               padding: 'clamp(1rem, 3vw, 1.5rem) clamp(1.25rem, 3vw, 1.75rem)',
               background: musterOnly ? 'rgba(107, 144, 128, 0.12)' : vk2 ? 'rgba(255, 140, 66, 0.1)' : 'rgba(184, 184, 255, 0.08)',
               border: musterOnly ? '1px solid rgba(107, 144, 128, 0.3)' : vk2 ? '1px solid rgba(255, 140, 66, 0.25)' : '1px solid rgba(184, 184, 255, 0.2)',
               borderRadius: '16px',
               borderLeft: musterOnly ? '4px solid #6b9080' : vk2 ? '4px solid var(--k2-accent)' : '4px solid rgba(184, 184, 255, 0.6)'
-            }}>
+            }}
+            >
               <p style={{ margin: '0 0 0.5rem', fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', letterSpacing: '0.08em', textTransform: 'uppercase', color: musterOnly ? 'var(--k2-muted)' : vk2 ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.6)', fontWeight: '600' }}>
                 {(() => {
                   const h = galerieTexts.eventSectionHeading ?? ''
@@ -3607,7 +3614,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                   return h || 'Demnächst bei uns'
                 })()}
               </p>
-              <ul style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}>
+              <ul
+                className={!musterOnly && !vk2 ? 'k2-public-event-list' : undefined}
+                style={{ margin: 0, paddingLeft: '1.25rem', color: musterOnly ? 'var(--k2-text)' : '#ffffff', fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', lineHeight: 1.6 }}
+              >
                 {(musterOnly ? upcomingEventsOeffentlich : vk2 ? vk2UpcomingEvents : upcomingEvents).map((ev: any) => {
                   const flyerTenant: FlyerEventBogenTenantContext = musterOnly ? 'oeffentlich' : vk2 ? 'vk2' : 'k2'
                   return (
@@ -3664,7 +3674,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               marginBottom: 'clamp(3rem, 8vw, 4rem)'
             }}>
               {/* Martina – Malerei: Karte mit Pinsel-Akzent, asymmetrisch */}
-              <div style={{
+              <div
+                className={!musterOnly && !vk2 ? 'k2-public-artist-card' : undefined}
+                style={{
                 position: 'relative',
                 background: 'linear-gradient(145deg, rgba(255, 140, 66, 0.08) 0%, rgba(255, 255, 255, 0.04) 50%)',
                 backdropFilter: 'blur(20px)',
@@ -3736,7 +3748,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               
               {/* Georg – Keramik: nur bei K2 (ök2 = nur eine Person, Lena Berg) */}
               {!musterOnly && (
-              <div style={{
+              <div
+                className={!vk2 ? 'k2-public-artist-card' : undefined}
+                style={{
                 position: 'relative',
                 background: 'linear-gradient(145deg, rgba(255, 140, 66, 0.06) 0%, rgba(255, 255, 255, 0.04) 50%)',
                 backdropFilter: 'blur(20px)',

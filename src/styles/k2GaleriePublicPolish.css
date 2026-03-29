@@ -1,0 +1,48 @@
+/**
+ * K2 echte Galerie (Besucher) – Feinschliff: Fokus, Lesbarkeit, dezente Interaktion.
+ * Gilt nur, wenn GaleriePage die Klasse k2-echte-galerie-public setzt (!musterOnly && !vk2).
+ */
+
+.k2-echte-galerie-public {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.k2-echte-galerie-public :where(button, a):focus-visible {
+  outline: 2px solid rgba(255, 200, 160, 0.95);
+  outline-offset: 3px;
+}
+
+/* Event-Zeilen (Plakat): leichter Hover, ohne Layout zu sprengen */
+.k2-echte-galerie-public .k2-public-event-list button {
+  border-radius: 6px;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.k2-echte-galerie-public .k2-public-event-list button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.k2-echte-galerie-public .k2-public-event-list button:active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k2-echte-galerie-public .k2-public-event-list button {
+    transition: none;
+  }
+}
+
+/* Block „Demnächst bei uns“: etwas weicher im Raum */
+.k2-echte-galerie-public .k2-public-events-wrap {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Künstler-Karten: dezenter Fokus-Ring für Tastatur (Vita-Button) */
+.k2-echte-galerie-public .k2-public-artist-card:focus-within {
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 2px rgba(255, 200, 160, 0.45);
+}

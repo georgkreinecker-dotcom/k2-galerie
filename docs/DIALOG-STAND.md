@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **K2 echte Galerie (Besucher): Feinschliff nur Oberfläche:** `k2GaleriePublicPolish.css` eingebunden; Root **`k2-echte-galerie-public`** nur bei `!musterOnly && !vk2` (Antialiasing, **:focus-visible**, Event-Liste **k2-public-event-list**, Block **k2-public-events-wrap**, Künstler-Karten **k2-public-artist-card**). Keine Änderung an Speichern, Sync, Merge, Stammdaten. **Dateien:** `GaleriePage.tsx`, `src/styles/k2GaleriePublicPolish.css`. **Commit:** _(nach Push eintragen)_.
+
+**Was wir JETZT tun:** Nach Deploy: `/galerie` (K2) kurz – Fokus-Tastatur, Event-Zeilen-Hover, Karten; ök2/VK2 unverändert.
+
+---
+
 **Letzter Stand:** 29.03.26 – **K2 Galerie „Aktuelles“ → Plakat/Flyer-Vorschau:** Öffnen mit `from=publicGalerie` setzt **left/middle/right** jetzt aus **aktuellen** K2-Stammdaten „Galerie gestalten“ (`getGalerieImages`), nicht mehr aus dem alten gespeicherten Flyer-Master in `localStorage` – damit kein „veraltetes“ Motiv mehr. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **9c87e80** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nach Deploy: von Galerie Aktuelles → A3-Vorschau kurz prüfen; Admin-Flyer-Master bleibt für Bearbeitung/Speichern wie bisher.
