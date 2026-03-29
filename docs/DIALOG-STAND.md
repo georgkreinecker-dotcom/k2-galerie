@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **K2 Galerie „Aktuelles“ → Plakat/Flyer-Vorschau:** Öffnen mit `from=publicGalerie` setzt **left/middle/right** jetzt aus **aktuellen** K2-Stammdaten „Galerie gestalten“ (`getGalerieImages`), nicht mehr aus dem alten gespeicherten Flyer-Master in `localStorage` – damit kein „veraltetes“ Motiv mehr. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **6bfe9fd** ✅ auf GitHub.
+
+**Was wir JETZT tun:** Nach Deploy: von Galerie Aktuelles → A3-Vorschau kurz prüfen; Admin-Flyer-Master bleibt für Bearbeitung/Speichern wie bisher.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Öffentliche Galerie: echte Vitas in gallery-data.json:** Im Repo standen in `martina.vita` / `georg.vita` noch **ök2-Muster** (Lena Berg / Paul Weber). Ersetzt durch dieselben Langtexte wie **`K2_DEFAULT_VITA_MARTINA` / `K2_DEFAULT_VITA_GEORG`** (`tenantConfig.ts`, Entwürfe März 2026). Skript: `scripts/patch-gallery-data-k2-vitas.mjs`. **Commit:** **72a040a** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Galerie auf Vercel nach Deploy testen (Stand-Badge tippen / Cache); optional Admin → Stammdaten speichern + Veröffentlichen, wenn du den lokalen Speicher dauerhaft angleichen willst.

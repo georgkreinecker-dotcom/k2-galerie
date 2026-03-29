@@ -497,6 +497,21 @@ export default function FlyerEventBogenNeuPage() {
     })
   }, [isOeffentlich, isVk2, flyerImgFallback])
 
+  /**
+   * Galerie „Aktuelles“ → A3/A6/Karte (`from=publicGalerie`, K2): Vorschau soll **aktuelle**
+   * Bilder aus „Galerie gestalten“ zeigen – nicht einen früher gespeicherten Flyer-Master aus
+   * localStorage (sonst wirkt das Plakat „veraltet“ mit falschem Motiv).
+   */
+  useEffect(() => {
+    if (!fromPublicGalerie || isOeffentlich || isVk2) return
+    const g = loadStammdaten('k2', 'gallery')
+    const gi = getGalerieImages(g)
+    const fb = flyerImgFallback
+    setLeftSrc(gi.galerieCardImage || gi.welcomeImage || fb)
+    setMiddleSrc(gi.welcomeImage || fb)
+    setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
+  }, [fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
+
   const werbeunterlagenHref = useMemo(() => {
     const b = PROJECT_ROUTES['k2-galerie'].werbeunterlagen
     if (isOeffentlich) return `${b}?context=oeffentlich`
