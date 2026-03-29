@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { MUSTER_TEXTE, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import {
+  MUSTER_TEXTE,
+  PRODUCT_COPYRIGHT_BRAND_ONLY,
+  PRODUCT_URHEBER_ANWENDUNG,
+  K2_DEFAULT_VITA_MARTINA,
+  K2_DEFAULT_VITA_GEORG,
+  isPlatformInstance,
+} from '../config/tenantConfig'
 import { loadStammdaten, saveStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { mayEditContent } from '../utils/visitorContext'
@@ -9,6 +16,7 @@ import '../App.css'
 
 // K2: Stammdaten nur über Schicht (Phase 5.3). ök2: Vita-eigene Keys (Inhalt nur hier).
 const OEFFENTLICH_VITA_KEYS = { martina: 'k2-oeffentlich-vita-martina', georg: 'k2-oeffentlich-vita-georg' } as const
+const K2_DEFAULT_VITA_BY_PERSON = { martina: K2_DEFAULT_VITA_MARTINA, georg: K2_DEFAULT_VITA_GEORG } as const
 const DEFAULT_BIO = {
   martina: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
   georg: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
@@ -62,10 +70,23 @@ export default function VitaPage() {
       } else {
         const data = loadStammdaten('k2', id) as { name?: string; email?: string; phone?: string; bio?: string; vita?: string }
         const existing = typeof data?.vita === 'string' && data.vita.trim() !== ''
-        setVita(existing ? data.vita! : buildInitialVita(id, data || {}))
+        if (existing) {
+          setVita(data.vita!)
+        } else if (isPlatformInstance()) {
+          setVita(K2_DEFAULT_VITA_BY_PERSON[id])
+        } else {
+          setVita(buildInitialVita(id, data || {}))
+        }
       }
     } catch {
-      setVita(buildInitialVita(id, isOeffentlich ? (id === 'martina' ? MUSTER_TEXTE.martina : MUSTER_TEXTE.georg) : {}))
+      if (isOeffentlich) {
+        const muster = id === 'martina' ? MUSTER_TEXTE.martina : MUSTER_TEXTE.georg
+        setVita(buildInitialVita(id, muster))
+      } else if (isPlatformInstance()) {
+        setVita(K2_DEFAULT_VITA_BY_PERSON[id])
+      } else {
+        setVita(buildInitialVita(id, {}))
+      }
     }
     setLoaded(true)
   }, [id, isOeffentlich])

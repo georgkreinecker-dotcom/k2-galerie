@@ -80,7 +80,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -3567,10 +3567,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
           }
           if (!mergedMartina.vita || typeof mergedMartina.vita !== 'string' || !mergedMartina.vita.trim()) {
-            mergedMartina.vita = MUSTER_VITA_MARTINA
+            mergedMartina.vita = isPlatformInstance() ? K2_DEFAULT_VITA_MARTINA : ''
           }
         } else {
-          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'malerei', bio: '', vita: MUSTER_VITA_MARTINA }
+          mergedMartina = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'malerei', bio: '', vita: isPlatformInstance() ? K2_DEFAULT_VITA_MARTINA : '' }
         }
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder/Adresse reparieren – niemals komplette Stammdaten überschreiben (sonst gehen Bio, Bilder verloren). Schicht: saveStammdaten.
@@ -3603,10 +3603,10 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? '')
           }
           if (!mergedGeorg.vita || typeof mergedGeorg.vita !== 'string' || !mergedGeorg.vita.trim()) {
-            mergedGeorg.vita = MUSTER_VITA_GEORG
+            mergedGeorg.vita = isPlatformInstance() ? K2_DEFAULT_VITA_GEORG : ''
           }
         } else {
-          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'keramik', bio: '', vita: MUSTER_VITA_GEORG }
+          mergedGeorg = { name: d.name, email: d.email, phone: d.phone, website: d.website || '', address: (d as any).address ?? '', city: (d as any).city ?? '', country: (d as any).country ?? '', category: 'keramik', bio: '', vita: isPlatformInstance() ? K2_DEFAULT_VITA_GEORG : '' }
         }
         if (isMounted) setGeorgData(mergedGeorg)
         if (storedGeorg && typeof storedGeorg === 'object' && JSON.stringify(storedGeorg).length < 100000) {
@@ -10255,12 +10255,17 @@ ${'='.repeat(60)}
   const openVitaDocument = (personId: 'martina' | 'georg') => {
     const person = personId === 'martina' ? martinaData : georgData
     const design = designSettings || OEF_DESIGN_DEFAULT
+    const fallbackVita = tenant.isOeffentlich
+      ? (personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG)
+      : isPlatformInstance()
+        ? (personId === 'martina' ? K2_DEFAULT_VITA_MARTINA : K2_DEFAULT_VITA_GEORG)
+        : ''
     const htmlRaw = buildVitaDocumentHtml(personId, {
       name: person?.name || '',
       email: person?.email,
       phone: person?.phone,
       website: person?.website,
-      vita: person?.vita || (personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG)
+      vita: (person?.vita && String(person.vita).trim()) ? String(person.vita).trim() : fallbackVita
     }, {
       accentColor: design.accentColor,
       backgroundColor1: design.backgroundColor1,

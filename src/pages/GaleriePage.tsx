@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, WILLKOMMEN_NAME_KEY, WILLKOMMEN_ENTWURF_KEY, ENTDECKEN_ROUTE, MEIN_BEREICH_ROUTE } from '../config/navigation'
-import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
+import { TENANT_CONFIGS, MUSTER_TEXTE, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG, PRODUCT_LIZENZ_ANFRAGE_EMAIL, OEK2_WILLKOMMEN_IMAGES, getOek2WelcomeImageEffective, OEK2_PLACEHOLDER_IMAGE, initVk2DemoStammdatenIfEmpty, getProminenteAdresseFormatiert, FOCUS_DIRECTIONS } from '../config/tenantConfig'
 import { buildVitaDocumentHtml } from '../utils/vitaDocument'
 import { getGalerieImages, getPageContentGalerie, mergePageContentGalerieFromServer } from '../config/pageContentGalerie'
 import { GalerieSocialLinks } from '../components/GalerieSocialLinks'
@@ -2546,12 +2546,15 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         const key = personId === 'martina' ? 'k2-stammdaten-martina' : 'k2-stammdaten-georg'
         const raw = localStorage.getItem(key)
         const parsed = raw ? JSON.parse(raw) : {}
+        const savedVita = parsed.vita && String(parsed.vita).trim() ? String(parsed.vita).trim() : ''
+        const k2FallbackVita =
+          personId === 'martina' ? K2_DEFAULT_VITA_MARTINA : K2_DEFAULT_VITA_GEORG
         data = {
           name: parsed.name || (personId === 'martina' ? K2_STAMMDATEN_DEFAULTS.martina.name : K2_STAMMDATEN_DEFAULTS.georg.name),
           email: parsed.email,
           phone: parsed.phone,
           website: parsed.website,
-          vita: (parsed.vita && String(parsed.vita).trim()) ? parsed.vita : (personId === 'martina' ? MUSTER_VITA_MARTINA : MUSTER_VITA_GEORG)
+          vita: savedVita || (isPlatformInstance() ? k2FallbackVita : ''),
         }
         const g = localStorage.getItem('k2-stammdaten-galerie')
         const gParsed = g ? JSON.parse(g) : {}
