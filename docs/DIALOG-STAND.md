@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Martina Telefon in gallery-data.json:** Im veröffentlichten **`public/gallery-data.json`** stand bei **`martina.phone`** noch **0676 7519162** (abweichend von Georg, Galerie und **`K2_STAMMDATEN_DEFAULTS`** = **0664 1046337**). Auf **0664 1046337** angeglichen, damit Live/„Vom Server laden“ und Repo-Defaults zusammenpassen. **Commit:** **d3639d5** ✅ auf GitHub
+**Letzter Stand:** 29.03.26 – **Martina Telefon in gallery-data.json:** Im veröffentlichten **`public/gallery-data.json`** stand bei **`martina.phone`** noch **0676 7519162** (abweichend von Georg, Galerie und **`K2_STAMMDATEN_DEFAULTS`** = **0664 1046337**). Auf **0664 1046337** angeglichen, damit Live/„Vom Server laden“ und Repo-Defaults zusammenpassen. **Commit:** **9c51e00** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Impressum/Galerie Martina-Zeile prüfen; falls am Mac noch alte Nummer in **localStorage**: Admin → Stammdaten Martina → speichern (oder „Vom Server laden“ nach Deploy).
 
