@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Stand-Badge (Impressum-Bereich): Mac vs. geteilter Link:** Auf **localhost** zeigt die App absichtlich **„Build lokal: …“** (letzter `npm run build` auf dem Mac), auf **Live (Vercel)** **„Stand: …“** vom Server (`/api/build-info`). Das sind zwei verschiedene Quellen – kein Datenfehler. **Klarstellung:** Tooltip am Badge + Kasten in der **?**-Hilfe („Stand auf dem Handy…“). **Datei:** `App.tsx` (`StandBadgeSync`). **Commit:** Nachricht auf main: „Stand-Badge: Build lokal vs. Stand Live erklären …“ ✅ nach Push
+
+**Was wir JETZT tun:** Zum Vergleich mit Empfängern dieselbe **Produktions-URL** im Browser öffnen wie im Link (nicht localhost). Wenn beide schon Live und Zeiten weichen ab: Stand-Badge tippen bzw. Cache.
+
+---
+
 **Letzter Stand:** 29.03.26 – **Eventplan → A3/A6/Karte = schlanke Vorschau:** `flyerEventBogenUrl` mit **`fromAdminDerivation`** setzt `from=adminFlyerDerivation`; **FlyerEventBogenNeuPage** wie Galerie-Ableitung (`derivationOnlyViewer`): keine Flyer-Master-Toolbar. **Zurück:** Browser-History oder `/admin?tab=eventplan` (+ `context` bei ök2/VK2). **Admin:** virtuelle Flyer-Dokumente, Plakat A3 (Öffentlichkeitsarbeit), Präsentationsmappen-Hilfe. **Seitentext-Default:** „Demnächst bei uns“ + K2-Migration alter Überschrift. **Dateien:** `navigation.ts`, `FlyerEventBogenNeuPage.tsx`, `ScreenshotExportAdmin.tsx`, `pageTexts.ts`. **Commit:** **0f4b16b** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Eventplan → Plakat A3 / virtuelles Dokument – nur schmale Leiste wie von der Galerie prüfen.

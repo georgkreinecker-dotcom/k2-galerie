@@ -329,6 +329,13 @@ const STAND_BADGE_PATHNAMES = [
 function StandBadgeSync() {
   const location = useLocation()
   const pathname = location?.pathname ?? ''
+  try {
+    const sp = new URLSearchParams(location.search || '')
+    if (sp.get('k2PlakatEmbed') === '1') return null
+  } catch {
+    /* ignore */
+  }
+  if (typeof document !== 'undefined' && document.body?.getAttribute('data-k2-plakat-overlay') === '1') return null
   const showHere = STAND_BADGE_PATHNAMES.some((p) => pathname === p)
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
@@ -372,9 +379,9 @@ function StandBadgeSync() {
   const isMobile = typeof window !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth <= 768)
   const label = serverNewer
     ? (isMobile ? 'Neuer Stand – tippen!' : 'Aktualisiere …')
-    : (isLocal ? `Build: ${BUILD_LABEL}` : `Stand: ${displayLabel}`)
+    : (isLocal ? `Build lokal: ${BUILD_LABEL}` : `Stand: ${displayLabel}`)
   const title = isLocal
-    ? `Build-Zeit dieser Version. Neuer Code: Im Cursor-Terminal „npm run build“ ausführen, dann Seite neu laden (F5). Dann siehst du hier die neue Zeit.`
+    ? `Nur diese Entwicklungsversion auf dem Mac (letzter „npm run build“). Das ist nicht derselbe Stand wie bei einem geteilten Link zur Live-Galerie – dort steht „Stand:“ vom Server. Zum Vergleich mit Empfängern dieselbe Produktions-Adresse im Browser öffnen wie im Link (nicht localhost). Neuen Code testen: im Cursor-Terminal „npm run build“, dann Seite neu laden (F5).`
     : isMobile
       ? 'Tippen = Seite neu laden (immer neueste Version). Siehst du noch Blau oder alte Bilder? Einmal tippen.'
       : 'Tippen oder neue Seite öffnen (neuer Tab) = frischer Stand. Auch im fremden WLAN.'
@@ -464,6 +471,9 @@ function StandBadgeSync() {
             <h2 id="stand-hilfe-titel" style={{ margin: '0 0 0.6rem', fontSize: '1.05rem', fontWeight: 700, color: '#1c1a18' }}>
               Stand auf dem Handy oder Tablet
             </h2>
+            <p style={{ margin: '0 0 0.75rem', padding: '0.65rem 0.75rem', background: 'rgba(181,74,30,0.08)', borderRadius: 8, fontSize: '0.95em' }}>
+              <strong>Mac mit localhost:</strong> Unten links steht <strong>Build lokal</strong> – das ist Ihre Entwicklungsversion, <em>nicht</em> automatisch derselbe Zeitstempel wie bei einem <strong>geteilten Link</strong> zur Live-Galerie (<strong>Stand:</strong> vom Server). Zum Abgleich dieselbe Produktions-Adresse öffnen wie der Empfänger.
+            </p>
             <p style={{ margin: '0 0 0.75rem' }}>
               Manchmal wirkt die Galerie <strong>noch alt</strong>, obwohl Sie bereits veröffentlicht haben. Häufig liegt das am <strong>Zwischenspeicher</strong> Ihres Browsers – das ist bei Webseiten normal und kein Fehler Ihrer Daten.
             </p>
