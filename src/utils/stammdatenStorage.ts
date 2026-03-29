@@ -4,7 +4,23 @@
  * Merge-Logik nur hier; keine leeren Werte überschreiben (kein-datenverlust).
  */
 
-import { K2_STAMMDATEN_DEFAULTS, MUSTER_TEXTE, DEFAULT_OEK2_FOCUS_DIRECTION_ID } from '../config/tenantConfig'
+import {
+  K2_STAMMDATEN_DEFAULTS,
+  MUSTER_TEXTE,
+  DEFAULT_OEK2_FOCUS_DIRECTION_ID,
+  isPlatformInstance,
+  K2_DEFAULT_VITA_MARTINA,
+  K2_DEFAULT_VITA_GEORG,
+} from '../config/tenantConfig'
+
+/** Verhindert Auto-Save-Race: noch nicht hydratisierter React-State (Repo-Defaults) darf abweichende gespeicherte Werte nicht überschreiben. */
+function pickPersonScalar(incoming: unknown, existing: unknown, def: unknown): string {
+  const inc = incoming != null && String(incoming).trim() ? String(incoming).trim() : ''
+  const ex = existing != null && String(existing).trim() ? String(existing).trim() : ''
+  const d = def != null && String(def).trim() ? String(def).trim() : ''
+  if (inc && ex && d && inc === d && ex !== d) return ex
+  return inc || ex || d
+}
 
 export type StammdatenTenantId = 'k2' | 'oeffentlich'
 export type StammdatenType = 'martina' | 'georg' | 'gallery'
@@ -28,6 +44,66 @@ export function getStammdatenKey(tenant: StammdatenTenantId, type: StammdatenTyp
   return KEYS[tenant][type]
 }
 
+function readRawK2PersonParsed(type: 'martina' | 'georg'): Record<string, unknown> | null {
+  const key = getStammdatenKey('k2', type)
+  const raw = typeof window !== 'undefined' ? localStorage.getItem(key) : null
+  if (!raw?.trim()) return null
+  try {
+    const p = JSON.parse(raw) as unknown
+    if (!p || typeof p !== 'object') return null
+    const s = JSON.stringify(p)
+    if (s.length >= 100_000) return null
+    return p as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+const K2_ADMIN_FALLBACK_BIO: Record<'martina' | 'georg', string> = {
+  martina:
+    'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
+  georg:
+    'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von jahrzehntelanger Erfahrung.',
+}
+
+/**
+ * K2 Admin: Personen-State aus localStorage (roh), ohne Fallback auf Defaults wenn noch kein Key existiert.
+ * Gleiche Kontakt-/Vita-Logik wie der Stammdaten-useEffect im Admin – für useState-Hydration vor erstem Auto-Save.
+ */
+export function buildK2PersonStateForAdmin(type: 'martina' | 'georg'): Record<string, unknown> {
+  const d = type === 'martina' ? K2_STAMMDATEN_DEFAULTS.martina : K2_STAMMDATEN_DEFAULTS.georg
+  const category = type === 'martina' ? 'malerei' : 'keramik'
+  const parsed = readRawK2PersonParsed(type)
+  if (parsed) {
+    const merged: Record<string, unknown> = {
+      ...parsed,
+      name: (parsed.name && String(parsed.name).trim()) ? parsed.name : d.name,
+      email: (parsed.email && String(parsed.email).trim()) ? parsed.email : d.email,
+      phone: (parsed.phone && String(parsed.phone).trim()) ? parsed.phone : d.phone,
+      website: (parsed.website && String(parsed.website).trim()) ? parsed.website : (d.website || ''),
+      address: (parsed.address != null && String(parsed.address).trim()) ? parsed.address : (d.address ?? ''),
+      city: (parsed.city != null && String(parsed.city).trim()) ? parsed.city : (d.city ?? ''),
+      country: (parsed.country != null && String(parsed.country).trim()) ? parsed.country : (d.country ?? ''),
+    }
+    if (!merged.vita || typeof merged.vita !== 'string' || !merged.vita.trim()) {
+      merged.vita = isPlatformInstance() ? (type === 'martina' ? K2_DEFAULT_VITA_MARTINA : K2_DEFAULT_VITA_GEORG) : ''
+    }
+    return merged
+  }
+  return {
+    name: d.name,
+    category,
+    bio: K2_ADMIN_FALLBACK_BIO[type],
+    email: d.email,
+    phone: d.phone,
+    website: d.website || '',
+    address: d.address ?? '',
+    city: d.city ?? '',
+    country: d.country ?? '',
+    vita: isPlatformInstance() ? (type === 'martina' ? K2_DEFAULT_VITA_MARTINA : K2_DEFAULT_VITA_GEORG) : '',
+  }
+}
+
 /** Niemals leere Kontaktfelder/Adresse persistieren: vorhanden > Repo-Standard. Adresse getrennt von Galerie (Künstler-Adresse nur Fallback). */
 export function mergeStammdatenPerson(
   incoming: any,
@@ -37,10 +113,10 @@ export function mergeStammdatenPerson(
   const e = existing && typeof existing === 'object' ? existing : {}
   return {
     ...incoming,
-    name: (incoming?.name && String(incoming.name).trim()) || e.name || defaults.name,
-    email: (incoming?.email && String(incoming.email).trim()) || (e.email && String(e.email).trim()) || defaults.email,
-    phone: (incoming?.phone && String(incoming.phone).trim()) || (e.phone && String(e.phone).trim()) || defaults.phone,
-    website: (incoming?.website && String(incoming.website).trim()) || (e.website && String(e.website).trim()) || (defaults.website || ''),
+    name: pickPersonScalar(incoming?.name, e.name, defaults.name),
+    email: pickPersonScalar(incoming?.email, e.email, defaults.email),
+    phone: pickPersonScalar(incoming?.phone, e.phone, defaults.phone),
+    website: pickPersonScalar(incoming?.website, e.website, defaults.website || ''),
     address: (incoming?.address != null && String(incoming.address).trim()) ? incoming.address : (e.address ?? (defaults.address || '')),
     city: (incoming?.city != null && String(incoming.city).trim()) ? incoming.city : (e.city ?? (defaults.city || '')),
     country: (incoming?.country != null && String(incoming.country).trim()) ? incoming.country : (e.country ?? (defaults.country || '')),

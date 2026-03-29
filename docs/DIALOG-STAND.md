@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 29.03.26 – **Gleicher Stand (Repo = Vercel-Ziel):** Alle ausstehenden lokalen Änderungen **gebündelt committed und auf `main` gepusht:** Stammdaten **`mergeStammdatenPerson` / `pickPersonScalar`** (gespeicherte Telefonnummer wird nicht durch Repo-Default überschrieben, wenn Auto-Save zu früh feuert), **`buildK2PersonStateForAdmin`** + Tests; **Flyer-Event-Bogen** Aufrufer (Texte-Schreibtisch, Werbeunterlagen, mök2, Plakat-Redirect) mit konsistenten Query-Parametern; **`eventPlakatTooltip`** (Galerie + VK2); dazu Build-Infos, kleine `main`-Anpassung, Vita-Martina-Entwurf in **docs/**, Testprotokoll-Zeile. **Nicht versioniert:** `src/utils/domFullscreen.ts` (derzeit keine Importe – kann später oder gelöscht). **Commit:** siehe `git log -1 --oneline` nach Push.
+
+**Was wir JETZT tun:** **Vercel → Deployments** bis **Ready / Current** prüfen; dann Live-URL **`/build-info.json`** oder Stand-Badge mit Erwartung abgleichen.
+
+---
+
 **Letzter Stand:** 29.03.26 – **Lehre: Vercel-Deploys stundenlang aus, unbemerkt:** Es sind **keine erfolgreichen Deployments** mehrere Stunden lang durchgegangen – **ohne dass es vorher auffiel** (lokal wirkt alles normal). **Das ist kein Kompliment** – Live und GitHub können auseinanderlaufen, ohne dass man es merkt. **Ab jetzt:** Nach **jedem** Push kurz **Vercel → Projekt → Deployments** ansehen: **Ready** / **Current** oder rot (Build Failed). Zusätzlich: Live-Seite **`/build-info.json`** oder **Stand-Badge** nur auf **Produktions-URL** (nicht localhost). **Doku:** [VERCEL-STAND-HANDY.md](VERCEL-STAND-HANDY.md), [DEPLOYMENT-EIN-BRANCH.md](DEPLOYMENT-EIN-BRANCH.md). **Commit:** **0a113d1** ✅ auf GitHub
 
 **Was wir JETZT tun:** Wenn Deploys wieder laufen: letzten grünen Deployment-Zeitpunkt notieren; bei Build-Failure die Vercel-Logs als erste Quelle.

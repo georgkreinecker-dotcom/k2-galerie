@@ -188,7 +188,7 @@ const BEREICHE: Bereich[] = [
         id: 'plakat',
         titel: 'Plakat A3',
         zweck: 'Gleiche Route wie Flyer-Master, nur A3 – Muster/Event & Stammdaten',
-        to: flyerEventBogenUrl({ mode: 'a3', tenant: 'k2' }),
+        to: flyerEventBogenUrl({ mode: 'a3', tenant: 'k2', fromAdminDerivation: true }),
         rotateDeg: 0.28,
       },
     ],

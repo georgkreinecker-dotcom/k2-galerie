@@ -1232,7 +1232,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </li>
             <li>
               <Link
-                to={flyerEventBogenUrl({ mode: 'a3', tenant: 'oeffentlich' })}
+                to={flyerEventBogenUrl({ mode: 'a3', tenant: 'oeffentlich', fromPublicGalerie: true })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
                 Plakat A3 (vom Master) →
@@ -1240,7 +1240,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </li>
             <li>
               <Link
-                to={flyerEventBogenUrl({ mode: 'a6', tenant: 'oeffentlich' })}
+                to={flyerEventBogenUrl({ mode: 'a6', tenant: 'oeffentlich', fromPublicGalerie: true })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
                 Flyer A6 quer (vom Master) →
@@ -1248,7 +1248,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             </li>
             <li>
               <Link
-                to={flyerEventBogenUrl({ mode: 'card', tenant: 'oeffentlich' })}
+                to={flyerEventBogenUrl({ mode: 'card', tenant: 'oeffentlich', fromPublicGalerie: true })}
                 style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}
               >
                 Visitenkarte 55 × 85 (vom Master) →

@@ -140,12 +140,15 @@ if (typeof window !== 'undefined') {
 }
 
 // Finale Lösung Crash: Im iframe (Cursor Preview) die App NICHT laden – nur Hinweis.
-// Ausnahmen: embedded=1 = APf iPhone/iPad-Vorschau; k2DocViewer=1 = In-App-Dokument-Viewer im Admin (iframe lädt gleiche Origin-Route, z. B. Flyer-Master).
+// Ausnahmen: embedded=1 = APf iPhone/iPad-Vorschau; k2DocViewer=1 = In-App-Dokument-Viewer im Admin;
+// k2PlakatEmbed=1 = Plakat aus Galerie-„Aktuelles“ im Overlay-iframe (gleiche Origin).
 const rootElement = typeof document !== 'undefined' ? document.getElementById('root') : null
 const embeddedInApf = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embedded') === '1'
 const k2DocViewerEmbed =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('k2DocViewer') === '1'
-if (rootElement && inIframe && !embeddedInApf && !k2DocViewerEmbed) {
+const k2PlakatEmbed =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('k2PlakatEmbed') === '1'
+if (rootElement && inIframe && !embeddedInApf && !k2DocViewerEmbed && !k2PlakatEmbed) {
   const port = typeof window !== 'undefined' && window.location.port ? window.location.port : '5177'
   // Volle URL (Pfad + Suchparameter), damit z. B. /projects/k2-galerie?page=handbuch&doc=... im Browser genau diese Seite öffnet
   const fullUrl = typeof window !== 'undefined'

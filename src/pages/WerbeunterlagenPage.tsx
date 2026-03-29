@@ -195,6 +195,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
               to={flyerEventBogenUrl({
                 mode: 'a3',
                 tenant: modus === 'oek2' ? 'oeffentlich' : 'k2',
+                ...(modus === 'oek2' ? { fromPublicGalerie: true } : { fromAdminDerivation: true }),
               })}
               style={{ padding: '0.5rem 0.85rem', background: s.bgCard, border: `1px solid ${s.accentSoft}`, borderRadius: 8, textDecoration: 'none', color: s.text, fontWeight: 600 }}
             >

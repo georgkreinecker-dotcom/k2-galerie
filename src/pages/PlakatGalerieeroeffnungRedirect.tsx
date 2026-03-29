@@ -9,5 +9,10 @@ export default function PlakatGalerieeroeffnungRedirect() {
   const ctx = new URLSearchParams(search).get('context')?.toLowerCase().trim()
   const tenant: FlyerEventBogenTenantContext =
     ctx === 'oeffentlich' ? 'oeffentlich' : ctx === 'vk2' ? 'vk2' : 'k2'
-  return <Navigate to={flyerEventBogenUrl({ mode: 'a3', tenant })} replace />
+  return (
+    <Navigate
+      to={flyerEventBogenUrl({ mode: 'a3', tenant, fromPublicGalerie: true })}
+      replace
+    />
+  )
 }
