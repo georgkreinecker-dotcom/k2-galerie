@@ -151,7 +151,7 @@ function main() {
   writePdf('vita-georg-k2-kurzbiographie-2026-03.pdf', (a) => {
     a.addTitle('Kurzbiographie Georg Kreinecker')
     a.addPara(
-      '1983 legte ich die Schlossermeisterprüfung ab. 1985 wagte ich mit dem Kreinecker Georg Maschinenbau (KGM) den Schritt in die Selbstständigkeit – daraus wurden die kgm consulting & trading GmbH und die kgm Immobilien GmbH. kgm solution betreibe ich im Ruhestand; das ist mein Projekt rund um die K2 Galerie und die digitale Plattform.'
+      '1983 legte ich die Schlossermeisterprüfung ab. 1985 wagte ich mit der Gründung von Kreinecker Georg Maschinenbau (KGM) den Schritt in die Selbstständigkeit – daraus wurden die kgm consulting & trading GmbH und die kgm Immobilien GmbH. kgm solution betreibe ich im Ruhestand; das ist mein Projekt rund um die K2 Galerie und die digitale Plattform.'
     )
     a.addPara(
       'Mit Stein und Bildhauerei bin ich 2009 eingestiegen; Bronze war für mich nur eine zwischengelagerte Phase – bei der Keramik blieb ich hängen und wollte mehr. Praxiskurse bei Georg Niemann, bei Sabine Classen und im Keramikzentrum Grenzhausen (Keramik-Kombinat) haben mich weitergebracht. Ich lese viel dazu und probiere am Ton aus – das gehört für mich einfach zum Handwerk dazu.'
