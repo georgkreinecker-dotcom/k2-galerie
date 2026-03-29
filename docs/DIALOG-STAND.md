@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **K2 Galerie „Aktuelles“ → Plakat/Flyer-Vorschau:** Öffnen mit `from=publicGalerie` setzt **left/middle/right** jetzt aus **aktuellen** K2-Stammdaten „Galerie gestalten“ (`getGalerieImages`), nicht mehr aus dem alten gespeicherten Flyer-Master in `localStorage` – damit kein „veraltetes“ Motiv mehr. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **6bfe9fd** ✅ auf GitHub.
+**Letzter Stand:** 29.03.26 – **K2 Galerie „Aktuelles“ → Plakat/Flyer-Vorschau:** Öffnen mit `from=publicGalerie` setzt **left/middle/right** jetzt aus **aktuellen** K2-Stammdaten „Galerie gestalten“ (`getGalerieImages`), nicht mehr aus dem alten gespeicherten Flyer-Master in `localStorage` – damit kein „veraltetes“ Motiv mehr. **Datei:** `FlyerEventBogenNeuPage.tsx`. **Commit:** **9c87e80** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Nach Deploy: von Galerie Aktuelles → A3-Vorschau kurz prüfen; Admin-Flyer-Master bleibt für Bearbeitung/Speichern wie bisher.
 
