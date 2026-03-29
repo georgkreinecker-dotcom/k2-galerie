@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 29.03.26 – **Vita Georg 1985:** Formulierung **„mit der Gründung von Kreinecker Georg Maschinenbau (KGM)“** (statt „mit dem …“) in Entwurf, HTML, PDF-Generator + Georg-Kurzbiographie-PDF. **Commit:** _(nach Push eintragen)_ ✅ auf GitHub.
+**Letzter Stand:** 29.03.26 – **Vita Georg 1985:** Formulierung **„mit der Gründung von Kreinecker Georg Maschinenbau (KGM)“** (statt „mit dem …“) in Entwurf, HTML, PDF-Generator + Georg-Kurzbiographie-PDF. **Commit:** **4949280** ✅ auf GitHub.
 
 **Was wir JETZT tun:** Optional Martina-Vita; sonst weiter wie zuvor.
 
