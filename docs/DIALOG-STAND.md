@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: kostenlose Pro++ ohne Ablaufdatum** – Neue Tokens: `l: propplus`, `p: 1` (Einladungslink läuft nicht ab); Verify-Fallback Lizenz: Pilot → `propplus`, sonst `proplus` (Legacy v2). **PilotEinladungPage:** `k2-pilot-einladung` mit `licenceType` + `pilotProPlusUnlimited`. **Admin:** `setKassabuchLizenzStufe` ök2/VK2 → `propplus` bei Pilot-Session; Banner-Text angepasst. E-Mail-HTML + Plaintext Fußzeile. Tests ergänzt. *(Commit-Hash nach Push eintragen.)*
+**Letzter Stand:** 30.03.26 – **Testpilot: kostenlose Pro++ ohne Ablaufdatum** – Neue Tokens: `l: propplus`, `p: 1` (Einladungslink läuft nicht ab); Verify-Fallback Lizenz: Pilot → `propplus`, sonst `proplus` (Legacy v2). **PilotEinladungPage:** `k2-pilot-einladung` mit `licenceType` + `pilotProPlusUnlimited`. **Admin:** `setKassabuchLizenzStufe` ök2/VK2 → `propplus` bei Pilot-Session; Banner-Text angepasst. E-Mail-HTML + Plaintext Fußzeile. Tests ergänzt. **Commit:** **4b0c3a1** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Push Vercel **Ready** → neuen Testpilot-Link erzeugen und Einladung + Admin (Kassa-Stufe) kurz prüfen.
 
