@@ -5,7 +5,13 @@
 
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE, AGB_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import {
+  PROJECT_ROUTES,
+  WILLKOMMEN_ROUTE,
+  OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE,
+  AGB_ROUTE,
+  K2_GALERIE_APF_EINSTIEG,
+} from '../config/navigation'
 import { mok2Groups } from '../config/mok2Structure'
 
 const PANEL_WIDTH = 380
@@ -28,7 +34,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const isSoftwareentwicklung = location.pathname === PROJECT_ROUTES['k2-galerie'].softwareentwicklung
   const isEmpfehlungstool = location.pathname === PROJECT_ROUTES['k2-galerie'].empfehlungstool
   const isVerguetung = location.pathname === PROJECT_ROUTES['k2-galerie'].verguetung
-  const isWillkommen = location.pathname === WILLKOMMEN_ROUTE
+  const isEingangstor = location.pathname === OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE || location.pathname === WILLKOMMEN_ROUTE
   const isAgb = location.pathname === AGB_ROUTE
 
   const scrollToSection = (id: string) => {
@@ -175,18 +181,18 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
           Vergütung
         </Link>
         <Link
-          to={WILLKOMMEN_ROUTE}
+          to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
           style={{
             padding: '0.4rem 0.8rem',
-            background: isWillkommen ? 'var(--k2-accent, #5ffbf1)' : '#444',
-            color: isWillkommen ? '#000' : '#fff',
+            background: isEingangstor ? 'var(--k2-accent, #5ffbf1)' : '#444',
+            color: isEingangstor ? '#000' : '#fff',
             textDecoration: 'none',
             borderRadius: '6px',
             fontSize: '0.9rem',
-            fontWeight: isWillkommen ? 600 : 400,
+            fontWeight: isEingangstor ? 600 : 400,
           }}
         >
-          Willkommen
+          Eingangstor
         </Link>
         <Link
           to={AGB_ROUTE}
@@ -377,7 +383,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
               🛒 Lizenz online abschließen (Stripe)
             </Link>
             <Link
-              to={WILLKOMMEN_ROUTE}
+              to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
               style={{
                 marginTop: '0.4rem',
                 padding: '0.5rem 0.75rem',
@@ -390,7 +396,7 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
                 display: 'block',
               }}
             >
-              🚪 Willkommensseite (Zugangsbereich)
+              🚪 Eingangstor (Zugangsbereich)
             </Link>
             <Link
               to={AGB_ROUTE}

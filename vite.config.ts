@@ -702,6 +702,9 @@ const devPilotInviteMiddleware = () => {
               req.on('error', reject)
             })
             req.body = bodyRaw
+            // Shared zuerst mit Cache-Bust laden (verhindert veraltete Named-Exports / leere Stub-Module bei Vite-Dev).
+            const sharedUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'pilotInviteShared.js')).href}?v=${Date.now()}`
+            await import(sharedUrl)
             const sendInviteUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href}?v=${Date.now()}`
             const mod = await import(sendInviteUrl)
             await mod.default(req, wrapResForVercelStyleApi(res))
