@@ -303,7 +303,7 @@ export async function sendPilotInviteViaResend({
   const hrefEsc = escapeHtml(String(inviteUrl))
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#1a1a1a;max-width:560px;">
-    <p style="margin:0 0 12px;font-size:13px;color:#555">Siehst du keinen grünen Button? Dann zeigt dein Programm nur die Text-Version – unten steht derselbe Link zum Antippen.</p>
+    <p style="margin:0 0 12px;font-size:13px;color:#555">Kein Button sichtbar? E-Mail als HTML laden – oder in der Text-Ansicht die <strong>eine</strong> Zeile mit &lt;https://…&gt; komplett kopieren.</p>
     <p>Hallo ${escapeHtml(hallo)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
     <p><strong>Wichtig:</strong> Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Einladung ist mit Vorname, Nachname und E-Mail abgestimmt. Was du siehst, sind <strong>Muster-Daten</strong> – zum Ausprobieren.</p>

@@ -174,9 +174,8 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(t).toContain('Weiter zur öffentlichen Demo (ök2)')
     expect(t).toContain('Stammdaten')
     expect(t).toContain('Hallo Alex')
-    expect(t).toContain('https://x.example/p?t=abc')
     expect(t).toContain('<https://x.example/p?t=abc>')
-    expect(t).toContain('EINLADUNG ÖFFNEN')
+    expect(t).toContain('Direktlink')
   })
 
   it('buildPilotInviteEmailPlainText: VK2-Button-Text', () => {

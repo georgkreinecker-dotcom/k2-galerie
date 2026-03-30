@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot Plaintext: wieder nur eine Link-Zeile** – Doppelte Riesen-URL (nackt + &lt;…&gt;) war zu viel. Jetzt wie früher **nur** `<https://…>` unter „Direktlink“; kurzer Hinweis HTML vs. Text. HTML-Mail: Hinweiszeile angepasst. **Commit:** (nach Push)
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Button in HTML, Text-Mail lesbar:** Viele Programme zeigen nur **Plaintext** → kein grüner Button, nur `<URL>`. **Plaintext** (`pilotInviteEmailBody.js`): Hinweis auf HTML-Button, Kasten **„EINLADUNG ÖFFNEN“** mit **voller URL-Zeile** (tippbar) + weiterhin `<…>` als Alternative. **Resend-HTML** (`sendPilotInviteViaResend`): Hinweiszeile, **Tabellen-Button**, `href` escaped. **Tests + Build grün.** **Commit:** **5e9fec5** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
