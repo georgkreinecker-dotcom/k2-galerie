@@ -435,8 +435,13 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.35rem', color: 'var(--k2-text)' }}>
             ✉️ Testpilot:in per E-Mail einladen
           </h2>
-          <p style={{ fontSize: '0.9rem', color: 'var(--k2-text)', margin: '0 0 0.75rem', lineHeight: 1.5, fontWeight: 600 }}>
-            Nach dem Absenden siehst du <strong>dieselbe Vorschau</strong> wie der Empfänger in der Einladungs-E-Mail (Button, Texte).
+          <p style={{ fontSize: '0.9rem', color: 'var(--k2-text)', margin: '0 0 0.5rem', lineHeight: 1.55, fontWeight: 600 }}>
+            <strong>Ehrlich:</strong> Die weiße Karte unten ist <strong>nur eine Vorschau in der App</strong> – die allein schickt <strong>keine</strong> E-Mail.
+          </p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem', lineHeight: 1.55 }}>
+            <strong>Postfach beim Empfänger</strong> nur, wenn auf Vercel <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> + passendes{' '}
+            <code style={{ fontSize: '0.78rem' }}>RESEND_FROM</code> stehen und Resend die Mail annimmt. Sonst: Link kopieren, selbst senden, oder{' '}
+            <strong>.eml</strong> laden (in der <strong>Mail-App</strong> öffnen – nicht im Texteditor, sonst siehst du nur „HTML-Text“).
           </p>
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem' }}>
             <Link
@@ -478,7 +483,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
               </select>
             </div>
             <button type="submit" disabled={pilotInviteBusy} className="btn" style={{ background: '#b54a1e', color: '#fff', alignSelf: 'flex-start' }}>
-              {pilotInviteBusy ? '…' : 'Einladung senden / Link erzeugen'}
+              {pilotInviteBusy ? '…' : 'Absenden: Link + Vorschau (E-Mail nur mit Resend)'}
             </button>
           </form>
           {pilotInviteMsg && pilotInviteMsg.type === 'error' ? (
@@ -505,6 +510,72 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
           ) : null}
           {pilotInviteUrl ? (
             <div style={{ marginTop: '1rem' }}>
+              {pilotInviteMsg && pilotInviteMsg.type === 'warn' ? (
+                <div
+                  style={{
+                    marginBottom: '1rem',
+                    padding: '0.9rem 1rem',
+                    borderRadius: 10,
+                    background: 'rgba(220, 38, 38, 0.12)',
+                    border: '2px solid rgba(248, 113, 113, 0.55)',
+                    fontSize: '0.88rem',
+                    color: 'var(--k2-text)',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  <strong style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem' }}>
+                    Es ist keine E-Mail rausgegangen.
+                  </strong>
+                  Der Server hat <strong>nichts</strong> in ein Postfach geschickt – weder HTML noch schön formatiert. Was du darunter siehst, ist{' '}
+                  <strong>nur diese Vorschau</strong> in der App. So lädst du trotzdem ein:{' '}
+                  <strong>Link kopieren</strong> und selbst per Mail schicken, oder <strong>.eml laden</strong> und in{' '}
+                  <strong>Apple Mail / Outlook</strong> öffnen (Doppelklick) – <em>nicht</em> mit TextEdit oder „Quelltext“, sonst wirkt es wie HTML-Müll.
+                  <br />
+                  <br />
+                  Automatisch raus erst nach Einrichtung:{' '}
+                  <Link
+                    to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md"
+                    style={{ color: '#fca5a5', fontWeight: 700, textDecoration: 'underline' }}
+                  >
+                    Handbuch: Resend auf Vercel
+                  </Link>
+                  {pilotInviteMsg.detail ? (
+                    <>
+                      <br />
+                      <br />
+                      <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>Resend-Meldung:</span>
+                      <pre
+                        style={{
+                          margin: '0.35rem 0 0',
+                          fontSize: '0.72rem',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          color: 'var(--k2-muted)',
+                        }}
+                      >
+                        {pilotInviteMsg.detail}
+                      </pre>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+              {pilotInviteMsg && pilotInviteMsg.type === 'ok' ? (
+                <div
+                  style={{
+                    marginBottom: '1rem',
+                    padding: '0.75rem 1rem',
+                    borderRadius: 10,
+                    background: 'rgba(22, 163, 74, 0.15)',
+                    border: '1px solid rgba(74, 222, 128, 0.45)',
+                    fontSize: '0.88rem',
+                    color: 'var(--k2-text)',
+                    lineHeight: 1.55,
+                  }}
+                >
+                  <strong>E-Mail wurde vom Server an Resend übergeben</strong> – beim Empfänger im Posteingang prüfen (Ordner Spam). Die Vorschau unten
+                  entspricht dem HTML-Inhalt der Mail.
+                </div>
+              ) : null}
               <h3
                 style={{
                   fontSize: '1.05rem',
@@ -514,28 +585,15 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   fontWeight: 700,
                 }}
               >
-                So sieht die E-Mail beim Empfänger aus
+                {pilotInviteMsg?.type === 'ok'
+                  ? 'So sieht die gesendete E-Mail aus'
+                  : 'Vorschau: so würde die Einladung als HTML-Mail aussehen'}
               </h3>
               <PilotInviteEmailPreview
                 inviteUrl={pilotInviteUrl}
                 greetingName={pilotInviteFirstName.trim()}
                 inviteContext={pilotInviteContext}
               />
-              {pilotInviteMsg && pilotInviteMsg.type !== 'error' ? (
-                <p
-                  style={{
-                    marginTop: '0.75rem',
-                    fontSize: '0.82rem',
-                    textAlign: 'center',
-                    color: pilotInviteMsg.type === 'warn' ? '#fbbf24' : 'rgba(95,251,241,0.85)',
-                  }}
-                >
-                  {pilotInviteMsg.type === 'warn' ? '⚠️ ' : '✅ '}
-                  {pilotInviteMsg.type === 'warn'
-                    ? 'Kein automatischer Versand – die Vorschau oben ist trotzdem der gültige Link.'
-                    : 'Einladung wurde per E-Mail mitgeschickt (wenn der Server-Versand aktiv ist).'}
-                </p>
-              ) : null}
               <details style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'var(--k2-muted)' }}>
                 <summary style={{ cursor: 'pointer', color: 'var(--k2-muted)' }}>
                   Link kopieren, .eml mit Layout oder Mail-Programm (nur Klartext)
@@ -620,21 +678,6 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                     </a>
                   ) : null}
                 </div>
-                {pilotInviteMsg?.detail ? (
-                  <pre
-                    style={{
-                      marginTop: '0.5rem',
-                      fontSize: '0.7rem',
-                      color: 'var(--k2-muted)',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word',
-                      maxHeight: '5rem',
-                      overflow: 'auto',
-                    }}
-                  >
-                    {pilotInviteMsg.detail}
-                  </pre>
-                ) : null}
               </details>
             </div>
           ) : null}

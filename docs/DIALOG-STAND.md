@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: Kein „Fake-Versand“ in der UI:** Georg zu Recht: nur schöne Vorschau ≠ Postfach. **LicencesPage** jetzt **ehrlich:** Einleitung = Vorschau allein schickt keine Mail; **rot** „Es ist keine E-Mail rausgegangen“ wenn Server/Resend nichts liefert; **grün** wenn Resend übernommen hat; Button-Text **„Absenden: Link + Vorschau (E-Mail nur mit Resend)“**; Hinweis **.eml in Mail-App** öffnen (nicht Texteditor). **Tests + Build grün.** **Commit:** **dbd6c11** ✅ auf GitHub
+
+**Was wir JETZT tun:** Ohne `RESEND_API_KEY` auf Vercel kommt weiterhin nichts im Postfach – dann Link/.eml nutzen oder Resend einrichten (Handbuch 26)
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: „Geht nicht raus“ / mailto nur HTML-Code:** `mailto:` kann **kein HTML** – nur Klartext; lange URLs brechen **mailto-Limits** → kaputter Entwurf. **Fix:** `api/pilotInviteEmailHtml.js` (eine Quelle für Resend + **.eml**); **LicencesPage** Button **„Mail mit Layout (.eml laden)“** + klare Hinweise; **send-pilot-invite:** `mailtoTruncated` + Kurztext wenn URL >2200 Zeichen; **mailtoUrl** auch bei erfolgreichem Resend (Fallback). **Tests + Build grün.** **Commit:** **62d4d6a** ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg: .eml testen (Doppelklick → Mail); ohne Resend = normal; mit Resend = E-Mail automatisch raus
+**Was wir JETZT tun:** –
 
 ---
 
