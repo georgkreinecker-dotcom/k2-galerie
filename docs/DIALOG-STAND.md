@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Lizenzen ök2/VK2 (mök2 + Seiten):** Zeitplan **öffentlich ab 01. Mai** und **Pilot:innen nach Einladung/Vereinbarung** oben bei **LicencesPage**, **LizenzKaufenPage** und mök2 **§10**; neuer Block **„Lizenz abschließen (ök2 & VK2)“** mit Links **Lizenz kaufen** + **Lizenzen verwalten**; **VK2 §10b** mit gleichem Zeitplan-Kasten + **„Lizenzen abschließen“**-Links und Stufe **Kunstvereine (VK2)**. Sidebar **mok2Structure** Gruppe „Bewertung & Lizenzen“: Einträge **mok2-10** und **mok2-10-lizenz-abschliessen**. Inhaltsverzeichnis mök2 ergänzt. **Commit:** (folgt nach Push)
+**Letzter Stand:** 28.03.26 – **Lizenzen ök2/VK2 (mök2 + Seiten):** Zeitplan **öffentlich ab 01. Mai** und **Pilot:innen nach Einladung/Vereinbarung** oben bei **LicencesPage**, **LizenzKaufenPage** und mök2 **§10**; neuer Block **„Lizenz abschließen (ök2 & VK2)“** mit Links **Lizenz kaufen** + **Lizenzen verwalten**; **VK2 §10b** mit gleichem Zeitplan-Kasten + **„Lizenzen abschließen“**-Links und Stufe **Kunstvereine (VK2)**. Sidebar **mok2Structure** Gruppe „Bewertung & Lizenzen“: Einträge **mok2-10** und **mok2-10-lizenz-abschliessen**. Inhaltsverzeichnis mök2 ergänzt. **Commit:** **cd83063** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Push: mök2 §10/§10b und Seite **Lizenzen** kurz gegenlesen; Deploy prüfen.
 
