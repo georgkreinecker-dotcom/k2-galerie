@@ -204,6 +204,8 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(h).toContain('Jetzt Testpilot starten')
     expect(h).toContain('#0d9488')
     expect(h).toContain('href="https://x.example/p?t=abc&amp;x=1"')
+    expect(h).toContain('padding:1.25rem 1.35rem')
+    expect(h).toContain('box-shadow:0 4px 24px')
     expect(h).not.toContain('<script')
   })
 })

@@ -32,8 +32,11 @@ export function buildPilotInviteEmailHtml({ name, greetingName, inviteUrl, conte
         </td>
       </tr>
     </table>`
+  /** Ein äußerer Block – dieselben Inline-Styles wie früher die React-Vorschau (eine Quelle: Vorschau = Mail = .eml). */
+  const outer =
+    'font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1a1a1a;max-width:560px;margin:0 auto;padding:1.25rem 1.35rem;background:#fff;border-radius:12px;border:1px solid #e8e6e3;box-shadow:0 4px 24px rgba(0,0,0,0.08)'
   return `
-    <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#1a1a1a;max-width:560px;">
+    <div style="${outer}">
     <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:#111">Hallo ${escapeHtml(hallo)}</p>
     <p style="margin:0 0 16px;font-size:14px;color:#444">Testpilot:in · ${escapeHtml(contextLabel)}</p>
     <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1a1a1a">Ein Klick – los geht’s:</p>
