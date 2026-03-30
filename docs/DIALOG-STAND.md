@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Testpilot-Einladung – Automatisierung zu Ende dokumentiert:** Team-Handbuch **`k2team-handbuch/26-TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Spiegel `public/k2team-handbuch/`), Index + **K2TeamHandbuchPage**-Eintrag; **LicencesPage** Link „Einmal einrichten“; **`.env.example`** + **`docs/TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Zeiger); **`docs/00-INDEX.md`**. Eine Spur: Schritt 1–3 bis Link + optional Resend-Mail.
+
+**Was wir JETZT tun:** Auf **Vercel** `PILOT_INVITE_SECRET` setzen; optional Resend; **Lizenzen** → Testpilot testen (nach vorherigen Blöcken).
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-Workflow (Automatisierung):** **`/api/send-pilot-invite`** (POST, Origin-Check, optional **Resend**), **`/api/validate-pilot-token`**, **`api/pilotInviteShared.js`** (HMAC). **Seite** **`/projects/k2-galerie/pilot-einladung`** (`PilotEinladungPage`, **PlatformOnlyRoute**): Token → Weiter **Entdecken** oder **VK2-Galerie**, Name in **sessionStorage**. **Lizenzen:** Block **„Testpilot einladen“** (`#testpilot-einladen`), Link von **Zettel-Pilot-Form**. **PilotStartPage** / **ZettelPilotFormPage:** Texte angepasst. **Vite-Dev:** Middleware für beide APIs wenn **`PILOT_INVITE_SECRET`** in `.env`. **Vercel-Env:** `PILOT_INVITE_SECRET`, optional `RESEND_API_KEY`, `RESEND_FROM`. **Commit:** **c7f9657** ✅ auf GitHub
 
 **Was wir JETZT tun:** Auf **Vercel** `PILOT_INVITE_SECRET` setzen; optional Resend; dann **Lizenzen** → Testpilot einladen testen.

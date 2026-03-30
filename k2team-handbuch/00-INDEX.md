@@ -22,5 +22,6 @@ Kurzreferenz für Zusammenarbeit und Betrieb der K2 Galerie. Stand: Februar 2026
 | 12 | [Notfall-Checkliste](23-NOTFALL-CHECKLISTE.md) | Cursor aus? Dialog tot? Parallelstrukturen: DIALOG-STAND, Briefing, Backup – zentral im Smart Panel |
 | 13 | [Texte & Briefe Kompass](24-TEXTE-BRIEFE-KOMPASS.md) | Schnellwahl: welcher Text/Brief wofür; ein Zweck = ein Hauptdokument |
 | 14 | [Lizenz: Eigene URL ab Pro](25-LIZENZ-EIGENE-URL-AB-PRO.md) | Custom Domain/URL pro Lizenznehmer: was es ist, wie es online wird, wie Veröffentlichen dazu passt |
+| 15 | [Testpilot-Einladung einrichten](26-TESTPILOT-EINLADUNG-EINRICHTUNG.md) | PILOT_INVITE_SECRET, Resend, Vercel – einmal einrichten, dann Link und optional E-Mail vom Server |
 
 **Weitere Kapitel** (bei Bedarf): [Proaktive Zusammenarbeit](03-PROAKTIVE-ZUSAMMENARBEIT.md) · [Vision](04-VISION-STRATEGIE.md) · [Arbeitsgewohnheiten](05-ARBEITSGEWOHNHEITEN.md) · [Aktueller Stand](06-AKTUELLER-STAND.md) · [Entscheidungen](07-ENTSCHEIDUNGS-FRAMEWORK.md) · [Feedback](08-FEEDBACK.md) · [Git/Vercel](09-GIT-VERCEL-PROBLEME.md) · [Stabilität](10-STABILITAET-FIXES.md) · [Backup-Zusammenfassung](11-BACKUP-ZUSAMMENFASSUNG.md) · [APf-Verbesserungen](12-ARBEITSPLATTFORM-VERBESSERUNGEN.md)

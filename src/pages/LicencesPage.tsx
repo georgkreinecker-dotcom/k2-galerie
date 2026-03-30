@@ -401,6 +401,15 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code>
             ; optional <code style={{ fontSize: '0.78rem' }}>RESEND_FROM</code> (Absender, Domain bei Resend verifiziert).
           </p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+            <Link
+              to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md"
+              style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}
+            >
+              Einmal einrichten – vollständige Anleitung im Team-Handbuch
+            </Link>
+            {' '}(Schritt 1–3 bis alles wirklich funktioniert.)
+          </p>
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Name der Pilot:in *</label>
