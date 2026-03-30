@@ -442,8 +442,12 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
               <strong>localhost:</strong> Der Einladungslink zeigt trotzdem auf die Live-Adresse k2-galerie.vercel.app. Der
               Wert <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> muss dort (Vercel → Production){' '}
               <strong>exakt</strong> derselbe sein wie in deiner Projekt-<code style={{ fontSize: '0.78rem' }}>.env</code> –
-              sonst ist der Link nach dem Klick ungültig. Am zuverlässigsten: Lizenzen-Seite auf der Live-Seite öffnen und
-              die Einladung dort erzeugen.
+              sonst ist der Link nach dem Klick ungültig. Am zuverlässigsten: auf der Live-Seite die{' '}
+              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
+                Lizenzen-Seite
+              </Link>{' '}
+              öffnen (nicht nur die Domain – ohne Pfad landet man auf dem Eingangstor Entdecken) und die Einladung dort
+              erzeugen.
             </div>
           ) : null}
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>

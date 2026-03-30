@@ -4,7 +4,9 @@
 
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ENTDECKEN_ROUTE, WILLKOMMEN_NAME_KEY } from '../config/navigation'
+import { ENTDECKEN_ROUTE, PROJECT_ROUTES, WILLKOMMEN_NAME_KEY } from '../config/navigation'
+
+const LIVE_LIZENZEN_PATH = PROJECT_ROUTES['k2-galerie'].licences
 
 const BG = '#f6f4f0'
 const TEXT = '#1c1a18'
@@ -184,10 +186,17 @@ export default function PilotEinladungPage() {
                 <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> nutzen (lokal in{' '}
                 <code style={{ fontSize: '0.82em' }}>.env.local</code> und auf Vercel <strong>identisch</strong>).
               </p>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                <strong>Hinweis zur Adresse:</strong> Wer nur <strong>k2-galerie.vercel.app</strong> ohne Pfad öffnet, landet auf dem{' '}
+                <strong>Eingangstor</strong> (Entdecken) – das ist Absicht. Für eine neue Einladung brauchst du die Seite{' '}
+                <strong>Lizenzen</strong>, nicht die Startseite.
+              </p>
               <p style={{ margin: 0 }}>
-                <strong>Neuen Link erzeugen:</strong> APf → <strong>Lizenzen</strong> → Testpilot-Formular – am zuverlässigsten die Seite direkt auf{' '}
-                <strong>k2-galerie.vercel.app</strong> öffnen, Einladung senden, dann den angezeigten Link oder „Persönlichen Link öffnen“ nutzen
-                (nicht einen alten Tab mit localhost mischen).
+                <strong>Neuen Link erzeugen:</strong> In der Live-App{' '}
+                <Link to={LIVE_LIZENZEN_PATH} style={{ color: BTN, fontWeight: 600 }}>
+                  Lizenzen öffnen
+                </Link>{' '}
+                (<code style={{ fontSize: '0.76em' }}>{LIVE_LIZENZEN_PATH}</code>), Testpilot-Formular ausfüllen, Einladung senden – dann „Persönlichen Link öffnen“ oder den angezeigten Link nutzen (nicht einen alten Tab mit localhost mischen).
               </p>
             </div>
           ) : null}

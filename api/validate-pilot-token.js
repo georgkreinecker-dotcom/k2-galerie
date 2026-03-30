@@ -64,7 +64,7 @@ export default async function handler(req, res) {
             : 'INVALID'
     const hint =
       reason === 'bad_signature'
-        ? 'Häufig: (1) Einladung auf localhost erzeugt, Link öffnet auf k2-galerie.vercel.app → PILOT_INVITE_SECRET in Vercel unter Environment Variables für **Production** (nicht nur Preview) muss **bytegenau** dieselbe Zeichenkette sein wie in der Projekt-.env – ohne Anführungszeichen, ohne Zeilenumbruch; nach Änderung **Redeploy**. (2) Oder: Einladung direkt auf https://k2-galerie.vercel.app unter Lizenzen erzeugen. (3) Nach Secret-Wechsel: optional PILOT_INVITE_SECRET_ALT in Vercel setzen (altes Geheimnis), bis alle neuen Links versendet sind.'
+        ? 'Häufig: (1) Einladung auf localhost erzeugt, Link öffnet auf k2-galerie.vercel.app → PILOT_INVITE_SECRET in Vercel unter Environment Variables für **Production** (nicht nur Preview) muss **bytegenau** dieselbe Zeichenkette sein wie in der Projekt-.env – ohne Anführungszeichen, ohne Zeilenumbruch; nach Änderung **Redeploy**. (2) Oder: Einladung direkt auf https://k2-galerie.vercel.app/projects/k2-galerie/licences erzeugen (nur die Domain ohne Pfad öffnet das Eingangstor /entdecken). (3) Nach Secret-Wechsel: optional PILOT_INVITE_SECRET_ALT in Vercel setzen (altes Geheimnis), bis alle neuen Links versendet sind.'
         : reason === 'expired'
           ? 'Bitte unter APf → Lizenzen einen neuen Testpilot-Link erzeugen.'
           : reason === 'malformed'
