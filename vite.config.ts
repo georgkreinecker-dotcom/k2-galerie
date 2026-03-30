@@ -702,16 +702,15 @@ const devPilotInviteMiddleware = () => {
               req.on('error', reject)
             })
             req.body = bodyRaw
-            // Shared zuerst mit Cache-Bust laden (verhindert veraltete Named-Exports / leere Stub-Module bei Vite-Dev).
-            const sharedUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'pilotInviteShared.js')).href}?v=${Date.now()}`
-            await import(sharedUrl)
-            const sendInviteUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href}?v=${Date.now()}`
+            // Stabile file:-URL ohne ?v= – Query kann in Node ESM doppelte Modul-Instanzen erzeugen und
+            // import * / Bindings aus pilotInviteShared brechen („… is not a function“).
+            const sendInviteUrl = pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href
             const mod = await import(sendInviteUrl)
             await mod.default(req, wrapResForVercelStyleApi(res))
             return
           }
           if (req.method === 'GET' && url.startsWith('/api/validate-pilot-token')) {
-            const validateUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href}?v=${Date.now()}`
+            const validateUrl = pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href
             const mod = await import(validateUrl)
             await mod.default(req, wrapResForVercelStyleApi(res))
             return
