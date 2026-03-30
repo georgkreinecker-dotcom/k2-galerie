@@ -58,8 +58,15 @@ export default function ZettelPilotFormPage() {
   return (
     <main style={{ padding: '2rem', maxWidth: 480, margin: '0 auto', background: '#fff', minHeight: '100vh', color: '#1c1a18' }}>
       <h1 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Neuer Test-Pilot</h1>
-      <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '1.5rem' }}>
+      <p style={{ fontSize: '0.9rem', color: '#555', marginBottom: '0.75rem' }}>
         Name eingeben → ök2 oder VK2 wählen → QR wird automatisch vergeben → Laufzettel generieren und mitgeben.
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#555', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+        <strong>E-Mail-Einladung statt Zettel?</strong> Unter{' '}
+        <Link to={`${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`} style={{ color: '#0d9488', fontWeight: 600 }}>
+          Lizenzen → Testpilot einladen
+        </Link>{' '}
+        kannst du eine persönliche Einladung per Link (und optional automatische E-Mail) verschicken.
       </p>
 
       <div style={{ marginBottom: '1.25rem' }}>

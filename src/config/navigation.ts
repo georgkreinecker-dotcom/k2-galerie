@@ -134,6 +134,8 @@ export const PROJECT_ROUTES = {
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
+    /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
+    pilotEinladung: '/projects/k2-galerie/pilot-einladung',
     lizenzKaufen: '/projects/k2-galerie/lizenz-kaufen',
     empfehlungstool: '/projects/k2-galerie/empfehlungstool',
     verguetung: '/projects/k2-galerie/verguetung',
@@ -202,6 +204,8 @@ export const PROJECT_ROUTES = {
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
+    /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
+    pilotEinladung: '/projects/k2-galerie/pilot-einladung',
     lizenzKaufen: '/projects/k2-galerie/lizenz-kaufen',
     empfehlungstool: '/projects/k2-galerie/empfehlungstool',
     verguetung: '/projects/k2-galerie/verguetung',
@@ -247,6 +251,8 @@ export const PROJECT_ROUTES = {
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
+    /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
+    pilotEinladung: '/projects/k2-galerie/pilot-einladung',
     lizenzKaufen: '/projects/k2-galerie/lizenz-kaufen',
     empfehlungstool: '/projects/k2-galerie/empfehlungstool',
     verguetung: '/projects/k2-galerie/verguetung',

@@ -36,6 +36,7 @@ import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage
 import PlakatGalerieeroeffnungRedirect from './pages/PlakatGalerieeroeffnungRedirect'
 import FlyerEventBogenNeuPage from './pages/FlyerEventBogenNeuPage'
 import PilotStartPage from './pages/PilotStartPage'
+import PilotEinladungPage from './pages/PilotEinladungPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
@@ -860,6 +861,14 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
+      <Route
+        path={PROJECT_ROUTES['k2-galerie'].pilotEinladung}
+        element={
+          <PlatformOnlyRoute>
+            <PilotEinladungPage />
+          </PlatformOnlyRoute>
+        }
+      />
       <Route path={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} element={<Mok2Layout><LizenzKaufenPage /></Mok2Layout>} />
       <Route path="/lizenz-erfolg" element={<LizenzErfolgPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].empfehlungstool} element={<Mok2Layout><EmpfehlungstoolPage /></Mok2Layout>} />

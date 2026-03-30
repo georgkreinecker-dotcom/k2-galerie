@@ -11,6 +11,9 @@ function loadEnvFromFile(projectRoot: string): {
   GITHUB_BRANCH?: string
   STRIPE_SECRET_KEY?: string
   STRIPE_PROXY_GET_LICENCE_ORIGIN?: string
+  PILOT_INVITE_SECRET?: string
+  RESEND_API_KEY?: string
+  RESEND_FROM?: string
 } {
   const envPath = path.join(projectRoot, '.env')
   if (!fs.existsSync(envPath)) return {}
@@ -30,7 +33,10 @@ function loadEnvFromFile(projectRoot: string): {
       key === 'GITHUB_REPO' ||
       key === 'GITHUB_BRANCH' ||
       key === 'STRIPE_SECRET_KEY' ||
-      key === 'STRIPE_PROXY_GET_LICENCE_ORIGIN'
+      key === 'STRIPE_PROXY_GET_LICENCE_ORIGIN' ||
+      key === 'PILOT_INVITE_SECRET' ||
+      key === 'RESEND_API_KEY' ||
+      key === 'RESEND_FROM'
     ) {
       out[key] = value
     }
@@ -647,6 +653,75 @@ const writeGalleryDataMiddleware = () => {
   }
 }
 
+/** Lokal: Testpilot-Einladung (PILOT_INVITE_SECRET + optional Resend aus .env). */
+const devPilotInviteMiddleware = () => {
+  return {
+    name: 'dev-pilot-invite-middleware',
+    configureServer(server: any) {
+      server.middlewares.use(async (req: any, res: any, next: any) => {
+        const url = req.url || ''
+        if (!url.startsWith('/api/send-pilot-invite') && !url.startsWith('/api/validate-pilot-token')) {
+          next()
+          return
+        }
+        const projectRoot = path.resolve(__dirname)
+        const envFile = loadEnvFromFile(projectRoot)
+        const secret = (process.env.PILOT_INVITE_SECRET || envFile.PILOT_INVITE_SECRET || '').trim()
+        if (!secret) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              error: 'PILOT_INVITE_SECRET in .env eintragen (Testpilot-Einladung).',
+            }),
+          )
+          return
+        }
+        process.env.PILOT_INVITE_SECRET = secret
+        if (envFile.RESEND_API_KEY) process.env.RESEND_API_KEY = envFile.RESEND_API_KEY
+        if (envFile.RESEND_FROM) process.env.RESEND_FROM = envFile.RESEND_FROM
+
+        const parsedUrl = new URL(url, 'http://localhost')
+        req.query = Object.fromEntries(parsedUrl.searchParams.entries())
+
+        if (req.method === 'OPTIONS') {
+          res.setHeader('Access-Control-Allow-Origin', '*')
+          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+          res.writeHead(200)
+          res.end()
+          return
+        }
+
+        try {
+          if (req.method === 'POST' && url.startsWith('/api/send-pilot-invite')) {
+            const bodyRaw = await new Promise<string>((resolve, reject) => {
+              const chunks: Buffer[] = []
+              req.on('data', (chunk: Buffer) => chunks.push(chunk))
+              req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+              req.on('error', reject)
+            })
+            req.body = bodyRaw
+            const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href)
+            await mod.default(req, res)
+            return
+          }
+          if (req.method === 'GET' && url.startsWith('/api/validate-pilot-token')) {
+            const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href)
+            await mod.default(req, res)
+            return
+          }
+        } catch (e: any) {
+          console.error('dev-pilot-invite:', e)
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: (e?.message || 'Fehler').substring(0, 200) }))
+          return
+        }
+        next()
+      })
+    },
+  }
+}
+
 /** Lokal: POST /api/create-checkout wie auf Vercel (Stripe Test-Key aus .env). */
 const devCreateCheckoutMiddleware = () => {
   return {
@@ -782,6 +857,7 @@ export default defineConfig({
     writeBackupMiddleware(), // Backup-Upload Unterstützung
     vercelStatusMiddleware(), // Vercel Status Check
     devProxyGetLicenceBySessionMiddleware(), // optional: Erfolgsseite → Vercel-API
+    devPilotInviteMiddleware(), // Testpilot-Einladung (PILOT_INVITE_SECRET in .env)
     devCreateCheckoutMiddleware(), // Stripe Checkout lokal (nur Dev-Server)
   ],
   base: '/',

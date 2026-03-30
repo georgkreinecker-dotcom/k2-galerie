@@ -91,7 +91,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
           01. Mai – öffentlicher regulärer Lizenzstart
         </div>
         <p style={{ margin: '0 0 0.55rem', fontSize: '0.9rem', lineHeight: 1.55, color: '#292524' }}>
-          Bis dahin kein allgemeiner Selbstservice für alle als fester Produktstart. Gemeint ist der <strong>erste Mai</strong> (nicht „1.5“).
+          <strong style={{ color: '#78350f' }}>Regulär ab 01.05.</strong> (= <strong>1. Mai</strong>, Kalender Tag.Monat) – öffentlicher Standardstart. Bis dahin kein allgemeiner Selbstservice für alle. Wer „<strong>ab 1.05</strong>“ sucht: dasselbe Datum. Nicht „1.5“ als Dezimalzahl verwechseln.
         </p>
         <div style={{ fontWeight: 700, color: '#92400e', marginBottom: '0.25rem', fontSize: '0.9rem' }}>Pilot-Zugang (kurz)</div>
         <ol style={{ margin: '0 0 0.6rem', paddingLeft: '1.2rem', fontSize: '0.88rem', lineHeight: 1.55, color: '#1c1917' }}>

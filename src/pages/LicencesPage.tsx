@@ -104,6 +104,14 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [onlineLoading, setOnlineLoading] = useState(false)
   const [onlineError, setOnlineError] = useState<string | null>(null)
 
+  const [pilotInviteName, setPilotInviteName] = useState('')
+  const [pilotInviteEmail, setPilotInviteEmail] = useState('')
+  const [pilotInviteContext, setPilotInviteContext] = useState<'oeffentlich' | 'vk2'>('oeffentlich')
+  const [pilotInviteBusy, setPilotInviteBusy] = useState(false)
+  const [pilotInviteMsg, setPilotInviteMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [pilotInviteUrl, setPilotInviteUrl] = useState<string | null>(null)
+  const [pilotInviteMailto, setPilotInviteMailto] = useState<string | null>(null)
+
   useEffect(() => {
     setGrants(loadGrants())
   }, [])
@@ -210,6 +218,42 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setGrants(next)
     saveGrants(next)
     setDeleteId(null)
+  }
+
+  async function handlePilotInviteSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPilotInviteMsg(null)
+    setPilotInviteUrl(null)
+    setPilotInviteMailto(null)
+    const n = pilotInviteName.trim()
+    const em = pilotInviteEmail.trim().toLowerCase()
+    if (!n || !em) {
+      setPilotInviteMsg({ type: 'error', text: 'Name und E-Mail sind Pflicht.' })
+      return
+    }
+    setPilotInviteBusy(true)
+    try {
+      const res = await fetch(`${window.location.origin}/api/send-pilot-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toEmail: em, name: n, context: pilotInviteContext }),
+      })
+      const j = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setPilotInviteMsg({ type: 'error', text: typeof j.error === 'string' ? j.error : 'Versand fehlgeschlagen.' })
+        return
+      }
+      setPilotInviteMsg({
+        type: 'ok',
+        text: j.sent === true ? (j.message || 'E-Mail wurde gesendet.') : (j.message || 'Link erzeugt – unten kopieren oder mailto öffnen.'),
+      })
+      if (typeof j.inviteUrl === 'string') setPilotInviteUrl(j.inviteUrl)
+      if (typeof j.mailtoUrl === 'string') setPilotInviteMailto(j.mailtoUrl)
+    } catch {
+      setPilotInviteMsg({ type: 'error', text: 'Netzwerkfehler – bitte später erneut.' })
+    } finally {
+      setPilotInviteBusy(false)
+    }
   }
 
   return (
@@ -328,6 +372,61 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           <p style={{ fontSize: '0.8rem', color: 'var(--k2-muted)', marginTop: '0.75rem', marginBottom: 0 }}>
             Aufstufung jederzeit möglich: Basic → Pro → Pro+ → Pro++ → Kunstvereine (VK2). Daten bleiben erhalten.
           </p>
+        </section>
+
+        {/* TESTPILOT EINLADEN (E-Mail / Link) */}
+        <section
+          id="testpilot-einladen"
+          style={{
+          background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.35)',
+          borderRadius: '12px', padding: '1.25rem', marginBottom: '1.5rem'
+        }}
+        >
+          <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.35rem', color: 'var(--k2-text)' }}>
+            ✉️ Testpilot:in per E-Mail einladen
+          </h2>
+          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+            Erzeugt einen persönlichen Link (und optional E-Mail über Resend). Die Pilot:in öffnet den Link und kommt
+            direkt in die ök2- oder VK2-Demo – ohne Extra-Schritte. Auf Vercel:{' '}
+            <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> setzen; optional{' '}
+            <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> für automatischen Versand.
+          </p>
+          <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Name der Pilot:in *</label>
+              <input type="text" value={pilotInviteName} onChange={(e) => setPilotInviteName(e.target.value)} className="input" placeholder="Name" />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>E-Mail *</label>
+              <input type="email" value={pilotInviteEmail} onChange={(e) => setPilotInviteEmail(e.target.value)} className="input" placeholder="E-Mail" />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Demo-Ziel</label>
+              <select value={pilotInviteContext} onChange={(e) => setPilotInviteContext(e.target.value as 'oeffentlich' | 'vk2')} className="input">
+                <option value="oeffentlich">Öffentliche Demo (ök2)</option>
+                <option value="vk2">VK2 Vereins-Demo</option>
+              </select>
+            </div>
+            <button type="submit" disabled={pilotInviteBusy} className="btn" style={{ background: '#b54a1e', color: '#fff', alignSelf: 'flex-start' }}>
+              {pilotInviteBusy ? '…' : 'Einladung senden / Link erzeugen'}
+            </button>
+          </form>
+          {pilotInviteMsg && (
+            <p style={{ marginTop: '0.85rem', fontSize: '0.9rem', color: pilotInviteMsg.type === 'ok' ? 'rgba(95,251,241,0.95)' : '#f87171' }}>
+              {pilotInviteMsg.text}
+            </p>
+          )}
+          {pilotInviteUrl && (
+            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem', wordBreak: 'break-all' }}>
+              <strong style={{ color: 'var(--k2-text)' }}>Link:</strong>{' '}
+              <a href={pilotInviteUrl} style={{ color: 'var(--k2-accent)' }}>{pilotInviteUrl}</a>
+            </div>
+          )}
+          {pilotInviteMailto && (
+            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
+              <a href={pilotInviteMailto} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>E-Mail-Programm öffnen (mailto)</a>
+            </p>
+          )}
         </section>
 
         {/* LIZENZ VERGEBEN + EMPFEHLUNGSPROGRAMM */}

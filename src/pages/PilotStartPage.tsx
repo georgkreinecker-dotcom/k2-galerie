@@ -15,7 +15,8 @@ const PILOT_GALERIE_BASE = BASE_APP_URL + ENTDECKEN_ROUTE
 const PILOT_SEITE_BASE = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
 
 // Kurz und klar – das Erste, was Michael sieht
-const KURZ_TEXT = 'Hallo Michael,\n\nhier dein Zugang zur K2 Galerie. Tipp einmal auf den grünen Button – dann bist du in deiner Galerie. Passwort leer lassen, unter Einstellungen deinen Namen eintragen. Fertig.'
+const KURZ_TEXT =
+  'Hallo Michael,\n\nhier dein Zugang zur K2 Galerie. Wenn du eine E-Mail mit persönlichem Einladungslink bekommen hast: diesen zuerst öffnen – du landest direkt in der Demo.\n\nSonst: Tipp auf den grünen Button – dann bist du in deiner Galerie. Passwort leer lassen, unter Einstellungen deinen Namen eintragen. Fertig.'
 
 const BRIEF_TEXT = `Hallo Michael,
 

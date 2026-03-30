@@ -1377,6 +1377,7 @@ import { sortArtworksNewestFirst, sortArtworksFavoritesFirstThenNewest } from '.
 import { urlWithBuildVersion } from '../src/buildInfo.generated'
 import { getOrCreateEmpfehlerId, isValidEmpfehlerIdFormat } from '../src/utils/empfehlerId'
 import { LIZENZPREISE } from '../src/config/licencePricing'
+import LizenzZeitplanPilotStripeInfo from '../src/components/LizenzZeitplanPilotStripeInfo'
 import { getGutschriftSumme } from '../src/utils/empfehlerGutschrift'
 import { writePngDpi } from 'png-dpi-reader-writer'
 
@@ -19714,9 +19715,13 @@ ${name}`
                 <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
                   📋 Lizenzinformation
                 </h3>
-                <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
                   Was jedes Paket enthält – Unterschiede auf einen Blick, damit die Mehrkosten nachvollziehbar sind.
                 </p>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <LizenzZeitplanPilotStripeInfo variant="licences" />
+                </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
