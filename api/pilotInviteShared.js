@@ -243,8 +243,6 @@ export function getPilotInviteLinkBaseUrl(req) {
   return `${proto}://${hostHeader || 'k2-galerie.vercel.app'}`.replace(/\/$/, '')
 }
 
-export { buildPilotInviteEmailPlainText }
-
 /**
  * Resend REST (optional)
  * @returns {Promise<{ ok: boolean, error?: string }>}

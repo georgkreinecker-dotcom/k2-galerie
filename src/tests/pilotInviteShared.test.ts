@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import { describe, it, expect, vi } from 'vitest'
+import { buildPilotInviteEmailPlainText } from '../../api/pilotInviteEmailBody.js'
 import {
   buildPilotEinladungUrl,
   buildPilotEinladungUrlQuery,
-  buildPilotInviteEmailPlainText,
   getPilotInviteLinkBaseUrl,
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,

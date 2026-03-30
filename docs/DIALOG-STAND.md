@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: Named-Export aus `pilotInviteShared.js` entfernt** – `buildPilotInviteEmailPlainText` kommt **nur** aus `api/pilotInviteEmailBody.js` (`send-pilot-invite`, intern Resend in Shared, Tests). **Kein** `export { buildPilotInviteEmailPlainText }` mehr in Shared (manche Laufzeiten meldeten weiterhin „does not provide an export named …“). **Tests + Build grün.** **Commit:** (nach Push) ✅ auf GitHub
+
+**Was wir JETZT tun:** **Cursor: Dev-Server einmal stoppen und `npm run dev` neu starten** → Lizenzen → **Einladung senden**; nach Vercel **Ready** auf **k2-galerie.vercel.app** dasselbe (Stand-Badge/Deploy prüfen).
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot stabil: Fließtext eigene Datei `api/pilotInviteEmailBody.js`** (ein Export `buildPilotInviteEmailPlainText`). **`send-pilot-invite`** importiert das **direkt**; **`pilotInviteShared`** importiert dieselbe Quelle für Resend + re-export für Tests. Damit keine fragile Named-Export-Kette nur über `pilotInviteShared.js`. **Build grün.** **Commit:** **91a7962** ✅ auf GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** abwarten → **Lizenzen → Einladung senden** auf Live prüfen; lokal: Dev ggf. neu starten, denselben Test.
