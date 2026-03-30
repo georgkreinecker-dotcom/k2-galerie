@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-UI:** Georg: Nutzer bekommen **keinen** Code – nur die **gestaltete Mail** (grüne Buttons). **LicencesPage:** alle sichtbaren Texte von „HTML-String / HTML-Mail / HTML-Müll“ auf **Darstellung, Layout, Klartext vs. Button** umgestellt; klar: Empfänger sieht **keinen** Technik-Text. **Tests + Build grün.** **Commit:** **c300b40** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Regel verankert:** Georg: „Merkst du dir das oder nur Floskel?“ → **Neue Pflichtregel** `.cursor/rules/email-html-vorschau-versand-eine-quelle.mdc` (alwaysApply) + Zeile in **ein-standard-problem.mdc**: bei Ansicht≠Mail **sofort** prüfen ob **zwei Welten** (Vorschau vs. HTML-Builder). **Commit:** **40f94f3** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
