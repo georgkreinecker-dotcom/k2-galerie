@@ -5,6 +5,7 @@ import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
+import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { addGutschrift } from '../utils/empfehlerGutschrift'
 
@@ -227,21 +228,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
         </nav>
 
         <h1 style={{ marginBottom: '0.5rem' }}>💼 Lizenzen</h1>
-        <div style={{
-          background: 'rgba(251,191,36,0.10)',
-          border: '1px solid rgba(251,191,36,0.40)',
-          borderRadius: '10px',
-          padding: '0.8rem 1rem',
-          marginBottom: '1rem',
-          color: 'var(--k2-text)'
-        }}>
-          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.35rem' }}>📅 Zeitplan Lizenzen</div>
-          <div style={{ fontSize: '0.88rem', lineHeight: 1.55 }}>
-            <strong>Öffentliche Lizenzanmeldung / regulärer Standardstart ab 01. Mai.</strong> Bis dahin gilt kein allgemeiner Selbstservice für alle Interessent:innen als fester Produktstart.
-            <br />
-            <strong>Testpilot:innen</strong> arbeiten nach <strong>Einladung und Vereinbarung</strong> mit uns früher; Zugang und ggf. Online-Zahlung werden dafür individuell freigegeben (siehe mök2, Abschnitt Lizenzen).
-          </div>
-        </div>
+        <LizenzZeitplanPilotStripeInfo variant="licences" />
         <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
           <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
             Lizenz online auswählen &amp; bezahlen

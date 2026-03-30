@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Lizenz: Zeitplan / Pilot / Stripe-Test sichtbar:** Neue Komponente **`LizenzZeitplanPilotStripeInfo`** (ein Standard, drei Varianten): **Übersicht-Board** oberhalb der Kacheln; **Lizenzen** + **Lizenz kaufen** mit **hohem Kontrast** (gelber Verlauf, dunkle Schrift – kein `var(--k2-text)` auf Amber). Inhalt: **01. Mai** ausgeschrieben (Hinweis „nicht 1.5“), **Pilot in 3 Schritten**, **Stripe-Testkarte 4242…** + `sk_test_…`. **Commit:** 2f4ff66 ✅ auf GitHub
+
+**Was wir JETZT tun:** Nach Deploy: **Übersicht**, **Lizenzen**, **Lizenz kaufen** – Info-Kasten lesbar prüfen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Stripe lokal + mök2 Navigation:** `api/createCheckoutShared.js` (gemeinsam Vercel + Dev); **Vite-Dev** bedient **`POST /api/create-checkout`** wenn **`STRIPE_SECRET_KEY=sk_test_…`** in `.env`; optional **`STRIPE_PROXY_GET_LICENCE_ORIGIN`** für Erfolgsseite → Vercel-API; **Cancel-URL** → `lizenz-kaufen`. **mök2:** Hash-Scroll auf Marketing-Seite; Sidebar **„Lizenz online abschließen (Stripe)“**; robusteres `scrollIntoView`. **Doku:** [STRIPE-TEST-LOKAL.md](STRIPE-TEST-LOKAL.md). **Commit:** **031c34c** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: `.env` mit Test-Key, `npm run dev`, Lizenz-Kauf testen; vollständige Kette am einfachsten auf **k2-galerie.vercel.app**.

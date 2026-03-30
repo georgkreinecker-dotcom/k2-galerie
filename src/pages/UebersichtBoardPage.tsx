@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE } from '../config/navigation'
+import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 
 const GRANTS_KEY = 'k2-license-grants'
 
@@ -86,6 +87,8 @@ export default function UebersichtBoardPage() {
             <div className="meta">Lizenznehmer, Empfehler, Abrechnung – auf einen Blick. Ein Klick zu den Details.</div>
           </div>
         </header>
+
+        <LizenzZeitplanPilotStripeInfo variant="board" />
 
         {loading ? (
           <div className="card familie-card-enter" style={{ padding: '2rem', textAlign: 'center', color: C.textSoft }}>
