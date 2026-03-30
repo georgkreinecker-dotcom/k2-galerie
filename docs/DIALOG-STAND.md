@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot „does not provide an export named buildPilotInviteEmailPlainText“:** Manche Laufzeiten (Vite-Dev dynamischer `import` + `pilotInviteShared`) binden den **Named-Export** nicht zuverlässig. **Fix:** **`buildPilotInviteEmailPlainText`** (Fließtext wie in Shared) **lokal in `api/send-pilot-invite.js`** – übrige Imports unverändert; **Resend** nutzt weiter `sendPilotInviteViaResend` aus Shared. **Commit:** **73d495c** ✅ auf GitHub
+
+**Was wir JETZT tun:** **Dev neu starten** → Lizenzen → **Einladung senden** testen; nach Vercel **Ready** dasselbe auf Live.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot „PilotInvite.buildPilotInviteEmailPlainText is not a function“:** Ursache u. a. **Namespace** (`import *`) + **`?v=` am dynamischen `import()`** → in Node ESM riskante Doppel-Ladung. **Fix:** wieder **Named-Imports** aus `pilotInviteShared.js`; Vite-Middleware lädt **`send-pilot-invite` / `validate-pilot-token` ohne Query**; eine übersehene Zeile `PilotInvite.isValidPilotInviteEmail` → `isValidPilotInviteEmail`. **Commit:** **6f2eaad** ✅ auf GitHub
 
 **Was wir JETZT tun:** Dev-Server **neu starten** → Lizenzen → **Einladung senden** testen.
