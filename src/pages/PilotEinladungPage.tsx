@@ -128,10 +128,26 @@ export default function PilotEinladungPage() {
           }}
         >
           <p style={{ margin: 0 }}>{error}</p>
-          <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.5 }}>
-            Typisch: Link abgelaufen, oder der Server hat noch kein <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> (Vercel
-            → Environment). Bitte eine <strong>neue Einladung</strong> vom Team anfordern – nicht die Lizenzen-Seite, die ist etwas anderes.
-          </p>
+          {error === 'Server nicht konfiguriert.' ? (
+            <div style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.55 }}>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                Es fehlt die Umgebungsvariable <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> auf dem Server, der diese Seite ausliefert – ohne sie kann kein Einladungslink geprüft werden.
+              </p>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                <strong>Vercel (k2-galerie.vercel.app):</strong> Dashboard → Projekt → Settings → Environment Variables → dieselbe Variable wie beim Erzeugen der Einladung (mind. 32 Zeichen), für Production und ggf. Preview. Danach einmal <strong>Redeploy</strong>.
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Lokal (localhost):</strong> In der Projekt-<code>.env</code> z. B.{' '}
+                <code style={{ fontSize: '0.78em' }}>PILOT_INVITE_SECRET=…</code> setzen (siehe{' '}
+                <code style={{ fontSize: '0.78em' }}>.env.example</code>), dann Dev-Server neu starten.
+              </p>
+            </div>
+          ) : (
+            <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.5 }}>
+              Typisch: Link abgelaufen, oder der Server hat noch kein <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> (Vercel
+              → Environment). Bitte eine <strong>neue Einladung</strong> vom Team anfordern – nicht die Lizenzen-Seite, die ist etwas anderes.
+            </p>
+          )}
           <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: MUTED }}>
             <Link to={ENTDECKEN_ROUTE} style={{ color: BTN, fontWeight: 600 }}>
               Zur öffentlichen Einstiegsseite (Entdecken)

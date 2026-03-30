@@ -1,11 +1,22 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
 import { wrapResForVercelStyleApi } from './api/connectResponseAdapter'
 
-// .env aus Projektroot lesen (Vite lädt sie sonst nicht in die Server-Middleware)
+/** Gleiche Quellen wie Vite: .env, .env.local, .env.[mode], .env.[mode].local (später überschreibt früher). Nicht nur .env – sonst fehlen z. B. Secrets in .env.local. */
+const ENV_KEYS_FOR_MIDDLEWARE = [
+  'GITHUB_TOKEN',
+  'GITHUB_REPO',
+  'GITHUB_BRANCH',
+  'STRIPE_SECRET_KEY',
+  'STRIPE_PROXY_GET_LICENCE_ORIGIN',
+  'PILOT_INVITE_SECRET',
+  'RESEND_API_KEY',
+  'RESEND_FROM',
+] as const
+
 function loadEnvFromFile(projectRoot: string): {
   GITHUB_TOKEN?: string
   GITHUB_REPO?: string
@@ -16,31 +27,19 @@ function loadEnvFromFile(projectRoot: string): {
   RESEND_API_KEY?: string
   RESEND_FROM?: string
 } {
-  const envPath = path.join(projectRoot, '.env')
-  if (!fs.existsSync(envPath)) return {}
-  let content = fs.readFileSync(envPath, 'utf8')
-  content = content.replace(/^\uFEFF/, '') // BOM entfernen
+  const mode = process.env.NODE_ENV === 'production' ? 'production' : 'development'
+  let fromFiles: Record<string, string> = {}
+  try {
+    fromFiles = loadEnv(mode, projectRoot, '')
+  } catch {
+    fromFiles = {}
+  }
   const out: Record<string, string> = {}
-  for (const line of content.split(/\r?\n/)) {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) continue
-    const eq = trimmed.indexOf('=')
-    if (eq <= 0) continue
-    const key = trimmed.slice(0, eq).trim()
-    let value = trimmed.slice(eq + 1).trim()
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1)
-    if (
-      key === 'GITHUB_TOKEN' ||
-      key === 'GITHUB_REPO' ||
-      key === 'GITHUB_BRANCH' ||
-      key === 'STRIPE_SECRET_KEY' ||
-      key === 'STRIPE_PROXY_GET_LICENCE_ORIGIN' ||
-      key === 'PILOT_INVITE_SECRET' ||
-      key === 'RESEND_API_KEY' ||
-      key === 'RESEND_FROM'
-    ) {
-      out[key] = value
-    }
+  for (const key of ENV_KEYS_FOR_MIDDLEWARE) {
+    const shell = process.env[key]?.trim()
+    const file = fromFiles[key]?.trim()
+    const v = shell || file
+    if (v) out[key] = v
   }
   return out
 }

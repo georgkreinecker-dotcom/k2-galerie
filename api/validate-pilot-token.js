@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Nur GET erlaubt' })
 
-  const secret = process.env.PILOT_INVITE_SECRET
+  const secret =
+    typeof process.env.PILOT_INVITE_SECRET === 'string' ? process.env.PILOT_INVITE_SECRET.trim() : ''
   if (!secret) {
     return res.status(500).json({ valid: false, error: 'Server nicht konfiguriert.' })
   }

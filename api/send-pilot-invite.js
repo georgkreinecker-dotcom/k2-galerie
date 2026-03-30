@@ -28,7 +28,8 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: 'Ungültiger Aufruf (Origin).' })
   }
 
-  const secret = process.env.PILOT_INVITE_SECRET
+  const secret =
+    typeof process.env.PILOT_INVITE_SECRET === 'string' ? process.env.PILOT_INVITE_SECRET.trim() : ''
   if (!secret) {
     console.error('send-pilot-invite: PILOT_INVITE_SECRET fehlt')
     return res.status(500).json({ error: 'Einladungssystem nicht konfiguriert (PILOT_INVITE_SECRET).' })
