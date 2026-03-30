@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Regel verankert:** Georg: „Merkst du dir das oder nur Floskel?“ → **Neue Pflichtregel** `.cursor/rules/email-html-vorschau-versand-eine-quelle.mdc` (alwaysApply) + Zeile in **ein-standard-problem.mdc**: bei Ansicht≠Mail **sofort** prüfen ob **zwei Welten** (Vorschau vs. HTML-Builder). **Commit:** _(nach Push)_ ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Regel verankert:** Georg: „Merkst du dir das oder nur Floskel?“ → **Neue Pflichtregel** `.cursor/rules/email-html-vorschau-versand-eine-quelle.mdc` (alwaysApply) + Zeile in **ein-standard-problem.mdc**: bei Ansicht≠Mail **sofort** prüfen ob **zwei Welten** (Vorschau vs. HTML-Builder). **Commit:** **40f94f3** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
