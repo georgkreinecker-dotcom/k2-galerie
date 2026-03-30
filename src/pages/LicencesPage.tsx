@@ -108,7 +108,11 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [pilotInviteEmail, setPilotInviteEmail] = useState('')
   const [pilotInviteContext, setPilotInviteContext] = useState<'oeffentlich' | 'vk2'>('oeffentlich')
   const [pilotInviteBusy, setPilotInviteBusy] = useState(false)
-  const [pilotInviteMsg, setPilotInviteMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null)
+  const [pilotInviteMsg, setPilotInviteMsg] = useState<{
+    type: 'ok' | 'warn' | 'error'
+    text: string
+    detail?: string
+  } | null>(null)
   const [pilotInviteUrl, setPilotInviteUrl] = useState<string | null>(null)
   const [pilotInviteMailto, setPilotInviteMailto] = useState<string | null>(null)
 
@@ -243,9 +247,14 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
         setPilotInviteMsg({ type: 'error', text: typeof j.error === 'string' ? j.error : 'Versand fehlgeschlagen.' })
         return
       }
+      const sent = j.sent === true
       setPilotInviteMsg({
-        type: 'ok',
-        text: j.sent === true ? (j.message || 'E-Mail wurde gesendet.') : (j.message || 'Link erzeugt – unten kopieren oder mailto öffnen.'),
+        type: sent ? 'ok' : 'warn',
+        text: sent
+          ? (j.message || 'E-Mail wurde gesendet.')
+          : (j.message ||
+              'Es wurde keine Server-E-Mail verschickt. Persönlichen Link unten nutzen oder mailto – siehe Hinweis zu RESEND auf Vercel.'),
+        detail: !sent && typeof j.resendError === 'string' ? j.resendError : undefined,
       })
       if (typeof j.inviteUrl === 'string') setPilotInviteUrl(j.inviteUrl)
       if (typeof j.mailtoUrl === 'string') setPilotInviteMailto(j.mailtoUrl)
@@ -386,10 +395,11 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             ✉️ Testpilot:in per E-Mail einladen
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
-            Erzeugt einen persönlichen Link (und optional E-Mail über Resend). Die Pilot:in öffnet den Link und kommt
-            direkt in die ök2- oder VK2-Demo – ohne Extra-Schritte. Auf Vercel:{' '}
-            <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> setzen; optional{' '}
-            <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> für automatischen Versand.
+            Erzeugt immer einen persönlichen Link. <strong style={{ color: 'var(--k2-text)' }}>E-Mail vom Server</strong> nur,
+            wenn auf Vercel <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> gesetzt ist – sonst Posteingang leer,
+            aber der Link unten funktioniert trotzdem. Pflicht:{' '}
+            <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code>
+            ; optional <code style={{ fontSize: '0.78rem' }}>RESEND_FROM</code> (Absender, Domain bei Resend verifiziert).
           </p>
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
             <div>
@@ -412,9 +422,38 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             </button>
           </form>
           {pilotInviteMsg && (
-            <p style={{ marginTop: '0.85rem', fontSize: '0.9rem', color: pilotInviteMsg.type === 'ok' ? 'rgba(95,251,241,0.95)' : '#f87171' }}>
-              {pilotInviteMsg.text}
-            </p>
+            <div style={{ marginTop: '0.85rem' }}>
+              <p
+                style={{
+                  fontSize: '0.9rem',
+                  margin: 0,
+                  color:
+                    pilotInviteMsg.type === 'ok'
+                      ? 'rgba(95,251,241,0.95)'
+                      : pilotInviteMsg.type === 'warn'
+                        ? '#fbbf24'
+                        : '#f87171',
+                }}
+              >
+                {pilotInviteMsg.type === 'warn' ? '⚠️ ' : ''}
+                {pilotInviteMsg.text}
+              </p>
+              {pilotInviteMsg.detail ? (
+                <pre
+                  style={{
+                    marginTop: '0.5rem',
+                    fontSize: '0.72rem',
+                    color: 'var(--k2-muted)',
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    maxHeight: '6rem',
+                    overflow: 'auto',
+                  }}
+                >
+                  {pilotInviteMsg.detail}
+                </pre>
+              ) : null}
+            </div>
           )}
           {pilotInviteUrl && (
             <div style={{ marginTop: '0.75rem', fontSize: '0.82rem', wordBreak: 'break-all' }}>

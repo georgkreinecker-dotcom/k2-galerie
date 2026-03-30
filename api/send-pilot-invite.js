@@ -93,10 +93,19 @@ export default async function handler(req, res) {
         ok: true,
         sent: true,
         inviteUrl,
-        message: 'E-Mail wurde gesendet.',
+        message: 'E-Mail wurde gesendet (Resend). Posteingang prüfen; ggf. Spam.',
       })
     }
     console.warn('send-pilot-invite: Resend fehlgeschlagen', sendRes.error)
+    return res.status(200).json({
+      ok: true,
+      sent: false,
+      inviteUrl,
+      mailtoUrl,
+      resendError: typeof sendRes.error === 'string' ? sendRes.error.slice(0, 400) : undefined,
+      message:
+        'Resend hat die E-Mail nicht angenommen – Link unten nutzen oder mailto. In Vercel: RESEND_API_KEY / RESEND_FROM prüfen (Domain bei Resend verifiziert?).',
+    })
   }
 
   return res.status(200).json({
@@ -105,8 +114,6 @@ export default async function handler(req, res) {
     inviteUrl,
     mailtoUrl,
     message:
-      resendKey
-        ? 'E-Mail-Versand fehlgeschlagen – Link und mailto unten nutzen.'
-        : 'Kein RESEND_API_KEY – Link kopieren oder E-Mail-Programm öffnen (mailto).',
+      'Kein RESEND_API_KEY auf dem Server – es wird keine E-Mail verschickt. Persönlichen Link unten kopieren oder „mailto“ öffnen. Für automatischen Versand: Vercel → RESEND_API_KEY (und RESEND_FROM) setzen.',
   })
 }
