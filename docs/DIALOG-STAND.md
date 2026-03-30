@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot-Link: robuste Verifikation** – `normalizePilotInviteToken` / `trimPilotInviteSecret` (Whitespace, BOM) in **Signatur + API**; **validate-pilot-token:** optional **`PILOT_INVITE_SECRET_ALT`** bei `bad_signature`; Client normalisiert Token vor Fetch; Test: Token mit Zeilenumbruch. `.env.example` ergänzt. **Tests + Build grün.** **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot-Link: robuste Verifikation** – `normalizePilotInviteToken` / `trimPilotInviteSecret` (Whitespace, BOM) in **Signatur + API**; **validate-pilot-token:** optional **`PILOT_INVITE_SECRET_ALT`** bei `bad_signature`; Client normalisiert Token vor Fetch; Test: Token mit Zeilenumbruch. `.env.example` ergänzt. **Tests + Build grün.** **Commit:** **1952336** ✅ auf GitHub
 
 **Was wir JETZT tun:** Push → Vercel **Production Ready** → **neue Einladung auf Live** erzeugen (oder Secret in Vercel = Mac + ggf. `PILOT_INVITE_SECRET_ALT` für alte Links); Link erneut öffnen.
 
