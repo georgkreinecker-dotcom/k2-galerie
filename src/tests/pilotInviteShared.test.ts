@@ -162,31 +162,31 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(verified?.email).toBe('')
   })
 
-  it('buildPilotInviteEmailPlainText: kein Konto, Schritte, öffentliche Demo', () => {
+  it('buildPilotInviteEmailPlainText: Symbolzeilen, kurze URL-Zeile, ök2', () => {
     const t = buildPilotInviteEmailPlainText({
       name: 'Alex Beispiel',
       greetingName: 'Alex',
-      inviteUrl: 'https://x.example/p?t=abc',
+      inviteUrl: 'https://x.example/p/i/0123456789abcdef0123456789abcdef',
       contextLabel: 'öffentliche Demo (ök2)',
       inviteContext: 'oeffentlich',
     })
     expect(t).toContain('kein Passwort')
-    expect(t).toContain('Weiter zur öffentlichen Demo (ök2)')
-    expect(t).toContain('Stammdaten')
+    expect(t).toContain('ök2-Demo')
     expect(t).toContain('Hallo Alex')
-    expect(t).toContain('<https://x.example/p?t=abc>')
-    expect(t).toContain('Direktlink')
+    expect(t).toContain('https://x.example/p/i/0123456789abcdef0123456789abcdef')
+    expect(t).toContain('▶')
+    expect(t).not.toContain('So gehst du vor')
   })
 
-  it('buildPilotInviteEmailPlainText: VK2-Button-Text', () => {
+  it('buildPilotInviteEmailPlainText: VK2-Kurzlabel', () => {
     const t = buildPilotInviteEmailPlainText({
       name: 'Alex Beispiel',
       greetingName: 'Alex',
-      inviteUrl: 'https://x.example/p?t=abc',
+      inviteUrl: 'https://x.example/p/i/0123456789abcdef0123456789abcdef',
       contextLabel: 'VK2 Vereins-Demo',
       inviteContext: 'vk2',
     })
-    expect(t).toContain('Weiter zur VK2-Vorschau (Verein)')
-    expect(t).toContain('Vereins-Vorschau')
+    expect(t).toContain('VK2-Demo')
+    expect(t).toContain('▶')
   })
 })

@@ -6,6 +6,8 @@
  * Env: PILOT_INVITE_SECRET (Pflicht), optional RESEND_API_KEY, RESEND_FROM,
  *      PILOT_INVITE_ALLOWED_ORIGINS (kommagetrennte URL-Präfixe)
  */
+import crypto from 'crypto'
+import { createClient } from '@supabase/supabase-js'
 import { buildPilotInviteEmailPlainText } from './pilotInviteEmailBody.js'
 import {
   signPilotInviteToken,
@@ -16,6 +18,29 @@ import {
   sendPilotInviteViaResend,
   trimPilotInviteSecret,
 } from './pilotInviteShared.js'
+
+/**
+ * Einzeiliger Kurzlink https://…/p/i/32hex statt ?t=JWT (Symbolwesen / lesbare Mail).
+ * @returns {Promise<string|null>}
+ */
+async function tryPilotShortInviteUrl(baseNormalized, token) {
+  const supabaseUrl = process.env.SUPABASE_URL
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !serviceKey) return null
+  const code = crypto.randomBytes(16).toString('hex')
+  try {
+    const supabase = createClient(supabaseUrl, serviceKey)
+    const { error } = await supabase.from('pilot_short_invites').insert({ code, token })
+    if (error) {
+      console.warn('send-pilot-invite: pilot_short_invites', error.message)
+      return null
+    }
+    return `${baseNormalized}/p/i/${code}`
+  } catch (e) {
+    console.warn('send-pilot-invite: short url', e)
+    return null
+  }
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -76,7 +101,9 @@ export default async function handler(req, res) {
 
   // Inline wie buildPilotEinladungUrlQuery (Vite-Dev-Import sonst ggf. veralteter Shared-Export-Cache).
   const base = getPilotInviteLinkBaseUrl(req).replace(/\/$/, '')
-  const inviteUrl = `${base}/p?t=${encodeURIComponent(token)}`
+  const longInviteUrl = `${base}/p?t=${encodeURIComponent(token)}`
+  const shortInviteUrl = await tryPilotShortInviteUrl(base, token)
+  const inviteUrl = shortInviteUrl || longInviteUrl
 
   let signHost = ''
   try {

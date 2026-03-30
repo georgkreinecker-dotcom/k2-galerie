@@ -16,7 +16,7 @@ alwaysApply: true
 | Wo | Was das bedeutet |
 |----|------------------|
 | **App / UI** | Handlung sichtbar ohne Lesen; Ampel, ein Klick, kurze Labels. Siehe auch **ux-user-first-logik.mdc**. |
-| **E-Mails, Einladungen, Benachrichtigungen** | Sofort erkennbarer Einstieg (z. B. klarer Button), wenig Pflicht-Text; Details erst darunter oder klein. |
+| **E-Mails, Einladungen, Benachrichtigungen** | Sofort erkennbarer Einstieg (z. B. klarer Button), **wenig** Pflicht-Text; **keine** Wortlawine vor dem Tun. Wo technisch nötig (Token): **Kurzlink** + Auflösung auf dem Server statt mehrzeiliger Riesen-URL im Plaintext. |
 | **Handbuch & Nutzertexte** | Lesbar und redigiert – aber bei **Handlung** („was tun?“) Symbol/Struktur zuerst, nicht Absätze vor dem Wesentlichen. |
 | **Fehlermeldungen & Erfolgsmeldungen** | Kurz, eine klare nächste Aktion; nicht nur erklären. |
 | **KI ↔ Georg** | Kurz, strukturiert, visuell gegliedert (Überschriften, Listen) – **keine** unnötigen Textwände; Wesentliches sofort erkennbar. Passt zu **.cursorrules** (KURZE ANTWORTEN, VISUAL). |

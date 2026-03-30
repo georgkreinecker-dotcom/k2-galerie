@@ -1,42 +1,31 @@
 /**
  * Testpilot-Einladung: Fließtext für E-Mail / mailto – eigene Datei (ein Export),
- * damit Bundler/Vite keinen Named-Export-Konflikt mit pilotInviteShared.js erzeugen.
+ * damit Bundler/Vite keinen Named-Export-Konflikt mit pilotInviteShared.js erzeugt.
+ * Symbolwesen: wenig Text, klare Zeichen; Kurzlink inviteUrl möglichst einzeilig.
  */
 
 /**
- * Einheitlicher Fließtext für Resend (text) und mailto-Fallback – eine Quelle.
  * @param {object} p
- * @param {string} p.name – Anrede (Vor- und Nachname oder ein Feld)
- * @param {string} [p.greetingName] – nur Vorname für „Hallo …“ (sonst name)
- * @param {string} p.inviteUrl
- * @param {string} p.contextLabel z. B. „öffentliche Demo (ök2)“
+ * @param {string} p.name
+ * @param {string} [p.greetingName]
+ * @param {string} p.inviteUrl – Kurzlink /p/i/… oder Fallback ?t=
+ * @param {string} p.contextLabel
  * @param {'oeffentlich'|'vk2'} [p.inviteContext]
  */
 export function buildPilotInviteEmailPlainText({ name, greetingName, inviteUrl, contextLabel, inviteContext = 'oeffentlich' }) {
   const vk2 = inviteContext === 'vk2'
-  const demoButton = vk2 ? 'Weiter zur VK2-Vorschau (Verein)' : 'Weiter zur öffentlichen Demo (ök2)'
-  const nachDemo = vk2
-    ? 'Du siehst die Vereins-Vorschau und kannst dort stöbern.'
-    : 'Du landest direkt in den Einstellungen (Stammdaten) – Name und E-Mail kannst du dort prüfen. Von dort aus öffnest du die öffentliche Demo.'
+  const demoKurz = vk2 ? 'VK2-Demo' : 'ök2-Demo'
   const hallo = String(greetingName || name || '').trim() || 'Testpilot:in'
   return [
     `Hallo ${hallo},`,
     '',
-    'Kurz: In der HTML-Version gibt es einen grünen Start-Button. Bei Nur-Text: nur die eine Zeile unten in spitzen Klammern komplett kopieren.',
+    `▶ HTML: Grünen Button tippen.`,
     '',
-    `du bist als Testpilot:in für die K2 Galerie eingeladen (${contextLabel}).`,
+    `▶ Nur Text: Zeile unten tippen oder kopieren → Browser → Enter.`,
     '',
-    'Wichtig: Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link ist mit Vorname, Nachname und E-Mail abgestimmt; auf der Einladungsseite und in den Stammdaten siehst du dieselben Daten. Was du siehst, sind Muster-Daten – zum Ausprobieren.',
+    inviteUrl,
     '',
-    'So gehst du vor:',
-    '1) Einladungslink öffnen (Button in der HTML-Mail oder die eine Zeile unten mit <https://…> im Browser einfügen).',
-    `2) Auf der Einladungsseite den Button „${demoButton}“ wählen.`,
-    `3) ${nachDemo}`,
-    '4) Wenn du magst: oben „Admin“ öffnen – Werke, Stammdaten, Design, Kasse nur zum Ausprobieren (ebenfalls Muster).',
+    `Testpilot · ${contextLabel} · kein Passwort · Muster · danach „${demoKurz}“ auf der Seite.`,
     '',
-    'Direktlink (eine Zeile, ggf. aus spitzen Klammern kopieren):',
-    `<${inviteUrl}>`,
-    '',
-    'Der Link ist personalisiert; für Testpilot:innen Pro++ ohne Ablaufdatum – der Link selbst bleibt gültig.',
   ].join('\n')
 }

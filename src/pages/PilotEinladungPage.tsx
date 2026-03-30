@@ -61,10 +61,13 @@ export default function PilotEinladungPage() {
   const [searchParams] = useSearchParams()
   const params = useParams()
   const navigate = useNavigate()
-  /** `/p/*` = gesamter Token; alternativ Query `t` / `token` (Legacy pilot-einladung) */
-  const splat = typeof params['*'] === 'string' ? params['*'] : ''
+  /** `/p/*` = Token im Pfad, oder `i/32hex` = Kurzlink (Server → voller Token) */
+  const splatRaw = typeof params['*'] === 'string' ? params['*'].trim() : ''
+  const shortInviteM = /^i\/([a-f0-9]{32})$/i.exec(splatRaw)
+  const shortCode = shortInviteM ? shortInviteM[1].toLowerCase() : ''
+  const tokenFromSplat = shortCode ? '' : normalizePilotTokenClient(splatRaw)
   const token = normalizePilotTokenClient(
-    splat ||
+    tokenFromSplat ||
       (typeof params.token === 'string' ? params.token : '') ||
       searchParams.get('t') ||
       searchParams.get('token') ||
@@ -76,7 +79,38 @@ export default function PilotEinladungPage() {
   const [errorHint, setErrorHint] = useState<string | null>(null)
   const [data, setData] = useState<ValidateOk | null>(null)
 
+  /** Kurzlink /p/i/CODE → einmal Token holen, dann normale /p?t=… */
   useEffect(() => {
+    if (!shortCode) return
+    let cancelled = false
+    setLoading(true)
+    setError(null)
+    setErrorHint(null)
+    const base = window.location.origin
+    fetch(`${base}/api/pilot-short-invite-resolve?c=${encodeURIComponent(shortCode)}`)
+      .then((r) => r.json())
+      .then((j: { ok?: boolean; token?: string; error?: string }) => {
+        if (cancelled) return
+        if (j.ok === true && typeof j.token === 'string' && j.token) {
+          navigate(`/p?t=${encodeURIComponent(j.token)}`, { replace: true })
+          return
+        }
+        setLoading(false)
+        setError(typeof j.error === 'string' ? j.error : 'Einladungslink ungültig.')
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLoading(false)
+          setError('Verbindung zum Server fehlgeschlagen.')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [shortCode, navigate])
+
+  useEffect(() => {
+    if (shortCode) return
     if (!token) {
       setLoading(false)
       setErrorHint(null)
@@ -117,7 +151,7 @@ export default function PilotEinladungPage() {
     return () => {
       cancelled = true
     }
-  }, [token])
+  }, [token, shortCode])
 
   function goOek2() {
     if (!data) return

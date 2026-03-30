@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot Symbolwesen richtig:** Plaintext war Wortlawine + Riesen-JWT → **nicht** der Sinn der Regel. Jetzt: **▶**-Zeilen, **eine kurze URL** (`/p/i/32hex`) via **Supabase** `pilot_short_invites` + **`api/pilot-short-invite-resolve`**, **`PilotEinladungPage`** löst Kurzlink auf. Ohne DB/Keys: Fallback langer `?t=`. Handbuch 26 + Migration **009**. **Commit:** (nach Push)
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot Plaintext: wieder nur eine Link-Zeile** – Doppelte Riesen-URL (nackt + &lt;…&gt;) war zu viel. Jetzt wie früher **nur** `<https://…>` unter „Direktlink“; kurzer Hinweis HTML vs. Text. HTML-Mail: Hinweiszeile angepasst. **Commit:** **698a124** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

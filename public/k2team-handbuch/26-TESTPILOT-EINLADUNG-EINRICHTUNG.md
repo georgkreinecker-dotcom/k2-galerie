@@ -6,30 +6,34 @@
 
 ---
 
+## Der eine Pfad (normaler Betrieb)
+
+**Lizenzen auf der APf** – auch wenn du die App unter **localhost** öffnest – schickt der Browser die Anfrage **immer an die Live-API** auf k2-galerie.vercel.app. Der Link in der E-Mail bzw. zum Kopieren wird dort signiert; **ein** Ablauf, **kein** Mix aus „lokal signieren, Link zeigt auf Vercel“.
+
+Dafür muss **`PILOT_INVITE_SECRET`** auf **Vercel** (Production) stimmen und nach Änderungen ein **Redeploy** gelaufen sein. Das ist der Pfad für dich im Alltag.
+
+*Hilfestellung zum Fehlerfinden:* Wenn etwas nicht passt, kann man in der Konsole oder in Vercel-Logs nachsehen; **gleiches Secret lokal und auf Vercel** war früher eine Erklärhilfe bei `bad_signature` – **kein** zweiter offizieller Nutzerweg neben dem Live-API-Pfad.
+
+---
+
 ## Kurzüberblick
 
 | Du willst … | Dafür brauchst du … |
 |-------------|---------------------|
-| Nur den Link (kopieren, per Signal/WhatsApp schicken) | **`PILOT_INVITE_SECRET`** – lokal in `.env` und auf Vercel |
-| Dass eine **E-Mail** im Postfach landet | Wie oben **plus** **`RESEND_API_KEY`** (und sinnvoll **`RESEND_FROM`**) auf **Vercel**; lokal optional in `.env` zum Testen |
+| Den Einladungs-Link (kopieren, z. B. Signal/WhatsApp) | **`PILOT_INVITE_SECRET`** auf **Vercel** (Schritt 1) – die APf nutzt dafür automatisch die Live-API |
+| Dass eine **E-Mail** im Postfach landet | Wie oben **plus** **`RESEND_API_KEY`** (und sinnvoll **`RESEND_FROM`**) auf **Vercel** |
+| **Kurze, einzeilige** Einladungs-URL in der Mail (lesbar, Symbol statt Riesen-Link) | **Supabase:** Migration **`009_pilot_short_invites.sql`** im Projekt auf deiner Datenbank ausführen; **`SUPABASE_URL`** und **`SUPABASE_SERVICE_ROLE_KEY`** müssen auf **Vercel** gesetzt sein. Ohne Tabelle oder ohne Keys: Es funktioniert weiter mit dem **langen** Fallback-Link (`?t=…`). |
 
 ---
 
-## Schritt 1 – Geheimnis `PILOT_INVITE_SECRET` (Pflicht)
+## Schritt 1 – Geheimnis `PILOT_INVITE_SECRET` (Pflicht für Live)
 
-Ohne diesen Wert antwortet die API mit einem Fehler (lokal z. B. „PILOT_INVITE_SECRET in .env eintragen“).
+Ohne diesen Wert auf Vercel antwortet die Live-API mit einem Fehler.
 
 1. Einen **langen zufälligen** String wählen – **mindestens 32 Zeichen** (Passwort-Generator oder `openssl rand -hex 32`).
-2. **Lokal:** Im Projektordner die Datei **`.env`** anlegen oder ergänzen (nicht committen; liegt in `.gitignore`):
+2. **Vercel:** **Project** → **Settings** → **Environment Variables** → **`PILOT_INVITE_SECRET`** für **Production** (und ggf. Preview) setzen → **Redeploy** auslösen, damit die Serverless-Funktion den Wert hat.
 
-   ```env
-   PILOT_INVITE_SECRET=hier-dein-langer-zufallswert-mindestens-32-zeichen
-   ```
-
-3. **Dev-Server neu starten** nach jeder Änderung an `.env` (`npm run dev` beenden und neu starten).
-4. **Vercel:** **Project** → **Settings** → **Environment Variables** → dieselbe Variable für **Production** (und ggf. Preview) setzen → **Redeploy** auslösen, damit die Serverless-Funktion den neuen Wert hat.
-
-**Wichtig:** Das Geheimnis muss **überall dasselbe** sein, wo du die Einladung wirklich nutzt (lokal nur für lokaler Test; live nur Vercel).
+**Nur Entwicklung / direkter API-Test am Rechner:** Wer die Route **`/api/send-pilot-invite`** im **lokalen** Dev-Server über die Vite-Middleware anstößt, braucht **`PILOT_INVITE_SECRET`** zusätzlich in **`.env`** im Projektordner (nicht committen) und startet den Dev-Server danach neu. Das ist **nicht** der gleiche Weg wie „Lizenzen in der APf“ – die geht wie oben über **Live**.
 
 ---
 
@@ -43,7 +47,7 @@ Wenn **kein** `RESEND_API_KEY` gesetzt ist: Der Link erscheint in der App, aber 
 4. **`RESEND_FROM`** setzen, z. B. `K2 Galerie <onboarding@deine-verifizierte-domain>` – die Domain muss zu Resend passen.  
 5. **Redeploy** auf Vercel nach dem Setzen der Variablen.
 
-**Lokal testen:** Dieselben beiden Variablen in `.env` eintragen, Dev-Server neu starten. Dann sollte ein Versand wie auf Vercel möglich sein (sofern Resend den Key akzeptiert).
+**Optional lokal:** Dieselben Resend-Variablen in `.env` nur wenn du **E-Mail-Versand** direkt gegen den Dev-Server testen willst; für den normalen Lizenzen-Weg reicht Vercel.
 
 ---
 
@@ -52,7 +56,7 @@ Wenn **kein** `RESEND_API_KEY` gesetzt ist: Der Link erscheint in der App, aber 
 1. **Lizenzen** öffnen, Formular ausfüllen, absenden.  
 2. **Grüner** Erfolg + keine Warnung → Server-Mail wurde mit Resend ausgelöst.  
 3. **Gelbe Warnung** → Link ist da, Server-Mail nicht (kein Key, Resend-Fehler, Domain) – Text in der Meldung lesen; technische Details stehen ggf. darunter.  
-4. **Rot** → meist fehlendes Geheimnis oder Netzwerkfehler; Meldung lesen.
+4. **Rot** → meist fehlendes Geheimnis auf Vercel oder Netzwerkfehler; Meldung lesen.
 
 ---
 
@@ -60,14 +64,16 @@ Wenn **kein** `RESEND_API_KEY` gesetzt ist: Der Link erscheint in der App, aber 
 
 | Meldung / Symptom | Ursache | Was tun |
 |-------------------|---------|---------|
-| „PILOT_INVITE_SECRET in .env eintragen“ (nur lokal) | `.env` fehlt oder Variable leer, oder Dev nicht neu gestartet | Schritt 1, dann Dev neu starten |
+| API-Fehler / rot nach **Lizenzen** | `PILOT_INVITE_SECRET` fehlt auf Vercel oder kein Redeploy nach Änderung | Schritt 1 Vercel |
+| „PILOT_INVITE_SECRET in .env eintragen“ (nur lokal, **Dev** direkt) | `.env` fehlt für **lokalen** API-Test, oder Dev nicht neu gestartet | Nur bei Middleware-Test: `.env` + Neustart; **Lizenzen** nutzen Live-API |
 | Link da, Posteingang leer | Kein `RESEND_API_KEY` auf Vercel oder Resend lehnt ab | Schritt 2; Vercel-Logs prüfen |
-| Auf Vercel rot / API-Fehler | `PILOT_INVITE_SECRET` nicht in Vercel gesetzt oder nach Änderung kein Redeploy | Schritt 1 Vercel-Teil |
+| Früher: `bad_signature` nach Klick auf Link | Signatur und Prüfung an verschiedenen Orten – **behoben** durch einen Live-API-Pfad aus der APf | Bei erneutem Auftreten: Vercel-Secret und Deploy prüfen |
 
 ---
 
 ## Eine Quelle im Projekt
 
-- Technische Details und Code: `api/send-pilot-invite.js`, lokale Weiterleitung in `vite.config.ts` (Dev).
+- **Welche URL der Browser aufruft:** `src/utils/pilotInviteClient.ts` (`getSendPilotInviteApiUrl()`).
+- **Server:** `api/send-pilot-invite.js`; lokale Weiterleitung in `vite.config.ts` nur für **Dev**.
 
 **Stand:** März 2026 – bei Änderungen an der API diese Seite mit anpassen.
