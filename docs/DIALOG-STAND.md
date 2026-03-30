@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot stabil: Fließtext eigene Datei `api/pilotInviteEmailBody.js`** (ein Export `buildPilotInviteEmailPlainText`). **`send-pilot-invite`** importiert das **direkt**; **`pilotInviteShared`** importiert dieselbe Quelle für Resend + re-export für Tests. Damit keine fragile Named-Export-Kette nur über `pilotInviteShared.js`. **Build grün.** **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot stabil: Fließtext eigene Datei `api/pilotInviteEmailBody.js`** (ein Export `buildPilotInviteEmailPlainText`). **`send-pilot-invite`** importiert das **direkt**; **`pilotInviteShared`** importiert dieselbe Quelle für Resend + re-export für Tests. Damit keine fragile Named-Export-Kette nur über `pilotInviteShared.js`. **Build grün.** **Commit:** **91a7962** ✅ auf GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** abwarten → **Lizenzen → Einladung senden** auf Live prüfen; lokal: Dev ggf. neu starten, denselben Test.
 
