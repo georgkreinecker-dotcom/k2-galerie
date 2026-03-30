@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Testpilot-Einladung – Automatisierung zu Ende dokumentiert:** Team-Handbuch **`k2team-handbuch/26-TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Spiegel `public/k2team-handbuch/`), Index + **K2TeamHandbuchPage**-Eintrag; **LicencesPage** Link „Einmal einrichten“; **`.env.example`** + **`docs/TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Zeiger); **`docs/00-INDEX.md`**. Eine Spur: Schritt 1–3 bis Link + optional Resend-Mail. **Commits:** Feature **fa8eb31**, DIALOG-Stand **03ee3c6** (beide pushen)
+**Letzter Stand:** 28.03.26 – **Testpilot-Einladung – Automatisierung zu Ende dokumentiert:** Team-Handbuch **`k2team-handbuch/26-TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Spiegel `public/k2team-handbuch/`), Index + **K2TeamHandbuchPage**-Eintrag; **LicencesPage** Link „Einmal einrichten“; **`.env.example`** + **`docs/TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Zeiger); **`docs/00-INDEX.md`**. Eine Spur: Schritt 1–3 bis Link + optional Resend-Mail. **Commit:** Hauptlieferung **fa8eb31** ✅ auf GitHub; danach **03ee3c6** / **fa1f030** nur DIALOG-Stand – mit **`git push`** nachziehen.
 
 **Was wir JETZT tun:** Auf **Vercel** `PILOT_INVITE_SECRET` setzen; optional Resend; **Lizenzen** → Testpilot testen (nach vorherigen Blöcken).
 
