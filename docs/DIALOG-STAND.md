@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: Hinweis „nur Domain“ = Eingangstor** – Root `k2-galerie.vercel.app/` → `/entdecken` (Absicht). **PilotEinladungPage** + **Lizenzen:** Texte mit **echtem Lizenzen-Pfad** `/projects/k2-galerie/licences` + Link; API-Hint ergänzt. **Tests + Build grün.** **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot: Hinweis „nur Domain“ = Eingangstor** – Root `k2-galerie.vercel.app/` → `/entdecken` (Absicht). **PilotEinladungPage** + **Lizenzen:** Texte mit **echtem Lizenzen-Pfad** `/projects/k2-galerie/licences` + Link; API-Hint ergänzt. **Tests + Build grün.** **Commit:** **d168be2** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
