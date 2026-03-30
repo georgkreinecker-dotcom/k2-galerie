@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
-import { PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { BASE_APP_URL, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
+import { getSendPilotInviteApiUrl, isPilotInviteLocalDevHostname } from '../utils/pilotInviteClient'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
@@ -143,8 +144,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
   }, [apfFocusTestpilot])
 
   useEffect(() => {
-    const h = window.location.hostname
-    setLicencesPageIsLocalhost(h === 'localhost' || h === '127.0.0.1')
+    setLicencesPageIsLocalhost(isPilotInviteLocalDevHostname(window.location.hostname))
   }, [])
 
   async function loadOnlineData() {
@@ -266,7 +266,8 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
     }
     setPilotInviteBusy(true)
     try {
-      const res = await fetch(`${window.location.origin}/api/send-pilot-invite`, {
+      const inviteApi = getSendPilotInviteApiUrl()
+      const res = await fetch(inviteApi, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -458,15 +459,14 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                 lineHeight: 1.55,
               }}
             >
-              <strong>localhost:</strong> Der Einladungslink zeigt trotzdem auf die Live-Adresse k2-galerie.vercel.app. Der
-              Wert <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> muss dort (Vercel → Production){' '}
-              <strong>exakt</strong> derselbe sein wie in deiner Projekt-<code style={{ fontSize: '0.78rem' }}>.env</code> –
-              sonst ist der Link nach dem Klick ungültig. Am zuverlässigsten: auf der Live-Seite die{' '}
+              <strong>APf (localhost):</strong> „Einladung senden“ geht an die{' '}
+              <strong>Live-App</strong> ({BASE_APP_URL}) – dieselbe Signatur wie auf Vercel, der persönliche Link funktioniert
+              ohne Secret-Vergleich Mac vs. Vercel. Voraussetzung: kurz online (Internet). Optional kannst du die Einladung
+              weiterhin direkt im Browser auf der{' '}
               <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
                 Lizenzen-Seite
               </Link>{' '}
-              öffnen (nicht nur die Domain – ohne Pfad landet man auf dem Eingangstor Entdecken) und die Einladung dort
-              erzeugen.
+              erzeugen (nicht nur die Domain öffnen – ohne Pfad = Eingangstor Entdecken).
             </div>
           ) : null}
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>

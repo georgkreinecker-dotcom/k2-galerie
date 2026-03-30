@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: APf localhost = Live-API (Sportwagen):** Einladung von der APf rief bisher **localhost**/api auf (Signatur Mac-.env), Link aber **Vercel** → oft `bad_signature`. Jetzt: **Plattform + localhost** → POST an **k2-galerie.vercel.app/api/send-pilot-invite** (`pilotInviteClient.ts`); **crossEnvSecretWarning** nur wenn der **lokale** Server signiert. Lizenznehmer-Clone: `isPlatformHostname` → weiter same-origin. **Tests + Build grün.**
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **PilotEinladungPage – Fehler nicht nur Textlinks:** Bei **„Prüfung fehlgeschlagen“** (meist **bad_signature** = `PILOT_INVITE_SECRET` lokal ≠ Vercel Production, oder Einladung auf localhost / alter Tab): drei **Klick-Buttons** – **Lizenzen öffnen (neuen Link)**, **Entdecken**, **Team-Handbuch** – statt blauer Unterstreich-Links. **Tests + Build grün.** **Commit:** **7bfc248** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

@@ -80,13 +80,29 @@ export default async function handler(req, res) {
 
   let signHost = ''
   try {
-    signHost = new URL(origin || 'http://localhost').hostname
+    signHost = new URL(origin || 'http://localhost').hostname.toLowerCase()
   } catch {
     signHost = ''
   }
-  /** Link zeigt auf Production, Signatur lief von localhost → gleiches PILOT_INVITE_SECRET nötig, sonst /p ungültig */
+  const hostHeader = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim()
+  let serverHostname = ''
+  try {
+    serverHostname = new URL(`http://${hostHeader}`).hostname.toLowerCase()
+  } catch {
+    serverHostname = (hostHeader.split(':')[0] || '').toLowerCase()
+  }
+  const serverIsLocal =
+    serverHostname === 'localhost' ||
+    serverHostname === '127.0.0.1' ||
+    serverHostname === '::1'
+  /**
+   * Nur warnen, wenn wirklich der lokale Dev-Server signiert hat, der Link aber auf Production zeigt.
+   * POST von localhost → k2-galerie.vercel.app/api/…: Signatur läuft auf Vercel → keine Warnung.
+   */
   const crossEnvSecretWarning =
-    base.includes('k2-galerie.vercel.app') && (signHost === 'localhost' || signHost === '127.0.0.1')
+    base.includes('k2-galerie.vercel.app') &&
+    (signHost === 'localhost' || signHost === '127.0.0.1') &&
+    serverIsLocal
 
   const contextLabel = context === 'vk2' ? 'VK2 Vereins-Demo' : 'öffentliche Demo (ök2)'
 
