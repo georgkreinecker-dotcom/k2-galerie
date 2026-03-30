@@ -703,12 +703,14 @@ const devPilotInviteMiddleware = () => {
               req.on('error', reject)
             })
             req.body = bodyRaw
-            const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href)
+            const sendInviteUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href}?v=${Date.now()}`
+            const mod = await import(sendInviteUrl)
             await mod.default(req, wrapResForVercelStyleApi(res))
             return
           }
           if (req.method === 'GET' && url.startsWith('/api/validate-pilot-token')) {
-            const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href)
+            const validateUrl = `${pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href}?v=${Date.now()}`
+            const mod = await import(validateUrl)
             await mod.default(req, wrapResForVercelStyleApi(res))
             return
           }
