@@ -1,0 +1,30 @@
+---
+description: E-Mail-Vorschau und tatsächlicher Versand (HTML) = eine Quelle; bei Nutzerreaktionen sofort zwei Welten prüfen.
+alwaysApply: true
+---
+
+# E-Mail: Vorschau = Versand-HTML (eine Quelle)
+
+## Lehre (30.03.26 – Georg)
+
+**„Die Mail soll so aussehen wie die Ansicht.“** Wenn Vorschau und Versand **zwei Welten** sind (z. B. schönes **React-Layout** in der App + separater **HTML-String** für Resend/.eml), entstehen Stunden Frust: Ansicht stimmt, Postfach/Mail-Programm wirkt „falsch“ oder „nur HTML-Text“.
+
+**Das hätte bei den ersten Reaktionen auffallen müssen:** Sobald Georg sagt **Ansicht ≠ was ankommt**, **nur Vorschau**, **kein Versand**, **HTML-Müll** → **sofort** prüfen: Gibt es **eine** Funktion, die den **HTML-Body** baut, oder **zwei** parallele Darstellungen?
+
+## Regel (verbindlich)
+
+1. **Eine Quelle für den HTML-Body:** Der String, den **Resend** (oder vergleichbar) schickt, ist **derselbe**, den die **In-App-Vorschau** zeigt – z. B. `buildPilotInviteEmailHtml` + `dangerouslySetInnerHTML` / `srcdoc`, **kein** zweites React-Layout „das ungefähr so aussieht“.
+2. **Äußeres Layout (Karte, Rand, Schatten):** Gehört in **dieselbe** HTML-Builder-Funktion, wenn es auch in der Mail erscheinen soll – nicht nur in der React-Vorschau.
+3. **Erste Hilfe bei Fehlermeldung:** Zuerst **Dateien nebeneinander legen:** Wo wird die Vorschau gebaut? Wo der Versand? Wenn **nicht derselbe Aufruf** → das ist die wahrscheinliche Ursache, **bevor** an mailto, Resend-Keys oder Texteditoren geschraubt wird.
+
+## Referenz (Testpilot)
+
+- **HTML bauen:** `api/pilotInviteEmailHtml.js` → `buildPilotInviteEmailHtml`
+- **Vorschau:** `src/components/PilotInviteEmailPreview.tsx` rendert **nur** diesen String
+- **.eml / Shared:** `pilotInviteEmlDownload.ts`, `api/pilotInviteShared.js`
+
+## Kurzfassung
+
+**Vorschau und E-Mail-HTML = eine Welt, eine Builder-Funktion. Bei „Ansicht passt, Mail nicht“ zuerst zwei Welten ausschließen.**
+
+Verknüpfung: **ein-standard-problem.mdc** (Tabelle), **georg-merke-dir-reproduzierbarkeit.mdc** („merken“ = im Repo festhalten).
