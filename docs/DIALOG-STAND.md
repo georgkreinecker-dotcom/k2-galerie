@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot Plaintext: wieder nur eine Link-Zeile** – Doppelte Riesen-URL (nackt + &lt;…&gt;) war zu viel. Jetzt wie früher **nur** `<https://…>` unter „Direktlink“; kurzer Hinweis HTML vs. Text. HTML-Mail: Hinweiszeile angepasst. **Commit:** (nach Push)
+**Letzter Stand:** 30.03.26 – **Testpilot Plaintext: wieder nur eine Link-Zeile** – Doppelte Riesen-URL (nackt + &lt;…&gt;) war zu viel. Jetzt wie früher **nur** `<https://…>` unter „Direktlink“; kurzer Hinweis HTML vs. Text. HTML-Mail: Hinweiszeile angepasst. **Commit:** **698a124** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
