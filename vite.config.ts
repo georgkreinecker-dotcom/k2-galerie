@@ -671,7 +671,8 @@ const devPilotInviteMiddleware = () => {
           res.writeHead(500, { 'Content-Type': 'application/json' })
           res.end(
             JSON.stringify({
-              error: 'PILOT_INVITE_SECRET in .env eintragen (Testpilot-Einladung).',
+              error:
+                'Lokal fehlt PILOT_INVITE_SECRET: In der Projekt-.env eine Zeile PILOT_INVITE_SECRET=… (mind. 32 Zeichen, z. B. openssl rand -hex 32) speichern, dann Seite neu laden und erneut senden. Auf Vercel dieselbe Variable setzen.',
             }),
           )
           return
