@@ -106,6 +106,10 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
           <code style={{ background: 'rgba(255,255,255,0.85)', padding: '0.12rem 0.35rem', borderRadius: 4 }}>4242 4242 4242 4242</code>
           {' '}– nur wenn der Server im <strong>Testmodus</strong> läuft (<code style={{ fontSize: '0.8rem' }}>sk_test_…</code>). Details: Doku „STRIPE-TEST“ im Projekt.
         </div>
+        <p style={{ margin: '0.75rem 0 0', fontSize: '0.86rem', lineHeight: 1.5, color: '#57534e' }}>
+          <strong style={{ color: '#92400e' }}>Testpilot:in per E-Mail einladen:</strong> Formular weiter unten auf{' '}
+          <strong>dieser</strong> Seite (Abschnitt „✉️ Testpilot:in per E-Mail einladen“) – nach den Lizenzstufen-Karten.
+        </p>
       </section>
     )
   }
@@ -137,6 +141,13 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         <strong style={{ color: '#92400e' }}>Stripe testen:</strong> Nach „Weiter zur Zahlung“ bei der Karte{' '}
         <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.1rem 0.35rem', borderRadius: 4 }}>4242 4242 4242 4242</code>
         {' '}eintragen (nur Testmodus).
+      </p>
+      <p style={{ margin: '0.75rem 0 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#292524', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
+        <strong style={{ color: '#92400e' }}>Testpilot:in per E-Mail einladen:</strong> steht nicht hier, sondern auf der Seite{' '}
+        <Link to={`${licencesPath}#testpilot-einladen`} style={{ color: '#b45309', fontWeight: 700 }}>
+          Lizenzen
+        </Link>
+        {' '}(oben in mök2 gleicher gelber Kasten – darunter scrollen zum Formular).
       </p>
     </section>
   )
