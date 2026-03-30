@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Cursor-Vorschau vs. Testpilot:** In der **iframe-Vorschau** lädt die App **absichtlich nicht** (Crash-Schutz); Stattdessen Hinweis „Im Browser öffnen“. Unter dem Button steht die **aktuell in der Vorschau geöffnete** URL (z. B. Lizenzen) – kein App-Fehler. Bei Pfad **`/p/…`** zeigt der Hinweis jetzt explizit: Testpilot nur im **Browser** (Chrome/Safari). **`main.tsx`**. **Commit:** **d05808c** ✅ auf GitHub
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: nicht mehr „Lizenzen/mök2“ bei Fehler, Route `/p/*` früh:** Fehlerseite verlinkt **nicht** auf Lizenzen (war verwirrend); stattdessen Entdecken + Handbuch 26. Route **`/p/*`** (Splat) oben in `App.tsx`. **Lizenzen:** Button „Persönlicher Link öffnen“ + gekürzte Anzeige (href voll). **Commit:** **7094d0c** ✅ auf GitHub
 
 ---
