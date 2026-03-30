@@ -154,11 +154,16 @@ if (rootElement && inIframe && !embeddedInApf && !k2DocViewerEmbed && !k2PlakatE
   const fullUrl = typeof window !== 'undefined'
     ? (window.location.origin.includes('localhost') ? `http://localhost:${port}${window.location.pathname}${window.location.search}` : `${window.location.origin}${window.location.pathname}${window.location.search}`)
     : 'http://localhost:5177'
+  const pathForHint = typeof window !== 'undefined' ? window.location.pathname || '' : ''
+  const isPilotInvitePath = pathForHint === '/p' || pathForHint.startsWith('/p/')
+  const hintSub = isPilotInvitePath
+    ? 'Testpilot-Einladung: Bitte im Browser öffnen (Chrome/Safari). In der Cursor-Vorschau lädt die App absichtlich nicht – das ist kein Fehler.'
+    : 'Bitte im Browser öffnen (dort siehst du die APf und das Dokument):'
   rootElement.innerHTML = `
     <div style="padding: 2rem; color: rgba(255,245,240,0.95); background: #1a0f0a; min-height: 100vh; font-family: system-ui; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
       <h1 style="color: #ff8c42; margin-bottom: 1rem; font-size: 1.25rem;">K2 Galerie</h1>
       <p style="margin-bottom: 1rem; max-width: 420px; line-height: 1.5;">Die App wird in der Vorschau nicht geladen – so bleibt Cursor stabil.</p>
-      <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: rgba(212,165,116,0.9);">Bitte im Browser öffnen (dort siehst du die APf und das Dokument):</p>
+      <p style="margin-bottom: 1.5rem; font-size: 0.95rem; color: rgba(212,165,116,0.9);">${hintSub}</p>
       <a href="${fullUrl}" target="_blank" rel="noopener" style="display: inline-block; padding: 0.75rem 1.5rem; background: #ff8c42; color: #1a0f0a; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; cursor: pointer;">Im Browser öffnen</a>
       <p style="margin-top: 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.5); word-break: break-all; max-width: 90%;">${fullUrl}</p>
     </div>
