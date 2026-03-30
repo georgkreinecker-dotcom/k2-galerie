@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 28.03.26 – **Eiserne Regel neu:** **End-to-End vollständig – nie „zwischendrin“** – `.cursor/rules/eiserne-regel-end-to-end-vollstaendig.mdc` (`alwaysApply: true`); Eintrag in **docs/EISERNE-REGELN-UEBERSICHT.md**. **Commit:** **8f732a8** ✅ auf GitHub
+**Letzter Stand:** 28.03.26 – **Eiserne Regel neu:** **End-to-End vollständig – nie „zwischendrin“** – `.cursor/rules/eiserne-regel-end-to-end-vollstaendig.mdc` (`alwaysApply: true`); Eintrag in **docs/EISERNE-REGELN-UEBERSICHT.md**. **Commits:** **8f732a8** Regel + Übersicht · **29cdaa4** DIALOG ✅ auf GitHub
 
 **Was wir JETZT tun:** Wie zuvor – Vercel/Resend nach Handbuch; Regel gilt ab sofort für alle Aufträge.
 
