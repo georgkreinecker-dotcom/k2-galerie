@@ -9,6 +9,7 @@ import TermWithExplanation from '../components/TermWithExplanation'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { PilotInviteEmailPreview } from '../components/PilotInviteEmailPreview'
 import { downloadPilotInviteEml } from '../utils/pilotInviteEmlDownload'
+import { isResendTestingRecipientsOnlyError } from '../utils/resendPilotInviteHints'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { addGutschrift } from '../utils/empfehlerGutschrift'
 
@@ -614,11 +615,37 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   >
                     Handbuch: Resend auf Vercel
                   </Link>
+                  {isResendTestingRecipientsOnlyError(pilotInviteMsg.detail) ? (
+                    <div
+                      style={{
+                        marginTop: '0.85rem',
+                        padding: '0.75rem 0.85rem',
+                        borderRadius: 8,
+                        background: 'rgba(251, 191, 36, 0.14)',
+                        border: '1px solid rgba(245, 158, 11, 0.5)',
+                        fontSize: '0.86rem',
+                        lineHeight: 1.6,
+                        color: 'var(--k2-text)',
+                      }}
+                    >
+                      <strong style={{ color: '#b45309' }}>Das ist kein Vercel-Bug:</strong> Mit nur API-Key (ohne eigene Domain bei Resend) erlaubt Resend den
+                      Versand <strong>nur an die E-Mail deines Resend-Kontos</strong> – nicht an beliebige Testpilot-Adressen.
+                      <br />
+                      <br />
+                      <strong>So geht’s für echte Empfänger:</strong> Bei Resend unter{' '}
+                      <a href="https://resend.com/domains" target="_blank" rel="noopener noreferrer" style={{ color: '#0d9488', fontWeight: 700 }}>
+                        resend.com/domains
+                      </a>{' '}
+                      eine Domain verifizieren (DNS wie angegeben). Dann in Vercel <code style={{ fontSize: '0.75rem' }}>RESEND_FROM</code> auf eine Adresse{' '}
+                      <strong>dieser</strong> Domain setzen, z. B. <code style={{ fontSize: '0.75rem' }}>K2 Galerie &lt;einladung@kgm.at&gt;</code> – und erneut{' '}
+                      <strong>deployen</strong>.
+                    </div>
+                  ) : null}
                   {pilotInviteMsg.detail ? (
                     <>
                       <br />
                       <br />
-                      <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>Resend-Meldung:</span>
+                      <span style={{ fontSize: '0.8rem', opacity: 0.9 }}>Resend-Meldung (Original):</span>
                       <pre
                         style={{
                           margin: '0.35rem 0 0',

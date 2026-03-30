@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Resend 403 „only send testing emails to your own address“:** Mit nur `RESEND_API_KEY` (ohne **verifizierte Domain**) blockiert Resend Versand an andere Empfänger – **kein App-Fehler**. **LicencesPage:** gelber Kasten mit deutscher Erklärung + Link **resend.com/domains**; **`isResendTestingRecipientsOnlyError`** in `resendPilotInviteHints.ts`; Test; **Handbuch 26** + **public**-Spiegel um Domain-Schritt und Fehlertabelle ergänzt. **Tests + Build grün.** **Commit:** **a3dd9c0** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: „kein grüner Button“ = meist mailto/Entwurf, nicht Resend:** Apple-Mail-Screenshot zeigte **Neue Nachricht** mit nur Text – typisch für **mailto** („Mail-Programm“), nicht für die **Posteingangs-Mail** von Resend (die hat HTML). **LicencesPage:** grüner Erfolgskasten um Abschnitt **Verwechslung** ergänzt; bei erfolgreichem Versand Hinweis in Details + Link-Text **„nicht die Resend-Mail“**. **Tests + Build grün.** **Commit:** **8eef9eb** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

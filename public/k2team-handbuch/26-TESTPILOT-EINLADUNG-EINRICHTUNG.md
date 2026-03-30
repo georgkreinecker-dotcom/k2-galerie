@@ -43,8 +43,8 @@ Wenn **kein** `RESEND_API_KEY` gesetzt ist: Der Link erscheint in der App, aber 
 
 1. Account bei **Resend** anlegen: https://resend.com  
 2. **API Key** erstellen → in Vercel als **`RESEND_API_KEY`** eintragen (Production).  
-3. **Domain** bei Resend verifizieren (DNS-Einträge wie angegeben).  
-4. **`RESEND_FROM`** setzen, z. B. `K2 Galerie <onboarding@deine-verifizierte-domain>` – die Domain muss zu Resend passen.  
+3. **Domain** bei Resend verifizieren (DNS-Einträge wie angegeben). **Ohne Schritt 3** erlaubt Resend den Versand **nur an die E-Mail-Adresse deines Resend-Kontos** – nicht an beliebige Testpilot:innen (Fehler sinngemäß: *only send testing emails to your own email address*).  
+4. **`RESEND_FROM`** setzen mit **verifizierter** Domain, z. B. `K2 Galerie <einladung@kgm.at>` – nicht nur `onboarding@resend.dev`, wenn du an **andere** Empfänger senden willst.  
 5. **Redeploy** auf Vercel nach dem Setzen der Variablen.
 
 **Optional lokal:** Dieselben Resend-Variablen in `.env` nur wenn du **E-Mail-Versand** direkt gegen den Dev-Server testen willst; für den normalen Lizenzen-Weg reicht Vercel.
@@ -67,6 +67,7 @@ Wenn **kein** `RESEND_API_KEY` gesetzt ist: Der Link erscheint in der App, aber 
 | API-Fehler / rot nach **Lizenzen** | `PILOT_INVITE_SECRET` fehlt auf Vercel oder kein Redeploy nach Änderung | Schritt 1 Vercel |
 | „PILOT_INVITE_SECRET in .env eintragen“ (nur lokal, **Dev** direkt) | `.env` fehlt für **lokalen** API-Test, oder Dev nicht neu gestartet | Nur bei Middleware-Test: `.env` + Neustart; **Lizenzen** nutzen Live-API |
 | Link da, Posteingang leer | Kein `RESEND_API_KEY` auf Vercel oder Resend lehnt ab | Schritt 2; Vercel-Logs prüfen |
+| Rot/Gelb mit **403** und Text zu **testing emails** / **only … own email** / **verify a domain** | API-Key ja, aber **keine verifizierte Domain** (oder `RESEND_FROM` passt nicht zur Domain) | **resend.com/domains** – Domain verifizieren; `RESEND_FROM` z. B. `K2 Galerie <einladung@deine-domain>`; Redeploy |
 | Früher: `bad_signature` nach Klick auf Link | Signatur und Prüfung an verschiedenen Orten – **behoben** durch einen Live-API-Pfad aus der APf | Bei erneutem Auftreten: Vercel-Secret und Deploy prüfen |
 
 ---
