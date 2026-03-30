@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: Kein „Fake-Versand“ in der UI:** Georg zu Recht: nur schöne Vorschau ≠ Postfach. **LicencesPage** jetzt **ehrlich:** Einleitung = Vorschau allein schickt keine Mail; **rot** „Es ist keine E-Mail rausgegangen“ wenn Server/Resend nichts liefert; **grün** wenn Resend übernommen hat; Button-Text **„Absenden: Link + Vorschau (E-Mail nur mit Resend)“**; Hinweis **.eml in Mail-App** öffnen (nicht Texteditor). **Tests + Build grün.** **Commit:** **dbd6c11** ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot: Kein „Fake-Versand“ in der UI:** Georg zu Recht: nur schöne Vorschau ≠ Postfach. **LicencesPage** jetzt **ehrlich:** Einleitung = Vorschau allein schickt keine Mail; **rot** „Es ist keine E-Mail rausgegangen“ wenn Server/Resend nichts liefert; **grün** wenn Resend übernommen hat; Button-Text **„Absenden: Link + Vorschau (E-Mail nur mit Resend)“**; Hinweis **.eml in Mail-App** öffnen (nicht Texteditor). **Tests + Build grün.** **Commit:** **2cd57f3** ✅ auf GitHub
 
 **Was wir JETZT tun:** Ohne `RESEND_API_KEY` auf Vercel kommt weiterhin nichts im Postfach – dann Link/.eml nutzen oder Resend einrichten (Handbuch 26)
 
