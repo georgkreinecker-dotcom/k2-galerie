@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Resend 403 „only send testing emails to your own address“:** Mit nur `RESEND_API_KEY` (ohne **verifizierte Domain**) blockiert Resend Versand an andere Empfänger – **kein App-Fehler**. **LicencesPage:** gelber Kasten mit deutscher Erklärung + Link **resend.com/domains**; **`isResendTestingRecipientsOnlyError`** in `resendPilotInviteHints.ts`; Test; **Handbuch 26** + **public**-Spiegel um Domain-Schritt und Fehlertabelle ergänzt. **Tests + Build grün.** **Commit:** **a3dd9c0** ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Resend 403 „only send testing emails to your own address“:** Mit nur `RESEND_API_KEY` (ohne **verifizierte Domain**) blockiert Resend Versand an andere Empfänger – **kein App-Fehler**. **LicencesPage:** gelber Kasten mit deutscher Erklärung + Link **resend.com/domains**; **`isResendTestingRecipientsOnlyError`** in `resendPilotInviteHints.ts`; Test; **Handbuch 26** + **public**-Spiegel um Domain-Schritt und Fehlertabelle ergänzt. **Tests + Build grün.** **Commit:** **8021d62** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
