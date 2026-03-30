@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Vercel Build rot (358c75a):** `LicencesPage` importierte `getPilotInviteMailStatusUrl`, auf `main` fehlten **Export** + **API**. **Fix:** `src/utils/pilotInviteClient.ts` exportiert `getPilotInviteMailStatusUrl`, neu **`api/pilot-invite-mail-status.js`** (GET `{ resendConfigured }`), **Vite-Dev** GET ohne PILOT_INVITE_SECRET-Pflicht. **Tests + Build grün.** **Commit:** **a20b2c0** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-UI:** Georg: Nutzer bekommen **keinen** Code – nur die **gestaltete Mail** (grüne Buttons). **LicencesPage:** alle sichtbaren Texte von „HTML-String / HTML-Mail / HTML-Müll“ auf **Darstellung, Layout, Klartext vs. Button** umgestellt; klar: Empfänger sieht **keinen** Technik-Text. **Tests + Build grün.** **Commit:** **c300b40** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
