@@ -143,10 +143,18 @@ export default function PilotEinladungPage() {
               </p>
             </div>
           ) : (
-            <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.5 }}>
-              Typisch: Link abgelaufen, oder der Server hat noch kein <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> (Vercel
-              → Environment). Bitte eine <strong>neue Einladung</strong> vom Team anfordern – nicht die Lizenzen-Seite, die ist etwas anderes.
-            </p>
+            <div style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.55 }}>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                Typisch: Link abgelaufen, oder das Geheimnis passt nicht: Einladung und Prüfung müssen dasselbe{' '}
+                <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> nutzen (lokal in{' '}
+                <code style={{ fontSize: '0.82em' }}>.env.local</code> und auf Vercel <strong>identisch</strong>).
+              </p>
+              <p style={{ margin: 0 }}>
+                <strong>Neuen Link erzeugen:</strong> APf → <strong>Lizenzen</strong> → Testpilot-Formular – am zuverlässigsten die Seite direkt auf{' '}
+                <strong>k2-galerie.vercel.app</strong> öffnen, Einladung senden, dann den angezeigten Link oder „Persönlichen Link öffnen“ nutzen
+                (nicht einen alten Tab mit localhost mischen).
+              </p>
+            </div>
           )}
           <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: MUTED }}>
             <Link to={ENTDECKEN_ROUTE} style={{ color: BTN, fontWeight: 600 }}>
