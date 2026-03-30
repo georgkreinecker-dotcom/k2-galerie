@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Lizenzen & Testpilot: APf + kompakte Einladung** – **Smart Panel** (K2 Galerie): Button **„Lizenzen & Testpilot“** → `page=lizenzen`, Scroll zu **Testpilot einladen** (`apfFocusTestpilot`). **DevViewPage:** Tab „Lizenzen & Testpilot“, `getPathForPage` mit `#testpilot-einladen`. **LicencesPage:** nach Einladung **keine** lange URL-Zeile mehr; **„Persönlichen Link öffnen“** + **„Link kopieren“**; Hash `#testpilot-einladen` scrollt zum Block. **Tests + Build grün.** **Commit:** **291b8a0** ✅ (APf-Zugang + Einladung nur als Buttons; DIALOG-STAND ergänzt)
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: Vercel-Preview = Plattform** – `isPlatformInstance()` kannte nur `PLATFORM_HOSTNAMES`; **Preview** (`k2-galerie-git-….vercel.app`) → **false** → **PlatformOnlyRoute** bei `/p` → `/` → **Entdecken** statt Admin. **Fix:** `isPlatformHostname(host)` + Vercel-Hosts `k2-galerie.*` / `k2-galerie-*` unter `.vercel.app`; Tests. **Commit:** **1ecad1a** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
