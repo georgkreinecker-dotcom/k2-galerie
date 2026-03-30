@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import {
   buildPilotEinladungUrl,
+  buildPilotEinladungUrlQuery,
   getPilotInviteLinkBaseUrl,
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
@@ -43,6 +44,12 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(url).toContain('/p/abc123')
     expect(url.includes('token=')).toBe(false)
     expect(url.includes('?t=')).toBe(false)
+  })
+
+  it('buildPilotEinladungUrlQuery: E-Mail-Links mit ?t= (robuster gegen Zeilenumbruch)', () => {
+    const url = buildPilotEinladungUrlQuery('https://k2-galerie.vercel.app', 'abc.def')
+    expect(url).toContain('/p?t=')
+    expect(url).toContain(encodeURIComponent('abc.def'))
   })
 
   it('getPilotInviteLinkBaseUrl: Dev localhost → feste Production-URL für E-Mails', () => {

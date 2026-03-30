@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Token nicht mehr mitten in der Zeile zerbrechen:** Einladungs-URL jetzt **`/p?t=…`** (Query); Plaintext mit **`<https://…>`**; HTML-Direktlink nur noch **„diesen Link“** (volle URL nur im `href`, nicht als sichtbarer langer Text mit `word-break`). Vermeidet Leerzeichen im Token durch Mail-Client-Umbruch. **Commit:** (nach Push) ✅ auf GitHub
+
+---
+
+**Letzter Stand:** 30.03.26 – **„Server nicht konfiguriert“ (Testpilot):** API braucht **`PILOT_INVITE_SECRET`** (Vercel Environment + ggf. lokal `.env`). **PilotEinladungPage:** Bei genau dieser Meldung jetzt **konkrete** Hinweise Vercel vs. localhost statt nur „Link abgelaufen“. **Commit:** (nach Push) ✅ auf GitHub
+
+---
+
 **Letzter Stand:** 30.03.26 – **Cursor-Vorschau vs. Testpilot:** In der **iframe-Vorschau** lädt die App **absichtlich nicht** (Crash-Schutz); Stattdessen Hinweis „Im Browser öffnen“. Unter dem Button steht die **aktuell in der Vorschau geöffnete** URL (z. B. Lizenzen) – kein App-Fehler. Bei Pfad **`/p/…`** zeigt der Hinweis jetzt explizit: Testpilot nur im **Browser** (Chrome/Safari). **`main.tsx`**. **Commit:** **d05808c** ✅ auf GitHub
 
 ---

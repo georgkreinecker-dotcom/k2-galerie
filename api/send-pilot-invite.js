@@ -10,7 +10,7 @@ import {
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
   isValidPilotInviteEmail,
-  buildPilotEinladungUrl,
+  buildPilotEinladungUrlQuery,
   getPilotInviteLinkBaseUrl,
   sendPilotInviteViaResend,
 } from './pilotInviteShared.js'
@@ -59,14 +59,14 @@ export default async function handler(req, res) {
   }
 
   const base = getPilotInviteLinkBaseUrl(req)
-  const inviteUrl = buildPilotEinladungUrl(base, token)
+  const inviteUrl = buildPilotEinladungUrlQuery(base, token)
 
   const contextLabel = context === 'vk2' ? 'VK2 Vereins-Demo' : 'öffentliche Demo (ök2)'
 
   const resendKey = (process.env.RESEND_API_KEY || '').trim()
   const mailSubject = encodeURIComponent('Deine Testpilot-Einladung – K2 Galerie')
   const mailBody = encodeURIComponent(
-    `Hallo ${name},\n\nhier ist deine Testpilot-Einladung für die K2 Galerie (${contextLabel}).\n\nSo startest du:\n1) Link öffnen\n2) „Weiter zur Demo“ wählen\n3) Bei Bedarf „Admin“ öffnen\n\nDirektlink:\n${inviteUrl}\n\nViel Erfolg!`,
+    `Hallo ${name},\n\nhier ist deine Testpilot-Einladung für die K2 Galerie (${contextLabel}).\n\nSo startest du:\n1) Link öffnen\n2) „Weiter zur Demo“ wählen\n3) Bei Bedarf „Admin“ öffnen\n\nDirektlink (eine Zeile, ggf. aus spitzen Klammern kopieren):\n<${inviteUrl}>\n\nViel Erfolg!`,
   )
   const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${mailBody}`
 

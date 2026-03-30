@@ -154,6 +154,16 @@ export function buildPilotEinladungUrl(baseUrl, token) {
   return `${base}/p/${encodeURIComponent(token)}`
 }
 
+/**
+ * Gleicher Token wie buildPilotEinladungUrl, aber Query `?t=` statt Pfad.
+ * E-Mail-Clients umbrechen lange Zeilen oft mit Leerzeichen – im Pfad entsteht so ein kaputter Token.
+ * Query-Form + spitze Klammern im Plaintext sind robuster.
+ */
+export function buildPilotEinladungUrlQuery(baseUrl, token) {
+  const base = baseUrl.replace(/\/$/, '')
+  return `${base}/p?t=${encodeURIComponent(token)}`
+}
+
 /** Standard-Öffentlichkeits-URL für Einladungslinks (Handy, Safari, externe Empfänger). */
 const PILOT_INVITE_DEFAULT_PUBLIC_BASE = 'https://k2-galerie.vercel.app'
 
@@ -221,7 +231,8 @@ export async function sendPilotInviteViaResend({
     '2) Auf der Seite „Weiter zur Demo“ wählen.',
     '3) Bei Bedarf „Admin“ öffnen.',
     '',
-    inviteUrl,
+    'Direktlink (eine Zeile, ggf. aus spitzen Klammern kopieren):',
+    `<${inviteUrl}>`,
     '',
     'Link ist personalisiert und einige Wochen gültig.',
   ].join('\n')
@@ -236,7 +247,7 @@ export async function sendPilotInviteViaResend({
     </ol>
     <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
     <p style="color:#666;font-size:12px">Link ist personalisiert und einige Wochen gültig.</p>
-    <p style="color:#666;font-size:12px;word-break:break-all">Direktlink (falls Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">${escapeHtml(inviteUrl)}</a></p>
+    <p style="color:#666;font-size:12px">Direktlink (falls Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">diesen Link</a> – gleiche Adresse wie der Button (nicht den sichtbaren Text aus einer umbrochenen Zeile kopieren).</p>
   `
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
