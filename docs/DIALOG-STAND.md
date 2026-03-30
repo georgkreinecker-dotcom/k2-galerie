@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Button in HTML, Text-Mail lesbar:** Viele Programme zeigen nur **Plaintext** → kein grüner Button, nur `<URL>`. **Plaintext** (`pilotInviteEmailBody.js`): Hinweis auf HTML-Button, Kasten **„EINLADUNG ÖFFNEN“** mit **voller URL-Zeile** (tippbar) + weiterhin `<…>` als Alternative. **Resend-HTML** (`sendPilotInviteViaResend`): Hinweiszeile, **Tabellen-Button**, `href` escaped. **Tests + Build grün.** **Commit:** (folgt nach Push)
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Button in HTML, Text-Mail lesbar:** Viele Programme zeigen nur **Plaintext** → kein grüner Button, nur `<URL>`. **Plaintext** (`pilotInviteEmailBody.js`): Hinweis auf HTML-Button, Kasten **„EINLADUNG ÖFFNEN“** mit **voller URL-Zeile** (tippbar) + weiterhin `<…>` als Alternative. **Resend-HTML** (`sendPilotInviteViaResend`): Hinweiszeile, **Tabellen-Button**, `href` escaped. **Tests + Build grün.** **Commit:** **5e9fec5** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
