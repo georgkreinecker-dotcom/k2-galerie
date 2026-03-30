@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { BASE_APP_URL, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
-import { getSendPilotInviteApiUrl, isPilotInviteLocalDevHostname } from '../utils/pilotInviteClient'
+import { getSendPilotInviteApiUrl, getPilotInviteMailStatusUrl, isPilotInviteLocalDevHostname } from '../utils/pilotInviteClient'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
@@ -125,6 +125,8 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
   const [pilotInviteCrossEnvWarning, setPilotInviteCrossEnvWarning] = useState(false)
   const [pilotInviteCopied, setPilotInviteCopied] = useState(false)
   const [licencesPageIsLocalhost, setLicencesPageIsLocalhost] = useState(false)
+  /** Live-API (meist Vercel): ist Resend gesetzt? → dann fixe automatische Zustellung möglich */
+  const [pilotResendServerStatus, setPilotResendServerStatus] = useState<'loading' | 'yes' | 'no' | 'error'>('loading')
 
   useEffect(() => {
     setGrants(loadGrants())
@@ -148,6 +150,22 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
 
   useEffect(() => {
     setLicencesPageIsLocalhost(isPilotInviteLocalDevHostname(window.location.hostname))
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetch(getPilotInviteMailStatusUrl())
+      .then((r) => r.json())
+      .then((j: { resendConfigured?: boolean }) => {
+        if (cancelled) return
+        setPilotResendServerStatus(j.resendConfigured ? 'yes' : 'no')
+      })
+      .catch(() => {
+        if (!cancelled) setPilotResendServerStatus('error')
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   async function loadOnlineData() {
@@ -435,14 +453,65 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.35rem', color: 'var(--k2-text)' }}>
             ✉️ Testpilot:in per E-Mail einladen
           </h2>
-          <p style={{ fontSize: '0.9rem', color: 'var(--k2-text)', margin: '0 0 0.5rem', lineHeight: 1.55, fontWeight: 600 }}>
-            <strong>Ehrlich:</strong> Die weiße Karte unten ist <strong>nur eine Vorschau in der App</strong> – die allein schickt <strong>keine</strong> E-Mail.
-          </p>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem', lineHeight: 1.55 }}>
-            <strong>Postfach beim Empfänger</strong> nur, wenn auf Vercel <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> + passendes{' '}
-            <code style={{ fontSize: '0.78rem' }}>RESEND_FROM</code> stehen und Resend die Mail annimmt. Sonst: Link kopieren, selbst senden, oder{' '}
-            <strong>.eml</strong> laden (in der <strong>Mail-App</strong> öffnen – nicht im Texteditor, sonst siehst du nur „HTML-Text“).
-          </p>
+          {pilotResendServerStatus === 'loading' ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem' }}>Server-Status wird geprüft …</p>
+          ) : null}
+          {pilotResendServerStatus === 'yes' ? (
+            <div
+              style={{
+                marginBottom: '0.85rem',
+                padding: '0.65rem 0.85rem',
+                borderRadius: 10,
+                background: 'rgba(22, 163, 74, 0.15)',
+                border: '1px solid rgba(74, 222, 128, 0.45)',
+                fontSize: '0.88rem',
+                color: 'var(--k2-text)',
+                lineHeight: 1.55,
+              }}
+            >
+              <strong>Fixe Lösung aktiv:</strong> Auf dem Server ist <strong>Resend</strong> eingerichtet – beim Empfänger kommt{' '}
+              <strong>dieselbe gestaltete Mail</strong> an wie die weiße Karte unten (grüner Button, alles so – <strong>kein</strong> Code für den
+              Nutzer).
+            </div>
+          ) : null}
+          {pilotResendServerStatus === 'no' ? (
+            <div
+              style={{
+                marginBottom: '0.85rem',
+                padding: '0.75rem 0.9rem',
+                borderRadius: 10,
+                background: 'rgba(180, 83, 9, 0.1)',
+                border: '1px solid rgba(251, 191, 36, 0.45)',
+                fontSize: '0.88rem',
+                color: 'var(--k2-text)',
+                lineHeight: 1.55,
+              }}
+            >
+              <strong>Automatischer Versand fehlt (noch nicht „fix“):</strong> Auf dem Live-Server ist <strong>kein</strong>{' '}
+              <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> gesetzt – von der App aus kann dann <strong>kein</strong> Postfach
+              automatisch erreicht werden (kein Browser kann das ohne Mail-Server).{' '}
+              <strong>Fix einmalig:</strong>{' '}
+              <Link to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md" style={{ color: '#b45309', fontWeight: 700 }}>
+                Resend auf Vercel
+              </Link>
+              . Bis dahin: Link kopieren, .eml in der Mail-App öffnen (nicht Texteditor).
+            </div>
+          ) : null}
+          {pilotResendServerStatus === 'error' ? (
+            <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 0.75rem' }}>
+              Server-Status nicht erreichbar – nach „Absenden“ siehst du, ob eine Mail rausging.
+            </p>
+          ) : null}
+          {pilotResendServerStatus === 'yes' ? (
+            <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+              Die Vorschau unten ist <strong>genau die Darstellung</strong>, die auch in der gesendeten Mail beim Empfänger ankommt – die Buttons, nicht
+              Technik-Text.
+            </p>
+          ) : pilotResendServerStatus === 'no' ? (
+            <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+              Die Vorschau zeigt, <strong>wie die Mail aussehen würde</strong> – ohne Resend wird sie nicht automatisch zugestellt.
+            </p>
+          ) : null}
           <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem' }}>
             <Link
               to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md"
@@ -483,7 +552,13 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
               </select>
             </div>
             <button type="submit" disabled={pilotInviteBusy} className="btn" style={{ background: '#b54a1e', color: '#fff', alignSelf: 'flex-start' }}>
-              {pilotInviteBusy ? '…' : 'Absenden: Link + Vorschau (E-Mail nur mit Resend)'}
+              {pilotInviteBusy
+                ? '…'
+                : pilotResendServerStatus === 'yes'
+                  ? 'Einladung senden (E-Mail = Vorschau unten)'
+                  : pilotResendServerStatus === 'no'
+                    ? 'Link erzeugen + Vorschau (kein Auto-Versand – Resend fehlt)'
+                    : 'Absenden: Link + Vorschau'}
             </button>
           </form>
           {pilotInviteMsg && pilotInviteMsg.type === 'error' ? (
@@ -526,10 +601,10 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   <strong style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.95rem' }}>
                     Es ist keine E-Mail rausgegangen.
                   </strong>
-                  Der Server hat <strong>nichts</strong> in ein Postfach geschickt – weder HTML noch schön formatiert. Was du darunter siehst, ist{' '}
-                  <strong>nur diese Vorschau</strong> in der App. So lädst du trotzdem ein:{' '}
-                  <strong>Link kopieren</strong> und selbst per Mail schicken, oder <strong>.eml laden</strong> und in{' '}
-                  <strong>Apple Mail / Outlook</strong> öffnen (Doppelklick) – <em>nicht</em> mit TextEdit oder „Quelltext“, sonst wirkt es wie HTML-Müll.
+                  Der Server hat <strong>nichts</strong> in ein Postfach geschickt – <strong>keine</strong> fertige Mail mit Layout. Was du darunter siehst,
+                  ist <strong>nur diese Vorschau</strong> in der App. So lädst du trotzdem ein: <strong>Link kopieren</strong> und selbst per Mail schicken,
+                  oder <strong>.eml laden</strong> und in <strong>Apple Mail / Outlook</strong> öffnen (Doppelklick) – <em>nicht</em> mit TextEdit oder
+                  „Rohansicht“, sonst siehst du nur Technik-Zeichen statt der grünen Buttons.
                   <br />
                   <br />
                   Automatisch raus erst nach Einrichtung:{' '}
@@ -573,7 +648,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   }}
                 >
                   <strong>E-Mail wurde vom Server an Resend übergeben</strong> – beim Empfänger im Posteingang prüfen (Ordner Spam). Die Vorschau unten
-                  entspricht dem HTML-Inhalt der Mail.
+                  entspricht <strong>genau dem Layout</strong> der Mail (grüne Buttons inklusive) – <strong>kein</strong> Code für den Empfänger.
                 </div>
               ) : null}
               <h3
@@ -586,8 +661,8 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                 }}
               >
                 {pilotInviteMsg?.type === 'ok'
-                  ? 'So sieht die gesendete E-Mail aus'
-                  : 'Vorschau: so würde die Einladung als HTML-Mail aussehen'}
+                  ? 'So sieht die gesendete E-Mail beim Empfänger aus'
+                  : 'Vorschau: so sieht die Einladung beim Empfänger aus (mit grünem Button)'}
               </h3>
               <PilotInviteEmailPreview
                 inviteUrl={pilotInviteUrl}
@@ -599,7 +674,9 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   Link kopieren, .eml mit Layout oder Mail-Programm (nur Klartext)
                 </summary>
                 <p style={{ margin: '0.5rem 0 0.65rem', lineHeight: 1.55, color: 'var(--k2-text)' }}>
-                  <strong>„Mail-Programm öffnen“</strong> nutzt mailto – das ist <strong>immer nur Text</strong>, kein HTML. Deshalb siehst du dort <strong>keinen grünen Button</strong> wie in der Vorschau. Automatisch „raus“ geht nur mit <strong>Resend</strong> auf Vercel (
+                  <strong>„Mail-Programm öffnen“</strong> nutzt mailto – das ist <strong>immer nur Klartext</strong>, <strong>ohne</strong> dein Layout mit
+                  Button. Deshalb siehst du dort <strong>keinen grünen Button</strong> wie in der Vorschau. Automatisch „raus“ geht nur mit{' '}
+                  <strong>Resend</strong> auf Vercel (
                   <code style={{ fontSize: '0.75rem' }}>RESEND_API_KEY</code>
                   ).
                 </p>
