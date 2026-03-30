@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **PilotEinladungPage – Fehler nicht nur Textlinks:** Bei **„Prüfung fehlgeschlagen“** (meist **bad_signature** = `PILOT_INVITE_SECRET` lokal ≠ Vercel Production, oder Einladung auf localhost / alter Tab): drei **Klick-Buttons** – **Lizenzen öffnen (neuen Link)**, **Entdecken**, **Team-Handbuch** – statt blauer Unterstreich-Links. **Tests + Build grün.**
+**Letzter Stand:** 30.03.26 – **PilotEinladungPage – Fehler nicht nur Textlinks:** Bei **„Prüfung fehlgeschlagen“** (meist **bad_signature** = `PILOT_INVITE_SECRET` lokal ≠ Vercel Production, oder Einladung auf localhost / alter Tab): drei **Klick-Buttons** – **Lizenzen öffnen (neuen Link)**, **Entdecken**, **Team-Handbuch** – statt blauer Unterstreich-Links. **Tests + Build grün.** **Commit:** **7bfc248** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
