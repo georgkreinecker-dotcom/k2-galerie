@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot „buildPilotInviteEmailPlainText“-Fehler (Vite-Dev):** `api/send-pilot-invite.js` importiert **`pilotInviteShared` als Namespace** (`import * as PilotInvite`); Aufrufe über `PilotInvite.*`. **Vite:** vor dynamischem Import von `send-pilot-invite` wird **`pilotInviteShared.js` mit `?v=…` Cache-Bust** geladen. **mök2:** Sidebar/Links **Eingangstor** → `OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`, Highlight wenn Willkommen oder Eingangstor. **Commit:** **37f38fc** ✅ auf GitHub
+
+**Was wir JETZT tun:** Dev-Server **neu starten** → Lizenzen → **Einladung senden** erneut testen; nach Vercel **Ready** dieselbe Prüfung auf Production.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: Vorname, Nachname + E-Mail:** Token **v3** (`vn`/`nn`/`n`/`e`); Lizenzen-Formular zwei Felder; `validate-pilot-token` liefert `firstName`/`lastName`; Einladungsseite „Hallo“ mit Vorname; `k2-pilot-einladung` speichert optional Vor-/Nachname; alte **v2**-Links ohne `vn`/`nn` weiter lesbar. **Commit:** **4a9d595** ✅ auf GitHub
 
 ---
