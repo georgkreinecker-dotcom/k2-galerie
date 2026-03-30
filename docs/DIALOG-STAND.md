@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: nicht mehr „Lizenzen/mök2“ bei Fehler, Route `/p/*` früh:** Fehlerseite verlinkt **nicht** auf Lizenzen (war verwirrend); stattdessen Entdecken + Handbuch 26. Route **`/p/*`** (Splat) oben in `App.tsx`. **Lizenzen:** Button „Persönlicher Link öffnen“ + gekürzte Anzeige (href voll). **Commit:** (nach Push) ✅
+**Letzter Stand:** 30.03.26 – **Testpilot: nicht mehr „Lizenzen/mök2“ bei Fehler, Route `/p/*` früh:** Fehlerseite verlinkt **nicht** auf Lizenzen (war verwirrend); stattdessen Entdecken + Handbuch 26. Route **`/p/*`** (Splat) oben in `App.tsx`. **Lizenzen:** Button „Persönlicher Link öffnen“ + gekürzte Anzeige (href voll). **Commit:** **7094d0c** ✅ auf GitHub
 
 ---
 
