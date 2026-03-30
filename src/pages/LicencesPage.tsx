@@ -227,22 +227,30 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
         </nav>
 
         <h1 style={{ marginBottom: '0.5rem' }}>💼 Lizenzen</h1>
-        <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
-          Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.
-        </p>
         <div style={{
           background: 'rgba(251,191,36,0.10)',
           border: '1px solid rgba(251,191,36,0.40)',
           borderRadius: '10px',
           padding: '0.8rem 1rem',
-          marginBottom: '1.2rem',
+          marginBottom: '1rem',
           color: 'var(--k2-text)'
         }}>
-          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.25rem' }}>📅 Zeitplan Lizenzen</div>
-          <div style={{ fontSize: '0.88rem', lineHeight: 1.5 }}>
-            Regulärer Lizenzverkauf ab <strong>01. Mai</strong>. <strong>Testpilot:innen können sofort arbeiten.</strong>
+          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.35rem' }}>📅 Zeitplan Lizenzen</div>
+          <div style={{ fontSize: '0.88rem', lineHeight: 1.55 }}>
+            <strong>Öffentliche Lizenzanmeldung / regulärer Standardstart ab 01. Mai.</strong> Bis dahin gilt kein allgemeiner Selbstservice für alle Interessent:innen als fester Produktstart.
+            <br />
+            <strong>Testpilot:innen</strong> arbeiten nach <strong>Einladung und Vereinbarung</strong> mit uns früher; Zugang und ggf. Online-Zahlung werden dafür individuell freigegeben (siehe mök2, Abschnitt Lizenzen).
           </div>
         </div>
+        <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem' }}>
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
+            Lizenz online auswählen &amp; bezahlen
+          </Link>
+          <span style={{ color: 'var(--k2-muted)' }}> – für Pilot:innen nach Vereinbarung; öffentlicher Standardstart siehe Kasten oben.</span>
+        </p>
+        <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+          Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.
+        </p>
 
         {/* STATUS-BALKEN */}
         <div style={{

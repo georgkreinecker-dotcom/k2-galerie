@@ -98,7 +98,7 @@ export default function LizenzKaufenPage() {
         }}>
           <div style={{ fontWeight: 700, color: accentDeep, marginBottom: '0.2rem' }}>📅 Hinweis</div>
           <div style={{ fontSize: '0.88rem', lineHeight: 1.45 }}>
-            Regulärer Lizenzverkauf ist ab <strong>01. Mai</strong> vorgesehen. <strong>Testpilot:innen können sofort starten.</strong>
+            <strong>Öffentlicher regulärer Lizenzstart ab 01. Mai.</strong> Die Seite kann technisch schon genutzt werden; vor diesem Datum richtet sich der Ablauf an <strong>Testpilot:innen nach Einladung</strong> – nicht an den allgemeinen Produktstart für alle.
           </div>
         </div>
 

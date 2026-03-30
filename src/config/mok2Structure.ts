@@ -55,6 +55,8 @@ export const mok2Groups: Mok2Group[] = [
   {
     chapterTitle: 'Bewertung & Lizenzen',
     sections: [
+      { id: 'mok2-10', label: '10. Lizenzen (Konditionen & Vergebung)' },
+      { id: 'mok2-10-lizenz-abschliessen', label: 'Lizenz abschließen (Online, Pilot, VK2)' },
       { id: 'mok2-produktbewertung', label: 'Produktbewertung (Kosten | Marktwert)' },
       { id: 'mok2-entwicklerkosten', label: 'Entwicklerkosten (Schätzung)' },
       { id: 'mok2-neubewertung-2026', label: 'Neubewertung (März 2026)' },

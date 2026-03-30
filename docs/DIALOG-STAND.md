@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Lizenzen ök2/VK2 (mök2 + Seiten):** Zeitplan **öffentlich ab 01. Mai** und **Pilot:innen nach Einladung/Vereinbarung** oben bei **LicencesPage**, **LizenzKaufenPage** und mök2 **§10**; neuer Block **„Lizenz abschließen (ök2 & VK2)“** mit Links **Lizenz kaufen** + **Lizenzen verwalten**; **VK2 §10b** mit gleichem Zeitplan-Kasten + **„Lizenzen abschließen“**-Links und Stufe **Kunstvereine (VK2)**. Sidebar **mok2Structure** Gruppe „Bewertung & Lizenzen“: Einträge **mok2-10** und **mok2-10-lizenz-abschliessen**. Inhaltsverzeichnis mök2 ergänzt. **Commit:** (folgt nach Push)
+
+**Was wir JETZT tun:** Nach Push: mök2 §10/§10b und Seite **Lizenzen** kurz gegenlesen; Deploy prüfen.
+
+---
+
 **Sync 30.03. (Morgen):** Offene lokale Dateien (Session-Ende, WIR-PROZESS, Briefing, Stand-Build) committed & gepusht – **15cc6e6** ✅
 
 **Letzter Stand:** 29.03.26 – **Martina Telefon in gallery-data.json:** Im veröffentlichten **`public/gallery-data.json`** stand bei **`martina.phone`** noch **0676 7519162** (abweichend von Georg, Galerie und **`K2_STAMMDATEN_DEFAULTS`** = **0664 1046337**). Auf **0664 1046337** angeglichen, damit Live/„Vom Server laden“ und Repo-Defaults zusammenpassen. **Commit:** **9c51e00** ✅ auf GitHub

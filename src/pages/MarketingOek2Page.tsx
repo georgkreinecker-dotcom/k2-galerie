@@ -275,7 +275,9 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-7" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Promotion für alle Medien</strong></a></li>
             <li><a href="#mok2-8" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>APf-Struktur:</strong> Marketingarbeit organisieren</a></li>
             <li><a href="#mok2-9" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Werbeunterlagen</strong> (bearbeitbar)</a></li>
-            <li><Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>10. Lizenzen</strong> (Konditionen & Vergebung)</Link></li>
+            <li><a href="#mok2-10" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>10. Lizenzen</strong> (Konditionen & Vergebung)</a></li>
+            <li><a href="#mok2-10-lizenz-abschliessen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz abschließen</strong> (Online, Pilot, VK2)</a></li>
+            <li><Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenzen verwalten</strong> (APf-Seite)</Link></li>
             <li><a href="#mok2-lizenz-pakete-aussen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz-Pakete für Außen</strong> (Werbung, Pitch, Flyer)</a></li>
             <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform – K2-Familie)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
@@ -1271,16 +1273,53 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
 
       {/* 10. Lizenzen (mök2) – Konditionen, Vergebung, Abrechnung Empfehlungs-Programm */}
       <section id="mok2-10" style={{ marginBottom: '2rem' }}>
+        <div
+          style={{
+            background: 'rgba(251,191,36,0.12)',
+            border: '1px solid rgba(251,191,36,0.45)',
+            borderRadius: '10px',
+            padding: '0.85rem 1rem',
+            marginBottom: '1rem',
+            color: 'rgba(255,255,255,0.92)',
+          }}
+        >
+          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.35rem' }}>📅 Zeitplan Lizenzen</div>
+          <div style={{ fontSize: '0.9rem', lineHeight: 1.55 }}>
+            <strong>Öffentliche Lizenzanmeldung / regulärer Standardstart ab 01. Mai.</strong> Bis dahin kein allgemeiner Selbstservice für alle Interessent:innen als fester Produktstart.
+            <br />
+            <strong>Testpilot:innen</strong> arbeiten nach <strong>Einladung und Vereinbarung</strong> früher; Zugang und ggf. Online-Zahlung werden individuell freigegeben.
+          </div>
+        </div>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
           Lizenz-Stufen (Basic, Pro, Pro+, Pro++, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §7). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
-        <p>
-          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
-            💼 Lizenzen verwalten (Konditionen & Lizenz vergeben) →
+        <h3
+          id="mok2-10-lizenz-abschliessen"
+          style={{ fontSize: '1.08rem', color: '#5ffbf1', marginBottom: '0.5rem', marginTop: '0.25rem' }}
+        >
+          Lizenz abschließen (ök2 &amp; VK2)
+        </h3>
+        <p style={{ marginBottom: '0.75rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <strong>Einzelkünstler:innen und Galerien (ök2):</strong>{' '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            Lizenz online auswählen &amp; bezahlen
           </Link>
+          {' – oder (Vertrieb / manuell): '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            Lizenzen verwalten
+          </Link>
+          {' '}mit Konditionen, Stufenwahl und optionaler Empfehler-ID.
+        </p>
+        <p style={{ marginBottom: '0.5rem', lineHeight: 1.6, fontSize: '0.95rem' }}>
+          <strong>Vereine (VK2):</strong> dieselbe Seite{' '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', fontWeight: 600, textDecoration: 'none' }}>
+            Lizenzen verwalten
+          </Link>
+          {' – dort Stufe '}
+          <strong>Kunstvereine (VK2)</strong> wählen und eintragen. Online-Kauf wie Pro ist möglich; der Vereinsablauf wird wie vereinbart abgestimmt – Konditionen siehe Lizenzstruktur VK2 unten.
         </p>
       </section>
 
@@ -1540,6 +1579,33 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <h2 style={{ fontSize: '1.25rem', color: 'var(--k2-accent)', marginBottom: '0.75rem', borderBottom: '1px solid rgba(255, 140, 66, 0.5)', paddingBottom: '0.35rem' }}>
           Lizenzstruktur VK2 (Vereinsplattform)
         </h2>
+        <div
+          style={{
+            background: 'rgba(251,191,36,0.1)',
+            border: '1px solid rgba(251,191,36,0.4)',
+            borderRadius: '10px',
+            padding: '0.75rem 1rem',
+            marginBottom: '0.85rem',
+            color: 'rgba(255,255,255,0.9)',
+          }}
+        >
+          <div style={{ fontWeight: 700, color: '#fbbf24', marginBottom: '0.25rem', fontSize: '0.9rem' }}>📅 Zeitplan</div>
+          <div style={{ fontSize: '0.88rem', lineHeight: 1.5 }}>
+            Derselbe Rahmen wie bei ök2: <strong>öffentlicher regulärer Start ab 01. Mai</strong>; <strong>Pilot-Vereine</strong> nach Einladung und Vereinbarung früher.
+          </div>
+        </div>
+        <p style={{ marginBottom: '0.85rem', lineHeight: 1.65, fontSize: '0.95rem' }}>
+          <strong>Lizenzen abschließen (VK2):</strong>{' '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            Lizenz online auswählen &amp; bezahlen
+          </Link>
+          {' · '}
+          <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'none' }}>
+            Lizenzen verwalten
+          </Link>
+          {' '}
+          – Stufe <strong>Kunstvereine (VK2)</strong> wählen (manuelle Erfassung, Empfehler-ID, Konditionen).
+        </p>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
           <strong>VK2</strong> = Plattform für <strong>alle Vereinstypen</strong> – Vereine sind ähnlich strukturiert (Mitglieder, gemeinsamer Auftritt, Events). <strong>Kunstvereine</strong> sind die aktuelle Unterkategorie/Einstieg. Dritte Lizenzvariante neben Einzelkünstler und (später) größere Galerie. <strong>Vereinskassa und Buchhaltung vorgesehen:</strong> Der Verein kann seine Vereinskassa und Buchhaltung in derselben App führen (Verkäufe, Kassabuch, CSVs, Belege-PDF – Vorarbeit für Steuerberater; 7 Jahre Aufbewahrung); technische Freischaltung folgt.
         </p>
