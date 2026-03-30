@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: Vercel-Preview = Plattform** – `isPlatformInstance()` kannte nur `PLATFORM_HOSTNAMES`; **Preview** (`k2-galerie-git-….vercel.app`) → **false** → **PlatformOnlyRoute** bei `/p` → `/` → **Entdecken** statt Admin. **Fix:** `isPlatformHostname(host)` + Vercel-Hosts `k2-galerie.*` / `k2-galerie-*` unter `.vercel.app`; Tests. **Commit:** _(nach Push)_
+**Letzter Stand:** 30.03.26 – **Testpilot: Vercel-Preview = Plattform** – `isPlatformInstance()` kannte nur `PLATFORM_HOSTNAMES`; **Preview** (`k2-galerie-git-….vercel.app`) → **false** → **PlatformOnlyRoute** bei `/p` → `/` → **Entdecken** statt Admin. **Fix:** `isPlatformHostname(host)` + Vercel-Hosts `k2-galerie.*` / `k2-galerie-*` unter `.vercel.app`; Tests. **Commit:** **1ecad1a** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
