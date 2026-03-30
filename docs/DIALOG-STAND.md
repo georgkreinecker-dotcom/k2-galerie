@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Token nicht mehr mitten in der Zeile zerbrechen:** Einladungs-URL jetzt **`/p?t=…`** (Query); Plaintext mit **`<https://…>`**; HTML-Direktlink nur noch **„diesen Link“** (volle URL nur im `href`, nicht als sichtbarer langer Text mit `word-break`). Vermeidet Leerzeichen im Token durch Mail-Client-Umbruch. **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: Token nicht mehr mitten in der Zeile zerbrechen:** Einladungs-URL jetzt **`/p?t=…`** (Query); Plaintext mit **`<https://…>`**; HTML-Direktlink nur noch **„diesen Link“** (volle URL nur im `href`, nicht als sichtbarer langer Text mit `word-break`). Vermeidet Leerzeichen im Token durch Mail-Client-Umbruch. **Commit:** **d89d607** ✅ auf GitHub
 
 ---
 
