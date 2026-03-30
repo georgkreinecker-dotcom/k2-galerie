@@ -39,6 +39,8 @@ export default async function handler(req, res) {
   return res.status(200).json({
     valid: true,
     name: data.name,
+    firstName: data.firstName,
+    lastName: data.lastName,
     email: data.email,
     context: data.context,
     licenceType: data.licenceType,

@@ -4,11 +4,7 @@
 
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import {
-  ENTDECKEN_ROUTE,
-  PROJECT_ROUTES,
-  WILLKOMMEN_NAME_KEY,
-} from '../config/navigation'
+import { ENTDECKEN_ROUTE, WILLKOMMEN_NAME_KEY } from '../config/navigation'
 
 const BG = '#f6f4f0'
 const TEXT = '#1c1a18'
@@ -18,6 +14,8 @@ const BTN = '#0d9488'
 type ValidateOk = {
   valid: true
   name: string
+  firstName?: string
+  lastName?: string
   email: string
   context: 'oeffentlich' | 'vk2'
   licenceType?: string
@@ -56,6 +54,8 @@ export default function PilotEinladungPage() {
           setData({
             valid: true,
             name: String(j.name),
+            firstName: typeof j.firstName === 'string' ? j.firstName : undefined,
+            lastName: typeof j.lastName === 'string' ? j.lastName : undefined,
             email: String(j.email || ''),
             context: j.context === 'vk2' ? 'vk2' : 'oeffentlich',
             licenceType: j.licenceType,
@@ -81,12 +81,18 @@ export default function PilotEinladungPage() {
       sessionStorage.setItem(WILLKOMMEN_NAME_KEY, data.name)
       sessionStorage.setItem(
         'k2-pilot-einladung',
-        JSON.stringify({ name: data.name, email: data.email, context: 'oeffentlich' }),
+        JSON.stringify({
+          name: data.name,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          context: 'oeffentlich',
+        }),
       )
     } catch {
       /* ignore */
     }
-    navigate(ENTDECKEN_ROUTE)
+    navigate('/admin?context=oeffentlich&tab=einstellungen&settings=stammdaten&pilot=1')
   }
 
   function goVk2() {
@@ -95,12 +101,18 @@ export default function PilotEinladungPage() {
       sessionStorage.setItem(WILLKOMMEN_NAME_KEY, data.name)
       sessionStorage.setItem(
         'k2-pilot-einladung',
-        JSON.stringify({ name: data.name, email: data.email, context: 'vk2' }),
+        JSON.stringify({
+          name: data.name,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          context: 'vk2',
+        }),
       )
     } catch {
       /* ignore */
     }
-    navigate(PROJECT_ROUTES.vk2.galerie)
+    navigate('/admin?context=vk2&tab=einstellungen&settings=stammdaten&pilot=1')
   }
 
   return (
@@ -171,7 +183,7 @@ export default function PilotEinladungPage() {
       {!loading && data && (
         <>
           <p style={{ fontSize: '1rem', lineHeight: 1.5, marginBottom: '1.25rem' }}>
-            Hallo <strong>{data.name}</strong>, willkommen als Testpilot:in. Ein Klick – du bist in der richtigen
+            Hallo <strong>{data.firstName || data.name.split(/\s+/)[0] || data.name}</strong>, willkommen als Testpilot:in. Ein Klick – du bist in der richtigen
             Demo.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

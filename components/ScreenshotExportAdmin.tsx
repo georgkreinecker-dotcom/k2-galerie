@@ -8,6 +8,8 @@ import {
   AGB_ROUTE,
   BASE_APP_URL,
   WILLKOMMEN_ROUTE,
+  WILLKOMMEN_NAME_KEY,
+  WILLKOMMEN_ENTWURF_KEY,
   BENUTZER_HANDBUCH_ROUTE,
   VK2_HANDBUCH_ROUTE,
   ENTDECKEN_ROUTE,
@@ -80,7 +82,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -2217,7 +2219,28 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   /** Mediengenerator: „Zum Ansehen & Drucken“-Palette pro Event (eine offen). */
   const [werbemittelDruckpaletteEventKey, setWerbemittelDruckpaletteEventKey] = useState<string | null>(null)
   const [werkeSideOptionsOpen, setWerkeSideOptionsOpen] = useState(false) // Einstellungen & Sync (Verkaufte Werke, Vom Server laden) – Nebenakteure, aufklappbar
-  const [settingsSubTab, setSettingsSubTab] = useState<'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'backup'>('stammdaten')
+  type SettingsSubTabType = 'stammdaten' | 'registrierung' | 'drucker' | 'sicherheit' | 'empfehlung' | 'lizenz' | 'lizenzbeenden' | 'lizenzinfo' | 'backup'
+  const initialSettingsSubTab = ((): SettingsSubTabType => {
+    try {
+      const p = new URLSearchParams(window.location.search)
+      const s = p.get('settings')
+      const valid: SettingsSubTabType[] = ['stammdaten', 'registrierung', 'drucker', 'sicherheit', 'empfehlung', 'lizenz', 'lizenzbeenden', 'lizenzinfo', 'backup']
+      if (s && valid.includes(s as SettingsSubTabType)) return s as SettingsSubTabType
+    } catch { /* ignore */ }
+    return 'stammdaten'
+  })()
+  const [settingsSubTab, setSettingsSubTab] = useState<SettingsSubTabType>(initialSettingsSubTab)
+  const [pilotStammdatenBannerDismissed, setPilotStammdatenBannerDismissed] = useState(false)
+  const showPilotStammdatenWelcome =
+    !pilotStammdatenBannerDismissed &&
+    (() => {
+      try {
+        if (new URLSearchParams(window.location.search).get('pilot') === '1') return true
+        return !!sessionStorage.getItem('k2-pilot-einladung')
+      } catch {
+        return false
+      }
+    })()
   const { showChecklists: showGamificationChecklists, checklistsHiddenByUser: profiGamificationChecklistsHidden, setChecklistsHiddenByUser: setProfiGamificationChecklistsHidden } = useGamificationChecklistsUi()
   const settingsContentRef = useRef<HTMLDivElement>(null)
   /** Ref auf den oberen Rand des Admin-Bereichs – für „Zurück in den Admin-Bereich“ (scrollt den tatsächlichen Scroll-Container) */
@@ -3724,6 +3747,103 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     }, 300)
     return () => { isMounted = false; clearTimeout(t) }
   }, [])
+
+  /** Testpilot: Name/E-Mail aus Einladung in Stammdaten übernehmen (nur wenn noch Muster/leer). */
+  const pilotPrefillAppliedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (pilotPrefillAppliedRef.current) return
+    if (!tenant.isOeffentlich && !tenant.isVk2) return
+    let raw: string | null = null
+    try {
+      raw = sessionStorage.getItem('k2-pilot-einladung')
+    } catch {
+      return
+    }
+    if (!raw) return
+    let parsed: { name?: string; firstName?: string; lastName?: string; email?: string; context?: string }
+    try {
+      parsed = JSON.parse(raw) as {
+        name?: string
+        firstName?: string
+        lastName?: string
+        email?: string
+        context?: string
+      }
+    } catch {
+      return
+    }
+    const pilotName = (
+      (parsed.name || '').trim() ||
+      [parsed.firstName, parsed.lastName].filter(Boolean).join(' ').trim()
+    ).trim()
+    const pilotEmail = (parsed.email || '').trim()
+    if (!pilotName) return
+
+    const applySessionName = () => {
+      try {
+        sessionStorage.setItem(WILLKOMMEN_NAME_KEY, pilotName)
+        sessionStorage.setItem(WILLKOMMEN_ENTWURF_KEY, '1')
+      } catch {
+        /* ignore */
+      }
+    }
+
+    if (tenant.isOeffentlich && parsed.context === 'oeffentlich') {
+      pilotPrefillAppliedRef.current = true
+      setMartinaData((prev: typeof martinaData) => {
+        const musterN = (MUSTER_TEXTE.martina.name || '').trim()
+        const musterE = (MUSTER_TEXTE.martina.email || '').trim()
+        const curN = (prev.name || '').trim()
+        const curE = (prev.email || '').trim()
+        const fillN = !curN || curN === musterN
+        const fillE = !!pilotEmail && (!curE || curE === musterE)
+        if (!fillN && !fillE) return prev
+        const next = { ...prev, ...(fillN ? { name: pilotName } : {}), ...(fillE ? { email: pilotEmail } : {}) }
+        try {
+          persistStammdaten('oeffentlich', 'martina', next)
+        } catch {
+          /* ignore */
+        }
+        return next
+      })
+      applySessionName()
+      return
+    }
+
+    if (tenant.isVk2 && parsed.context === 'vk2') {
+      const t = window.setTimeout(() => {
+        if (pilotPrefillAppliedRef.current) return
+        pilotPrefillAppliedRef.current = true
+        setVk2Stammdaten((prev: Vk2Stammdaten) => {
+          const v = prev.verein || {}
+          const demoV = VK2_DEMO_STAMMDATEN.verein
+          const curN = (v.name || '').trim()
+          const curE = (v.email || '').trim()
+          const demoN = (demoV.name || '').trim()
+          const demoE = (demoV.email || '').trim()
+          const fillN = !curN || curN === demoN
+          const fillE = !!pilotEmail && (!curE || curE === demoE)
+          if (!fillN && !fillE) return prev
+          const next: Vk2Stammdaten = {
+            ...prev,
+            verein: {
+              ...v,
+              ...(fillN ? { name: pilotName } : {}),
+              ...(fillE ? { email: pilotEmail } : {}),
+            },
+          }
+          try {
+            saveVk2Stammdaten(next)
+          } catch {
+            /* ignore */
+          }
+          return next
+        })
+        applySessionName()
+      }, 450)
+      return () => clearTimeout(t)
+    }
+  }, [tenant.isOeffentlich, tenant.isVk2])
 
   // Registrierungs-Config (Lizenztyp, Vereinsmitglied, Empfehlung) aus localStorage laden
   useEffect(() => {
@@ -17766,6 +17886,53 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             {/* Stammdaten Sub-Tab */}
             {settingsSubTab === 'stammdaten' && (
               <div ref={settingsContentRef}>
+                {showPilotStammdatenWelcome && (tenant.isOeffentlich || tenant.isVk2) && (
+                  <div
+                    style={{
+                      padding: '0.85rem 1rem',
+                      marginBottom: '1rem',
+                      background: '#e8f7f4',
+                      border: '1px solid #0d9488',
+                      borderRadius: s.radius,
+                      color: '#1c1a18',
+                      fontSize: '0.92rem',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '0.75rem',
+                    }}
+                  >
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <strong>Testpilot:</strong> Dein Name und deine E-Mail sind hier vorbefüllt – bitte prüfen und ergänzen. Danach kannst du die öffentliche Demo ansehen.
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                      {tenant.isOeffentlich && (
+                        <Link
+                          to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}
+                          style={{ padding: '0.45rem 0.85rem', background: '#0d9488', color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none', fontSize: '0.88rem' }}
+                        >
+                          Zur Demo-Galerie
+                        </Link>
+                      )}
+                      {tenant.isVk2 && (
+                        <Link
+                          to={PROJECT_ROUTES.vk2.galerie}
+                          style={{ padding: '0.45rem 0.85rem', background: '#0d9488', color: '#fff', borderRadius: '8px', fontWeight: 600, textDecoration: 'none', fontSize: '0.88rem' }}
+                        >
+                          Zur VK2-Galerie
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setPilotStammdatenBannerDismissed(true)}
+                        style={{ padding: '0.4rem 0.65rem', background: 'transparent', border: `1px solid ${s.muted}`, borderRadius: '8px', color: s.muted, cursor: 'pointer', fontSize: '0.85rem' }}
+                      >
+                        Hinweis ausblenden
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {tenant.isVk2 ? (
                   /* VK2: Verein, Vorstand, Beirat, Mitglieder */
                   <div>

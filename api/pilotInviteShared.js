@@ -7,15 +7,45 @@ import crypto from 'crypto'
 const EXP_SEC = 60 * 60 * 24 * 30 // 30 Tage
 
 /**
+ * Vor-/Nachname + E-Mail; rückwärtskompatibel mit nur { name } (ein Feld → Vorname, Rest → Nachname).
+ * @param {object} payload
+ * @returns {{ vn: string, nn: string, n: string, email: string }}
+ */
+function normalizePilotInvitePayload(payload) {
+  let vn = String(payload.firstName ?? payload.vorname ?? '').trim()
+  let nn = String(payload.lastName ?? payload.nachname ?? '').trim()
+  const email = String(payload.email ?? '').trim().toLowerCase()
+  if (!vn && !nn) {
+    const legacy = String(payload.name || '').trim()
+    if (legacy) {
+      const sp = legacy.indexOf(' ')
+      if (sp > 0) {
+        vn = legacy.slice(0, sp).trim()
+        nn = legacy.slice(sp + 1).trim()
+      } else {
+        vn = legacy
+      }
+    }
+  }
+  const n = [vn, nn].filter(Boolean).join(' ').trim()
+  return { vn, nn, n, email }
+}
+
+/**
  * Kompakter Token, damit der Link kürzer bleibt.
- * @param {object} payload – { name, context: 'oeffentlich'|'vk2' }
+ * @param {object} payload – { firstName, lastName, email, name? (legacy), context: 'oeffentlich'|'vk2' }
  * @param {string} secret
  */
 export function signPilotInviteToken(payload, secret) {
   if (!secret || typeof secret !== 'string') throw new Error('PILOT_INVITE_SECRET fehlt')
+  const { vn, nn, n, email } = normalizePilotInvitePayload(payload)
+  if (!n) throw new Error('Name fehlt')
   const data = {
-    v: 2,
-    n: String(payload.name || '').trim(),
+    v: 3,
+    vn,
+    nn,
+    n,
+    e: email,
     c: payload.context === 'vk2' ? 'vk2' : 'oeffentlich',
     x: Math.floor(Date.now() / 1000) + EXP_SEC,
   }
@@ -51,9 +81,15 @@ export function verifyPilotInviteToken(token, secret) {
   }
   const exp = Number(data.x ?? data.exp ?? 0)
   if (exp && Math.floor(Date.now() / 1000) > exp) return null
-  // Backward-compatible Normalisierung (v1 und v2 Tokens)
+  const vn = String(data.vn ?? '').trim()
+  const nn = String(data.nn ?? '').trim()
+  const nameFromParts = [vn, nn].filter(Boolean).join(' ').trim()
+  const name = nameFromParts || String(data.n ?? data.name ?? '').trim()
+  // Backward-compatible Normalisierung (v1/v2 nur n; v3 vn/nn/e)
   return {
-    name: String(data.n ?? data.name ?? '').trim(),
+    name,
+    firstName: vn,
+    lastName: nn,
     email: String(data.e ?? data.email ?? '').trim().toLowerCase(),
     context: data.c === 'vk2' || data.context === 'vk2' ? 'vk2' : 'oeffentlich',
     licenceType: String(data.l ?? data.licenceType ?? 'proplus'),
@@ -209,23 +245,25 @@ export function getPilotInviteLinkBaseUrl(req) {
 /**
  * Einheitlicher Fließtext für Resend (text) und mailto-Fallback – eine Quelle.
  * @param {object} p
- * @param {string} p.name
+ * @param {string} p.name – Anrede (Vor- und Nachname oder ein Feld)
+ * @param {string} [p.greetingName] – nur Vorname für „Hallo …“ (sonst name)
  * @param {string} p.inviteUrl
  * @param {string} p.contextLabel z. B. „öffentliche Demo (ök2)“
  * @param {'oeffentlich'|'vk2'} [p.inviteContext]
  */
-export function buildPilotInviteEmailPlainText({ name, inviteUrl, contextLabel, inviteContext = 'oeffentlich' }) {
+export function buildPilotInviteEmailPlainText({ name, greetingName, inviteUrl, contextLabel, inviteContext = 'oeffentlich' }) {
   const vk2 = inviteContext === 'vk2'
   const demoButton = vk2 ? 'Weiter zur VK2-Vorschau (Verein)' : 'Weiter zur öffentlichen Demo (ök2)'
   const nachDemo = vk2
     ? 'Du siehst die Vereins-Vorschau und kannst dort stöbern.'
-    : 'Du landest am Eingang „Entdecken“ und kannst von dort die öffentliche Galerie-Demo öffnen.'
+    : 'Du landest direkt in den Einstellungen (Stammdaten) – Name und E-Mail kannst du dort prüfen. Von dort aus öffnest du die öffentliche Demo.'
+  const hallo = String(greetingName || name || '').trim() || 'Testpilot:in'
   return [
-    `Hallo ${name},`,
+    `Hallo ${hallo},`,
     '',
     `du bist als Testpilot:in für die K2 Galerie eingeladen (${contextLabel}).`,
     '',
-    'Wichtig: Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link führt zur Einladungsseite; dort wird dein Vorname für die Begrüßung genutzt. Was du siehst, sind Muster-Daten – zum Ausprobieren.',
+    'Wichtig: Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link ist mit Vorname, Nachname und E-Mail abgestimmt; auf der Einladungsseite und in den Stammdaten siehst du dieselben Daten. Was du siehst, sind Muster-Daten – zum Ausprobieren.',
     '',
     'So gehst du vor:',
     `1) Den Link unten öffnen (oder die Adresse aus den spitzen Klammern kopieren).`,
@@ -247,6 +285,7 @@ export function buildPilotInviteEmailPlainText({ name, inviteUrl, contextLabel, 
 export async function sendPilotInviteViaResend({
   toEmail,
   name,
+  greetingName,
   inviteUrl,
   resendKey,
   resendFrom,
@@ -260,18 +299,19 @@ export async function sendPilotInviteViaResend({
   const demoButton = vk2 ? 'Weiter zur VK2-Vorschau (Verein)' : 'Weiter zur öffentlichen Demo (ök2)'
   const nachDemo = vk2
     ? 'Du siehst die Vereins-Vorschau und kannst dort stöbern.'
-    : 'Du landest am Eingang „Entdecken“ und kannst von dort die öffentliche Galerie-Demo öffnen.'
-  const text = buildPilotInviteEmailPlainText({ name, inviteUrl, contextLabel, inviteContext })
+    : 'Du landest direkt in den Einstellungen (Stammdaten). Von dort aus öffnest du die öffentliche Demo.'
+  const hallo = String(greetingName || name || '').trim() || 'Testpilot:in'
+  const text = buildPilotInviteEmailPlainText({ name, greetingName, inviteUrl, contextLabel, inviteContext })
   const html = `
-    <p>Hallo ${escapeHtml(name)},</p>
+    <p>Hallo ${escapeHtml(hallo)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
-    <p><strong>Wichtig:</strong> Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link führt zur Einladungsseite; dort wird dein Vorname für die Begrüßung genutzt. Was du siehst, sind <strong>Muster-Daten</strong> – zum Ausprobieren.</p>
+    <p><strong>Wichtig:</strong> Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Einladung ist mit Vorname, Nachname und E-Mail abgestimmt. Was du siehst, sind <strong>Muster-Daten</strong> – zum Ausprobieren.</p>
     <p><strong>So gehst du vor:</strong></p>
     <ol>
       <li>Den Button unten anklicken (oder die Adresse unter dem Button kopieren).</li>
       <li>Auf der Einladungsseite den Button <strong>„${escapeHtml(demoButton)}“</strong> wählen.</li>
       <li>${escapeHtml(nachDemo)}</li>
-      <li>Optional: oben <strong>„Admin“</strong> öffnen – Werke, Stammdaten, Design, Kasse nur zum Ausprobieren (Muster).</li>
+      <li>Optional: in der Demo oben <strong>„Admin“</strong> – Werke, Design, Kasse nur zum Ausprobieren (Muster).</li>
     </ol>
     <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
     <p style="color:#666;font-size:12px">Der Link ist personalisiert und einige Wochen gültig.</p>

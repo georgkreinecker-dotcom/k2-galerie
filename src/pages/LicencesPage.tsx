@@ -104,7 +104,8 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [onlineLoading, setOnlineLoading] = useState(false)
   const [onlineError, setOnlineError] = useState<string | null>(null)
 
-  const [pilotInviteName, setPilotInviteName] = useState('')
+  const [pilotInviteFirstName, setPilotInviteFirstName] = useState('')
+  const [pilotInviteLastName, setPilotInviteLastName] = useState('')
   const [pilotInviteEmail, setPilotInviteEmail] = useState('')
   const [pilotInviteContext, setPilotInviteContext] = useState<'oeffentlich' | 'vk2'>('oeffentlich')
   const [pilotInviteBusy, setPilotInviteBusy] = useState(false)
@@ -229,10 +230,11 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setPilotInviteMsg(null)
     setPilotInviteUrl(null)
     setPilotInviteMailto(null)
-    const n = pilotInviteName.trim()
+    const fn = pilotInviteFirstName.trim()
+    const ln = pilotInviteLastName.trim()
     const em = pilotInviteEmail.trim().toLowerCase()
-    if (!n || !em) {
-      setPilotInviteMsg({ type: 'error', text: 'Name und E-Mail sind Pflicht.' })
+    if (!fn || !ln || !em) {
+      setPilotInviteMsg({ type: 'error', text: 'Vorname, Nachname und E-Mail sind Pflicht.' })
       return
     }
     setPilotInviteBusy(true)
@@ -240,7 +242,12 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
       const res = await fetch(`${window.location.origin}/api/send-pilot-invite`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ toEmail: em, name: n, context: pilotInviteContext }),
+        body: JSON.stringify({
+          toEmail: em,
+          firstName: fn,
+          lastName: ln,
+          context: pilotInviteContext,
+        }),
       })
       const j = await res.json().catch(() => ({}))
       if (!res.ok) {
@@ -412,8 +419,12 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
           </p>
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Name der Pilot:in *</label>
-              <input type="text" value={pilotInviteName} onChange={(e) => setPilotInviteName(e.target.value)} className="input" placeholder="Name" />
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Vorname *</label>
+              <input type="text" value={pilotInviteFirstName} onChange={(e) => setPilotInviteFirstName(e.target.value)} className="input" placeholder="Vorname" autoComplete="given-name" />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Nachname *</label>
+              <input type="text" value={pilotInviteLastName} onChange={(e) => setPilotInviteLastName(e.target.value)} className="input" placeholder="Nachname" autoComplete="family-name" />
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>E-Mail *</label>
