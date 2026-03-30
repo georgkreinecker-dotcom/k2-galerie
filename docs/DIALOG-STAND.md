@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot Symbolwesen richtig:** Plaintext war Wortlawine + Riesen-JWT → **nicht** der Sinn der Regel. Jetzt: **▶**-Zeilen, **eine kurze URL** (`/p/i/32hex`) via **Supabase** `pilot_short_invites` + **`api/pilot-short-invite-resolve`**, **`PilotEinladungPage`** löst Kurzlink auf. Ohne DB/Keys: Fallback langer `?t=`. Handbuch 26 + Migration **009**. **Commit:** (nach Push)
+**Letzter Stand:** 30.03.26 – **Testpilot Symbolwesen richtig:** Plaintext war Wortlawine + Riesen-JWT → **nicht** der Sinn der Regel. Jetzt: **▶**-Zeilen, **eine kurze URL** (`/p/i/32hex`) via **Supabase** `pilot_short_invites` + **`api/pilot-short-invite-resolve`**, **`PilotEinladungPage`** löst Kurzlink auf. Ohne DB/Keys: Fallback langer `?t=`. Handbuch 26 + Migration **009**. **Commit:** **c78a035** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
