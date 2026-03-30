@@ -33,6 +33,7 @@
 |---------|--------|----------------------|
 | **Backup & Wiederherstellung** | eiserne-regel-backup-wiederherstellung.mdc | Überlebenswichtig; war nur in KRITISCHE-ABLAEUFE §11 – jetzt eigene alwaysApply-Regel: NIEMALS entfernen/abschwächen/Format brechen. |
 | **VK2-Refactors – K2-Kern unberührt** | eiserne-regel-vk2-refactors-k2-kern-unberuehrt.mdc | Bei VK2-Überarbeitung war Admin-Login wieder da, Impressum ohne Stammdaten; jetzt verbindlich: Admin eine Tür, K2-Impressum Stammdaten+Routenplaner, Stammdaten nur mergen. |
+| **End-to-End vollständig – nie „zwischendrin“** | eiserne-regel-end-to-end-vollstaendig.mdc | Georg: immer durchgängige Lösung bis zur echten Funktion; keine Halb-Automatisierung, kein Abbruch nach „nur API“ oder nur Chat-Hinweis ohne eine Spur in Doku/Code. |
 
 ---
 
@@ -45,4 +46,4 @@
 
 ## Kurzfassung
 
-Struktureminent wichtige Bereiche sind durch eiserne Regeln abgedeckt. Zwei Lücken (Backup & Wiederherstellung, VK2-Refactors/K2-Kern) wurden mit eigenen alwaysApply-Regeln geschlossen. Übersicht hier; Details in den jeweiligen .mdc-Dateien und in KRITISCHE-ABLAEUFE.md.
+Struktureminent wichtige Bereiche sind durch eiserne Regeln abgedeckt. Lücken (u. a. Backup & Wiederherstellung, VK2-Refactors/K2-Kern, **End-to-End-Vollständigkeit für Georg**) wurden mit eigenen alwaysApply-Regeln geschlossen. Übersicht hier; Details in den jeweiligen .mdc-Dateien und in KRITISCHE-ABLAEUFE.md.

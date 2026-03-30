@@ -1,0 +1,35 @@
+---
+description: Georg – immer vollständige End-to-End-Lösung, niemals Halb-Sachen oder „zwischendrin“ stoppen (eiserne Regel).
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL: End-to-End vollständig – niemals „zwischendrin“ (unveränderlich)
+
+## Warum
+
+Georg will **keine** Teillieferungen, bei denen er raten muss, was noch fehlt, oder zwischen `.env`, Vercel, Doku und UI **selbst** die Lücke schließt. **„Fertig“** und **„Automatisierung“** bedeuten für ihn: **ein durchgängiger Weg bis zur echten, nachvollziehbaren Funktion** – nicht „der Kern steht, Rest ist klar“.
+
+## Regel (unveränderlich)
+
+1. **Immer End-to-End liefern:** Von der ersten relevanten Aktion bis zum **nachweisbaren** Ergebnis (z. B. Klick → erwartetes Verhalten; Einrichtung → **eine** klare Checkliste bis „es geht“).
+2. **Niemals „zwischendrin“ aufhören:** Kein Abbruch nach „nur API“, „nur Hinweis in Chat“, „nur `.env`-Zeile“ ohne **dieselbe Spur** in **einem** festgehaltenen Ort (Code + wo nötig **eine** Doku/Handbuch-Stelle oder `.env.example`).
+3. **Keine Halb-Automatisierung:** Wenn etwas „automatisch“ heißt, muss der **gesamte** für Georg relevante Pfad stimmen – oder die **eine** Anleitung führt Schritt für Schritt bis dorthin (ohne dass er zwischen Systemen kombinieren muss).
+4. **Ausnahme:** Nur wenn Georg **ausdrücklich** etwas anderes will (z. B. „nur Spike“, „nur Konzept“, „erst Lesen, kein Code“).
+
+## Was verboten ist
+
+- „Das hast du noch auf Vercel / in Resend / im Terminal …“ als **Hauptantwort**, ohne dass die **vollständige** Einrichtung in **einer** Quelle nachgezogen oder erledigt ist (was die KI selbst erledigen kann, **erledigt die KI**).
+- **„Fertig“** melden, wenn nur ein Teil des Nutzerwegs funktioniert oder dokumentiert ist.
+- Mehrere **parallele** „fast fertige“ Spuren statt **einer** durchgängigen.
+
+## Pflicht vor „Fertig“ bei Features, Abläufen, Automatisierung
+
+- [ ] Ist der **komplette** Weg von Nutzersicht (oder Einrichtung) bis **Erfolg** abgedeckt?
+- [ ] Gibt es **einen** Ort (Doku/Handbuch/Kapitel oder klarer UI-Pfad), an dem **alle** nötigen Schritte stehen – nicht verstreut?
+- [ ] Kann Georg **ohne Rätselraten** zum Ziel kommen (oder ist die einzige verbleibende Lücke ausdrücklich benannt und minimal, z. B. externes Dashboard)?
+
+## Kurzfassung
+
+**Georg = immer vollständige End-to-End-Lösung. Niemals halb, niemals „zwischendrin“ stoppen. Ausnahme nur bei ausdrücklicher anderer Anweisung.**
+
+Verknüpfung: **anweisung-lueckenlos-umsetzen.mdc**, **verbindlich-zuverlaessig-nicht-hoffnung.mdc**, **fertig-heisst-getestet-committed.mdc**, **georg-fertige-form.mdc**, **georg-ki-erledigt-pension.mdc**.
