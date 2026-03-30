@@ -91,6 +91,7 @@ export const BASE_APP_URL = 'https://k2-galerie.vercel.app'
  * Alle anderen Hostnamen = Lizenznehmer-Instanz → ök2/VK2 nie verfügbar.
  * Doku: docs/SICHERHEIT-LIZENZNEHMER-KEIN-OEK2-VK2.md
  */
+/** Bei neuem Eintrag: api/pilotInviteShared.js → PILOT_INVITE_PLATFORM_HOSTNAMES für Testpilot-POST (Cross-Origin) mitpflegen. */
 export const PLATFORM_HOSTNAMES = [
   'localhost',
   '127.0.0.1',

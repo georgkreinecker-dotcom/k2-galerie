@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-Mail von www.kgm.at / kgm.at:** Cross-Origin POST → `k2-galerie.vercel.app` schlug mit **403 Ungültiger Aufruf (Origin)** fehl, weil **Origin** `www.kgm.at` / `kgm.at` nicht erlaubt war. **Fix:** `api/pilotInviteShared.js` → **`PILOT_INVITE_PLATFORM_HOSTNAMES`** (Sync mit **PLATFORM_HOSTNAMES** in `tenantConfig.ts`); Kommentar bei **PLATFORM_HOSTNAMES** für künftige Hosts. **Tests** für kgm-Origins. **Tests + Build grün.** **Commit:** **10c26df** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Vercel Build rot (358c75a):** `LicencesPage` importierte `getPilotInviteMailStatusUrl`, auf `main` fehlten **Export** + **API**. **Fix:** `src/utils/pilotInviteClient.ts` exportiert `getPilotInviteMailStatusUrl`, neu **`api/pilot-invite-mail-status.js`** (GET `{ resendConfigured }`), **Vite-Dev** GET ohne PILOT_INVITE_SECRET-Pflicht. **Tests + Build grün.** **Commit:** **a20b2c0** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

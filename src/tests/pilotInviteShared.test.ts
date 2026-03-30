@@ -43,6 +43,18 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(isPilotInviteAllowedOrigin(origin, '', req as any)).toBe(false)
   })
 
+  it('isPilotInviteAllowedOrigin: www.kgm.at → API auf k2-galerie.vercel.app (Cross-Origin)', () => {
+    const origin = 'https://www.kgm.at'
+    const req = { headers: { host: 'k2-galerie.vercel.app' } }
+    expect(isPilotInviteAllowedOrigin(origin, '', req as any)).toBe(true)
+  })
+
+  it('isPilotInviteAllowedOrigin: kgm.at ohne www erlaubt', () => {
+    const origin = 'https://kgm.at'
+    const req = { headers: { host: 'k2-galerie.vercel.app' } }
+    expect(isPilotInviteAllowedOrigin(origin, '', req as any)).toBe(true)
+  })
+
   it('buildPilotEinladungUrl: kurzer Pfad /p/… ohne Query', () => {
     const url = buildPilotEinladungUrl('https://k2-galerie.vercel.app', 'abc123')
     expect(url).toContain('/p/abc123')

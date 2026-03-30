@@ -175,8 +175,7 @@ export function isPilotInviteAllowedOrigin(origin, extraOrigins, req) {
   try {
     const u = new URL(origin)
     const h = u.hostname.toLowerCase()
-    if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '::1') return true
-    if (h === 'k2-galerie.vercel.app') return true
+    if (PILOT_INVITE_PLATFORM_HOSTNAMES.has(h)) return true
     if (h.endsWith('.vercel.app') && h.includes('k2-galerie')) return true
     const appUrl = String(typeof process !== 'undefined' && process.env?.VITE_APP_URL || '').trim()
     if (appUrl.startsWith('http')) {
@@ -208,6 +207,22 @@ export function isPilotInviteAllowedOrigin(origin, extraOrigins, req) {
     return false
   }
 }
+
+/**
+ * Hosts, unter denen die APf die Testpilot-API per Cross-Origin POST aufruft (Seite z. B. www.kgm.at → API k2-galerie.vercel.app).
+ * Muss zu PLATFORM_HOSTNAMES in src/config/tenantConfig.ts passen – neuen Plattform-Host dort und hier ergänzen.
+ */
+const PILOT_INVITE_PLATFORM_HOSTNAMES = new Set(
+  [
+    'localhost',
+    '127.0.0.1',
+    '[::1]',
+    '::1',
+    'k2-galerie.vercel.app',
+    'www.kgm.at',
+    'kgm.at',
+  ].map((x) => x.toLowerCase()),
+)
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
