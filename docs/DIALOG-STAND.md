@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-Link jetzt wirklich kurz + klickbar:** Einladung nutzt ab sofort den Pfad **`/p/<token>`** (statt Query), `PilotEinladungPage` liest Token aus Route-Param oder Query (rückwärtskompatibel). Beim lokalen Test bleibt die Basis ohne `PILOT_INVITE_PUBLIC_BASE_URL` auf dem lokalen Host, damit Klick direkt funktioniert; mit gesetzter `PILOT_INVITE_PUBLIC_BASE_URL` wird diese bevorzugt (für externe Empfänger).
+
+**Was wir JETZT tun:** Nach Deploy/Reload erneut Einladung senden und den neuen Kurzlink (`/p/...`) anklicken.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-Link/Mail lesbar:** Einladung nutzt jetzt **kurzen Parameter `?t=`** (statt `?token=`), Token ist kompakter (v2), `validate-pilot-token` bleibt rückwärtskompatibel (`t` + `token`). Beim lokalen Versand wird für Einladungslink **nicht mehr localhost** verwendet, sondern stabile Basis (`PILOT_INVITE_PUBLIC_BASE_URL` oder `https://k2-galerie.vercel.app`). E-Mail enthält jetzt ein **kurzes Begleitschreiben** mit 3 Schritten + deutlichem Start-Button.
 
 **Was wir JETZT tun:** Deploy abwarten → Testpilot-Einladung erneut senden; Link soll sichtbar kürzer sein und direkt funktionieren.

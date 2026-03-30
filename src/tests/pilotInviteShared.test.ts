@@ -39,8 +39,9 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
 
   it('buildPilotEinladungUrl nutzt kurzen Query-Key t', () => {
     const url = buildPilotEinladungUrl('https://k2-galerie.vercel.app', 'abc123')
-    expect(url).toContain('/projects/k2-galerie/pilot-einladung?t=abc123')
+    expect(url).toContain('/p/abc123')
     expect(url.includes('token=')).toBe(false)
+    expect(url.includes('?t=')).toBe(false)
   })
 
   it('sign/verify mit kompaktem Token (v2)', () => {

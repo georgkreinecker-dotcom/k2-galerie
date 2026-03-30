@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   ENTDECKEN_ROUTE,
   PROJECT_ROUTES,
@@ -25,8 +25,9 @@ type ValidateOk = {
 
 export default function PilotEinladungPage() {
   const [searchParams] = useSearchParams()
+  const params = useParams()
   const navigate = useNavigate()
-  const token = searchParams.get('t') || searchParams.get('token') || ''
+  const token = params.token || searchParams.get('t') || searchParams.get('token') || ''
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

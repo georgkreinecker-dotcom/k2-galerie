@@ -21,9 +21,7 @@ function baseUrlFromReq(req) {
   if (envUrl.startsWith('http')) return envUrl.replace(/\/$/, '')
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`.replace(/\/$/, '')
   const host = req.headers.host || 'k2-galerie.vercel.app'
-  if (host.includes('localhost') || host.includes('127.0.0.1')) {
-    return 'https://k2-galerie.vercel.app'
-  }
+  // Lokal testen: ohne explizite Public-URL den lokalen Host verwenden, damit der Klick sofort funktioniert.
   const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim()
   return `${proto}://${host}`.replace(/\/$/, '')
 }

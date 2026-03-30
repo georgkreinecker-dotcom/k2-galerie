@@ -151,7 +151,7 @@ export function isValidPilotInviteEmail(email) {
  */
 export function buildPilotEinladungUrl(baseUrl, token) {
   const base = baseUrl.replace(/\/$/, '')
-  return `${base}/projects/k2-galerie/pilot-einladung?t=${encodeURIComponent(token)}`
+  return `${base}/p/${encodeURIComponent(token)}`
 }
 
 /**
