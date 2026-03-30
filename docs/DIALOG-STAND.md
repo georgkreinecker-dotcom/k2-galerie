@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **PilotEinladungPage – Fehler nicht nur Textlinks:** Bei **„Prüfung fehlgeschlagen“** (meist **bad_signature** = `PILOT_INVITE_SECRET` lokal ≠ Vercel Production, oder Einladung auf localhost / alter Tab): drei **Klick-Buttons** – **Lizenzen öffnen (neuen Link)**, **Entdecken**, **Team-Handbuch** – statt blauer Unterstreich-Links. **Tests + Build grün.**
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Lizenzen & Testpilot: APf + kompakte Einladung** – **Smart Panel** (K2 Galerie): Button **„Lizenzen & Testpilot“** → `page=lizenzen`, Scroll zu **Testpilot einladen** (`apfFocusTestpilot`). **DevViewPage:** Tab „Lizenzen & Testpilot“, `getPathForPage` mit `#testpilot-einladen`. **LicencesPage:** nach Einladung **keine** lange URL-Zeile mehr; **„Persönlichen Link öffnen“** + **„Link kopieren“**; Hash `#testpilot-einladen` scrollt zum Block. **Tests + Build grün.** **Commit:** **291b8a0** ✅ (APf-Zugang + Einladung nur als Buttons; DIALOG-STAND ergänzt)
 
 **Was wir JETZT tun:** –

@@ -2,7 +2,7 @@
  * Einstieg nach E-Mail-Einladung: Token prüfen → Name setzen → Weiter zu ök2 oder VK2.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ENTDECKEN_ROUTE, PROJECT_ROUTES, WILLKOMMEN_NAME_KEY } from '../config/navigation'
 
@@ -12,6 +12,34 @@ const BG = '#f6f4f0'
 const TEXT = '#1c1a18'
 const MUTED = '#5c5650'
 const BTN = '#0d9488'
+
+const linkButtonPrimary: CSSProperties = {
+  display: 'inline-block',
+  padding: '0.7rem 1rem',
+  background: BTN,
+  color: '#fff',
+  borderRadius: 8,
+  fontSize: '0.95rem',
+  fontWeight: 600,
+  textDecoration: 'none',
+  border: 'none',
+  textAlign: 'center' as const,
+  cursor: 'pointer',
+}
+
+const linkButtonSecondary: CSSProperties = {
+  display: 'inline-block',
+  padding: '0.7rem 1rem',
+  background: '#fff',
+  color: TEXT,
+  border: '1px solid #ccc',
+  borderRadius: 8,
+  fontSize: '0.95rem',
+  fontWeight: 600,
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  cursor: 'pointer',
+}
 
 /** Gleiche Logik wie api/pilotInviteShared (kein Import: Node/crypto). Mail-Clients: Zeilenumbrüche im Token. */
 function normalizePilotTokenClient(raw: string): string {
@@ -192,23 +220,30 @@ export default function PilotEinladungPage() {
                 <strong>Lizenzen</strong>, nicht die Startseite.
               </p>
               <p style={{ margin: 0 }}>
-                <strong>Neuen Link erzeugen:</strong> In der Live-App{' '}
-                <Link to={LIVE_LIZENZEN_PATH} style={{ color: BTN, fontWeight: 600 }}>
-                  Lizenzen öffnen
-                </Link>{' '}
-                (<code style={{ fontSize: '0.76em' }}>{LIVE_LIZENZEN_PATH}</code>), Testpilot-Formular ausfüllen, Einladung senden – dann „Persönlichen Link öffnen“ oder den angezeigten Link nutzen (nicht einen alten Tab mit localhost mischen).
+                <strong>Neuen Link erzeugen:</strong> Live-App → Lizenzen (
+                <code style={{ fontSize: '0.76em' }}>{LIVE_LIZENZEN_PATH}</code>), Testpilot-Formular, Einladung senden – dann
+                „Persönlichen Link öffnen“ nutzen (keinen alten localhost-Tab mischen).
               </p>
             </div>
           ) : null}
-          <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: MUTED }}>
-            <Link to={ENTDECKEN_ROUTE} style={{ color: BTN, fontWeight: 600 }}>
-              Zur öffentlichen Einstiegsseite (Entdecken)
+          <div
+            style={{
+              marginTop: '1.1rem',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
+            <Link to={LIVE_LIZENZEN_PATH} style={linkButtonPrimary}>
+              Lizenzen öffnen (neuen Link)
             </Link>
-            {' · '}
-            <Link to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md" style={{ color: BTN, fontWeight: 600 }}>
+            <Link to={ENTDECKEN_ROUTE} style={linkButtonSecondary}>
+              Zur Einstiegsseite (Entdecken)
+            </Link>
+            <Link to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md" style={linkButtonSecondary}>
               Einrichtung im Team-Handbuch
             </Link>
-          </p>
+          </div>
         </div>
       )}
 
