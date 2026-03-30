@@ -27,7 +27,14 @@ export default function PilotEinladungPage() {
   const [searchParams] = useSearchParams()
   const params = useParams()
   const navigate = useNavigate()
-  const token = params.token || searchParams.get('t') || searchParams.get('token') || ''
+  /** `/p/*` = gesamter Token; alternativ Query `t` / `token` (Legacy pilot-einladung) */
+  const splat = typeof params['*'] === 'string' ? params['*'] : ''
+  const token =
+    splat ||
+    (typeof params.token === 'string' ? params.token : '') ||
+    searchParams.get('t') ||
+    searchParams.get('token') ||
+    ''
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -121,9 +128,17 @@ export default function PilotEinladungPage() {
           }}
         >
           <p style={{ margin: 0 }}>{error}</p>
+          <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.5 }}>
+            Typisch: Link abgelaufen, oder der Server hat noch kein <code style={{ fontSize: '0.82em' }}>PILOT_INVITE_SECRET</code> (Vercel
+            → Environment). Bitte eine <strong>neue Einladung</strong> vom Team anfordern – nicht die Lizenzen-Seite, die ist etwas anderes.
+          </p>
           <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: MUTED }}>
-            <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: BTN, fontWeight: 600 }}>
-              Zur Lizenzen-Seite
+            <Link to={ENTDECKEN_ROUTE} style={{ color: BTN, fontWeight: 600 }}>
+              Zur öffentlichen Einstiegsseite (Entdecken)
+            </Link>
+            {' · '}
+            <Link to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md" style={{ color: BTN, fontWeight: 600 }}>
+              Einrichtung im Team-Handbuch
             </Link>
           </p>
         </div>

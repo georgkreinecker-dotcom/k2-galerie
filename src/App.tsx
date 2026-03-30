@@ -752,6 +752,15 @@ function App() {
     <Routes>
       {/* Schreiben an Michael – nur diese eine Seite, keine APf, keine Galerie */}
       <Route path={PILOT_SCHREIBEN_ROUTE} element={<PilotStartPage />} />
+      {/* Testpilot-Einladung: kurzer Pfad /p/… – früh in der Liste, damit nichts anderes zuerst greift */}
+      <Route
+        path="/p/*"
+        element={
+          <PlatformOnlyRoute>
+            <PilotEinladungPage />
+          </PlatformOnlyRoute>
+        }
+      />
       {/* Root-Route: / → Entdecken überall; APf separat (?apf=1, /platform, /dev-view) */}
       <Route path="/" element={
         <AppErrorBoundary>
@@ -863,14 +872,6 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route
         path={PROJECT_ROUTES['k2-galerie'].pilotEinladung}
-        element={
-          <PlatformOnlyRoute>
-            <PilotEinladungPage />
-          </PlatformOnlyRoute>
-        }
-      />
-      <Route
-        path="/p/:token"
         element={
           <PlatformOnlyRoute>
             <PilotEinladungPage />

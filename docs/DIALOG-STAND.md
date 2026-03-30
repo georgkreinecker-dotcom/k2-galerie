@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: nicht mehr „Lizenzen/mök2“ bei Fehler, Route `/p/*` früh:** Fehlerseite verlinkt **nicht** auf Lizenzen (war verwirrend); stattdessen Entdecken + Handbuch 26. Route **`/p/*`** (Splat) oben in `App.tsx`. **Lizenzen:** Button „Persönlicher Link öffnen“ + gekürzte Anzeige (href voll). **Commit:** (nach Push) ✅
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: kein Monsterlink-Bruch, kein localhost für Empfänger:** `getPilotInviteLinkBaseUrl` – von **localhost-Dev** zeigt der Link standardmäßig auf **`https://k2-galerie.vercel.app/p/…`** (überschreibbar mit `PILOT_INVITE_PUBLIC_BASE_URL`). Resend: **kein** gekürzter Footer-Link mehr (war Safari/kopierbar kaputt), **Plaintext `text`** mit vollem URL, HTML-Direktlink mit `word-break`. **Commit:** **fe7594b** ✅ auf GitHub
 
 **Was wir JETZT tun:** Push → **erneut Einladung senden**; Mail zeigt `…/p/<Token>` (kurz vs. altem `?token=`). Auf Vercel weiterhin **gleiches `PILOT_INVITE_SECRET`** wie lokal zum Signieren.

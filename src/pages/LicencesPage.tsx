@@ -465,9 +465,26 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             </div>
           )}
           {pilotInviteUrl && (
-            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem', wordBreak: 'break-all' }}>
-              <strong style={{ color: 'var(--k2-text)' }}>Link:</strong>{' '}
-              <a href={pilotInviteUrl} style={{ color: 'var(--k2-accent)' }}>{pilotInviteUrl}</a>
+            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem' }}>
+              <strong style={{ color: 'var(--k2-text)' }}>Einladung:</strong>{' '}
+              <a
+                href={pilotInviteUrl}
+                style={{
+                  display: 'inline-block',
+                  marginTop: '0.35rem',
+                  padding: '0.45rem 0.75rem',
+                  background: '#b54a1e',
+                  color: '#fff',
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Persönlichen Link öffnen (Testpilot)
+              </a>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--k2-muted)', wordBreak: 'break-all' }} title={pilotInviteUrl}>
+                {pilotInviteUrl.length > 96 ? `${pilotInviteUrl.slice(0, 48)}…${pilotInviteUrl.slice(-36)}` : pilotInviteUrl}
+              </div>
             </div>
           )}
           {pilotInviteMailto && (
