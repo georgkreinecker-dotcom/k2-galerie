@@ -28,3 +28,8 @@ export function getSendPilotInviteApiUrl(): string {
   }
   return `${trimBase(window.location.origin)}/api/send-pilot-invite`
 }
+
+/** GET-URL: gleiche Basis wie send-pilot-invite (localhost → Production), siehe pilot-invite-mail-status.js */
+export function getPilotInviteMailStatusUrl(): string {
+  return getSendPilotInviteApiUrl().replace(/\/send-pilot-invite\/?$/, '/pilot-invite-mail-status')
+}

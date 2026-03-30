@@ -660,11 +660,42 @@ const devPilotInviteMiddleware = () => {
     configureServer(server: any) {
       server.middlewares.use(async (req: any, res: any, next: any) => {
         const url = req.url || ''
+        const projectRoot = path.resolve(__dirname)
+
+        /** Resend-Status: kein PILOT_INVITE_SECRET nötig (Lizenzen-UI) */
+        if (url.startsWith('/api/pilot-invite-mail-status')) {
+          const envFile = loadEnvFromFile(projectRoot)
+          if (envFile.RESEND_API_KEY) process.env.RESEND_API_KEY = envFile.RESEND_API_KEY
+          const parsedUrl = new URL(url, 'http://localhost')
+          req.query = Object.fromEntries(parsedUrl.searchParams.entries())
+          if (req.method === 'OPTIONS') {
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+            res.writeHead(200)
+            res.end()
+            return
+          }
+          if (req.method === 'GET') {
+            try {
+              const statusUrl = pathToFileURL(path.join(projectRoot, 'api', 'pilot-invite-mail-status.js')).href
+              const mod = await import(statusUrl)
+              await mod.default(req, wrapResForVercelStyleApi(res))
+            } catch (e: any) {
+              console.error('dev-pilot-invite-mail-status:', e)
+              res.writeHead(500, { 'Content-Type': 'application/json' })
+              res.end(JSON.stringify({ error: (e?.message || 'Fehler').substring(0, 200) }))
+            }
+            return
+          }
+          next()
+          return
+        }
+
         if (!url.startsWith('/api/send-pilot-invite') && !url.startsWith('/api/validate-pilot-token')) {
           next()
           return
         }
-        const projectRoot = path.resolve(__dirname)
         const envFile = loadEnvFromFile(projectRoot)
         const secret = (process.env.PILOT_INVITE_SECRET || envFile.PILOT_INVITE_SECRET || '').trim()
         if (!secret) {
