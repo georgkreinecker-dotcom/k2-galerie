@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
 import { pathToFileURL } from 'url'
+import { wrapResForVercelStyleApi } from './api/connectResponseAdapter'
 
 // .env aus Projektroot lesen (Vite lädt sie sonst nicht in die Server-Middleware)
 function loadEnvFromFile(projectRoot: string): {
@@ -703,12 +704,12 @@ const devPilotInviteMiddleware = () => {
             })
             req.body = bodyRaw
             const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'send-pilot-invite.js')).href)
-            await mod.default(req, res)
+            await mod.default(req, wrapResForVercelStyleApi(res))
             return
           }
           if (req.method === 'GET' && url.startsWith('/api/validate-pilot-token')) {
             const mod = await import(pathToFileURL(path.join(projectRoot, 'api', 'validate-pilot-token.js')).href)
-            await mod.default(req, res)
+            await mod.default(req, wrapResForVercelStyleApi(res))
             return
           }
         } catch (e: any) {
