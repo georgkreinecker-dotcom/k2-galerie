@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-Workflow (Automatisierung):** **`/api/send-pilot-invite`** (POST, Origin-Check, optional **Resend**), **`/api/validate-pilot-token`**, **`api/pilotInviteShared.js`** (HMAC). **Seite** **`/projects/k2-galerie/pilot-einladung`** (`PilotEinladungPage`, **PlatformOnlyRoute**): Token → Weiter **Entdecken** oder **VK2-Galerie**, Name in **sessionStorage**. **Lizenzen:** Block **„Testpilot einladen“** (`#testpilot-einladen`), Link von **Zettel-Pilot-Form**. **PilotStartPage** / **ZettelPilotFormPage:** Texte angepasst. **Vite-Dev:** Middleware für beide APIs wenn **`PILOT_INVITE_SECRET`** in `.env`. **Vercel-Env:** `PILOT_INVITE_SECRET`, optional `RESEND_API_KEY`, `RESEND_FROM`. **Commit:** **c7f9657** ✅ auf GitHub
+
+**Was wir JETZT tun:** Auf **Vercel** `PILOT_INVITE_SECRET` setzen; optional Resend; dann **Lizenzen** → Testpilot einladen testen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Lizenz: Zeitplan / Pilot / Stripe-Test sichtbar:** Neue Komponente **`LizenzZeitplanPilotStripeInfo`** (ein Standard, drei Varianten): **Übersicht-Board** oberhalb der Kacheln; **Lizenzen** + **Lizenz kaufen** mit **hohem Kontrast** (gelber Verlauf, dunkle Schrift – kein `var(--k2-text)` auf Amber). Inhalt: **01. Mai** ausgeschrieben (Hinweis „nicht 1.5“), **Pilot in 3 Schritten**, **Stripe-Testkarte 4242…** + `sk_test_…`. **Commit:** **89aa7f5** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy: **Übersicht**, **Lizenzen**, **Lizenz kaufen** – Info-Kasten lesbar prüfen.
