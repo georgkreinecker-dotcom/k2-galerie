@@ -88,9 +88,11 @@ function saveGrants(grants: LicenceGrant[]) {
 
 interface LicencesPageProps {
   embeddedInMok2Layout?: boolean
+  /** APf-Tab „Lizenzen“: scrollt zum Block Testpilot einladen */
+  apfFocusTestpilot?: boolean
 }
 
-export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps = {}) {
+export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }: LicencesPageProps = {}) {
   const [grants, setGrants] = useState<LicenceGrant[]>([])
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -117,11 +119,28 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   const [pilotInviteUrl, setPilotInviteUrl] = useState<string | null>(null)
   const [pilotInviteMailto, setPilotInviteMailto] = useState<string | null>(null)
   const [pilotInviteCrossEnvWarning, setPilotInviteCrossEnvWarning] = useState(false)
+  const [pilotInviteCopied, setPilotInviteCopied] = useState(false)
   const [licencesPageIsLocalhost, setLicencesPageIsLocalhost] = useState(false)
 
   useEffect(() => {
     setGrants(loadGrants())
   }, [])
+
+  /** Direktlink #testpilot-einladen oder APf-Tab: zum gelben Kasten scrollen */
+  useEffect(() => {
+    const scrollToPilot = () => {
+      document.getElementById('testpilot-einladen')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+    if (apfFocusTestpilot) {
+      const t = window.setTimeout(scrollToPilot, 80)
+      return () => window.clearTimeout(t)
+    }
+    if (typeof window !== 'undefined' && window.location.hash === '#testpilot-einladen') {
+      const t = window.setTimeout(scrollToPilot, 80)
+      return () => window.clearTimeout(t)
+    }
+    return undefined
+  }, [apfFocusTestpilot])
 
   useEffect(() => {
     const h = window.location.hostname
@@ -528,14 +547,13 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             </div>
           ) : null}
           {pilotInviteUrl && (
-            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem' }}>
-              <strong style={{ color: 'var(--k2-text)' }}>Einladung:</strong>{' '}
+            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+              <strong style={{ color: 'var(--k2-text)', width: '100%' }}>Einladung:</strong>
               <a
                 href={pilotInviteUrl}
                 style={{
                   display: 'inline-block',
-                  marginTop: '0.35rem',
-                  padding: '0.45rem 0.75rem',
+                  padding: '0.5rem 0.9rem',
                   background: '#b54a1e',
                   color: '#fff',
                   borderRadius: 8,
@@ -545,9 +563,33 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
               >
                 Persönlichen Link öffnen (Testpilot)
               </a>
-              <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: 'var(--k2-muted)', wordBreak: 'break-all' }} title={pilotInviteUrl}>
-                {pilotInviteUrl.length > 96 ? `${pilotInviteUrl.slice(0, 48)}…${pilotInviteUrl.slice(-36)}` : pilotInviteUrl}
-              </div>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  void navigator.clipboard.writeText(pilotInviteUrl).then(
+                    () => {
+                      setPilotInviteCopied(true)
+                      window.setTimeout(() => setPilotInviteCopied(false), 2000)
+                    },
+                    () => {
+                      /* z. B. unsicherer Kontext: Link bleibt über den orangen Button nutzbar */
+                    }
+                  )
+                }}
+                style={{
+                  padding: '0.45rem 0.75rem',
+                  fontSize: '0.8rem',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  color: 'var(--k2-text)',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                {pilotInviteCopied ? '✓ Kopiert' : 'Link kopieren'}
+              </button>
             </div>
           )}
           {pilotInviteMailto && (

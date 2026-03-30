@@ -31,6 +31,7 @@ import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
 import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
 import MobileConnectPage from './MobileConnectPage'
+import LicencesPage from './LicencesPage'
 import SmartPanel from '../components/SmartPanel'
 import { BUILD_TIMESTAMP } from '../buildInfo.generated'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
@@ -444,6 +445,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'platzanordnung': return PROJECT_ROUTES['k2-galerie'].platzanordnung
       case 'k2-familie': return PROJECT_ROUTES['k2-familie'].home
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
+      case 'lizenzen': return `${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
       case 'texte-schreibtisch': return PROJECT_ROUTES['k2-galerie'].texteSchreibtisch
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
@@ -1022,6 +1024,7 @@ end tell`
     { id: 'galerie-vorschau', name: 'Galerie-Vorschau', component: GalerieVorschauPage },
     { id: 'galerie-oeffentlich-vorschau', name: 'Öffentliche Galerie K2 Vorschau', component: GalerieVorschauPage },
     { id: 'uebersicht', name: 'Übersicht-Board', component: UebersichtBoardPage },
+    { id: 'lizenzen', name: 'Lizenzen & Testpilot', component: LicencesPage },
     { id: 'vk2', name: 'VK2 Vereinsplattform', component: GaleriePage },
     { id: 'vk2-kunden', name: 'VK2 Mitglieder', component: GalerieVorschauPage },
     { id: 'vk2-vorschau', name: 'VK2 Künstler-Vorschau', component: GalerieVorschauPage },
@@ -1217,6 +1220,9 @@ end tell`
     }
     if (pageToRender === 'mobile-connect') {
       return <MobileConnectPage key={componentKey} />
+    }
+    if (pageToRender === 'lizenzen') {
+      return <LicencesPage key={componentKey} apfFocusTestpilot />
     }
     // Event- und Medienplanung / Oeffentlichkeitsarbeit aus Smart Panel -> Admin mit richtigem Tab (APf zeigt sonst Galerie)
     if (pageToRender === 'presse') {

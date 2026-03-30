@@ -76,6 +76,7 @@ type PanelItem = {
 
 const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'uebersicht', label: '📊 Übersicht-Board', page: 'uebersicht', url: PROJECT_ROUTES['k2-galerie'].uebersicht, color: 'linear-gradient(135deg, rgba(13,148,136,0.2), rgba(45,212,191,0.12))', border: 'rgba(45,212,191,0.4)' },
+  { id: 'lizenzen', label: '🔑 Lizenzen & Testpilot', page: 'lizenzen', url: `${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`, color: 'linear-gradient(135deg, rgba(245,158,11,0.18), rgba(217,119,6,0.12))', border: 'rgba(245,158,11,0.45)' },
   { id: 'k2', label: '🎨 K2 Galerie Kunst&Keramik', page: 'galerie', url: PROJECT_ROUTES['k2-galerie'].galerie, color: 'linear-gradient(135deg, rgba(255,140,66,0.2), rgba(230,122,42,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'oek2', label: '🌐 Öffentliche Galerie K2', page: 'galerie-oeffentlich', url: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich, color: 'linear-gradient(135deg, rgba(95,251,241,0.12), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.3)' },
   { id: 'k2-familie', label: '👨‍👩‍👧‍👦 K2 Familie', page: 'k2-familie', url: PROJECT_ROUTES['k2-familie'].home, color: 'linear-gradient(135deg, rgba(13,148,136,0.22), rgba(20,184,166,0.12))', border: 'rgba(13,148,136,0.5)' },
@@ -113,7 +114,7 @@ function saveOrder(order: string[]) {
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
 const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
   { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
@@ -665,7 +666,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
@@ -685,7 +686,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               background: item.color,
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
-                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
+                              color: item.id === 'uebersicht' ? '#2dd4bf' : item.id === 'lizenzen' ? '#f59e0b' : item.id === 'oek2' ? '#5ffbf1' : item.id === 'mok2' ? '#fbbf24' : '#ff8c42',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',
