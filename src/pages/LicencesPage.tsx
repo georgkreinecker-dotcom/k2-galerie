@@ -647,8 +647,24 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                     lineHeight: 1.55,
                   }}
                 >
-                  <strong>E-Mail wurde vom Server an Resend übergeben</strong> – beim Empfänger im Posteingang prüfen (Ordner Spam). Die Vorschau unten
-                  entspricht <strong>genau dem Layout</strong> der Mail (grüne Buttons inklusive) – <strong>kein</strong> Code für den Empfänger.
+                  <strong>E-Mail wurde vom Server an Resend übergeben</strong> – beim Empfänger im <strong>Posteingang</strong> prüfen (Ordner Spam). Die
+                  Vorschau unten entspricht <strong>genau dem HTML</strong>, das Resend mitschickt (grüner Button) – <strong>kein</strong> Technik-Text für den
+                  Empfänger.
+                  <p
+                    style={{
+                      margin: '0.75rem 0 0',
+                      paddingTop: '0.65rem',
+                      borderTop: '1px solid rgba(74, 222, 128, 0.35)',
+                      fontSize: '0.86rem',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    <strong style={{ color: '#b45309' }}>Häufige Verwechslung:</strong> Wenn in Apple Mail eine <strong>„Neue Nachricht“</strong> oder ein{' '}
+                    <strong>Entwurf</strong> nur <strong>Klartext</strong> und den langen Link zeigt – <strong>ohne</strong> grünen Button –, kommt das fast immer
+                    von <strong>„Mail-Programm (nur Text)“</strong> (mailto) oder vom Einfügen des Textes. Das ist <strong>absichtlich nur Text</strong>, nicht die
+                    Resend-Zustellung. Den Button gibt es in der <strong>eingegangenen</strong> Mail im Postfach – oder: <strong>.eml laden</strong> → Doppelklick in
+                    Mail.
+                  </p>
                 </div>
               ) : null}
               <h3
@@ -671,8 +687,27 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
               />
               <details style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'var(--k2-muted)' }}>
                 <summary style={{ cursor: 'pointer', color: 'var(--k2-muted)' }}>
-                  Link kopieren, .eml mit Layout oder Mail-Programm (nur Klartext)
+                  {pilotInviteMsg?.type === 'ok'
+                    ? 'Link kopieren oder .eml – mailto nur wenn du bewusst nur Text willst'
+                    : 'Link kopieren, .eml mit Layout oder Mail-Programm (nur Klartext)'}
                 </summary>
+                {pilotInviteMsg?.type === 'ok' ? (
+                  <p
+                    style={{
+                      margin: '0.5rem 0 0.65rem',
+                      padding: '0.55rem 0.65rem',
+                      borderRadius: 8,
+                      background: 'rgba(180, 83, 9, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      lineHeight: 1.55,
+                      color: 'var(--k2-text)',
+                      fontSize: '0.84rem',
+                    }}
+                  >
+                    Resend hat die Einladung schon abgeschickt – den grünen Button siehst du in der <strong>Posteingangs-Mail</strong>, nicht in einem neuen
+                    Entwurf über den Link unten.
+                  </p>
+                ) : null}
                 <p style={{ margin: '0.5rem 0 0.65rem', lineHeight: 1.55, color: 'var(--k2-text)' }}>
                   <strong>„Mail-Programm öffnen“</strong> nutzt mailto – das ist <strong>immer nur Klartext</strong>, <strong>ohne</strong> dein Layout mit
                   Button. Deshalb siehst du dort <strong>keinen grünen Button</strong> wie in der Vorschau. Automatisch „raus“ geht nur mit{' '}
@@ -751,7 +786,9 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
                   </button>
                   {pilotInviteMailto ? (
                     <a href={pilotInviteMailto} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
-                      Mail-Programm (nur Text)
+                      {pilotInviteMsg?.type === 'ok'
+                        ? 'Mail-Programm öffnen (nur Text – nicht die Resend-Mail mit Button)'
+                        : 'Mail-Programm (nur Text)'}
                     </a>
                   ) : null}
                 </div>

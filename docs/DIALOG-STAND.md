@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: „kein grüner Button“ = meist mailto/Entwurf, nicht Resend:** Apple-Mail-Screenshot zeigte **Neue Nachricht** mit nur Text – typisch für **mailto** („Mail-Programm“), nicht für die **Posteingangs-Mail** von Resend (die hat HTML). **LicencesPage:** grüner Erfolgskasten um Abschnitt **Verwechslung** ergänzt; bei erfolgreichem Versand Hinweis in Details + Link-Text **„nicht die Resend-Mail“**. **Tests + Build grün.** **Commit:** **f7bed08**
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-Mail von www.kgm.at / kgm.at:** Cross-Origin POST → `k2-galerie.vercel.app` schlug mit **403 Ungültiger Aufruf (Origin)** fehl, weil **Origin** `www.kgm.at` / `kgm.at` nicht erlaubt war. **Fix:** `api/pilotInviteShared.js` → **`PILOT_INVITE_PLATFORM_HOSTNAMES`** (Sync mit **PLATFORM_HOSTNAMES** in `tenantConfig.ts`); Kommentar bei **PLATFORM_HOSTNAMES** für künftige Hosts. **Tests** für kgm-Origins. **Tests + Build grün.** **Commit:** **3248d0e** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
