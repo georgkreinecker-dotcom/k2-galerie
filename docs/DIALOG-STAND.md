@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot Schritt 2 (Link öffnen): Ursache oft localhost vs. Vercel** – Token wird mit `PILOT_INVITE_SECRET` signiert; Link zeigt auf k2-galerie.vercel.app → Prüfung nutzt Vercel-Secret. **Ohne identisches Secret** schlägt `/p` fehl. **Fix im Code:** `verifyPilotInviteTokenWithReason` + API `hint` bei bad_signature; **Lizenzen:** Hinweisbox auf localhost + **roter Kasten** wenn Einladung von localhost bei Vercel-Link erzeugt; `send-pilot-invite` liefert `crossEnvSecretWarning`. **Zuverlässig:** Einladung auf **Live-Lizenzen** erzeugen **oder** Secret in Vercel = `.env` (Production). **Commit:** (nach Push) ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot: kostenlose Pro++ ohne Ablaufdatum** – Neue Tokens: `l: propplus`, `p: 1` (Einladungslink läuft nicht ab); Verify-Fallback Lizenz: Pilot → `propplus`, sonst `proplus` (Legacy v2). **PilotEinladungPage:** `k2-pilot-einladung` mit `licenceType` + `pilotProPlusUnlimited`. **Admin:** `setKassabuchLizenzStufe` ök2/VK2 → `propplus` bei Pilot-Session; Banner-Text angepasst. E-Mail-HTML + Plaintext Fußzeile. Tests ergänzt. *(Commit-Hash nach Push eintragen.)*
+
+**Was wir JETZT tun:** Nach Push Vercel **Ready** → neuen Testpilot-Link erzeugen und Einladung + Admin (Kassa-Stufe) kurz prüfen.
+
+---
+
+**Letzter Stand:** 30.03.26 – **Testpilot Schritt 2 (Link öffnen): Ursache oft localhost vs. Vercel** – Token wird mit `PILOT_INVITE_SECRET` signiert; Link zeigt auf k2-galerie.vercel.app → Prüfung nutzt Vercel-Secret. **Ohne identisches Secret** schlägt `/p` fehl. **Fix im Code:** `verifyPilotInviteTokenWithReason` + API `hint` bei bad_signature; **Lizenzen:** Hinweisbox auf localhost + **roter Kasten** wenn Einladung von localhost bei Vercel-Link erzeugt; `send-pilot-invite` liefert `crossEnvSecretWarning`. **Zuverlässig:** Einladung auf **Live-Lizenzen** erzeugen **oder** Secret in Vercel = `.env` (Production). **Commit:** **68d0154** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy **Live** Lizenzen → Testpilot → Link testen; optional lokal Secret mit Vercel angleichen.
 

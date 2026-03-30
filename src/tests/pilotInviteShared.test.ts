@@ -81,6 +81,48 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(verified?.lastName).toBe('Kreinecker')
     expect(verified?.email).toBe('g@example.com')
     expect(verified?.context).toBe('oeffentlich')
+    expect((verified as { licenceType?: string })?.licenceType).toBe('propplus')
+  })
+
+  it('Testpilot-Token (p:1): abgelaufenes x wird ignoriert – Link bleibt gültig', () => {
+    const secret = 'sekret'
+    const data = {
+      v: 3,
+      vn: 'A',
+      nn: 'B',
+      n: 'A B',
+      e: 'a@b.c',
+      c: 'oeffentlich',
+      l: 'propplus',
+      p: 1,
+      x: Math.floor(Date.now() / 1000) - 86400 * 60,
+    }
+    const payloadStr = Buffer.from(JSON.stringify(data), 'utf8').toString('base64url')
+    const sig = crypto.createHmac('sha256', secret).update(payloadStr).digest('base64url')
+    const token = `${payloadStr}.${sig}`
+    const r = verifyPilotInviteTokenWithReason(token, secret)
+    expect(r.ok).toBe(true)
+    if (r.ok) expect(r.data.licenceType).toBe('propplus')
+  })
+
+  it('v3 ohne p: altes Ablaufdatum → expired', () => {
+    const secret = 'sekret'
+    const data = {
+      v: 3,
+      vn: 'A',
+      nn: 'B',
+      n: 'A B',
+      e: 'a@b.c',
+      c: 'oeffentlich',
+      l: 'proplus',
+      x: Math.floor(Date.now() / 1000) - 86400,
+    }
+    const payloadStr = Buffer.from(JSON.stringify(data), 'utf8').toString('base64url')
+    const sig = crypto.createHmac('sha256', secret).update(payloadStr).digest('base64url')
+    const token = `${payloadStr}.${sig}`
+    const r = verifyPilotInviteTokenWithReason(token, secret)
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.reason).toBe('expired')
   })
 
   it('verifyPilotInviteTokenWithReason: falsches Secret → bad_signature', () => {

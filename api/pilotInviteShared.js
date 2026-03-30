@@ -48,6 +48,10 @@ export function signPilotInviteToken(payload, secret) {
     n,
     e: email,
     c: payload.context === 'vk2' ? 'vk2' : 'oeffentlich',
+    /** Pro++ – Testpilot:innen: höchste Demo-Stufe, kostenlos, ohne Lizenz-Ablauf in der App */
+    l: 'propplus',
+    /** Testpilot-Programm: Einladungslink läuft nicht ab (Sicherheit: weiterhin HMAC, personalisiert) */
+    p: 1,
     x: Math.floor(Date.now() / 1000) + EXP_SEC,
   }
   const payloadStr = Buffer.from(JSON.stringify(data), 'utf8').toString('base64url')
@@ -81,7 +85,9 @@ export function verifyPilotInviteTokenWithReason(token, secret) {
     return { ok: false, reason: 'malformed' }
   }
   const exp = Number(data.x ?? data.exp ?? 0)
-  if (exp && Math.floor(Date.now() / 1000) > exp) return { ok: false, reason: 'expired' }
+  const isPilotInvite = data.p === 1 || data.p === true
+  if (!isPilotInvite && exp && Math.floor(Date.now() / 1000) > exp) return { ok: false, reason: 'expired' }
+  const licenceFallback = isPilotInvite ? 'propplus' : 'proplus'
   const vn = String(data.vn ?? '').trim()
   const nn = String(data.nn ?? '').trim()
   const nameFromParts = [vn, nn].filter(Boolean).join(' ').trim()
@@ -94,7 +100,7 @@ export function verifyPilotInviteTokenWithReason(token, secret) {
       lastName: nn,
       email: String(data.e ?? data.email ?? '').trim().toLowerCase(),
       context: data.c === 'vk2' || data.context === 'vk2' ? 'vk2' : 'oeffentlich',
-      licenceType: String(data.l ?? data.licenceType ?? 'proplus'),
+      licenceType: String(data.l ?? data.licenceType ?? licenceFallback),
       exp,
     },
   }
@@ -291,7 +297,7 @@ export async function sendPilotInviteViaResend({
       <li>Optional: in der Demo oben <strong>„Admin“</strong> – Werke, Design, Kasse nur zum Ausprobieren (Muster).</li>
     </ol>
     <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
-    <p style="color:#666;font-size:12px">Der Link ist personalisiert und einige Wochen gültig.</p>
+    <p style="color:#666;font-size:12px">Der Link ist personalisiert; für Testpilot:innen Pro++ ohne Ablaufdatum – der Link selbst bleibt gültig.</p>
     <p style="color:#666;font-size:12px">Direktlink (falls der Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">diesen Link</a> – gleiche Adresse wie der Button (nicht den sichtbaren Text aus einer umbrochenen Zeile kopieren).</p>
   `
   const r = await fetch('https://api.resend.com/emails', {

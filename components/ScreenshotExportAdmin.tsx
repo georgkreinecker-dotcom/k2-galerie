@@ -117,6 +117,7 @@ import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
+import { setKassabuchLizenzStufe } from '../src/utils/kassabuchStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
 import { applyServerDataToLocal, preserveLocalImageData, preserveStorageImageRefs } from '../src/utils/syncMerge'
 import { clearAdminUnlock } from '../src/utils/adminUnlockStorage'
@@ -3842,6 +3843,35 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         applySessionName()
       }, 450)
       return () => clearTimeout(t)
+    }
+  }, [tenant.isOeffentlich, tenant.isVk2])
+
+  /** Testpilot: Kassa/Lizenzstufe Pro++ setzen – einmal wenn k2-pilot-einladung gesetzt ist. */
+  const pilotLizenzPropplusAppliedRef = React.useRef(false)
+  React.useEffect(() => {
+    if (pilotLizenzPropplusAppliedRef.current) return
+    if (!tenant.isOeffentlich && !tenant.isVk2) return
+    let raw: string | null = null
+    try {
+      raw = sessionStorage.getItem('k2-pilot-einladung')
+    } catch {
+      return
+    }
+    if (!raw) return
+    let parsed: { context?: string }
+    try {
+      parsed = JSON.parse(raw) as { context?: string }
+    } catch {
+      return
+    }
+    if (tenant.isOeffentlich && parsed.context === 'oeffentlich') {
+      pilotLizenzPropplusAppliedRef.current = true
+      setKassabuchLizenzStufe('oeffentlich', 'propplus')
+      return
+    }
+    if (tenant.isVk2 && parsed.context === 'vk2') {
+      pilotLizenzPropplusAppliedRef.current = true
+      setKassabuchLizenzStufe('vk2', 'propplus')
     }
   }, [tenant.isOeffentlich, tenant.isVk2])
 
@@ -17371,7 +17401,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}>
                 ✈️ Du nutzt einen <strong>Test-Pilot-Zugang</strong>
                 {tenant.isOeffentlich ? ' (ök2 – Künstler-Demo)' : ' (VK2 – Vereinsplattform)'}
-                {' '}– voller Gratis-Zugang. Bitte unten unter „Meine Daten“ Namen und Kontakt eintragen, dann kannst du voll durchstarten.
+                {' '}– Stufe <strong>Pro++</strong> kostenlos und ohne Ablaufdatum. Bitte unten unter „Meine Daten“ Namen und Kontakt eintragen, dann kannst du voll durchstarten.
               </div>
             )}
 

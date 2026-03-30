@@ -94,6 +94,8 @@ export default function PilotEinladungPage() {
           lastName: data.lastName,
           email: data.email,
           context: 'oeffentlich',
+          licenceType: data.licenceType || 'propplus',
+          pilotProPlusUnlimited: true,
         }),
       )
     } catch {
@@ -114,6 +116,8 @@ export default function PilotEinladungPage() {
           lastName: data.lastName,
           email: data.email,
           context: 'vk2',
+          licenceType: data.licenceType || 'propplus',
+          pilotProPlusUnlimited: true,
         }),
       )
     } catch {
@@ -270,8 +274,8 @@ export default function PilotEinladungPage() {
             )}
           </div>
           <p style={{ fontSize: '0.82rem', color: MUTED, marginTop: '1.25rem', lineHeight: 1.5 }}>
-            Tipp: Auf der Galerie „Admin“ wählen – in den ersten Wochen oft ohne Passwort. Unter Einstellungen
-            Namen und Kontakt eintragen.
+            Als Testpilot:in nutzt du die Stufe <strong>Pro++</strong> kostenlos und ohne Ablaufdatum. Tipp: In der
+            Galerie „Admin“ wählen – oft ohne Passwort. Unter Einstellungen Namen und Kontakt eintragen.
           </p>
         </>
       )}

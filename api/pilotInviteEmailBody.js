@@ -35,6 +35,6 @@ export function buildPilotInviteEmailPlainText({ name, greetingName, inviteUrl, 
     'Direktlink (eine Zeile, ggf. aus spitzen Klammern kopieren):',
     `<${inviteUrl}>`,
     '',
-    'Der Link ist personalisiert und einige Wochen gültig.',
+    'Der Link ist personalisiert; für Testpilot:innen Pro++ ohne Ablaufdatum – der Link selbst bleibt gültig.',
   ].join('\n')
 }
