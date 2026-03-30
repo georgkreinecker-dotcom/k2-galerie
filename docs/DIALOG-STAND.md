@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Stripe lokal + mök2 Navigation:** `api/createCheckoutShared.js` (gemeinsam Vercel + Dev); **Vite-Dev** bedient **`POST /api/create-checkout`** wenn **`STRIPE_SECRET_KEY=sk_test_…`** in `.env`; optional **`STRIPE_PROXY_GET_LICENCE_ORIGIN`** für Erfolgsseite → Vercel-API; **Cancel-URL** → `lizenz-kaufen`. **mök2:** Hash-Scroll auf Marketing-Seite; Sidebar **„Lizenz online abschließen (Stripe)“**; robusteres `scrollIntoView`. **Doku:** [STRIPE-TEST-LOKAL.md](STRIPE-TEST-LOKAL.md). **Commit:** **cf9680d** ✅ auf GitHub (nach Push)
+
+**Was wir JETZT tun:** Georg: `.env` mit Test-Key, `npm run dev`, Lizenz-Kauf testen; vollständige Kette am einfachsten auf **k2-galerie.vercel.app**.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Lizenzen ök2/VK2 (mök2 + Seiten):** Zeitplan **öffentlich ab 01. Mai** und **Pilot:innen nach Einladung/Vereinbarung** oben bei **LicencesPage**, **LizenzKaufenPage** und mök2 **§10**; neuer Block **„Lizenz abschließen (ök2 & VK2)“** mit Links **Lizenz kaufen** + **Lizenzen verwalten**; **VK2 §10b** mit gleichem Zeitplan-Kasten + **„Lizenzen abschließen“**-Links und Stufe **Kunstvereine (VK2)**. Sidebar **mok2Structure** Gruppe „Bewertung & Lizenzen“: Einträge **mok2-10** und **mok2-10-lizenz-abschliessen**. Inhaltsverzeichnis mök2 ergänzt. **Commit:** **cd83063** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Push: mök2 §10/§10b und Seite **Lizenzen** kurz gegenlesen; Deploy prüfen.

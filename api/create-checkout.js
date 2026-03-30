@@ -5,28 +5,7 @@
  *
  * Umgebungsvariablen (Vercel): STRIPE_SECRET_KEY, VERCEL_URL (oder NEXT_PUBLIC_APP_URL) für Success/Cancel-URLs
  */
-import Stripe from 'stripe'
-
-const PRICE_CENTS = {
-  basic: 1500,    // 15 €
-  pro: 3500,      // 35 €
-  proplus: 4500,  // 45 €
-  propplus: 5500, // 55 €
-}
-
-/** Sichere tenantId: a-z0-9-, max 64 Zeichen. Eindeutig durch Zufallssuffix. */
-function generateTenantId(email) {
-  const slug = (email || '')
-    .trim()
-    .toLowerCase()
-    .split('@')[0]
-    .replace(/[^a-z0-9]/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 40) || 'galerie'
-  const rand = Math.random().toString(36).slice(2, 8)
-  return `galerie-${slug}-${rand}`
-}
+import { createStripeCheckoutSession } from './createCheckoutShared.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -50,53 +29,28 @@ export default async function handler(req, res) {
   }
 
   const { licenceType, email, name, empfehlerId } = body
-  const priceCents = PRICE_CENTS[licenceType]
-  if (!priceCents || !email || !name) {
-    return res.status(400).json({
-      error: 'Fehlende Angaben',
-      hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
-    })
-  }
 
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : (process.env.VITE_APP_URL || 'https://k2-galerie.vercel.app')
 
-  const tenantId = generateTenantId(email)
-  const successUrl = `${baseUrl}/lizenz-erfolg?session_id={CHECKOUT_SESSION_ID}`
-  const cancelUrl = `${baseUrl}/projects/k2-galerie/licences`
-
   try {
-    const stripe = new Stripe(secret)
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: `K2 Galerie – ${licenceType === 'basic' ? 'Basic' : licenceType === 'pro' ? 'Pro' : licenceType === 'proplus' ? 'Pro+' : 'Pro++'}`,
-              description: licenceType === 'basic' ? '15 €/Monat' : licenceType === 'pro' ? '35 €/Monat' : licenceType === 'proplus' ? '45 €/Monat' : '55 €/Monat',
-            },
-            unit_amount: priceCents,
-          },
-          quantity: 1,
-        },
-      ],
-      customer_email: email.trim(),
-      metadata: {
-        licenceType,
-        customerName: (name || '').trim().substring(0, 200),
-        tenantId,
-        ...(empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}),
-      },
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+    const { url } = await createStripeCheckoutSession({
+      licenceType,
+      email,
+      name,
+      empfehlerId,
+      secretKey: secret,
+      baseUrl,
     })
-
-    return res.status(200).json({ url: session.url })
+    return res.status(200).json({ url })
   } catch (err) {
+    if (err?.code === 'VALIDATION') {
+      return res.status(400).json({
+        error: 'Fehlende Angaben',
+        hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
+      })
+    }
     console.error('create-checkout:', err)
     return res.status(500).json({
       error: 'Checkout konnte nicht erstellt werden',

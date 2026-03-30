@@ -32,10 +32,12 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
   const isAgb = location.pathname === AGB_ROUTE
 
   const scrollToSection = (id: string) => {
-    if (isMarketingPage) {
+    if (!isMarketingPage) return
+    const run = () => {
       const el = document.getElementById(id)
-      el?.scrollIntoView({ behavior: 'smooth' })
+      el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+    requestAnimationFrame(() => requestAnimationFrame(run))
   }
 
   return (
@@ -356,6 +358,23 @@ export default function Mok2Layout({ children }: { children: React.ReactNode }) 
               }}
             >
               💼 Lizenzen (Konditionen & Vergebung)
+            </Link>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen}
+              style={{
+                marginTop: '0.4rem',
+                padding: '0.5rem 0.75rem',
+                background: 'rgba(181, 74, 30, 0.25)',
+                border: '1px solid rgba(255, 140, 66, 0.45)',
+                borderRadius: '6px',
+                color: '#ffccaa',
+                textDecoration: 'none',
+                fontSize: '0.85rem',
+                display: 'block',
+                fontWeight: 600,
+              }}
+            >
+              🛒 Lizenz online abschließen (Stripe)
             </Link>
             <Link
               to={WILLKOMMEN_ROUTE}

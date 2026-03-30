@@ -2,9 +2,16 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'fs'
 import path from 'path'
+import { pathToFileURL } from 'url'
 
 // .env aus Projektroot lesen (Vite lädt sie sonst nicht in die Server-Middleware)
-function loadEnvFromFile(projectRoot: string): { GITHUB_TOKEN?: string; GITHUB_REPO?: string; GITHUB_BRANCH?: string } {
+function loadEnvFromFile(projectRoot: string): {
+  GITHUB_TOKEN?: string
+  GITHUB_REPO?: string
+  GITHUB_BRANCH?: string
+  STRIPE_SECRET_KEY?: string
+  STRIPE_PROXY_GET_LICENCE_ORIGIN?: string
+} {
   const envPath = path.join(projectRoot, '.env')
   if (!fs.existsSync(envPath)) return {}
   let content = fs.readFileSync(envPath, 'utf8')
@@ -18,7 +25,15 @@ function loadEnvFromFile(projectRoot: string): { GITHUB_TOKEN?: string; GITHUB_R
     const key = trimmed.slice(0, eq).trim()
     let value = trimmed.slice(eq + 1).trim()
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1)
-    if (key === 'GITHUB_TOKEN' || key === 'GITHUB_REPO' || key === 'GITHUB_BRANCH') out[key] = value
+    if (
+      key === 'GITHUB_TOKEN' ||
+      key === 'GITHUB_REPO' ||
+      key === 'GITHUB_BRANCH' ||
+      key === 'STRIPE_SECRET_KEY' ||
+      key === 'STRIPE_PROXY_GET_LICENCE_ORIGIN'
+    ) {
+      out[key] = value
+    }
   }
   return out
 }
@@ -632,6 +647,131 @@ const writeGalleryDataMiddleware = () => {
   }
 }
 
+/** Lokal: POST /api/create-checkout wie auf Vercel (Stripe Test-Key aus .env). */
+const devCreateCheckoutMiddleware = () => {
+  return {
+    name: 'dev-create-checkout-middleware',
+    configureServer(server: any) {
+      server.middlewares.use('/api/create-checkout', async (req: any, res: any, _next: any) => {
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+        if (req.method === 'OPTIONS') {
+          res.writeHead(200)
+          res.end()
+          return
+        }
+        if (req.method !== 'POST') {
+          res.writeHead(405, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Nur POST erlaubt' }))
+          return
+        }
+        const projectRoot = path.resolve(__dirname)
+        const envFile = loadEnvFromFile(projectRoot)
+        const secret = (process.env.STRIPE_SECRET_KEY || envFile.STRIPE_SECRET_KEY || '').trim()
+        if (!secret) {
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              error: 'Zahlungssystem lokal nicht konfiguriert',
+              hint: 'STRIPE_SECRET_KEY=sk_test_… in .env eintragen, Dev-Server neu starten.',
+            }),
+          )
+          return
+        }
+        const bodyRaw = await new Promise<string>((resolve, reject) => {
+          const chunks: Buffer[] = []
+          req.on('data', (chunk: Buffer) => chunks.push(chunk))
+          req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+          req.on('error', reject)
+        })
+        let body: Record<string, unknown>
+        try {
+          body = JSON.parse(bodyRaw || '{}') as Record<string, unknown>
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Ungültiger JSON-Body' }))
+          return
+        }
+        const host = req.headers.host || 'localhost:5177'
+        const proto = (req.headers['x-forwarded-proto'] as string) || 'http'
+        const baseUrl = `${proto}://${host}`
+        try {
+          const sharedPath = path.join(projectRoot, 'api', 'createCheckoutShared.js')
+          const mod = await import(pathToFileURL(sharedPath).href)
+          const { url } = await mod.createStripeCheckoutSession({
+            licenceType: body.licenceType,
+            email: body.email,
+            name: body.name,
+            empfehlerId: body.empfehlerId,
+            secretKey: secret,
+            baseUrl,
+          })
+          res.writeHead(200, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ url }))
+        } catch (err: any) {
+          if (err?.code === 'VALIDATION') {
+            res.writeHead(400, { 'Content-Type': 'application/json' })
+            res.end(
+              JSON.stringify({
+                error: 'Fehlende Angaben',
+                hint: 'licenceType (basic|pro|proplus|propplus), email und name sind Pflicht.',
+              }),
+            )
+            return
+          }
+          console.error('dev-create-checkout:', err)
+          res.writeHead(500, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              error: 'Checkout konnte nicht erstellt werden',
+              hint: (err?.message || '').substring(0, 150),
+            }),
+          )
+        }
+      })
+    },
+  }
+}
+
+/**
+ * Optional: GET /api/get-licence-by-session an Production weiterreichen (nach Test-Zahlung),
+ * wenn Webhook nur Vercel erreicht. .env: STRIPE_PROXY_GET_LICENCE_ORIGIN=https://k2-galerie.vercel.app
+ */
+const devProxyGetLicenceBySessionMiddleware = () => {
+  return {
+    name: 'dev-proxy-get-licence-by-session',
+    configureServer(server: any) {
+      server.middlewares.use('/api/get-licence-by-session', async (req: any, res: any, next: any) => {
+        const projectRoot = path.resolve(__dirname)
+        const envFile = loadEnvFromFile(projectRoot)
+        const origin = (
+          process.env.STRIPE_PROXY_GET_LICENCE_ORIGIN ||
+          envFile.STRIPE_PROXY_GET_LICENCE_ORIGIN ||
+          ''
+        )
+          .trim()
+          .replace(/\/$/, '')
+        if (!origin || req.method !== 'GET') {
+          next()
+          return
+        }
+        try {
+          const target = `${origin}${req.url || ''}`
+          const r = await fetch(target, { headers: { Accept: 'application/json' } })
+          const text = await r.text()
+          const ct = r.headers.get('content-type') || 'application/json; charset=utf-8'
+          res.writeHead(r.status, { 'Content-Type': ct })
+          res.end(text)
+        } catch (e: any) {
+          res.writeHead(502, { 'Content-Type': 'application/json' })
+          res.end(JSON.stringify({ error: 'Proxy fehlgeschlagen', hint: e?.message || '' }))
+        }
+      })
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -640,7 +780,9 @@ export default defineConfig({
     writeGalleryDataPlugin(), 
     writeGalleryDataMiddleware(),
     writeBackupMiddleware(), // Backup-Upload Unterstützung
-    vercelStatusMiddleware() // Vercel Status Check
+    vercelStatusMiddleware(), // Vercel Status Check
+    devProxyGetLicenceBySessionMiddleware(), // optional: Erfolgsseite → Vercel-API
+    devCreateCheckoutMiddleware(), // Stripe Checkout lokal (nur Dev-Server)
   ],
   base: '/',
   server: {

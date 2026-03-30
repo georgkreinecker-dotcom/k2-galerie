@@ -124,6 +124,19 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
     }
   }, [location.pathname])
 
+  /** Hash aus Sidebar/Link (#mok2-10-…) zuverlässig scrollen (Router rendert zuerst, dann Ziel-Element). */
+  useEffect(() => {
+    const marketingPath = PROJECT_ROUTES['k2-galerie'].marketingOek2
+    if (location.pathname !== marketingPath) return
+    const raw = location.hash?.replace(/^#/, '').trim()
+    if (!raw) return
+    const t = window.setTimeout(() => {
+      const el = document.getElementById(raw)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 200)
+    return () => clearTimeout(t)
+  }, [location.pathname, location.hash])
+
   /** Eine URL, eine Seite: nur Schreiben an Michael (Begleitschreiben + Einstiegscodes). Alle QR/Links „für Michael“ zeigen darauf – nie auf die Galerie. */
   const pilotSchreibenAufHandyUrl = BASE_APP_URL + PILOT_SCHREIBEN_ROUTE
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
