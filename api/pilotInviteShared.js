@@ -55,22 +55,77 @@ export function verifyPilotInviteToken(token, secret) {
 }
 
 /**
- * @param {string} origin – Request-Header Origin
- * @param {string} [extraOrigins] – PILOT_INVITE_ALLOWED_ORIGINS kommagetrennt
+ * Origin für Pilot-API: Bei same-origin POST senden manche Umgebungen keinen Origin-Header.
+ * Dann Referer-Origin, sonst aus Host + Schema (Vercel/Dev).
+ * @param {import('http').IncomingMessage} req
  */
-export function isPilotInviteAllowedOrigin(origin, extraOrigins) {
+export function getPilotInviteRequestOrigin(req) {
+  const raw = req.headers?.origin
+  if (typeof raw === 'string' && raw.trim()) return raw.trim()
+  const ref = req.headers?.referer
+  if (typeof ref === 'string' && ref.trim()) {
+    try {
+      return new URL(ref).origin
+    } catch {
+      /* ignore */
+    }
+  }
+  const hostRaw = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim()
+  if (!hostRaw) return ''
+  let hostnameForLocalCheck = hostRaw
+  try {
+    hostnameForLocalCheck = new URL(`http://${hostRaw}`).hostname
+  } catch {
+    hostnameForLocalCheck = hostRaw.split(':')[0]
+  }
+  const isLocal =
+    hostnameForLocalCheck === 'localhost' ||
+    hostnameForLocalCheck === '127.0.0.1' ||
+    hostnameForLocalCheck === '::1'
+  const proto = (req.headers?.['x-forwarded-proto'] || '').split(',')[0].trim()
+  const scheme = isLocal ? 'http' : proto === 'http' ? 'http' : 'https'
+  return `${scheme}://${hostRaw}`
+}
+
+/**
+ * @param {string} origin – effektiver Origin (s. getPilotInviteRequestOrigin)
+ * @param {string} [extraOrigins] – PILOT_INVITE_ALLOWED_ORIGINS kommagetrennt
+ * @param {import('http').IncomingMessage} [req] – optional: gleicher Host wie Origin (eigene Domain)
+ */
+export function isPilotInviteAllowedOrigin(origin, extraOrigins, req) {
   if (!origin || typeof origin !== 'string') return false
   try {
     const u = new URL(origin)
     const h = u.hostname.toLowerCase()
-    if (h === 'localhost' || h === '127.0.0.1') return true
+    if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]' || h === '::1') return true
     if (h === 'k2-galerie.vercel.app') return true
     if (h.endsWith('.vercel.app') && h.includes('k2-galerie')) return true
+    const appUrl = String(typeof process !== 'undefined' && process.env?.VITE_APP_URL || '').trim()
+    if (appUrl.startsWith('http')) {
+      try {
+        if (new URL(appUrl).origin === origin) return true
+      } catch {
+        /* ignore */
+      }
+    }
     const extras = String(extraOrigins || '')
       .split(',')
       .map((s) => s.trim().replace(/\/$/, ''))
       .filter(Boolean)
-    return extras.some((e) => origin.startsWith(e))
+    if (extras.some((e) => origin.startsWith(e))) return true
+    if (req && req.headers) {
+      const hostHeader = (req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim()
+      if (hostHeader) {
+        try {
+          const reqH = new URL(`http://${hostHeader}`).hostname.toLowerCase()
+          const oriH = u.hostname.toLowerCase()
+          if (oriH === reqH) return true
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return false
   } catch {
     return false
   }
@@ -127,8 +182,16 @@ export async function sendPilotInviteViaResend({
     }),
   })
   if (!r.ok) {
-    const t = await r.text()
-    return { ok: false, error: t.slice(0, 200) }
+    const raw = await r.text()
+    let msg = raw
+    try {
+      const j = JSON.parse(raw)
+      if (typeof j.message === 'string') msg = j.message
+      else if (Array.isArray(j.errors) && j.errors.length) msg = JSON.stringify(j.errors[0])
+    } catch {
+      /* Roh-Text */
+    }
+    return { ok: false, error: `[${r.status}] ${msg}`.slice(0, 500) }
   }
   return { ok: true }
 }

@@ -7,6 +7,7 @@
  */
 import {
   signPilotInviteToken,
+  getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
   isValidPilotInviteEmail,
   buildPilotEinladungUrl,
@@ -30,8 +31,8 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Nur POST erlaubt' })
 
-  const origin = req.headers.origin || ''
-  if (!isPilotInviteAllowedOrigin(origin, process.env.PILOT_INVITE_ALLOWED_ORIGINS)) {
+  const origin = getPilotInviteRequestOrigin(req)
+  if (!isPilotInviteAllowedOrigin(origin, process.env.PILOT_INVITE_ALLOWED_ORIGINS, req)) {
     return res.status(403).json({ error: 'Ungültiger Aufruf (Origin).' })
   }
 

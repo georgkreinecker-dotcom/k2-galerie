@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail:** `getPilotInviteRequestOrigin` (Origin → Referer → Host), **gleicher Host wie Origin** erlaubt (eigene Domain ohne Extra-Env). Resend-Fehler mit HTTP-Status + API-`message`. Tests: `src/tests/pilotInviteShared.test.ts`. **Nach Deploy:** Lizenzen → Einladung; bei Warnung Detailzeile + Vercel `RESEND_API_KEY` / Domain **RESEND_FROM**.
+
+**Was wir JETZT tun:** Deploy abwarten → Testpilot-Mail erneut testen; wenn weiterhin Warnung: Detail unter der Meldung lesen (Domain bei Resend verifizieren).
+
+---
+
 **Letzter Stand:** 28.03.26 – **Eiserne Regel neu:** **End-to-End vollständig – nie „zwischendrin“** – `.cursor/rules/eiserne-regel-end-to-end-vollstaendig.mdc` (`alwaysApply: true`); Eintrag in **docs/EISERNE-REGELN-UEBERSICHT.md**. **Commits:** **8f732a8** Regel + Übersicht · **29cdaa4** DIALOG ✅ auf GitHub
 
 **Was wir JETZT tun:** Wie zuvor – Vercel/Resend nach Handbuch; Regel gilt ab sofort für alle Aufträge.
