@@ -70,6 +70,15 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     }
   })
 
+  it('normalizePilotInviteToken entfernt Zeilenumbrüche (E-Mail-Client)', () => {
+    const token = signPilotInviteToken(
+      { firstName: 'A', lastName: 'B', email: 'a@b.c', context: 'oeffentlich' },
+      'sekret',
+    )
+    const broken = token.slice(0, 20) + '\n' + token.slice(20)
+    expect(verifyPilotInviteToken(broken, 'sekret')?.name).toBe('A B')
+  })
+
   it('sign/verify mit kompaktem Token (v3: Vorname, Nachname, E-Mail)', () => {
     const token = signPilotInviteToken(
       { firstName: 'Georg', lastName: 'Kreinecker', email: 'g@example.com', context: 'oeffentlich' },

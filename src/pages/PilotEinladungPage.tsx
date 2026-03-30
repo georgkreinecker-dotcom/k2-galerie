@@ -11,6 +11,12 @@ const TEXT = '#1c1a18'
 const MUTED = '#5c5650'
 const BTN = '#0d9488'
 
+/** Gleiche Logik wie api/pilotInviteShared (kein Import: Node/crypto). Mail-Clients: Zeilenumbrüche im Token. */
+function normalizePilotTokenClient(raw: string): string {
+  if (!raw) return ''
+  return String(raw).trim().replace(/\s+/g, '')
+}
+
 type ValidateOk = {
   valid: true
   name: string
@@ -27,12 +33,13 @@ export default function PilotEinladungPage() {
   const navigate = useNavigate()
   /** `/p/*` = gesamter Token; alternativ Query `t` / `token` (Legacy pilot-einladung) */
   const splat = typeof params['*'] === 'string' ? params['*'] : ''
-  const token =
+  const token = normalizePilotTokenClient(
     splat ||
-    (typeof params.token === 'string' ? params.token : '') ||
-    searchParams.get('t') ||
-    searchParams.get('token') ||
-    ''
+      (typeof params.token === 'string' ? params.token : '') ||
+      searchParams.get('t') ||
+      searchParams.get('token') ||
+      '',
+  )
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

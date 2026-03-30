@@ -3,6 +3,18 @@
  * Keine Geheimnisse im Browser.
  */
 import crypto from 'crypto'
+
+/** E-Mail-Clients brechen lange URLs um → Leerzeichen im Token → bad_signature. Base64url enthält keine Spaces. */
+export function normalizePilotInviteToken(token) {
+  if (token == null) return ''
+  return String(token).trim().replace(/\s+/g, '')
+}
+
+/** BOM/unsichtbare Zeichen am Anfang von .env-Zeilen brechen HMAC-Vergleich. */
+export function trimPilotInviteSecret(secret) {
+  if (typeof secret !== 'string') return ''
+  return secret.replace(/^\uFEFF/, '').trim()
+}
 import { buildPilotInviteEmailPlainText } from './pilotInviteEmailBody.js'
 
 const EXP_SEC = 60 * 60 * 24 * 30 // 30 Tage
@@ -38,7 +50,8 @@ function normalizePilotInvitePayload(payload) {
  * @param {string} secret
  */
 export function signPilotInviteToken(payload, secret) {
-  if (!secret || typeof secret !== 'string') throw new Error('PILOT_INVITE_SECRET fehlt')
+  secret = trimPilotInviteSecret(secret)
+  if (!secret) throw new Error('PILOT_INVITE_SECRET fehlt')
   const { vn, nn, n, email } = normalizePilotInvitePayload(payload)
   if (!n) throw new Error('Name fehlt')
   const data = {
@@ -65,6 +78,8 @@ export function signPilotInviteToken(payload, secret) {
  * @returns {{ ok: true, data: object } | { ok: false, reason: 'bad_signature'|'malformed'|'expired' }}
  */
 export function verifyPilotInviteTokenWithReason(token, secret) {
+  token = normalizePilotInviteToken(token)
+  secret = trimPilotInviteSecret(secret)
   if (!token || !secret) return { ok: false, reason: 'bad_signature' }
   const dot = token.lastIndexOf('.')
   if (dot <= 0) return { ok: false, reason: 'malformed' }

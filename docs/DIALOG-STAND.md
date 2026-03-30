@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-Link: robuste Verifikation** – `normalizePilotInviteToken` / `trimPilotInviteSecret` (Whitespace, BOM) in **Signatur + API**; **validate-pilot-token:** optional **`PILOT_INVITE_SECRET_ALT`** bei `bad_signature`; Client normalisiert Token vor Fetch; Test: Token mit Zeilenumbruch. `.env.example` ergänzt. **Tests + Build grün.** **Commit:** (nach Push) ✅ auf GitHub
+
+**Was wir JETZT tun:** Push → Vercel **Production Ready** → **neue Einladung auf Live** erzeugen (oder Secret in Vercel = Mac + ggf. `PILOT_INVITE_SECRET_ALT` für alte Links); Link erneut öffnen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: kostenlose Pro++ ohne Ablaufdatum** – Neue Tokens: `l: propplus`, `p: 1` (Einladungslink läuft nicht ab); Verify-Fallback Lizenz: Pilot → `propplus`, sonst `proplus` (Legacy v2). **PilotEinladungPage:** `k2-pilot-einladung` mit `licenceType` + `pilotProPlusUnlimited`. **Admin:** `setKassabuchLizenzStufe` ök2/VK2 → `propplus` bei Pilot-Session; Banner-Text angepasst. E-Mail-HTML + Plaintext Fußzeile. Tests ergänzt. **Commit:** **4b0c3a1** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Push Vercel **Ready** → neuen Testpilot-Link erzeugen und Einladung + Admin (Kassa-Stufe) kurz prüfen.
