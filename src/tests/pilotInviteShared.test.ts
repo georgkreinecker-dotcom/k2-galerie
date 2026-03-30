@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { describe, it, expect, vi } from 'vitest'
 import { buildPilotInviteEmailPlainText } from '../../api/pilotInviteEmailBody.js'
+import { buildPilotInviteEmailHtml } from '../../api/pilotInviteEmailHtml.js'
 import {
   buildPilotEinladungUrl,
   buildPilotEinladungUrlQuery,
@@ -188,5 +189,21 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     })
     expect(t).toContain('VK2-Demo')
     expect(t).toContain('▶')
+  })
+
+  it('buildPilotInviteEmailHtml: Hallo, Button-Text, Link escapet', () => {
+    const url = 'https://x.example/p?t=abc&x=1'
+    const h = buildPilotInviteEmailHtml({
+      name: 'Alex Beispiel',
+      greetingName: 'Alex',
+      inviteUrl: url,
+      contextLabel: 'öffentliche Demo (ök2)',
+      inviteContext: 'oeffentlich',
+    })
+    expect(h).toContain('Hallo Alex')
+    expect(h).toContain('Jetzt Testpilot starten')
+    expect(h).toContain('#0d9488')
+    expect(h).toContain('href="https://x.example/p?t=abc&amp;x=1"')
+    expect(h).not.toContain('<script')
   })
 })

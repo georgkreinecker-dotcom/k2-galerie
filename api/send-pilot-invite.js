@@ -135,7 +135,7 @@ export default async function handler(req, res) {
 
   const resendKey = (process.env.RESEND_API_KEY || '').trim()
   const mailSubject = encodeURIComponent('Deine Testpilot-Einladung – K2 Galerie')
-  const mailBody = encodeURIComponent(
+  const mailBodyFull = encodeURIComponent(
     `${buildPilotInviteEmailPlainText({
       name: fullName,
       greetingName: firstName,
@@ -144,7 +144,22 @@ export default async function handler(req, res) {
       inviteContext: context,
     })}\n\nViel Erfolg!`,
   )
-  const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${mailBody}`
+  let mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${mailBodyFull}`
+  /** mailto: hat oft ~2000 Zeichen Limit – sonst leerer Body oder Roh-Chaos in der Mail-App */
+  let mailtoTruncated = false
+  if (mailtoUrl.length > 2200) {
+    mailtoTruncated = true
+    const plainShort = [
+      `Hallo ${firstName},`,
+      '',
+      'Der persönliche Testpilot-Link ist zu lang für „Mail-Programm öffnen“ (mailto).',
+      '',
+      'Bitte auf dieser Seite „Link kopieren“ nutzen und den Link in eine neue E-Mail einfügen – oder die .eml-Datei laden (siehe Button unter der Vorschau).',
+      '',
+      'Viel Erfolg!',
+    ].join('\n')
+    mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${encodeURIComponent(plainShort)}`
+  }
 
   if (resendKey) {
     const sendRes = await sendPilotInviteViaResend({
@@ -162,6 +177,8 @@ export default async function handler(req, res) {
         ok: true,
         sent: true,
         inviteUrl,
+        mailtoUrl,
+        mailtoTruncated,
         crossEnvSecretWarning,
         message: 'E-Mail wurde gesendet (Resend). Posteingang prüfen; ggf. Spam.',
       })
@@ -172,6 +189,7 @@ export default async function handler(req, res) {
       sent: false,
       inviteUrl,
       mailtoUrl,
+      mailtoTruncated,
       crossEnvSecretWarning,
       resendError: typeof sendRes.error === 'string' ? sendRes.error.slice(0, 400) : undefined,
       message:
@@ -184,6 +202,7 @@ export default async function handler(req, res) {
     sent: false,
     inviteUrl,
     mailtoUrl,
+    mailtoTruncated,
     crossEnvSecretWarning,
     message:
       'Kein RESEND_API_KEY auf dem Server – es wird keine E-Mail verschickt. Persönlichen Link unten kopieren oder „mailto“ öffnen. Für automatischen Versand: Vercel → RESEND_API_KEY (und RESEND_FROM) setzen.',

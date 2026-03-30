@@ -7,6 +7,8 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 import { LIZENZPREISE } from '../config/licencePricing'
 import TermWithExplanation from '../components/TermWithExplanation'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
+import { PilotInviteEmailPreview } from '../components/PilotInviteEmailPreview'
+import { downloadPilotInviteEml } from '../utils/pilotInviteEmlDownload'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { addGutschrift } from '../utils/empfehlerGutschrift'
 
@@ -119,6 +121,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
   } | null>(null)
   const [pilotInviteUrl, setPilotInviteUrl] = useState<string | null>(null)
   const [pilotInviteMailto, setPilotInviteMailto] = useState<string | null>(null)
+  const [pilotInviteMailtoTruncated, setPilotInviteMailtoTruncated] = useState(false)
   const [pilotInviteCrossEnvWarning, setPilotInviteCrossEnvWarning] = useState(false)
   const [pilotInviteCopied, setPilotInviteCopied] = useState(false)
   const [licencesPageIsLocalhost, setLicencesPageIsLocalhost] = useState(false)
@@ -256,6 +259,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
     setPilotInviteMsg(null)
     setPilotInviteUrl(null)
     setPilotInviteMailto(null)
+    setPilotInviteMailtoTruncated(false)
     setPilotInviteCrossEnvWarning(false)
     const fn = pilotInviteFirstName.trim()
     const ln = pilotInviteLastName.trim()
@@ -293,6 +297,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
       })
       if (typeof j.inviteUrl === 'string') setPilotInviteUrl(j.inviteUrl)
       if (typeof j.mailtoUrl === 'string') setPilotInviteMailto(j.mailtoUrl)
+      setPilotInviteMailtoTruncated(j.mailtoTruncated === true)
       setPilotInviteCrossEnvWarning(j.crossEnvSecretWarning === true)
     } catch {
       setPilotInviteMsg({ type: 'error', text: 'Netzwerkfehler – bitte später erneut.' })
@@ -430,45 +435,28 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
           <h2 style={{ fontSize: '1.05rem', margin: '0 0 0.35rem', color: 'var(--k2-text)' }}>
             ✉️ Testpilot:in per E-Mail einladen
           </h2>
-          <p style={{ fontSize: '0.85rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
-            Erzeugt immer einen persönlichen Link. <strong style={{ color: 'var(--k2-text)' }}>E-Mail vom Server</strong> nur,
-            wenn auf Vercel <code style={{ fontSize: '0.78rem' }}>RESEND_API_KEY</code> gesetzt ist – sonst Posteingang leer,
-            aber der Link unten funktioniert trotzdem. Pflicht:{' '}
-            <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code>
-            ; optional <code style={{ fontSize: '0.78rem' }}>RESEND_FROM</code> (Absender, Domain bei Resend verifiziert).
+          <p style={{ fontSize: '0.9rem', color: 'var(--k2-text)', margin: '0 0 0.75rem', lineHeight: 1.5, fontWeight: 600 }}>
+            Nach dem Absenden siehst du <strong>dieselbe Vorschau</strong> wie der Empfänger in der Einladungs-E-Mail (Button, Texte).
           </p>
-          <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.82rem', color: 'var(--k2-muted)', margin: '0 0 1rem' }}>
             <Link
               to="/k2team-handbuch?doc=26-TESTPILOT-EINLADUNG-EINRICHTUNG.md"
-              style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'underline' }}
+              style={{ color: 'var(--k2-accent)', fontWeight: 600 }}
             >
-              Einmal einrichten – vollständige Anleitung im Team-Handbuch
+              Technik einmal einrichten
             </Link>
-            {' '}(Schritt 1–3 bis alles wirklich funktioniert.)
+            {licencesPageIsLocalhost ? (
+              <>
+                {' · '}
+                <details style={{ display: 'inline' }}>
+                  <summary style={{ cursor: 'pointer', display: 'inline', color: 'var(--k2-muted)' }}>Hinweis APf localhost</summary>
+                  <span style={{ display: 'block', marginTop: '0.5rem', padding: '0.6rem', background: 'rgba(180, 83, 9, 0.1)', borderRadius: 8, fontSize: '0.8rem' }}>
+                    Senden geht an die Live-App ({BASE_APP_URL}). Lizenzen-Seite mit Pfad nutzen, nicht nur die Startseite.
+                  </span>
+                </details>
+              </>
+            ) : null}
           </p>
-          {licencesPageIsLocalhost ? (
-            <div
-              style={{
-                marginBottom: '1rem',
-                padding: '0.75rem 0.9rem',
-                borderRadius: 8,
-                background: 'rgba(180, 83, 9, 0.12)',
-                border: '1px solid rgba(180, 83, 9, 0.45)',
-                fontSize: '0.84rem',
-                color: 'var(--k2-text)',
-                lineHeight: 1.55,
-              }}
-            >
-              <strong>APf (localhost):</strong> „Einladung senden“ geht an die{' '}
-              <strong>Live-App</strong> ({BASE_APP_URL}) – dieselbe Signatur wie auf Vercel, der persönliche Link funktioniert
-              ohne Secret-Vergleich Mac vs. Vercel. Voraussetzung: kurz online (Internet). Optional kannst du die Einladung
-              weiterhin direkt im Browser auf der{' '}
-              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
-                Lizenzen-Seite
-              </Link>{' '}
-              erzeugen (nicht nur die Domain öffnen – ohne Pfad = Eingangstor Entdecken).
-            </div>
-          ) : null}
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Vorname *</label>
@@ -493,40 +481,9 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
               {pilotInviteBusy ? '…' : 'Einladung senden / Link erzeugen'}
             </button>
           </form>
-          {pilotInviteMsg && (
-            <div style={{ marginTop: '0.85rem' }}>
-              <p
-                style={{
-                  fontSize: '0.9rem',
-                  margin: 0,
-                  color:
-                    pilotInviteMsg.type === 'ok'
-                      ? 'rgba(95,251,241,0.95)'
-                      : pilotInviteMsg.type === 'warn'
-                        ? '#fbbf24'
-                        : '#f87171',
-                }}
-              >
-                {pilotInviteMsg.type === 'warn' ? '⚠️ ' : ''}
-                {pilotInviteMsg.text}
-              </p>
-              {pilotInviteMsg.detail ? (
-                <pre
-                  style={{
-                    marginTop: '0.5rem',
-                    fontSize: '0.72rem',
-                    color: 'var(--k2-muted)',
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    maxHeight: '6rem',
-                    overflow: 'auto',
-                  }}
-                >
-                  {pilotInviteMsg.detail}
-                </pre>
-              ) : null}
-            </div>
-          )}
+          {pilotInviteMsg && pilotInviteMsg.type === 'error' ? (
+            <p style={{ marginTop: '0.85rem', fontSize: '0.9rem', margin: 0, color: '#f87171' }}>{pilotInviteMsg.text}</p>
+          ) : null}
           {pilotInviteCrossEnvWarning ? (
             <div
               style={{
@@ -546,57 +503,141 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
               (Link öffnen) fehl. Entweder Secret angleichen oder Einladung direkt auf der Live-Seite erneut erzeugen.
             </div>
           ) : null}
-          {pilotInviteUrl && (
-            <div style={{ marginTop: '0.75rem', fontSize: '0.82rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
-              <strong style={{ color: 'var(--k2-text)', width: '100%' }}>Einladung:</strong>
-              <a
-                href={pilotInviteUrl}
+          {pilotInviteUrl ? (
+            <div style={{ marginTop: '1rem' }}>
+              <h3
                 style={{
-                  display: 'inline-block',
-                  padding: '0.5rem 0.9rem',
-                  background: '#b54a1e',
-                  color: '#fff',
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Persönlichen Link öffnen (Testpilot)
-              </a>
-              <button
-                type="button"
-                className="btn"
-                onClick={() => {
-                  void navigator.clipboard.writeText(pilotInviteUrl).then(
-                    () => {
-                      setPilotInviteCopied(true)
-                      window.setTimeout(() => setPilotInviteCopied(false), 2000)
-                    },
-                    () => {
-                      /* z. B. unsicherer Kontext: Link bleibt über den orangen Button nutzbar */
-                    }
-                  )
-                }}
-                style={{
-                  padding: '0.45rem 0.75rem',
-                  fontSize: '0.8rem',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  fontSize: '1.05rem',
+                  margin: '0 0 0.75rem',
+                  textAlign: 'center',
                   color: 'var(--k2-text)',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontWeight: 600,
+                  fontWeight: 700,
                 }}
               >
-                {pilotInviteCopied ? '✓ Kopiert' : 'Link kopieren'}
-              </button>
+                So sieht die E-Mail beim Empfänger aus
+              </h3>
+              <PilotInviteEmailPreview
+                inviteUrl={pilotInviteUrl}
+                greetingName={pilotInviteFirstName.trim()}
+                inviteContext={pilotInviteContext}
+              />
+              {pilotInviteMsg && pilotInviteMsg.type !== 'error' ? (
+                <p
+                  style={{
+                    marginTop: '0.75rem',
+                    fontSize: '0.82rem',
+                    textAlign: 'center',
+                    color: pilotInviteMsg.type === 'warn' ? '#fbbf24' : 'rgba(95,251,241,0.85)',
+                  }}
+                >
+                  {pilotInviteMsg.type === 'warn' ? '⚠️ ' : '✅ '}
+                  {pilotInviteMsg.type === 'warn'
+                    ? 'Kein automatischer Versand – die Vorschau oben ist trotzdem der gültige Link.'
+                    : 'Einladung wurde per E-Mail mitgeschickt (wenn der Server-Versand aktiv ist).'}
+                </p>
+              ) : null}
+              <details style={{ marginTop: '0.75rem', fontSize: '0.82rem', color: 'var(--k2-muted)' }}>
+                <summary style={{ cursor: 'pointer', color: 'var(--k2-muted)' }}>
+                  Link kopieren, .eml mit Layout oder Mail-Programm (nur Klartext)
+                </summary>
+                <p style={{ margin: '0.5rem 0 0.65rem', lineHeight: 1.55, color: 'var(--k2-text)' }}>
+                  <strong>„Mail-Programm öffnen“</strong> nutzt mailto – das ist <strong>immer nur Text</strong>, kein HTML. Deshalb siehst du dort <strong>keinen grünen Button</strong> wie in der Vorschau. Automatisch „raus“ geht nur mit <strong>Resend</strong> auf Vercel (
+                  <code style={{ fontSize: '0.75rem' }}>RESEND_API_KEY</code>
+                  ).
+                </p>
+                <p style={{ margin: '0 0 0.65rem', lineHeight: 1.55, color: 'var(--k2-text)' }}>
+                  <strong>Layout wie oben:</strong> Datei laden und per Doppelklick öffnen (z. B. Apple Mail) – dann erscheint der Button.
+                </p>
+                {pilotInviteMailtoTruncated ? (
+                  <p
+                    style={{
+                      margin: '0 0 0.65rem',
+                      padding: '0.5rem 0.65rem',
+                      borderRadius: 8,
+                      background: 'rgba(251,191,36,0.12)',
+                      border: '1px solid rgba(251,191,36,0.35)',
+                      color: 'var(--k2-text)',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Der Einladungslink war zu lang für mailto – im Mail-Programm steht nur ein Kurztext. Bitte <strong>Link kopieren</strong> oder <strong>.eml</strong> nutzen.
+                  </p>
+                ) : null}
+                <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      void navigator.clipboard.writeText(pilotInviteUrl).then(
+                        () => {
+                          setPilotInviteCopied(true)
+                          window.setTimeout(() => setPilotInviteCopied(false), 2000)
+                        },
+                        () => {}
+                      )
+                    }}
+                    style={{
+                      padding: '0.45rem 0.75rem',
+                      fontSize: '0.8rem',
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      color: 'var(--k2-text)',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {pilotInviteCopied ? '✓ Kopiert' : 'Link kopieren'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() =>
+                      downloadPilotInviteEml({
+                        toEmail: pilotInviteEmail.trim().toLowerCase(),
+                        firstName: pilotInviteFirstName.trim(),
+                        lastName: pilotInviteLastName.trim(),
+                        inviteUrl: pilotInviteUrl,
+                        inviteContext: pilotInviteContext,
+                      })
+                    }
+                    style={{
+                      padding: '0.45rem 0.75rem',
+                      fontSize: '0.8rem',
+                      background: '#0d9488',
+                      border: 'none',
+                      color: '#fff',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Mail mit Layout (.eml laden)
+                  </button>
+                  {pilotInviteMailto ? (
+                    <a href={pilotInviteMailto} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>
+                      Mail-Programm (nur Text)
+                    </a>
+                  ) : null}
+                </div>
+                {pilotInviteMsg?.detail ? (
+                  <pre
+                    style={{
+                      marginTop: '0.5rem',
+                      fontSize: '0.7rem',
+                      color: 'var(--k2-muted)',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      maxHeight: '5rem',
+                      overflow: 'auto',
+                    }}
+                  >
+                    {pilotInviteMsg.detail}
+                  </pre>
+                ) : null}
+              </details>
             </div>
-          )}
-          {pilotInviteMailto && (
-            <p style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-              <a href={pilotInviteMailto} style={{ color: 'var(--k2-accent)', fontWeight: 600 }}>E-Mail-Programm öffnen (mailto)</a>
-            </p>
-          )}
+          ) : null}
         </section>
 
         {/* LIZENZ VERGEBEN + EMPFEHLUNGSPROGRAMM */}
