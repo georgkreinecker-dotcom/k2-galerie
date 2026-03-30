@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: „kein grüner Button“ = meist mailto/Entwurf, nicht Resend:** Apple-Mail-Screenshot zeigte **Neue Nachricht** mit nur Text – typisch für **mailto** („Mail-Programm“), nicht für die **Posteingangs-Mail** von Resend (die hat HTML). **LicencesPage:** grüner Erfolgskasten um Abschnitt **Verwechslung** ergänzt; bei erfolgreichem Versand Hinweis in Details + Link-Text **„nicht die Resend-Mail“**. **Tests + Build grün.** **Commit:** **f7bed08**
+**Letzter Stand:** 30.03.26 – **Testpilot: „kein grüner Button“ = meist mailto/Entwurf, nicht Resend:** Apple-Mail-Screenshot zeigte **Neue Nachricht** mit nur Text – typisch für **mailto** („Mail-Programm“), nicht für die **Posteingangs-Mail** von Resend (die hat HTML). **LicencesPage:** grüner Erfolgskasten um Abschnitt **Verwechslung** ergänzt; bei erfolgreichem Versand Hinweis in Details + Link-Text **„nicht die Resend-Mail“**. **Tests + Build grün.** **Commit:** **8eef9eb** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
