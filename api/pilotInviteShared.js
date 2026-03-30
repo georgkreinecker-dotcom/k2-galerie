@@ -300,20 +300,30 @@ export async function sendPilotInviteViaResend({
     : 'Du landest direkt in den Einstellungen (Stammdaten). Von dort aus öffnest du die öffentliche Demo.'
   const hallo = String(greetingName || name || '').trim() || 'Testpilot:in'
   const text = buildPilotInviteEmailPlainText({ name, greetingName, inviteUrl, contextLabel, inviteContext })
+  const hrefEsc = escapeHtml(String(inviteUrl))
   const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#1a1a1a;max-width:560px;">
+    <p style="margin:0 0 12px;font-size:13px;color:#555">Siehst du keinen grünen Button? Dann zeigt dein Programm nur die Text-Version – unten steht derselbe Link zum Antippen.</p>
     <p>Hallo ${escapeHtml(hallo)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
     <p><strong>Wichtig:</strong> Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Einladung ist mit Vorname, Nachname und E-Mail abgestimmt. Was du siehst, sind <strong>Muster-Daten</strong> – zum Ausprobieren.</p>
     <p><strong>So gehst du vor:</strong></p>
     <ol>
-      <li>Den Button unten anklicken (oder die Adresse unter dem Button kopieren).</li>
+      <li>Zuerst den grünen Button hier unten (oder den Link darunter).</li>
       <li>Auf der Einladungsseite den Button <strong>„${escapeHtml(demoButton)}“</strong> wählen.</li>
       <li>${escapeHtml(nachDemo)}</li>
       <li>Optional: in der Demo oben <strong>„Admin“</strong> – Werke, Design, Kasse nur zum Ausprobieren (Muster).</li>
     </ol>
-    <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
-    <p style="color:#666;font-size:12px">Der Link ist personalisiert; für Testpilot:innen Pro++ ohne Ablaufdatum – der Link selbst bleibt gültig.</p>
-    <p style="color:#666;font-size:12px">Direktlink (falls der Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">diesen Link</a> – gleiche Adresse wie der Button (nicht den sichtbaren Text aus einer umbrochenen Zeile kopieren).</p>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:18px 0 14px;">
+      <tr>
+        <td align="left" bgcolor="#0d9488" style="border-radius:8px;mso-padding-alt:12px 20px;">
+          <a href="${hrefEsc}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:12px 20px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;border-radius:8px;background-color:#0d9488;">Jetzt Testpilot starten</a>
+        </td>
+      </tr>
+    </table>
+    <p style="color:#666;font-size:12px;margin:0 0 10px">Der Link ist personalisiert; für Testpilot:innen Pro++ ohne Ablaufdatum – der Link selbst bleibt gültig.</p>
+    <p style="color:#666;font-size:12px;margin:0">Falls der Button nicht reagiert: <a href="${hrefEsc}" style="color:#0d9488;font-weight:600">diesen Link</a> – gleiche Adresse (nicht aus einer umgebrochenen Zeile kopieren).</p>
+    </div>
   `
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
