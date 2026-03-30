@@ -154,6 +154,48 @@ export function buildPilotEinladungUrl(baseUrl, token) {
   return `${base}/p/${encodeURIComponent(token)}`
 }
 
+/** Standard-Öffentlichkeits-URL für Einladungslinks (Handy, Safari, externe Empfänger). */
+const PILOT_INVITE_DEFAULT_PUBLIC_BASE = 'https://k2-galerie.vercel.app'
+
+/**
+ * Basis-URL für Testpilot-Einladungslinks in E-Mail und API-Antwort.
+ * – PILOT_INVITE_PUBLIC_BASE_URL setzen zum Überschreiben (z. B. nur lokal testen: http://localhost:5177)
+ * – Ohne gesetzte Variable: Aufruf vom lokalen Dev-Server → feste Production-URL, damit Empfänger nicht localhost im Link haben
+ * – Sonst: wie bisher aus Host / VITE_APP_URL / VERCEL_URL
+ * @param {import('http').IncomingMessage} req
+ */
+export function getPilotInviteLinkBaseUrl(req) {
+  const forced = (typeof process !== 'undefined' && process.env?.PILOT_INVITE_PUBLIC_BASE_URL
+    ? String(process.env.PILOT_INVITE_PUBLIC_BASE_URL)
+    : ''
+  ).trim()
+  if (forced.startsWith('http')) return forced.replace(/\/$/, '')
+
+  const hostHeader = (req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim()
+  let hostname = ''
+  if (hostHeader) {
+    try {
+      hostname = new URL(`http://${hostHeader}`).hostname.toLowerCase()
+    } catch {
+      hostname = hostHeader.split(':')[0].toLowerCase()
+    }
+  }
+  const isLocal =
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '[::1]' ||
+    hostname === '::1'
+  if (isLocal) return PILOT_INVITE_DEFAULT_PUBLIC_BASE.replace(/\/$/, '')
+
+  const envUrl = (typeof process !== 'undefined' && process.env?.VITE_APP_URL ? String(process.env.VITE_APP_URL) : '').trim()
+  if (envUrl.startsWith('http')) return envUrl.replace(/\/$/, '')
+  if (typeof process !== 'undefined' && process.env?.VERCEL_URL) {
+    return `https://${String(process.env.VERCEL_URL).replace(/\/$/, '')}`
+  }
+  const proto = (req.headers?.['x-forwarded-proto'] || 'https').split(',')[0].trim()
+  return `${proto}://${hostHeader || 'k2-galerie.vercel.app'}`.replace(/\/$/, '')
+}
+
 /**
  * Resend REST (optional)
  * @returns {Promise<{ ok: boolean, error?: string }>}
@@ -169,7 +211,20 @@ export async function sendPilotInviteViaResend({
   if (!resendKey) return { ok: false, error: 'Kein RESEND_API_KEY' }
   const from = resendFrom || 'K2 Galerie <onboarding@resend.dev>'
   const subject = 'Deine Testpilot-Einladung – K2 Galerie'
-  const shortUrl = inviteUrl.length > 120 ? `${inviteUrl.slice(0, 70)}...` : inviteUrl
+  const text = [
+    `Hallo ${name},`,
+    '',
+    `du bist als Testpilot:in für die K2 Galerie eingeladen (${contextLabel}).`,
+    '',
+    'So startest du:',
+    '1) Auf den Link unten tippen oder die URL kopieren.',
+    '2) Auf der Seite „Weiter zur Demo“ wählen.',
+    '3) Bei Bedarf „Admin“ öffnen.',
+    '',
+    inviteUrl,
+    '',
+    'Link ist personalisiert und einige Wochen gültig.',
+  ].join('\n')
   const html = `
     <p>Hallo ${escapeHtml(name)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
@@ -181,7 +236,7 @@ export async function sendPilotInviteViaResend({
     </ol>
     <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
     <p style="color:#666;font-size:12px">Link ist personalisiert und einige Wochen gültig.</p>
-    <p style="color:#666;font-size:12px">Direktlink (falls Button nicht geht): ${escapeHtml(shortUrl)}</p>
+    <p style="color:#666;font-size:12px;word-break:break-all">Direktlink (falls Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">${escapeHtml(inviteUrl)}</a></p>
   `
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -194,6 +249,7 @@ export async function sendPilotInviteViaResend({
       to: [toEmail],
       subject,
       html,
+      text,
     }),
   })
   if (!r.ok) {

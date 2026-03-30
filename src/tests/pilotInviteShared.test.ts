@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import {
   buildPilotEinladungUrl,
+  getPilotInviteLinkBaseUrl,
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
   signPilotInviteToken,
@@ -37,11 +38,26 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(isPilotInviteAllowedOrigin(origin, '', req as any)).toBe(false)
   })
 
-  it('buildPilotEinladungUrl nutzt kurzen Query-Key t', () => {
+  it('buildPilotEinladungUrl: kurzer Pfad /p/… ohne Query', () => {
     const url = buildPilotEinladungUrl('https://k2-galerie.vercel.app', 'abc123')
     expect(url).toContain('/p/abc123')
     expect(url.includes('token=')).toBe(false)
     expect(url.includes('?t=')).toBe(false)
+  })
+
+  it('getPilotInviteLinkBaseUrl: Dev localhost → feste Production-URL für E-Mails', () => {
+    const req = { headers: { host: 'localhost:5177' } }
+    expect(getPilotInviteLinkBaseUrl(req as any)).toBe('https://k2-galerie.vercel.app')
+  })
+
+  it('getPilotInviteLinkBaseUrl: PILOT_INVITE_PUBLIC_BASE_URL überschreibt', () => {
+    vi.stubEnv('PILOT_INVITE_PUBLIC_BASE_URL', 'http://localhost:7777')
+    try {
+      const req = { headers: { host: 'localhost:5177' } }
+      expect(getPilotInviteLinkBaseUrl(req as any)).toBe('http://localhost:7777')
+    } finally {
+      vi.unstubAllEnvs()
+    }
   })
 
   it('sign/verify mit kompaktem Token (v2)', () => {

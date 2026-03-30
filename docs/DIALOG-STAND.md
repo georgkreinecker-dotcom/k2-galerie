@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail: kein Monsterlink-Bruch, kein localhost für Empfänger:** `getPilotInviteLinkBaseUrl` – von **localhost-Dev** zeigt der Link standardmäßig auf **`https://k2-galerie.vercel.app/p/…`** (überschreibbar mit `PILOT_INVITE_PUBLIC_BASE_URL`). Resend: **kein** gekürzter Footer-Link mehr (war Safari/kopierbar kaputt), **Plaintext `text`** mit vollem URL, HTML-Direktlink mit `word-break`. **Commit:** **e843066** ✅ auf GitHub
+
+**Was wir JETZT tun:** Push → **erneut Einladung senden**; Mail zeigt `…/p/<Token>` (kurz vs. altem `?token=`). Auf Vercel weiterhin **gleiches `PILOT_INVITE_SECRET`** wie lokal zum Signieren.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-Link jetzt wirklich kurz + klickbar:** Einladung nutzt ab sofort den Pfad **`/p/<token>`** (statt Query), `PilotEinladungPage` liest Token aus Route-Param oder Query (rückwärtskompatibel). Beim lokalen Test bleibt die Basis ohne `PILOT_INVITE_PUBLIC_BASE_URL` auf dem lokalen Host, damit Klick direkt funktioniert; mit gesetzter `PILOT_INVITE_PUBLIC_BASE_URL` wird diese bevorzugt (für externe Empfänger).
 
 **Was wir JETZT tun:** Nach Deploy/Reload erneut Einladung senden und den neuen Kurzlink (`/p/...`) anklicken.

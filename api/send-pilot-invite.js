@@ -11,20 +11,9 @@ import {
   isPilotInviteAllowedOrigin,
   isValidPilotInviteEmail,
   buildPilotEinladungUrl,
+  getPilotInviteLinkBaseUrl,
   sendPilotInviteViaResend,
 } from './pilotInviteShared.js'
-
-function baseUrlFromReq(req) {
-  const forcedUrl = (process.env.PILOT_INVITE_PUBLIC_BASE_URL || '').trim()
-  if (forcedUrl.startsWith('http')) return forcedUrl.replace(/\/$/, '')
-  const envUrl = (process.env.VITE_APP_URL || process.env.VERCEL_URL || '').trim()
-  if (envUrl.startsWith('http')) return envUrl.replace(/\/$/, '')
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`.replace(/\/$/, '')
-  const host = req.headers.host || 'k2-galerie.vercel.app'
-  // Lokal testen: ohne explizite Public-URL den lokalen Host verwenden, damit der Klick sofort funktioniert.
-  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim()
-  return `${proto}://${host}`.replace(/\/$/, '')
-}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -68,7 +57,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Token konnte nicht erstellt werden.' })
   }
 
-  const base = baseUrlFromReq(req)
+  const base = getPilotInviteLinkBaseUrl(req)
   const inviteUrl = buildPilotEinladungUrl(base, token)
 
   const contextLabel = context === 'vk2' ? 'VK2 Vereins-Demo' : 'öffentliche Demo (ök2)'
