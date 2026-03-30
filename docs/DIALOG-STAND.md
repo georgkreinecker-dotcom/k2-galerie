@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: Vorschau = exakt dieselbe HTML wie die Mail:** Bisher zweigleisig (React-Karte vs. `buildPilotInviteEmailHtml`) → Drift-Risiko. Jetzt: **PilotInviteEmailPreview** rendert **nur** den String aus **buildPilotInviteEmailHtml**; äußere Karten-Styles (Padding, Rand, Schatten) in **pilotInviteEmailHtml.js** – **eine Quelle** für Vorschau, Resend, .eml. **Tests + Build grün.** **Commit:** **328ad9a** ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Testpilot: Vorschau = exakt dieselbe HTML wie die Mail:** Bisher zweigleisig (React-Karte vs. `buildPilotInviteEmailHtml`) → Drift-Risiko. Jetzt: **PilotInviteEmailPreview** rendert **nur** den String aus **buildPilotInviteEmailHtml**; äußere Karten-Styles (Padding, Rand, Schatten) in **pilotInviteEmailHtml.js** – **eine Quelle** für Vorschau, Resend, .eml. **Tests + Build grün.** **Commit:** **116fc36** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: kurz prüfen – Ansicht Lizenzen = HTML der gesendeten Mail (bei Resend)
 
