@@ -76,6 +76,16 @@ export default async function handler(req, res) {
   const base = getPilotInviteLinkBaseUrl(req).replace(/\/$/, '')
   const inviteUrl = `${base}/p?t=${encodeURIComponent(token)}`
 
+  let signHost = ''
+  try {
+    signHost = new URL(origin || 'http://localhost').hostname
+  } catch {
+    signHost = ''
+  }
+  /** Link zeigt auf Production, Signatur lief von localhost → gleiches PILOT_INVITE_SECRET nötig, sonst /p ungültig */
+  const crossEnvSecretWarning =
+    base.includes('k2-galerie.vercel.app') && (signHost === 'localhost' || signHost === '127.0.0.1')
+
   const contextLabel = context === 'vk2' ? 'VK2 Vereins-Demo' : 'öffentliche Demo (ök2)'
 
   const resendKey = (process.env.RESEND_API_KEY || '').trim()
@@ -107,6 +117,7 @@ export default async function handler(req, res) {
         ok: true,
         sent: true,
         inviteUrl,
+        crossEnvSecretWarning,
         message: 'E-Mail wurde gesendet (Resend). Posteingang prüfen; ggf. Spam.',
       })
     }
@@ -116,6 +127,7 @@ export default async function handler(req, res) {
       sent: false,
       inviteUrl,
       mailtoUrl,
+      crossEnvSecretWarning,
       resendError: typeof sendRes.error === 'string' ? sendRes.error.slice(0, 400) : undefined,
       message:
         'Resend hat die E-Mail nicht angenommen – Link unten nutzen oder mailto. In Vercel: RESEND_API_KEY / RESEND_FROM prüfen (Domain bei Resend verifiziert?).',
@@ -127,6 +139,7 @@ export default async function handler(req, res) {
     sent: false,
     inviteUrl,
     mailtoUrl,
+    crossEnvSecretWarning,
     message:
       'Kein RESEND_API_KEY auf dem Server – es wird keine E-Mail verschickt. Persönlichen Link unten kopieren oder „mailto“ öffnen. Für automatischen Versand: Vercel → RESEND_API_KEY (und RESEND_FROM) setzen.',
   })

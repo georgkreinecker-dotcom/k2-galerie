@@ -116,9 +116,16 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
   } | null>(null)
   const [pilotInviteUrl, setPilotInviteUrl] = useState<string | null>(null)
   const [pilotInviteMailto, setPilotInviteMailto] = useState<string | null>(null)
+  const [pilotInviteCrossEnvWarning, setPilotInviteCrossEnvWarning] = useState(false)
+  const [licencesPageIsLocalhost, setLicencesPageIsLocalhost] = useState(false)
 
   useEffect(() => {
     setGrants(loadGrants())
+  }, [])
+
+  useEffect(() => {
+    const h = window.location.hostname
+    setLicencesPageIsLocalhost(h === 'localhost' || h === '127.0.0.1')
   }, [])
 
   async function loadOnlineData() {
@@ -230,6 +237,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
     setPilotInviteMsg(null)
     setPilotInviteUrl(null)
     setPilotInviteMailto(null)
+    setPilotInviteCrossEnvWarning(false)
     const fn = pilotInviteFirstName.trim()
     const ln = pilotInviteLastName.trim()
     const em = pilotInviteEmail.trim().toLowerCase()
@@ -265,6 +273,7 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
       })
       if (typeof j.inviteUrl === 'string') setPilotInviteUrl(j.inviteUrl)
       if (typeof j.mailtoUrl === 'string') setPilotInviteMailto(j.mailtoUrl)
+      setPilotInviteCrossEnvWarning(j.crossEnvSecretWarning === true)
     } catch {
       setPilotInviteMsg({ type: 'error', text: 'Netzwerkfehler – bitte später erneut.' })
     } finally {
@@ -417,6 +426,26 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
             </Link>
             {' '}(Schritt 1–3 bis alles wirklich funktioniert.)
           </p>
+          {licencesPageIsLocalhost ? (
+            <div
+              style={{
+                marginBottom: '1rem',
+                padding: '0.75rem 0.9rem',
+                borderRadius: 8,
+                background: 'rgba(180, 83, 9, 0.12)',
+                border: '1px solid rgba(180, 83, 9, 0.45)',
+                fontSize: '0.84rem',
+                color: 'var(--k2-text)',
+                lineHeight: 1.55,
+              }}
+            >
+              <strong>localhost:</strong> Der Einladungslink zeigt trotzdem auf die Live-Adresse k2-galerie.vercel.app. Der
+              Wert <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> muss dort (Vercel → Production){' '}
+              <strong>exakt</strong> derselbe sein wie in deiner Projekt-<code style={{ fontSize: '0.78rem' }}>.env</code> –
+              sonst ist der Link nach dem Klick ungültig. Am zuverlässigsten: Lizenzen-Seite auf der Live-Seite öffnen und
+              die Einladung dort erzeugen.
+            </div>
+          ) : null}
           <form onSubmit={handlePilotInviteSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '420px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--k2-muted)', marginBottom: '0.25rem' }}>Vorname *</label>
@@ -475,6 +504,25 @@ export default function LicencesPage({ embeddedInMok2Layout }: LicencesPageProps
               ) : null}
             </div>
           )}
+          {pilotInviteCrossEnvWarning ? (
+            <div
+              style={{
+                marginTop: '0.85rem',
+                padding: '0.75rem 0.9rem',
+                borderRadius: 8,
+                background: 'rgba(220, 38, 38, 0.1)',
+                border: '1px solid rgba(220, 38, 38, 0.35)',
+                fontSize: '0.84rem',
+                color: 'var(--k2-text)',
+                lineHeight: 1.55,
+              }}
+            >
+              <strong>Achtung – gleiches Geheimnis nötig:</strong> Diese Einladung wurde von <strong>localhost</strong>{' '}
+              erzeugt, der Link führt aber auf <strong>k2-galerie.vercel.app</strong>. Ohne identisches{' '}
+              <code style={{ fontSize: '0.78rem' }}>PILOT_INVITE_SECRET</code> in Vercel (Production) schlägt Schritt 2
+              (Link öffnen) fehl. Entweder Secret angleichen oder Einladung direkt auf der Live-Seite erneut erzeugen.
+            </div>
+          ) : null}
           {pilotInviteUrl && (
             <div style={{ marginTop: '0.75rem', fontSize: '0.82rem' }}>
               <strong style={{ color: 'var(--k2-text)' }}>Einladung:</strong>{' '}

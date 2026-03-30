@@ -2,7 +2,7 @@
  * GET /api/validate-pilot-token?t=... – prüft Token (ohne Geheimnis preiszugeben).
  * Rückwärtskompatibel auch mit ?token=
  */
-import { verifyPilotInviteToken } from './pilotInviteShared.js'
+import { verifyPilotInviteTokenWithReason } from './pilotInviteShared.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -31,10 +31,32 @@ export default async function handler(req, res) {
     return res.status(400).json({ valid: false, error: 'token fehlt' })
   }
 
-  const data = verifyPilotInviteToken(token, secret)
-  if (!data) {
-    return res.status(200).json({ valid: false, error: 'Ungültiger oder abgelaufener Link.' })
+  const vr = verifyPilotInviteTokenWithReason(token, secret)
+  if (!vr.ok) {
+    const reason = vr.reason
+    const error =
+      reason === 'expired'
+        ? 'Dieser Einladungslink ist abgelaufen (über 30 Tage).'
+        : reason === 'malformed'
+          ? 'Der Link ist unvollständig oder beschädigt.'
+          : 'Ungültiger Link – Prüfung fehlgeschlagen.'
+    const code = reason === 'expired' ? 'EXPIRED' : reason === 'malformed' ? 'MALFORMED' : 'INVALID'
+    const hint =
+      reason === 'bad_signature'
+        ? 'Häufig: Die Einladung wurde auf localhost erzeugt, der Link zeigt aber auf k2-galerie.vercel.app. Dann muss PILOT_INVITE_SECRET in Vercel (Production) exakt dieselbe Zeichenkette sein wie in der Projekt-.env auf dem Mac. Zuverlässig: Lizenzen direkt auf https://k2-galerie.vercel.app öffnen und die Einladung dort erzeugen.'
+        : reason === 'expired'
+          ? 'Bitte unter APf → Lizenzen einen neuen Testpilot-Link erzeugen.'
+          : reason === 'malformed'
+            ? 'Bitte den Link aus der E-Mail vollständig nutzen oder einen neuen Link erzeugen.'
+            : undefined
+    return res.status(200).json({
+      valid: false,
+      error,
+      code,
+      ...(hint ? { hint } : {}),
+    })
   }
+  const data = vr.data
 
   return res.status(200).json({
     valid: true,

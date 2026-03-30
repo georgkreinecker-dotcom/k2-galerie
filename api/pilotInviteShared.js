@@ -58,44 +58,56 @@ export function signPilotInviteToken(payload, secret) {
 /**
  * @param {string} token
  * @param {string} secret
- * @returns {object|null}
+ * @returns {{ ok: true, data: object } | { ok: false, reason: 'bad_signature'|'malformed'|'expired' }}
  */
-export function verifyPilotInviteToken(token, secret) {
-  if (!token || !secret) return null
+export function verifyPilotInviteTokenWithReason(token, secret) {
+  if (!token || !secret) return { ok: false, reason: 'bad_signature' }
   const dot = token.lastIndexOf('.')
-  if (dot <= 0) return null
+  if (dot <= 0) return { ok: false, reason: 'malformed' }
   const payloadStr = token.slice(0, dot)
   const sig = token.slice(dot + 1)
   const expected = crypto.createHmac('sha256', secret).update(payloadStr).digest('base64url')
   try {
     const a = Buffer.from(sig, 'utf8')
     const b = Buffer.from(expected, 'utf8')
-    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return { ok: false, reason: 'bad_signature' }
   } catch {
-    return null
+    return { ok: false, reason: 'bad_signature' }
   }
   let data
   try {
     data = JSON.parse(Buffer.from(payloadStr, 'base64url').toString('utf8'))
   } catch {
-    return null
+    return { ok: false, reason: 'malformed' }
   }
   const exp = Number(data.x ?? data.exp ?? 0)
-  if (exp && Math.floor(Date.now() / 1000) > exp) return null
+  if (exp && Math.floor(Date.now() / 1000) > exp) return { ok: false, reason: 'expired' }
   const vn = String(data.vn ?? '').trim()
   const nn = String(data.nn ?? '').trim()
   const nameFromParts = [vn, nn].filter(Boolean).join(' ').trim()
   const name = nameFromParts || String(data.n ?? data.name ?? '').trim()
-  // Backward-compatible Normalisierung (v1/v2 nur n; v3 vn/nn/e)
   return {
-    name,
-    firstName: vn,
-    lastName: nn,
-    email: String(data.e ?? data.email ?? '').trim().toLowerCase(),
-    context: data.c === 'vk2' || data.context === 'vk2' ? 'vk2' : 'oeffentlich',
-    licenceType: String(data.l ?? data.licenceType ?? 'proplus'),
-    exp,
+    ok: true,
+    data: {
+      name,
+      firstName: vn,
+      lastName: nn,
+      email: String(data.e ?? data.email ?? '').trim().toLowerCase(),
+      context: data.c === 'vk2' || data.context === 'vk2' ? 'vk2' : 'oeffentlich',
+      licenceType: String(data.l ?? data.licenceType ?? 'proplus'),
+      exp,
+    },
   }
+}
+
+/**
+ * @param {string} token
+ * @param {string} secret
+ * @returns {object|null}
+ */
+export function verifyPilotInviteToken(token, secret) {
+  const r = verifyPilotInviteTokenWithReason(token, secret)
+  return r.ok ? r.data : null
 }
 
 /**

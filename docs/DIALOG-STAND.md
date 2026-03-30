@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot Schritt 2 (Link öffnen): Ursache oft localhost vs. Vercel** – Token wird mit `PILOT_INVITE_SECRET` signiert; Link zeigt auf k2-galerie.vercel.app → Prüfung nutzt Vercel-Secret. **Ohne identisches Secret** schlägt `/p` fehl. **Fix im Code:** `verifyPilotInviteTokenWithReason` + API `hint` bei bad_signature; **Lizenzen:** Hinweisbox auf localhost + **roter Kasten** wenn Einladung von localhost bei Vercel-Link erzeugt; `send-pilot-invite` liefert `crossEnvSecretWarning`. **Zuverlässig:** Einladung auf **Live-Lizenzen** erzeugen **oder** Secret in Vercel = `.env` (Production). **Commit:** (nach Push) ✅ auf GitHub
+
+**Was wir JETZT tun:** Nach Deploy **Live** Lizenzen → Testpilot → Link testen; optional lokal Secret mit Vercel angleichen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: Named-Export aus `pilotInviteShared.js` entfernt** – `buildPilotInviteEmailPlainText` kommt **nur** aus `api/pilotInviteEmailBody.js` (`send-pilot-invite`, intern Resend in Shared, Tests). **Kein** `export { buildPilotInviteEmailPlainText }` mehr in Shared (manche Laufzeiten meldeten weiterhin „does not provide an export named …“). **Tests + Build grün.** **Commit:** **2d28e02** ✅ auf GitHub
 
 **Was wir JETZT tun:** **Cursor: Dev-Server einmal stoppen und `npm run dev` neu starten** → Lizenzen → **Einladung senden**; nach Vercel **Ready** auf **k2-galerie.vercel.app** dasselbe (Stand-Badge/Deploy prüfen).

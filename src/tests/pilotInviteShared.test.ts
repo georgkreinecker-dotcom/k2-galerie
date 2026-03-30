@@ -9,6 +9,7 @@ import {
   isPilotInviteAllowedOrigin,
   signPilotInviteToken,
   verifyPilotInviteToken,
+  verifyPilotInviteTokenWithReason,
 } from '../../api/pilotInviteShared.js'
 
 describe('pilotInviteShared – Testpilot-API Origin', () => {
@@ -80,6 +81,16 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     expect(verified?.lastName).toBe('Kreinecker')
     expect(verified?.email).toBe('g@example.com')
     expect(verified?.context).toBe('oeffentlich')
+  })
+
+  it('verifyPilotInviteTokenWithReason: falsches Secret → bad_signature', () => {
+    const token = signPilotInviteToken(
+      { firstName: 'A', lastName: 'B', email: 'a@b.c', context: 'oeffentlich' },
+      'secret-a',
+    )
+    const r = verifyPilotInviteTokenWithReason(token, 'secret-b')
+    expect(r.ok).toBe(false)
+    if (!r.ok) expect(r.reason).toBe('bad_signature')
   })
 
   it('verify: altes v2-Token (nur n, ohne vn/nn/e) noch lesbar', () => {

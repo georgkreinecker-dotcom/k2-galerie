@@ -36,11 +36,13 @@ export default function PilotEinladungPage() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [errorHint, setErrorHint] = useState<string | null>(null)
   const [data, setData] = useState<ValidateOk | null>(null)
 
   useEffect(() => {
     if (!token) {
       setLoading(false)
+      setErrorHint(null)
       setError('Kein Einladungslink – bitte den Link aus der E-Mail vollständig nutzen.')
       return
     }
@@ -51,6 +53,7 @@ export default function PilotEinladungPage() {
       .then((j) => {
         if (cancelled) return
         if (j.valid === true && j.name) {
+          setErrorHint(null)
           setData({
             valid: true,
             name: String(j.name),
@@ -61,11 +64,15 @@ export default function PilotEinladungPage() {
             licenceType: j.licenceType,
           })
         } else {
+          setErrorHint(typeof j.hint === 'string' ? j.hint : null)
           setError(j.error || 'Link ungültig oder abgelaufen.')
         }
       })
       .catch(() => {
-        if (!cancelled) setError('Verbindung zum Server fehlgeschlagen.')
+        if (!cancelled) {
+          setErrorHint(null)
+          setError('Verbindung zum Server fehlgeschlagen.')
+        }
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -140,6 +147,11 @@ export default function PilotEinladungPage() {
           }}
         >
           <p style={{ margin: 0 }}>{error}</p>
+          {errorHint ? (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.88rem', color: TEXT, lineHeight: 1.55 }}>
+              {errorHint}
+            </p>
+          ) : null}
           {error === 'Server nicht konfiguriert.' ? (
             <div style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.55 }}>
               <p style={{ margin: '0 0 0.65rem' }}>
@@ -154,7 +166,7 @@ export default function PilotEinladungPage() {
                 <code style={{ fontSize: '0.78em' }}>.env.example</code>), dann Dev-Server neu starten.
               </p>
             </div>
-          ) : (
+          ) : !errorHint ? (
             <div style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: MUTED, lineHeight: 1.55 }}>
               <p style={{ margin: '0 0 0.65rem' }}>
                 Typisch: Link abgelaufen, oder das Geheimnis passt nicht: Einladung und Prüfung müssen dasselbe{' '}
@@ -167,7 +179,7 @@ export default function PilotEinladungPage() {
                 (nicht einen alten Tab mit localhost mischen).
               </p>
             </div>
-          )}
+          ) : null}
           <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: MUTED }}>
             <Link to={ENTDECKEN_ROUTE} style={{ color: BTN, fontWeight: 600 }}>
               Zur öffentlichen Einstiegsseite (Entdecken)
