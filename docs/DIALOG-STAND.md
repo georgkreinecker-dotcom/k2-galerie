@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot „PilotInvite.buildPilotInviteEmailPlainText is not a function“:** Ursache u. a. **Namespace** (`import *`) + **`?v=` am dynamischen `import()`** → in Node ESM riskante Doppel-Ladung. **Fix:** wieder **Named-Imports** aus `pilotInviteShared.js`; Vite-Middleware lädt **`send-pilot-invite` / `validate-pilot-token` ohne Query**; eine übersehene Zeile `PilotInvite.isValidPilotInviteEmail` → `isValidPilotInviteEmail`. **Commit:** **6f2eaad** ✅ auf GitHub
+
+**Was wir JETZT tun:** Dev-Server **neu starten** → Lizenzen → **Einladung senden** testen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot „buildPilotInviteEmailPlainText“-Fehler (Vite-Dev):** `api/send-pilot-invite.js` importiert **`pilotInviteShared` als Namespace** (`import * as PilotInvite`); Aufrufe über `PilotInvite.*`. **Vite:** vor dynamischem Import von `send-pilot-invite` wird **`pilotInviteShared.js` mit `?v=…` Cache-Bust** geladen. **mök2:** Sidebar/Links **Eingangstor** → `OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE`, Highlight wenn Willkommen oder Eingangstor. **Commit:** **37f38fc** ✅ auf GitHub
 
 **Was wir JETZT tun:** Dev-Server **neu starten** → Lizenzen → **Einladung senden** erneut testen; nach Vercel **Ready** dieselbe Prüfung auf Production.
