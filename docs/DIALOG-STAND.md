@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: Warum kein Button im Screenshot?** Viele Ansichten (Entwurf, „Nur Text“, mailto, Zitat) zeigen **nur Plaintext** – dort gibt es **keinen** HTML-Button; Resend schickt **html + text** parallel. Plaintext-Zeilen **„▶ HTML: Grünen Button…“** wirkten wie ein Fehler → Formulierung **„Siehst du einen grünen Button? / Kein Button? Link kopieren“** in `pilotInviteEmailBody.js`. **Commit:** **93cfeab** ✅ auf GitHub
+
+**Was wir JETZT tun:** Symbolwesen Öffentlichkeit → dann Admin (Fortsetzung)
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot Symbolwesen richtig:** Plaintext war Wortlawine + Riesen-JWT → **nicht** der Sinn der Regel. Jetzt: **▶**-Zeilen, **eine kurze URL** (`/p/i/32hex`) via **Supabase** `pilot_short_invites` + **`api/pilot-short-invite-resolve`**, **`PilotEinladungPage`** löst Kurzlink auf. Ohne DB/Keys: Fallback langer `?t=`. Handbuch 26 + Migration **009**. **Commit:** **c78a035** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
