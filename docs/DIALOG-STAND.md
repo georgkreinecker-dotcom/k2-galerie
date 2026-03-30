@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 28.03.26 – **Eiserne Regel neu:** **End-to-End vollständig – nie „zwischendrin“** – `.cursor/rules/eiserne-regel-end-to-end-vollstaendig.mdc` (`alwaysApply: true`); Eintrag in **docs/EISERNE-REGELN-UEBERSICHT.md**. **Commit:** **8f732a8** ✅ auf GitHub
+
+**Was wir JETZT tun:** Wie zuvor – Vercel/Resend nach Handbuch; Regel gilt ab sofort für alle Aufträge.
+
+---
+
 **Letzter Stand:** 28.03.26 – **Testpilot-Einladung – Automatisierung zu Ende dokumentiert:** Team-Handbuch **`k2team-handbuch/26-TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Spiegel `public/k2team-handbuch/`), Index + **K2TeamHandbuchPage**-Eintrag; **LicencesPage** Link „Einmal einrichten“; **`.env.example`** + **`docs/TESTPILOT-EINLADUNG-EINRICHTUNG.md`** (Zeiger); **`docs/00-INDEX.md`**. Eine Spur: Schritt 1–3 bis Link + optional Resend-Mail. **Commit:** Hauptlieferung **fa8eb31** ✅ auf GitHub; danach **03ee3c6** / **fa1f030** nur DIALOG-Stand – mit **`git push`** nachziehen.
 
 **Was wir JETZT tun:** Auf **Vercel** `PILOT_INVITE_SECRET` setzen; optional Resend; **Lizenzen** → Testpilot testen (nach vorherigen Blöcken).
