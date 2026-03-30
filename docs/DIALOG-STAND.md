@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail:** `getPilotInviteRequestOrigin` (Origin → Referer → Host), **gleicher Host wie Origin** erlaubt (eigene Domain ohne Extra-Env). Resend-Fehler mit HTTP-Status + API-`message`. Tests: `src/tests/pilotInviteShared.test.ts`. **Nach Deploy:** Lizenzen → Einladung; bei Warnung Detailzeile + Vercel `RESEND_API_KEY` / Domain **RESEND_FROM**.
+**Letzter Stand:** 30.03.26 – **Testpilot-E-Mail:** `getPilotInviteRequestOrigin` (Origin → Referer → Host), **gleicher Host wie Origin** erlaubt (eigene Domain ohne Extra-Env). Resend-Fehler mit HTTP-Status + API-`message`. Tests: `src/tests/pilotInviteShared.test.ts`. **Commit:** **27a27f8** ✅ auf GitHub. **Nach Deploy:** Lizenzen → Einladung; bei Warnung Detailzeile + Vercel `RESEND_API_KEY` / Domain **RESEND_FROM**.
 
 **Was wir JETZT tun:** Deploy abwarten → Testpilot-Mail erneut testen; wenn weiterhin Warnung: Detail unter der Meldung lesen (Domain bei Resend verifizieren).
 
