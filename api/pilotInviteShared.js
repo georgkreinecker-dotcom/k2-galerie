@@ -207,6 +207,40 @@ export function getPilotInviteLinkBaseUrl(req) {
 }
 
 /**
+ * Einheitlicher Fließtext für Resend (text) und mailto-Fallback – eine Quelle.
+ * @param {object} p
+ * @param {string} p.name
+ * @param {string} p.inviteUrl
+ * @param {string} p.contextLabel z. B. „öffentliche Demo (ök2)“
+ * @param {'oeffentlich'|'vk2'} [p.inviteContext]
+ */
+export function buildPilotInviteEmailPlainText({ name, inviteUrl, contextLabel, inviteContext = 'oeffentlich' }) {
+  const vk2 = inviteContext === 'vk2'
+  const demoButton = vk2 ? 'Weiter zur VK2-Vorschau (Verein)' : 'Weiter zur öffentlichen Demo (ök2)'
+  const nachDemo = vk2
+    ? 'Du siehst die Vereins-Vorschau und kannst dort stöbern.'
+    : 'Du landest am Eingang „Entdecken“ und kannst von dort die öffentliche Galerie-Demo öffnen.'
+  return [
+    `Hallo ${name},`,
+    '',
+    `du bist als Testpilot:in für die K2 Galerie eingeladen (${contextLabel}).`,
+    '',
+    'Wichtig: Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link führt zur Einladungsseite; dort wird dein Vorname für die Begrüßung genutzt. Was du siehst, sind Muster-Daten – zum Ausprobieren.',
+    '',
+    'So gehst du vor:',
+    `1) Den Link unten öffnen (oder die Adresse aus den spitzen Klammern kopieren).`,
+    `2) Auf der Einladungsseite den Button „${demoButton}“ wählen.`,
+    `3) ${nachDemo}`,
+    '4) Wenn du magst: oben „Admin“ öffnen – Werke, Stammdaten, Design, Kasse nur zum Ausprobieren (ebenfalls Muster).',
+    '',
+    'Direktlink (eine Zeile, ggf. aus spitzen Klammern kopieren):',
+    `<${inviteUrl}>`,
+    '',
+    'Der Link ist personalisiert und einige Wochen gültig.',
+  ].join('\n')
+}
+
+/**
  * Resend REST (optional)
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
@@ -217,37 +251,31 @@ export async function sendPilotInviteViaResend({
   resendKey,
   resendFrom,
   contextLabel,
+  inviteContext = 'oeffentlich',
 }) {
   if (!resendKey) return { ok: false, error: 'Kein RESEND_API_KEY' }
   const from = resendFrom || 'K2 Galerie <onboarding@resend.dev>'
   const subject = 'Deine Testpilot-Einladung – K2 Galerie'
-  const text = [
-    `Hallo ${name},`,
-    '',
-    `du bist als Testpilot:in für die K2 Galerie eingeladen (${contextLabel}).`,
-    '',
-    'So startest du:',
-    '1) Auf den Link unten tippen oder die URL kopieren.',
-    '2) Auf der Seite „Weiter zur Demo“ wählen.',
-    '3) Bei Bedarf „Admin“ öffnen.',
-    '',
-    'Direktlink (eine Zeile, ggf. aus spitzen Klammern kopieren):',
-    `<${inviteUrl}>`,
-    '',
-    'Link ist personalisiert und einige Wochen gültig.',
-  ].join('\n')
+  const vk2 = inviteContext === 'vk2'
+  const demoButton = vk2 ? 'Weiter zur VK2-Vorschau (Verein)' : 'Weiter zur öffentlichen Demo (ök2)'
+  const nachDemo = vk2
+    ? 'Du siehst die Vereins-Vorschau und kannst dort stöbern.'
+    : 'Du landest am Eingang „Entdecken“ und kannst von dort die öffentliche Galerie-Demo öffnen.'
+  const text = buildPilotInviteEmailPlainText({ name, inviteUrl, contextLabel, inviteContext })
   const html = `
     <p>Hallo ${escapeHtml(name)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
-    <p><strong>So startest du:</strong></p>
+    <p><strong>Wichtig:</strong> Du brauchst kein Passwort und hast auf der Demo noch kein eigenes Benutzerkonto wie später bei einer Lizenz. Der Link führt zur Einladungsseite; dort wird dein Vorname für die Begrüßung genutzt. Was du siehst, sind <strong>Muster-Daten</strong> – zum Ausprobieren.</p>
+    <p><strong>So gehst du vor:</strong></p>
     <ol>
-      <li>Auf den Button klicken.</li>
-      <li>Auf der Seite „Weiter zur Demo“ wählen.</li>
-      <li>In der Demo bei Bedarf oben „Admin“ öffnen.</li>
+      <li>Den Button unten anklicken (oder die Adresse unter dem Button kopieren).</li>
+      <li>Auf der Einladungsseite den Button <strong>„${escapeHtml(demoButton)}“</strong> wählen.</li>
+      <li>${escapeHtml(nachDemo)}</li>
+      <li>Optional: oben <strong>„Admin“</strong> öffnen – Werke, Stammdaten, Design, Kasse nur zum Ausprobieren (Muster).</li>
     </ol>
     <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
-    <p style="color:#666;font-size:12px">Link ist personalisiert und einige Wochen gültig.</p>
-    <p style="color:#666;font-size:12px">Direktlink (falls Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">diesen Link</a> – gleiche Adresse wie der Button (nicht den sichtbaren Text aus einer umbrochenen Zeile kopieren).</p>
+    <p style="color:#666;font-size:12px">Der Link ist personalisiert und einige Wochen gültig.</p>
+    <p style="color:#666;font-size:12px">Direktlink (falls der Button nicht geht): <a href="${inviteUrl}" style="color:#0d9488">diesen Link</a> – gleiche Adresse wie der Button (nicht den sichtbaren Text aus einer umbrochenen Zeile kopieren).</p>
   `
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',

@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import {
   buildPilotEinladungUrl,
   buildPilotEinladungUrlQuery,
+  buildPilotInviteEmailPlainText,
   getPilotInviteLinkBaseUrl,
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
@@ -72,5 +73,29 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     const verified = verifyPilotInviteToken(token, 'sekret')
     expect(verified?.name).toBe('Georg')
     expect(verified?.context).toBe('oeffentlich')
+  })
+
+  it('buildPilotInviteEmailPlainText: kein Konto, Schritte, öffentliche Demo', () => {
+    const t = buildPilotInviteEmailPlainText({
+      name: 'Alex',
+      inviteUrl: 'https://x.example/p?t=abc',
+      contextLabel: 'öffentliche Demo (ök2)',
+      inviteContext: 'oeffentlich',
+    })
+    expect(t).toContain('kein Passwort')
+    expect(t).toContain('Weiter zur öffentlichen Demo (ök2)')
+    expect(t).toContain('Entdecken')
+    expect(t).toContain('<https://x.example/p?t=abc>')
+  })
+
+  it('buildPilotInviteEmailPlainText: VK2-Button-Text', () => {
+    const t = buildPilotInviteEmailPlainText({
+      name: 'Alex',
+      inviteUrl: 'https://x.example/p?t=abc',
+      contextLabel: 'VK2 Vereins-Demo',
+      inviteContext: 'vk2',
+    })
+    expect(t).toContain('Weiter zur VK2-Vorschau (Verein)')
+    expect(t).toContain('Vereins-Vorschau')
   })
 })

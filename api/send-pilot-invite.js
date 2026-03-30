@@ -12,6 +12,7 @@ import {
   isValidPilotInviteEmail,
   getPilotInviteLinkBaseUrl,
   sendPilotInviteViaResend,
+  buildPilotInviteEmailPlainText,
 } from './pilotInviteShared.js'
 
 export default async function handler(req, res) {
@@ -66,7 +67,12 @@ export default async function handler(req, res) {
   const resendKey = (process.env.RESEND_API_KEY || '').trim()
   const mailSubject = encodeURIComponent('Deine Testpilot-Einladung – K2 Galerie')
   const mailBody = encodeURIComponent(
-    `Hallo ${name},\n\nhier ist deine Testpilot-Einladung für die K2 Galerie (${contextLabel}).\n\nSo startest du:\n1) Link öffnen\n2) „Weiter zur Demo“ wählen\n3) Bei Bedarf „Admin“ öffnen\n\nDirektlink (eine Zeile, ggf. aus spitzen Klammern kopieren):\n<${inviteUrl}>\n\nViel Erfolg!`,
+    `${buildPilotInviteEmailPlainText({
+      name,
+      inviteUrl,
+      contextLabel,
+      inviteContext: context,
+    })}\n\nViel Erfolg!`,
   )
   const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${mailBody}`
 
@@ -78,6 +84,7 @@ export default async function handler(req, res) {
       resendKey,
       resendFrom: process.env.RESEND_FROM,
       contextLabel,
+      inviteContext: context,
     })
     if (sendRes.ok) {
       return res.status(200).json({
