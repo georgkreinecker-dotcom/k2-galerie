@@ -99,12 +99,26 @@ export const PLATFORM_HOSTNAMES = [
   'kgm.at',
 ]
 
+/**
+ * Reine Hostname-Prüfung (ohne window) – für Tests und zentrale Logik.
+ * Vercel Preview/Team: k2-galerie-git-*.vercel.app – nicht in PLATFORM_HOSTNAMES, sonst /p → PlatformOnlyRoute → / → Entdecken.
+ * Nur Hosts, die eindeutig dieses Vercel-Projekt sind (Prefix k2-galerie. oder k2-galerie-); keine generische *.vercel.app-Freigabe.
+ */
+export function isPlatformHostname(host: string): boolean {
+  const h = String(host || '')
+    .trim()
+    .toLowerCase()
+  if (!h) return false
+  if (PLATFORM_HOSTNAMES.some((x) => x.toLowerCase() === h)) return true
+  if (h.endsWith('.vercel.app') && (h.startsWith('k2-galerie.') || h.startsWith('k2-galerie-'))) return true
+  return false
+}
+
 /** Gibt true zurück, wenn die App auf einer Plattform-Instanz (kgm) läuft. Nur dann sind ök2 und VK2 erlaubt. */
 export function isPlatformInstance(): boolean {
   try {
     if (typeof window === 'undefined' || !window.location?.hostname) return false
-    const host = window.location.hostname.toLowerCase()
-    return PLATFORM_HOSTNAMES.some((h) => h.toLowerCase() === host)
+    return isPlatformHostname(window.location.hostname)
   } catch {
     return false
   }

@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: Vercel-Preview = Plattform** – `isPlatformInstance()` kannte nur `PLATFORM_HOSTNAMES`; **Preview** (`k2-galerie-git-….vercel.app`) → **false** → **PlatformOnlyRoute** bei `/p` → `/` → **Entdecken** statt Admin. **Fix:** `isPlatformHostname(host)` + Vercel-Hosts `k2-galerie.*` / `k2-galerie-*` unter `.vercel.app`; Tests. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: Hinweis „nur Domain“ = Eingangstor** – Root `k2-galerie.vercel.app/` → `/entdecken` (Absicht). **PilotEinladungPage** + **Lizenzen:** Texte mit **echtem Lizenzen-Pfad** `/projects/k2-galerie/licences` + Link; API-Hint ergänzt. **Tests + Build grün.** **Commit:** **d168be2** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
