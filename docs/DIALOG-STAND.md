@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot: „Geht nicht raus“ / mailto nur HTML-Code:** `mailto:` kann **kein HTML** – nur Klartext; lange URLs brechen **mailto-Limits** → kaputter Entwurf. **Fix:** `api/pilotInviteEmailHtml.js` (eine Quelle für Resend + **.eml**); **LicencesPage** Button **„Mail mit Layout (.eml laden)“** + klare Hinweise; **send-pilot-invite:** `mailtoTruncated` + Kurztext wenn URL >2200 Zeichen; **mailtoUrl** auch bei erfolgreichem Resend (Fallback). **Tests + Build grün.** **Commit:** **62d4d6a** ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: .eml testen (Doppelklick → Mail); ohne Resend = normal; mit Resend = E-Mail automatisch raus
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot: Warum kein Button im Screenshot?** Viele Ansichten (Entwurf, „Nur Text“, mailto, Zitat) zeigen **nur Plaintext** – dort gibt es **keinen** HTML-Button; Resend schickt **html + text** parallel. Plaintext-Zeilen **„▶ HTML: Grünen Button…“** wirkten wie ein Fehler → Formulierung **„Siehst du einen grünen Button? / Kein Button? Link kopieren“** in `pilotInviteEmailBody.js`. **Commit:** **93cfeab** ✅ auf GitHub
 
 **Was wir JETZT tun:** Symbolwesen Öffentlichkeit → dann Admin (Fortsetzung)
