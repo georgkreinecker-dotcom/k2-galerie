@@ -10,7 +10,6 @@ import {
   getPilotInviteRequestOrigin,
   isPilotInviteAllowedOrigin,
   isValidPilotInviteEmail,
-  buildPilotEinladungUrlQuery,
   getPilotInviteLinkBaseUrl,
   sendPilotInviteViaResend,
 } from './pilotInviteShared.js'
@@ -58,8 +57,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Token konnte nicht erstellt werden.' })
   }
 
-  const base = getPilotInviteLinkBaseUrl(req)
-  const inviteUrl = buildPilotEinladungUrlQuery(base, token)
+  // Inline wie buildPilotEinladungUrlQuery (Vite-Dev-Import sonst ggf. veralteter Shared-Export-Cache).
+  const base = getPilotInviteLinkBaseUrl(req).replace(/\/$/, '')
+  const inviteUrl = `${base}/p?t=${encodeURIComponent(token)}`
 
   const contextLabel = context === 'vk2' ? 'VK2 Vereins-Demo' : 'öffentliche Demo (ök2)'
 
