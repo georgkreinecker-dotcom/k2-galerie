@@ -118,6 +118,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`
 - **K2 Familie (Raumschiff):** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` (Fundament), `docs/K2-FAMILIE-ROADMAP.md` (Vision & Phasen)
+- **Symbolwesen – gesamte Kommunikation (eiserne Regel):** Zuerst sichtbare Zeichen und Handlung, nicht Textwände; gilt für App, E-Mails, Nutzertexte und Dialog. Regel: `.cursor/rules/eiserne-regel-symbolwesen-kommunikation.mdc` (alwaysApply).
 - **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung (verschiedene Standards = Fehlerquellen). Regel: `.cursor/rules/ein-standard-problem.mdc`; Doku: `docs/STRUKTUR-HANDELN-QUELLEN.md`, `docs/00-INDEX.md`.
 - **Team-Hebel & Vermächtnis (Lernkurve):** Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung. Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`; Vermächtnis: `docs/WIR-PROZESS.md` (Abschnitt „Team-Hebel und Lernkurve“).
 - **Handbuch-Inhalt:** `k2team-handbuch/00-INDEX.md`

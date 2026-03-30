@@ -21,6 +21,7 @@ Wenn die Antwort „Nein" oder „Vielleicht" ist: **neu denken**, bevor Code ge
 - Viele Optionen auf einmal – User weiß nicht wo anfangen
 
 ### ✅ Nutzer-Logik (Pflicht)
+- **Symbolwesen (eiserne Regel, gesamte Kommunikation):** **eiserne-regel-symbolwesen-kommunikation.mdc** – in der Oberfläche: zuerst sichtbare Zeichen und Handlung, nicht Textwände vor dem Tun.
 - **Status auf einen Blick:** Was ist fertig (✅ grün)? Was fehlt noch (○ rot/orange)?
 - **Eine klare Aktion pro Situation:** Roter Button = „das musst du noch tun". Grüner Bereich = „erledigt, kein Handlungsbedarf"
 - **Ampel-Prinzip:** Grün = gut, Orange/Rot = Handlung nötig – überall einheitlich

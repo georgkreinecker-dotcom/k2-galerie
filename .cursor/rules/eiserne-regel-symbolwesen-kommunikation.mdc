@@ -1,0 +1,38 @@
+---
+description: Eiserne Regel – Menschen sind Symbolwesen; gilt für die gesamte Kommunikation (Produkt, Texte, E-Mails, KI-Antworten)
+alwaysApply: true
+---
+
+# 🔴 EISERNE REGEL: Symbolwesen – gesamte Kommunikation (unveränderlich)
+
+## Der Satz (von Georg)
+
+**Wir Menschen sind Symbolwesen.** Niemand liest gern lange Textwände. **Userfreundlichkeit** hängt daran, dass **zuerst Zeichen** wirken: Button, Farbe, Form, Icon, klare Überschrift, Struktur – **bevor** der Nutzer Fließtext lesen muss.
+
+---
+
+## Geltungsbereich (gesamte Kommunikation)
+
+| Wo | Was das bedeutet |
+|----|------------------|
+| **App / UI** | Handlung sichtbar ohne Lesen; Ampel, ein Klick, kurze Labels. Siehe auch **ux-user-first-logik.mdc**. |
+| **E-Mails, Einladungen, Benachrichtigungen** | Sofort erkennbarer Einstieg (z. B. klarer Button), wenig Pflicht-Text; Details erst darunter oder klein. |
+| **Handbuch & Nutzertexte** | Lesbar und redigiert – aber bei **Handlung** („was tun?“) Symbol/Struktur zuerst, nicht Absätze vor dem Wesentlichen. |
+| **Fehlermeldungen & Erfolgsmeldungen** | Kurz, eine klare nächste Aktion; nicht nur erklären. |
+| **KI ↔ Georg** | Kurz, strukturiert, visuell gegliedert (Überschriften, Listen) – **keine** unnötigen Textwände; Wesentliches sofort erkennbar. Passt zu **.cursorrules** (KURZE ANTWORTEN, VISUAL). |
+
+---
+
+## Was verboten ist (als Standard)
+
+- **Nur** erklären, wenn **Handlung** versteckt ist oder erst nach viel Lesen klar wird.
+- Lange Fließtexte **vor** dem, was der Mensch **tun** soll.
+- Gleiche wichtige Aktion nur als Satz verstecken, wenn ein **sichtbares Zeichen** (Button, hervorgehobener Block) möglich ist.
+
+---
+
+## Kurzfassung
+
+**Symbolwesen = zuerst sichtbare Zeichen und klare Handlung, dann Text.** Gilt für Produkt, externe Kommunikation und unsere Dialogführung. **Eiserne Regel – nicht abschwächen.**
+
+Verknüpfung: **ux-user-first-logik.mdc**, **georg-smarte-benutzeroberflaeche.mdc**, **handbuch-dokumente-leserlich-kein-formular.mdc** (Leserlichkeit bleibt – Symbolwesen ergänzt sie bei „was tun?“).
