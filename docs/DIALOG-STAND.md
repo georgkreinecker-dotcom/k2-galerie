@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Testpilot: APf localhost = Live-API (Sportwagen):** Einladung von der APf rief bisher **localhost**/api auf (Signatur Mac-.env), Link aber **Vercel** → oft `bad_signature`. Jetzt: **Plattform + localhost** → POST an **k2-galerie.vercel.app/api/send-pilot-invite** (`pilotInviteClient.ts`); **crossEnvSecretWarning** nur wenn der **lokale** Server signiert. Lizenznehmer-Clone: `isPlatformHostname` → weiter same-origin. **Tests + Build grün.**
+**Letzter Stand:** 30.03.26 – **Testpilot: APf localhost = Live-API (Sportwagen):** Einladung von der APf rief bisher **localhost**/api auf (Signatur Mac-.env), Link aber **Vercel** → oft `bad_signature`. Jetzt: **Plattform + localhost** → POST an **k2-galerie.vercel.app/api/send-pilot-invite** (`pilotInviteClient.ts`); **crossEnvSecretWarning** nur wenn der **lokale** Server signiert. Lizenznehmer-Clone: `isPlatformHostname` → weiter same-origin. **Tests + Build grün.** **Commit:** **b6208db** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
