@@ -1,5 +1,6 @@
 /**
- * GET /api/validate-pilot-token?token=... – prüft Token (ohne Geheimnis preiszugeben).
+ * GET /api/validate-pilot-token?t=... – prüft Token (ohne Geheimnis preiszugeben).
+ * Rückwärtskompatibel auch mit ?token=
  */
 import { verifyPilotInviteToken } from './pilotInviteShared.js'
 
@@ -15,9 +16,15 @@ export default async function handler(req, res) {
   }
 
   const token =
-    typeof req.query?.token === 'string'
+    (typeof req.query?.t === 'string'
+      ? req.query.t
+      : '') ||
+    (typeof req.query?.token === 'string'
       ? req.query.token
-      : new URL(req.url || '', 'http://localhost').searchParams.get('token') || ''
+      : '') ||
+    new URL(req.url || '', 'http://localhost').searchParams.get('t') ||
+    new URL(req.url || '', 'http://localhost').searchParams.get('token') ||
+    ''
 
   if (!token) {
     return res.status(400).json({ valid: false, error: 'token fehlt' })

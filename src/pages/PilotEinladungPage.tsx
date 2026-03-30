@@ -26,7 +26,7 @@ type ValidateOk = {
 export default function PilotEinladungPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const token = searchParams.get('token') || ''
+  const token = searchParams.get('t') || searchParams.get('token') || ''
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export default function PilotEinladungPage() {
     }
     let cancelled = false
     const base = window.location.origin
-    fetch(`${base}/api/validate-pilot-token?token=${encodeURIComponent(token)}`)
+    fetch(`${base}/api/validate-pilot-token?t=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((j) => {
         if (cancelled) return

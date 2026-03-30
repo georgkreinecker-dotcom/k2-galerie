@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getPilotInviteRequestOrigin, isPilotInviteAllowedOrigin } from '../../api/pilotInviteShared.js'
+import {
+  buildPilotEinladungUrl,
+  getPilotInviteRequestOrigin,
+  isPilotInviteAllowedOrigin,
+  signPilotInviteToken,
+  verifyPilotInviteToken,
+} from '../../api/pilotInviteShared.js'
 
 describe('pilotInviteShared – Testpilot-API Origin', () => {
   it('getPilotInviteRequestOrigin nutzt Origin-Header', () => {
@@ -29,5 +35,18 @@ describe('pilotInviteShared – Testpilot-API Origin', () => {
     const origin = 'https://boese.example'
     const req = { headers: { host: 'k2-galerie.vercel.app' } }
     expect(isPilotInviteAllowedOrigin(origin, '', req as any)).toBe(false)
+  })
+
+  it('buildPilotEinladungUrl nutzt kurzen Query-Key t', () => {
+    const url = buildPilotEinladungUrl('https://k2-galerie.vercel.app', 'abc123')
+    expect(url).toContain('/projects/k2-galerie/pilot-einladung?t=abc123')
+    expect(url.includes('token=')).toBe(false)
+  })
+
+  it('sign/verify mit kompaktem Token (v2)', () => {
+    const token = signPilotInviteToken({ name: 'Georg', context: 'oeffentlich' }, 'sekret')
+    const verified = verifyPilotInviteToken(token, 'sekret')
+    expect(verified?.name).toBe('Georg')
+    expect(verified?.context).toBe('oeffentlich')
   })
 })

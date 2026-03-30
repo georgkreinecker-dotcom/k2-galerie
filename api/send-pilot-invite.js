@@ -15,10 +15,15 @@ import {
 } from './pilotInviteShared.js'
 
 function baseUrlFromReq(req) {
+  const forcedUrl = (process.env.PILOT_INVITE_PUBLIC_BASE_URL || '').trim()
+  if (forcedUrl.startsWith('http')) return forcedUrl.replace(/\/$/, '')
   const envUrl = (process.env.VITE_APP_URL || process.env.VERCEL_URL || '').trim()
   if (envUrl.startsWith('http')) return envUrl.replace(/\/$/, '')
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`.replace(/\/$/, '')
   const host = req.headers.host || 'k2-galerie.vercel.app'
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    return 'https://k2-galerie.vercel.app'
+  }
   const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim()
   return `${proto}://${host}`.replace(/\/$/, '')
 }
@@ -59,10 +64,7 @@ export default async function handler(req, res) {
 
   let token
   try {
-    token = signPilotInviteToken(
-      { email: toEmail, name, context, licenceType: 'proplus' },
-      secret,
-    )
+    token = signPilotInviteToken({ name, context }, secret)
   } catch (e) {
     console.error('send-pilot-invite sign', e)
     return res.status(500).json({ error: 'Token konnte nicht erstellt werden.' })
@@ -76,7 +78,7 @@ export default async function handler(req, res) {
   const resendKey = (process.env.RESEND_API_KEY || '').trim()
   const mailSubject = encodeURIComponent('Deine Testpilot-Einladung – K2 Galerie')
   const mailBody = encodeURIComponent(
-    `Hallo ${name},\n\nhier ist dein persönlicher Link zur Testpilot-Galerie (${contextLabel}):\n\n${inviteUrl}\n\nViel Erfolg!`,
+    `Hallo ${name},\n\nhier ist deine Testpilot-Einladung für die K2 Galerie (${contextLabel}).\n\nSo startest du:\n1) Link öffnen\n2) „Weiter zur Demo“ wählen\n3) Bei Bedarf „Admin“ öffnen\n\nDirektlink:\n${inviteUrl}\n\nViel Erfolg!`,
   )
   const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?subject=${mailSubject}&body=${mailBody}`
 

@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 30.03.26 – **Testpilot-Link/Mail lesbar:** Einladung nutzt jetzt **kurzen Parameter `?t=`** (statt `?token=`), Token ist kompakter (v2), `validate-pilot-token` bleibt rückwärtskompatibel (`t` + `token`). Beim lokalen Versand wird für Einladungslink **nicht mehr localhost** verwendet, sondern stabile Basis (`PILOT_INVITE_PUBLIC_BASE_URL` oder `https://k2-galerie.vercel.app`). E-Mail enthält jetzt ein **kurzes Begleitschreiben** mit 3 Schritten + deutlichem Start-Button.
+
+**Was wir JETZT tun:** Deploy abwarten → Testpilot-Einladung erneut senden; Link soll sichtbar kürzer sein und direkt funktionieren.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Testpilot-E-Mail:** `getPilotInviteRequestOrigin` (Origin → Referer → Host), **gleicher Host wie Origin** erlaubt (eigene Domain ohne Extra-Env). Resend-Fehler mit HTTP-Status + API-`message`. Tests: `src/tests/pilotInviteShared.test.ts`. **Commit:** **27a27f8** ✅ auf GitHub. **Nach Deploy:** Lizenzen → Einladung; bei Warnung Detailzeile + Vercel `RESEND_API_KEY` / Domain **RESEND_FROM**.
 
 **Was wir JETZT tun:** Deploy abwarten → Testpilot-Mail erneut testen; wenn weiterhin Warnung: Detail unter der Meldung lesen (Domain bei Resend verifizieren).

@@ -7,18 +7,17 @@ import crypto from 'crypto'
 const EXP_SEC = 60 * 60 * 24 * 30 // 30 Tage
 
 /**
- * @param {object} payload – { email, name, context: 'oeffentlich'|'vk2', licenceType?: string }
+ * Kompakter Token, damit der Link kürzer bleibt.
+ * @param {object} payload – { name, context: 'oeffentlich'|'vk2' }
  * @param {string} secret
  */
 export function signPilotInviteToken(payload, secret) {
   if (!secret || typeof secret !== 'string') throw new Error('PILOT_INVITE_SECRET fehlt')
   const data = {
-    v: 1,
-    email: String(payload.email || '').trim().toLowerCase(),
-    name: String(payload.name || '').trim(),
-    context: payload.context === 'vk2' ? 'vk2' : 'oeffentlich',
-    licenceType: payload.licenceType || 'proplus',
-    exp: Math.floor(Date.now() / 1000) + EXP_SEC,
+    v: 2,
+    n: String(payload.name || '').trim(),
+    c: payload.context === 'vk2' ? 'vk2' : 'oeffentlich',
+    x: Math.floor(Date.now() / 1000) + EXP_SEC,
   }
   const payloadStr = Buffer.from(JSON.stringify(data), 'utf8').toString('base64url')
   const sig = crypto.createHmac('sha256', secret).update(payloadStr).digest('base64url')
@@ -50,8 +49,16 @@ export function verifyPilotInviteToken(token, secret) {
   } catch {
     return null
   }
-  if (data.exp && Math.floor(Date.now() / 1000) > data.exp) return null
-  return data
+  const exp = Number(data.x ?? data.exp ?? 0)
+  if (exp && Math.floor(Date.now() / 1000) > exp) return null
+  // Backward-compatible Normalisierung (v1 und v2 Tokens)
+  return {
+    name: String(data.n ?? data.name ?? '').trim(),
+    email: String(data.e ?? data.email ?? '').trim().toLowerCase(),
+    context: data.c === 'vk2' || data.context === 'vk2' ? 'vk2' : 'oeffentlich',
+    licenceType: String(data.l ?? data.licenceType ?? 'proplus'),
+    exp,
+  }
 }
 
 /**
@@ -144,7 +151,7 @@ export function isValidPilotInviteEmail(email) {
  */
 export function buildPilotEinladungUrl(baseUrl, token) {
   const base = baseUrl.replace(/\/$/, '')
-  return `${base}/projects/k2-galerie/pilot-einladung?token=${encodeURIComponent(token)}`
+  return `${base}/projects/k2-galerie/pilot-einladung?t=${encodeURIComponent(token)}`
 }
 
 /**
@@ -162,11 +169,19 @@ export async function sendPilotInviteViaResend({
   if (!resendKey) return { ok: false, error: 'Kein RESEND_API_KEY' }
   const from = resendFrom || 'K2 Galerie <onboarding@resend.dev>'
   const subject = 'Deine Testpilot-Einladung – K2 Galerie'
+  const shortUrl = inviteUrl.length > 120 ? `${inviteUrl.slice(0, 70)}...` : inviteUrl
   const html = `
     <p>Hallo ${escapeHtml(name)},</p>
     <p>du bist als <strong>Testpilot:in</strong> für die K2 Galerie eingeladen (${escapeHtml(contextLabel)}).</p>
-    <p><a href="${inviteUrl}">Hier klicken – weiter zur Galerie</a></p>
+    <p><strong>So startest du:</strong></p>
+    <ol>
+      <li>Auf den Button klicken.</li>
+      <li>Auf der Seite „Weiter zur Demo“ wählen.</li>
+      <li>In der Demo bei Bedarf oben „Admin“ öffnen.</li>
+    </ol>
+    <p><a href="${inviteUrl}" style="display:inline-block;padding:10px 14px;background:#0d9488;color:#fff;text-decoration:none;border-radius:8px">Jetzt Testpilot starten</a></p>
     <p style="color:#666;font-size:12px">Link ist personalisiert und einige Wochen gültig.</p>
+    <p style="color:#666;font-size:12px">Direktlink (falls Button nicht geht): ${escapeHtml(shortUrl)}</p>
   `
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
