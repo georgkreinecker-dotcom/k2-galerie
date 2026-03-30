@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 30.03.26 – **Lizenz: Zeitplan / Pilot / Stripe-Test sichtbar:** Neue Komponente **`LizenzZeitplanPilotStripeInfo`** (ein Standard, drei Varianten): **Übersicht-Board** oberhalb der Kacheln; **Lizenzen** + **Lizenz kaufen** mit **hohem Kontrast** (gelber Verlauf, dunkle Schrift – kein `var(--k2-text)` auf Amber). Inhalt: **01. Mai** ausgeschrieben (Hinweis „nicht 1.5“), **Pilot in 3 Schritten**, **Stripe-Testkarte 4242…** + `sk_test_…`. **Commit:** 2f4ff66 ✅ auf GitHub
+**Letzter Stand:** 30.03.26 – **Lizenz: Zeitplan / Pilot / Stripe-Test sichtbar:** Neue Komponente **`LizenzZeitplanPilotStripeInfo`** (ein Standard, drei Varianten): **Übersicht-Board** oberhalb der Kacheln; **Lizenzen** + **Lizenz kaufen** mit **hohem Kontrast** (gelber Verlauf, dunkle Schrift – kein `var(--k2-text)` auf Amber). Inhalt: **01. Mai** ausgeschrieben (Hinweis „nicht 1.5“), **Pilot in 3 Schritten**, **Stripe-Testkarte 4242…** + `sk_test_…`. **Commit:** **89aa7f5** ✅ auf GitHub
 
 **Was wir JETZT tun:** Nach Deploy: **Übersicht**, **Lizenzen**, **Lizenz kaufen** – Info-Kasten lesbar prüfen.
 
