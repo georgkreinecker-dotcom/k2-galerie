@@ -54,4 +54,12 @@ describe('mergeEventTimesFromLocal', () => {
     expect(out[0].startTime).toBe('19:00')
     expect(out[0].endTime).toBe('22:00')
   })
+
+  it('behält lokales Medienfeld wenn Server nur Platzhalter liefert', () => {
+    const server = [{ id: 'e1', title: 'X', bannerUrl: '/img/muster/malerei.svg', startTime: '18:00', endTime: '' }]
+    const local = [{ id: 'e1', title: 'X', bannerUrl: '/img/k2/event-eroeffnung.jpg', startTime: '18:00', endTime: '21:00' }]
+    const out = mergeEventTimesFromLocal(server, local)
+    expect(out[0].bannerUrl).toBe('/img/k2/event-eroeffnung.jpg')
+    expect(out[0].endTime).toBe('21:00')
+  })
 })

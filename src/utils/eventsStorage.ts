@@ -90,12 +90,41 @@ export function mergeEventTimesFromLocal(serverEvents: any[], localEvents: any[]
     const dmKeys = Object.keys(dailyMerged)
     const dailyTimes =
       dmKeys.length > 0 ? dailyMerged : se.dailyTimes && Object.keys(se.dailyTimes || {}).length > 0 ? se.dailyTimes : local.dailyTimes || {}
-    return {
+    const merged: any = {
       ...se,
       startTime,
       endTime,
       dailyTimes: dailyTimes && typeof dailyTimes === 'object' ? dailyTimes : {},
     }
+
+    // Kein Datenverlust (Events): Wenn Server bei Medienfeldern nur leer/Platzhalter liefert,
+    // lokale (reichere) Werte behalten. So kommt z. B. ein korrekt gesetztes Eventfoto nicht
+    // durch einen „mageren“ Server-Export wieder weg.
+    try {
+      const isMediaKey = (k: string) =>
+        /(image|photo|foto|plakat|banner|cover|hero|background|overlay|url)$/i.test(k)
+      const looksLikePlaceholder = (v: string) => {
+        const s = v.trim().toLowerCase()
+        if (!s) return true
+        if (s.endsWith('.svg')) return true
+        if (s.includes('/img/muster/')) return true
+        if (s.includes('placeholder')) return true
+        return false
+      }
+      for (const k of Object.keys(local || {})) {
+        if (!isMediaKey(k)) continue
+        const lv = local?.[k]
+        const sv = merged?.[k]
+        if (typeof lv !== 'string' || !lv.trim()) continue
+        if (typeof sv !== 'string' || looksLikePlaceholder(sv)) {
+          merged[k] = lv
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return merged
   })
 }
 

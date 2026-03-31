@@ -2388,7 +2388,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   /** Wie QR: Server-Stand + Cache-Bust – reiner Link ohne v/_ lädt oft gecachte alte App (Handy). */
   const getShareUrl = () => {
     if (typeof window === 'undefined') return ''
-    const base = `${window.location.origin}${window.location.pathname}`
+    // Teilen muss auch aus lokalen/privaten Origins (localhost/LAN) funktionieren:
+    // Dann immer den öffentlichen Vercel-Link teilen – nie localhost.
+    const base = isLocalOrPrivateOrigin()
+      ? getPublicPageUrl(vk2, musterOnly)
+      : `${window.location.origin}${window.location.pathname}`
     return buildQrUrlWithBust(base, qrVersionTs)
   }
   const getShareText = () => (displayGalleryName || 'Galerie') + ' – Schau dir die Werke an'
@@ -2416,7 +2420,18 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     const url = getShareUrl()
     const text = getShareText()
     const full = text + ' ' + url
-    window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener,noreferrer')
+    const waUrl = 'https://wa.me/?text=' + encodeURIComponent(full)
+    const isStandalone =
+      (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches) ||
+      (typeof navigator !== 'undefined' && (navigator as any).standalone === true)
+
+    // iOS/PWA: window.open kann blockieren → dann im selben Tab weiter.
+    if (isStandalone) {
+      window.location.href = waUrl
+    } else {
+      const w = window.open(waUrl, '_blank', 'noopener,noreferrer')
+      if (!w) window.location.href = waUrl
+    }
     setSharePopoverOpen(false)
   }
 
