@@ -18157,6 +18157,145 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Malerei-Doppler nach Titel jetzt zusammenführen
                   </button>
                 </div>
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🔢 Malerei-Nummern nach Server-Stand reparieren</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Wenn durch frühere Bugs beim Bearbeiten neue Nummern entstanden sind, kann die fortlaufende Malerei-Nummerierung kaputt wirken.
+                    Dieser Button lädt die veröffentlichte <strong>gallery-data.json</strong> und setzt die Nummern für Malerei anhand <strong>Titel + Bild</strong> wieder auf den Server-Stand zurück.
+                    Vorschau + Bestätigung, danach Veröffentlichung. Verkäufe/Reservierungen/Bestellungen werden mitangepasst.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!confirm('Nur K2: Malerei-Nummern anhand gallery-data.json (Server-Stand) reparieren?\n\nVorher ggf. Vollbackup herunterladen.')) return
+
+                      let serverArtworks: any[] = []
+                      try {
+                        const u = `/gallery-data.json?_=${Date.now()}`
+                        const res = await fetch(u, { cache: 'no-store' })
+                        if (!res.ok) throw new Error(String(res.status))
+                        const data = await res.json()
+                        serverArtworks = Array.isArray(data?.artworks) ? data.artworks : []
+                      } catch (e) {
+                        alert(`gallery-data.json konnte nicht geladen werden: ${e instanceof Error ? e.message : 'Fehler'}\n\nApp auf Vercel öffnen oder lokalen Build nutzen.`)
+                        return
+                      }
+
+                      const raw = readArtworksRawByKey('k2-artworks') ?? []
+                      if (!Array.isArray(raw) || raw.length === 0) {
+                        alert('Keine lokale Werkliste gefunden (k2-artworks ist leer).')
+                        return
+                      }
+
+                      const norm = (v: any) => String(v ?? '').trim()
+                      const normTitleKey = (s: string) =>
+                        s
+                          .trim()
+                          .toLowerCase()
+                          .normalize('NFKD')
+                          .replace(/[\u0300-\u036f]/g, '')
+                          .replace(/\s+/g, ' ')
+                      const imageSig = (a: any) => {
+                        const v = norm(a?.imageRef) || norm(a?.imageUrl) || norm(a?.previewUrl)
+                        if (!v) return ''
+                        try {
+                          if (v.startsWith('http://') || v.startsWith('https://')) {
+                            const u = new URL(v)
+                            return u.pathname
+                          }
+                        } catch (_) {}
+                        return v
+                      }
+
+                      const isMalerei = (a: any) => norm(a?.category) === 'malerei'
+                      const keyOf = (a: any) => norm(a?.number ?? a?.id)
+                      const titleOf = (a: any) => norm(a?.title)
+
+                      // Map server malerei by title+imageSig -> canonical number
+                      const serverMap = new Map<string, string>()
+                      for (const a of serverArtworks) {
+                        if (!isMalerei(a)) continue
+                        const t = titleOf(a)
+                        const num = keyOf(a)
+                        if (!t || !num) continue
+                        const sig = imageSig(a)
+                        const k = `${normTitleKey(t)}|${sig}`
+                        if (!serverMap.has(k)) serverMap.set(k, num)
+                      }
+
+                      const usedNumbers = new Set(raw.map((a: any) => keyOf(a)).filter(Boolean) as string[])
+                      const renames: Array<{ from: string; to: string; title: string }> = []
+                      const nextList = raw.map((a: any) => ({ ...a }))
+
+                      for (let i = 0; i < nextList.length; i++) {
+                        const a = nextList[i]
+                        if (!isMalerei(a)) continue
+                        const t = titleOf(a)
+                        const from = keyOf(a)
+                        if (!t || !from) continue
+                        const sig = imageSig(a)
+                        const to = serverMap.get(`${normTitleKey(t)}|${sig}`)
+                        if (!to || to === from) continue
+                        // avoid collisions: only apply if target not already used by some other entry
+                        if (usedNumbers.has(to) && to !== from) continue
+                        usedNumbers.delete(from)
+                        usedNumbers.add(to)
+                        nextList[i] = { ...a, number: to, id: to }
+                        renames.push({ from, to, title: t })
+                      }
+
+                      if (renames.length === 0) {
+                        alert('Keine reparierbaren Malerei-Nummern gefunden (oder Zielnummern wären kollidiert).')
+                        return
+                      }
+
+                      const preview = renames
+                        .slice(0, 14)
+                        .map((r) => `${r.from} → ${r.to} (${r.title})`)
+                        .join('\n')
+                      const more = renames.length > 14 ? `\n… und ${renames.length - 14} weitere` : ''
+                      if (!confirm(`${renames.length} Malerei-Nummer(n) werden auf Server-Stand gesetzt:\n\n${preview}${more}\n\nFortfahren?`)) return
+
+                      const map: Record<string, string> = {}
+                      renames.forEach((r) => { map[r.from] = r.to })
+
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', nextList, {
+                        filterK2Only: true,
+                        allowReduce: false,
+                      })
+                      if (!ok) {
+                        alert('Speichern der Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+
+                      patchK2LocalStorageAfterArtworkRenames(map)
+
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurden ${renames.length} Nummer(n) repariert – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert(`✅ Malerei-Nummern repariert: ${renames.length} Anpassungen, veröffentlicht. Die Seite lädt neu.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#0d9488',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Malerei-Nummern jetzt nach Server-Stand reparieren
+                  </button>
+                </div>
                 <input
                   ref={backupFileInputRef}
                   type="file"
