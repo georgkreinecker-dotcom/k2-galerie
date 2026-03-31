@@ -14,6 +14,7 @@ import { artworksForExport } from './artworkExport'
 import { loadEvents } from './eventsStorage'
 import { loadDocuments } from './documentsStorage'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
+import { FLYER_EVENT_BOGEN_STORAGE_KEY_K2, FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF, FLYER_EVENT_BOGEN_STORAGE_KEY_VK2 } from './flyerEventBogenStorageKeys'
 import type { TenantId } from '../config/tenantConfig'
 
 type PublishTenantId = Exclude<TenantId, 'demo'>
@@ -39,6 +40,28 @@ function tenantPrefix(tenantId: PublishTenantId): string {
 
 function tenantKey(tenantId: PublishTenantId, suffix: string): string {
   return `${tenantPrefix(tenantId)}-${suffix}`
+}
+
+function getFlyerMasterKeyForTenant(tenantId: PublishTenantId): string {
+  if (tenantId === 'oeffentlich') return FLYER_EVENT_BOGEN_STORAGE_KEY_OEFF
+  if (tenantId === 'vk2') return FLYER_EVENT_BOGEN_STORAGE_KEY_VK2
+  return FLYER_EVENT_BOGEN_STORAGE_KEY_K2
+}
+
+function readFlyerMasterForPublish(tenantId: PublishTenantId): { leftSrc?: string; leftWerkLabel?: string } | null {
+  // Wichtig: Für den Server nur URLs (keine data:/blob:), sonst Payload zu groß und nicht geräteübergreifend.
+  try {
+    const raw = localStorage.getItem(getFlyerMasterKeyForTenant(tenantId))
+    if (!raw || raw.length > 200_000) return null
+    const parsed = JSON.parse(raw) as { leftSrc?: string; leftWerkLabel?: string } | null
+    const leftSrc = typeof parsed?.leftSrc === 'string' ? parsed.leftSrc.trim() : ''
+    const leftWerkLabel = typeof parsed?.leftWerkLabel === 'string' ? parsed.leftWerkLabel.trim() : ''
+    if (!leftSrc) return null
+    if (leftSrc.startsWith('data:') || leftSrc.startsWith('blob:')) return null
+    return { leftSrc, leftWerkLabel: leftWerkLabel || undefined }
+  } catch {
+    return null
+  }
 }
 
 export interface PublishGalleryDataResult {
@@ -271,6 +294,7 @@ export async function publishGalleryDataToServer(
     designSettings: (serverMeta?.designSettings ?? getItemSafe(tenantKey(tenantId, 'design-settings'), {})),
     pageTexts: (serverMeta?.pageTexts ?? getItemSafe(tenantKey(tenantId, 'page-texts'), null)),
     pageContentGalerie: JSON.stringify(pageContentForServer),
+    flyerMaster: (serverMeta?.flyerMaster ?? readFlyerMasterForPublish(tenantId)),
     version: Date.now(),
     buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
     exportedAt: new Date().toISOString(),

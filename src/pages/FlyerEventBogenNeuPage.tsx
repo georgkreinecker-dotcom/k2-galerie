@@ -666,6 +666,7 @@ export default function FlyerEventBogenNeuPage() {
     const fb = flyerImgFallback
 
     const applyFromServerPayload = (payload: any) => {
+      const flyerMaster = payload?.flyerMaster && typeof payload.flyerMaster === 'object' ? payload.flyerMaster : null
       const galleryFromServer = payload?.gallery && typeof payload.gallery === 'object' ? payload.gallery : {}
       let page: any = null
       try {
@@ -679,11 +680,18 @@ export default function FlyerEventBogenNeuPage() {
       const welcome = String(page?.welcomeImage || galleryFromServer?.welcomeImage || '/img/k2/willkommen.jpg').trim()
       const card = String(page?.galerieCardImage || galleryFromServer?.galerieCardImage || '').trim()
       const virtualTour = String(page?.virtualTourImage || galleryFromServer?.virtualTourImage || '').trim()
+      const masterLeft = String(flyerMaster?.leftSrc || '').trim()
+      const masterLabel = String(flyerMaster?.leftWerkLabel || '').trim()
 
       if (!active) return
       // Links (Hauptbild): Karte > Willkommen > Fallback – NICHT aus lokaler Persistenz.
-      setLeftSrc(card || welcome || fb)
-      setLeftWerkLabel('Galeriebild')
+      if (masterLeft && !masterLeft.startsWith('data:') && !masterLeft.startsWith('blob:')) {
+        setLeftSrc(masterLeft)
+        setLeftWerkLabel(masterLabel || 'Masterflyer')
+      } else {
+        setLeftSrc(card || welcome || fb)
+        setLeftWerkLabel('Galeriebild')
+      }
       // Mitte/Rechts: Willkommen / Virtueller Rundgang
       setMiddleSrc(welcome || fb)
       setRightSrc(virtualTour || welcome || fb)
