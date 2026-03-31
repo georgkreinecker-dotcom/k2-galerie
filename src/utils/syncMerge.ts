@@ -168,6 +168,74 @@ function getKeysForMatching(a: any): string[] {
   if (numOnly && numOnly !== main) keys.add(numOnly)
   return Array.from(keys)
 }
+
+/** Kanonische K2-Nummer mit Präfix-Buchstabe (M/K/G/S/O/P/I) + Ziffern. */
+function isCanonicalK2PrefixedNumber(v: any): boolean {
+  const s = String(v ?? '').trim()
+  return /^K2-[A-Z]-?\d+$/i.test(s)
+}
+
+/**
+ * Für Lookups (Merge/Bilddaten) dürfen kanonische K2-Nummern NICHT über reine Ziffern matchen,
+ * sonst kollidieren echte Bereiche: K2-M-0019 ↔ K2-K-0019.
+ *
+ * Regel:
+ * - Hat das Item eine kanonische K2-Nummer → nur den primären Key (number/id) verwenden.
+ * - Sonst (Legacy/Altformate) → volle Key-Varianten inkl. Ziffern-Fallback.
+ */
+function getKeysForLookup(a: any, getKey: (x: any) => string | undefined = DEFAULT_GET_KEY): string[] {
+  const main = getKey(a)
+  if (!main) return []
+  const raw = a?.number ?? a?.id
+  if (isCanonicalK2PrefixedNumber(raw)) return [String(main)]
+  return getKeysForMatching(a)
+}
+
+/**
+ * Bild-/Merge-Abgleich darf NICHT Keramik (K) und Malerei (M) über die gleiche Ziffer verbinden.
+ * Beispiel: K2-K-0019 und K2-M-0019 existieren beide real – ein „0019“-Key würde kollidieren.
+ *
+ * Lösung: Ziffern-Keys (19, 0019) nur dann in Maps verwenden, wenn sie im jeweiligen Set eindeutig sind.
+ * (Die primären Keys bleiben immer: number/id im Originalformat.)
+ */
+function buildDisambiguatedKeyMap(list: any[], getKey: (a: any) => string | undefined): Map<string, any> {
+  const primaryKeys: Array<{ item: any; key: string }> = []
+  const numericCounts = new Map<string, number>()
+  const numericKeysByItem: Array<{ item: any; keys: string[] }> = []
+
+  const addNumeric = (k: string) => numericCounts.set(k, (numericCounts.get(k) ?? 0) + 1)
+
+  for (const item of list) {
+    const main = getKey(item)
+    if (main) primaryKeys.push({ item, key: main })
+
+    const parsed = parseK2Number(item?.number)
+    const numericKeys: string[] = []
+    if (parsed) {
+      numericKeys.push(String(parsed.num))
+      numericKeys.push(String(parsed.num).padStart(4, '0'))
+    }
+    // Legacy: K2-0031 oder 0031 o.ä. – nur Ziffernteil, aber wird später nur verwendet wenn eindeutig.
+    if (main) {
+      const numOnly = String(main).trim().replace(/^K2-[A-Z]-?/i, '').replace(/^0+/, '')
+      if (numOnly && numOnly !== main) numericKeys.push(numOnly)
+    }
+
+    if (numericKeys.length) {
+      numericKeysByItem.push({ item, keys: numericKeys })
+      numericKeys.forEach(addNumeric)
+    }
+  }
+
+  const m = new Map<string, any>()
+  primaryKeys.forEach(({ item, key }) => m.set(key, item))
+  numericKeysByItem.forEach(({ item, keys }) => {
+    keys.forEach((k) => {
+      if ((numericCounts.get(k) ?? 0) === 1) m.set(k, item)
+    })
+  })
+  return m
+}
 const DEFAULT_IS_MOBILE = (a: any): boolean =>
   !!(a?.createdOnMobile || a?.updatedOnMobile)
 const DEFAULT_IS_VERY_NEW = (a: any): boolean => {
@@ -202,22 +270,18 @@ export function mergeServerWithLocal(
   const onlyAddLocalIfMobileAndVeryNew = options.onlyAddLocalIfMobileAndVeryNew === true
   const serverAsSoleTruth = options.serverAsSoleTruth === true
 
-  // Server-Map mit ALLEN Key-Varianten (0030, K2-K-0030, 30 …), damit lokales "K2-K-0030" das Server-Werk "0030" findet – sonst Duplikate + Bildverlust
+  // Server-Map mit Key-Varianten – Ziffern-only nur wenn eindeutig (sonst K2-K-0019 ↔ K2-M-0019 Chaos).
   const serverMap =
     options.serverMap ??
     (() => {
-      const m = new Map<string, any>()
-      serverList.forEach((a: any) => {
-        getKeysForMatching(a).forEach((k) => { if (k) m.set(k, a) })
-      })
-      return m
+      return buildDisambiguatedKeyMap(serverList, getKey)
     })()
 
   const merged: any[] = [...serverList]
   const toHistory: any[] = []
 
   localList.forEach((local: any) => {
-    const keysToTry = getKeysForMatching(local)
+    const keysToTry = getKeysForLookup(local, getKey)
     if (keysToTry.length === 0) return
     const serverItem = keysToTry.map((k) => serverMap.get(k)).find(Boolean)
     const mobile = isMobileWork(local)
@@ -272,12 +336,9 @@ export function preserveLocalImageData(
   localList: any[],
   getKey: (a: any) => string | undefined = DEFAULT_GET_KEY
 ): any[] {
-  const localByKey = new Map<string, any>()
-  localList.forEach((a: any) => {
-    getKeysForMatching(a).forEach((k) => { if (k) localByKey.set(k, a) })
-  })
+  const localByKey = buildDisambiguatedKeyMap(localList, getKey)
   return merged.map((item: any) => {
-    const keysToTry = getKeysForMatching(item)
+    const keysToTry = getKeysForLookup(item, getKey)
     if (keysToTry.length === 0) return item
     const local = keysToTry.map((k) => localByKey.get(k)).find(Boolean)
     if (!local) return item
@@ -308,8 +369,8 @@ export function mergeMissingFromStorage(
 ): any[] {
   if (fromStorage.length <= incoming.length) return incoming
   const hasMatchInIncoming = (stored: any): boolean => {
-    const keys = getKeysForMatching(stored)
-    return keys.some((k) => k && incoming.some((inItem) => getKeysForMatching(inItem).includes(k)))
+    const keys = getKeysForLookup(stored, getKey)
+    return keys.some((k) => k && incoming.some((inItem) => getKeysForLookup(inItem, getKey).includes(k)))
   }
   const missing = fromStorage.filter((a) => !hasMatchInIncoming(a))
   if (missing.length === 0) return incoming
@@ -326,12 +387,9 @@ export function preserveStorageImageRefs(
   fromStorage: any[],
   getKey: (a: any) => string | undefined = DEFAULT_GET_KEY
 ): any[] {
-  const storageByKey = new Map<string, any>()
-  fromStorage.forEach((a: any) => {
-    getKeysForMatching(a).forEach((k) => { if (k) storageByKey.set(k, a) })
-  })
+  const storageByKey = buildDisambiguatedKeyMap(fromStorage, getKey)
   return incoming.map((item: any) => {
-    const keysToTry = getKeysForMatching(item)
+    const keysToTry = getKeysForLookup(item, getKey)
     if (keysToTry.length === 0) return item
     const stored = keysToTry.map((k) => storageByKey.get(k)).find(Boolean)
     if (!stored) return item
