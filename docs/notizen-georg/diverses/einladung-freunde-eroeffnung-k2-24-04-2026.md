@@ -17,6 +17,8 @@ Liebe …, lieber …,
 
 ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich, einmal mit etwas, das mich in den letzten Monaten stark beschäftigt hat.
 
+![Masterflyer K2 – Seite 1](/img/k2/masterflyer-k2-seite1.png)
+
 **1. Galerieeröffnung 24.–26. April**  
 Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung **24.–26.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
 
