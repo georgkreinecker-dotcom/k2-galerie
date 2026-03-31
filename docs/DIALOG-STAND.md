@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 31.03.26 – **Einladung / Masterflyer fixiert (genau wie Georg angeordnet):** Der **grüne Masterflyer** ist jetzt **1:1** die Datei `public/img/k2/masterflyer-k2-a5-seite1.png` (ersetzt, keine Ableitung). Zusätzlich: Notiz-Ansicht rendert Flyer **randlos (full‑bleed)**, damit er groß wirkt. **Tests + Build grün.** **Commits:** **c487fb0**, **3e4dd29** ✅ auf GitHub
+
+**Was wir JETZT tun:** Schluss für heute (Session Ende). Nächstes Mal nur kurz visuell prüfen: Einladung zeigt **grünen** Masterflyer (ohne falsche Öffnungszeiten) und wirkt groß genug.
+
+---
+
 **Letzter Stand:** 31.03.26 – **Chaos „Martina-Bilder als K2-K-…“ (Keramik) trotz keiner Neuanlage:** Ursache im Merge/Abgleich: kanonische K2-Nummern wurden zusätzlich über **reine Ziffern** gematcht (z. B. `0019`) → echte Kollision **K2-M-0019 ↔ K2-K-0019** möglich. **Fix:** In `syncMerge.ts` werden bei **kanonischen** K2-Nummern keine Ziffern-Fallback-Keys mehr für Lookups verwendet (nur bei Legacy-Formaten), plus Test `syncMerge-k2-prefix-ambiguity.test.ts`. **Tests + Build grün.** **Commit:** **ee8643c** ✅ auf GitHub
 
 **Was wir JETZT tun:** In der App einmal **„Aktuellen Stand holen“** (Server laden) und dann im Admin prüfen: Martina-Bilder bleiben **K2-M-…**, Keramik bleibt **K2-K-…**, keine Überschneidungen.
