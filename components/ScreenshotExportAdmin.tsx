@@ -26076,7 +26076,7 @@ ${name}`
             <h3 style={{ margin: '0 0 1rem', color: '#22c55e', fontSize: '1.2rem' }}>✅ App aktualisiert</h3>
             {publishSuccessModal.artworksCount != null && (
               <p style={{ margin: '0 0 0.5rem', color: 'rgba(255,255,255,0.95)', fontSize: '1rem', fontWeight: '600' }}>
-                Gesendet: {publishSuccessModal.artworksCount} Werke{publishSuccessModal.imagesResolved != null ? `, ${publishSuccessModal.imagesResolved} mit Bild` : ''}.
+                Gesendet: {publishSuccessModal.artworksCount} Werke{publishSuccessModal.imagesResolved != null ? `, ${publishSuccessModal.imagesResolved} mit Bild` : ''} – plus Stammdaten, Events, Dokumente, Design und Seitentexte.
                 {publishSuccessModal.serverArtworksCount != null && publishSuccessModal.serverImagesCount != null && (
                   <> Auf Vercel: {publishSuccessModal.serverArtworksCount} Werke, {publishSuccessModal.serverImagesCount} mit Bild.
                     {publishSuccessModal.serverExportedAt && (
