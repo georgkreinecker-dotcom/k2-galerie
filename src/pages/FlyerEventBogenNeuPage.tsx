@@ -594,12 +594,63 @@ export default function FlyerEventBogenNeuPage() {
    */
   useEffect(() => {
     if (!derivationOnlyViewer || isOeffentlich || isVk2) return
-    const g = loadStammdaten('k2', 'gallery')
-    const gi = getGalerieImages(g)
+    let active = true
     const fb = flyerImgFallback
-    setMiddleSrc(gi.welcomeImage || fb)
-    setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
-  }, [derivationOnlyViewer, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback])
+
+    const applyFromServerPayload = (payload: any) => {
+      const galleryFromServer = (payload?.gallery && typeof payload.gallery === 'object') ? payload.gallery : {}
+      let page: any = null
+      try {
+        if (typeof payload?.pageContentGalerie === 'string' && payload.pageContentGalerie.trim()) {
+          page = JSON.parse(payload.pageContentGalerie)
+        }
+      } catch (_) {
+        page = null
+      }
+      const welcome = String(page?.welcomeImage || galleryFromServer?.welcomeImage || '/img/k2/willkommen.jpg').trim()
+      const virtualTour = String(page?.virtualTourImage || galleryFromServer?.virtualTourImage || '').trim()
+
+      if (!active) return
+      setMiddleSrc(welcome || fb)
+      setRightSrc(virtualTour || welcome || fb)
+    }
+
+    const applyFromLocal = () => {
+      const g = loadStammdaten('k2', 'gallery')
+      const gi = getGalerieImages(g)
+      if (!active) return
+      setMiddleSrc(gi.welcomeImage || fb)
+      setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
+    }
+
+    // Public-Derivations (aus „Aktuelles“) müssen deterministisch Server-Stand verwenden.
+    // Sonst kann am Empfänger-Gerät ein alter localStorage-Stand das Bild „zurückdrehen“.
+    if (fromPublicGalerie) {
+      const controller = new AbortController()
+      const t = setTimeout(() => controller.abort(), 8000)
+      fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((payload) => {
+          clearTimeout(t)
+          if (!payload) return applyFromLocal()
+          applyFromServerPayload(payload)
+        })
+        .catch(() => {
+          clearTimeout(t)
+          applyFromLocal()
+        })
+      return () => {
+        active = false
+        clearTimeout(t)
+        controller.abort()
+      }
+    }
+
+    applyFromLocal()
+    return () => {
+      active = false
+    }
+  }, [derivationOnlyViewer, fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback, versionTimestamp])
 
   useEffect(() => {
     if (derivationOnlyViewer) setShowDerivationFullscreen(true)
