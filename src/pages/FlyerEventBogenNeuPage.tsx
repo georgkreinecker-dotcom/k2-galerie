@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { getPageTexts } from '../config/pageTexts'
-import { getGalerieImages } from '../config/pageContentGalerie'
+import { getGalerieImages, setPageContentGalerie } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
   MUSTER_TEXTE,
@@ -916,6 +916,18 @@ export default function FlyerEventBogenNeuPage() {
       }
       localStorage.setItem(flyerStorageKey, json)
       setLeftSrc(leftSrcToSave)
+
+      // K2: Wenn das Masterbild eine URL ist (kein data:/blob:), dann gehört es in die Seitengestaltung (gemeinsame Quelle).
+      // So ist das Masterbild nach „An Server senden“ auf allen Geräten gleich und nicht nur lokal am Mac.
+      if (!isOeffentlich && !isVk2) {
+        const u = String(leftSrcToSave || '').trim()
+        if (u && !u.startsWith('data:') && !u.startsWith('blob:')) {
+          try {
+            setPageContentGalerie({ galerieCardImage: u }, undefined)
+          } catch (_) {}
+        }
+      }
+
       if (leftSrcToSave === fallbackPath && leftSrc !== fallbackPath) {
         setFlyerSaveMessage(
           isOeffentlich || isVk2
