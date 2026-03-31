@@ -1572,10 +1572,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       // Vorschau aus Einstellungen „Seiten prüfen“: Nur localStorage nutzen, kein Fetch (sonst überschreiben alte Server-Daten die gerade gespeicherten)
       if (!isVorschauModus) {
       try {
-        // Cache-Bust: v= aus URL (vom QR) mitnutzen, damit Scan immer frische Daten lädt
+        // Cache-Bust: NICHT den Query-Parameter v= als Cache-Key übernehmen.
+        // Sonst kann ein alter geteilter Link (mit altem v=) über Service-Worker/Cache wieder „alten Stand“ liefern,
+        // obwohl der Server längst neu ist. Wir busten daher immer selbst mit _=Date.now().
         const timestamp = Date.now()
-        const urlV = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('v') : null
-        const pathAndQuery = `/gallery-data.json?v=${urlV || timestamp}&t=${timestamp}&_=${Math.random()}`
         
         // WICHTIG: Timeout hinzufügen um Hänger zu vermeiden
         controller = new AbortController()
@@ -1594,7 +1594,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         }
 
         // ESSENZIELL: Immer zuerst API (Blob = was „Jetzt an Server senden“ geschrieben hat). tenantId=k2 = genau die K2-Daten, keine Muster/ök2 – QR liefert Gleichstand.
-        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=k2&${urlV ? `v=${urlV}&` : ''}t=${timestamp}&_=${Date.now()}`
+        const apiUrl = `${GALLERY_DATA_PUBLIC_URL}/api/gallery-data?tenantId=k2&t=${timestamp}&_=${Date.now()}`
         let response: Response | null = null
         try {
           response = await fetch(apiUrl, fetchOpts)
