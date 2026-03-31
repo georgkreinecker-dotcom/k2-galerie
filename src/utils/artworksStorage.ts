@@ -15,6 +15,17 @@ import { MUSTER_ARTWORKS } from '../config/tenantConfig'
 const K2_ARTWORKS_KEY = 'k2-artworks'
 const OEF_ARTWORKS_KEY = 'k2-oeffentlich-artworks'
 
+export function ensureArtworkUid(a: any): string {
+  const existing = String(a?.uid ?? '').trim()
+  if (existing) return existing
+  try {
+    const c: any = typeof crypto !== 'undefined' ? (crypto as any) : undefined
+    if (c && typeof c.randomUUID === 'function') return c.randomUUID()
+  } catch (_) {}
+  // Fallback: ausreichend einzigartig für lokale Identität (nicht kryptografisch)
+  return `uid_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`
+}
+
 /**
  * Klare Regel (Datentrennung ök2 vs. K2):
  * - Echte K2-Galerie (Martina & Georg): Werknummern wie 0030, 0031, 0035, K2-K-0030 (3–4 Ziffern, ggf. Präfix K2-K-/K2-M-).

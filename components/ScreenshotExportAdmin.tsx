@@ -97,7 +97,7 @@ import {
   type PageContentEntdecken,
 } from '../src/config/pageContentEntdecken'
 import { loadEntdeckenHeroOverlayIfFresh } from '../src/utils/entdeckenHeroOverlayStorage'
-import { addPendingArtwork, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
+import { addPendingArtwork, ensureArtworkUid, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
 import { uploadArtworkImageToStorage } from '../src/utils/supabaseStorage'
 import { loadStammdaten, saveStammdaten as persistStammdaten, loadVk2Stammdaten, saveVk2Stammdaten, buildK2PersonStateForAdmin } from '../src/utils/stammdatenStorage'
@@ -11474,9 +11474,11 @@ ${'='.repeat(60)}
     }
     
     const quantityNum = Math.min(99, Math.max(1, parseInt(artworkQuantity, 10) || 1))
+    const baseUidSource = editingArtwork || existingArtworks.find((a: any) => String(a?.id ?? a?.number ?? '').trim() === String(finalArtworkNumber).trim())
     const artworkData: any = {
       id: finalArtworkNumber,
       number: finalArtworkNumber,
+      uid: ensureArtworkUid(baseUidSource || {}),
       title: (finalTitle || '').trim(),
       category: artworkCategory,
       entryType: (tenant.isOeffentlich ? getEntryTypeForDirection(artworkDirection) : (artworkEntryType || editingArtwork?.entryType || 'artwork')) as EntryTypeId,
@@ -11574,8 +11576,11 @@ ${'='.repeat(60)}
     const sameArtwork = (a: any) => {
       const aId = norm(a?.id)
       const aNum = norm(a?.number)
+      const aUid = norm(a?.uid)
       const eId = norm(editingArtwork?.id)
       const eNum = norm(editingArtwork?.number)
+      const eUid = norm(editingArtwork?.uid)
+      if (aUid && eUid && aUid === eUid) return true
       if (aId && eId && aId === eId) return true
       if (aNum && eNum && aNum === eNum) return true
       const aSuffix = aNum?.replace(/^.*[-_]/, '') || aNum

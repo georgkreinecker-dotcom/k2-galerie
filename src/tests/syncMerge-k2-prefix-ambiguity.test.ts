@@ -47,5 +47,20 @@ describe('syncMerge – K2 Präfix-Ambiguität (M vs K)', () => {
     expect(m?.imageUrl).toBe('https://example.com/m30-local.jpg')
     expect(k?.imageUrl).toBe('https://example.com/k30.jpg')
   })
+
+  it('mergeServerWithLocal matched stabil über uid (auch wenn Nummern sich unterscheiden)', () => {
+    const server = [
+      { uid: 'u-1', number: 'K2-M-0022', id: 'K2-M-0022', category: 'malerei', title: 'X', updatedAt: '2026-03-01T10:00:00.000Z' },
+    ]
+    const local = [
+      { uid: 'u-1', number: 'K2-M-0030', id: 'K2-M-0030', category: 'malerei', title: 'X', updatedAt: '2026-03-02T10:00:00.000Z' },
+    ]
+
+    const { merged } = mergeServerWithLocal(server, local, { onlyAddLocalIfMobileAndVeryNew: false, serverAsSoleTruth: true })
+    expect(merged).toHaveLength(1)
+    expect(merged[0]?.uid).toBe('u-1')
+    // Server ist Wahrheit (serverAsSoleTruth) → Nummer bleibt Server-Stand
+    expect(merged[0]?.number).toBe('K2-M-0022')
+  })
 })
 

@@ -3807,10 +3807,13 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                     console.log('✏️ Alle artworks:', artworks.map((a: any) => ({ number: a.number, id: a.id })))
                     
                     // Robuster Abgleich: number/id als String (damit 0031 / K2-K-0031 und verschiedene Typen treffen)
-                    const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '').trim()
-                    const index = artworks.findIndex((a: any) => 
-                      editKey && (String(a?.number ?? a?.id ?? '').trim() === editKey)
-                    )
+                      const editUid = String(editingArtwork?.uid ?? '').trim()
+                      const editKey = String(editingArtwork?.number ?? editingArtwork?.id ?? '').trim()
+                      const index = artworks.findIndex((a: any) => {
+                        const aUid = String(a?.uid ?? '').trim()
+                        if (editUid && aUid && aUid === editUid) return true
+                        return editKey && (String(a?.number ?? a?.id ?? '').trim() === editKey)
+                      })
                     
                     console.log('✏️ Gefundener Index:', index, 'von', artworks.length, 'Objekten', editKey ? `(Key: ${editKey})` : '')
                     
@@ -3831,6 +3834,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                       const existingArtwork = artworks[index]
                       const updatedArtwork = {
                         ...existingArtwork,
+                        uid: existingArtwork.uid || editingArtwork?.uid,
                         title: mobileTitle,
                         category: mobileCategory,
                         imageUrl: mobilePhoto,
@@ -3843,13 +3847,18 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                         updatedAt: new Date().toISOString(),
                         updatedOnMobile: true
                       }
+                      const uidKey = String(updatedArtwork?.uid ?? '').trim()
                       const key = String(updatedArtwork?.number ?? updatedArtwork?.id ?? '').trim()
                       
                       // Warteschlange: Lesen + Schreiben erst NACH vorherigem Speichern (z. B. 30), damit Bild bei 30 nicht verloren geht
                       const prev = lastArtworkSaveRef.current
                       lastArtworkSaveRef.current = prev.then(async (): Promise<boolean> => {
                         const latest = loadArtworks()
-                        const idxInStorage = latest.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                        const idxInStorage = latest.findIndex((a: any) => {
+                          const aUid = String(a?.uid ?? '').trim()
+                          if (uidKey && aUid && aUid === uidKey) return true
+                          return String(a?.number ?? a?.id ?? '').trim() === key
+                        })
                         if (idxInStorage < 0) {
                           console.warn('⚠️ Bearbeiten abgebrochen: Werk nicht im Speicher gefunden (würde sonst duplizieren):', key)
                           return false
@@ -3858,8 +3867,16 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                         const toSave = updatedArtworks
                         let prepared = await prepareArtworksForStorage(toSave)
                         const rightBeforeSave = loadArtworks()
-                        const idxOther = rightBeforeSave.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
-                        const editedInPrepared = prepared.find((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
+                        const idxOther = rightBeforeSave.findIndex((a: any) => {
+                          const aUid = String(a?.uid ?? '').trim()
+                          if (uidKey && aUid && aUid === uidKey) return true
+                          return String(a?.number ?? a?.id ?? '').trim() === key
+                        })
+                        const editedInPrepared = prepared.find((a: any) => {
+                          const aUid = String(a?.uid ?? '').trim()
+                          if (uidKey && aUid && aUid === uidKey) return true
+                          return String(a?.number ?? a?.id ?? '').trim() === key
+                        })
                         if (idxOther >= 0 && editedInPrepared) {
                           const withOnlyThisReplaced = [...rightBeforeSave.slice(0, idxOther), editedInPrepared, ...rightBeforeSave.slice(idxOther + 1)]
                           prepared = await prepareArtworksForStorage(withOnlyThisReplaced)

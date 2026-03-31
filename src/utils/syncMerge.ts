@@ -197,14 +197,19 @@ function getCanonicalK2PrefixedVariants(v: any): string[] {
  */
 function getKeysForLookup(a: any, getKey: (x: any) => string | undefined = DEFAULT_GET_KEY): string[] {
   const main = getKey(a)
-  if (!main) return []
+  const uid = String(a?.uid ?? '').trim()
+  const keys = new Set<string>()
+  if (uid) keys.add(`uid:${uid}`)
+  if (!main) return Array.from(keys)
+  keys.add(String(main))
   const raw = a?.number ?? a?.id
   if (isCanonicalK2PrefixedNumber(raw)) {
     const variants = getCanonicalK2PrefixedVariants(raw)
-    variants.push(String(main))
-    return Array.from(new Set(variants))
+    variants.forEach((k) => keys.add(k))
+    return Array.from(keys)
   }
-  return getKeysForMatching(a)
+  getKeysForMatching(a).forEach((k) => keys.add(k))
+  return Array.from(keys)
 }
 
 /**
@@ -245,6 +250,11 @@ function buildDisambiguatedKeyMap(list: any[], getKey: (a: any) => string | unde
 
   const m = new Map<string, any>()
   primaryKeys.forEach(({ item, key }) => m.set(key, item))
+  // UID immer als stabilen Lookup-Key führen (Nummer kann sich ändern; UID nicht).
+  for (const item of list) {
+    const uid = String(item?.uid ?? '').trim()
+    if (uid) m.set(`uid:${uid}`, item)
+  }
   // Präfix-Varianten (K2-M-30 ↔ K2-M-0030) immer mitführen, damit Bilddaten/Merge stabil bleiben.
   // Keine reinen Ziffern hier hinzufügen (das passiert nur unten via numericCounts & Eindeutigkeit).
   for (const item of list) {
