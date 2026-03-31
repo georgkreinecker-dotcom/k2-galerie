@@ -706,6 +706,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       setPublishStatus({ success: false, message: 'Veröffentlichen läuft im Hintergrund …' })
       setIsPublishing(false)
       publishGalleryDataToServer(allArtworksWithImages, {
+        tenantId: 'k2',
         onProgress: (done, total, phase) => setPublishStatus({ success: false, message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)` })
       }).then((result) => {
         if (!result.success) {

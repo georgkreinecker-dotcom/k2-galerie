@@ -14,6 +14,9 @@ import { artworksForExport } from './artworkExport'
 import { loadEvents } from './eventsStorage'
 import { loadDocuments } from './documentsStorage'
 import { getPageContentGalerie } from '../config/pageContentGalerie'
+import type { TenantId } from '../config/tenantConfig'
+
+type PublishTenantId = Exclude<TenantId, 'demo'>
 
 /** Ab dieser Größe wird in kleinen Chunks gesendet (jeweils unter 1 MB). */
 const CHUNKED_THRESHOLD_BYTES = 4 * 1024 * 1024
@@ -28,6 +31,14 @@ function getItemSafe(key: string, defaultValue: unknown): unknown {
   } catch {
     return defaultValue
   }
+}
+
+function tenantPrefix(tenantId: PublishTenantId): string {
+  return tenantId === 'k2' ? 'k2' : tenantId === 'oeffentlich' ? 'k2-oeffentlich' : tenantId === 'vk2' ? 'k2-vk2' : `k2-${tenantId}`
+}
+
+function tenantKey(tenantId: PublishTenantId, suffix: string): string {
+  return `${tenantPrefix(tenantId)}-${suffix}`
 }
 
 export interface PublishGalleryDataResult {
@@ -170,6 +181,8 @@ export async function publishK2MetaToServerPreserveArtworks(): Promise<PublishGa
 export async function publishGalleryDataToServer(
   artworks: any[],
   options?: {
+    /** Kontext, in den veröffentlicht werden soll. Default: 'k2' */
+    tenantId?: PublishTenantId
     onProgress?: (done: number, total: number, phase?: 'images' | 'chunks') => void
     /** Nach bewusstem Löschen aller Werke: leeres Array an Vercel schreiben (sonst kommen alte Werke beim nächsten Laden zurück). */
     allowEmptyArtworks?: boolean
@@ -181,6 +194,8 @@ export async function publishGalleryDataToServer(
     preserveServerMeta?: boolean
   }
 ): Promise<PublishGalleryDataResult> {
+  const tenantId: PublishTenantId = (options?.tenantId ?? 'k2') as PublishTenantId
+
   const allowEmpty = options?.allowEmptyArtworks === true
   if (!Array.isArray(artworks) || (!allowEmpty && artworks.length === 0)) {
     return { success: false, error: 'Keine Werke zum Veröffentlichen' }
@@ -202,7 +217,7 @@ export async function publishGalleryDataToServer(
 
   // Optional: Meta vom Server übernehmen (nur K2) – verhindert „zurückdrehen“ durch alte lokale Daten.
   let serverMeta: Record<string, unknown> | null = null
-  if (options?.preserveServerMeta) {
+  if (options?.preserveServerMeta && tenantId === 'k2') {
     try {
       const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
       if (res.ok) {
@@ -214,18 +229,18 @@ export async function publishGalleryDataToServer(
     }
   }
 
-  const galleryStamm = (serverMeta?.gallery ?? getItemSafe('k2-stammdaten-galerie', {})) as Record<string, unknown>
+  const galleryStamm = (serverMeta?.gallery ?? getItemSafe(tenantKey(tenantId, 'stammdaten-galerie'), {})) as Record<string, unknown>
   const pageContent = serverMeta?.pageContentGalerie
     ? (() => {
         try {
           const raw = String(serverMeta!.pageContentGalerie ?? '')
           const parsed = raw ? JSON.parse(raw) : null
-          return parsed && typeof parsed === 'object' ? (parsed as any) : getPageContentGalerie()
+          return parsed && typeof parsed === 'object' ? (parsed as any) : getPageContentGalerie(tenantId === 'k2' ? undefined : tenantId)
         } catch {
-          return getPageContentGalerie()
+          return getPageContentGalerie(tenantId === 'k2' ? undefined : tenantId)
         }
       })()
-    : getPageContentGalerie()
+    : getPageContentGalerie(tenantId === 'k2' ? undefined : tenantId)
   // Nur URLs mitsenden – keine data: (Base64), sonst wird der Payload um MB groß (Speicher/Blob-Limit)
   const toUrlOrEmpty = (v: string | undefined): string => {
     if (!v || typeof v !== 'string') return ''
@@ -244,22 +259,22 @@ export async function publishGalleryDataToServer(
     virtualTourVideo: toUrlOrEmpty(virtualTourVideo),
   }
   const data = {
-    martina: (serverMeta?.martina ?? getItemSafe('k2-stammdaten-martina', {})),
-    georg: (serverMeta?.georg ?? getItemSafe('k2-stammdaten-georg', {})),
+    martina: (serverMeta?.martina ?? getItemSafe(tenantKey(tenantId, 'stammdaten-martina'), {})),
+    georg: (serverMeta?.georg ?? getItemSafe(tenantKey(tenantId, 'stammdaten-georg'), {})),
     gallery: {
       ...galleryStamm,
       welcomeImage: toUrlOrEmpty(welcome), galerieCardImage: toUrlOrEmpty(galerieCard), virtualTourImage: toUrlOrEmpty(virtualTour)
     },
     artworks: forExport,
-    events: (Array.isArray(serverMeta?.events) ? (serverMeta!.events as any[]) : (loadEvents('k2') as any[])).slice(0, 100),
-    documents: (Array.isArray(serverMeta?.documents) ? (serverMeta!.documents as any[]) : (loadDocuments('k2') as any[])).slice(0, 100),
-    designSettings: (serverMeta?.designSettings ?? getItemSafe('k2-design-settings', {})),
-    pageTexts: (serverMeta?.pageTexts ?? getItemSafe('k2-page-texts', null)),
+    events: (Array.isArray(serverMeta?.events) ? (serverMeta!.events as any[]) : (loadEvents(tenantId as any) as any[])).slice(0, 100),
+    documents: (Array.isArray(serverMeta?.documents) ? (serverMeta!.documents as any[]) : (loadDocuments(tenantId as any) as any[])).slice(0, 100),
+    designSettings: (serverMeta?.designSettings ?? getItemSafe(tenantKey(tenantId, 'design-settings'), {})),
+    pageTexts: (serverMeta?.pageTexts ?? getItemSafe(tenantKey(tenantId, 'page-texts'), null)),
     pageContentGalerie: JSON.stringify(pageContentForServer),
     version: Date.now(),
     buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
     exportedAt: new Date().toISOString(),
-    tenantId: 'k2'
+    tenantId
   }
 
   const json = JSON.stringify(data)

@@ -3946,6 +3946,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                           const allArtworks = filterK2OnlyStorage(withImages || [])
                           if (allArtworks.length === 0) return
                           publishGalleryDataToServer(allArtworks, {
+                            tenantId: 'k2',
                             // Schutz: Beim automatischen Hintergrund-Senden niemals Stammdaten/Events/Design „zurückdrehen“
                             // (ein Stand = ein Stand). Nur Werke ersetzen, Meta vom Server übernehmen.
                             preserveServerMeta: true,
@@ -4214,6 +4215,7 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                         const allArtworks = filterK2OnlyStorage(withImages || [])
                         if (allArtworks.length === 0) return
                         publishGalleryDataToServer(allArtworks, {
+                          tenantId: 'k2',
                           // Schutz: „Schnell senden“ (nicht explizit Stammdaten veröffentlichen) → Meta vom Server behalten
                           preserveServerMeta: true,
                           onProgress: (done, total, phase) => setLoadStatus({ message: phase === 'chunks' ? `Teil ${done} von ${total} senden …` : `Bilder hochladen … ${done}/${total} (im Hintergrund)`, success: false })
