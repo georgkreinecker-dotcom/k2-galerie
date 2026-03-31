@@ -100,6 +100,50 @@ function relativeLuminanceHex(hex: string): number {
   return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
 }
 
+function looksLikePlaceholderImageUrl(v: string): boolean {
+  const s = (v || '').trim().toLowerCase()
+  if (!s) return true
+  if (s.endsWith('.svg')) return true
+  if (s.includes('/img/muster/')) return true
+  if (s.includes('placeholder')) return true
+  return false
+}
+
+function pickEventImageUrl(ev: unknown): string {
+  if (!ev || typeof ev !== 'object') return ''
+  const obj = ev as Record<string, unknown>
+  // Bevorzugung: offensichtliche Bild-Felder zuerst
+  const preferred = [
+    'imageUrl',
+    'photoUrl',
+    'fotoUrl',
+    'bannerUrl',
+    'coverUrl',
+    'coverImage',
+    'heroImage',
+    'plakatImage',
+    'plakatUrl',
+    'overlayUrl',
+    'backgroundUrl',
+  ]
+  for (const k of preferred) {
+    const v = typeof obj[k] === 'string' ? String(obj[k]) : ''
+    if (!v.trim()) continue
+    if (looksLikePlaceholderImageUrl(v)) continue
+    return v.trim()
+  }
+  // Fallback: irgendein string-Feld, das nach Bild/URL aussieht
+  const keys = Object.keys(obj)
+  for (const k of keys) {
+    if (!/(image|photo|foto|plakat|banner|cover|hero|background|overlay|url)$/i.test(k)) continue
+    const v = typeof obj[k] === 'string' ? String(obj[k]) : ''
+    if (!v.trim()) continue
+    if (looksLikePlaceholderImageUrl(v)) continue
+    return v.trim()
+  }
+  return ''
+}
+
 /** Text auf Akzentfläche (Hero, Invite-Panel): hell oder dunkel je nach Akzenthelligkeit. */
 function onAccentCaptionColor(accentHex: string): string {
   return relativeLuminanceHex(accentHex) > 0.55 ? '#1a120c' : '#fdfbf8'
@@ -968,6 +1012,28 @@ export default function FlyerEventBogenNeuPage() {
       setEventDateLine('Termin folgt')
     }
   }, [flyerDataTick, isOeffentlich, isVk2, eventIdFromUrl])
+
+  /**
+   * Event-Ableitungen (A3/A6/Karte): Wenn ein Event per eventId gewählt wurde und ein sinnvolles
+   * Eventfoto existiert, soll es **das** Bild für das Plakat sein – nicht ein alter Flyer-Master-Stand.
+   * Das verhindert genau die Klasse „A3 wird mit falschem Bild verschickt“.
+   */
+  useEffect(() => {
+    if (!derivationOnlyViewer) return
+    if (!(isA3Mode || isA6Mode || isCardMode)) return
+    if (!eventIdFromUrl) return
+    const picked = pickEventImageUrl(eroeffnungEvent)
+    if (!picked) return
+    setLeftSrc((prev) => {
+      // nicht zurück auf placeholder wechseln
+      if (looksLikePlaceholderImageUrl(picked)) return prev
+      if (prev && prev.trim() === picked) return prev
+      // blob:-URLs sind nur in der Session gültig; für öffentliches Plakat vermeiden
+      if (picked.startsWith('blob:')) return prev
+      return picked
+    })
+    setLeftWerkLabel('Eventfoto')
+  }, [derivationOnlyViewer, isA3Mode, isA6Mode, isCardMode, eventIdFromUrl, eroeffnungEvent])
 
   /** Nach „Paket übernehmen“ im ök2-Admin: Browser-Speicher des Flyer-Masters ist leer – offene Seite sofort auf Muster/Defaults. */
   useEffect(() => {
