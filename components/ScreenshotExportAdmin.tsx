@@ -18167,6 +18167,80 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   <button
                     type="button"
                     onClick={async () => {
+                      if (!confirm('Nur K2: Korrigieren: das Malerei-Werk mit Nummer 30 soll Nummer 22 bekommen?\n\nKonkret: K2-M-0030 → K2-M-0022\n\nVorher ggf. Vollbackup herunterladen.')) return
+
+                      const raw = readArtworksRawByKey('k2-artworks') ?? []
+                      if (!Array.isArray(raw) || raw.length === 0) {
+                        alert('Keine lokale Werkliste gefunden (k2-artworks ist leer).')
+                        return
+                      }
+
+                      const norm = (v: any) => String(v ?? '').trim()
+                      const isMalerei = (a: any) => norm(a?.category) === 'malerei'
+                      const keyOf = (a: any) => norm(a?.number ?? a?.id)
+
+                      const fromCandidates = new Set(['K2-M-0030', 'K2-M-30', '30'])
+                      const fromIdx = raw.findIndex((a: any) => isMalerei(a) && fromCandidates.has(keyOf(a)))
+                      if (fromIdx < 0) {
+                        alert('Konnte kein Malerei-Werk mit Nummer 30 finden (gesucht: K2-M-0030 / K2-M-30 / 30).')
+                        return
+                      }
+
+                      const to = 'K2-M-0022'
+                      const used = new Set(raw.map((a: any) => keyOf(a)).filter(Boolean) as string[])
+                      const from = keyOf(raw[fromIdx])
+                      if (used.has(to) && to !== from) {
+                        alert(`Abgebrochen: Zielnummer ${to} ist bereits vergeben.`)
+                        return
+                      }
+
+                      const title = norm(raw[fromIdx]?.title)
+                      if (!confirm(`1 Änderung wird gemacht:\n\n${from} → ${to}${title ? ` (${title})` : ''}\n\nFortfahren?`)) return
+
+                      const nextList = raw.map((a: any) => ({ ...a }))
+                      nextList[fromIdx] = { ...nextList[fromIdx], number: to, id: to }
+
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', nextList, {
+                        filterK2Only: true,
+                        allowReduce: false,
+                      })
+                      if (!ok) {
+                        alert('Speichern der Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+
+                      patchK2LocalStorageAfterArtworkRenames({ [from]: to })
+
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurde die Nummer korrigiert – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert('✅ Korrektur erledigt (30 → 22), veröffentlicht. Die Seite lädt neu.')
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      marginRight: '0.75rem',
+                      marginBottom: '0.75rem',
+                    }}
+                  >
+                    Fix: Malerei 30 → 22
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
                       if (!confirm('Nur K2: Malerei-Nummern anhand gallery-data.json (Server-Stand) reparieren?\n\nVorher ggf. Vollbackup herunterladen.')) return
 
                       let serverArtworks: any[] = []
