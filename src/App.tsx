@@ -793,7 +793,13 @@ function App() {
       } />
       
       {/* Galerie als separate Route */}
-      <Route path="/galerie-home" element={<GaleriePage />} />
+      {/* Kurze Besucher-URLs (Teilen-Link Standard) */}
+      <Route path="/galerie" element={<GaleriePage />} />
+      <Route path="/galerie-vorschau" element={<GalerieVorschauPage />} />
+      <Route path="/galerie-oeffentlich" element={<PlatformOnlyRoute><Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
+      <Route path="/galerie-oeffentlich-vorschau" element={<PlatformOnlyRoute><Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
+      {/* Legacy */}
+      <Route path="/galerie-home" element={<Navigate to="/galerie" replace />} />
       <Route path="/flyer-k2-galerie" element={<FlyerK2GaleriePage />} />
       <Route path="/prospekt-k2-galerie" element={<ProspektK2GaleriePage />} />
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />

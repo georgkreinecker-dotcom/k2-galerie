@@ -48,7 +48,7 @@ function getPublicPageUrl(vk2: boolean, musterOnly: boolean): string {
   const base = 'https://k2-galerie.vercel.app'
   if (vk2) return base + '/projects/vk2/galerie'
   if (musterOnly) return base + '/galerie-oeffentlich'
-  return base + '/projects/k2-galerie/galerie'
+  return base + '/galerie'
 }
 
 function isLocalOrPrivateOrigin(): boolean {
