@@ -139,24 +139,34 @@ export function renderGeorgsNotizMarkdown(text: string): ReactNode[] {
     if (imgLine) {
       const alt = (imgLine[1] || '').trim()
       const src = (imgLine[2] || '').trim()
+      const CONTAINER_SIDE_PADDING_REM = 1.35
       const isQr =
         /qr/i.test(alt) ||
         src.includes('api.qrserver.com') ||
         src.includes('create-qr-code') ||
         src.includes('qr') && src.includes('size=')
       out.push(
-        <p key={key()} style={{ ...baseStyles.p, textAlign: 'center' as const }}>
+        <p
+          key={key()}
+          style={{
+            ...baseStyles.p,
+            textAlign: 'center' as const,
+            marginLeft: isQr ? undefined : `-${CONTAINER_SIDE_PADDING_REM}rem`,
+            marginRight: isQr ? undefined : `-${CONTAINER_SIDE_PADDING_REM}rem`,
+          }}
+        >
           <img
             src={src}
             alt={alt || 'Bild'}
             style={{
-              maxWidth: isQr ? 160 : 900,
-              width: isQr ? undefined : '100%',
+              maxWidth: isQr ? 160 : 'none',
+              width: isQr ? undefined : `calc(100% + ${CONTAINER_SIDE_PADDING_REM * 2}rem)`,
               height: 'auto',
-              borderRadius: 10,
+              borderRadius: isQr ? 10 : 0,
               background: isQr ? '#fff' : 'transparent',
               padding: isQr ? 6 : 0,
-              display: 'inline-block',
+              display: 'block',
+              margin: isQr ? '0 auto' : '0',
               boxShadow: isQr ? 'none' : '0 10px 30px rgba(0,0,0,0.18)',
             }}
           />
