@@ -3850,9 +3850,11 @@ const GalerieVorschauPage = ({ initialFilter, musterOnly = false, vk2 = false, f
                       lastArtworkSaveRef.current = prev.then(async (): Promise<boolean> => {
                         const latest = loadArtworks()
                         const idxInStorage = latest.findIndex((a: any) => String(a?.number ?? a?.id ?? '').trim() === key)
-                        const updatedArtworks = idxInStorage >= 0
-                          ? [...latest.slice(0, idxInStorage), updatedArtwork, ...latest.slice(idxInStorage + 1)]
-                          : [...latest, updatedArtwork]
+                        if (idxInStorage < 0) {
+                          console.warn('⚠️ Bearbeiten abgebrochen: Werk nicht im Speicher gefunden (würde sonst duplizieren):', key)
+                          return false
+                        }
+                        const updatedArtworks = [...latest.slice(0, idxInStorage), updatedArtwork, ...latest.slice(idxInStorage + 1)]
                         const toSave = updatedArtworks
                         let prepared = await prepareArtworksForStorage(toSave)
                         const rightBeforeSave = loadArtworks()

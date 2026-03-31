@@ -11652,7 +11652,11 @@ ${'='.repeat(60)}
         artworkData.updatedOnMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
         artworks[index] = artworkData
       } else {
-        artworks.push(artworkData)
+        // 🔒 Bearbeiten darf niemals eine neue „Version“ anlegen – sonst Doppel-Einträge.
+        alert(
+          `⚠️ Bearbeiten abgebrochen: Das Werk konnte in der aktuellen Liste nicht gefunden werden.\n\nGesucht: ${norm(editingArtwork?.number ?? editingArtwork?.id)}\n\nBitte Seite neu laden („Stand“ tippen oder Cmd+R) und dann nochmal bearbeiten/speichern.`
+        )
+        return
       }
     } else {
       // Neues Werk hinzufügen - prüfe nochmal ob Nummer eindeutig ist
@@ -17904,6 +17908,102 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     Platzhalter (K2-M-0032…0039, K2-S-0001) jetzt entfernen
+                  </button>
+                </div>
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🧩 Malerei-Doppler zusammenführen (gleiche Nummer)</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Wenn beim Bearbeiten früher fälschlich eine „neue Version“ angelegt wurde, entstehen Doppel-Einträge mit <strong>gleicher Nummer</strong>.
+                    Dieser Button behält pro Nummer <strong>nur den neuesten</strong> Eintrag (nach <code>updatedAt</code>/<code>createdAt</code>) und entfernt die übrigen – erst nach Vorschau + Bestätigung.
+                    Danach wird an Vercel gesendet.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const raw = readArtworksRawByKey('k2-artworks') ?? []
+                      if (!Array.isArray(raw) || raw.length === 0) {
+                        alert('Keine lokale Werkliste gefunden (k2-artworks ist leer).')
+                        return
+                      }
+                      const norm = (v: any) => String(v ?? '').trim()
+                      const isMalerei = (a: any) => norm(a?.category) === 'malerei'
+                      const keyOf = (a: any) => norm(a?.number ?? a?.id)
+                      const byNum = new Map<string, any[]>()
+                      raw.forEach((a: any) => {
+                        if (!isMalerei(a)) return
+                        const k = keyOf(a)
+                        if (!k) return
+                        if (!byNum.has(k)) byNum.set(k, [])
+                        byNum.get(k)!.push(a)
+                      })
+                      const dupGroups = Array.from(byNum.entries()).filter(([, arr]) => arr.length > 1)
+                      if (dupGroups.length === 0) {
+                        alert('Keine Malerei-Doppler mit gleicher Nummer gefunden.')
+                        return
+                      }
+                      const pickTs = (a: any) => {
+                        const t = a?.updatedAt || a?.createdAt
+                        const ms = t ? new Date(t).getTime() : 0
+                        return Number.isFinite(ms) ? ms : 0
+                      }
+                      const toRemove: any[] = []
+                      const previewLines: string[] = []
+                      dupGroups
+                        .sort(([a], [b]) => a.localeCompare(b, 'de'))
+                        .forEach(([num, arr]) => {
+                          const sorted = [...arr].sort((x, y) => pickTs(y) - pickTs(x))
+                          const keep = sorted[0]
+                          const drop = sorted.slice(1)
+                          drop.forEach((x) => toRemove.push(x))
+                          previewLines.push(
+                            `${num}: behalten → ${norm(keep?.title) || '(ohne Titel)'} (${norm(keep?.updatedAt || keep?.createdAt) || 'ohne Datum'}) | entfernen: ${drop.length}`
+                          )
+                        })
+                      const preview = previewLines.slice(0, 18).join('\n')
+                      const more = previewLines.length > 18 ? `\n… und ${previewLines.length - 18} weitere Nummern` : ''
+                      if (
+                        !confirm(
+                          `Gefunden: ${dupGroups.length} Nummern mit Doppel-Einträgen (Malerei).\n\n${preview}${more}\n\nEs werden insgesamt ${toRemove.length} Einträge entfernt. Fortfahren?`
+                        )
+                      )
+                        return
+                      const removeSet = new Set(toRemove.map((a: any) => keyOf(a) + '|' + String(pickTs(a)) + '|' + norm(a?.title)))
+                      const filtered = raw.filter((a: any) => {
+                        const sig = keyOf(a) + '|' + String(pickTs(a)) + '|' + norm(a?.title)
+                        return !removeSet.has(sig)
+                      })
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', filtered, {
+                        filterK2Only: true,
+                        allowReduce: true,
+                      })
+                      if (!ok) {
+                        alert('Speichern der bereinigten Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurden ${toRemove.length} Doppler entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert(`✅ Doppler bereinigt: ${toRemove.length} Einträge entfernt, veröffentlicht, Seite lädt neu.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#1c4d3a',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Malerei-Doppler jetzt zusammenführen
                   </button>
                 </div>
                 <input
