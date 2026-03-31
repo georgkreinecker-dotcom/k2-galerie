@@ -54,6 +54,15 @@ export const Vk2KatalogPage: React.FC = () => {
   const [filterArtist, setFilterArtist] = useState('')
   const [filterCategory, setFilterCategory] = useState('')
 
+  const norm = (v: any) => String(v ?? '').trim()
+  const slug = (name: string) => norm(name).replace(/\s+/g, '-').toLowerCase()
+  const ensureVk2CatalogWorkId = (mitgliedKeySuffix: string, w: any) => {
+    const rawId = norm(w?.id) || norm(w?.number) || norm(w?.title) || `work-${Math.random().toString(36).slice(2)}`
+    // VK2-Katalog sammelt Werke von mehreren Mitgliedern → IDs dürfen nie kollidieren.
+    // Deshalb wird jede ID automatisch namespaced: "<mitglied>:<id>"
+    return `${mitgliedKeySuffix}:${rawId}`
+  }
+
   // Werke sammeln: aus lizenzGalerieUrl (fetch) + lokale Fallbacks
   useEffect(() => {
     const stammdaten = loadVk2Stammdaten()
@@ -63,12 +72,21 @@ export const Vk2KatalogPage: React.FC = () => {
 
     // 1. Lokale Werke nur aus VK2-Mitglieder-Keys (Datentrennung: niemals k2-artworks im VK2-Katalog)
     mitglieder.forEach((m: import('../config/tenantConfig').Vk2Mitglied) => {
-      const keySuffix = m.name.replace(/\s+/g, '-').toLowerCase()
+      const keySuffix = slug(m.name)
       const rawLocal = localStorage.getItem(`k2-vk2-artworks-${keySuffix}`)
       if (rawLocal) {
         try {
           const parsed: any[] = JSON.parse(rawLocal)
-          parsed.filter(w => w.imVereinskatalog).forEach(w => collected.push({ ...w, mitgliedName: m.name, artist: w.artist || m.name }))
+          parsed
+            .filter((w) => w?.imVereinskatalog)
+            .forEach((w) =>
+              collected.push({
+                ...w,
+                id: ensureVk2CatalogWorkId(keySuffix, w),
+                mitgliedName: m.name,
+                artist: w.artist || m.name,
+              })
+            )
         } catch { /* ignore */ }
       }
     })
@@ -90,9 +108,16 @@ export const Vk2KatalogPage: React.FC = () => {
             const data = await res.json()
             const artworks = Array.isArray(data.artworks) ? data.artworks : []
             const galerieUrl = m.lizenzGalerieUrl?.trim() || undefined
+            const keySuffix = slug(m.name)
             return artworks
               .filter((w: any) => w?.imVereinskatalog && !isEchteK2Werknummer(String(w?.number ?? w?.id ?? '')))
-              .map((w: any) => ({ ...w, mitgliedName: m.name, artist: w.artist || m.name, lizenzGalerieUrl: galerieUrl }))
+              .map((w: any) => ({
+                ...w,
+                id: ensureVk2CatalogWorkId(keySuffix, w),
+                mitgliedName: m.name,
+                artist: w.artist || m.name,
+                lizenzGalerieUrl: galerieUrl,
+              }))
           } catch {
             return []
           }
