@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 31.03.26 – **Chaos „Martina-Bilder als K2-K-…“ (Keramik) trotz keiner Neuanlage:** Ursache im Merge/Abgleich: kanonische K2-Nummern wurden zusätzlich über **reine Ziffern** gematcht (z. B. `0019`) → echte Kollision **K2-M-0019 ↔ K2-K-0019** möglich. **Fix:** In `syncMerge.ts` werden bei **kanonischen** K2-Nummern keine Ziffern-Fallback-Keys mehr für Lookups verwendet (nur bei Legacy-Formaten), plus Test `syncMerge-k2-prefix-ambiguity.test.ts`. **Tests + Build grün.** **Commit:** **ee8643c** ✅ auf GitHub
+
+**Was wir JETZT tun:** In der App einmal **„Aktuellen Stand holen“** (Server laden) und dann im Admin prüfen: Martina-Bilder bleiben **K2-M-…**, Keramik bleibt **K2-K-…**, keine Überschneidungen.
+
+---
+
 **Letzter Stand:** 30.03.26 – **Resend 403 „only send testing emails to your own address“:** Mit nur `RESEND_API_KEY` (ohne **verifizierte Domain**) blockiert Resend Versand an andere Empfänger – **kein App-Fehler**. **LicencesPage:** gelber Kasten mit deutscher Erklärung + Link **resend.com/domains**; **`isResendTestingRecipientsOnlyError`** in `resendPilotInviteHints.ts`; Test; **Handbuch 26** + **public**-Spiegel um Domain-Schritt und Fehlertabelle ergänzt. **Tests + Build grün.** **Commit:** **8021d62** ✅ auf GitHub
 
 **Was wir JETZT tun:** Session beendet 30.03. Abend – **nächster Schritt Georg:** Resend **kgm.at** auf Verified warten → **RESEND_FROM** auf Vercel (Adresse @kgm.at) → Redeploy → Testpilot erneut testen.
