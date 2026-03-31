@@ -60,6 +60,12 @@ export async function publishGalleryDataToServer(
     onProgress?: (done: number, total: number, phase?: 'images' | 'chunks') => void
     /** Nach bewusstem Löschen aller Werke: leeres Array an Vercel schreiben (sonst kommen alte Werke beim nächsten Laden zurück). */
     allowEmptyArtworks?: boolean
+    /**
+     * Sicherheitsmodus: Stammdaten/Events/Dokumente/Design/PageTexts werden vom Server übernommen
+     * und nur die Werke werden ersetzt. Verhindert, dass ein Gerät mit altem lokalen Stand
+     * (z. B. Handy) beim automatischen Hintergrund-Senden Stammdaten oder Eventinhalte „zurückdreht“.
+     */
+    preserveServerMeta?: boolean
   }
 ): Promise<PublishGalleryDataResult> {
   const allowEmpty = options?.allowEmptyArtworks === true
@@ -81,8 +87,32 @@ export async function publishGalleryDataToServer(
     .filter(Boolean)
   const forExport = artworksForExport(withUrls)
 
-  const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
-  const pageContent = getPageContentGalerie()
+  // Optional: Meta vom Server übernehmen (nur K2) – verhindert „zurückdrehen“ durch alte lokale Daten.
+  let serverMeta: Record<string, unknown> | null = null
+  if (options?.preserveServerMeta) {
+    try {
+      const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
+      if (res.ok) {
+        const j = await res.json().catch(() => null)
+        if (j && typeof j === 'object') serverMeta = j as Record<string, unknown>
+      }
+    } catch {
+      // ignore → fällt auf lokalen Stand zurück
+    }
+  }
+
+  const galleryStamm = (serverMeta?.gallery ?? getItemSafe('k2-stammdaten-galerie', {})) as Record<string, unknown>
+  const pageContent = serverMeta?.pageContentGalerie
+    ? (() => {
+        try {
+          const raw = String(serverMeta!.pageContentGalerie ?? '')
+          const parsed = raw ? JSON.parse(raw) : null
+          return parsed && typeof parsed === 'object' ? (parsed as any) : getPageContentGalerie()
+        } catch {
+          return getPageContentGalerie()
+        }
+      })()
+    : getPageContentGalerie()
   // Nur URLs mitsenden – keine data: (Base64), sonst wird der Payload um MB groß (Speicher/Blob-Limit)
   const toUrlOrEmpty = (v: string | undefined): string => {
     if (!v || typeof v !== 'string') return ''
@@ -101,17 +131,17 @@ export async function publishGalleryDataToServer(
     virtualTourVideo: toUrlOrEmpty(virtualTourVideo),
   }
   const data = {
-    martina: getItemSafe('k2-stammdaten-martina', {}),
-    georg: getItemSafe('k2-stammdaten-georg', {}),
+    martina: (serverMeta?.martina ?? getItemSafe('k2-stammdaten-martina', {})),
+    georg: (serverMeta?.georg ?? getItemSafe('k2-stammdaten-georg', {})),
     gallery: {
       ...galleryStamm,
       welcomeImage: toUrlOrEmpty(welcome), galerieCardImage: toUrlOrEmpty(galerieCard), virtualTourImage: toUrlOrEmpty(virtualTour)
     },
     artworks: forExport,
-    events: (loadEvents('k2') as any[]).slice(0, 100),
-    documents: (loadDocuments('k2') as any[]).slice(0, 100),
-    designSettings: getItemSafe('k2-design-settings', {}),
-    pageTexts: getItemSafe('k2-page-texts', null),
+    events: (Array.isArray(serverMeta?.events) ? (serverMeta!.events as any[]) : (loadEvents('k2') as any[])).slice(0, 100),
+    documents: (Array.isArray(serverMeta?.documents) ? (serverMeta!.documents as any[]) : (loadDocuments('k2') as any[])).slice(0, 100),
+    designSettings: (serverMeta?.designSettings ?? getItemSafe('k2-design-settings', {})),
+    pageTexts: (serverMeta?.pageTexts ?? getItemSafe('k2-page-texts', null)),
     pageContentGalerie: JSON.stringify(pageContentForServer),
     version: Date.now(),
     buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
