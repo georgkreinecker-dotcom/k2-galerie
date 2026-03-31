@@ -4408,6 +4408,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
               const raw = readArtworksRawByKey('k2-artworks')
               const toPublish = await resolveArtworkImages(raw)
               publishGalleryDataToServer(toPublish, {
+                tenantId: 'k2',
                 onProgress: (done, total, phase) => {
                   if (!silent && isMountedRef.current) {
                     const msg = phase === 'chunks' ? `Teil ${done} von ${total} wird gesendet …` : (total > 1 ? `Bilder vorbereiten … ${done}/${total}` : 'Daten werden gesendet…')
@@ -16565,6 +16566,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   const raw = readArtworksRawByKey('k2-artworks')
                                   const toPublish = await resolveArtworkImages(raw)
                                   const result = await publishGalleryDataToServer(toPublish, {
+                                    tenantId: 'k2',
                                     allowEmptyArtworks: toPublish.length === 0,
                                   })
                                   if (!result.success) {
@@ -17786,7 +17788,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       }
                       const rawForPublish = readArtworksRawByKey('k2-artworks')
                       const toPublish = await resolveArtworkImages(rawForPublish)
-                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      const pub = await publishGalleryDataToServer(toPublish, { tenantId: 'k2' })
                       if (!pub.success) {
                         alert(
                           `Lokal wurden ${matches.length} Einträge entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
@@ -17882,7 +17884,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       }
                       const rawForPublish = readArtworksRawByKey('k2-artworks')
                       const toPublish = await resolveArtworkImages(rawForPublish)
-                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      const pub = await publishGalleryDataToServer(toPublish, { tenantId: 'k2' })
                       if (!pub.success) {
                         alert(
                           `Lokal wurden ${toRemove.length} Doppler entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
@@ -18047,7 +18049,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       }
                       const rawForPublish = readArtworksRawByKey('k2-artworks')
                       const toPublish = await resolveArtworkImages(rawForPublish)
-                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      const pub = await publishGalleryDataToServer(toPublish, { tenantId: 'k2' })
                       if (!pub.success) {
                         alert(
                           `Lokal wurden ${toRemove.length} Doppler entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
