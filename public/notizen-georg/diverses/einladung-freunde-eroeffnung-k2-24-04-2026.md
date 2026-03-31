@@ -1,13 +1,13 @@
 # Einladung an Freundinnen und Freunde – K2 Galerie & Plattform
 
 **Zweck:** Persönliche Nachricht (E-Mail oder Messenger), drei Punkte wie besprochen. **Dazu in dieser Datei:** **WhatsApp-Kurzversion** (zum Kopieren) weiter unten – einmal normal kurz, einmal nur Kern + Links.  
-**Stand:** März 2026 · Eröffnung **24. April 2026**
+**Stand:** März 2026 · Eröffnung **24.–26. April 2026**
 
 ---
 
 ## Betreff (Vorschlag)
 
-**Einladung & Neuigkeiten – K2 Galerie am 24.04. und was Martina und ich sonst noch gebaut haben**
+**Einladung & Neuigkeiten – K2 Galerie 24.–26.04. und was Martina und ich sonst noch gebaut haben**
 
 ---
 
@@ -17,8 +17,8 @@ Liebe …, lieber …,
 
 ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich, einmal mit etwas, das mich in den letzten Monaten stark beschäftigt hat.
 
-**1. Galerieeröffnung am 24. April**  
-Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung am **24.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
+**1. Galerieeröffnung 24.–26. April**  
+Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung **24.–26.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web ein wenig umsehen:
 
