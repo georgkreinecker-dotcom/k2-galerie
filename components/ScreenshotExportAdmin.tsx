@@ -17824,6 +17824,88 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Fehlende Keramik K2-K-… aus gallery-data.json anfügen
                   </button>
                 </div>
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🧹 Platzhalter entfernen (K2)</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Entfernt gezielt Werke, die es in Wirklichkeit <strong>nicht</strong> gibt (z. B. schwarze Platzhalter-Karten). Es wird{' '}
+                    <strong>nur</strong> gelöscht, was du in der Vorschau bestätigst. Danach wird an Vercel gesendet (damit es nicht wieder zurückkommt).
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const targets = [
+                        'K2-M-0032',
+                        'K2-M-0033',
+                        'K2-M-0034',
+                        'K2-M-0036',
+                        'K2-M-0037',
+                        'K2-M-0038',
+                        'K2-M-0039',
+                        'K2-S-0001',
+                      ]
+                      const raw = readArtworksRawByKey('k2-artworks') ?? []
+                      if (!Array.isArray(raw) || raw.length === 0) {
+                        alert('Keine lokale Werkliste gefunden (k2-artworks ist leer).')
+                        return
+                      }
+                      const norm = (v: any) => String(v ?? '').trim()
+                      const matches = raw.filter((a: any) => {
+                        const k = norm(a?.number ?? a?.id)
+                        return k && targets.includes(k)
+                      })
+                      if (matches.length === 0) {
+                        alert('Keiner der Ziel-Einträge ist aktuell in k2-artworks vorhanden.')
+                        return
+                      }
+                      const preview = matches
+                        .slice(0, 15)
+                        .map((a: any) => `${norm(a?.number ?? a?.id)} – ${norm(a?.title) || '(ohne Titel)'} – ${norm(a?.category) || ''}`)
+                        .join('\n')
+                      const more = matches.length > 15 ? `\n… und ${matches.length - 15} weitere` : ''
+                      if (
+                        !confirm(
+                          `Diese ${matches.length} Einträge werden aus der Werkliste entfernt:\n\n${preview}${more}\n\nFortfahren?`
+                        )
+                      )
+                        return
+                      const toSave = raw.filter((a: any) => {
+                        const k = norm(a?.number ?? a?.id)
+                        return !targets.includes(k)
+                      })
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', toSave, {
+                        filterK2Only: true,
+                        allowReduce: true,
+                      })
+                      if (!ok) {
+                        alert('Speichern der bereinigten Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurden ${matches.length} Einträge entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert(`✅ ${matches.length} Platzhalter entfernt und veröffentlicht. Die Seite lädt neu.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#b54a1e',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Platzhalter (K2-M-0032…0039, K2-S-0001) jetzt entfernen
+                  </button>
+                </div>
                 <input
                   ref={backupFileInputRef}
                   type="file"
