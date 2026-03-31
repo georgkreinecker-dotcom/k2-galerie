@@ -17992,6 +17992,171 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Malerei-Doppler jetzt zusammenführen
                   </button>
                 </div>
+                <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
+                  <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🧠 Malerei-Doppler zusammenführen (gleicher Titel, andere Nummer)</h4>
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
+                    Falls bei Preis-/Textänderungen versehentlich neue Nummern vergeben wurden, entstehen Doppler mit <strong>gleichem Titel</strong> aber <strong>anderer Nummer</strong>.
+                    Dieser Button sucht solche Fälle in <strong>Malerei</strong> und behält pro Titel den neuesten Eintrag. Sicherheitsgurt: Es werden nur Gruppen zusammengeführt, wenn das Bild gleich ist (oder eines fehlt).
+                    Vorschau + Bestätigung, danach Veröffentlichung.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const raw = readArtworksRawByKey('k2-artworks') ?? []
+                      if (!Array.isArray(raw) || raw.length === 0) {
+                        alert('Keine lokale Werkliste gefunden (k2-artworks ist leer).')
+                        return
+                      }
+                      const norm = (v: any) => String(v ?? '').trim()
+                      const normTitle = (s: string) =>
+                        s
+                          .trim()
+                          .toLowerCase()
+                          .normalize('NFKD')
+                          .replace(/[\u0300-\u036f]/g, '')
+                          .replace(/\s+/g, ' ')
+                      const keyOf = (a: any) => norm(a?.number ?? a?.id)
+                      const titleOf = (a: any) => norm(a?.title)
+                      const isMalerei = (a: any) => norm(a?.category) === 'malerei'
+                      const pickTs = (a: any) => {
+                        const t = a?.updatedAt || a?.createdAt
+                        const ms = t ? new Date(t).getTime() : 0
+                        return Number.isFinite(ms) ? ms : 0
+                      }
+                      const imageSig = (a: any) => {
+                        const v = norm(a?.imageRef) || norm(a?.imageUrl) || norm(a?.previewUrl)
+                        if (!v) return ''
+                        // normalize absolute urls to path to reduce noise
+                        try {
+                          if (v.startsWith('http://') || v.startsWith('https://')) {
+                            const u = new URL(v)
+                            return u.pathname
+                          }
+                        } catch (_) {}
+                        return v
+                      }
+
+                      const byTitle = new Map<string, any[]>()
+                      raw.forEach((a: any) => {
+                        if (!isMalerei(a)) return
+                        const t = titleOf(a)
+                        if (!t) return
+                        const k = normTitle(t)
+                        if (!byTitle.has(k)) byTitle.set(k, [])
+                        byTitle.get(k)!.push(a)
+                      })
+
+                      const groups = Array.from(byTitle.entries())
+                        .map(([k, arr]) => ({ k, arr }))
+                        .filter((g) => g.arr.length > 1)
+
+                      if (groups.length === 0) {
+                        alert('Keine Malerei-Doppler nach Titel gefunden.')
+                        return
+                      }
+
+                      const toRemove: any[] = []
+                      const skipped: Array<{ titleKey: string; items: any[] }> = []
+                      const previewLines: string[] = []
+
+                      groups
+                        .sort((a, b) => a.k.localeCompare(b.k, 'de'))
+                        .forEach((g) => {
+                          const sorted = [...g.arr].sort((x, y) => pickTs(y) - pickTs(x))
+                          const keep = sorted[0]
+                          const keepSig = imageSig(keep)
+                          const drop = sorted.slice(1)
+
+                          // Safety: only merge if all drops have same imageSig or missing.
+                          const safe = drop.every((x) => {
+                            const s = imageSig(x)
+                            if (!s || !keepSig) return true
+                            return s === keepSig
+                          })
+                          if (!safe) {
+                            skipped.push({ titleKey: g.k, items: sorted })
+                            return
+                          }
+
+                          drop.forEach((x) => toRemove.push(x))
+                          const keepNum = keyOf(keep)
+                          const keepTitle = titleOf(keep) || '(ohne Titel)'
+                          const keepWhen = norm(keep?.updatedAt || keep?.createdAt) || 'ohne Datum'
+                          const dropNums = drop.map((x) => keyOf(x)).filter(Boolean).join(', ')
+                          previewLines.push(`${keepTitle}: behalten → ${keepNum} (${keepWhen}) | entfernen: ${dropNums || drop.length}`)
+                        })
+
+                      if (toRemove.length === 0) {
+                        const hint = skipped.length > 0 ? `\n\nHinweis: ${skipped.length} Gruppen wurden übersprungen (unterschiedliche Bilder).` : ''
+                        alert('Es wurden keine sicheren Doppler gefunden.' + hint)
+                        return
+                      }
+
+                      const preview = previewLines.slice(0, 14).join('\n')
+                      const more = previewLines.length > 14 ? `\n… und ${previewLines.length - 14} weitere` : ''
+                      const skippedInfo =
+                        skipped.length > 0
+                          ? `\n\nÜbersprungen (unterschiedliche Bilder): ${skipped.length} Gruppe(n).`
+                          : ''
+
+                      if (
+                        !confirm(
+                          `Gefunden: ${previewLines.length} Titel mit sicheren Dopplern (Malerei).\n\n${preview}${more}\n\nEs werden insgesamt ${toRemove.length} Einträge entfernt.${skippedInfo}\n\nFortfahren?`
+                        )
+                      )
+                        return
+
+                      const removeSet = new Set(
+                        toRemove.map((a: any) => {
+                          const num = keyOf(a)
+                          const ts = pickTs(a)
+                          const title = normTitle(titleOf(a) || '')
+                          const sig = imageSig(a)
+                          return `${num}|${ts}|${title}|${sig}`
+                        })
+                      )
+                      const filtered = raw.filter((a: any) => {
+                        const num = keyOf(a)
+                        const ts = pickTs(a)
+                        const title = normTitle(titleOf(a) || '')
+                        const sig = imageSig(a)
+                        return !removeSet.has(`${num}|${ts}|${title}|${sig}`)
+                      })
+
+                      const ok = await saveArtworksByKeyWithImageStore('k2-artworks', filtered, {
+                        filterK2Only: true,
+                        allowReduce: true,
+                      })
+                      if (!ok) {
+                        alert('Speichern der bereinigten Werke ist fehlgeschlagen – bitte erneut versuchen.')
+                        return
+                      }
+                      const rawForPublish = readArtworksRawByKey('k2-artworks')
+                      const toPublish = await resolveArtworkImages(rawForPublish)
+                      const pub = await publishGalleryDataToServer(toPublish, {})
+                      if (!pub.success) {
+                        alert(
+                          `Lokal wurden ${toRemove.length} Doppler entfernt – der Server-Update ist fehlgeschlagen.\n\nBitte unter Galerie-Vorschau oder Dev „An Server senden“ / Veröffentlichen.\n\n${pub.error || ''}`
+                        )
+                        return
+                      }
+                      alert(`✅ Doppler bereinigt: ${toRemove.length} Einträge entfernt, veröffentlicht, Seite lädt neu.`)
+                      safeReload()
+                    }}
+                    style={{
+                      padding: '0.6rem 1rem',
+                      background: '#1c4d3a',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 8,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                    }}
+                  >
+                    Malerei-Doppler nach Titel jetzt zusammenführen
+                  </button>
+                </div>
                 <input
                   ref={backupFileInputRef}
                   type="file"
