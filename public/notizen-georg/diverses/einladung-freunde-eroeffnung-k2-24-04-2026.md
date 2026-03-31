@@ -20,7 +20,7 @@ ich möchte dich herzlich zu unserer **Galerieeröffnung** einladen. Martina und
 ![Masterflyer K2 – Seite 1](/img/k2/masterflyer-k2-a5-seite1.png)
 
 **1. Galerieeröffnung 24.–26. April**  
-Martina und ich laden dich **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. Wenn du kommen magst: wir geben dir die Uhrzeiten gern kurz durch oder wir telefonieren kurz.
+Martina und ich laden dich **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. **Die Uhrzeit steht auf der Einladungskarte.**
 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web ein wenig umsehen:
 
@@ -59,7 +59,7 @@ Liebe …,
 wir möchten euch herzlich zu unserer **Galerieeröffnung** einladen. Martina und ich freuen uns sehr, wenn ihr Zeit findet – und wenn ihr mögt, könnt ihr davor oder danach schon kurz online reinschauen.
 
 **1. Galerieeröffnung 24.–26. April**  
-Wir laden euch **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. Wenn ihr kommen mögt: wir geben euch die Uhrzeiten gern kurz durch oder wir telefonieren kurz.
+Wir laden euch **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. **Die Uhrzeit steht auf der Einladungskarte.**
 
 - **Galerie:** https://k2-galerie.vercel.app/galerie  
 
@@ -83,7 +83,8 @@ Herzliche Grüße
 
 Liebe …, lieber …,
 
-kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. Genauere Uhrzeiten oder ein kurzes Telefonat geben wir gern nach.
+kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. **Die Uhrzeit steht auf der Einladungskarte.**
+kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. **Die Uhrzeit steht auf der Einladungskarte.**
 
 Wenn du schon reinschauen willst – unsere Galerie mit den Werken im Web:
 https://k2-galerie.vercel.app/galerie
