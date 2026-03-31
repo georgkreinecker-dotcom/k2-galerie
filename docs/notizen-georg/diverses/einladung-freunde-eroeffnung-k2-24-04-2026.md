@@ -30,6 +30,8 @@ Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
 Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
 
+![Masterflyer K2 – Seite 2](/img/k2/masterflyer-k2-a5-seite2.png)
+
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet hier unser Eingangstor (Demo) und die Präsentationsmappe:
 
 - **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken  
