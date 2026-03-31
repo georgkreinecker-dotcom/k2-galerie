@@ -53,6 +53,9 @@ interface OrderRow {
   total?: number
   paymentMethod?: string
   items?: Array<{ number?: string; title?: string; price?: number; quantity?: number }>
+  // Level 5: Snapshots für historische Belege (aus Shop/Kassa)
+  sellerSnapshot?: any
+  buyerSnapshot?: any
 }
 
 function loadOrders(tenant: KassabuchTenant): OrderRow[] {
@@ -85,12 +88,24 @@ function exportVerkaufeCsv(orders: OrderRow[], fromDate?: string, toDate?: strin
   if (fromDate) list = list.filter(o => o.datum >= fromDate)
   if (toDate) list = list.filter(o => o.datum <= toDate)
   list.sort((a, b) => (a.datum || '').localeCompare(b.datum || ''))
-  const header = 'Datum;Bon-Nr.;Betrag;Zahlungsart'
+  const header = 'Datum;Bon-Nr.;Betrag;Zahlungsart;Aussteller;Aussteller-Adresse;Aussteller-E-Mail;Kunde/Rechnungsempfänger'
   const rows = list.map(o => {
+    const esc = (v: any) => String(v ?? '').replace(/;/g, ',').replace(/\n/g, ' ').replace(/\r/g, ' ').trim()
     const nr = (o.orderNumber || o.id || '').replace(/;/g, ',')
     const betrag = typeof o.total === 'number' ? o.total.toFixed(2) : '0,00'
     const art = o.paymentMethod === 'cash' ? 'Bar' : o.paymentMethod === 'card' ? 'Karte' : o.paymentMethod === 'transfer' ? 'Rechnung' : (o.paymentMethod || '')
-    return `${o.datum};${nr};${betrag};${art}`
+    const snap = o.sellerSnapshot
+    const tenant = snap?.tenant
+    const g = tenant === 'k2' || tenant === 'oeffentlich' ? (snap?.gallery || {}) : {}
+    const v = tenant === 'vk2' ? (snap?.vk2Verein || {}) : {}
+    const sellerName = tenant === 'vk2' ? (v.name || 'Verein') : (g.name || (tenant === 'oeffentlich' ? 'Galerie Muster' : 'K2 Galerie'))
+    const sellerAddress = tenant === 'vk2'
+      ? [v.address, v.city, v.country].filter(Boolean).join(', ')
+      : [g.address, g.city, g.country].filter(Boolean).join(', ')
+    const sellerEmail = tenant === 'vk2' ? (v.email || '') : (g.email || '')
+    const buyerName = (o.buyerSnapshot && (o.buyerSnapshot.name || o.buyerSnapshot.firma)) ? (o.buyerSnapshot.name || o.buyerSnapshot.firma) : ''
+
+    return `${o.datum};${esc(nr)};${esc(betrag)};${esc(art)};${esc(sellerName)};${esc(sellerAddress)};${esc(sellerEmail)};${esc(buyerName)}`
   })
   return [header, ...rows].join('\n')
 }
