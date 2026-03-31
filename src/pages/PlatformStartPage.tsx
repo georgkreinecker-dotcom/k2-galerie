@@ -4,13 +4,14 @@ import QRCode from 'qrcode'
 import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { getPublicGalerieUrl } from '../utils/publicLinks'
 
 // Haupt-Features (wichtigste Funktionen)
 const mainFeatures = [
   {
     title: 'K2 Galerie',
     description: 'Öffentliche Galerie öffnen – Kunst & Keramik',
-    to: PROJECT_ROUTES['k2-galerie'].galerie,
+    to: getPublicGalerieUrl('k2', 'galerie'),
     cta: 'Galerie öffnen →',
     icon: '🎨',
     color: 'linear-gradient(135deg, var(--k2-accent), #e67a2a)',

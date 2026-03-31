@@ -4,8 +4,9 @@ import { ProjectNavButton } from '../components/Navigation'
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import { getPublicGalerieUrl } from '../utils/publicLinks'
 
-const VERCEL_GALERIE_URL = 'https://k2-galerie.vercel.app/projects/k2-galerie/galerie'
+const VERCEL_GALERIE_URL = getPublicGalerieUrl('k2', 'galerie')
 
 const MobileConnectPage = () => {
   const [url, setUrl] = usePersistentString('k2-mobile-url')
@@ -24,12 +25,12 @@ const MobileConnectPage = () => {
     const port = window.location.port || '5177'
     const protocol = window.location.protocol
     if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      setLocalGalerieUrl(`${protocol}//${hostname}:${port}/projects/k2-galerie/galerie`)
+      setLocalGalerieUrl(`${protocol}//${hostname}:${port}/galerie`)
       setDevViewUrl(`${protocol}//${hostname}:${port}/#/dev-view`)
     } else {
       // Am Mac mit localhost: QR muss LAN-IP zeigen (z. B. 192.168.0.31), sonst kann das Handy nicht verbinden
       const lanIp = '192.168.0.31'
-      setLocalGalerieUrl(`http://${lanIp}:${port}/projects/k2-galerie/galerie`)
+      setLocalGalerieUrl(`http://${lanIp}:${port}/galerie`)
       setDevViewUrl(`http://${lanIp}:${port}/#/dev-view`)
     }
   }, [])

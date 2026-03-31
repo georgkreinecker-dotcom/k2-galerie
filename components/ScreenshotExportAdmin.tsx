@@ -18,6 +18,7 @@ import {
 } from '../src/config/navigation'
 import { buildQrUrlWithBust } from '../src/hooks/useServerBuildTimestamp'
 import { APP_BASE_URL } from '../src/config/externalUrls'
+import { getPublicGalerieUrl } from '../src/utils/publicLinks'
 import ZertifikatTab from './tabs/ZertifikatTab'
 import NewsletterTab from './tabs/NewsletterTab'
 import PressemappeTab from './tabs/PressemappeTab'
@@ -64,10 +65,10 @@ function decodeWerbemittelDataUrlToHtml(src: string | undefined | null): string 
   }
 }
 
-/** Feste Galerie-URL für Etiketten-QR (APP_BASE_URL = Vercel oder VITE_APP_BASE_URL) */
-const GALERIE_QR_BASE = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
-/** Fallback für QR/Links in Werbemitteln (Flyer, Plakat, Newsletter) – immer Produktion, nie localhost */
-const FALLBACK_GALERIE_URL_WERBEMITTEL = APP_BASE_URL + PROJECT_ROUTES['k2-galerie'].galerie
+/** Feste Galerie-URL für Etiketten-QR – Besucher-Route (keine APf-Route). */
+const GALERIE_QR_BASE = getPublicGalerieUrl('k2', 'galerie')
+/** Fallback für QR/Links in Werbemitteln (Flyer, Plakat, Newsletter) – immer Besucher-Route. */
+const FALLBACK_GALERIE_URL_WERBEMITTEL = getPublicGalerieUrl('k2', 'galerie')
 /** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
 const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
 /** Werbemittel (Marketing): Fußhinweis – eine Quelle für K2 / ök2 / VK2 */

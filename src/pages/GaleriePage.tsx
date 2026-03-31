@@ -24,6 +24,7 @@ import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '
 import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
+import { getPublicGalerieUrl } from '../utils/publicLinks'
 import '../App.css'
 import '../styles/k2GaleriePublicPolish.css'
 
@@ -45,10 +46,9 @@ const KEY_OEF_ADMIN_EMAIL = 'k2-oeffentlich-admin-email'
 const KEY_OEF_ADMIN_PHONE = 'k2-oeffentlich-admin-phone'
 /** K2 im Internet – gleiche Seite, funktioniert in jedem WLAN/Mobilfunk */
 function getPublicPageUrl(vk2: boolean, musterOnly: boolean): string {
-  const base = 'https://k2-galerie.vercel.app'
-  if (vk2) return base + '/projects/vk2/galerie'
-  if (musterOnly) return base + '/galerie-oeffentlich'
-  return base + '/galerie'
+  if (vk2) return getPublicGalerieUrl('vk2', 'galerie')
+  if (musterOnly) return getPublicGalerieUrl('oeffentlich', 'galerie')
+  return getPublicGalerieUrl('k2', 'galerie')
 }
 
 function isLocalOrPrivateOrigin(): boolean {
@@ -1049,13 +1049,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
   // VK2: QR muss auf VK2-Route zeigen, nicht auf K2-Galerie
   const vercelGalerieUrl = useMemo(() => {
-    if (vk2) return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES.vk2.galerie
-    if (musterOnly) {
-      const url = GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-      if (!url.includes('galerie-oeffentlich')) return GALLERY_DATA_PUBLIC_URL + '/projects/k2-galerie/galerie-oeffentlich'
-      return url
-    }
-    return GALLERY_DATA_PUBLIC_URL + PROJECT_ROUTES['k2-galerie'].galerie
+    if (vk2) return getPublicGalerieUrl('vk2', 'galerie')
+    if (musterOnly) return getPublicGalerieUrl('oeffentlich', 'galerie')
+    return getPublicGalerieUrl('k2', 'galerie')
   }, [vk2, musterOnly])
   // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust)
   const [qrBustTick, setQrBustTick] = useState(0)
