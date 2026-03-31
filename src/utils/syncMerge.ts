@@ -172,7 +172,19 @@ function getKeysForMatching(a: any): string[] {
 /** Kanonische K2-Nummer mit Präfix-Buchstabe (M/K/G/S/O/P/I) + Ziffern. */
 function isCanonicalK2PrefixedNumber(v: any): boolean {
   const s = String(v ?? '').trim()
-  return /^K2-[A-Z]-?\d+$/i.test(s)
+  return /^K2-(?:M|K|G|S|O|P|I)-?\d+$/i.test(s)
+}
+
+function getCanonicalK2PrefixedVariants(v: any): string[] {
+  const s = String(v ?? '').trim()
+  const m = s.match(/^K2-([A-Z])-?(\d+)$/i)
+  if (!m) return []
+  const letter = m[1].toUpperCase()
+  const num = parseInt(m[2], 10) || 0
+  const digits = String(num)
+  const digits4 = String(num).padStart(4, '0')
+  // Nur Varianten mit Präfix – niemals reine Ziffern (sonst M/K-Kollision möglich).
+  return Array.from(new Set([`K2-${letter}-${digits}`, `K2-${letter}-${digits4}`]))
 }
 
 /**
@@ -180,14 +192,18 @@ function isCanonicalK2PrefixedNumber(v: any): boolean {
  * sonst kollidieren echte Bereiche: K2-M-0019 ↔ K2-K-0019.
  *
  * Regel:
- * - Hat das Item eine kanonische K2-Nummer → nur den primären Key (number/id) verwenden.
+ * - Hat das Item eine kanonische K2-Nummer → nur präfixierte Varianten (inkl. 30/0030), keine reinen Ziffern.
  * - Sonst (Legacy/Altformate) → volle Key-Varianten inkl. Ziffern-Fallback.
  */
 function getKeysForLookup(a: any, getKey: (x: any) => string | undefined = DEFAULT_GET_KEY): string[] {
   const main = getKey(a)
   if (!main) return []
   const raw = a?.number ?? a?.id
-  if (isCanonicalK2PrefixedNumber(raw)) return [String(main)]
+  if (isCanonicalK2PrefixedNumber(raw)) {
+    const variants = getCanonicalK2PrefixedVariants(raw)
+    variants.push(String(main))
+    return Array.from(new Set(variants))
+  }
   return getKeysForMatching(a)
 }
 
@@ -229,6 +245,13 @@ function buildDisambiguatedKeyMap(list: any[], getKey: (a: any) => string | unde
 
   const m = new Map<string, any>()
   primaryKeys.forEach(({ item, key }) => m.set(key, item))
+  // Präfix-Varianten (K2-M-30 ↔ K2-M-0030) immer mitführen, damit Bilddaten/Merge stabil bleiben.
+  // Keine reinen Ziffern hier hinzufügen (das passiert nur unten via numericCounts & Eindeutigkeit).
+  for (const item of list) {
+    const raw = item?.number ?? item?.id
+    if (!isCanonicalK2PrefixedNumber(raw)) continue
+    getCanonicalK2PrefixedVariants(raw).forEach((k) => m.set(k, item))
+  }
   numericKeysByItem.forEach(({ item, keys }) => {
     keys.forEach((k) => {
       if ((numericCounts.get(k) ?? 0) === 1) m.set(k, item)
