@@ -28,18 +28,31 @@
 
       // Cache/Service-Worker möglichst räumen, ohne Nutzerdaten anzutasten.
       // Wichtig: KEIN localStorage.clear() – Werke/Stammdaten bleiben erhalten.
+      var tasks = [];
       try {
         if ('caches' in window && window.caches && typeof window.caches.keys === 'function') {
-          window.caches.keys().then(function(names) {
-            try { names.forEach(function(name) { try { window.caches.delete(name); } catch (e) {} }); } catch (e) {}
-          }).catch(function() {});
+          tasks.push(
+            window.caches.keys().then(function(names) {
+              try {
+                return Promise.all(names.map(function(name) {
+                  try { return window.caches.delete(name); } catch (e) { return Promise.resolve(false); }
+                }));
+              } catch (e) { return Promise.resolve(); }
+            }).catch(function() {})
+          );
         }
       } catch (e) {}
       try {
         if (navigator && navigator.serviceWorker && typeof navigator.serviceWorker.getRegistrations === 'function') {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            try { regs.forEach(function(r) { try { r.unregister(); } catch (e) {} }); } catch (e) {}
-          }).catch(function() {});
+          tasks.push(
+            navigator.serviceWorker.getRegistrations().then(function(regs) {
+              try {
+                return Promise.all(regs.map(function(r) {
+                  try { return r.unregister(); } catch (e) { return Promise.resolve(false); }
+                }));
+              } catch (e) { return Promise.resolve(); }
+            }).catch(function() {})
+          );
         }
       } catch (e) {}
       try {
@@ -48,17 +61,28 @@
           sessionStorage.removeItem('k2_stale_reload');
         }
       } catch (e) {}
-      if (returnPath && returnPath.indexOf('/') === 0) {
-        var hash = '';
-        var hashIdx = returnPath.indexOf('#');
-        if (hashIdx !== -1) {
-          hash = returnPath.slice(hashIdx);
-          returnPath = returnPath.slice(0, hashIdx);
+
+      var go = function() {
+        if (returnPath && returnPath.indexOf('/') === 0) {
+          var hash = '';
+          var hashIdx = returnPath.indexOf('#');
+          if (hashIdx !== -1) {
+            hash = returnPath.slice(hashIdx);
+            returnPath = returnPath.slice(0, hashIdx);
+          }
+          var sep = returnPath.indexOf('?') !== -1 ? '&' : '?';
+          location.replace(o + returnPath + sep + 'v=' + t + '&_=' + t + hash);
+        } else {
+          location.replace(o + '/?v=' + t + '&_=' + t);
         }
-        var sep = returnPath.indexOf('?') !== -1 ? '&' : '?';
-        location.replace(o + returnPath + sep + 'v=' + t + '&_=' + t + hash);
-      } else {
-        location.replace(o + '/?v=' + t + '&_=' + t);
+      };
+
+      // iOS/PWA: gib dem Cleanup kurz Zeit, sonst Mischstand möglich
+      try {
+        Promise.allSettled(tasks).then(function() { setTimeout(go, 150); });
+        setTimeout(go, 600); // Fallback: nie hängen bleiben
+      } catch (e) {
+        setTimeout(go, 200);
       }
     })();
   </script>
