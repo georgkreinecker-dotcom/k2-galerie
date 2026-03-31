@@ -7,20 +7,20 @@
 
 ## Betreff (Vorschlag)
 
-**Einladung & Neuigkeiten – K2 Galerie 24.–26.04. und was Martina und ich sonst noch gebaut haben**
+**Einladung – K2 Galerie 24.–26.04. (Eferding)**
 
 ---
 
-## Text zum Kopieren
+## Text zum Kopieren – Variante 1 (eine Person)
 
 Liebe …, lieber …,
 
-ich möchte dich einfach herzlich einladen – zu unserer Galerieeröffnung, und wenn du magst, auch zu einem kurzen Blick auf das, was Martina und ich gerade aufbauen.
+ich möchte dich herzlich zu unserer **Galerieeröffnung** einladen. Martina und ich freuen uns sehr, wenn du Zeit findest – und wenn du magst, kannst du davor oder danach schon kurz online reinschauen.
 
 ![Masterflyer K2 – Seite 1](/img/k2/masterflyer-k2-a5-seite1.png)
 
 **1. Galerieeröffnung 24.–26. April**  
-Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung **24.–26.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
+Martina und ich laden dich **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. Wenn du kommen magst: wir geben dir die Uhrzeiten gern kurz durch oder wir telefonieren kurz.
 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web ein wenig umsehen:
 
@@ -28,11 +28,11 @@ Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web 
 ![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie)
 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
-Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
+Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Darum habe ich (mit KI als Werkzeug) **ök2** und **VK2** angestoßen: eine **skalierfähige** Galerie- und Vereinsplattform. Gedacht für Menschen, die ihren Auftritt professionell zeigen wollen – in **6 Sparten**: **Kunst & Galerie**, **Handwerk & Manufaktur**, **Design & Möbel**, **Mode & Kleinserien**, **Food & Genuss**, **Dienstleister & Portfolio**. In die Arbeit fließt meine Unternehmer-Erfahrung ein: **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
 
 ![Masterflyer K2 – Seite 2](/img/k2/masterflyer-k2-a5-seite2.png)
 
-**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet hier unser Eingangstor (Demo) und die Präsentationsmappe:
+**Bei unserer Galerieeröffnung** stellen wir die Idee dahinter auch kurz vor. Wenn du vorab schauen möchtest:
 
 - **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken  
 ![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
@@ -40,7 +40,7 @@ Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und 
 ![QR-Code Präsentationsmappe (Langversion)](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fpraesentationsmappe-vollversion)
 
 **3. Test-Pilot-Programm – 25 Gratislizenzen**  
-Wenn **du** selbst **Interesse** hast, **K2** (Galerie-Software) oder **VK2** (Vereinsplattform) auszuprobieren – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
+Wenn du selbst Interesse hast – oder jemanden kennst: Wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Kostenlos ausprobieren, und uns kurz Rückmeldung geben.
 
 Bei Interesse bitte eine kurze Mail an: **georg.kreinecker@kgm.at**
 
@@ -49,6 +49,31 @@ Ich freue mich auf dich – bei der Eröffnung und darüber hinaus.
 Herzliche Grüße  
 **Georg**  
 *(und von Martina die besten Grüße)*
+
+---
+
+## Text zum Kopieren – Variante 2 (Gruppe)
+
+Liebe …,
+
+wir möchten euch herzlich zu unserer **Galerieeröffnung** einladen. Martina und ich freuen uns sehr, wenn ihr Zeit findet – und wenn ihr mögt, könnt ihr davor oder danach schon kurz online reinschauen.
+
+**1. Galerieeröffnung 24.–26. April**  
+Wir laden euch **recht herzlich** in unsere **K2 Galerie Kunst & Keramik** ein – **24.–26.04.2026** in Eferding. Wenn ihr kommen mögt: wir geben euch die Uhrzeiten gern kurz durch oder wir telefonieren kurz.
+
+- **Galerie:** https://k2-galerie.vercel.app/galerie  
+
+**2. ök2 & VK2 (Plattform – mein Projekt)**  
+Neben der Galerie habe ich (mit KI als Werkzeug) **ök2** und **VK2** angestoßen: eine **skalierfähige** Galerie- und Vereinsplattform – für 6 Sparten: **Kunst & Galerie**, **Handwerk & Manufaktur**, **Design & Möbel**, **Mode & Kleinserien**, **Food & Genuss**, **Dienstleister & Portfolio**.
+
+- **Eingangstor (Demo):** https://k2-galerie.vercel.app/entdecken  
+- **Präsentationsmappe (Langversion):** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
+
+**3. Test-Pilot (25 Gratislizenzen)**  
+Wenn jemand aus eurem Umfeld Interesse hat: kurze Mail an **georg.kreinecker@kgm.at**.
+
+Herzliche Grüße  
+**Martina & Georg**
 
 ---
 
