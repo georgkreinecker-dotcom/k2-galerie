@@ -88,7 +88,7 @@ Test-Pilot: georg.kreinecker@kgm.at · Grüße Martina & Georg
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
 - Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/galerie
-- Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
+- Präsentationsmappe (Langversion): https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
 ---
@@ -96,6 +96,6 @@ Test-Pilot: georg.kreinecker@kgm.at · Grüße Martina & Georg
 ## Hinweis für dich
 
 - Namen in der Anrede einsetzen („Liebe Anna, lieber Thomas“ …).  
-- Wenn jemand nur das **Demo-ök2** sehen soll: https://k2-galerie.vercel.app/projects/k2-galerie/galerie-oeffentlich (optional, nicht im Haupttext nötig).  
+- Wenn jemand nur das **Demo-ök2** sehen soll: https://k2-galerie.vercel.app/galerie-oeffentlich (optional, nicht im Haupttext nötig).  
 - Für neue Öffentlichkeitsarbeiten immer dieselbe Link-Quelle verwenden: `src/config/navigation.ts` + `docs/LINKS-QR-CODES-UEBERSICHT.md` (kein manuelles Abtippen von Einzel-URLs).
 - **kgm solution** bleibt die Firmenmarke; **K2 Galerie** ist eure öffentliche Galerie – so wie in der App festgelegt.
