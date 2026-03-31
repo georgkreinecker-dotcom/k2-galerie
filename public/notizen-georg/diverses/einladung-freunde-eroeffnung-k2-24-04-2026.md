@@ -25,17 +25,17 @@ Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web ein wenig umsehen:
 
 - **Galerie:** https://k2-galerie.vercel.app/galerie  
-![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie)
+![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie)
 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
 Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
 
-**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet unsere **Präsentationsmappe** hier (im Browser öffnen, gern auch „Als PDF drucken“ nutzen):
+**Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet hier unser Eingangstor (Demo) und die Präsentationsmappe:
 
 - **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken  
-![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
-- **Präsentationsmappe:** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
-![QR-Code Präsentationsmappe](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fpraesentationsmappe)
+![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
+- **Präsentationsmappe (Langversion):** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion  
+![QR-Code Präsentationsmappe (Langversion)](https://api.qrserver.com/v1/create-qr-code/?size=110x110&margin=4&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fpraesentationsmappe-vollversion)
 
 **3. Test-Pilot-Programm – 25 Gratislizenzen**  
 Wenn **du** selbst **Interesse** hast, **K2** (Galerie-Software) oder **VK2** (Vereinsplattform) auszuprobieren – **oder jemanden kennst**, der das möchte –: wir vergeben **25 Gratislizenzen** an **Testpilotinnen und Testpiloten**. Das ist ein **kostenloses Testprogramm**, um die Plattform in der Praxis zu erproben und uns Rückmeldung zu geben.
