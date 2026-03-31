@@ -364,7 +364,7 @@ export async function publishGalleryDataToServer(
       payloadSizeBytes: json.length
     }
     try {
-      const getRes = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
+      const getRes = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=${encodeURIComponent(String(tenantId))}&_=${Date.now()}`, { cache: 'no-store' })
       if (getRes.ok) {
         const serverData = await getRes.json().catch(() => null)
         const serverList = Array.isArray(serverData?.artworks) ? serverData.artworks : []
@@ -397,7 +397,7 @@ export async function publishGalleryDataToServer(
         payloadSizeBytes: json.length
       }
       try {
-        const getRes = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
+        const getRes = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=${encodeURIComponent(String(tenantId))}&_=${Date.now()}`, { cache: 'no-store' })
         if (getRes.ok) {
           const serverData = await getRes.json().catch(() => null)
           const serverList = Array.isArray(serverData?.artworks) ? serverData.artworks : []

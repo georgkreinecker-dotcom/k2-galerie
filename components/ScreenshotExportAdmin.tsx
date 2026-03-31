@@ -26086,6 +26086,11 @@ ${name}`
                 )}
               </p>
             )}
+            {publishSuccessModal.serverExportedAt && (Date.now() - new Date(publishSuccessModal.serverExportedAt).getTime()) > 2 * 60 * 1000 && (
+              <p style={{ margin: '0 0 0.5rem', color: 'rgba(248,113,113,0.95)', fontSize: '0.95rem', fontWeight: 700 }}>
+                ⚠️ Achtung: Der Server‑Stand wirkt noch alt. Dann ist „An Server senden“ zwar durchgelaufen, aber am Server ist der neue Stand noch nicht sichtbar.
+              </p>
+            )}
             {publishSuccessModal.artworkNumbersWithoutImageUrl != null && publishSuccessModal.artworkNumbersWithoutImageUrl.length > 0 && (
               <p style={{ margin: '0 0 0.5rem', color: 'rgba(251,191,36,0.95)', fontSize: '0.95rem' }}>
                 Bei {publishSuccessModal.artworkNumbersWithoutImageUrl.length} Werken konnte keine Bild-URL erstellt werden (z. B. kein Bild vorhanden – etwa nach „Bilder 30–39 bereinigen“ – oder Upload-Timeout): {publishSuccessModal.artworkNumbersWithoutImageUrl.slice(0, 15).join(', ')}{publishSuccessModal.artworkNumbersWithoutImageUrl.length > 15 ? ' …' : ''}.
