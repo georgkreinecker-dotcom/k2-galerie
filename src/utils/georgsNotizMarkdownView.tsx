@@ -137,12 +137,28 @@ export function renderGeorgsNotizMarkdown(text: string): ReactNode[] {
     // Eine Zeile: ![Alt-Text](https://...) – z. B. QR-Codes im Brief an Andreas
     const imgLine = t.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
     if (imgLine) {
+      const alt = (imgLine[1] || '').trim()
+      const src = (imgLine[2] || '').trim()
+      const isQr =
+        /qr/i.test(alt) ||
+        src.includes('api.qrserver.com') ||
+        src.includes('create-qr-code') ||
+        src.includes('qr') && src.includes('size=')
       out.push(
         <p key={key()} style={{ ...baseStyles.p, textAlign: 'center' as const }}>
           <img
-            src={imgLine[2]}
-            alt={imgLine[1] || 'Bild'}
-            style={{ maxWidth: 160, height: 'auto', borderRadius: 8, background: '#fff', padding: 6, display: 'inline-block' }}
+            src={src}
+            alt={alt || 'Bild'}
+            style={{
+              maxWidth: isQr ? 160 : 520,
+              width: isQr ? undefined : '100%',
+              height: 'auto',
+              borderRadius: 10,
+              background: isQr ? '#fff' : 'transparent',
+              padding: isQr ? 6 : 0,
+              display: 'inline-block',
+              boxShadow: isQr ? 'none' : '0 10px 30px rgba(0,0,0,0.18)',
+            }}
           />
         </p>
       )
