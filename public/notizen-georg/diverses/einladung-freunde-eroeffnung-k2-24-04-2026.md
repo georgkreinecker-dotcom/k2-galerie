@@ -23,9 +23,9 @@ Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – 
 Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
 
 - **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken
-![QR-Code Willkommen](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fwillkommen)
-- **Galerie:** https://k2-galerie.vercel.app/projects/k2-galerie/galerie  
-![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fgalerie)
+![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
+- **Galerie:** https://k2-galerie.vercel.app/galerie  
+![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie)
 
 **2. Was ich nach der Pension noch gebaut habe – ök2 und VK2**  
 Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und Zukunft. Deshalb habe ich zusammen mit **künstlicher Intelligenz** (als Werkzeug, nicht als Ersatz für den Menschen) die Projekte **ök2** und **VK2** angestoßen: eine **skalierbare Galerie- und Vereinsplattform**, gedacht für Künstlerinnen, Galerien und Kunstvereine. In diese Arbeit fließt **über 45 Jahre Erfahrung** als Unternehmer ein – **Produktentwicklung, Marketing und Verkauf**, alles was ich in der Praxis gelernt habe.
@@ -57,7 +57,7 @@ Liebe …, lieber …,
 kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. Genauere Uhrzeiten oder ein kurzes Telefonat geben wir gern nach.
 
 Wenn du schon reinschauen willst – unsere Galerie mit den Werken im Web:
-https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+https://k2-galerie.vercel.app/galerie
 
 Neben der Galerie habe ich in den letzten Monaten eine **Software/Plattform** mitentwickelt (aus dem Bedürfnis, die Galerie zeitgemäß zu präsentieren und zu organisieren). Zur Eröffnung stellen wir das kurz vor. Wer vorab stöbern möchte:
 Eintritt öffentliche Demo: https://k2-galerie.vercel.app/entdecken
@@ -74,6 +74,7 @@ Wir freuen uns auf euch – Martina & Georg
 Eröffnung K2 Galerie · 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding
 
 Galerie (Werke): https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+Galerie (Werke): https://k2-galerie.vercel.app/galerie
 Demo / Eintritt: https://k2-galerie.vercel.app/entdecken
 Mappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion
 
@@ -84,6 +85,7 @@ Test-Pilot: georg.kreinecker@kgm.at · Grüße Martina & Georg
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
 - Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+- Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/galerie
 - Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
