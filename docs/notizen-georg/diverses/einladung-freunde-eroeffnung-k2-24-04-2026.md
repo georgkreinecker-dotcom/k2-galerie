@@ -15,7 +15,7 @@
 
 Liebe …, lieber …,
 
-ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich, einmal mit etwas, das mich in den letzten Monaten stark beschäftigt hat.
+ich möchte dich einfach herzlich einladen – zu unserer Galerieeröffnung, und wenn du magst, auch zu einem kurzen Blick auf das, was Martina und ich gerade aufbauen.
 
 ![Masterflyer K2 – Seite 1](/img/k2/masterflyer-k2-a5-seite1.png)
 
@@ -77,7 +77,7 @@ Wir freuen uns auf euch – Martina & Georg
 
 Eröffnung K2 Galerie · 24.–26.04.2026 · Schlossergasse 4, 4070 Eferding
 
-Galerie (Werke): https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+Galerie (Werke): https://k2-galerie.vercel.app/galerie
 Demo / Eintritt: https://k2-galerie.vercel.app/entdecken
 Mappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe-vollversion
 
@@ -87,7 +87,7 @@ Test-Pilot: georg.kreinecker@kgm.at · Grüße Martina & Georg
 
 ## Kurzfassung nur mit Links (z. B. für zweite Nachricht)
 
-- Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/projects/k2-galerie/galerie
+- Homepage: https://k2-galerie.vercel.app/entdecken · https://k2-galerie.vercel.app/galerie
 - Präsentationsmappe: https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 - Test-Pilot (25× Gratis): **georg.kreinecker@kgm.at**
 
