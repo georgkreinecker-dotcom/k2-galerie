@@ -11596,32 +11596,11 @@ ${'='.repeat(60)}
       }
     })
     
-    // Behebe Konflikte: Behalte das neueste Werk, benenne andere um
+    // 🔒 Keine automatische Umnummerierung: Das würde „neue Versionen“ erzeugen und Chaos machen.
+    // Wenn Doppler existieren, werden sie über den dedizierten Bereinigungs-Button (mit Vorschau+Bestätigung) zusammengeführt.
     duplicateNumbers.forEach((duplicates, number) => {
       if (duplicates.length > 1) {
-        console.warn(`⚠️ Doppelte Nummer gefunden: ${number} (${duplicates.length} Werke)`)
-        duplicates.sort((a: any, b: any) => {
-          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-          return dateB - dateA
-        })
-        for (let i = 1; i < duplicates.length; i++) {
-          const duplicate = duplicates[i]
-          const newNumber = `${number}-${i}`
-          console.log(`🔄 Umbenennen: ${number} → ${newNumber}`)
-          const idx = artworks.findIndex((a: any) =>
-            a.id === duplicate.id || (a.number === duplicate.number && a.createdAt === duplicate.createdAt)
-          )
-          if (idx !== -1) {
-            artworks[idx].number = newNumber
-            artworks[idx].id = newNumber
-            if (artworks[idx].number === finalArtworkNumber && !editingArtwork) {
-              finalArtworkNumber = newNumber
-              artworkData.number = newNumber
-              artworkData.id = newNumber
-            }
-          }
-        }
+        console.warn(`⚠️ Doppelte Nummer gefunden (keine Auto-Umnummerierung): ${number} (${duplicates.length} Werke)`)
       }
     })
     
@@ -11662,7 +11641,14 @@ ${'='.repeat(60)}
       // Neues Werk hinzufügen - prüfe nochmal ob Nummer eindeutig ist
       const existing = artworks.find((a: any) => a.number === finalArtworkNumber)
       if (existing) {
-        // Falls immer noch Konflikt: Verwende Timestamp-basierte Nummer
+        // 🔒 K2: Kein Timestamp-Fallback (würde „neue Version“ erzeugen). Lieber abbrechen und sichtbar machen.
+        if (!forOek2 && !tenant.isVk2) {
+          alert(
+            `⚠️ Neues Werk abgebrochen: Die Nummer ${finalArtworkNumber} existiert bereits.\n\nBitte Stand neu laden und dann erneut anlegen. Wenn Doppler existieren: zuerst „Malerei-Doppler zusammenführen“.`
+          )
+          return
+        }
+        // ök2/VK2: darf weiterhin einen eindeutigen Fallback erhalten (kein K2-Kern)
         const timestamp = Date.now().toString().slice(-6)
         const random = Math.floor(Math.random() * 100).toString().padStart(2, '0')
         const conflictEntryType = artworkData.entryType || 'artwork'
@@ -11670,7 +11656,7 @@ ${'='.repeat(60)}
         finalArtworkNumber = (forOek2 && (conflictEntryType === 'product' || conflictEntryType === 'idea')) ? `${prefix}${timestamp}${random}` : `K2-${prefix}-${timestamp}${random}`
         artworkData.number = finalArtworkNumber
         artworkData.id = finalArtworkNumber
-        console.warn('⚠️ Letzter Konflikt-Fallback - neue Nummer:', finalArtworkNumber)
+        console.warn('⚠️ Fallback-Nummer (nicht K2):', finalArtworkNumber)
       }
       artworks.push(artworkData)
     }
