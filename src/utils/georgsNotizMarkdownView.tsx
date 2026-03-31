@@ -11,7 +11,7 @@ export const georgsNotizPageStyle: CSSProperties = {
 
 /** A4-nah: helles Blatt, Schatten, gut lesbar (wie Lesepapier, nicht Textwand-Nachtmodus). */
 export const georgsNotizContainerStyle: CSSProperties = {
-  maxWidth: 720,
+  maxWidth: 980,
   margin: '0 auto',
   lineHeight: 1.65,
   fontSize: '1.05rem',
@@ -150,7 +150,7 @@ export function renderGeorgsNotizMarkdown(text: string): ReactNode[] {
             src={src}
             alt={alt || 'Bild'}
             style={{
-              maxWidth: isQr ? 160 : 520,
+              maxWidth: isQr ? 160 : 900,
               width: isQr ? undefined : '100%',
               height: 'auto',
               borderRadius: 10,
