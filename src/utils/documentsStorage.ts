@@ -3,6 +3,7 @@
  * Alle Lese-/Schreibzugriffe für k2-documents(s), k2-oeffentlich-documents(s), k2-vk2-document(s) laufen hier.
  * Hinweis: Key im Code teils 'k2-documents' (ohne s), einheitlich hier als documents.
  */
+import { loadStammdaten, loadVk2Stammdaten } from './stammdatenStorage'
 
 export type DocumentsTenantId = 'k2' | 'oeffentlich' | 'vk2'
 
@@ -44,6 +45,27 @@ function isSameAsOtherKey(list: any[], otherTenantId: DocumentsTenantId): boolea
 export type SaveDocumentsOptions = {
   /** Nur für kontrollierte Abläufe (z. B. Medienpaket ersetzt Event-Zeile): kurz mit [] schreiben, obwohl noch viele Docs im Speicher stehen – direkt danach folgt der volle neue Stand. */
   allowEmptyWrite?: boolean
+}
+
+export type StammdatenSnapshot = {
+  version: 1
+  capturedAt: string
+  tenantId: DocumentsTenantId
+  /** K2/ök2: gallery/martina/georg; VK2: vk2 */
+  data: Record<string, unknown>
+}
+
+function buildStammdatenSnapshot(tenantId: DocumentsTenantId): StammdatenSnapshot {
+  const capturedAt = new Date().toISOString()
+  if (tenantId === 'vk2') {
+    const vk2 = loadVk2Stammdaten()
+    return { version: 1, capturedAt, tenantId, data: { vk2: (vk2 ?? {}) as Record<string, unknown> } }
+  }
+  const t = tenantId === 'oeffentlich' ? 'oeffentlich' : 'k2'
+  const gallery = loadStammdaten(t, 'gallery') ?? {}
+  const martina = loadStammdaten(t, 'martina') ?? {}
+  const georg = loadStammdaten(t, 'georg') ?? {}
+  return { version: 1, capturedAt, tenantId, data: { gallery, martina, georg } as Record<string, unknown> }
 }
 
 /** Gibt true zurück wenn geschrieben wurde, false wenn Schutz gegriffen hat oder Fehler. */
@@ -92,7 +114,16 @@ export function saveDocuments(
         }
       }
     }
-    const json = JSON.stringify(list)
+    // Level 5 (Stammdaten): Snapshot an jedes Dokument hängen (nur wenn noch keiner vorhanden).
+    // Wichtig: Schutzchecks oben müssen auf der Original-Liste laufen (sonst könnten Gleichheitschecks aushebeln).
+    const snapshot = buildStammdatenSnapshot(tenantId)
+    const toWrite = list.map((d: any) => {
+      if (!d || typeof d !== 'object') return d
+      if ((d as any).stammdatenSnapshot) return d
+      return { ...d, stammdatenSnapshot: snapshot }
+    })
+
+    const json = JSON.stringify(toWrite)
     // Werbemittel: mehrere HTML-Dokumente als data-URL überschreiten schnell 10 MB (Medienpaket übernehmen).
     if (json.length > 32_000_000) {
       console.error('❌ documentsStorage: Daten zu groß')
@@ -101,7 +132,7 @@ export function saveDocuments(
     if (typeof window !== 'undefined') {
       localStorage.setItem(key, json)
       // Zusätzliche Sicherheit K2: Lokale Sicherungskopie (wird nie vom Server überschrieben)
-      if (tenantId === 'k2' && list.length > 0) {
+      if (tenantId === 'k2' && toWrite.length > 0) {
         try {
           localStorage.setItem('k2-documents-backup', json)
         } catch (_) {}

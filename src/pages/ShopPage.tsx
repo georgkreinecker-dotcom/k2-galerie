@@ -278,6 +278,27 @@ const ShopPage = () => {
     return () => window.removeEventListener('artworks-updated', loadArtworks)
   }, [fromOeffentlich])
 
+  // Level 5: Falls ein alter Warenkorb noch keine artworkUid hat, beim Vorliegen der Werkliste ergänzen
+  useEffect(() => {
+    if (!Array.isArray(allArtworks) || allArtworks.length === 0) return
+    setCart(prev => {
+      if (!Array.isArray(prev) || prev.length === 0) return prev
+      let changed = false
+      const next = prev.map((item: CartItem) => {
+        const hasUid = String((item as any)?.artworkUid ?? '').trim()
+        if (hasUid) return item
+        const num = String((item as any)?.number ?? '').trim()
+        if (!num) return item
+        const match = allArtworks.find((a: any) => String(a?.uid ?? '').trim() && String(a?.number ?? a?.id ?? '').trim() === num)
+        const uid = String(match?.uid ?? '').trim()
+        if (!uid) return item
+        changed = true
+        return { ...item, artworkUid: uid }
+      })
+      return changed ? next : prev
+    })
+  }, [allArtworks])
+
   // Bestellungen laden (für Bon erneut drucken) – kontexteigener Key (Datensicherheit)
   useEffect(() => {
     try {
@@ -482,7 +503,13 @@ const ShopPage = () => {
       if (soldData) {
         const soldArtworks = JSON.parse(soldData)
         if (Array.isArray(soldArtworks)) {
-          const isSold = soldArtworks.some((a: any) => a && a.number === artwork.number)
+          const auid = String(artwork?.uid ?? '').trim()
+          const isSold = soldArtworks.some((a: any) => {
+            if (!a) return false
+            const suid = String(a?.artworkUid ?? '').trim()
+            if (auid && suid && suid === auid) return true
+            return a.number === artwork.number
+          })
           if (isSold) {
             alert('Dieses Werk ist bereits verkauft.')
             return
@@ -1561,7 +1588,12 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     // Werke als verkauft markieren (mit optionaler Kundenzuordnung)
     cart.forEach(item => {
       const soldArtworks = JSON.parse(localStorage.getItem(soldArtworksKey) || '[]')
-      if (!soldArtworks.find((a: any) => a.number === item.number)) {
+      const iuid = String((item as any)?.artworkUid ?? '').trim()
+      if (!soldArtworks.find((a: any) => {
+        const suid = String(a?.artworkUid ?? '').trim()
+        if (iuid && suid && suid === iuid) return true
+        return a?.number === item.number
+      })) {
         soldArtworks.push({
           number: item.number,
           ...(item.artworkUid ? { artworkUid: item.artworkUid } : {}),
