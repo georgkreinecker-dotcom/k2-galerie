@@ -125,6 +125,130 @@ const ShopPage = () => {
   const VK2_BEZEICHNUNG_OPTIONEN = ['Eintritt', 'Spende', 'Mitgliedsbeitrag', 'Verpflegung / Getränke', 'Sonstiges'] as const
   const VK2_AUSGANG_OPTIONEN = ['Material', 'Honorar', 'Miete', 'Getränke / Verpflegung', 'Sonstiges'] as const
 
+  type SellerSnapshotV1 = {
+    version: 1
+    capturedAt: string
+    tenant: 'k2' | 'oeffentlich' | 'vk2'
+    gallery?: {
+      name?: string
+      address?: string
+      city?: string
+      country?: string
+      phone?: string
+      email?: string
+      website?: string
+      ustIdNr?: string
+      bankverbindung?: string
+      iban?: string
+    }
+    vk2Verein?: {
+      name?: string
+      address?: string
+      city?: string
+      country?: string
+      phone?: string
+      email?: string
+      bankverbindung?: string
+      iban?: string
+    }
+  }
+
+  type BuyerSnapshotV1 = {
+    version: 1
+    capturedAt: string
+    source: 'customerId' | 'guest' | 'manual'
+    customerId?: string
+    name?: string
+    firma?: string
+    street?: string
+    plz?: string
+    city?: string
+    email?: string
+    phone?: string
+    uid?: string
+  }
+
+  const buildSellerSnapshot = (): SellerSnapshotV1 => {
+    const capturedAt = new Date().toISOString()
+    if (fromVk2) {
+      const vk2 = loadVk2Stammdaten()
+      const v = (vk2?.verein || {}) as Record<string, unknown>
+      return {
+        version: 1,
+        capturedAt,
+        tenant: 'vk2',
+        vk2Verein: {
+          name: typeof v.name === 'string' ? v.name : undefined,
+          address: typeof v.address === 'string' ? v.address : undefined,
+          city: typeof v.city === 'string' ? v.city : undefined,
+          country: typeof v.country === 'string' ? v.country : undefined,
+          phone: typeof v.phone === 'string' ? v.phone : undefined,
+          email: typeof v.email === 'string' ? v.email : undefined,
+          bankverbindung: typeof v.bankverbindung === 'string' ? v.bankverbindung : undefined,
+          iban: typeof v.iban === 'string' ? v.iban : undefined,
+        }
+      }
+    }
+    const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+    const g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery') || {}
+    return {
+      version: 1,
+      capturedAt,
+      tenant,
+      gallery: {
+        name: (g as any).name,
+        address: (g as any).address,
+        city: (g as any).city,
+        country: (g as any).country,
+        phone: (g as any).phone,
+        email: (g as any).email,
+        website: (g as any).website,
+        ustIdNr: (g as any).ustIdNr,
+        bankverbindung: (g as any).bankverbindung,
+        iban: (g as any).iban,
+      }
+    }
+  }
+
+  const buildBuyerSnapshot = (args: { customerId?: string; manualRechnung?: any }): BuyerSnapshotV1 | undefined => {
+    const capturedAt = new Date().toISOString()
+    if (args.manualRechnung) {
+      const m = args.manualRechnung
+      return {
+        version: 1,
+        capturedAt,
+        source: 'manual',
+        name: (m.name || '').trim() || undefined,
+        firma: (m.firma || '').trim() || undefined,
+        street: (m.street || '').trim() || undefined,
+        plz: (m.plz || '').trim() || undefined,
+        city: (m.city || '').trim() || undefined,
+        email: (m.email || '').trim() || undefined,
+        phone: (m.phone || '').trim() || undefined,
+        uid: (m.uid || '').trim() || undefined,
+      }
+    }
+    if (args.customerId) {
+      const c = customers.find(x => x.id === args.customerId)
+      return {
+        version: 1,
+        capturedAt,
+        source: 'customerId',
+        customerId: args.customerId,
+        name: (c?.name || '').trim() || undefined,
+        email: (c?.email || '').trim() || undefined,
+        phone: (c?.phone || '').trim() || undefined,
+      }
+    }
+    const name = (guestName || '').trim()
+    const email = (guestEmail || '').trim()
+    const phone = (guestPhone || '').trim()
+    if (name || email || phone) {
+      return { version: 1, capturedAt, source: 'guest', name: name || undefined, email: email || undefined, phone: phone || undefined }
+    }
+    return undefined
+  }
+
   // Ök2: „Zur Galerie“ und Kontakt – eine zentrale Quelle (Phase 5.3). Muss vor Galerie-Stammdaten-Load stehen.
   const fromOeffentlich = isOeffentlichDisplayContext(location.state)
   const fromVk2 =
@@ -702,6 +826,10 @@ const ShopPage = () => {
     let bezeichnung = (vk2Bezeichnung || 'Einnahme').trim() || 'Einnahme'
     if (vk2MitgliedName.trim()) bezeichnung = bezeichnung + ' – ' + vk2MitgliedName.trim()
     const rechnungEmpfaenger = vk2PaymentMethod === 'transfer' && (vk2RechnungEmpfaenger || '').trim() ? (vk2RechnungEmpfaenger || '').trim() : undefined
+    const sellerSnapshot = buildSellerSnapshot()
+    const buyerSnapshot: BuyerSnapshotV1 | undefined = rechnungEmpfaenger
+      ? { version: 1, capturedAt: new Date().toISOString(), source: 'manual', name: rechnungEmpfaenger }
+      : undefined
     const order = {
       id: `ORDER-VK2-${Date.now()}`,
       date: new Date().toISOString(),
@@ -710,6 +838,8 @@ const ShopPage = () => {
       discount: 0,
       total: betrag,
       paymentMethod: vk2PaymentMethod,
+      sellerSnapshot,
+      ...(buyerSnapshot ? { buyerSnapshot } : {}),
       orderNumber: `O-VK2-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`,
       rechnungEmpfaenger: rechnungEmpfaenger,
       rechnungsNr: undefined as string | undefined
@@ -922,8 +1052,8 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    const vk2 = loadVk2Stammdaten()
-    const verein = vk2?.verein || {}
+    const snap = order?.sellerSnapshot as SellerSnapshotV1 | undefined
+    const verein = (snap && snap.version === 1 && snap.tenant === 'vk2' && snap.vk2Verein) ? snap.vk2Verein : ((loadVk2Stammdaten()?.verein || {}) as any)
     const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
     const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
     const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
@@ -995,11 +1125,16 @@ ${bankBlock}
       return
     }
 
+    const snap = order?.sellerSnapshot as SellerSnapshotV1 | undefined
     const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
-    let g: ReturnType<typeof loadStammdaten> = null
-    try {
-      g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
-    } catch (_) {}
+    let g: any = null
+    if (snap && snap.version === 1 && snap.tenant === tenant && snap.gallery) {
+      g = snap.gallery
+    } else {
+      try {
+        g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
+      } catch (_) {}
+    }
     const defaultName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
     const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
     const sellerName = (g && (g as any).name && String((g as any).name).trim()) ? String((g as any).name) : defaultName
@@ -1123,12 +1258,17 @@ ${bankBlock}
       return
     }
 
+    const snap = order?.sellerSnapshot as SellerSnapshotV1 | undefined
     const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
     const kuenstlerFbA4 = readKuenstlerFallbackShop(fromOeffentlich)
-    let gStamm: ReturnType<typeof loadStammdaten> = null
-    try {
-      gStamm = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
-    } catch (_) {}
+    let gStamm: any = null
+    if (snap && snap.version === 1 && snap.tenant === tenant && snap.gallery) {
+      gStamm = snap.gallery
+    } else {
+      try {
+        gStamm = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
+      } catch (_) {}
+    }
     const bankForReceipt = ((gStamm && (gStamm as any).bankverbindung) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
     const paymentMethodText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung'
@@ -1565,7 +1705,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       }
     }
 
-    // Bestellung speichern
+    // Bestellung speichern (Level 5: Snapshot von Aussteller/Kunde mitspeichern)
+    const sellerSnapshot = buildSellerSnapshot()
+    const buyerSnapshot = buildBuyerSnapshot({ customerId, manualRechnung })
     const order = {
       id: `ORDER-${Date.now()}`,
       date: new Date().toISOString(),
@@ -1575,6 +1717,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       total,
       paymentMethod: method,
       customerId,
+      sellerSnapshot,
+      ...(buyerSnapshot ? { buyerSnapshot } : {}),
       ...(manualRechnung ? { manualRechnung } : {}),
       orderNumber: `O-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`
     }
