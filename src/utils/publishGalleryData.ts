@@ -47,6 +47,119 @@ export interface PublishGalleryDataResult {
 }
 
 /**
+ * K2: Meta (Stammdaten/Events/Dokumente/Design/PageTexts/PageContent) gezielt am Server korrigieren,
+ * ohne die Server-Werke anzutasten. („Ein Stand = ein Stand“)
+ *
+ * Quelle Werke: Server (unverändert)
+ * Quelle Meta: aktueller lokaler Admin-Stand (dieses Gerät)
+ */
+export async function publishK2MetaToServerPreserveArtworks(): Promise<PublishGalleryDataResult> {
+  // 1) Server lesen (Werke sind Wahrheit)
+  let serverData: any = null
+  try {
+    const res = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
+    if (res.ok) serverData = await res.json().catch(() => null)
+  } catch {
+    /* ignore */
+  }
+  const serverArtworks = Array.isArray(serverData?.artworks) ? serverData.artworks : []
+  if (serverArtworks.length === 0) {
+    return { success: false, error: 'Server hat keine Werke. Meta-Korrektur abgebrochen (würde sonst leer überschreiben).' }
+  }
+
+  // 2) Lokale Meta (Admin-Stand) einsammeln – nie Base64/Blob mitsenden
+  const galleryStamm = getItemSafe('k2-stammdaten-galerie', {}) as Record<string, unknown>
+  const pageContent = getPageContentGalerie()
+  const toUrlOrEmpty = (v: string | undefined): string => {
+    if (!v || typeof v !== 'string') return ''
+    if (v.startsWith('data:') || v.startsWith('blob:')) return ''
+    return v
+  }
+  const welcome = (pageContent?.welcomeImage as string) || (galleryStamm?.welcomeImage as string) || ''
+  const galerieCard = (pageContent?.galerieCardImage as string) || (galleryStamm?.galerieCardImage as string) || ''
+  const virtualTour = (pageContent?.virtualTourImage as string) || (galleryStamm?.virtualTourImage as string) || ''
+  const virtualTourVideo = (pageContent?.virtualTourVideo as string) || ''
+  const pageContentForServer = {
+    ...pageContent,
+    welcomeImage: toUrlOrEmpty(pageContent?.welcomeImage as string),
+    galerieCardImage: toUrlOrEmpty(pageContent?.galerieCardImage as string),
+    virtualTourImage: toUrlOrEmpty(pageContent?.virtualTourImage as string),
+    virtualTourVideo: toUrlOrEmpty(virtualTourVideo),
+  }
+
+  const payload = {
+    martina: getItemSafe('k2-stammdaten-martina', {}),
+    georg: getItemSafe('k2-stammdaten-georg', {}),
+    gallery: {
+      ...galleryStamm,
+      welcomeImage: toUrlOrEmpty(welcome),
+      galerieCardImage: toUrlOrEmpty(galerieCard),
+      virtualTourImage: toUrlOrEmpty(virtualTour),
+    },
+    // Werke bleiben exakt wie am Server
+    artworks: serverArtworks,
+    events: (loadEvents('k2') as any[]).slice(0, 100),
+    documents: (loadDocuments('k2') as any[]).slice(0, 100),
+    designSettings: getItemSafe('k2-design-settings', {}),
+    pageTexts: getItemSafe('k2-page-texts', null),
+    pageContentGalerie: JSON.stringify(pageContentForServer),
+    version: Date.now(),
+    buildId: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+    exportedAt: new Date().toISOString(),
+    tenantId: 'k2',
+  }
+
+  const json = JSON.stringify(payload)
+  const writeUrl = `${GALLERY_DATA_BASE_URL}/api/write-gallery-data`
+  const timeoutMs = 60000
+  const apiKey = typeof import.meta.env.VITE_WRITE_GALLERY_API_KEY === 'string' ? String(import.meta.env.VITE_WRITE_GALLERY_API_KEY).trim() : ''
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (apiKey) headers['X-API-Key'] = apiKey
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(writeUrl, { method: 'POST', headers, body: json, signal: controller.signal })
+    clearTimeout(timeoutId)
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok || result?.success !== true) {
+      const err = result?.error || `Server ${res.status}`
+      const hint = result?.hint && String(result.hint).trim()
+      return { success: false, error: hint ? `${err}\n\n${hint}` : err, payloadSizeBytes: json.length }
+    }
+    const out: PublishGalleryDataResult = {
+      success: true,
+      result,
+      artworksCount: serverArtworks.length,
+      payloadSizeBytes: json.length,
+    }
+    try {
+      const getRes = await fetch(`${GALLERY_DATA_BASE_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store' })
+      if (getRes.ok) {
+        const after = await getRes.json().catch(() => null)
+        if (after?.exportedAt) out.serverExportedAt = String(after.exportedAt)
+      }
+    } catch {
+      /* ignore */
+    }
+    return out
+  } catch (e) {
+    clearTimeout(timeoutId)
+    const msg = e instanceof Error ? e.message : String(e)
+    const isNetwork =
+      /failed to fetch|load failed|networkerror|aborted|timeout|network request failed/i.test(msg) ||
+      (e instanceof Error && e.name === 'AbortError')
+    return {
+      success: false,
+      error: isNetwork
+        ? 'Netzwerkfehler (Verbindung oder Zeitüberschreitung). Bitte erneut versuchen.'
+        : msg,
+      payloadSizeBytes: json.length
+    }
+  }
+}
+
+/**
  * Einziger Standard-Ablauf für Veröffentlichen:
  * 1. Bild-URLs auflösen (imageRef/Base64 → https), damit Server echte URLs bekommt
  * 2. Base64 aus Export entfernen (artworksForExport)

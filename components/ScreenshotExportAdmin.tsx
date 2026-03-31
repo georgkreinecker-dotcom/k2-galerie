@@ -111,7 +111,7 @@ import { loadEvents as loadEventsFromStorage, saveEvents as saveEventsToStorage,
 import { pickOpeningEventForWerbemittel } from '../src/utils/oek2MusterEventLinie'
 import { loadDocuments as loadDocumentsFromStorage, saveDocuments as saveDocumentsToStorage, loadK2DocumentsBackup } from '../src/utils/documentsStorage'
 import { applyServerPayloadK2 } from '../src/utils/applyServerDataToLocal'
-import { publishGalleryDataToServer } from '../src/utils/publishGalleryData'
+import { publishGalleryDataToServer, publishK2MetaToServerPreserveArtworks } from '../src/utils/publishGalleryData'
 import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
@@ -5234,6 +5234,39 @@ function ScreenshotExportAdmin(props?: AdminProps) {
       setIsLoadingFromServer(false)
     }
   }
+
+  /** K2: Server-Meta korrigieren (Stammdaten/Events/Design), ohne Server-Werke anzutasten. */
+  const handleFixServerMetaK2 = useCallback(async () => {
+    if (tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) {
+      alert('Dieser Fix ist nur für K2 (ohne dynamischen Mandanten) gedacht.')
+      return
+    }
+    const ok = confirm(
+      'K2: Server-Stammdaten/Events/Design jetzt korrigieren (ohne Werke zu ändern)?\n\n' +
+        '✅ Werke am Server bleiben exakt gleich.\n' +
+        '✅ Nur Stammdaten/Events/Design/Seitentexte/Seitengestaltung werden vom aktuellen Admin-Stand übernommen.\n\n' +
+        'Das ist der „ein Stand = ein Stand“ Fix, wenn ein Gerät zuvor falsche Meta-Daten an den Server geschickt hat.'
+    )
+    if (!ok) return
+    setSyncStatusBar({ phase: 'sending', message: 'Meta wird korrigiert… (Werke bleiben unverändert)' })
+    try {
+      const res = await publishK2MetaToServerPreserveArtworks()
+      if (res.success) {
+        const at = res.serverExportedAt ? ` Server-Stand: ${new Date(res.serverExportedAt).toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })}.` : ''
+        setSyncStatusBar({ phase: 'success', message: `✅ Meta korrigiert.${at}` })
+        setTimeout(() => setSyncStatusBar({ phase: 'idle', message: '' }), 6000)
+        alert('✅ Server-Meta korrigiert.\n\nJetzt am Handy „Vom Server laden“ bzw. Stand-Badge tippen – dann muss Martina-Telefon und Event-Inhalt überall gleich sein.')
+      } else {
+        setSyncStatusBar({ phase: 'error', message: 'Meta-Korrektur fehlgeschlagen.' })
+        setTimeout(() => setSyncStatusBar({ phase: 'idle', message: '' }), 8000)
+        alert(`❌ Meta-Korrektur fehlgeschlagen:\n\n${res.error || 'Unbekannt'}`)
+      }
+    } catch (e) {
+      setSyncStatusBar({ phase: 'error', message: 'Meta-Korrektur fehlgeschlagen.' })
+      setTimeout(() => setSyncStatusBar({ phase: 'idle', message: '' }), 8000)
+      alert(`❌ Meta-Korrektur fehlgeschlagen:\n\n${e instanceof Error ? e.message : String(e)}`)
+    }
+  }, [tenant])
 
   // REGEL: Nach jedem Neuladen des Geräts (Seite/Admin geöffnet) automatisch Daten vom Vercel-Server holen – keine manuelle Eingabe nötig. Einmal pro Mount, nur K2, still (kein Alert).
   useEffect(() => {
@@ -15751,6 +15784,33 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                                   {isDeploying ? '⏳ Wird gesendet…' : '📤 An Server senden'}
                                 </button>
                                 <span style={{ fontSize: '0.7rem', color: s.muted }}>Jetzt an alle Geräte senden</span>
+                              </div>
+                            )}
+                            {!tenant.isOeffentlich && !tenant.isVk2 && !tenant.dynamicTenantId && (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                                <button
+                                  type="button"
+                                  onClick={handleFixServerMetaK2}
+                                  disabled={isLoadingFromServer || isDeploying}
+                                  title="K2: Wenn am Server falsche Telefonnummer/Event-Inhalte sind: nur Meta korrigieren, Werke bleiben unverändert"
+                                  style={{
+                                    padding: '0.6rem 1rem',
+                                    background: 'rgba(220, 38, 38, 0.12)',
+                                    color: '#dc2626',
+                                    border: '1px solid rgba(220, 38, 38, 0.35)',
+                                    borderRadius: '10px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: 700,
+                                    cursor: (isLoadingFromServer || isDeploying) ? 'not-allowed' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.4rem',
+                                    opacity: (isLoadingFromServer || isDeploying) ? 0.6 : 1
+                                  }}
+                                >
+                                  🧷 Server‑Meta korrigieren (ohne Werke)
+                                </button>
+                                <span style={{ fontSize: '0.7rem', color: s.muted }}>Nur Stammdaten/Events/Design – Werke bleiben 1:1</span>
                               </div>
                             )}
                           </div>
