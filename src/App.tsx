@@ -340,6 +340,7 @@ function StandBadgeSync() {
   const showHere = STAND_BADGE_PATHNAMES.some((p) => pathname === p)
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
+  const [serverTs, setServerTs] = useState<number | null>(null)
   const [showStandHelp, setShowStandHelp] = useState(false)
   const isLocal = typeof window !== 'undefined' && /^https?:\/\/localhost|127\.0\.0\.1/i.test(window.location?.origin || '')
   // Alle Hooks VOR jedem Return – sonst „Rendered fewer hooks“ beim Wechsel der Route (K2/ök2/Vorschau/Admin)
@@ -358,10 +359,26 @@ function StandBadgeSync() {
       .then((data: { label?: string; timestamp?: number } | null) => {
         if (!mountedRef.current || !data) return
         if (data.label) setDisplayLabel(data.label)
+        if (typeof data.timestamp === 'number') setServerTs(data.timestamp)
         if (data.timestamp && data.timestamp > BUILD_TIMESTAMP) setServerNewer(true)
       })
       .catch(() => {})
   }, [isLocal])
+
+  const getLoadedIndexBundleHint = (): string => {
+    try {
+      // Vite Build: /assets/index-<hash>.js. Für Mischstand/Cache: welcher Bundle ist wirklich geladen?
+      const entries = (performance.getEntriesByType?.('resource') || []) as Array<{ name?: string }>
+      const hit = entries
+        .map((e) => String(e?.name || ''))
+        .find((n) => /\/assets\/index-[^/]+\.js(\?|$)/.test(n))
+      if (hit) {
+        const m = hit.match(/\/assets\/(index-[^/]+\.js)/)
+        return m?.[1] || hit
+      }
+    } catch { /* ignore */ }
+    return 'unbekannt'
+  }
 
   useEffect(() => {
     if (!showStandHelp) return
@@ -472,6 +489,13 @@ function StandBadgeSync() {
             <h2 id="stand-hilfe-titel" style={{ margin: '0 0 0.6rem', fontSize: '1.05rem', fontWeight: 700, color: '#1c1a18' }}>
               Stand auf dem Handy oder Tablet
             </h2>
+            <div style={{ margin: '0 0 0.75rem', padding: '0.65rem 0.75rem', background: 'rgba(17,17,17,0.04)', borderRadius: 8, fontSize: '0.92em', color: '#1c1a18' }}>
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>Diagnose (für Mischstand/Cache)</div>
+              <div><strong>Code lokal:</strong> {BUILD_LABEL}</div>
+              <div><strong>Code-TS:</strong> {String(BUILD_TIMESTAMP)}</div>
+              <div><strong>Server-TS:</strong> {serverTs != null ? String(serverTs) : '…'}</div>
+              <div><strong>Bundle:</strong> {getLoadedIndexBundleHint()}</div>
+            </div>
             <p style={{ margin: '0 0 0.75rem', padding: '0.65rem 0.75rem', background: 'rgba(181,74,30,0.08)', borderRadius: 8, fontSize: '0.95em' }}>
               <strong>Mac mit localhost:</strong> Unten links steht <strong>Build lokal</strong> – das ist Ihre Entwicklungsversion, <em>nicht</em> automatisch derselbe Zeitstempel wie bei einem <strong>geteilten Link</strong> zur Live-Galerie (<strong>Stand:</strong> vom Server). Zum Abgleich dieselbe Produktions-Adresse öffnen wie der Empfänger.
             </p>
