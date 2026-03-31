@@ -161,11 +161,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
     if (diagnoseRunning) return
     setDiagnoseRunning(true)
 
-    const withTimeout = async (url: string, ms = 7000) => {
+    const withTimeout = async (url: string, ms = 7000, init?: RequestInit) => {
       const controller = new AbortController()
       const timer = setTimeout(() => controller.abort(), ms)
       try {
-        const res = await fetch(url, { cache: 'no-store', signal: controller.signal })
+        const res = await fetch(url, { ...(init ?? {}), cache: 'no-store', signal: controller.signal })
         return res
       } finally {
         clearTimeout(timer)
@@ -178,11 +178,19 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         withTimeout('https://k2-galerie.vercel.app/api/build-info?t=' + Date.now()),
         withTimeout('https://k2-galerie.vercel.app/api/gallery-data?t=' + Date.now()),
         withTimeout('https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now()),
-        withTimeout('https://k2-galerie.vercel.app/api/blob-handle-virtual-tour?t=' + Date.now())
+        // WICHTIG: POST-Test (nicht GET), sonst kommt HTTP 405 "Method Not Allowed" und versteckt den echten Schreib-Fehler.
+        // Wir senden absichtlich ungültiges JSON, damit garantiert NICHTS überschrieben wird – aber wir sehen Auth/Infra-Fehler (401/500/...).
+        withTimeout(
+          'https://k2-galerie.vercel.app/api/write-gallery-data?t=' + Date.now(),
+          9000,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{' }
+        )
       ])
 
       const okOrHttp = (r: PromiseSettledResult<Response>) =>
-        r.status === 'fulfilled' ? `HTTP ${r.value.status}` : 'nicht erreichbar'
+        r.status === 'fulfilled'
+          ? `HTTP ${r.value.status}${r.value.statusText ? ` (${r.value.statusText})` : ''}`
+          : 'nicht erreichbar'
 
       const allGood = checks.every((r) => r.status === 'fulfilled' && r.value.status < 500 && r.value.status !== 404)
       const details = [
@@ -190,7 +198,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         `api/build-info: ${okOrHttp(checks[1])}`,
         `api/gallery-data: ${okOrHttp(checks[2])}`,
         `gallery-data.json: ${okOrHttp(checks[3])}`,
-        `blob API: ${okOrHttp(checks[4])}`
+        `write-gallery-data (POST): ${okOrHttp(checks[4])}`
       ]
 
       setDeployHealth((prev) => ({
