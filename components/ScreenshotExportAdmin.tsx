@@ -18211,20 +18211,23 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       const keyOf = (a: any) => norm(a?.number ?? a?.id)
                       const titleOf = (a: any) => norm(a?.title)
 
-                      // Map server malerei by title+imageSig -> canonical number
-                      const serverMap = new Map<string, string>()
+                      // Server: Map malerei by normalized title -> canonical number (nur wenn eindeutig)
+                      const serverTitleCounts = new Map<string, number>()
+                      const serverTitleToNum = new Map<string, string>()
                       for (const a of serverArtworks) {
                         if (!isMalerei(a)) continue
                         const t = titleOf(a)
                         const num = keyOf(a)
                         if (!t || !num) continue
-                        const sig = imageSig(a)
-                        const k = `${normTitleKey(t)}|${sig}`
-                        if (!serverMap.has(k)) serverMap.set(k, num)
+                        const tk = normTitleKey(t)
+                        serverTitleCounts.set(tk, (serverTitleCounts.get(tk) ?? 0) + 1)
+                        if (!serverTitleToNum.has(tk)) serverTitleToNum.set(tk, num)
                       }
 
                       const usedNumbers = new Set(raw.map((a: any) => keyOf(a)).filter(Boolean) as string[])
-                      const renames: Array<{ from: string; to: string; title: string }> = []
+                      const renames: Array<{ index: number; from: string; to: string; title: string }> = []
+                      const skippedNoMatch: string[] = []
+                      const skippedAmbiguousTitle: string[] = []
                       const nextList = raw.map((a: any) => ({ ...a }))
 
                       for (let i = 0; i < nextList.length; i++) {
@@ -18233,21 +18236,43 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         const t = titleOf(a)
                         const from = keyOf(a)
                         if (!t || !from) continue
-                        const sig = imageSig(a)
-                        const to = serverMap.get(`${normTitleKey(t)}|${sig}`)
+                        const titleKey = normTitleKey(t)
+                        const cnt = serverTitleCounts.get(titleKey) ?? 0
+                        if (cnt === 0) {
+                          skippedNoMatch.push(t)
+                          continue
+                        }
+                        if (cnt > 1) {
+                          skippedAmbiguousTitle.push(t)
+                          continue
+                        }
+                        const to = serverTitleToNum.get(titleKey)
                         if (!to || to === from) continue
-                        // avoid collisions: only apply if target not already used by some other entry
-                        if (usedNumbers.has(to) && to !== from) continue
-                        usedNumbers.delete(from)
-                        usedNumbers.add(to)
-                        nextList[i] = { ...a, number: to, id: to }
-                        renames.push({ from, to, title: t })
+                        renames.push({ index: i, from, to, title: t })
                       }
 
                       if (renames.length === 0) {
-                        alert('Keine reparierbaren Malerei-Nummern gefunden (oder Zielnummern wären kollidiert).')
+                        const reasons: string[] = []
+                        if (skippedNoMatch.length > 0) reasons.push(`kein Match: ${skippedNoMatch.length}`)
+                        if (skippedAmbiguousTitle.length > 0) reasons.push(`mehrdeutiger Titel am Server: ${skippedAmbiguousTitle.length}`)
+                        alert(
+                          `Keine reparierbaren Malerei-Nummern gefunden.\n\nHinweis: Dieser Fix nutzt den veröffentlichten Server-Stand (gallery-data.json) als Wahrheit.\n\n${reasons.length ? 'Gründe: ' + reasons.join(', ') : ''}`
+                        )
                         return
                       }
+
+                      // Kollisionssicher anwenden: zuerst alle betroffenen Werke auf temporäre Nummern setzen, dann auf Zielnummern.
+                      const tmpPrefix = `K2-M-TMP-${Date.now()}-`
+                      const map: Record<string, string> = {}
+                      renames.forEach((r, idx) => {
+                        const tmp = `${tmpPrefix}${String(idx + 1).padStart(3, '0')}`
+                        nextList[r.index] = { ...nextList[r.index], number: tmp, id: tmp }
+                        map[r.from] = r.to
+                      })
+                      renames.forEach((r) => {
+                        // Zielnummer anwenden
+                        nextList[r.index] = { ...nextList[r.index], number: r.to, id: r.to }
+                      })
 
                       const preview = renames
                         .slice(0, 14)
@@ -18255,9 +18280,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         .join('\n')
                       const more = renames.length > 14 ? `\n… und ${renames.length - 14} weitere` : ''
                       if (!confirm(`${renames.length} Malerei-Nummer(n) werden auf Server-Stand gesetzt:\n\n${preview}${more}\n\nFortfahren?`)) return
-
-                      const map: Record<string, string> = {}
-                      renames.forEach((r) => { map[r.from] = r.to })
 
                       const ok = await saveArtworksByKeyWithImageStore('k2-artworks', nextList, {
                         filterK2Only: true,
