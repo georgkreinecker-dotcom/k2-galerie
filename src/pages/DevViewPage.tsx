@@ -179,11 +179,11 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
         withTimeout('https://k2-galerie.vercel.app/api/gallery-data?t=' + Date.now()),
         withTimeout('https://k2-galerie.vercel.app/gallery-data.json?t=' + Date.now()),
         // WICHTIG: POST-Test (nicht GET), sonst kommt HTTP 405 "Method Not Allowed" und versteckt den echten Schreib-Fehler.
-        // Wir senden absichtlich ungültiges JSON, damit garantiert NICHTS überschrieben wird – aber wir sehen Auth/Infra-Fehler (401/500/...).
+        // Wir nutzen einen Dry-Run (schreibt NICHTS), damit die Diagnose echte 200/401/500 liefern kann.
         withTimeout(
           'https://k2-galerie.vercel.app/api/write-gallery-data?t=' + Date.now(),
           9000,
-          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{' }
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dryRun: true }) }
         )
       ])
 

@@ -68,6 +68,33 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Ungültiges JSON' })
   }
 
+  // Dry-Run: nur prüfen, ob Blob (und optional Auth) grundsätzlich funktioniert – ohne irgendetwas zu schreiben.
+  // Zweck: DevView „Ein-Klick Diagnose“ kann dann HTTP 200 liefern, ohne Daten zu überschreiben.
+  if (parsed?.dryRun === true) {
+    try {
+      // list() triggert Token/Blob-Setup Fehler genauso wie put(), schreibt aber nichts.
+      await list({ limit: 1 })
+      return res.status(200).json({ success: true, dryRun: true, message: 'Blob OK (Dry-Run)' })
+    } catch (blobErr) {
+      console.error('Blob dry-run Fehler:', blobErr)
+      const msg = (blobErr?.message || String(blobErr)).trim()
+      const isToken = /token|BLOB_READ_WRITE|authorization/i.test(msg)
+      const isSuspended = /BlobStoreSuspendedError|suspended|store has been suspended/i.test(msg)
+      let hint
+      if (isToken) {
+        hint = 'In Vercel: Storage → Blob Store anlegen. Danach ist BLOB_READ_WRITE_TOKEN automatisch gesetzt.'
+      } else if (isSuspended) {
+        hint = 'Vercel Blob Store wurde pausiert (Limits oder durch Vercel). Vercel Dashboard → Storage → Blob prüfen; ggf. Support: vercel.com/help.'
+      } else {
+        hint = (msg || 'Unbekannter Blob-Fehler. In Vercel Dashboard → Logs prüfen.').substring(0, 400)
+      }
+      return res.status(500).json({
+        error: isToken ? 'Blob-Speicher nicht eingerichtet' : isSuspended ? 'Blob-Speicher pausiert' : 'Blob-Check fehlgeschlagen',
+        hint
+      })
+    }
+  }
+
   // Chunked Upload: mehrere kleine Teile, am Ende zusammenführen und einmal schreiben
   const isChunked = parsed?.chunked === true && typeof parsed?.uploadId === 'string' && Number.isInteger(parsed?.chunkIndex) && parsed?.data != null
   const uploadIdSafe = isChunked && /^[a-z0-9-]{1,80}$/.test(parsed.uploadId.trim())
