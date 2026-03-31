@@ -453,6 +453,7 @@ function eventHasFlyerZeiten(e: EventTerminLike | null | undefined): boolean {
 export default function FlyerEventBogenNeuPage() {
   const navigate = useNavigate()
   const { isOeffentlich, isVk2 } = useTenant()
+  const isK2 = !isOeffentlich && !isVk2
   const flyerStorageKey = getFlyerEventBogenStorageKey(isOeffentlich, isVk2)
   const flyerImgFallback = useMemo(
     () => flyerImageFallbackPath(isOeffentlich, isVk2),
@@ -1010,6 +1011,16 @@ export default function FlyerEventBogenNeuPage() {
       }),
     [eroeffnungEvent]
   )
+  const masterA5TerminLine = useMemo(() => {
+    // Georg: Masterflyer (Einladungskarte) darf keine Öffnungszeiten zeigen und muss auch ohne gespeicherte Events
+    // einen korrekten, stabilen Termin haben (statisches Asset / Screenshot).
+    const k2Fallback = '24.–26.04.2026'
+    return formatEventTerminKomplett(eroeffnungEvent, {
+      mode: 'compact',
+      emptyFallback: isK2 ? k2Fallback : 'Termin folgt',
+      withClockEmojiSingle: false,
+    })
+  }, [eroeffnungEvent, isK2])
   const a6EventDateLine = useMemo(
     () =>
       formatEventTerminKomplett(eroeffnungEvent, {
@@ -1465,16 +1476,10 @@ export default function FlyerEventBogenNeuPage() {
                 </button>
               ) : null}
               <p className="v2-invite-kicker">Sie sind herzlich eingeladen</p>
-              <div className="v2-termin">{terminKomplettV2}</div>
+              <div className="v2-termin">{masterA5TerminLine}</div>
               <p className="v2-address">
                 {base.address} · {base.city}
               </p>
-              {openingHoursBlock && !eventHasFlyerZeiten(eroeffnungEvent) ? (
-                <div className="v2-hours-wrap">
-                  <p className="v2-hours-heading">Öffnungszeiten Galerie</p>
-                  <div className="v2-hours-body">{openingHoursBlock}</div>
-                </div>
-              ) : null}
             </div>
           </div>
         </div>
