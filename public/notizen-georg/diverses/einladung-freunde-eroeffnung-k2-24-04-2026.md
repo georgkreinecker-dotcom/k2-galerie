@@ -20,10 +20,8 @@ ich möchte dich auf zwei Arten an uns denken lassen – einmal ganz persönlich
 **1. Galerieeröffnung am 24. April**  
 Martina und ich laden dich **recht herzlich** zu unserer **K2 Galerie** ein – Eröffnung am **24.04.2026**. Es würde uns sehr freuen, wenn du dabei sein kannst; Einzelheiten zur Zeit und zum Ablauf gebe ich dir gern separat durch oder wir telefonieren kurz.
 
-Wenn du schon **neugierig bist**, kannst du dich auf unserer **neuen Homepage** ein wenig umsehen – Willkommensseite und Galerie sind online:
+Wenn du schon **neugierig bist**, kannst du dich auf unserer **Galerie** im Web ein wenig umsehen:
 
-- **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken
-![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
 - **Galerie:** https://k2-galerie.vercel.app/galerie  
 ![QR-Code K2 Galerie](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fgalerie)
 
@@ -32,6 +30,8 @@ Mir liegt das reine Pensionistenleben noch nicht – ich brauche Gestaltung und 
 
 **Bei unserer Galerieeröffnung** werden wir diese **Produkte und die Idee dahinter** auch kurz **vorstellen**. Wer vorab in die Unterlagen schauen möchte, findet unsere **Präsentationsmappe** hier (im Browser öffnen, gern auch „Als PDF drucken“ nutzen):
 
+- **Eingangstor (ök2):** https://k2-galerie.vercel.app/entdecken  
+![QR-Code Eingangstor](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fentdecken)
 - **Präsentationsmappe:** https://k2-galerie.vercel.app/projects/k2-galerie/praesentationsmappe  
 ![QR-Code Präsentationsmappe](https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=8&data=https%3A%2F%2Fk2-galerie.vercel.app%2Fprojects%2Fk2-galerie%2Fpraesentationsmappe)
 
