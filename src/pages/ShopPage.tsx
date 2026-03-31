@@ -41,6 +41,8 @@ const s = {
 
 interface CartItem {
   number: string
+  /** Level 5: stabile technische Identität – Nummer kann sich ändern, uid nicht */
+  artworkUid?: string
   title: string
   price: number
   category: string
@@ -93,7 +95,7 @@ const ShopPage = () => {
   const [rechnungManual, setRechnungManual] = useState({ name: '', email: '', phone: '', street: '', plz: '', city: '' })
   const [showNummernListe, setShowNummernListe] = useState(false)
   const [showVerkaufsliste, setShowVerkaufsliste] = useState(false)
-  const [soldEntriesList, setSoldEntriesList] = useState<Array<{ number: string; soldAt?: string; orderId?: string; title: string; price: number }>>([])
+  const [soldEntriesList, setSoldEntriesList] = useState<Array<{ number: string; artworkUid?: string; soldAt?: string; orderId?: string; title: string; price: number }>>([])
   // Kurze Bestätigung „zur Auswahl hinzugefügt“ – auto-schließend, kein Schließen-Button
   const [addedToast, setAddedToast] = useState<string | null>(null)
   const addedToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -337,8 +339,13 @@ const ShopPage = () => {
       const artworks = readArtworksRawByKey(artworkKey)
       if (Array.isArray(artworks) && order.items && order.items.length > 0) {
         let changed = false
-        order.items.forEach((item: { number: string }) => {
-          const idx = artworks.findIndex((a: any) => (a.number || a.id) === item.number)
+        order.items.forEach((item: { number: string; artworkUid?: string }) => {
+          const uid = String((item as any)?.artworkUid ?? '').trim()
+          const idx = artworks.findIndex((a: any) => {
+            const aUid = String(a?.uid ?? '').trim()
+            if (uid && aUid && aUid === uid) return true
+            return (a.number || a.id) === item.number
+          })
           if (idx !== -1) {
             const a = artworks[idx]
             const q = a.quantity != null ? Number(a.quantity) : 0
@@ -381,9 +388,15 @@ const ShopPage = () => {
       }
       const sorted = [...arr].sort((a: any, b: any) => (b.soldAt || '').localeCompare(a.soldAt || ''))
       const top = sorted.slice(0, MAX_VERKAUFSLISTE).map((e: any) => {
-        const werk = allArtworks.find((a: any) => (a.number || a.id) === e.number)
+        const uid = String(e?.artworkUid ?? '').trim()
+        const werk = allArtworks.find((a: any) => {
+          const aUid = String(a?.uid ?? '').trim()
+          if (uid && aUid && aUid === uid) return true
+          return (a.number || a.id) === e.number
+        })
         return {
           number: e.number || '',
+          artworkUid: uid || undefined,
           soldAt: e.soldAt,
           orderId: e.orderId,
           title: werk?.title || e.number || '–',
@@ -413,7 +426,12 @@ const ShopPage = () => {
       localStorage.setItem(soldArtworksKey, JSON.stringify(arr))
       const artworkKey = fromOeffentlich ? 'k2-oeffentlich-artworks' : 'k2-artworks'
       const artworks = readArtworksRawByKey(artworkKey)
-      const idx = artworks.findIndex((a: any) => (a.number || a.id) === removed.number)
+      const uid = String((removed as any)?.artworkUid ?? '').trim()
+      const idx = artworks.findIndex((a: any) => {
+        const aUid = String(a?.uid ?? '').trim()
+        if (uid && aUid && aUid === uid) return true
+        return (a.number || a.id) === removed.number
+      })
       if (idx !== -1) {
         const a = artworks[idx]
         const q = a.quantity != null ? Number(a.quantity) : 0
@@ -475,8 +493,9 @@ const ShopPage = () => {
       // Ignoriere Fehler
     }
 
-    // Prüfe ob bereits im Warenkorb
-    if (cart.some(item => item.number === artwork.number)) {
+    // Prüfe ob bereits im Warenkorb (Level 5: bevorzugt über uid)
+    const foundUid = String(artwork?.uid ?? '').trim()
+    if (foundUid ? cart.some(item => String(item.artworkUid ?? '').trim() === foundUid) : cart.some(item => item.number === artwork.number)) {
       alert('Dieses Werk ist bereits in deiner Auswahl.')
       return
     }
@@ -497,6 +516,7 @@ const ShopPage = () => {
     // Zum Warenkorb hinzufügen
     const cartItem: CartItem = {
       number: artwork.number || artwork.id,
+      artworkUid: foundUid || undefined,
       title: artwork.title || artwork.number,
       price: artwork.price,
       category: artwork.category,
@@ -1544,6 +1564,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       if (!soldArtworks.find((a: any) => a.number === item.number)) {
         soldArtworks.push({
           number: item.number,
+          ...(item.artworkUid ? { artworkUid: item.artworkUid } : {}),
           soldAt: new Date().toISOString(),
           orderId: order.id,
           ...(customerId ? { customerId } : {})
@@ -1560,8 +1581,13 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
         const artworks = JSON.parse(raw)
         if (Array.isArray(artworks)) {
           let changed = false
-          cart.forEach((item: { number: string }) => {
-            const idx = artworks.findIndex((a: any) => (a.number || a.id) === item.number)
+          cart.forEach((item: { number: string; artworkUid?: string }) => {
+            const uid = String((item as any)?.artworkUid ?? '').trim()
+            const idx = artworks.findIndex((a: any) => {
+              const aUid = String(a?.uid ?? '').trim()
+              if (uid && aUid && aUid === uid) return true
+              return (a.number || a.id) === item.number
+            })
             if (idx !== -1) {
               const a = artworks[idx]
               const q = a.quantity != null ? Number(a.quantity) : 1
