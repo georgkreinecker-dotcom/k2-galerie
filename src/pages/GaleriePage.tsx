@@ -1567,6 +1567,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       if (!isMounted) return
       
       let data: any = null
+      let loadedFromServer = false
       const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('vorschau') === '1'
 
       // Vorschau aus Einstellungen „Seiten prüfen“: Nur localStorage nutzen, kein Fetch (sonst überschreiben alte Server-Daten die gerade gespeicherten)
@@ -1626,6 +1627,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           const jsonData = await response.json()
           // API (Blob) = einzige Quelle. Kein Fallback auf statische Datei (Build-Stand = alt, falsche Bilder am Handy).
           data = jsonData
+          loadedFromServer = true
           // QR/Gleichstand: Nur auf K2-Route Server-Daten anwenden – nie Muster/ök2-Daten in K2-Keys schreiben
           if (musterOnly || vk2) {
             data = null
@@ -1818,7 +1820,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         }
       }
       
-      // Setze Daten - PRIORITÄT: localStorage > JSON-Datei
+      // Setze Daten:
+      // - Wenn wir vom Server geladen haben, ist Server der Stand (sonst kippt es nach 2s wieder zurück auf lokalen Altstand).
+      // - Wenn kein Server-Ladepfad aktiv ist, bleibt localStorage Quelle.
       // Crash-Schutz: Kein setState nach Unmount
       if (!isMounted) return
       try {
@@ -1827,31 +1831,38 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         let mergedMartina: { name: string; email: string; phone: string; website: string; vita?: string }
         const vitaFrom = (o: { vita?: string } | null | undefined) =>
           o?.vita && String(o.vita).trim() ? String(o.vita).trim() : ''
-        if (martinaStored) {
-          const martinaLocal = JSON.parse(martinaStored)
+        const martinaLocal = martinaStored ? (() => { try { return JSON.parse(martinaStored) } catch { return null } })() : null
+        if (data?.martina) {
+          mergedMartina = {
+            // Basis: Defaults, dann lokal, dann Server (Server gewinnt bei non-empty, wenn geladen)
+            name: (martinaLocal?.name || dm.name),
+            email: (martinaLocal?.email && String(martinaLocal.email).trim()) ? martinaLocal.email : dm.email,
+            phone: (martinaLocal?.phone && String(martinaLocal.phone).trim()) ? martinaLocal.phone : dm.phone,
+            website: (martinaLocal?.website && String(martinaLocal.website).trim()) ? martinaLocal.website : (dm.website || ''),
+            vita: vitaFrom(data.martina as { vita?: string }) || vitaFrom(martinaLocal) || vitaFrom(data?.martina as { vita?: string }),
+          }
+          if (loadedFromServer) {
+            if (data.martina.name && String(data.martina.name).trim()) mergedMartina.name = data.martina.name
+            if (data.martina.email && String(data.martina.email).trim()) mergedMartina.email = data.martina.email
+            if (data.martina.phone && String(data.martina.phone).trim()) mergedMartina.phone = data.martina.phone
+            if (data.martina.website && String(data.martina.website).trim()) mergedMartina.website = data.martina.website
+          }
+        } else if (martinaLocal) {
           mergedMartina = {
             name: martinaLocal.name || dm.name,
             email: (martinaLocal.email && String(martinaLocal.email).trim()) ? martinaLocal.email : dm.email,
             phone: (martinaLocal.phone && String(martinaLocal.phone).trim()) ? martinaLocal.phone : dm.phone,
             website: (martinaLocal.website && String(martinaLocal.website).trim()) ? martinaLocal.website : (dm.website || ''),
-            vita: vitaFrom(martinaLocal) || vitaFrom(data?.martina as { vita?: string }),
-          }
-        } else if (data?.martina) {
-          mergedMartina = {
-            name: data.martina.name || dm.name,
-            email: (data.martina.email && String(data.martina.email).trim()) ? data.martina.email : dm.email,
-            phone: (data.martina.phone && String(data.martina.phone).trim()) ? data.martina.phone : dm.phone,
-            website: (data.martina.website && String(data.martina.website).trim()) ? data.martina.website : (dm.website || ''),
-            vita: vitaFrom(data.martina as { vita?: string }),
+            vita: vitaFrom(martinaLocal),
           }
         } else {
           mergedMartina = { name: dm.name, email: dm.email, phone: dm.phone, website: dm.website || '', vita: '' }
         }
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder in den Speicher schreiben – bestehende Daten (Bio etc.) nicht überschreiben
-        if (martinaStored) {
+        if (loadedFromServer) {
           try {
-            const prev = JSON.parse(martinaStored)
+            const prev = martinaLocal || {}
             localStorage.setItem('k2-stammdaten-martina', JSON.stringify({ ...prev, name: mergedMartina.name, email: mergedMartina.email, phone: mergedMartina.phone, website: mergedMartina.website }))
           } catch (_) {}
         }
@@ -1866,30 +1877,36 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         let mergedGeorg: { name: string; email: string; phone: string; website: string; vita?: string }
         const vitaFromG = (o: { vita?: string } | null | undefined) =>
           o?.vita && String(o.vita).trim() ? String(o.vita).trim() : ''
-        if (georgStored) {
-          const georgLocal = JSON.parse(georgStored)
+        const georgLocal = georgStored ? (() => { try { return JSON.parse(georgStored) } catch { return null } })() : null
+        if (data?.georg) {
+          mergedGeorg = {
+            name: (georgLocal?.name || dg.name),
+            email: (georgLocal?.email && String(georgLocal.email).trim()) ? georgLocal.email : dg.email,
+            phone: (georgLocal?.phone && String(georgLocal.phone).trim()) ? georgLocal.phone : dg.phone,
+            website: (georgLocal?.website && String(georgLocal.website).trim()) ? georgLocal.website : (dg.website || ''),
+            vita: vitaFromG(data.georg as { vita?: string }) || vitaFromG(georgLocal) || vitaFromG(data?.georg as { vita?: string }),
+          }
+          if (loadedFromServer) {
+            if (data.georg.name && String(data.georg.name).trim()) mergedGeorg.name = data.georg.name
+            if (data.georg.email && String(data.georg.email).trim()) mergedGeorg.email = data.georg.email
+            if (data.georg.phone && String(data.georg.phone).trim()) mergedGeorg.phone = data.georg.phone
+            if (data.georg.website && String(data.georg.website).trim()) mergedGeorg.website = data.georg.website
+          }
+        } else if (georgLocal) {
           mergedGeorg = {
             name: georgLocal.name || dg.name,
             email: (georgLocal.email && String(georgLocal.email).trim()) ? georgLocal.email : dg.email,
             phone: (georgLocal.phone && String(georgLocal.phone).trim()) ? georgLocal.phone : dg.phone,
             website: (georgLocal.website && String(georgLocal.website).trim()) ? georgLocal.website : (dg.website || ''),
-            vita: vitaFromG(georgLocal) || vitaFromG(data?.georg as { vita?: string }),
-          }
-        } else if (data?.georg) {
-          mergedGeorg = {
-            name: data.georg.name || dg.name,
-            email: (data.georg.email && String(data.georg.email).trim()) ? data.georg.email : dg.email,
-            phone: (data.georg.phone && String(data.georg.phone).trim()) ? data.georg.phone : dg.phone,
-            website: (data.georg.website && String(data.georg.website).trim()) ? data.georg.website : (dg.website || ''),
-            vita: vitaFromG(data.georg as { vita?: string }),
+            vita: vitaFromG(georgLocal),
           }
         } else {
           mergedGeorg = { name: dg.name, email: dg.email, phone: dg.phone, website: dg.website || '', vita: '' }
         }
         if (isMounted) setGeorgData(mergedGeorg)
-        if (georgStored) {
+        if (loadedFromServer) {
           try {
-            const prev = JSON.parse(georgStored)
+            const prev = georgLocal || {}
             localStorage.setItem('k2-stammdaten-georg', JSON.stringify({ ...prev, name: mergedGeorg.name, email: mergedGeorg.email, phone: mergedGeorg.phone, website: mergedGeorg.website }))
           } catch (_) {}
         }
