@@ -1178,7 +1178,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           artworks: data.artworks?.length || 0
         })
         
-        // Stammdaten: BESTEHENDE (prev/local) haben Vorrang – Server überschreibt nicht, was du schon korrigiert hast (kein-datenverlust)
+        // Stammdaten: Beim „Stand & Daten“ gilt Server als Quelle – aber NIE mit Leer überschreiben (kein-datenverlust).
         if (data.martina) {
           setMartinaData((prev) => {
             const prevV = (prev as { vita?: string }).vita
@@ -1186,11 +1186,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             const srvV = (data.martina as { vita?: string }).vita
             const srvVita = srvV && String(srvV).trim() ? String(srvV).trim() : ''
             return {
-              name: (prev.name && String(prev.name).trim()) || (data.martina.name && String(data.martina.name).trim()) || '',
-              email: (prev.email && String(prev.email).trim()) || (data.martina.email && String(data.martina.email).trim()) || '',
-              phone: (prev.phone && String(prev.phone).trim()) || (data.martina.phone && String(data.martina.phone).trim()) || '',
-              website: (prev.website && String(prev.website).trim()) || (data.martina.website && String(data.martina.website).trim()) || '',
-              vita: prevVita || srvVita,
+              name: (data.martina.name && String(data.martina.name).trim()) || (prev.name && String(prev.name).trim()) || '',
+              email: (data.martina.email && String(data.martina.email).trim()) || (prev.email && String(prev.email).trim()) || '',
+              phone: (data.martina.phone && String(data.martina.phone).trim()) || (prev.phone && String(prev.phone).trim()) || '',
+              website: (data.martina.website && String(data.martina.website).trim()) || (prev.website && String(prev.website).trim()) || '',
+              vita: srvVita || prevVita,
             }
           })
         }
@@ -1201,22 +1201,22 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             const srvV = (data.georg as { vita?: string }).vita
             const srvVita = srvV && String(srvV).trim() ? String(srvV).trim() : ''
             return {
-              name: (prev.name && String(prev.name).trim()) || (data.georg.name && String(data.georg.name).trim()) || '',
-              email: (prev.email && String(prev.email).trim()) || (data.georg.email && String(data.georg.email).trim()) || '',
-              phone: (prev.phone && String(prev.phone).trim()) || (data.georg.phone && String(data.georg.phone).trim()) || '',
-              website: (prev.website && String(prev.website).trim()) || (data.georg.website && String(data.georg.website).trim()) || '',
-              vita: prevVita || srvVita,
+              name: (data.georg.name && String(data.georg.name).trim()) || (prev.name && String(prev.name).trim()) || '',
+              email: (data.georg.email && String(data.georg.email).trim()) || (prev.email && String(prev.email).trim()) || '',
+              phone: (data.georg.phone && String(data.georg.phone).trim()) || (prev.phone && String(prev.phone).trim()) || '',
+              website: (data.georg.website && String(data.georg.website).trim()) || (prev.website && String(prev.website).trim()) || '',
+              vita: srvVita || prevVita,
             }
           })
         }
         if (data.gallery) {
           setGalleryData((prev) => ({
-            address: (prev.address != null && String(prev.address).trim()) ? prev.address : (data.gallery.address != null && String(data.gallery.address).trim()) ? data.gallery.address : '',
-            city: (prev.city != null && String(prev.city).trim()) ? prev.city : (data.gallery.city != null && String(data.gallery.city).trim()) ? data.gallery.city : '',
-            country: (prev.country != null && String(prev.country).trim()) ? prev.country : (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : '',
-            phone: (prev.phone && String(prev.phone).trim()) ? prev.phone : (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : '',
-            email: (prev.email && String(prev.email).trim()) ? prev.email : (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : '',
-            website: (prev.website != null && String(prev.website).trim()) ? prev.website : (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
+            address: (data.gallery.address != null && String(data.gallery.address).trim()) ? data.gallery.address : prev.address,
+            city: (data.gallery.city != null && String(data.gallery.city).trim()) ? data.gallery.city : prev.city,
+            country: (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : prev.country,
+            phone: (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : prev.phone,
+            email: (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : prev.email,
+            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
             internetadresse: (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim()) ? data.gallery.internetadresse : (data.gallery.website || prev.internetadresse || ''),
             openingHours: (data.gallery as any).openingHours ?? prev.openingHours ?? '',
             adminPassword: data.gallery.adminPassword ?? prev.adminPassword ?? '',
@@ -1331,7 +1331,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             documents: loadDocuments('k2'),
             designSettings: localDesign,
             pageTexts: localPageTexts
-          })
+          }, { preferServer: true })
           if (toApply.events != null) {
             saveEvents('k2', toApply.events)
             window.dispatchEvent(new CustomEvent('k2-events-updated'))
@@ -1756,7 +1756,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               documents: loadDocuments('k2'),
               designSettings: localDesign,
               pageTexts: localPageTexts
-            })
+            }, { preferServer: true })
             if (toApply.events != null) {
               saveEvents('k2', toApply.events)
               window.dispatchEvent(new CustomEvent('k2-events-updated'))

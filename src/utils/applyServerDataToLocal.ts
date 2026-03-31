@@ -49,9 +49,13 @@ export function hasMeaningfulDesign(design: unknown): design is Record<string, s
   return Boolean((d.accentColor && d.accentColor.trim()) || (d.backgroundColor1 && d.backgroundColor1.trim()))
 }
 
-export function getDesignToApply(serverDesign: unknown, localDesign: unknown): Record<string, string> | null {
+export function getDesignToApply(
+  serverDesign: unknown,
+  localDesign: unknown,
+  options?: { preferServer?: boolean }
+): Record<string, string> | null {
   if (!hasMeaningfulDesign(serverDesign)) return null
-  if (hasMeaningfulDesign(localDesign)) return null
+  if (!options?.preferServer && hasMeaningfulDesign(localDesign)) return null
   const use = isOldBlueTheme(serverDesign as Record<string, string>) ? K2_ORANGE_DESIGN : (serverDesign as Record<string, string>)
   return use
 }
@@ -136,12 +140,13 @@ export function applyServerPayloadK2(
     documents: any[]
     designSettings: unknown
     pageTexts: unknown
-  }
+  },
+  options?: { preferServer?: boolean }
 ): ApplyServerPayloadK2Result {
   return {
     events: applyServerEvents(serverData.events, local.events),
     documents: applyServerDocuments(serverData.documents, local.documents),
-    designSettings: getDesignToApply(serverData.designSettings, local.designSettings),
+    designSettings: getDesignToApply(serverData.designSettings, local.designSettings, options),
     pageTexts: applyServerPageTexts(serverData.pageTexts, local.pageTexts)
   }
 }
