@@ -652,6 +652,74 @@ export default function FlyerEventBogenNeuPage() {
     }
   }, [derivationOnlyViewer, fromPublicGalerie, isOeffentlich, isVk2, flyerDataTick, flyerImgFallback, versionTimestamp])
 
+  /**
+   * Master A5 (A4 mit 2×A5) aus Galerie („Aktuelles“):
+   * Der Empfänger soll deterministisch den Server-Stand sehen – nicht alte lokale Flyer-Persistenz.
+   * Daher: bei fromPublicGalerie auch im Master-Modus die Bildquellen vom Server holen.
+   */
+  useEffect(() => {
+    if (!fromPublicGalerie) return
+    if (isOeffentlich || isVk2) return
+    if (isA3Mode || isA6Mode || isCardMode) return // Ableitungen werden oben behandelt
+
+    let active = true
+    const fb = flyerImgFallback
+
+    const applyFromServerPayload = (payload: any) => {
+      const galleryFromServer = payload?.gallery && typeof payload.gallery === 'object' ? payload.gallery : {}
+      let page: any = null
+      try {
+        if (typeof payload?.pageContentGalerie === 'string' && payload.pageContentGalerie.trim()) {
+          page = JSON.parse(payload.pageContentGalerie)
+        }
+      } catch (_) {
+        page = null
+      }
+
+      const welcome = String(page?.welcomeImage || galleryFromServer?.welcomeImage || '/img/k2/willkommen.jpg').trim()
+      const card = String(page?.galerieCardImage || galleryFromServer?.galerieCardImage || '').trim()
+      const virtualTour = String(page?.virtualTourImage || galleryFromServer?.virtualTourImage || '').trim()
+
+      if (!active) return
+      // Links (Hauptbild): Karte > Willkommen > Fallback – NICHT aus lokaler Persistenz.
+      setLeftSrc(card || welcome || fb)
+      setLeftWerkLabel('Galeriebild')
+      // Mitte/Rechts: Willkommen / Virtueller Rundgang
+      setMiddleSrc(welcome || fb)
+      setRightSrc(virtualTour || welcome || fb)
+    }
+
+    const applyFromLocal = () => {
+      const g = loadStammdaten('k2', 'gallery')
+      const gi = getGalerieImages(g)
+      if (!active) return
+      setLeftSrc(gi.galerieCardImage || gi.welcomeImage || fb)
+      setLeftWerkLabel('Galeriebild')
+      setMiddleSrc(gi.welcomeImage || fb)
+      setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
+    }
+
+    const controller = new AbortController()
+    const t = setTimeout(() => controller.abort(), 8000)
+    fetch(`${BASE_APP_URL}/api/gallery-data?tenantId=k2&_=${Date.now()}`, { cache: 'no-store', signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((payload) => {
+        clearTimeout(t)
+        if (!payload) return applyFromLocal()
+        applyFromServerPayload(payload)
+      })
+      .catch(() => {
+        clearTimeout(t)
+        applyFromLocal()
+      })
+
+    return () => {
+      active = false
+      clearTimeout(t)
+      controller.abort()
+    }
+  }, [fromPublicGalerie, isOeffentlich, isVk2, isA3Mode, isA6Mode, isCardMode, flyerImgFallback])
+
   useEffect(() => {
     if (derivationOnlyViewer) setShowDerivationFullscreen(true)
   }, [derivationOnlyViewer])
@@ -743,11 +811,10 @@ export default function FlyerEventBogenNeuPage() {
       else if (isVk2) sp.set('context', 'vk2')
       else sp.set('context', 'k2')
       if (eventIdFromUrl) sp.set('eventId', eventIdFromUrl)
-      /** `from=publicGalerie` / `from=adminFlyerDerivation` nur bei Ableitungs-URLs – nicht beim A5-Master. */
-      const derivation =
-        extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
-      if (fromPublicGalerie && derivation) sp.set('from', 'publicGalerie')
-      if (fromPublicGalerie) sp.set('k2PlakatEmbed', '1')
+      /** Öffentlich (aus Galerie): muss auch im Master A5 sichtbar bleiben, sonst lädt der Master wieder alte Persistenz. */
+      const derivation = extra.mode === 'a3' || extra.mode === 'a6' || extra.mode === 'card'
+      if (fromPublicGalerie) sp.set('from', 'publicGalerie')
+      if (fromPublicGalerie && derivation) sp.set('k2PlakatEmbed', '1')
       if (!fromPublicGalerie && fromAdminFlyerDerivation && derivation) sp.set('from', 'adminFlyerDerivation')
       Object.entries(extra).forEach(([k, v]) => {
         if (v !== undefined && v !== '') sp.set(k, v)
