@@ -2272,6 +2272,14 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   // Medienspiegel: Liste Medien (Name + E-Mail), pro Kontext gespeichert
   const [medienspiegel, setMedienspiegel] = useState<{ id: string; name: string; email: string }[]>([])
   const [medienspiegelSelectedIds, setMedienspiegelSelectedIds] = useState<Set<string>>(new Set())
+  const [mustermailModal, setMustermailModal] = useState<{
+    title: string
+    subject: string
+    bcc: string
+    body: string
+    fullPacket: string
+    startpaketInfo?: string
+  } | null>(null)
   const [medienspiegelAddName, setMedienspiegelAddName] = useState('')
   const [medienspiegelAddEmail, setMedienspiegelAddEmail] = useState('')
   const [medienspiegelPasteText, setMedienspiegelPasteText] = useState('')
@@ -10192,7 +10200,44 @@ ${'='.repeat(60)}
       const empfaengerBlock = mailtoTo ? `AN:\n${mailtoTo}` : `BCC:\n${bcc}`
       const fullPacket = `BETREFF:\n${betreff}\n\n${empfaengerBlock}\n\nTEXT:\n${plainBody}`
 
-      const bodyForMailto = plainBody.length > 2500 ? shortBody : plainBody
+      // Georg: Immer zuerst ein Mustermail erzeugen (sichtbar), dann nach Bedarf ins echte Mailprogramm einfügen.
+      if (mailTyp === 'presse') {
+        const startpaketInfo =
+          (selectedByCheck.length === 0 && usesPresseRecipients)
+            ? `Startpaket: ${Math.min(DEFAULT_PRESSE_STARTPAKET_COUNT, allRecipients.length)} Medien (weil nichts angehakt)`
+            : undefined
+        setMustermailModal({
+          title: `Mustermail – Presse (${ev?.title || 'Event'})`,
+          subject: betreff,
+          bcc,
+          body: plainBody,
+          fullPacket,
+          startpaketInfo,
+        })
+        try { await navigator.clipboard.writeText(fullPacket) } catch (_) {}
+        return
+      }
+
+      const buildMailBodySnippetForMailto = (full: string) => {
+        // Mailto-Limits: lieber ein echter, kurzer Text im Body als nur „Zwischenablage“.
+        // Ziel: Apple Mail zeigt sofort Inhalt + Links; der volle Text bleibt zusätzlich im Clipboard (fullPacket).
+        const hardMax = 1800
+        const s = String(full || '').trim()
+        if (!s) return shortBody
+        if (s.length <= hardMax) return s
+        // Kürzen ohne „Wortsalat“: bis zur letzten sinnvollen Grenze.
+        const cut = s.slice(0, hardMax)
+        const lastBreak = Math.max(cut.lastIndexOf('\n\n'), cut.lastIndexOf('\n'), cut.lastIndexOf('. '), cut.lastIndexOf(' '))
+        const safe = (lastBreak > 600 ? cut.slice(0, lastBreak) : cut).trim()
+        return `${safe}\n\n—\nVoller Text (inkl. BCC) liegt in der Zwischenablage.`
+      }
+
+      const bodyForMailto =
+        mailTyp === 'presse'
+          ? buildMailBodySnippetForMailto(plainBody)
+          : plainBody.length > 2500
+            ? shortBody
+            : plainBody
       const buildMailto = (opts: { to?: string; bcc?: string; subject: string; body?: string }) => {
         const toPart = opts.to ? `mailto:${encodeURIComponent(opts.to)}` : 'mailto:'
         const parts: string[] = []
@@ -10238,7 +10283,7 @@ ${'='.repeat(60)}
       }
 
       // mailto-Links werden je nach Client früh abgeschnitten (v. a. bei vielen BCC-Adressen).
-      // Bei zu langem Link: Presse automatisch in 2–N Mails aufteilen, damit Body + BCC wieder „sendefertig“ ankommt.
+      // (Presse läuft oben als Mustermail.)
       const isLikelyTooLong = mailtoPrimary.length > 1800
       const splitEmailsIntoMailtoBatches = (emails: string[], mk: (bccList: string) => string): string[] => {
         const out: string[] = []
@@ -22949,8 +22994,28 @@ ${name}`
             <div id="admin-medienspiegel-bcc" style={{ order: 3, marginBottom: '2rem', padding: '1.25rem', background: `${s.accent}0a`, border: `1px solid ${s.accent}35`, borderRadius: '14px' }}>
               <h3 style={{ fontSize: '1.15rem', color: s.text, marginBottom: '0.35rem' }}>📋 Medienspiegel</h3>
               <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.75rem' }}>
-                Lege deine Presse-Empfänger an. <strong style={{ color: s.text }}>Häkchen setzen und E-Mail-Adressen kopieren</strong> (für BCC).
+                Lege deine Presse-Empfänger an. <strong style={{ color: s.text }}>Häkchen setzen → BCC kopieren → im Mail einfügen</strong>.
               </p>
+              <div
+                style={{
+                  marginBottom: '0.9rem',
+                  padding: '0.75rem 0.85rem',
+                  background: '#fffefb',
+                  border: `1px solid ${s.accent}33`,
+                  borderRadius: '12px',
+                  color: '#1c1a18',
+                }}
+              >
+                <div style={{ fontWeight: 900, marginBottom: '0.35rem' }}>So übernimmst du die Adressen ins Mail (BCC)</div>
+                <ol style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                  <li><strong>Medien anhaken</strong> (oder nichts anhaken = Startpaket).</li>
+                  <li>Button <strong>„📋 BCC kopieren“</strong> klicken.</li>
+                  <li>Im Mailprogramm ins Feld <strong>„Blindkopie (BCC)“</strong> einfügen.</li>
+                </ol>
+                <div style={{ marginTop: '0.45rem', fontSize: '0.85rem', color: '#5c5650' }}>
+                  Tipp: Eine Testmail an dich selbst senden, dann erst an die Medien.
+                </div>
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
                 <button
                   type="button"
@@ -23087,7 +23152,7 @@ ${name}`
               {medienspiegel.length > 0 && (
                 <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.45rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.82rem', color: s.text }}>Bei Einträgen: E-Mail-Adressen kopieren</span>
+                    <span style={{ fontSize: '0.82rem', color: s.text }}>Auswahl treffen, dann BCC kopieren</span>
                     <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set(medienspiegel.map(m => m.id)))} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Alle auswählen</button>
                     <button type="button" onClick={() => setMedienspiegelSelectedIds(new Set())} style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}>Keine auswählen</button>
                     <button
@@ -23104,7 +23169,7 @@ ${name}`
                             : `✅ BCC kopiert (Startpaket: ${Math.min(DEFAULT_PRESSE_STARTPAKET_COUNT, medienspiegel.length)} Medien).`))
                           .catch(() => alert('Kopieren fehlgeschlagen.'))
                       }}
-                      title="BCC kopieren: Auswahl – sonst Startpaket"
+                      title="BCC kopieren: Auswahl – sonst Startpaket (8)"
                       style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
                     >
                       📋 BCC kopieren
@@ -24884,6 +24949,112 @@ ${name}`
                 }}
               >
                 Übernehmen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mustermail (Presse): Vorschau + Kopieren – ohne mailto-Limits */}
+      {mustermailModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99997,
+            background: 'rgba(15, 20, 25, 0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+          onClick={() => setMustermailModal(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '44rem',
+              background: WERBEUNTERLAGEN_STIL.bgCard,
+              border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}33`,
+              borderRadius: '12px',
+              padding: '1.25rem',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.2)',
+              color: '#1c1a18',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>{mustermailModal.title}</h3>
+                {mustermailModal.startpaketInfo ? (
+                  <div style={{ marginTop: '0.35rem', fontSize: '0.85rem', color: '#5c5650' }}>{mustermailModal.startpaketInfo}</div>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => setMustermailModal(null)}
+                style={{
+                  padding: '0.45rem 0.85rem',
+                  background: 'transparent',
+                  border: `1px solid ${WERBEUNTERLAGEN_STIL.accent}55`,
+                  borderRadius: '8px',
+                  color: '#5c5650',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: 700,
+                }}
+              >
+                OK
+              </button>
+            </div>
+
+            <div style={{ marginTop: '0.9rem', display: 'grid', gridTemplateColumns: '1fr', gap: '0.65rem' }}>
+              <div style={{ fontSize: '0.85rem', color: '#5c5650' }}><strong>Betreff</strong></div>
+              <div style={{ padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid #b54a1e33', background: '#fffefb', whiteSpace: 'pre-wrap' }}>
+                {mustermailModal.subject}
+              </div>
+
+              <div style={{ fontSize: '0.85rem', color: '#5c5650' }}><strong>BCC</strong></div>
+              <div style={{ padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1px solid #b54a1e33', background: '#fffefb', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {mustermailModal.bcc}
+              </div>
+
+              <div style={{ fontSize: '0.85rem', color: '#5c5650' }}><strong>Text</strong></div>
+              <div style={{ padding: '0.75rem 0.85rem', borderRadius: '10px', border: '1px solid #b54a1e33', background: '#fffefb', whiteSpace: 'pre-wrap', lineHeight: 1.45, maxHeight: '42vh', overflow: 'auto' }}>
+                {mustermailModal.body}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(mustermailModal.bcc).then(() => alert('✅ BCC kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))}
+                style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 800, cursor: 'pointer' }}
+              >
+                📋 BCC kopieren
+              </button>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(mustermailModal.subject).then(() => alert('✅ Betreff kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))}
+                style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 800, cursor: 'pointer' }}
+              >
+                📋 Betreff kopieren
+              </button>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(mustermailModal.body).then(() => alert('✅ Text kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))}
+                style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 800, cursor: 'pointer' }}
+              >
+                📋 Text kopieren
+              </button>
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(mustermailModal.fullPacket).then(() => alert('✅ Alles kopiert (Betreff + BCC + Text).')).catch(() => alert('Kopieren fehlgeschlagen.'))}
+                style={{ padding: '0.55rem 0.95rem', background: '#b54a1e', border: '1px solid #b54a1e', borderRadius: '8px', color: '#fff', fontWeight: 900, cursor: 'pointer' }}
+              >
+                ✅ Alles kopieren (fertig)
               </button>
             </div>
           </div>
