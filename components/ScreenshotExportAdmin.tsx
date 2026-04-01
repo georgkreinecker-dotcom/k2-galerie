@@ -10185,8 +10185,16 @@ ${'='.repeat(60)}
       const fullPacket = `BETREFF:\n${betreff}\n\n${empfaengerBlock}\n\nTEXT:\n${plainBody}`
 
       const bodyForMailto = plainBody.length > 2500 ? shortBody : plainBody
-      const mailtoWithBcc = `mailto:?bcc=${encodeURIComponent(bcc)}&subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
-      const mailtoWithTo = `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}&body=${encodeURIComponent(bodyForMailto)}`
+      const buildMailto = (opts: { to?: string; bcc?: string; subject: string; body?: string }) => {
+        const toPart = opts.to ? `mailto:${encodeURIComponent(opts.to)}` : 'mailto:'
+        const parts: string[] = []
+        if (opts.bcc) parts.push(`bcc=${encodeURIComponent(opts.bcc)}`)
+        parts.push(`subject=${encodeURIComponent(opts.subject)}`)
+        if (opts.body != null) parts.push(`body=${encodeURIComponent(opts.body)}`)
+        return `${toPart}?${parts.join('&')}`
+      }
+      const mailtoWithBcc = buildMailto({ bcc, subject: betreff, body: bodyForMailto })
+      const mailtoWithTo = buildMailto({ to: mailtoTo, subject: betreff, body: bodyForMailto })
       const mailtoPrimary = mailtoTo ? mailtoWithTo : mailtoWithBcc
       const mailtoSubjectOnly = mailtoTo
         ? `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(betreff)}`
@@ -10221,9 +10229,25 @@ ${'='.repeat(60)}
         }
       }
 
-      // mailto-Links werden je nach Client früh abgeschnitten.
-      // Deshalb: bei langem Link sicherer Fallback ohne BCC/Body, alles liegt im Clipboard.
+      // mailto-Links werden je nach Client früh abgeschnitten (v. a. bei vielen BCC-Adressen).
+      // Bei zu langem Link: Presse automatisch in 2–N Mails aufteilen, damit Body + BCC wieder „sendefertig“ ankommt.
       const isLikelyTooLong = mailtoPrimary.length > 1800
+      const splitEmailsIntoMailtoBatches = (emails: string[], mk: (bccList: string) => string): string[] => {
+        const out: string[] = []
+        let current: string[] = []
+        for (const e of emails) {
+          const next = [...current, e]
+          const candidate = mk(next.join(','))
+          if (candidate.length > 1750 && current.length > 0) {
+            out.push(mk(current.join(',')))
+            current = [e]
+          } else {
+            current = next
+          }
+        }
+        if (current.length > 0) out.push(mk(current.join(',')))
+        return out
+      }
 
       // Ein Klick bis zum Ziel: PDF zuerst bauen, dann Web Share mit Datei (Anhang in vielen Mail-Apps) – kein Halbweg.
       let werbemittelPdfPack: { blob: Blob; fileName: string } | null = null
@@ -10260,12 +10284,35 @@ ${'='.repeat(60)}
         if (shared) return
       }
 
-      triggerMailClient(isLikelyTooLong ? mailtoSubjectOnly : mailtoPrimary)
-
-      // Clipboard bewusst nach dem Mail-Start schreiben (blockiert so den Öffnen-Klick nicht).
-      window.setTimeout(() => {
-        navigator.clipboard.writeText(fullPacket).catch(() => {})
-      }, 0)
+      if (isLikelyTooLong && mailTyp === 'presse' && !mailtoTo) {
+        const batches = splitEmailsIntoMailtoBatches(recipientEmails, (bccList) =>
+          buildMailto({ bcc: bccList, subject: betreff, body: bodyForMailto })
+        )
+        const opened = batches[0] || mailtoSubjectOnly
+        triggerMailClient(opened)
+        // Clipboard: alle Pakete (inkl. BCC-Liste je Mail) – damit du 2/3 ohne Suchen öffnen kannst.
+        const packetLines: string[] = []
+        batches.forEach((u, i) => {
+          packetLines.push(`MAIL ${i + 1}/${batches.length}`)
+          packetLines.push(u)
+          packetLines.push('')
+        })
+        const packet = packetLines.join('\n').trim()
+        window.setTimeout(() => {
+          navigator.clipboard.writeText(packet || fullPacket).catch(() => {})
+        }, 0)
+        if (batches.length > 1) {
+          window.setTimeout(() => {
+            alert(`✅ Mail 1/${batches.length} geöffnet.\n\nDie weiteren Mail-Links (2/${batches.length} …) liegen jetzt in der Zwischenablage.`)
+          }, 250)
+        }
+      } else {
+        triggerMailClient(isLikelyTooLong ? mailtoSubjectOnly : mailtoPrimary)
+        // Clipboard bewusst nach dem Mail-Start schreiben (blockiert so den Öffnen-Klick nicht).
+        window.setTimeout(() => {
+          navigator.clipboard.writeText(fullPacket).catch(() => {})
+        }, 0)
+      }
 
       if (werbemittelPdfPack) {
         /** Stiller Download – kein zweites Fenster nach Mail; PDF liegt in Downloads zum Anhängen. */
