@@ -10183,6 +10183,8 @@ ${'='.repeat(60)}
           b.includes(String(demoUrlForPresse))
         if (alreadyHasLinks) return b
         const linksBlock = [
+          'Wichtig: Manche Mailprogramme zeigen nur eine unscharfe Vorschau. Bitte Links im Browser öffnen.',
+          '',
           'Links:',
           `- Galerie: ${galerieUrlForPresse}`,
           `- Demo / Eingangstor: ${demoUrlForPresse}`,
