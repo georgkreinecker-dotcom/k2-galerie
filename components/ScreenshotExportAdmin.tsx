@@ -10145,7 +10145,8 @@ ${'='.repeat(60)}
           if (!betreff.trim() || betreff === fallbackBetreff) {
             betreff = extractPresseBetreffFromHtml(htmlDecoded, fallbackBetreff)
           }
-          if (!plainBody.trim()) {
+          // Presse-Mails: NICHT aus dem druckbaren HTML extrahieren (enthält Format-/Layout-Hinweise).
+          if (!plainBody.trim() && mailTyp !== 'presse') {
             plainBody = htmlToPlainTextForClipboard(htmlDecoded)
           }
         }
@@ -10158,9 +10159,17 @@ ${'='.repeat(60)}
           : tenant.isOeffentlich
             ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
             : PROJECT_ROUTES['k2-galerie'].galerie)
-      const demoUrlForPresse = BASE_APP_URL + PROJECT_ROUTES.entdecken
+      const demoUrlForPresse = BASE_APP_URL + ENTDECKEN_ROUTE
       const mappeUrlForPresse = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
       const masterflyerUrlForPresse = BASE_APP_URL + '/img/k2/masterflyer-k2-a5-seite1.png'
+
+      const decodeHtmlEntities = (s: string) =>
+        String(s || '')
+          .replace(/&amp;/g, '&')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
 
       const ensurePresseLinksBlock = (body: string): string => {
         const b = String(body || '').trim()
@@ -10180,10 +10189,12 @@ ${'='.repeat(60)}
         return [b, linksBlock].filter(Boolean).join('\n\n').trim()
       }
 
-      if (!plainBody.trim() && ev?.id && mailTyp === 'presse') {
+      // Presse: Mail-Text kommt IMMER aus der Presse-Vorlage (nicht aus dem druckbaren HTML).
+      if (ev?.id && mailTyp === 'presse') {
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
         const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
-        plainBody = ensurePresseLinksBlock((presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim())
+        const content = (presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim()
+        plainBody = ensurePresseLinksBlock(decodeHtmlEntities(content))
       }
 
       if (!plainBody.trim()) {
@@ -10194,7 +10205,7 @@ ${'='.repeat(60)}
 
       plainBody = normalizeMailBody(betreff, plainBody)
       if (mailTyp === 'presse') {
-        plainBody = ensurePresseLinksBlock(plainBody)
+        plainBody = ensurePresseLinksBlock(decodeHtmlEntities(plainBody))
       }
 
       if (mailTyp === 'plakat') {
@@ -10215,13 +10226,7 @@ ${'='.repeat(60)}
       // Georg: Immer zuerst ein Mustermail erzeugen (sichtbar), dann nach Bedarf ins echte Mailprogramm einfügen.
       if (mailTyp === 'presse') {
         const startpaketInfo = selectedByCheck.length === 0 ? 'Keine Auswahl: BCC ist leer (du kannst im Medienspiegel anhaken oder BCC kopieren).' : undefined
-        const decodeEntities = (s: string) =>
-          String(s || '')
-            .replace(/&amp;/g, '&')
-            .replace(/&quot;/g, '"')
-            .replace(/&#39;/g, "'")
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
+        const decodeEntities = decodeHtmlEntities
 
         const buildMailBodySnippetForMailto = (full: string) => {
           // Mailto-Limits: kurzer, echter Text im Body (Apple Mail zeigt sofort Inhalt).
