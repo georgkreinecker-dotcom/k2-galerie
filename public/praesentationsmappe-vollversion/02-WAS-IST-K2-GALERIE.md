@@ -1,6 +1,13 @@
 # Was ist die K2 Galerie?
 
-Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit Mein Weg (Sparten)**. Im Zentrum steht die Auswahl **einer Sparte** in den Stammdaten – eine Quelle für Typ und Kategorien der Einträge (Kunstwerk, Produkt, Idee/Referenz), für Filter in der öffentlichen Galerie und für sinnvolle Text- und Arbeitsabläufe.
+Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit „Mein Weg“**.
+
+**Mein Weg** ist die Hauptaussage: Du entscheidest einmal, **wofür** du deine Galerie nutzt – und ab dann passt sich die App daran an. Die gewählte Sparte ist damit keine „Nebenaussage“, sondern die **Schaltzentrale** für:
+
+- **Typen und Kategorien** (Kunstwerk, Produkt, Idee/Referenz – passend zur Sparte)
+- **Filter und Struktur** in der öffentlichen Galerie (Besucher erleben Ordnung statt Mischmasch)
+- **Texte und Generatoren** (Events, Flyer, Presse, Social) – gleiche Daten, gleiche Sprache, gleiche Linie
+- **Abläufe** (vom Erfassen bis zum Veröffentlichen) – ohne doppelte Eingaben
 
 **Die sechs Sparten (Anzeigenamen in der App):**
 

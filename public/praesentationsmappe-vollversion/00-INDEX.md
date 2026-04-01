@@ -10,7 +10,7 @@ Slogan, **Mein Weg** und die sechs Sparten auf einen Blick – erster Eindruck.
 
 2. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-Plattform mit **Sparten (Mein Weg)**: Kunst & Galerie bis Dienstleister & Portfolio – eine Quelle für Typ, Kategorien und Abläufe; dazu Galerie, Events, Medienplanung, ein Stand überall.
+**Mein Weg** ist der Kern: eine Entscheidung (eine von sechs Sparten) – daraus folgen Typen, Kategorien, Filter und Generatoren. Danach: Galerie, Events/Medienplanung und ein Stand überall.
 
 3. [Fuer wen](03-FUER-WEN.md)
 
@@ -18,7 +18,7 @@ Wer zu welcher **Sparte** passt; ök2/Lizenz und VK2 kurz eingeordnet.
 
 4. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
-Willkommen und Galerie; optional YouTube, Instagram und Highlight-Video aus **Stammdaten** (nicht Design); Filter passen zu **Mein Weg** / Sparte.
+Willkommen und Galerie; optional YouTube/Instagram/Highlight-Video aus **Stammdaten** (nicht Design). **Mein Weg** sorgt dafür, dass Filter und Struktur zum Profil passen.
 
 5. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 
