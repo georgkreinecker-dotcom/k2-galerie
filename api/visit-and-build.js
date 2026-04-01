@@ -28,10 +28,24 @@ async function handleVisit(req, res) {
   const tenant = getTenant(req)
   if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (k2, oeffentlich, vk2, vk2-members, vk2-external)' })
 
-  const supabaseUrl = process.env.SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrlRaw = process.env.SUPABASE_URL
+  const supabaseUrl = (supabaseUrlRaw || '').trim()
+  const keyRaw =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE
+  const key = (keyRaw || '').trim()
   if (!supabaseUrl || !key) {
-    return res.status(200).json({ count: 0, error: 'Supabase nicht konfiguriert' })
+    // Diagnose ohne Secrets (nur "fehlt/da"), damit Vercel-Env-Probleme schnell sichtbar sind.
+    const missing = []
+    if (!supabaseUrl) missing.push('SUPABASE_URL')
+    if (!key) missing.push('SUPABASE_SERVICE_ROLE_KEY')
+    return res.status(200).json({
+      count: 0,
+      error: 'Supabase nicht konfiguriert',
+      configured: false,
+      missing,
+    })
   }
 
   const supabase = createClient(supabaseUrl, key)
@@ -46,10 +60,10 @@ async function handleVisit(req, res) {
       return res.status(200).json({ count: next })
     }
     const { data: row } = await supabase.from('visits').select('count').eq('tenant_id', tenant).single()
-    return res.status(200).json({ count: (row && row.count != null) ? row.count : 0 })
+    return res.status(200).json({ count: (row && row.count != null) ? row.count : 0, configured: true })
   } catch (e) {
     console.error('visit-and-build visit', e)
-    return res.status(500).json({ count: 0, error: String(e && e.message || 'Fehler') })
+    return res.status(500).json({ count: 0, error: String(e && e.message || 'Fehler'), configured: true })
   }
 }
 
