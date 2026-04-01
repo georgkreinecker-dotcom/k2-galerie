@@ -9937,7 +9937,15 @@ ${'='.repeat(60)}
       const selectedByCheck = usesPresseRecipients
         ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
         : verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
-      const selectedRecipients = selectedByCheck.length > 0 ? selectedByCheck : allRecipients
+      // UX: Wenn noch nichts angehakt ist, ist "alle Medien" zu groß → mailto wird zu lang → landet wieder bei Zwischenablage.
+      // Daher: Ohne Auswahl ein kleines Start-Paket (kannst du jederzeit durch Anhaken steuern).
+      const DEFAULT_PRESSE_STARTPAKET_COUNT = 8
+      const selectedRecipients =
+        selectedByCheck.length > 0
+          ? selectedByCheck
+          : usesPresseRecipients
+            ? allRecipients.slice(0, DEFAULT_PRESSE_STARTPAKET_COUNT)
+            : allRecipients
 
       if (selectedRecipients.length === 0) {
         setActiveTab('presse')
