@@ -38,6 +38,17 @@ Wechseln Sie oben auf **„Mediengenerator & Verteiler“**. Dort sehen Sie zu j
 - **PR-Vorschläge:** Vorgefertigte Texte fuer Newsletter, Plakat, Presseaussendung und Social Media – aus Ihren Stammdaten (Galerie, Kuenstler:innen, Kontakt) erzeugt.
 - **Verteiler:** Medienspiegel und Newsletter-Empfaenger direkt im gleichen Ablauf.
 
+---
+
+## Masterflyer (A5) – die Quelle für alle Flyer-Varianten
+
+Wenn im Bereich **Flyer** von „Master“ die Rede ist, ist damit die **A5‑Einladungskarte** gemeint. Sie ist der **Ausgangspunkt** (die Quelle) für alle abgeleiteten Formate.
+
+- **Masterflyer (A5)**: Die „Einladungskarte“, die Sie ansehen und drucken können.
+- **Abgeleitete Formate**: Plakat (A3), kleine Karte (A6), Vorschau‑Varianten – sie folgen dem Master und nutzen dieselben Daten.
+
+**Wichtig:** Der Masterflyer nutzt **Stammdaten** (Adresse/Kontakt) und **Eventdaten** (Datum/Zeiten) aus dem selben Event. Wenn Sie Zeiten ändern, ändern Sie sie **im Event** – danach erzeugen Sie die Druckversion neu.
+
 **Ablauf in Kurzform:**
 
 1. Event unter **Veranstaltungen** anlegen (Titel, Datum, Ort, Art, Beschreibung).

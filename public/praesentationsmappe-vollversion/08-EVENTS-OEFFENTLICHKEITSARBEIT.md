@@ -26,6 +26,16 @@ Event- und Medienplanung ist nicht nur ein Zusatz. Fuer viele Galerien und Verei
 - Das Team bleibt im gleichen Arbeitsfluss statt zwischen Tools zu springen.
 - Die gleiche Struktur passt fuer Galerie, Demo und Vereinsplattform.
 
+## Masterflyer (A5) – Einladungskarte als Quelle
+
+Der **Masterflyer** ist die **A5‑Einladungskarte**. Er ist die **Quelle** für alle Flyer‑Varianten (z. B. A3‑Plakat, A6‑Karte). Das ist wichtig, weil es verhindert, dass man in mehreren Programmen „ähnliche“ Versionen pflegt.
+
+- **Eventdaten** (Datum, Zeiten) kommen aus dem Event.
+- **Stammdaten** (Adresse/Kontakt) kommen aus den Stammdaten.
+- **Masterflyer** = ein klarer, druckbarer Ausgangspunkt.
+
+![Masterflyer (A5) – Einladungskarte](/img/k2/masterflyer-k2-a5-seite1.png)
+
 ## Beispiel: Event-Eroeffnung in 1 Tag
 
 **Ausgangslage:** Heute Vormittag steht fest: Morgen Abend ist Galerie-Eroeffnung.
