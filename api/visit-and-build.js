@@ -51,16 +51,33 @@ async function handleVisit(req, res) {
   const supabase = createClient(supabaseUrl, key)
   try {
     if (req.method === 'POST') {
-      const { data: row } = await supabase.from('visits').select('count').eq('tenant_id', tenant).single()
+      const { data: row, error: selErr } = await supabase
+        .from('visits')
+        .select('count')
+        .eq('tenant_id', tenant)
+        .maybeSingle()
+      if (selErr) {
+        return res.status(500).json({ count: 0, error: `Supabase select fehlgeschlagen: ${selErr.message}`, configured: true })
+      }
       const next = (row && row.count != null ? row.count : 0) + 1
-      await supabase.from('visits').upsert(
+      const { error: upErr } = await supabase.from('visits').upsert(
         { tenant_id: tenant, count: next, updated_at: new Date().toISOString() },
         { onConflict: 'tenant_id' }
       )
+      if (upErr) {
+        return res.status(500).json({ count: 0, error: `Supabase upsert fehlgeschlagen: ${upErr.message}`, configured: true })
+      }
       return res.status(200).json({ count: next })
     }
-    const { data: row } = await supabase.from('visits').select('count').eq('tenant_id', tenant).single()
-    return res.status(200).json({ count: (row && row.count != null) ? row.count : 0, configured: true })
+    const { data: row, error: getErr } = await supabase
+      .from('visits')
+      .select('count')
+      .eq('tenant_id', tenant)
+      .maybeSingle()
+    if (getErr) {
+      return res.status(500).json({ count: 0, error: `Supabase select fehlgeschlagen: ${getErr.message}`, configured: true })
+    }
+    return res.status(200).json({ count: row && row.count != null ? row.count : 0, configured: true })
   } catch (e) {
     console.error('visit-and-build visit', e)
     return res.status(500).json({ count: 0, error: String(e && e.message || 'Fehler'), configured: true })
