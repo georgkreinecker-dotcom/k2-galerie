@@ -7040,12 +7040,13 @@ ${'='.repeat(60)}
       presseTitle: string
       presseContent: string
       imageBlock: string
+      linksBlock: string
       qrBlock: string
     },
     opts?: { iframePreview?: boolean }
   ) => {
     const iframePreview = opts?.iframePreview === true
-    const { prDocClass, prDocCss, galleryName, eventTitle, eventDateStr, presseTitle, presseContent, imageBlock, qrBlock } = params
+    const { prDocClass, prDocCss, galleryName, eventTitle, eventDateStr, presseTitle, presseContent, imageBlock, linksBlock, qrBlock } = params
     const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     const contentWithLinks = textToHtmlWithLinks(presseContent)
     const eventDateEsc = eventDateStr ? esc(eventDateStr).replace(/\n/g, '<br>') : ''
@@ -7113,6 +7114,7 @@ ${'='.repeat(60)}
     <div class="presse-headline">${esc(presseTitle)}</div>
     ${imageBlock}
     <div class="presse-body" style="white-space: pre-wrap; margin-top: 0.75rem;">${contentWithLinks}</div>
+    ${linksBlock}
     ${qrBlock}
     </div>
   </div>
@@ -9056,8 +9058,15 @@ ${'='.repeat(60)}
       const eventDateStrP = formatEventDates(event) || ''
 
       let imageBlockP = ''
+      // K2: Masterflyer als sichtbare „Ansicht“ (sendefertig für Presse, ein Bild genügt)
+      if (!tenant.isVk2 && !tenant.isOeffentlich) {
+        imageBlockP += `<div class="presse-block" style="margin: 0.75rem 0;">
+  <img src="/img/k2/masterflyer-k2-a5-seite1.png" alt="Masterflyer" style="max-width: 100%; height: auto; display: block; border-radius: 0;" />
+  <div style="font-size:0.8rem; color:#666; margin-top:0.35rem;">Masterflyer (A5) – Ansicht</div>
+</div>`
+      }
       if (presse?.imageUrl) {
-        imageBlockP = `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${String(presse.imageUrl).replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>`
+        imageBlockP += `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${String(presse.imageUrl).replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>`
       }
       let qrBlockP = ''
       if (presse?.qrShow && presse?.qrUrl) {
@@ -9069,6 +9078,21 @@ ${'='.repeat(60)}
         }
       }
 
+      // Links (immer sichtbar): Galerie + Demo/Eingangstor + Präsentationsmappe
+      const galerieUrlP =
+        BASE_APP_URL +
+        (tenant.isVk2
+          ? PROJECT_ROUTES.vk2.galerie
+          : tenant.isOeffentlich
+            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+            : PROJECT_ROUTES['k2-galerie'].galerie)
+      const demoUrlP = BASE_APP_URL + PROJECT_ROUTES.entdecken
+      const mappeUrlP = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
+      const linksBlockP = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.25rem;"><strong>Links</strong></div>
+  <div class="presse-body" style="white-space: pre-wrap; font-size:0.95rem;">Galerie: ${String(galerieUrlP)}<br>Demo / Eingangstor: ${String(demoUrlP)}<br>Präsentationsmappe: ${String(mappeUrlP)}</div>
+</div>`
+
       const fullPresseHtml = buildPresseaussendungRedactionPreviewHtml(
         {
           prDocClass: prDocClassP,
@@ -9079,6 +9103,7 @@ ${'='.repeat(60)}
           presseTitle: presse?.title ?? '',
           presseContent: typeof presse?.content === 'string' ? presse.content : '',
           imageBlock: imageBlockP,
+          linksBlock: linksBlockP,
           qrBlock: qrBlockP,
         },
         { iframePreview: false }
