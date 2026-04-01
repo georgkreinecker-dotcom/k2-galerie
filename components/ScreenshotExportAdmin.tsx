@@ -2278,6 +2278,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     bcc: string
     body: string
     fullPacket: string
+    mailtoUrl?: string
+    masterflyerUrl?: string
     startpaketInfo?: string
   } | null>(null)
   const [medienspiegelAddName, setMedienspiegelAddName] = useState('')
@@ -10220,12 +10222,39 @@ ${'='.repeat(60)}
             .replace(/&#39;/g, "'")
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
+
+        const buildMailBodySnippetForMailto = (full: string) => {
+          // Mailto-Limits: kurzer, echter Text im Body (Apple Mail zeigt sofort Inhalt).
+          const hardMax = 1800
+          const s = String(full || '').trim()
+          if (!s) return ''
+          if (s.length <= hardMax) return s
+          const cut = s.slice(0, hardMax)
+          const lastBreak = Math.max(cut.lastIndexOf('\n\n'), cut.lastIndexOf('\n'), cut.lastIndexOf('. '), cut.lastIndexOf(' '))
+          const safe = (lastBreak > 600 ? cut.slice(0, lastBreak) : cut).trim()
+          return `${safe}\n\n—\nVoller Text liegt in der Zwischenablage.`
+        }
+        const buildMailto = (opts: { bcc?: string; subject: string; body?: string }) => {
+          const parts: string[] = []
+          if (opts.bcc) parts.push(`bcc=${encodeURIComponent(opts.bcc)}`)
+          parts.push(`subject=${encodeURIComponent(opts.subject)}`)
+          if (opts.body != null) parts.push(`body=${encodeURIComponent(opts.body)}`)
+          return `mailto:?${parts.join('&')}`
+        }
+        const mailtoUrl = buildMailto({
+          bcc: bcc || undefined,
+          subject: decodeEntities(betreff),
+          body: buildMailBodySnippetForMailto(plainBody),
+        })
+
         setMustermailModal({
           title: `Mustermail – Presse (${ev?.title || 'Event'})`,
           subject: decodeEntities(betreff),
           bcc,
           body: plainBody,
           fullPacket,
+          mailtoUrl,
+          masterflyerUrl: masterflyerUrlForPresse,
           startpaketInfo,
         })
         try { await navigator.clipboard.writeText(fullPacket) } catch (_) {}
@@ -25042,6 +25071,37 @@ ${name}`
             </div>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
+              {mustermailModal.masterflyerUrl ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      window.open(String(mustermailModal.masterflyerUrl), '_blank', 'noopener,noreferrer')
+                    } catch (_) {
+                      // Fallback: wenigstens in Zwischenablage
+                      navigator.clipboard.writeText(String(mustermailModal.masterflyerUrl)).then(() => alert('✅ Masterflyer-Link kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))
+                    }
+                  }}
+                  style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 800, cursor: 'pointer' }}
+                >
+                  🖼️ Masterflyer öffnen
+                </button>
+              ) : null}
+              {mustermailModal.mailtoUrl ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      window.location.href = String(mustermailModal.mailtoUrl)
+                    } catch (_) {
+                      alert('Mailprogramm konnte nicht geöffnet werden.')
+                    }
+                  }}
+                  style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 900, cursor: 'pointer' }}
+                >
+                  📩 Im Mailprogramm öffnen
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => navigator.clipboard.writeText(mustermailModal.bcc).then(() => alert('✅ BCC kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))}
