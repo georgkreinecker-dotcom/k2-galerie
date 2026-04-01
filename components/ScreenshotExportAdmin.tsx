@@ -24831,8 +24831,31 @@ ${name}`
         const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
         const galleryName = isVk2 ? (vk2Stammdaten?.verein?.name || 'Kunstverein Muster') : ((galleryData?.name) || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie'))
         const eventDateStr = redactionEvent ? formatEventDates(redactionEvent) : ''
-        const imageBlock = redactionPresseImageUrl ? `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>` : ''
+        let imageBlock = ''
+        // K2: Masterflyer als fixe „Ansicht“ (immer sichtbar im Dokument)
+        if (!tenant.isVk2 && !tenant.isOeffentlich) {
+          imageBlock += `<div class="presse-block" style="margin: 0.75rem 0;">
+  <img src="/img/k2/masterflyer-k2-a5-seite1.png" alt="Masterflyer" style="max-width: 100%; height: auto; display: block; border-radius: 0;" />
+  <div style="font-size:0.8rem; color:#666; margin-top:0.35rem;">Masterflyer (A5) – Ansicht</div>
+</div>`
+        }
+        if (redactionPresseImageUrl) {
+          imageBlock += `<div class="presse-block" style="margin: 0.75rem 0;"><img src="${redactionPresseImageUrl.replace(/"/g, '&quot;')}" alt="" style="max-width: 100%; height: auto; border-radius: 8px; display: block;" /></div>`
+        }
         const qrBlock = redactionPresseQrShow && redactionPresseQrDataUrl ? `<div class="presse-block" style="margin: 0.75rem 0; text-align: center;"><img src="${redactionPresseQrDataUrl}" alt="QR-Code" style="width: 120px; height: 120px;" /><p style="font-size: 0.75rem; margin-top: 0.35rem;">Scan für Link</p></div>` : ''
+        const galerieUrl =
+          BASE_APP_URL +
+          (tenant.isVk2
+            ? PROJECT_ROUTES.vk2.galerie
+            : tenant.isOeffentlich
+              ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+              : PROJECT_ROUTES['k2-galerie'].galerie)
+        const demoUrl = BASE_APP_URL + PROJECT_ROUTES.entdecken
+        const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
+        const linksBlock = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
+  <div style="font-size:0.85rem; color:#666; margin-bottom:0.25rem;"><strong>Links</strong></div>
+  <div class="presse-body" style="white-space: pre-wrap; font-size:0.95rem;">Galerie: ${String(galerieUrl)}<br>Demo / Eingangstor: ${String(demoUrl)}<br>Präsentationsmappe: ${String(mappeUrl)}</div>
+</div>`
         const previewHtml = buildPresseaussendungRedactionPreviewHtml(
           {
             prDocClass,
@@ -24843,6 +24866,7 @@ ${name}`
             presseTitle: redactionPresseTitle,
             presseContent: redactionPresseContent,
             imageBlock,
+            linksBlock,
             qrBlock
           },
           { iframePreview: true }
@@ -24856,6 +24880,7 @@ ${name}`
           presseTitle: redactionPresseTitle,
           presseContent: redactionPresseContent,
           imageBlock,
+          linksBlock,
           qrBlock
         })
         const saveRedaction = () => {
