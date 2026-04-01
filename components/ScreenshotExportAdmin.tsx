@@ -10161,7 +10161,10 @@ ${'='.repeat(60)}
             : PROJECT_ROUTES['k2-galerie'].galerie)
       const demoUrlForPresse = BASE_APP_URL + ENTDECKEN_ROUTE
       const mappeUrlForPresse = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
-      const masterflyerUrlForPresse = BASE_APP_URL + '/img/k2/masterflyer-k2-a5-seite1.png'
+      const flyerTenantForPresse: FlyerEventBogenTenantContext = tenant.isVk2 ? 'vk2' : tenant.isOeffentlich ? 'oeffentlich' : 'k2'
+      // WICHTIG: Das PNG ist nur 1024×675 (zu klein). Für Presse immer den druckbaren Master-Flyer-Link verwenden.
+      const masterflyerUrlForPresse = BASE_APP_URL + flyerEventBogenUrl({ tenant: flyerTenantForPresse, eventId: ev?.id ?? undefined })
+      const masterflyerPreviewPngUrlForPresse = BASE_APP_URL + '/img/k2/masterflyer-k2-a5-seite1.png'
 
       const decodeHtmlEntities = (s: string) =>
         String(s || '')
@@ -10184,7 +10187,8 @@ ${'='.repeat(60)}
           `- Galerie: ${galerieUrlForPresse}`,
           `- Demo / Eingangstor: ${demoUrlForPresse}`,
           `- Präsentationsmappe: ${mappeUrlForPresse}`,
-          `- Masterflyer (Bild): ${masterflyerUrlForPresse}`,
+          `- Masterflyer (druckbar im Browser): ${masterflyerUrlForPresse}`,
+          `- Masterflyer (Vorschau-Bild, klein): ${masterflyerPreviewPngUrlForPresse}`,
         ].join('\n')
         return [b, linksBlock].filter(Boolean).join('\n\n').trim()
       }
