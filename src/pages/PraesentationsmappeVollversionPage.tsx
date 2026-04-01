@@ -202,6 +202,7 @@ export default function PraesentationsmappeVollversionPage() {
     const out: ReactNode[] = []
     let i = 0
     let firstH1Done = false
+    let lastWasEmpty = false
     const key = () => `${keyPrefix}-${i}`
 
     while (i < lines.length) {
@@ -209,11 +210,24 @@ export default function PraesentationsmappeVollversionPage() {
       const trimmed = line.trim()
 
       if (trimmed === '') {
-        out.push(<div key={key()} className="pmv-leerzeile" aria-hidden />)
+        // Mehrere Leerzeilen hintereinander machen beim Drucken unnötige Leerräume.
+        if (!lastWasEmpty) out.push(<div key={key()} className="pmv-leerzeile" aria-hidden />)
+        lastWasEmpty = true
         i++; continue
       }
       if (trimmed.toUpperCase() === '[SEITENUMBRUCH]') {
-        out.push(<div key={key()} className="pmv-seitenumbruch" aria-hidden><span className="pmv-seitenumbruch-label">— Seitenumbruch —</span></div>)
+        // Seitenumbruch am Dokumentende erzeugt oft eine leere Folgeseite → weglassen.
+        const hasMoreMeaningfulContent = lines.slice(i + 1).some((l) => {
+          const t = l.trim()
+          return t !== '' && t.toUpperCase() !== '[SEITENUMBRUCH]'
+        })
+        if (!hasMoreMeaningfulContent) break
+        out.push(
+          <div key={key()} className="pmv-seitenumbruch" aria-hidden>
+            <span className="pmv-seitenumbruch-label">— Seitenumbruch —</span>
+          </div>
+        )
+        lastWasEmpty = false
         i++; continue
       }
       const imgMatch = line.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
@@ -221,6 +235,7 @@ export default function PraesentationsmappeVollversionPage() {
         const [, alt, src] = imgMatch
         const url = src.startsWith('http') ? src : src.startsWith('/') ? src : `${BASE}/${src}`
         out.push(<p key={key()} className="pmv-p pmv-p-with-img"><img src={url} alt={alt || 'Screenshot'} className="pmv-img" style={{ maxWidth: '100%', height: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }} /></p>)
+        lastWasEmpty = false
         i++; continue
       }
       if (line.startsWith('# ')) {
@@ -228,18 +243,22 @@ export default function PraesentationsmappeVollversionPage() {
         const displayTitle = (chapterNumber != null && !firstH1Done) ? `${chapterNumber}. ${title}` : title
         if (!firstH1Done) firstH1Done = true
         out.push(<h1 key={key()} className="pmv-h1">{displayTitle}</h1>)
+        lastWasEmpty = false
         i++; continue
       }
       if (line.startsWith('## ')) {
         out.push(<h2 key={key()} className="pmv-h2">{line.substring(3).trim()}</h2>)
+        lastWasEmpty = false
         i++; continue
       }
       if (line.startsWith('### ')) {
         out.push(<h3 key={key()} className="pmv-h3">{line.substring(4).trim()}</h3>)
+        lastWasEmpty = false
         i++; continue
       }
       if (trimmed === '---' || /^---+$/.test(trimmed)) {
         out.push(<hr key={key()} className="pmv-hr" />)
+        lastWasEmpty = false
         i++; continue
       }
       if (line.startsWith('|') && line.includes('|', 1)) {
@@ -261,6 +280,7 @@ export default function PraesentationsmappeVollversionPage() {
             </div>
           )
         }
+        lastWasEmpty = false
         continue
       }
       if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -270,6 +290,7 @@ export default function PraesentationsmappeVollversionPage() {
           i++
         }
         out.push(<ul key={key()} className="pmv-ul">{items}</ul>)
+        lastWasEmpty = false
         continue
       }
       const numLinkMatch = line.match(/^(\d+\.)\s+\[([^\]]+)\]\(([^)]+)\)/)
@@ -282,6 +303,7 @@ export default function PraesentationsmappeVollversionPage() {
           const href = path.startsWith('http') ? path : `${BASE}/${path}`
           out.push(<p key={key()} className="pmv-p">{num} <a href={href} className="pmv-link" target={path.startsWith('http') ? '_blank' : undefined} rel={path.startsWith('http') ? 'noopener noreferrer' : undefined}>{title}</a></p>)
         }
+        lastWasEmpty = false
         i++; continue
       }
       if (line.startsWith('[') && line.includes('](')) {
@@ -295,10 +317,12 @@ export default function PraesentationsmappeVollversionPage() {
             const href = path.startsWith('http') ? path : `${BASE}/${path}`
             out.push(<p key={key()} className="pmv-p"><a href={href} className="pmv-link" target={path.startsWith('http') ? '_blank' : undefined} rel={path.startsWith('http') ? 'noopener noreferrer' : undefined}>{match[1]}</a></p>)
           }
+          lastWasEmpty = false
           i++; continue
         }
       }
       out.push(<p key={key()} className="pmv-p">{renderInline(line)}</p>)
+      lastWasEmpty = false
       i++
     }
     return out
