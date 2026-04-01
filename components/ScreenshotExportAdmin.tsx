@@ -10073,10 +10073,10 @@ ${'='.repeat(60)}
       const suggestionsList = JSON.parse(localStorage.getItem('k2-pr-suggestions') || '[]')
       const evSug = ev?.id ? suggestionsList.find((sg: any) => sg.eventId === ev.id) : null
 
-      // Mail muss sofort aufgehen; PDF-Erzeugung daher erst danach im Hintergrund.
-      const shouldPreparePdf =
-        mailTyp === 'plakat' || mailTyp === 'event-flyer' || mailTyp === 'newsletter' || mailTyp === 'presse'
-      // mailto: kann keine Dateianhänge setzen – ehrlicher Hinweis im Fließtext (vorher war attachmentInfo immer null → irreführende „Vorschau anhängen“-Texte).
+      // Wichtig: Presse wird als TEXT im Mail-Body verschickt. PDF ist hier kein Standard-Anhang (sonst doppelt).
+      // PDF/Anhang nur dort, wo es wirklich gebraucht wird (Plakat/Flyer/Druckerei).
+      const shouldPreparePdf = mailTyp === 'plakat' || mailTyp === 'event-flyer'
+      // mailto: kann keine Dateianhänge setzen – Hinweis nur, wenn wir wirklich ein PDF vorbereiten.
       const pdfMailHinweis = shouldPreparePdf
         ? 'Hinweis: Unterstützt dein Gerät „Teilen“ mit Datei (z. B. iPhone/iPad), kann die PDF direkt in die Mail – sonst legen wir die PDF in „Downloads" und die E-Mail-App öffnet sich separat (mailto kann keinen Anhang setzen).'
         : ''
@@ -10137,7 +10137,25 @@ ${'='.repeat(60)}
       if (!plainBody.trim() && ev?.id && mailTyp === 'presse') {
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
         const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
-        plainBody = [(presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim(), pdfMailHinweis]
+        const galerieUrl =
+          BASE_APP_URL +
+          (tenant.isVk2
+            ? PROJECT_ROUTES.vk2.galerie
+            : tenant.isOeffentlich
+              ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+              : PROJECT_ROUTES['k2-galerie'].galerie)
+        const demoUrl = BASE_APP_URL + PROJECT_ROUTES.entdecken
+        const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
+        const linksBlock = [
+          'Links:',
+          `- Galerie: ${galerieUrl}`,
+          `- Demo / Eingangstor: ${demoUrl}`,
+          `- Präsentationsmappe: ${mappeUrl}`,
+        ].join('\n')
+        plainBody = [
+          (presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim(),
+          linksBlock,
+        ]
           .filter(Boolean)
           .join('\n\n')
           .trim()
@@ -10147,15 +10165,7 @@ ${'='.repeat(60)}
         plainBody = `Hallo,\n\nim Anhang/als Vorlage senden wir ${doc?.name || 'das Werbemittel'} für ${ev?.title || 'das Event'}.\n\nViele Grüße`
       }
 
-      // Presse: Text kann schon aus HTML kommen – PDF-Hinweis trotzdem anhängen, wenn noch nicht drin.
-      if (
-        mailTyp === 'presse' &&
-        shouldPreparePdf &&
-        pdfMailHinweis &&
-        !plainBody.includes('Gleich wird eine druckfertige PDF-Datei')
-      ) {
-        plainBody = [plainBody.trim(), pdfMailHinweis].filter(Boolean).join('\n\n').trim()
-      }
+      // Presse: kein PDF-Hinweis – Mail-Text ist die Wahrheit (kein doppelter Anhang).
 
       plainBody = normalizeMailBody(betreff, plainBody)
 
