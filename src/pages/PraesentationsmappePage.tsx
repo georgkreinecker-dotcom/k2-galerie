@@ -104,6 +104,7 @@ export default function PraesentationsmappePage() {
     : isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
     : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || 'K2 Galerie').replace(/&/g, ' & ')
+  const badgeText = isVk2Variante ? 'Kurzversion (VK2)' : 'Kurzversion'
 
   return (
     <div className="pm-wrap" style={{ minHeight: '100vh', background: '#faf8f5', color: '#1c1a18' }}>
@@ -129,6 +130,20 @@ export default function PraesentationsmappePage() {
 
         {/* Deckblatt im Erscheinungsbild Teal/Weiß (Vorbild für alle Drucksorten) */}
         <div className="pm-teal-cover" style={{ background: TEAL_DARK, color: '#fff', padding: 'clamp(2rem, 5vw, 3rem) 1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <span style={{ padding: '0.25rem 0.55rem', borderRadius: '999px', background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.22)', fontSize: '0.78rem', fontWeight: 700 }}>
+              {badgeText}
+            </span>
+            <Link
+              to={{
+                pathname: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion,
+                search: location.search.replace(/(^\\?|&)view=kurz(&|$)/, '$1').replace(/\\?&/, '?').replace(/\\?$/, ''),
+              } as any}
+              style={{ color: '#fff', textDecoration: 'underline', fontSize: '0.85rem', fontWeight: 700 }}
+            >
+              Zur Vollversion →
+            </Link>
+          </div>
           <h1 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.25rem)', fontWeight: 700, color: '#fff', margin: 0, letterSpacing: '-0.02em' }}>
             {coverTitle}
           </h1>

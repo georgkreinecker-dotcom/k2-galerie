@@ -86,7 +86,7 @@ export default function PraesentationsmappeVollversionPage() {
 
   const returnTo = searchParams.get('returnTo')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
-  const pageTitle = isVk2Variant ? 'Präsentationsmappe VK2' : 'Präsentationsmappe'
+  const pageTitle = isVk2Variant ? 'Präsentationsmappe VK2 – Vollversion' : 'Präsentationsmappe – Vollversion'
   const pageSubtitle = isVk2Variant
     ? 'Vollversion für die Vereinsplattform VK2: Mitglieder, Verwaltung, Kassa, Event- und Medienplanung.'
     : 'Handbuch-Struktur, Marketing-Stil; Fokus Mein Weg & sechs Sparten. Screenshots unter /img/oeffentlich/.'
@@ -454,7 +454,7 @@ export default function PraesentationsmappeVollversionPage() {
     }
   `
 
-  const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe'
+  const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
 
   return (
     <div className="pmv-wrap" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
