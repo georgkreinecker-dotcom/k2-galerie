@@ -78,7 +78,7 @@ Kostenlos. Wirkt in Google-Suche „Galerie [Ort]“.
 
 | Zweck | URL |
 |-------|-----|
-| K2 Galerie | https://k2-galerie.vercel.app/projects/k2-galerie/galerie |
+| K2 Galerie | https://k2-galerie.vercel.app/galerie |
 | Demo / Eingangstor (ök2) | https://k2-galerie.vercel.app/entdecken |
 | VK2 | https://k2-galerie.vercel.app/projects/vk2 |
 
@@ -119,12 +119,12 @@ QR-Codes für diese URLs auf Einladung, Presse, Social, in der Lounge. Nicht and
 
 **Verteiler:** docs/MEDIENVERTEILER-EROEFFNUNG.md – regional (OÖN, MeinBezirk, Tips, ORF OÖ) + überregional (Standard, Presse). Für Eröffnung und alle weiteren Aussendungen.
 
-**Titel Presseinformation:** Presseinformation – Eröffnung der K2 Galerie
+**Titel Presseinformation:** Presseinformation – Galerieeröffnung „K2 Galerie Kunst & Keramik“
 
 **Lead:**  
-[Galeriename] eröffnet am [Datum] die K2 Galerie. Gezeigt werden Werke in Malerei, Keramik, Grafik und Skulptur. Zur Eröffnung gibt es Einblick in die K2-Plattform (K2 · ök2 · VK2), mit der Künstler:innen, Galerien und Kunstvereine ihre Werke präsentieren und Veranstaltungen planen.
+K2 Galerie Kunst & Keramik eröffnet in Eferding (24.–26. April 2026). Zur Eröffnung gibt es – neben den Werken – Einblick in die Plattform (K2 · ök2 · VK2), mit der Kunstschaffende, Galerien und Kunstvereine ihre Online‑Galerie und Öffentlichkeitsarbeit aus einer Datenquelle erstellen können.
 
-**Ort, Zeit, Kontakt:** [Adresse], [Datum, Uhrzeit]. Kontakt: [E-Mail, Telefon].
+**Ort, Zeit, Kontakt:** [Adresse], [Datum]. Kontakt: [E-Mail, Telefon]. *(Uhrzeiten: auf Einladungskarte / Aushang vor Ort.)*
 
 **Optional 2. Absatz:**  
 Die K2 Galerie ist zugleich Schaufenster und Arbeitsort: Besucher:innen können die Galerie und eine Demo der Plattform (ök2) erleben; Vereine können die Vereinsplattform VK2 kennenlernen. Links und QR-Codes vor Ort.

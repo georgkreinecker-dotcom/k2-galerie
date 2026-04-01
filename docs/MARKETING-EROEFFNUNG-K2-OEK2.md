@@ -86,18 +86,21 @@ Wir freuen uns auf Sie.
 
 ### 3.4 Presseinformation (Muster)
 
-**Titel:** Presseinformation – Eröffnung der K2 Galerie
+**Titel:** Presseinformation – Galerieeröffnung „K2 Galerie Kunst & Keramik“
 
-**Lead:**  
-Die K2 Galerie eröffnet am [Datum] mit einer Ausstellung von [Künstler:innen]. Zur Eröffnung lädt das Galerie-Team in die Räume ein und gibt in einer gemeinsamen Lounge Einblick in die K2-Plattform für Künstler:innen, Galerien und Kunstvereine (K2 · ök2 · VK2).
+**Lead (druckbar):**  
+Eferding bekommt einen neuen Ausstellungsraum: Martina und Georg Kreinecker eröffnen von **24. bis 26. April 2026** die **K2 Galerie Kunst & Keramik** in der Schlossergasse 4. Gezeigt werden Arbeiten aus **Malerei und Keramik**. Zur Eröffnung gibt es zusätzlich Einblick in die Plattform (K2 · ök2 · VK2), mit der Kunstschaffende, Galerien und Kunstvereine ihre Online‑Galerie und Öffentlichkeitsarbeit aus einer Datenquelle erstellen können.
 
-**Text:**  
-[Absatz 1: Galerie, Künstler:innen, Ausstellung, Ort, Datum, Öffnungszeiten.]
+**Text (3 Absätze, übernommen werden kann 1–3):**
 
-**Absatz 2 – Die Plattform (kurz umrissen):**  
-Am Eröffnungstag können Gäste in einer **gemeinsamen Lounge** die **K2-Plattform** kennenlernen: eine webbasierte Anwendung für **Künstler:innen, Galerien und Kunstvereine** (K2 · ök2 · VK2). Mit ihr lassen sich Werke präsentieren, Ausstellungen und Veranstaltungen planen, Einladungen und Presse-Texte erstellen sowie sich vernetzen. Die Galerie selbst arbeitet bereits mit K2; die **Musterseiten (ök2)** zeigen, wie eine Galerie im Netz aussieht; **VK2** ist die Variante für Vereine und Gruppen. Beides – ök2 und VK2 – ist am Bildschirm vor Ort oder am eigenen Gerät zugänglich (siehe Links und QR-Codes unten). So verbindet die Eröffnung die reale Ausstellung mit dem Werkzeug, das dahintersteht.
+**Absatz 1 – Galerie und Werke:**  
+Die K2 Galerie verbindet Malerei und Keramik in einem Raum. Der Schwerpunkt liegt auf Arbeiten von Martina und Georg Kreinecker – Kunst als Gegenwart, nicht als „Dekoration“. Besucherinnen und Besucher sind eingeladen, den Raum und die Werke in Ruhe zu erleben.
 
-[Absatz 3: Kontakt, Bildanfragen.]
+**Absatz 2 – Plattform (kurz, sachlich):**  
+Mit **ök2** (öffentliche Demo) und **VK2** (Vereinsplattform) wird zur Eröffnung auch ein Blick hinter die Kulissen möglich: eine webbasierte Plattform, die aus Stammdaten und Eventdaten automatisch Einladungen, Flyer und Pressetexte erzeugen kann. Damit wird Öffentlichkeitsarbeit für Kulturakteure planbar – ohne Tool‑Wechsel und ohne doppelte Eingaben.
+
+**Absatz 3 – Ort/Kontakt:**  
+Ort: Schlossergasse 4, 4070 Eferding · Termin: 24.–26. April 2026 · Kontakt: georg.kreinecker@kgm.at (Telefon siehe Einladungskarte / Aushang vor Ort)
 
 ---
 
@@ -114,7 +117,7 @@ Am Eröffnungstag können Gäste in einer **gemeinsamen Lounge** die **K2-Plattf
 
 | Zweck | URL | Verwendung |
 |-------|-----|------------|
-| **Zur K2 Galerie** (echte Galerie, Werke, Öffnungszeiten) | `https://k2-galerie.vercel.app/projects/k2-galerie/galerie` | Einladung „Galerie online“, Presse „Website“, Social, QR in der Lounge für „unsere Galerie“. |
+| **Zur K2 Galerie** (echte Galerie, Werke) | `https://k2-galerie.vercel.app/galerie` | Einladung „Galerie online“, Presse „Website“, Social, QR in der Lounge für „unsere Galerie“. |
 | **Zu den Musterseiten / Demo (ök2)** (Plattform ausprobieren, Lizenz anfragen) | `https://k2-galerie.vercel.app/entdecken` | Einladung „Plattform entdecken“, Presse „Demo“, Social „Mehr zur Plattform“, QR in der Lounge für „ök2 / Demo“. |
 | **Zur Vereinsplattform VK2** (Beispiel für Vereine) | `https://k2-galerie.vercel.app/projects/vk2` | Optional in Lounge oder Presse, wenn VK2 explizit gezeigt wird. |
 
