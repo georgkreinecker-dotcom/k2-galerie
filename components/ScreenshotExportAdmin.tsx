@@ -25079,35 +25079,44 @@ ${name}`
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
               {mustermailModal.masterflyerUrl ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      window.open(String(mustermailModal.masterflyerUrl), '_blank', 'noopener,noreferrer')
-                    } catch (_) {
-                      // Fallback: wenigstens in Zwischenablage
-                      navigator.clipboard.writeText(String(mustermailModal.masterflyerUrl)).then(() => alert('✅ Masterflyer-Link kopiert.')).catch(() => alert('Kopieren fehlgeschlagen.'))
-                    }
+                <a
+                  href={String(mustermailModal.masterflyerUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    padding: '0.55rem 0.9rem',
+                    background: '#fffefb',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: '8px',
+                    color: '#1c1a18',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
                   }}
-                  style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 800, cursor: 'pointer' }}
                 >
                   🖼️ Masterflyer öffnen
-                </button>
+                </a>
               ) : null}
               {mustermailModal.mailtoUrl ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      window.location.href = String(mustermailModal.mailtoUrl)
-                    } catch (_) {
-                      alert('Mailprogramm konnte nicht geöffnet werden.')
-                    }
+                <a
+                  href={String(mustermailModal.mailtoUrl)}
+                  style={{
+                    padding: '0.55rem 0.9rem',
+                    background: '#fffefb',
+                    border: '1px solid #b54a1e55',
+                    borderRadius: '8px',
+                    color: '#1c1a18',
+                    fontWeight: 900,
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
                   }}
-                  style={{ padding: '0.55rem 0.9rem', background: '#fffefb', border: '1px solid #b54a1e55', borderRadius: '8px', color: '#1c1a18', fontWeight: 900, cursor: 'pointer' }}
                 >
                   📩 Im Mailprogramm öffnen
-                </button>
+                </a>
               ) : null}
               <button
                 type="button"
