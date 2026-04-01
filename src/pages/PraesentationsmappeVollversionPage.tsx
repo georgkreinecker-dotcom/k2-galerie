@@ -15,18 +15,16 @@ import {
   K2_GALERIE_PUBLIC_BRAND,
   MUSTER_TEXTE,
   TENANT_CONFIGS,
-  getOek2WelcomeImageEffective,
 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
+import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 
 const BASE_STANDARD = '/praesentationsmappe-vollversion'
 const BASE_VK2 = '/praesentationsmappe-vk2-vollversion'
 const DOC_PARAM = 'doc'
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
 const VK2_URL = BASE_APP_URL + '/projects/vk2'
-/** Fallback Deckblatt-Bild wenn kein Welcome-Bild in Stammdaten */
-const DECKBLATT_WILLKOMMENSBILD = '/img/oeffentlich/willkommen-demo.jpg'
 
 function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): string {
   if (!isOeffentlich) return raw
@@ -344,14 +342,9 @@ export default function PraesentationsmappeVollversionPage() {
     const deckTitle = isOeffentlich
       ? MUSTER_TEXTE.gallery.firmenname || TENANT_CONFIGS.oeffentlich.galleryName
       : K2_GALERIE_PUBLIC_BRAND
-    const g =
-      typeof window !== 'undefined'
-        ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string | undefined>)
-        : undefined
-    const welcomeRaw = g?.welcomeImage?.trim() || ''
-    const deckImg = isOeffentlich
-      ? getOek2WelcomeImageEffective(welcomeRaw)
-      : welcomeRaw || DECKBLATT_WILLKOMMENSBILD
+    // Deckblatt-Foto soll immer das Eingangsbild (Eingangstor / Entdecken) sein.
+    // Quelle: Admin → Design → Eingangsseite.
+    const deckImg = getEntdeckenHeroPathUrl()
     return (
       <div className="pmv-deckblatt-cover" lang="de">
         <div className="pmv-deckblatt-header">
@@ -363,7 +356,7 @@ export default function PraesentationsmappeVollversionPage() {
         <div className="pmv-cover-img-wrap">
           <img
             src={deckImg}
-            alt={isOeffentlich ? 'Willkommensseite Demo-Galerie (ök2)' : 'Willkommensseite der K2 Galerie'}
+            alt="Eingangstor / Entdecken – Deckblattbild"
             className="pmv-cover-img"
           />
         </div>
