@@ -9096,7 +9096,7 @@ ${'='.repeat(60)}
           : tenant.isOeffentlich
             ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
             : PROJECT_ROUTES['k2-galerie'].galerie)
-      const demoUrlP = BASE_APP_URL + PROJECT_ROUTES.entdecken
+      const demoUrlP = BASE_APP_URL + ENTDECKEN_ROUTE
       const mappeUrlP = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
       const linksBlockP = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
   <div style="font-size:0.85rem; color:#666; margin-bottom:0.25rem;"><strong>Links</strong></div>
@@ -25185,7 +25185,7 @@ ${name}`
             : tenant.isOeffentlich
               ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
               : PROJECT_ROUTES['k2-galerie'].galerie)
-        const demoUrl = BASE_APP_URL + PROJECT_ROUTES.entdecken
+        const demoUrl = BASE_APP_URL + ENTDECKEN_ROUTE
         const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
         const linksBlock = `<div class="presse-block" style="margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.15);">
   <div style="font-size:0.85rem; color:#666; margin-bottom:0.25rem;"><strong>Links</strong></div>
