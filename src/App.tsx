@@ -805,7 +805,26 @@ function App() {
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
       {/* Präsentationsmappe: Kurzvariante (Teal/Weiß) + Vollversion (große Mappe, viele Kapitel). */}
       <Route path="/projects/k2-galerie/praesentationsmappe-vollversion" element={<PraesentationsmappeVollversionPage />} />
-      <Route path="/projects/k2-galerie/praesentationsmappe" element={<PraesentationsmappePage />} />
+      <Route
+        path="/projects/k2-galerie/praesentationsmappe"
+        element={(() => {
+          const sp = new URLSearchParams(location.search)
+          // Kurzversion bleibt bewusst möglich – aber nur wenn explizit verlangt.
+          if ((sp.get('view') || '').toLowerCase() === 'kurz') return <PraesentationsmappePage />
+          // Standard: Langversion, Query/State bleibt erhalten.
+          return (
+            <Navigate
+              to={
+                sp.toString()
+                  ? `/projects/k2-galerie/praesentationsmappe-vollversion?${sp.toString()}`
+                  : '/projects/k2-galerie/praesentationsmappe-vollversion'
+              }
+              replace
+              state={location.state}
+            />
+          )
+        })()}
+      />
       {/* Plattform-Routen – auf Mobile sofort Galerie (kein Smart Panel) */}
       <Route path="/platform" element={
         <AppErrorBoundary>
