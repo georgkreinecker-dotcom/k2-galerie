@@ -9816,12 +9816,14 @@ ${'='.repeat(60)}
             : tenant.isVk2
               ? '?context=vk2'
               : ''
+          const mappeKurzQs = mappeQs ? `${mappeQs}&view=kurz` : '?view=kurz'
           const pmHelperFlyerT: FlyerEventBogenTenantContext = tenant.isOeffentlich
             ? 'oeffentlich'
             : tenant.isVk2
               ? 'vk2'
               : 'k2'
           const vk2Qs = '?variant=vk2'
+          const vk2KurzQs = `${vk2Qs}&view=kurz`
           const r = PROJECT_ROUTES['k2-galerie']
           const link = (path: string, label: string) =>
             `<p style="margin:0.6rem 0"><a href="${BASE_APP_URL}${path}${mappeQs}" target="_blank" rel="noopener noreferrer" style="color:#0d9488;font-weight:600">${label}</a> <span style="color:#5c5650;font-size:0.9rem">(im Browser öffnen, dann Drucken → PDF)</span></p>`
@@ -9833,9 +9835,9 @@ ${'='.repeat(60)}
             '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Präsentationsmappen</title><style>body{font-family:system-ui,sans-serif;padding:1.75rem;max-width:560px;line-height:1.55;color:#1c1a18}</style></head><body>' +
             '<h1 style="font-size:1.2rem;margin-top:0">Präsentationsmappen</h1>' +
             '<p>Kein gespeicherter HTML-Inhalt – die Vorschau läuft über die festen Seiten der App:</p>' +
-            link(r.praesentationsmappe, 'Kurzvariante') +
+            linkFull(`${r.praesentationsmappe}${mappeKurzQs}`, 'Kurzvariante') +
             link(r.praesentationsmappeVollversion, 'Vollversion') +
-            linkVk2(r.praesentationsmappe, 'VK2 Kurzversion') +
+            linkFull(`${r.praesentationsmappe}${vk2KurzQs}`, 'VK2 Kurzversion') +
             linkVk2(r.praesentationsmappeVollversion, 'VK2 Vollversion') +
             link('/prospekt-k2-galerie', 'Prospekt / Flyer') +
             linkFull(

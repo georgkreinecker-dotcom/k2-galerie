@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
-import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, BENUTZER_HANDBUCH_ROUTE, OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import {
   PRODUCT_COPYRIGHT,
   PRODUCT_LIZENZ_ANFRAGE_EMAIL,
@@ -59,12 +59,24 @@ export default function PraesentationsmappePage() {
   const location = useLocation()
   const searchParams = new URLSearchParams(location.search)
   const isVk2Variante = searchParams.get('variant') === 'vk2'
+  const view = (searchParams.get('view') || '').trim().toLowerCase()
   const printCtx = useWerbemittelPrintContext()
   const isOeffentlich = printCtx === 'oeffentlich'
 
   const { versionTimestamp: qrVersionTs, refetch: refetchQrStand } = useQrVersionTimestamp()
   const [qrOek2, setQrOek2] = useState('')
   const [qrVk2, setQrVk2] = useState('')
+
+  // Standard-Link soll Langversion öffnen. Kurzvariante bleibt erreichbar über ?view=kurz (und optional variant/context).
+  useEffect(() => {
+    if (view === 'kurz') return
+    const next = new URLSearchParams(location.search)
+    // view-Param entfernen (falls leer/anders), damit URL sauber bleibt
+    next.delete('view')
+    const target = PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion
+    const qs = next.toString()
+    navigate(qs ? `${target}?${qs}` : target, { replace: true, state: location.state })
+  }, [navigate, location.search, location.state, view])
 
   useEffect(() => {
     refetchQrStand()
