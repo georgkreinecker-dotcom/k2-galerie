@@ -10225,14 +10225,16 @@ ${'='.repeat(60)}
 
         const buildMailBodySnippetForMailto = (full: string) => {
           // Mailto-Limits: kurzer, echter Text im Body (Apple Mail zeigt sofort Inhalt).
-          const hardMax = 1800
+          // Apple Mail schafft mehr – wir kürzen nur wenn es wirklich extrem wird.
+          const hardMax = 8000
           const s = String(full || '').trim()
           if (!s) return ''
           if (s.length <= hardMax) return s
           const cut = s.slice(0, hardMax)
           const lastBreak = Math.max(cut.lastIndexOf('\n\n'), cut.lastIndexOf('\n'), cut.lastIndexOf('. '), cut.lastIndexOf(' '))
           const safe = (lastBreak > 600 ? cut.slice(0, lastBreak) : cut).trim()
-          return `${safe}\n\n—\nVoller Text liegt in der Zwischenablage.`
+          // Hinweis nur, wenn wir wirklich gekürzt haben.
+          return `${safe}\n\n—\nHinweis: Text wurde gekürzt. Voller Text liegt in der Zwischenablage.`
         }
         const buildMailto = (opts: { bcc?: string; subject: string; body?: string }) => {
           const parts: string[] = []
