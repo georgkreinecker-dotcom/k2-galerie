@@ -23094,19 +23094,20 @@ ${name}`
                       type="button"
                       onClick={() => {
                         const selected = medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
-                        const emails = selected.map(m => m.email).filter(Boolean).join(', ')
-                        if (!emails) {
-                          alert('Bitte zuerst Einträge auswählen.')
-                          return
-                        }
+                        const DEFAULT_PRESSE_STARTPAKET_COUNT = 8
+                        const list = selected.length > 0 ? selected : medienspiegel.slice(0, DEFAULT_PRESSE_STARTPAKET_COUNT)
+                        const emails = list.map(m => m.email).filter(Boolean).join(', ')
+                        if (!emails) return
                         navigator.clipboard.writeText(emails)
-                          .then(() => alert('✅ E-Mail-Adressen aus den ausgewählten Einträgen kopiert.'))
+                          .then(() => alert(selected.length > 0
+                            ? '✅ BCC kopiert (aus deiner Auswahl).'
+                            : `✅ BCC kopiert (Startpaket: ${Math.min(DEFAULT_PRESSE_STARTPAKET_COUNT, medienspiegel.length)} Medien).`))
                           .catch(() => alert('Kopieren fehlgeschlagen.'))
                       }}
-                      title="Bei Einträgen: E-Mail-Adressen kopieren"
+                      title="BCC kopieren: Auswahl – sonst Startpaket"
                       style={{ padding: '0.3rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}44`, borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer', color: s.text, fontWeight: 700 }}
                     >
-                      📋 E-Mail-Adressen kopieren
+                      📋 BCC kopieren
                     </button>
                   </div>
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 0.75rem', maxHeight: '220px', overflowY: 'auto', border: `1px solid ${s.accent}22`, borderRadius: '10px', background: s.bgElevated }}>
