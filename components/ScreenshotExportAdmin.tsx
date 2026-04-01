@@ -9945,17 +9945,16 @@ ${'='.repeat(60)}
       const selectedByCheck = usesPresseRecipients
         ? medienspiegel.filter(m => medienspiegelSelectedIds.has(m.id))
         : verteilerNewsletter.filter(m => verteilerNewsletterSelectedIds.has(m.id))
-      // UX: Wenn noch nichts angehakt ist, ist "alle Medien" zu groß → mailto wird zu lang → landet wieder bei Zwischenablage.
-      // Daher: Ohne Auswahl ein kleines Start-Paket (kannst du jederzeit durch Anhaken steuern).
-      const DEFAULT_PRESSE_STARTPAKET_COUNT = 8
+      // Presse: Wenn nichts angehakt ist, bleibt BCC absichtlich leer (Georg will Mustermail sehen, dann bewusst übernehmen).
+      // Newsletter u. a.: ohne Auswahl = alle (wie bisher).
       const selectedRecipients =
         selectedByCheck.length > 0
           ? selectedByCheck
           : usesPresseRecipients
-            ? allRecipients.slice(0, DEFAULT_PRESSE_STARTPAKET_COUNT)
+            ? []
             : allRecipients
 
-      if (selectedRecipients.length === 0) {
+      if (selectedRecipients.length === 0 && !usesPresseRecipients) {
         setActiveTab('presse')
         window.scrollTo({ top: 200, behavior: 'smooth' })
         window.setTimeout(() => {
@@ -10150,31 +10149,39 @@ ${'='.repeat(60)}
         }
       }
 
+      const galerieUrlForPresse =
+        BASE_APP_URL +
+        (tenant.isVk2
+          ? PROJECT_ROUTES.vk2.galerie
+          : tenant.isOeffentlich
+            ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+            : PROJECT_ROUTES['k2-galerie'].galerie)
+      const demoUrlForPresse = BASE_APP_URL + PROJECT_ROUTES.entdecken
+      const mappeUrlForPresse = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
+      const masterflyerUrlForPresse = BASE_APP_URL + '/img/k2/masterflyer-k2-a5-seite1.png'
+
+      const ensurePresseLinksBlock = (body: string): string => {
+        const b = String(body || '').trim()
+        const alreadyHasLinks =
+          b.includes('Links:') ||
+          b.includes(String(galerieUrlForPresse)) ||
+          b.includes(String(mappeUrlForPresse)) ||
+          b.includes(String(demoUrlForPresse))
+        if (alreadyHasLinks) return b
+        const linksBlock = [
+          'Links:',
+          `- Galerie: ${galerieUrlForPresse}`,
+          `- Demo / Eingangstor: ${demoUrlForPresse}`,
+          `- Präsentationsmappe: ${mappeUrlForPresse}`,
+          `- Masterflyer (Bild): ${masterflyerUrlForPresse}`,
+        ].join('\n')
+        return [b, linksBlock].filter(Boolean).join('\n\n').trim()
+      }
+
       if (!plainBody.trim() && ev?.id && mailTyp === 'presse') {
         const presseRaw = evSug?.presseaussendung || generatePresseaussendungContent(ev)
         const presseObj = typeof presseRaw === 'object' && presseRaw && 'content' in presseRaw ? presseRaw : null
-        const galerieUrl =
-          BASE_APP_URL +
-          (tenant.isVk2
-            ? PROJECT_ROUTES.vk2.galerie
-            : tenant.isOeffentlich
-              ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
-              : PROJECT_ROUTES['k2-galerie'].galerie)
-        const demoUrl = BASE_APP_URL + PROJECT_ROUTES.entdecken
-        const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
-        const linksBlock = [
-          'Links:',
-          `- Galerie: ${galerieUrl}`,
-          `- Demo / Eingangstor: ${demoUrl}`,
-          `- Präsentationsmappe: ${mappeUrl}`,
-        ].join('\n')
-        plainBody = [
-          (presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim(),
-          linksBlock,
-        ]
-          .filter(Boolean)
-          .join('\n\n')
-          .trim()
+        plainBody = ensurePresseLinksBlock((presseObj?.content ?? (typeof presseRaw === 'string' ? presseRaw : '')).trim())
       }
 
       if (!plainBody.trim()) {
@@ -10184,6 +10191,9 @@ ${'='.repeat(60)}
       // Presse: kein PDF-Hinweis – Mail-Text ist die Wahrheit (kein doppelter Anhang).
 
       plainBody = normalizeMailBody(betreff, plainBody)
+      if (mailTyp === 'presse') {
+        plainBody = ensurePresseLinksBlock(plainBody)
+      }
 
       if (mailTyp === 'plakat') {
         // Keine zusätzlichen Textblöcke: Plakat-Mail bleibt bewusst kurz.
@@ -10202,13 +10212,17 @@ ${'='.repeat(60)}
 
       // Georg: Immer zuerst ein Mustermail erzeugen (sichtbar), dann nach Bedarf ins echte Mailprogramm einfügen.
       if (mailTyp === 'presse') {
-        const startpaketInfo =
-          (selectedByCheck.length === 0 && usesPresseRecipients)
-            ? `Startpaket: ${Math.min(DEFAULT_PRESSE_STARTPAKET_COUNT, allRecipients.length)} Medien (weil nichts angehakt)`
-            : undefined
+        const startpaketInfo = selectedByCheck.length === 0 ? 'Keine Auswahl: BCC ist leer (du kannst im Medienspiegel anhaken oder BCC kopieren).' : undefined
+        const decodeEntities = (s: string) =>
+          String(s || '')
+            .replace(/&amp;/g, '&')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
         setMustermailModal({
           title: `Mustermail – Presse (${ev?.title || 'Event'})`,
-          subject: betreff,
+          subject: decodeEntities(betreff),
           bcc,
           body: plainBody,
           fullPacket,
