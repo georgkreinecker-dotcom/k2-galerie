@@ -2,6 +2,7 @@
 
 ## Kurz
 
+0. **Optional:** Im Cursor Terminal `npm run verify:stripe-env` – zeigt, ob `STRIPE_SECRET_KEY` und ggf. Supabase-Keys in `.env` / `.env.local` gesetzt sind (ohne Werte auszugeben).
 1. **Stripe Dashboard (Testmodus):** Geheimer Schlüssel `sk_test_…` kopieren.
 2. **`.env` im Projektroot:** `STRIPE_SECRET_KEY=sk_test_…` eintragen (ohne Anführungszeichen, keine Leerzeichen um `=`).
 3. **Dev-Server neu starten** (Cursor-Terminal: beenden, dann `npm run dev`).

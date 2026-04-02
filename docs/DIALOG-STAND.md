@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Stripe-Anbindung (Go-Live vorbereitet):** Neue Doku **`docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md`** (SQL-Reihenfolge 003_stripe → 007/008/009, Vercel-Env, Webhook-Events, Test). Script **`npm run verify:stripe-env`** (`scripts/verify-stripe-env.mjs`). Anpassungen **`STRIPE-LIZENZEN-GO-LIVE.md`**, **`00-INDEX`**, **`START-NUR-NOCH-OFFEN`**, **K2SoftwareentwicklungPage** (#k2-ready-stripe), **`.env.example`**, **`STRIPE-TEST-LOKAL.md`**. **Tests + Build grün.** **Commit:** **be700cb** ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: Supabase-SQL + Vercel-Variablen + Stripe-Webhook laut **`STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md`**.
+
+**Einordnung:** Lizenzkauf produktionsfähig – Code war da; fehlende Kette = Doku + lokale Env-Prüfung + klare Dashboard-Schritte.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Ready to go + Eröffnung zusammen:** Smart-Panel-Mappe **K2 Ready to go** enthält jetzt **Galerie-Eröffnung 24.–26.04.** (Einladung, mök2, Marketing ök2, Öffentlichkeitsarbeit, Docs, Sprung **#k2-ready-eroeffnung**). **K2SoftwareentwicklungPage:** gleicher Abschnitt mit Links + `docs/`-Verweisen. **WhatsApp-Duplikat** in `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md` entfernt. **Tests + Build grün.** **Commit:** **0e97f74** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
