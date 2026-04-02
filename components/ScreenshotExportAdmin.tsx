@@ -2265,6 +2265,23 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [previewFullscreenPage, setPreviewFullscreenPage] = useState<1 | 2>(1) // welche Seite in der Vorschau (immer nur eine)
   const [designPreviewHeightPx, setDesignPreviewHeightPx] = useState(560) // Vorschau-Höhe – per Ziehen anpassbar
   const [designPreviewScale, setDesignPreviewScale] = useState(1) // 1 = 100%, manuell vergrößerbar
+  /** Vorschau-Tab: kompakte Toolbar + weniger Text oben = mehr Platz für die Galerie-Vorschau (sessionStorage). */
+  const [designToolbarCompact, setDesignToolbarCompact] = useState(() => {
+    try {
+      if (typeof sessionStorage === 'undefined') return true
+      return sessionStorage.getItem('k2-admin-design-toolbar-compact') !== '0'
+    } catch {
+      return true
+    }
+  })
+  const persistDesignToolbarCompact = (compact: boolean) => {
+    setDesignToolbarCompact(compact)
+    try {
+      sessionStorage.setItem('k2-admin-design-toolbar-compact', compact ? '1' : '0')
+    } catch (_) {}
+  }
+  const designVorschauChromeCompact =
+    activeTab === 'design' && designSubTab === 'vorschau' && designToolbarCompact
   const designPreviewResizeStart = useRef<{ y: number; height: number } | null>(null)
   // Presse & Medien – Variablen für Presse-Vorlage
   const [presseDatum, setPresseDatum] = useState('')
@@ -13267,12 +13284,73 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
   }
 
   const renderDesignVorschau = () => {
+    const dtCompact = designToolbarCompact
     return (
-        <div ref={previewContainerRef} style={{ width: '100%', minHeight: 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
-          {/* Design-Toolbar – sticky, immer sichtbar */}
-          <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '1rem 1.25rem' }}>
-            {/* Titel */}
-            <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text, marginBottom: '0.75rem' }}>✨ Deine Galerie gestalten</div>
+        <div ref={previewContainerRef} style={{ width: '100%', minHeight: dtCompact ? 'calc(100vh - 120px)' : 'calc(100vh - 180px)', background: WERBEUNTERLAGEN_STIL.bgDark, display: 'flex', flexDirection: 'column' }}>
+          {/* Design-Toolbar – sticky, immer sichtbar; kompakt = mehr Vorschaufläche */}
+          <div style={{ flexShrink: 0, position: 'sticky', top: 0, zIndex: 20, background: WERBEUNTERLAGEN_STIL.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: dtCompact ? '0.35rem 0.55rem' : '1rem 1.25rem' }}>
+            {dtCompact ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.35rem 0.45rem', marginBottom: '0.3rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('werke')}
+                  style={{
+                    padding: '0.2rem 0.45rem',
+                    fontSize: '0.76rem',
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: `1px solid ${s.muted}55`,
+                    background: s.bgElevated,
+                    color: s.muted,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  ← Übersicht
+                </button>
+                <span style={{ fontWeight: 800, fontSize: '0.82rem', color: s.text }}>✨ Gestalten</span>
+                <button
+                  type="button"
+                  onClick={() => persistDesignToolbarCompact(false)}
+                  style={{
+                    padding: '0.2rem 0.5rem',
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    borderRadius: 6,
+                    border: `1px solid ${s.accent}66`,
+                    background: `${s.accent}14`,
+                    color: '#b54a1e',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  Ablauf &amp; Infos
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.text }}>✨ Deine Galerie gestalten</div>
+                  <button
+                    type="button"
+                    onClick={() => persistDesignToolbarCompact(true)}
+                    style={{
+                      padding: '0.35rem 0.65rem',
+                      fontSize: '0.78rem',
+                      fontWeight: 700,
+                      borderRadius: 8,
+                      border: `1px solid ${s.accent}55`,
+                      background: s.bgElevated,
+                      color: '#b54a1e',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                    }}
+                  >
+                    Mehr Platz für Vorschau
+                  </button>
+                </div>
+              </>
+            )}
             {/* Nur K2: Entdecken-Seite (Landing) – ein Klick = Bild wählen, sofort gespeichert */}
             {!tenant.isOeffentlich && !tenant.isVk2 && (() => {
               const entdeckenHeroVorschauSrc =
@@ -13293,15 +13371,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               const fh = WERBEUNTERLAGEN_STIL.fontHeading
               const fb = WERBEUNTERLAGEN_STIL.fontBody
               return (
-              <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem 0.75rem', marginBottom: designEingangstorPanelOpen ? '0.5rem' : 0 }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text }}>🚪 Eingangstor (Seite „Entdecken“)</span>
+              <div style={{ marginBottom: dtCompact ? '0.35rem' : '1rem', padding: dtCompact ? '0.35rem 0.5rem' : '0.75rem 1rem', background: 'rgba(0,0,0,0.08)', borderRadius: 10, border: `1px solid ${s.accent}44` }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.35rem 0.5rem', marginBottom: designEingangstorPanelOpen ? (dtCompact ? '0.35rem' : '0.5rem') : 0 }}>
+                  <span style={{ fontSize: dtCompact ? '0.78rem' : '0.95rem', fontWeight: 700, color: s.text }}>{dtCompact ? '🚪 Eingangstor' : '🚪 Eingangstor (Seite „Entdecken“)'}</span>
                   <button
                     type="button"
                     onClick={() => setDesignEingangstorPanelOpen((o) => !o)}
                     style={{
-                      padding: '0.45rem 1rem',
-                      fontSize: '0.88rem',
+                      padding: dtCompact ? '0.28rem 0.55rem' : '0.45rem 1rem',
+                      fontSize: dtCompact ? '0.76rem' : '0.88rem',
                       fontWeight: 600,
                       background: '#b54a1e',
                       color: '#fff',
@@ -13310,10 +13388,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       cursor: 'pointer',
                     }}
                   >
-                    {designEingangstorPanelOpen ? 'Eingangstor einklappen' : 'Eingangstor öffnen (Bild & Vorschau)'}
+                    {designEingangstorPanelOpen ? (dtCompact ? 'Zu' : 'Eingangstor einklappen') : (dtCompact ? 'Öffnen' : 'Eingangstor öffnen (Bild & Vorschau)')}
                   </button>
                 </div>
-                {!designEingangstorPanelOpen ? (
+                {!designEingangstorPanelOpen && !dtCompact ? (
                   <p style={{ margin: 0, fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
                     Nur bei Bedarf – dann kannst du hier das Tor-Bild setzen. Die übrige Galerie-Gestaltung scrollst du normal darunter.
                   </p>
@@ -13488,15 +13566,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
               )
             })()}
-            {/* 3-Schritt-Workflow */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Workflow Schritte 1–4 + Zoom */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', flexWrap: 'wrap' }}>
               {/* Schritt 1 */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: 10, padding: '0.45rem 1rem' }}>
-                <span style={{ fontSize: '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
-                <span style={{ fontSize: '0.95rem', color: s.muted }}>Foto / Video reinziehen oder Text anklicken</span>
-                {pageContent.welcomeImage && <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 700 }}>✓ Foto bereit</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem', background: 'rgba(0,0,0,0.06)', border: `1px solid ${s.accent}33`, borderRadius: dtCompact ? 8 : 10, padding: dtCompact ? '0.22rem 0.45rem' : '0.45rem 1rem' }}>
+                <span style={{ fontSize: dtCompact ? '0.78rem' : '0.9rem', fontWeight: 700, color: s.accent }}>1</span>
+                <span style={{ fontSize: dtCompact ? '0.76rem' : '0.95rem', color: s.muted }}>{dtCompact ? 'Foto/Text' : 'Foto / Video reinziehen oder Text anklicken'}</span>
+                {pageContent.welcomeImage && <span style={{ fontSize: dtCompact ? '0.72rem' : '0.8rem', color: '#10b981', fontWeight: 700 }}>✓</span>}
               </div>
-              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {!dtCompact ? <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span> : <span style={{ color: s.muted, fontSize: '0.75rem' }}>·</span>}
               {/* Schritt 2: Galerie ansehen – erst Bild in localStorage speichern, dann öffnen */}
               <button type="button" onClick={() => {
                 // Erst alles in localStorage sichern, dann Galerie im gleichen Tab öffnen
@@ -13515,16 +13593,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   fromAdminContext: tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
                 }
                 navigate(route + '?vorschau=1', { state: backState })
-              }} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>2</span> {tenant.isVk2 ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?' : '👁 Galerie ansehen – gefällt es?'}
+              }} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: dtCompact ? 8 : 10, color: '#10b981', cursor: 'pointer', fontFamily: 'inherit' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>2</span>{' '}
+                {dtCompact
+                  ? '👁 Ansehen'
+                  : tenant.isVk2
+                    ? '👁 Unsere Mitglieder-Seite ansehen – gefällt es?'
+                    : '👁 Galerie ansehen – gefällt es?'}
               </button>
-              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {!dtCompact ? <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span> : <span style={{ color: s.muted, fontSize: '0.75rem' }}>·</span>}
               {/* Schritt 3: Speichern */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: 10, color: s.accent, cursor: 'pointer' }}>🎨 Farbe ändern</button>
-                <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: '0.5rem 1rem', fontSize: '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: 10, color: '#5ffbf1', cursor: 'pointer' }}>🚪 Eingangsseite</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem' }}>
+                <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: 'pointer' }}>{dtCompact ? '🎨 Farbe' : '🎨 Farbe ändern'}</button>
+                <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: dtCompact ? 8 : 10, color: '#5ffbf1', cursor: 'pointer' }}>{dtCompact ? '🚪 Eingang' : '🚪 Eingangsseite'}</button>
                 {designSaveFeedback === 'ok'
-                  ? <span style={{ fontSize: '1rem', color: '#10b981', fontWeight: 700, padding: '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: 10 }}>✅ Gespeichert!</span>
+                  ? <span style={{ fontSize: dtCompact ? '0.76rem' : '1rem', color: '#10b981', fontWeight: 700, padding: dtCompact ? '0.25rem 0.45rem' : '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: dtCompact ? 8 : 10 }}>{dtCompact ? '✓' : '✅ Gespeichert!'}</span>
                   : <button type="button" className="btn-primary" onClick={async () => {
                       try {
                         const designTenant = tenant.isOeffentlich ? 'oeffentlich' : tenant.isVk2 ? 'vk2' : undefined
@@ -13604,21 +13687,22 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       } catch (e) {
                         alert('Fehler beim Speichern: ' + (e instanceof Error ? e.message : String(e)))
                       }
-                    }} style={{ padding: '0.5rem 1.25rem', fontSize: '1rem', fontWeight: 700, borderRadius: 10 }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, marginRight: '0.35rem' }}>3</span>💾 Speichern (auf diesem Gerät)
+                    }} style={{ padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.25rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, borderRadius: dtCompact ? 8 : 10 }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, marginRight: '0.25rem' }}>3</span>{dtCompact ? '💾' : '💾 Speichern (auf diesem Gerät)'}
                     </button>
                 }
               </div>
-              <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span>
+              {!dtCompact ? <span style={{ color: s.muted, fontSize: '1.2rem' }}>→</span> : <span style={{ color: s.muted, fontSize: '0.75rem' }}>·</span>}
               {/* Schritt 4: Veröffentlichen – für alle sichtbar (Vercel / Handy) */}
-              <button type="button" onClick={() => publishMobile()} disabled={isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)} title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1.1rem', fontSize: '1rem', fontWeight: 700, background: isDeploying ? 'rgba(0,0,0,0.08)' : 'rgba(95,251,241,0.15)', border: `1.5px solid ${s.accent}`, borderRadius: 10, color: s.accent, cursor: isDeploying ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)) ? 0.7 : 1 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>4</span> {isDeploying ? '⏳ Wird veröffentlicht…' : <><span>📤 Veröffentlichen</span><br /><span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.9 }}>für alle jetzt sichtbar</span></>}
+              <button type="button" onClick={() => publishMobile()} disabled={isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)} title="Aktuellen Stand für alle sichtbar machen (Vercel / Besucher / Mobil)" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: dtCompact ? '0.28rem 0.55rem' : '0.5rem 1.1rem', fontSize: dtCompact ? '0.78rem' : '1rem', fontWeight: 700, background: isDeploying ? 'rgba(0,0,0,0.08)' : 'rgba(95,251,241,0.15)', border: `1.5px solid ${s.accent}`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: isDeploying ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: (isDeploying || (!tenant.isOeffentlich && !tenant.isVk2 && allArtworks.length === 0)) ? 0.7 : 1 }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>4</span>{' '}
+                {isDeploying ? (dtCompact ? '⏳…' : '⏳ Wird veröffentlicht…') : dtCompact ? '📤 Veröff.' : <><span>📤 Veröffentlichen</span><br /><span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.9 }}>für alle jetzt sichtbar</span></>}
               </button>
               {/* Zoom-Buttons, am Ende */}
-              <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
-                <span style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>Zoom:</span>
+              <div style={{ display: 'flex', gap: dtCompact ? '0.2rem' : '0.35rem', alignItems: 'center', marginLeft: 'auto' }}>
+                <span style={{ color: 'var(--k2-muted)', fontSize: dtCompact ? '0.72rem' : '0.85rem' }}>Zoom</span>
                 {([1, 1.25, 1.5, 2] as const).map((sc) => (
-                  <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: '0.3rem 0.55rem', fontSize: '0.85rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
+                  <button key={sc} type="button" onClick={() => setDesignPreviewScale(sc)} style={{ padding: dtCompact ? '0.15rem 0.38rem' : '0.3rem 0.55rem', fontSize: dtCompact ? '0.72rem' : '0.85rem', background: designPreviewScale === sc ? 'rgba(95,251,241,0.2)' : 'transparent', border: '1px solid ' + (designPreviewScale === sc ? 'var(--k2-accent)' : 'rgba(255,255,255,0.15)'), borderRadius: 6, color: designPreviewScale === sc ? 'var(--k2-accent)' : 'var(--k2-muted)', cursor: 'pointer' }}>{Math.round(sc * 100)}%</button>
                 ))}
               </div>
             </div>
@@ -14842,8 +14926,51 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             </div>
           </div>
 
-          {/* Nur ök2-Demo: klarstellen, dass es Musterdaten sind – nicht „schon meine Galerie“ */}
-          {tenant.isOeffentlich && (
+          {/* Nur ök2-Demo: klarstellen, dass es Musterdaten sind – im Design-Vorschau-Kompaktmodus nur eine Zeile */}
+          {tenant.isOeffentlich && designVorschauChromeCompact ? (
+            <div
+              role="note"
+              aria-label="Hinweis: Demo mit Musterdaten"
+              style={{
+                marginTop: '0.5rem',
+                padding: '0.35rem 0.65rem',
+                borderRadius: '8px',
+                background: '#fef9a8',
+                border: '1px solid #d4d106',
+                color: '#1a1a1a',
+                fontSize: '0.76rem',
+                lineHeight: 1.4,
+                fontFamily: s.fontBody,
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <span>
+                <strong style={{ color: '#3f3f06' }}>Demo</strong> · Musterdaten · Veröffentlichen = für alle sichtbar
+              </span>
+              <button
+                type="button"
+                onClick={() => persistDesignToolbarCompact(false)}
+                style={{
+                  marginLeft: 'auto',
+                  padding: '0.2rem 0.55rem',
+                  fontSize: '0.72rem',
+                  fontWeight: 700,
+                  borderRadius: 6,
+                  border: '1px solid #b5a806',
+                  background: '#fff',
+                  color: '#3f3f06',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Demo-Text vollständig
+              </button>
+            </div>
+          ) : null}
+          {tenant.isOeffentlich && !designVorschauChromeCompact ? (
             <div
               role="note"
               aria-label="Hinweis: Demo mit Musterdaten"
@@ -14863,7 +14990,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <strong style={{ color: '#3f3f06' }}>Demo:</strong>{' '}
               Das hier ist der <strong>Demo-Admin</strong> mit <strong>Musterdaten</strong> – <strong>noch nicht deine eigene Galerie</strong>. Nach dem Ausprobieren richtest du deine echte Galerie mit der Lizenz ein. Änderungen bleiben zuerst in der Demo; <strong>für alle Demo-Besucher</strong> sichtbar werden sie nach <strong>Veröffentlichen</strong>. Mit <strong>„Galerie ansehen“</strong> siehst du die Ansicht wie ein Besucher.
             </div>
-          )}
+          ) : null}
         </header>
 
         <main style={{
@@ -14875,8 +15002,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           {/* Admin-Dashboard: "Was willst du heute tun?" – große Karten statt Tab-Reihe */}
           <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2.5rem)' }}>
 
-            {/* Zurück-Link wenn in einem Bereich */}
-            {activeTab !== 'werke' && (
+            {/* Zurück-Link – im Design-Vorschau-Kompaktmodus nur in der Toolbar (mehr Platz) */}
+            {activeTab !== 'werke' && !designVorschauChromeCompact && (
               <button
                 type="button"
                 onClick={() => setActiveTab('werke')}
@@ -15029,8 +15156,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </div>
             )}
 
-            {/* Bereichs-Kopf wenn in Eventplan/Design/Einstellungen */}
-            {activeTab !== 'werke' && (
+            {/* Bereichs-Kopf – bei Design-Vorschau kompakt weglassen (Titel in Toolbar) */}
+            {activeTab !== 'werke' && !designVorschauChromeCompact && (
               <div style={{ marginBottom: 'clamp(1.5rem, 4vw, 2rem)' }}>
                 <h2 style={{ fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 700, color: s.text, margin: 0 }}>
                   {activeTab === 'katalog' && (
@@ -16940,7 +17067,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             overflow: 'visible'
           }}>
             {/* Gamification: Galerie gestalten (nur ök2/VK2) – nur Anzeige aus State, kein neuer Speicherpfad */}
-            {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && (() => {
+            {(tenant.isOeffentlich || tenant.isVk2) && showGamificationChecklists && !designVorschauChromeCompact && (() => {
               const designTenantId = tenant.isOeffentlich ? 'oeffentlich' : 'vk2'
               const baselineGalerie = getGaleriePageTextsBaseline(designTenantId)
               const pg = pageContent
@@ -17073,6 +17200,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               )
             })()}
             <div style={designDraftCssVars}>
+            {(designSubTab !== 'vorschau' || !designToolbarCompact) && (
             <p
               role="note"
               style={{
@@ -17094,6 +17222,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               </strong>{' '}
               Farben und Texte hier gelten für Vorlagen unter <strong style={{ color: s.text }}>Marketing</strong> – Presse, Flyer, Social Media und Newsletter.
             </p>
+            )}
             {/* Nur bei Farben: Titel + Zurück zur Vorschau */}
             {designSubTab === 'farben' && (
               <>

@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Admin Design-Tab: mehr Vorschaufläche (kompakt):** Standard **kompakt** – schmale Toolbar (`← Übersicht`, Schritte 1–4 kurz, Zoom), **größere** `minHeight` für die Vorschau, kein großer Seitentitel / kein „Zurück“ doppelt, Gamification- und Eventplan-Hinweis ausgeblendet, ök2-Demo-Banner **eine Zeile** + „Demo-Text vollständig“. Speichern/Veröffentlichen/Ansehen bleiben sichtbar. **`Ablauf & Infos`** bzw. **`Mehr Platz für Vorschau`** + SessionStorage `k2-admin-design-toolbar-compact` (`0` = große Leiste). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **1623b97** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: beim Gestalten zu wenig Platz für die Galerie-Vorschau – Orientierung in einer Zeile, Fokus auf Vorschau.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Besucherzähler ök2 + Lizenz-Mandanten:** Ursache ök2 oft: nach fehlgeschlagenem POST wurde `sessionStorage` trotzdem gesetzt → kein zweiter Versuch in derselben Session. Jetzt **nur bei `res.ok`** merken; **ein Standard** `reportPublicGalleryVisit` (GaleriePage, Vk2GaleriePage). **`/g/:tenantId`:** Zählung ergänzt (vorher fehlend). **API** `visit-and-build.js`: Tenant = gültiger Slug `^[a-z0-9-]{1,64}$` (wie Mandanten-URL). **Supabase:** Migration `006_visits_licensee_slugs.sql` (CHECK erweitert) – **einmal auf dem Projekt ausführen**, sonst Upsert für neue Slugs scheitert. **Admin:** Besucher-Ticker für `dynamicTenantId`. **Tests:** `reportPublicGalleryVisit.test.ts`. **Commit:** **6933889** ✅ GitHub
 
 **Was wir JETZT tun:** –
