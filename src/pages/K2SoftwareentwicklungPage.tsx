@@ -84,7 +84,7 @@ export default function K2SoftwareentwicklungPage() {
           Schritt für Schritt: <strong>docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md</strong> – Kurzcheckliste: <code>docs/STRIPE-LIZENZEN-GO-LIVE.md</code>, <code>docs/START-NUR-NOCH-OFFEN.md</code>
         </p>
         <ol style={{ lineHeight: 1.65, paddingLeft: '1.35em', margin: '0 0 0.75rem', fontSize: '0.88rem' }}>
-          <li>Supabase: SQL in Reihenfolge – <code>003_stripe_licences_payments_gutschriften.sql</code>, dann <code>007_licences_tenant_id_galerie_url.sql</code>, dann <code>008_licences_licence_type_propplus.sql</code> (siehe Anbindungs-Doku)</li>
+          <li>Supabase: SQL in Reihenfolge – <code>003_stripe_licences_payments_gutschriften.sql</code>, <code>007_licences_tenant_id_galerie_url.sql</code>, <code>008_licences_licence_type_propplus.sql</code>, <code>010_licences_payments_stripe_session_unique.sql</code> (siehe Anbindungs-Doku)</li>
           <li>Vercel: Env (u. a. <code>SUPABASE_SERVICE_ROLE_KEY</code>, <code>STRIPE_SECRET_KEY</code>, <code>STRIPE_WEBHOOK_SECRET</code>)</li>
           <li>Stripe: Webhook <code>checkout.session.completed</code>, Secret in Vercel</li>
         </ol>

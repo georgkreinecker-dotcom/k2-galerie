@@ -28,9 +28,10 @@ Der **Code** liegt im Repo (`api/create-checkout`, `api/webhook-stripe`, `api/li
 | **A** | `003_stripe_licences_payments_gutschriften.sql` | Tabellen `licences`, `payments`, `empfehler_gutschriften` + RLS |
 | **B** | `007_licences_tenant_id_galerie_url.sql` | Spalten `tenant_id`, `galerie_url` (Erfolgsseite, `/g/…`) |
 | **C** | `008_licences_licence_type_propplus.sql` | Lizenztyp **Pro++** (`propplus`) erlaubt |
-| **D** (optional) | `009_pilot_short_invites.sql` | Kurz-URLs Testpilot – nur wenn du Pilot-Einladungen nutzt |
+| **D** | `010_licences_payments_stripe_session_unique.sql` | **Eindeutige** `stripe_session_id` (keine Doppel-Lizenzen bei Webhook-Wiederholung) |
+| **E** (optional) | `009_pilot_short_invites.sql` | Kurz-URLs Testpilot – nur wenn du Pilot-Einladungen nutzt |
 
-Ohne **B** schreibt der Webhook zwar, aber **get-licence-by-session** liefert keine sinnvolle Galerie-URL wie vorgesehen. Ohne **C** schlägt ein Kauf von **Pro++** in der Datenbank fehl.
+Ohne **B** schreibt der Webhook zwar, aber **get-licence-by-session** liefert keine sinnvolle Galerie-URL wie vorgesehen. Ohne **C** schlägt ein Kauf von **Pro++** in der Datenbank fehl. **D** ist stark empfohlen (Webhook-Retries, parallele Zustellung) – vor dem Lauf prüfen, ob in `licences`/`payments` schon doppelte `stripe_session_id` existieren (sonst Index-Fehler).
 
 ---
 

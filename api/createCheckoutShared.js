@@ -1,15 +1,14 @@
 /**
  * Gemeinsame Stripe-Checkout-Erstellung für Vercel (create-checkout.js) und Vite-Dev (lokal).
- * Preise müssen mit src/config/licencePricing.ts übereinstimmen.
+ * Cent-Preise: api/stripePriceCents.js (Tests gegen licencePricing.ts).
  */
 import Stripe from 'stripe'
+import {
+  STRIPE_CHECKOUT_LICENCE_TYPES,
+  STRIPE_LICENCE_PRICE_CENTS,
+} from './stripePriceCents.js'
 
-export const PRICE_CENTS = {
-  basic: 1500,
-  pro: 3500,
-  proplus: 4500,
-  propplus: 5500,
-}
+export const PRICE_CENTS = STRIPE_LICENCE_PRICE_CENTS
 
 export function generateTenantId(email) {
   const slug = (email || '')
@@ -30,7 +29,9 @@ export function generateTenantId(email) {
  */
 export async function createStripeCheckoutSession(opts) {
   const { licenceType, email, name, empfehlerId, secretKey, baseUrl } = opts
-  const priceCents = PRICE_CENTS[licenceType]
+  const lt = typeof licenceType === 'string' ? licenceType.trim() : ''
+  const priceCents =
+    lt && STRIPE_CHECKOUT_LICENCE_TYPES.includes(lt) ? PRICE_CENTS[lt] : undefined
   if (!priceCents || !email || !name) {
     const err = new Error('Fehlende Angaben')
     err.code = 'VALIDATION'
@@ -42,6 +43,22 @@ export async function createStripeCheckoutSession(opts) {
   const cancelUrl = `${baseUrl.replace(/\/$/, '')}/projects/k2-galerie/lizenz-kaufen`
 
   const stripe = new Stripe(secretKey)
+  const productLabel =
+    lt === 'basic'
+      ? 'Basic'
+      : lt === 'pro'
+        ? 'Pro'
+        : lt === 'proplus'
+          ? 'Pro+'
+          : 'Pro++'
+  const productDesc =
+    lt === 'basic'
+      ? '15 €/Monat'
+      : lt === 'pro'
+        ? '35 €/Monat'
+        : lt === 'proplus'
+          ? '45 €/Monat'
+          : '55 €/Monat'
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     payment_method_types: ['card'],
@@ -50,15 +67,8 @@ export async function createStripeCheckoutSession(opts) {
         price_data: {
           currency: 'eur',
           product_data: {
-            name: `K2 Galerie – ${licenceType === 'basic' ? 'Basic' : licenceType === 'pro' ? 'Pro' : licenceType === 'proplus' ? 'Pro+' : 'Pro++'}`,
-            description:
-              licenceType === 'basic'
-                ? '15 €/Monat'
-                : licenceType === 'pro'
-                  ? '35 €/Monat'
-                  : licenceType === 'proplus'
-                    ? '45 €/Monat'
-                    : '55 €/Monat',
+            name: `K2 Galerie – ${productLabel}`,
+            description: productDesc,
           },
           unit_amount: priceCents,
         },
@@ -67,7 +77,7 @@ export async function createStripeCheckoutSession(opts) {
     ],
     customer_email: email.trim(),
     metadata: {
-      licenceType,
+      licenceType: lt,
       customerName: (name || '').trim().substring(0, 200),
       tenantId,
       ...(empfehlerId && empfehlerId.trim() ? { empfehlerId: empfehlerId.trim().substring(0, 100) } : {}),

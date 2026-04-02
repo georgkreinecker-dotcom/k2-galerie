@@ -28,7 +28,7 @@ Das sind die **einzigen** Punkte, die vor „Start“ noch erledigt werden – b
 
 | # | Was | Wo |
 |---|-----|-----|
-| 1 | Supabase: SQL für Lizenzen in Reihenfolge | Siehe **docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md** (`003_stripe_…`, `007_…`, `008_…`; nicht die andere `003_add_in_exhibition…` verwechseln) |
+| 1 | Supabase: SQL für Lizenzen in Reihenfolge | Siehe **docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md** (`003_stripe_…`, `007_…`, `008_…`, **`010_…` eindeutige Session**; nicht die andere `003_add_in_exhibition…` verwechseln) |
 | 2 | Vercel: Env eintragen (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) | Vercel → Projekt → Settings → Environment Variables |
 | 3 | Stripe: Webhook anlegen (URL, Event checkout.session.completed, Secret in Vercel) | Stripe Dashboard → Webhooks |
 
