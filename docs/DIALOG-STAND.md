@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **„Zahlungssystem lokal nicht konfiguriert“:** API-Hinweis (`hint`) wird unter dem Formular mit angezeigt; gelber Kasten **Lizenz kaufen** erklärt `.env` + `STRIPE_SECRET_KEY=sk_test_…` + Dev neu starten / Vercel. **Commit:** 6a967cc ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg am Mac mit `npm run dev` ohne Stripe-Key – erwartbar; keine Panik.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Passwort & Sicherheit (ök2):** Kachel-Untertitel + Sicherheits-Tab: klar, dass **kein voreingestelltes Standard-Passwort** existiert, Nutzer legt **nach Wunsch** ein eigenes an oder keins. **Benutzerhandbuch** `10-EINSTELLUNGEN.md` (Demo ök2) ergänzt. **Tests + Build grün.** **Commit:** **e3c0cb0** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

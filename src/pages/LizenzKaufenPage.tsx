@@ -56,7 +56,8 @@ export default function LizenzKaufenPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setError(data?.error || data?.hint || 'Checkout konnte nicht gestartet werden.')
+        const parts = [data?.error, data?.hint].filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        setError(parts.length > 0 ? parts.join('\n\n') : 'Checkout konnte nicht gestartet werden.')
         setLoading(false)
         return
       }
@@ -205,7 +206,9 @@ export default function LizenzKaufenPage() {
             )}
           </div>
 
-          {error && <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 1rem' }}>{error}</p>}
+          {error && (
+            <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 1rem', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{error}</p>
+          )}
 
           <button
             type="submit"
