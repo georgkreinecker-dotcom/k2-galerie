@@ -25,6 +25,7 @@ import { hasFreshOek2EntrySession } from '../utils/oek2FreshStart'
 import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
+import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import '../App.css'
 import '../styles/k2GaleriePublicPolish.css'
 
@@ -566,22 +567,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
   // Besucherzähler: einmal pro Session pro Tenant an API melden (nur echte Besucher, nicht in iframe/Cursor Preview)
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (window.self !== window.top) return
-    try {
-      if (tenantId === 'k2' && localStorage.getItem('k2-admin-unlocked') === 'k2') return
-      const key = tenantId === 'vk2' ? 'k2-visit-sent-vk2' : 'k2-visit-sent-' + tenantId
-      if (sessionStorage.getItem(key)) return
-      const tenant = tenantId === 'vk2'
-        ? (sessionStorage.getItem('k2-vk2-mitglied-eingeloggt') ? 'vk2-members' : 'vk2-external')
+    const key = tenantId === 'vk2' ? 'k2-visit-sent-vk2' : 'k2-visit-sent-' + tenantId
+    const tenant =
+      tenantId === 'vk2'
+        ? sessionStorage.getItem('k2-vk2-mitglied-eingeloggt')
+          ? 'vk2-members'
+          : 'vk2-external'
         : tenantId
-      const origin = window.location.origin
-      fetch(`${origin}/api/visit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant }),
-      }).then(() => sessionStorage.setItem(key, '1')).catch(() => {})
-    } catch (_) {}
+    reportPublicGalleryVisit({
+      tenant,
+      sessionKey: key,
+      skip: () =>
+        tenantId === 'k2' && typeof localStorage !== 'undefined' && localStorage.getItem('k2-admin-unlocked') === 'k2',
+    })
   }, [tenantId])
 
   // Design-Farben aus Admin anwenden – NUR für K2 (nicht für ök2/musterOnly!)

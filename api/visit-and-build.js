@@ -6,15 +6,20 @@
  */
 const { createClient } = require('@supabase/supabase-js')
 
-const ALLOWED = ['k2', 'oeffentlich', 'vk2', 'vk2-members', 'vk2-external']
+/** Synchron zu src/utils/reportPublicGalleryVisit.ts (VISIT_TENANT_ID_RE) */
+const VISIT_TENANT_RE = /^[a-z0-9-]{1,64}$/
+
+function isValidVisitTenant(t) {
+  return typeof t === 'string' && VISIT_TENANT_RE.test(t)
+}
 
 function getTenant(req) {
   if (req.method === 'POST' && req.body) {
     const body = typeof req.body === 'string' ? (() => { try { return JSON.parse(req.body) } catch { return {} } })() : req.body
-    if (body && ALLOWED.includes(body.tenant)) return body.tenant
+    if (body && isValidVisitTenant(body.tenant)) return body.tenant
   }
   const q = req.query && req.query.tenant
-  if (q && ALLOWED.includes(q)) return q
+  if (q && isValidVisitTenant(q)) return q
   return null
 }
 
@@ -26,7 +31,7 @@ async function handleVisit(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Nur GET oder POST' })
 
   const tenant = getTenant(req)
-  if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (k2, oeffentlich, vk2, vk2-members, vk2-external)' })
+  if (!tenant) return res.status(400).json({ error: 'tenant fehlt oder ungültig (1–64 Zeichen: a–z, 0–9, Bindestrich)' })
 
   const supabaseUrlRaw = process.env.SUPABASE_URL
   const supabaseUrl = (supabaseUrlRaw || '').trim()

@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Besucherzähler ök2 + Lizenz-Mandanten:** Ursache ök2 oft: nach fehlgeschlagenem POST wurde `sessionStorage` trotzdem gesetzt → kein zweiter Versuch in derselben Session. Jetzt **nur bei `res.ok`** merken; **ein Standard** `reportPublicGalleryVisit` (GaleriePage, Vk2GaleriePage). **`/g/:tenantId`:** Zählung ergänzt (vorher fehlend). **API** `visit-and-build.js`: Tenant = gültiger Slug `^[a-z0-9-]{1,64}$` (wie Mandanten-URL). **Supabase:** Migration `006_visits_licensee_slugs.sql` (CHECK erweitert) – **einmal auf dem Projekt ausführen**, sonst Upsert für neue Slugs scheitert. **Admin:** Besucher-Ticker für `dynamicTenantId`. **Tests:** `reportPublicGalleryVisit.test.ts`. **Commit:** 1f625d7 ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: K2 Zähler ok, ök2 nicht – Fix Session-Marker + Lizenznehmer-Pfad; DB-Migration nicht vergessen.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Lizenz: Erklärung Kette + Druck-Fix:** Lizenzen-Seite **0** und **keine Galerie-Links** auf `/lizenz-erfolg` = dieselbe Ursache: Eintrag kommt nur nach **Stripe-Webhook** → Supabase `licences` (siehe `api/webhook-stripe.js`, `api/get-licence-by-session.js`, `api/licence-data.js`). Ohne Webhook/Secret/DB bleibt alles leer. **LizenzErfolgPage:** Beim **Drucken** war der QR-Hinweis nutzlos (verwies auf Bereiche, die im Druck ausgeblendet sind) – jetzt **nur-im-Druck** sinnvoller Text (Admin-URL im Kasten / Hinweis wenn Links fehlen). **Commit:** **cd6b360** ✅ GitHub
 
 **Was wir JETZT tun:** –

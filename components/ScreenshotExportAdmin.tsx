@@ -3497,22 +3497,28 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => clearTimeout(t)
   }, [activeTab, settingsSubTab])
 
-  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe)
+  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe / Lizenz-Mandant)
   useEffect(() => {
     let isMounted = true
     const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const dyn = tenant.dynamicTenantId
     if (tenant.isVk2) {
       Promise.all([
         fetch(`${origin}/api/visit?tenant=vk2-members`).then((r) => r.json()).then((d) => d.count ?? 0),
         fetch(`${origin}/api/visit?tenant=vk2-external`).then((r) => r.json()).then((d) => d.count ?? 0),
       ]).then(([m, e]) => { if (isMounted) setBesucherCount(m + e) }).catch(() => { if (isMounted) setBesucherCount(null) })
+    } else if (dyn && /^[a-z0-9-]{1,64}$/.test(dyn)) {
+      fetch(`${origin}/api/visit?tenant=${encodeURIComponent(dyn)}`)
+        .then((r) => r.json())
+        .then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) })
+        .catch(() => { if (isMounted) setBesucherCount(null) })
     } else if (tenant.isOeffentlich) {
       fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
     } else {
       fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
     }
     return () => { isMounted = false }
-  }, [tenant.isOeffentlich, tenant.isVk2])
+  }, [tenant.isOeffentlich, tenant.isVk2, tenant.dynamicTenantId])
 
   // ök2: Verkaufte-Werke-Anzeige (Tage) aus k2-oeffentlich-galerie-settings laden
   useEffect(() => {

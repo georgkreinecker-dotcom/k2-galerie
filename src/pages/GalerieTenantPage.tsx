@@ -5,6 +5,7 @@
  */
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
 import '../App.css'
 
 const SAFE_TENANT_ID = /^[a-z0-9-]{1,64}$/
@@ -18,6 +19,15 @@ export default function GalerieTenantPage() {
   } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+
+  useEffect(() => {
+    if (tenantId && SAFE_TENANT_ID.test(tenantId)) {
+      reportPublicGalleryVisit({
+        tenant: tenantId,
+        sessionKey: 'k2-visit-sent-' + tenantId,
+      })
+    }
+  }, [tenantId])
 
   useEffect(() => {
     if (!tenantId || !SAFE_TENANT_ID.test(tenantId)) {
