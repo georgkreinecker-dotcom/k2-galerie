@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **ök2 „Lizenz abschließen“: Test/Muster erklärt:** Im Admin (Einstellungen → Lizenzen → Lizenz abschließen) gibt es **keine** Lizenz ohne Zahlung; Kasten mit Links **Erfolgsseite ansehen (Muster)** → `/lizenz-erfolg?muster=1` und **Lizenz kaufen** (Muster-Formular). Stripe-**Testmodus** = echte Checkout-Route mit Testkarte. **Tests + Build grün.** **Commit:** **fcb0f71** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Gleiche Infos wie auf Lizenz-kaufen-Seite, damit Georg nicht sucht.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Muster-Lizenz-Anmeldung (ohne Zahlung):** **`/lizenz-erfolg?muster=1`** = Mustervorschau Erfolgsseite (Hinweisbox, Druck „MUSTER“, Links via `buildLizenzMusterErfolgLinks`). **`LizenzKaufenPage`:** Kasten Muster + Link + Button „Formular mit Musterdaten füllen“. **`LicencesPage`:** Link Mustervorschau. Neu: **`src/utils/lizenzMusterDemo.ts`**, **`lizenzMusterDemo.test.ts`**. **STRIPE-ANBINDUNG** – Hinweis Einstiege. **Tests + Build grün.** **Commit:** **5a7cb4e** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: unter **Lizenzen** / **Lizenz kaufen** die Mustervorschau kurz ansehen; echte Zahlung unverändert über Stripe.

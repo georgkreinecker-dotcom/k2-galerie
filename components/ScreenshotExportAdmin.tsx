@@ -20314,6 +20314,13 @@ ${name}`
                   <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
                     Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen. Die <strong>Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben</strong>.
                   </p>
+                  <div style={{ margin: '0 0 1.25rem', padding: '0.85rem 1rem', background: s.bgElevated, border: `1px dashed ${s.accent}55`, borderRadius: 10, fontSize: '0.85rem', color: s.text, lineHeight: 1.55 }}>
+                    <strong style={{ color: s.accent }}>Test / Muster:</strong> Hier gibt es <strong>keine</strong> Lizenz ohne Zahlung – „Jetzt bezahlen“ führt immer zu Stripe (im Stripe-Testmodus zahlst du mit Testkarte, ohne echtes Geld).{' '}
+                    <strong>Mustervorschau</strong> der Erfolgsseite ohne Zahlung und ohne Datenbank:{' '}
+                    <Link to="/lizenz-erfolg?muster=1" style={{ color: s.accent, fontWeight: 700 }}>Erfolgsseite ansehen (Muster)</Link>
+                    {' · '}
+                    <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: s.accent, fontWeight: 600 }}>Lizenz kaufen (Seite mit Muster-Formular)</Link>
+                  </div>
 
                   {hatStammdaten && lizenzUseStammdaten === 'ask' && (
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}44`, borderRadius: 12 }}>
