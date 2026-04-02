@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **ök2 „Lizenz abschließen“: Test/Muster erklärt:** Im Admin (Einstellungen → Lizenzen → Lizenz abschließen) gibt es **keine** Lizenz ohne Zahlung; Kasten mit Links **Erfolgsseite ansehen (Muster)** → `/lizenz-erfolg?muster=1` und **Lizenz kaufen** (Muster-Formular). Stripe-**Testmodus** = echte Checkout-Route mit Testkarte. **Tests + Build grün.** **Commit:** **fcb0f71** ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **ök2 „Lizenz abschließen“: Test/Muster erklärt:** Im Admin (Einstellungen → Lizenzen → Lizenz abschließen) gibt es **keine** Lizenz ohne Zahlung; Kasten mit Links **Erfolgsseite ansehen (Muster)** → `/lizenz-erfolg?muster=1` und **Lizenz kaufen** (Muster-Formular). Stripe-**Testmodus** = echte Checkout-Route mit Testkarte. **Tests + Build grün.** **Commit:** **e5fe545** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
