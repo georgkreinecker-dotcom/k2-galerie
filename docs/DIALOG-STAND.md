@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Admin-QR Stammdaten: nie localhost:** `LicenseeAdminQrPanel` bekam **`APP_BASE_URL`** statt **`window.location.origin`** (K2-Plattform, ök2-Demo, Lizenznehmer) – Link/QR zeigen **`https://k2-galerie.vercel.app/admin`** (bzw. `?context=oeffentlich`), auch wenn der Admin im Browser unter **localhost** läuft. **Tests + Build grün.** **Commit:** *(nach Push eintragen)*
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 02.04.26 – **Benutzerhandbuch Passwort/Admin-Zugang:** Kapitel **10-EINSTELLUNGEN** neu gegliedert: zuerst **Link und QR** (Demo unter Vita, Lizenz oben, K2-Referenz wie Demo), dann **optionales Passwort**, dann Merken/Vergessen/VK2. Kürzer und klarer formuliert. **00-INDEX** Kurzbeschreibung Kapitel 10, **06-OEK2-DEMO-LIZENZ** Tabelle Admin-QR angepasst. **Commit:** **73092a7** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

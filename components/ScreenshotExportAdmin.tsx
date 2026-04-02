@@ -19044,7 +19044,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     {!isPlatformInstance() && !tenant.isOeffentlich && (
                       <LicenseeAdminQrPanel
                         registrationComplete={!!(registrierungConfig.lizenznummer || '').trim()}
-                        adminBaseUrl={typeof window !== 'undefined' ? `${window.location.origin}/admin` : ''}
+                        adminBaseUrl={`${APP_BASE_URL}/admin`}
                         accent={s.accent}
                         bgCard={s.bgCard}
                         text={s.text}
@@ -19175,11 +19175,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       {tenant.isOeffentlich && isPlatformInstance() && (
                         <LicenseeAdminQrPanel
                           registrationComplete
-                          adminBaseUrl={
-                            typeof window !== 'undefined'
-                              ? `${window.location.origin}/admin?context=oeffentlich`
-                              : ''
-                          }
+                          adminBaseUrl={`${APP_BASE_URL}/admin?context=oeffentlich`}
                           accent={s.accent}
                           bgCard={s.bgCard}
                           text={s.text}
@@ -19200,9 +19196,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       {!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && (
                         <LicenseeAdminQrPanel
                           registrationComplete
-                          adminBaseUrl={
-                            typeof window !== 'undefined' ? `${window.location.origin}/admin` : ''
-                          }
+                          adminBaseUrl={`${APP_BASE_URL}/admin`}
                           accent={s.accent}
                           bgCard={s.bgCard}
                           text={s.text}
