@@ -1,3 +1,6 @@
+-- >>> WICHTIG FÜR SUPABASE: Hier den GESAMTEN Text markieren (Cmd+A) und kopieren.
+-- >>> FALSCH: nur den Dateinamen tippen oder einfügen (eine Zeile) – das führt zu nichts.
+-- >>> RICHTIG: Nach dem Kopieren siehst du in Supabase viele Zeilen, oben mit -- und CREATE TABLE
 -- =============================================================================
 -- Stripe-Lizenzen für Supabase – ALLES IN EINEM
 -- =============================================================================
