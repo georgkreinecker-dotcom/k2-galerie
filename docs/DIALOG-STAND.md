@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Muster-Lizenz-Anmeldung (ohne Zahlung):** **`/lizenz-erfolg?muster=1`** = Mustervorschau Erfolgsseite (Hinweisbox, Druck „MUSTER“, Links via `buildLizenzMusterErfolgLinks`). **`LizenzKaufenPage`:** Kasten Muster + Link + Button „Formular mit Musterdaten füllen“. **`LicencesPage`:** Link Mustervorschau. Neu: **`src/utils/lizenzMusterDemo.ts`**, **`lizenzMusterDemo.test.ts`**. **STRIPE-ANBINDUNG** – Hinweis Einstiege. **Tests + Build grün.** **Commit:** **Commit:** **5550815** ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Muster-Lizenz-Anmeldung (ohne Zahlung):** **`/lizenz-erfolg?muster=1`** = Mustervorschau Erfolgsseite (Hinweisbox, Druck „MUSTER“, Links via `buildLizenzMusterErfolgLinks`). **`LizenzKaufenPage`:** Kasten Muster + Link + Button „Formular mit Musterdaten füllen“. **`LicencesPage`:** Link Mustervorschau. Neu: **`src/utils/lizenzMusterDemo.ts`**, **`lizenzMusterDemo.test.ts`**. **STRIPE-ANBINDUNG** – Hinweis Einstiege. **Tests + Build grün.** **Commit:** **5a7cb4e** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: unter **Lizenzen** / **Lizenz kaufen** die Mustervorschau kurz ansehen; echte Zahlung unverändert über Stripe.
 
