@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Supabase Stripe „Einfach-Modus“:** Eine Datei **`supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql`** (Inhalt = 003+007+008+010, Policies mit `DROP IF EXISTS` für Wiederholbarkeit). **`docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md`** – Abschnitt Einfach-Modus oben + Tabelle angepasst. Georg: nicht mehr vier Dateien nacheinander – **ein Kopieren, ein Run**.
+**Letzter Stand:** 02.04.26 – **Supabase Stripe „Einfach-Modus“:** Eine Datei **`supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql`** (Inhalt = 003+007+008+010, Policies mit `DROP IF EXISTS` für Wiederholbarkeit). **`docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md`** – Abschnitt Einfach-Modus oben + Tabelle angepasst. Georg: nicht mehr vier Dateien nacheinander – **ein Kopieren, ein Run**. **Tests + Build grün.** **Commit:** **5e2f700** ✅ auf GitHub
 
 **Was wir JETZT tun:** Supabase: diese eine SQL-Datei ausführen (falls noch nicht). Dann weiter Vercel-Env + Stripe-Webhook wie in der Anbindungs-Doku.
 
