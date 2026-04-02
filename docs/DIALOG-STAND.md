@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **EIN_RUN.sql wiederhergestellt:** Datei war versehentlich mit Chat-Text überschrieben; voller SQL-Inhalt zurück (`licences`/`payments`/`empfehler_gutschriften`). Kopfzeile: Hinweis **nicht** Tabelle `stripe_lizenzen` (fremdes Schema) – erste Tabelle muss **`licences`** heißen.
+
+**Was wir JETZT tun:** Georg: Datei erneut **Cmd+A** → kopieren → Supabase (siehe Kommentar oben in der Datei).
+
+**Einordnung:** Verwechslung mit anderem SQL vermeiden; Dateiname enthält „stripe_lizenzen“ nur als Merkhilfe.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Supabase Stripe „Einfach-Modus“:** Eine Datei **`supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql`** (Inhalt = 003+007+008+010, Policies mit `DROP IF EXISTS` für Wiederholbarkeit). **`docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md`** – Abschnitt Einfach-Modus oben + Tabelle angepasst. Georg: nicht mehr vier Dateien nacheinander – **ein Kopieren, ein Run**. **Tests + Build grün.** **Commit:** **5e2f700** ✅ auf GitHub (EIN_RUN + Anleitung; ggf. neuere DIALOG-Commits auf main)
 
 **Was wir JETZT tun:** Supabase: diese eine SQL-Datei ausführen (falls noch nicht). Dann weiter Vercel-Env + Stripe-Webhook wie in der Anbindungs-Doku.

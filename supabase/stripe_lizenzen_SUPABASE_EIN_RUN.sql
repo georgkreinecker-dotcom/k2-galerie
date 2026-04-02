@@ -3,7 +3,7 @@
 -- =============================================================================
 -- Einfach: Diese Datei komplett kopieren → Supabase → SQL Editor → einfügen → EINMAL „Run“.
 -- Enthält die gleiche Logik wie Migrationen 003 + 007 + 008 + 010 (Reihenfolge stimmt).
--- Bei komplett leerem Projekt: kein Durcheinander mit vier einzelnen Dateien.
+-- WICHTIG: Erste Tabelle heißt **licences** (nicht stripe_lizenzen). Webhook schreibt dorthin.
 -- =============================================================================
 
 -- ----- Teil 1: Tabellen + RLS (ehemals 003) -----
@@ -82,7 +82,6 @@ ALTER TABLE licences
   CHECK (licence_type IN ('basic', 'pro', 'proplus', 'propplus'));
 
 -- ----- Teil 4: eindeutige Stripe-Session (ehemals 010) -----
--- Wenn der Index fehlschlägt: evtl. doppelte stripe_session_id in licences/payments – erst bereinigen.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_licences_stripe_session_unique
   ON licences (stripe_session_id)
   WHERE stripe_session_id IS NOT NULL AND btrim(stripe_session_id) <> '';
