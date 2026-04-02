@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Stripe: Herz-Nieren-Tests + Robustheit:** **`api/stripePriceCents.js`** (Preise) + **`api/stripeWebhookLicenceShared.js`** (testbare Webhook-Zeilen). **`stripeLicenceContract.test.ts`** (Preise = `licencePricing`, Tenant/Session, ungültiger `licenceType`). **Webhook idempotent** (Doppel-Lieferung, Lizenz ohne Payment → Catch-up). **Migration `010_licences_payments_stripe_session_unique.sql`**. **LizenzErfolgPage:** Warte-Retries 2s / 5s / 10s. Doku **STRIPE-ANBINDUNG**, **GO-LIVE**, **START-NUR-NOCH-OFFEN**, **K2SoftwareentwicklungPage**, **STRIPE-TEST-LOKAL**. **Tests + Build grün.** **Commit/Push:** siehe `git log -1 --oneline` nach Übernahme auf main ✅
+**Letzter Stand:** 02.04.26 – **Stripe: Herz-Nieren-Tests + Robustheit:** **`api/stripePriceCents.js`** (Preise) + **`api/stripeWebhookLicenceShared.js`** (testbare Webhook-Zeilen). **`stripeLicenceContract.test.ts`** (Preise = `licencePricing`, Tenant/Session, ungültiger `licenceType`). **Webhook idempotent** (Doppel-Lieferung, Lizenz ohne Payment → Catch-up). **Migration `010_licences_payments_stripe_session_unique.sql`**. **LizenzErfolgPage:** Warte-Retries 2s / 5s / 10s. Doku **STRIPE-ANBINDUNG**, **GO-LIVE**, **START-NUR-NOCH-OFFEN**, **K2SoftwareentwicklungPage**, **STRIPE-TEST-LOKAL**. **Tests + Build grün.** **Commit:** **41e577d** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: SQL **010** in Supabase mitlaufen lassen (wenn 003–008 schon da); sonst Reihenfolge laut Anbindungs-Doku.
 
