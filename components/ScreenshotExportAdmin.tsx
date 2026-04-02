@@ -19197,6 +19197,29 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           }
                         />
                       )}
+                      {!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && (
+                        <LicenseeAdminQrPanel
+                          registrationComplete
+                          adminBaseUrl={
+                            typeof window !== 'undefined' ? `${window.location.origin}/admin` : ''
+                          }
+                          accent={s.accent}
+                          bgCard={s.bgCard}
+                          text={s.text}
+                          muted={s.muted}
+                          radius="12px"
+                          heading="Admin-Zugang K2 Galerie"
+                          adminIntro={
+                            <p style={{ margin: 0 }}>
+                              Das ist der <strong>Admin-Link und QR für eure echte K2-Galerie</strong> (Kunst &amp; Keramik)
+                              auf dieser Plattform – <strong>dieselbe Funktion</strong> wie bei der ök2-Demo: Link kopieren,
+                              QR speichern, Stand neu laden. Handy scannt → du landest im <strong>Admin</strong>.
+                              Besucher nutzen den <strong>Galerie-QR</strong> auf der Galerie-Seite, nicht diesen
+                              Admin-Code.
+                            </p>
+                          }
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -19569,6 +19592,24 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <strong>Lizenzbestätigung</strong> nach dem Kauf (Seite nach erfolgreicher Zahlung – dort ebenfalls
                       ausdrucken). Wenn du diese Angaben festhältst, kommst du <strong>immer wieder in deine Galerie</strong> –
                       auch ohne Lesezeichen oder neues Gerät.
+                    </div>
+                  )}
+                  {!tenant.isOeffentlich && !tenant.isVk2 && isPlatformInstance() && (
+                    <div
+                      style={{
+                        padding: '0.85rem 1rem',
+                        background: '#fffbeb',
+                        border: '1px solid #f59e0b',
+                        borderRadius: 10,
+                        color: '#1c1a18',
+                        fontSize: '0.88rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '0.35rem' }}>Absolute Sicherheit für euren Zugang</strong>
+                      Drucke oder speichere <strong>Admin-Link und QR</strong> (oben unter Vita bei den Stammdaten) fest.
+                      So habt ihr <strong>jederzeit wieder Zugang zur K2-Galerie</strong> – auch ohne Lesezeichen oder
+                      neues Gerät.
                     </div>
                   )}
                   {!isPlatformInstance() && !tenant.isOeffentlich && !tenant.isVk2 && (

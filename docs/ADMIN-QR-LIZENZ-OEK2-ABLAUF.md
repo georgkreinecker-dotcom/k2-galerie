@@ -1,13 +1,14 @@
-# Admin-QR (Lizenznehmer & ök2) – Ablauf und Prüfliste
+# Admin-QR (K2, Lizenznehmer & ök2) – Ablauf und Prüfliste
 
 Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden und der **Server-Stand** beim Scannen greift.
 
 ---
 
-## Drei sichtbare Stellen
+## Sichtbare Stellen
 
 | Kontext | Wo | Admin-URL (kanonisch) | QR sichtbar wenn |
 |--------|-----|------------------------|------------------|
+| **K2 echte Galerie** (nur Plattform) | Admin → Einstellungen → Stammdaten, unter Vita (Martina) | `{origin}/admin` (ohne `context`) | immer |
 | **ök2-Demo** (nur Plattform) | Admin → Einstellungen → Stammdaten, unter Vita | `{origin}/admin?context=oeffentlich` | immer (Demo) |
 | **Lizenznehmer** (eigene Instanz) | Admin → Einstellungen → Stammdaten (oben) | `{origin}/admin` (+ ggf. Query aus API) | nach **Lizenznummer** unter Registrierung |
 | **Nach Lizenzkauf** | `/lizenz-erfolg?session_id=…` | `admin_url` aus API | wenn URL `/admin` enthält |
@@ -34,8 +35,9 @@ Kurzreferenz, damit QR/Link **nicht** mit Galerie-Besucher-QR verwechselt werden
 1. `LicenseeAdminQrPanel.tsx` ist mit **allen** Aufrufern committed (Props wie `adminIntro` nicht nur lokal).
 2. `npm run test` → u. a. `publicLinks.test.ts` grün.
 3. `npm run build` grün.
-4. ök2: Stammdaten-Panel nutzt **`/admin?context=oeffentlich`**.
-5. Handbuch: `public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md` (Abschnitt wichtige Daten) bei inhaltlichen Änderungen mitdenken.
+4. **K2 (Plattform):** Stammdaten unter Vita nutzt **`/admin`** ohne Demo-Query.
+5. ök2: Stammdaten-Panel nutzt **`/admin?context=oeffentlich`**.
+6. Handbuch: `public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md` (Abschnitt wichtige Daten) bei inhaltlichen Änderungen mitdenken.
 
 ---
 
