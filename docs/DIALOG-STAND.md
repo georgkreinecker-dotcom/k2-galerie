@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Ready to go + Eröffnung zusammen:** Smart-Panel-Mappe **K2 Ready to go** enthält jetzt **Galerie-Eröffnung 24.–26.04.** (Einladung, mök2, Marketing ök2, Öffentlichkeitsarbeit, Docs, Sprung **#k2-ready-eroeffnung**). **K2SoftwareentwicklungPage:** gleicher Abschnitt mit Links + `docs/`-Verweisen. **WhatsApp-Duplikat** in `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md` entfernt. **Tests + Build grün.** **Commit:** **5f7726e** ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Ready to go + Eröffnung zusammen:** Smart-Panel-Mappe **K2 Ready to go** enthält jetzt **Galerie-Eröffnung 24.–26.04.** (Einladung, mök2, Marketing ök2, Öffentlichkeitsarbeit, Docs, Sprung **#k2-ready-eroeffnung**). **K2SoftwareentwicklungPage:** gleicher Abschnitt mit Links + `docs/`-Verweisen. **WhatsApp-Duplikat** in `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md` entfernt. **Tests + Build grün.** **Commit:** **0e97f74** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
