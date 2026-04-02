@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Admin-QR-Prozess abgesichert (Repo + Doku):** `LicenseeAdminQrPanel` inkl. **`adminIntro`** vollständig committed (vorher lokal offen → TS-Build auf Vercel gefährdet). **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – Ablauf K2 / ök2-Demo / Lizenznehmer, technische Quelle `publicLinks` + Server-Stand + Bust, **Checkliste vor Commit**. **docs/00-INDEX.md** Eintrag. **publicLinks.test.ts** Assertion `/admin?context=oeffentlich`. **Tests + Build grün.** **Commit:** **97d7368** ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Admin-QR-Prozess abgesichert (Repo + Doku):** `LicenseeAdminQrPanel` inkl. **`adminIntro`** vollständig committed (vorher lokal offen → TS-Build auf Vercel gefährdet). **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – Ablauf K2 / ök2-Demo / Lizenznehmer, technische Quelle `publicLinks` + Server-Stand + Bust, **Checkliste vor Commit**. **docs/00-INDEX.md** Eintrag. **publicLinks.test.ts** Assertion `/admin?context=oeffentlich`. **Tests + Build grün.** **Commit:** **0c54cd5** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
