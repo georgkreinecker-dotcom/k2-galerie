@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Lizenz-UI = Systemtest (Nachzug):** Gelber Dev-Kasten und **LizenzZeitplanPilotStripeInfo** (Production) sprechen nicht mehr von Mustervorschau als Ersatz für „Jetzt bezahlen“. **Commit:** 7e11fb1 ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: System testen, keine Pseudo-User-Flows.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Stripe-Systemtest statt Dev-Bypass:** Lokal ohne `STRIPE_SECRET_KEY` liefert **POST /api/create-checkout** wieder **503** mit klarem `hint` (kein Umweg zur Mustervorschau). **LizenzKaufenPage:** Kasten „Systemtest Checkout“, Button **Stripe-Systemtest auf Vercel**, Mustervorschau nur noch expliziter Link. **LizenzZeitplanPilotStripeInfo** / **LizenzErfolgPage** Texte angepasst. **vite.config.ts** Middleware. **Tests + Build grün.** **Auf main gepusht** (Hash siehe `git log -1 --oneline`).
 
 **Was wir JETZT tun:** –
