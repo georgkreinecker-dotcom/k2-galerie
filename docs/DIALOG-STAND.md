@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Lizenz „Jetzt bezahlen“ in Cursor-Vorschau:** `openCheckoutOrPaymentUrl` – im iframe öffnen **Stripe** und **/lizenz-erfolg** in **neuem Tab** (sonst nur main.tsx-Platzhalter). **LizenzKaufenPage** + **Admin ök2 Lizenz** + Test `openCheckoutOrPaymentUrl.test.ts`. **Commit:** *(folgt)*
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Ein Standard pro Problemstellung (Checkout-Weiterleitung).
+
+---
+
 **Letzter Stand:** 02.04.26 – **„Zahlungssystem lokal nicht konfiguriert“:** API-Hinweis (`hint`) wird unter dem Formular mit angezeigt; gelber Kasten **Lizenz kaufen** erklärt `.env` + `STRIPE_SECRET_KEY=sk_test_…` + Dev neu starten / Vercel. **Commit:** 78ea402 ✅ auf GitHub
 
 **Was wir JETZT tun:** –

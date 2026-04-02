@@ -11,6 +11,7 @@ import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
 import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
+import { openCheckoutOrPaymentUrl } from '../utils/openCheckoutOrPaymentUrl'
 
 const LICENCE_OPTIONS = [
   { id: 'basic' as const, ...LIZENZPREISE.basic },
@@ -29,6 +30,7 @@ export default function LizenzKaufenPage() {
   const [empfehlerId, setEmpfehlerId] = useState(empfehlerFromUrl)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [checkoutOpenedNewTab, setCheckoutOpenedNewTab] = useState(false)
 
   useEffect(() => {
     if (empfehlerFromUrl && isValidEmpfehlerIdFormat(empfehlerFromUrl)) setEmpfehlerId(empfehlerFromUrl)
@@ -37,6 +39,7 @@ export default function LizenzKaufenPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setCheckoutOpenedNewTab(false)
     if (!email.trim() || !name.trim()) {
       setError('Bitte E-Mail und Name angeben.')
       return
@@ -62,7 +65,19 @@ export default function LizenzKaufenPage() {
         return
       }
       if (data?.url) {
-        window.location.href = data.url
+        const how = openCheckoutOrPaymentUrl(data.url)
+        if (how === 'new_tab') {
+          setLoading(false)
+          setCheckoutOpenedNewTab(true)
+          return
+        }
+        if (how === 'popup_blocked') {
+          setLoading(false)
+          setError(
+            `Der Browser hat das neue Fenster blockiert. Bitte Pop-ups für diese Seite erlauben – oder diese Adresse im Browser öffnen:\n\n${data.url}`,
+          )
+          return
+        }
         return
       }
       setError('Keine Zahlungs-URL erhalten.')
@@ -102,14 +117,24 @@ export default function LizenzKaufenPage() {
             color: text,
           }}
         >
-          <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>Muster (ohne Zahlung)</div>
-          <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
-            <strong>Erfolgsseite ansehen:</strong>{' '}
-            <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
-              Lizenzbestätigung als Vorschau öffnen
-            </Link>
-            {' – inkl. Drucklayout, ohne Stripe.'}
-          </p>
+          <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
+            {import.meta.env.DEV ? 'Am Mac mit Dev-Server' : 'Muster (ohne Zahlung)'}
+          </div>
+          {import.meta.env.DEV ? (
+            <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
+              <strong>Ohne Stripe in der .env:</strong> Der Button <strong>Jetzt bezahlen</strong> unten öffnet automatisch die{' '}
+              <strong>Mustervorschau</strong> – kein Fehler, kein Extra-Schritt. Mit <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> in der{' '}
+              <code style={{ fontSize: '0.82rem' }}>.env</code> (Dev neu starten) kommst du stattdessen auf die echte Stripe-Zahlungsseite.
+            </p>
+          ) : (
+            <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
+              <strong>Erfolgsseite ansehen:</strong>{' '}
+              <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
+                Lizenzbestätigung als Vorschau öffnen
+              </Link>
+              {' – inkl. Drucklayout, ohne Stripe.'}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -131,9 +156,11 @@ export default function LizenzKaufenPage() {
           >
             Formular mit Musterdaten füllen
           </button>
-          <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: muted, lineHeight: 1.4 }}>
-            „Jetzt bezahlen“ startet danach trotzdem Stripe – nur zum Ansehen der Felder nutzt du die Vorschau oben.
-          </p>
+          {!import.meta.env.DEV && (
+            <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: muted, lineHeight: 1.4 }}>
+              Zum Durchklicken ohne Zahlung: Link <strong>Mustervorschau</strong> oben nutzen.
+            </p>
+          )}
         </div>
         <LizenzZeitplanPilotStripeInfo variant="kaufen" />
 
@@ -206,6 +233,22 @@ export default function LizenzKaufenPage() {
             )}
           </div>
 
+          {checkoutOpenedNewTab && (
+            <p
+              style={{
+                color: '#166534',
+                fontSize: '0.9rem',
+                margin: '0 0 1rem',
+                lineHeight: 1.5,
+                padding: '0.65rem 0.85rem',
+                background: 'rgba(34,197,94,0.12)',
+                border: '1px solid rgba(22,101,52,0.35)',
+                borderRadius: 10,
+              }}
+            >
+              <strong>Neuer Tab:</strong> Stripe oder die Erfolgsseite wurde geöffnet – dort weitermachen. (In der Cursor-Vorschau kann die App im kleinen Fenster nicht die ganze Seite zeigen.)
+            </p>
+          )}
           {error && (
             <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 1rem', lineHeight: 1.5, whiteSpace: 'pre-line' }}>{error}</p>
           )}

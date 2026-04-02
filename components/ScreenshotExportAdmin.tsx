@@ -33,6 +33,7 @@ import {
   DEFAULT_KATALOG_SPALTEN_VK2,
 } from '../src/utils/werkkatalogPreferences'
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
+import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
 function isProductionLikeUrl(url: string | undefined): boolean {
@@ -2250,6 +2251,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
   const [lizenzUseStammdaten, setLizenzUseStammdaten] = useState<'ask' | 'yes' | 'no'>('ask')
   const [lizenzLoading, setLizenzLoading] = useState(false)
   const [lizenzError, setLizenzError] = useState<string | null>(null)
+  const [lizenzCheckoutInfo, setLizenzCheckoutInfo] = useState<string | null>(null)
   const [lizenzBeendenGrund, setLizenzBeendenGrund] = useState<string>('')
   const [lizenzBeendenVerbesserung, setLizenzBeendenVerbesserung] = useState('')
   const [lizenzBeendenBackupHinweis, setLizenzBeendenBackupHinweis] = useState(false)
@@ -20278,6 +20280,7 @@ ${name}`
                 const name = lizenzName.trim()
                 const email = lizenzEmail.trim()
                 setLizenzError(null)
+                setLizenzCheckoutInfo(null)
                 if (!name || !email) {
                   setLizenzError('Bitte Name und E-Mail angeben.')
                   return
@@ -20302,7 +20305,21 @@ ${name}`
                     return
                   }
                   if (data?.url) {
-                    window.location.href = data.url
+                    const how = openCheckoutOrPaymentUrl(data.url)
+                    if (how === 'new_tab') {
+                      setLizenzLoading(false)
+                      setLizenzCheckoutInfo(
+                        'Zahlung oder Vorschau wurde in einem neuen Tab geöffnet – dort weitermachen. (Eingebettete Vorschau kann weder Stripe noch die Erfolgsseite vollständig zeigen.)',
+                      )
+                      return
+                    }
+                    if (how === 'popup_blocked') {
+                      setLizenzLoading(false)
+                      setLizenzError(
+                        `Pop-up blockiert. Bitte Pop-ups erlauben oder im Browser öffnen: ${data.url}`,
+                      )
+                      return
+                    }
                     return
                   }
                   setLizenzError('Keine Zahlungs-URL erhalten.')
@@ -20320,8 +20337,8 @@ ${name}`
                     Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen. Die <strong>Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben</strong>.
                   </p>
                   <div style={{ margin: '0 0 1.25rem', padding: '0.85rem 1rem', background: s.bgElevated, border: `1px dashed ${s.accent}55`, borderRadius: 10, fontSize: '0.85rem', color: s.text, lineHeight: 1.55 }}>
-                    <strong style={{ color: s.accent }}>Test / Muster:</strong> Hier gibt es <strong>keine</strong> Lizenz ohne Zahlung – „Jetzt bezahlen“ führt immer zu Stripe (im Stripe-Testmodus zahlst du mit Testkarte, ohne echtes Geld).{' '}
-                    <strong>Mustervorschau</strong> der Erfolgsseite ohne Zahlung und ohne Datenbank:{' '}
+                    <strong style={{ color: s.accent }}>Test / Muster:</strong> Auf <strong>Vercel</strong> oder mit <strong>Stripe-Key</strong> in der lokalen <code style={{ fontSize: '0.78rem' }}>.env</code> führt der Button zu <strong>Stripe</strong> (Testkarte 4242…). Lokal <strong>ohne</strong> Key: Mustervorschau der Erfolgsseite (Dev-Server). In <strong>Cursor-Vorschau</strong> oder iframe öffnet sich Zahlung/Vorschau in einem <strong>neuen Tab</strong>.{' '}
+                    <strong>Mustervorschau</strong> direkt:{' '}
                     <Link to="/lizenz-erfolg?muster=1" style={{ color: s.accent, fontWeight: 700 }}>Erfolgsseite ansehen (Muster)</Link>
                     {' · '}
                     <Link to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen} style={{ color: s.accent, fontWeight: 600 }}>Lizenz kaufen (Seite mit Muster-Formular)</Link>
@@ -20369,6 +20386,22 @@ ${name}`
                           <input type="text" value={lizenzEmpfehlerId} onChange={(e) => setLizenzEmpfehlerId(e.target.value)} placeholder="z. B. K2-E-XXXXXX" style={{ width: '100%', padding: '0.6rem 0.9rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, boxSizing: 'border-box' }} />
                           {lizenzEmpfehlerId && !isValidEmpfehlerIdFormat(lizenzEmpfehlerId) && <p style={{ fontSize: '0.78rem', color: s.muted, margin: '0.25rem 0 0' }}>Format: K2-E- und 6 Zeichen</p>}
                         </div>
+                        {lizenzCheckoutInfo && (
+                          <p
+                            style={{
+                              color: '#166534',
+                              fontSize: '0.9rem',
+                              margin: '0 0 0.75rem',
+                              lineHeight: 1.5,
+                              padding: '0.6rem 0.75rem',
+                              background: 'rgba(34,197,94,0.1)',
+                              border: '1px solid rgba(22,101,52,0.3)',
+                              borderRadius: 8,
+                            }}
+                          >
+                            {lizenzCheckoutInfo}
+                          </p>
+                        )}
                         {lizenzError && <p style={{ color: '#c53030', fontSize: '0.9rem', margin: '0 0 0.75rem' }}>{lizenzError}</p>}
                         <button type="submit" disabled={lizenzLoading} style={{ padding: '0.7rem 1.25rem', background: lizenzLoading ? s.muted : s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: lizenzLoading ? 'not-allowed' : 'pointer', fontSize: '0.95rem' }}>
                           {lizenzLoading ? 'Wird weitergeleitet …' : 'Jetzt bezahlen (Karte/Stripe) →'}
