@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Ready to go + Eröffnung zusammen:** Smart-Panel-Mappe **K2 Ready to go** enthält jetzt **Galerie-Eröffnung 24.–26.04.** (Einladung, mök2, Marketing ök2, Öffentlichkeitsarbeit, Docs, Sprung **#k2-ready-eroeffnung**). **K2SoftwareentwicklungPage:** gleicher Abschnitt mit Links + `docs/`-Verweisen. **WhatsApp-Duplikat** in `public/notizen-georg/diverses/einladung-freunde-eroeffnung-k2-24-04-2026.md` entfernt. **Tests + Build grün.** **Commit:** **5f7726e** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Eine Mappe für technischen Go-Live und Event/Marketing – kein inhaltlicher Bruch.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Admin-QR Stammdaten: nie localhost:** `LicenseeAdminQrPanel` bekam **`APP_BASE_URL`** statt **`window.location.origin`** (K2-Plattform, ök2-Demo, Lizenznehmer) – Link/QR zeigen **`https://k2-galerie.vercel.app/admin`** (bzw. `?context=oeffentlich`), auch wenn der Admin im Browser unter **localhost** läuft. **Tests + Build grün.** **Commit:** **23c5618** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

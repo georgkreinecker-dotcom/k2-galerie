@@ -84,7 +84,6 @@ Herzliche Grüße
 Liebe …, lieber …,
 
 kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. **Die Uhrzeit steht auf der Einladungskarte.**
-kurz von uns: Wir laden euch herzlich zur **Eröffnung der K2 Galerie** ein – **24.–26. April 2026**, **K2 Galerie Kunst & Keramik**, Schlossergasse 4, **4070 Eferding**. **Die Uhrzeit steht auf der Einladungskarte.**
 
 Wenn du schon reinschauen willst – unsere Galerie mit den Werken im Web:
 https://k2-galerie.vercel.app/galerie

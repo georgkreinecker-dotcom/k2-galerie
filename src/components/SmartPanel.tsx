@@ -113,6 +113,8 @@ function saveOrder(order: string[]) {
 
 const MAPPEN_OPEN_KEY = 'smartpanel-mappen-open'
 const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
+const EINLADUNG_EROEFFNUNG_24 = PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24
+const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
 const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
@@ -488,8 +490,81 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 {mappe.id === 'ready-to-go' && (
                   <>
                     <p style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', lineHeight: 1.45, color: 'rgba(255,245,240,0.75)' }}>
-                      Offene Schritte und Prüfpunkte vor dem Live-Start – eine Mappe statt verstreuter To-dos. Details und Dateipfade: K2 Softwareentwicklung.
+                      Live-Start, Sicherheit <strong style={{ color: 'rgba(255,245,240,0.92)' }}>und</strong> Galerie-Eröffnung (24.–26.04.) – eine Mappe. Details: K2 Softwareentwicklung; Einladung &amp; Marketing direkt hier.
                     </p>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(253,224,71,0.95)', fontWeight: 700, margin: '0.15rem 0 0.2rem' }}>Galerie-Eröffnung 24.–26.04.</div>
+                    <ul style={{ margin: '0 0 0.45rem', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(255,245,240,0.88)' }}>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => navigate(EINLADUNG_EROEFFNUNG_24)} onKeyDown={e => e.key === 'Enter' && navigate(EINLADUNG_EROEFFNUNG_24)} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Einladung Freunde – Mail &amp; WhatsApp</span>
+                        ) : (
+                          <Link to={EINLADUNG_EROEFFNUNG_24} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Einladung Freunde – Mail &amp; WhatsApp</Link>
+                        )}
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('mok2')} onKeyDown={e => e.key === 'Enter' && onNavigate('mok2')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>mök2 – Vertrieb &amp; Promotion</span>
+                        ) : (
+                          <Link to={MOK2_ROUTE} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>mök2 – Vertrieb &amp; Promotion</Link>
+                        )}
+                        {' · '}
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => navigate(MARKETING_OEK2_PAGE)} onKeyDown={e => e.key === 'Enter' && navigate(MARKETING_OEK2_PAGE)} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Marketing ök2</span>
+                        ) : (
+                          <Link to={MARKETING_OEK2_PAGE} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Marketing ök2</Link>
+                        )}
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('oeffentlichkeitsarbeit')} onKeyDown={e => e.key === 'Enter' && onNavigate('oeffentlichkeitsarbeit')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</span>
+                        ) : (
+                          <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1" style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</Link>
+                        )}
+                      </li>
+                      <li>
+                        Docs: <code style={{ fontSize: '0.68rem', color: 'rgba(255,245,240,0.7)' }}>MARKETING-EROEFFNUNG-K2-OEK2.md</code>, <code style={{ fontSize: '0.68rem', color: 'rgba(255,245,240,0.7)' }}>K2-DOKUMENTE-GALERIEEROEFFNUNG.md</code>
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => {
+                              onNavigate('softwareentwicklung')
+                              window.setTimeout(() => {
+                                try {
+                                  window.location.hash = 'k2-ready-eroeffnung'
+                                  const el = document.getElementById('k2-ready-eroeffnung')
+                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                } catch {
+                                  /* ignore */
+                                }
+                              }, 450)
+                            }}
+                            onKeyDown={e => {
+                              if (e.key !== 'Enter') return
+                              onNavigate('softwareentwicklung')
+                              window.setTimeout(() => {
+                                try {
+                                  window.location.hash = 'k2-ready-eroeffnung'
+                                  const el = document.getElementById('k2-ready-eroeffnung')
+                                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                } catch {
+                                  /* ignore */
+                                }
+                              }, 450)
+                            }}
+                            style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Abschnitt Eröffnung auf „K2 Softwareentwicklung“
+                          </span>
+                        ) : (
+                          <Link to={`${K2_SOFTWAREENTWICKLUNG}#k2-ready-eroeffnung`} style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Abschnitt Eröffnung auf „K2 Softwareentwicklung“
+                          </Link>
+                        )}
+                      </li>
+                    </ul>
                     {onNavigate ? (
                       <span
                         role="button"

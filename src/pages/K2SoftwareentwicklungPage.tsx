@@ -55,8 +55,27 @@ export default function K2SoftwareentwicklungPage() {
           K2 Ready to go
         </h2>
         <p style={{ margin: '0 0 1rem', lineHeight: 1.55, fontSize: '0.92rem', color: 'rgba(255,245,240,0.9)' }}>
-          Eine Übersicht der offenen Schritte und Docs – abgestimmt mit dem Smart Panel (Mappe <strong>K2 Ready to go</strong>). Details immer in den genannten Dateien unter <code style={{ fontSize: '0.85em' }}>docs/</code>.
+          Eine Übersicht der offenen Schritte und Docs – abgestimmt mit dem Smart Panel (Mappe <strong>K2 Ready to go</strong>). <strong>Technik, Sicherheit und Galerie-Eröffnung (24.–26.04.)</strong> gehören zur gleichen Mappe: Live-Stand und Event/Marketing greifen ineinander. Details in <code style={{ fontSize: '0.85em' }}>docs/</code> und in der APf (Notizen, mök2, Admin).
         </p>
+
+        <h3 id="k2-ready-eroeffnung" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '0 0 0.4rem' }}>
+          Galerie-Eröffnung 24.–26.04. (mit Ready to go)
+        </h3>
+        <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
+          Einladung, Presse/Flyer und Lounge – dieselbe Fahrspur wie „Go-Live“. Kurzfassung und Ablage:
+        </p>
+        <ul style={{ lineHeight: 1.6, paddingLeft: '1.35em', margin: '0 0 0.75rem', fontSize: '0.88rem' }}>
+          <li>
+            <Link to={PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24} style={{ color: '#5ffbf1', textDecoration: 'underline' }}>Einladung Freunde – Mail &amp; WhatsApp</Link>
+            {' · '}
+            <Link to={PROJECT_ROUTES['k2-galerie'].marketingOek2} style={{ color: '#5ffbf1', textDecoration: 'underline' }}>Marketing ök2 (mök2)</Link>
+            {' · '}
+            <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>Admin – Öffentlichkeitsarbeit</Link>
+          </li>
+          <li><code>docs/MARKETING-EROEFFNUNG-K2-OEK2.md</code></li>
+          <li><code>docs/K2-DOKUMENTE-GALERIEEROEFFNUNG.md</code></li>
+          <li><code>docs/EROEFFNUNG-24-26-04-WAS-WIR-GEPLANT-HATTEN.md</code></li>
+        </ul>
 
         <h3 id="k2-ready-stripe" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
           Zahlung / Stripe (nur wenn Online-Lizenz von Tag 1)
