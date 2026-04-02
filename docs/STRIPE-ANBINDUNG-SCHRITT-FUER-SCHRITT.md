@@ -7,19 +7,33 @@ Der **Code** liegt im Repo (`api/create-checkout`, `api/webhook-stripe`, `api/li
 
 ---
 
+## Einfach-Modus Supabase (ein Klick, kein Hin und Her)
+
+**Eine Datei, ein Run:**
+
+1. Im Repo in Cursor öffnen: [`supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql`](../supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql)
+2. **Alles** markieren und kopieren (nicht den Dateinamen – den **SQL-Text**).
+3. Supabase → **SQL Editor** → einfügen → **Run** (einmal).
+
+Damit sind die Schritte A–D aus der Tabelle unten erledigt (gleicher Inhalt wie Migrationen 003 + 007 + 008 + 010). **Pilot-Kurz-URLs** bleiben optional (`009_…` nur wenn gebraucht).
+
+---
+
 ## Kurz-Überblick (3 Blöcke)
 
 | # | Wo | Was |
 |---|-----|-----|
-| 1 | **Supabase** | SQL-Dateien **in der Reihenfolge** unten ausführen |
+| 1 | **Supabase** | **Einfach:** [`stripe_lizenzen_SUPABASE_EIN_RUN.sql`](../supabase/stripe_lizenzen_SUPABASE_EIN_RUN.sql) einmal – **oder** Einzeldateien in der Reihenfolge unten |
 | 2 | **Vercel** | Umgebungsvariablen setzen + **Redeploy** |
 | 3 | **Stripe** | Webhook-Endpunkt + Events + **Signing Secret** nach Vercel |
 
 ---
 
-## 1. Supabase – SQL in dieser Reihenfolge
+## 1. Supabase – SQL
 
-**Ort:** Supabase Dashboard → **SQL Editor** → jeweils Inhalt der Datei einfügen → **Run**.
+**Empfohlen:** Abschnitt **„Einfach-Modus“** oben – eine Datei, ein Run.
+
+**Alternativ (Einzeldateien):** Supabase Dashboard → **SQL Editor** → jeweils **vollständigen SQL-Inhalt** der Datei einfügen → **Run** (pro Datei einmal).
 
 **Wichtig:** Im Ordner `supabase/migrations/` gibt es **zwei** Dateien mit Präfix `003_…`. Für **Lizenzen/Stripe** brauchst du **nur** die Stripe-Datei unten als Schritt A – nicht verwechseln mit `003_add_in_exhibition_to_artworks.sql` (andere Tabelle).
 
