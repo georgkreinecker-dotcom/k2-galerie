@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Lizenznehmer: Admin-QR für Mobil:** Neue Komponente **`LicenseeAdminQrPanel`** – in **Einstellungen → Stammdaten** nur auf **Lizenznehmer-Instanz** (`!isPlatformInstance`), QR sichtbar **nach gespeicherter Lizenznummer** unter Registrierung; Link kopieren, QR-PNG speichern, Stand neu laden. Gleiches auf **`LizenzErfolgPage`**, wenn die API eine **`/admin`**-URL liefert. Hilfen **`normalizeLicenseeAdminUrl`** / **`getLicenseeAdminQrTargetUrl`** in **`publicLinks.ts`**. **Handbuch:** **`27-LIZENZNEHMER-ADMIN-QR-MOBIL.md`** + Index + public-Spiegel + QR-Register + Eintrag **K2TeamHandbuchPage**. **Tests + Build grün.** **Commit:** _(nach Push eintragen)_ ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Lizenznehmer: Admin-QR für Mobil:** Neue Komponente **`LicenseeAdminQrPanel`** – in **Einstellungen → Stammdaten** nur auf **Lizenznehmer-Instanz** (`!isPlatformInstance`), QR sichtbar **nach gespeicherter Lizenznummer** unter Registrierung; Link kopieren, QR-PNG speichern, Stand neu laden. Gleiches auf **`LizenzErfolgPage`**, wenn die API eine **`/admin`**-URL liefert. Hilfen **`normalizeLicenseeAdminUrl`** / **`getLicenseeAdminQrTargetUrl`** in **`publicLinks.ts`**. **Handbuch:** **`27-LIZENZNEHMER-ADMIN-QR-MOBIL.md`** + Index + public-Spiegel + QR-Register + Eintrag **K2TeamHandbuchPage**. **Tests + Build grün.** **Commit:** **6dca011** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg kann auf **eigener Galerie-URL** Stammdaten öffnen: nach Registrierung QR testen; nach Lizenzkauf Erfolgsseite prüfen.
 
