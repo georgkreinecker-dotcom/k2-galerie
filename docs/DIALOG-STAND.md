@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Passwort & Sicherheit (ök2):** Kachel-Untertitel + Sicherheits-Tab: klar, dass **kein voreingestelltes Standard-Passwort** existiert, Nutzer legt **nach Wunsch** ein eigenes an oder keins. **Benutzerhandbuch** `10-EINSTELLUNGEN.md` (Demo ök2) ergänzt. **Tests + Build grün.** **Commit:** **9343bd3** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Symbolwesen / keine falsche Erwartung „festes Passwort von kgm“.
+
+---
+
 **Letzter Stand:** 02.04.26 – **ök2 „Lizenz abschließen“: Test/Muster erklärt:** Im Admin (Einstellungen → Lizenzen → Lizenz abschließen) gibt es **keine** Lizenz ohne Zahlung; Kasten mit Links **Erfolgsseite ansehen (Muster)** → `/lizenz-erfolg?muster=1` und **Lizenz kaufen** (Muster-Formular). Stripe-**Testmodus** = echte Checkout-Route mit Testkarte. **Tests + Build grün.** **Commit:** **e5fe545** ✅ auf GitHub
 
 **Was wir JETZT tun:** –

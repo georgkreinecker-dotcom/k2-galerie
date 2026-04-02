@@ -17902,7 +17902,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>🔒</div>
                 <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Passwort & Sicherheit</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Admin-Passwort ändern</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>
+                  Kein Standard-Passwort – optional ein eigenes setzen
+                </div>
               </button>
               )}
               {/* Anmeldung – nur VK2 (K2 schlank, keine Anmeldung) */}
@@ -19871,7 +19873,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <div ref={settingsContentRef}>
                 <h3 style={{ fontSize: '1.1rem', color: s.accent, marginBottom: '1rem' }}>🔒 Sicherheitsabteilung</h3>
                 <p style={{ color: s.muted, marginBottom: '1rem', lineHeight: 1.5 }}>
-                  Hier regelst du den Zugang zum Admin-Bereich (Passwort) und die Sicherung deiner Daten. So behältst du die Kontrolle und kannst bei Verlust alles zurückholen.
+                  Hier regelst du den Zugang zum Admin-Bereich (Passwort) und die Sicherung deiner Daten. So behältst du die Kontrolle und kannst bei Verlust alles zurückholen.{' '}
+                  <strong style={{ color: s.text }}>Es gibt kein von uns voreingestelltes Passwort</strong> – du kannst nach Belieben ein eigenes anlegen oder bewusst keins nutzen.
                 </p>
                 <div style={{
                   padding: '1rem',
@@ -19887,7 +19890,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 {/* Admin-Passwort ändern / setzen (K2: Stammdaten, ök2: eigener Key) */}
                 <div style={{ padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33`, marginBottom: '1rem' }}>
                   <h4 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text }}>Admin-Passwort ändern</h4>
-                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>Mindestens 6 Zeichen. E-Mail oder Telefon (optional) helfen dir, das Passwort später wiederzufinden.</p>
+                  <p style={{ margin: '0 0 1rem', fontSize: '0.85rem', color: s.muted }}>
+                    <strong style={{ color: s.text }}>Kein festes Wort von uns:</strong> Wir setzen kein Standard-Passwort – du wählst selbst (mind. 6 Zeichen), wenn du eins möchtest. E-Mail oder Telefon (optional) helfen dir später beim Wiederfinden.
+                  </p>
                   <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Wie bei einer App: nur auf diesem Gerät gespeichert, nicht zurücksetzbar. Leer lassen und speichern = Passwort entfernen (dann Einstieg über „Mein Bereich“ ohne Passwort).</p>
                   <input type="email" value={adminContactEmail} onChange={(e) => setAdminContactEmail(e.target.value)} placeholder="E-Mail (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />
                   <input type="tel" value={adminContactPhone} onChange={(e) => setAdminContactPhone(e.target.value)} placeholder="Telefon (optional)" style={{ width: '100%', padding: '0.6rem 0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', marginBottom: '0.5rem', boxSizing: 'border-box' }} />

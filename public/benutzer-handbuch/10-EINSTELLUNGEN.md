@@ -98,6 +98,7 @@ Hier geht es um **zwei Dinge**, die oft verwechselt werden:
 **Demo ök2**
 
 - **Wo:** **Einstellungen** → **Passwort & Sicherheit** → **Admin-Passwort ändern**.
+- **Kein vorgegebenes Passwort:** Von kgm solution gibt es **kein** fest eingestelltes Standardwort – Sie können **nach Wunsch** ein eigenes wählen oder bewusst **keins** nutzen.
 - **Speichern** mit neuem Passwort und Wiederholung (je mindestens 6 Zeichen). **Beide Felder leer** lassen und speichern = Passwort **entfernen** (Einstieg wieder ohne Passwort).
 
 ---
