@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Besucherzähler ök2 + Lizenz-Mandanten:** Ursache ök2 oft: nach fehlgeschlagenem POST wurde `sessionStorage` trotzdem gesetzt → kein zweiter Versuch in derselben Session. Jetzt **nur bei `res.ok`** merken; **ein Standard** `reportPublicGalleryVisit` (GaleriePage, Vk2GaleriePage). **`/g/:tenantId`:** Zählung ergänzt (vorher fehlend). **API** `visit-and-build.js`: Tenant = gültiger Slug `^[a-z0-9-]{1,64}$` (wie Mandanten-URL). **Supabase:** Migration `006_visits_licensee_slugs.sql` (CHECK erweitert) – **einmal auf dem Projekt ausführen**, sonst Upsert für neue Slugs scheitert. **Admin:** Besucher-Ticker für `dynamicTenantId`. **Tests:** `reportPublicGalleryVisit.test.ts`. **Commit:** 1f625d7 ✅ GitHub
+**Letzter Stand:** 02.04.26 – **Besucherzähler ök2 + Lizenz-Mandanten:** Ursache ök2 oft: nach fehlgeschlagenem POST wurde `sessionStorage` trotzdem gesetzt → kein zweiter Versuch in derselben Session. Jetzt **nur bei `res.ok`** merken; **ein Standard** `reportPublicGalleryVisit` (GaleriePage, Vk2GaleriePage). **`/g/:tenantId`:** Zählung ergänzt (vorher fehlend). **API** `visit-and-build.js`: Tenant = gültiger Slug `^[a-z0-9-]{1,64}$` (wie Mandanten-URL). **Supabase:** Migration `006_visits_licensee_slugs.sql` (CHECK erweitert) – **einmal auf dem Projekt ausführen**, sonst Upsert für neue Slugs scheitert. **Admin:** Besucher-Ticker für `dynamicTenantId`. **Tests:** `reportPublicGalleryVisit.test.ts`. **Commit:** **6933889** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
