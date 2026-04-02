@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Passwort & Sicherheit (ök2):** Kachel-Untertitel + Sicherheits-Tab: klar, dass **kein voreingestelltes Standard-Passwort** existiert, Nutzer legt **nach Wunsch** ein eigenes an oder keins. **Benutzerhandbuch** `10-EINSTELLUNGEN.md` (Demo ök2) ergänzt. **Tests + Build grün.** **Commit:** **9343bd3** ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Passwort & Sicherheit (ök2):** Kachel-Untertitel + Sicherheits-Tab: klar, dass **kein voreingestelltes Standard-Passwort** existiert, Nutzer legt **nach Wunsch** ein eigenes an oder keins. **Benutzerhandbuch** `10-EINSTELLUNGEN.md` (Demo ök2) ergänzt. **Tests + Build grün.** **Commit:** **e3c0cb0** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
