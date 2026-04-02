@@ -121,13 +121,13 @@ export default function LizenzKaufenPage() {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-            {import.meta.env.DEV ? 'Systemtest Checkout (lokal)' : 'Muster (ohne Zahlung)'}
+            {import.meta.env.DEV ? 'Echter Funktionstest vs. Mustervorschau' : 'Muster (ohne Zahlung)'}
           </div>
           {import.meta.env.DEV ? (
             <>
-              <p style={{ margin: '0 0 0.55rem', lineHeight: 1.45 }}>
-                <strong>Jetzt bezahlen</strong> startet nur den <strong>echten</strong> Stripe-Checkout (Webhook, Datenbank, Erfolgsseite). Dafür braucht der Dev-Server{' '}
-                <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY=sk_test_…</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> – sonst erscheint eine Fehlermeldung mit Hinweis (kein Ersatz-Flow).
+              <p style={{ margin: '0 0 0.5rem', lineHeight: 1.45 }}>
+                <strong>So weißt du, ob es wirklich funktioniert:</strong> Nach <strong>Jetzt bezahlen</strong> muss die <strong>Stripe-Zahlungsseite</strong> kommen, du zahlst mit der <strong>Testkarte</strong>, danach die <strong>Erfolgsseite mit echter Session</strong> – dann sind Checkout, Webhook und Datenbank durchgelaufen. Dafür braucht der Dev-Server{' '}
+                <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY=sk_test_…</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> (Dev neu starten). Ohne Key: Fehlermeldung – Absicht, kein Schein-Erfolg.
               </p>
               <a
                 href={stripeTestLiveUrl}
@@ -135,7 +135,7 @@ export default function LizenzKaufenPage() {
                 rel="noopener noreferrer"
                 style={{
                   display: 'inline-block',
-                  marginBottom: '0.55rem',
+                  marginBottom: '0.5rem',
                   padding: '0.5rem 0.9rem',
                   background: accentDeep,
                   color: '#fff',
@@ -145,10 +145,10 @@ export default function LizenzKaufenPage() {
                   textDecoration: 'none',
                 }}
               >
-                Stripe-Systemtest auf Vercel (gleiche Seite)
+                Gleichen Ablauf auf Vercel mit echtem Stripe testen
               </a>
               <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
-                Nur Drucklayout der Bestätigung ohne Zahlung:{' '}
+                <strong>Mustervorschau</strong> = nur Layout, <strong>kein</strong> Nachweis dass Zahlung oder Server funktionieren:{' '}
                 <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
                   Mustervorschau öffnen
                 </Link>

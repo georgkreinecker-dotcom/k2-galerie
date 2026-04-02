@@ -98,7 +98,7 @@ export default function LizenzErfolgPage() {
             marginRight: 'auto',
           }}
         >
-          <strong>Muster:</strong> Keine echte Zahlung, keine Datenbank-Lizenz. So sieht die Seite nach einem Kauf aus – inkl. Druckvorschau unten. Für den Checkout-Systemtest: Lizenz kaufen mit Stripe-Key lokal oder auf k2-galerie.vercel.app.
+          <strong>Muster:</strong> Keine echte Zahlung, keine Datenbank-Lizenz. So sieht die Seite nach einem Kauf aus – inkl. Druckvorschau unten. Diese Ansicht ist <strong>kein</strong> Nachweis, dass Stripe, Webhook oder Speicher funktionieren; dafür brauchst du den kompletten Weg über die Stripe-Zahlungsseite (Lizenz kaufen mit Key lokal oder auf k2-galerie.vercel.app).
         </p>
       )}
       <p className="lizenz-erfolg-no-print" style={{ color: 'var(--k2-muted)', marginBottom: '1rem' }}>

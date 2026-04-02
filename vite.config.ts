@@ -811,14 +811,14 @@ const devCreateCheckoutMiddleware = () => {
         const projectRoot = path.resolve(__dirname)
         const envFile = loadEnvFromFile(projectRoot)
         const secret = (process.env.STRIPE_SECRET_KEY || envFile.STRIPE_SECRET_KEY || '').trim()
-        /** Systemtest = echter Stripe; ohne Key kein stiller Umweg (keine Mustervorschau als Ersatz). */
+        /** Ohne Key kein Checkout-URL – Mustervorschau ersetzt keinen echten Zahlungslauf. */
         if (!secret) {
           res.writeHead(503, { 'Content-Type': 'application/json' })
           res.end(
             JSON.stringify({
               error: 'Stripe lokal nicht konfiguriert',
               hint:
-                'Für den Checkout-Systemtest: STRIPE_SECRET_KEY=sk_test_… in .env (Projektroot), Dev-Server neu starten. Oder dieselbe Seite auf k2-galerie.vercel.app testen (dort ist Stripe angebunden).',
+                'Ob Checkout, Webhook und Datenbank wirklich funktionieren, siehst du nur nach einer echten Stripe-Checkout-Session (Testkarte auf der Stripe-Seite) und Erfolgsseite mit session_id. Dafür: STRIPE_SECRET_KEY=sk_test_… in .env (Projektroot), Dev-Server neu starten – oder dieselbe Lizenz-Seite auf k2-galerie.vercel.app öffnen und dort bezahlen. Die Mustervorschau zeigt nur das Layout; sie beweist nicht, dass die Zahlung klappt.',
             }),
           )
           return

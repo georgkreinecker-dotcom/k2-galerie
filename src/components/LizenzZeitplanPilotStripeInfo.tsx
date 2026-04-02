@@ -148,13 +148,13 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
       </p>
       {import.meta.env.DEV ? (
         <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-          <strong style={{ color: '#92400e' }}>Lokal:</strong> Systemtest = echter Checkout. Ohne{' '}
-          <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code> in <strong>.env</strong> (Dev neu starten) schlägt <strong>Jetzt bezahlen</strong> mit Hinweis fehl – Absicht. Auf{' '}
-          <strong>k2-galerie.vercel.app</strong> denselben Ablauf gegen produktive Test-Umgebung fahren.
+          <strong style={{ color: '#92400e' }}>Lokal:</strong> Ein <strong>echter</strong> Funktionstest = Stripe-Seite → Testkarte → Erfolgsseite mit Session. Ohne{' '}
+          <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code> in <strong>.env</strong> geht das nicht – <strong>Jetzt bezahlen</strong> meldet das absichtlich. Alternativ: gleiche Seite auf{' '}
+          <strong>k2-galerie.vercel.app</strong> und dort den kompletten Zahlungsweg durchspielen.
         </p>
       ) : (
         <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Auf <strong>k2-galerie.vercel.app</strong> läuft der Checkout mit Stripe. Die Mustervorschau ist nur das Drucklayout – kein Ersatz für den Systemtest.
+          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Nur wenn du die <strong>Stripe-Zahlungsseite</strong> durchläufst und danach die <strong>Erfolgsseite mit echter Zahlung</strong> siehst, ist der Weg verifiziert. Die Mustervorschau zeigt nur das Layout – sie beweist <strong>nicht</strong>, dass Stripe oder der Server funktionieren.
         </p>
       )}
       <p style={{ margin: '0.75rem 0 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#292524', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
