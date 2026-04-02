@@ -18,7 +18,11 @@ export default async function handler(req, res) {
   const secret = process.env.STRIPE_SECRET_KEY
   if (!secret) {
     console.error('create-checkout: STRIPE_SECRET_KEY fehlt')
-    return res.status(500).json({ error: 'Zahlungssystem nicht konfiguriert' })
+    return res.status(500).json({
+      error: 'Zahlungssystem nicht konfiguriert',
+      hint:
+        'STRIPE_SECRET_KEY in Vercel hinterlegen. Ohne echte Stripe-Checkout-Session lässt sich nicht verifizieren, ob Zahlung und Webhook funktionieren.',
+    })
   }
 
   let body
