@@ -63,39 +63,62 @@ Der Button **„Veröffentlichen“** (bzw. **„An Server senden“** oder **�
 
 ## Passwort und Admin-Zugang
 
-**Damit Sie den Admin-Zugang sicher nutzen** – die wichtigsten Punkte in einfachen Worten.
+Hier geht es um **zwei Dinge**, die oft verwechselt werden:
 
-### Passwort auf dem Gerät speichern (Ihre Entscheidung)
+1. **Optional: Galerie-Passwort** – nur wenn eines eingetragen ist, erscheint beim Einstieg ins Bearbeiten ein **Passwortfeld**.
+2. **Admin-Link und QR-Code** – damit Sie den **Admin** auf dem **Handy** oder einem zweiten Gerät **ohne Tippfehler** öffnen. Das ist **nicht** der QR-Code für Besucher auf der Galerie-Seite.
 
-Die App **verschickt keinen zentralen „Passwort vergessen“-Link** per E-Mail und **speichert Ihr Admin-Passwort nicht in einer zentralen Cloud** von kgm. **Sie entscheiden**, ob **Ihr Gerät oder Browser** das Passwort für Sie merkt:
+---
 
-- **iPhone / iPad / Mac:** **Passwörter** in den **Einstellungen** des Geräts (z. B. **iCloud-Schlüsselbund**) – dort können Sie gespeicherte Zugänge einsehen und ändern.
-- **Android:** **Google Passwort-Manager** oder die Passwort-Einstellungen Ihres Geräteherstellers.
-- **Im Browser:** Wenn beim Anmelden die Frage **„Passwort speichern?“** erscheint, können Sie **Ja** wählen – oder **Nein**, wenn Sie das Passwort lieber selbst notieren.
+### Admin-Link und QR-Code (schnell wieder einsteigen)
 
-**Tipp:** Nach dem **Passwort setzen** einmal normal anmelden und dabei **vom Browser oder Gerät speichern lassen**, wenn Sie das wünschen. So verwalten Sie den Zugang **über die gewohnten Funktionen Ihres Geräts** – ohne auf eine automatische Zurücksetzen-E-Mail aus der App angewiesen zu sein.
+**Wozu:** Link kopieren oder QR als Bild speichern – beim Scannen landen Sie **direkt im Admin** (nach dem Galerie-Passwort, falls eines gesetzt ist).
 
-### Eigene Galerie (K2, später Lizenznehmer:innen)
+**Wo in der App:** **Admin** → **Einstellungen** → **Stammdaten**.
 
-- **Wo:** Den **Admin** erreichen Sie von der **Galerie** aus (z. B. **Mit mir in den Admin** oder Ihr Einstieg **Mein Bereich**). Dort erscheint der Dialog **Admin-Zugang** mit Passwortfeld.
-- **Testphase:** In den ersten **14 Tagen** nach dem ersten Besuch können Sie sich oft **ohne Passwort** anmelden (Hinweis steht im Dialog). Danach – oder wenn bereits ein Passwort gespeichert ist – benötigen Sie es.
-- **Passwort setzen oder ersetzen:** Im Dialog auf **Passwort setzen** tippen. Dann: **neues Passwort** (mindestens **6 Zeichen**), **wiederholen**, optional **E-Mail** und **Telefon** eintragen → **Passwort speichern**. Die Angaben werden in den **Galerie-Stammdaten** gespeichert (und mit **Veröffentlichen** zum Server übertragen). **Es gibt kein Feld „altes Passwort“** – ein erneutes Speichern **ersetzt** das bisherige Passwort.
-- **Passwort ändern, während Sie bereits angemeldet sind:** Oben **abmelden** (Symbol **👤**), wieder zur **Galerie** gehen und den Admin-Dialog öffnen → erneut **Passwort setzen** wie oben.
+**Je nach Galerie-Typ:**
 
-### Demo ök2 (öffentliche Muster-Galerie)
+- **Öffentliche Demo (ök2):** Unter der **ersten Person**, **Vita** aufklappen – darunter steht der Bereich **Admin-Zugang Muster-Demo** mit Link und QR. **Nur für die Demo.** Nach dem Lizenzkauf nutzen Sie **einen anderen** Admin-Link und QR (siehe Lizenzbestätigung und Stammdaten Ihrer **eigenen** Galerie).
+- **Eigene Galerie nach Lizenz:** **Oben** in den Stammdaten, sobald Ihre **Lizenznummer** eingetragen ist – Link kopieren, QR speichern.
+- **Referenz-Galerie K2** (Kunst & Keramik auf der Anbieter-Website): **Gleicher Platz wie in der Demo** – unter **Vita** der ersten Person – aber **Ihr** Admin für die echte K2-Galerie (kein Demo-Code).
 
-- **Wo:** **Admin** → Tab **Einstellungen** → Kachel **Passwort & Sicherheit** → Abschnitt **Admin-Passwort ändern**.
-- **Ablauf:** Neues Passwort und **Wiederholung** (je mindestens 6 Zeichen), optional E-Mail/Telefon → **Passwort speichern**. Beide Passwortfelder **leer lassen** und speichern = **Passwort entfernen** (Einstieg ist dann wieder ohne Passwort möglich, wie in der Demo üblich).
+**Sicherheit:** Kurz vor **Stammdaten speichern** weist die App darauf hin: Wichtige Zugangsdaten **ausdrucken oder als Datei** behalten – dann finden Sie den Weg zurück, auch ohne Lesezeichen oder nach einem Gerätewechsel.
+
+---
+
+### Galerie-Passwort (optional)
+
+**Eigene Galerie oder Referenz K2**
+
+- **Wo:** Von der **Galerie** aus **Admin** oder **Mit mir in den Admin** – Dialog **Admin-Zugang** mit Passwortfeld (nur wenn ein Passwort gesetzt ist).
+- **Testphase:** Oft **14 Tage** ohne Passwort möglich; Hinweis steht im Dialog.
+- **Neu setzen oder ersetzen:** **Passwort setzen** → mindestens **6 Zeichen**, wiederholen, optional E-Mail/Telefon → **Passwort speichern**. Kein Feld „altes Passwort“ – Speichern **ersetzt** das bisherige Passwort. Liegt in den **Stammdaten**, mit **Veröffentlichen** auf den Server.
+- **Ändern während Sie drin sind:** **Abmelden** (**👤**), zur Galerie, Admin-Dialog erneut öffnen → **Passwort setzen**.
+
+**Demo ök2**
+
+- **Wo:** **Einstellungen** → **Passwort & Sicherheit** → **Admin-Passwort ändern**.
+- **Speichern** mit neuem Passwort und Wiederholung (je mindestens 6 Zeichen). **Beide Felder leer** lassen und speichern = Passwort **entfernen** (Einstieg wieder ohne Passwort).
+
+---
+
+### Passwort auf dem Gerät merken
+
+kgm **verschickt kein** zentrales „Passwort vergessen“ per E-Mail und **speichert Ihr Passwort nicht** in einer zentralen Cloud. **Browser oder Gerät** dürfen es für Sie merken – **iCloud-Schlüsselbund**, **Google Passwort-Manager** oder die Abfrage **„Passwort speichern?“** im Browser. **Tipp:** Einmal normal anmelden und speichern lassen, wenn Sie das möchten.
+
+---
 
 ### Passwort vergessen?
 
-1. **Zuerst:** In den **gespeicherten Passwörtern** Ihres **Geräts** oder **Browsers** nachsehen (siehe Abschnitt oben) – oft ist der Zugang dort hinterlegt.
-2. **Dann:** Über **Passwort vergessen?** im **Galerie-Dialog** erhalten Sie einen **Hinweis** (optional können Sie E-Mail oder Telefon eintragen; es wird **kein** automatischer Link verschickt). Steht dort eine **Kontaktadresse aus den Stammdaten**, können Sie die **Inhaberin oder den Inhaber der Galerie** bitten, ein neues Passwort festzulegen (**Passwort setzen** im gleichen Dialog).
-3. **kgm solution / die Plattform** kann Ihr **lokales** Galerie-Passwort **nicht** einsehen oder zurücksetzen (Ihre Daten liegen bei Ihnen bzw. in Ihrer Instanz).
+1. Zuerst in den **gespeicherten Passwörtern** des **Geräts** oder **Browsers** nachsehen.
+2. **Passwort vergessen?** im **Galerie-Dialog** zeigt einen **Hinweis** (kein automatischer Link per E-Mail). Steht eine **Kontaktadresse** aus den Stammdaten dabei, können Sie die **Inhaberin oder den Inhaber** bitten, neu zu setzen (**Passwort setzen** im Dialog).
+3. **kgm solution** kann Ihr **lokales** Galerie-Passwort **nicht** einsehen oder zurücksetzen.
+
+---
 
 ### Vereinsplattform VK2
 
-- Vorstände melden sich am **VK2-Einstieg** mit **Name + PIN** an (kein gleiches Muster wie die Galerie-Passwort-Kachel). Details: **VK2-Handbuch**, Kapitel Einstellungen und Anmeldung.
+Anmeldung mit **Name + PIN** am VK2-Einstieg – anderes Muster als die Galerie. Details: **VK2-Handbuch**.
 
 ---
 
@@ -116,5 +139,5 @@ Details zum **Belegdruck** (Kassabon, Rechnung) stehen im Kapitel [Kassa und Buc
 - **Stammdaten** = Galerie/Verein, Kontakt, Adresse, Öffnungszeiten; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, optional Kommunikation (WhatsApp).
 - **Backup** = Vollbackup herunterladen (regelmäßig empfohlen), aus Datei oder letztem Backup wiederherstellen.
 - **Veröffentlichen** = Änderungen an den Server senden, damit sie überall sichtbar sind.
-- **Passwort** = K2: am Galerie-Dialog setzen/ersetzen; ök2: Einstellungen → Passwort & Sicherheit; zum **Merken** den **Passwort-Speicher** des Geräts oder Browsers nutzen; **vergessen** → zuerst dort nachsehen, sonst Hinweis im Dialog + ggf. Kontakt zur Galerie; VK2 = Name+PIN (eigenes Handbuch).
+- **Admin-Zugang** = **Link und QR** in **Stammdaten** (Demo/K2-Referenz **unter Vita**; eigene Lizenz-Galerie **oben** nach Lizenznummer); **Passwort** optional – K2/Referenz am Galerie-Dialog, ök2 unter **Passwort & Sicherheit**; **vergessen** → zuerst Passwort-Speicher des Geräts; VK2 = Name+PIN (VK2-Handbuch).
 - **Drucker** = Etikettendrucker oder Belegdrucker einrichten (IP/Name, gleiches Netzwerk).
