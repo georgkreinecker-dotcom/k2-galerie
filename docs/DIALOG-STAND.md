@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **K2: eigener Admin-QR wie ök2:** Auf der **Plattform** unter **Admin → Einstellungen → Stammdaten**, **unter Vita** (Martina): **`LicenseeAdminQrPanel`** mit **`/admin`** (ohne `context`) – Link kopieren, QR speichern, Server-Stand + Bust wie überall. Gelber Kasten **Absolute Sicherheit für euren Zugang** vor **Stammdaten speichern**. Doku **ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** + **00-INDEX** angepasst. **Tests + Build grün.** **Commit:** **c545298** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 02.04.26 – **Admin-QR-Prozess abgesichert (Repo + Doku):** `LicenseeAdminQrPanel` inkl. **`adminIntro`** vollständig committed (vorher lokal offen → TS-Build auf Vercel gefährdet). **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – Ablauf K2 / ök2-Demo / Lizenznehmer, technische Quelle `publicLinks` + Server-Stand + Bust, **Checkliste vor Commit**. **docs/00-INDEX.md** Eintrag. **publicLinks.test.ts** Assertion `/admin?context=oeffentlich`. **Tests + Build grün.** **Commit:** **0c54cd5** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
