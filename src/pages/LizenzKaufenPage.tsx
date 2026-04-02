@@ -121,14 +121,39 @@ export default function LizenzKaufenPage() {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-            {import.meta.env.DEV ? 'Am Mac mit Dev-Server' : 'Muster (ohne Zahlung)'}
+            {import.meta.env.DEV ? 'Systemtest Checkout (lokal)' : 'Muster (ohne Zahlung)'}
           </div>
           {import.meta.env.DEV ? (
-            <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
-              <strong>Ohne Stripe in der .env:</strong> Der Button <strong>Jetzt bezahlen</strong> unten öffnet automatisch die{' '}
-              <strong>Mustervorschau</strong> – kein Fehler, kein Extra-Schritt. Mit <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> in der{' '}
-              <code style={{ fontSize: '0.82rem' }}>.env</code> (Dev neu starten) kommst du stattdessen auf die echte Stripe-Zahlungsseite.
-            </p>
+            <>
+              <p style={{ margin: '0 0 0.55rem', lineHeight: 1.45 }}>
+                <strong>Jetzt bezahlen</strong> startet nur den <strong>echten</strong> Stripe-Checkout (Webhook, Datenbank, Erfolgsseite). Dafür braucht der Dev-Server{' '}
+                <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY=sk_test_…</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> – sonst erscheint eine Fehlermeldung mit Hinweis (kein Ersatz-Flow).
+              </p>
+              <a
+                href={stripeTestLiveUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  marginBottom: '0.55rem',
+                  padding: '0.5rem 0.9rem',
+                  background: accentDeep,
+                  color: '#fff',
+                  borderRadius: 10,
+                  fontWeight: 700,
+                  fontSize: '0.88rem',
+                  textDecoration: 'none',
+                }}
+              >
+                Stripe-Systemtest auf Vercel (gleiche Seite)
+              </a>
+              <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
+                Nur Drucklayout der Bestätigung ohne Zahlung:{' '}
+                <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
+                  Mustervorschau öffnen
+                </Link>
+              </p>
+            </>
           ) : (
             <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
               <strong>Erfolgsseite ansehen:</strong>{' '}

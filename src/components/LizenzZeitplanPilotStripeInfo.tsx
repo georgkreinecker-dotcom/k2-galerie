@@ -154,7 +154,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         </p>
       ) : (
         <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Auf <strong>k2-galerie.vercel.app</strong> läuft der Checkout mit Stripe; am Mac nur mit passender <strong>.env</strong> oder über die Mustervorschau.
+          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Auf <strong>k2-galerie.vercel.app</strong> läuft der Checkout mit Stripe. Die Mustervorschau ist nur das Drucklayout – kein Ersatz für den Systemtest.
         </p>
       )}
       <p style={{ margin: '0.75rem 0 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#292524', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
