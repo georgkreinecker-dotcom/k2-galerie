@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Lizenz-UI = Systemtest (Nachzug):** Gelber Dev-Kasten und **LizenzZeitplanPilotStripeInfo** (Production) sprechen nicht mehr von Mustervorschau als Ersatz für „Jetzt bezahlen“. **Commit:** 7e11fb1 ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **Lizenz „echter Funktionstest“ eindeutig:** UI + Dev-503 (`vite.config.ts`) + **Vercel** `api/create-checkout.js`: ohne `STRIPE_SECRET_KEY` kommt jetzt überall ein **`hint`**, der sagt: Nachweis nur über **echte Stripe-Checkout-Session** (Testkarte) + Erfolgsseite mit `session_id`; Mustervorschau = nur Layout. **Commits:** 7e2686e (UI/Dev), a714cb7 (Vercel-API) ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
-**Einordnung:** Georg: System testen, keine Pseudo-User-Flows.
+**Einordnung:** Georg wollte klare Sprache: nichts „Ähnliches“ als Beweis für Stripe/Webhook/DB.
 
 ---
 
