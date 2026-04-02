@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Admin-QR Stammdaten: nie localhost:** `LicenseeAdminQrPanel` bekam **`APP_BASE_URL`** statt **`window.location.origin`** (K2-Plattform, ök2-Demo, Lizenznehmer) – Link/QR zeigen **`https://k2-galerie.vercel.app/admin`** (bzw. `?context=oeffentlich`), auch wenn der Admin im Browser unter **localhost** läuft. **Tests + Build grün.** **Commit:** *(nach Push eintragen)*
+**Letzter Stand:** 02.04.26 – **Admin-QR Stammdaten: nie localhost:** `LicenseeAdminQrPanel` bekam **`APP_BASE_URL`** statt **`window.location.origin`** (K2-Plattform, ök2-Demo, Lizenznehmer) – Link/QR zeigen **`https://k2-galerie.vercel.app/admin`** (bzw. `?context=oeffentlich`), auch wenn der Admin im Browser unter **localhost** läuft. **Tests + Build grün.** **Commit:** **23c5618** ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 
