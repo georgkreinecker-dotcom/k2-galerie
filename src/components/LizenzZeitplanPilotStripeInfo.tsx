@@ -146,13 +146,17 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         <strong style={{ color: '#92400e' }}>Nicht hier im Formular:</strong> Die Nummer <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>4242…</code> gehört{' '}
         <strong>nicht</strong> ins Feld „Empfehler-ID“ (nur für Rabattcodes wie <strong>K2-E-…</strong>).
       </p>
-      <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-        <strong style={{ color: '#92400e' }}>„Zahlungssystem lokal nicht konfiguriert“:</strong> Auf dem Mac mit{' '}
-        <code style={{ fontSize: '0.78rem' }}>npm run dev</code> braucht die Datei <strong>.env</strong> im Projekt die Zeile{' '}
-        <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code>{' '}
-        (aus Stripe → Entwickler → API-Schlüssel). Danach Dev-Server <strong>neu starten</strong>. Auf{' '}
-        <strong>k2-galerie.vercel.app</strong> ist der Schlüssel in der Regel schon gesetzt.
-      </p>
+      {import.meta.env.DEV ? (
+        <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
+          <strong style={{ color: '#92400e' }}>Lokal:</strong> Systemtest = echter Checkout. Ohne{' '}
+          <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code> in <strong>.env</strong> (Dev neu starten) schlägt <strong>Jetzt bezahlen</strong> mit Hinweis fehl – Absicht. Auf{' '}
+          <strong>k2-galerie.vercel.app</strong> denselben Ablauf gegen produktive Test-Umgebung fahren.
+        </p>
+      ) : (
+        <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
+          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Auf <strong>k2-galerie.vercel.app</strong> läuft der Checkout mit Stripe; am Mac nur mit passender <strong>.env</strong> oder über die Mustervorschau.
+        </p>
+      )}
       <p style={{ margin: '0.75rem 0 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#292524', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
         <strong style={{ color: '#92400e' }}>Testpilot:in per E-Mail einladen:</strong> steht nicht hier, sondern auf der Seite{' '}
         <Link to={`${licencesPath}#testpilot-einladen`} style={{ color: '#b45309', fontWeight: 700 }}>

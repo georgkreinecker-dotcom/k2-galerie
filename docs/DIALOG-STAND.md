@@ -1,6 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Lizenz „Jetzt bezahlen“ in Cursor-Vorschau:** `openCheckoutOrPaymentUrl` – im iframe öffnen **Stripe** und **/lizenz-erfolg** in **neuem Tab** (sonst nur main.tsx-Platzhalter). **LizenzKaufenPage** + **Admin ök2 Lizenz** + Test `openCheckoutOrPaymentUrl.test.ts`. **Commit:** *(folgt)*
+**Letzter Stand:** 02.04.26 – **Stripe-Systemtest statt Dev-Bypass:** Lokal ohne `STRIPE_SECRET_KEY` liefert **POST /api/create-checkout** wieder **503** mit klarem `hint` (kein Umweg zur Mustervorschau). **LizenzKaufenPage:** Kasten „Systemtest Checkout“, Button **Stripe-Systemtest auf Vercel**, Mustervorschau nur noch expliziter Link. **LizenzZeitplanPilotStripeInfo** / **LizenzErfolgPage** Texte angepasst. **vite.config.ts** Middleware. **Tests + Build grün.** **Auf main gepusht** (Hash siehe `git log -1 --oneline`).
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg will die Kette wirklich testen (Checkout → Webhook → DB), keinen pseudo-User-Flow.
+
+---
+
+**Letzter Stand:** 02.04.26 – **Lizenz „Jetzt bezahlen“ in Cursor-Vorschau:** `openCheckoutOrPaymentUrl` – im iframe öffnen **Stripe** und **/lizenz-erfolg** in **neuem Tab** (sonst nur main.tsx-Platzhalter). **LizenzKaufenPage** + **Admin ök2 Lizenz** + Test `openCheckoutOrPaymentUrl.test.ts`. **Commit:** 1024fe1 ✅ auf GitHub
 
 **Was wir JETZT tun:** –
 

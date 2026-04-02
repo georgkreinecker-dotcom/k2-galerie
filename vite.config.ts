@@ -777,19 +777,6 @@ const devCreateCheckoutMiddleware = () => {
           res.end(JSON.stringify({ error: 'Nur POST erlaubt' }))
           return
         }
-        const projectRoot = path.resolve(__dirname)
-        const envFile = loadEnvFromFile(projectRoot)
-        const secret = (process.env.STRIPE_SECRET_KEY || envFile.STRIPE_SECRET_KEY || '').trim()
-        if (!secret) {
-          res.writeHead(500, { 'Content-Type': 'application/json' })
-          res.end(
-            JSON.stringify({
-              error: 'Zahlungssystem lokal nicht konfiguriert',
-              hint: 'STRIPE_SECRET_KEY=sk_test_… in .env eintragen, Dev-Server neu starten.',
-            }),
-          )
-          return
-        }
         const bodyRaw = await new Promise<string>((resolve, reject) => {
           const chunks: Buffer[] = []
           req.on('data', (chunk: Buffer) => chunks.push(chunk))
@@ -804,16 +791,45 @@ const devCreateCheckoutMiddleware = () => {
           res.end(JSON.stringify({ error: 'Ungültiger JSON-Body' }))
           return
         }
+        const lt = typeof body.licenceType === 'string' ? body.licenceType.trim() : ''
+        const email = typeof body.email === 'string' ? body.email.trim() : ''
+        const name = typeof body.name === 'string' ? body.name.trim() : ''
+        const licenceOk = ['basic', 'pro', 'proplus', 'propplus'].includes(lt)
+        if (!licenceOk || !email || !name) {
+          res.writeHead(400, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              error: 'Fehlende Angaben',
+              hint: 'Lizenztyp, E-Mail und Name sind Pflicht.',
+            }),
+          )
+          return
+        }
         const host = req.headers.host || 'localhost:5177'
         const proto = (req.headers['x-forwarded-proto'] as string) || 'http'
-        const baseUrl = `${proto}://${host}`
+        const baseUrl = `${proto}://${host}`.replace(/\/$/, '')
+        const projectRoot = path.resolve(__dirname)
+        const envFile = loadEnvFromFile(projectRoot)
+        const secret = (process.env.STRIPE_SECRET_KEY || envFile.STRIPE_SECRET_KEY || '').trim()
+        /** Systemtest = echter Stripe; ohne Key kein stiller Umweg (keine Mustervorschau als Ersatz). */
+        if (!secret) {
+          res.writeHead(503, { 'Content-Type': 'application/json' })
+          res.end(
+            JSON.stringify({
+              error: 'Stripe lokal nicht konfiguriert',
+              hint:
+                'Für den Checkout-Systemtest: STRIPE_SECRET_KEY=sk_test_… in .env (Projektroot), Dev-Server neu starten. Oder dieselbe Seite auf k2-galerie.vercel.app testen (dort ist Stripe angebunden).',
+            }),
+          )
+          return
+        }
         try {
           const sharedPath = path.join(projectRoot, 'api', 'createCheckoutShared.js')
           const mod = await import(pathToFileURL(sharedPath).href)
           const { url } = await mod.createStripeCheckoutSession({
-            licenceType: body.licenceType,
-            email: body.email,
-            name: body.name,
+            licenceType: lt,
+            email,
+            name,
             empfehlerId: body.empfehlerId,
             secretKey: secret,
             baseUrl,

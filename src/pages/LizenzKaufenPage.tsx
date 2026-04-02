@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { LIZENZPREISE } from '../config/licencePricing'
-import { PROJECT_ROUTES, WILLKOMMEN_ROUTE } from '../config/navigation'
+import { BASE_APP_URL, PROJECT_ROUTES, WILLKOMMEN_ROUTE } from '../config/navigation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
@@ -30,7 +30,10 @@ export default function LizenzKaufenPage() {
   const [empfehlerId, setEmpfehlerId] = useState(empfehlerFromUrl)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [checkoutOpenedNewTab, setCheckoutOpenedNewTab] = useState(false)
+  /** true = Stripe-Checkout wurde in neuem Tab geöffnet (z. B. Cursor-Vorschau/iframe) */
+  const [checkoutStripeOpenedNewTab, setCheckoutStripeOpenedNewTab] = useState(false)
+
+  const stripeTestLiveUrl = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].lizenzKaufen}`
 
   useEffect(() => {
     if (empfehlerFromUrl && isValidEmpfehlerIdFormat(empfehlerFromUrl)) setEmpfehlerId(empfehlerFromUrl)
@@ -39,7 +42,7 @@ export default function LizenzKaufenPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setCheckoutOpenedNewTab(false)
+    setCheckoutStripeOpenedNewTab(false)
     if (!email.trim() || !name.trim()) {
       setError('Bitte E-Mail und Name angeben.')
       return
@@ -68,7 +71,7 @@ export default function LizenzKaufenPage() {
         const how = openCheckoutOrPaymentUrl(data.url)
         if (how === 'new_tab') {
           setLoading(false)
-          setCheckoutOpenedNewTab(true)
+          setCheckoutStripeOpenedNewTab(true)
           return
         }
         if (how === 'popup_blocked') {
@@ -233,7 +236,7 @@ export default function LizenzKaufenPage() {
             )}
           </div>
 
-          {checkoutOpenedNewTab && (
+          {checkoutStripeOpenedNewTab && (
             <p
               style={{
                 color: '#166534',
@@ -246,7 +249,7 @@ export default function LizenzKaufenPage() {
                 borderRadius: 10,
               }}
             >
-              <strong>Neuer Tab:</strong> Stripe oder die Erfolgsseite wurde geöffnet – dort weitermachen. (In der Cursor-Vorschau kann die App im kleinen Fenster nicht die ganze Seite zeigen.)
+              <strong>Neuer Tab:</strong> Die Stripe-Zahlungsseite wurde geöffnet – dort mit Testkarte weitermachen. (In der Cursor-Vorschau öffnet sich der Checkout bewusst im Browser-Tab.)
             </p>
           )}
           {error && (
