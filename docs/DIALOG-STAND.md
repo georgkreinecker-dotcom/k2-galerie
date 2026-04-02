@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Muster-Lizenz-Anmeldung (ohne Zahlung):** **`/lizenz-erfolg?muster=1`** = Mustervorschau Erfolgsseite (Hinweisbox, Druck „MUSTER“, Links via `buildLizenzMusterErfolgLinks`). **`LizenzKaufenPage`:** Kasten Muster + Link + Button „Formular mit Musterdaten füllen“. **`LicencesPage`:** Link Mustervorschau. Neu: **`src/utils/lizenzMusterDemo.ts`**, **`lizenzMusterDemo.test.ts`**. **STRIPE-ANBINDUNG** – Hinweis Einstiege. **Tests + Build grün.** **Commit:** **Commit:** **5550815** ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: unter **Lizenzen** / **Lizenz kaufen** die Mustervorschau kurz ansehen; echte Zahlung unverändert über Stripe.
+
+**Einordnung:** Demo für Piloten – keine Supabase-/Stripe-Session, keine rechtsgültige Bestätigung.
+
+---
+
 **Letzter Stand:** 02.04.26 – **EIN_RUN.sql wiederhergestellt:** Datei war versehentlich mit Chat-Text überschrieben; voller SQL-Inhalt zurück (`licences`/`payments`/`empfehler_gutschriften`). Kopfzeile: Hinweis **nicht** Tabelle `stripe_lizenzen` (fremdes Schema) – erste Tabelle muss **`licences`** heißen. **Tests + Build grün.** **Commit:** **3d9babe** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: Datei erneut **Cmd+A** → kopieren → Supabase (siehe Kommentar oben in der Datei).

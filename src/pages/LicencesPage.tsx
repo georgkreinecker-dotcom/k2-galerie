@@ -347,6 +347,10 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
             Lizenz online auswählen &amp; bezahlen
           </Link>
           <span style={{ color: 'var(--k2-muted)' }}> – für Pilot:innen nach Vereinbarung; öffentlicher Standardstart siehe Kasten oben.</span>
+          <br />
+          <Link to="/lizenz-erfolg?muster=1" style={{ color: 'var(--k2-muted)', fontSize: '0.85rem' }}>
+            Mustervorschau Erfolgsseite (ohne Zahlung)
+          </Link>
         </p>
         <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
           Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.

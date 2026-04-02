@@ -92,6 +92,8 @@ Nach dem Speichern: **Signing secret** kopieren → in Vercel als **`STRIPE_WEBH
 4. In **Supabase** → Table Editor → `licences` / `payments`: neuer Eintrag.
 5. **Erfolgsseite** `/lizenz-erfolg?session_id=…`: Daten erscheinen (kurz warten, bis der Webhook durch ist).
 
+**Nur Layout/Muster (ohne Stripe, ohne DB):** `/lizenz-erfolg?muster=1` – Erfolgsseite und Druckvorschau mit Beispiel-Links; Einstieg auch unter **Lizenz kaufen** und **Lizenzen** (mök2).
+
 **Lokal (`npm run dev`):** Siehe `docs/STRIPE-TEST-LOKAL.md` und `npm run verify:stripe-env`.
 
 ---

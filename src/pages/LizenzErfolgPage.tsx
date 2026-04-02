@@ -7,17 +7,29 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
-import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
+import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
+import { buildLizenzMusterErfolgLinks } from '../utils/lizenzMusterDemo'
 
 type LicenceLinks = { galerie_url: string | null; admin_url: string; name: string; email: string }
 
 export default function LizenzErfolgPage() {
   const [searchParams] = useSearchParams()
   const sessionId = searchParams.get('session_id')
+  const musterParam = searchParams.get('muster')
+  const musterVorschau = musterParam === '1' && !sessionId
   const [links, setLinks] = useState<LicenceLinks | null>(null)
   const [linksError, setLinksError] = useState<string | null>(null)
   const bestaetigungsDatum = new Date().toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+  /** Muster-Erfolgsseite ohne Stripe: /lizenz-erfolg?muster=1 */
+  useEffect(() => {
+    if (sessionId) return
+    if (musterParam !== '1') return
+    const o = typeof window !== 'undefined' ? window.location.origin : ''
+    setLinks(buildLizenzMusterErfolgLinks(o))
+    setLinksError(null)
+  }, [sessionId, musterParam])
 
   useEffect(() => {
     if (!sessionId) return
@@ -66,9 +78,33 @@ export default function LizenzErfolgPage() {
         }
       `}</style>
       <div className="lizenz-erfolg-no-print" style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-      <h1 className="lizenz-erfolg-no-print" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Lizenz erworben</h1>
+      <h1 className="lizenz-erfolg-no-print" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+        {musterVorschau ? 'Lizenz – Mustervorschau' : 'Lizenz erworben'}
+      </h1>
+      {musterVorschau && (
+        <p
+          className="lizenz-erfolg-no-print"
+          style={{
+            fontSize: '0.92rem',
+            color: '#b45309',
+            background: 'rgba(251,191,36,0.15)',
+            border: '1px solid rgba(180,83,9,0.35)',
+            borderRadius: 10,
+            padding: '0.65rem 0.85rem',
+            marginBottom: '1rem',
+            textAlign: 'left',
+            maxWidth: 420,
+            marginLeft: 'auto',
+            marginRight: 'auto',
+          }}
+        >
+          <strong>Muster:</strong> Keine echte Zahlung, keine Datenbank-Lizenz. So sieht die Seite nach einem Kauf aus – inkl. Druckvorschau unten.
+        </p>
+      )}
       <p className="lizenz-erfolg-no-print" style={{ color: 'var(--k2-muted)', marginBottom: '1rem' }}>
-        Vielen Dank für deine Zahlung. Deine Lizenz ist aktiv.
+        {musterVorschau
+          ? 'Die Links unten sind Beispieladressen (Mandanten-ID muster-lizenz-demo).'
+          : 'Vielen Dank für deine Zahlung. Deine Lizenz ist aktiv.'}
       </p>
       {linksError && (
         <p className="lizenz-erfolg-no-print" style={{ fontSize: '0.9rem', color: 'var(--k2-muted)', marginBottom: '1rem' }}>
@@ -106,9 +142,18 @@ export default function LizenzErfolgPage() {
                 heading="Admin-QR fürs Handy"
                 adminIntro={
                   <p style={{ margin: 0 }}>
-                    Das ist <strong>dein eigener</strong> Admin-Zugang nach dem Lizenzkauf – nicht der QR der ök2-Muster-Demo.
-                    Unten in der <strong>Lizenzbestätigung zum Drucken</strong> stehen Galerie- und Admin-Adresse mit; den QR
-                    kannst du hier als Bild sichern oder den Link kopieren.
+                    {musterVorschau ? (
+                      <>
+                        <strong>Mustervorschau:</strong> QR und Link sind nur Beispiele – nach einem echten Kauf erscheinen hier{' '}
+                        <strong>deine</strong> Zugangsdaten.
+                      </>
+                    ) : (
+                      <>
+                        Das ist <strong>dein eigener</strong> Admin-Zugang nach dem Lizenzkauf – nicht der QR der ök2-Muster-Demo.
+                        Unten in der <strong>Lizenzbestätigung zum Drucken</strong> stehen Galerie- und Admin-Adresse mit; den QR
+                        kannst du hier als Bild sichern oder den Link kopieren.
+                      </>
+                    )}
                   </p>
                 }
               />
@@ -142,8 +187,16 @@ export default function LizenzErfolgPage() {
           Vielen Dank für deinen Lizenzabschluss. Deine Lizenz ist aktiv.
         </p>
         <p style={{ margin: '0 0 0.25rem', fontSize: '0.9rem', color: '#555' }}>Datum: {bestaetigungsDatum}</p>
+        {musterVorschau && (
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', color: '#92400e', fontWeight: 600 }}>
+            MUSTER – keine rechtsgültige Lizenzbestätigung
+          </p>
+        )}
         {sessionId && (
           <p style={{ margin: 0, fontSize: '0.85rem', color: '#666', wordBreak: 'break-all' }}>Referenz: {sessionId}</p>
+        )}
+        {!sessionId && musterVorschau && (
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Referenz: Mustervorschau (keine Stripe-Session)</p>
         )}
         {links?.galerie_url && (
           <p style={{ margin: '0.75rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
@@ -182,6 +235,11 @@ export default function LizenzErfolgPage() {
           Zur Galerie-Entdeckung →
         </Link>
       </p>
+      <footer className="lizenz-erfolg-no-print" style={{ marginTop: '2rem', fontSize: '0.72rem', color: 'var(--k2-muted)', lineHeight: 1.45 }}>
+        {PRODUCT_COPYRIGHT_BRAND_ONLY}
+        <br />
+        {PRODUCT_URHEBER_ANWENDUNG}
+      </footer>
     </main>
   )
 }

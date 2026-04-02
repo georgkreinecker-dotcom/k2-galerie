@@ -10,6 +10,7 @@ import { PROJECT_ROUTES, WILLKOMMEN_ROUTE } from '../config/navigation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
+import { LIZENZ_MUSTER_EMAIL, LIZENZ_MUSTER_NAME } from '../utils/lizenzMusterDemo'
 
 const LICENCE_OPTIONS = [
   { id: 'basic' as const, ...LIZENZPREISE.basic },
@@ -89,6 +90,50 @@ export default function LizenzKaufenPage() {
         <p style={{ color: muted, fontSize: '0.9rem', marginBottom: '1.75rem' }}>
           Produkt anklicken – Name und E-Mail eintragen – Zahlung per Karte (Stripe). Nach dem Kauf ist deine Lizenz aktiv.
         </p>
+        <div
+          style={{
+            marginBottom: '1.25rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(251,191,36,0.12)',
+            border: '1px solid rgba(180,83,9,0.28)',
+            borderRadius: 12,
+            fontSize: '0.88rem',
+            color: text,
+          }}
+        >
+          <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>Muster (ohne Zahlung)</div>
+          <p style={{ margin: '0 0 0.6rem', lineHeight: 1.45 }}>
+            <strong>Erfolgsseite ansehen:</strong>{' '}
+            <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
+              Lizenzbestätigung als Vorschau öffnen
+            </Link>
+            {' – inkl. Drucklayout, ohne Stripe.'}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setName(LIZENZ_MUSTER_NAME)
+              setEmail(LIZENZ_MUSTER_EMAIL)
+              setLicenceType('pro')
+            }}
+            style={{
+              padding: '0.5rem 0.85rem',
+              background: bgCard,
+              border: `1px solid ${accent}55`,
+              borderRadius: 10,
+              fontFamily: fontBody,
+              fontSize: '0.88rem',
+              fontWeight: 600,
+              color: accentDeep,
+              cursor: 'pointer',
+            }}
+          >
+            Formular mit Musterdaten füllen
+          </button>
+          <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: muted, lineHeight: 1.4 }}>
+            „Jetzt bezahlen“ startet danach trotzdem Stripe – nur zum Ansehen der Felder nutzt du die Vorschau oben.
+          </p>
+        </div>
         <LizenzZeitplanPilotStripeInfo variant="kaufen" />
 
         {/* 1. Produkt per Klick auswählen */}
