@@ -5,7 +5,7 @@
 
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
+import { BASE_APP_URL, PROJECT_ROUTES, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 
 export default function K2SoftwareentwicklungPage() {
   useEffect(() => {
@@ -80,6 +80,18 @@ export default function K2SoftwareentwicklungPage() {
         <h3 id="k2-ready-stripe" style={{ fontSize: '1.05rem', color: '#fde68a', margin: '1rem 0 0.4rem' }}>
           Zahlung / Stripe (nur wenn Online-Lizenz von Tag 1)
         </h3>
+        <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
+          <strong>Funktionstest Stripe (Sportwagen – ein Klick):</strong>{' '}
+          <a
+            href={`${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].lizenzKaufen}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#5ffbf1', textDecoration: 'underline', fontWeight: 700 }}
+          >
+            Lizenz kaufen auf Vercel öffnen
+          </a>
+          {' '}(von der APf aus – ohne .env-Fummeln; dort Formular → Jetzt bezahlen → Testkarte 4242…).
+        </p>
         <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.88rem' }}>
           Schritt für Schritt: <strong>docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md</strong> – Kurzcheckliste: <code>docs/STRIPE-LIZENZEN-GO-LIVE.md</code>, <code>docs/START-NUR-NOCH-OFFEN.md</code>
         </p>

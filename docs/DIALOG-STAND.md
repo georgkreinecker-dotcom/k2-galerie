@@ -1,6 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Lizenz „echter Funktionstest“ eindeutig:** UI + Dev-503 (`vite.config.ts`) + **Vercel** `api/create-checkout.js`: ohne `STRIPE_SECRET_KEY` kommt jetzt überall ein **`hint`**, der sagt: Nachweis nur über **echte Stripe-Checkout-Session** (Testkarte) + Erfolgsseite mit `session_id`; Mustervorschau = nur Layout. **Commits:** 7e2686e (UI/Dev), a714cb7 (Vercel-API) ✅ auf GitHub
+**Letzter Stand:** 02.04.26 – **APf: Funktionstest Stripe = ein Klick (Sportwagen):** `LizenzKaufenPage` im Dev: großer Button zuerst → Vercel; `.env` nur in `<details>`. `K2SoftwareentwicklungPage` (#k2-ready-stripe): derselbe Ein-Klick-Link. `LizenzZeitplanPilotStripeInfo` verweist auf gelben Kasten. **Commit:** (nach Push) ✅ GitHub
+
+**Letzter Stand:** 02.04.26 – **Begriff vereinheitlicht: „Funktionstest Stripe“** – überall derselbe Name (Lizenz kaufen, gelber Kasten, Infobox, Erfolg Muster-Hinweis, Dev-503-`hint`, Vercel `create-checkout` `hint`). **Commit:** (nach Push eintragen) ✅ auf GitHub
+
+**Letzter Stand:** 02.04.26 – **Lizenz „echter Funktionstest“ eindeutig:** UI + Dev-503 (`vite.config.ts`) + **Vercel** `api/create-checkout.js`: ohne `STRIPE_SECRET_KEY` kommt jetzt überall ein **`hint`**, der sagt: Nachweis nur über **echte Stripe-Checkout-Session** (Testkarte) + Erfolgsseite mit `session_id`; Mustervorschau = nur Layout. **Commits:** 7e2686e (UI/Dev), a714cb7 (Vercel-API) ✅ auf GitHub · DIALOG aktualisiert **6fc433e**
 
 **Was wir JETZT tun:** –
 

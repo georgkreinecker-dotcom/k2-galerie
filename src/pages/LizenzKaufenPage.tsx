@@ -121,36 +121,50 @@ export default function LizenzKaufenPage() {
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: '0.45rem', color: accentDeep }}>
-            {import.meta.env.DEV ? 'Echter Funktionstest vs. Mustervorschau' : 'Muster (ohne Zahlung)'}
+            {import.meta.env.DEV ? 'Funktionstest Stripe (Sportwagen: ein Klick)' : 'Muster (ohne Zahlung)'}
           </div>
           {import.meta.env.DEV ? (
             <>
-              <p style={{ margin: '0 0 0.5rem', lineHeight: 1.45 }}>
-                <strong>So weißt du, ob es wirklich funktioniert:</strong> Nach <strong>Jetzt bezahlen</strong> muss die <strong>Stripe-Zahlungsseite</strong> kommen, du zahlst mit der <strong>Testkarte</strong>, danach die <strong>Erfolgsseite mit echter Session</strong> – dann sind Checkout, Webhook und Datenbank durchgelaufen. Dafür braucht der Dev-Server{' '}
-                <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY=sk_test_…</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> (Dev neu starten). Ohne Key: Fehlermeldung – Absicht, kein Schein-Erfolg.
+              <p style={{ margin: '0 0 0.65rem', lineHeight: 1.45, fontSize: '0.88rem' }}>
+                <strong>APf = localhost:</strong> Ohne <code style={{ fontSize: '0.82rem' }}>STRIPE_SECRET_KEY</code> in der <code style={{ fontSize: '0.82rem' }}>.env</code> kann <strong>Jetzt bezahlen</strong> hier nicht starten – Webhook erreicht localhost ohnehin nicht.{' '}
+                <strong>Ein Standard:</strong> einen Klick unten → echte Lizenz-Seite auf Vercel → dort Formular → Jetzt bezahlen → Testkarte.
               </p>
               <a
                 href={stripeTestLiveUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  display: 'inline-block',
-                  marginBottom: '0.5rem',
-                  padding: '0.5rem 0.9rem',
+                  display: 'block',
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  marginBottom: '0.65rem',
+                  padding: '0.9rem 1rem',
                   background: accentDeep,
                   color: '#fff',
-                  borderRadius: 10,
-                  fontWeight: 700,
-                  fontSize: '0.88rem',
+                  borderRadius: 12,
+                  fontWeight: 800,
+                  fontSize: '1.02rem',
                   textDecoration: 'none',
+                  textAlign: 'center',
                 }}
               >
-                Gleichen Ablauf auf Vercel mit echtem Stripe testen
+                Funktionstest Stripe – ein Klick (öffnet Vercel)
               </a>
-              <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
-                <strong>Mustervorschau</strong> = nur Layout, <strong>kein</strong> Nachweis dass Zahlung oder Server funktionieren:{' '}
+              <p style={{ margin: '0 0 0.5rem', fontSize: '0.84rem', color: muted, lineHeight: 1.45 }}>
+                Auf der Vercel-Seite: <strong>4242 4242 4242 4242</strong>, beliebiges Datum, CVC z. B. 123 → dann Erfolgsseite mit Session.
+              </p>
+              <details style={{ marginBottom: '0.5rem', fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
+                <summary style={{ cursor: 'pointer', fontWeight: 600, color: accentDeep }}>
+                  Optional: stattdessen lokal (braucht Key + Dev neu starten)
+                </summary>
+                <p style={{ margin: '0.45rem 0 0' }}>
+                  <code>STRIPE_SECRET_KEY=sk_test_…</code> in <code>.env</code> – dann funktioniert <strong>Jetzt bezahlen</strong> auf dieser localhost-Seite. Webhook-Test bleibt sinnvoller auf Vercel.
+                </p>
+              </details>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: muted, lineHeight: 1.45 }}>
+                <strong>Mustervorschau</strong> (nur Layout):{' '}
                 <Link to="/lizenz-erfolg?muster=1" style={{ color: accent, fontWeight: 600 }}>
-                  Mustervorschau öffnen
+                  öffnen
                 </Link>
               </p>
             </>

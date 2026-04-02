@@ -1,5 +1,5 @@
 /**
- * Ein Standard: Zeitplan (01. Mai), Pilot-Ablauf, Stripe-Test – überall gleich lesbar.
+ * Ein Standard: Zeitplan (01. Mai), Pilot-Ablauf, Funktionstest Stripe – überall gleich lesbar.
  */
 import { Link } from 'react-router-dom'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -17,7 +17,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
   if (variant === 'board') {
     return (
       <section
-        aria-label="Zeitplan Lizenzen, Pilot, Stripe-Test"
+        aria-label="Zeitplan Lizenzen, Pilot, Funktionstest Stripe"
         style={{
           marginBottom: '1.25rem',
           padding: '1rem 1.15rem',
@@ -28,7 +28,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         }}
       >
         <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#fde68a', marginBottom: '0.35rem' }}>
-          Lizenzen – Zeitplan &amp; Test
+          Lizenzen – Zeitplan &amp; Funktionstest Stripe
         </div>
         <div style={{ fontSize: 'clamp(1.35rem, 3.5vw, 1.75rem)', fontWeight: 800, color: '#fff', lineHeight: 1.15, marginBottom: '0.5rem' }}>
           01. Mai – regulärer Start
@@ -42,7 +42,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
           <li>Zugang – u. a. <strong style={{ color: '#fde68a' }}>Lizenz kaufen</strong> / Stripe nach Freigabe</li>
         </ol>
         <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', lineHeight: 1.5, color: 'rgba(255,255,255,0.85)' }}>
-          <strong style={{ color: '#a7f3d0' }}>Stripe testen:</strong> Checkout starten, bei der Karte{' '}
+          <strong style={{ color: '#a7f3d0' }}>Funktionstest Stripe:</strong> Checkout starten, bei der Karte{' '}
           <code style={{ background: 'rgba(0,0,0,0.25)', padding: '0.1rem 0.35rem', borderRadius: 4, fontSize: '0.82rem' }}>4242 4242 4242 4242</code>
           {' '}– nur im <strong>Testmodus</strong> (lokal <code style={{ fontSize: '0.78rem' }}>sk_test_…</code> in der Umgebung).
         </p>
@@ -73,7 +73,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
   if (variant === 'licences') {
     return (
       <section
-        aria-label="Zeitplan Lizenzen, Pilot, Stripe-Test"
+        aria-label="Zeitplan Lizenzen, Pilot, Funktionstest Stripe"
         style={{
           background: 'linear-gradient(180deg, #fef3c7 0%, #fde68a 100%)',
           border: '2px solid #f59e0b',
@@ -85,7 +85,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         }}
       >
         <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#92400e', marginBottom: '0.25rem' }}>
-          Zeitplan · Pilot · Stripe-Test
+          Zeitplan · Pilot · Funktionstest Stripe
         </div>
         <div style={{ fontSize: 'clamp(1.25rem, 3vw, 1.65rem)', fontWeight: 800, color: '#78350f', lineHeight: 1.2, marginBottom: '0.45rem' }}>
           01. Mai – öffentlicher regulärer Lizenzstart
@@ -102,7 +102,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
           </li>
         </ol>
         <div style={{ fontSize: '0.86rem', lineHeight: 1.5, color: '#44403c', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
-          <strong style={{ color: '#92400e' }}>Zahlung testen (Stripe):</strong> Testkarte{' '}
+          <strong style={{ color: '#92400e' }}>Funktionstest Stripe:</strong> Testkarte{' '}
           <code style={{ background: 'rgba(255,255,255,0.85)', padding: '0.12rem 0.35rem', borderRadius: 4 }}>4242 4242 4242 4242</code>
           {' '}– nur wenn der Server im <strong>Testmodus</strong> läuft (<code style={{ fontSize: '0.8rem' }}>sk_test_…</code>). Details: Doku „STRIPE-TEST“ im Projekt.
         </div>
@@ -117,7 +117,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
   // kaufen
   return (
     <section
-      aria-label="Zeitplan, Pilot, Stripe-Test"
+      aria-label="Zeitplan, Pilot, Funktionstest Stripe"
       style={{
         background: 'linear-gradient(180deg, #fef3c7 0%, #fde68a 100%)',
         border: '2px solid #f59e0b',
@@ -138,7 +138,7 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
         <strong style={{ color: '#92400e' }}>Pilot:</strong> Einladung → Vereinbarung → Zugang (dann u. a. hier bezahlen).
       </p>
       <p style={{ margin: 0, fontSize: '0.86rem', lineHeight: 1.5, color: '#57534e' }}>
-        <strong style={{ color: '#92400e' }}>Stripe testen:</strong> Auf <strong>„Jetzt bezahlen“</strong> klicken – es öffnet sich die <strong>Stripe-Zahlungsseite</strong>. Dort bei der Karte{' '}
+        <strong style={{ color: '#92400e' }}>Funktionstest Stripe:</strong> Auf <strong>„Jetzt bezahlen“</strong> klicken – es öffnet sich die <strong>Stripe-Zahlungsseite</strong>. Dort bei der Karte{' '}
         <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.1rem 0.35rem', borderRadius: 4 }}>4242 4242 4242 4242</code>
         {' '}eintragen, beliebiges zukünftiges Ablaufdatum und CVC (z. B. 123). Nur im <strong>Testmodus</strong> (<code style={{ fontSize: '0.78rem' }}>sk_test_…</code>).
       </p>
@@ -148,13 +148,12 @@ export default function LizenzZeitplanPilotStripeInfo({ variant }: Props) {
       </p>
       {import.meta.env.DEV ? (
         <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-          <strong style={{ color: '#92400e' }}>Lokal:</strong> Ein <strong>echter</strong> Funktionstest = Stripe-Seite → Testkarte → Erfolgsseite mit Session. Ohne{' '}
-          <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code> in <strong>.env</strong> geht das nicht – <strong>Jetzt bezahlen</strong> meldet das absichtlich. Alternativ: gleiche Seite auf{' '}
-          <strong>k2-galerie.vercel.app</strong> und dort den kompletten Zahlungsweg durchspielen.
+          <strong style={{ color: '#92400e' }}>APf / localhost:</strong> Oben im gelben Kasten <strong>Funktionstest Stripe – ein Klick</strong> – das ist der Standard (Vercel). <strong>Funktionstest Stripe</strong> = Stripe-Seite → Testkarte → Erfolgsseite mit Session. Optional lokal:{' '}
+          <code style={{ background: 'rgba(255,255,255,0.9)', padding: '0.08rem 0.3rem', borderRadius: 4 }}>STRIPE_SECRET_KEY=sk_test_…</code> in <strong>.env</strong>, sonst schlägt <strong>Jetzt bezahlen</strong> hier fehl.
         </p>
       ) : (
         <p style={{ margin: '0.55rem 0 0', fontSize: '0.84rem', lineHeight: 1.5, color: '#44403c' }}>
-          <strong style={{ color: '#92400e' }}>Hinweis:</strong> Nur wenn du die <strong>Stripe-Zahlungsseite</strong> durchläufst und danach die <strong>Erfolgsseite mit echter Zahlung</strong> siehst, ist der Weg verifiziert. Die Mustervorschau zeigt nur das Layout – sie beweist <strong>nicht</strong>, dass Stripe oder der Server funktionieren.
+          <strong style={{ color: '#92400e' }}>Funktionstest Stripe:</strong> Nur wenn du die <strong>Stripe-Zahlungsseite</strong> durchläufst und danach die <strong>Erfolgsseite mit echter Zahlung</strong> siehst, ist der Weg verifiziert. Die Mustervorschau zeigt nur das Layout – sie beweist <strong>nicht</strong>, dass Stripe oder der Server funktionieren.
         </p>
       )}
       <p style={{ margin: '0.75rem 0 0', fontSize: '0.88rem', lineHeight: 1.55, color: '#292524', paddingTop: '0.5rem', borderTop: '1px solid rgba(180,83,9,0.35)' }}>
