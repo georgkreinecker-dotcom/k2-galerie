@@ -37,6 +37,7 @@ Alle QR-Codes und zentralen Links der App – wo sie vorkommen, wohin sie führe
 | 19 | Galerie-Vorschau ?q=Nummer | GalerieVorschauPage (EtikettQrCode) | QR auf Etikett zu einem Werk |
 | 20 | Pilot-Schreiben | MarketingOek2Page (mök2) | QR „für Michael“ |
 | 21 | Willkommen | MarketingOek2Page | Link Willkommensseite (Text) |
+| 22 | Admin Lizenznehmer-Instanz | Stammdaten Admin, LizenzErfolgPage | QR + Link nur Admin, nach Registrierung bzw. wenn API `/admin` liefert |
 
 ---
 

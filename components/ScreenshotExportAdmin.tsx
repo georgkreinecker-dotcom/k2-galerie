@@ -124,6 +124,7 @@ import { deleteArtworkImagesFromGitHubForNumberRange } from '../src/utils/github
 import { ImageProcessingOptions, type ImageProcessingMode } from '../src/components/ImageProcessingOptions'
 import type { BackgroundPresetKey } from '../src/utils/professionalImageBackground'
 import ImageCropModal from '../src/components/ImageCropModal'
+import { LicenseeAdminQrPanel } from '../src/components/LicenseeAdminQrPanel'
 import AdminBildZuschneidenButton from '../src/components/AdminBildZuschneidenButton'
 import {
   getWerbeliniePrDocCss,
@@ -19039,6 +19040,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       <p style={{ margin: '0 0 1rem', fontSize: '0.78rem', color: s.muted, lineHeight: 1.45 }}>
                         Musterfelder leeren: oben unter <strong>Einstellungen</strong> auf <strong>„Demo &amp; Muster zurücksetzen“</strong> tippen → <strong>🗑️ Musterfelder leeren</strong>.
                       </p>
+                    )}
+                    {!isPlatformInstance() && !tenant.isOeffentlich && (
+                      <LicenseeAdminQrPanel
+                        registrationComplete={!!(registrierungConfig.lizenznummer || '').trim()}
+                        adminBaseUrl={typeof window !== 'undefined' ? `${window.location.origin}/admin` : ''}
+                        accent={s.accent}
+                        bgCard={s.bgCard}
+                        text={s.text}
+                        muted={s.muted}
+                        radius={s.radius}
+                      />
                     )}
                 <div style={{
                   display: 'grid',

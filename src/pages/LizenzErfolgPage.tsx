@@ -8,6 +8,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, ENTDECKEN_ROUTE, K2_GALERIE_APF_EINSTIEG } from '../config/navigation'
 import { PRODUCT_BRAND_NAME } from '../config/tenantConfig'
+import { LicenseeAdminQrPanel } from '../components/LicenseeAdminQrPanel'
 
 type LicenceLinks = { galerie_url: string | null; admin_url: string; name: string; email: string }
 
@@ -89,6 +90,22 @@ export default function LizenzErfolgPage() {
               {links.admin_url}
             </a>
           </p>
+          {/\/admin/i.test(links.admin_url) && (
+            <div style={{ marginTop: '1.25rem' }}>
+              <LicenseeAdminQrPanel
+                registrationComplete
+                adminBaseUrl={links.admin_url}
+                accent="#0d9488"
+                bgCard="#f8fafc"
+                text="#1c1a18"
+                muted="#5c5650"
+                radius="12px"
+                primaryButtonBg="#b54a1e"
+                primaryButtonColor="#fff"
+                heading="Admin-QR fürs Handy"
+              />
+            </div>
+          )}
         </div>
       )}
       {sessionId && !links && !linksError && (

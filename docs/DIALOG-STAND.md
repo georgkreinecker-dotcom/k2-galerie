@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Lizenznehmer: Admin-QR für Mobil:** Neue Komponente **`LicenseeAdminQrPanel`** – in **Einstellungen → Stammdaten** nur auf **Lizenznehmer-Instanz** (`!isPlatformInstance`), QR sichtbar **nach gespeicherter Lizenznummer** unter Registrierung; Link kopieren, QR-PNG speichern, Stand neu laden. Gleiches auf **`LizenzErfolgPage`**, wenn die API eine **`/admin`**-URL liefert. Hilfen **`normalizeLicenseeAdminUrl`** / **`getLicenseeAdminQrTargetUrl`** in **`publicLinks.ts`**. **Handbuch:** **`27-LIZENZNEHMER-ADMIN-QR-MOBIL.md`** + Index + public-Spiegel + QR-Register + Eintrag **K2TeamHandbuchPage**. **Tests + Build grün.** **Commit:** _(nach Push eintragen)_ ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg kann auf **eigener Galerie-URL** Stammdaten öffnen: nach Registrierung QR testen; nach Lizenzkauf Erfolgsseite prüfen.
+
+---
+
 **Letzter Stand:** 31.03.26 – **Einladung / Masterflyer fixiert (genau wie Georg angeordnet):** Der **grüne Masterflyer** ist jetzt **1:1** die Datei `public/img/k2/masterflyer-k2-a5-seite1.png` (ersetzt, keine Ableitung). Zusätzlich: Notiz-Ansicht rendert Flyer **randlos (full‑bleed)**, damit er groß wirkt. **Tests + Build grün.** **Commits:** **c487fb0**, **3e4dd29** ✅ auf GitHub
 
 **Was wir JETZT tun:** Schluss für heute (Session Ende). Nächstes Mal nur kurz visuell prüfen: Einladung zeigt **grünen** Masterflyer (ohne falsche Öffnungszeiten) und wirkt groß genug.

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getPublicGaleriePath, getPublicGalerieUrl } from '../utils/publicLinks'
+import { getPublicGaleriePath, getPublicGalerieUrl, normalizeLicenseeAdminUrl, getLicenseeAdminQrTargetUrl } from '../utils/publicLinks'
 
 describe('publicLinks', () => {
   it('getPublicGaleriePath liefert Besucher-Routen für K2/ök2 und VK2-Routen', () => {
@@ -15,6 +15,24 @@ describe('publicLinks', () => {
     const u = getPublicGalerieUrl('k2', 'galerie')
     expect(u.includes('/galerie')).toBe(true)
     expect(u.startsWith('http')).toBe(true)
+  })
+
+  const origin = 'https://beispiel-galerie.at'
+
+  it('normalizeLicenseeAdminUrl lässt /admin und Query unverändert', () => {
+    expect(normalizeLicenseeAdminUrl(`${origin}/admin?tenantId=xyz`, origin)).toBe(`${origin}/admin?tenantId=xyz`)
+    expect(normalizeLicenseeAdminUrl(`${origin}/admin/`, origin)).toBe(`${origin}/admin`)
+  })
+
+  it('normalizeLicenseeAdminUrl ergänzt /admin ohne doppelten Pfad', () => {
+    expect(normalizeLicenseeAdminUrl(origin, origin)).toBe(`${origin}/admin`)
+  })
+
+  it('getLicenseeAdminQrTargetUrl hängt v und Cache-Bust an', () => {
+    const u = getLicenseeAdminQrTargetUrl(`${origin}/admin`, 12345, origin)
+    expect(u.startsWith(`${origin}/admin?`)).toBe(true)
+    expect(u).toContain('v=12345')
+    expect(u).toContain('_=')
   })
 })
 

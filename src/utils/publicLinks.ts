@@ -28,3 +28,29 @@ export function getPublicGalerieUrlWithBust(tenant: PublicTenant, mode: PublicVi
   return buildQrUrlWithBust(getPublicGalerieUrl(tenant, mode), versionTimestamp)
 }
 
+/**
+ * Admin-Einstieg für Lizenz-QR: kanonische URL, Query z. B. tenantId bleibt erhalten.
+ * Relatives `input` wird gegen `baseOrigin` aufgelöst (Browser oder Fallback-Host).
+ */
+export function normalizeLicenseeAdminUrl(input: string, baseOrigin?: string): string {
+  const raw = (input || '').trim()
+  if (!raw) return ''
+  const fallbackOrigin =
+    baseOrigin ||
+    (typeof window !== 'undefined' ? window.location.origin : 'https://k2-galerie.vercel.app')
+  try {
+    const u = new URL(raw, fallbackOrigin)
+    const path = (u.pathname || '/').replace(/\/+$/, '') || '/'
+    if (path.toLowerCase().endsWith('/admin')) {
+      return `${u.origin}${path}${u.search}`
+    }
+    return `${u.origin}/admin${u.search}`
+  } catch {
+    return raw
+  }
+}
+
+export function getLicenseeAdminQrTargetUrl(adminUrl: string, versionTimestamp: number, baseOrigin?: string): string {
+  return buildQrUrlWithBust(normalizeLicenseeAdminUrl(adminUrl, baseOrigin), versionTimestamp)
+}
+

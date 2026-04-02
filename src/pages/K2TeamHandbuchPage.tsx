@@ -31,6 +31,7 @@ export default function K2TeamHandbuchPage() {
     { id: '23-notfall', name: 'Notfall-Checkliste (Cursor, Dialog, Parallelstrukturen)', file: '23-NOTFALL-CHECKLISTE.md' },
     { id: '24-texte-briefe-kompass', name: 'Texte & Briefe Kompass', file: '24-TEXTE-BRIEFE-KOMPASS.md' },
     { id: '26-testpilot-einladung', name: 'Testpilot-Einladung einrichten', file: '26-TESTPILOT-EINLADUNG-EINRICHTUNG.md' },
+    { id: '27-lizenz-admin-qr', name: 'Lizenznehmer: Admin-QR fürs Handy', file: '27-LIZENZNEHMER-ADMIN-QR-MOBIL.md' },
   ]
 
   useEffect(() => {
