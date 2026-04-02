@@ -1045,7 +1045,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   }, [mobileUrl, mobileUrlMemo])
 
   // QR immer anzeigen: useQrVersionTimestamp liefert Server-Stand oder Fallback (BUILD_TIMESTAMP), nie null
-  const { versionTimestamp: qrVersionTs, serverLabel, refetch: refetchQrStand } = useQrVersionTimestamp()
+  const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   // ök2: QR MUSS auf Muster-Galerie zeigen (galerie-oeffentlich), nie auf K2 – sonst zeigt Scan die echte K2-Seite
   // VK2: QR muss auf VK2-Route zeigen, nicht auf K2-Galerie
   const vercelGalerieUrl = useMemo(() => {
@@ -1055,17 +1055,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   }, [vk2, musterOnly])
   // QR alle 15 s neu bauen mit frischem Date.now() (Cache-Bust)
   const [qrBustTick, setQrBustTick] = useState(0)
-  // Eindeutiger Schlüssel für QR-URL: nach „QR neu erzeugen“ oder Veröffentlichen neu setzen → gescannte URL ist einmalig, kein Browser-/CDN-Cache
-  const [qrRegenerateKey, setQrRegenerateKey] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
+  // Eindeutiger r= pro Seitenaufruf (zusätzlich zu buildQrUrlWithBust + 15s-Tick) – weniger CDN-/Browser-Cache beim ersten Scan
+  const [qrRegenerateKey] = useState(() => `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
   useEffect(() => {
     if (typeof window !== 'undefined' && window.self !== window.top) return
     const t = setInterval(() => setQrBustTick((k) => k + 1), 15000)
     return () => clearInterval(t)
   }, [])
-  const handleQrNeuErzeugen = () => {
-    refetchQrStand()
-    setQrRegenerateKey(`${Date.now()}-${Math.random().toString(36).slice(2, 10)}`)
-  }
   // QR mit Server-Stand + eindeutigem r= (qrRegenerateKey): Scan trifft nie gecachte Seite, lädt aktuelle App + API-Daten
   useEffect(() => {
     let cancelled = false
@@ -4169,24 +4165,10 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 
                 {/* Rechte Seite: QR mit Bezeichnung der Seite (Kunde sieht Galeriename, kein Vercel) */}
                 {vercelQrDataUrl && (
-                    <div style={{
-                      textAlign: 'center',
-                      flexShrink: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.5rem',
-                      alignItems: 'center'
-                    }}>
+                    <div style={{ textAlign: 'center', flexShrink: 0 }}>
                       <div style={{ background: '#fff', padding: '0.4rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-                        <div style={{ display: 'flex', gap: 4, marginBottom: 4, flexWrap: 'wrap', justifyContent: 'center' }}>
-                          <button type="button" onClick={() => { refetchQrStand(); handleRefresh(); }} title="Stand und Daten von Vercel abrufen" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.06)', border: '1px solid rgba(0,0,0,0.12)', borderRadius: 6, cursor: 'pointer' }}>Stand & Daten</button>
-                          {!musterOnly && <button type="button" onClick={handleQrNeuErzeugen} title="QR mit neuer URL erzeugen – danach scannen liefert garantiert aktuellen Stand (kein Cache)" style={{ padding: '2px 8px', fontSize: 11, background: 'rgba(0,0,0,0.08)', border: '1px solid rgba(0,0,0,0.2)', borderRadius: 6, cursor: 'pointer', fontWeight: 600 }}>QR neu erzeugen</button>}
-                        </div>
                         <img src={vercelQrDataUrl} alt={`QR-Code: ${tenantConfig.galleryName}`} style={{ width: 100, height: 100, display: 'block' }} />
                       </div>
-                      <p style={{ margin: 0, fontSize: 'clamp(0.55rem, 1.2vw, 0.65rem)', color: theme.muted, fontWeight: 500, maxWidth: 140 }}>
-                        {tenantConfig.galleryName}
-                      </p>
                     </div>
                 )}
               </div>
