@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Lizenz: Erklärung Kette + Druck-Fix:** Lizenzen-Seite **0** und **keine Galerie-Links** auf `/lizenz-erfolg` = dieselbe Ursache: Eintrag kommt nur nach **Stripe-Webhook** → Supabase `licences` (siehe `api/webhook-stripe.js`, `api/get-licence-by-session.js`, `api/licence-data.js`). Ohne Webhook/Secret/DB bleibt alles leer. **LizenzErfolgPage:** Beim **Drucken** war der QR-Hinweis nutzlos (verwies auf Bereiche, die im Druck ausgeblendet sind) – jetzt **nur-im-Druck** sinnvoller Text (Admin-URL im Kasten / Hinweis wenn Links fehlen). **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 02.04.26 – **Lizenz: Erklärung Kette + Druck-Fix:** Lizenzen-Seite **0** und **keine Galerie-Links** auf `/lizenz-erfolg` = dieselbe Ursache: Eintrag kommt nur nach **Stripe-Webhook** → Supabase `licences` (siehe `api/webhook-stripe.js`, `api/get-licence-by-session.js`, `api/licence-data.js`). Ohne Webhook/Secret/DB bleibt alles leer. **LizenzErfolgPage:** Beim **Drucken** war der QR-Hinweis nutzlos (verwies auf Bereiche, die im Druck ausgeblendet sind) – jetzt **nur-im-Druck** sinnvoller Text (Admin-URL im Kasten / Hinweis wenn Links fehlen). **Commit:** **cd6b360** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
