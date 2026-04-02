@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Admin-QR-Prozess abgesichert (Repo + Doku):** `LicenseeAdminQrPanel` inkl. **`adminIntro`** vollständig committed (vorher lokal offen → TS-Build auf Vercel gefährdet). **docs/ADMIN-QR-LIZENZ-OEK2-ABLAUF.md** – Ablauf K2 / ök2-Demo / Lizenznehmer, technische Quelle `publicLinks` + Server-Stand + Bust, **Checkliste vor Commit**. **docs/00-INDEX.md** Eintrag. **publicLinks.test.ts** Assertion `/admin?context=oeffentlich`. **Tests + Build grün.** **Commit:** **97d7368** ✅ auf GitHub
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 02.04.26 – **Admin-QR: Demo vs. Lizenz, Sicherheit, Druckbestätigung:** ök2 **Stammdaten** (unter Vita): Text = **nur Muster-Demo-QR**; nach Lizenz **eigener** Admin-QR. **Vor „Stammdaten speichern“:** gelber Kasten **Absolute Sicherheit** (ök2 Plattform + **Lizenznehmer-Instanz**): Daten/QR/Bestätigung ausdrucken oder speichern. **`LizenzErfolgPage`:** druckbare **Lizenzbestätigung** mit **Galerie- + Admin-URL** und Hinweis **QR am Bildschirm** speichern; Panel **`adminIntro`** (eigen vs. ök2-Demo). **Handbuch** `public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md` (Tabelle + Merksatz). **Tests + Build grün.** **Commit:** **ce3d758** ✅ auf GitHub
 
 **Was wir JETZT tun:** Georg: ök2 Stammdaten + Lizenz-Erfolg-Druck kurz ansehen.

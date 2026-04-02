@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import QRCode from 'qrcode'
 import { useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getLicenseeAdminQrTargetUrl, normalizeLicenseeAdminUrl } from '../utils/publicLinks'
@@ -17,6 +17,8 @@ export type LicenseeAdminQrPanelProps = {
   primaryButtonBg?: string
   primaryButtonColor?: string
   heading?: string
+  /** Ersetzt den Standard-Erklärungstext unter der Überschrift (z. B. ök2-Demo) */
+  adminIntro?: ReactNode
 }
 
 export function LicenseeAdminQrPanel({
@@ -30,6 +32,7 @@ export function LicenseeAdminQrPanel({
   primaryButtonBg = '#b54a1e',
   primaryButtonColor = '#fff',
   heading = 'Admin auf dem Handy',
+  adminIntro,
 }: LicenseeAdminQrPanelProps) {
   const { versionTimestamp, refetch } = useQrVersionTimestamp()
   const [dataUrl, setDataUrl] = useState<string | null>(null)
@@ -131,11 +134,15 @@ export function LicenseeAdminQrPanel({
       }}
     >
       <strong style={{ display: 'block', marginBottom: '0.35rem', fontSize: '1rem' }}>{heading}</strong>
-      <p style={{ margin: '0 0 0.75rem', color: muted, fontSize: '0.88rem' }}>
-        Dieser Code öffnet den <strong>Admin</strong> deiner Galerie im Browser auf dem Mobilgerät. Galerie-Passwort wie
-        am Computer eingeben oder Lesezeichen setzen. Öffentliche Besucher nutzen den Galerie-QR auf der Galerie-Seite –
-        der führt nicht in den Admin.
-      </p>
+      {adminIntro != null ? (
+        <div style={{ margin: '0 0 0.75rem', color: muted, fontSize: '0.88rem', lineHeight: 1.45 }}>{adminIntro}</div>
+      ) : (
+        <p style={{ margin: '0 0 0.75rem', color: muted, fontSize: '0.88rem' }}>
+          Dieser Code öffnet den <strong>Admin</strong> deiner Galerie im Browser auf dem Mobilgerät. Galerie-Passwort wie
+          am Computer eingeben oder Lesezeichen setzen. Öffentliche Besucher nutzen den Galerie-QR auf der Galerie-Seite –
+          der führt nicht in den Admin.
+        </p>
+      )}
       <p
         style={{
           margin: '0 0 0.75rem',

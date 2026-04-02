@@ -22,6 +22,9 @@ describe('publicLinks', () => {
   it('normalizeLicenseeAdminUrl lässt /admin und Query unverändert', () => {
     expect(normalizeLicenseeAdminUrl(`${origin}/admin?tenantId=xyz`, origin)).toBe(`${origin}/admin?tenantId=xyz`)
     expect(normalizeLicenseeAdminUrl(`${origin}/admin/`, origin)).toBe(`${origin}/admin`)
+    expect(normalizeLicenseeAdminUrl(`${origin}/admin?context=oeffentlich`, origin)).toBe(
+      `${origin}/admin?context=oeffentlich`
+    )
   })
 
   it('normalizeLicenseeAdminUrl ergänzt /admin ohne doppelten Pfad', () => {
