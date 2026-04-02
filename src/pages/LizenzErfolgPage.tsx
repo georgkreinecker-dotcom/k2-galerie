@@ -103,6 +103,13 @@ export default function LizenzErfolgPage() {
                 primaryButtonBg="#b54a1e"
                 primaryButtonColor="#fff"
                 heading="Admin-QR fürs Handy"
+                adminIntro={
+                  <p style={{ margin: 0 }}>
+                    Das ist <strong>dein eigener</strong> Admin-Zugang nach dem Lizenzkauf – nicht der QR der ök2-Muster-Demo.
+                    Unten in der <strong>Lizenzbestätigung zum Drucken</strong> stehen Galerie- und Admin-Adresse mit; den QR
+                    kannst du hier als Bild sichern oder den Link kopieren.
+                  </p>
+                }
               />
             </div>
           )}
@@ -137,6 +144,21 @@ export default function LizenzErfolgPage() {
         {sessionId && (
           <p style={{ margin: 0, fontSize: '0.85rem', color: '#666', wordBreak: 'break-all' }}>Referenz: {sessionId}</p>
         )}
+        {links?.galerie_url && (
+          <p style={{ margin: '0.75rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
+            <strong>Galerie (Besucher):</strong> {links.galerie_url}
+          </p>
+        )}
+        {links?.admin_url && (
+          <p style={{ margin: '0.35rem 0 0.35rem', fontSize: '0.9rem', color: '#333', lineHeight: 1.45, wordBreak: 'break-all' }}>
+            <strong>Admin (Bearbeiten):</strong> {links.admin_url}
+          </p>
+        )}
+        <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
+          <strong>QR-Code für den Admin:</strong> Auf dem Bildschirm oberhalb dieses Kastens unter „Admin-QR fürs Handy“ –
+          dort <strong>Link kopieren</strong> oder <strong>QR-Bild speichern</strong> und mit zu deinen Unterlagen legen.
+          Das ist dein persönlicher Zugang nach dem Lizenzkauf (nicht der ök2-Demo-QR).
+        </p>
       </div>
       <p className="lizenz-erfolg-no-print" style={{ marginBottom: '1rem' }}>
         <button

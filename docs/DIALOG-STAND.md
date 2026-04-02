@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Admin-QR: Demo vs. Lizenz, Sicherheit, Druckbestätigung:** ök2 **Stammdaten** (unter Vita): Text = **nur Muster-Demo-QR**; nach Lizenz **eigener** Admin-QR. **Vor „Stammdaten speichern“:** gelber Kasten **Absolute Sicherheit** (ök2 Plattform + **Lizenznehmer-Instanz**): Daten/QR/Bestätigung ausdrucken oder speichern. **`LizenzErfolgPage`:** druckbare **Lizenzbestätigung** mit **Galerie- + Admin-URL** und Hinweis **QR am Bildschirm** speichern; Panel **`adminIntro`** (eigen vs. ök2-Demo). **Handbuch** `public/benutzer-handbuch/06-OEK2-DEMO-LIZENZ.md` (Tabelle + Merksatz). **Tests + Build grün.** **Commit:** **ce3d758** ✅ auf GitHub
+
+**Was wir JETZT tun:** Georg: ök2 Stammdaten + Lizenz-Erfolg-Druck kurz ansehen.
+
+---
+
 **Letzter Stand:** 02.04.26 – **Lizenznehmer: Admin-QR für Mobil:** Neue Komponente **`LicenseeAdminQrPanel`** – in **Einstellungen → Stammdaten** nur auf **Lizenznehmer-Instanz** (`!isPlatformInstance`), QR sichtbar **nach gespeicherter Lizenznummer** unter Registrierung; Link kopieren, QR-PNG speichern, Stand neu laden. Gleiches auf **`LizenzErfolgPage`**, wenn die API eine **`/admin`**-URL liefert. Hilfen **`normalizeLicenseeAdminUrl`** / **`getLicenseeAdminQrTargetUrl`** in **`publicLinks.ts`**. **Handbuch:** **`27-LIZENZNEHMER-ADMIN-QR-MOBIL.md`** + Index + public-Spiegel + QR-Register + Eintrag **K2TeamHandbuchPage**. **Tests + Build grün.** **Commit:** **6dca011** ✅ auf GitHub
 
-**Was wir JETZT tun:** Georg kann auf **eigener Galerie-URL** Stammdaten öffnen: nach Registrierung QR testen; nach Lizenzkauf Erfolgsseite prüfen.
+**Was wir JETZT tun:** –
 
 ---
 

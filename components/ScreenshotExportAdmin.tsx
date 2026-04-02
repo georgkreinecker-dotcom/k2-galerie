@@ -19172,6 +19172,31 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           </>
                         )}
                       </div>
+                      {tenant.isOeffentlich && isPlatformInstance() && (
+                        <LicenseeAdminQrPanel
+                          registrationComplete
+                          adminBaseUrl={
+                            typeof window !== 'undefined'
+                              ? `${window.location.origin}/admin?context=oeffentlich`
+                              : ''
+                          }
+                          accent={s.accent}
+                          bgCard={s.bgCard}
+                          text={s.text}
+                          muted={s.muted}
+                          radius="12px"
+                          heading="Admin-Zugang Muster-Demo (ök2)"
+                          adminIntro={
+                            <p style={{ margin: 0 }}>
+                              Das ist der <strong>Admin-Link und QR nur für die ök2-Muster-Demo</strong> auf dieser
+                              Plattform. Sobald du deine <strong>eigene Lizenz</strong> erworben hast, bekommst du{' '}
+                              <strong>deine eigene</strong> Galerie-Adresse und <strong>einen eigenen</strong> Admin-QR –
+                              nicht diesen hier. Öffentliche Besucher nutzen den Galerie-QR auf der Galerie-Seite, nicht
+                              diesen Admin-Code.
+                            </p>
+                          }
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -19527,6 +19552,43 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+                  {tenant.isOeffentlich && isPlatformInstance() && (
+                    <div
+                      style={{
+                        padding: '0.85rem 1rem',
+                        background: '#fffbeb',
+                        border: '1px solid #f59e0b',
+                        borderRadius: 10,
+                        color: '#1c1a18',
+                        fontSize: '0.88rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '0.35rem' }}>Absolute Sicherheit für deinen Zugang</strong>
+                      Drucke oder speichere <strong>Admin-Link und QR</strong> (siehe oben bei den Stammdaten) und die{' '}
+                      <strong>Lizenzbestätigung</strong> nach dem Kauf (Seite nach erfolgreicher Zahlung – dort ebenfalls
+                      ausdrucken). Wenn du diese Angaben festhältst, kommst du <strong>immer wieder in deine Galerie</strong> –
+                      auch ohne Lesezeichen oder neues Gerät.
+                    </div>
+                  )}
+                  {!isPlatformInstance() && !tenant.isOeffentlich && !tenant.isVk2 && (
+                    <div
+                      style={{
+                        padding: '0.85rem 1rem',
+                        background: '#fffbeb',
+                        border: '1px solid #f59e0b',
+                        borderRadius: 10,
+                        color: '#1c1a18',
+                        fontSize: '0.88rem',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ display: 'block', marginBottom: '0.35rem' }}>Zugang dauerhaft sichern</strong>
+                      Halte <strong>Admin-Link und QR</strong> (oben, nach gespeicherter Lizenznummer) sowie die{' '}
+                      <strong>Lizenzbestätigung</strong> vom Kauf ausgedruckt oder als Datei bereit – das ist deine{' '}
+                      <strong>absolute Sicherheit</strong>, jederzeit wieder in deine Galerie zu kommen.
+                    </div>
+                  )}
                   <button 
                     className="btn-primary" 
                     onClick={saveStammdaten}

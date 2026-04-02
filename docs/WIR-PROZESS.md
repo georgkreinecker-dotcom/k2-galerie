@@ -126,6 +126,8 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 02.04.26 | **Klartext statt Platz-Hinweis:** Der ök2-QR-Text erklärt **Demo vs. eigener Code nach Lizenz**; **Sicherheit** = ausdrucken/speichern vor dem Speichern der Stammdaten; **LizenzErfolg**-Druck trägt URLs + QR-Hinweis – eine durchgängige Geschichte für Georg. |
+| 02.04.26 | **Admin-QR am richtigen Ort:** Testpilot:innen in **ök2** sollen den Admin-Link/QR **beim Ausfüllen der Stammdaten** sehen – unter Vita, gleiche Komponente wie Lizenznehmer, mit **`adminIntro`** und **`/admin?context=oeffentlich`**. |
 | 31.03.26 (Abend) | **Schluss für heute:** Wenn Georg „Masterflyer“ anordnet, ist die Quelle **genau diese Datei** (kein Ableiten, kein „ähnlich“). Umsetzung muss 1:1 sein, sonst zerstört es Vertrauen und kostet Stunden. |
 | 30.03.26 (Abend) | **Schluss für heute:** Testpilot = **Resend-Regel** (API-Key allein reicht nicht): ohne **verifizierte Domain** nur Mail an Kontoadresse; **kgm.at DNS** bei Resend + **`RESEND_FROM`** @kgm.at auf Vercel schließt den Kreis. **mailto** ≠ Zustell-Mail (kein HTML-Button) – das gehört in die Erklärung, nicht Georgs „es geht nicht“. |
 | 29.03.26 (Abend) | **Schluss für heute:** Georg meldet alles außer Martinas Telefon im Lot – **Ursache** war nur **`gallery-data.json`** (0676 vs. Defaults 0664); eine Zeile angleichen + Push genügt, kein App-Kern. Session-Ende = DIALOG-STAND, WIR-PROZESS, Commit (ohne absichtlich unversionierte Dateien), Push. |

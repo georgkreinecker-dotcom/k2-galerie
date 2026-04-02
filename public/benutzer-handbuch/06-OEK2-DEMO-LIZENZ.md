@@ -82,13 +82,14 @@ Damit Sie Angaben, die Sie **immer wieder brauchen**, nicht jedes Mal suchen mü
 
 | Was | Wie Sie es sicher haben |
 |-----|-------------------------|
-| **Lizenzbestätigung** | Nach dem Kauf **ausdrucken** oder als PDF speichern (über den Druckdialog des Browsers: **Drucken** → **Als PDF speichern**, je nach Gerät). |
+| **Lizenzbestätigung** | Nach dem Kauf **ausdrucken** oder als PDF speichern (über den Druckdialog des Browsers: **Drucken** → **Als PDF speichern**, je nach Gerät). Enthält **Galerie- und Admin-Adresse** sowie einen Hinweis auf den **Admin-QR** (den Sie am Bildschirm als Bild speichern können). |
+| **Admin-QR (Demo vs. eigene Lizenz)** | In der **ök2-Demo** zeigt der Admin unter **Stammdaten** einen QR nur für die **Muster-App**; nach dem **Lizenzkauf** erhalten Sie **einen eigenen** Admin-Link und QR für Ihre Galerie – nicht den Demo-Code. |
 | **Ihre Galerie-URL** | **Lesezeichen** im Browser oder **Notiz** auf dem Handy; die **genaue Adresse** (z. B. nach der Wunsch-URL) einmal festhalten. |
-| **Stammdaten** (Kontakt, Adresse, Galerie) | Im **Admin** unter **[Einstellungen](10-EINSTELLUNGEN.md)** → **Stammdaten** pflegen; bei Bedarf Seiten aus der App **drucken** oder Angaben in Ihre **eigene** Dokumentation übernehmen. |
+| **Stammdaten** (Kontakt, Adresse, Galerie) | Im **Admin** unter **[Einstellungen](10-EINSTELLUNGEN.md)** → **Stammdaten** pflegen; **vor dem Speichern** den Hinweis beachten: **wichtige Daten ausdrucken oder abspeichern** (Admin-Link, QR, später Lizenzbestätigung), damit Sie **jederzeit** wieder in Ihre Galerie gelangen – Ihre **absolute Sicherheit**. |
 | **Empfehlungslink** (falls vorhanden) | Im Admin unter dem Bereich **Empfehlung** / **Lizenz** anzeigen, **Link kopieren** und z. B. in einer Notiz oder Textdatei speichern. |
 | **Vollständige Datensicherung** | **Admin** → **[Einstellungen](10-EINSTELLUNGEN.md)** → **Backup & Wiederherstellung** → **Vollbackup herunterladen**. Die Datei **auf einem zweiten Gerät oder externen Speicher** ablegen (z. B. USB-Stick, Cloud-Ordner). |
 
-**Merksatz:** Was Sie **auf Papier oder als Datei** haben, können Sie auch ohne die App sofort wiederfinden – sinnvoll für Steuerberaterin, Bank oder einfach für Ihre Unterlagen.
+**Merksatz:** Was Sie **auf Papier oder als Datei** haben (Adressen, Admin-Link, QR-Bild, Lizenzbestätigung), können Sie auch ohne Lesezeichen oder nach Gerätewechsel wiederfinden – das ist Ihre **absolute Sicherheit** für den Galerie-Zugang; sinnvoll auch für Steuerberaterin, Bank oder Unterlagen.
 
 ---
 
