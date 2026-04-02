@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 02.04.26 – **Lizenz: Erklärung Kette + Druck-Fix:** Lizenzen-Seite **0** und **keine Galerie-Links** auf `/lizenz-erfolg` = dieselbe Ursache: Eintrag kommt nur nach **Stripe-Webhook** → Supabase `licences` (siehe `api/webhook-stripe.js`, `api/get-licence-by-session.js`, `api/licence-data.js`). Ohne Webhook/Secret/DB bleibt alles leer. **LizenzErfolgPage:** Beim **Drucken** war der QR-Hinweis nutzlos (verwies auf Bereiche, die im Druck ausgeblendet sind) – jetzt **nur-im-Druck** sinnvoller Text (Admin-URL im Kasten / Hinweis wenn Links fehlen). **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: von Lizenzen erwartet „ök2 neuer User“ + Druck – technisch hängt das an Webhook + Supabase; Druck war UX-Bug im Bestätigungskasten.
+
+---
+
 **Letzter Stand:** 02.04.26 – **APf: Funktionstest Stripe = ein Klick (Sportwagen):** `LizenzKaufenPage` im Dev: großer Button zuerst → Vercel; `.env` nur in `<details>`. `K2SoftwareentwicklungPage` (#k2-ready-stripe): derselbe Ein-Klick-Link. `LizenzZeitplanPilotStripeInfo` verweist auf gelben Kasten. **Commit:** **b065da1** ✅ GitHub
 
 **Letzter Stand:** 02.04.26 – **Begriff vereinheitlicht: „Funktionstest Stripe“** – überall derselbe Name (Lizenz kaufen, gelber Kasten, Infobox, Erfolg Muster-Hinweis, Dev-503-`hint`, Vercel `create-checkout` `hint`). **Commits:** siehe Zeile darüber / 7e2686e, a714cb7 ✅ auf GitHub

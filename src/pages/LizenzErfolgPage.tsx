@@ -74,8 +74,10 @@ export default function LizenzErfolgPage() {
       <style>{`
         @media print {
           .lizenz-erfolg-no-print { display: none !important; }
+          .lizenz-erfolg-print-only { display: block !important; }
           .lizenz-bestaetigung-print { max-width: 100% !important; margin: 0 !important; box-shadow: none !important; border: 1px solid #ccc !important; }
         }
+        .lizenz-erfolg-print-only { display: none; }
       `}</style>
       <div className="lizenz-erfolg-no-print" style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
       <h1 className="lizenz-erfolg-no-print" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
@@ -98,7 +100,7 @@ export default function LizenzErfolgPage() {
             marginRight: 'auto',
           }}
         >
-          <strong>Muster:</strong> Keine echte Zahlung, keine Datenbank-Lizenz. So sieht die Seite nach einem Kauf aus – inkl. Druckvorschau unten. Diese Ansicht ist <strong>kein</strong> Nachweis, dass Stripe, Webhook oder Speicher funktionieren; dafür brauchst du den kompletten Weg über die Stripe-Zahlungsseite (Lizenz kaufen mit Key lokal oder auf k2-galerie.vercel.app).
+          <strong>Muster:</strong> Keine echte Zahlung, keine Datenbank-Lizenz. So sieht die Seite nach einem Kauf aus – inkl. Druckvorschau unten. Diese Ansicht ist <strong>kein</strong> Nachweis, dass Stripe, Webhook oder Speicher funktionieren; dafür brauchst du einen <strong>Funktionstest Stripe</strong> (Lizenz kaufen → Stripe-Zahlungsseite → Testkarte → Erfolgsseite mit Session – lokal mit Key oder auf k2-galerie.vercel.app).
         </p>
       )}
       <p className="lizenz-erfolg-no-print" style={{ color: 'var(--k2-muted)', marginBottom: '1rem' }}>
@@ -208,10 +210,25 @@ export default function LizenzErfolgPage() {
             <strong>Admin (Bearbeiten):</strong> {links.admin_url}
           </p>
         )}
-        <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
+        <p className="lizenz-erfolg-no-print" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
           <strong>QR-Code für den Admin:</strong> Auf dem Bildschirm oberhalb dieses Kastens unter „Admin-QR fürs Handy“ –
           dort <strong>Link kopieren</strong> oder <strong>QR-Bild speichern</strong> und mit zu deinen Unterlagen legen.
           Das ist dein persönlicher Zugang nach dem Lizenzkauf (nicht der ök2-Demo-QR).
+        </p>
+        <p className="lizenz-erfolg-print-only" style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: '#444', lineHeight: 1.5 }}>
+          {links?.admin_url ? (
+            <>
+              <strong>Admin-Zugang:</strong> Die Adresse „Admin (Bearbeiten)“ steht oben in diesem Kasten. Vor dem Drucken
+              kannst du unter „Admin-QR fürs Handy“ noch einen QR speichern oder den Link kopieren – der QR erscheint nicht
+              auf dem Ausdruck.
+            </>
+          ) : (
+            <>
+              <strong>Hinweis:</strong> Sobald Galerie- und Admin-Adresse oben geladen sind, erscheinen sie in diesem Kasten.
+              Fehlen sie nach der Zahlung dauerhaft, ist die serverseitige Verarbeitung (Webhook) noch nicht eingerichtet –
+              siehe Dokumentation STRIPE-TEST / Webhook in Vercel.
+            </>
+          )}
         </p>
       </div>
       <p className="lizenz-erfolg-no-print" style={{ marginBottom: '1rem' }}>
