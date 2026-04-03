@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel rot nach `build:vercel`:** Wahrscheinliche **zweite** Ursache: Auf Vercel ist oft **`NODE_ENV=production`** – dann installiert **`npm ci` ohne Flag keine devDependencies** → **`tsc` / `vite` fehlen** → Build bricht nach ~40–50s ab. **Fix (verbindlich):** **`vercel.json`** → `installCommand` = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --include=dev` (war lange nur lokal geändert, **nicht** mit 922e677 gepusht). **Test:** `vercel-config-guard.test.ts` prüft `--include=dev`. **Commit:** **1e0fe72** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel: sicher notwendig (ohne „wenn du willst“):** Build-Werkzeuge müssen bei **`NODE_ENV=production`** trotzdem installiert sein. **Doppelte Absicherung:** (1) **`typescript`**, **`vite`**, **`@vitejs/plugin-react`** und nötige **`@types/*`** von **devDependencies → `dependencies`** (Vercel installiert `dependencies` immer). (2) **`vercel.json`** weiter **`npm ci --include=dev`**. Verifiziert: `NODE_ENV=production npm ci` → `tsc`/`vite` vorhanden; `build:vercel` grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **main** – `git log -1 --oneline` = Nachricht „Vercel: typescript/vite…“ ✅ GitHub
 
-**Was wir JETZT tun:** Vercel-Deployment „Ready“; bei Rot weiterhin Build-Log erste Fehlerzeile.
+**Was wir JETZT tun:** Vercel „Ready“ prüfen.
 
-**Einordnung:** `build:vercel` + explizit devDeps bei Install = Pipeline komplett.
+**Einordnung:** Georg braucht keine Entscheidung – das ist der übliche Standard für Hosted Builds.
 
 ---
 
