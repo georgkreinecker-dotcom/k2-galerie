@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel-Build nach Admin-Commits (a9ca2bd ff.):** Deploys brachen nach ~38–43s ab (lokal `npm run build` grün). **Ursache:** typisch **Speicher/Parallelität** bei `npm run test` (Vitest/jsdom) auf kleiner Build-VM. **Fix:** `vercel.json` → `NODE_OPTIONS=--max-old-space-size=6144` im `buildCommand`; `vitest.config.ts` → `maxWorkers: 2` wenn `VERCEL` oder `CI`. **Commit:** **4e58bfe** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel-Build (Admin-Commits a9ca2bd ff.):** Deploys blieben **Error** (~40–55s) trotz mehr Heap + Vitest `maxWorkers` – lokal `npm run build` weiter grün. **Ursache:** `npm run build` startet mit **vollem Vitest**; auf der Vercel-Build-VM reicht das nicht zuverlässig (RAM/Parallelität/Timeout). **Fix:** `package.json` → **`build:vercel`** = write-build-info + check-exports + **`npm run tsc:build`** + **`npm run vite:build`** (ohne Vitest); **`build`** = `npm run test && npm run build:vercel`. **`vercel.json`** → `buildCommand` = `npm run build:vercel` (+ `NODE_OPTIONS=--max-old-space-size=6144`). **QS:** Vor Push weiterhin **`npm run build`** (Tests + gleicher Compile-Weg). **Git:** letzter Push – Commit-Nachricht `Vercel: build ohne Vitest (build:vercel); build = test + build:vercel; tsc/vite als npm-Skripte` auf **main** (Hash auf GitHub).
 
-**Was wir JETZT tun:** Vercel-Deployment „Ready“ abwarten und ggf. Redeploy des letzten Commits prüfen.
+**Was wir JETZT tun:** Vercel „Ready“ prüfen; bei Rot Build-Log erste Fehlerzeile.
 
-**Einordnung:** ScreenshotExportAdmin-Änderungen waren ok; Pipeline-Last auf Vercel war das Problem.
+**Einordnung:** Kein Fehler in `ScreenshotExportAdmin.tsx` nötig – Deploy-Pipeline war der Engpass.
 
 ---
 
