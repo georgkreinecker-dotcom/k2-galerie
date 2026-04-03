@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel rot nach `build:vercel`:** Wahrscheinliche **zweite** Ursache: Auf Vercel ist oft **`NODE_ENV=production`** – dann installiert **`npm ci` ohne Flag keine devDependencies** → **`tsc` / `vite` fehlen** → Build bricht nach ~40–50s ab. **Fix (verbindlich):** **`vercel.json`** → `installCommand` = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --include=dev` (war lange nur lokal geändert, **nicht** mit 922e677 gepusht). **Test:** `vercel-config-guard.test.ts` prüft `--include=dev`. **Commit:** Tip **main** – Nachricht `Vercel: npm ci --include=dev …` ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel rot nach `build:vercel`:** Wahrscheinliche **zweite** Ursache: Auf Vercel ist oft **`NODE_ENV=production`** – dann installiert **`npm ci` ohne Flag keine devDependencies** → **`tsc` / `vite` fehlen** → Build bricht nach ~40–50s ab. **Fix (verbindlich):** **`vercel.json`** → `installCommand` = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --include=dev` (war lange nur lokal geändert, **nicht** mit 922e677 gepusht). **Test:** `vercel-config-guard.test.ts` prüft `--include=dev`. **Commit:** **1e0fe72** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel-Deployment „Ready“; bei Rot weiterhin Build-Log erste Fehlerzeile.
 
