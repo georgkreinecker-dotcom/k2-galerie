@@ -29,6 +29,10 @@ describe('Vercel-Konfigurations-Schranken', () => {
     ).toBe(true)
     expect(cmd.includes('ELECTRON_SKIP_BINARY_DOWNLOAD=1'), 'ELECTRON_SKIP_BINARY_DOWNLOAD=1 muss gesetzt sein').toBe(true)
     expect(cmd.includes('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1'), 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 muss gesetzt sein').toBe(true)
+    expect(
+      cmd.includes('NPM_CONFIG_omit=dev'),
+      'NPM_CONFIG_omit=dev: selbst wenn Vercel npm ohne production-Modus startet, devDependencies weglassen'
+    ).toBe(true)
   })
 
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {
