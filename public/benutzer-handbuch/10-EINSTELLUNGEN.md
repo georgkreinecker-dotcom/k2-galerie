@@ -33,9 +33,7 @@ Hier im Handbuch als **eigener Abschnitt**, damit Sie den Eintrag sofort finden:
 
 - **Verein:** Vereinsname, Vereinsnummer (z. B. ZVR), Adresse, E-Mail, Website.
 - **Vorstand, Kasse, Schriftführung:** Namen der Ansprechpartner. Sie erscheinen auf der Vereinsgalerie und auf Drucken.
-- **Kategorien / Kunstrichtungen für Mitglieder:** Das sind die **Kategorien Ihres Kunstvereins**. **Ablauf: 1. Verein anlegen** (oben: Vereinsname, Adresse, Vorstand) → **2. Kategorien hier definieren**. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kunstrichtung“. **Standard:** Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Sie können bei der Standard-Liste bleiben oder eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance). Mit „Wieder Standard nutzen“ setzen Sie auf die vorgegebene Liste zurück.
-- **Kommunikation (WhatsApp):** Optional WhatsApp-Gruppen-Link und Vorstand-Telefonnummer für direkte Nachrichten. Diese Links werden auf der Vereinsgalerie angezeigt.
-
+- **Vereinstyp & Kategorien für Mitglieder:** Zuerst **Vereinstyp** wählen (Kunst, Sport, Musik, Freizeit, …) – das ist der **Schwerpunkt** für Vorschläge, nicht der Satzungszweck. **Ohne eigene Kategorienliste** schlägt die App passende **Vorschlags-Kategorien** vor (z. B. Malerei/Keramik für Kunst, Fußball/Tennis für Sport). Sie können den Vorschlag **nur nutzen** oder als **bearbeitbare Liste übernehmen** und anpassen. Die Kategorien erscheinen beim Bearbeiten von Mitgliedern unter „Kategorie“.
 **Wichtig:** Stammdaten einmal korrekt eintragen und bei Änderungen aktualisieren – dann stimmen Galerie, Einladungen und Belege überall.
 
 ---
@@ -137,7 +135,7 @@ Details zum **Belegdruck** (Kassabon, Rechnung) stehen im Kapitel [Kassa und Buc
 
 ## Kurz zusammengefasst
 
-- **Stammdaten** = Galerie/Verein, Kontakt, Adresse, Öffnungszeiten; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren, optional Kommunikation (WhatsApp).
+- **Stammdaten** = Galerie/Verein, Kontakt, Adresse, Öffnungszeiten; bei Vereinen: zuerst Verein anlegen, dann Kategorien definieren.
 - **Backup** = Vollbackup herunterladen (regelmäßig empfohlen), aus Datei oder letztem Backup wiederherstellen.
 - **Veröffentlichen** = Änderungen an den Server senden, damit sie überall sichtbar sind.
 - **Admin-Zugang** = **Link und QR** in **Stammdaten** (Demo/K2-Referenz **unter Vita**; eigene Lizenz-Galerie **oben** nach Lizenznummer); **Passwort** optional – K2/Referenz am Galerie-Dialog, ök2 unter **Passwort & Sicherheit**; **vergessen** → zuerst Passwort-Speicher des Geräts; VK2 = Name+PIN (VK2-Handbuch).

@@ -5,6 +5,8 @@
 
 Der **Code** liegt im Repo (`api/create-checkout`, `api/webhook-stripe`, `api/licence-data`, `api/get-licence-by-session`, Vite-Proxy in `vite.config.ts`). Diese Anleitung ist die **eine Quelle** für das, was **du in Supabase, Vercel und Stripe** einmalig einrichtest.
 
+**Verbindliche Kette (Überblick, nichts überspringen):** **[STRIPE-LIZENZEN-GO-LIVE.md](./STRIPE-LIZENZEN-GO-LIVE.md)** Abschnitt „Verbindliche Kette (bombensicher)“. **Webhook-URL und API-Pfade** als Konstanten: **`api/stripeLicenceChainConstants.js`**.
+
 ---
 
 ## Einfach-Modus Supabase (ein Klick, kein Hin und Her)
@@ -76,7 +78,7 @@ Ohne **B** schreibt der Webhook zwar, aber **get-licence-by-session** liefert ke
 
 | Feld | Wert |
 |------|------|
-| **Endpoint URL** | `https://k2-galerie.vercel.app/api/webhook-stripe` |
+| **Endpoint URL** | Wie in Code: `getStripeWebhookUrlProduction()` in **`api/stripeLicenceChainConstants.js`** (derzeit `https://k2-galerie.vercel.app/api/webhook-stripe`) |
 | **Events** | Mindestens **`checkout.session.completed`** |
 | | Zusätzlich empfohlen: **`customer.subscription.deleted`** (wenn ihr später Abos nutzt / Kündigung → Daten löschen) |
 

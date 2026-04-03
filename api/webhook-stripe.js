@@ -1,6 +1,7 @@
 /**
  * Vercel Serverless: Stripe Webhook – Zahlung erfolgreich.
  * Stripe ruft diese URL auf (im Dashboard konfigurieren). Raw-Body für Signaturprüfung nötig.
+ * **Exakte Production-URL:** `getStripeWebhookUrlProduction()` in `api/stripeLicenceChainConstants.js`.
  *
  * Umgebungsvariablen: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  *

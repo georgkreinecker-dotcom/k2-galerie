@@ -1,6 +1,6 @@
 /**
- * Eingangsseite (Entdecken) – Design für alle, die zum ersten Mal kommen (ök2 + VK2).
- * Bild + Texte: Admin → Design → Eingangsseite. Farben: automatisch aus K2-Design (k2-design-settings).
+ * Eingangsseite (Entdecken) – öffentliche Seite; Inhalt bearbeiten nur im K2-Admin (Design → Eingangsseite / Eingangstor).
+ * Speicher: k2-page-content-entdecken. Farben: aus k2-design-settings (K2-Design).
  */
 
 import { saveEntdeckenHeroOverlay } from '../utils/entdeckenHeroOverlayStorage'

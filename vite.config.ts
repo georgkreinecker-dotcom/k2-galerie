@@ -818,7 +818,7 @@ const devCreateCheckoutMiddleware = () => {
             JSON.stringify({
               error: 'Stripe lokal nicht konfiguriert',
               hint:
-                'Ob Checkout, Webhook und Datenbank wirklich funktionieren, siehst du nur nach einer echten Stripe-Checkout-Session (Testkarte auf der Stripe-Seite) und Erfolgsseite mit session_id. Dafür: STRIPE_SECRET_KEY=sk_test_… in .env (Projektroot), Dev-Server neu starten – oder dieselbe Lizenz-Seite auf k2-galerie.vercel.app öffnen und dort bezahlen. Die Mustervorschau zeigt nur das Layout; sie beweist nicht, dass die Zahlung klappt.',
+                'Funktionstest Stripe: Ob Checkout, Webhook und Datenbank wirklich funktionieren, siehst du nur nach einer echten Stripe-Checkout-Session (Testkarte auf der Stripe-Seite) und Erfolgsseite mit session_id. Dafür: STRIPE_SECRET_KEY=sk_test_… in .env (Projektroot), Dev-Server neu starten – oder dieselbe Lizenz-Seite auf k2-galerie.vercel.app öffnen und dort bezahlen. Die Mustervorschau zeigt nur das Layout; sie beweist nicht, dass die Zahlung klappt.',
             }),
           )
           return

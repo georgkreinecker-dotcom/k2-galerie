@@ -322,7 +322,12 @@ export function loadVk2Stammdaten(): any {
 
 export function saveVk2Stammdaten(data: any): void {
   try {
-    const json = JSON.stringify(data)
+    let payload = data
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      const { kommunikation: _vk2KommEntfernt, ...rest } = data as Record<string, unknown>
+      payload = rest
+    }
+    const json = JSON.stringify(payload)
     if (json.length > 10_000_000) {
       console.error('❌ stammdatenStorage: VK2-Daten zu groß')
       return

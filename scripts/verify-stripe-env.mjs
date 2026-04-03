@@ -6,6 +6,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { getStripeWebhookUrlProduction } from '../api/stripeLicenceChainConstants.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(__dirname, '..')
@@ -66,7 +67,10 @@ for (const [key, label] of optional) {
 console.log('\n── Nächste Schritte (Production) ──')
 console.log('1) Supabase SQL: siehe docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md')
 console.log('2) Vercel → Environment Variables: dieselben Keys wie oben (Pflicht)')
-console.log('3) Stripe → Webhooks: URL …/api/webhook-stripe, Events siehe Doku\n')
+console.log('3) Stripe → Webhooks: exakt diese URL (eine Quelle: api/stripeLicenceChainConstants.js):')
+console.log('   ', getStripeWebhookUrlProduction())
+console.log('   Events: checkout.session.completed (+ optional customer.subscription.deleted)')
+console.log('4) Verbindliche Kette A–F: docs/STRIPE-LIZENZEN-GO-LIVE.md\n')
 
 if (strict && missing > 0) {
   console.error(`Fehlend: ${missing} Pflichtvariable(n).`)

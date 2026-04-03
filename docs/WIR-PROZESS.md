@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 04.04.26 (Abend) | **Schluss für heute:** Georg fragt, ob Smoke-Tests automatisch laufen – **nein**, die Doku ist ein **manueller** Mini-Check; klar sagen spart Missverständnisse. Session-Ende = Test, Build, DIALOG-STAND, WIR-PROZESS, alles committen und pushen, damit der Raum morgen stimmt. |
 | 02.04.26 | **Klartext statt Platz-Hinweis:** Der ök2-QR-Text erklärt **Demo vs. eigener Code nach Lizenz**; **Sicherheit** = ausdrucken/speichern vor dem Speichern der Stammdaten; **LizenzErfolg**-Druck trägt URLs + QR-Hinweis – eine durchgängige Geschichte für Georg. |
 | 02.04.26 | **Admin-QR am richtigen Ort:** Testpilot:innen in **ök2** sollen den Admin-Link/QR **beim Ausfüllen der Stammdaten** sehen – unter Vita, gleiche Komponente wie Lizenznehmer, mit **`adminIntro`** und **`/admin?context=oeffentlich`**. |
 | 31.03.26 (Abend) | **Schluss für heute:** Wenn Georg „Masterflyer“ anordnet, ist die Quelle **genau diese Datei** (kein Ableiten, kein „ähnlich“). Umsetzung muss 1:1 sein, sonst zerstört es Vertrauen und kostet Stunden. |

@@ -1,4 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import {
+  STRIPE_API_PATHS,
+  STRIPE_LICENCE_PRODUCTION_HOST,
+  STRIPE_WEBHOOK_PATH,
+  getStripeWebhookUrlProduction,
+} from '../../api/stripeLicenceChainConstants.js'
 import { LIZENZPREISE } from '../config/licencePricing'
 import {
   STRIPE_CHECKOUT_LICENCE_TYPES,
@@ -11,6 +17,18 @@ import {
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
 import { createStripeCheckoutSession, generateTenantId } from '../../api/createCheckoutShared.js'
+
+describe('Stripe Lizenz – Kette: Konstanten = eine Quelle (bombensicher)', () => {
+  it('Production-Webhook-URL und Pfade stabil (Doku/Stripe Dashboard)', () => {
+    expect(STRIPE_LICENCE_PRODUCTION_HOST).toBe('https://k2-galerie.vercel.app')
+    expect(STRIPE_WEBHOOK_PATH).toBe('/api/webhook-stripe')
+    expect(getStripeWebhookUrlProduction()).toBe('https://k2-galerie.vercel.app/api/webhook-stripe')
+    expect(STRIPE_API_PATHS.webhook).toBe('/api/webhook-stripe')
+    expect(STRIPE_API_PATHS.licenceData).toBe('/api/licence-data')
+    expect(STRIPE_API_PATHS.getLicenceBySession).toBe('/api/get-licence-by-session')
+    expect(STRIPE_API_PATHS.createCheckout).toBe('/api/create-checkout')
+  })
+})
 
 describe('Stripe Lizenz – Preise = eine Quelle mit licencePricing', () => {
   it('jede Checkout-Stufe: Cent = priceEur * 100', () => {

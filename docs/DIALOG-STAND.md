@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 (Abend) – **Session-Ende Georg („Schluss für heute“):** `npm run test` + `npm run build` grün; offener Stand committed + gepusht: Stripe-Lizenz-Kette (`api/licence-data.js`, `api/stripeLicenceChainConstants.js`), Checkout/Webhook, Doku STRIPE/AGENTEN-BRIEFING, Benutzer- und VK2-Handbuch, `stammdatenStorage`, `App`/`vite`, Tests. **Commit:** **8a301c1** ✅ GitHub
+
+**Was wir JETZT tun:** Nächste Session: obersten Block hier lesen und Faden aufnehmen.
+
+**Einordnung:** Session-Ende-Regel – GitHub/Vercel = Mac.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Smoke-Test-Doku Besucherzähler (Lizenz `/g/…`):** **`docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md`** – kurzer Ablauf (Inkognito, Vercel, Netzwerk POST `/api/visit`, optional Admin **👁**); **`docs/00-INDEX.md`**; Kommentar **`GalerieTenantPage.tsx`**. **Commit:** **12ceb3d** ✅ GitHub
 
 **Was wir JETZT tun:** –

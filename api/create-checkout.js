@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     return res.status(500).json({
       error: 'Zahlungssystem nicht konfiguriert',
       hint:
-        'STRIPE_SECRET_KEY in Vercel hinterlegen. Ohne echte Stripe-Checkout-Session lässt sich nicht verifizieren, ob Zahlung und Webhook funktionieren.',
+        'Funktionstest Stripe: STRIPE_SECRET_KEY in Vercel hinterlegen. Ohne echte Stripe-Checkout-Session lässt sich nicht verifizieren, ob Zahlung und Webhook funktionieren.',
     })
   }
 

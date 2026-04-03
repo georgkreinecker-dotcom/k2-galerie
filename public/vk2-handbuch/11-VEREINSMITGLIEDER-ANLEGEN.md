@@ -50,7 +50,7 @@ In der Mitgliederliste auf eine **Zeile** klicken → Bearbeiten-Modal mit allen
 Damit ein Mitglied **sein eigenes Profil** bearbeiten kann:
 
 1. **Bearbeiten** öffnen → Feld **„PIN (4-stellig)“** ausfüllen (oder Zufalls-PIN) → Speichern.
-2. Dem Mitglied **Link** (z. B. `/vk2-login`) **und PIN** mitteilen (QR-Code unter Einstellungen → Stammdaten oder „Per WhatsApp teilen“).
+2. Dem Mitglied **Link** (z. B. `/vk2-login`) **und PIN** mitteilen (QR-Code unter Einstellungen → Stammdaten; Link kopieren und weitergeben).
 3. Mitglied: Login-Seite öffnen → Namen wählen → PIN eingeben → Anmelden. Danach eigener Bereich zum Bearbeiten. **Vorstand** kommt in den vollen Admin.
 
 ---
@@ -64,7 +64,7 @@ Die Mitgliederliste des Vereins und die ök2-Lizenzen (eigene Galerie) sind **ni
 1. **Mitglied** geht zur **Lizenz-Seite** (z. B. Link von eurer Vereinsseite oder von der Willkommensseite der Plattform: „Lizenz kaufen“ / „Lizenz abschließen“).
 2. Lizenz wählen (Basic/Pro), **Name und E-Mail** eingeben, bezahlen (Karte über Stripe).
 3. Nach der Zahlung erscheint die **Erfolgsseite** mit dem **Link zur eigenen Galerie** (z. B. `https://…/g/galerie-…`). Diesen Link kann das Mitglied **ausdrucken oder kopieren**.
-4. **Mitglied teilt dem Vorstand den Galerie-Link mit** (z. B. per E-Mail, WhatsApp).
+4. **Mitglied teilt dem Vorstand den Galerie-Link mit** (z. B. per E-Mail oder Messenger).
 5. **Vorstand** öffnet die Mitgliederliste, klickt auf das Mitglied (oder legt es neu an) → **Bearbeiten** → im Feld **„Link zur eigenen Galerie“** (Lizenz-Galerie-URL) diesen Link eintragen → Speichern. Optional: **Lizenznummer** eintragen, falls das Mitglied eine bekommt (z. B. von der Bestätigung).
 
 **Kurz:** Mitglied kauft → bekommt Galerie-Link → gibt Link an Verein → Verein trägt Link im Profil ein.

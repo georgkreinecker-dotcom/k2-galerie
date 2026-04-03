@@ -24,7 +24,7 @@ Das sind die **Kategorien eures Vereins**. Sie stehen unter Einstellungen → St
 
 - **Ablauf:** Zuerst den Verein anlegen (oben), danach hier die Kategorien definieren. Jeder Verein hat seine eigenen Kategorien.
 - **Standard:** Beim Muster (Kunstverein): Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt bei der Standard-Liste bleiben oder eigene Kategorien festlegen.
-- **Eigene Kategorien:** Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, oder zu eurer Vereinsform passende Bezeichnungen) und jederzeit mit „Wieder Standard nutzen“ auf die vorgegebene Liste zurückgehen.
+- **Eigene Kategorien:** Ihr könnt eigene Kategorien festlegen (z. B. Aquarell und Mixed Media für Kunstvereine, oder Sparten wie Fußball und Chor für andere Vereine) und mit **Kunstverein-Beispiel wiederherstellen** auf die Beispiel-Liste für Kunstvereine zurückgehen.
 - **Verwendung:** Die Kategorien erscheinen beim Bearbeiten von Mitgliedern – so ordnet ihr jedes Mitglied den passenden Kategorien zu.
 
 ---

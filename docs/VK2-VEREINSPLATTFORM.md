@@ -20,6 +20,14 @@
 
 ---
 
+## Vereinstyp und Kategorien für Mitglieder
+
+- **Vereinstyp** (Schwerpunkt in der App: Kunst, Sport, Musik, Freizeit, Kultur, Soziales, Sonstiges) steuert die **Vorschlagsliste** für die Mitgliederkategorie, **solange** keine eigene Liste `eigeneKategorien` gesetzt ist.
+- Ohne gewählten Typ gilt wie bisher der **Kunst-Standard** (`VK2_KUNSTBEREICHE`).
+- **Quelle:** `tenantConfig.ts` – `VK2_VEREINSTYP_OPTIONS`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` / `getVk2KategorienVorschlagFuerTyp`; Admin: `ScreenshotExportAdmin` (VK2 Einstellungen).
+
+---
+
 ## Lizenzlogik (für spätere Umsetzung)
 
 | Rolle            | Bedingung                    | Lizenz / Nutzen                    |

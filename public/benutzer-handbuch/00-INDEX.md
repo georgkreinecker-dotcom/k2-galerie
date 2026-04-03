@@ -44,7 +44,7 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 10. [Einstellungen](10-EINSTELLUNGEN.md)
 
-Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Video unter Stammdaten. Backup, Veröffentlichen, Drucker. **Admin-Zugang:** Link und QR in den Stammdaten je nach Galerie-Typ; **Passwort** getrennt erklärt. Vereine: Verein anlegen, Kategorien, WhatsApp.
+Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Video unter Stammdaten. Backup, Veröffentlichen, Drucker. **Admin-Zugang:** Link und QR in den Stammdaten je nach Galerie-Typ; **Passwort** getrennt erklärt. Vereine: Verein anlegen, Kategorien.
 
 11. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
