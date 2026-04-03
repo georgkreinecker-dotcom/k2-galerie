@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **ök2 öffentliche Muster-Galerie entlastet:** Weißer Button **„Galerie gestalten (CD)“** entfernt; Zeile **„Mit mir in den Admin“** nur noch wenn kein fixer Admin-Button oben (`showAdminEntryOnGalerie`). **Stand-Badge + ? + Entsperren** (`StandBadgeSync`) nicht mehr auf Route **`/projects/k2-galerie/galerie-oeffentlich`** – K2-Galerie und VK2-Galerie unverändert. **Dateien:** `GaleriePage.tsx`, `App.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 03.04.26 – **ök2 öffentliche Muster-Galerie entlastet:** Weißer Button **„Galerie gestalten (CD)“** entfernt; Zeile **„Mit mir in den Admin“** nur noch wenn kein fixer Admin-Button oben (`showAdminEntryOnGalerie`). **Stand-Badge + ? + Entsperren** (`StandBadgeSync`) nicht mehr auf Route **`/projects/k2-galerie/galerie-oeffentlich`** – K2-Galerie und VK2-Galerie unverändert. **Dateien:** `GaleriePage.tsx`, `App.tsx`. **Commit:** **9c664c5** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
