@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel tsc: `Vk2GaleriePage` + entferntes `kommunikation`:** Nach `tenantConfig`-Push fehlte noch **`Vk2GaleriePage.tsx`** – Footer nutzte **`stammdaten.kommunikation`** (WhatsApp/Umfragen), Typ aber ohne Feld → **TS2339**. **Fix:** dieselbe „VK2 schlank“-UI wie lokal: Blöcke entfernt, **Datei committen**. **Commit:** _(nach Push)_
+**Letzter Stand:** 03.04.26 – **Vercel tsc: `Vk2GaleriePage` + entferntes `kommunikation`:** Nach `tenantConfig`-Push fehlte noch **`Vk2GaleriePage.tsx`** – Footer nutzte **`stammdaten.kommunikation`** (WhatsApp/Umfragen), Typ aber ohne Feld → **TS2339**. **Fix:** dieselbe „VK2 schlank“-UI wie lokal: Blöcke entfernt, **Datei committen**. **Commit:** **b0731eb** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** prüfen.
 
