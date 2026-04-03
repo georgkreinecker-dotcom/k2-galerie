@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** _(nach Push)_
+**Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** **770e011**
 
 **Was wir JETZT tun:** Vercel Production **Ready** prüfen.
 
@@ -32,7 +32,7 @@
 
 ---
 
-**Letzter Stand:** 02.04.26 – **VK2 + dynamischer Mandant: Lizenzen wie ök2 end-to-end im Admin:** Einstellungen-Karte **Lizenzen** mit **Lizenzinformation**, **Neue Lizenz anmelden** (Stripe wie ök2), **Lizenz beenden**; Prefill aus **Vereinsstammdaten** (VK2) bzw. **Meine Daten** (dynamisch). Unterzeile vereinheitlicht; **📄**-Icon mit etwas mehr Platz (Darstellung). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 02.04.26 – **VK2 + dynamischer Mandant: Lizenzen wie ök2 end-to-end im Admin:** Einstellungen-Karte **Lizenzen** mit **Lizenzinformation**, **Neue Lizenz anmelden** (Stripe wie ök2), **Lizenz beenden**; Prefill aus **Vereinsstammdaten** (VK2) bzw. **Meine Daten** (dynamisch). Unterzeile vereinheitlicht; **📄**-Icon mit etwas mehr Platz (Darstellung). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **770e011**
 
 **Was wir JETZT tun:** –
 
@@ -40,7 +40,7 @@
 
 ---
 
-**Letzter Stand:** 03.04.26 – **VK2 schlank – WhatsApp/Kommunikations-Block entfernt:** Kein Admin-Bereich mehr für Gruppenlink, Vorstand-Telefon, Umfragen; **Vk2Stammdaten** ohne `kommunikation`; **Vk2GaleriePage**-Footer ohne WA-Buttons/Umfragen; Mitglied-Login-QR nur noch **Link kopieren** (kein „Per WhatsApp teilen“). Beim Speichern strippen in **`saveVk2Stammdaten`** (alte Keys fallen aus dem JSON). **Handbuch** 10, 08, 00-INDEX, vk2 11 angepasst. **Commit:** _(nach Push)_
+**Letzter Stand:** 03.04.26 – **VK2 schlank – WhatsApp/Kommunikations-Block entfernt:** Kein Admin-Bereich mehr für Gruppenlink, Vorstand-Telefon, Umfragen; **Vk2Stammdaten** ohne `kommunikation`; **Vk2GaleriePage**-Footer ohne WA-Buttons/Umfragen; Mitglied-Login-QR nur noch **Link kopieren** (kein „Per WhatsApp teilen“). Beim Speichern strippen in **`saveVk2Stammdaten`** (alte Keys fallen aus dem JSON). **Handbuch** 10, 08, 00-INDEX, vk2 11 angepasst. **Commit:** **770e011**
 
 **Was wir JETZT tun:** –
 
@@ -56,7 +56,7 @@
 
 ---
 
-**Letzter Stand:** 02.04.26 – **Admin Design: „🚪 Eingang“ nur K2:** Button war in ök2/VK2 sichtbar, obwohl **Entdecken / k2-page-content-entdecken** zur **echten K2-Galerie** gehören (wie Eingangstor). Jetzt: Button nur bei K2; bei ök2/VK2 Tab `eingangsseite` → Vorschau; Doku `pageContentEntdecken.ts` + Hinweistext im Eingangs-Formular. **Commit:** _(nach Push)_
+**Letzter Stand:** 02.04.26 – **Admin Design: „🚪 Eingang“ nur K2:** Button war in ök2/VK2 sichtbar, obwohl **Entdecken / k2-page-content-entdecken** zur **echten K2-Galerie** gehören (wie Eingangstor). Jetzt: Button nur bei K2; bei ök2/VK2 Tab `eingangsseite` → Vorschau; Doku `pageContentEntdecken.ts` + Hinweistext im Eingangs-Formular. **Commit:** **770e011**
 
 **Was wir JETZT tun:** –
 
