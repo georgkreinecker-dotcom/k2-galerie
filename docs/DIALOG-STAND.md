@@ -1,8 +1,16 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Vercel Production **Ready** prüfen.
+
+**Einordnung:** Kein Node-Rätsel – **fehlender Commit** zwischen Admin-UI und Config; `npm run build` lokal mit vollem `node_modules` maskierte es nicht, `git show HEAD:tenantConfig` zeigte die Lücke.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Vercel `engines.node` – Warnung „will be ignored“:** Vercel parst **`||`-Ranges** in `package.json` → `engines` oft **ignoriert**. **Fix:** `engines.node` = **`22.x`** (einfach, wie Dashboard **Node 22.x**); weiterhin Vite-7-tauglich. **Guard-Test** `vercel-config-guard.test.ts`: kein `||`, erwartet `22.x`. **Commit:** **fb6baa0** ✅ GitHub
 
-**Was wir JETZT tun:** Vercel erneut deployen; Log: **keine** engines-Warnung mehr; bei **Exit 2** weiterhin **erste rote Zeile** im Build-Log prüfen (tsc/vite).
+**Was wir JETZT tun:** –
 
 **Einordnung:** Gleicher Node-22-Zielzustand wie zuvor, aber **Vercel-kompatibel** formuliert – sonst wählt die Plattform ignorierend eine falsche Version.
 

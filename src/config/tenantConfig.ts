@@ -351,6 +351,25 @@ export interface Vk2Mitglied {
   bankName?: string
 }
 
+/** VK2: Vereinstyp für Vorschlagslisten der Mitglieder-Kategorien (Schwerpunkt, nicht Satzungszweck). */
+export const VK2_VEREINSTYP_IDS = ['kunst', 'sport', 'musik', 'freizeit', 'kultur', 'soziales', 'sonstiges'] as const
+export type Vk2VereinsTypId = (typeof VK2_VEREINSTYP_IDS)[number]
+
+export function isVk2VereinsTypId(v: string | undefined | null): v is Vk2VereinsTypId {
+  return v != null && String(v).trim() !== '' && (VK2_VEREINSTYP_IDS as readonly string[]).includes(String(v))
+}
+
+/** Anzeigenamen für die Auswahl im Admin. */
+export const VK2_VEREINSTYP_OPTIONS: { id: Vk2VereinsTypId; label: string }[] = [
+  { id: 'kunst', label: 'Kunstverein / bildende Kunst' },
+  { id: 'sport', label: 'Sportverein' },
+  { id: 'musik', label: 'Musikverein (Chor, Orchester, …)' },
+  { id: 'freizeit', label: 'Freizeit- / Hobbyverein' },
+  { id: 'kultur', label: 'Kulturverein (Literatur, Theater, …)' },
+  { id: 'soziales', label: 'Soziales / Gemeinwesen' },
+  { id: 'sonstiges', label: 'Sonstiger Vereinstyp' },
+]
+
 /** VK2-Stammdaten: Verein mit Vorstand, Beirat, Mitgliedern (K2-Familie: gleiche Struktur, eigene Keys) */
 export interface Vk2Stammdaten {
   verein: {
@@ -378,26 +397,10 @@ export interface Vk2Stammdaten {
   mitglieder: Vk2Mitglied[]
   /** Nicht registrierte Mitglieder (ohne K2-Account). Obliegt dem Verein; werden im System erfasst (Datenschutz). */
   mitgliederNichtRegistriert: string[]
-  /** Kommunikation: WhatsApp-Gruppe, Vorstand-Kontakt, Umfragen */
-  kommunikation?: {
-    /** WhatsApp Gruppen-Einladungslink (z.B. https://chat.whatsapp.com/xxx) */
-    whatsappGruppeLink?: string
-    /** Telefonnummer des Vorstands für WhatsApp (nur Ziffern, international: 43… Österreich, 49… Deutschland, etc.) */
-    vorstandTelefon?: string
-    /** Aktive Umfragen */
-    umfragen?: Vk2Umfrage[]
-  }
   /** Eigene Kategorien/Kunstrichtungen des Vereins für Mitglieder. Wenn gesetzt und nicht leer, ersetzen sie VK2_KUNSTBEREICHE im Dropdown und überall. */
   eigeneKategorien?: { id: string; label: string }[]
-}
-
-/** Umfrage für Vereinsmitglieder – wird per WhatsApp-Link geteilt */
-export interface Vk2Umfrage {
-  id: string
-  frage: string
-  antworten: string[]
-  erstelltAm: string
-  aktiv: boolean
+  /** Steuert die Vorschlagsliste, solange eigeneKategorien leer ist (Abwärtskompatibel: ohne Wert = wie bisher Kunst). */
+  vereinsTyp?: Vk2VereinsTypId
 }
 
 /** Registrierungs-Config: Lizenztyp, Vereinsmitgliedschaft, Bonussystem-Option (für K2/ök2/VK2) */
@@ -569,6 +572,7 @@ export const VK2_DEMO_STAMMDATEN: Vk2Stammdaten = {
     lizenzGalerieUrl: i < 3 ? `${BASE_APP_URL}/projects/k2-galerie/galerie-oeffentlich` : undefined,
   })),
   mitgliederNichtRegistriert: ['Petra Farbe', 'Thomas Pinsel'],
+  vereinsTyp: 'kunst',
 }
 
 /** Muster-Vereinsaktivität: Gemeinschaftsausstellung im Vereinshaus X, in einem Monat, mit allen Dummy-Künstlern. Inkl. 2 Druckfertige Dokumente (Einladung, Presse). */
@@ -1193,11 +1197,73 @@ export const VK2_KUNSTBEREICHE = [
   { id: 'sonstiges', label: 'Sonstiges' },
 ] as const
 
-/** VK2: Liefert die Kunstrichtungen für den Verein – eigene Kategorien, wenn gesetzt, sonst Standard (VK2_KUNSTBEREICHE). */
+/** VK2: Vorschlags-Kategorien je Vereinstyp (Kopie für UI „übernehmen“). */
+export const VK2_KATEGORIEN_VORSCHLAEGE: Record<Vk2VereinsTypId, { id: string; label: string }[]> = {
+  kunst: [...VK2_KUNSTBEREICHE],
+  sport: [
+    { id: 'fussball', label: 'Fußball' },
+    { id: 'tennis', label: 'Tennis' },
+    { id: 'volleyball', label: 'Volleyball' },
+    { id: 'fitness', label: 'Fitness / Gymnastik' },
+    { id: 'jugend-sport', label: 'Kinder & Jugend' },
+    { id: 'wandern-berg', label: 'Wandern / Berg' },
+    { id: 'sonstiges-sport', label: 'Sonstiges' },
+  ],
+  musik: [
+    { id: 'chor', label: 'Chor' },
+    { id: 'orchester', label: 'Orchester' },
+    { id: 'blasmusik', label: 'Blasmusik' },
+    { id: 'ensemble', label: 'Kleines Ensemble' },
+    { id: 'ausbildung-musik', label: 'Ausbildung / Jugend' },
+    { id: 'sonstiges-musik', label: 'Sonstiges' },
+  ],
+  freizeit: [
+    { id: 'wandern-freizeit', label: 'Wandern' },
+    { id: 'rad', label: 'Radfahren' },
+    { id: 'fotografie-freizeit', label: 'Fotografie' },
+    { id: 'garten', label: 'Garten' },
+    { id: 'spiele', label: 'Gesellschaftsspiele' },
+    { id: 'sonstiges-freizeit', label: 'Sonstiges' },
+  ],
+  kultur: [
+    { id: 'literatur', label: 'Literatur' },
+    { id: 'theater', label: 'Theater' },
+    { id: 'film', label: 'Film' },
+    { id: 'heimatpflege', label: 'Heimatpflege' },
+    { id: 'tradition', label: 'Brauchtum / Tradition' },
+    { id: 'sonstiges-kultur', label: 'Sonstiges' },
+  ],
+  soziales: [
+    { id: 'nachbarschaft', label: 'Nachbarschaft' },
+    { id: 'integration', label: 'Integration' },
+    { id: 'senioren', label: 'Senioren' },
+    { id: 'familie', label: 'Familie' },
+    { id: 'jugend-soziales', label: 'Kinder & Jugend' },
+    { id: 'sonstiges-soziales', label: 'Sonstiges' },
+  ],
+  sonstiges: [
+    { id: 'allgemein', label: 'Allgemein' },
+    { id: 'mitglied-aktiv', label: 'Aktives Mitglied' },
+    { id: 'mitglied-passiv', label: 'Passives Mitglied' },
+    { id: 'foerderer', label: 'Fördermitglied' },
+    { id: 'gast', label: 'Gast' },
+    { id: 'sonstiges-verein', label: 'Sonstiges' },
+  ],
+}
+
+/** VK2: Vorschlagsliste für gewählten Vereinstyp; ohne Typ wie bisher Kunstbereiche. */
+export function getVk2KategorienVorschlagFuerTyp(vereinsTyp: Vk2VereinsTypId | undefined): { id: string; label: string }[] {
+  if (vereinsTyp && VK2_KATEGORIEN_VORSCHLAEGE[vereinsTyp]) {
+    return VK2_KATEGORIEN_VORSCHLAEGE[vereinsTyp].map((k) => ({ id: k.id, label: k.label }))
+  }
+  return [...VK2_KUNSTBEREICHE]
+}
+
+/** VK2: Liefert die Kunstrichtungen für den Verein – eigene Kategorien, wenn gesetzt, sonst Vorschlag aus Vereinstyp bzw. Kunst-Standard. */
 export function getVk2Kunstrichtungen(stamm: Vk2Stammdaten | null | undefined): { id: string; label: string }[] {
   const list = stamm?.eigeneKategorien
   if (list && list.length > 0) return list
-  return [...VK2_KUNSTBEREICHE]
+  return getVk2KategorienVorschlagFuerTyp(stamm?.vereinsTyp)
 }
 
 /** VK2: Seed-Künstler:innen (ein Platzhalter pro Kunstbereich), wenn k2-vk2-artworks leer */
