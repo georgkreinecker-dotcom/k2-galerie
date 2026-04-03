@@ -3301,8 +3301,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             </div>
           </div>
         )}
-        {/* ök2 intern/APf: nur CD + ggf. Admin – keine Sparten (die nur im Fremden-Einstiegs-Banner oben). */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && (
+        {/* ök2 intern/APf: optional „Admin“-Zeile nur wenn kein fixer Admin-Button oben – kein CD-Button (Design über Admin / Mein Bereich). */}
+        {musterOnly && !showOek2FremdeOrientierungsBanner && !showAdminEntryOnGalerie && (
           <div
             style={{
               margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3325,40 +3325,21 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               >
                 <button
                   type="button"
-                  onClick={() => navigate(`${MEIN_BEREICH_ROUTE}?context=oeffentlich&tab=design`)}
+                  onClick={handleAdminButtonClick}
                   style={{
-                    padding: '0.5rem 0.95rem',
-                    background: '#fffefb',
-                    color: '#1c1a18',
-                    border: '1px solid rgba(107, 144, 128, 0.55)',
+                    padding: '0.5rem 1rem',
+                    background: 'var(--k2-accent)',
+                    color: '#fff',
+                    border: 'none',
                     borderRadius: '10px',
                     fontWeight: 600,
-                    fontSize: '0.88rem',
+                    fontSize: '0.9rem',
                     cursor: 'pointer',
                     fontFamily: 'inherit',
                   }}
                 >
-                  ✨ Galerie gestalten (CD) →
+                  Mit mir in den Admin →
                 </button>
-                {!showAdminEntryOnGalerie && (
-                  <button
-                    type="button"
-                    onClick={handleAdminButtonClick}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: 'var(--k2-accent)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '10px',
-                      fontWeight: 600,
-                      fontSize: '0.9rem',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                    }}
-                  >
-                    Mit mir in den Admin →
-                  </button>
-                )}
               </div>
             </div>
           </div>

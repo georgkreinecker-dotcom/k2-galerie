@@ -1,6 +1,22 @@
 # Dialog-Stand
 
-**Letzter Stand:** 02.04.26 – **Admin Design-Tab: mehr Vorschaufläche (kompakt):** Standard **kompakt** – schmale Toolbar (`← Übersicht`, Schritte 1–4 kurz, Zoom), **größere** `minHeight` für die Vorschau, kein großer Seitentitel / kein „Zurück“ doppelt, Gamification- und Eventplan-Hinweis ausgeblendet, ök2-Demo-Banner **eine Zeile** + „Demo-Text vollständig“. Speichern/Veröffentlichen/Ansehen bleiben sichtbar. **`Ablauf & Infos`** bzw. **`Mehr Platz für Vorschau`** + SessionStorage `k2-admin-design-toolbar-compact` (`0` = große Leiste). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **1623b97** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **ök2 öffentliche Muster-Galerie entlastet:** Weißer Button **„Galerie gestalten (CD)“** entfernt; Zeile **„Mit mir in den Admin“** nur noch wenn kein fixer Admin-Button oben (`showAdminEntryOnGalerie`). **Stand-Badge + ? + Entsperren** (`StandBadgeSync`) nicht mehr auf Route **`/projects/k2-galerie/galerie-oeffentlich`** – K2-Galerie und VK2-Galerie unverändert. **Dateien:** `GaleriePage.tsx`, `App.tsx`. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: Demo-Seite für Besucher ohne Werkzeug-Leiste unten links und ohne CD-Button oben.
+
+---
+
+**Letzter Stand:** 02.04.26 – **Admin Design: „🚪 Eingang“ nur K2:** Button war in ök2/VK2 sichtbar, obwohl **Entdecken / k2-page-content-entdecken** zur **echten K2-Galerie** gehören (wie Eingangstor). Jetzt: Button nur bei K2; bei ök2/VK2 Tab `eingangsseite` → Vorschau; Doku `pageContentEntdecken.ts` + Hinweistext im Eingangs-Formular. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: Eingang-Icon in ök2 – gehört nur K2.
+
+---
+
+**Letzter Stand:** 02.04.26 – **Admin Design-Tab: mehr Vorschaufläche (kompakt):** Standard **kompakt** – schmale Toolbar (`← Übersicht`, Schritte 1–4 kurz, Zoom), **größere** `minHeight` für die Vorschau, kein großer Seitentitel / kein „Zurück“ doppelt, Gamification- und Eventplan-Hinweis ausgeblendet, ök2-Demo-Banner **eine Zeile** + „Demo-Text vollständig“. Speichern/Veröffentlichen/Ansehen bleiben sichtbar. **`Ablauf & Infos`** bzw. **`Mehr Platz für Vorschau`** + SessionStorage `k2-admin-design-toolbar-compact` (`0` = große Leiste). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **5d4b202** ✅ GitHub
 
 **Was wir JETZT tun:** –
 

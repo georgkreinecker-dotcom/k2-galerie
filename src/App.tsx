@@ -322,7 +322,7 @@ class AdminErrorBoundary extends Component<{ children: ReactNode }, { hasError: 
 /** Stand-Anzeige nur auf erster Galerieseite und im Impressum (Georg: sonst überall entfernt, auch bei QR). */
 const STAND_BADGE_PATHNAMES = [
   '/projects/k2-galerie/galerie',
-  '/projects/k2-galerie/galerie-oeffentlich',
+  // ök2 öffentliche Muster-Galerie: kein Stand-Badge / ? / Entsperren – Besucher-Oberfläche entlasten (K2-Galerie & VK2 unverändert).
   '/projects/vk2/galerie',
   AGB_ROUTE
 ]
