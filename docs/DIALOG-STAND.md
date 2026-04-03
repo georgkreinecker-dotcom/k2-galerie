@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel weiter rot (~42s):** Ursache **`npm ci --include=dev`** → installiert **Electron** (devDependency) → **Postinstall / Binary-Download** scheitert auf **Vercel-Linux** nach ~40s. **Fix:** **`installCommand`** = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci` **ohne** `--include=dev` (Build nur über **`dependencies`**: typescript, vite, @vitejs/plugin-react, @types). **Test:** `vercel-config-guard.test.ts`. **Commit:** _(Hash nach Push eintragen)_
+**Letzter Stand:** 03.04.26 – **Vercel weiter rot (~42s):** Ursache **`npm ci --include=dev`** → installiert **Electron** (devDependency) → **Postinstall / Binary-Download** scheitert auf **Vercel-Linux** nach ~40s. **Fix:** **`installCommand`** = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci` **ohne** `--include=dev` (Build nur über **`dependencies`**: typescript, vite, @vitejs/plugin-react, @types). **Test:** `vercel-config-guard.test.ts`. **Commit:** **ae16570** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel „Ready“ prüfen.
 
