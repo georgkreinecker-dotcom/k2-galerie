@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel weiter rot (~42s):** Ursache **`npm ci --include=dev`** → installiert **Electron** (devDependency) → **Postinstall / Binary-Download** scheitert auf **Vercel-Linux** nach ~40s. **Fix:** **`installCommand`** = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci` **ohne** `--include=dev` (Build nur über **`dependencies`**: typescript, vite, @vitejs/plugin-react, @types). **Test:** `vercel-config-guard.test.ts`. **Commit:** **ae16570** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel rot (~40s) – echte Ursache:** Nur **`npm ci`** (wie in **ae16570**) reicht **nicht**: Vercel setzt beim **Install** oft **kein** `NODE_ENV=production` → **devDependencies** (Electron, Playwright, …) werden **trotzdem** mitinstalliert → Postinstall bricht auf Linux ab. **Fix:** **`npm ci --omit=dev`** + dieselben SKIP-Env-Vars; Build-Tools bleiben in **`dependencies`**. **Test:** `vercel-config-guard.test.ts` verlangt `--omit=dev`. **Commit:** **de1018b** ✅ GitHub
 
-**Was wir JETZT tun:** Vercel „Ready“ prüfen.
+**Was wir JETZT tun:** Vercel Deployment **de1018b** „Ready“ prüfen; Stand-Badge/QR wie gewohnt.
 
-**Einordnung:** Vercel = nur Production-Dependencies; Tests/Electron bleiben lokal/Mac.
+**Einordnung:** Fehler lag an **Install-Befehl**, nicht an „falschem Commit“; vorheriger Fix war unvollständig (ohne `--omit=dev`).
 
 ---
 
