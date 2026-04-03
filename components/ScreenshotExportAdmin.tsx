@@ -15056,7 +15056,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : (tenant.isVk2 ? 'Vereinsstammdaten, Drucker, Sicherheit (inkl. Backup). Lizenz & Anmeldung.' : 'Meine Daten, Drucker (schlank für unsere App).'), tab: 'einstellungen' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : (tenant.isVk2 ? 'Vereinsstammdaten, Drucker, Backup, Anmeldung, Lizenz.' : 'Meine Daten, Drucker (schlank für unsere App).'), tab: 'einstellungen' },
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -17904,7 +17904,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
-            {/* Einstellungen: Karten – 1. Meine Daten / VK2: Vereinsstammdaten, 2. Lizenzen (ök2: Info + abschließen + beenden; VK2/dynamisch: beenden), 3. Empfehlung … */}
+            {/* Einstellungen: Karten – 1. Meine Daten / VK2: Vereinsstammdaten, 2. Lizenzen (Info + anmelden/abschließen + beenden: ök2, VK2, dynamischer Mandant), 3. Empfehlung … */}
             {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem', alignItems: 'stretch' }}>
               {/* 1. Meine Daten (K2/ök2) bzw. Vereinsstammdaten (VK2) */}
@@ -17920,7 +17920,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     : 'Name, Kontakt, Adresse, Öffnungszeiten, YouTube/Instagram'}
                 </div>
               </button>
-              {/* 2. Lizenzen – eine Karte, Hauptaktion Lizenzinformation, daneben Abschließen & Beenden (ök2); VK2/dynamisch nur Beenden */}
+              {/* 2. Lizenzen – ök2, VK2, dynamischer Mandant: Info + Anmelden/Abschließen + Beenden (ein Standard) */}
               {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
                 const lizenzHubAktiv = settingsSubTab === 'lizenz' || settingsSubTab === 'lizenzbeenden' || settingsSubTab === 'lizenzinfo'
                 const innerBtn = {
@@ -17955,69 +17955,55 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = lizenzHubAktiv ? s.accent : `${s.accent}22` }}
                   >
-                    {/* 📜 wirkt auf macOS oft „abgeschnitten“; 📄 bleibt vollständig sichtbar */}
-                    <span style={{ fontSize: '1.5rem', lineHeight: 1, marginBottom: '0.35rem', display: 'inline-flex', alignItems: 'center', minHeight: '1.35em' }} aria-hidden>📄</span>
+                    {/* Emoji mit etwas Luft – vermeidet abgeschnittene Darstellung (z. B. macOS) */}
+                    <span
+                      style={{
+                        fontSize: '1.35rem',
+                        lineHeight: 1.25,
+                        marginBottom: '0.4rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '1.5rem',
+                        overflow: 'visible',
+                      }}
+                      aria-hidden
+                    >
+                      📄
+                    </span>
                     <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzen</div>
                     <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', marginBottom: '0.75rem', lineHeight: 1.45 }}>
-                      {tenant.isOeffentlich
-                        ? 'Stufen & Preise – abschließen oder jederzeit beenden'
-                        : 'Lizenz beenden – jederzeit möglich'}
+                      Stufen & Preise – anmelden oder abschließen, jederzeit beenden
                     </div>
-                    {tenant.isOeffentlich && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setSettingsSubTab('lizenzinfo')}
-                          style={{
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            padding: '0.65rem 0.9rem',
-                            marginBottom: '0.5rem',
-                            borderRadius: 8,
-                            border: 'none',
-                            background: '#b54a1e',
-                            color: '#fff',
-                            fontWeight: 700,
-                            fontSize: '0.88rem',
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            textAlign: 'center',
-                          }}
-                        >
-                          📋 Lizenzinformation
-                        </button>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenz' ? `${s.accent}22` : s.bgCard }}>
-                            📄 Lizenz abschließen
-                          </button>
-                          <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard }}>
-                            🚪 Lizenz beenden
-                          </button>
-                        </div>
-                      </>
-                    )}
-                    {!tenant.isOeffentlich && (tenant.isVk2 || tenant.dynamicTenantId) && (
-                      <button
-                        type="button"
-                        onClick={() => setSettingsSubTab('lizenzbeenden')}
-                        style={{
-                          width: '100%',
-                          boxSizing: 'border-box',
-                          padding: '0.65rem 0.9rem',
-                          borderRadius: 8,
-                          border: `1px solid ${s.accent}55`,
-                          background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard,
-                          color: s.text,
-                          fontWeight: 600,
-                          fontSize: '0.88rem',
-                          cursor: 'pointer',
-                          fontFamily: 'inherit',
-                          textAlign: 'center',
-                        }}
-                      >
+                    <button
+                      type="button"
+                      onClick={() => setSettingsSubTab('lizenzinfo')}
+                      style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        padding: '0.65rem 0.9rem',
+                        marginBottom: '0.5rem',
+                        borderRadius: 8,
+                        border: 'none',
+                        background: '#b54a1e',
+                        color: '#fff',
+                        fontWeight: 700,
+                        fontSize: '0.88rem',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        textAlign: 'center',
+                      }}
+                    >
+                      📋 Lizenzinformation
+                    </button>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <button type="button" onClick={() => setSettingsSubTab('lizenz')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenz' ? `${s.accent}22` : s.bgCard }}>
+                        {tenant.isOeffentlich ? '📄 Lizenz abschließen' : '✨ Neue Lizenz anmelden'}
+                      </button>
+                      <button type="button" onClick={() => setSettingsSubTab('lizenzbeenden')} style={{ ...innerBtn, borderColor: `${s.accent}44`, background: settingsSubTab === 'lizenzbeenden' ? `${s.accent}22` : s.bgCard }}>
                         🚪 Lizenz beenden
                       </button>
-                    )}
+                    </div>
                   </div>
                 )
               })()}
@@ -18043,8 +18029,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   {tenant.isVk2 ? 'Drucken (Standard-Drucker)' : 'Etikettendrucker einrichten'}
                 </div>
               </button>
-              {/* 5b. Backup & Bilder – nur K2 (eigener Untertab, öffnet sofort) */}
-              {!tenant.isOeffentlich && !tenant.isVk2 && (
+              {/* 5b. Backup – K2: Werkzeuge & Bilder; VK2: Vereinsdaten */}
+              {!tenant.isOeffentlich && (
               <button
                 type="button"
                 onClick={() => setSettingsSubTab('backup')}
@@ -18053,8 +18039,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'backup' ? s.accent : `${s.accent}22` }}
               >
                 <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>💾</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Backup & Bilder</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Sicherungskopie und Wiederherstellung</div>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>{tenant.isVk2 ? 'Backup & Daten' : 'Backup & Bilder'}</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>{tenant.isVk2 ? 'Vereinsdaten sichern und zurückholen' : 'Sicherungskopie und Wiederherstellung'}</div>
               </button>
               )}
               {/* 6. Passwort & Sicherheit – nur ök2 (K2 schlank, kein Passwort) */}
@@ -18083,13 +18069,17 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               )}
             </div>
 
-            {/* Backup Sub-Tab – nur K2: eigener Bereich, Button reagiert sofort */}
+            {/* Backup Sub-Tab – K2: Werkzeuge + Vollbackup; VK2: nur Vereins-Sicherung */}
             {settingsSubTab === 'backup' && !tenant.isOeffentlich && (
               <div ref={settingsContentRef} style={{ marginTop: '1rem' }}>
-                <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: s.text }}>💾 Backup & Bilder</h3>
+                <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', color: s.text }}>{tenant.isVk2 ? '💾 Backup & Daten (VK2)' : '💾 Backup & Bilder'}</h3>
                 <p style={{ color: s.muted, fontSize: '0.9rem', marginBottom: '1rem', lineHeight: 1.55 }}>
-                  Sicherungskopie herunterladen und aus Backup-Datei wiederherstellen.
+                  {tenant.isVk2
+                    ? 'Vereinsdaten (Mitglieder, Vorstand, Events, Dokumente, Design) als Datei sichern oder aus einer zuvor gespeicherten Datei wiederherstellen – getrennt von K2 und ök2.'
+                    : 'Sicherungskopie herunterladen und aus Backup-Datei wiederherstellen.'}
                 </p>
+                {!tenant.isVk2 && (
+                <>
                 <div style={{ marginBottom: '1.25rem', padding: '1rem', background: s.bgCard, borderRadius: '12px', border: `1px solid ${s.accent}33` }}>
                   <h4 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: s.text }}>🧹 Platzhalter entfernen (K2)</h4>
                   <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted, lineHeight: 1.55 }}>
@@ -18433,6 +18423,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     Malerei-Doppler nach Titel jetzt zusammenführen
                   </button>
                 </div>
+                </>
+                )}
                 <input
                   ref={backupFileInputRef}
                   type="file"
@@ -18449,6 +18441,38 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         const raw = reader.result as string
                         const backup = JSON.parse(raw)
                         const kontext = detectBackupKontext(backup)
+                        if (kontext === 'k2-familie') {
+                          setRestoreProgress('idle')
+                          alert('Diese Sicherungsdatei ist von K2 Familie. Bitte in K2 Familie wiederherstellen: Projekte → K2 Familie → Sicherung → „Aus Backup-Datei wiederherstellen“.')
+                          return
+                        }
+                        if (tenant.isVk2) {
+                          if (kontext !== 'vk2' && kontext !== 'unbekannt') {
+                            const kontextName = kontext === 'k2' ? 'K2 Galerie' : 'ök2 Demo'
+                            if (!confirm(`Diese Sicherungsdatei stammt von „${kontextName}“. Du bist im VK2-Vereinsbereich – üblich sind VK2-Sicherungen.\n\nTrotzdem einspielen?`)) {
+                              setRestoreProgress('idle')
+                              return
+                            }
+                          }
+                          let ok = false
+                          if (kontext === 'vk2') {
+                            ok = restoreVk2FromBackup(backup).ok
+                          } else if (kontext === 'oeffentlich') {
+                            ok = restoreOek2FromBackup(backup).ok
+                          } else if (kontext === 'k2') {
+                            ok = restoreK2FromBackup(backup).ok || restoreFromBackupFile(backup)
+                          } else {
+                            ok = restoreVk2FromBackup(backup).ok
+                          }
+                          if (!ok) {
+                            setRestoreProgress('idle')
+                            alert('Diese Datei ist keine gültige VK2-Sicherung. Bitte eine Datei wählen, die du hier mit „Sicherungskopie herunterladen“ erstellt hast.')
+                            return
+                          }
+                          setRestoreProgress('done')
+                          setTimeout(() => safeReload(), 800)
+                          return
+                        }
                         if (kontext !== 'k2' && kontext !== 'unbekannt') {
                           const kontextName = kontext === 'vk2' ? 'VK2 Verein' : 'ök2 Demo'
                           if (!confirm(`Hinweis: Diese Sicherungsdatei stammt von „${kontextName}“, du bist aber in der K2 Galerie.\n\nTrotzdem wiederherstellen?`)) {
@@ -18488,6 +18512,40 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <div style={{ color: s.accent, fontSize: '0.95rem' }}>{restoreProgress === 'running' ? 'Wiederherstellung läuft…' : 'Fertig. Lade neu…'}</div>
                   </div>
                 )}
+                {tenant.isVk2 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          try {
+                            const result = createVk2Backup()
+                            downloadBackupAsFile(result.data, result.filename)
+                            recordLastBackupDownloadExported('vk2')
+                            alert('✅ VK2-Sicherung ist heruntergeladen.\n\nIn der Datei: Vereins-Stammdaten, Mitglieder, Events, Dokumente, Design, Eingangskarten.\n\nSpeichere die Datei an einem sicheren Ort (z. B. PC, USB-Stick, backupmicro). Bei Datenverlust kannst du sie hier mit „Aus Backup-Datei wiederherstellen“ wieder einspielen.')
+                          } catch (e) {
+                            alert('Beim Erstellen der Sicherungskopie ist etwas schiefgelaufen. Bitte erneut versuchen.')
+                          }
+                        }}
+                        style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer' }}
+                      >
+                        💾 Sicherungskopie herunterladen (VK2)
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Eine JSON-Datei nur für diesen Vereinsbereich – nicht mit K2- oder ök2-Dateien mischen.</p>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        disabled={restoreProgress !== 'idle'}
+                        onClick={() => backupFileInputRef.current?.click()}
+                        style={{ padding: '0.75rem 1.25rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', color: s.text, fontSize: '0.95rem', fontWeight: '600', cursor: restoreProgress !== 'idle' ? 'not-allowed' : 'pointer' }}
+                      >
+                        📂 Aus Backup-Datei wiederherstellen
+                      </button>
+                      <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Ersetzt die VK2-Daten in dieser App durch den Inhalt der gewählten Datei. Nur nutzen bei Datenverlust oder Gerätewechsel.</p>
+                    </div>
+                  </div>
+                ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
                     <button
@@ -18519,6 +18577,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: s.muted }}>Wenn du Daten verloren hast oder auf einem anderen Gerät weitermachen willst: Hier wählst du eine zuvor heruntergeladene Sicherungsdatei aus. Die App wird mit dem Stand aus dieser Datei gefüllt. Achtung: Was du aktuell in der App hast, wird dabei ersetzt.</p>
                   </div>
                 </div>
+                )}
               </div>
             )}
 
@@ -18543,7 +18602,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     }}
                   >
                     <div style={{ flex: '1 1 220px', minWidth: 0 }}>
-                      <strong>Testpilot:</strong> Dein Name und deine E-Mail sind hier vorbefüllt – bitte prüfen und ergänzen. Danach kannst du die öffentliche Demo ansehen.
+                      <strong>Testpilot:</strong>{' '}
+                      {tenant.isOeffentlich
+                        ? 'Dein Name und deine E-Mail sind hier vorbefüllt – bitte prüfen und ergänzen. Danach kannst du die öffentliche Demo ansehen.'
+                        : 'Vereinsname und Erreichbarkeit sind hier vorbefüllt – bitte prüfen und ergänzen. Danach könnt ihr die VK2-Galerie ansehen.'}
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
                       {tenant.isOeffentlich && (
@@ -20321,11 +20383,31 @@ ${name}`
               )
             })()}
 
-            {/* Lizenz abschließen (ök2): Produkt per Klick, evtl. Daten aus Einstellungen verwenden, dann Stripe */}
-            {tenant.isOeffentlich && settingsSubTab === 'lizenz' && (() => {
-              const stammdatenName = (galleryData?.name && galleryData?.email) ? (galleryData as any).name : (martinaData?.name && martinaData?.email) ? (martinaData as any).name : (georgData?.name && georgData?.email) ? (georgData as any).name : ''
-              const stammdatenEmail = (galleryData?.name && galleryData?.email) ? (galleryData as any).email : (martinaData?.name && martinaData?.email) ? (martinaData as any).email : (georgData?.name && georgData?.email) ? (georgData as any).email : ''
+            {/* Lizenz abschließen / Neue Lizenz anmelden (ök2, VK2, dynamischer Mandant): Stripe wie ein Standard */}
+            {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && settingsSubTab === 'lizenz' && (() => {
+              const fromGallery =
+                (galleryData?.name && galleryData?.email)
+                  ? { name: String((galleryData as any).name), email: String((galleryData as any).email) }
+                  : (martinaData?.name && martinaData?.email)
+                    ? { name: String((martinaData as any).name), email: String((martinaData as any).email) }
+                    : (georgData?.name && georgData?.email)
+                      ? { name: String((georgData as any).name), email: String((georgData as any).email) }
+                      : { name: '', email: '' }
+              const v = vk2Stammdaten?.verein
+              const fromVerein =
+                v?.name?.trim() && v?.email?.trim() ? { name: v.name.trim(), email: v.email.trim() } : { name: '', email: '' }
+              const stammdatenName = tenant.isVk2 ? fromVerein.name : fromGallery.name
+              const stammdatenEmail = tenant.isVk2 ? fromVerein.email : fromGallery.email
               const hatStammdaten = !!(stammdatenName && stammdatenEmail)
+              const lizenzTitel = tenant.isOeffentlich ? '📄 Lizenz abschließen' : '✨ Neue Lizenz anmelden'
+              const lizenzIntro =
+                tenant.isVk2
+                  ? 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, können wir diese übernehmen.'
+                  : 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.'
+              const stammdatenFrageQuelle =
+                tenant.isVk2
+                  ? <>In den <strong>Vereinsstammdaten</strong> stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</>
+                  : <>In deinen Einstellungen stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</>
               const LIZENZ_OPTIONS = [
                 { id: 'basic' as const, ...LIZENZPREISE.basic },
                 { id: 'pro' as const, ...LIZENZPREISE.pro },
@@ -20388,10 +20470,11 @@ ${name}`
               return (
                 <div ref={settingsContentRef}>
                   <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
-                    📄 Lizenz abschließen
+                    {lizenzTitel}
                   </h3>
                   <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
-                    Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen. Die <strong>Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben</strong>.
+                    {lizenzIntro}{' '}
+                    <strong style={{ color: s.text }}>Die Lizenznummer wird nach erfolgreicher Zahlung vom System vergeben.</strong>
                   </p>
                   <div style={{ margin: '0 0 1.25rem', padding: '0.85rem 1rem', background: s.bgElevated, border: `1px dashed ${s.accent}55`, borderRadius: 10, fontSize: '0.85rem', color: s.text, lineHeight: 1.55 }}>
                     <strong style={{ color: s.accent }}>Test / Muster:</strong> Auf <strong>Vercel</strong> oder mit <strong>Stripe-Key</strong> in der lokalen <code style={{ fontSize: '0.78rem' }}>.env</code> führt der Button zu <strong>Stripe</strong> (Testkarte 4242…). Lokal <strong>ohne</strong> Key: Mustervorschau der Erfolgsseite (Dev-Server). In <strong>Cursor-Vorschau</strong> oder iframe öffnet sich Zahlung/Vorschau in einem <strong>neuen Tab</strong>.{' '}
@@ -20403,8 +20486,8 @@ ${name}`
 
                   {hatStammdaten && lizenzUseStammdaten === 'ask' && (
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}44`, borderRadius: 12 }}>
-                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Daten aus Einstellungen verwenden?</div>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>In deinen Einstellungen stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</p>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Gespeicherte Daten verwenden?</div>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: s.muted }}>{stammdatenFrageQuelle}</p>
                       <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                         <button type="button" onClick={() => { setLizenzName(stammdatenName); setLizenzEmail(stammdatenEmail); setLizenzUseStammdaten('yes') }} style={{ padding: '0.5rem 1rem', background: s.accent, color: '#fff', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Ja, verwenden</button>
                         <button type="button" onClick={() => setLizenzUseStammdaten('no') } style={{ padding: '0.5rem 1rem', background: s.bgElevated, color: s.text, border: `1px solid ${s.accent}44`, borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.9rem' }}>Nein, neue eingeben</button>
@@ -20548,7 +20631,14 @@ ${name}`
                     </div>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>3. Hast du deine Daten gesichert?</label>
-                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>Vor dem Ende der Lizenz: Backup unter <strong>Einstellungen → Meine Daten</strong> bzw. über das Vollbackup in den Einstellungen erstellen.</p>
+                      <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>
+                        Vor dem Ende der Lizenz: Sicherungskopie erstellen –{' '}
+                        {tenant.isVk2 ? (
+                          <>unter <strong>Einstellungen → Backup & Daten</strong> (Vereinsdaten, Mitglieder, Events, Design).</>
+                        ) : (
+                          <>unter <strong>Einstellungen → Meine Daten</strong> bzw. über das Vollbackup in den Einstellungen.</>
+                        )}
+                      </p>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: s.text, cursor: 'pointer' }}>
                         <input type="checkbox" checked={lizenzBeendenBackupHinweis} onChange={(e) => setLizenzBeendenBackupHinweis(e.target.checked)} />
                         Ich habe meine Daten gesichert oder werde das vor Ablauf tun
@@ -20563,91 +20653,115 @@ ${name}`
               )
             })()}
 
-            {/* Lizenzinformation – was jedes Paket enthält, Unterschiede und Mehrkosten auf einen Blick */}
+            {/* Lizenzinformation – Galerie-Pakete (K2/ök2) bzw. Kurzinfo VK2 */}
             {settingsSubTab === 'lizenzinfo' && (
               <div ref={settingsContentRef} style={{ maxWidth: 640 }}>
                 <h3 style={{ fontSize: 'clamp(1.1rem, 3vw, 1.3rem)', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
                   📋 Lizenzinformation
                 </h3>
-                <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
-                  Was jedes Paket enthält – Unterschiede auf einen Blick, damit die Mehrkosten nachvollziehbar sind.
-                </p>
-
-                <div style={{ marginBottom: '1.25rem' }}>
-                  <LizenzZeitplanPilotStripeInfo variant="licences" />
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Basic</span>
-                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.basic.price}</span>
-                    </div>
-                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                      <li>Galerie + Shop (bis 30 Werke)</li>
-                      <li>Events, Kasse, Etiketten</li>
-                      <li>Für den Einstieg – alles in einer App</li>
-                    </ul>
-                  </div>
-
-                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro</span>
-                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.pro.price}</span>
-                    </div>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Basic, plus:</p>
-                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                      <li><strong>Unbegrenzte Werke</strong></li>
-                      <li><strong>Custom Domain</strong> (eigene Adresse)</li>
-                      <li>Weiterhin ohne vollen Marketingbereich</li>
-                    </ul>
-                  </div>
-
-                  <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro+</span>
-                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.proplus.price}</span>
-                    </div>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro, plus:</p>
-                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                      <li><strong>Gesamter Marketingbereich</strong></li>
-                      <li>Events, Galeriepräsentation, Flyer, Presse</li>
-                      <li>Social Media, Plakat, PR-Dokumente aus einem Guss</li>
-                    </ul>
-                  </div>
-
-                  <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro++</span>
-                      <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.propplus.price}</span>
-                    </div>
-                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro+, plus:</p>
-                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                      <li><strong>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung</li>
-                    </ul>
-                  </div>
-
-                  <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
-                      <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
-                    </div>
-                    <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
-                      <li>Wie Pro; ab 10 registrierten Mitgliedern für den Verein kostenfrei</li>
-                      <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür wird eine Lizenznummer vom Kunstverein benötigt</li>
-                    </ul>
-                    <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6, padding: '0.6rem', background: `${s.accent}08`, borderRadius: 8 }}>
-                      <strong style={{ color: s.text }}>Wie bekomme ich die Lizenznummer?</strong> Der Kunstverein erhält vom System Lizenznummern für seine Mitglieder. Einfach beim Vorstand oder in der Vereinsverwaltung anfragen – die Nummer wird dir dort zugewiesen.
+                {tenant.isVk2 ? (
+                  <>
+                    <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                      Hier gilt die <strong>Vereinslizenz Kunstvereine (VK2)</strong> – Mitgliederverwaltung, Vereins-Galerie und dieselben Werkzeuge wie Pro, aber auf den Verein zugeschnitten.
                     </p>
-                  </div>
-                </div>
+                    <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
+                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
+                      </div>
+                      <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                        <li>Leistungsumfang wie Pro; ab <strong>10 registrierten Mitgliedern</strong> ist die Vereinslizenz kostenfrei</li>
+                        <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür braucht es eine Lizenznummer vom Verein</li>
+                        <li>Nicht registrierte Mitglieder können nur mit Namen erfasst werden (Datenschutz)</li>
+                      </ul>
+                      <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6, padding: '0.6rem', background: `${s.accent}08`, borderRadius: 8 }}>
+                        <strong style={{ color: s.text }}>Anmeldung / Zahlung:</strong> Unter <strong>Einstellungen → Neue Lizenz anmelden</strong> Lizenz wählen und per Karte (Stripe) abschließen. Vereinsname und E-Mail aus den Vereinsstammdaten können übernommen werden.
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.6 }}>
+                      Was jedes Paket enthält – Unterschiede auf einen Blick, damit die Mehrkosten nachvollziehbar sind.
+                    </p>
 
-                <div style={{ marginTop: '1.25rem', padding: '1rem', background: `${s.accent}0c`, borderRadius: 12, border: `1px solid ${s.accent}33` }}>
-                  <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text, margin: '0 0 0.5rem' }}>Wie kann ich upgraden?</h4>
-                  <p style={{ margin: 0, fontSize: '0.9rem', color: s.text, lineHeight: 1.6 }}>
-                    Von Basic auf Pro oder Pro auf Pro+: Gehe zu <strong>Einstellungen → Lizenz abschließen</strong>, wähle die höhere Stufe und schließe die Zahlung ab. Deine Lizenz wird automatisch aktualisiert.
-                  </p>
-                </div>
+                    <div style={{ marginBottom: '1.25rem' }}>
+                      <LizenzZeitplanPilotStripeInfo variant="licences" />
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Basic</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.basic.price}</span>
+                        </div>
+                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                          <li>Galerie + Shop (bis 30 Werke)</li>
+                          <li>Events, Kasse, Etiketten</li>
+                          <li>Für den Einstieg – alles in einer App</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.pro.price}</span>
+                        </div>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Basic, plus:</p>
+                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                          <li><strong>Unbegrenzte Werke</strong></li>
+                          <li><strong>Custom Domain</strong> (eigene Adresse)</li>
+                          <li>Weiterhin ohne vollen Marketingbereich</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro+</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.proplus.price}</span>
+                        </div>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro, plus:</p>
+                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                          <li><strong>Gesamter Marketingbereich</strong></li>
+                          <li>Events, Galeriepräsentation, Flyer, Presse</li>
+                          <li>Social Media, Plakat, PR-Dokumente aus einem Guss</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ background: s.bgCard, border: `2px solid ${s.accent}44`, borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Pro++</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.propplus.price}</span>
+                        </div>
+                        <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: s.muted }}>Alles aus Pro+, plus:</p>
+                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                          <li><strong>Rechnung</strong> (§ 11 UStG): fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung</li>
+                        </ul>
+                      </div>
+
+                      <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
+                          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
+                        </div>
+                        <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
+                          <li>Wie Pro; ab 10 registrierten Mitgliedern für den Verein kostenfrei</li>
+                          <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür wird eine Lizenznummer vom Kunstverein benötigt</li>
+                        </ul>
+                        <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6, padding: '0.6rem', background: `${s.accent}08`, borderRadius: 8 }}>
+                          <strong style={{ color: s.text }}>Wie bekomme ich die Lizenznummer?</strong> Der Kunstverein erhält vom System Lizenznummern für seine Mitglieder. Einfach beim Vorstand oder in der Vereinsverwaltung anfragen – die Nummer wird dir dort zugewiesen.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '1.25rem', padding: '1rem', background: `${s.accent}0c`, borderRadius: 12, border: `1px solid ${s.accent}33` }}>
+                      <h4 style={{ fontSize: '0.95rem', fontWeight: 600, color: s.text, margin: '0 0 0.5rem' }}>Wie kann ich upgraden?</h4>
+                      <p style={{ margin: 0, fontSize: '0.9rem', color: s.text, lineHeight: 1.6 }}>
+                        Von Basic auf Pro oder Pro auf Pro+: Gehe zu <strong>Einstellungen → Lizenz abschließen</strong>, wähle die höhere Stufe und schließe die Zahlung ab. Deine Lizenz wird automatisch aktualisiert.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

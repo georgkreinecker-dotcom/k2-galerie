@@ -1,5 +1,29 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **VK2 Einstellungen – Tab Backup & Daten:** K2-only Blöcke (Platzhalter, Malerei-Doppler, …) in **Fragment** + `!tenant.isVk2`; **VK2:** Download `createVk2Backup` + `recordLastBackupDownloadExported('vk2')`, Wiederherstellen mit **K2-Familie-Hinweis**, VK2-Kontext-Bestätigung bei fremder Datei, `restoreVk2FromBackup`/`unbekannt`-Fallback. Versteckter File-Input **ein** für K2/VK2. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Feincheck VK2 Einstellungen – Backup-Tab end-to-end statt halbem JSX.
+
+---
+
+**Letzter Stand:** 02.04.26 – **VK2 + dynamischer Mandant: Lizenzen wie ök2 end-to-end im Admin:** Einstellungen-Karte **Lizenzen** mit **Lizenzinformation**, **Neue Lizenz anmelden** (Stripe wie ök2), **Lizenz beenden**; Prefill aus **Vereinsstammdaten** (VK2) bzw. **Meine Daten** (dynamisch). Unterzeile vereinheitlicht; **📄**-Icon mit etwas mehr Platz (Darstellung). **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: bei VK2 fehlte „Neu anmelden“ – jetzt derselbe Ablauf wie ök2 (Info → Checkout → Beenden).
+
+---
+
+**Letzter Stand:** 03.04.26 – **VK2 schlank – WhatsApp/Kommunikations-Block entfernt:** Kein Admin-Bereich mehr für Gruppenlink, Vorstand-Telefon, Umfragen; **Vk2Stammdaten** ohne `kommunikation`; **Vk2GaleriePage**-Footer ohne WA-Buttons/Umfragen; Mitglied-Login-QR nur noch **Link kopieren** (kein „Per WhatsApp teilen“). Beim Speichern strippen in **`saveVk2Stammdaten`** (alte Keys fallen aus dem JSON). **Handbuch** 10, 08, 00-INDEX, vk2 11 angepasst. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: „Ja machen wir“ – Vereinstyp statt nur Kunst-Fallback für alle Vereine.
+
+---
+
 **Letzter Stand:** 03.04.26 – **ök2 öffentliche Muster-Galerie entlastet:** Weißer Button **„Galerie gestalten (CD)“** entfernt; Zeile **„Mit mir in den Admin“** nur noch wenn kein fixer Admin-Button oben (`showAdminEntryOnGalerie`). **Stand-Badge + ? + Entsperren** (`StandBadgeSync`) nicht mehr auf Route **`/projects/k2-galerie/galerie-oeffentlich`** – K2-Galerie und VK2-Galerie unverändert. **Dateien:** `GaleriePage.tsx`, `App.tsx`. **Commit:** **9c664c5** ✅ GitHub
 
 **Was wir JETZT tun:** –
