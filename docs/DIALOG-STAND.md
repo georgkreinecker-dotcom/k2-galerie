@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Smoke-Test-Doku Besucherzähler (Lizenz `/g/…`):** **`docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md`** – kurzer Ablauf (Inkognito, Vercel, Netzwerk POST `/api/visit`, optional Admin **👁**); **`docs/00-INDEX.md`**; Kommentar **`GalerieTenantPage.tsx`**. **Commit:** **12ceb3d** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: „Smoke-Hinweis“ festgehalten; keine Zähl-Logik geändert.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Besucherzahl am Mac (Vite): GET von Vercel:** Unter `npm run dev` gibt es kein `/api/visit` → Admin **👁**, **PlatformStartPage**, **UebersichtBoardPage** zeigten **„–“** bzw. keine Zähler während Handy (Produktion) schon Zahlen hatte. **Fix:** `fetchVisitCount` in **`visitCountApiOrigin.ts`** (GET immer **`BASE_APP_URL`** in DEV); Einbau in **ScreenshotExportAdmin**, **PlatformStartPage**, **UebersichtBoardPage**; Board: Lizenz-Fetch und Besucher-Fetch **parallel** (Besucher nicht mehr an fehlgeschlagene `licence-data` gekoppelt). Tests **`visitCountApiOrigin.test.ts`**. **Commit:** **d2f6c52** ✅ GitHub
 
 **Was wir JETZT tun:** Georg: lokal Admin öffnen → **👁** soll echte Zähler zeigen (wie Vercel).
