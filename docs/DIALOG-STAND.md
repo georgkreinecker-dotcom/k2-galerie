@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel `engines.node` – Warnung „will be ignored“:** Vercel parst **`||`-Ranges** in `package.json` → `engines` oft **ignoriert**. **Fix:** `engines.node` = **`22.x`** (einfach, wie Dashboard **Node 22.x**); weiterhin Vite-7-tauglich. **Guard-Test** `vercel-config-guard.test.ts`: kein `||`, erwartet `22.x`. **Commit:** _(nach Push – Hash hier eintragen)_ ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel `engines.node` – Warnung „will be ignored“:** Vercel parst **`||`-Ranges** in `package.json` → `engines` oft **ignoriert**. **Fix:** `engines.node` = **`22.x`** (einfach, wie Dashboard **Node 22.x**); weiterhin Vite-7-tauglich. **Guard-Test** `vercel-config-guard.test.ts`: kein `||`, erwartet `22.x`. **Commit:** **fb6baa0** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel erneut deployen; Log: **keine** engines-Warnung mehr; bei **Exit 2** weiterhin **erste rote Zeile** im Build-Log prüfen (tsc/vite).
 
