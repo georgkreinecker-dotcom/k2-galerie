@@ -67,9 +67,9 @@ const LicenseManager = () => {
     {
       id: 'vk2',
       name: LIZENZPREISE.vk2.name,
-      price: '0',
+      price: String(LIZENZPREISE.vk2.priceEur),
       period: 'monatlich',
-      priceLabel: LIZENZPREISE.vk2.priceLabel ?? undefined,
+      priceLabel: LIZENZPREISE.vk2.price,
       features: [
         'Vereinsplattform (VK2) – alle Künstler:innen des Vereins',
         'Verein nutzt Pro; ab 10 registrierten Mitgliedern kostenfrei',

@@ -20402,18 +20402,28 @@ ${name}`
               const lizenzTitel = tenant.isOeffentlich ? '📄 Lizenz abschließen' : '✨ Neue Lizenz anmelden'
               const lizenzIntro =
                 tenant.isVk2
-                  ? 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, können wir diese übernehmen.'
+                  ? 'Vereinslizenz: 35 €/Monat (gleicher Leistungsstand wie Pro). Zahlung nur per Karte über Stripe – das ist der vorgesehene Weg; lokal ohne Stripe-Key siehst du eine Mustervorschau. Wenn in den Vereinsstammdaten schon Vereinsname und E-Mail stehen, können wir diese übernehmen.'
                   : 'Lizenz wählen, Zahlung per Karte (Stripe). Wenn du in „Meine Daten“ schon Name und E-Mail eingetragen hast, können wir diese übernehmen.'
               const stammdatenFrageQuelle =
                 tenant.isVk2
                   ? <>In den <strong>Vereinsstammdaten</strong> stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</>
                   : <>In deinen Einstellungen stehen: <strong>{stammdatenName}</strong>, {stammdatenEmail}. Sollen wir diese für den Lizenzvertrag verwenden?</>
-              const LIZENZ_OPTIONS = [
-                { id: 'basic' as const, ...LIZENZPREISE.basic },
-                { id: 'pro' as const, ...LIZENZPREISE.pro },
-                { id: 'proplus' as const, ...LIZENZPREISE.proplus },
-                { id: 'propplus' as const, ...LIZENZPREISE.propplus },
-              ]
+              /** VK2: nur Vereinslizenz (Checkout = Pro-Preis); ök2/Mandant: alle Galerie-Stufen */
+              const LIZENZ_OPTIONS = tenant.isVk2
+                ? [
+                    {
+                      id: 'pro' as const,
+                      name: LIZENZPREISE.vk2.name,
+                      price: LIZENZPREISE.vk2.price,
+                      priceEur: LIZENZPREISE.vk2.priceEur,
+                    },
+                  ]
+                : [
+                    { id: 'basic' as const, ...LIZENZPREISE.basic },
+                    { id: 'pro' as const, ...LIZENZPREISE.pro },
+                    { id: 'proplus' as const, ...LIZENZPREISE.proplus },
+                    { id: 'propplus' as const, ...LIZENZPREISE.propplus },
+                  ]
               const handleLizenzSubmit = async (e: React.FormEvent) => {
                 e.preventDefault()
                 const name = lizenzName.trim()
@@ -20498,7 +20508,9 @@ ${name}`
                   {(lizenzUseStammdaten !== 'ask' || !hatStammdaten) && (
                     <>
                       <div style={{ marginBottom: '1rem' }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>Lizenz wählen</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.5rem' }}>
+                          {tenant.isVk2 ? 'Vereinslizenz (VK2)' : 'Lizenz wählen'}
+                        </div>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.6rem' }}>
                           {LIZENZ_OPTIONS.map((opt) => {
                             const selected = lizenzLicenceType === opt.id
@@ -20665,17 +20677,18 @@ ${name}`
                       Hier gilt die <strong>Vereinslizenz Kunstvereine (VK2)</strong> – Mitgliederverwaltung, Vereins-Galerie und dieselben Werkzeuge wie Pro, aber auf den Verein zugeschnitten.
                     </p>
                     <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.35rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
-                        <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
+                        <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.price}</span>
                       </div>
+                      <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: s.muted, lineHeight: 1.5 }}>{LIZENZPREISE.vk2.priceSubtitle}</p>
                       <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
                         <li>Leistungsumfang wie Pro; ab <strong>10 registrierten Mitgliedern</strong> ist die Vereinslizenz kostenfrei</li>
                         <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür braucht es eine Lizenznummer vom Verein</li>
                         <li>Nicht registrierte Mitglieder können nur mit Namen erfasst werden (Datenschutz)</li>
                       </ul>
                       <p style={{ margin: '0.75rem 0 0', fontSize: '0.85rem', color: s.muted, lineHeight: 1.6, padding: '0.6rem', background: `${s.accent}08`, borderRadius: 8 }}>
-                        <strong style={{ color: s.text }}>Anmeldung / Zahlung:</strong> Unter <strong>Einstellungen → Neue Lizenz anmelden</strong> Lizenz wählen und per Karte (Stripe) abschließen. Vereinsname und E-Mail aus den Vereinsstammdaten können übernommen werden.
+                        <strong style={{ color: s.text }}>Anmeldung / Zahlung:</strong> Unter <strong>Einstellungen → Neue Lizenz anmelden</strong> gibt es die Vereinslizenz mit Zahlung nur per Karte (Stripe). Vereinsname und E-Mail aus den Vereinsstammdaten können übernommen werden.
                       </p>
                     </div>
                   </>
@@ -20740,10 +20753,11 @@ ${name}`
                       </div>
 
                       <div style={{ background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px', padding: '1.25rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.35rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                           <span style={{ fontSize: '1rem', fontWeight: 700, color: s.text }}>Kunstvereine (VK2)</span>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.priceLabel}</span>
+                          <span style={{ fontSize: '1rem', fontWeight: 600, color: s.accent }}>{LIZENZPREISE.vk2.price}</span>
                         </div>
+                        <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: s.muted, lineHeight: 1.5 }}>{LIZENZPREISE.vk2.priceSubtitle}</p>
                         <ul style={{ margin: 0, padding: '0 0 0 1.25rem', fontSize: '0.9rem', color: s.text, lineHeight: 1.75 }}>
                           <li>Wie Pro; ab 10 registrierten Mitgliedern für den Verein kostenfrei</li>
                           <li>Lizenzmitglieder: <strong>50 % Rabatt</strong> – dafür wird eine Lizenznummer vom Kunstverein benötigt</li>

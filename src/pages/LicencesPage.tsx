@@ -44,6 +44,14 @@ interface OnlineGutschrift {
   created_at: string
 }
 
+/** GET /api/licence-data – verbindliche Stripe-Kette (siehe docs/STRIPE-LIZENZEN-GO-LIVE.md) */
+interface LicenceDataStripeChain {
+  version: number
+  supabase_configured: boolean
+  webhook_url_production: string
+  empty_online_hint?: string
+}
+
 const STORAGE_KEY = 'k2-license-grants'
 
 export interface LicenceGrant {
@@ -61,7 +69,7 @@ const LICENCE_TYPES: { id: 'basic' | 'pro' | 'proplus' | 'propplus' | 'vk2'; nam
   { id: 'pro',     name: LIZENZPREISE.pro.name,    price: LIZENZPREISE.pro.price,     priceEur: LIZENZPREISE.pro.priceEur,     icon: '⭐',  summary: 'Alles aus Basic + unbegrenzte Werke, Custom Domain – ohne vollen Marketingbereich' },
   { id: 'proplus', name: LIZENZPREISE.proplus.name, price: LIZENZPREISE.proplus.price, priceEur: LIZENZPREISE.proplus.priceEur, icon: '💎',  summary: 'Alles aus Pro + gesamter Marketingbereich (Events, Galeriepräsentation, Flyer, Presse, Social Media)' },
   { id: 'propplus', name: LIZENZPREISE.propplus.name, price: LIZENZPREISE.propplus.price, priceEur: LIZENZPREISE.propplus.priceEur, icon: '📄',  summary: 'Alles aus Pro+ + Rechnung (§ 11 UStG): fortlaufende Nummerierung, Pflichtangaben, USt-Aufschlüsselung', highlight: true },
-  { id: 'vk2',     name: LIZENZPREISE.vk2.name,    price: LIZENZPREISE.vk2.priceLabel ?? '', priceEur: LIZENZPREISE.vk2.priceEur, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
+  { id: 'vk2',     name: LIZENZPREISE.vk2.name,    price: LIZENZPREISE.vk2.price, priceEur: LIZENZPREISE.vk2.priceEur, icon: '🏛️', summary: 'Verein nutzt Pro; ab 10 Mitgliedern für den Verein kostenfrei; Vereinsmitglieder 50 % Rabatt' },
 ]
 
 function loadGrants(): LicenceGrant[] {
@@ -109,6 +117,7 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
   const [onlineGutschriften, setOnlineGutschriften] = useState<OnlineGutschrift[]>([])
   const [onlineLoading, setOnlineLoading] = useState(false)
   const [onlineError, setOnlineError] = useState<string | null>(null)
+  const [onlineStripeChain, setOnlineStripeChain] = useState<LicenceDataStripeChain | null>(null)
 
   const [pilotInviteFirstName, setPilotInviteFirstName] = useState('')
   const [pilotInviteLastName, setPilotInviteLastName] = useState('')
@@ -179,6 +188,17 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
       setOnlineLicences(Array.isArray(data.licences) ? data.licences : [])
       setOnlinePayments(Array.isArray(data.payments) ? data.payments : [])
       setOnlineGutschriften(Array.isArray(data.gutschriften) ? data.gutschriften : [])
+      const sc = data.stripe_chain
+      if (sc && typeof sc === 'object' && typeof sc.version === 'number') {
+        setOnlineStripeChain({
+          version: sc.version,
+          supabase_configured: Boolean(sc.supabase_configured),
+          webhook_url_production: typeof sc.webhook_url_production === 'string' ? sc.webhook_url_production : '',
+          empty_online_hint: typeof sc.empty_online_hint === 'string' ? sc.empty_online_hint : undefined,
+        })
+      } else {
+        setOnlineStripeChain(null)
+      }
       if (data.error) setOnlineError(data.error)
     } catch (e) {
       setOnlineError((e as Error)?.message || 'Fehler beim Laden')
@@ -916,6 +936,39 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
           {onlineError && (
             <p style={{ fontSize: '0.85rem', color: '#f87171', margin: '0 0 0.5rem' }}>{onlineError}</p>
           )}
+          {!onlineError &&
+            !onlineLoading &&
+            onlineStripeChain?.empty_online_hint &&
+            onlineLicences.length === 0 &&
+            onlinePayments.length === 0 &&
+            onlineGutschriften.length === 0 && (
+              <div
+                role="status"
+                style={{
+                  fontSize: '0.82rem',
+                  color: '#1c1a18',
+                  background: 'rgba(251,191,36,0.2)',
+                  border: '1px solid rgba(180,83,9,0.45)',
+                  borderRadius: 10,
+                  padding: '0.65rem 0.85rem',
+                  marginBottom: '0.75rem',
+                  textAlign: 'left',
+                  lineHeight: 1.45,
+                }}
+              >
+                <strong>Verbindliche Kette (Stripe → Webhook → Supabase):</strong>{' '}
+                {onlineStripeChain.empty_online_hint}
+                {onlineStripeChain.webhook_url_production ? (
+                  <span style={{ display: 'block', marginTop: '0.35rem', fontSize: '0.78rem', wordBreak: 'break-all' }}>
+                    Webhook-URL in Stripe: <code style={{ fontSize: 'inherit' }}>{onlineStripeChain.webhook_url_production}</code>
+                  </span>
+                ) : null}
+                <span style={{ display: 'block', marginTop: '0.35rem', fontSize: '0.78rem', color: '#5c5650' }}>
+                  Im Repo: <code style={{ fontSize: 'inherit' }}>docs/STRIPE-LIZENZEN-GO-LIVE.md</code> und{' '}
+                  <code style={{ fontSize: 'inherit' }}>docs/STRIPE-ANBINDUNG-SCHRITT-FUER-SCHRITT.md</code>
+                </span>
+              </div>
+            )}
           {onlineLoading && onlineLicences.length === 0 && onlinePayments.length === 0 && (
             <p style={{ fontSize: '0.9rem', color: 'var(--k2-muted)' }}>Lade Daten…</p>
           )}
