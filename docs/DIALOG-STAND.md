@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **VK2 Event-Flyer (Master): keine K2-Daten mehr:** `FlyerEventBogenNeuPage` lud für VK2 **`getK2Basics()`** + **`loadStammdaten('k2','gallery')`** → Muster zeigte K2 Galerie, Martina/Georg, Eferding. **Fix:** `getVk2FlyerBasics()` aus **`loadVk2Stammdaten`** / Demo; **`getPageContentGalerie('vk2')`** für Bilder; synthetisches `gallery` aus Verein; **`defaultMasterTextFromBase`/`mergeMasterTextFromPersisted`** mit **`isVk2`** (Rückseite ohne ök2-Marketing-Block); **`heroOpeningWord`** aus VK2-Event oder „Gemeinschaftsausstellung“; Storage-Listener **`k2-vk2-page-content-galerie`** / **`k2-vk2-page-texts`**. **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** Push → Vercel Ready; Georg: VK2-Flyer im Admin prüfen.
+
+**Einordnung:** `dokumente-kontext-eine-quelle` – VK2-Werbemittel nur VK2-Quellen.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Vercel tsc: `Vk2GaleriePage` + entferntes `kommunikation`:** Nach `tenantConfig`-Push fehlte noch **`Vk2GaleriePage.tsx`** – Footer nutzte **`stammdaten.kommunikation`** (WhatsApp/Umfragen), Typ aber ohne Feld → **TS2339**. **Fix:** dieselbe „VK2 schlank“-UI wie lokal: Blöcke entfernt, **Datei committen**. **Commit:** **b0731eb** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** prüfen.
