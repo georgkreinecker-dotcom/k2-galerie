@@ -17,17 +17,14 @@ describe('Vercel-Konfigurations-Schranken', () => {
     }
   })
 
-  it('engines.node mindestens wie Vite (sonst bricht vite build auf Vercel bei Node 18)', () => {
+  it('engines.node: einfache Major-Angabe für Vercel (kein || – sonst warnt Vercel „will be ignored“)', () => {
     const pkgRaw = readFileSync(join(process.cwd(), 'package.json'), 'utf8')
     const pkg = JSON.parse(pkgRaw) as { engines?: { node?: string } }
-    const vitePath = join(process.cwd(), 'node_modules', 'vite', 'package.json')
-    const vitePkg = JSON.parse(readFileSync(vitePath, 'utf8')) as { engines?: { node?: string } }
-    const viteNode = vitePkg.engines?.node ?? ''
-    expect(viteNode, 'Vite engines.node lesbar').toBeTruthy()
-    expect(
-      pkg.engines?.node,
-      `package.json engines.node muss Vite entsprechen (aktuell ${viteNode}) – Vite 7 läuft nicht auf Node 18; Vercel wählt sonst zu alte Node-Version`
-    ).toBe(viteNode)
+    const node = pkg.engines?.node ?? ''
+    expect(node.includes('||'), 'Vercel unterstützt engines.node mit || nicht zuverlässig – Warnung „will be ignored“').toBe(
+      false
+    )
+    expect(node, 'engines.node = 22.x (Dashboard + Vite 7 auf Vercel-22)').toBe('22.x')
   })
 
   it('installCommand: npm ci --omit=dev, beide SKIP-Env-Vars, niemals --include=dev', () => {

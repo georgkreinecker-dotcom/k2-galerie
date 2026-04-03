@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel-Fehler (echte Ursache, nicht geraten):** **Vite 7** verlangt **`^20.19.0 || >=22.12.0`** (`node_modules/vite/package.json` → `engines.node`). **`package.json` hatte `>=18`** → Vercel kann **Node 18** nutzen → **`vite build` bricht** ab (oft nach ~30–40 s: Install ok, Build startet). **Fix:** `engines.node` = derselbe String wie bei Vite; **`.nvmrc`** = `22`; GitHub **Vercel-Paritäts-Job** (`npm ci --omit=dev` + `build:vercel` auf Ubuntu). **Commit:** **856c94e** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel `engines.node` – Warnung „will be ignored“:** Vercel parst **`||`-Ranges** in `package.json` → `engines` oft **ignoriert**. **Fix:** `engines.node` = **`22.x`** (einfach, wie Dashboard **Node 22.x**); weiterhin Vite-7-tauglich. **Guard-Test** `vercel-config-guard.test.ts`: kein `||`, erwartet `22.x`. **Commit:** _(nach Push – Hash hier eintragen)_ ✅ GitHub
 
-**Was wir JETZT tun:** Vercel „Ready“ prüfen; in Vercel **Node-Version** ggf. auf **22** stellen falls Projekt alt gepinnt war.
+**Was wir JETZT tun:** Vercel erneut deployen; Log: **keine** engines-Warnung mehr; bei **Exit 2** weiterhin **erste rote Zeile** im Build-Log prüfen (tsc/vite).
 
-**Einordnung:** Die vorherige Runde (npm ci / Electron) war Nebel; der harte Fakt steht in **Vites engines**.
+**Einordnung:** Gleicher Node-22-Zielzustand wie zuvor, aber **Vercel-kompatibel** formuliert – sonst wählt die Plattform ignorierend eine falsche Version.
 
 ---
 
