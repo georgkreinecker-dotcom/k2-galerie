@@ -17,14 +17,17 @@ describe('Vercel-Konfigurations-Schranken', () => {
     }
   })
 
-  it('installCommand: weiterhin devDependencies einplanen (Tests/Lint lokal; npm ci --include=dev)', () => {
+  it('installCommand: kein --include=dev (devDeps = Electron/Playwright → Postinstall bricht auf Vercel-Linux oft ab)', () => {
     const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
     const cfg = JSON.parse(raw) as { installCommand?: string }
     const cmd = cfg.installCommand ?? ''
+    expect(cmd.includes('npm ci'), 'installCommand muss npm ci nutzen').toBe(true)
     expect(
-      cmd.includes('--include=dev') || cmd.includes('NODE_ENV=development'),
-      'installCommand soll devDependencies nicht weglassen (zusätzliche Absicherung neben dependencies-Buildtools)'
+      !cmd.includes('--include=dev'),
+      'Auf Vercel keine devDependencies installieren: typescript/vite liegen in dependencies; Electron-Binary-Download scheitert häufig unter Linux'
     ).toBe(true)
+    expect(cmd.includes('ELECTRON_SKIP_BINARY_DOWNLOAD=1')).toBe(true)
+    expect(cmd.includes('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1')).toBe(true)
   })
 
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {

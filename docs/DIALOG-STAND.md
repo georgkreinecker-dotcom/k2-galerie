@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel: sicher notwendig (ohne „wenn du willst“):** Build-Werkzeuge müssen bei **`NODE_ENV=production`** trotzdem installiert sein. **Doppelte Absicherung:** (1) **`typescript`**, **`vite`**, **`@vitejs/plugin-react`** und nötige **`@types/*`** von **devDependencies → `dependencies`** (Vercel installiert `dependencies` immer). (2) **`vercel.json`** weiter **`npm ci --include=dev`**. Verifiziert: `NODE_ENV=production npm ci` → `tsc`/`vite` vorhanden; `build:vercel` grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **46de178** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel weiter rot (~42s):** Ursache **`npm ci --include=dev`** → installiert **Electron** (devDependency) → **Postinstall / Binary-Download** scheitert auf **Vercel-Linux** nach ~40s. **Fix:** **`installCommand`** = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 ELECTRON_SKIP_BINARY_DOWNLOAD=1 npm ci` **ohne** `--include=dev` (Build nur über **`dependencies`**: typescript, vite, @vitejs/plugin-react, @types). **Test:** `vercel-config-guard.test.ts`. **Commit:** _(Hash nach Push eintragen)_
 
 **Was wir JETZT tun:** Vercel „Ready“ prüfen.
 
-**Einordnung:** Georg braucht keine Entscheidung – das ist der übliche Standard für Hosted Builds.
+**Einordnung:** Vercel = nur Production-Dependencies; Tests/Electron bleiben lokal/Mac.
 
 ---
 
