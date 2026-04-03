@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **Besucherzahl am Mac (Vite): GET von Vercel:** Unter `npm run dev` gibt es kein `/api/visit` → Admin **👁**, **PlatformStartPage**, **UebersichtBoardPage** zeigten **„–“** bzw. keine Zähler während Handy (Produktion) schon Zahlen hatte. **Fix:** `fetchVisitCount` in **`visitCountApiOrigin.ts`** (GET immer **`BASE_APP_URL`** in DEV); Einbau in **ScreenshotExportAdmin**, **PlatformStartPage**, **UebersichtBoardPage**; Board: Lizenz-Fetch und Besucher-Fetch **parallel** (Besucher nicht mehr an fehlgeschlagene `licence-data` gekoppelt). Tests **`visitCountApiOrigin.test.ts`**. **Commit:** **cc5d916** ✅ GitHub
+
+**Was wir JETZT tun:** Georg: lokal Admin öffnen → **👁** soll echte Zähler zeigen (wie Vercel).
+
+**Einordnung:** Gleiche Datenquelle wie Mobil; POST **`reportPublicGalleryVisit`** unverändert auf `origin` (lokales Surfen triggert Produktions-Zähler nicht).
+
+---
+
 **Letzter Stand:** 03.04.26 – **VK2 öffentliche Galerie: „← Zurück“ entfernt:** In **`Vk2GaleriePage`** den orangenen **Zurück**-Button in der Kopfzeile entfernt (war nur bei `fromAdminTab` → `/`). Layout links: fester Platzhalter; **Mitglied** / **Admin** unverändert. **Commit:** **f5eed06** ✅ GitHub
 
 **Was wir JETZT tun:** –

@@ -34,6 +34,7 @@ import {
 } from '../src/utils/werkkatalogPreferences'
 import { formatEventTerminKomplett } from '../src/utils/eventTerminFormat'
 import { openCheckoutOrPaymentUrl } from '../src/utils/openCheckoutOrPaymentUrl'
+import { fetchVisitCount } from '../src/utils/visitCountApiOrigin'
 
 /** Nur echte Produktions-URLs für gedruckte QR/Links (https, kein localhost) – sonst Fallback nutzen */
 function isProductionLikeUrl(url: string | undefined): boolean {
@@ -3520,25 +3521,20 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => clearTimeout(t)
   }, [activeTab, settingsSubTab])
 
-  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe / Lizenz-Mandant)
+  // Besucher-Ticker: Zahl für aktuellen Kontext laden (K2 / ök2 / VK2 Summe / Lizenz-Mandant). GET immer Produktions-API unter Vite (lokal kein /api/visit).
   useEffect(() => {
     let isMounted = true
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
     const dyn = tenant.dynamicTenantId
     if (tenant.isVk2) {
-      Promise.all([
-        fetch(`${origin}/api/visit?tenant=vk2-members`).then((r) => r.json()).then((d) => d.count ?? 0),
-        fetch(`${origin}/api/visit?tenant=vk2-external`).then((r) => r.json()).then((d) => d.count ?? 0),
-      ]).then(([m, e]) => { if (isMounted) setBesucherCount(m + e) }).catch(() => { if (isMounted) setBesucherCount(null) })
+      Promise.all([fetchVisitCount('vk2-members'), fetchVisitCount('vk2-external')]).then(([m, e]) => {
+        if (isMounted) setBesucherCount(m + e)
+      })
     } else if (dyn && /^[a-z0-9-]{1,64}$/.test(dyn)) {
-      fetch(`${origin}/api/visit?tenant=${encodeURIComponent(dyn)}`)
-        .then((r) => r.json())
-        .then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) })
-        .catch(() => { if (isMounted) setBesucherCount(null) })
+      fetchVisitCount(dyn).then((n) => { if (isMounted) setBesucherCount(n) })
     } else if (tenant.isOeffentlich) {
-      fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
+      fetchVisitCount('oeffentlich').then((n) => { if (isMounted) setBesucherCount(n) })
     } else {
-      fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => { if (isMounted) setBesucherCount(d.count ?? 0) }).catch(() => { if (isMounted) setBesucherCount(null) })
+      fetchVisitCount('k2').then((n) => { if (isMounted) setBesucherCount(n) })
     }
     return () => { isMounted = false }
   }, [tenant.isOeffentlich, tenant.isVk2, tenant.dynamicTenantId])

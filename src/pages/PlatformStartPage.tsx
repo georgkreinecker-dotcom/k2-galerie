@@ -5,6 +5,7 @@ import '../App.css'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
+import { fetchVisitCount } from '../utils/visitCountApiOrigin'
 
 // Haupt-Features (wichtigste Funktionen)
 const mainFeatures = [
@@ -113,13 +114,12 @@ export default function PlatformStartPage() {
   }, [])
 
   useEffect(() => {
-    const origin = window.location.origin
     Promise.all([
-      fetch(`${origin}/api/visit?tenant=k2`).then((r) => r.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=oeffentlich`).then((r) => r.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=vk2-members`).then((r) => r.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=vk2-external`).then((r) => r.json()).then((d) => d.count ?? 0),
-    ]).then(([k2, oef, vk2M, vk2E]) => setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E })).catch(() => setVisits(null))
+      fetchVisitCount('k2'),
+      fetchVisitCount('oeffentlich'),
+      fetchVisitCount('vk2-members'),
+      fetchVisitCount('vk2-external'),
+    ]).then(([k2, oef, vk2M, vk2E]) => setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E }))
   }, [])
 
   // Prüfe ob iOS und ob bereits installiert

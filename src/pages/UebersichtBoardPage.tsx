@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, MOK2_ROUTE } from '../config/navigation'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
+import { fetchVisitCount } from '../utils/visitCountApiOrigin'
 
 const GRANTS_KEY = 'k2-license-grants'
 
@@ -51,19 +52,34 @@ export default function UebersichtBoardPage() {
     const origin = window.location.origin
     let cancelled = false
     Promise.all([
-      fetch(`${origin}/api/licence-data`).then((res) => res.json()),
-      fetch(`${origin}/api/visit?tenant=k2`).then((res) => res.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=oeffentlich`).then((res) => res.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=vk2-members`).then((res) => res.json()).then((d) => d.count ?? 0),
-      fetch(`${origin}/api/visit?tenant=vk2-external`).then((res) => res.json()).then((d) => d.count ?? 0),
-    ]).then(([data, k2, oef, vk2M, vk2E]) => {
-      if (cancelled) return
-      setApiData({ licences: data.licences ?? [], payments: data.payments ?? [], gutschriften: data.gutschriften ?? [] })
-      setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E })
-    }).catch(() => {
-      if (!cancelled) setApiData({ licences: [], payments: [], gutschriften: [] })
-    }).finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
+      fetch(`${origin}/api/licence-data`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!cancelled) {
+            setApiData({
+              licences: data.licences ?? [],
+              payments: data.payments ?? [],
+              gutschriften: data.gutschriften ?? [],
+            })
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setApiData({ licences: [], payments: [], gutschriften: [] })
+        }),
+      Promise.all([
+        fetchVisitCount('k2'),
+        fetchVisitCount('oeffentlich'),
+        fetchVisitCount('vk2-members'),
+        fetchVisitCount('vk2-external'),
+      ]).then(([k2, oef, vk2M, vk2E]) => {
+        if (!cancelled) setVisits({ k2, oeffentlich: oef, vk2Members: vk2M, vk2External: vk2E })
+      }),
+    ]).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const onlineCount = apiData?.licences?.length ?? 0
