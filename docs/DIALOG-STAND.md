@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **VK2 Event-Flyer (Master): keine K2-Daten mehr:** `FlyerEventBogenNeuPage` lud für VK2 **`getK2Basics()`** + **`loadStammdaten('k2','gallery')`** → Muster zeigte K2 Galerie, Martina/Georg, Eferding. **Fix:** `getVk2FlyerBasics()` aus **`loadVk2Stammdaten`** / Demo; **`getPageContentGalerie('vk2')`** für Bilder; synthetisches `gallery` aus Verein; **`defaultMasterTextFromBase`/`mergeMasterTextFromPersisted`** mit **`isVk2`** (Rückseite ohne ök2-Marketing-Block); **`heroOpeningWord`** aus VK2-Event oder „Gemeinschaftsausstellung“; Storage-Listener **`k2-vk2-page-content-galerie`** / **`k2-vk2-page-texts`**. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 03.04.26 – **VK2 Event-Flyer (Master): keine K2-Daten mehr:** `FlyerEventBogenNeuPage` lud für VK2 **`getK2Basics()`** + **`loadStammdaten('k2','gallery')`** → Muster zeigte K2 Galerie, Martina/Georg, Eferding. **Fix:** `getVk2FlyerBasics()` aus **`loadVk2Stammdaten`** / Demo; **`getPageContentGalerie('vk2')`** für Bilder; synthetisches `gallery` aus Verein; **`defaultMasterTextFromBase`/`mergeMasterTextFromPersisted`** mit **`isVk2`** (Rückseite ohne ök2-Marketing-Block); **`heroOpeningWord`** aus VK2-Event oder „Gemeinschaftsausstellung“; Storage-Listener **`k2-vk2-page-content-galerie`** / **`k2-vk2-page-texts`**. **Commit:** **435c28c** ✅ GitHub
 
-**Was wir JETZT tun:** Push → Vercel Ready; Georg: VK2-Flyer im Admin prüfen.
+**Was wir JETZT tun:** Vercel Ready; Georg: VK2-Flyer im Admin prüfen.
 
 **Einordnung:** `dokumente-kontext-eine-quelle` – VK2-Werbemittel nur VK2-Quellen.
 
