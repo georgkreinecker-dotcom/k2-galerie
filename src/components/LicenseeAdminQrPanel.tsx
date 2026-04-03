@@ -19,6 +19,8 @@ export type LicenseeAdminQrPanelProps = {
   heading?: string
   /** Ersetzt den Standard-Erklärungstext unter der Überschrift (z. B. ök2-Demo) */
   adminIntro?: ReactNode
+  /** Dateiname beim Speichern des QR-PNG (Standard: admin-qr-k2-galerie.png) */
+  downloadFileName?: string
 }
 
 export function LicenseeAdminQrPanel({
@@ -33,6 +35,7 @@ export function LicenseeAdminQrPanel({
   primaryButtonColor = '#fff',
   heading = 'Admin auf dem Handy',
   adminIntro,
+  downloadFileName = 'admin-qr-k2-galerie.png',
 }: LicenseeAdminQrPanelProps) {
   const { versionTimestamp, refetch } = useQrVersionTimestamp()
   const [dataUrl, setDataUrl] = useState<string | null>(null)
@@ -88,9 +91,9 @@ export function LicenseeAdminQrPanel({
     if (!dataUrl) return
     const a = document.createElement('a')
     a.href = dataUrl
-    a.download = 'admin-qr-k2-galerie.png'
+    a.download = downloadFileName || 'admin-qr-k2-galerie.png'
     a.click()
-  }, [dataUrl])
+  }, [dataUrl, downloadFileName])
 
   if (!registrationComplete) {
     return (

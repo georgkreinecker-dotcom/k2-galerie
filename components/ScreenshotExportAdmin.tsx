@@ -18714,6 +18714,37 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       )
                     })()}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                        gap: 'clamp(0.75rem, 2vw, 1.25rem)',
+                        marginBottom: '1.25rem',
+                        alignItems: 'start',
+                      }}
+                    >
+                      {isPlatformInstance() && (
+                        <LicenseeAdminQrPanel
+                          registrationComplete
+                          adminBaseUrl={`${APP_BASE_URL}/admin?context=vk2`}
+                          accent={s.accent}
+                          bgCard={s.bgCard}
+                          text={s.text}
+                          muted={s.muted}
+                          radius="12px"
+                          heading="Admin-Zugang Muster-Demo (VK2)"
+                          downloadFileName="admin-qr-vk2-demo.png"
+                          adminIntro={
+                            <p style={{ margin: 0 }}>
+                              Das ist der <strong>Admin-Link und QR nur für die VK2-Muster-Vereinsplattform</strong> auf
+                              dieser Plattform. Sobald ein Verein <strong>eine eigene Lizenz</strong> nutzt, gelten{' '}
+                              <strong>dessen</strong> Zugangsdaten – nicht dieser Demo-QR. Öffentliche Besucher nutzen den{' '}
+                              <strong>Galerie-QR</strong> auf der VK2-Galerie-Seite, nicht diesen Admin-Code.
+                            </p>
+                          }
+                        />
+                      )}
+                      <div>
                     {/* Verein */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
                       <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏛️ Verein</h3>
@@ -18770,6 +18801,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <label style={{ fontSize: '0.85rem' }}>IBAN (für Rechnungen, optional)</label>
                           <input type="text" value={(vk2Stammdaten.verein as { iban?: string }).iban ?? ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, verein: { ...vk2Stammdaten.verein, iban: e.target.value } })} placeholder="AT00 0000 0000 0000 0000" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
+                      </div>
+                    </div>
                       </div>
                     </div>
                     {/* ── VEREINSTYP + KATEGORIEN FÜR MITGLIEDER ── */}
