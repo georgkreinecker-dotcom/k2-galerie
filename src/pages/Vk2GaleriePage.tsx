@@ -206,7 +206,7 @@ const Vk2GaleriePage: React.FC = () => {
 
       {/* Keine gelbe Leiste mit „Zurück zu Einstellungen“ – für User verboten, zur APf zu führen */}
 
-      {/* Nav: „Zurück“ und „Admin“ anzeigen, wenn Aufruf vom Admin (fromAdminTab) oder Admin bereits freigeschaltet – Zugang wiederherstellbar */}
+      {/* Nav: kein „Zurück“ zur APf (Georg 03.04.26). „Admin“ nur wenn Aufruf vom Admin oder Unlock – Zugang wiederherstellbar */}
       {(() => {
         const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
         const showAdminEntry = fromAdmin || isAdminUnlocked()
@@ -220,16 +220,7 @@ const Vk2GaleriePage: React.FC = () => {
             borderBottom: `1px solid ${C.border}`,
             boxShadow: '0 1px 8px rgba(0,0,0,0.06)',
           }}>
-            {fromAdmin ? (
-              <button
-                onClick={() => navigate('/')}
-                style={{ background: C.accent, color: '#fff', border: 'none', borderRadius: 8, padding: '0.3rem 0.75rem', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer', letterSpacing: '0.04em' }}
-              >
-                ← Zurück
-              </button>
-            ) : (
-              <div style={{ width: '4rem' }} />
-            )}
+            <div style={{ width: '4rem', flexShrink: 0 }} aria-hidden />
             <span style={{ fontSize: '0.78rem', fontWeight: 600, color: C.textMid, letterSpacing: '0.14em', textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }}>
               {vereinsName}
             </span>
