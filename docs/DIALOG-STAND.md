@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 (Abend) – **Session-Ende Georg („Schluss für heute“):** `npm run test` + `npm run build` grün; offener Stand committed + gepusht: Stripe-Lizenz-Kette (`api/licence-data.js`, `api/stripeLicenceChainConstants.js`), Checkout/Webhook, Doku STRIPE/AGENTEN-BRIEFING, Benutzer- und VK2-Handbuch, `stammdatenStorage`, `App`/`vite`, Tests. **Commit:** **8a301c1** ✅ GitHub
+**Letzter Stand:** 04.04.26 (Abend) – **Session-Ende Georg („Schluss für heute“):** `npm run test` + `npm run build` grün; offener Stand committed + gepusht: Stripe-Lizenz-Kette (`api/licence-data.js`, `api/stripeLicenceChainConstants.js`), Checkout/Webhook, Doku STRIPE/AGENTEN-BRIEFING, Benutzer- und VK2-Handbuch, `stammdatenStorage`, `App`/`vite`, Tests. **Commit:** **c3764d8** ✅ GitHub
 
 **Was wir JETZT tun:** Nächste Session: obersten Block hier lesen und Faden aufnehmen.
 
