@@ -1,6 +1,22 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **VK2 Einstellungen – Tab Backup & Daten:** K2-only Blöcke (Platzhalter, Malerei-Doppler, …) in **Fragment** + `!tenant.isVk2`; **VK2:** Download `createVk2Backup` + `recordLastBackupDownloadExported('vk2')`, Wiederherstellen mit **K2-Familie-Hinweis**, VK2-Kontext-Bestätigung bei fremder Datei, `restoreVk2FromBackup`/`unbekannt`-Fallback. Versteckter File-Input **ein** für K2/VK2. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** _(nach Push)_
+**Letzter Stand:** 03.04.26 – **Vercel-Build nach Admin-Commits (a9ca2bd ff.):** Deploys brachen nach ~38–43s ab (lokal `npm run build` grün). **Ursache:** typisch **Speicher/Parallelität** bei `npm run test` (Vitest/jsdom) auf kleiner Build-VM. **Fix:** `vercel.json` → `NODE_OPTIONS=--max-old-space-size=6144` im `buildCommand`; `vitest.config.ts` → `maxWorkers: 2` wenn `VERCEL` oder `CI`. **Commit:** **4e58bfe** ✅ GitHub
+
+**Was wir JETZT tun:** Vercel-Deployment „Ready“ abwarten und ggf. Redeploy des letzten Commits prüfen.
+
+**Einordnung:** ScreenshotExportAdmin-Änderungen waren ok; Pipeline-Last auf Vercel war das Problem.
+
+---
+
+**Letzter Stand:** 03.04.26 – **VK2-Lizenz Preis & Anmeldung:** `licencePricing.ts` – VK2 **35 €/Monat (wie Pro)**, `priceEur: 35`, Untertitel Kostenfrei-Regel; **Admin** bei VK2 nur **eine** Karte „Kunstvereine (VK2)“ (Checkout `pro`); Intro + Lizenzinfo: Zahlung **nur Karte/Stripe**; **LicencesPage** VK2-Karte mit Euro-Zeile; **LicenseManager** VK2-Preisanzeige. **Commit:** **e163201** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: VK2-Preis sichtbar; Frage „Anmeldung nur eine Möglichkeit?“ → ja, Zahlungsweg Stripe; Vereinslizenz eine Stufe.
+
+---
+
+**Letzter Stand:** 03.04.26 – **VK2 Einstellungen – Tab Backup & Daten:** K2-only Blöcke (Platzhalter, Malerei-Doppler, …) in **Fragment** + `!tenant.isVk2`; **VK2:** Download `createVk2Backup` + `recordLastBackupDownloadExported('vk2')`, Wiederherstellen mit **K2-Familie-Hinweis**, VK2-Kontext-Bestätigung bei fremder Datei, `restoreVk2FromBackup`/`unbekannt`-Fallback. Versteckter File-Input **ein** für K2/VK2. **Datei:** `ScreenshotExportAdmin.tsx`. **Commit:** **01eed62** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
