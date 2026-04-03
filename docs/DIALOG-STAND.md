@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **VK2 Admin-QR wie ök2:** Im Admin **Einstellungen → Stammdaten (VK2)** neben **Verein** dieselbe Karte wie ök2: **`LicenseeAdminQrPanel`** mit `admin?context=vk2`, Server-Stand + Bust, **Admin-Link kopieren**, **QR-Bild speichern** (`downloadFileName`), **Stand für QR neu laden**; nur **`isPlatformInstance()`**. **`LicenseeAdminQrPanel`:** optionaler Prop **`downloadFileName`**. **Commit:** **5729169** ✅ GitHub
+
+**Was wir JETZT tun:** Georg: VK2 Stammdaten im Admin kurz prüfen (QR neben Verein).
+
+**Einordnung:** Gleiches Muster wie ök2-Demo-Admin-QR; Besucher weiter Galerie-QR auf VK2-Galerie.
+
+---
+
 **Letzter Stand:** 03.04.26 – **VK2 Event-Flyer (Master): keine K2-Daten mehr:** `FlyerEventBogenNeuPage` lud für VK2 **`getK2Basics()`** + **`loadStammdaten('k2','gallery')`** → Muster zeigte K2 Galerie, Martina/Georg, Eferding. **Fix:** `getVk2FlyerBasics()` aus **`loadVk2Stammdaten`** / Demo; **`getPageContentGalerie('vk2')`** für Bilder; synthetisches `gallery` aus Verein; **`defaultMasterTextFromBase`/`mergeMasterTextFromPersisted`** mit **`isVk2`** (Rückseite ohne ök2-Marketing-Block); **`heroOpeningWord`** aus VK2-Event oder „Gemeinschaftsausstellung“; Storage-Listener **`k2-vk2-page-content-galerie`** / **`k2-vk2-page-texts`**. **Commit:** **435c28c** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel Ready; Georg: VK2-Flyer im Admin prüfen.
