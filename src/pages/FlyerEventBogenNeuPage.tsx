@@ -3,16 +3,19 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { getPageTexts } from '../config/pageTexts'
-import { getGalerieImages, setPageContentGalerie } from '../config/pageContentGalerie'
+import { getGalerieImages, getPageContentGalerie, setPageContentGalerie } from '../config/pageContentGalerie'
 import {
   K2_STAMMDATEN_DEFAULTS,
   MUSTER_TEXTE,
   PRODUCT_COPYRIGHT_BRAND_ONLY,
   PRODUCT_OEK2_MARKETING_ERKLAERUNG_FLYER,
   TENANT_CONFIGS,
+  VK2_DEMO_STAMMDATEN,
+  VK2_STAMMDATEN_DEFAULTS,
+  type Vk2Stammdaten,
 } from '../config/tenantConfig'
 import { useTenant } from '../context/TenantContext'
-import { loadStammdaten } from '../utils/stammdatenStorage'
+import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { loadEvents } from '../utils/eventsStorage'
 import { getOeffentlichEventsWithMusterFallback, pickOpeningEventForWerbemittel } from '../utils/oek2MusterEventLinie'
 import {
@@ -284,7 +287,21 @@ function loadFlyerEventBogenPersisted(storageKey: string): Partial<FlyerEventBog
   }
 }
 
-function defaultMasterTextFromBase(isOeffentlich: boolean): FlyerEventBogenPersistedV1['masterText'] {
+function defaultMasterTextFromBase(
+  isOeffentlich: boolean,
+  isVk2: boolean,
+): FlyerEventBogenPersistedV1['masterText'] {
+  if (isVk2) {
+    const b = getVk2FlyerBasics()
+    return {
+      intro: b.intro,
+      backSlogan: 'Gemeinschaft stärkt Kunst.',
+      backPower: 'Unser Verein bringt Künstler:innen zusammen – sichtbar, vernetzt, einladend.',
+      backSub: 'Die VK2-Vereinsplattform: Ausstellungen, Mitglieder und Öffentlichkeit aus einer Oberfläche.',
+      backInvite: 'Besuchen Sie unsere Online-Galerie und die nächsten Termine im Verein.',
+      marketingBlocksRaw: '',
+    }
+  }
   const b = isOeffentlich ? getOek2MusterBasics() : getK2Basics()
   return {
     intro: b.intro,
@@ -299,8 +316,9 @@ function defaultMasterTextFromBase(isOeffentlich: boolean): FlyerEventBogenPersi
 function mergeMasterTextFromPersisted(
   persisted: Partial<FlyerEventBogenPersistedV1> | null,
   isOeffentlich: boolean,
+  isVk2: boolean,
 ): FlyerEventBogenPersistedV1['masterText'] {
-  const d = defaultMasterTextFromBase(isOeffentlich)
+  const d = defaultMasterTextFromBase(isOeffentlich, isVk2)
   if (!persisted?.masterText) return d
   const m = persisted.masterText
   return {
@@ -377,6 +395,43 @@ function getOek2MusterBasics() {
     city: gallery.city || mt.gallery.city || '',
     phone: gallery.phone || mt.gallery.phone || '',
     email: gallery.email || mt.gallery.email || '',
+  }
+}
+
+/** Flyer-Basis VK2: nur Vereins-Stammdaten / Demo – keine K2-Galerie, keine Martina/Georg-Zeile aus K2. */
+function getVk2FlyerBasics() {
+  const raw = loadVk2Stammdaten() as Vk2Stammdaten | null
+  const demo = VK2_DEMO_STAMMDATEN
+  const hasVereinName = Boolean(raw?.verein && String(raw.verein.name || '').trim())
+  const s = hasVereinName && raw ? raw : demo
+  const v = { ...VK2_STAMMDATEN_DEFAULTS.verein, ...s.verein }
+  const mitglieder = Array.isArray(s.mitglieder) ? s.mitglieder : []
+  const m0 = String(mitglieder[0]?.name || s.vorstand?.name || '').trim()
+  const m1 = String(mitglieder[1]?.name || s.vize?.name || '').trim()
+  let subtitle = ''
+  if (m0 && m1) {
+    const a = firstName(m0, m0)
+    const b = firstName(m1, m1)
+    subtitle = `${a} & ${b}`
+  } else if (m0) subtitle = m0
+  else subtitle = 'Ihr Vorstand'
+
+  const pt = getPageTexts('vk2')
+  const introDefault =
+    'Gemeinschaft, Kunst und Begegnung – entdecke die Ausstellung unseres Vereins und die Vielfalt der Mitgliederwerke.'
+  const galleryName = String(v.name || demo.verein.name).trim()
+
+  return {
+    galleryName,
+    brandLine: galleryName,
+    brandSub: subtitle,
+    backCardTitle: galleryName,
+    intro: String(pt.galerie?.welcomeIntroText || '').trim() || introDefault,
+    subtitle,
+    address: String(v.address || demo.verein.address || '').trim(),
+    city: String(v.city || demo.verein.city || '').trim(),
+    phone: '',
+    email: String(v.email || demo.verein.email || '').trim(),
   }
 }
 
@@ -498,15 +553,42 @@ export default function FlyerEventBogenNeuPage() {
     [isOeffentlich, isVk2, flyerDataTick],
   )
   const flyerTheme = useMemo(() => buildFlyerThemeInject(homepageDesignForFlyer), [homepageDesignForFlyer])
-  const base = useMemo(
-    () => (isOeffentlich ? getOek2MusterBasics() : getK2Basics()),
-    [isOeffentlich, flyerDataTick],
-  )
-  const gallery = useMemo(
-    () => loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery'),
-    [flyerDataTick, isOeffentlich],
-  )
-  const galerieImages = getGalerieImages(gallery)
+  const base = useMemo(() => {
+    if (isOeffentlich) return getOek2MusterBasics()
+    if (isVk2) return getVk2FlyerBasics()
+    return getK2Basics()
+  }, [isOeffentlich, isVk2, flyerDataTick])
+  const gallery = useMemo(() => {
+    if (isOeffentlich) return loadStammdaten('oeffentlich', 'gallery')
+    if (isVk2) {
+      const vk = getVk2FlyerBasics()
+      return {
+        name: vk.galleryName,
+        address: vk.address,
+        city: vk.city,
+        phone: vk.phone,
+        email: vk.email,
+        openingHours: '',
+        openingHoursWeek: undefined as Record<string, string> | undefined,
+        welcomeImage: '',
+        galerieCardImage: '',
+        virtualTourImage: '',
+      }
+    }
+    return loadStammdaten('k2', 'gallery')
+  }, [flyerDataTick, isOeffentlich, isVk2])
+  const galerieImages = useMemo(() => {
+    if (isVk2) {
+      const pc = getPageContentGalerie('vk2')
+      return {
+        welcomeImage: pc.welcomeImage || '',
+        galerieCardImage: pc.galerieCardImage || '',
+        virtualTourImage: pc.virtualTourImage || '',
+        virtualTourVideo: pc.virtualTourVideo || '',
+      }
+    }
+    return getGalerieImages(gallery, isOeffentlich ? 'oeffentlich' : undefined)
+  }, [isVk2, isOeffentlich, gallery, flyerDataTick])
   const defaultLeft =
     galerieImages.galerieCardImage || galerieImages.welcomeImage || flyerImgFallback
   const defaultMiddle = galerieImages.welcomeImage || flyerImgFallback
@@ -547,6 +629,7 @@ export default function FlyerEventBogenNeuPage() {
     mergeMasterTextFromPersisted(
       loadFlyerEventBogenPersisted(getFlyerEventBogenStorageKey(isOeffentlich, isVk2)),
       isOeffentlich,
+      isVk2,
     ),
   )
   const [introFollowsGallery, setIntroFollowsGallery] = useState(() => {
@@ -1040,9 +1123,9 @@ export default function FlyerEventBogenNeuPage() {
     }
     return 'Gescannt gelangen Besucher zur öffentlichen Online-Galerie – dort sind Ihre Werke sichtbar.'
   }, [isOeffentlich, isVk2])
-  /** ök2: Überschrift aus Muster-Event (z. B. Vernissage); K2: unverändert „Galerieeröffnung“. */
+  /** ök2/VK2: Überschrift aus Event (z. B. Vernissage, Gemeinschaftsausstellung); K2: „Galerieeröffnung“. */
   const heroOpeningWord = useMemo(() => {
-    if (isOeffentlich && eroeffnungEvent) {
+    if ((isOeffentlich || isVk2) && eroeffnungEvent) {
       const t = String(
         (eroeffnungEvent as { title?: string; name?: string }).title ||
           (eroeffnungEvent as { title?: string; name?: string }).name ||
@@ -1050,8 +1133,9 @@ export default function FlyerEventBogenNeuPage() {
       ).trim()
       if (t) return t
     }
+    if (isVk2) return 'Gemeinschaftsausstellung'
     return 'Galerieeröffnung'
-  }, [isOeffentlich, eroeffnungEvent])
+  }, [isOeffentlich, isVk2, eroeffnungEvent])
   const openingHoursBlock = useMemo(() => formatGalleryOpeningHoursBlock(gallery), [gallery])
 
   const masterClickInfoTexts = useMemo(() => {
@@ -1197,7 +1281,7 @@ export default function FlyerEventBogenNeuPage() {
       setRightSrc(gi.virtualTourImage || gi.welcomeImage || fb)
       setLeftWerkLabel('Bild aus Datei')
       setIntroFollowsGallery(true)
-      setMasterText(mergeMasterTextFromPersisted(null, true))
+      setMasterText(mergeMasterTextFromPersisted(null, true, false))
       setPage1Layout(layoutFromUrl)
     }
     window.addEventListener('k2-flyer-event-bogen-neu-reset', onFlyerMasterReset)
@@ -1244,7 +1328,13 @@ export default function FlyerEventBogenNeuPage() {
           bump()
         }
       } else if (isVk2) {
-        if (e.key === 'k2-vk2-events' || e.key === 'k2-vk2-stammdaten') bump()
+        if (
+          e.key === 'k2-vk2-events' ||
+          e.key === 'k2-vk2-stammdaten' ||
+          e.key === 'k2-vk2-page-content-galerie' ||
+          e.key === 'k2-vk2-page-texts'
+        )
+          bump()
       } else if (
         e.key === 'k2-events' ||
         e.key === 'k2-stammdaten-galerie' ||
