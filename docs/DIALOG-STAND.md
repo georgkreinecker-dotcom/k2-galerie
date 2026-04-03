@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **VK2 öffentliche Galerie: „← Zurück“ entfernt:** In **`Vk2GaleriePage`** den orangenen **Zurück**-Button in der Kopfzeile entfernt (war nur bei `fromAdminTab` → `/`). Layout links: fester Platzhalter; **Mitglied** / **Admin** unverändert. **Commit:** **f5eed06** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Passt zu **vk2-oek2-kein-zurueck-zur-apf** – kein sichtbarer Rückweg zur APf-Startseite aus der Galerie-Kopfzeile.
+
+---
+
 **Letzter Stand:** 03.04.26 – **VK2 Admin-QR wie ök2:** Im Admin **Einstellungen → Stammdaten (VK2)** neben **Verein** dieselbe Karte wie ök2: **`LicenseeAdminQrPanel`** mit `admin?context=vk2`, Server-Stand + Bust, **Admin-Link kopieren**, **QR-Bild speichern** (`downloadFileName`), **Stand für QR neu laden**; nur **`isPlatformInstance()`**. **`LicenseeAdminQrPanel`:** optionaler Prop **`downloadFileName`**. **Commit:** **5729169** ✅ GitHub
 
 **Was wir JETZT tun:** Georg: VK2 Stammdaten im Admin kurz prüfen (QR neben Verein).
