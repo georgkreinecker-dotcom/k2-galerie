@@ -17,17 +17,18 @@ describe('Vercel-Konfigurations-Schranken', () => {
     }
   })
 
-  it('installCommand: kein --include=dev (devDeps = Electron/Playwright → Postinstall bricht auf Vercel-Linux oft ab)', () => {
+  it('installCommand: npm ci --omit=dev, beide SKIP-Env-Vars, niemals --include=dev', () => {
     const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
     const cfg = JSON.parse(raw) as { installCommand?: string }
     const cmd = cfg.installCommand ?? ''
     expect(cmd.includes('npm ci'), 'installCommand muss npm ci nutzen').toBe(true)
+    expect(cmd.includes('--omit=dev'), 'installCommand muss --omit=dev enthalten (keine devDependencies auf Vercel)').toBe(true)
     expect(
       !cmd.includes('--include=dev'),
-      'Auf Vercel keine devDependencies installieren: typescript/vite liegen in dependencies; Electron-Binary-Download scheitert häufig unter Linux'
+      'Auf Vercel keine devDependencies erzwingen: typescript/vite liegen in dependencies; Electron/Playwright-Postinstall bricht auf Vercel-Linux oft ab'
     ).toBe(true)
-    expect(cmd.includes('ELECTRON_SKIP_BINARY_DOWNLOAD=1')).toBe(true)
-    expect(cmd.includes('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1')).toBe(true)
+    expect(cmd.includes('ELECTRON_SKIP_BINARY_DOWNLOAD=1'), 'ELECTRON_SKIP_BINARY_DOWNLOAD=1 muss gesetzt sein').toBe(true)
+    expect(cmd.includes('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1'), 'PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 muss gesetzt sein').toBe(true)
   })
 
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {
