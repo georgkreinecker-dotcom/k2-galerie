@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel-Install gehärtet:** Zusätzlich zu **`npm ci --omit=dev`** steht **`NPM_CONFIG_omit=dev`** (npm respektiert das auch ohne `NODE_ENV=production`). Lokal verifiziert: frische **`npm ci --omit=dev`** + **`npm run build:vercel`** = grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **ccd194b** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel-Fehler (echte Ursache, nicht geraten):** **Vite 7** verlangt **`^20.19.0 || >=22.12.0`** (`node_modules/vite/package.json` → `engines.node`). **`package.json` hatte `>=18`** → Vercel kann **Node 18** nutzen → **`vite build` bricht** ab (oft nach ~30–40 s: Install ok, Build startet). **Fix:** `engines.node` = derselbe String wie bei Vite; **`.nvmrc`** = `22`; GitHub **Vercel-Paritäts-Job** (`npm ci --omit=dev` + `build:vercel` auf Ubuntu). **Commit:** **64ee811** ✅ GitHub
 
-**Was wir JETZT tun:** Vercel „Ready“; falls **weiter rot:** Dashboard → Project → **Settings → General → Build & Development** → **Install Command** muss **leer** sein (sonst überschreibt es `vercel.json`).
+**Was wir JETZT tun:** Vercel „Ready“ prüfen; in Vercel **Node-Version** ggf. auf **22** stellen falls Projekt alt gepinnt war.
 
-**Einordnung:** Doppelte Absicherung gegen devDependency-Install auf Linux (Electron/Playwright).
+**Einordnung:** Die vorherige Runde (npm ci / Electron) war Nebel; der harte Fakt steht in **Vites engines**.
 
 ---
 
