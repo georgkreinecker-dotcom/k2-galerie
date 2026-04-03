@@ -84,7 +84,7 @@ const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 const CENTRAL_GALLERY_DATA_URL = `${VERCEL_APP_BASE}/api/gallery-data`
 /** Fallback wenn Blob noch leer (z. B. erste Deploy): statische Datei aus Build */
 const CENTRAL_GALLERY_DATA_FALLBACK_URL = `${VERCEL_APP_BASE}/gallery-data.json`
-import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_KUNSTBEREICHE, getVk2Kunstrichtungen, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
+import { MUSTER_TEXTE, MUSTER_ARTWORKS, MUSTER_EVENTS, MUSTER_VITA_MARTINA, MUSTER_VITA_GEORG, K2_STAMMDATEN_DEFAULTS, K2_DEFAULT_VITA_MARTINA, K2_DEFAULT_VITA_GEORG, isPlatformInstance, TENANT_CONFIGS, PRODUCT_BRAND_NAME, PRODUCT_WERBESLOGAN, PRODUCT_WERBESLOGAN_2, PRODUCT_ZIELGRUPPE, PRODUCT_POSITIONING_SWEET_SPOT, getCurrentTenantId, ARTWORK_CATEGORIES, ENTRY_TYPES, getEntryTypeLabel, getCategoryLabel, getCategoryPrefixLetter, getCategoriesForEntryType, getCategoriesForEntryTypeAndDirection, isSubcategoryPlausibleForCategory, getOek2DefaultArtworkImage, OEK2_PLACEHOLDER_IMAGE, VK2_VEREINSTYP_OPTIONS, getVk2KategorienVorschlagFuerTyp, getVk2Kunstrichtungen, isVk2VereinsTypId, VK2_STAMMDATEN_DEFAULTS, VK2_DEMO_STAMMDATEN, REGISTRIERUNG_CONFIG_DEFAULTS, getLizenznummerPraefix, initVk2DemoEventAndDocumentsIfEmpty, getOek2MusterPrDocuments, OEK2_DEPRECATED_MUSTER_PR_DOC_IDS, getProminenteAdresseFormatiert, getProminenteAdresse, FOCUS_DIRECTIONS, getDefaultEntryTypeForFocusDirections, getWelcomeIntroForFocusDirections, getCategoriesForDirection, getEffectiveDirectionFromWork, getEntryTypeForDirection, DEFAULT_OEK2_FOCUS_DIRECTION_ID, type TenantId, type FocusDirectionId, type ArtworkCategoryId, type EntryTypeId, type Vk2Stammdaten, type Vk2Mitglied, type RegistrierungConfig } from '../src/config/tenantConfig'
 import { buildVitaDocumentHtml } from '../src/utils/vitaDocument'
 import { getStoryForPr } from '../src/utils/prStory'
 import AdminBrandLogo from '../src/components/AdminBrandLogo'
@@ -1183,12 +1183,11 @@ function VK2LoginQrBlock({ s }: { s: { accent: string; text: string; muted: stri
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, color: s.text, fontSize: '0.9rem', marginBottom: '0.25rem' }}>🔑 Mitglied-Login QR-Code</div>
         <div style={{ fontSize: '0.8rem', color: s.muted, marginBottom: '0.4rem' }}>
-          Diesen QR-Code per WhatsApp an Mitglieder schicken. Scan → Login-Seite → Name wählen → PIN → eigenes Profil.
+          QR oder Link an Mitglieder weitergeben. Scan → Login → Name wählen → PIN → eigenes Profil.
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <code style={{ fontSize: '0.75rem', color: s.accent, background: `${s.accent}15`, padding: '0.2rem 0.5rem', borderRadius: 4 }}>{loginUrl}</code>
           <button type="button" onClick={() => { try { navigator.clipboard.writeText(loginUrl); alert('Link kopiert ✅') } catch (_) {} }} style={{ padding: '0.25rem 0.6rem', background: `${s.accent}22`, border: `1px solid ${s.accent}44`, borderRadius: 6, color: s.accent, fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}>Link kopieren</button>
-          <a href={`https://wa.me/?text=${encodeURIComponent(`🔑 Dein Login-Link für deinen Mitglieder-Bereich:\n${loginUrl}\n\nName wählen + PIN eingeben → fertig!`)}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.25rem 0.6rem', background: '#25d36620', border: '1px solid #25d36644', borderRadius: 6, color: '#25d366', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>💬 Per WhatsApp teilen</a>
         </div>
       </div>
     </div>
@@ -2614,6 +2613,13 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     return () => ro.disconnect()
   }, [designSubTab])
 
+  // Eingangsseite „Entdecken“: nur K2 (Toolbar + Speicher in k2-page-content-entdecken). ök2/VK2: kein Button, Tab zurücksetzen.
+  useEffect(() => {
+    if (tenant.isOeffentlich || tenant.isVk2) {
+      setDesignSubTab((tab) => (tab === 'eingangsseite' ? 'vorschau' : tab))
+    }
+  }, [tenant.isOeffentlich, tenant.isVk2])
+
   // Design-Vorschau: Ziehen am unteren Rand zum Vergrößern/Verkleinern (Maus + Touch)
   useEffect(() => {
     const onMove = (clientY: number) => {
@@ -3758,6 +3764,17 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         const parsed = loadVk2Stammdaten() as Partial<Vk2Stammdaten> | null
         if (parsed && typeof parsed === 'object' && JSON.stringify(parsed).length < 500000) {
           const parsedMitglieder: Vk2Mitglied[] = Array.isArray(parsed.mitglieder) ? parsed.mitglieder.map((m: any) => typeof m === 'string' ? { name: m, oeffentlichSichtbar: true } : { name: m?.name ?? '', email: m?.email, lizenz: m?.lizenz, typ: m?.typ, mitgliedFotoUrl: m?.mitgliedFotoUrl, imageUrl: m?.imageUrl, phone: m?.phone, website: m?.website, seit: m?.seit, strasse: m?.strasse, plz: m?.plz, ort: m?.ort, land: m?.land, geburtsdatum: m?.geburtsdatum, eintrittsdatum: m?.eintrittsdatum ?? m?.seit, oeffentlichSichtbar: m?.oeffentlichSichtbar !== false, bankKontoinhaber: m?.bankKontoinhaber, bankIban: m?.bankIban, bankBic: m?.bankBic, bankName: m?.bankName }) : []
+          const eigParsed = Array.isArray(parsed.eigeneKategorien)
+            ? parsed.eigeneKategorien
+              .filter((x: unknown) => x && typeof x === 'object')
+              .map((x: any) => ({
+                id: String(x.id || '').trim() || `vk2-cat-${Math.random().toString(36).slice(2, 10)}`,
+                label: String(x.label ?? '').trim(),
+              }))
+              .filter((x: { id: string; label: string }) => x.label.length > 0)
+            : []
+          const eigeneKategorien = eigParsed.length > 0 ? eigParsed : undefined
+          const vereinsTyp = isVk2VereinsTypId((parsed as Vk2Stammdaten).vereinsTyp) ? (parsed as Vk2Stammdaten).vereinsTyp : undefined
           const merged: Vk2Stammdaten = {
             verein: { ...VK2_STAMMDATEN_DEFAULTS.verein, ...parsed.verein },
             vorstand: { ...VK2_STAMMDATEN_DEFAULTS.vorstand, ...parsed.vorstand },
@@ -3768,6 +3785,8 @@ function ScreenshotExportAdmin(props?: AdminProps) {
             // Wenn keine Mitglieder gespeichert: Muster-Mitglieder als Fallback
             mitglieder: parsedMitglieder.length > 0 ? parsedMitglieder : USER_LISTE_FUER_MITGLIEDER,
             mitgliederNichtRegistriert: Array.isArray(parsed.mitgliederNichtRegistriert) ? parsed.mitgliederNichtRegistriert : [],
+            eigeneKategorien,
+            vereinsTyp,
           }
           setVk2Stammdaten(merged)
         } else {
@@ -13605,7 +13624,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               {/* Schritt 3: Speichern */}
               <div style={{ display: 'flex', alignItems: 'center', gap: dtCompact ? '0.25rem' : '0.5rem' }}>
                 <button type="button" onClick={() => setDesignSubTab('farben')} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: `${s.accent}18`, border: `1px solid ${s.accent}66`, borderRadius: dtCompact ? 8 : 10, color: s.accent, cursor: 'pointer' }}>{dtCompact ? '🎨 Farbe' : '🎨 Farbe ändern'}</button>
-                <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: dtCompact ? 8 : 10, color: '#5ffbf1', cursor: 'pointer' }}>{dtCompact ? '🚪 Eingang' : '🚪 Eingangsseite'}</button>
+                {!tenant.isOeffentlich && !tenant.isVk2 ? (
+                  <button type="button" onClick={() => { setDesignSubTab('eingangsseite'); setEntdeckenForm(getPageContentEntdecken()) }} style={{ padding: dtCompact ? '0.28rem 0.45rem' : '0.5rem 1rem', fontSize: dtCompact ? '0.76rem' : '0.95rem', fontWeight: 600, background: 'rgba(95,251,241,0.12)', border: '1px solid rgba(95,251,241,0.5)', borderRadius: dtCompact ? 8 : 10, color: '#5ffbf1', cursor: 'pointer' }}>{dtCompact ? '🚪 Eingang' : '🚪 Eingangsseite'}</button>
+                ) : null}
                 {designSaveFeedback === 'ok'
                   ? <span style={{ fontSize: dtCompact ? '0.76rem' : '1rem', color: '#10b981', fontWeight: 700, padding: dtCompact ? '0.25rem 0.45rem' : '0.5rem 1.1rem', background: 'rgba(16,185,129,0.12)', border: '1.5px solid #10b981', borderRadius: dtCompact ? 8 : 10 }}>{dtCompact ? '✓' : '✅ Gespeichert!'}</span>
                   : <button type="button" className="btn-primary" onClick={async () => {
@@ -15035,7 +15056,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                   ] : [
                     { emoji: '🖼️', name: 'Werke hinzufügen und bearbeiten', beschreibung: 'Foto aufnehmen, Titel und Preis eintragen – ein Klick und das Werk ist live in deiner Galerie.', tab: 'werke' },
                     { emoji: '✨', name: 'Galerie gestalten und texten', beschreibung: tenant.isOeffentlich ? 'Farben, Texte, dein Foto – die Galerie wird zu dir.' : 'Farben, Logo, Texte – die Galerie wird euer Gesicht.', tab: 'design' },
-                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : (tenant.isVk2 ? 'Meine Daten, Drucker, Sicherheit (inkl. Backup). Lizenz & Anmeldung.' : 'Meine Daten, Drucker (schlank für unsere App).'), tab: 'einstellungen' },
+                    { emoji: '⚙️', name: 'Einstellungen', beschreibung: tenant.isOeffentlich ? 'Meine Daten, Kontakt. Lizenz & Empfehlungsprogramm.' : (tenant.isVk2 ? 'Vereinsstammdaten, Drucker, Sicherheit (inkl. Backup). Lizenz & Anmeldung.' : 'Meine Daten, Drucker (schlank für unsere App).'), tab: 'einstellungen' },
                   ]
                   const rechtsBereiche: HubArea[] = tenant.isVk2 ? [
                     { emoji: '📋', name: 'Werkkatalog', beschreibung: 'Alle Werke auf einen Blick – filtern, suchen, drucken.', tab: 'katalog' },
@@ -17266,7 +17287,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 <>
                   <div style={{ position: 'sticky', top: 0, zIndex: 20, background: s.bgDark, borderBottom: `2px solid ${s.accent}33`, padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                     <button type="button" onClick={() => setDesignSubTab('vorschau')} style={{ padding: '0.5rem 1rem', border: `1px solid ${s.accent}44`, borderRadius: 8, fontSize: '0.95rem', background: s.bgElevated, color: s.text, cursor: 'pointer', fontWeight: 600 }}>← Vorschau</button>
-                    <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Eingangsseite für alle, die zum ersten Mal kommen (ök2 + VK2) – Bild in Vorschau wählen, Texte hier; Farben = K2-Design</span>
+                    <span style={{ fontSize: '0.85rem', color: s.muted, flex: 1 }}>Eingangsseite „Entdecken“ nur für die echte K2-Galerie – Hero-Bild und Texte; Farben aus dem Design-Tab</span>
                     <button type="button" className="btn-primary" onClick={() => { setPageContentEntdecken(entdeckenForm); setDesignSaveFeedback('ok'); setTimeout(() => setDesignSaveFeedback(null), 3000) }} style={{ padding: '0.5rem 1.25rem', fontSize: '0.95rem', fontWeight: 700 }}>💾 Speichern</button>
                     {designSaveFeedback === 'ok' && <span style={{ fontSize: '0.9rem', color: '#10b981', fontWeight: 600 }}>✓ Gespeichert</span>}
                   </div>
@@ -17883,17 +17904,21 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               <p style={{ margin: '0 0 1rem', fontSize: '0.8rem', color: s.muted }}>Verwaltung: <Link to={PROJECT_ROUTES['k2-galerie'].uebersicht} style={{ color: s.accent }}>Übersicht-Board</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: s.accent }}>Lizenzen</Link>, <Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: s.accent }}>Empfehlungstool</Link>.</p>
             )}
 
-            {/* Einstellungen: Karten – 1. Meine Daten, 2. Lizenzen (ök2: Info + abschließen + beenden; VK2/dynamisch: beenden), 3. Empfehlung … */}
+            {/* Einstellungen: Karten – 1. Meine Daten / VK2: Vereinsstammdaten, 2. Lizenzen (ök2: Info + abschließen + beenden; VK2/dynamisch: beenden), 3. Empfehlung … */}
             {!settingsSubTab || settingsSubTab === 'stammdaten' ? null : null /* subtab aktiv = kein Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '2rem', alignItems: 'stretch' }}>
-              {/* 1. Meine Daten */}
+              {/* 1. Meine Daten (K2/ök2) bzw. Vereinsstammdaten (VK2) */}
               <button type="button" onClick={() => setSettingsSubTab('stammdaten')} style={{ textAlign: 'left', cursor: 'pointer', background: settingsSubTab === 'stammdaten' ? `${s.accent}18` : s.bgElevated, border: `2px solid ${settingsSubTab === 'stammdaten' ? s.accent : s.accent + '22'}`, borderRadius: '12px', padding: '1rem', transition: 'all 0.2s', fontFamily: 'inherit', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', boxSizing: 'border-box', width: '100%', minHeight: '7.75rem', height: '100%' }}
                 onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                 onMouseLeave={(e) => { e.currentTarget.style.borderColor = settingsSubTab === 'stammdaten' ? s.accent : `${s.accent}22` }}
               >
-                <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }}>👥</div>
-                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Meine Daten</div>
-                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>Name, Kontakt, Adresse, Öffnungszeiten, YouTube/Instagram</div>
+                <span style={{ fontSize: '1.5rem', lineHeight: 1, marginBottom: '0.4rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'flex-start', minHeight: '1.35em' }} aria-hidden>{tenant.isVk2 ? '🏛️' : '👥'}</span>
+                <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>{tenant.isVk2 ? 'Vereinsstammdaten' : 'Meine Daten'}</div>
+                <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', flex: 1, lineHeight: 1.35 }}>
+                  {tenant.isVk2
+                    ? 'Verein, Vorstand, Mitglieder, Kategorien, Social-Links'
+                    : 'Name, Kontakt, Adresse, Öffnungszeiten, YouTube/Instagram'}
+                </div>
               </button>
               {/* 2. Lizenzen – eine Karte, Hauptaktion Lizenzinformation, daneben Abschließen & Beenden (ök2); VK2/dynamisch nur Beenden */}
               {(tenant.isOeffentlich || tenant.isVk2 || tenant.dynamicTenantId) && (() => {
@@ -17930,7 +17955,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = s.accent }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = lizenzHubAktiv ? s.accent : `${s.accent}22` }}
                   >
-                    <div style={{ fontSize: '1.4rem', marginBottom: '0.35rem' }}>📜</div>
+                    {/* 📜 wirkt auf macOS oft „abgeschnitten“; 📄 bleibt vollständig sichtbar */}
+                    <span style={{ fontSize: '1.5rem', lineHeight: 1, marginBottom: '0.35rem', display: 'inline-flex', alignItems: 'center', minHeight: '1.35em' }} aria-hidden>📄</span>
                     <div style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>Lizenzen</div>
                     <div style={{ fontSize: '0.78rem', color: s.muted, marginTop: '0.2rem', marginBottom: '0.75rem', lineHeight: 1.45 }}>
                       {tenant.isOeffentlich
@@ -18684,16 +18710,35 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       </div>
                     </div>
-                    {/* ── KATEGORIEN / KUNSTRICHTUNGEN FÜR MITGLIEDER ── */}
+                    {/* ── VEREINSTYP + KATEGORIEN FÜR MITGLIEDER ── */}
                     <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Kategorien für Mitglieder</h3>
-                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', color: s.muted }}>Das sind die <strong>Kategorien eures Kunstvereins</strong>. Ablauf: <strong>1. Verein anlegen</strong> (oben: Vereinsname, Adresse, Vorstand) → <strong>2. Kategorien hier definieren</strong>. Jeder Verein hat seine eigenen Kategorien; sie erscheinen beim Bearbeiten von Mitgliedern unter „Kategorie“.</p>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Standard: Malerei, Keramik, Grafik, Skulptur, Fotografie, Textil, Sonstiges. Ihr könnt eigene Kategorien festlegen (z. B. Aquarell, Mixed Media, Performance) oder beim Standard bleiben.</p>
+                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>🏷️ Vereinstyp &amp; Kategorien für Mitglieder</h3>
+                      <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', color: s.muted }}><strong>Vereinstyp</strong> = Schwerpunkt eures Vereins (nicht der Satzungszweck). Er bestimmt die <strong>Vorschlagsliste</strong> für Mitglieder-Kategorien, solange ihr keine eigene Liste pflegt.</p>
+                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}><strong>Kategorien</strong> = Sparten, Gruppen oder Rollen (erscheinen beim Bearbeiten von Mitgliedern). Ihr könnt Vorschläge <strong>nur nutzen</strong> (ohne Liste) oder als <strong>bearbeitbare Liste</strong> übernehmen und anpassen.</p>
+                      <div className="field" style={{ marginBottom: '0.85rem', maxWidth: '420px' }}>
+                        <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '0.35rem', color: s.text }}>Vereinstyp</label>
+                        <select
+                          value={vk2Stammdaten.vereinsTyp ?? ''}
+                          onChange={(e) => {
+                            const v = e.target.value
+                            setVk2Stammdaten({
+                              ...vk2Stammdaten,
+                              vereinsTyp: v === '' ? undefined : (isVk2VereinsTypId(v) ? v : undefined),
+                            })
+                          }}
+                          style={{ width: '100%', padding: '0.55rem 0.65rem', fontSize: '0.9rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text }}
+                        >
+                          <option value="">Wie bisher – Vorschlag wie Kunstverein (Malerei, Keramik, …)</option>
+                          {VK2_VEREINSTYP_OPTIONS.map((opt) => (
+                            <option key={opt.id} value={opt.id}>{opt.label}</option>
+                          ))}
+                        </select>
+                      </div>
                       {(vk2Stammdaten.eigeneKategorien?.length ?? 0) > 0 ? (
                         <div>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
                             {(vk2Stammdaten.eigeneKategorien || []).map((k, idx) => (
-                              <div key={k.id} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8 }}>
+                              <div key={`${k.id}-${idx}`} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.6rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8 }}>
                                 <input
                                   type="text"
                                   value={k.label}
@@ -18719,180 +18764,52 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                             </button>
                             <button
                               type="button"
-                              onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [] })}
+                              title="Ersetzt die Liste durch die Vorschläge des gewählten Vereinstyps"
+                              onClick={() => {
+                                if (!window.confirm('Die aktuelle Kategorienliste wird durch die Vorschläge des gewählten Vereinstyps ersetzt. Fortfahren?')) return
+                                setVk2Stammdaten({
+                                  ...vk2Stammdaten,
+                                  eigeneKategorien: getVk2KategorienVorschlagFuerTyp(vk2Stammdaten.vereinsTyp).map((x) => ({ id: x.id, label: x.label })),
+                                })
+                              }}
+                              style={{ padding: '0.4rem 0.85rem', background: `${s.accent}14`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', cursor: 'pointer' }}
+                            >
+                              Vorschläge aus Vereinstyp laden
+                            </button>
+                            <button
+                              type="button"
+                              title="Leere die bearbeitbare Liste; Vorschlag = gewählter Vereinstyp bzw. Kunst"
+                              onClick={() => {
+                                if (!window.confirm('Bearbeitbare Liste leeren und wieder nur Vorschlag nutzen? (Kunstverein-Beispiel: Vereinstyp wird auf Kunst gesetzt.)')) return
+                                setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [], vereinsTyp: 'kunst' })
+                              }}
                               style={{ padding: '0.4rem 0.85rem', background: 'transparent', border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.muted, fontSize: '0.85rem', cursor: 'pointer' }}
                             >
-                              Wieder Standard nutzen
+                              Liste leeren → Kunst-Vorschlag
                             </button>
                           </div>
                         </div>
                       ) : (
                         <div>
-                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>Aktuell: Standard-Kategorien (Malerei, Keramik, Grafik, …)</p>
-                          <button
-                            type="button"
-                            onClick={() => setVk2Stammdaten({ ...vk2Stammdaten, eigeneKategorien: [...VK2_KUNSTBEREICHE].map((k) => ({ id: k.id, label: k.label })) })}
-                            style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
-                          >
-                            Eigene Kategorien festlegen
-                          </button>
-                          <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>Du kannst den Standard übernehmen und anpassen oder komplett neue Kategorien anlegen.</p>
-                        </div>
-                      )}
-                    </div>
-                    {/* ── KOMMUNIKATION ── */}
-                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: '12px' }}>
-                      <h3 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: s.text, borderBottom: `1px solid ${s.accent}22`, paddingBottom: '0.5rem' }}>💬 Kommunikation (WhatsApp)</h3>
-                      <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: s.muted }}>Diese Links erscheinen auf der Mitglieder-Galerie. Mitglieder können direkt per WhatsApp kommunizieren – am Handy öffnet sich die App, am PC WhatsApp Web.</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
-                            📱 WhatsApp-Gruppen-Link
-                          </label>
-                          <input
-                            type="url"
-                            value={vk2Stammdaten.kommunikation?.whatsappGruppeLink || ''}
-                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, whatsappGruppeLink: e.target.value } })}
-                            placeholder="https://chat.whatsapp.com/..."
-                            style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, outline: 'none' }}
-                          />
-                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>In WhatsApp: Gruppe → Link einladen → Link kopieren</p>
-                        </div>
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.85rem', color: s.muted, fontWeight: 600 }}>
-                            📞 Vorstand Telefon (für Direkt-Nachricht)
-                          </label>
-                          <input
-                            type="tel"
-                            value={vk2Stammdaten.kommunikation?.vorstandTelefon || ''}
-                            onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, vorstandTelefon: e.target.value.replace(/\D/g, '') } })}
-                            placeholder="z.B. 4366412345678 (international änderbar)"
-                            style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, outline: 'none' }}
-                          />
-                          <p style={{ margin: '0.25rem 0 0', fontSize: '0.75rem', color: s.muted }}>Nur Ziffern, Landesvorwahl + Nummer ohne führende 0 (z.B. 43 Österreich, 49 Deutschland). Beliebig änderbar.</p>
-                        </div>
-                      </div>
-
-                      {/* Vorschau */}
-                      {(vk2Stammdaten.kommunikation?.whatsappGruppeLink || vk2Stammdaten.kommunikation?.vorstandTelefon) && (
-                        <div style={{ padding: '0.6rem 0.75rem', background: '#25d36611', border: '1px solid #25d36644', borderRadius: 8, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                          <span style={{ fontSize: '0.8rem', color: s.muted }}>Vorschau:</span>
-                          {vk2Stammdaten.kommunikation?.whatsappGruppeLink && (
-                            <a href={vk2Stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer" style={{ padding: '0.3rem 0.7rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              💬 Gruppe beitreten ↗
-                            </a>
-                          )}
-                          {vk2Stammdaten.kommunikation?.vorstandTelefon && (
-                            <a href={`https://wa.me/${vk2Stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer" style={{ padding: '0.3rem 0.7rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              📩 Vorstand schreiben ↗
-                            </a>
-                          )}
-                        </div>
-                      )}
-
-                      {/* ── UMFRAGEN ── */}
-                      <div style={{ marginTop: '1rem', borderTop: `1px solid ${s.accent}22`, paddingTop: '0.75rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <div>
-                            <span style={{ fontWeight: 700, color: s.text, fontSize: '0.95rem' }}>📊 Umfragen</span>
-                            <span style={{ fontSize: '0.8rem', color: s.muted, marginLeft: '0.5rem' }}>Link per WhatsApp teilen – Mitglieder antworten direkt</span>
+                          <p style={{ margin: '0 0 0.5rem', fontSize: '0.85rem', color: s.muted }}>
+                            Aktuell nur <strong>Vorschlag</strong> (keine eigene Liste):{' '}
+                            {getVk2Kunstrichtungen(vk2Stammdaten).map((c) => c.label).join(', ')}
+                          </p>
+                          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setVk2Stammdaten({
+                                ...vk2Stammdaten,
+                                eigeneKategorien: getVk2KategorienVorschlagFuerTyp(vk2Stammdaten.vereinsTyp).map((k) => ({ id: k.id, label: k.label })),
+                              })}
+                              style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
+                            >
+                              Vorschlag als bearbeitbare Liste übernehmen
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const id = `umfrage-${Date.now()}`
-                              const neu: import('../src/config/tenantConfig').Vk2Umfrage = { id, frage: '', antworten: ['Ja', 'Nein'], erstelltAm: new Date().toISOString(), aktiv: true }
-                              const umfragen = [...(vk2Stammdaten.kommunikation?.umfragen || []), neu]
-                              setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                            }}
-                            style={{ padding: '0.4rem 0.85rem', background: `${s.accent}22`, border: `1px solid ${s.accent}55`, borderRadius: 8, color: s.accent, fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
-                          >
-                            + Neue Umfrage
-                          </button>
+                          <p style={{ margin: '0.5rem 0 0', fontSize: '0.75rem', color: s.muted }}>Tipp: Zuerst Vereinstyp wählen, dann übernehmen – oder Liste leer lassen und nur den Vorschlag in den Dropdowns nutzen.</p>
                         </div>
-
-                        {(vk2Stammdaten.kommunikation?.umfragen || []).length === 0 && (
-                          <p style={{ fontSize: '0.82rem', color: s.muted, fontStyle: 'italic' }}>Noch keine Umfragen. Mit „+ Neue Umfrage" eine erstellen.</p>
-                        )}
-
-                        {(vk2Stammdaten.kommunikation?.umfragen || []).map((umfrage, ui) => {
-                          const pollUrl = `https://k2-galerie.vercel.app${window.location.pathname.replace('/admin', '') || '/'}vk2-umfrage?id=${umfrage.id}&frage=${encodeURIComponent(umfrage.frage)}&antworten=${encodeURIComponent(umfrage.antworten.join('|'))}`
-                          const whatsappText = `📊 *${umfrage.frage}*\n\nBitte abstimmen:\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\n➡️ ${pollUrl}`
-                          const waLink = `https://wa.me/?text=${encodeURIComponent(whatsappText)}`
-                          return (
-                            <div key={umfrage.id} style={{ marginBottom: '0.75rem', padding: '0.75rem', background: s.bgElevated, border: `1px solid ${s.accent}22`, borderRadius: 10 }}>
-                              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'flex-start' }}>
-                                <input
-                                  type="text"
-                                  value={umfrage.frage}
-                                  onChange={(e) => {
-                                    const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, frage: e.target.value } : u)
-                                    setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                                  }}
-                                  placeholder="Frage eingeben, z.B. Wann passt die nächste Ausstellung?"
-                                  style={{ flex: 1, padding: '0.5rem 0.7rem', background: s.bgCard, border: `1px solid ${s.accent}33`, borderRadius: 8, color: s.text, fontSize: '0.9rem', outline: 'none' }}
-                                />
-                                <button type="button" title="Umfrage löschen" onClick={() => {
-                                  const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).filter((_, i) => i !== ui)
-                                  setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                                }} style={{ padding: '0.5rem 0.6rem', background: 'none', border: `1px solid ${s.accent}22`, borderRadius: 8, color: s.muted, cursor: 'pointer', fontSize: '1rem', flexShrink: 0 }}>🗑️</button>
-                              </div>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
-                                {umfrage.antworten.map((ant, ai) => (
-                                  <div key={ai} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                    <input
-                                      type="text"
-                                      value={ant}
-                                      onChange={(e) => {
-                                        const antworten = umfrage.antworten.map((a, i) => i === ai ? e.target.value : a)
-                                        const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
-                                        setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                                      }}
-                                      placeholder={`Antwort ${ai + 1}`}
-                                      style={{ width: 100, padding: '0.3rem 0.5rem', background: s.bgCard, border: `1px solid ${s.accent}22`, borderRadius: 6, color: s.text, fontSize: '0.85rem', outline: 'none' }}
-                                    />
-                                    {umfrage.antworten.length > 2 && (
-                                      <button type="button" onClick={() => {
-                                        const antworten = umfrage.antworten.filter((_, i) => i !== ai)
-                                        const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
-                                        setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                                      }} style={{ background: 'none', border: 'none', color: s.muted, cursor: 'pointer', fontSize: '0.8rem', padding: '0 2px' }}>×</button>
-                                    )}
-                                  </div>
-                                ))}
-                                {umfrage.antworten.length < 4 && (
-                                  <button type="button" onClick={() => {
-                                    const antworten = [...umfrage.antworten, '']
-                                    const umfragen = (vk2Stammdaten.kommunikation?.umfragen || []).map((u, i) => i === ui ? { ...u, antworten } : u)
-                                    setVk2Stammdaten({ ...vk2Stammdaten, kommunikation: { ...vk2Stammdaten.kommunikation, umfragen } })
-                                  }} style={{ padding: '0.3rem 0.5rem', background: `${s.accent}15`, border: `1px dashed ${s.accent}44`, borderRadius: 6, color: s.accent, fontSize: '0.82rem', cursor: 'pointer' }}>+ Antwort</button>
-                                )}
-                              </div>
-                              {umfrage.frage.trim() && (
-                                <a
-                                  href={waLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.85rem', fontWeight: 700, textDecoration: 'none' }}
-                                >
-                                  💬 Per WhatsApp teilen ↗
-                                </a>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-
-                      {/* Speichern */}
-                      <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
-                        <button
-                          type="button"
-                          onClick={() => { try { saveVk2Stammdaten(vk2Stammdaten) } catch (_) {}; alert('Kommunikations-Einstellungen gespeichert ✅') }}
-                          style={{ padding: '0.5rem 1.25rem', background: s.gradientAccent, border: 'none', borderRadius: 8, color: '#fff', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}
-                        >
-                          Speichern
-                        </button>
-                      </div>
+                      )}
                     </div>
 
                     {/* Vorstand & Beirat – gegendert; Vollzugang nur Vorsitzende:r + Kassier:in (siehe docs/VK2-ZUGANG-ROLLEN.md) */}
@@ -18920,6 +18837,14 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           <label style={{ fontSize: '0.85rem' }}>Beisitzer:in (optional)</label>
                           <input type="text" value={vk2Stammdaten.beisitzer?.name || ''} onChange={(e) => setVk2Stammdaten({ ...vk2Stammdaten, beisitzer: { name: e.target.value } })} placeholder="Name" style={{ padding: '0.6rem', fontSize: '0.9rem', width: '100%', boxSizing: 'border-box', background: s.bgElevated, border: `1px solid ${s.accent}33`, color: s.text }} />
                         </div>
+                      </div>
+                      <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${s.accent}22`, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
+                        <button type="button" className="btn-primary" onClick={saveStammdaten} style={{ padding: '0.65rem 1.35rem', fontSize: '0.95rem', fontWeight: 700 }}>
+                          💾 Stammdaten speichern
+                        </button>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: s.muted, lineHeight: 1.45, flex: '1 1 220px' }}>
+                          <strong>Verein, Kategorien &amp; Vorstand</strong> – hier speichern, wenn du oben etwas geändert hast. Technisch ein Datensatz mit der Mitgliederliste: viele Aktionen dort (Hakerl, Import, Bearbeiten) speichern bereits automatisch.
+                        </p>
                       </div>
                     </div>
                     {/* Mitgliederliste – Übersicht, Bearbeiten, nur Name (ohne Profil). Neue Profile: Tab Vereinsmitglieder. */}
@@ -19156,9 +19081,6 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </p>
                       </div>
                     </div>
-                    <button className="btn-primary" onClick={saveStammdaten} style={{ padding: '0.75rem 1.5rem', fontSize: '1rem' }}>
-                      💾 Stammdaten speichern
-                    </button>
                   </div>
                 ) : (
                   <>
