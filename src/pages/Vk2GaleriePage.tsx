@@ -462,12 +462,6 @@ const Vk2GaleriePage: React.FC = () => {
               {(stammdaten?.verein?.address || stammdaten?.verein?.city) && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>{[stammdaten.verein.address, stammdaten.verein.city].filter(Boolean).join(', ')}</p>}
               {stammdaten?.verein?.email && <p style={{ margin: '0 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)' }}><a href={`mailto:${stammdaten.verein.email}`} style={{ color: C.accent, textDecoration: 'none' }}>{stammdaten.verein.email}</a></p>}
               {stammdaten?.vorstand?.name && <p style={{ margin: '0.5rem 0 0.1rem', fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid }}>Vorstand: {stammdaten.vorstand.name}{stammdaten.vize?.name ? `, ${stammdaten.vize.name}` : ''}</p>}
-              {(stammdaten?.kommunikation?.whatsappGruppeLink || stammdaten?.kommunikation?.vorstandTelefon) && (
-                <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                  {stammdaten?.kommunikation?.whatsappGruppeLink && <a href={stammdaten.kommunikation.whatsappGruppeLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: '#25d366', borderRadius: 20, color: '#fff', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none', width: 'fit-content' }}>💬 WhatsApp-Gruppe</a>}
-                  {stammdaten?.kommunikation?.vorstandTelefon && <a href={`https://wa.me/${stammdaten.kommunikation.vorstandTelefon}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', padding: '0.4rem 0.9rem', background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', borderRadius: 20, color: '#1a7a3c', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none', width: 'fit-content' }}>📩 Vorstand schreiben</a>}
-                </div>
-              )}
             </div>
             {/* Rechte Seite: QR (wie GaleriePage) */}
             {qrDataUrl && (
@@ -479,23 +473,6 @@ const Vk2GaleriePage: React.FC = () => {
               </div>
             )}
           </div>
-          {/* Umfragen */}
-          {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).length > 0 && (
-            <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 600 }}>
-              {(stammdaten?.kommunikation?.umfragen || []).filter(u => u.aktiv && u.frage.trim()).map(umfrage => {
-                const waText = `📊 *${umfrage.frage}*\n\n${umfrage.antworten.map((a, i) => `${['1️⃣','2️⃣','3️⃣','4️⃣'][i] || (i+1)+'.'}  ${a}`).join('\n')}\n\nBitte abstimmen!`
-                return (
-                  <div key={umfrage.id} style={{ padding: '0.6rem 0.9rem', background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.text, marginBottom: '0.15rem' }}>📊 {umfrage.frage}</div>
-                      <div style={{ fontSize: '0.75rem', color: C.textLight }}>{umfrage.antworten.join(' · ')}</div>
-                    </div>
-                    <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.8rem', background: '#25d366', borderRadius: 18, color: '#fff', fontSize: '0.8rem', fontWeight: 700, textDecoration: 'none', flexShrink: 0 }}>Abstimmen ↗</a>
-                  </div>
-                )
-              })}
-            </div>
-          )}
           <p style={{ marginTop: '1.5rem', marginBottom: 0, paddingTop: '1rem', borderTop: `1px solid ${C.border}`, fontSize: 'clamp(0.8rem, 1.8vw, 0.9rem)', color: C.textMid, letterSpacing: '0.01em' }}>{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
           <p style={{ marginTop: '0.35rem', marginBottom: 0, fontSize: 'clamp(0.72rem, 1.6vw, 0.82rem)', color: C.textMid, opacity: 0.95 }}>{PRODUCT_URHEBER_ANWENDUNG}</p>
         </div>

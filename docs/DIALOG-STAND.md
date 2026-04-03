@@ -1,10 +1,18 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **Vercel tsc: `Vk2GaleriePage` + entferntes `kommunikation`:** Nach `tenantConfig`-Push fehlte noch **`Vk2GaleriePage.tsx`** – Footer nutzte **`stammdaten.kommunikation`** (WhatsApp/Umfragen), Typ aber ohne Feld → **TS2339**. **Fix:** dieselbe „VK2 schlank“-UI wie lokal: Blöcke entfernt, **Datei committen**. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Vercel **Ready** prüfen.
+
+**Einordnung:** Zweiter „nur lokal“-Fall – `Vk2Stammdaten` und Galerie-Seite müssen **gemeinsam** auf main landen.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** **770e011** ✅ GitHub
 
-**Was wir JETZT tun:** Vercel Production **Ready** prüfen.
+**Was wir JETZT tun:** –
 
-**Einordnung:** Kein Node-Rätsel – **fehlender Commit** zwischen Admin-UI und Config; `npm run build` lokal mit vollem `node_modules` maskierte es nicht, `git show HEAD:tenantConfig` zeigte die Lücke.
+**Einordnung:** Kein Node-Rätsel – **fehlender Commit** zwischen Admin-UI und Config; `git show HEAD:tenantConfig` zeigte die Lücke.
 
 ---
 
