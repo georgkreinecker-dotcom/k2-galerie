@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel-Fehler (echte Ursache, nicht geraten):** **Vite 7** verlangt **`^20.19.0 || >=22.12.0`** (`node_modules/vite/package.json` → `engines.node`). **`package.json` hatte `>=18`** → Vercel kann **Node 18** nutzen → **`vite build` bricht** ab (oft nach ~30–40 s: Install ok, Build startet). **Fix:** `engines.node` = derselbe String wie bei Vite; **`.nvmrc`** = `22`; GitHub **Vercel-Paritäts-Job** (`npm ci --omit=dev` + `build:vercel` auf Ubuntu). **Commit:** **64ee811** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel-Fehler (echte Ursache, nicht geraten):** **Vite 7** verlangt **`^20.19.0 || >=22.12.0`** (`node_modules/vite/package.json` → `engines.node`). **`package.json` hatte `>=18`** → Vercel kann **Node 18** nutzen → **`vite build` bricht** ab (oft nach ~30–40 s: Install ok, Build startet). **Fix:** `engines.node` = derselbe String wie bei Vite; **`.nvmrc`** = `22`; GitHub **Vercel-Paritäts-Job** (`npm ci --omit=dev` + `build:vercel` auf Ubuntu). **Commit:** **856c94e** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel „Ready“ prüfen; in Vercel **Node-Version** ggf. auf **22** stellen falls Projekt alt gepinnt war.
 
