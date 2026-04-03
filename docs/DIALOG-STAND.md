@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel rot (~40s) – echte Ursache:** Nur **`npm ci`** (wie in **ae16570**) reicht **nicht**: Vercel setzt beim **Install** oft **kein** `NODE_ENV=production` → **devDependencies** (Electron, Playwright, …) werden **trotzdem** mitinstalliert → Postinstall bricht auf Linux ab. **Fix:** **`npm ci --omit=dev`** + dieselben SKIP-Env-Vars; Build-Tools bleiben in **`dependencies`**. **Test:** `vercel-config-guard.test.ts` verlangt `--omit=dev`. **Commit:** **de1018b** ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel-Install gehärtet:** Zusätzlich zu **`npm ci --omit=dev`** steht **`NPM_CONFIG_omit=dev`** (npm respektiert das auch ohne `NODE_ENV=production`). Lokal verifiziert: frische **`npm ci --omit=dev`** + **`npm run build:vercel`** = grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **ccd194b** ✅ GitHub
 
-**Was wir JETZT tun:** Vercel Deployment **de1018b** „Ready“ prüfen; Stand-Badge/QR wie gewohnt.
+**Was wir JETZT tun:** Vercel „Ready“; falls **weiter rot:** Dashboard → Project → **Settings → General → Build & Development** → **Install Command** muss **leer** sein (sonst überschreibt es `vercel.json`).
 
-**Einordnung:** Fehler lag an **Install-Befehl**, nicht an „falschem Commit“; vorheriger Fix war unvollständig (ohne `--omit=dev`).
+**Einordnung:** Doppelte Absicherung gegen devDependency-Install auf Linux (Electron/Playwright).
 
 ---
 
