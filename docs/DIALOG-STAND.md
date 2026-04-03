@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** **770e011**
+**Letzter Stand:** 03.04.26 – **Vercel Build Exit 2 – tsc:** Admin nutzte **`VK2_VEREINSTYP_*`**, **`vereinsTyp`**, **`getVk2KategorienVorschlagFuerTyp`** – standen nur **lokal** in `tenantConfig.ts`, **nicht** auf GitHub → `tsc -b` auf Vercel rot. **Fix:** fehlende Änderungen **committen** (`VK2_VEREINSTYP_OPTIONS`, `Vk2Stammdaten.vereinsTyp`, `VK2_KATEGORIEN_VORSCHLAEGE`, `getVk2Kunstrichtungen` angepasst; `kommunikation`/`Vk2Umfrage` aus Typ entfernt wie VK2-schlank). Test **`vk2VereinsTypKategorien.test.ts`** mit ins Repo. **Commit:** **770e011** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel Production **Ready** prüfen.
 
