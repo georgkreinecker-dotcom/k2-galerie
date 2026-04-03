@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel: sicher notwendig (ohne „wenn du willst“):** Build-Werkzeuge müssen bei **`NODE_ENV=production`** trotzdem installiert sein. **Doppelte Absicherung:** (1) **`typescript`**, **`vite`**, **`@vitejs/plugin-react`** und nötige **`@types/*`** von **devDependencies → `dependencies`** (Vercel installiert `dependencies` immer). (2) **`vercel.json`** weiter **`npm ci --include=dev`**. Verifiziert: `NODE_ENV=production npm ci` → `tsc`/`vite` vorhanden; `build:vercel` grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **main** – `git log -1 --oneline` = Nachricht „Vercel: typescript/vite…“ ✅ GitHub
+**Letzter Stand:** 03.04.26 – **Vercel: sicher notwendig (ohne „wenn du willst“):** Build-Werkzeuge müssen bei **`NODE_ENV=production`** trotzdem installiert sein. **Doppelte Absicherung:** (1) **`typescript`**, **`vite`**, **`@vitejs/plugin-react`** und nötige **`@types/*`** von **devDependencies → `dependencies`** (Vercel installiert `dependencies` immer). (2) **`vercel.json`** weiter **`npm ci --include=dev`**. Verifiziert: `NODE_ENV=production npm ci` → `tsc`/`vite` vorhanden; `build:vercel` grün. **Test:** `vercel-config-guard.test.ts`. **Commit:** **46de178** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel „Ready“ prüfen.
 
