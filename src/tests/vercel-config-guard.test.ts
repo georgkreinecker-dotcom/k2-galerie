@@ -8,6 +8,16 @@ describe('Vercel-Konfigurations-Schranken', () => {
     expect(() => JSON.parse(raw)).not.toThrow()
   })
 
+  it('installCommand: devDependencies müssen installiert werden (tsc/vite sind devDependencies)', () => {
+    const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
+    const cfg = JSON.parse(raw) as { installCommand?: string }
+    const cmd = cfg.installCommand ?? ''
+    expect(
+      cmd.includes('--include=dev') || cmd.includes('NODE_ENV=development'),
+      'Bei NODE_ENV=production überspringt npm ci sonst devDependencies → tsc/vite fehlen auf Vercel'
+    ).toBe(true)
+  })
+
   it('functions.*.includeFiles bleibt ein String (Schema-Schranke)', () => {
     const raw = readFileSync(join(process.cwd(), 'vercel.json'), 'utf8')
     const cfg = JSON.parse(raw) as { functions?: Record<string, { includeFiles?: unknown }> }

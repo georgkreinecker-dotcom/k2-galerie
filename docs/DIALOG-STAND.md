@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Vercel-Build (Admin-Commits a9ca2bd ff.):** Deploys blieben **Error** (~40–55s) trotz mehr Heap + Vitest `maxWorkers` – lokal `npm run build` weiter grün. **Ursache:** `npm run build` startet mit **vollem Vitest**; auf der Vercel-Build-VM reicht das nicht zuverlässig (RAM/Parallelität/Timeout). **Fix:** `package.json` → **`build:vercel`** = write-build-info + check-exports + **`npm run tsc:build`** + **`npm run vite:build`** (ohne Vitest); **`build`** = `npm run test && npm run build:vercel`. **`vercel.json`** → `buildCommand` = `npm run build:vercel` (+ `NODE_OPTIONS=--max-old-space-size=6144`). **QS:** Vor Push weiterhin **`npm run build`** (Tests + gleicher Compile-Weg). **Commit:** **922e677** ✅ GitHub (Nachricht: `Vercel: build ohne Vitest (build:vercel); …`)
+**Letzter Stand:** 03.04.26 – **Vercel rot nach `build:vercel`:** Wahrscheinliche **zweite** Ursache: Auf Vercel ist oft **`NODE_ENV=production`** – dann installiert **`npm ci` ohne Flag keine devDependencies** → **`tsc` / `vite` fehlen** → Build bricht nach ~40–50s ab. **Fix (verbindlich):** **`vercel.json`** → `installCommand` = `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --include=dev` (war lange nur lokal geändert, **nicht** mit 922e677 gepusht). **Test:** `vercel-config-guard.test.ts` prüft `--include=dev`. **Commit:** Tip **main** – Nachricht `Vercel: npm ci --include=dev …` ✅ GitHub
 
-**Was wir JETZT tun:** Vercel „Ready“ prüfen; bei Rot Build-Log erste Fehlerzeile.
+**Was wir JETZT tun:** Vercel-Deployment „Ready“; bei Rot weiterhin Build-Log erste Fehlerzeile.
 
-**Einordnung:** Kein Fehler in `ScreenshotExportAdmin.tsx` nötig – Deploy-Pipeline war der Engpass.
+**Einordnung:** `build:vercel` + explizit devDeps bei Install = Pipeline komplett.
 
 ---
 
