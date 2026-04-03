@@ -2,6 +2,8 @@
  * Öffentliche Galerie-Ansicht für einen Mandanten (tenantId aus URL).
  * Route: /g/:tenantId
  * Lädt gallery-data?tenantId= und zeigt die Galerie oder „Jetzt gestalten“ + Admin-Link.
+ *
+ * Besucherzähler: Smoke-Test für Lizenz-Mandanten → docs/SMOKE-BESUCHERZAEHLER-LIZENZ.md
  */
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
