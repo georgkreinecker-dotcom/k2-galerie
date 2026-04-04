@@ -29,6 +29,8 @@
     "generate:vita-pdfs": "node scripts/generate-vita-schreibtisch-pdfs.mjs",
     "verify:stripe-env": "node scripts/verify-stripe-env.mjs",
     "capture:pm-admin-screenshot": "node scripts/capture-pm-admin-screenshot.mjs",
+    "capture:pm-event-medien-screenshot": "node scripts/capture-pm-event-medien-screenshot.mjs",
+    "capture:pm-einstellungen-screenshot": "node scripts/capture-pm-einstellungen-screenshot.mjs",
     "briefing": "node scripts/agenten-briefing.js",
     "sync:texte-oeffentlich": "bash scripts/sync-texte-oeffentliche-spiegel.sh",
     "electron": "electron .",

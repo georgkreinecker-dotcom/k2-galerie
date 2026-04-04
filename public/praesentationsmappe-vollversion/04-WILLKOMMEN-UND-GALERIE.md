@@ -8,8 +8,6 @@ Zwei Bereiche, beide getrennt bearbeitbar:
 
 **Galerie:** Die Werke – Karten mit Bild, Titel, Preis. Filter und Kategorien hängen von **Mein Weg** (der gewählten **Sparte** in den Stammdaten) zusammen: Besucher sehen eine Galerie, die zum Profil passt – übersichtlich, auf allen Geräten gleich.
 
-**Als Nächstes in der Mappe:** der **Admin** – **Hub und Herzstück**. Dort pflegst und steuerst du alles, was du hier als Besucher siehst – und alles, was dahinter zum Laufen gehört.
-
 ![Willkommen](/img/oeffentlich/willkommen-demo.jpg)
 
 ![Galerie-Vorschau mit Werkkarten](/img/oeffentlich/galerie-vorschau-karten.png)

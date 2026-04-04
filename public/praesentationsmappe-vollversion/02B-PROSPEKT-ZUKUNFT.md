@@ -8,7 +8,7 @@
 
 ## Statt vier Welten – ein roter Faden
 
-**Die Fakten** (vier Welten, Doppelarbeit, eine Datenbasis) stehen **einmal** im Kapitel **[USPs und Wettbewerb](02-USP-UND-WETTBEWERB.md)** – **hier** nur die **Lesefassung:** Wenn du **kennst**, wie es sich anfühlt, wenn **Website, Kasse, Werbung und Etikett** auseinanderlaufen – **dann** brauchst du keine zweite Erklärung, **warum** **ein** Faden Leichtigkeit gibt.
+**Die Fakten** (vier Welten, Doppelarbeit, eine Datenbasis) stehen **einmal** im Kapitel **[USPs und Mitbewerb](02-USP-UND-WETTBEWERB.md)** – **hier** nur die **Lesefassung:** Wenn du **kennst**, wie es sich anfühlt, wenn **Website, Kasse, Werbung und Etikett** auseinanderlaufen – **dann** brauchst du keine zweite Erklärung, **warum** **ein** Faden Leichtigkeit gibt.
 
 **K2 Galerie / ök2** denkt **Galerie, Kassa, Druck und Web** zusammen – **ein** Auftritt, **überall** wiedererkennbar. **Du** entscheidest, **ob** du **diese** Klarheit **willst**.
 
@@ -56,7 +56,7 @@ Die **Kunst** bleibt **Einstieg und Referenz** — **Mein Weg** öffnet den **Ma
 
 **Eine Seite zum Mitnehmen:** [Promo A4 – Flyer](/projects/k2-galerie/flyer-oek2-promo-a4) (nicht in der Mappe)
 
-**Technische Tiefe** (Matrix, Tabellen): [USPs & Wettbewerb](02-USP-UND-WETTBEWERB.md)
+**Technische Tiefe** (Matrix, Tabellen): [USPs & Mitbewerb](02-USP-UND-WETTBEWERB.md)
 
 Demo öffentlich: `/projects/k2-galerie/galerie-oeffentlich`
 

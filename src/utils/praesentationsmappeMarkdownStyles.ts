@@ -124,6 +124,16 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-wrap .pmv-h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; color: #0d9488; font-weight: 600; }
     .pmv-wrap .pmv-h3 { font-size: 1.15rem; margin: 1rem 0 0.4rem; color: #4b5563; }
     .pmv-wrap .pmv-hr { border: none; border-top: 1px solid #e5e7eb; margin: 1.25rem 0; }
+    .pmv-wrap .pmv-blockquote {
+      margin: 1rem 0 1.35rem;
+      padding: 1rem 1.15rem 1.05rem;
+      border-left: 4px solid #0d9488;
+      background: linear-gradient(90deg, rgba(20, 184, 166, 0.14) 0%, rgba(255, 255, 255, 0) 72%);
+      border-radius: 0 10px 10px 0;
+      box-shadow: 0 1px 0 rgba(28, 26, 24, 0.04);
+    }
+    .pmv-wrap .pmv-blockquote .pmv-p { margin: 0 0 0.55rem; font-size: 1.03rem; line-height: 1.65; }
+    .pmv-wrap .pmv-blockquote .pmv-p:last-child { margin-bottom: 0; }
     .pmv-wrap .pmv-p { margin: 0 0 0.6rem; line-height: 1.7; color: #1c1a18; }
     .pmv-wrap .pmv-ul { margin: 0.5rem 0 0.75rem 1.5rem; padding-left: 0.5rem; }
     .pmv-wrap .pmv-li { margin-bottom: 0.35rem; line-height: 1.6; color: #1c1a18; }
@@ -236,6 +246,15 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-ul { margin: 0.4em 0 0.6em 1.25em !important; padding-left: 0.4em !important; }
       .pmv-wrap .pmv-li { margin-bottom: 0.25em !important; line-height: 1.45 !important; font-size: 10pt !important; }
       .pmv-wrap .pmv-hr { margin: 0.6em 0 !important; }
+      .pmv-wrap .pmv-blockquote {
+        margin: 0.65em 0 0.85em !important;
+        padding: 0.65em 0.75em !important;
+        border-left-width: 3pt !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        page-break-inside: avoid !important;
+      }
+      .pmv-wrap .pmv-blockquote .pmv-p { font-size: 10pt !important; line-height: 1.45 !important; margin-bottom: 0.45em !important; }
       .pmv-wrap .pmv-leerzeile { height: 0.25em !important; }
       .pmv-wrap .pmv-img { max-width: 100% !important; height: auto !important; border-radius: 4px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid !important; }
       .pmv-wrap .pmv-p-with-img { page-break-inside: avoid !important; }

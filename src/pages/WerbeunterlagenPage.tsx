@@ -368,7 +368,7 @@ export default function WerbeunterlagenPage({ embeddedInMok2Layout }: Werbeunter
             5. Präsentationsmappen – Links zum Mitsenden
           </h2>
           <p style={{ color: s.muted, marginBottom: '1rem', fontSize: '0.9rem' }}>
-            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel; Start mit USPs und Wettbewerb). VK2: Kurz-, Voll- und Musterbilder-Mappe (Parameter variant=vk2-promo). Als Link in E-Mail, Chat oder Werbedokument einfügen.
+            Kurzvariante (1 Seite, Teal/Weiß) und Vollversion (große Mappe, viele Kapitel; Start mit USPs und Mitbewerb). VK2: Kurz-, Voll- und Musterbilder-Mappe (Parameter variant=vk2-promo). Als Link in E-Mail, Chat oder Werbedokument einfügen.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: s.bgCard, borderRadius: s.radius, border: `1px solid ${s.accentSoft}` }}>

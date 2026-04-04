@@ -99,7 +99,7 @@ Screenshots von der laufenden App (ök2/K2), einheitlicher Stil, keine Platzhalt
 | 5 Werke | Admin Tab Werke + Galerie | pm-admin-uebersicht.png, galerie-card.jpg |
 | 6 Design | Admin Tab Design | pm-design.png |
 | 7 Kassa | Admin Tab Statistik / Shop | pm-admin-uebersicht.png |
-| 8 Events | Admin Tab Eventplan | pm-admin-uebersicht.png |
+| 8 Events | Admin Tab Event- und Medienplanung (Öffentlichkeitsarbeit) | pm-event-medienplanung.png (`npm run capture:pm-event-medien-screenshot` bei laufendem Dev-Server) |
 | 9 VK2 | VK2-Admin (gleiche Struktur) | pm-admin-uebersicht.png |
 | 10 Demo/Lizenz | Galerie ök2 (`/galerie-oeffentlich`) | willkommen-demo.jpg |
 | 11 Kontakt | QR in Galerie / Mission Control | pm-qr.png (Screenshot nachträglich) |

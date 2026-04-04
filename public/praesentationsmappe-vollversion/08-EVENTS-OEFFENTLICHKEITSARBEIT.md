@@ -2,6 +2,8 @@
 
 Ein Bereich, ein Ablauf: Veranstaltung planen, Werbedokumente erzeugen und direkt an den passenden Verteiler senden. Mediengenerator und Verteiler (Medienspiegel + Newsletter-Empfaenger) arbeiten im selben Schritt zusammen.
 
+**VK2 (Kunstvereine / Vereinsplattform):** Dafür gibt es eine **eigene Präsentationsmappe** – gleiche App, eigener Aufbau und Schwerpunkt: [Präsentationsmappe VK2 – Vollversion öffnen](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2).
+
 ## Warum dieser Bereich so wichtig ist
 
 Event- und Medienplanung ist nicht nur ein Zusatz. Fuer viele Galerien und Vereine ist das der Motor, damit Besucher kommen, Berichte erscheinen und Veranstaltungen sichtbar werden.
@@ -88,8 +90,8 @@ Der **Masterflyer** ist die **A5‑Einladungskarte**. Er ist die **Quelle** für
 
 **Ergebnis am selben Tag:** Die Vereinsausstellung ist kommunikativ komplett vorbereitet – Einladungen, Flyer, Medien-Text und Verteiler laufen im VK2-Kontext aus einer Quelle.
 
-![Admin – Event- und Medienplanung](/img/oeffentlich/pm-admin-uebersicht.png)
+![Admin – Event- und Medienplanung (Öffentlichkeitsarbeit)](/img/oeffentlich/pm-event-medienplanung.png)
 
-*Quelle: Admin -> Bereich „Event- und Medienplanung“ (Mediengenerator & Verteiler).*
+*Quelle: Admin → **Event- und Medienplanung** → Bereich **Öffentlichkeitsarbeit** (Mediengenerator & Verteiler).*
 
 [SEITENUMBRUCH]

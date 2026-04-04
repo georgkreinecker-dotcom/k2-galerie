@@ -22,7 +22,9 @@ Zuerst **Was ist die K2 Galerie** und **Für wen** mit der **Sparten-Tabelle**; 
 
 **Anschließend** zeigen **Willkommen und Galerie**, **was Besucher sehen**. **Direkt danach** folgt der **Admin** als **Herzstück** – **Überblick** und **Screenshot** der **Zentrale**, bevor die Mappe in **Werke**, **Design**, **Kassa**, **Events** und die übrigen Bereiche **einsteigt**.
 
-**Danach weißt du:** ob die **Linie** zu dir passt **und** ob dir **Schaufenster** plus **Admin** als **ein** Bild vorkommt.
+**Nach** dem Kapitel **Demo und Lizenz** folgt **Einstellungen** – **zweites Herzstück** neben dem Admin: **Stammdaten** und alles, was **eine Quelle** für Impressum, Belege und Werbemittel bleibt, plus Screenshot aus der Demo.
+
+**Danach weißt du:** ob die **Linie** zu dir passt **und** ob dir **Schaufenster** plus **Admin** als **ein** Bild vorkommt – und wo **Einstellungen** in dieses Bild gehören.
 
 ---
 
@@ -88,7 +90,7 @@ Warenkorb für Besucherinnen, Zahlungswunsch ohne automatische Abbuchung im Inte
 
 13. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Vom Event in der Planung bis zu Werbemitteln, Verteilern und Druck – **ein** Strang aus denselben Daten, statt Copy und Paste zwischen vielen Werkzeugen.
+Vom Event in der Planung bis zu Werbemitteln, Verteilern und Druck – **ein** Strang aus denselben Daten, statt Copy und Paste zwischen vielen Werkzeugen. **VK2 (Vereinsplattform):** eigene Präsentationsmappe mit Vereinsfokus – [Präsentationsmappe VK2 – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2).
 
 14. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
@@ -98,14 +100,18 @@ Für **Kunstvereine** und ähnliche Gemeinschaften; Einstieg in VK2 und die Kond
 
 Öffentliche Demo **ök2** ausprobieren, eigene Galerie denken, Lizenzen von Basic bis VK2 vergleichen – der Schritt vom Lesen zum Handeln.
 
-16. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
+16. [Einstellungen – Stammdaten und mehr](16-EINSTELLUNGEN-STAMMDATEN.md)
+
+**Zweites Herzstück** neben dem Admin: **Stammdaten** als eine Quelle für Impressum, Belege und Werbemittel; **Mein Weg** in der Demo; Drucker, Backup, Lizenz – **ein** Ort statt verstreute Optionen.
+
+17. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
 
 Empfehlerkennung, Rabatt und Gutschrift – wenn du die Lösung weiterempfehlen möchtest und davon profitieren willst.
 
-17. [Technik](12-TECHNIK.md)
+18. [Technik](12-TECHNIK.md)
 
 Browser, PWA, gängige Betriebssysteme – **ein** Stand überall, ohne dass du als Galeristin oder Galerist Technik studieren musst.
 
-18. [Kontakt und nächste Schritte](13-KONTAKT.md)
+19. [Kontakt und nächste Schritte](13-KONTAKT.md)
 
 Demo, QR-Code, Lizenz – und **du** entscheidest, welcher Schritt als Nächstes für dich sinnvoll ist.

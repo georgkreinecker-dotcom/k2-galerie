@@ -141,6 +141,39 @@ export function renderMarkdown(text: string, opts: PraesentationsmappeMarkdownOp
       i++
       continue
     }
+    if (trimmed.startsWith('>')) {
+      const paragraphs: string[][] = []
+      let current: string[] = []
+      while (i < lines.length) {
+        const raw = lines[i]
+        const t = raw.trim()
+        if (!t.startsWith('>')) break
+        const inner = raw.replace(/^\s*>\s?/, '').trimEnd()
+        if (inner === '') {
+          if (current.length) {
+            paragraphs.push(current)
+            current = []
+          }
+        } else {
+          current.push(inner)
+        }
+        i++
+      }
+      if (current.length) paragraphs.push(current)
+      if (paragraphs.length > 0) {
+        out.push(
+          <div key={key()} className="pmv-blockquote" role="note">
+            {paragraphs.map((chunk, pi) => (
+              <p key={pi} className="pmv-p">
+                {renderInline(chunk.join(' '))}
+              </p>
+            ))}
+          </div>
+        )
+      }
+      lastWasEmpty = false
+      continue
+    }
     if (trimmed === '---' || /^---+$/.test(trimmed)) {
       out.push(<hr key={key()} className="pmv-hr" />)
       lastWasEmpty = false

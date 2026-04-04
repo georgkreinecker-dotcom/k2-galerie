@@ -1,24 +1,28 @@
 # Was ist die K2 Galerie?
 
-**USPs** und ggf. **Prospekt** liefern das **Warum** am Markt. **Dieses Kapitel** liefert das **Was** – in klaren Worten, ohne die Argumente zu wiederholen.
+Nach **USPs** und **Prospekt** kennst du das **Warum**. **Hier** geht es um das **Was**: eine **Galerie- und Vermarktungsplattform**, in der **Sparte**, **Werke** und **öffentlicher Auftritt** zusammenhalten – ohne die Marktargumente zu wiederholen.
 
-**Schwerpunkt 2** der Mappe ist **Schritt 4** in einem Stück: Du gehst von der **Besucherperspektive** (**Willkommen und Galerie**) **sofort** weiter zum **Admin** – das ist das **Herzstück**: der Ort, an dem du Werke, Auftritt, Kasse, Events und mehr **aus einer Hand** steuerst. Danach folgen die einzelnen Bereiche (Werke, Design, Kassa, …) – jeweils mit Beispielen aus der Oberfläche.
+## Mein Weg – eine Entscheidung, viele Hebel
 
----
+**Mein Weg** ist die **Kernidee**: Du legst **einmal** fest, **wofür** du die Plattform nutzt – danach ziehen Typen, Texte und Abläufe an **einem** Strang. Die gewählte Sparte ist **kein** Dekor, sondern die **Schaltzentrale** für:
 
-Die **K2 Galerie** ist eine **Galerie- und Vermarktungsplattform** mit **„Mein Weg“**.
+- **Typen und Kategorien** (z. B. Kunstwerk, Produkt, Idee – passend zur Sparte)
+- **Filter und Ordnung** in der **öffentlichen** Galerie (Besucher erkennen deine Linie)
+- **Texte und Werbemittel** (Events, Flyer, Presse, Social) aus **denselben** Daten und **derselben** Sprache
+- **Abläufe** vom Erfassen bis zum Veröffentlichen – **ohne** doppelte Eingaben
 
-**Mein Weg** heißt: Du legst **einmal** fest, **wofür** du die Plattform nutzt – die gewählte **Sparte** wird zur **Schaltzentrale** für Typen, Kategorien, Filter, Texte und Abläufe. Nicht Dekoration, sondern **Steuerlogik**: Besucher erleben **Ordnung**, du arbeitest **ohne Doppelpflege** zwischen Website, Kasse und Werbemitteln.
+**Welche Sparte zu dir passt** findest du in der **Sparten-Tabelle** im nächsten Kapitel **[Für wen](03-FUER-WEN.md)**.
 
-**Dazu gehört unter anderem:**
+## Schaufenster und Werkstatt
 
-- **Typen und Kategorien**, die zur Sparte passen (z. B. Kunstwerk, Produkt, Idee – je nach Fokus)
-- **Filter und Struktur** in der öffentlichen Galerie
-- **Texte und Generatoren** für Events, Flyer, Presse, Social – **dieselben** Daten, **dieselbe** Linie
-- **Ein** Weg vom Erfassen bis zum Veröffentlichen – mit **einem Stand** auf den Geräten, die du nutzt (Browser, PWA; Windows, Android, macOS, iOS)
+**Diese Zweiheit** ist zentral: was **Besucher** sehen – und **wo du arbeitest**.
 
-**Welche Sparte zu dir passt** – die **vollständige** Übersicht der **sechs Sparten**, Demo **ök2**, Lizenzen und **VK2** steht **einmal** im Kapitel **[Für wen](03-FUER-WEN.md)** – damit du nicht zweimal dieselbe Liste liest.
+> **Außen** wirkt deine **Galerie** im Netz: Willkommen, Werke, Vita, Shop – **ein** Stand auf allen Geräten (Browser, PWA).
+>
+> **Innen**, im **Alltag**, sitzt die **Arbeit** an einem Ort, der oft **unterschätzt** wird: dem **Admin**. Dort liegen Planung, Stammdaten, Werke, Design, Veröffentlichen, Kassa, Events und mehr – **an einem Ort gebündelt**, statt verstreut über viele Programme. **Der Admin ist die Zentrale** – kein Nebenraum.
 
-Kurz: **Schaufenster** (Willkommen, Galerie, Vita, Shop) und **Werkstatt** (**Admin-Hub**) sind **ein Produkt**. Genau das siehst du ab **Schwerpunkt 2** – zuerst wie **Gäste** reinkommen, **dann** der **Admin** mit großem Screenshot und danach die **Feinarbeit** pro Bereich.
+Als **Nächstes** führt dich die Mappe zuerst zu **Willkommen und Galerie** (**was Besucher sehen**), **direkt danach** zum **Admin** als **Herzstück** – mit **Überblick** und **Screenshot**. Danach geht es Kapitel für Kapitel in die **Einzelbereiche**.
+
+![Galerie – so wirkt der öffentliche Auftritt](/img/oeffentlich/galerie-card.jpg)
 
 [SEITENUMBRUCH]

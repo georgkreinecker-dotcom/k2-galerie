@@ -1,4 +1,4 @@
-# USPs und Wettbewerb – für deine Entscheidung
+# USPs und Mitbewerb – für deine Entscheidung
 
 **Schritt 1 in dieser Mappe** fasst zusammen, was die **K2 Galerie** mit der öffentlichen Demo **ök2** und der Lizenz für dich zusammenbringt – und warum es dieses **eine Paket** am Markt so selten gibt. Je tiefer du liest, desto öfter kommt der Gedanke: *Genau diese Kombination habe ich mir gewünscht – ich hätte sie nur nie so benennen können.*
 
@@ -101,10 +101,6 @@ Viele Galerien und Ateliers arbeiten mit **mehreren Programmen**, die **jeweils 
 
 ### Ein Satz, der oft trifft
 
-**Statt** Kasse hier, Galerie dort, Flyer woanders: **eine** Lösung für Web, Verkauf vor Ort, Lager, Events und Werbung – **ein Preisrahmen, ein Stand, eine Datenbasis**; plus **VK2** und **Empfehlungs-Programm** für Wachstum ohne teures Vertriebsnetz. **Wenn** du **das** lesen willst – **bist du** oft **schon** entschieden.
-
----
-
-![Admin-Übersicht – alles aus einem Hub (Muster)](/img/oeffentlich/pm-admin-uebersicht.png)
+**Statt** Kasse hier, Galerie dort, Flyer woanders: **eine** Lösung für Web, Verkauf vor Ort, Lager, Events und Werbung – **ein** Preisrahmen, **ein** Stand, **eine** Datenbasis. **Dazu** **VK2** und das **Empfehlungs-Programm** für Wachstum **ohne** teures Vertriebsnetz. **Wer** bis hierher mitliest, **trifft** die Entscheidung **oft** schon **von selbst**.
 
 [SEITENUMBRUCH]

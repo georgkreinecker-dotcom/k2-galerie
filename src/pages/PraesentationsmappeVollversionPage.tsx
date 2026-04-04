@@ -1,6 +1,6 @@
 /**
  * Präsentationsmappe Vollversion – schrittweise Entscheidungshilfe für künftige Nutzer:innen (Überblick USPs + Produkt).
- * Gliederung: Schwerpunkt 1 = allgemeine Information; Schwerpunkt 2 = konkrete Beispiele im Admin (inkl. Demo/Lizenz/Kontakt).
+ * Gliederung: zuerst Orientierung (USPs, Prospekt, Was/Für wen), dann Kapitel mit konkreten Admin-Beispielen (inkl. Demo/Lizenz/Kontakt). Die Seitenleiste trennt die Blöcke visuell.
  * Ton: Du, Nutzen, klare Lesereihenfolge; Quelle: public/praesentationsmappe-vollversion/*.md
  */
 
@@ -35,7 +35,7 @@ function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): st
   return `# Kontakt\n\n${MUSTER_TEXTE.gallery.email} · Demo ök2 – nur Mustertexte, keine K2-Stammdaten.\n\n© ${PRODUCT_BRAND_NAME}\n\nQR zur Demo (ök2) unten.`
 }
 
-/** Ein Dokument der Mappe; sectionTitle nur beim ersten Kapitel eines Schwerpunkts (Zwischenüberschrift in der Seitenleiste). */
+/** Ein Dokument der Mappe; sectionTitle nur beim ersten Kapitel eines Gliederungsblocks (Zwischenüberschrift in der Seitenleiste, rein visuell). */
 type PraesMappeDoc = {
   sectionTitle?: string
   id: string
@@ -45,7 +45,7 @@ type PraesMappeDoc = {
 
 const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
   {
-    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    sectionTitle: 'Orientierung',
     id: '01-deckblatt',
     name: 'Deckblatt',
     file: '01-DECKBLATT.md',
@@ -55,12 +55,12 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   {
-    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    sectionTitle: 'Konkret im Admin',
     id: '04-willkommen',
     name: 'Willkommen und Galerie',
     file: '04-WILLKOMMEN-UND-GALERIE.md',
   },
-  { id: '04b-admin-hub', name: 'Admin – Hub und Herzstück', file: '04B-ADMIN-HUB.md' },
+  { id: '04-admin-herz', name: 'Admin – Herzstück', file: '04-ADMIN-HERZSTUECK.md' },
   { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md' },
   { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
   { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },
@@ -69,6 +69,11 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
   { id: '08-events', name: 'Events und Öffentlichkeitsarbeit', file: '08-EVENTS-OEFFENTLICHKEITSARBEIT.md' },
   { id: '09-vk2', name: 'Vereinsplattform VK2', file: '09-VEREINSPLATTFORM-VK2.md' },
   { id: '10-demo', name: 'Demo und Lizenz', file: '10-DEMO-LIZENZ.md' },
+  {
+    id: '16-einstellungen',
+    name: 'Einstellungen & Stammdaten',
+    file: '16-EINSTELLUNGEN-STAMMDATEN.md',
+  },
   { id: '11-empfehlung', name: 'Empfehlungsprogramm', file: '11-EMPFEHLUNGSPROGRAMM.md' },
   { id: '12-technik', name: 'Technik', file: '12-TECHNIK.md' },
   { id: '13-kontakt', name: 'Kontakt', file: '13-KONTAKT.md' },
@@ -76,7 +81,7 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
 
 const DOCUMENTS_VK2: PraesMappeDoc[] = [
   {
-    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    sectionTitle: 'Orientierung',
     id: '01-deckblatt',
     name: 'Deckblatt',
     file: '01-DECKBLATT.md',
@@ -86,7 +91,7 @@ const DOCUMENTS_VK2: PraesMappeDoc[] = [
   { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   {
-    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    sectionTitle: 'Konkret im Admin',
     id: '04-mitglieder-galerie',
     name: 'Mitglieder und Galerie',
     file: '04-MITGLIEDER-UND-GALERIE.md',
@@ -100,7 +105,7 @@ const DOCUMENTS_VK2: PraesMappeDoc[] = [
 /** Zweite VK2-Mappe: kurz, jedes Kapitel mit Muster-Screenshot unter /img/oeffentlich/. */
 const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
   {
-    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    sectionTitle: 'Orientierung',
     id: '01-deckblatt',
     name: 'Deckblatt',
     file: '01-DECKBLATT.md',
@@ -108,7 +113,7 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB.md' },
   {
-    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    sectionTitle: 'Konkret im Admin',
     id: '02-ein-blick',
     name: 'Ein Blick in den Admin',
     file: '02-EIN-BLICK-ADMIN.md',
@@ -165,10 +170,10 @@ export default function PraesentationsmappeVollversionPage() {
       ? 'Präsentationsmappe VK2 – Vollversion'
       : 'Präsentationsmappe – Vollversion'
   const pageSubtitle = isVk2Promo
-      ? 'Zweite Mappe für VK2: kompakt, Screenshot pro Kapitel – Schwerpunkt 1 Info, Schwerpunkt 2 Admin-Beispiele.'
+      ? 'Zweite Mappe für VK2: kompakt, Screenshot pro Kapitel – zuerst Orientierung, dann Beispiele aus dem Admin.'
     : isVk2Classic
-      ? 'VK2 Vollversion: Schwerpunkt 1 allgemeine Information, Schwerpunkt 2 konkrete Admin-Beispiele.'
-      : 'Zwei Schwerpunkte: allgemeine Information, dann konkrete Beispiele aus dem Admin. Screenshots unter /img/oeffentlich/.'
+      ? 'VK2 Vollversion: Orientierung, danach konkrete Admin-Beispiele – die Seitenleiste zeigt den Wechsel.'
+      : 'Zuerst Orientierung, dann konkrete Beispiele aus dem Admin; die Seitenleiste trennt die Blöcke. Screenshots unter /img/oeffentlich/.'
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -414,7 +419,9 @@ export default function PraesentationsmappeVollversionPage() {
                         fontSize: '0.68rem',
                         fontWeight: 700,
                         color: '#115e59',
-                        marginTop: index > 0 ? '0.65rem' : 0,
+                        marginTop: index > 0 ? '0.75rem' : 0,
+                        paddingTop: index > 0 ? '0.65rem' : 0,
+                        borderTop: index > 0 ? '2px solid rgba(13, 148, 136, 0.35)' : 'none',
                         marginBottom: '0.25rem',
                         lineHeight: 1.35,
                         textTransform: 'uppercase',

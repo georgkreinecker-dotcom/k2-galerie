@@ -2,26 +2,26 @@
 
 Kurze Präsentationsmappe für die **Vereinsplattform VK2**: jedes Kapitel mit **Screenshot** aus der App (Muster/Demo unter `/img/oeffentlich/`).
 
-## Zwei Schwerpunkte
+## Aufbau der Mappe
 
 | | Inhalt |
 |---|--------|
-| **Schwerpunkt 1 – Allgemeine Information** | Deckblatt, Inhaltsverzeichnis, **USPs & Wettbewerb** – Argumente und Abgrenzung **ohne** Screen-Führung. |
-| **Schwerpunkt 2 – Konkrete Beispiele im Admin** | Ab **Ein Blick in den Admin**: Hub, Mitglieder, Kassa, Events, Lizenz, Kontakt – jeweils mit **Musterbild**. |
+| **Orientierung** | Deckblatt, Inhaltsverzeichnis, **USPs & Mitbewerb** – Argumente und Abgrenzung **ohne** Screen-Führung. |
+| **Konkret im Admin** | Ab **Ein Blick in den Admin**: Hub, Mitglieder, Kassa, Events, Lizenz, Kontakt – jeweils mit **Musterbild**. Die **Seitenleiste** trennt die Blöcke visuell. |
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
-### Schwerpunkt 1 – Allgemeine Information
+### Orientierung
 
 **Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste ohne Nummer)*  
 Einstieg und Markenzeile.
 
 1. **Inhaltsverzeichnis – Kurzanleitung** *(dieses Kapitel; erste Nummer in der Leiste)*  
 
-2. [USPs & Wettbewerb](02-USP-WETTBEWERB.md)  
+2. [USPs & Mitbewerb](02-USP-WETTBEWERB.md)  
    **Fünf Gründe** + **Kreuz-Matrix** (3 Produkte vs. VK2) + Kurz-Tabelle.
 
-### Schwerpunkt 2 – Konkrete Beispiele im Admin
+### Konkret im Admin
 
 3. [Ein Blick in den Admin](02-EIN-BLICK-ADMIN.md)  
    Hub „Was möchtest du heute tun?“ – alle Bereiche auf einen Blick.

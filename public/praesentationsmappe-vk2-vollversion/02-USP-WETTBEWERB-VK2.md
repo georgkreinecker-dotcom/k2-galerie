@@ -1,4 +1,4 @@
-# USPs und Wettbewerb – VK2 (Vereinsplattform)
+# USPs und Mitbewerb – VK2 (Vereinsplattform)
 
 **Pitch in zwei Sätzen:** Vereine leben oft von **Homepage + Excel + WhatsApp + separatem Kassentool** – teuer in Zeit und Abstimmung. **VK2** packt **Mitglieder, öffentlichen Auftritt, Events und Kassa** in **dieselbe Produktfamilie** wie die Galerie-Lizenz: **ein** erlernter Ablauf, **eine** Datenlogik – kein Vereins-Baukasten neben einer Kasse neben einer „Künstler-Extra-App“.
 

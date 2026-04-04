@@ -577,12 +577,11 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
           Die <strong>Präsentationsmappe Vollversion</strong> ist für <strong>künftige Nutzer:innen</strong> gedacht: <strong>Schritt für Schritt</strong> USPs und Produkt – nicht als Verkäufer-Skript.
-          Der <strong>Promo-A4-Flyer</strong> ist <strong>eigenständig</strong> (eine Seite, druckbar); in der Mappe liegen <strong>USPs</strong> und der <strong>Prospekt</strong>.
+          Der <strong>Promo-A4-Flyer</strong> ist <strong>eigenständig</strong> (eine Seite, druckbar); in der Mappe folgen darauf die <strong>USPs</strong> und die weiteren Kapitel.
         </p>
         <ol style={{ lineHeight: 1.75, paddingLeft: '1.35rem', margin: '0 0 1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
           <li><strong>Promo A4 – Essenz</strong> — eigener Flyer, schnell klar, ob du tiefer einsteigen willst.</li>
-          <li><strong>USPs &amp; Wettbewerb</strong> — was du gewinnst, Matrix, Marktbeispiele.</li>
-          <li><strong>Prospekt Aufbruch &amp; Zukunft</strong> — Lesefassung zum Durchatmen und Weiterleiten.</li>
+          <li><strong>USPs &amp; Mitbewerb</strong> — was du gewinnst, Matrix, Marktbeispiele.</li>
         </ol>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center' }}>
           <Link
@@ -602,10 +601,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           >
             Promo A4-Flyer öffnen
           </Link>
-          {[
-            { doc: '02-USP-UND-WETTBEWERB.md', label: 'USPs & Wettbewerb' },
-            { doc: '02B-PROSPEKT-ZUKUNFT.md', label: 'Prospekt Aufbruch' },
-          ].map(({ doc, label }) => (
+          {[{ doc: '02-USP-UND-WETTBEWERB.md', label: 'USPs & Mitbewerb' }].map(({ doc, label }) => (
             <Link
               key={doc}
               to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?doc=${encodeURIComponent(doc)}`}

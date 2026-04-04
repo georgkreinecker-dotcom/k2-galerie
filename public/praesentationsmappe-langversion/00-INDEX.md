@@ -38,7 +38,7 @@ Warenkorb, Zahlungswunsch ohne automatische Online-Abbuchung; Kasse getrennt.
 
 9. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Ein Bereich fuer Planung, Mediengenerator und Verteiler – von Event bis Aussendung in einem Fluss.
+Ein Bereich fuer Planung, Mediengenerator und Verteiler – von Event bis Aussendung in einem Fluss. **VK2:** eigene Mappe – [Präsentationsmappe VK2 – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2).
 
 10. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
