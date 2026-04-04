@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Commit + Push** – Einstellungen-Kapitel `16-EINSTELLUNGEN-STAMMDATEN.md`, Screenshots `pm-einstellungen-stammdaten.png` / `pm-event-medienplanung.png`, Capture-Skripte; Admin `04-ADMIN-HERZSTUECK.md` (04B entfernt); Demo/Lizenz + Kontakt-Texte gekürzt; weitere Mappe-/Marketing-Anpassungen. Tests + Build grün. **Commit:** **5cafba7** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Vercel-Deployment abwarten; Stand-Badge/QR bei Bedarf.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Shop-Texte: Kasse/Lizenz vs. Warenkorb-Sätze raus** – Mappe Voll+Lang `15-SHOP-INTERNETBESTELLUNG.md`, Benutzerhandbuch `12-SHOP-INTERNET-BESTELLUNG.md` (zwei Aufzählungspunkte + Lizenz-Hinweis in Zahlungsliste), `PraesentationsmappePage.tsx` Kurztext. **Commit:** **0214a9b** ✅ GitHub
 
 **Was wir JETZT tun:** –
