@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Kapitelnummern = Inhaltsverzeichnis** – `PraesentationsmappeVollversionPage.tsx`: `tocChapter` pro Eintrag (wie `00-INDEX.md`), weil Kapitel 3 Prospekt nur im Index, nicht in der Seitenleiste → bisherige reine `idx`-Zählung verschob **Technik** fälschlich auf **16**. Jetzt: **16** = Einstellungen, **18** = Technik, **19** = Kontakt; Inhaltsverzeichnis **1.** Tests + Build grün. **Commit:** **88fec41** ✅ GitHub
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Nach Vercel-Deploy Mappe öffnen – Seitenleiste und Überschriften mit INDEX abgleichen.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Commit + Push** – Einstellungen-Kapitel `16-EINSTELLUNGEN-STAMMDATEN.md`, Screenshots `pm-einstellungen-stammdaten.png` / `pm-event-medienplanung.png`, Capture-Skripte; Admin `04-ADMIN-HERZSTUECK.md` (04B entfernt); Demo/Lizenz + Kontakt-Texte gekürzt; weitere Mappe-/Marketing-Anpassungen. Tests + Build grün. **Commit:** **5cafba7** ✅ GitHub
 
 **Was wir JETZT tun:** –
