@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Breite am Bildschirm wirklich erzwungen** – Ursache Screenshot „noch nicht A4“: **Grid + breite Tabellen** (`min-width`) hat die Spalte aufgeblasen; Fix: **`minmax(0,1fr)`** in der Grid-Spalte, **`min-width:0`** + **`width: min(100%,210mm)`** am Bogen, **`overflow-x: auto`** für Matrix; **kein** `borderRadius: 12` mehr im Inline-Style am `article`. **Commit:** **a59234e** ✅ GitHub
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Breite am Bildschirm wirklich erzwungen** – Ursache Screenshot „noch nicht A4“: **Grid + breite Tabellen** (`min-width`) hat die Spalte aufgeblasen; Fix: **`minmax(0,1fr)`** in der Grid-Spalte, **`min-width:0`** + **`width: min(100%,210mm)`** am Bogen, **`overflow-x: auto`** für Matrix; **kein** `borderRadius: 12` mehr im Inline-Style am `article`. **Commit:** **b626dd2** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Vollversion Desktop neu laden → weißer Bogen soll **schmaler** sein als die graue Fläche, zentriert; breite Tabellen **scrollen** im Bogen.
 
