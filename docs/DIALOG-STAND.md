@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Kapitelnummern = Inhaltsverzeichnis** – `PraesentationsmappeVollversionPage.tsx`: `tocChapter` pro Eintrag (wie `00-INDEX.md`), weil Kapitel 3 Prospekt nur im Index, nicht in der Seitenleiste → bisherige reine `idx`-Zählung verschob **Technik** fälschlich auf **16**. Jetzt: **16** = Einstellungen, **18** = Technik, **19** = Kontakt; Inhaltsverzeichnis **1.** Tests + Build grün. **Commit:** **88fec41** ✅ GitHub
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Kapitelnummern = Inhaltsverzeichnis** – `PraesentationsmappeVollversionPage.tsx`: `tocChapter` pro Eintrag (wie `00-INDEX.md`), weil Kapitel 3 Prospekt nur im Index, nicht in der Seitenleiste → bisherige reine `idx`-Zählung setzte **Technik** fälschlich auf **16** (Index: **18**). Jetzt: **16** = Einstellungen, **18** = Technik, **19** = Kontakt; Inhaltsverzeichnis **1.** Tests + Build grün. **Commit:** **88fec41** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
