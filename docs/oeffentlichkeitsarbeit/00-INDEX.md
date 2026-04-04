@@ -25,6 +25,14 @@
 
 ---
 
+## Archiv – tatsächlich versendete Presse
+
+| Datum | Dokument | Inhalt |
+|-------|----------|--------|
+| 01.04.26 | [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) | **1. Presseaussendung** an redaktion@wels.at – Galerieeröffnung 24.–26.04.2026, Text 1:1 wie versendet (Sweet Spot, Plattform, Künstlertexte, Links). |
+
+---
+
 ## Verknüpfung – ausführliche Quellen (in docs/)
 
 | Thema | Datei | Inhalt |
