@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Promo A4-Essenz + mök2 Vertrieb:** Mappe **`02C-PROMO-A4-ESSENZ.md`** (Handout, Merksatz + fünf Punkte); **`PraesentationsmappeVollversionPage`** + **`00-INDEX`** Punkt **2b**; mök2 **„Vertrieb: A4-Essenz & Präsentationsmappe“** mit drei Sprunglinks (A4, USP, Prospekt); **`mok2Structure`**; Querverweise in **02-USP** / **02B**. Tests/Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 03.04.26 – **Promo A4-Essenz + mök2 Vertrieb:** Mappe **`02C-PROMO-A4-ESSENZ.md`** (Handout, Merksatz + fünf Punkte); **`PraesentationsmappeVollversionPage`** + **`00-INDEX`** Punkt **2b**; mök2 **„Vertrieb: A4-Essenz & Präsentationsmappe“** mit drei Sprunglinks (A4, USP, Prospekt); **`mok2Structure`**; Querverweise in **02-USP** / **02B**. Tests/Build grün. **Commit:** **227ca87** ✅ GitHub
 
 **Was wir JETZT tun:** mök2 → drei Buttons zur Mappe testen; **Promo A4** einmal drucken/PDF.
 
