@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Statistik-Kapitel** – `14-STATISTIK-WERKKATALOG.md`: Überblick gilt **für alle Sparten** (Mein Weg), nicht nur Handel/Galerie; `00-INDEX.md` Kurzbeschreibung Kapitel 10 angepasst. **Commit:** mit Push (Message: Präsentationsmappe Statistik für alle Sparten)
+
+**Was wir JETZT tun:** Mappe Kapitel **Statistik und Werkkatalog** kurz gegenlesen.
+
+**Einordnung:** Georg: Statistik = **allgemeiner Bedarf**, sechs Sparten mitdenken.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Admin-Screenshot aktualisiert** – `public/img/oeffentlich/pm-admin-uebersicht.png` neu aus laufendem Dev-Server (Playwright): ök2-Admin-Hub `/admin?context=oeffentlich`, **2880×2200** PNG (2× Retina, drucktauglich). Skript `scripts/capture-pm-admin-screenshot.mjs`, npm `capture:pm-admin-screenshot`; Hinweis in `docs/PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md`. Tests grün; `build:vercel` nach Änderung geprüft. **Commit:** letzter Push mit Message „Präsentationsmappe: Admin-Hub-Screenshot neu (Playwright, Druckqualität)“ — Hash: `git log -1 --oneline`
 
 **Was wir JETZT tun:** Mappe/Prospekt in der App kurz öffnen – Bild wirkt scharf; bei Bedarf Screenshot erneut (`npm run dev` → `npm run capture:pm-admin-screenshot`, einmal `npx playwright install chromium`).

@@ -6,7 +6,7 @@ Ein eigener Admin-Bereich unter dem Namen **Statistik/Werkkatalog**.
 
 ## Warum das wichtig ist
 
-Kunsthandel und Galerien brauchen neben der schönen Online-Galerie einen **praktischen Überblick**: Was ist noch in der Ausstellung? Was liegt im Lager? Was ist verkauft oder reserviert? Welche Umsätze gibt es?
+**Statistik und Überblick** braucht **jede** Nutzerin und jeder Nutzer – **nicht nur** Galerie und klassischen **Handel**. Ob **Kunst & Galerie**, **Handwerk**, **Design**, **Mode**, **Food** oder **Dienstleistung**: sobald du **Werke**, **Bestände** und **Abschlüsse** führst, zählt derselbe **praktische Blick**: Was ist noch ausgestellt? Was liegt im Lager? Was ist verkauft oder reserviert? Welche Umsätze gibt es?
 
 K2 Galerie bündelt das in **einem Tab**: **Verkaufs- und Lagerstatistik** zum Ansehen und **Drucken**, dazu der **Werkkatalog** als filterbare, druckbare Tabelle aller Werke. **PDF-Exporte** und **Speicherdaten** liegen dort ebenfalls – alles, was zum Tagesgeschäft und zur Dokumentation gehört, ohne Excel und ohne zweite App.
 

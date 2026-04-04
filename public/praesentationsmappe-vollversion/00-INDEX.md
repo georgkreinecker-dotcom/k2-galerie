@@ -16,23 +16,19 @@ Im Kapitel **USPs und Wettbewerbsvergleich** liegen die **sachlichen Argumente**
 
 Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen.
 
-### Schritt 3 – Was ist die K2 Galerie, und für wen ist sie da?
+### Schritt 3 – Was die Plattform ist, für wen sie da ist – und wo du sie im Alltag bedienst
 
-Zuerst **Was ist die K2 Galerie**: die Plattform in klarer, sachlicher Sprache – **Mein Weg** als Schaltzentrale. Im Kapitel **Für wen** gibt es die **einzige** ausführliche Übersicht der **sechs Sparten**, wer öffentliche Demo und Lizenz nutzt, und wo die **Vereinsplattform VK2** ins Spiel kommt.
+Zuerst **Was ist die K2 Galerie** und **Für wen** mit der **Sparten-Tabelle**; **Demo ök2**, **Lizenz** und **VK2** folgen in den **eigenen** Kapiteln – **ohne** dieselbe Liste mehrfach.
 
-**Danach weißt du:** ob die Lösung inhaltlich zu deiner Situation passt – bevor du in Menüs und Bildschirfen steigst.
+**Anschließend** zeigen **Willkommen und Galerie**, **was Besucher sehen**. **Direkt danach** folgt der **Admin** als **Herzstück** – **Überblick** und **Screenshot** der **Zentrale**, bevor die Mappe in **Werke**, **Design**, **Kassa**, **Events** und die übrigen Bereiche **einsteigt**.
 
-### Schritt 4 – Konkrete Beispiele im Admin: vom ersten Bildschirm bis zur Öffentlichkeitsarbeit
-
-Der **zweite Schwerpunkt** startet mit **Willkommen und Galerie** (Besucherperspektive) – und setzt **sofort** mit dem **Admin-Hub** fort: das **Herzstück**, von dem aus du **Werke**, **Design**, **Kassa**, **Events** und mehr steuerst. Danach folgen die Kapitel zu den einzelnen Bereichen inkl. **VK2**.
-
-**Danach weißt du:** ob sich Oberfläche und Abläufe für dich **greifbar** anfühlen – von der Vitrine bis zur **Zentrale**.
+**Danach weißt du:** ob die **Linie** zu dir passt **und** ob dir **Schaufenster** plus **Admin** als **ein** Bild vorkommt.
 
 ---
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
-### Schwerpunkt 1 – Allgemeine Information
+### Orientierung
 
 **Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste **ohne** Nummer, Einstiegsseite)*
 
@@ -52,13 +48,13 @@ Ausführliche Lesefassung mit Kunst, Markt und Fragen, die du dir stellen kannst
 
 4. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-Das **Was** der Plattform: **Mein Weg**, Datenfluss, Besucher- vs. Admin-Perspektive – **verzahnt** mit **Schritt 4** (Schwerpunkt 2). Die **Spartenliste** folgt bewusst nur im nächsten Kapitel.
+**Was** die Plattform ist, **Mein Weg** als Schaltzentrale, **Schaufenster** (öffentliche Galerie) und **Vorschau** auf den **Admin** als **Zentrale** – die **Sparten-Tabelle** folgt **nur** im nächsten Kapitel.
 
 5. [Für wen](03-FUER-WEN.md)
 
-Hier steht **einmal** die vollständige Orientierung zu den **sechs Sparten**, zur öffentlichen Demo **ök2**, zu Lizenzen und kurz zur **Vereinsplattform VK2** – damit du zuordnen kannst, was zu dir passt.
+Hier steht **einmal** die **Sparten-Tabelle** – damit du zuordnen kannst, **was** zu dir passt. **Demo ök2**, **Lizenzen** und **VK2** erklären die Kapitel **Demo und Lizenz** und **Vereinsplattform VK2**.
 
-### Schwerpunkt 2 – Konkrete Beispiele im Admin
+### Konkret im Admin
 
 *(Die Nummern entsprechen der **Seitenleiste** in der Mappe: nach dem Deckblatt beginnt die Zählung mit **1** = Inhaltsverzeichnis.)*
 
@@ -66,9 +62,9 @@ Hier steht **einmal** die vollständige Orientierung zu den **sechs Sparten**, z
 
 Willkommensbereich und Galerie-Ansicht wie in der App; optional ein Video aus den **Stammdaten**. **Mein Weg** zeigt sich hier in Filtern und Struktur für deinen öffentlichen Auftritt.
 
-7. [Admin – Hub und Herzstück](04B-ADMIN-HUB.md)
+7. [Admin – Herzstück und Zentrale](04-ADMIN-HERZSTUECK.md)
 
-Die **Galerie-Zentrale** mit einem Screenshot: **ein** Hub für Werke, Gestaltung, Kassa, Events, Einstellungen und mehr – das **Herzstück** neben dem Schaufenster.
+**Der** Hub, an dem **du** den Alltag führst: Kacheln zu Werken, Gestaltung, Kassa, Events, Einstellungen – **ein** Screenshot, **ein** klarer Überblick, warum das **Herzstück** der Plattform ist.
 
 8. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 
@@ -80,7 +76,7 @@ Farben, Texte, Bilder der Willkommensseite – und **ein** verlässlicher Weg zu
 
 10. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
 
-Verkäufe, Lager, druckbarer Werkkatalog und Exporte: der Überblick, der sich im Betrieb auszahlt.
+Verkäufe, Lager, druckbarer Werkkatalog und Exporte – **für alle Sparten** unter **Mein Weg**, nicht nur für Galerie und Handel: der Überblick, der sich im Betrieb auszahlt.
 
 11. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
 
