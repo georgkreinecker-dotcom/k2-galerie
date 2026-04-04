@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Nummernlogik Schwerpunkt 1 = Sidebar** – Im **Inhaltsverzeichnis** (Markdown): **Deckblatt** ohne Listen-„1.“; **1. Inhaltsverzeichnis**, dann **2.–5.** – passt zur **Kapitel-Leiste** (kein Konflikt mehr „1. Inhaltsverzeichnis“ vs. „1. Deckblatt“). Dateien: `public/praesentationsmappe-vollversion/00-INDEX.md`, `praesentationsmappe-vk2-vollversion`, `praesentationsmappe-vk2-promo`. Zusammen mit **H1 ohne Auto-„1.“** auf der INDEX-Seite (`chapterNumberForPmvMarkdown`). `npm run test` + `npm run build` grün. **Commit:** **283bf82** ✅ GitHub
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Nummernlogik Schwerpunkt 1 = Sidebar** – Im **Inhaltsverzeichnis** (Markdown): **Deckblatt** ohne Listen-„1.“; **1. Inhaltsverzeichnis**, dann **2.–5.** – passt zur **Kapitel-Leiste** (kein Konflikt mehr „1. Inhaltsverzeichnis“ vs. „1. Deckblatt“). Dateien: `public/praesentationsmappe-vollversion/00-INDEX.md`, `praesentationsmappe-vk2-vollversion`, `praesentationsmappe-vk2-promo`. Zusammen mit **H1 ohne Auto-„1.“** auf der INDEX-Seite (`chapterNumberForPmvMarkdown`). `npm run test` + `npm run build` grün. **Commit:** **64dc91f** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Vollversion → Sidebar und TOC-Zeilen kurz gegenlesen.
 
