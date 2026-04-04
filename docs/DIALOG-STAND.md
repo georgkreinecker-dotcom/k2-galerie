@@ -4,7 +4,7 @@
 
 **Was wir JETZT tun:** Prospekt in der Vollversion lesen — neuer Abschnitt vor „Der Markt stückelt“.
 
-**Einordnung:** Pitch: Substanz bei der Kunst, Skalierung ohne Kühlung der Sprache.
+**Einordnung:** Pitch: bei Kunst und Galerie konkret bleiben – und die **Marktweite** (eine Struktur, viele Instanzen) klar machen.
 
 ---
 
