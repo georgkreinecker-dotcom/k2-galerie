@@ -2,8 +2,4 @@
 
 **Internetshop** über die öffentliche Galerie: Besucher legen Werke in den **Warenkorb**, geben **Name und E-Mail** ein, wählen eine **Zahlungsart** (**Karte**, **Rechnung**, **Bar**) und schließen ab. In der App gibt es **keine** automatische **Online-Abbuchung** im Warenkorb – die gewählte Art ist der **Zahlungswunsch**; Sie klären die **echte** Zahlung **außerhalb** der App (Überweisung, Terminal, Vereinbarung).
 
-**Kasse** im Admin bleibt der Weg für **Verkauf vor Ort** mit Bon und Rechnung – **nicht** dasselbe wie der Internet-Warenkorb.
-
-**Lizenz kaufen** für die eigene Galerie ist ein **anderer** Vorgang als der **Kunstwerk-Warenkorb** für Endkundinnen und Endkunden.
-
 [SEITENUMBRUCH]

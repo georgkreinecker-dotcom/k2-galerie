@@ -21,8 +21,6 @@ Die Bestellung wird **auf dem Gerät des Besuchers** im Browser dieser Galerie-S
 ### Was Sie als Galerie tun
 
 - **Nachbestellen / Zahlung klären:** Mit der Kundin oder dem Kunden Kontakt aufnehmen – je nach gewählter Art: z. B. **Überweisung** (Bankdaten aus Stammdaten, wenn gepflegt), **Karte** außerhalb der App (Link, Terminal bei Abholung), **Bar** bei Abholung.
-- **Kasse** im Admin bleibt der Weg für **Verkauf vor Ort** mit Bon und Rechnung – das ist **nicht** dasselbe wie der Internet-Warenkorb (siehe Tabelle unten).
-- **Lizenz für die eigene Galerie kaufen** läuft über die vorgesehene **Lizenz-/Zahlungsstrecke** und kann einen **anderen** technischen Weg haben – das betrifft **nicht** den **Kunstwerk-Warenkorb** für Endkundinnen und Endkunden.
 
 ---
 
@@ -42,7 +40,6 @@ Die Bestellung wird **auf dem Gerät des Besuchers** im Browser dieser Galerie-S
 2. **„Karte“** = Wunsch; die **echte** Kartenzahlung klären Sie **außerhalb** der App.
 3. **Rechnung / Überweisung** – Zahlung über Ihr **Bankkonto**; die App **bucht** nicht automatisch ein.
 4. **Bar** – typisch bei **Abholung** vor Ort.
-5. **Lizenz kaufen** ≠ **Warenkorb Kunstwerke** (kann anderer Zahlungsweg sein).
 
 ---
 

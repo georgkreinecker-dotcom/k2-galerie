@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Shop-Texte: Kasse/Lizenz vs. Warenkorb-Sätze raus** – Mappe Voll+Lang `15-SHOP-INTERNETBESTELLUNG.md`, Benutzerhandbuch `12-SHOP-INTERNET-BESTELLUNG.md` (zwei Aufzählungspunkte + Lizenz-Hinweis in Zahlungsliste), `PraesentationsmappePage.tsx` Kurztext. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: weniger Abgrenzungstexte, gleicher inhaltlicher Kern (Warenkorb = Wunsch, keine In-App-Abbuchung).
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik ohne Alltag-Abschnitt** – `14-STATISTIK-WERKKATALOG.md`: Absatz „Typisch öffnest du …“ (ehem. **Im Alltag**-Inhalt) entfernt. **Commit:** **eccb7bd** ✅ GitHub
 
 **Was wir JETZT tun:** –
