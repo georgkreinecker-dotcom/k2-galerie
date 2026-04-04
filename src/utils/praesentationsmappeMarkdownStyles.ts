@@ -142,7 +142,7 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-wrap .pmv-table-compare tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.75); }
     .pmv-wrap .pmv-table-compare tbody tr:hover { background: rgba(20, 184, 166, 0.09); }
     .pmv-wrap .pmv-table-compare tbody td { padding: 0.55rem 0.45rem; border-bottom: 1px solid #e7e5e4; vertical-align: middle; }
-    .pmv-wrap .pmv-table-compare .pmv-td-criterion { font-size: 0.9rem; line-height: 1.45; color: #1c1a18; text-align: left; font-weight: 500; padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+    .pmv-wrap .pmv-table-compare .pmv-td-criterion { font-size: 0.9rem; line-height: 1.45; color: #1c1a18; text-align: left; font-weight: 500; padding-left: 0.75rem !important; padding-right: 0.75rem !important; overflow-wrap: break-word; word-wrap: break-word; min-width: 0; hyphens: auto; }
     .pmv-wrap .pmv-table-compare .pmv-td-check { text-align: center; width: 4.25rem; }
     .pmv-wrap .pmv-table-compare .pmv-td-highlight { text-align: center; background: rgba(20, 184, 166, 0.14) !important; font-size: 1.05rem; border-left: 2px solid #14b8a6; }
     .pmv-wrap .pmv-cell-yes { color: #047857; font-weight: 700; }
@@ -150,11 +150,11 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     /* Split-Vergleich (3 Spalten: Thema | Markt fragmentiert | K2/ök2 integriert) */
     .pmv-wrap .pmv-table-split-wrap { margin: 1rem 0 1.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid #d6d3d1; background: #fafaf9; box-shadow: 0 2px 10px rgba(28, 26, 24, 0.07); }
     .pmv-wrap .pmv-table-split { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9375rem; table-layout: fixed; }
-    .pmv-wrap .pmv-table-split thead th { font-weight: 600; padding: 0.7rem 0.65rem; vertical-align: bottom; line-height: 1.35; border-bottom: 2px solid #e7e5e4; }
+    .pmv-wrap .pmv-table-split thead th { font-weight: 600; padding: 0.7rem 0.65rem; vertical-align: bottom; line-height: 1.35; border-bottom: 2px solid #e7e5e4; overflow-wrap: break-word; word-wrap: break-word; min-width: 0; hyphens: auto; }
     .pmv-wrap .pmv-table-split .pmv-th-split-first { text-align: left; width: 18%; background: #f5f5f4; color: #44403c; }
     .pmv-wrap .pmv-table-split .pmv-th-split-market { text-align: left; width: 41%; background: #fef3c7; color: #78350f; border-left: 1px solid #fcd34d; border-right: 1px solid #fcd34d; }
     .pmv-wrap .pmv-table-split .pmv-th-split-k2 { text-align: left; width: 41%; background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%); color: #134e4a; border-bottom: 2px solid #14b8a6 !important; }
-    .pmv-wrap .pmv-table-split tbody td { padding: 0.55rem 0.65rem; border-bottom: 1px solid #e7e5e4; vertical-align: top; line-height: 1.5; color: #1c1a18; }
+    .pmv-wrap .pmv-table-split tbody td { padding: 0.55rem 0.65rem; border-bottom: 1px solid #e7e5e4; vertical-align: top; line-height: 1.5; color: #1c1a18; overflow-wrap: break-word; word-wrap: break-word; min-width: 0; hyphens: auto; }
     .pmv-wrap .pmv-table-split tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.55); }
     .pmv-wrap .pmv-table-split tbody tr:first-child .pmv-td-split-market { background: rgba(254, 243, 199, 0.5); font-weight: 600; }
     .pmv-wrap .pmv-table-split tbody tr:first-child .pmv-td-split-k2 { background: rgba(209, 250, 229, 0.55); font-weight: 600; }
