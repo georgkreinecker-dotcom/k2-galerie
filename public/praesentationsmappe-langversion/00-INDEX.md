@@ -59,7 +59,3 @@ Plattform (Windows, Android, macOS, iOS), Browser & PWA – ein Stand überall, 
 14. [Kontakt und nächste Schritte](13-KONTAKT.md)
 
 QR, Link zur Demo, Lizenz anfragen – zum Schluss.
-
----
-
-**Drucken:** Button „Drucken“ – einzelnes Kapitel oder ganze Mappe als PDF.
