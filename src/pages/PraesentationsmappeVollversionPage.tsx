@@ -51,8 +51,7 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
     file: '01-DECKBLATT.md',
   },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
-  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-UND-WETTBEWERB.md' },
-  { id: '02b-prospekt-zukunft', name: 'Prospekt Aufbruch & Zukunft', file: '02B-PROSPEKT-ZUKUNFT.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-UND-WETTBEWERB.md' },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   {
@@ -82,7 +81,7 @@ const DOCUMENTS_VK2: PraesMappeDoc[] = [
     file: '01-DECKBLATT.md',
   },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
-  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
   { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   {
@@ -106,7 +105,7 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
     file: '01-DECKBLATT.md',
   },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
-  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB.md' },
   {
     sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
     id: '02-ein-blick',
@@ -122,12 +121,17 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
 
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
-/** Nummer vor der ersten H1 nur wo sinnvoll; Inhaltsverzeichnis nicht „1.“ – Nummer steht schon in der Kapitel-Leiste. */
+/** Nummer vor der ersten H1 nur wo sinnvoll; Inhaltsverzeichnis ohne Ziffer – Seitenleiste nutzt dieselbe Logik (keine „1.“ vor Inhaltsverzeichnis). */
 function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): number | undefined {
   const idx = docs.findIndex((d) => d.file === file)
   if (idx <= 0) return undefined
   if (docs[idx]?.file === '00-INDEX.md') return undefined
   return idx
+}
+
+function sidebarDocLabel(docs: PraesMappeDoc[], doc: PraesMappeDoc): string {
+  const n = chapterNumberForPmvMarkdown(docs, doc.file)
+  return n != null ? `${n}. ${doc.name}` : doc.name
 }
 
 export default function PraesentationsmappeVollversionPage() {
@@ -180,11 +184,17 @@ export default function PraesentationsmappeVollversionPage() {
       navigate(PROJECT_ROUTES['k2-galerie'].flyerOek2PromoA4, { replace: true })
       return
     }
+    if (docFromUrl === '02B-PROSPEKT-ZUKUNFT.md' && !isAnyVk2) {
+      const next = new URLSearchParams(searchParams)
+      next.set(DOC_PARAM, '02-USP-UND-WETTBEWERB.md')
+      navigate({ search: next.toString() }, { replace: true })
+      return
+    }
     const fileToLoad = docFromUrl && DOCUMENTS.some((d) => d.file === docFromUrl)
       ? docFromUrl
       : DOCUMENTS[0].file
     loadDocument(fileToLoad)
-  }, [searchParams, isMobile, isOeffentlich, BASE, DOCUMENTS, navigate])
+  }, [searchParams, isMobile, isOeffentlich, BASE, DOCUMENTS, navigate, isAnyVk2])
 
   useEffect(() => {
     const needQr = selectedDoc === kontaktFileForVariant || fullPrintView
@@ -429,7 +439,7 @@ export default function PraesentationsmappeVollversionPage() {
                       width: '100%',
                     }}
                   >
-                    {index === 0 ? doc.name : `${index}. ${doc.name}`}
+                    {sidebarDocLabel(DOCUMENTS, doc)}
                   </button>
                 </div>
               ))}
