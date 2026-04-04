@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergangssatz geschärft** (kein Wegreden der Kunst, **Werk bleibt Werk**, Skalieren = vervielfältigen nicht verwässern). **`02B-PROSPEKT-ZUKUNFT.md`**. **Commit:** *(nach Push)*
+**Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergangssatz geschärft** (kein Wegreden der Kunst, **Werk bleibt Werk**, Skalieren = vervielfältigen nicht verwässern). **`02B-PROSPEKT-ZUKUNFT.md`**. **Commit:** **ad29497** ✅ GitHub
 
 **Was wir JETZT tun:** Prospekt Abschnitt „Vom Atelier zum gesamten Markt“ — letzte Absätze lesen.
 
