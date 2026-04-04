@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: eigenständiger Prospekt zu USP/Wettbewerb:** Neues Kapitel **`public/praesentationsmappe-vollversion/02B-PROSPEKT-ZUKUNFT.md`** („Prospekt Aufbruch & Zukunft“) – Lesefassung, zukunftsorientiert; **`00-INDEX`** Punkt **2a**; **`PraesentationsmappeVollversionPage`** Sidebar; Querverweis in **`02-USP-UND-WETTBEWERB.md`**. `npm run test` / `npm run build` grün. **Commit:** **b5add46** ✅ GitHub
+
+**Was wir JETZT tun:** Vollversion in der APf – Kapitel „Prospekt Aufbruch & Zukunft“ öffnen, Druck/PDF prüfen.
+
+**Einordnung:** Pitch und Mail neben der technischen USP-Matrix.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentation: Positionierung „Teil der Zukunft“:** Deckblatt, **`02-USP-UND-WETTBEWERB.md`** (**Haltung** Zukunft/Aufbruch, USP-Zeile **Zukunft statt Altware**, Kapitel-Einleitung), **`00-INDEX`** – nicht als etablierte Altware, sondern **Aufbruch** (Browser, PWA, eine Datenbasis). **Commit:** **5595f25** ✅ GitHub
 
 **Was wir JETZT tun:** Präsentationsmappe in der APf – Deckblatt + USPs gegenlesen.
