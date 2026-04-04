@@ -24,9 +24,9 @@ Zuerst **Was ist die K2 Galerie**: die Plattform in klarer, sachlicher Sprache �
 
 ### Schritt 4 – Konkrete Beispiele im Admin: vom ersten Bildschirm bis zur Öffentlichkeitsarbeit
 
-Ab **Willkommen und Galerie** beginnt der **zweite Schwerpunkt**: du siehst, wie die App **aussieht** und **arbeitet** – Werke, Design, Veröffentlichung, Statistik, Kassa, Shop, Events und der Blick auf **VK2**.
+Der **zweite Schwerpunkt** startet mit **Willkommen und Galerie** (Besucherperspektive) – und setzt **sofort** mit dem **Admin-Hub** fort: das **Herzstück**, von dem aus du **Werke**, **Design**, **Kassa**, **Events** und mehr steuerst. Danach folgen die Kapitel zu den einzelnen Bereichen inkl. **VK2**.
 
-**Danach weißt du:** ob sich die Oberfläche und die Abläufe für dich greifbar anfühlen.
+**Danach weißt du:** ob sich Oberfläche und Abläufe für dich **greifbar** anfühlen – von der Vitrine bis zur **Zentrale**.
 
 ---
 
@@ -52,7 +52,7 @@ Ausführliche Lesefassung mit Kunst, Markt und Fragen, die du dir stellen kannst
 
 4. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-Die Plattform in klaren Worten: Aufbau, Idee und **Mein Weg** als Steuerlogik – **ohne** die Spartenliste; die folgt bewusst nur im nächsten Kapitel.
+Das **Was** der Plattform: **Mein Weg**, Datenfluss, Besucher- vs. Admin-Perspektive – **verzahnt** mit **Schritt 4** (Schwerpunkt 2). Die **Spartenliste** folgt bewusst nur im nächsten Kapitel.
 
 5. [Für wen](03-FUER-WEN.md)
 
@@ -66,46 +66,50 @@ Hier steht **einmal** die vollständige Orientierung zu den **sechs Sparten**, z
 
 Willkommensbereich und Galerie-Ansicht wie in der App; optional ein Video aus den **Stammdaten**. **Mein Weg** zeigt sich hier in Filtern und Struktur für deinen öffentlichen Auftritt.
 
-7. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
+7. [Admin – Hub und Herzstück](04B-ADMIN-HUB.md)
+
+Die **Galerie-Zentrale** mit einem Screenshot: **ein** Hub für Werke, Gestaltung, Kassa, Events, Einstellungen und mehr – das **Herzstück** neben dem Schaufenster.
+
+8. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 
 Kategorien aus deiner Sparte, Fotos, Preise, Einkauf und Verkauf – beschrieben so, dass du den Arbeitsablauf erkennst, nicht die Technik im Vordergrund steht.
 
-8. [Design und Veröffentlichung](06-DESIGN-VEROEFFENTLICHUNG.md)
+9. [Design und Veröffentlichung](06-DESIGN-VEROEFFENTLICHUNG.md)
 
 Farben, Texte, Bilder der Willkommensseite – und **ein** verlässlicher Weg zu veröffentlichen, damit derselbe Stand auf allen Geräten sichtbar ist.
 
-9. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
+10. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
 
 Verkäufe, Lager, druckbarer Werkkatalog und Exporte: der Überblick, der sich im Betrieb auszahlt.
 
-10. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
+11. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
 
 Verkauf vor Ort, Kasse in der App, Belege – verbunden mit deinen Werken, ohne Medienbruch.
 
-11. [Shop und Internetbestellung](15-SHOP-INTERNETBESTELLUNG.md)
+12. [Shop und Internetbestellung](15-SHOP-INTERNETBESTELLUNG.md)
 
 Warenkorb für Besucherinnen, Zahlungswunsch ohne automatische Abbuchung im Internet; die Kasse bleibt der klare Ort für den Abschluss.
 
-12. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
+13. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
 Vom Event in der Planung bis zu Werbemitteln, Verteilern und Druck – **ein** Strang aus denselben Daten, statt Copy und Paste zwischen vielen Werkzeugen.
 
-13. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
+14. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
 Für **Kunstvereine** und ähnliche Gemeinschaften; Einstieg in VK2 und die Konditionen, die in der App nachgelesen werden können.
 
-14. [Demo und Lizenz](10-DEMO-LIZENZ.md)
+15. [Demo und Lizenz](10-DEMO-LIZENZ.md)
 
 Öffentliche Demo **ök2** ausprobieren, eigene Galerie denken, Lizenzen von Basic bis VK2 vergleichen – der Schritt vom Lesen zum Handeln.
 
-15. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
+16. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
 
 Empfehlerkennung, Rabatt und Gutschrift – wenn du die Lösung weiterempfehlen möchtest und davon profitieren willst.
 
-16. [Technik](12-TECHNIK.md)
+17. [Technik](12-TECHNIK.md)
 
 Browser, PWA, gängige Betriebssysteme – **ein** Stand überall, ohne dass du als Galeristin oder Galerist Technik studieren musst.
 
-17. [Kontakt und nächste Schritte](13-KONTAKT.md)
+18. [Kontakt und nächste Schritte](13-KONTAKT.md)
 
 Demo, QR-Code, Lizenz – und **du** entscheidest, welcher Schritt als Nächstes für dich sinnvoll ist.

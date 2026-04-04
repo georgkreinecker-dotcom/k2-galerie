@@ -60,6 +60,7 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
     name: 'Willkommen und Galerie',
     file: '04-WILLKOMMEN-UND-GALERIE.md',
   },
+  { id: '04b-admin-hub', name: 'Admin – Hub und Herzstück', file: '04B-ADMIN-HUB.md' },
   { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md' },
   { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
   { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },

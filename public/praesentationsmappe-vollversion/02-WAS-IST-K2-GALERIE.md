@@ -1,22 +1,24 @@
 # Was ist die K2 Galerie?
 
-**Schritt 4 in dieser Mappe:** Aus **USPs / Prospekt** kennst du das **Warum** – **hier** das **Was**: **ein System**, das Sparte, Werke und Auftritt **zusammenhält** (ohne die Argumente zu wiederholen).
+**USPs** und ggf. **Prospekt** liefern das **Warum** am Markt. **Dieses Kapitel** liefert das **Was** – in klaren Worten, ohne die Argumente zu wiederholen.
 
-Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit „Mein Weg“**.
+**Schwerpunkt 2** der Mappe ist **Schritt 4** in einem Stück: Du gehst von der **Besucherperspektive** (**Willkommen und Galerie**) **sofort** weiter zum **Admin** – das ist das **Herzstück**: der Ort, an dem du Werke, Auftritt, Kasse, Events und mehr **aus einer Hand** steuerst. Danach folgen die einzelnen Bereiche (Werke, Design, Kassa, …) – jeweils mit Beispielen aus der Oberfläche.
 
-**Mein Weg** ist die Hauptaussage: Du entscheidest einmal, **wofür** du deine Galerie nutzt – und ab dann passt sich die App daran an. Die gewählte Sparte ist damit keine „Nebenaussage“, sondern die **Schaltzentrale** für:
+---
 
-- **Typen und Kategorien** (Kunstwerk, Produkt, Idee/Referenz – passend zur Sparte)
-- **Filter und Struktur** in der öffentlichen Galerie (Besucher erleben Ordnung statt Mischmasch)
-- **Texte und Generatoren** (Events, Flyer, Presse, Social) – gleiche Daten, gleiche Sprache, gleiche Linie
-- **Abläufe** (vom Erfassen bis zum Veröffentlichen) – ohne doppelte Eingaben
+Die **K2 Galerie** ist eine **Galerie- und Vermarktungsplattform** mit **„Mein Weg“**.
 
-**Welche Sparte zu dir passt** – **eine** Tabelle, **kein** zweites Mal die gleiche Liste: direkt im **nächsten** Kapitel **[Für wen](03-FUER-WEN.md)**.
+**Mein Weg** heißt: Du legst **einmal** fest, **wofür** du die Plattform nutzt – die gewählte **Sparte** wird zur **Schaltzentrale** für Typen, Kategorien, Filter, Texte und Abläufe. Nicht Dekoration, sondern **Steuerlogik**: Besucher erleben **Ordnung**, du arbeitest **ohne Doppelpflege** zwischen Website, Kasse und Werbemitteln.
 
-Darauf aufbauend: **eigene Galerie** im Netz (Willkommen, Werke, Vita, Shop), **Design** und Veröffentlichen mit **einem Stand auf allen Geräten**, **Event- und Medienplanung** (planen, Dokumente erzeugen, Verteiler), **Kassa und Etiketten** wo nötig. Windows, Android, macOS, iOS – Browser und PWA.
+**Dazu gehört unter anderem:**
 
-Nicht nur eine App: **Werkzeug am Rechner** (Planung, Veröffentlichen, Werbeunterlagen) plus **Galerie und Kassa** auf Tablet und Handy – in dieser Kombination aus einem Guss.
+- **Typen und Kategorien**, die zur Sparte passen (z. B. Kunstwerk, Produkt, Idee – je nach Fokus)
+- **Filter und Struktur** in der öffentlichen Galerie
+- **Texte und Generatoren** für Events, Flyer, Presse, Social – **dieselben** Daten, **dieselbe** Linie
+- **Ein** Weg vom Erfassen bis zum Veröffentlichen – mit **einem Stand** auf den Geräten, die du nutzt (Browser, PWA; Windows, Android, macOS, iOS)
 
-![Galerie-Übersicht](/img/oeffentlich/galerie-card.jpg)
+**Welche Sparte zu dir passt** – die **vollständige** Übersicht der **sechs Sparten**, Demo **ök2**, Lizenzen und **VK2** steht **einmal** im Kapitel **[Für wen](03-FUER-WEN.md)** – damit du nicht zweimal dieselbe Liste liest.
+
+Kurz: **Schaufenster** (Willkommen, Galerie, Vita, Shop) und **Werkstatt** (**Admin-Hub**) sind **ein Produkt**. Genau das siehst du ab **Schwerpunkt 2** – zuerst wie **Gäste** reinkommen, **dann** der **Admin** mit großem Screenshot und danach die **Feinarbeit** pro Bereich.
 
 [SEITENUMBRUCH]
