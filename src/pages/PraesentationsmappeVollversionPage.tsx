@@ -318,7 +318,7 @@ export default function PraesentationsmappeVollversionPage() {
           </p>
           {!fullPrintView && !isMobile ? (
             <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#9ca3af' }}>
-              Weißer Bogen = ungefähre DIN-A4-Breite · passt zur Druckvorschau
+              DIN-A4-Breite · gestrichelter Innenrand = Druckkörper wie beim Druck (Kopf-/Seiten-/Fußrand) · passt zur Druckvorschau
             </p>
           ) : null}
         </div>
@@ -353,7 +353,7 @@ export default function PraesentationsmappeVollversionPage() {
       {(fullPrintView || (isMobile && allDocContents.length > 0)) ? (
         <article
           className="pmv-scroll-mobile pmv-a4-sheet"
-          style={{ background: '#fff', padding: 0, border: 'none', overflow: 'visible' }}
+          style={{ overflow: 'visible' }}
         >
           {allDocContents.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Keine Kapitel geladen.</div>
@@ -430,7 +430,7 @@ export default function PraesentationsmappeVollversionPage() {
 
           <article
             className="pmv-article pmv-a4-sheet"
-            style={{ background: '#fff', padding: 0, border: 'none', minHeight: 400 }}
+            style={{ minHeight: 400 }}
           >
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>

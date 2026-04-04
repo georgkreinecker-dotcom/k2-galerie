@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Bogen wie Word eingebettet** – Grauer **Schreibtisch** deutlicher (Gradient, mehr **Padding** am `.pmv-map-grid`); weißer Bogen mit **Margin rundum** (`1.25rem 1rem 2rem`) + **mehrschichtiger Schatten** + Randfarbe, damit **Seitenränder** sichtbar sind; **„Gesamte Mappe“** (`> .pmv-a4-sheet`) ebenfalls vertikal Abstand. ✅ GitHub (Commit-Message: *Word-artige Seitenränder um A4-Bogen*)
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Text liegt im Druckkörper** – **Ursache:** `article` hatte **Inline `padding: 0` + `border: none`** → Text am **Blattrand**, Hilfslinien aber bei **15 mm / 18 mm** wie `@page`. **Fix:** Inline-Padding/Border entfernt, CSS **`padding: 15mm 18mm`** greift; **„Gesamte Mappe“** (`> .pmv-a4-sheet`) dieselben Blatt-Ränder + 210 mm + Schatten wie Einzelansicht. `npm run test` + `npm run build` grün.
 
-**Was wir JETZT tun:** Mappe Desktop neu laden – rings um den weißen Bogen soll **durchgehend Grau** sichtbar sein.
+**Was wir JETZT tun:** Mappe Desktop neu laden – **Fließtext steht innerhalb** des gestrichelten Rahmens (wie Druck).
 
-**Einordnung:** Georg: wie **Word-Seite eingebettet** – nicht nur Breite 210 mm, sondern **Abstand Papier ↔ Hintergrund**.
+**Einordnung:** Georg: Problem war **nicht** die Linie, sondern **wo der Text saß** – jetzt **eine Welt** mit Druckvorschau.
 
 ---
 

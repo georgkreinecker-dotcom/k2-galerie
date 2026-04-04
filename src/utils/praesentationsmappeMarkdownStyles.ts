@@ -33,9 +33,86 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         border: 1px solid #c4c0ba;
         min-height: 0;
         overflow-x: auto;
+        position: relative;
       }
+      /* Zweiter Rand: Druck-Margins wie @page (15mm oben, 18mm seitlich/unten) – Kopf-/Fuß-/Seitenrand sichtbar */
+      .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        box-sizing: border-box;
+        background:
+          linear-gradient(180deg, rgba(120, 113, 108, 0.07) 0, rgba(120, 113, 108, 0.07) 15mm, transparent 15mm),
+          linear-gradient(0deg, rgba(120, 113, 108, 0.07) 0, rgba(120, 113, 108, 0.07) 18mm, transparent 18mm),
+          linear-gradient(90deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm),
+          linear-gradient(270deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm);
+      }
+      .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet::before {
+        content: '';
+        position: absolute;
+        left: 18mm;
+        right: 18mm;
+        top: 15mm;
+        bottom: 18mm;
+        border: 1px dashed rgba(100, 94, 88, 0.42);
+        pointer-events: none;
+        z-index: 1;
+        box-sizing: border-box;
+        border-radius: 1px;
+      }
+      .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet > * {
+        position: relative;
+        z-index: 2;
+      }
+      /* Gesamte Mappe: gleiche Blatt-Ränder wie Einzelansicht, Text = Druckkörper (mit Hilfslinien) */
       .pmv-map-page-root > .pmv-a4-sheet {
+        box-sizing: border-box;
+        width: min(100%, 210mm);
+        max-width: 210mm;
         margin: 1.25rem auto 2.5rem;
+        padding: 15mm 18mm;
+        position: relative;
+        background: #fff !important;
+        border: 1px solid #c4c0ba;
+        border-radius: 2px;
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.06),
+          0 4px 12px rgba(28, 26, 24, 0.08),
+          0 16px 40px rgba(28, 26, 24, 0.12);
+        min-height: 0;
+        overflow-x: auto;
+      }
+      .pmv-map-page-root > .pmv-a4-sheet::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        box-sizing: border-box;
+        background:
+          linear-gradient(180deg, rgba(120, 113, 108, 0.07) 0, rgba(120, 113, 108, 0.07) 15mm, transparent 15mm),
+          linear-gradient(0deg, rgba(120, 113, 108, 0.07) 0, rgba(120, 113, 108, 0.07) 18mm, transparent 18mm),
+          linear-gradient(90deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm),
+          linear-gradient(270deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm);
+      }
+      .pmv-map-page-root > .pmv-a4-sheet::before {
+        content: '';
+        position: absolute;
+        left: 18mm;
+        right: 18mm;
+        top: 15mm;
+        bottom: 18mm;
+        border: 1px dashed rgba(100, 94, 88, 0.42);
+        pointer-events: none;
+        z-index: 1;
+        box-sizing: border-box;
+        border-radius: 1px;
+      }
+      .pmv-map-page-root > .pmv-a4-sheet > * {
+        position: relative;
+        z-index: 2;
       }
       .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
       .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
@@ -121,6 +198,11 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         box-shadow: 0 1px 10px rgba(28, 26, 24, 0.08);
         border-radius: 12px;
       }
+      .pmv-map-page-root .pmv-a4-sheet::before,
+      .pmv-map-page-root .pmv-a4-sheet::after {
+        display: none !important;
+        content: none !important;
+      }
       .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
       .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
         margin: -1rem -1rem 1rem -1rem;
@@ -184,6 +266,11 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         box-shadow: none !important;
         border-radius: 0 !important;
         overflow-x: visible !important;
+      }
+      .pmv-map-page-root .pmv-a4-sheet::before,
+      .pmv-map-page-root .pmv-a4-sheet::after {
+        display: none !important;
+        content: none !important;
       }
       .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
       .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
