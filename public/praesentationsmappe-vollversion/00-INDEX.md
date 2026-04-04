@@ -6,11 +6,11 @@
 
 1. [Deckblatt](01-DECKBLATT.md)
 
-Slogan, **Mein Weg** und die sechs Sparten auf einen Blick – erster Eindruck.
+Slogan, **Zukunft statt Altware**, **Mein Weg** und die sechs Sparten – erster Eindruck.
 
 2. [USPs und Wettbewerbsvergleich](02-USP-UND-WETTBEWERB.md)
 
-**Pitch**, USP-Tabelle, **Dreier-Vergleich mit Kreuz-Matrix** (✓/✗), **Marktbeispiele mit Namen** (Wix, Shopify, Canva …), Mega-USP „kein vergleichbares Gesamtprodukt“, Kosten-Stack – Präsentationsstart mit Druck. Detailtiefe: Marketing ök2 in der App.
+**Haltung Zukunft/Aufbruch**, **Pitch**, USP-Tabelle inkl. **Zukunft statt Altware**, **Dreier-Vergleich mit Kreuz-Matrix** (✓/✗), **Marktbeispiele mit Namen**, Mega-USP Gesamtprodukt, Kosten-Stack – Präsentationsstart mit Druck. Detailtiefe: Marketing ök2 in der App.
 
 3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 

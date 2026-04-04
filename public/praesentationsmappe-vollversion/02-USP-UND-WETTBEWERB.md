@@ -1,5 +1,7 @@
 # USPs und Wettbewerb – schärfer, verkaufstauglich
 
+**Haltung – Zukunft statt „etabliert“:** Wir treten **nicht** als Altware aus drei Jahrzehnten Einzelsoftware auf, sondern als **Teil der Zukunft**: **heute** gebaut für integrierten Galerie-Alltag – **Browser, PWA, eine Datenbasis**, DSGVO-nah, aus **Österreich** – **Aufbruch**, nicht „so haben wir’s schon immer gemacht“.
+
 **Pitch in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat.
 
 **Vertiefung:** Marketing ök2 in der App (`/mok2`) – „1. USPs“ und „Produkt- & Branchenvergleich“.
@@ -8,7 +10,7 @@
 
 ## Warum dieses Kapitel zuerst?
 
-Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so kombinieren?** und **Was kostet es, stattdessen Markt-Standard zu stückeln?** Danach sind Funktionskapitel leichter einzuordnen.
+Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so kombinieren?** und **Was kostet es, stattdessen Markt-Standard zu stückeln?** – und dass ihr **die Richtung mitgeht**, in der sich der Markt noch kaum bündelt: **Zukunft**, nicht verstaubte Etablierung. Danach sind Funktionskapitel leichter einzuordnen.
 
 ---
 
@@ -26,6 +28,7 @@ Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so
 | **Empfehlungs-Programm** | Persönliche Empfehler-ID, Rabatt/Gutschrift, **ein Klick** zum Teilen – **Vertrieb durch Nutzer:innen**, in der Galerie-/Künstler:innen-Welt selten so integriert. |
 | **Österreich / EU** | Entwicklung und Betrieb aus Österreich; **DSGVO**, deutsche UI, erreichbar – **Vertrauen** statt anonymer Fernost-Cloud. |
 | **Datensouveränität** | Backup & Wiederherstellung als **fester Hauptweg**; Demo **ök2** und echte Galerie **strikt getrennt**. |
+| **Zukunft statt Altware** | **Kein** etabliertes Legacy-Konglomerat – **eine** moderne, integrierte Linie für die **kommenden Jahre**; ihr zeigt **Aufbruch**, nicht „wir sind schon immer der Marktstandard“. |
 
 ---
 
