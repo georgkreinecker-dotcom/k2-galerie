@@ -12,19 +12,15 @@ Die folgenden **fünf Schritte** führen dich von der ersten Orientierung bis zu
 
 Beim **Deckblatt** lernst du die **Haltung** der K2 Galerie kennen: ein moderner Weg für Galerien und Künstlerinnen, der nicht bei veralteten Insellösungen stehen bleibt. Der rote Faden **Mein Weg** zeigt, wie dein Auftritt gedacht ist – ohne dich sofort mit einer langen Spartenliste zu überfrachten. Die **sechs Sparten** werden hier nur angerissen; **ausführlich und genau einmal** sortierst du später bei **Für wen**, was zu dir passt.
 
-**Danach weißt du:** welches Versprechen die Plattform ausspricht – und ob du dich in dieser Richtung wiederfindest.
-
 ### Schritt 2 – USPs und Markt: Fakten und Vergleich
 
-Im Kapitel **USPs und Wettbewerbsvergleich** liegen die **sachlichen Argumente**: eine übersichtliche Matrix, typische Marktbeispiele und die Frage, **was du konkret gewinnst**. Dieses Kapitel ist die **einzige** Stelle, an der diese Fakten so gebündelt stehen; Prospekt und Flyer **verweisen** darauf, statt alles zu wiederholen.
+Im Kapitel **USPs und Wettbewerbsvergleich** liegen die **sachlichen Argumente**: eine übersichtliche Matrix, typische Marktbeispiele und die Frage, **was du konkret gewinnst**.
 
 **Danach weißt du:** wo die Plattform im Markt steht – und welche Vorteile für deinen Betrieb genannt werden.
 
 ### Schritt 3 – Prospekt: zum Innehalten und Vertiefen
 
-Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt – ohne ein zweites USP-Kapitel zu werden. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen. Die **Promo A4 – Essenz** ist ein **eigenständiger Flyer** (Link unten im Inhaltsverzeichnis): eine Seite zum Mitnehmen; Details und Tiefe bleiben bei den USPs und im Prospekt.
-
-**Danach weißt du:** wie die Geschichte um die Plattform erzählt wird – und wo du die Kurzfassung auf einen Blick findest.
+Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt – ohne ein zweites USP-Kapitel zu werden. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen.
 
 ### Schritt 4 – Was ist die K2 Galerie, und für wen ist sie da?
 
@@ -67,7 +63,7 @@ Einstieg mit Slogan, der Gedanke **Zukunft statt Altware**, der rote Faden **Mei
 
 2. [USPs und Wettbewerbsvergleich](02-USP-UND-WETTBEWERB.md)
 
-Marktvergleich, Matrix und **was du gewinnst** – die zentrale Faktenbasis der Mappe. Spätere Kapitel verweisen hierher, statt dieselben Argumente zu wiederholen.
+Marktvergleich, Matrix und **was du gewinnst** – die sachliche Grundlage für deine Entscheidung.
 
 2a. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
