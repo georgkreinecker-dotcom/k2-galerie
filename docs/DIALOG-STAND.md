@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe `00-INDEX`: Schritte 1–5 neu redigiert** – statt dürftiger Tabelle jetzt **Leseführung** mit klaren Zwischenüberschriften, vollständigen Sätzen und **„Danach weißt du:“** pro Schritt; Schwerpunkt-Tabelle und Inhaltsverzeichnis-Kapitel 1–4 sprachlich angeglichen; Schwerpunkt-2-Zeilen ausgebaut. Datei: **`public/praesentationsmappe-vollversion/00-INDEX.md`**. `npm run test` grün. **Commit:** *(folgt)*
+
+**Was wir JETZT tun:** In der APf Kapitel **Inhaltsverzeichnis** lesen – klingt es für Laien rund?
+
+**Einordnung:** Handbuch-Regel: leserlich, nicht Formular – Georg wollte Struktur und Text für Schritte 1–5 **komplett neu**.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Promo A4 Essenz = eigenständiger Flyer** (nicht mehr Kapitel der Präsentationsmappe): Inhalt **`public/oek2-flyer-promo-a4/PROMO-A4-ESSENZ.md`**, Seite **`FlyerOek2PromoA4Page`**, Route **`/projects/k2-galerie/flyer-oek2-promo-a4`**; **02C** aus Mappe entfernt, **`?doc=02C-PROMO-A4-ESSENZ.md`** → Redirect auf Flyer; **`00-INDEX`**, **02-USP**, **02B**, **mök2** verlinken den Flyer; Markdown-Renderer/Styles ausgelagert (`praesentationsmappeMarkdown*`). `npm run test` / `npm run build` grün. **Commit:** **6ba718a** ✅ GitHub
 
 **Was wir JETZT tun:** Flyer in der APf öffnen, Druck/PDF prüfen; Mappe ohne A4-Kapitel durchklicken.

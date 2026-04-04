@@ -4,92 +4,136 @@
 
 ## So nutzt du diese Mappe – Schritt für Schritt
 
-**Das ist deine Entscheidungshilfe:** Du liest in **Ruhe**, in **logischer Reihenfolge** – und nach jedem Abschnitt soll klarer werden, **ob und warum** diese Plattform zu **deinem** Alltag passt.
+Diese Mappe ist eine **Entscheidungshilfe**, keine Werbebroschüre zum Wegwerfen. Du kannst sie in Ruhe lesen, Kapitel für Kapitel – und nach jedem der ersten Schritte sollte für dich etwas **konkreter** werden: Passt diese Plattform zu dem, was du im Alltag brauchst, oder eher nicht?
 
-| Schritt | Kapitel (Kurz) | Was du für dich klärst |
-|--------|----------------|-------------------------|
-| **1** | Deckblatt | Haltung und **Mein Weg** – **ohne** die Spartenliste (die kommt **einmal** bei **Für wen**). |
-| **2** | USPs & Markt | **Argumente und Matrix** – einmalig, nicht in Prospekt/A4 wiederholen lassen. |
-| **3** | Prospekt | **Stimmung** und **Merksatz** – verweisen auf **2**, statt Fakten zu duplizieren. **A4-Flyer** ist **eigenständig** (Link unten). |
-| **4** | Was ist + Für wen | **Technik** + **einzige** Sparten-Tabelle – **ein** Durchlauf, kein Kreis. |
-| **5** | Willkommen bis Events | **Screens und Alltag** – **nach** der inhaltlichen Klärung. |
-| **6** | Demo, Lizenz, Kontakt | **Tun:** ausprobieren, vergleichen, entscheiden. |
+Die folgenden **fünf Schritte** führen dich von der ersten Orientierung bis zu den **konkreten Beispielen aus dem Admin**. Schritt 6 schließt mit Ausprobieren, Lizenzen und Kontakt ab.
 
-**Tipp:** Wenn du **schnell** nur das Wesentliche willst: Deckblatt → **Promo A4 – Essenz** → **Demo und Lizenz** → **Kontakt**. Wenn du **gründlich** entscheiden willst: der Reihe nach von oben nach unten.
+### Schritt 1 – Deckblatt: Haltung und Einstieg
+
+Beim **Deckblatt** lernst du die **Haltung** der K2 Galerie kennen: ein moderner Weg für Galerien und Künstlerinnen, der nicht bei veralteten Insellösungen stehen bleibt. Der rote Faden **Mein Weg** zeigt, wie dein Auftritt gedacht ist – ohne dich sofort mit einer langen Spartenliste zu überfrachten. Die **sechs Sparten** werden hier nur angerissen; **ausführlich und genau einmal** sortierst du später bei **Für wen**, was zu dir passt.
+
+**Danach weißt du:** welches Versprechen die Plattform ausspricht – und ob du dich in dieser Richtung wiederfindest.
+
+### Schritt 2 – USPs und Markt: Fakten und Vergleich
+
+Im Kapitel **USPs und Wettbewerbsvergleich** liegen die **sachlichen Argumente**: eine übersichtliche Matrix, typische Marktbeispiele und die Frage, **was du konkret gewinnst**. Dieses Kapitel ist die **einzige** Stelle, an der diese Fakten so gebündelt stehen; Prospekt und Flyer **verweisen** darauf, statt alles zu wiederholen.
+
+**Danach weißt du:** wo die Plattform im Markt steht – und welche Vorteile für deinen Betrieb genannt werden.
+
+### Schritt 3 – Prospekt: zum Innehalten und Vertiefen
+
+Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt – ohne ein zweites USP-Kapitel zu werden. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen. Die **Promo A4 – Essenz** ist ein **eigenständiger Flyer** (Link unten im Inhaltsverzeichnis): eine Seite zum Mitnehmen; Details und Tiefe bleiben bei den USPs und im Prospekt.
+
+**Danach weißt du:** wie die Geschichte um die Plattform erzählt wird – und wo du die Kurzfassung auf einen Blick findest.
+
+### Schritt 4 – Was ist die K2 Galerie, und für wen ist sie da?
+
+Zuerst **Was ist die K2 Galerie**: die Plattform in klarer, sachlicher Sprache – **Mein Weg** als Schaltzentrale, **ohne** die Spartenliste noch einmal auszubreiten. Anschließend **Für wen**: die **einzige** ausführliche Übersicht der **sechs Sparten**, wer öffentliche Demo und Lizenz nutzt, und wo die **Vereinsplattform VK2** ins Spiel kommt. So entsteht **ein** durchgängiger Bogen statt eines Kreises aus Wiederholungen.
+
+**Danach weißt du:** ob die Lösung inhaltlich zu deiner Situation passt – bevor du in Menüs und Bildschirfen steigst.
+
+### Schritt 5 – Konkrete Beispiele im Admin: vom ersten Bildschirm bis zur Öffentlichkeitsarbeit
+
+Ab **Willkommen und Galerie** beginnt der **zweite Schwerpunkt**: du siehst, wie die App **aussieht** und **arbeitet** – Werke, Design, Veröffentlichung, Statistik, Kassa, Shop, Events und der Blick auf **VK2**. Das sind **keine** erneuten Argumente aus Schritt 2, sondern **Beispiele aus der Praxis**, an denen du dir den Alltag vorstellen kannst.
+
+**Danach weißt du:** ob sich die Oberfläche und die Abläufe für dich greifbar anfühlen.
+
+### Schritt 6 – Demo, Lizenz, Kontakt
+
+Zum Schluss **Demo und Lizenz**, **Empfehlungsprogramm**, **Technik** und **Kontakt**: ausprobieren, Lizenzen vergleichen, technische Rahmenbedingungen prüfen – und den **nächsten Schritt** bewusst wählen.
+
+---
+
+**Kurzweg, wenn wenig Zeit ist:** Deckblatt lesen → **Promo A4 – Essenz** öffnen → **Demo und Lizenz** ansehen → bei Bedarf **Kontakt**. Für eine **gründliche** Entscheidung liest du die Kapitel der Reihe nach.
+
+---
+
+## Zwei Schwerpunkte
+
+| Schwerpunkt | Inhalt |
+|-------------|--------|
+| **Allgemeine Information** | Alles, was du **verstehen** willst, bevor du in der App klickst: Deckblatt, USPs, Prospekt, **Was ist die K2 Galerie**, **Für wen**. |
+| **Konkrete Beispiele im Admin** | Ab **Willkommen und Galerie**: Bildschirme und Abläufe wie in der echten Anwendung; danach Demo, Lizenz, Empfehlung, Technik, Kontakt. |
 
 ---
 
 ## Inhaltsverzeichnis – Kurzanleitung
 
+### Schwerpunkt 1 – Allgemeine Information
+
 1. [Deckblatt](01-DECKBLATT.md)
 
-Slogan, **Zukunft statt Altware**, **Mein Weg** und die sechs Sparten – **Schritt 1:** emotionaler und sachlicher Einstieg.
+Einstieg mit Slogan, der Gedanke **Zukunft statt Altware**, der rote Faden **Mein Weg** und ein erster Blick auf die sechs Sparten – ohne sie hier schon voll auszubreiten.
 
 2. [USPs und Wettbewerbsvergleich](02-USP-UND-WETTBEWERB.md)
 
-**Schritt 2 – Fakten einmal:** Matrix, Marktbeispiele, **was du gewinnst** (alles Weitere verweist hierher).
+Marktvergleich, Matrix und **was du gewinnst** – die zentrale Faktenbasis der Mappe. Spätere Kapitel verweisen hierher, statt dieselben Argumente zu wiederholen.
 
 2a. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
-**Lesefassung** zu Schritt 2: **kein** zweites USP-Kapitel – Kunst, Markt, **Entscheidungsfragen**; **Innehalten, Drucken**.
+Ausführliche Lesefassung mit Kunst, Markt und Fragen, die du dir stellen kannst; zum Lesen in Ruhe, Drucken oder als PDF.
 
-**Promo A4 – Flyer (eigenständig, nicht in dieser Mappe):** [zum Flyer öffnen](/projects/k2-galerie/flyer-oek2-promo-a4) — eine Seite zum Mitnehmen; **Details** bei **2** und **2a**.
+**Promo A4 – Flyer** (liegt **außerhalb** dieser Mappe): [zum Flyer öffnen](/projects/k2-galerie/flyer-oek2-promo-a4) — eine Seite zum Mitnehmen; inhaltlich verwandt mit den Kapiteln **2** und **2a**.
 
 3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-**Schritt 4a:** **Mein Weg** als Schaltzentrale – **ohne** Spartenliste (→ **4**).
+Die Plattform in klaren Worten: Aufbau, Idee und **Mein Weg** als Steuerlogik – **ohne** die Spartenliste; die folgt bewusst nur im nächsten Kapitel.
 
-4. [Fuer wen](03-FUER-WEN.md)
+4. [Für wen](03-FUER-WEN.md)
 
-**Schritt 4b:** **Einzige** Sparten-Übersicht; ök2, Lizenz, VK2 kurz.
+Hier steht **einmal** die vollständige Orientierung zu den **sechs Sparten**, zur öffentlichen Demo **ök2**, zu Lizenzen und kurz zur **Vereinsplattform VK2** – damit du zuordnen kannst, was zu dir passt.
 
-5. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
+### Schwerpunkt 2 – Konkrete Beispiele im Admin
 
-Willkommen und Galerie; optional Video aus **Stammdaten**. **Mein Weg** = passende Filter und Struktur für **deinen** Auftritt.
+*(Die Nummern entsprechen der Seitenleiste in der Mappe, gezählt ab dem ersten Eintrag nach dem Deckblatt.)*
 
-6. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
+6. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
-Typ und Kategorien aus der Sparte; Fotos, Preise, EK/VK – **ohne IT-Stress**.
+Willkommensbereich und Galerie-Ansicht wie in der App; optional ein Video aus den **Stammdaten**. **Mein Weg** zeigt sich hier in Filtern und Struktur für deinen öffentlichen Auftritt.
 
-7. [Design und Veröffentlichung](06-DESIGN-VEROEFFENTLICHUNG.md)
+7. [Werke erfassen und präsentieren](05-WERKE-ERFASSEN.md)
 
-Farben, Texte, Willkommensbild – **ein Klick** veröffentlichen, **derselbe Stand** überall.
+Kategorien aus deiner Sparte, Fotos, Preise, Einkauf und Verkauf – beschrieben so, dass du den Arbeitsablauf erkennst, nicht die Technik im Vordergrund steht.
 
-8. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
+8. [Design und Veröffentlichung](06-DESIGN-VEROEFFENTLICHUNG.md)
 
-Verkaufs- und Lagerübersicht, druckbarer Werkkatalog, Exporte – **Überblick**, der sich auszahlt.
+Farben, Texte, Bilder der Willkommensseite – und **ein** verlässlicher Weg zu veröffentlichen, damit derselbe Stand auf allen Geräten sichtbar ist.
 
-9. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
+9. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
 
-Verkauf vor Ort, Kasse in der App, Belege – **direkt an deine Werke** gekoppelt.
+Verkäufe, Lager, druckbarer Werkkatalog und Exporte: der Überblick, der sich im Betrieb auszahlt.
 
-10. [Shop und Internetbestellung](15-SHOP-INTERNETBESTELLUNG.md)
+10. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
 
-Warenkorb für Besucher, Zahlungswunsch ohne automatische Online-Abbuchung; Kasse getrennt.
+Verkauf vor Ort, Kasse in der App, Belege – verbunden mit deinen Werken, ohne Medienbruch.
 
-11. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
+11. [Shop und Internetbestellung](15-SHOP-INTERNETBESTELLUNG.md)
 
-Event erfassen → Werbemittel, Verteiler, Druck und digital – **ein Ablauf** statt Copy-Paste-Chaos.
+Warenkorb für Besucherinnen, Zahlungswunsch ohne automatische Abbuchung im Internet; die Kasse bleibt der klare Ort für den Abschluss.
 
-12. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
+12. [Event- und Medienplanung](08-EVENTS-OEFFENTLICHKEITSARBEIT.md)
 
-Für **Vereine** – Kunstvereine als Einstieg; **ab 10 Mitgliedern** für den Verein kostenfrei (Konditionen in der App).
+Vom Event in der Planung bis zu Werbemitteln, Verteilern und Druck – **ein** Strang aus denselben Daten, statt Copy und Paste zwischen vielen Werkzeugen.
 
-13. [Demo und Lizenz](10-DEMO-LIZENZ.md)
+13. [Vereinsplattform VK2](09-VEREINSPLATTFORM-VK2.md)
 
-**Schritt 6:** ök2 ausprobieren, **eigene Galerie** – Lizenzen (Basic, Pro, Pro+, Pro++, VK2).
+Für **Kunstvereine** und ähnliche Gemeinschaften; Einstieg in VK2 und die Konditionen, die in der App nachgelesen werden können.
 
-14. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
+14. [Demo und Lizenz](10-DEMO-LIZENZ.md)
 
-Empfehler-ID, Rabatt/Gutschrift – **wächst mit**, wenn du die Lösung **weiterempfehlst**.
+Öffentliche Demo **ök2** ausprobieren, eigene Galerie denken, Lizenzen von Basic bis VK2 vergleichen – der Schritt vom Lesen zum Handeln.
 
-15. [Technik](12-TECHNIK.md)
+15. [Empfehlungsprogramm](11-EMPFEHLUNGSPROGRAMM.md)
 
-Windows, Android, macOS, iOS, Browser & PWA – **dein Stand**, überall derselbe.
+Empfehlerkennung, Rabatt und Gutschrift – wenn du die Lösung weiterempfehlen möchtest und davon profitieren willst.
 
-16. [Kontakt und nächste Schritte](13-KONTAKT.md)
+16. [Technik](12-TECHNIK.md)
 
-**Schluss:** Demo, QR, Lizenz – **du** entscheidest den nächsten Schritt.
+Browser, PWA, gängige Betriebssysteme – **ein** Stand überall, ohne dass du als Galeristin oder Galerist Technik studieren musst.
+
+17. [Kontakt und nächste Schritte](13-KONTAKT.md)
+
+Demo, QR-Code, Lizenz – und **du** entscheidest, welcher Schritt als Nächstes für dich sinnvoll ist.
 
 ---
 

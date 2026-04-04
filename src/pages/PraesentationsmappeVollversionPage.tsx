@@ -1,5 +1,6 @@
 /**
  * Präsentationsmappe Vollversion – schrittweise Entscheidungshilfe für künftige Nutzer:innen (Überblick USPs + Produkt).
+ * Gliederung: Schwerpunkt 1 = allgemeine Information; Schwerpunkt 2 = konkrete Beispiele im Admin (inkl. Demo/Lizenz/Kontakt).
  * Ton: Du, Nutzen, klare Lesereihenfolge; Quelle: public/praesentationsmappe-vollversion/*.md
  */
 
@@ -34,14 +35,32 @@ function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): st
   return `# Kontakt\n\n${MUSTER_TEXTE.gallery.email} · Demo ök2 – nur Mustertexte, keine K2-Stammdaten.\n\n© ${PRODUCT_BRAND_NAME}\n\nQR zur Demo (ök2) unten.`
 }
 
-const DOCUMENTS_STANDARD = [
-  { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
+/** Ein Dokument der Mappe; sectionTitle nur beim ersten Kapitel eines Schwerpunkts (Zwischenüberschrift in der Seitenleiste). */
+type PraesMappeDoc = {
+  sectionTitle?: string
+  id: string
+  name: string
+  file: string
+}
+
+const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
+  {
+    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    id: '01-deckblatt',
+    name: 'Deckblatt',
+    file: '01-DECKBLATT.md',
+  },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-UND-WETTBEWERB.md' },
   { id: '02b-prospekt-zukunft', name: 'Prospekt Aufbruch & Zukunft', file: '02B-PROSPEKT-ZUKUNFT.md' },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
-  { id: '04-willkommen', name: 'Willkommen und Galerie', file: '04-WILLKOMMEN-UND-GALERIE.md' },
+  {
+    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    id: '04-willkommen',
+    name: 'Willkommen und Galerie',
+    file: '04-WILLKOMMEN-UND-GALERIE.md',
+  },
   { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md' },
   { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
   { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },
@@ -53,33 +72,53 @@ const DOCUMENTS_STANDARD = [
   { id: '11-empfehlung', name: 'Empfehlungsprogramm', file: '11-EMPFEHLUNGSPROGRAMM.md' },
   { id: '12-technik', name: 'Technik', file: '12-TECHNIK.md' },
   { id: '13-kontakt', name: 'Kontakt', file: '13-KONTAKT.md' },
-] as const
+]
 
-const DOCUMENTS_VK2 = [
-  { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
+const DOCUMENTS_VK2: PraesMappeDoc[] = [
+  {
+    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    id: '01-deckblatt',
+    name: 'Deckblatt',
+    file: '01-DECKBLATT.md',
+  },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
   { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
-  { id: '04-mitglieder-galerie', name: 'Mitglieder und Galerie', file: '04-MITGLIEDER-UND-GALERIE.md' },
+  {
+    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    id: '04-mitglieder-galerie',
+    name: 'Mitglieder und Galerie',
+    file: '04-MITGLIEDER-UND-GALERIE.md',
+  },
   { id: '05-kassa-verkauf', name: 'Kassa und Verkauf', file: '05-KASSA-UND-VERKAUF.md' },
   { id: '06-events-medien', name: 'Events und Medienplanung', file: '06-EVENTS-UND-MEDIENPLANUNG.md' },
   { id: '07-lizenz-betrieb', name: 'Lizenz und Betrieb', file: '07-LIZENZ-UND-BETRIEB.md' },
   { id: '08-kontakt', name: 'Kontakt', file: '08-KONTAKT.md' },
-] as const
+]
 
 /** Zweite VK2-Mappe: kurz, jedes Kapitel mit Muster-Screenshot unter /img/oeffentlich/. */
-const DOCUMENTS_VK2_PROMO = [
-  { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
+const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
+  {
+    sectionTitle: 'Schwerpunkt 1 – Allgemeine Information',
+    id: '01-deckblatt',
+    name: 'Deckblatt',
+    file: '01-DECKBLATT.md',
+  },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB.md' },
-  { id: '02-ein-blick', name: 'Ein Blick in den Admin', file: '02-EIN-BLICK-ADMIN.md' },
+  {
+    sectionTitle: 'Schwerpunkt 2 – Konkrete Beispiele im Admin',
+    id: '02-ein-blick',
+    name: 'Ein Blick in den Admin',
+    file: '02-EIN-BLICK-ADMIN.md',
+  },
   { id: '03-mitglieder', name: 'Mitglieder & Galerie', file: '03-MITGLIEDER-GALERIE.md' },
   { id: '04-kassa', name: 'Kassa & Verkauf', file: '04-KASSA-VERKAUF.md' },
   { id: '05-events', name: 'Events & Medien', file: '05-EVENTS-MEDIEN.md' },
   { id: '06-lizenz', name: 'Lizenz & Betrieb', file: '06-LIZENZ-BETRIEB.md' },
   { id: '07-kontakt', name: 'Kontakt', file: '07-KONTAKT.md' },
-] as const
+]
 
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
@@ -113,10 +152,10 @@ export default function PraesentationsmappeVollversionPage() {
       ? 'Präsentationsmappe VK2 – Vollversion'
       : 'Präsentationsmappe – Vollversion'
   const pageSubtitle = isVk2Promo
-    ? 'Zweite Mappe für VK2: kompakt, jedes Kapitel mit Screenshot aus der App (Muster/Demo).'
+      ? 'Zweite Mappe für VK2: kompakt, Screenshot pro Kapitel – Schwerpunkt 1 Info, Schwerpunkt 2 Admin-Beispiele.'
     : isVk2Classic
-      ? 'Vollversion für die Vereinsplattform VK2: Mitglieder, Verwaltung, Kassa, Event- und Medienplanung.'
-      : 'Handbuch-Struktur, Marketing-Stil; Fokus Mein Weg & sechs Sparten. Screenshots unter /img/oeffentlich/.'
+      ? 'VK2 Vollversion: Schwerpunkt 1 allgemeine Information, Schwerpunkt 2 konkrete Admin-Beispiele.'
+      : 'Zwei Schwerpunkte: allgemeine Information, dann konkrete Beispiele aus dem Admin. Screenshots unter /img/oeffentlich/.'
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -334,24 +373,42 @@ export default function PraesentationsmappeVollversionPage() {
             <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               {DOCUMENTS.map((doc, index) => (
-                <button
-                  key={doc.id}
-                  type="button"
-                  onClick={() => loadDocument(doc.file)}
-                  style={{
-                    padding: '0.5rem 0.75rem',
-                    background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
-                    border: 'none',
-                    borderRadius: 6,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    fontSize: '0.875rem',
-                    color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
-                    fontWeight: selectedDoc === doc.file ? 600 : 400
-                  }}
-                >
-                  {index === 0 ? doc.name : `${index}. ${doc.name}`}
-                </button>
+                <div key={doc.id}>
+                  {doc.sectionTitle ? (
+                    <div
+                      style={{
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        color: '#115e59',
+                        marginTop: index > 0 ? '0.65rem' : 0,
+                        marginBottom: '0.25rem',
+                        lineHeight: 1.35,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      {doc.sectionTitle}
+                    </div>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => loadDocument(doc.file)}
+                    style={{
+                      padding: '0.5rem 0.75rem',
+                      background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
+                      border: 'none',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontSize: '0.875rem',
+                      color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
+                      fontWeight: selectedDoc === doc.file ? 600 : 400,
+                      width: '100%',
+                    }}
+                  >
+                    {index === 0 ? doc.name : `${index}. ${doc.name}`}
+                  </button>
+                </div>
               ))}
             </div>
           </nav>
