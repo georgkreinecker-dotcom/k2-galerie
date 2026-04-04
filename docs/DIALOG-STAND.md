@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Zwischenspeicherung: Präsentationsmappe `00-INDEX` Leseführung gestrafft** – Dialog mit Georg: Absätze/Schritte per „raus“ entfernt (fünf-Schritte-Satz, Sparten-Hinweis, kompletter Deckblatt-Schritt inkl. Neu-Nummerierung 2→1 …, Schritt Demo/Lizenz/Kontakt). **Regel** `.cursor/rules/georg-dokument-fluss-ohne-stoer-commit.mdc` mit committed. `npm run test` + `npm run build` grün. **Commit:** **22bc36d** ✅ GitHub
+
+**Was wir JETZT tun:** Weiter Text in der Mappe nach Bedarf – oder Inhaltsverzeichnis/Leseführung gegenlesen.
+
+**Einordnung:** Schneller Dokumentfluss ohne Commit nach jeder Zeile; Stand jetzt auf **main** + Vercel mit Build.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe `00-INDEX`: Schritte 1–5 neu redigiert** – statt dürftiger Tabelle jetzt **Leseführung** mit klaren Zwischenüberschriften, vollständigen Sätzen und **„Danach weißt du:“** pro Schritt; Schwerpunkt-Tabelle und Inhaltsverzeichnis-Kapitel 1–4 sprachlich angeglichen; Schwerpunkt-2-Zeilen ausgebaut. Datei: **`public/praesentationsmappe-vollversion/00-INDEX.md`**. `npm run test` grün. **Commit:** **2b9cc63** ✅ GitHub
 
 **Was wir JETZT tun:** In der APf Kapitel **Inhaltsverzeichnis** lesen – klingt es für Laien rund?
