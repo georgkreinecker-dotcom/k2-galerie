@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe `00-INDEX`: Schritte 1–5 neu redigiert** – statt dürftiger Tabelle jetzt **Leseführung** mit klaren Zwischenüberschriften, vollständigen Sätzen und **„Danach weißt du:“** pro Schritt; Schwerpunkt-Tabelle und Inhaltsverzeichnis-Kapitel 1–4 sprachlich angeglichen; Schwerpunkt-2-Zeilen ausgebaut. Datei: **`public/praesentationsmappe-vollversion/00-INDEX.md`**. `npm run test` grün. **Commit:** *(folgt)*
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe `00-INDEX`: Schritte 1–5 neu redigiert** – statt dürftiger Tabelle jetzt **Leseführung** mit klaren Zwischenüberschriften, vollständigen Sätzen und **„Danach weißt du:“** pro Schritt; Schwerpunkt-Tabelle und Inhaltsverzeichnis-Kapitel 1–4 sprachlich angeglichen; Schwerpunkt-2-Zeilen ausgebaut. Datei: **`public/praesentationsmappe-vollversion/00-INDEX.md`**. `npm run test` grün. **Commit:** **2b9cc63** ✅ GitHub
 
 **Was wir JETZT tun:** In der APf Kapitel **Inhaltsverzeichnis** lesen – klingt es für Laien rund?
 
