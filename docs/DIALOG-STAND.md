@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Statistik-Kapitel** – `14-STATISTIK-WERKKATALOG.md`: Überblick gilt **für alle Sparten** (Mein Weg), nicht nur Handel/Galerie; `00-INDEX.md` Kurzbeschreibung Kapitel 10 angepasst. **Commit:** mit Push (Message: Präsentationsmappe Statistik für alle Sparten)
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Statistik-Kapitel** – `14-STATISTIK-WERKKATALOG.md`: Überblick gilt **für alle Sparten** (Mein Weg), nicht nur Handel/Galerie; `00-INDEX.md` Kurzbeschreibung Kapitel 10 angepasst. **Commit:** **461c6c6** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Kapitel **Statistik und Werkkatalog** kurz gegenlesen.
 
