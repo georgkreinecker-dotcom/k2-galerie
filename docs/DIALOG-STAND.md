@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 (Nacht) – **Session-Ende: Build-Stand + Protokoll** – Georg: Schluss für heute. `npm run build` (Tests inkl.): aktualisiert `api/build-info-payload.json`, `public/build-info.json`, `src/buildInfo.generated.ts`, `index.html`; `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` kleine Korrektur. **Commit:** **{H}**
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Nächste Session: bei Bedarf Mappe Vollversion nach Deploy prüfen (Sidebar 16/18); Stand über Badge/QR.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Kapitelnummern = Inhaltsverzeichnis** – `PraesentationsmappeVollversionPage.tsx`: `tocChapter` pro Eintrag (wie `00-INDEX.md`), weil Kapitel 3 Prospekt nur im Index, nicht in der Seitenleiste → bisherige reine `idx`-Zählung setzte **Technik** fälschlich auf **16** (Index: **18**). Jetzt: **16** = Einstellungen, **18** = Technik, **19** = Kontakt; Inhaltsverzeichnis **1.** Tests + Build grün. **Commit:** **88fec41** ✅ GitHub
 
 **Was wir JETZT tun:** –
