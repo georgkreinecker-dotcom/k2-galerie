@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Breite am Bildschirm wirklich erzwungen** – Ursache Screenshot „noch nicht A4“: **Grid + breite Tabellen** (`min-width`) hat die Spalte aufgeblasen; Fix: **`minmax(0,1fr)`** in der Grid-Spalte, **`min-width:0`** + **`width: min(100%,210mm)`** am Bogen, **`overflow-x: auto`** für Matrix; **kein** `borderRadius: 12` mehr im Inline-Style am `article`. **Commit:** **a59234e** ✅ GitHub
+
+**Was wir JETZT tun:** Mappe Vollversion Desktop neu laden → weißer Bogen soll **schmaler** sein als die graue Fläche, zentriert; breite Tabellen **scrollen** im Bogen.
+
+**Einordnung:** Georg: „Ist noch nicht A4?“ → technisch war die **Spalte** so breit wie die Matrix; jetzt fester **210 mm**-Rahmen wie Druckrand-Idee.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe USP: Direktvergleich anschaulicher** – Vor der großen Matrix eine **Mini-Tabelle** („drei Schubladen“ vs. „eine Schublade“), Spalten **A/B/C** in Klartext, Kriterienzeilen kürzer formuliert, **Merksatz** statt verschachtelter Schlusssatz. Datei **`02-USP-UND-WETTBEWERB.md`**. **Commit:** **73ee730** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe USP → Direktvergleich im Browser lesen; ob die kleine Tabelle hilft.

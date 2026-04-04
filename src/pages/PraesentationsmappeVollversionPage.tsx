@@ -303,15 +303,24 @@ export default function PraesentationsmappeVollversionPage() {
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
 
   return (
-    <div className="pmv-wrap" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
+    <div className="pmv-wrap pmv-map-page-root" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
       <style>{PRAESENTATIONSMAPPE_MARKDOWN_STYLES}</style>
 
       <header className="pmv-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1c1a18', fontWeight: 600 }}>📁 {pageTitle}</h1>
           <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
-          {fullPrintView ? 'Alle Kapitel mit Bildern – zum Drucken' : (isMobile && allDocContents.length > 0) ? 'Alle Kapitel – durchscrollen bis zur letzten Seite' : pageSubtitle}
-        </p>
+            {fullPrintView
+              ? 'Alle Kapitel mit Bildern – zum Drucken'
+              : isMobile && allDocContents.length > 0
+                ? 'Alle Kapitel – durchscrollen bis zur letzten Seite'
+                : pageSubtitle}
+          </p>
+          {!fullPrintView && !isMobile ? (
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#9ca3af' }}>
+              Weißer Bogen = ungefähre DIN-A4-Breite · passt zur Druckvorschau
+            </p>
+          ) : null}
         </div>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           {fullPrintView ? (
@@ -342,7 +351,10 @@ export default function PraesentationsmappeVollversionPage() {
       </header>
 
       {(fullPrintView || (isMobile && allDocContents.length > 0)) ? (
-        <article className="pmv-scroll-mobile" style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'visible' }}>
+        <article
+          className="pmv-scroll-mobile pmv-a4-sheet"
+          style={{ background: '#fff', padding: 0, border: 'none', overflow: 'visible' }}
+        >
           {allDocContents.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Keine Kapitel geladen.</div>
           ) : (
@@ -368,7 +380,10 @@ export default function PraesentationsmappeVollversionPage() {
       ) : isMobile && loadingFullPrint ? (
         <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Mappe wird geladen…</div>
       ) : (
-        <div className="pmv-mobile-stack" style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) 1fr', gap: '1.5rem' }}>
+        <div
+          className="pmv-mobile-stack pmv-map-grid"
+          style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 200px) minmax(0, 1fr)', gap: '1.5rem' }}
+        >
           <nav className="pmv-no-print pmv-nav" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
             <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -413,7 +428,10 @@ export default function PraesentationsmappeVollversionPage() {
             </div>
           </nav>
 
-          <article className="pmv-article" style={{ background: '#fff', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid #e5e7eb', minHeight: 400 }}>
+          <article
+            className="pmv-article pmv-a4-sheet"
+            style={{ background: '#fff', padding: 0, border: 'none', minHeight: 400 }}
+          >
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
             ) : (

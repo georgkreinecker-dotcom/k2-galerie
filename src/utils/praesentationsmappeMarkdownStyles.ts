@@ -1,6 +1,42 @@
 /** Gemeinsame Screen- und Druck-Styles für Präsentationsmappe und Promo-A4-Flyer (.pmv-*). */
 export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-wrap { max-width: 52rem; margin: 0 auto; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 1rem; }
+    /* Nur Präsentationsmappe (Vollversion/VK2): Bildschirm ≈ DIN-A4-Breite wie beim Druck; Flyer bleibt ohne .pmv-map-page-root */
+    .pmv-map-page-root.pmv-wrap { max-width: none; width: 100%; box-sizing: border-box; }
+    @media (min-width: 769px) {
+      .pmv-map-page-root .pmv-map-grid {
+        background: #eceae6;
+        padding: 1.25rem 1.25rem 2rem;
+        border-radius: 12px;
+        align-items: start;
+        gap: 1.25rem;
+        max-width: min(100%, calc(200px + 1.25rem + 210mm + 2.5rem));
+        margin-inline: auto;
+        box-sizing: border-box;
+      }
+      /* min-width:0: breite Tabellen (z. B. Matrix) dürfen Spalte nicht über A4 aufblasen → horiz. Scroll im Bogen */
+      .pmv-map-page-root .pmv-a4-sheet {
+        box-sizing: border-box;
+        width: min(100%, 210mm);
+        max-width: 210mm;
+        min-width: 0;
+        justify-self: center;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 15mm 18mm;
+        background: #fff !important;
+        border-radius: 3px;
+        box-shadow: 0 4px 28px rgba(28, 26, 24, 0.12);
+        border: 1px solid #d6d3d1;
+        min-height: 0;
+        overflow-x: auto;
+      }
+      .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
+      .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
+        margin: -15mm -18mm 1.25rem -18mm;
+        border-radius: 4px 4px 0 0;
+      }
+    }
     .pmv-wrap .pmv-h1 { font-size: 1.75rem; margin: 1.5rem 0 0.75rem; color: #1c1a18; font-weight: 600; }
     .pmv-wrap .pmv-h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; color: #0d9488; font-weight: 600; }
     .pmv-wrap .pmv-h3 { font-size: 1.15rem; margin: 1rem 0 0.4rem; color: #4b5563; }
@@ -72,6 +108,18 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-table-compare .pmv-td-criterion { font-size: 0.8125rem; }
       .pmv-wrap .pmv-table-split { font-size: 0.875rem; table-layout: auto; }
       .pmv-wrap .pmv-table-split .pmv-th-split-first, .pmv-wrap .pmv-table-split .pmv-th-split-market, .pmv-wrap .pmv-table-split .pmv-th-split-k2 { width: auto; }
+      .pmv-map-page-root .pmv-map-grid { background: transparent; padding: 0; border-radius: 0; }
+      .pmv-map-page-root .pmv-a4-sheet {
+        max-width: 100%;
+        padding: 1rem !important;
+        box-shadow: 0 1px 10px rgba(28, 26, 24, 0.08);
+        border-radius: 12px;
+      }
+      .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
+      .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
+        margin: -1rem -1rem 1rem -1rem;
+        border-radius: 12px 12px 0 0;
+      }
     }
     .pmv-deckblatt-cover .pmv-cover-title { font-size: 2.5rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: 0.02em; color: #fff; }
     .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0.25rem; color: #fff; opacity: 0.98; }
@@ -118,6 +166,24 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-table-split .pmv-th-split-market, .pmv-wrap .pmv-table-split .pmv-td-split-market { background: #fffbeb !important; }
       .pmv-wrap .pmv-table-split .pmv-th-split-k2, .pmv-wrap .pmv-table-split .pmv-td-split-k2 { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; }
       .pmv-wrap article { padding: 0 0 12mm !important; border: none !important; box-shadow: none !important; }
+      .pmv-map-page-root .pmv-map-grid { background: transparent !important; padding: 0 !important; border-radius: 0 !important; max-width: none !important; margin: 0 !important; }
+      .pmv-map-page-root .pmv-a4-sheet {
+        max-width: none !important;
+        width: auto !important;
+        min-width: 0 !important;
+        justify-self: stretch !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        overflow-x: visible !important;
+      }
+      .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
+      .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {
+        margin: 0 !important;
+        border-radius: 0 !important;
+      }
       .pmv-seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 6mm; padding: 2mm 8mm; font-size: 9pt; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
       .pmv-seitenfuss .pmv-seitenfuss-preview { display: none !important; }
       .pmv-seitenfuss::after { content: "Seite " counter(page) " von " counter(pages); color: #000 !important; }
