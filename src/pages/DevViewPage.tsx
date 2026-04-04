@@ -66,12 +66,6 @@ function getPersistentBoolean(key: string): boolean {
   return localStorage.getItem(key) === '1'
 }
 
-/** Früher eigene APf-Seite – jetzt nur noch „presse“ (Eventplan-Tab Öffentlichkeitsarbeit). */
-function normalizeApfPageId(pageId: string | null | undefined): string {
-  if (pageId == null || pageId === '') return ''
-  return pageId === 'oeffentlichkeitsarbeit' ? 'presse' : pageId
-}
-
 type ViewMode = 'mobile' | 'tablet' | 'desktop' | 'split'
 type DeployHealthState = 'unknown' | 'ok' | 'stale' | 'missing_api' | 'error'
 const VERCEL_DASHBOARD_URL = 'https://vercel.com/dashboard'
@@ -82,7 +76,7 @@ type PageSection =
   | { id: string; name: string; icon: string; path: string }
 
 const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
   const [diagnoseRunning, setDiagnoseRunning] = useState(false)
@@ -349,12 +343,12 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'desktop')
   // Beim Öffnen der APf: zuletzt geöffnete Seite wiederherstellen, damit die Seite an der gearbeitet wird (nicht immer ök2).
   const [currentPage, setCurrentPage] = useState(() => {
-    if (pageFromUrl) return normalizeApfPageId(pageFromUrl)
+    if (pageFromUrl) return pageFromUrl
     try {
       const last = typeof window !== 'undefined' ? localStorage.getItem(APF_LAST_PAGE_KEY) : null
-      if (last && last.trim() && last !== 'desktop-leer') return normalizeApfPageId(last)
+      if (last && last.trim() && last !== 'desktop-leer') return last
     } catch (_) { /* ignore */ }
-    return normalizeApfPageId(defaultPage) || 'desktop-leer'
+    return defaultPage || 'desktop-leer'
   })
   const [mobileZoom, setMobileZoom] = useState(1)
   const [desktopZoom, setDesktopZoom] = useState(1)
@@ -465,7 +459,8 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'mission-control': return PLATFORM_ROUTES.missionControl
-      case 'presse': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit'
+      case 'presse': return '/admin?tab=presse'
+      case 'oeffentlichkeitsarbeit': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1'
       case 'softwareentwicklung': return PROJECT_ROUTES['k2-galerie'].softwareentwicklung
       case 'mobile-connect': return PROJECT_ROUTES['k2-galerie'].mobileConnect
       case 'admin-einstellungen': return '/admin?tab=einstellungen'
@@ -1062,6 +1057,7 @@ end tell`
     { id: 'admin-einstellungen', name: 'Admin – Einstellungen & Backup', component: ScreenshotExportAdmin },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
     { id: 'presse', name: 'Event- und Medienplanung (K2)', component: ScreenshotExportAdmin },
+    { id: 'oeffentlichkeitsarbeit', name: 'Öffentlichkeitsarbeit (K2)', component: ScreenshotExportAdmin },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
@@ -1244,7 +1240,17 @@ end tell`
       }
       return (
         <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Event- und Medienplanung wird geladen…</div>}>
-          <ScreenshotExportAdmin key="admin-presse" forceTab="eventplan" forceEventplanSubTab="öffentlichkeitsarbeit" />
+          <ScreenshotExportAdmin key="admin-presse" forceTab="presse" />
+        </Suspense>
+      )
+    }
+    if (pageToRender === 'oeffentlichkeitsarbeit') {
+      if (typeof window !== 'undefined' && window.self !== window.top) {
+        return <AdminPreviewPlaceholder key="oeffentlichkeitsarbeit-placeholder" />
+      }
+      return (
+        <Suspense key="oeffentlichkeitsarbeit-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Öffentlichkeitsarbeit wird geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-oeffentlichkeitsarbeit" forceTab="eventplan" forceEventplanSubTab="öffentlichkeitsarbeit" forceOeffentlichkeitsarbeitModal />
         </Suspense>
       )
     }
@@ -2055,7 +2061,7 @@ end tell`
         <div style={{
           position: 'fixed',
           top: 0,
-          left: panelMinimized ? '-420px' : '0', // Vollständig ausblenden – 400px Breite + 20px Puffer, sonst überlappt rechter Rand den Inhalt
+          left: panelMinimized ? '-420px' : '0', // Vollständig ausblenden – 400px Breite + 20px Puffer, sonst überlappt rechter Rand (z. B. „Öffentlichkeitsarbeit (K2)“) den Content
           width: '400px',
           height: '100vh',
           background: 'linear-gradient(180deg, #2d1a14, #1a0f0a)',

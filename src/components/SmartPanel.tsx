@@ -85,6 +85,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
   { id: 'presse', label: '📰 Event- und Medienplanung (K2)', page: 'presse', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit', color: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08))', border: 'rgba(59,130,246,0.35)' },
+  { id: 'oeffentlichkeitsarbeit', label: '📢 Öffentlichkeitsarbeit (K2)', page: 'oeffentlichkeitsarbeit', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1', color: 'linear-gradient(135deg, rgba(234,88,12,0.15), rgba(194,65,12,0.08))', border: 'rgba(234,88,12,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
   { id: 'handbuch', label: '🧠 Handbuch', page: 'handbuch', url: '/k2team-handbuch', color: 'rgba(95,251,241,0.08)', border: 'rgba(95,251,241,0.2)' },
 ]
@@ -94,10 +95,8 @@ function loadOrder(): string[] {
     const saved = localStorage.getItem(PANEL_ORDER_KEY)
     if (saved) {
       const order = JSON.parse(saved) as string[]
-      // Ehemalige Seite „oeffentlichkeitsarbeit“ → „presse“ (ein Einstieg, kein zweites Panel-Kachel)
-      const migrated = order.map((id) => (id === 'oeffentlichkeitsarbeit' ? 'presse' : id))
       // Duplikate entfernen (erster Eintrag zählt), damit nicht zweimal „K2 Familie“ erscheint
-      const deduped = migrated.filter((id, idx) => migrated.indexOf(id) === idx)
+      const deduped = order.filter((id, idx) => order.indexOf(id) === idx)
       if (deduped.length !== order.length) {
         try { localStorage.setItem(PANEL_ORDER_KEY, JSON.stringify(deduped)) } catch { /* ignore */ }
         return deduped
@@ -105,7 +104,7 @@ function loadOrder(): string[] {
       return order
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-markt', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-markt', 'presse', 'oeffentlichkeitsarbeit', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -117,7 +116,7 @@ const K2_SOFTWAREENTWICKLUNG = PROJECT_ROUTES['k2-galerie'].softwareentwicklung
 const EINLADUNG_EROEFFNUNG_24 = PROJECT_ROUTES['k2-galerie'].notizenEinladungEroeffnung24
 const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
 /** Arbeitsmappen – Hall of Fame: K2 Galerie, K2 Markt, K2 Familie, Notizen, Vermächtnis (jeweils eigenes Produkt) */
-const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse'] as const
+const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
   { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
@@ -517,9 +516,9 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                       </li>
                       <li>
                         {onNavigate ? (
-                          <span role="button" tabIndex={0} onClick={() => onNavigate('presse')} onKeyDown={e => e.key === 'Enter' && onNavigate('presse')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</span>
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('oeffentlichkeitsarbeit')} onKeyDown={e => e.key === 'Enter' && onNavigate('oeffentlichkeitsarbeit')} style={{ color: '#fcd34d', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</span>
                         ) : (
-                          <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit" style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</Link>
+                          <Link to="/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1" style={{ color: '#fcd34d', textDecoration: 'underline', fontFamily: 'inherit' }}>Admin – Öffentlichkeitsarbeit</Link>
                         )}
                       </li>
                       <li>
