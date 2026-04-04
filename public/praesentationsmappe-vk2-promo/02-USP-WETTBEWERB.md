@@ -1,15 +1,40 @@
-# USPs & Vergleich (VK2)
+# USPs & Vergleich – VK2 (Kurzfassung)
 
-- **Ein System:** Mitglieder, Auftritt, Events, Kassa – **keine** Insellösungen.
-- **Gleiche Plattform** wie die Galerie-Software: **ein** Ablauf zu lernen.
-- **Events & Druck** aus einer Datenquelle – nicht drei Mal tippen.
-- **EU / Österreich** – Vertrauen, Sprache, Datenschutz.
+**Ein Satz:** Verein ohne Tool-Chaos – **Mitglieder, Auftritt, Events und Kassa** in **einer** App-Familie wie die Galerie-Software, nicht Homepage + Excel + Fremdkasse.
 
-| Fragmentiert | VK2 |
-|--------------|-----|
+---
+
+## Die fünf Gründe (promo-tauglich)
+
+1. **Ein System statt vier Inseln** – keine getrennte Website-, Tabellen- und Kassen-Welt.
+2. **Gleiche Bedienlogik wie die Galerie** – **schneller** erklärt, **weniger** Schulung.
+3. **Event → Einladung & Druck** – **nicht** dreimal dieselben Daten tippen.
+4. **Tablet & Handy am Stand** – nicht nur „der eine PC im Vereinsraum“.
+5. **EU / Österreich** – Sprache, Nähe, Datenschutz **spürbar**.
+
+---
+
+## Drei Produkte vs. VK2 – Kreuz-Matrix
+
+**✓** = ja · **✗** = nein / nur mit Extra-Aufwand
+
+| | Homepage-Baukasten | Excel + Mail/WhatsApp | Fremde Kasse | **VK2** |
+|--|:------------------:|:---------------------:|:------------:|:-------:|
+| Mitglieder + Auftritt **zusammen** | ✗ | ✗ | ✗ | ✓ |
+| Event → Einladung/Druck **ohne** Neutippen | ✗ | ✗ | ✗ | ✓ |
+| Kassa im **Vereins**-Ablauf | ✗ | ✗ | ✓ | ✓ |
+| **Eine** App statt drei Welten | ✗ | ✗ | ✗ | ✓ |
+
+---
+
+## Auf einen Blick
+
+| Draußen oft | Mit VK2 |
+|-------------|---------|
 | Website + Tabelle + externes Kassen-Tool | **Eine App** |
-| Flyer neu layouten | Aus **Event + Stammdaten** |
-| Nur PC des Vorstands | **Tablet/Handy** im Betrieb |
+| Flyer „schnell in Canva“ ohne Vereins-CD | Aus **Event + Stammdaten** – **eine Linie** |
+| Nur PC des Vorstands | **Team** mit **Tablet/Handy** im Einsatz |
+| Viele kleine Abos | **Ein** klarer Lizenzrahmen (Details → mök2) |
 
 ---
 

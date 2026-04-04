@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentation: Kreuz-Matrix drei Markt-Produkte vs. Lösung:** In **`02-USP-UND-WETTBEWERB.md`** (Standard), **`02-USP-WETTBEWERB-VK2.md`** und **VK2-Promo** je Tabelle **A/B/C + K2 Galerie·ök2 bzw. VK2** mit **✓/✗** und Legende; Indizes Kurzbeschreibung angepasst. Tests grün.
+
+**Was wir JETZT tun:** Präsentationsmappe in der APf öffnen – Kapitel „USPs“ prüfen.
+
+**Einordnung:** Direkter visueller Vergleich für Pitch und PDF-Druck.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappen: USPs & Wettbewerb am Anfang:** Neue Kapitel **`public/praesentationsmappe-vollversion/02-USP-UND-WETTBEWERB.md`**, **`public/praesentationsmappe-vk2-vollversion/02-USP-WETTBEWERB-VK2.md`**, **`public/praesentationsmappe-vk2-promo/02-USP-WETTBEWERB.md`**; **`PraesentationsmappeVollversionPage`**: Einträge direkt nach dem Index; zweite VK2-Mappe **`praesentationsmappe-vk2-promo`** (`variant=vk2-promo`); **`WerbeunterlagenPage`**: Hinweis + Link-Karte; Indizes angepasst; `npm run test` / `npm run build` grün. **Commit (Feature+Assets):** **0296230** ✅ GitHub
 
 **Was wir JETZT tun:** Georg: Vollversion in der APf öffnen – zweites Kapitel nach Inhaltsverzeichnis ist „USPs & Wettbewerb“; VK2 mit `?variant=vk2` bzw. `?variant=vk2-promo` prüfen.

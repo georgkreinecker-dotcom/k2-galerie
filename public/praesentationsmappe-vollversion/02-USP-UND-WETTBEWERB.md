@@ -1,55 +1,77 @@
-# USPs und Wettbewerbsvergleich
+# USPs und Wettbewerb – schärfer, verkaufstauglich
 
-**Kurzfassung für Präsentationen.** Ausführliche Fassung, Zahlen und CD-Erläuterung: **Marketing ök2** in der App (`/mok2`) – Abschnitte „1. USPs“ und „Produkt- & Branchenvergleich“.
+**Pitch in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat.
 
----
-
-## Warum zuerst USPs und Vergleich?
-
-Gute Präsentationen machen in wenigen Minuten klar: **Was ist das Alleinstellungsmerkmal?** und **Warum nicht einzelne Tools vom Markt kombinieren?** Danach folgen die Kapitel zu Funktionen und Abläufen.
+**Vertiefung:** Marketing ök2 in der App (`/mok2`) – „1. USPs“ und „Produkt- & Branchenvergleich“.
 
 ---
 
-## USPs – Kernbotschaften (Auswahl)
+## Warum dieses Kapitel zuerst?
 
-- **Mein Weg – sechs Sparten, eine Plattform:** Eine Sparte in den Stammdaten (von Kunst & Galerie bis Dienstleister & Portfolio) steuert Typen, Kategorien und viele Texte – klare Haltung statt beliebigem „wir können alles“.
-
-- **Eigener Ort statt Miete bei anderen:** Social Media ist Masse – die Plattform ist **individuell und Klasse**; professioneller eigener Auftritt statt nur zerstreuter Posts.
-
-- **Alles in einer Oberfläche:** Galerie-Webauftritt, Werke, Events, Marketing/Presse/Flyer, Kasse, Etiketten, Shop – **eine Datenbasis**, kein doppeltes Pflegen in drei Systemen.
-
-- **Marketing und CD aus einem Guss:** Farben und Gestaltung aus **Galerie gestalten** ziehen durch Willkommensseite, Galerie, Plakat, Flyer und Presse-PDF – **eine Linie**, kein Medienbruch.
-
-- **Sweet-Spot am Markt:** Zu klein für die Großen, zu komplex für die Kleinen – genau der Raum für integrierte Galerie + Kasse + Events + Werbung.
-
-- **Multifunktional am Rechner, gleicher Stand mobil:** Voller Admin- und Planungsumfang am PC/Mac; Galerie und Kassa auf Tablet/Handy – **ein Stand** (PWA/Browser, plattformneutral).
-
-- **VK2 – Vereinsplattform:** Alle Vereinstypen; Kunstvereine als Einstieg; Mitglieder, gemeinsamer Auftritt, Events; ab 10 eingetragenen Mitgliedern für den Verein kostenfrei.
-
-- **Empfehlungs-Programm:** Persönliche Empfehler-ID, Rabatt/Gutschrift, ein Klick zum Teilen – in dieser Branche **kaum vergleichbar** aus einer App.
-
-- **Made in Austria:** Entwicklung und Betrieb aus Österreich; EU-Datenschutz, erreichbar, deutsche Oberfläche – **Vertrauen** statt anonymer Fernost-Cloud.
-
-- **Datensouveränität:** Backup & Wiederherstellung als fester Hauptweg; strikte Trennung Demo (ök2) und echte Galerie (K2).
+Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so kombinieren?** und **Was kostet es, stattdessen Markt-Standard zu stückeln?** Danach sind Funktionskapitel leichter einzuordnen.
 
 ---
 
-## Wettbewerbsvergleich – typischer Markt vs. eine Lösung
+## USPs – verkürzt, aber messerscharf
 
-| Thema | Typisch am Markt (fragmentiert) | K2 Galerie / ök2 (integriert) |
-|--------|----------------------------------|-------------------------------|
-| **Galerie / Website** | Baukasten oder Agentur – eigenes System, andere Daten als Verkauf | Werke und Texte **dieselbe Quelle** wie Kassa und Etiketten |
-| **Kasse** | Eigenes Kassenprodukt (oft nur Kasse, monatlich + TSE) | Kasse **in derselben App** mit Werken, Belegen, Statistik |
-| **Events / Flyer / Presse** | E-Mail-Tool, Layout-Programm – Daten **neu eintippen** | Event **einmal** anlegen → Vorschläge für Einladung, Plakat, Presse, Social |
-| **Etiketten / Beschriftung** | Separat oder manuell | Aus **Werkdaten** und Druckdialog – zum Brother/AirPrint-Workflow passend |
-| **Corporate Design** | Jedes Medium anders | **Galerie gestalten** definiert die Linie für Web **und** Druck |
-| **Geräte** | Oft „nur Desktop“ oder getrennte Apps | **Browser & PWA** – Windows, Android, macOS, iOS; ein Stand |
-| **Verein** | Vereinsseite + Tabellen + WhatsApp | **VK2:** Mitglieder, Auftritt, Events, Kassa – ein Ablauf |
-| **Kostenfolge** | Mehrere Abos, mehrere Schulungen | **Ein Lizenzmodell**, eine Oberfläche zum Erlernen |
+| USP | Was der Zuhörer mitnehmen soll |
+|-----|--------------------------------|
+| **Mein Weg – sechs Sparten** | Eine gewählte Sparte steuert Typen, Kategorien, Texte – **klare Haltung**, kein beliebiges „wir können alles“. |
+| **Eigener Auftritt statt nur Masse** | Social Media = Reichweite; **die Plattform = dein professioneller Ort** mit eigener Linie – nicht nur zerstreute Posts. |
+| **Eine Datenbasis – null Doppelpflege** | Galerie, Kassa, Etiketten, Shop, Events und PDFs ziehen aus **denselben Werken und Stammdaten** – kein Neutippen für jedes Medium. |
+| **Marketing & CD aus einem Guss** | **Galerie gestalten** definiert Farben und Bildsprache → ziehen durch Willkommen, Galerie, Flyer, Plakat, Presse – **wiedererkennbar**, nicht „jedes Tool anders“. |
+| **Sweet-Spot** | Zu klein für Enterprise-Suites, zu anspruchsvoll für reine Baukästen – **genau der Raum** für integrierte Galerie + Kasse + Events + Werbung. |
+| **Desktop = Kraftwerk, Mobil = gleicher Stand** | Voller Admin am PC/Mac; **Galerie und Kassa** auf Tablet/Handy; **ein Deploy-Stand** (Browser/PWA), plattformneutral. |
+| **VK2** | Vereine: Mitglieder, Auftritt, Events, Kassa-Logik **in derselben Produktfamilie**; Kunstvereine als Einstieg; **ab 10 eingetragenen Mitgliedern** für den Verein kostenfrei (Details in mök2). |
+| **Empfehlungs-Programm** | Persönliche Empfehler-ID, Rabatt/Gutschrift, **ein Klick** zum Teilen – **Vertrieb durch Nutzer:innen**, in der Galerie-/Künstler:innen-Welt selten so integriert. |
+| **Österreich / EU** | Entwicklung und Betrieb aus Österreich; **DSGVO**, deutsche UI, erreichbar – **Vertrauen** statt anonymer Fernost-Cloud. |
+| **Datensouveränität** | Backup & Wiederherstellung als **fester Hauptweg**; Demo **ök2** und echte Galerie **strikt getrennt**. |
 
-### Ein Satz zum Mitnehmen
+---
 
-Statt Kasse hier, Galerie dort, Events woanders: **eine Lösung** für Webauftritt, Verkauf vor Ort, Lager, Events und Werbung – **ein Preis, ein Stand, eine Datenbasis**; dazu **VK2** für Vereine und das **Empfehlungs-Programm** für Vertrieb durch Nutzer:innen.
+## Direktvergleich: drei typische Produkte vs. integrierte Lösung
+
+**So liest du die Matrix:** **✓** = gehört zum Produkt dazu · **✗** = fehlt oder nur mit **zusätzlicher** Software / **neuem** Eintippen der Daten.
+
+| Funktion / Kriterium | **A** Website-Baukasten oder CMS | **B** Kassensystem (nur POS) | **C** Flyer, E-Mail, Canva, PDF **getrennt** | **K2 Galerie / ök2** |
+|----------------------|:--------------------------------:|:----------------------------:|:--------------------------------------------:|:--------------------:|
+| Werke & öffentliche Galerie (Vita, Shop) | ✓ | ✗ | ✗ | ✓ |
+| Verkauf, Belege, Lager an Werke gekoppelt | ✗ | ✓ | ✗ | ✓ |
+| Event **einmal** anlegen → Einladung, Plakat, Presse, Social aus **denselben** Daten | ✗ | ✗ | ✗ | ✓ |
+| Etiketten aus **Werksdaten** (ohne Neutippen) | ✗ | ✗ | ✗ | ✓ |
+| **Eine** Corporate-Design-Linie: Web **und** Druck | ✗ | ✗ | ✗ | ✓ |
+| **Eine** Datenbasis – kein Doppelpflege-Chaos | ✗ | ✗ | ✗ | ✓ |
+| Empfehlungs-Programm **in derselben** App | ✗ | ✗ | ✗ | ✓ |
+| Vereinsplattform **VK2** im gleichen Ökosystem | ✗ | ✗ | ✗ | ✓ |
+
+**Kernaussage für die Präsentation:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **D** bündelt das.
+
+---
+
+## Fremdvergleich – Marktfragmentierung vs. eine Lösung
+
+**Typischer Stack am Markt (Kurz):**
+
+- **Nur Kasse:** oft ca. **15–35 €/Monat** plus TSE/Signatur (grob **80–180 €/Jahr**), eigene Hardware – **ohne** Galerie, **ohne** Event-zu-Flyer-Logik.
+- **Website/Baukasten oder Agentur:** eigene Datenwelt – **Werkliste ≠ Kassa ≠ Etikett**.
+- **Events & Druck:** Mail, Canva, Layout – **Daten noch einmal** eingeben, **anderes Design** als die Homepage.
+- **Ergebnis:** leicht **mehrere hundert Euro pro Jahr** und **kein** gemeinsames Bild nach außen.
+
+| Thema | Typisch draußen (fragmentiert) | K2 Galerie / ök2 (integriert) |
+|--------|--------------------------------|--------------------------------|
+| **Daten** | Gleiche Infos an drei Stellen pflegen | **Einmal** Werk & Event – **überall** nutzbar |
+| **Galerie / Web** | CMS, „Items“, generische Templates | **Werke, Vita, Kategorien** – Galerie-Sprache, nicht IT-Jargon |
+| **Kasse & Beleg** | Separates Produkt, eigene Oberfläche | **Kasse in derselben App** – an Werke, Lager, Statistik angebunden |
+| **Öffentlichkeitsarbeit** | Copy-Paste aus Word/Mail | Event **einmal** → Vorschläge für Einladung, Plakat, Presse, Social |
+| **Etiketten** | Manuell oder Fremdsoftware | Aus **Werkdaten** – u. a. Brother/AirPrint-Workflow |
+| **Auftritt** | Jedes Medium „ein bisschen anders“ | **Eine CD-Quelle** – Web und Druck passen zusammen |
+| **Geräte** | Oft nur Desktop oder App-Wirrwarr | **Browser & PWA** – Windows, Android, macOS, iOS; **ein Stand** |
+| **Verein** | Homepage + Excel + Chat + externes Kassentool | **VK2:** Struktur, Auftritt, Events, Kassa **ein Ablauf** |
+| **Kostenlogik** | Summe aus mehreren Abos + Schulungen | **Ein Lizenzmodell**, **eine** Oberfläche zum Erlernen |
+
+### Ein Satz fürs Gespräch
+
+**Statt** Kasse hier, Galerie dort, Flyer woanders: **eine** Lösung für Web, Verkauf vor Ort, Lager, Events und Werbung – **ein Preisrahmen, ein Stand, eine Datenbasis**; plus **VK2** und **Empfehlungs-Programm** für Wachstum ohne teures Vertriebsnetz.
 
 ---
 

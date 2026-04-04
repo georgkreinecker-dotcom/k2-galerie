@@ -8,7 +8,7 @@ Kurze Präsentationsmappe für die **Vereinsplattform VK2**: jedes Kapitel mit *
    Einstieg und Markenzeile.
 
 2. [USPs & Wettbewerb](02-USP-WETTBEWERB.md)  
-   Kurz: Vorteile und Vergleich zur Insellösung.
+   **Fünf Gründe** + **Kreuz-Matrix** (3 Produkte vs. VK2) + Kurz-Tabelle.
 
 3. [Ein Blick in den Admin](02-EIN-BLICK-ADMIN.md)  
    Hub „Was möchtest du heute tun?“ – alle Bereiche auf einen Blick.

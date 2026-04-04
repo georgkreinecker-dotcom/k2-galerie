@@ -5,7 +5,7 @@ Willkommen in der Präsentationsmappe für die Vereinsplattform VK2.
 ## Inhaltsverzeichnis – Kurzanleitung
 
 1. [USPs und Wettbewerb](02-USP-WETTBEWERB-VK2.md)  
-   Kurz: Alleinstellungsmerkmale VK2 und Vergleich zur typischen Insellösung im Verein.
+   **Pitch**, USP-Tabelle, **Dreier-Matrix** (✓/✗), Fremdvergleich Vereinsalltag vs. eine Oberfläche.
 
 2. [Was ist VK2](02-WAS-IST-VK2.md)  
    Die Plattform in einem klaren Satz: Mitglieder, Kommunikation und Vereinsalltag in einem Ablauf.
