@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappen: USPs & Wettbewerb am Anfang:** Neue Kapitel **`public/praesentationsmappe-vollversion/02-USP-UND-WETTBEWERB.md`**, **`public/praesentationsmappe-vk2-vollversion/02-USP-WETTBEWERB-VK2.md`**, **`public/praesentationsmappe-vk2-promo/02-USP-WETTBEWERB.md`**; **`PraesentationsmappeVollversionPage`**: Einträge direkt nach dem Index; zweite VK2-Mappe **`praesentationsmappe-vk2-promo`** (`variant=vk2-promo`); **`WerbeunterlagenPage`**: Hinweis + Link-Karte; Indizes angepasst; `npm run test` / `npm run build` grün. **Commit (Feature+Assets):** **0296230** ✅ GitHub
+
+**Was wir JETZT tun:** Georg: Vollversion in der APf öffnen – zweites Kapitel nach Inhaltsverzeichnis ist „USPs & Wettbewerb“; VK2 mit `?variant=vk2` bzw. `?variant=vk2-promo` prüfen.
+
+**Einordnung:** Gute Präsentation = zuerst Nutzen und Abgrenzung; Tiefe weiter in **Marketing ök2** (`/mok2`).
+
+---
+
 **Letzter Stand:** 04.04.26 (Abend) – **Session-Ende Georg („Schluss für heute“):** `npm run test` + `npm run build` grün; offener Stand committed + gepusht: Stripe-Lizenz-Kette (`api/licence-data.js`, `api/stripeLicenceChainConstants.js`), Checkout/Webhook, Doku STRIPE/AGENTEN-BRIEFING, Benutzer- und VK2-Handbuch, `stammdatenStorage`, `App`/`vite`, Tests. **Commit:** **c3764d8** ✅ GitHub
 
 **Was wir JETZT tun:** Nächste Session: obersten Block hier lesen und Faden aufnehmen.
