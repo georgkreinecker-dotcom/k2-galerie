@@ -1,5 +1,29 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Admin-Screenshot aktualisiert** – `public/img/oeffentlich/pm-admin-uebersicht.png` neu aus laufendem Dev-Server (Playwright): ök2-Admin-Hub `/admin?context=oeffentlich`, **2880×2200** PNG (2× Retina, drucktauglich). Skript `scripts/capture-pm-admin-screenshot.mjs`, npm `capture:pm-admin-screenshot`; Hinweis in `docs/PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md`. Tests grün; `build:vercel` nach Änderung geprüft. **Commit:** letzter Push mit Message „Präsentationsmappe: Admin-Hub-Screenshot neu (Playwright, Druckqualität)“ — Hash: `git log -1 --oneline`
+
+**Was wir JETZT tun:** Mappe/Prospekt in der App kurz öffnen – Bild wirkt scharf; bei Bedarf Screenshot erneut (`npm run dev` → `npm run capture:pm-admin-screenshot`, einmal `npx playwright install chromium`).
+
+**Einordnung:** Gleiche Datei wie in Vollversion/VK2/Langversion – eine Quelle, aktueller UI-Stand.
+
+---
+
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: „Was ist K2“ neu, Admin-Kapitel, Schritt 3+4 zusammen** – `02-WAS-IST-K2-GALERIE.md` neu redigiert; neues `04-ADMIN-HERZSTUECK.md` direkt nach Willkommen/Galerie mit Screenshot `pm-admin-uebersicht.png`; `00-INDEX.md` Schritt 3+4 verschmolzen, TOC 7–18; `PraesentationsmappeVollversionPage.tsx` neuer DOCUMENTS-Eintrag. Tests + Build grün. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Vollversion in der App kurz durchklicken (neues Kapitel **Admin – Herzstück**).
+
+**Einordnung:** Georg: Admin als **Herzstück** sichtbar; früherer Schritt-4-Faden mit „Was ist“ inhaltlich zusammengeführt.
+
+---
+
+**Letzter Stand:** 04.04.26 – **APf: „Öffentlichkeitsarbeit (K2)“ raus** – Doppelte Smart-Panel-Kachel und eigene APf-Seite entfernt; **ein** Einstieg **„Event- und Medienplanung (K2)“** (`presse`) öffnet Admin **Eventplan → Öffentlichkeitsarbeit** **ohne** Vollbild-Modal; iframe-URL und Cursor-Vorschau angeglichen. Alte URLs `?page=oeffentlichkeitsarbeit` → `?page=presse`; `smartpanel-reihenfolge` migriert. **Commit:** **a38b1ab** ✅ GitHub
+
+**Was wir JETZT tun:** APf neu laden – im Dropdown nur noch „Event- und Medienplanung (K2)“; kein zweites Label oben links am Admin-Hub.
+
+**Einordnung:** Georg: **raus** = störendes Doppel / falsches iframe-`title`; ein Standard pro Einstieg.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Nummernlogik Schwerpunkt 1 = Sidebar** – Im **Inhaltsverzeichnis** (Markdown): **Deckblatt** ohne Listen-„1.“; **1. Inhaltsverzeichnis**, dann **2.–5.** – passt zur **Kapitel-Leiste** (kein Konflikt mehr „1. Inhaltsverzeichnis“ vs. „1. Deckblatt“). Dateien: `public/praesentationsmappe-vollversion/00-INDEX.md`, `praesentationsmappe-vk2-vollversion`, `praesentationsmappe-vk2-promo`. Zusammen mit **H1 ohne Auto-„1.“** auf der INDEX-Seite (`chapterNumberForPmvMarkdown`). `npm run test` + `npm run build` grün. **Commit:** **64dc91f** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Vollversion → Sidebar und TOC-Zeilen kurz gegenlesen.
@@ -146,7 +170,7 @@
 
 **Letzter Stand:** 04.04.26 – **Präsentationsmappen: USPs & Wettbewerb am Anfang:** Neue Kapitel **`public/praesentationsmappe-vollversion/02-USP-UND-WETTBEWERB.md`**, **`public/praesentationsmappe-vk2-vollversion/02-USP-WETTBEWERB-VK2.md`**, **`public/praesentationsmappe-vk2-promo/02-USP-WETTBEWERB.md`**; **`PraesentationsmappeVollversionPage`**: Einträge direkt nach dem Index; zweite VK2-Mappe **`praesentationsmappe-vk2-promo`** (`variant=vk2-promo`); **`WerbeunterlagenPage`**: Hinweis + Link-Karte; Indizes angepasst; `npm run test` / `npm run build` grün. **Commit (Feature+Assets):** **0296230** ✅ GitHub
 
-**Was wir JETZT tun:** Georg: Vollversion in der APf öffnen – zweites Kapitel nach Inhaltsverzeichnis ist „USPs & Wettbewerb“; VK2 mit `?variant=vk2` bzw. `?variant=vk2-promo` prüfen.
+**Was wir JETZT tun:** Georg: Vollversion in der APf öffnen – zweites Kapitel nach Inhaltsverzeichnis ist „USPs & Mitbewerb“; VK2 mit `?variant=vk2` bzw. `?variant=vk2-promo` prüfen.
 
 **Einordnung:** Gute Präsentation = zuerst Nutzen und Abgrenzung; Tiefe weiter in **Marketing ök2** (`/mok2`).
 

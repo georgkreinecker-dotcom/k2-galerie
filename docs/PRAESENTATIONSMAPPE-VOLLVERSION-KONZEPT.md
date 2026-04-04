@@ -94,7 +94,7 @@ Screenshots von der laufenden App (ök2/K2), einheitlicher Stil, keine Platzhalt
 |---------|---------------------------|----------------|
 | 1 Deckblatt | Willkommensseite (Galerie) | willkommen-demo.jpg (nicht willkommen.jpg – das ist Legacy/Testpilot) |
 | 2 Was ist K2 | Galerie-Übersicht | galerie-card.jpg |
-| 3 Für wen | Admin-Übersicht (Hub) | pm-admin-uebersicht.png |
+| 3 Für wen | Admin-Übersicht (Hub) | pm-admin-uebersicht.png (nachziehen: `npm run capture:pm-admin-screenshot` bei laufendem Dev-Server, einmal `npx playwright install chromium`) |
 | 4 Willkommen und Galerie | Willkommen + Galerie | willkommen-demo.jpg, galerie-card.jpg |
 | 5 Werke | Admin Tab Werke + Galerie | pm-admin-uebersicht.png, galerie-card.jpg |
 | 6 Design | Admin Tab Design | pm-design.png |
