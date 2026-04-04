@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentation: Positionierung „Teil der Zukunft“:** Deckblatt, **`02-USP-UND-WETTBEWERB.md`** (**Haltung** Zukunft/Aufbruch, USP-Zeile **Zukunft statt Altware**, Kapitel-Einleitung), **`00-INDEX`** – nicht als etablierte Altware, sondern **Aufbruch** (Browser, PWA, eine Datenbasis). **Commit:** **ae339c6** ✅ GitHub (nach Push)
+**Letzter Stand:** 04.04.26 – **Präsentation: Positionierung „Teil der Zukunft“:** Deckblatt, **`02-USP-UND-WETTBEWERB.md`** (**Haltung** Zukunft/Aufbruch, USP-Zeile **Zukunft statt Altware**, Kapitel-Einleitung), **`00-INDEX`** – nicht als etablierte Altware, sondern **Aufbruch** (Browser, PWA, eine Datenbasis). **Commit:** **5595f25** ✅ GitHub
 
 **Was wir JETZT tun:** Präsentationsmappe in der APf – Deckblatt + USPs gegenlesen.
 
