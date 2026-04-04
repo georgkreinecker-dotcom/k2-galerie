@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergang Kunst → gesamter Markt:** Neuer Abschnitt **„Vom Atelier zum gesamten Markt“** in **`02B-PROSPEKT-ZUKUNFT.md`** (Werke, Künstler:innen, Kunstgalerien; Vision **eine Struktur, viele Instanzen** / ganzer Markt); **`00-INDEX`** Kurzbeschreibung 2a angepasst. **Commit:** *(nach Push)*
+
+**Was wir JETZT tun:** Prospekt in der Vollversion lesen — neuer Abschnitt vor „Der Markt stückelt“.
+
+**Einordnung:** Pitch: Substanz bei der Kunst, Skalierung ohne Kühlung der Sprache.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: eigenständiger Prospekt zu USP/Wettbewerb:** Neues Kapitel **`public/praesentationsmappe-vollversion/02B-PROSPEKT-ZUKUNFT.md`** („Prospekt Aufbruch & Zukunft“) – Lesefassung, zukunftsorientiert; **`00-INDEX`** Punkt **2a**; **`PraesentationsmappeVollversionPage`** Sidebar; Querverweis in **`02-USP-UND-WETTBEWERB.md`**. `npm run test` / `npm run build` grün. **Commit:** **b5add46** ✅ GitHub
 
 **Was wir JETZT tun:** Vollversion in der APf – Kapitel „Prospekt Aufbruch & Zukunft“ öffnen, Druck/PDF prüfen.

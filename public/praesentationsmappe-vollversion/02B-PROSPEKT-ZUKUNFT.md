@@ -14,6 +14,14 @@ Heute landen Werke, Verkauf, Events und Werbung bei vielen Künstler:innen und k
 
 Das ist keine nostalgische „alles wie früher“-Lösung — sondern die **Frage, wie Galerie-Alltag in den nächsten Jahren** aussehen soll, wenn **Zeit knapp** ist und **Klarheit** zählt.
 
+## Vom Atelier zum gesamten Markt
+
+Hier reden wir bewusst von **Kunst**: von **Werken**, von **Künstler:innen und Künstlern**, von **Kunstgalerien** — von **Vernissage**, **Etikett am Objekt** und **ehrlichem Auftritt nach außen**. Das ist **kein** generisches „Content-Management“: Hinter jedem Werk steht **Urheberschaft**, **Preis**, **Verfügbarkeit** und oft **ein Leben lang** gesammelte Substanz.
+
+**Genau diese** Welt ist aber nicht nur für **ein** Atelier oder **eine** Referenzgalerie gebaut. **Dieselbe** durchdachte Linie — **eine** Produktfamilie, **strikte Trennung** der Daten **pro** Galerie, **pro** Verein, **pro** Lizenz — ist dafür angelegt, **den gesamten Markt** zu tragen, der so arbeitet: **Einzelkünstler:innen**, **kleine und größere Galerien**, **Kunstvereine** (mit eigener Logik, z. B. VK2), **künftige Lizenznehmer:innen** mit **eigener** Marke und **eigener** öffentlicher Präsenz. Nicht für jede Zielgruppe ein neues Rad — **eine Struktur, viele Instanzen**, damit **Weiterentwicklung und Qualität** allen zugute kommen.
+
+**Der Übergang im Kopf:** Das Gespräch beginnt **bei deinen Werken und deiner Galerie** — die Vision dahinter ist **größer**: eine **Plattform**, die **dieselbe** Sorgfalt für **viele** ermöglicht, ohne die Kunst zum Nebensache zu machen.
+
 [SEITENUMBRUCH]
 
 ## Der Markt stückelt — ihr braucht die Linie
