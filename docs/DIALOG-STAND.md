@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe USP: Fremdvergleich Kosten auf einen Blick** – **`02-USP-UND-WETTBEWERB.md`:** erste Tabellenzeile **Jährliche Kosten (Richtwerte)** mit Rechenbeispiel Markt (Kasse + TSE + Extras → **ca. 300–600+ €/J**), Zeilen **Zeit & Doppelarbeit** / **Auftritt**; doppelte **Auftritt**-Zeile entfernt. **Renderer:** 3-Spalten-Tabellen mit Header **Typisch draußen** + **K2/ök2** → Klassen **`pmv-table-split`** (gelb vs. türkis), ohne False Positive bei „Typische Nutzer“. **Styles:** Screen, Mobile, Print. Tests grün, `npm run build:vercel` grün. **Commit:** **bdf2ed6** ✅ GitHub
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe USP: Fremdvergleich Kosten auf einen Blick** – **`02-USP-UND-WETTBEWERB.md`:** erste Tabellenzeile **Jährliche Kosten (Richtwerte)** mit Rechenbeispiel Markt (Kasse + TSE + Extras → **ca. 300–600+ €/J**), Zeilen **Zeit & Doppelarbeit** / **Auftritt**; doppelte **Auftritt**-Zeile entfernt. **Renderer:** 3-Spalten-Tabellen mit Header **Typisch draußen** + **K2/ök2** → Klassen **`pmv-table-split`** (gelb vs. türkis), ohne False Positive bei „Typische Nutzer“. **Styles:** Screen, Mobile, Print. Tests grün, `npm run build:vercel` grün. **Commits:** **bdf2ed6** (Inhalt/Renderer/Styles), **ddcaa77** (DIALOG-STAND) ✅ GitHub
 
 **Was wir JETZT tun:** In der APf Präsentationsmappe Vollversion → Kapitel USP → Abschnitt Fremdvergleich: Tabelle optisch prüfen (Druck/PDF).
 
