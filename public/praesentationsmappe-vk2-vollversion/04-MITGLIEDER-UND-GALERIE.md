@@ -10,6 +10,6 @@ So entsteht eine geordnete Vereinspräsentation mit Wiedererkennung.
 
 Zusätzlich kann der Verein die Galerieansicht für Besucher direkt nutzen.
 
-![VK2 Mitgliederansicht](/img/oeffentlich/mitglieder-katalog.jpg)
+![VK2 Mitglieder- und Vereinsansicht (Muster)](/img/oeffentlich/pm-vk2-verein.png)
 
 [SEITENUMBRUCH]

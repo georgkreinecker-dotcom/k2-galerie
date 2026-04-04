@@ -11,4 +11,8 @@ Ein Event wird einmal gepflegt und für mehrere Ausgaben verwendet.
 
 Das spart Zeit und hält die Kommunikation einheitlich.
 
+---
+
+![Design und Galerie gestalten – Vorschau (Muster)](/img/oeffentlich/pm-design.png)
+
 [SEITENUMBRUCH]

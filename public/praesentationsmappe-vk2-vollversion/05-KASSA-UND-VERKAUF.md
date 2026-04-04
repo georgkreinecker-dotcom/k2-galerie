@@ -10,4 +10,8 @@ Die Kassa bleibt Teil des gesamten Vereinsablaufs, nicht ein getrenntes System.
 
 Dadurch sind Daten konsistent und jederzeit wieder auffindbar.
 
+---
+
+![Kasse – Verkauf und Übersicht (Muster)](/img/oeffentlich/pm-kassa.png)
+
 [SEITENUMBRUCH]

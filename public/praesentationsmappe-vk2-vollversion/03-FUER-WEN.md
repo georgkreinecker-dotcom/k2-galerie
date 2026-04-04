@@ -11,4 +11,8 @@ VK2 richtet sich an Vereine, die ihre Inhalte professionell und einfach führen 
 
 Der Einstieg ist einfach: Verein anlegen, Mitglieder pflegen, Eventplanung starten.
 
+---
+
+![Admin-Übersicht – alle Bereiche (Muster)](/img/oeffentlich/pm-admin-uebersicht.png)
+
 [SEITENUMBRUCH]

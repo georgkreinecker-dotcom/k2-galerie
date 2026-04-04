@@ -22,6 +22,7 @@ import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 
 const BASE_STANDARD = '/praesentationsmappe-vollversion'
 const BASE_VK2 = '/praesentationsmappe-vk2-vollversion'
+const BASE_VK2_PROMO = '/praesentationsmappe-vk2-promo'
 const DOC_PARAM = 'doc'
 const OEK2_URL = BASE_APP_URL + '/projects/k2-galerie/galerie-oeffentlich'
 const VK2_URL = BASE_APP_URL + '/projects/vk2'
@@ -34,6 +35,7 @@ function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): st
 const DOCUMENTS_STANDARD = [
   { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-UND-WETTBEWERB.md' },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   { id: '04-willkommen', name: 'Willkommen und Galerie', file: '04-WILLKOMMEN-UND-GALERIE.md' },
@@ -53,6 +55,7 @@ const DOCUMENTS_STANDARD = [
 const DOCUMENTS_VK2 = [
   { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
   { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   { id: '04-mitglieder-galerie', name: 'Mitglieder und Galerie', file: '04-MITGLIEDER-UND-GALERIE.md' },
@@ -62,15 +65,32 @@ const DOCUMENTS_VK2 = [
   { id: '08-kontakt', name: 'Kontakt', file: '08-KONTAKT.md' },
 ] as const
 
+/** Zweite VK2-Mappe: kurz, jedes Kapitel mit Muster-Screenshot unter /img/oeffentlich/. */
+const DOCUMENTS_VK2_PROMO = [
+  { id: '01-deckblatt', name: 'Deckblatt', file: '01-DECKBLATT.md' },
+  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-WETTBEWERB.md' },
+  { id: '02-ein-blick', name: 'Ein Blick in den Admin', file: '02-EIN-BLICK-ADMIN.md' },
+  { id: '03-mitglieder', name: 'Mitglieder & Galerie', file: '03-MITGLIEDER-GALERIE.md' },
+  { id: '04-kassa', name: 'Kassa & Verkauf', file: '04-KASSA-VERKAUF.md' },
+  { id: '05-events', name: 'Events & Medien', file: '05-EVENTS-MEDIEN.md' },
+  { id: '06-lizenz', name: 'Lizenz & Betrieb', file: '06-LIZENZ-BETRIEB.md' },
+  { id: '07-kontakt', name: 'Kontakt', file: '07-KONTAKT.md' },
+] as const
+
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
 export default function PraesentationsmappeVollversionPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const variant = searchParams.get('variant') === 'vk2' ? 'vk2' : 'standard'
-  const isVk2Variant = variant === 'vk2'
-  const BASE = isVk2Variant ? BASE_VK2 : BASE_STANDARD
-  const DOCUMENTS = isVk2Variant ? DOCUMENTS_VK2 : DOCUMENTS_STANDARD
+  const variantParam = searchParams.get('variant') || ''
+  const isVk2Promo = variantParam === 'vk2-promo'
+  const isVk2Classic = variantParam === 'vk2'
+  const isAnyVk2 = isVk2Classic || isVk2Promo
+  const BASE = isVk2Promo ? BASE_VK2_PROMO : isVk2Classic ? BASE_VK2 : BASE_STANDARD
+  const DOCUMENTS = isVk2Promo ? DOCUMENTS_VK2_PROMO : isVk2Classic ? DOCUMENTS_VK2 : DOCUMENTS_STANDARD
+  const kontaktFileForVariant =
+    isVk2Promo ? '07-KONTAKT.md' : isVk2Classic ? '08-KONTAKT.md' : '13-KONTAKT.md'
   const printCtx = useWerbemittelPrintContext()
   const isOeffentlich = printCtx === 'oeffentlich'
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null)
@@ -84,10 +104,16 @@ export default function PraesentationsmappeVollversionPage() {
 
   const returnTo = searchParams.get('returnTo')
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
-  const pageTitle = isVk2Variant ? 'Präsentationsmappe VK2 – Vollversion' : 'Präsentationsmappe – Vollversion'
-  const pageSubtitle = isVk2Variant
-    ? 'Vollversion für die Vereinsplattform VK2: Mitglieder, Verwaltung, Kassa, Event- und Medienplanung.'
-    : 'Handbuch-Struktur, Marketing-Stil; Fokus Mein Weg & sechs Sparten. Screenshots unter /img/oeffentlich/.'
+  const pageTitle = isVk2Promo
+    ? 'VK2 – Präsentationsmappe mit Musterbildern'
+    : isVk2Classic
+      ? 'Präsentationsmappe VK2 – Vollversion'
+      : 'Präsentationsmappe – Vollversion'
+  const pageSubtitle = isVk2Promo
+    ? 'Zweite Mappe für VK2: kompakt, jedes Kapitel mit Screenshot aus der App (Muster/Demo).'
+    : isVk2Classic
+      ? 'Vollversion für die Vereinsplattform VK2: Mitglieder, Verwaltung, Kassa, Event- und Medienplanung.'
+      : 'Handbuch-Struktur, Marketing-Stil; Fokus Mein Weg & sechs Sparten. Screenshots unter /img/oeffentlich/.'
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -104,20 +130,19 @@ export default function PraesentationsmappeVollversionPage() {
       ? docFromUrl
       : DOCUMENTS[0].file
     loadDocument(fileToLoad)
-  }, [searchParams, isMobile, isOeffentlich])
+  }, [searchParams, isMobile, isOeffentlich, BASE, DOCUMENTS])
 
   useEffect(() => {
-    const kontaktDoc = isVk2Variant ? '08-KONTAKT.md' : '13-KONTAKT.md'
-    const needQr = selectedDoc === kontaktDoc || fullPrintView
+    const needQr = selectedDoc === kontaktFileForVariant || fullPrintView
     if (!needQr) {
       setQrOek2DataUrl('')
       return
     }
-    const qrTarget = isVk2Variant ? VK2_URL : OEK2_URL
+    const qrTarget = isAnyVk2 ? VK2_URL : OEK2_URL
     QRCode.toDataURL(buildQrUrlWithBust(qrTarget, qrVersionTs), { width: 140, margin: 1 })
       .then(setQrOek2DataUrl)
       .catch(() => setQrOek2DataUrl(''))
-  }, [selectedDoc, fullPrintView, qrVersionTs, isVk2Variant])
+  }, [selectedDoc, fullPrintView, qrVersionTs, kontaktFileForVariant, isAnyVk2])
 
   const loadDocument = async (filename: string) => {
     setLoading(true)
@@ -131,7 +156,7 @@ export default function PraesentationsmappeVollversionPage() {
       const response = await fetch(`${BASE}/${filename}`)
       if (response.ok) {
         let text = await response.text()
-        if (!isVk2Variant && filename === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
+        if (!isAnyVk2 && filename === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
         setDocContent(text)
       } else {
         setDocContent(`# Dokument nicht gefunden\n\nDie Datei konnte nicht geladen werden.`)
@@ -150,7 +175,7 @@ export default function PraesentationsmappeVollversionPage() {
       for (const doc of DOCUMENTS) {
         const response = await fetch(`${BASE}/${doc.file}`)
         let text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
-        if (!isVk2Variant && doc.file === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
+        if (!isAnyVk2 && doc.file === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
         contents.push(text)
       }
       setAllDocContents(contents)
@@ -344,7 +369,7 @@ export default function PraesentationsmappeVollversionPage() {
 
   /** Deckblatt außen: K2 Galerie groß, Slogans, kgm solution dezent als Copyright. Header-Höhe inhaltabhängig, kein Abschneiden. */
   const renderDeckblattCover = () => {
-    if (isVk2Variant) {
+    if (isAnyVk2) {
       return (
         <div className="pmv-deckblatt-cover" lang="de">
           <div className="pmv-deckblatt-header">
@@ -355,8 +380,8 @@ export default function PraesentationsmappeVollversionPage() {
           </div>
           <div className="pmv-cover-img-wrap">
             <img
-              src="/img/oeffentlich/mitglieder-katalog.jpg"
-              alt="VK2 Vereinsplattform Vorschau"
+              src="/img/oeffentlich/pm-vk2-verein.png"
+              alt="VK2 Vereinsplattform – Musteransicht"
               className="pmv-cover-img"
             />
           </div>
@@ -522,9 +547,9 @@ export default function PraesentationsmappeVollversionPage() {
                 {doc.file === '01-DECKBLATT.md'
                   ? renderDeckblattCover()
                   : renderMarkdown(allDocContents[idx] ?? '', idx > 0 ? idx : undefined, (path) => { setFullPrintView(false); loadDocument(path); }, `ch${idx}`)}
-                {((!isVk2Variant && doc.file === '13-KONTAKT.md') || (isVk2Variant && doc.file === '08-KONTAKT.md')) && qrOek2DataUrl && (
+                {doc.file === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-                    <img src={qrOek2DataUrl} alt={isVk2Variant ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
+                    <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
                   </div>
                 )}
               </div>
@@ -569,9 +594,9 @@ export default function PraesentationsmappeVollversionPage() {
                 {selectedDoc === '01-DECKBLATT.md'
                   ? renderDeckblattCover()
                   : renderMarkdown(docContent, (() => { const idx = DOCUMENTS.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined; })(), (path) => loadDocument(path))}
-                {((!isVk2Variant && selectedDoc === '13-KONTAKT.md') || (isVk2Variant && selectedDoc === '08-KONTAKT.md')) && qrOek2DataUrl && (
+                {selectedDoc === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-                    <img src={qrOek2DataUrl} alt={isVk2Variant ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
+                    <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
                   </div>
                 )}
               </div>
