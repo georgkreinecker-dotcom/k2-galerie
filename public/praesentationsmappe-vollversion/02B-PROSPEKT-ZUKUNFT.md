@@ -8,11 +8,9 @@
 
 ## Statt vier Welten – ein roter Faden
 
-Heute landen Werke, Verkauf, Events und Werbung bei vielen Künstler:innen und kleinen Galerien in **vier Welten**: die **Website** in einem System, die **Kasse** in einem anderen, **Flyer, Mails und Social** wieder woanders, **Etiketten** oft per Hand oder mit einem vierten Werkzeug. Jedes Teil kann für sich taugen — zusammen wird es anstrengend: **dieselben Angaben** mehrfach pflegen, **jedes Medium** ein Stück anders aussehen, **mehrere Abos** bezahlen — und nach außen wirkt es selten wie **eine** Geschichte. **Wenn** du das **kennst** – **dann** weißt du, **warum** **ein** Faden **so viel** Leichtigkeit **gibt**.
+**Die Fakten** (vier Welten, Doppelarbeit, eine Datenbasis) stehen **einmal** im Kapitel **[USPs und Wettbewerb](02-USP-UND-WETTBEWERB.md)** – **hier** nur die **Lesefassung:** Wenn du **kennst**, wie es sich anfühlt, wenn **Website, Kasse, Werbung und Etikett** auseinanderlaufen – **dann** brauchst du keine zweite Erklärung, **warum** **ein** Faden Leichtigkeit gibt.
 
-**K2 Galerie** mit der öffentlichen Demo **ök2** ist dafür gebaut, **von Anfang an zusammenzudenken**: **eine Oberfläche**, **eine Datenbasis**. Werke und Events **einmal** erfassen — und dieselben Informationen für die öffentliche Galerie, die Kassa, den Shop, die Einladung, das Plakat, die Presse und vorbereitete Social-Texte nutzen. **Corporate Design** zieht von der Willkommensseite bis zum Druck: **wiedererkennbar**, statt dass jedes Programm seine eigene Farbwelt erfindet. **Stell dir vor:** **Ein** Auftritt – **überall**.
-
-Das ist keine nostalgische „alles wie früher“-Lösung — sondern die **Frage, wie Galerie-Alltag in den nächsten Jahren** aussehen soll, wenn **Zeit knapp** ist und **Klarheit** zählt. **Du** entscheidest, **ob** du **diese** Klarheit **willst**.
+**K2 Galerie / ök2** denkt **Galerie, Kassa, Druck und Web** zusammen – **ein** Auftritt, **überall** wiedererkennbar. **Du** entscheidest, **ob** du **diese** Klarheit **willst**.
 
 ## Vom Atelier zum gesamten Markt
 
@@ -24,9 +22,7 @@ Hier reden wir bewusst von **Kunst**: von **Werken**, von **Künstler:innen und 
 
 ## Mein Weg – sechs Sparten, eine Plattform
 
-Die **Kunst** bleibt **Einstieg, Herkunft und Referenz** — **nicht** die **Grenze** dessen, was die Plattform kann. **Wie** der **gesamte Markt** greifbar wird, ohne die Oberfläche zu verwässern: **Mein Weg**.
-
-In den **Stammdaten** legst **du** **Mein Weg** fest — **eine von sechs Sparten**. Daraus folgen **passende Werktypen**, **Kategorien**, **Filter in der Galerie** und **viele geführte Texte** — **eine** App-Familie, **keine** sechs getrennten Produkte. Die Sparten heißen: **Kunst & Galerie**, **Handwerk & Manufaktur**, **Design & Möbel**, **Mode & Kleinserien**, **Food & Genuss**, **Dienstleister & Portfolio**.
+Die **Kunst** bleibt **Einstieg und Referenz** — **Mein Weg** öffnet den **Markt**, ohne die Oberfläche zu verwässern. **Technik und Namen der Sparten:** Kapitel **[Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)** und **[Für wen](03-FUER-WEN.md)** – **hier** nur der **Merksatz:**
 
 **Merksatz:** **Für die Kunst definiert und formuliert — für den Markt über Mein Weg skalierbar.**
 
@@ -34,7 +30,7 @@ In den **Stammdaten** legst **du** **Mein Weg** fest — **eine von sechs Sparte
 
 ## Der Markt stückelt – du brauchst die Linie
 
-Die Namen sind vertraut: **Wix**, **Squarespace**, **WordPress**, **Shopify**, **Canva**, **SumUp**, **Zettle** — dazu Newsletter-Tools und vieles mehr. In **ihrem** Segment sind das oft **gute** Angebote. Genau deshalb wird sichtbar, was fehlt: **Nichts** davon ist als **ein** Produkt darauf ausgelegt, **Werknummer und Bild**, **Verkauf an das Werk gekoppelt**, **Event einmal angelegt** und daraus **Werbemittel**, **Etikett aus den Werksdaten** und **ein gemeinsamer Stand** auf Rechner, Tablet und Handy **ohne Bruch** zu liefern.
+**Häkchen-Matrix:** Kapitel **USPs** – **hier** nur die **Erzählung.** Die Namen sind vertraut: **Wix**, **Squarespace**, **WordPress**, **Shopify**, **Canva**, **SumUp**, **Zettle** — dazu Newsletter-Tools und vieles mehr. In **ihrem** Segment sind das oft **gute** Angebote. Genau deshalb wird sichtbar, was fehlt: **Nichts** davon ist als **ein** Produkt darauf ausgelegt, **Werknummer und Bild**, **Verkauf an das Werk gekoppelt**, **Event einmal angelegt** und daraus **Werbemittel**, **Etikett aus den Werksdaten** und **ein gemeinsamer Stand** auf Rechner, Tablet und Handy **ohne Bruch** zu liefern.
 
 **Der entscheidende Satz:** Für diese **Kombination in einer App** gibt es **kein vergleichbares Gesamtprodukt** am Markt. Das ist kein nettes Extra — das ist **weniger Doppelarbeit**, **weniger parallele Abos** und **ein roter Faden** von der Galerie bis zum Beleg und zum Plakat. **Wenn** du **das** brauchst – **hast du** es **hier**.
 
@@ -42,9 +38,7 @@ Die Namen sind vertraut: **Wix**, **Squarespace**, **WordPress**, **Shopify**, *
 
 ## Gebaut für morgen – nicht als Altware verkauft
 
-Die Lösung tritt **nicht** als „seit Jahrzehnten etabliert“ in drei Software-Epochen auf, sondern **bewusst als Teil der Zukunft**: **Browser und PWA**, **ein Stand** überall, **DSGVO-nah**, Entwicklung und Ansprache aus **Österreich**. **Mein Weg** und die **sechs Sparten** (siehe Abschnitt oben) halten die Oberfläche **fokussiert** — nicht beliebig „wir können alles“. Dazu **VK2** für Vereine in derselben Produktfamilie, ein **Empfehlungs-Programm**, das im Alltag mitgeht, und **Backup & Wiederherstellung** als **fester** Weg — Demo **ök2** und echte Galerie **strikt getrennt**.
-
-Kurz: **Aufbruch** statt verstaubter Etablierung — **integriert** statt zusammengeklickter Inseln. **Du** investierst in **etwas**, das **mit dir** weitergeht.
+**Haltung und Stichworte** (Browser, PWA, Österreich, VK2, Empfehlungs-Programm, Backup, Demo getrennt): **eine** knappe Zeile in den **USPs** – **hier** nur der **Kern:** **Aufbruch** statt verstaubter Etablierung; **integriert** statt Inseln. **Du** investierst in **etwas**, das **mit dir** weitergeht.
 
 [SEITENUMBRUCH]
 
@@ -60,7 +54,7 @@ Kurz: **Aufbruch** statt verstaubter Etablierung — **integriert** statt zusamm
 
 **K2 Galerie – für Menschen mit Ideen, die gesehen werden wollen.**
 
-**Eine Seite zum Mitnehmen:** [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md)
+**Eine Seite zum Mitnehmen:** [Promo A4 – Flyer](/projects/k2-galerie/flyer-oek2-promo-a4) (nicht in der Mappe)
 
 **Technische Tiefe** (Matrix, Tabellen): [USPs & Wettbewerb](02-USP-UND-WETTBEWERB.md)
 

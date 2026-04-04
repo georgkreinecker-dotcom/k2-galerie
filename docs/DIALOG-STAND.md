@@ -1,6 +1,22 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe = schrittweise Entscheidungshilfe (Du, kein Verkäufer-Skript):** **`00-INDEX`** „So nutzt du diese Mappe“ (Schritte 1–6); Kapitel **01–03**, **02-USP**, **02B**, **02C**, **10-DEMO-LIZENZ** (Schritt-6-Brücke: Demo zuerst, dann Lizenz); **mök2** Sektion + **`mok2Structure`**; **`PraesentationsmappeVollversionPage`** Kommentar. `npm run test` / `npm run build` grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 03.04.26 – **Promo A4 Essenz = eigenständiger Flyer** (nicht mehr Kapitel der Präsentationsmappe): Inhalt **`public/oek2-flyer-promo-a4/PROMO-A4-ESSENZ.md`**, Seite **`FlyerOek2PromoA4Page`**, Route **`/projects/k2-galerie/flyer-oek2-promo-a4`**; **02C** aus Mappe entfernt, **`?doc=02C-PROMO-A4-ESSENZ.md`** → Redirect auf Flyer; **`00-INDEX`**, **02-USP**, **02B**, **mök2** verlinken den Flyer; Markdown-Renderer/Styles ausgelagert (`praesentationsmappeMarkdown*`). `npm run test` / `npm run build` grün. **Commit:** *(folgt)*
+
+**Was wir JETZT tun:** Flyer in der APf öffnen, Druck/PDF prüfen; Mappe ohne A4-Kapitel durchklicken.
+
+**Einordnung:** Handout = eine eigene Route; Mappe = Schritte 1–6 ohne eingebettetes A4.
+
+---
+
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe bis Schritt 6: Dopplungen reduziert (kein Kreis):** **USPs** = **einzige** Fakten-/Matrix-Quelle; **Prospekt** und **A4** verweisen statt „vier Welten / Sparten / Zukunft“ erneut auszubreiten; **sechs Sparten** nur noch in **Für wen**; **Deckblatt** / **Was ist** / **Demo** mit Querverweisen. Dateien: **`00-INDEX`**, **01**, **02-USP**, **02B**, **02-WAS-IST**, **03**, **10** — **Promo A4** nur noch als **[Flyer](/projects/k2-galerie/flyer-oek2-promo-a4)**. **Commit:** *(siehe Eintrag darüber)*
+
+**Was wir JETZT tun:** Mappe Schritte 1–6 einmal durchlesen – ob es **linear** wirkt.
+
+**Einordnung:** Georg: Kreisgefühl – **eine Wahrheit pro Thema**, Rest **Stimmung**.
+
+---
+
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe = schrittweise Entscheidungshilfe (Du, kein Verkäufer-Skript):** **`00-INDEX`** „So nutzt du diese Mappe“ (Schritte 1–6); Kapitel **01–03**, **02-USP**, **02B**, **10-DEMO-LIZENZ** (Schritt-6-Brücke: Demo zuerst, dann Lizenz); **Promo A4** = eigener Flyer (nicht in der Mappe); **mök2** Sektion + **`mok2Structure`**; **`PraesentationsmappeVollversionPage`** Kommentar. `npm run test` / `npm run build` grün. **Commit:** **91bed74** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe in der APf durchlesen – ob nach jedem Block klar wird, was **du** gewinnst; Demo-Kapitel als Schritt 6.
 

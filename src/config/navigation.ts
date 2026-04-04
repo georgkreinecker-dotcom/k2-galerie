@@ -123,6 +123,8 @@ export const PROJECT_ROUTES = {
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     /** Präsentationsmappe Vollversion – große Mappe mit vielen Kapiteln. */
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
+    /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
+    flyerOek2PromoA4: '/projects/k2-galerie/flyer-oek2-promo-a4',
     /** Prospekt K2 Kunst und Keramik – Galerieeröffnung (1 Seite, druckbar) */
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     /** Alias: leitet auf Flyer-Event-Bogen A3-Ableitung (ein Master, keine zweite Plakat-Seite). */
@@ -199,6 +201,8 @@ export const PROJECT_ROUTES = {
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
+    /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
+    flyerOek2PromoA4: '/projects/k2-galerie/flyer-oek2-promo-a4',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
@@ -244,6 +248,8 @@ export const PROJECT_ROUTES = {
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
+    /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
+    flyerOek2PromoA4: '/projects/k2-galerie/flyer-oek2-promo-a4',
     prospektGalerieeroeffnung: '/projects/k2-galerie/prospekt-galerieeroeffnung',
     plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',

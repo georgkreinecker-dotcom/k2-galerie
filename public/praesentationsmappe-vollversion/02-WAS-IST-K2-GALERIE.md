@@ -1,6 +1,6 @@
 # Was ist die K2 Galerie?
 
-**Schritt 4 in dieser Mappe:** Du weißt schon **warum** sich eine **integrierte Linie** lohnt – **hier** siehst du **was** die Plattform **konkret** **für dich** **ist**: **ein System**, das **deine** Sparte, **deine** Werke und **deinen** Auftritt **zusammenhält**.
+**Schritt 4 in dieser Mappe:** Aus **USPs / Prospekt** kennst du das **Warum** – **hier** das **Was**: **ein System**, das Sparte, Werke und Auftritt **zusammenhält** (ohne die Argumente zu wiederholen).
 
 Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit „Mein Weg“**.
 
@@ -11,14 +11,7 @@ Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit „Mein Weg“*
 - **Texte und Generatoren** (Events, Flyer, Presse, Social) – gleiche Daten, gleiche Sprache, gleiche Linie
 - **Abläufe** (vom Erfassen bis zum Veröffentlichen) – ohne doppelte Eingaben
 
-**Die sechs Sparten (Anzeigenamen in der App):**
-
-- **Kunst & Galerie** – Künstler:innen, Ateliers, kleine Galerien; Kerngeschichte und Einstiegstor.
-- **Handwerk & Manufaktur** – Schmuck, Keramik (Gebrauch), Textil, Kleinserien, Katalog und Kassa.
-- **Design & Möbel** – Möbel, Leuchten, Accessoires; Showroom und Einladungen.
-- **Mode & Kleinserien** – Kollektionen, Märkte, Etiketten und Events.
-- **Food & Genuss** – Direktvermarktung, Manufakturen, Genussprodukte; Katalog, Verkauf, Etiketten.
-- **Dienstleister & Portfolio** – Referenzen, Projekte, Workshops; Presse und Events im Fokus.
+**Welche Sparte zu dir passt** – **eine** Tabelle, **kein** zweites Mal die gleiche Liste: direkt im **nächsten** Kapitel **[Für wen](03-FUER-WEN.md)**.
 
 Darauf aufbauend: **eigene Galerie** im Netz (Willkommen, Werke, Vita, Shop), **Design** und Veröffentlichen mit **einem Stand auf allen Geräten**, **Event- und Medienplanung** (planen, Dokumente erzeugen, Verteiler), **Kassa und Etiketten** wo nötig. Windows, Android, macOS, iOS – Browser und PWA.
 

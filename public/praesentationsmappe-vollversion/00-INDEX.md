@@ -8,12 +8,12 @@
 
 | Schritt | Kapitel (Kurz) | Was du für dich klärst |
 |--------|----------------|-------------------------|
-| **1** | Deckblatt | Erster Eindruck: Haltung, **Mein Weg**, sechs Sparten – **passt das zu dir?** |
-| **2** | USPs & Markt | **Was du bekommst**, was der Markt sonst stückelt – **fehlt dir genau das?** |
-| **3** | Prospekt & ggf. A4-Essenz | **Gefühl** und Kurzfassung – **willst du diese Linie für deine Arbeit?** |
-| **4** | Was ist / Für wen | **Passt das Produkt** zu dem, was du zeigen und verkaufen willst? |
-| **5** | Willkommen bis Shop & Events | **Konkret:** Wie fühlt sich der Alltag mit der App an? |
-| **6** | Demo, Lizenz, Kontakt | **Nächster Schritt:** ausprobieren, vergleichen, entscheiden. |
+| **1** | Deckblatt | Haltung und **Mein Weg** – **ohne** die Spartenliste (die kommt **einmal** bei **Für wen**). |
+| **2** | USPs & Markt | **Argumente und Matrix** – einmalig, nicht in Prospekt/A4 wiederholen lassen. |
+| **3** | Prospekt | **Stimmung** und **Merksatz** – verweisen auf **2**, statt Fakten zu duplizieren. **A4-Flyer** ist **eigenständig** (Link unten). |
+| **4** | Was ist + Für wen | **Technik** + **einzige** Sparten-Tabelle – **ein** Durchlauf, kein Kreis. |
+| **5** | Willkommen bis Events | **Screens und Alltag** – **nach** der inhaltlichen Klärung. |
+| **6** | Demo, Lizenz, Kontakt | **Tun:** ausprobieren, vergleichen, entscheiden. |
 
 **Tipp:** Wenn du **schnell** nur das Wesentliche willst: Deckblatt → **Promo A4 – Essenz** → **Demo und Lizenz** → **Kontakt**. Wenn du **gründlich** entscheiden willst: der Reihe nach von oben nach unten.
 
@@ -27,23 +27,21 @@ Slogan, **Zukunft statt Altware**, **Mein Weg** und die sechs Sparten – **Schr
 
 2. [USPs und Wettbewerbsvergleich](02-USP-UND-WETTBEWERB.md)
 
-**Schritt 2:** Was die Plattform **für dich** leistet – und warum **eine integrierte Linie** selten woanders vorkommt (Matrix, Marktbeispiele, Kostenlogik im Überblick).
+**Schritt 2 – Fakten einmal:** Matrix, Marktbeispiele, **was du gewinnst** (alles Weitere verweist hierher).
 
 2a. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
-**Lesefassung** zu Schritt 2: fließende Sprache – **vier Welten vs. ein roter Faden**, Kunst im Mittelpunkt, **Mein Weg**, drei **Entscheidungsfragen**; zum **Innehalten, Weiterleiten, Drucken**.
+**Lesefassung** zu Schritt 2: **kein** zweites USP-Kapitel – Kunst, Markt, **Entscheidungsfragen**; **Innehalten, Drucken**.
 
-2b. [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md)
-
-**Eine Seite** – Merksatz und fünf Kernpunkte; ideal, wenn du **sofort** spürst, ob du **tiefer** einsteigen willst.
+**Promo A4 – Flyer (eigenständig, nicht in dieser Mappe):** [zum Flyer öffnen](/projects/k2-galerie/flyer-oek2-promo-a4) — eine Seite zum Mitnehmen; **Details** bei **2** und **2a**.
 
 3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
-**Schritt 4:** **Mein Weg** als Schaltzentrale – Typen, Kategorien, Galerie, Events, **ein Stand** überall.
+**Schritt 4a:** **Mein Weg** als Schaltzentrale – **ohne** Spartenliste (→ **4**).
 
 4. [Fuer wen](03-FUER-WEN.md)
 
-**Schritt 4b:** Welche **Sparte** zu **dir** passt; ök2, Lizenz und VK2 kurz eingeordnet.
+**Schritt 4b:** **Einzige** Sparten-Übersicht; ök2, Lizenz, VK2 kurz.
 
 5. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 

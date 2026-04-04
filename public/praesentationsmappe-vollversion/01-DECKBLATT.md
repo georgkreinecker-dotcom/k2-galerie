@@ -6,9 +6,9 @@
 
 **Wir stehen für die Zukunft des Galerie-Alltags** – integriert, browserbasiert, **nicht** als verstaubtes Etablissement aus überholten Einzel-Tools. **Das bedeutet für dich:** weniger Springen zwischen Programmen, **mehr** Zeit für das, was zählt – **deine** Werke und **deine** Gäste.
 
-**Mein Weg** ist der Kern: **Eine** Entscheidung – und die App folgt **dir**. Du legst in den Stammdaten fest, **wofür** du deine Galerie nutzt; daraus werden **Werktypen**, **Kategorien** und **Einsteigstexte** abgeleitet – und **dieselbe Linie** zieht sich bis zu **Flyer, Presse und Events**. **Stell dir vor:** Einmal festgelegt – **überall** wiedererkennbar.
+**Mein Weg** ist der Kern: **Eine** Entscheidung – und die App folgt **dir** (Details und Sparten-Namen: Kapitel **Was ist** und **Für wen**). **Dieselbe Linie** bis zu Flyer, Presse und Events – **überall** wiedererkennbar.
 
-Eine Plattform – sechs Sparten: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. **Dieselbe Oberfläche – dein Profil.** **Du** musst dich nicht in fremde Kategorien zwängen.
+**Eine** Oberfläche, **dein** Profil – **ohne** dich in fremde Kategorien zu zwängen.
 
 Deine Ideen und Werke verdienen **mehr** als einen Instagram-Post. **Sie verdienen einen Ort**, der **professionell** wirkt – **von der ersten Seite bis zum Etikett.**
 

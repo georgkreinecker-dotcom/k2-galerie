@@ -6,13 +6,13 @@
 
 **Das Wichtigste in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat. **Wenn** du dich darin wiedererkennst – **dann** lohnt der Rest der Mappe **doppelt**.
 
-**Weiterlesen in Ruhe:** [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md) (fließende Lesefassung) · [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md) (eine Seite zum Mitnehmen).
+**Weiterlesen in Ruhe:** [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md) (fließende Lesefassung) · [Promo A4 – Flyer](/projects/k2-galerie/flyer-oek2-promo-a4) (eine Seite zum Mitnehmen, eigenständig).
 
 ---
 
 ## Warum dieses Kapitel an dieser Stelle?
 
-**Damit du schnell weißt:** Was bekommst du **nur hier** so kombiniert? Und was kostet es **nervlich und finanziell**, wenn du stattdessen **Markt-Standard** stückelst? Wenn das für dich **passt**, sind die folgenden Funktionskapitel **leichter** – weil du **weißt**, **wofür** du sie brauchst. **Wenn** du hier schon spürst *„Das ist genau mein Thema“* – **dann** hat diese Mappe schon ihren Job getan.
+**Einmal** klären: **nur hier** so kombiniert vs. **Markt gestückelt** – danach **Prospekt/A4** nur noch **Stimmung**, **keine** zweite Faktenrunde.
 
 ---
 

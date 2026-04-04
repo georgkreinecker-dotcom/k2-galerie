@@ -1,8 +1,8 @@
 # Für wen?
 
-**Schritt 4b:** Du hast **verstanden**, **was** die Plattform kann – **hier** ordnest du **dich** **ein**: **Welche Sparte** beschreibt **am besten**, **was du** zeigst?
+**Ein Schritt mit „Was ist“:** Hier steht die **einzige** Sparten-Übersicht in der Mappe – **nicht** dieselbe Liste noch einmal woanders.
 
-**Für alle, die über Mein Weg klar sagen, was sie zeigen.** Die Sparte ist kein Marketing-Label allein – sie steuert, wie Werke erfasst werden und was Besucher in der Galerie erwarten. Typische Zuordnungen:
+**Für alle, die über Mein Weg klar sagen, was sie zeigen.** Die Sparte steuert Erfassung und Erwartung in der Galerie. Typische Zuordnungen:
 
 | Sparte | Typische Nutzer:innen |
 |--------|------------------------|

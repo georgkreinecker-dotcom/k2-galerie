@@ -32,6 +32,7 @@ import ProduktVorschauPage from './pages/ProduktVorschauPage'
 import MarketingOek2Page from './pages/MarketingOek2Page'
 import PraesentationsmappePage from './pages/PraesentationsmappePage'
 import PraesentationsmappeVollversionPage from './pages/PraesentationsmappeVollversionPage'
+import FlyerOek2PromoA4Page from './pages/FlyerOek2PromoA4Page'
 import ProspektGalerieeroeffnungPage from './pages/ProspektGalerieeroeffnungPage'
 import PlakatGalerieeroeffnungRedirect from './pages/PlakatGalerieeroeffnungRedirect'
 import FlyerEventBogenNeuPage from './pages/FlyerEventBogenNeuPage'
@@ -803,6 +804,7 @@ function App() {
       <Route path="/presse-einladung-k2-galerie" element={<PresseEinladungK2GaleriePage />} />
       {/* Präsentationsmappe: Kurzvariante (Teal/Weiß) + Vollversion (große Mappe, viele Kapitel). */}
       <Route path="/projects/k2-galerie/praesentationsmappe-vollversion" element={<PraesentationsmappeVollversionPage />} />
+      <Route path="/projects/k2-galerie/flyer-oek2-promo-a4" element={<FlyerOek2PromoA4Page />} />
       <Route
         path="/projects/k2-galerie/praesentationsmappe"
         element={(() => {
