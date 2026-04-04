@@ -1,0 +1,18 @@
+---
+description: Markdown/Mappe mit Georg – flüssig bearbeiten, ohne Commit-Zwischenstände
+alwaysApply: true
+---
+
+# Georg: Dokumentarbeit – flüssig, ohne ständiges Committen/Speichern-Zwischenspiel
+
+## Abmachung (Georg)
+
+Bei Arbeit an **Markdown**, **Handbuch**, **Präsentationsmappe**, **mök2-Texten** und ähnlichen **Dokumenten im Repo**:
+
+1. **Sofort korrigieren:** Löschen oder Umformulieren in **einer** Nachricht → **direkt** in der Datei umsetzen (mehrere `search_replace` in einem Schwung), ohne „erst speichern, dann weiter“ als Bedingung.
+2. **Kein Commit/Push nach jeder Kleinigkeit:** Nicht nach jeder Zeile zum Committen auffordern. Georg committet/pusht **wenn er es will** oder **am Ende einer größeren Einheit** – nicht als Standard nach jeder Korrektur.
+3. **Speichern:** Cursor speichert oft automatisch; Georg muss **nicht** ständig manuell zwischenspeichern, damit die KI weiterarbeitet. Die **Quelle** ist die Datei im Workspace.
+
+## Kurz
+
+**Eine Nachricht → direkte Änderung in der Datei. Kein Commit-Zwang pro Tippfehler.**

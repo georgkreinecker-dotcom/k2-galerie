@@ -6,50 +6,27 @@
 
 Diese Mappe ist eine **Entscheidungshilfe**, keine Werbebroschüre zum Wegwerfen. Du kannst sie in Ruhe lesen, Kapitel für Kapitel – und nach jedem der ersten Schritte sollte für dich etwas **konkreter** werden: Passt diese Plattform zu dem, was du im Alltag brauchst, oder eher nicht?
 
-Die folgenden **fünf Schritte** führen dich von der ersten Orientierung bis zu den **konkreten Beispielen aus dem Admin**. Schritt 6 schließt mit Ausprobieren, Lizenzen und Kontakt ab.
-
-### Schritt 1 – Deckblatt: Haltung und Einstieg
-
-Beim **Deckblatt** lernst du die **Haltung** der K2 Galerie kennen: ein moderner Weg für Galerien und Künstlerinnen, der nicht bei veralteten Insellösungen stehen bleibt. Der rote Faden **Mein Weg** zeigt, wie dein Auftritt gedacht ist – ohne dich sofort mit einer langen Spartenliste zu überfrachten. Die **sechs Sparten** werden hier nur angerissen; **ausführlich und genau einmal** sortierst du später bei **Für wen**, was zu dir passt.
-
-### Schritt 2 – USPs und Markt: Fakten und Vergleich
+### Schritt 1 – USPs und Markt: Fakten und Vergleich
 
 Im Kapitel **USPs und Wettbewerbsvergleich** liegen die **sachlichen Argumente**: eine übersichtliche Matrix, typische Marktbeispiele und die Frage, **was du konkret gewinnst**.
 
 **Danach weißt du:** wo die Plattform im Markt steht – und welche Vorteile für deinen Betrieb genannt werden.
 
-### Schritt 3 – Prospekt: zum Innehalten und Vertiefen
+### Schritt 2 – Prospekt: zum Innehalten und Vertiefen
 
-Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt – ohne ein zweites USP-Kapitel zu werden. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen.
+Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt. Hier kannst du **innehalten**, ausdrucken oder als PDF mitnehmen.
 
-### Schritt 4 – Was ist die K2 Galerie, und für wen ist sie da?
+### Schritt 3 – Was ist die K2 Galerie, und für wen ist sie da?
 
-Zuerst **Was ist die K2 Galerie**: die Plattform in klarer, sachlicher Sprache – **Mein Weg** als Schaltzentrale, **ohne** die Spartenliste noch einmal auszubreiten. Anschließend **Für wen**: die **einzige** ausführliche Übersicht der **sechs Sparten**, wer öffentliche Demo und Lizenz nutzt, und wo die **Vereinsplattform VK2** ins Spiel kommt. So entsteht **ein** durchgängiger Bogen statt eines Kreises aus Wiederholungen.
+Zuerst **Was ist die K2 Galerie**: die Plattform in klarer, sachlicher Sprache – **Mein Weg** als Schaltzentrale. Im Kapitel **Für wen** gibt es die **einzige** ausführliche Übersicht der **sechs Sparten**, wer öffentliche Demo und Lizenz nutzt, und wo die **Vereinsplattform VK2** ins Spiel kommt.
 
 **Danach weißt du:** ob die Lösung inhaltlich zu deiner Situation passt – bevor du in Menüs und Bildschirfen steigst.
 
-### Schritt 5 – Konkrete Beispiele im Admin: vom ersten Bildschirm bis zur Öffentlichkeitsarbeit
+### Schritt 4 – Konkrete Beispiele im Admin: vom ersten Bildschirm bis zur Öffentlichkeitsarbeit
 
-Ab **Willkommen und Galerie** beginnt der **zweite Schwerpunkt**: du siehst, wie die App **aussieht** und **arbeitet** – Werke, Design, Veröffentlichung, Statistik, Kassa, Shop, Events und der Blick auf **VK2**. Das sind **keine** erneuten Argumente aus Schritt 2, sondern **Beispiele aus der Praxis**, an denen du dir den Alltag vorstellen kannst.
+Ab **Willkommen und Galerie** beginnt der **zweite Schwerpunkt**: du siehst, wie die App **aussieht** und **arbeitet** – Werke, Design, Veröffentlichung, Statistik, Kassa, Shop, Events und der Blick auf **VK2**.
 
 **Danach weißt du:** ob sich die Oberfläche und die Abläufe für dich greifbar anfühlen.
-
-### Schritt 6 – Demo, Lizenz, Kontakt
-
-Zum Schluss **Demo und Lizenz**, **Empfehlungsprogramm**, **Technik** und **Kontakt**: ausprobieren, Lizenzen vergleichen, technische Rahmenbedingungen prüfen – und den **nächsten Schritt** bewusst wählen.
-
----
-
-**Kurzweg, wenn wenig Zeit ist:** Deckblatt lesen → **Promo A4 – Essenz** öffnen → **Demo und Lizenz** ansehen → bei Bedarf **Kontakt**. Für eine **gründliche** Entscheidung liest du die Kapitel der Reihe nach.
-
----
-
-## Zwei Schwerpunkte
-
-| Schwerpunkt | Inhalt |
-|-------------|--------|
-| **Allgemeine Information** | Alles, was du **verstehen** willst, bevor du in der App klickst: Deckblatt, USPs, Prospekt, **Was ist die K2 Galerie**, **Für wen**. |
-| **Konkrete Beispiele im Admin** | Ab **Willkommen und Galerie**: Bildschirme und Abläufe wie in der echten Anwendung; danach Demo, Lizenz, Empfehlung, Technik, Kontakt. |
 
 ---
 
