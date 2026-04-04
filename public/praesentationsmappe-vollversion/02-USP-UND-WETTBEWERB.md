@@ -6,6 +6,8 @@
 
 **Vertiefung:** Marketing ök2 in der App (`/mok2`) – „1. USPs“ und „Produkt- & Branchenvergleich“.
 
+**Eigenständiger Prospekt** (Lesefassung, zukunftsorientiert, zum Drucken/Versenden): [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
+
 ---
 
 ## Warum dieses Kapitel zuerst?

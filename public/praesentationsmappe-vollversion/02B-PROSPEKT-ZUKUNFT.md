@@ -1,0 +1,53 @@
+# Ein Aufbruch – nicht noch ein Tool
+
+**K2 Galerie · ök2** — Lesefassung für Gespräch, Versand und Druck
+
+*Deine Ideen und Werke verdienen mehr als einen Instagram-Post.*
+
+---
+
+## Statt vier Welten – ein roter Faden
+
+Heute landen Werke, Verkauf, Events und Werbung bei vielen Künstler:innen und kleinen Galerien in **vier Welten**: die **Website** in einem System, die **Kasse** in einem anderen, **Flyer, Mails und Social** wieder woanders, **Etiketten** oft per Hand oder mit einem vierten Werkzeug. Jedes Teil kann für sich taugen — zusammen wird es anstrengend: **dieselben Angaben** mehrfach pflegen, **jedes Medium** ein Stück anders aussehen, **mehrere Abos** bezahlen — und nach außen wirkt es selten wie **eine** Geschichte.
+
+**K2 Galerie** mit der öffentlichen Demo **ök2** ist dafür gebaut, **von Anfang an zusammenzudenken**: **eine Oberfläche**, **eine Datenbasis**. Werke und Events **einmal** erfassen — und dieselben Informationen für die öffentliche Galerie, die Kassa, den Shop, die Einladung, das Plakat, die Presse und vorbereitete Social-Texte nutzen. **Corporate Design** zieht von der Willkommensseite bis zum Druck: **wiedererkennbar**, statt dass jedes Programm seine eigene Farbwelt erfindet.
+
+Das ist keine nostalgische „alles wie früher“-Lösung — sondern die **Frage, wie Galerie-Alltag in den nächsten Jahren** aussehen soll, wenn **Zeit knapp** ist und **Klarheit** zählt.
+
+[SEITENUMBRUCH]
+
+## Der Markt stückelt — ihr braucht die Linie
+
+Die Namen sind vertraut: **Wix**, **Squarespace**, **WordPress**, **Shopify**, **Canva**, **SumUp**, **Zettle** — dazu Newsletter-Tools und vieles mehr. In **ihrem** Segment sind das oft **gute** Angebote. Genau deshalb wird sichtbar, was fehlt: **Nichts** davon ist als **ein** Produkt darauf ausgelegt, **Werknummer und Bild**, **Verkauf an das Werk gekoppelt**, **Event einmal angelegt** und daraus **Werbemittel**, **Etikett aus den Werksdaten** und **ein gemeinsamer Stand** auf Rechner, Tablet und Handy **ohne Bruch** zu liefern.
+
+**Der entscheidende Satz:** Für diese **Kombination in einer App** gibt es **kein vergleichbares Gesamtprodukt** am Markt. Das ist kein nettes Extra — das ist **weniger Doppelarbeit**, **weniger parallele Abos** und **ein roter Faden** von der Galerie bis zum Beleg und zum Plakat.
+
+[SEITENUMBRUCH]
+
+## Gebaut für morgen — nicht als Altware verkauft
+
+Wir treten **nicht** als „seit Jahrzehnten etabliert“ in drei Software-Epochen auf, sondern **bewusst als Teil der Zukunft**: **Browser und PWA**, **ein Stand** überall, **DSGVO-nah**, Entwicklung und Ansprache aus **Österreich**. **Mein Weg** mit **sechs Sparten** hält die Oberfläche **klar** — nicht beliebig „wir können alles“. Dazu **VK2** für Vereine in derselben Produktfamilie, ein **Empfehlungs-Programm**, das im Alltag mitgeht, und **Backup & Wiederherstellung** als **fester** Weg — Demo **ök2** und echte Galerie **strikt getrennt**.
+
+Kurz: **Aufbruch** statt verstaubter Etablierung — **integriert** statt zusammengeklickter Inseln.
+
+[SEITENUMBRUCH]
+
+## Drei Fragen, die sich lohnen
+
+- **Soll ich weiter vier Welten pflegen — oder eine Datenbasis?**
+- **Soll Web und Plakat dieselbe Linie haben — oder darf jedes Tool anders aussehen?**
+- **Reicht mir ein Einzel-Tool — oder brauche ich Galerie, Kasse, Event und Etikett aus einem Guss?**
+
+Wenn die Antwort **eine integrierte Zukunft** ist, lohnt sich das Gespräch.
+
+---
+
+**K2 Galerie – für Menschen mit Ideen, die gesehen werden wollen.**
+
+Vertiefung und Zahlenrahmen: **Marketing ök2** in der App unter `/mok2` — und die technische **Kapitel-Mappe** mit Matrix und Tabellen im Dokument *USPs & Wettbewerb*.
+
+Demo öffentlich: `/projects/k2-galerie/galerie-oeffentlich`
+
+![Admin-Übersicht – alles aus einem Hub (Muster)](/img/oeffentlich/pm-admin-uebersicht.png)
+
+[SEITENUMBRUCH]
