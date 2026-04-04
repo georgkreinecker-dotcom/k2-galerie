@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik ohne Alltag-Abschnitt** – `14-STATISTIK-WERKKATALOG.md`: Absatz „Typisch öffnest du …“ (ehem. **Im Alltag**-Inhalt) entfernt. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: kein Pfeil-/Checklistenblock im Statistik-Kapitel.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik-Kapitel redigiert** – `14-STATISTIK-WERKKATALOG.md`: Satz „eigener Admin-Bereich unter dem Namen …“ entfernt; Fließtext wie übrige Mappe-Kapitel (kein Handbuch-Stil, keine `---`-Gliederung). INDEX Kapitel 10 Kurzzeile angepasst. **Commit:** **c906739** ✅ GitHub
 
 **Was wir JETZT tun:** Kapitel **Statistik und Werkkatalog** in der Mappe kurz lesen.
