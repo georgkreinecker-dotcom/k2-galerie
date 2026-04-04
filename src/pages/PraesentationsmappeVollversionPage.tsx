@@ -38,6 +38,8 @@ function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): st
 /** Ein Dokument der Mappe; sectionTitle nur beim ersten Kapitel eines Gliederungsblocks (Zwischenüberschrift in der Seitenleiste, rein visuell). */
 type PraesMappeDoc = {
   sectionTitle?: string
+  /** Nummer wie in public/.../00-INDEX.md (ohne Prospekt-Zeile in der Sidebar = sonst Verschiebung gegenüber idx). */
+  tocChapter?: number
   id: string
   name: string
   file: string
@@ -50,33 +52,36 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
     name: 'Deckblatt',
     file: '01-DECKBLATT.md',
   },
-  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
-  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-UND-WETTBEWERB.md' },
-  { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
-  { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
+  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md', tocChapter: 1 },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-UND-WETTBEWERB.md', tocChapter: 2 },
+  /** Kapitel 3 (Prospekt) nur im Index verlinkt, nicht in der Seitenleiste – Zählung springt auf 4. */
+  { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md', tocChapter: 4 },
+  { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md', tocChapter: 5 },
   {
     sectionTitle: 'Konkret im Admin',
     id: '04-willkommen',
     name: 'Willkommen und Galerie',
     file: '04-WILLKOMMEN-UND-GALERIE.md',
+    tocChapter: 6,
   },
-  { id: '04-admin-herz', name: 'Admin – Herzstück', file: '04-ADMIN-HERZSTUECK.md' },
-  { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md' },
-  { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md' },
-  { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md' },
-  { id: '07-kassa', name: 'Kassa und Verkauf', file: '07-KASSA-VERKAUF.md' },
-  { id: '15-shop-internet', name: 'Shop und Internetbestellung', file: '15-SHOP-INTERNETBESTELLUNG.md' },
-  { id: '08-events', name: 'Events und Öffentlichkeitsarbeit', file: '08-EVENTS-OEFFENTLICHKEITSARBEIT.md' },
-  { id: '09-vk2', name: 'Vereinsplattform VK2', file: '09-VEREINSPLATTFORM-VK2.md' },
-  { id: '10-demo', name: 'Demo und Lizenz', file: '10-DEMO-LIZENZ.md' },
+  { id: '04-admin-herz', name: 'Admin – Herzstück', file: '04-ADMIN-HERZSTUECK.md', tocChapter: 7 },
+  { id: '05-werke', name: 'Werke erfassen', file: '05-WERKE-ERFASSEN.md', tocChapter: 8 },
+  { id: '06-design', name: 'Design und Veröffentlichung', file: '06-DESIGN-VEROEFFENTLICHUNG.md', tocChapter: 9 },
+  { id: '14-statistik-werkkatalog', name: 'Statistik und Werkkatalog', file: '14-STATISTIK-WERKKATALOG.md', tocChapter: 10 },
+  { id: '07-kassa', name: 'Kassa und Verkauf', file: '07-KASSA-VERKAUF.md', tocChapter: 11 },
+  { id: '15-shop-internet', name: 'Shop und Internetbestellung', file: '15-SHOP-INTERNETBESTELLUNG.md', tocChapter: 12 },
+  { id: '08-events', name: 'Events und Öffentlichkeitsarbeit', file: '08-EVENTS-OEFFENTLICHKEITSARBEIT.md', tocChapter: 13 },
+  { id: '09-vk2', name: 'Vereinsplattform VK2', file: '09-VEREINSPLATTFORM-VK2.md', tocChapter: 14 },
+  { id: '10-demo', name: 'Demo und Lizenz', file: '10-DEMO-LIZENZ.md', tocChapter: 15 },
   {
     id: '16-einstellungen',
     name: 'Einstellungen & Stammdaten',
     file: '16-EINSTELLUNGEN-STAMMDATEN.md',
+    tocChapter: 16,
   },
-  { id: '11-empfehlung', name: 'Empfehlungsprogramm', file: '11-EMPFEHLUNGSPROGRAMM.md' },
-  { id: '12-technik', name: 'Technik', file: '12-TECHNIK.md' },
-  { id: '13-kontakt', name: 'Kontakt', file: '13-KONTAKT.md' },
+  { id: '11-empfehlung', name: 'Empfehlungsprogramm', file: '11-EMPFEHLUNGSPROGRAMM.md', tocChapter: 17 },
+  { id: '12-technik', name: 'Technik', file: '12-TECHNIK.md', tocChapter: 18 },
+  { id: '13-kontakt', name: 'Kontakt', file: '13-KONTAKT.md', tocChapter: 19 },
 ]
 
 const DOCUMENTS_VK2: PraesMappeDoc[] = [
@@ -130,8 +135,11 @@ const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 /** Nummer vor der ersten H1 nur wo sinnvoll; Inhaltsverzeichnis ohne Ziffer – Seitenleiste nutzt dieselbe Logik (keine „1.“ vor Inhaltsverzeichnis). */
 function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): number | undefined {
   const idx = docs.findIndex((d) => d.file === file)
+  if (idx < 0) return undefined
+  const doc = docs[idx]
+  if (doc?.tocChapter != null) return doc.tocChapter
   if (idx <= 0) return undefined
-  if (docs[idx]?.file === '00-INDEX.md') return undefined
+  if (doc?.file === '00-INDEX.md') return undefined
   return idx
 }
 
