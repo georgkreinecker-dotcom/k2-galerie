@@ -13,8 +13,10 @@ Willkommen in der Präsentationsmappe für die Vereinsplattform VK2.
 
 ### Schwerpunkt 1 – Allgemeine Information
 
-1. [Deckblatt](01-DECKBLATT.md)  
-   Einstieg und Markenzeile.
+**Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste ohne Nummer)*  
+Einstieg und Markenzeile.
+
+1. **Inhaltsverzeichnis – Kurzanleitung** *(dieses Kapitel; erste Nummer in der Leiste)*  
 
 2. [USPs und Wettbewerb](02-USP-WETTBEWERB-VK2.md)  
    **Pitch**, USP-Tabelle, **Dreier-Matrix** (✓/✗), Fremdvergleich Vereinsalltag vs. eine Oberfläche.

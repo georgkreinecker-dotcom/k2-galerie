@@ -13,8 +13,10 @@ Kurze Präsentationsmappe für die **Vereinsplattform VK2**: jedes Kapitel mit *
 
 ### Schwerpunkt 1 – Allgemeine Information
 
-1. [Deckblatt](01-DECKBLATT.md)  
-   Einstieg und Markenzeile.
+**Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste ohne Nummer)*  
+Einstieg und Markenzeile.
+
+1. **Inhaltsverzeichnis – Kurzanleitung** *(dieses Kapitel; erste Nummer in der Leiste)*  
 
 2. [USPs & Wettbewerb](02-USP-WETTBEWERB.md)  
    **Fünf Gründe** + **Kreuz-Matrix** (3 Produkte vs. VK2) + Kurz-Tabelle.

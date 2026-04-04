@@ -34,31 +34,33 @@ Ab **Willkommen und Galerie** beginnt der **zweite Schwerpunkt**: du siehst, wie
 
 ### Schwerpunkt 1 – Allgemeine Information
 
-1. [Deckblatt](01-DECKBLATT.md)
+**Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste **ohne** Nummer, Einstiegsseite)*
 
 Einstieg mit Slogan, der Gedanke **Zukunft statt Altware**, der rote Faden **Mein Weg** und ein erster Blick auf die sechs Sparten – ohne sie hier schon voll auszubreiten.
+
+1. **Inhaltsverzeichnis – Kurzanleitung** *(dieses Kapitel; in der Seitenleiste die **erste** Nummer)*
 
 2. [USPs und Wettbewerbsvergleich](02-USP-UND-WETTBEWERB.md)
 
 Marktvergleich, Matrix und **was du gewinnst** – die sachliche Grundlage für deine Entscheidung.
 
-2a. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
+3. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
 Ausführliche Lesefassung mit Kunst, Markt und Fragen, die du dir stellen kannst; zum Lesen in Ruhe, Drucken oder als PDF.
 
-**Promo A4 – Flyer** (liegt **außerhalb** dieser Mappe): [zum Flyer öffnen](/projects/k2-galerie/flyer-oek2-promo-a4) — eine Seite zum Mitnehmen; inhaltlich verwandt mit den Kapiteln **2** und **2a**.
+**Promo A4 – Flyer** (liegt **außerhalb** dieser Mappe): [zum Flyer öffnen](/projects/k2-galerie/flyer-oek2-promo-a4) — eine Seite zum Mitnehmen; inhaltlich verwandt mit den Kapiteln **2** und **3**.
 
-3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
+4. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
 Die Plattform in klaren Worten: Aufbau, Idee und **Mein Weg** als Steuerlogik – **ohne** die Spartenliste; die folgt bewusst nur im nächsten Kapitel.
 
-4. [Für wen](03-FUER-WEN.md)
+5. [Für wen](03-FUER-WEN.md)
 
 Hier steht **einmal** die vollständige Orientierung zu den **sechs Sparten**, zur öffentlichen Demo **ök2**, zu Lizenzen und kurz zur **Vereinsplattform VK2** – damit du zuordnen kannst, was zu dir passt.
 
 ### Schwerpunkt 2 – Konkrete Beispiele im Admin
 
-*(Die Nummern entsprechen der Seitenleiste in der Mappe, gezählt ab dem ersten Eintrag nach dem Deckblatt.)*
+*(Die Nummern entsprechen der **Seitenleiste** in der Mappe: nach dem Deckblatt beginnt die Zählung mit **1** = Inhaltsverzeichnis.)*
 
 6. [Willkommen und Galerie](04-WILLKOMMEN-UND-GALERIE.md)
 
