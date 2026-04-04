@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentation: Kreuz-Matrix drei Markt-Produkte vs. Lösung:** In **`02-USP-UND-WETTBEWERB.md`** (Standard), **`02-USP-WETTBEWERB-VK2.md`** und **VK2-Promo** je Tabelle **A/B/C + K2 Galerie·ök2 bzw. VK2** mit **✓/✗** und Legende; Indizes Kurzbeschreibung angepasst. Tests grün.
+**Letzter Stand:** 04.04.26 – **Präsentation: Kreuz-Matrix drei Markt-Produkte vs. Lösung:** In **`02-USP-UND-WETTBEWERB.md`** (Standard), **`02-USP-WETTBEWERB-VK2.md`** und **VK2-Promo** je Tabelle **A/B/C + K2 Galerie·ök2 bzw. VK2** mit **✓/✗** und Legende; Indizes Kurzbeschreibung angepasst. Tests grün. **Commit:** **390bdfa** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Präsentationsmappe in der APf öffnen – Kapitel „USPs“ prüfen.
 
