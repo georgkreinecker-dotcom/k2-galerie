@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Prospekt: Mein Weg / Sparten + Merken Kunst:** Abschnitt **„Mein Weg – sechs Sparten, eine Plattform“** in **`02B-PROSPEKT-ZUKUNFT.md`**; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**; Regel **`.cursor/rules/prospekt-kunst-und-mein-weg.mdc`** (alwaysApply); **`docs/00-INDEX.md`**, Mappe-**`00-INDEX`**. **Commit:** *(nach Push)*
+
+**Was wir JETZT tun:** Prospekt lesen — Block Mein Weg; Doku für Team/KI offen halten.
+
+**Einordnung:** Kunst präzise + Marktweite über Sparten erklären.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergangssatz geschärft** (kein Wegreden der Kunst, **Werk bleibt Werk**, Skalieren = vervielfältigen nicht verwässern). **`02B-PROSPEKT-ZUKUNFT.md`**. **Commit:** **ad29497** ✅ GitHub
 
 **Was wir JETZT tun:** Prospekt Abschnitt „Vom Atelier zum gesamten Markt“ — letzte Absätze lesen.

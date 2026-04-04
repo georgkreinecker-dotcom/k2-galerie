@@ -15,6 +15,7 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 ---
 
 ## Plan & nächste Schritte
+- **PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md** – **Prospekt & Pitch (04.04.26):** Kunst **präzise** formulieren (Werke, Urheberschaft — kein generisches CMS); **Mein Weg** und **sechs Sparten** **immer** mitkommunizieren, wenn Marktweite/Plattform genannt wird; Merksatz, Quellen (`FOCUS_DIRECTIONS`, `02B-PROSPEKT-ZUKUNFT.md`, mök2). Für Team und KI reproduzierbar; Regel `.cursor/rules/prospekt-kunst-und-mein-weg.mdc`.
 - **MARKTANALYSE-K2-GALERIE.md** – **Marktanalyse für das Produkt (Stand 14.03.26):** Positionierung, Zielmärkte (Künstler:innen, Galerien, VK2, ganzer Markt), Wettbewerb, Stärken/Schwächen/Chancen/Bedrohungen, Kurzfassung. Quelle: Produkt-Vision, Präsentationsmappe, tenantConfig.
 - **MARKT-ROADMAP-DREI-ZIELGRUPPEN.md** – **Grobe Markt-Roadmap (Apr. 2026):** Drei Zielgruppen – Einzelkünstler:innen/Lizenz, Kunstvereine/VK2, Piloten/Early Adopters; Phasen A–B–C je Gruppe; Querschnitt Sportwagen (ein Standard, Demo vor Text, realistische Quartals-Fokussierung). Weiterarbeit hier anbinden.
 - **MAERKTE-KUNST-FOKUS-ANALYSE.md** – **Märkte Kunst-Fokus (März 2026):** Aus der Kombination beider „Apps“ (Galerie/Admin + Plattform ök2/VK2) erschließbare Märkte mit Fokus Kunst: Einzelkünstler:innen, kleine Galerien, Kunstvereine, Kunstmärkte/Messen, Kunsthandel, Kurator:innen, Kunstschulen, kleine Museen. Sektion in mök2.

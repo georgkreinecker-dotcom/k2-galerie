@@ -22,6 +22,14 @@ Hier reden wir bewusst von **Kunst**: von **Werken**, von **Künstler:innen und 
 
 **Der Übergang im Kopf:** Wir beginnen **bei deinen Werken** — und machen **trotzdem** die Weite sichtbar. **Gesamter Markt** heißt hier **nicht**: Kunst **wegzureden**, **zu verallgemeinern** oder **zur Fußnote** neben Kasse, Shop und Statistik zu stellen. **Werk bleibt Werk; Urheberin und Urheber bleiben sichtbar.** **Skalieren** heißt: **dieselbe** Sorgfalt **vervielfältigen** — **nicht verwässern.**
 
+## Mein Weg – sechs Sparten, eine Plattform
+
+Die **Kunst** bleibt **Einstieg, Herkunft und Referenz** — **nicht** die **Grenze** dessen, was die Plattform kann. **Wie** der **gesamte Markt** greifbar wird, ohne die Oberfläche zu verwässern: **Mein Weg**.
+
+In den **Stammdaten** legt jede Person **Mein Weg** fest — **eine von sechs Sparten**. Daraus folgen **passende Werktypen**, **Kategorien**, **Filter in der Galerie** und **viele geführte Texte** — **eine** App-Familie, **keine** sechs getrennten Produkte. Die Sparten heißen: **Kunst & Galerie**, **Handwerk & Manufaktur**, **Design & Möbel**, **Mode & Kleinserien**, **Food & Genuss**, **Dienstleister & Portfolio**.
+
+**Merksatz:** **Für die Kunst definiert und formuliert — für den Markt über Mein Weg skalierbar.** Vertiefung mit Argumenten und Vertrieb: **Marketing ök2** in der App unter **`/mok2`** — Kapitel **Leitvision – Mein Weg & sechs Sparten**.
+
 [SEITENUMBRUCH]
 
 ## Der Markt stückelt — ihr braucht die Linie
@@ -34,7 +42,7 @@ Die Namen sind vertraut: **Wix**, **Squarespace**, **WordPress**, **Shopify**, *
 
 ## Gebaut für morgen — nicht als Altware verkauft
 
-Wir treten **nicht** als „seit Jahrzehnten etabliert“ in drei Software-Epochen auf, sondern **bewusst als Teil der Zukunft**: **Browser und PWA**, **ein Stand** überall, **DSGVO-nah**, Entwicklung und Ansprache aus **Österreich**. **Mein Weg** mit **sechs Sparten** hält die Oberfläche **klar** — nicht beliebig „wir können alles“. Dazu **VK2** für Vereine in derselben Produktfamilie, ein **Empfehlungs-Programm**, das im Alltag mitgeht, und **Backup & Wiederherstellung** als **fester** Weg — Demo **ök2** und echte Galerie **strikt getrennt**.
+Wir treten **nicht** als „seit Jahrzehnten etabliert“ in drei Software-Epochen auf, sondern **bewusst als Teil der Zukunft**: **Browser und PWA**, **ein Stand** überall, **DSGVO-nah**, Entwicklung und Ansprache aus **Österreich**. **Mein Weg** und die **sechs Sparten** (siehe Abschnitt oben) halten die Oberfläche **fokussiert** — nicht beliebig „wir können alles“. Dazu **VK2** für Vereine in derselben Produktfamilie, ein **Empfehlungs-Programm**, das im Alltag mitgeht, und **Backup & Wiederherstellung** als **fester** Weg — Demo **ök2** und echte Galerie **strikt getrennt**.
 
 Kurz: **Aufbruch** statt verstaubter Etablierung — **integriert** statt zusammengeklickter Inseln.
 
@@ -52,7 +60,7 @@ Wenn die Antwort **eine integrierte Zukunft** ist, lohnt sich das Gespräch.
 
 **K2 Galerie – für Menschen mit Ideen, die gesehen werden wollen.**
 
-Vertiefung und Zahlenrahmen: **Marketing ök2** in der App unter `/mok2` — und die technische **Kapitel-Mappe** mit Matrix und Tabellen im Dokument *USPs & Wettbewerb*.
+Vertiefung und Zahlenrahmen: **Marketing ök2** in der App unter `/mok2` — **Leitvision Mein Weg & sechs Sparten** — und die technische **Kapitel-Mappe** mit Matrix und Tabellen im Dokument *USPs & Wettbewerb*. Team-Hinweis (Reproduzierbarkeit): **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**.
 
 Demo öffentlich: `/projects/k2-galerie/galerie-oeffentlich`
 

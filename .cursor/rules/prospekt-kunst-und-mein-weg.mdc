@@ -1,0 +1,18 @@
+---
+description: Prospekt & Pitch – Kunst präzise formulieren und Mein Weg / sechs Sparten immer mitdenken
+alwaysApply: true
+---
+
+# Prospekt & Pitch: Kunst + Mein Weg
+
+## Kunst (spezieller Hinweis)
+
+Bei Texten zu **K2 / ök2**, **Prospekt**, **Präsentationsmappe**, **Pitch**: **Werke** und **Galerie** **nicht** als generisches Web- oder „Content“-Thema schreiben. **Bewusst:** Urheberschaft, Vernissage, Etikett, Substanz — siehe **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`** und **`public/praesentationsmappe-vollversion/02B-PROSPEKT-ZUKUNFT.md`** (Abschnitt „Vom Atelier zum gesamten Markt“).
+
+## Mein Weg / sechs Sparten
+
+Wenn **Marktweite**, **Plattform** oder **gesamter Markt** genannt wird: **immer** **Mein Weg** (eine Sparte in den Stammdaten) und die **sechs Sparten** mitkommunizieren oder verlinken — **nicht** nur Kunst. **Eine Quelle:** `FOCUS_DIRECTIONS` in **`src/config/tenantConfig.ts`**. **Vertiefung:** mök2 **`/mok2`**, Leitvision Mein Weg & sechs Sparten.
+
+## Merksatz
+
+**Für die Kunst definiert — für den Markt über Mein Weg skalierbar.**

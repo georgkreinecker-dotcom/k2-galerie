@@ -14,7 +14,7 @@ Slogan, **Zukunft statt Altware**, **Mein Weg** und die sechs Sparten – erster
 
 2a. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
-**Eigenständige Lesefassung** zu Punkt 2: fließende Sprache, **kein** trockenes Handbuch — **Zukunft und Aufbruch**, **Übergang Kunst/Galerie → gesamter Markt** (eine Struktur, viele Instanzen), Markt stückelt vs. eine Linie, drei Leitfragen; für **Gespräch, Mail, PDF-Druck**. Verweist auf mök2 und auf das USP-Kapitel mit Matrix.
+**Eigenständige Lesefassung** zu Punkt 2: fließende Sprache, **kein** trockenes Handbuch — **Zukunft und Aufbruch**, **Übergang Kunst/Galerie → gesamter Markt**, eigener Block **Mein Weg – sechs Sparten, eine Plattform** (Stammdaten-Sparte, Liste der sechs Sparten, Merksatz); Markt stückelt vs. eine Linie, drei Leitfragen; für **Gespräch, Mail, PDF-Druck**. Verweist auf mök2 (Leitvision) und auf das USP-Kapitel mit Matrix; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`** für Team/KI.
 
 3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
