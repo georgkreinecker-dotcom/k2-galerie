@@ -1,10 +1,18 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Text liegt im Druckkörper** – **Ursache:** `article` hatte **Inline `padding: 0` + `border: none`** → Text am **Blattrand**, Hilfslinien aber bei **15 mm / 18 mm** wie `@page`. **Fix:** Inline-Padding/Border entfernt, CSS **`padding: 15mm 18mm`** greift; **„Gesamte Mappe“** (`> .pmv-a4-sheet`) dieselben Blatt-Ränder + 210 mm + Schatten wie Einzelansicht. `npm run test` + `npm run build` grün.
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Inhaltsverzeichnis ohne „1.“ in der H1** – `00-INDEX.md`: **keine** automatische Kapitelnummer vor der Überschrift (`chapterNumberForPmvMarkdown`); Nummer bleibt nur in der **Kapitel-Leiste**. `npm run test` + `npm run build` grün.
 
-**Was wir JETZT tun:** Mappe Desktop neu laden – **Fließtext steht innerhalb** des gestrichelten Rahmens (wie Druck).
+**Was wir JETZT tun:** Kapitel Inhaltsverzeichnis öffnen → Titel ohne führende „1.“.
 
-**Einordnung:** Georg: Problem war **nicht** die Linie, sondern **wo der Text saß** – jetzt **eine Welt** mit Druckvorschau.
+**Einordnung:** Georg: „1. Präsentationsmappe …“ war **doppelt** zum Nav-Punkt „1. Inhaltsverzeichnis“.
+
+---
+
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Text liegt im Druckkörper** – **Ursache:** `article` hatte **Inline `padding: 0` + `border: none`** → Text am **Blattrand**, Hilfslinien aber bei **15 mm / 18 mm** wie `@page`. **Fix:** Inline-Padding/Border entfernt, CSS **`padding: 15mm 18mm`** greift; **„Gesamte Mappe“** (`> .pmv-a4-sheet`) dieselben Blatt-Ränder + 210 mm + Schatten wie Einzelansicht. **Commit:** **543e3ab** ✅ GitHub
+
+**Was wir JETZT tun:** Mappe Desktop – **Fließtext innerhalb** gestrichelter Druckkörper-Linie prüfen.
+
+**Einordnung:** Hilfslinien und Text **eine Welt** mit Druckvorschau.
 
 ---
 

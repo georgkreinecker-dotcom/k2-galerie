@@ -122,6 +122,14 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
 
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
+/** Nummer vor der ersten H1 nur wo sinnvoll; Inhaltsverzeichnis nicht „1.“ – Nummer steht schon in der Kapitel-Leiste. */
+function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): number | undefined {
+  const idx = docs.findIndex((d) => d.file === file)
+  if (idx <= 0) return undefined
+  if (docs[idx]?.file === '00-INDEX.md') return undefined
+  return idx
+}
+
 export default function PraesentationsmappeVollversionPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -364,7 +372,7 @@ export default function PraesentationsmappeVollversionPage() {
                   ? renderDeckblattCover()
                   : renderMarkdown(allDocContents[idx] ?? '', {
                       assetBase: BASE,
-                      chapterNumber: idx > 0 ? idx : undefined,
+                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, doc.file),
                       onInternalDocClick: (path) => { setFullPrintView(false); loadDocument(path) },
                       keyPrefix: `ch${idx}`,
                     })}
@@ -440,7 +448,7 @@ export default function PraesentationsmappeVollversionPage() {
                   ? renderDeckblattCover()
                   : renderMarkdown(docContent, {
                       assetBase: BASE,
-                      chapterNumber: (() => { const idx = DOCUMENTS.findIndex((d) => d.file === selectedDoc); return idx > 0 ? idx : undefined })(),
+                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
                       onInternalDocClick: (path) => loadDocument(path),
                     })}
                 {selectedDoc === kontaktFileForVariant && qrOek2DataUrl && (
