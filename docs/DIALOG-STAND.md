@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe USP: Fremdvergleich Kosten auf einen Blick** – **`02-USP-UND-WETTBEWERB.md`:** erste Tabellenzeile **Jährliche Kosten (Richtwerte)** mit Rechenbeispiel Markt (Kasse + TSE + Extras → **ca. 300–600+ €/J**), Zeilen **Zeit & Doppelarbeit** / **Auftritt**; doppelte **Auftritt**-Zeile entfernt. **Renderer:** 3-Spalten-Tabellen mit Header **Typisch draußen** + **K2/ök2** → Klassen **`pmv-table-split`** (gelb vs. türkis), ohne False Positive bei „Typische Nutzer“. **Styles:** Screen, Mobile, Print. Tests grün, `npm run build:vercel` grün. **Commit:** **bdf2ed6** ✅ GitHub
+
+**Was wir JETZT tun:** In der APf Präsentationsmappe Vollversion → Kapitel USP → Abschnitt Fremdvergleich: Tabelle optisch prüfen (Druck/PDF).
+
+**Einordnung:** Georg wollte **Kosten** und **Markt vs. eine Lösung** **visuell sofort** erkennbar; Sportwagenmodus = eine Darstellung, viele Aufrufer über Markdown-Tabelle.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Zwischenspeicherung: Präsentationsmappe `00-INDEX` Leseführung gestrafft** – Dialog mit Georg: Absätze/Schritte per „raus“ entfernt (fünf-Schritte-Satz, Sparten-Hinweis, kompletter Deckblatt-Schritt inkl. Neu-Nummerierung 2→1 …, Schritt Demo/Lizenz/Kontakt). **Regel** `.cursor/rules/georg-dokument-fluss-ohne-stoer-commit.mdc` mit committed. `npm run test` + `npm run build` grün. **Commit:** **22bc36d** ✅ GitHub
 
 **Was wir JETZT tun:** Weiter Text in der Mappe nach Bedarf – oder Inhaltsverzeichnis/Leseführung gegenlesen.
