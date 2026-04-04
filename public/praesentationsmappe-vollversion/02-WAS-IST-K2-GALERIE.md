@@ -1,5 +1,7 @@
 # Was ist die K2 Galerie?
 
+**Schritt 4 in dieser Mappe:** Du weißt schon **warum** sich eine **integrierte Linie** lohnt – **hier** siehst du **was** die Plattform **konkret** **für dich** **ist**: **ein System**, das **deine** Sparte, **deine** Werke und **deinen** Auftritt **zusammenhält**.
+
 Die K2 Galerie ist eine **Galerie- und Vermarktungsplattform mit „Mein Weg“**.
 
 **Mein Weg** ist die Hauptaussage: Du entscheidest einmal, **wofür** du deine Galerie nutzt – und ab dann passt sich die App daran an. Die gewählte Sparte ist damit keine „Nebenaussage“, sondern die **Schaltzentrale** für:

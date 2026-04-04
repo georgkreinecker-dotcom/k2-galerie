@@ -1,6 +1,6 @@
 /**
- * Präsentationsmappe Vollversion – Handbuch-Struktur, Marketing-Stil, Texte aus mök2, Screenshots der App.
- * Quelle: public/praesentationsmappe-vollversion/*.md
+ * Präsentationsmappe Vollversion – schrittweise Entscheidungshilfe für künftige Nutzer:innen (Überblick USPs + Produkt).
+ * Ton: Du, Nutzen, klare Lesereihenfolge; Quelle: public/praesentationsmappe-vollversion/*.md
  */
 
 import { useState, useEffect, type ReactNode } from 'react'

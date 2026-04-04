@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe = schrittweise Entscheidungshilfe (Du, kein Verkäufer-Skript):** **`00-INDEX`** „So nutzt du diese Mappe“ (Schritte 1–6); Kapitel **01–03**, **02-USP**, **02B**, **02C**, **10-DEMO-LIZENZ** (Schritt-6-Brücke: Demo zuerst, dann Lizenz); **mök2** Sektion + **`mok2Structure`**; **`PraesentationsmappeVollversionPage`** Kommentar. `npm run test` / `npm run build` grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Mappe in der APf durchlesen – ob nach jedem Block klar wird, was **du** gewinnst; Demo-Kapitel als Schritt 6.
+
+**Einordnung:** Nutzer:innen sollen sich **Stück für Stück** orientieren – professionell, ohne Druck-Marketing.
+
+---
+
 **Letzter Stand:** 03.04.26 – **Promo A4-Essenz + mök2 Vertrieb:** Mappe **`02C-PROMO-A4-ESSENZ.md`** (Handout, Merksatz + fünf Punkte); **`PraesentationsmappeVollversionPage`** + **`00-INDEX`** Punkt **2b**; mök2 **„Vertrieb: A4-Essenz & Präsentationsmappe“** mit drei Sprunglinks (A4, USP, Prospekt); **`mok2Structure`**; Querverweise in **02-USP** / **02B**. Tests/Build grün. **Commit:** **227ca87** ✅ GitHub
 
 **Was wir JETZT tun:** mök2 → drei Buttons zur Mappe testen; **Promo A4** einmal drucken/PDF.

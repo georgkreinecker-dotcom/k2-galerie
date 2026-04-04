@@ -275,7 +275,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
             <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
-            <li><a href="#mok2-verkauf-map-drei-ebenen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Vertrieb: A4-Essenz &amp; Präsentationsmappe</strong> (USP + Prospekt)</a></li>
+            <li><a href="#mok2-verkauf-map-drei-ebenen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Präsentationsmappe</strong> (Entscheidungshilfe: A4, USP, Prospekt)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
             <li><a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Produkt- &amp; Branchenvergleich</strong> (Vorteile im Vergleich)</a></li>
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
@@ -573,15 +573,15 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       {/* Vertrieb: feste Ebenen Mappe — A4, USP, Prospekt */}
       <section id="mok2-verkauf-map-drei-ebenen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          Vertrieb: A4-Essenz &amp; Präsentationsmappe
+          Präsentationsmappe – Entscheidungshilfe
         </h2>
         <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
-          Für <strong>Verkaufsargumentation</strong> und <strong>Vertriebsinformation</strong> sind <strong>drei Ebenen</strong> festgelegt — alles in der <strong>Präsentationsmappe Vollversion</strong> (Dokument wählen, dann drucken oder PDF):
+          Die Mappe ist für <strong>künftige Nutzer:innen</strong> gedacht: <strong>Schritt für Schritt</strong> USPs und Produkt verstehen – nicht als Verkäufer-Skript. <strong>Drei Einstiege</strong> in der <strong>Präsentationsmappe Vollversion</strong> (Dokument wählen, drucken oder PDF):
         </p>
         <ol style={{ lineHeight: 1.75, paddingLeft: '1.35rem', margin: '0 0 1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
-          <li><strong>Promo A4 – Essenz</strong> — eine Seite, sofort verstanden (Handout, erste Minute).</li>
-          <li><strong>USPs &amp; Wettbewerb</strong> — Argumente, Matrix, Marktnamen.</li>
-          <li><strong>Prospekt Aufbruch &amp; Zukunft</strong> — Lesefassung für Gespräch und Versand.</li>
+          <li><strong>Promo A4 – Essenz</strong> — eine Seite, schnell klar, ob du tiefer einsteigen willst.</li>
+          <li><strong>USPs &amp; Wettbewerb</strong> — was du gewinnst, Matrix, Marktbeispiele.</li>
+          <li><strong>Prospekt Aufbruch &amp; Zukunft</strong> — Lesefassung zum Durchatmen und Weiterleiten.</li>
         </ol>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center' }}>
           {[

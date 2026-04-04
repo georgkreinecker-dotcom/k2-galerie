@@ -23,7 +23,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-produktbeschreibung', label: 'Genaue Produktbeschreibung' },
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },
       { id: 'mok2-prospekt-galerieeroeffnung', label: 'Prospekt Galerieeröffnung K2' },
-      { id: 'mok2-verkauf-map-drei-ebenen', label: 'Vertrieb: A4-Essenz & Mappe (USP + Prospekt)' },
+      { id: 'mok2-verkauf-map-drei-ebenen', label: 'Präsentationsmappe (Entscheidungshilfe)' },
       { id: 'mok2-1', label: '1. USPs' },
       { id: 'mok2-cd-corporate-design', label: 'Corporate Design – eine Linie' },
       { id: 'mok2-texte-ki-freiheit', label: 'Texte & KI – eigenes Werkzeug' },

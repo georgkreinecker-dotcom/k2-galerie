@@ -1,38 +1,36 @@
-# USPs und Wettbewerb – schärfer, verkaufstauglich
+# USPs und Wettbewerb – für deine Entscheidung
 
-**Haltung – Zukunft statt „etabliert“:** Wir treten **nicht** als Altware aus drei Jahrzehnten Einzelsoftware auf, sondern als **Teil der Zukunft**: **heute** gebaut für integrierten Galerie-Alltag – **Browser, PWA, eine Datenbasis**, DSGVO-nah, aus **Österreich** – **Aufbruch**, nicht „so haben wir’s schon immer gemacht“.
+**Schritt 2 in dieser Mappe:** Hier siehst du **kompakt**, was die K2 Galerie / **ök2** **für dich** zusammenführt – und **warum** das am Markt **selten** als **ein** Paket vorkommt. Je näher du liest, desto klarer wird oft: *Genau **diese** Kombination habe ich mir gewünscht – ich habe sie nur nie so benannt.*
 
-**Pitch in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat.
+**Haltung – Zukunft statt „etabliert“:** Die Lösung ist **nicht** als Altware aus drei Jahrzehnten Einzelsoftware gedacht, sondern als **Teil der Zukunft**: **heute** gebaut für integrierten Galerie-Alltag – **Browser, PWA, eine Datenbasis**, DSGVO-nah, aus **Österreich** – **Aufbruch**, nicht „so haben wir’s schon immer gemacht“. **Für dich:** Du steigst in etwas **Moderne**s ein, das **mitdenkt**, nicht in drei alte Welten gleichzeitig.
 
-**Vertiefung:** Marketing ök2 in der App (`/mok2`) – „1. USPs“ und „Produkt- & Branchenvergleich“.
+**Das Wichtigste in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat. **Wenn** du dich darin wiedererkennst – **dann** lohnt der Rest der Mappe **doppelt**.
 
-**Eigenständiger Prospekt** (Lesefassung, zukunftsorientiert, zum Drucken/Versenden): [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
-
-**Promo eine Seite (A4):** [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md) — Merksatz und fünf Kernpunkte; in mök2 als Vertriebsebene verankert.
+**Weiterlesen in Ruhe:** [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md) (fließende Lesefassung) · [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md) (eine Seite zum Mitnehmen).
 
 ---
 
-## Warum dieses Kapitel zuerst?
+## Warum dieses Kapitel an dieser Stelle?
 
-Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so kombinieren?** und **Was kostet es, stattdessen Markt-Standard zu stückeln?** – und dass ihr **die Richtung mitgeht**, in der sich der Markt noch kaum bündelt: **Zukunft**, nicht verstaubte Etablierung. Danach sind Funktionskapitel leichter einzuordnen.
+**Damit du schnell weißt:** Was bekommst du **nur hier** so kombiniert? Und was kostet es **nervlich und finanziell**, wenn du stattdessen **Markt-Standard** stückelst? Wenn das für dich **passt**, sind die folgenden Funktionskapitel **leichter** – weil du **weißt**, **wofür** du sie brauchst. **Wenn** du hier schon spürst *„Das ist genau mein Thema“* – **dann** hat diese Mappe schon ihren Job getan.
 
 ---
 
-## USPs – verkürzt, aber messerscharf
+## USPs – kurz, aber klar: Was du gewinnst
 
-| USP | Was der Zuhörer mitnehmen soll |
-|-----|--------------------------------|
-| **Mein Weg – sechs Sparten** | Eine gewählte Sparte steuert Typen, Kategorien, Texte – **klare Haltung**, kein beliebiges „wir können alles“. |
-| **Eigener Auftritt statt nur Masse** | Social Media = Reichweite; **die Plattform = dein professioneller Ort** mit eigener Linie – nicht nur zerstreute Posts. |
-| **Eine Datenbasis – null Doppelpflege** | Galerie, Kassa, Etiketten, Shop, Events und PDFs ziehen aus **denselben Werken und Stammdaten** – kein Neutippen für jedes Medium. |
-| **Marketing & CD aus einem Guss** | **Galerie gestalten** definiert Farben und Bildsprache → ziehen durch Willkommen, Galerie, Flyer, Plakat, Presse – **wiedererkennbar**, nicht „jedes Tool anders“. |
-| **Sweet-Spot** | Zu klein für Enterprise-Suites, zu anspruchsvoll für reine Baukästen – **genau der Raum** für integrierte Galerie + Kasse + Events + Werbung. |
-| **Desktop = Kraftwerk, Mobil = gleicher Stand** | Voller Admin am PC/Mac; **Galerie und Kassa** auf Tablet/Handy; **ein Deploy-Stand** (Browser/PWA), plattformneutral. |
-| **VK2** | Vereine: Mitglieder, Auftritt, Events, Kassa-Logik **in derselben Produktfamilie**; Kunstvereine als Einstieg; **ab 10 eingetragenen Mitgliedern** für den Verein kostenfrei (Details in mök2). |
-| **Empfehlungs-Programm** | Persönliche Empfehler-ID, Rabatt/Gutschrift, **ein Klick** zum Teilen – **Vertrieb durch Nutzer:innen**, in der Galerie-/Künstler:innen-Welt selten so integriert. |
+| USP | Was du daraus mitnimmst |
+|-----|-------------------------|
+| **Mein Weg – sechs Sparten** | Eine gewählte Sparte steuert Typen, Kategorien, Texte – **klare Haltung**, kein beliebiges „wir können alles“. **Du** wirkst **fokussiert**, nicht beliebig. |
+| **Eigener Auftritt statt nur Masse** | Social Media = Reichweite; **die Plattform = dein professioneller Ort** mit eigener Linie – nicht nur zerstreute Posts. **Besucher** spüren: **Hier** ist ein **Zuhause** für deine Arbeit. |
+| **Eine Datenbasis – null Doppelpflege** | Galerie, Kassa, Etiketten, Shop, Events und PDFs ziehen aus **denselben Werken und Stammdaten** – kein Neutippen für jedes Medium. **Du** sparst **Stunden** – und **Fehler**. |
+| **Marketing & CD aus einem Guss** | **Galerie gestalten** definiert Farben und Bildsprache → ziehen durch Willkommen, Galerie, Flyer, Plakat, Presse – **wiedererkennbar**, nicht „jedes Tool anders“. **Du** wirkst **wie eine Marke**, nicht wie fünf Programme. |
+| **Sweet-Spot** | Zu klein für Enterprise-Suites, zu anspruchsvoll für reine Baukästen – **genau der Raum** für integrierte Galerie + Kasse + Events + Werbung. **Das bist oft du** – und **genau dafür** ist das gebaut. |
+| **Desktop = Kraftwerk, Mobil = gleicher Stand** | Voller Admin am PC/Mac; **Galerie und Kassa** auf Tablet/Handy; **ein Deploy-Stand** (Browser/PWA), plattformneutral. **Du** arbeitest, wo es passt – **ohne** Daten-Chaos. |
+| **VK2** | Vereine: Mitglieder, Auftritt, Events, Kassa-Logik **in derselben Produktfamilie**; Kunstvereine als Einstieg; **ab 10 eingetragenen Mitgliedern** für den Verein kostenfrei (Details in der App / Lizenztexten). |
+| **Empfehlungs-Programm** | Persönliche Empfehler-ID, Rabatt/Gutschrift, **ein Klick** zum Teilen – **wenn** du begeistert bist, **lohnt** es sich **für dich und andere**. |
 | **Österreich / EU** | Entwicklung und Betrieb aus Österreich; **DSGVO**, deutsche UI, erreichbar – **Vertrauen** statt anonymer Fernost-Cloud. |
-| **Datensouveränität** | Backup & Wiederherstellung als **fester Hauptweg**; Demo **ök2** und echte Galerie **strikt getrennt**. |
-| **Zukunft statt Altware** | **Kein** etabliertes Legacy-Konglomerat – **eine** moderne, integrierte Linie für die **kommenden Jahre**; ihr zeigt **Aufbruch**, nicht „wir sind schon immer der Marktstandard“. |
+| **Datensouveränität** | Backup & Wiederherstellung als **fester Hauptweg**; Demo **ök2** und echte Galerie **strikt getrennt**. **Deine** echte Galerie bleibt **deine**. |
+| **Zukunft statt Altware** | **Kein** etabliertes Legacy-Konglomerat – **eine** moderne, integrierte Linie für die **kommenden Jahre**. **Du** investierst in **Weiterentwicklung**, nicht in **Museumssoftware**. |
 
 ---
 
@@ -51,24 +49,24 @@ Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so
 | Empfehlungs-Programm **in derselben** App | ✗ | ✗ | ✗ | ✓ |
 | Vereinsplattform **VK2** im gleichen Ökosystem | ✗ | ✗ | ✗ | ✓ |
 
-**Kernaussage für die Präsentation:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **D** bündelt das.
+**Kurz für dich:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **Hier** bündelt sich das. **Wenn** du **mindestens zwei** Häkchen in der letzten Spalte brauchst – **dann** ist **Stückelung** meist **dein** Alltag **heute**.
 
-### Marktbeispiele mit Namen (Marktkenntnis – jeweils stark in **einem** Segment)
+### Marktbeispiele mit Namen (typische Einordnung)
 
-*Hinweis: Es geht um **typische Einordnung**, keine vollständige Liste und keine Wertung der einzelnen Anbieter.*
+*Es geht um **typische Einordnung**, keine vollständige Liste und keine Wertung der einzelnen Anbieter.*
 
 | Segment | Bekannte Beispiele (D‑A‑CH) |
 |--------|-----------------------------|
 | **Website / Baukasten / CMS** | **Wix**, **Squarespace**, **WordPress** (oft mit **WooCommerce**), **Webflow**, **IONOS**-Website |
 | **Onlineshop / Verkauf online** | **Shopify**, **WooCommerce**; Marktplätze z. B. **Etsy** |
-| **Kasse / POS** | **SumUp**, **Zettle** (PayPal), **Lightspeed** u. a. – meist **ohne** eure **Werk‑** und **Galerie‑**Logik in **derselben** Oberfläche |
+| **Kasse / POS** | **SumUp**, **Zettle** (PayPal), **Lightspeed** u. a. – meist **ohne** **Werk‑** und **Galerie‑**Logik in **derselben** Oberfläche |
 | **Flyer, Social, E-Mail** | **Canva**, **Adobe Express**; Newsletter u. a. **Brevo**, **Mailchimp** |
 
-**So sprichst du es aus:** Diese Namen kennt die Zielgruppe – und **genau deshalb** wird klar: Der Markt **stückelt**. Die Tools sind oft **gut für ihren Teil** – aber **nichts** davon ersetzt **eine integrierte K2-Galerie-/ök2-Linie** (Werke, Kasse, Event→Werbemittel, Etikett, **eine** Datenbasis, optional **VK2** und **Empfehlungs-Programm**).
+**Was das für dich heißt:** Diese Namen **kennst du** – und **genau deshalb** wird sichtbar: Der Markt **stückelt**. Die Tools sind oft **gut für ihren Teil** – aber **nichts** davon ersetzt **eine integrierte K2-Galerie-/ök2-Linie** (Werke, Kasse, Event→Werbemittel, Etikett, **eine** Datenbasis, optional **VK2** und **Empfehlungs-Programm**). **Wenn** du **müde** bist vom **Hin- und Her** – **liest** du hier **den Grund**.
 
-### Mega-USP in einem Satz
+### Das Alleinstellungsmerkmal in einem Satz
 
-**Es gibt kein vergleichbares Gesamtprodukt** für **diese Kombination in einer App** – das ist **kein kleines Feature**, sondern ein **zentrales Alleinstellungsmerkmal:** weniger Doppelpflege, weniger parallele Abos, **ein roter Faden** von der Galerie bis zum Beleg und zum Plakat.
+**Es gibt kein vergleichbares Gesamtprodukt** für **diese Kombination in einer App** – das ist **kein kleines Feature**, sondern das **zentrale Versprechen:** weniger Doppelpflege, weniger parallele Abos, **ein roter Faden** von der Galerie bis zum Beleg und zum Plakat. **Das** ist das, was du **nach dem Lesen** oft **nicht mehr missen** willst.
 
 ---
 
@@ -93,9 +91,9 @@ Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so
 | **Verein** | Homepage + Excel + Chat + externes Kassentool | **VK2:** Struktur, Auftritt, Events, Kassa **ein Ablauf** |
 | **Kostenlogik** | Summe aus mehreren Abos + Schulungen | **Ein Lizenzmodell**, **eine** Oberfläche zum Erlernen |
 
-### Ein Satz fürs Gespräch
+### Ein Satz, der oft trifft
 
-**Statt** Kasse hier, Galerie dort, Flyer woanders: **eine** Lösung für Web, Verkauf vor Ort, Lager, Events und Werbung – **ein Preisrahmen, ein Stand, eine Datenbasis**; plus **VK2** und **Empfehlungs-Programm** für Wachstum ohne teures Vertriebsnetz.
+**Statt** Kasse hier, Galerie dort, Flyer woanders: **eine** Lösung für Web, Verkauf vor Ort, Lager, Events und Werbung – **ein Preisrahmen, ein Stand, eine Datenbasis**; plus **VK2** und **Empfehlungs-Programm** für Wachstum ohne teures Vertriebsnetz. **Wenn** du **das** lesen willst – **bist du** oft **schon** entschieden.
 
 ---
 
