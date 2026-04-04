@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergangssatz geschärft** (kein Wegreden der Kunst, **Werk bleibt Werk**, Skalieren = vervielfältigen nicht verwässern). **`02B-PROSPEKT-ZUKUNFT.md`**. **Commit:** *(nach Push)*
+
+**Was wir JETZT tun:** Prospekt Abschnitt „Vom Atelier zum gesamten Markt“ — letzte Absätze lesen.
+
+**Einordnung:** Kante zwischen Plattform-Vision und Kunst-Mittelpunkt.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Prospekt 02B: Übergang Kunst → gesamter Markt:** Neuer Abschnitt **„Vom Atelier zum gesamten Markt“** in **`02B-PROSPEKT-ZUKUNFT.md`** (Werke, Künstler:innen, Kunstgalerien; Vision **eine Struktur, viele Instanzen** / ganzer Markt); **`00-INDEX`** Kurzbeschreibung 2a angepasst. **Commit:** **775af97** ✅ GitHub
 
 **Was wir JETZT tun:** Prospekt in der Vollversion lesen — neuer Abschnitt vor „Der Markt stückelt“.

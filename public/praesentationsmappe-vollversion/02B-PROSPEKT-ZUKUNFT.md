@@ -20,7 +20,7 @@ Hier reden wir bewusst von **Kunst**: von **Werken**, von **Künstler:innen und 
 
 **Genau diese** Welt ist aber nicht nur für **ein** Atelier oder **eine** Referenzgalerie gebaut. **Dieselbe** durchdachte Linie — **eine** Produktfamilie, **strikte Trennung** der Daten **pro** Galerie, **pro** Verein, **pro** Lizenz — ist dafür angelegt, **den gesamten Markt** zu tragen, der so arbeitet: **Einzelkünstler:innen**, **kleine und größere Galerien**, **Kunstvereine** (mit eigener Logik, z. B. VK2), **künftige Lizenznehmer:innen** mit **eigener** Marke und **eigener** öffentlicher Präsenz. Nicht für jede Zielgruppe ein neues Rad — **eine Struktur, viele Instanzen**, damit **Weiterentwicklung und Qualität** allen zugute kommen.
 
-**Der Übergang im Kopf:** Das Gespräch beginnt **bei deinen Werken und deiner Galerie** — die Vision dahinter ist **größer**: eine **Plattform**, die **dieselbe** Sorgfalt für **viele** ermöglicht, ohne die Kunst zum Nebensache zu machen.
+**Der Übergang im Kopf:** Wir beginnen **bei deinen Werken** — und machen **trotzdem** die Weite sichtbar. **Gesamter Markt** heißt hier **nicht**: Kunst **wegzureden**, **zu verallgemeinern** oder **zur Fußnote** neben Kasse, Shop und Statistik zu stellen. **Werk bleibt Werk; Urheberin und Urheber bleiben sichtbar.** **Skalieren** heißt: **dieselbe** Sorgfalt **vervielfältigen** — **nicht verwässern.**
 
 [SEITENUMBRUCH]
 
