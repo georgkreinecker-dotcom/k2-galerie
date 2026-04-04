@@ -5,31 +5,37 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-map-page-root.pmv-wrap { max-width: none; width: 100%; box-sizing: border-box; }
     @media (min-width: 769px) {
       .pmv-map-page-root .pmv-map-grid {
-        background: #eceae6;
-        padding: 1.25rem 1.25rem 2rem;
+        background: linear-gradient(180deg, #e8e6e1 0%, #e2e0da 100%);
+        padding: 1.75rem 1.75rem 2.5rem;
         border-radius: 12px;
         align-items: start;
-        gap: 1.25rem;
-        max-width: min(100%, calc(200px + 1.25rem + 210mm + 2.5rem));
+        gap: 1.5rem;
+        max-width: min(100%, calc(200px + 1.5rem + 210mm + 3.5rem + 2rem));
         margin-inline: auto;
         box-sizing: border-box;
       }
       /* min-width:0: breite Tabellen (z. B. Matrix) dürfen Spalte nicht über A4 aufblasen → horiz. Scroll im Bogen */
-      .pmv-map-page-root .pmv-a4-sheet {
+      /* Margin um den Bogen = sichtbare „Seitenränder“ wie Word (Grau ringsum) */
+      .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet {
         box-sizing: border-box;
         width: min(100%, 210mm);
         max-width: 210mm;
         min-width: 0;
         justify-self: center;
-        margin-left: auto;
-        margin-right: auto;
+        margin: 1.25rem 1rem 2rem;
         padding: 15mm 18mm;
         background: #fff !important;
-        border-radius: 3px;
-        box-shadow: 0 4px 28px rgba(28, 26, 24, 0.12);
-        border: 1px solid #d6d3d1;
+        border-radius: 2px;
+        box-shadow:
+          0 1px 2px rgba(0, 0, 0, 0.06),
+          0 4px 12px rgba(28, 26, 24, 0.08),
+          0 16px 40px rgba(28, 26, 24, 0.12);
+        border: 1px solid #c4c0ba;
         min-height: 0;
         overflow-x: auto;
+      }
+      .pmv-map-page-root > .pmv-a4-sheet {
+        margin: 1.25rem auto 2.5rem;
       }
       .pmv-map-page-root .pmv-a4-sheet > div:first-child > .pmv-deckblatt-cover:first-child,
       .pmv-map-page-root .pmv-a4-sheet > .pmv-chapter-block:first-child > .pmv-deckblatt-cover:first-child {

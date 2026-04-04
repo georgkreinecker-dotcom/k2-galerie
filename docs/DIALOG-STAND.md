@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Bogen wie Word eingebettet** – Grauer **Schreibtisch** deutlicher (Gradient, mehr **Padding** am `.pmv-map-grid`); weißer Bogen mit **Margin rundum** (`1.25rem 1rem 2rem`) + **mehrschichtiger Schatten** + Randfarbe, damit **Seitenränder** sichtbar sind; **„Gesamte Mappe“** (`> .pmv-a4-sheet`) ebenfalls vertikal Abstand. ✅ GitHub (Commit-Message: *Word-artige Seitenränder um A4-Bogen*)
+
+**Was wir JETZT tun:** Mappe Desktop neu laden – rings um den weißen Bogen soll **durchgehend Grau** sichtbar sein.
+
+**Einordnung:** Georg: wie **Word-Seite eingebettet** – nicht nur Breite 210 mm, sondern **Abstand Papier ↔ Hintergrund**.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: A4-Breite am Bildschirm wirklich erzwungen** – Ursache Screenshot „noch nicht A4“: **Grid + breite Tabellen** (`min-width`) hat die Spalte aufgeblasen; Fix: **`minmax(0,1fr)`** in der Grid-Spalte, **`min-width:0`** + **`width: min(100%,210mm)`** am Bogen, **`overflow-x: auto`** für Matrix; **kein** `borderRadius: 12` mehr im Inline-Style am `article`. **Commit:** **b626dd2** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Vollversion Desktop neu laden → weißer Bogen soll **schmaler** sein als die graue Fläche, zentriert; breite Tabellen **scrollen** im Bogen.
