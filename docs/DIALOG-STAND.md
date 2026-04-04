@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 03.04.26 – **Promo A4 Essenz = eigenständiger Flyer** (nicht mehr Kapitel der Präsentationsmappe): Inhalt **`public/oek2-flyer-promo-a4/PROMO-A4-ESSENZ.md`**, Seite **`FlyerOek2PromoA4Page`**, Route **`/projects/k2-galerie/flyer-oek2-promo-a4`**; **02C** aus Mappe entfernt, **`?doc=02C-PROMO-A4-ESSENZ.md`** → Redirect auf Flyer; **`00-INDEX`**, **02-USP**, **02B**, **mök2** verlinken den Flyer; Markdown-Renderer/Styles ausgelagert (`praesentationsmappeMarkdown*`). `npm run test` / `npm run build` grün. **Commit:** *(folgt)*
+**Letzter Stand:** 03.04.26 – **Promo A4 Essenz = eigenständiger Flyer** (nicht mehr Kapitel der Präsentationsmappe): Inhalt **`public/oek2-flyer-promo-a4/PROMO-A4-ESSENZ.md`**, Seite **`FlyerOek2PromoA4Page`**, Route **`/projects/k2-galerie/flyer-oek2-promo-a4`**; **02C** aus Mappe entfernt, **`?doc=02C-PROMO-A4-ESSENZ.md`** → Redirect auf Flyer; **`00-INDEX`**, **02-USP**, **02B**, **mök2** verlinken den Flyer; Markdown-Renderer/Styles ausgelagert (`praesentationsmappeMarkdown*`). `npm run test` / `npm run build` grün. **Commit:** **6ba718a** ✅ GitHub
 
 **Was wir JETZT tun:** Flyer in der APf öffnen, Druck/PDF prüfen; Mappe ohne A4-Kapitel durchklicken.
 
