@@ -32,20 +32,29 @@ Gemeint ist keine zusammengestückelte Altware aus Jahrzehnten Einzelsoftware, s
 
 ## Direktvergleich: Markt typisch vs. K2 / ök2
 
-**Legende:** **✓** = dabei · **✗** = fehlt oder nur mit Zusatz-Software / erneutem Eintippen
+**So liest du das auf einen Blick**
 
-| Kriterium | A: Website / CMS | B: Nur Kasse | C: Flyer, Mail, Canva … getrennt | **K2 Galerie / ök2** |
-|-----------|:----------------:|:------------:|:--------------------------------:|:--------------------:|
+Viele Galerien und Ateliers arbeiten mit **mehreren Programmen**, die **jeweils gut für eine Sache** sind. Die Tabelle zeigt nur: **Was schafft welches typische Tool – und was fehlt?**
+
+| | **Links drei Spalten** | **Rechte Spalte** |
+|--|------------------------|-------------------|
+| **Bild** | **Drei getrennte Schubladen** – Website, Kasse, Flyer/Mail/Canva arbeiten **selten mit denselben Daten**. | **Eine Schublade** – Galerie, Kasse, Etikett, Flyer und Co. ziehen aus **derselben** Werk- und Event-Basis. |
+| **Typ** | **A** = Website / CMS · **B** = nur Kasse · **C** = Werbung & Layout **extra** (oft alles nochmal eintippen) | **K2 Galerie / ök2** = **alles in einer App-Linie** |
+
+**Legende in der Tabelle:** **✓** = gehört normalerweise dazu · **✗** = fehlt, oder nur mit **anderem** Programm / **neuem** Tippen
+
+| Kriterium | A: Website / CMS | B: Nur Kasse | C: Flyer, Mail, Canva … | **K2 Galerie / ök2** |
+|-----------|:----------------:|:------------:|:-----------------------:|:--------------------:|
 | Werke, Galerie, Vita, Shop | ✓ | ✗ | ✗ | ✓ |
-| Verkauf, Belege, Lager an Werke gekoppelt | ✗ | ✓ | ✗ | ✓ |
-| Event einmal anlegen → Einladung, Plakat, Presse, Social aus denselben Daten | ✗ | ✗ | ✗ | ✓ |
-| Etiketten aus Werksdaten, ohne Neutippen | ✗ | ✗ | ✗ | ✓ |
-| Corporate Design: Web und Druck aus einem Guss | ✗ | ✗ | ✗ | ✓ |
-| Eine Datenbasis, kein Doppelpflege-Chaos | ✗ | ✗ | ✗ | ✓ |
-| Empfehlungs-Programm in derselben App | ✗ | ✗ | ✗ | ✓ |
-| Vereinsplattform VK2 im gleichen Ökosystem | ✗ | ✗ | ✗ | ✓ |
+| Kasse, Belege, Lager **an Werke** geknüpft | ✗ | ✓ | ✗ | ✓ |
+| Event **einmal** erfasst → Einladung, Plakat, Presse, Social **ohne** Copy-Paste | ✗ | ✗ | ✗ | ✓ |
+| Etikett **aus** Werksdaten – **kein** Neutippen | ✗ | ✗ | ✗ | ✓ |
+| **Gleiches** Erscheinungsbild: Web **und** Druck | ✗ | ✗ | ✗ | ✓ |
+| **Eine** Datenbasis – weniger Doppelarbeit | ✗ | ✗ | ✗ | ✓ |
+| Empfehlungs-Programm **in derselben** App | ✗ | ✗ | ✗ | ✓ |
+| Verein **VK2** im **gleichen** Ökosystem | ✗ | ✗ | ✗ | ✓ |
 
-**Kurz für dich:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **Hier** bündelt sich das. **Wenn** du **mindestens zwei** Häkchen in der letzten Spalte brauchst – **dann** ist **Stückelung** meist **dein** Alltag **heute**.
+**Merksatz:** Brauchst du **mehr als eine** der Sachen aus der **letzten** Spalte (z. B. Galerie **plus** Kasse **plus** saubere Flyer aus **dieselben** Infos)? Dann sind **A**, **B** und **C** im Alltag fast immer **Wechseln zwischen Programmen** – K2/ök2 fasst **diese Kette** **an einem** Ort zusammen.
 
 ### Marktbeispiele mit Namen (typische Einordnung)
 
