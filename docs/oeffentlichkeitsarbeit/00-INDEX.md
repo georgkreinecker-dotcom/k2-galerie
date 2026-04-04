@@ -33,6 +33,14 @@
 
 ---
 
+## Archiv – Einladungen an Freunde / Netzwerk (wie versendet)
+
+| Datum | Dokument | Inhalt |
+|-------|----------|--------|
+| 31.03.26 | [EINLADUNG-FREUNDE-ARCHIV-2026-03-31-ROTARY.md](EINLADUNG-FREUNDE-ARCHIV-2026-03-31-ROTARY.md) | **1. Mail an Freunde** (rotarischer Kreis) – Einladung Eröffnung, Link Galerie + Entdecken/ök2/VK2; Text 1:1 wie versendet. |
+
+---
+
 ## Verknüpfung – ausführliche Quellen (in docs/)
 
 | Thema | Datei | Inhalt |
