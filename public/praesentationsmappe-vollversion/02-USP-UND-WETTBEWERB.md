@@ -46,6 +46,23 @@ Präsentationen gewinnen, wenn in **wenigen Minuten** klar ist: **Was nur wir so
 
 **Kernaussage für die Präsentation:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **D** bündelt das.
 
+### Marktbeispiele mit Namen (Marktkenntnis – jeweils stark in **einem** Segment)
+
+*Hinweis: Es geht um **typische Einordnung**, keine vollständige Liste und keine Wertung der einzelnen Anbieter.*
+
+| Segment | Bekannte Beispiele (D‑A‑CH) |
+|--------|-----------------------------|
+| **Website / Baukasten / CMS** | **Wix**, **Squarespace**, **WordPress** (oft mit **WooCommerce**), **Webflow**, **IONOS**-Website |
+| **Onlineshop / Verkauf online** | **Shopify**, **WooCommerce**; Marktplätze z. B. **Etsy** |
+| **Kasse / POS** | **SumUp**, **Zettle** (PayPal), **Lightspeed** u. a. – meist **ohne** eure **Werk‑** und **Galerie‑**Logik in **derselben** Oberfläche |
+| **Flyer, Social, E-Mail** | **Canva**, **Adobe Express**; Newsletter u. a. **Brevo**, **Mailchimp** |
+
+**So sprichst du es aus:** Diese Namen kennt die Zielgruppe – und **genau deshalb** wird klar: Der Markt **stückelt**. Die Tools sind oft **gut für ihren Teil** – aber **nichts** davon ersetzt **eine integrierte K2-Galerie-/ök2-Linie** (Werke, Kasse, Event→Werbemittel, Etikett, **eine** Datenbasis, optional **VK2** und **Empfehlungs-Programm**).
+
+### Mega-USP in einem Satz
+
+**Es gibt kein vergleichbares Gesamtprodukt** für **diese Kombination in einer App** – das ist **kein kleines Feature**, sondern ein **zentrales Alleinstellungsmerkmal:** weniger Doppelpflege, weniger parallele Abos, **ein roter Faden** von der Galerie bis zum Beleg und zum Plakat.
+
 ---
 
 ## Fremdvergleich – Marktfragmentierung vs. eine Lösung
