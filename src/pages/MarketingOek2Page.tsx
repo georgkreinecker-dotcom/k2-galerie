@@ -275,6 +275,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-was-kann-die-app" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Was kann die App?</strong> (ök2 | VK2 – kurz)</a></li>
             <li><a href="#mok2-prospekt" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>K2 Galerie Prospekt</strong> (funktional & technisch, druckbar)</a></li>
             <li><a href="#mok2-prospekt-galerieeroeffnung" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Prospekt Galerieeröffnung K2</strong> (Kunst und Keramik, 1 Seite)</a></li>
+            <li><a href="#mok2-verkauf-map-drei-ebenen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Vertrieb: A4-Essenz &amp; Präsentationsmappe</strong> (USP + Prospekt)</a></li>
             <li><a href="#mok2-1" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>USPs</strong> (Unique Selling Points)</a></li>
             <li><a href="#mok2-produkt-branchenvergleich" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Produkt- &amp; Branchenvergleich</strong> (Vorteile im Vergleich)</a></li>
             <li><a href="#mok2-2" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Marktchancen – Stärken</strong></a></li>
@@ -567,6 +568,47 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         >
           Prospekt Galerieeröffnung öffnen (1 Seite, drucken)
         </Link>
+      </section>
+
+      {/* Vertrieb: feste Ebenen Mappe — A4, USP, Prospekt */}
+      <section id="mok2-verkauf-map-drei-ebenen" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Vertrieb: A4-Essenz &amp; Präsentationsmappe
+        </h2>
+        <p style={{ marginBottom: '1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.6 }}>
+          Für <strong>Verkaufsargumentation</strong> und <strong>Vertriebsinformation</strong> sind <strong>drei Ebenen</strong> festgelegt — alles in der <strong>Präsentationsmappe Vollversion</strong> (Dokument wählen, dann drucken oder PDF):
+        </p>
+        <ol style={{ lineHeight: 1.75, paddingLeft: '1.35rem', margin: '0 0 1rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
+          <li><strong>Promo A4 – Essenz</strong> — eine Seite, sofort verstanden (Handout, erste Minute).</li>
+          <li><strong>USPs &amp; Wettbewerb</strong> — Argumente, Matrix, Marktnamen.</li>
+          <li><strong>Prospekt Aufbruch &amp; Zukunft</strong> — Lesefassung für Gespräch und Versand.</li>
+        </ol>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', alignItems: 'center' }}>
+          {[
+            { doc: '02C-PROMO-A4-ESSENZ.md', label: 'Promo A4 öffnen' },
+            { doc: '02-USP-UND-WETTBEWERB.md', label: 'USPs & Wettbewerb' },
+            { doc: '02B-PROSPEKT-ZUKUNFT.md', label: 'Prospekt Aufbruch' },
+          ].map(({ doc, label }) => (
+            <Link
+              key={doc}
+              to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?doc=${encodeURIComponent(doc)}`}
+              state={{ returnTo: location.pathname }}
+              style={{
+                display: 'inline-block',
+                padding: '0.55rem 1.1rem',
+                background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 100%)',
+                color: '#fff',
+                textDecoration: 'none',
+                borderRadius: '10px',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                boxShadow: '0 2px 8px rgba(13,148,136,0.35)',
+              }}
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* 1. Markteinschätzung: USPs */}

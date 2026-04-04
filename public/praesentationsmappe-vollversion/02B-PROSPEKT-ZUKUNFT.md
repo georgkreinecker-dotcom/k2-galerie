@@ -60,6 +60,8 @@ Wenn die Antwort **eine integrierte Zukunft** ist, lohnt sich das Gespräch.
 
 **K2 Galerie – für Menschen mit Ideen, die gesehen werden wollen.**
 
+**Handout eine Seite:** [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md) — fünf Punkte + Merksatz zum Mitnehmen (Vertrieb in mök2: *Vertrieb: A4-Essenz & Präsentationsmappe*).
+
 Vertiefung und Zahlenrahmen: **Marketing ök2** in der App unter `/mok2` — **Leitvision Mein Weg & sechs Sparten** — und die technische **Kapitel-Mappe** mit Matrix und Tabellen im Dokument *USPs & Wettbewerb*. Team-Hinweis (Reproduzierbarkeit): **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**.
 
 Demo öffentlich: `/projects/k2-galerie/galerie-oeffentlich`

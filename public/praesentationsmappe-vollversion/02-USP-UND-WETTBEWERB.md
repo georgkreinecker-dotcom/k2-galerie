@@ -8,6 +8,8 @@
 
 **Eigenständiger Prospekt** (Lesefassung, zukunftsorientiert, zum Drucken/Versenden): [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 
+**Promo eine Seite (A4):** [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md) — Merksatz und fünf Kernpunkte; in mök2 als Vertriebsebene verankert.
+
 ---
 
 ## Warum dieses Kapitel zuerst?

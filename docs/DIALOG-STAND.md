@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 03.04.26 – **Promo A4-Essenz + mök2 Vertrieb:** Mappe **`02C-PROMO-A4-ESSENZ.md`** (Handout, Merksatz + fünf Punkte); **`PraesentationsmappeVollversionPage`** + **`00-INDEX`** Punkt **2b**; mök2 **„Vertrieb: A4-Essenz & Präsentationsmappe“** mit drei Sprunglinks (A4, USP, Prospekt); **`mok2Structure`**; Querverweise in **02-USP** / **02B**. Tests/Build grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** mök2 → drei Buttons zur Mappe testen; **Promo A4** einmal drucken/PDF.
+
+**Einordnung:** USP + Prospekt = Tiefe; **A4** = Promo-Botschaft auf einen Blick.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Prospekt: Mein Weg / Sparten + Merken Kunst:** Abschnitt **„Mein Weg – sechs Sparten, eine Plattform“** in **`02B-PROSPEKT-ZUKUNFT.md`**; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**; Regel **`.cursor/rules/prospekt-kunst-und-mein-weg.mdc`** (alwaysApply); **`docs/00-INDEX.md`**, Mappe-**`00-INDEX`**. **Commit:** **5831afe** ✅ GitHub
 
 **Was wir JETZT tun:** Prospekt lesen — Block Mein Weg; Doku für Team/KI offen halten.

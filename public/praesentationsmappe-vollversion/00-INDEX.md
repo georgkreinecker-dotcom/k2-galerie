@@ -16,6 +16,10 @@ Slogan, **Zukunft statt Altware**, **Mein Weg** und die sechs Sparten – erster
 
 **Eigenständige Lesefassung** zu Punkt 2: fließende Sprache, **kein** trockenes Handbuch — **Zukunft und Aufbruch**, **Übergang Kunst/Galerie → gesamter Markt**, eigener Block **Mein Weg – sechs Sparten, eine Plattform** (Stammdaten-Sparte, Liste der sechs Sparten, Merksatz); Markt stückelt vs. eine Linie, drei Leitfragen; für **Gespräch, Mail, PDF-Druck**. Verweist auf mök2 (Leitvision) und auf das USP-Kapitel mit Matrix; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`** für Team/KI.
 
+2b. [Promo A4 – Essenz](02C-PROMO-A4-ESSENZ.md)
+
+**Eine Seite** für sofortiges Verstehen: Merksatz, fünf Kernpunkte, Verweis auf USP-Kapitel und Prospekt — **Handout** und **Vertrieb**; in mök2 als feste Ebene verankert.
+
 3. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)
 
 **Mein Weg** ist der Kern: eine Entscheidung (eine von sechs Sparten) – daraus folgen Typen, Kategorien, Filter und Generatoren. Danach: Galerie, Events/Medienplanung und ein Stand überall.

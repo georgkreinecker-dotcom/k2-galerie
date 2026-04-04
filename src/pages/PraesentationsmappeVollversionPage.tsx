@@ -37,6 +37,7 @@ const DOCUMENTS_STANDARD = [
   { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
   { id: '02-usp-wettbewerb', name: 'USPs & Wettbewerb', file: '02-USP-UND-WETTBEWERB.md' },
   { id: '02b-prospekt-zukunft', name: 'Prospekt Aufbruch & Zukunft', file: '02B-PROSPEKT-ZUKUNFT.md' },
+  { id: '02c-promo-a4', name: 'Promo A4 – Essenz', file: '02C-PROMO-A4-ESSENZ.md' },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
   { id: '04-willkommen', name: 'Willkommen und Galerie', file: '04-WILLKOMMEN-UND-GALERIE.md' },
