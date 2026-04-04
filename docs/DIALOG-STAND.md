@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik ohne Alltag-Abschnitt** – `14-STATISTIK-WERKKATALOG.md`: Absatz „Typisch öffnest du …“ (ehem. **Im Alltag**-Inhalt) entfernt. **Commit:** _nach Push_
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik ohne Alltag-Abschnitt** – `14-STATISTIK-WERKKATALOG.md`: Absatz „Typisch öffnest du …“ (ehem. **Im Alltag**-Inhalt) entfernt. **Commit:** **eccb7bd** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
