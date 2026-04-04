@@ -28,8 +28,22 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-wrap .pmv-table-compare .pmv-td-highlight { text-align: center; background: rgba(20, 184, 166, 0.14) !important; font-size: 1.05rem; border-left: 2px solid #14b8a6; }
     .pmv-wrap .pmv-cell-yes { color: #047857; font-weight: 700; }
     .pmv-wrap .pmv-cell-no { color: #a8a29e; font-weight: 600; }
-    .pmv-wrap .pmv-table:not(.pmv-table-compare) th, .pmv-wrap .pmv-table:not(.pmv-table-compare) td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #e7e5e4; }
-    .pmv-wrap .pmv-table:not(.pmv-table-compare) thead th { background: #f5f5f4; color: #1c1a18; font-weight: 600; text-align: left; }
+    /* Split-Vergleich (3 Spalten: Thema | Markt fragmentiert | K2/ök2 integriert) */
+    .pmv-wrap .pmv-table-split-wrap { margin: 1rem 0 1.25rem; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid #d6d3d1; background: #fafaf9; box-shadow: 0 2px 10px rgba(28, 26, 24, 0.07); }
+    .pmv-wrap .pmv-table-split { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.9375rem; table-layout: fixed; }
+    .pmv-wrap .pmv-table-split thead th { font-weight: 600; padding: 0.7rem 0.65rem; vertical-align: bottom; line-height: 1.35; border-bottom: 2px solid #e7e5e4; }
+    .pmv-wrap .pmv-table-split .pmv-th-split-first { text-align: left; width: 18%; background: #f5f5f4; color: #44403c; }
+    .pmv-wrap .pmv-table-split .pmv-th-split-market { text-align: left; width: 41%; background: #fef3c7; color: #78350f; border-left: 1px solid #fcd34d; border-right: 1px solid #fcd34d; }
+    .pmv-wrap .pmv-table-split .pmv-th-split-k2 { text-align: left; width: 41%; background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%); color: #134e4a; border-bottom: 2px solid #14b8a6 !important; }
+    .pmv-wrap .pmv-table-split tbody td { padding: 0.55rem 0.65rem; border-bottom: 1px solid #e7e5e4; vertical-align: top; line-height: 1.5; color: #1c1a18; }
+    .pmv-wrap .pmv-table-split tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.55); }
+    .pmv-wrap .pmv-table-split tbody tr:first-child .pmv-td-split-market { background: rgba(254, 243, 199, 0.5); font-weight: 600; }
+    .pmv-wrap .pmv-table-split tbody tr:first-child .pmv-td-split-k2 { background: rgba(209, 250, 229, 0.55); font-weight: 600; }
+    .pmv-wrap .pmv-table-split .pmv-td-split-label { font-weight: 600; color: #292524; background: #f5f5f4; }
+    .pmv-wrap .pmv-table-split .pmv-td-split-market { background: rgba(255, 251, 235, 0.95); }
+    .pmv-wrap .pmv-table-split .pmv-td-split-k2 { background: rgba(236, 253, 245, 0.9); border-left: 2px solid #14b8a6; }
+    .pmv-wrap .pmv-table:not(.pmv-table-compare):not(.pmv-table-split) th, .pmv-wrap .pmv-table:not(.pmv-table-compare):not(.pmv-table-split) td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #e7e5e4; }
+    .pmv-wrap .pmv-table:not(.pmv-table-compare):not(.pmv-table-split) thead th { background: #f5f5f4; color: #1c1a18; font-weight: 600; text-align: left; }
     .pmv-seitenfuss { display: none; }
     .pmv-chapter-block { margin-bottom: 2rem; }
     .pmv-chapter-block.pmv-chapter-first { margin-top: 0; }
@@ -56,6 +70,8 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-table-matrix { margin-left: -0.25rem; margin-right: -0.25rem; border-radius: 10px; }
       .pmv-wrap .pmv-table-compare { font-size: 0.875rem; min-width: 32rem; }
       .pmv-wrap .pmv-table-compare .pmv-td-criterion { font-size: 0.8125rem; }
+      .pmv-wrap .pmv-table-split { font-size: 0.875rem; table-layout: auto; }
+      .pmv-wrap .pmv-table-split .pmv-th-split-first, .pmv-wrap .pmv-table-split .pmv-th-split-market, .pmv-wrap .pmv-table-split .pmv-th-split-k2 { width: auto; }
     }
     .pmv-deckblatt-cover .pmv-cover-title { font-size: 2.5rem; font-weight: 700; margin: 0 0 0.5rem; letter-spacing: 0.02em; color: #fff; }
     .pmv-deckblatt-cover .pmv-cover-slogan1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 0.25rem; color: #fff; opacity: 0.98; }
@@ -96,6 +112,11 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-table-compare .pmv-td-criterion { font-size: 8.5pt !important; }
       .pmv-wrap .pmv-table-compare .pmv-cell-yes { color: #047857 !important; }
       .pmv-wrap .pmv-table-compare .pmv-cell-no { color: #a8a29e !important; }
+      .pmv-wrap .pmv-table-split-wrap { border: 1px solid #ccc !important; box-shadow: none !important; background: #fff !important; }
+      .pmv-wrap .pmv-table-split thead th { font-size: 8pt !important; padding: 0.3em 0.35em !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .pmv-wrap .pmv-table-split tbody td { font-size: 8.5pt !important; padding: 0.25em 0.35em !important; }
+      .pmv-wrap .pmv-table-split .pmv-th-split-market, .pmv-wrap .pmv-table-split .pmv-td-split-market { background: #fffbeb !important; }
+      .pmv-wrap .pmv-table-split .pmv-th-split-k2, .pmv-wrap .pmv-table-split .pmv-td-split-k2 { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; }
       .pmv-wrap article { padding: 0 0 12mm !important; border: none !important; box-shadow: none !important; }
       .pmv-seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 6mm; padding: 2mm 8mm; font-size: 9pt; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
       .pmv-seitenfuss .pmv-seitenfuss-preview { display: none !important; }

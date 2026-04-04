@@ -158,14 +158,53 @@ export function renderMarkdown(text: string, opts: PraesentationsmappeMarkdownOp
       if (rows.length > 0) {
         const [head, ...body] = rows
         const colCount = head?.length ?? 0
-        const isWideMatrix = colCount >= 5
-        const wrapClass = isWideMatrix ? 'pmv-table-wrap pmv-table-matrix' : 'pmv-table-wrap'
-        const tableClass = isWideMatrix ? 'pmv-table pmv-table-compare' : 'pmv-table'
+        const h1 = head[1] ?? ''
+        const h2 = head[2] ?? ''
+        const isSplitCompare =
+          colCount === 3 &&
+          /Typisch\s+am\s+Markt|Typisch\s+draußen|fragmentiert|gestückelt|mehrere\s+Tools/i.test(h1) &&
+          /K2|ök2|VK2|integriert/i.test(h2)
+        const isWideMatrix = colCount >= 5 && !isSplitCompare
+        const wrapClass = isWideMatrix
+          ? 'pmv-table-wrap pmv-table-matrix'
+          : isSplitCompare
+            ? 'pmv-table-wrap pmv-table-split-wrap'
+            : 'pmv-table-wrap'
+        const tableClass = isWideMatrix
+          ? 'pmv-table pmv-table-compare'
+          : isSplitCompare
+            ? 'pmv-table pmv-table-split'
+            : 'pmv-table'
         const cellCheck = (text: string) => {
           const t = text.trim()
           if (t === '✓' || t === '✔') return <span className="pmv-cell-yes" title="Ja">✓</span>
           if (t === '✗' || t === '✘') return <span className="pmv-cell-no" title="Nein">✗</span>
           return renderInline(text)
+        }
+        const thClass = (j: number) => {
+          if (isWideMatrix && j === colCount - 1) return 'pmv-th-highlight'
+          if (isSplitCompare && j === 1) return 'pmv-th-split-market'
+          if (isSplitCompare && j === 2) return 'pmv-th-split-k2'
+          if (isSplitCompare && j === 0) return 'pmv-th-split-first'
+          return undefined
+        }
+        const tdClass = (j: number) => {
+          if (isWideMatrix) {
+            if (j === 0) return 'pmv-td-criterion'
+            if (j === colCount - 1) return 'pmv-td-highlight'
+            return 'pmv-td-check'
+          }
+          if (isSplitCompare) {
+            if (j === 0) return 'pmv-td-split-label'
+            if (j === 1) return 'pmv-td-split-market'
+            return 'pmv-td-split-k2'
+          }
+          return undefined
+        }
+        const renderTdContent = (c: string, j: number) => {
+          if (isWideMatrix) return j === 0 ? renderInline(c) : cellCheck(c)
+          if (isSplitCompare) return renderInline(c)
+          return j === 0 ? renderInline(c) : cellCheck(c)
         }
         out.push(
           <div key={key()} className={wrapClass}>
@@ -174,7 +213,7 @@ export function renderMarkdown(text: string, opts: PraesentationsmappeMarkdownOp
                 <thead>
                   <tr>
                     {head.map((c, j) => (
-                      <th key={j} scope="col" className={isWideMatrix && j === colCount - 1 ? 'pmv-th-highlight' : undefined}>
+                      <th key={j} scope="col" className={thClass(j)}>
                         {renderInline(c)}
                       </th>
                     ))}
@@ -185,19 +224,8 @@ export function renderMarkdown(text: string, opts: PraesentationsmappeMarkdownOp
                 {body.map((row, r) => (
                   <tr key={r}>
                     {row.map((c, j) => (
-                      <td
-                        key={j}
-                        className={
-                          isWideMatrix
-                            ? j === 0
-                              ? 'pmv-td-criterion'
-                              : j === colCount - 1
-                                ? 'pmv-td-highlight'
-                                : 'pmv-td-check'
-                            : undefined
-                        }
-                      >
-                        {j === 0 ? renderInline(c) : cellCheck(c)}
+                      <td key={j} className={tdClass(j)}>
+                        {renderTdContent(c, j)}
                       </td>
                     ))}
                   </tr>

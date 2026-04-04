@@ -73,16 +73,19 @@ Gemeint ist keine zusammengestückelte Altware aus Jahrzehnten Einzelsoftware, s
 - **Nur Kasse:** oft ca. **15–35 €/Monat** plus TSE/Signatur (grob **80–180 €/Jahr**), eigene Hardware – **ohne** Galerie, **ohne** Event-zu-Flyer-Logik.
 - **Website/Baukasten oder Agentur:** eigene Datenwelt – **Werkliste ≠ Kassa ≠ Etikett**.
 - **Events & Druck:** Mail, Canva, Layout – **Daten noch einmal** eingeben, **anderes Design** als die Homepage.
-- **Ergebnis:** leicht **mehrere hundert Euro pro Jahr** und **kein** gemeinsames Bild nach außen.
+
+**Kosten & Aufwand auf einen Blick** – die Tabelle fasst **Geld** und **Folgen** gegenüber **einer** integrierten Linie zusammen:
 
 | Thema | Typisch draußen (fragmentiert) | K2 Galerie / ök2 (integriert) |
 |--------|--------------------------------|--------------------------------|
+| **Jährliche Kosten (Richtwerte)** | **Kasse** grob **180–420 €/J** (15–35 € × 12) **+ TSE/Signatur** **80–180 €/J** **+** Website/Canva/Hosting **extra** → realistisch **ca. 300–600+ €/J** und steigt mit jedem weiteren Tool | **Ein** Lizenz-Preisrahmen – **kein** Stapel aus vielen kleinen Abos; **eine** Oberfläche statt mehrerer Schulungswelten |
+| **Zeit & Doppelarbeit** | Gleiche Daten **mehrfach** einpflegen (Web, Kasse, Flyer) | **Einmal** erfassen – **Werk**, **Event**, **Kasse**, **Etikett** ziehen aus **derselben** Basis |
+| **Auftritt nach außen** | Jedes Medium wirkt **anders** – **kein** gemeinsames Bild | **Eine** Linie: Web und Druck **passen zusammen** |
 | **Daten** | Gleiche Infos an drei Stellen pflegen | **Einmal** Werk & Event – **überall** nutzbar |
 | **Galerie / Web** | CMS, „Items“, generische Templates | **Werke, Vita, Kategorien** – Galerie-Sprache, nicht IT-Jargon |
 | **Kasse & Beleg** | Separates Produkt, eigene Oberfläche | **Kasse in derselben App** – an Werke, Lager, Statistik angebunden |
 | **Öffentlichkeitsarbeit** | Copy-Paste aus Word/Mail | Event **einmal** → Vorschläge für Einladung, Plakat, Presse, Social |
 | **Etiketten** | Manuell oder Fremdsoftware | Aus **Werkdaten** – u. a. Brother/AirPrint-Workflow |
-| **Auftritt** | Jedes Medium „ein bisschen anders“ | **Eine CD-Quelle** – Web und Druck passen zusammen |
 | **Geräte** | Oft nur Desktop oder App-Wirrwarr | **Browser & PWA** – Windows, Android, macOS, iOS; **ein Stand** |
 | **Verein** | Homepage + Excel + Chat + externes Kassentool | **VK2:** Struktur, Auftritt, Events, Kassa **ein Ablauf** |
 | **Kostenlogik** | Summe aus mehreren Abos + Schulungen | **Ein Lizenzmodell**, **eine** Oberfläche zum Erlernen |
