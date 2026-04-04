@@ -157,19 +157,48 @@ export function renderMarkdown(text: string, opts: PraesentationsmappeMarkdownOp
       }
       if (rows.length > 0) {
         const [head, ...body] = rows
+        const colCount = head?.length ?? 0
+        const isWideMatrix = colCount >= 5
+        const wrapClass = isWideMatrix ? 'pmv-table-wrap pmv-table-matrix' : 'pmv-table-wrap'
+        const tableClass = isWideMatrix ? 'pmv-table pmv-table-compare' : 'pmv-table'
+        const cellCheck = (text: string) => {
+          const t = text.trim()
+          if (t === '✓' || t === '✔') return <span className="pmv-cell-yes" title="Ja">✓</span>
+          if (t === '✗' || t === '✘') return <span className="pmv-cell-no" title="Nein">✗</span>
+          return renderInline(text)
+        }
         out.push(
-          <div key={key()} className="pmv-table-wrap">
-            <table className="pmv-table">
+          <div key={key()} className={wrapClass}>
+            <table className={tableClass}>
               {head && (
                 <thead>
-                  <tr>{head.map((c, j) => <th key={j}>{c}</th>)}</tr>
+                  <tr>
+                    {head.map((c, j) => (
+                      <th key={j} scope="col" className={isWideMatrix && j === colCount - 1 ? 'pmv-th-highlight' : undefined}>
+                        {renderInline(c)}
+                      </th>
+                    ))}
+                  </tr>
                 </thead>
               )}
               <tbody>
                 {body.map((row, r) => (
                   <tr key={r}>
                     {row.map((c, j) => (
-                      <td key={j}>{c}</td>
+                      <td
+                        key={j}
+                        className={
+                          isWideMatrix
+                            ? j === 0
+                              ? 'pmv-td-criterion'
+                              : j === colCount - 1
+                                ? 'pmv-td-highlight'
+                                : 'pmv-td-check'
+                            : undefined
+                        }
+                      >
+                        {j === 0 ? renderInline(c) : cellCheck(c)}
+                      </td>
                     ))}
                   </tr>
                 ))}

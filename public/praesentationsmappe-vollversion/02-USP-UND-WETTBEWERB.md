@@ -1,18 +1,14 @@
 # USPs und Wettbewerb – für deine Entscheidung
 
-**Schritt 2 in dieser Mappe:** Hier siehst du **kompakt**, was die K2 Galerie / **ök2** **für dich** zusammenführt – und **warum** das am Markt **selten** als **ein** Paket vorkommt. Je näher du liest, desto klarer wird oft: *Genau **diese** Kombination habe ich mir gewünscht – ich habe sie nur nie so benannt.*
+**Schritt 1 in dieser Mappe** fasst zusammen, was die **K2 Galerie** mit der öffentlichen Demo **ök2** und der Lizenz für dich zusammenbringt – und warum es dieses **eine Paket** am Markt so selten gibt. Je tiefer du liest, desto öfter kommt der Gedanke: *Genau diese Kombination habe ich mir gewünscht – ich hätte sie nur nie so benennen können.*
 
-**Haltung – Zukunft statt „etabliert“:** Die Lösung ist **nicht** als Altware aus drei Jahrzehnten Einzelsoftware gedacht, sondern als **Teil der Zukunft**: **heute** gebaut für integrierten Galerie-Alltag – **Browser, PWA, eine Datenbasis**, DSGVO-nah, aus **Österreich** – **Aufbruch**, nicht „so haben wir’s schon immer gemacht“. **Für dich:** Du steigst in etwas **Moderne**s ein, das **mitdenkt**, nicht in drei alte Welten gleichzeitig.
+### Haltung: Zukunft statt „wir machen’s schon immer so“
 
-**Das Wichtigste in drei Sätzen:** Künstler:innen und kleine Galerien pflegen Werke, Verkauf, Events und Werbung heute oft in **vier Welten** (Website, Kasse, Mail/Flyer, Etiketten) – mit **doppelter Arbeit** und **mehreren Abos**. Die K2 Galerie / Lizenz **ök2** bündelt das in **einer Oberfläche und einer Datenbasis**: einmal erfassen, überall nutzen – inklusive **Corporate Design** von Web bis Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, das in dieser Branche **kaum einen direkten Vergleich** hat. **Wenn** du dich darin wiedererkennst – **dann** lohnt der Rest der Mappe **doppelt**.
+Gemeint ist keine zusammengestückelte Altware aus Jahrzehnten Einzelsoftware, sondern eine Linie, die **heute** für den integrierten Galerie-Alltag gebaut ist: **Browser** und **PWA**, **eine Datenbasis**, **DSGVO-nah**, mit Entwicklung und Haltung aus **Österreich**. Das ist **Aufbruch**, kein Festhalten an „so haben wir’s schon immer gemacht“. Du steigst in etwas **Modernes** ein, das zusammenhängt und **mitdenkt** – nicht in drei alte Welten, die du täglich mühsam verbinden musst.
 
-**Weiterlesen in Ruhe:** [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md) (fließende Lesefassung) · [Promo A4 – Flyer](/projects/k2-galerie/flyer-oek2-promo-a4) (eine Seite zum Mitnehmen, eigenständig).
+### Drei Sätze zum Kern
 
----
-
-## Warum dieses Kapitel an dieser Stelle?
-
-**Einmal** klären: **nur hier** so kombiniert vs. **Markt gestückelt** – danach **Prospekt/A4** nur noch **Stimmung**, **keine** zweite Faktenrunde.
+**Künstlerinnen, Künstler** und **kleine Galerien** pflegen Werke, Verkauf, Events und Werbung im Alltag oft über **vier Welten** – Website, Kasse, Mail und Flyer, Etiketten – mit **doppelter Arbeit** und **mehreren Abos**. **K2 Galerie** und Lizenz **ök2** bündeln das in **einer Oberfläche** und **einer Datenbasis**: einmal erfassen, überall nutzen, inklusive **Corporate Design** von der Website bis zum Plakat. Dazu **VK2** für Vereine und ein **Empfehlungs-Programm**, zu dem es in dieser Branche kaum ein gleichwertiges Gegenstück gibt. **Wenn** du dich darin wiedererkennst, **lohnt** sich der Rest der Mappe **doppelt**.
 
 ---
 
@@ -34,20 +30,20 @@
 
 ---
 
-## Direktvergleich: drei typische Produkte vs. integrierte Lösung
+## Direktvergleich: Markt typisch vs. K2 / ök2
 
-**So liest du die Matrix:** **✓** = gehört zum Produkt dazu · **✗** = fehlt oder nur mit **zusätzlicher** Software / **neuem** Eintippen der Daten.
+**Legende:** **✓** = dabei · **✗** = fehlt oder nur mit Zusatz-Software / erneutem Eintippen
 
-| Funktion / Kriterium | **A** Website-Baukasten oder CMS | **B** Kassensystem (nur POS) | **C** Flyer, E-Mail, Canva, PDF **getrennt** | **K2 Galerie / ök2** |
-|----------------------|:--------------------------------:|:----------------------------:|:--------------------------------------------:|:--------------------:|
-| Werke & öffentliche Galerie (Vita, Shop) | ✓ | ✗ | ✗ | ✓ |
+| Kriterium | A: Website / CMS | B: Nur Kasse | C: Flyer, Mail, Canva … getrennt | **K2 Galerie / ök2** |
+|-----------|:----------------:|:------------:|:--------------------------------:|:--------------------:|
+| Werke, Galerie, Vita, Shop | ✓ | ✗ | ✗ | ✓ |
 | Verkauf, Belege, Lager an Werke gekoppelt | ✗ | ✓ | ✗ | ✓ |
-| Event **einmal** anlegen → Einladung, Plakat, Presse, Social aus **denselben** Daten | ✗ | ✗ | ✗ | ✓ |
-| Etiketten aus **Werksdaten** (ohne Neutippen) | ✗ | ✗ | ✗ | ✓ |
-| **Eine** Corporate-Design-Linie: Web **und** Druck | ✗ | ✗ | ✗ | ✓ |
-| **Eine** Datenbasis – kein Doppelpflege-Chaos | ✗ | ✗ | ✗ | ✓ |
-| Empfehlungs-Programm **in derselben** App | ✗ | ✗ | ✗ | ✓ |
-| Vereinsplattform **VK2** im gleichen Ökosystem | ✗ | ✗ | ✗ | ✓ |
+| Event einmal anlegen → Einladung, Plakat, Presse, Social aus denselben Daten | ✗ | ✗ | ✗ | ✓ |
+| Etiketten aus Werksdaten, ohne Neutippen | ✗ | ✗ | ✗ | ✓ |
+| Corporate Design: Web und Druck aus einem Guss | ✗ | ✗ | ✗ | ✓ |
+| Eine Datenbasis, kein Doppelpflege-Chaos | ✗ | ✗ | ✗ | ✓ |
+| Empfehlungs-Programm in derselben App | ✗ | ✗ | ✗ | ✓ |
+| Vereinsplattform VK2 im gleichen Ökosystem | ✗ | ✗ | ✗ | ✓ |
 
 **Kurz für dich:** **A**, **B** und **C** sind am Markt oft **gute Einzel-Tools** – aber **keines** liefert die **Kombination** aus Galerie, Kasse, Event-zu-Werbemittel, Etikett und CD **ohne** Bruch. **Hier** bündelt sich das. **Wenn** du **mindestens zwei** Häkchen in der letzten Spalte brauchst – **dann** ist **Stückelung** meist **dein** Alltag **heute**.
 
