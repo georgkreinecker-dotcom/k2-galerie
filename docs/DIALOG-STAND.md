@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Prospekt: Mein Weg / Sparten + Merken Kunst:** Abschnitt **„Mein Weg – sechs Sparten, eine Plattform“** in **`02B-PROSPEKT-ZUKUNFT.md`**; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**; Regel **`.cursor/rules/prospekt-kunst-und-mein-weg.mdc`** (alwaysApply); **`docs/00-INDEX.md`**, Mappe-**`00-INDEX`**. **Commit:** *(nach Push)*
+**Letzter Stand:** 04.04.26 – **Prospekt: Mein Weg / Sparten + Merken Kunst:** Abschnitt **„Mein Weg – sechs Sparten, eine Plattform“** in **`02B-PROSPEKT-ZUKUNFT.md`**; Doku **`docs/PROSPEKT-KUNST-MEIN-WEG-KOMMUNIKATION.md`**; Regel **`.cursor/rules/prospekt-kunst-und-mein-weg.mdc`** (alwaysApply); **`docs/00-INDEX.md`**, Mappe-**`00-INDEX`**. **Commit:** **5831afe** ✅ GitHub
 
 **Was wir JETZT tun:** Prospekt lesen — Block Mein Weg; Doku für Team/KI offen halten.
 
