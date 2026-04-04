@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 (Nacht) – **Session-Ende: Build-Stand + Protokoll** – Georg: Schluss für heute. `npm run build` (Tests inkl.): aktualisiert `api/build-info-payload.json`, `public/build-info.json`, `src/buildInfo.generated.ts`, `index.html`; `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` kleine Korrektur. **Commit:** **{H}**
+**Letzter Stand:** 04.04.26 (Nacht) – **Session-Ende: Build-Stand + Protokoll** – Georg: Schluss für heute. `npm run build` (Tests inkl.): aktualisiert `api/build-info-payload.json`, `public/build-info.json`, `src/buildInfo.generated.ts`, `index.html`; `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` kleine Korrektur. **Commit:** **3caa2368** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
