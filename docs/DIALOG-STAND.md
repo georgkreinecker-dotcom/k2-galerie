@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Statistik-Kapitel redigiert** – `14-STATISTIK-WERKKATALOG.md`: Satz „eigener Admin-Bereich unter dem Namen …“ entfernt; Fließtext wie übrige Mappe-Kapitel (kein Handbuch-Stil, keine `---`-Gliederung). INDEX Kapitel 10 Kurzzeile angepasst. **Commit:** _nach Push_
+
+**Was wir JETZT tun:** Kapitel **Statistik und Werkkatalog** in der Mappe kurz lesen.
+
+**Einordnung:** Georg: **ein** redaktioneller Standard für die Vollversion.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: Statistik-Kapitel** – `14-STATISTIK-WERKKATALOG.md`: Überblick gilt **für alle Sparten** (Mein Weg), nicht nur Handel/Galerie; `00-INDEX.md` Kurzbeschreibung Kapitel 10 angepasst. **Commit:** **461c6c6** ✅ GitHub
 
 **Was wir JETZT tun:** Mappe Kapitel **Statistik und Werkkatalog** kurz gegenlesen.

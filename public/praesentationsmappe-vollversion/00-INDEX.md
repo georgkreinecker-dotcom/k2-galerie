@@ -76,7 +76,7 @@ Farben, Texte, Bilder der Willkommensseite – und **ein** verlässlicher Weg zu
 
 10. [Statistik und Werkkatalog](14-STATISTIK-WERKKATALOG.md)
 
-Verkäufe, Lager, druckbarer Werkkatalog und Exporte – **für alle Sparten** unter **Mein Weg**, nicht nur für Galerie und Handel: der Überblick, der sich im Betrieb auszahlt.
+Statistik, Werkkatalog, Exporte – **eine** Kachel im Admin; **für alle Sparten** unter **Mein Weg**, der Überblick fürs Tagesgeschäft.
 
 11. [Kassa und Verkauf](07-KASSA-VERKAUF.md)
 

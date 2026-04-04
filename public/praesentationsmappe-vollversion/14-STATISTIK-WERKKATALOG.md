@@ -1,21 +1,7 @@
 # Statistik und Werkkatalog
 
-Ein eigener Admin-Bereich unter dem Namen **Statistik/Werkkatalog**.
+Im Admin liegen **Verkaufs- und Lagerstatistik**, **Werkkatalog**, **PDF-Exporte** und **Speicherdaten** an **einer** Stelle – über die Kachel **Statistik/Werkkatalog**. Du bleibst in derselben App und derselben Datenbasis, ohne eine zweite Tabelle oder ein Zusatzprogramm.
 
----
+Das ist für **jede** Sparte unter **Mein Weg** relevant, nicht nur für Galerie und klassischen Handel. Sobald du Werke, Bestände und Abschlüsse führst, brauchst du einen klaren Überblick: Was ist noch ausgestellt? Was liegt im Lager? Was ist verkauft oder reserviert? Wie entwickeln sich die Umsätze? Im **Werkkatalog** filterst und druckst du die Liste, nutzt sie für Etiketten und den Alltag. Über denselben Einstieg erreichst du im Galerie-Kontext die **Kundenadressen**, damit Verkauf, Beleg und Kundendatei zusammenpassen.
 
-## Warum das wichtig ist
-
-**Statistik und Überblick** braucht **jede** Nutzerin und jeder Nutzer – **nicht nur** Galerie und klassischen **Handel**. Ob **Kunst & Galerie**, **Handwerk**, **Design**, **Mode**, **Food** oder **Dienstleistung**: sobald du **Werke**, **Bestände** und **Abschlüsse** führst, zählt derselbe **praktische Blick**: Was ist noch ausgestellt? Was liegt im Lager? Was ist verkauft oder reserviert? Welche Umsätze gibt es?
-
-K2 Galerie bündelt das in **einem Tab**: **Verkaufs- und Lagerstatistik** zum Ansehen und **Drucken**, dazu der **Werkkatalog** als filterbare, druckbare Tabelle aller Werke. **PDF-Exporte** und **Speicherdaten** liegen dort ebenfalls – alles, was zum Tagesgeschäft und zur Dokumentation gehört, ohne Excel und ohne zweite App.
-
-**Kundenadressen** sind von dort aus erreichbar (Galerie-Kontext), damit Verkauf, Rechnung und Kundendatei zusammenpassen.
-
----
-
-## Im Alltag
-
-- Statistik öffnen → Bestände und Umsätze prüfen → bei Bedarf **Statistik drucken**.
-- **Werkkatalog** wählen → nach Kategorie oder Status filtern → Liste oder Etiketten nutzen.
-- Nach dem Bearbeiten: gleicher **Stand** auf allen Geräten wie überall in der K2 Galerie gewohnt.
+Typisch öffnest du den Bereich, prüfst Zahlen und Bestände und druckst die Statistik oder den Katalog bei Bedarf; danach arbeitest du weiter wie gewohnt – **derselbe Stand** auf allen Geräten, wie überall in der K2 Galerie.
