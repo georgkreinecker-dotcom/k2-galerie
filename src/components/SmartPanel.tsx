@@ -62,6 +62,9 @@ function startFremderModus() {
 /** VK2 immer per Voll-Navigation öffnen – verhindert, dass K2/Router-Zustand bleibt */
 const VK2_GALERIE_URL = '/projects/vk2/galerie'
 
+/** Promo-Video: eigener APf-Button (nicht in der Mappe „K2 Galerie“) – Farbe abgesetzt von Orange/Türkis */
+const PROMO_VIDEO_PRODUKTION_ROUTE = PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
+
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
 
 type PanelItem = {
@@ -230,6 +233,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
     if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
     if (browserPath.startsWith('/projects/k2-galerie/notizen')) return 'notizen'
+    if (browserPath.startsWith('/projects/k2-galerie/promo-video-produktion')) return 'promo-video-produktion'
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
   }, [browserPath, currentPage])
@@ -453,6 +457,55 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         >
           📋 Kompass als Tabelle
         </button>
+      </div>
+
+      {/* Promo-Video-Produktion: eigener Schnellzugriff (violett), nicht unter „K2 Galerie“-Mappe */}
+      <div style={{ marginTop: '-0.35rem' }}>
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={() => onNavigate('promo-video-produktion')}
+            style={{
+              width: '100%',
+              padding: '0.7rem 0.9rem',
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.38), rgba(91,33,182,0.22))',
+              border: activePage === 'promo-video-produktion' ? '2px solid rgba(216,180,254,0.95)' : '1px solid rgba(167,139,250,0.65)',
+              borderRadius: '10px',
+              color: '#ede9fe',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
+            }}
+            title="APf: Mappe als Quelle, fertiges Video in Stammdaten – nicht in der Besucher-Galerie"
+          >
+            🎬 Promo-Video-Produktion
+          </button>
+        ) : (
+          <Link
+            to={PROMO_VIDEO_PRODUKTION_ROUTE}
+            style={{
+              display: 'block',
+              width: '100%',
+              padding: '0.7rem 0.9rem',
+              background: 'linear-gradient(135deg, rgba(124,58,237,0.38), rgba(91,33,182,0.22))',
+              border: '1px solid rgba(167,139,250,0.65)',
+              borderRadius: '10px',
+              color: '#ede9fe',
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              textDecoration: 'none',
+              fontFamily: 'inherit',
+              textAlign: 'center',
+              boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
+            }}
+            title="APf: Mappe als Quelle, fertiges Video in Stammdaten – nicht in der Besucher-Galerie"
+          >
+            🎬 Promo-Video-Produktion
+          </Link>
+        )}
       </div>
 
       {/* ── Arbeitsmappen (Themen gebündelt) ───────────────────────────── */}

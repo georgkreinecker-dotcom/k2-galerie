@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Smart Panel: Promo-Video eigener violetter Button** – Nicht in Mappe „K2 Galerie“: `SmartPanel.tsx` eigener Button 🎬 unter Header (Violett-Gradient), `onNavigate('promo-video-produktion')`, aktive Route hervorgehoben. Build grün. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** –
+
+---
+
 **Letzter Stand:** 04.04.26 – **APf: Promo-Video-Produktion (eigener Platz, nicht in Besucher-App)** – Route `promoVideoProduktion` (`/projects/k2-galerie/promo-video-produktion`), `PromoVideoProduktionPage.tsx`: neutrale Stimme, Datenquelle Präsentationsmappe Vollversion, fertiges Video → Admin Stammdaten ök2; Zugriff nur `shouldShowK2GalerieApfProjectHub`. Projekt-Karte + DevView-Tab. Tests + Build grün. **Commit:** **f687780f** ✅ GitHub
 
 **Was wir JETZT tun:** –
