@@ -143,6 +143,8 @@ export const PROJECT_ROUTES = {
      * Nicht in der öffentlichen Galerie-App eingebunden – Zugriff nur localhost / ?apf=1 / ?dev=1.
      */
     promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
+    /** APf-only: Runway-Paket ~2 Min – Texte + englische Prompts zum Kopieren */
+    promoRunwayPack: '/projects/k2-galerie/promo-runway-pack',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
@@ -217,6 +219,7 @@ export const PROJECT_ROUTES = {
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
+    promoRunwayPack: '/projects/k2-galerie/promo-runway-pack',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
     pilotEinladung: '/projects/k2-galerie/pilot-einladung',
@@ -267,6 +270,7 @@ export const PROJECT_ROUTES = {
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
+    promoRunwayPack: '/projects/k2-galerie/promo-runway-pack',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
     pilotEinladung: '/projects/k2-galerie/pilot-einladung',

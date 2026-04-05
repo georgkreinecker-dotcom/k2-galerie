@@ -1,5 +1,23 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Runway-Paket ~2 Min (programmiert)** – `src/config/promoRunwayPack2min.ts` (8 Szenen: DE-Sprecher + EN-Runway-Prompt + Screen-Hinweis), `PromoRunwayPackPage`, Route `/projects/k2-galerie/promo-runway-pack`, Smart-Panel-Zweitbutton, `docs/PROMO-RUNWAY-PAKET-2MIN-V1.md`, Test `promoRunwayPack.test.ts`. Tests + Build grün. **Commit:** `git log -1 --oneline` (Runway-Paket) ✅ Push ausstehend
+
+**Was wir JETZT tun:** APf → Mappe Promo-Video → **Runway-Paket ~2 Min** → Prompts kopieren → Runway; parallel QuickTime ök2 nach Screen-Hinweisen.
+
+---
+
+**Letzter Stand:** 05.04.26 – **PROMO-VIDEO-UMSETZUNG-KONZEPT.md** – klares Umsetzungskonzept von vorn (3 Schichten, Phasen 1–7, Checkliste); `docs/00-INDEX.md` ergänzt.
+
+**Was wir JETZT tun:** [`PROMO-VIDEO-UMSETZUNG-KONZEPT.md`](PROMO-VIDEO-UMSETZUNG-KONZEPT.md) lesen → Phase 2 (Screens) oder Phase 3 (Runway optional) je nach Priorität.
+
+---
+
+**Letzter Stand:** 05.04.26 – **Runway: Erklärung + ein Kopier-Prompt** – Georg: Konzept ≠ Runway-Input; Runway liest kein Repo. Neu: `docs/PROMO-VIDEO-RUNWAY-PROMPT-90S-V1.md` (engl. **ein** Block + optional Negative); `PROMO-VIDEO-SPRECHERTEXT-90S-V1.md` §6 verlinkt. Echte App-Screens = weiter Screen ök2 + Schnitt.
+
+**Was wir JETZT tun:** Runway: Prompt-Datei öffnen → Block komplett einfügen; oder direkt QuickTime ök2 wie Drehbuch.
+
+---
+
 **Letzter Stand:** 05.04.26 – **Sprechertext → Untertitel (SRT)** – `docs/PROMO-VIDEO-SPRECHERTEXT-90S-V1.srt` angelegt (6 Blöcke, ~90 s Richtwerte); `PROMO-VIDEO-SPRECHERTEXT-90S-V1.md` §5 mit Verweis + Hinweis iMovie/CapCut. **Automatisch möglich aus Repo:** nur Untertitel-Datei, **kein** fertiges Video mit Ton aus Cursor.
 
 **Was wir JETZT tun:** SRT in Schnittsoftware importieren; Zeiten nach echtem Sprecher/TTS justieren; Ton separat (Aufnahme oder TTS).

@@ -64,6 +64,7 @@ const VK2_GALERIE_URL = '/projects/vk2/galerie'
 
 /** Promo-Video-Hub + Quellen (violett, eigene Mappe im Smart Panel) */
 const PROMO_VIDEO_PRODUKTION_ROUTE = PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
+const PROMO_RUNWAY_PACK_ROUTE = PROJECT_ROUTES['k2-galerie'].promoRunwayPack
 const PRAEMAPPE_VOLL_OEK2 = `${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
 const ADMIN_OEK2_EINSTELLUNGEN = '/admin?context=oeffentlich&tab=einstellungen'
 /** Spiegel unter public/k2team-handbuch/ – gleicher Inhalt wie docs/ (APf-Handbuch lädt von /k2team-handbuch/) */
@@ -245,6 +246,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/galerie') || browserPath.startsWith('/projects/k2-galerie/galerie')) return 'galerie'
     if (browserPath.startsWith('/mok2') || browserPath.startsWith('/projects/k2-galerie/marketing')) return 'mok2'
     if (browserPath.startsWith('/projects/k2-galerie/notizen')) return 'notizen'
+    if (browserPath.startsWith('/projects/k2-galerie/promo-runway-pack')) return 'promo-runway-pack'
     if (browserPath.startsWith('/projects/k2-galerie/promo-video-produktion')) return 'promo-video-produktion'
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
@@ -782,6 +784,51 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         title="Hub: Regeln, Ablauf, Screens"
                       >
                         🎬 Hub Promo-Video-Produktion
+                      </Link>
+                    )}
+                    {onNavigate ? (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('promo-runway-pack')}
+                        style={{
+                          width: '100%',
+                          padding: '0.55rem 0.85rem',
+                          marginTop: '0.4rem',
+                          background: 'linear-gradient(135deg, rgba(91,33,182,0.28), rgba(124,58,237,0.16))',
+                          border: activePage === 'promo-runway-pack' ? '2px solid rgba(216,180,254,0.85)' : '1px solid rgba(167,139,250,0.5)',
+                          borderRadius: '10px',
+                          color: '#e9d5ff',
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'center',
+                        }}
+                        title="Deutsche Texte + englische Runway-Prompts zum Kopieren"
+                      >
+                        ✨ Runway-Paket ~2 Min (Texte &amp; Prompts)
+                      </button>
+                    ) : (
+                      <Link
+                        to={PROMO_RUNWAY_PACK_ROUTE}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          padding: '0.55rem 0.85rem',
+                          marginTop: '0.4rem',
+                          background: 'linear-gradient(135deg, rgba(91,33,182,0.28), rgba(124,58,237,0.16))',
+                          border: '1px solid rgba(167,139,250,0.5)',
+                          borderRadius: '10px',
+                          color: '#e9d5ff',
+                          fontWeight: 600,
+                          fontSize: '0.8rem',
+                          textDecoration: 'none',
+                          fontFamily: 'inherit',
+                          textAlign: 'center',
+                        }}
+                        title="Deutsche Texte + englische Runway-Prompts zum Kopieren"
+                      >
+                        ✨ Runway-Paket ~2 Min (Texte &amp; Prompts)
                       </Link>
                     )}
                     <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.45rem 0 0.2rem' }}>Quelle &amp; Inhalt</div>

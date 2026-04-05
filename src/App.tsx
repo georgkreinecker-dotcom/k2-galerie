@@ -40,6 +40,7 @@ import PilotStartPage from './pages/PilotStartPage'
 import PilotEinladungPage from './pages/PilotEinladungPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
 import PromoVideoProduktionPage from './pages/PromoVideoProduktionPage'
+import PromoRunwayPackPage from './pages/PromoRunwayPackPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
@@ -862,6 +863,7 @@ function App() {
       <Route path="/projects/k2-galerie/k2-markt" element={<Navigate to={PROJECT_ROUTES['k2-markt'].mappe} replace />} />
       {/* BUG-034: konkrete k2-galerie-Unterpfade vor /projects/:projectId – sonst Catch-all / Risiko falscher Match */}
       <Route path={PROJECT_ROUTES['k2-galerie'].promoVideoProduktion} element={<PromoVideoProduktionPage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].promoRunwayPack} element={<PromoRunwayPackPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
