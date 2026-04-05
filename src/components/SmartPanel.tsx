@@ -66,6 +66,10 @@ const VK2_GALERIE_URL = '/projects/vk2/galerie'
 const PROMO_VIDEO_PRODUKTION_ROUTE = PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
 const PRAEMAPPE_VOLL_OEK2 = `${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
 const ADMIN_OEK2_EINSTELLUNGEN = '/admin?context=oeffentlich&tab=einstellungen'
+/** Spiegel unter public/k2team-handbuch/ – gleicher Inhalt wie docs/ (APf-Handbuch lädt von /k2team-handbuch/) */
+const DOC_VIDEO_PRAEMAPPE = 'VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md'
+const DOC_VIDEO_MATRIX = 'VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md'
+const apfHandbuchDocUrl = (docFile: string) => `/projects/k2-galerie?page=handbuch&doc=${encodeURIComponent(docFile)}`
 
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
 
@@ -901,12 +905,95 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                         )}
                       </li>
                     </ul>
-                    <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.2rem 0 0.2rem' }}>Doku im Repo (Cursor)</div>
-                    <p style={{ margin: '0 0 0.35rem', fontSize: '0.68rem', lineHeight: 1.4, color: 'rgba(237,233,254,0.72)' }}>
-                      <code style={{ fontSize: '0.65rem', color: 'rgba(216,180,254,0.85)' }}>docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md</code>
-                      <br />
-                      <code style={{ fontSize: '0.65rem', color: 'rgba(216,180,254,0.85)' }}>docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md</code>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.2rem 0 0.2rem' }}>Doku im Repo – in der APf öffnen</div>
+                    <p style={{ margin: '0 0 0.35rem', fontSize: '0.65rem', lineHeight: 1.35, color: 'rgba(237,233,254,0.65)' }}>
+                      Quelle: <code style={{ fontSize: '0.62rem' }}>docs/</code> · Lesen: Team-Handbuch (Spiegel)
                     </p>
+                    {onNavigate ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => openTeamHandbuchDoc(DOC_VIDEO_PRAEMAPPE)}
+                          style={{
+                            width: '100%',
+                            marginBottom: '0.35rem',
+                            padding: '0.5rem 0.65rem',
+                            background: 'rgba(91,33,182,0.25)',
+                            border: '1px solid rgba(167,139,250,0.5)',
+                            borderRadius: '8px',
+                            color: '#e9d5ff',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'left',
+                          }}
+                          title="Öffnet im Smart-Panel-Kontext das Handbuch mit dieser Datei"
+                        >
+                          📄 Prämappe-Analyse
+                          <span style={{ display: 'block', fontWeight: 400, fontSize: '0.65rem', opacity: 0.85, marginTop: '0.15rem' }}>{DOC_VIDEO_PRAEMAPPE}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openTeamHandbuchDoc(DOC_VIDEO_MATRIX)}
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem 0.65rem',
+                            background: 'rgba(91,33,182,0.25)',
+                            border: '1px solid rgba(167,139,250,0.5)',
+                            borderRadius: '8px',
+                            color: '#e9d5ff',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            textAlign: 'left',
+                          }}
+                          title="Öffnet im Smart-Panel-Kontext das Handbuch mit dieser Datei"
+                        >
+                          📄 Matrix &amp; Drehbuch V1
+                          <span style={{ display: 'block', fontWeight: 400, fontSize: '0.65rem', opacity: 0.85, marginTop: '0.15rem' }}>{DOC_VIDEO_MATRIX}</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          to={apfHandbuchDocUrl(DOC_VIDEO_PRAEMAPPE)}
+                          style={{
+                            display: 'block',
+                            marginBottom: '0.35rem',
+                            padding: '0.5rem 0.65rem',
+                            background: 'rgba(91,33,182,0.25)',
+                            border: '1px solid rgba(167,139,250,0.5)',
+                            borderRadius: '8px',
+                            color: '#e9d5ff',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            textDecoration: 'none',
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          📄 Prämappe-Analyse
+                        </Link>
+                        <Link
+                          to={apfHandbuchDocUrl(DOC_VIDEO_MATRIX)}
+                          style={{
+                            display: 'block',
+                            padding: '0.5rem 0.65rem',
+                            background: 'rgba(91,33,182,0.25)',
+                            border: '1px solid rgba(167,139,250,0.5)',
+                            borderRadius: '8px',
+                            color: '#e9d5ff',
+                            fontWeight: 600,
+                            fontSize: '0.78rem',
+                            textDecoration: 'none',
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          📄 Matrix &amp; Drehbuch V1
+                        </Link>
+                      </>
+                    )}
                   </>
                 )}
                 {mappe.id === 'galerie' && (
