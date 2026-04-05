@@ -2,10 +2,11 @@
  * Promo-Video-Produktion – APf-Werkzeug (nur localhost / ?apf=1 / ?dev=1).
  * Sportwagenmodus: eine Problemstellung = ein Standard (Datenquelle Mappe, Einspielung nur Stammdaten
  * im passenden Kontext) – keine parallelen „vielleicht so“-Wege. Siehe .cursor/rules/ein-standard-problem.mdc.
- * Kein Player in der öffentlichen Galerie-App: hier Datenquelle, Arbeitsablauf, fertiges Produkt
- * (z. B. YouTube) in Stammdaten eintragen – neutrale Stimme, nicht die Stimme des Galeristen.
+ * Vorschau-Player: dieselbe URL wie ök2-Stammdaten → Highlight-Video (keine zweite Quelle).
+ * Öffentliche Galerie-App: weiterhin nur Links (GalerieSocialLinks), kein Embed auf der Besucher-Seite hier.
  */
 
+import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   ENTDECKEN_ROUTE,
@@ -14,14 +15,36 @@ import {
   shouldShowK2GalerieApfProjectHub,
 } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { videoUrlToFeaturedEmbed } from '../utils/featuredVideoEmbed'
+import { loadStammdaten } from '../utils/stammdatenStorage'
+import { safeExternalHref } from '../utils/socialExternalUrls'
 
 export default function PromoVideoProduktionPage() {
+  const [featuredVideoUrl, setFeaturedVideoUrl] = useState('')
+
+  useEffect(() => {
+    const read = () => {
+      const g = loadStammdaten('oeffentlich', 'gallery') as { socialFeaturedVideoUrl?: string }
+      setFeaturedVideoUrl(typeof g?.socialFeaturedVideoUrl === 'string' ? g.socialFeaturedVideoUrl.trim() : '')
+    }
+    read()
+    const onUpdate = () => read()
+    window.addEventListener('k2-gallery-stammdaten-updated', onUpdate)
+    window.addEventListener('storage', onUpdate)
+    return () => {
+      window.removeEventListener('k2-gallery-stammdaten-updated', onUpdate)
+      window.removeEventListener('storage', onUpdate)
+    }
+  }, [])
+
   if (!shouldShowK2GalerieApfProjectHub()) {
     return <Navigate to={ENTDECKEN_ROUTE} replace />
   }
 
   const mappeVollOek2 = `${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
   const adminOek2Stammdaten = '/admin?context=oeffentlich&tab=einstellungen'
+  const safeVideo = safeExternalHref(featuredVideoUrl)
+  const embed = videoUrlToFeaturedEmbed(featuredVideoUrl)
 
   return (
     <article
@@ -38,8 +61,9 @@ export default function PromoVideoProduktionPage() {
       <header style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(95,251,241,0.25)' }}>
         <h1 style={{ fontSize: '1.5rem', margin: 0, color: '#5ffbf1' }}>Promo-Video-Produktion</h1>
         <p style={{ margin: '0.5rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>
-          Eigener Arbeitsplatz auf der APf – nicht in der Besucher-App eingebunden. Hier: Inhalte und
-          Ablauf; das fertige Video verlinkst du in den Stammdaten (richtiger Kontext), nicht hier.
+          Eigener Arbeitsplatz auf der APf. Unten siehst du das <strong>fertige Highlight-Video</strong>, sobald
+          der Link in den <strong>ök2-Stammdaten</strong> steht – dieselbe Quelle wie auf der öffentlichen Galerie,
+          keine zweite URL.
         </p>
         <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
           <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none' }}>
@@ -65,6 +89,10 @@ export default function PromoVideoProduktionPage() {
         }}
       >
         <strong style={{ color: '#e9d5ff', display: 'block', marginBottom: '0.4rem' }}>Inhalt</strong>
+        <a href="#promo-vorschau" style={{ color: '#c4b5fd' }}>
+          Video-Vorschau (APf)
+        </a>
+        {' · '}
         <a href="#promo-regeln" style={{ color: '#c4b5fd' }}>
           Regeln &amp; Sportwagenmodus
         </a>
@@ -85,6 +113,84 @@ export default function PromoVideoProduktionPage() {
           Ablauf
         </a>
       </nav>
+
+      <section
+        id="promo-vorschau"
+        style={{
+          marginBottom: '1.75rem',
+          padding: '1rem 1.1rem',
+          background: 'rgba(34,197,94,0.08)',
+          borderRadius: '12px',
+          border: '1px solid rgba(34,197,94,0.35)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.15rem', color: '#86efac', margin: '0 0 0.5rem' }}>
+          Fertiges Video – Vorschau auf der APf
+        </h2>
+        <p style={{ margin: '0 0 0.75rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.9)' }}>
+          Nach Aufnahme und Schnitt: Link unter{' '}
+          <strong>Admin → Einstellungen → Stammdaten Galerie (Kontext ök2) → Highlight-Video</strong>. Hier erscheint
+          dieselbe Vorschau (YouTube-Einbettung oder direkte .mp4/.webm-Datei).
+        </p>
+        {!safeVideo ? (
+          <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,245,240,0.65)' }}>
+            Noch kein Link in den Stammdaten –{' '}
+            <Link to={adminOek2Stammdaten} style={{ color: '#86efac', fontWeight: 600 }}>
+              jetzt eintragen
+            </Link>
+            .
+          </p>
+        ) : embed?.kind === 'youtube' ? (
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              maxWidth: '100%',
+              aspectRatio: '16 / 9',
+              background: '#0a0a0a',
+              borderRadius: 10,
+              overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            <iframe
+              title="Highlight-Video (ök2 Stammdaten)"
+              src={embed.src}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                border: 'none',
+              }}
+            />
+          </div>
+        ) : embed?.kind === 'direct' ? (
+          <video
+            controls
+            playsInline
+            src={embed.src}
+            style={{
+              width: '100%',
+              maxHeight: 'min(70vh, 480px)',
+              borderRadius: 10,
+              background: '#000',
+            }}
+          />
+        ) : (
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', color: 'rgba(255,245,240,0.85)' }}>
+            Diese URL lässt sich hier nicht direkt einbetten. Zum Ansehen:{' '}
+            <a href={safeVideo} target="_blank" rel="noopener noreferrer" style={{ color: '#86efac' }}>
+              Video öffnen
+            </a>
+            <span style={{ fontSize: '0.8rem', color: 'rgba(255,245,240,0.55)', marginLeft: '0.35rem' }}>
+              (YouTube- oder direkte Video-URL empfohlen)
+            </span>
+          </p>
+        )}
+      </section>
 
       <section
         id="promo-regeln"
@@ -134,8 +240,9 @@ export default function PromoVideoProduktionPage() {
             <strong>Neutrale Stimme</strong> für Sprecher/TTS – nicht die persönliche Stimme der Galerie.
           </li>
           <li>
-            Diese Seite ist nur <strong>Arbeits- und Orientierungsort</strong> (Daten holen, Skript/Story,
-            Export); kein eingebetteter Player für die öffentliche Galerie.
+            Diese Seite ist der <strong>Arbeits- und Orientierungsort</strong> auf der APf; die{' '}
+            <strong>Video-Vorschau</strong> oben nutzt dieselbe Stammdaten-URL wie die öffentliche Galerie
+            (Highlight-Video).
           </li>
         </ul>
       </section>
