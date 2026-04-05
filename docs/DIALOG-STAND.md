@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 05.04.26 – **Mappe Feinschliff + Video-Analyse** – `PromoVideoProduktionPage`: Tippfehler „derselbe Weg“; neu **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`** (Story, Prioritäten, Checkliste); `public/praesentationsmappe-vollversion/00-INDEX.md` Abschnitt „Video-Produktion (Promo)“; `PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md` §8; `docs/00-INDEX.md` Eintrag. **Commit:** *(nach Push)*
+**Letzter Stand:** 05.04.26 – **Mappe Feinschliff + Video-Analyse** – `PromoVideoProduktionPage`: Tippfehler „derselbe Weg“; neu **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`** (Story, Prioritäten, Checkliste); `public/praesentationsmappe-vollversion/00-INDEX.md` Abschnitt „Video-Produktion (Promo)“; `PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md` §8; `docs/00-INDEX.md` Eintrag. **Commit:** **2f70628d** ✅ GitHub
 
 **Was wir JETZT tun:** Video-Produktion starten nach Wunsch; Skript aus ANALYSE + Mappe.
 
