@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Smart Panel: Promo-Video eigener violetter Button** – Nicht in Mappe „K2 Galerie“: `SmartPanel.tsx` eigener Button 🎬 unter Header (Violett-Gradient), `onNavigate('promo-video-produktion')`, aktive Route hervorgehoben. Build grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 04.04.26 – **Smart Panel: Promo-Video eigener violetter Button** – Nicht in Mappe „K2 Galerie“: `SmartPanel.tsx` eigener Button 🎬 unter Header (Violett-Gradient), `onNavigate('promo-video-produktion')`, aktive Route hervorgehoben. Build grün. **Commit:** **d275ca03** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
