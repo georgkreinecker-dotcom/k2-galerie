@@ -1,5 +1,7 @@
 # Smoke-Test: Besucherzähler (Lizenz-Galerie `/g/…`)
 
+**Zuerst einen Eindruck?** → **[PROBESSESSION-BESUCHERZAEHLER-LIZENZ.md](PROBESSESSION-BESUCHERZAEHLER-LIZENZ.md)** (5 Minuten, erzählt den Ablauf).
+
 **Zweck:** In **wenigen Minuten** prüfen, ob **Erfassung** (POST) und optional **Anzeige** (GET im Admin) für einen **Lizenz-Mandanten** grundsätzlich funktionieren – ohne tiefes Debugging.
 
 **Wichtig:** Zählen und API laufen auf der **Produktions-App** (Vercel). Unter **`npm run dev`** (localhost) wird der Besuch **bewusst nicht** in die Live-Zahlen geschrieben (POST geht an localhost → keine Serverless-Route wie in Produktion).
