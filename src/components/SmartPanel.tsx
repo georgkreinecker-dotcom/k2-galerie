@@ -62,8 +62,10 @@ function startFremderModus() {
 /** VK2 immer per Voll-Navigation öffnen – verhindert, dass K2/Router-Zustand bleibt */
 const VK2_GALERIE_URL = '/projects/vk2/galerie'
 
-/** Promo-Video: eigener APf-Button (nicht in der Mappe „K2 Galerie“) – Farbe abgesetzt von Orange/Türkis */
+/** Promo-Video-Hub + Quellen (violett, eigene Mappe im Smart Panel) */
 const PROMO_VIDEO_PRODUKTION_ROUTE = PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
+const PRAEMAPPE_VOLL_OEK2 = `${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
+const ADMIN_OEK2_EINSTELLUNGEN = '/admin?context=oeffentlich&tab=einstellungen'
 
 const PANEL_ORDER_KEY = 'smartpanel-reihenfolge'
 
@@ -122,6 +124,12 @@ const MARKETING_OEK2_PAGE = PROJECT_ROUTES['k2-galerie'].marketingOek2
 const GALERIE_ITEM_IDS = ['uebersicht', 'lizenzen', 'k2', 'oek2', 'vk2', 'mok2', 'kampagne', 'presse', 'oeffentlichkeitsarbeit'] as const
 const MAPPEN = [
   { id: 'ready-to-go', label: 'K2 Ready to go', icon: '🎯', itemIds: [] as const },
+  {
+    id: 'promo-video',
+    label: 'Promo-Video-Produktion',
+    icon: '🎬',
+    itemIds: [] as const,
+  },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
@@ -134,7 +142,7 @@ function loadMappenOpen(): Record<string, boolean> {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { 'ready-to-go': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
+  return { 'ready-to-go': true, 'promo-video': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
 }
 
 function saveMappenOpen(open: Record<string, boolean>) {
@@ -459,56 +467,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
         </button>
       </div>
 
-      {/* Promo-Video-Produktion: eigener Schnellzugriff (violett), nicht unter „K2 Galerie“-Mappe */}
-      <div style={{ marginTop: '-0.35rem' }}>
-        {onNavigate ? (
-          <button
-            type="button"
-            onClick={() => onNavigate('promo-video-produktion')}
-            style={{
-              width: '100%',
-              padding: '0.7rem 0.9rem',
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.38), rgba(91,33,182,0.22))',
-              border: activePage === 'promo-video-produktion' ? '2px solid rgba(216,180,254,0.95)' : '1px solid rgba(167,139,250,0.65)',
-              borderRadius: '10px',
-              color: '#ede9fe',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
-            }}
-            title="APf: Mappe als Quelle, fertiges Video in Stammdaten – nicht in der Besucher-Galerie"
-          >
-            🎬 Promo-Video-Produktion
-          </button>
-        ) : (
-          <Link
-            to={PROMO_VIDEO_PRODUKTION_ROUTE}
-            style={{
-              display: 'block',
-              width: '100%',
-              padding: '0.7rem 0.9rem',
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.38), rgba(91,33,182,0.22))',
-              border: '1px solid rgba(167,139,250,0.65)',
-              borderRadius: '10px',
-              color: '#ede9fe',
-              fontWeight: 700,
-              fontSize: '0.88rem',
-              textDecoration: 'none',
-              fontFamily: 'inherit',
-              textAlign: 'center',
-              boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
-            }}
-            title="APf: Mappe als Quelle, fertiges Video in Stammdaten – nicht in der Besucher-Galerie"
-          >
-            🎬 Promo-Video-Produktion
-          </Link>
-        )}
-      </div>
-
-      {/* ── Arbeitsmappen (Themen gebündelt) ───────────────────────────── */}
+      {/* ── Arbeitsmappen (Themen gebündelt) – Promo-Video: eigene Mappe, nicht nur ein Button ── */}
       {MAPPEN.map(mappe => {
         const isOpen = mappenOpen[mappe.id] !== false
         const items = mappe.itemIds.map(id => DEFAULT_ITEMS.find(i => i.id === id)).filter(Boolean) as PanelItem[]
@@ -523,10 +482,18 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                 alignItems: 'center',
                 gap: '0.5rem',
                 padding: '0.6rem 0.75rem',
-                background: 'rgba(95,251,241,0.06)',
-                border: '1px solid rgba(95,251,241,0.2)',
+                ...(mappe.id === 'promo-video'
+                  ? {
+                      background: 'linear-gradient(135deg, rgba(124,58,237,0.22), rgba(91,33,182,0.12))',
+                      border: '1px solid rgba(167,139,250,0.45)',
+                      color: '#e9d5ff',
+                    }
+                  : {
+                      background: 'rgba(95,251,241,0.06)',
+                      border: '1px solid rgba(95,251,241,0.2)',
+                      color: '#5ffbf1',
+                    }),
                 borderRadius: '8px',
-                color: '#5ffbf1',
                 fontWeight: 600,
                 fontSize: '0.9rem',
                 cursor: 'pointer',
@@ -761,6 +728,185 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                       </li>
                     </ul>
                     <p style={{ margin: '0.4rem 0 0', fontSize: '0.68rem', lineHeight: 1.35, color: 'rgba(255,255,255,0.45)' }}>Daten-Tests: im Cursor Terminal <code style={{ fontSize: '0.65rem' }}>npm run test:daten</code> – wenn vorhanden.</p>
+                  </>
+                )}
+                {mappe.id === 'promo-video' && (
+                  <>
+                    <p style={{ margin: '0 0 0.35rem', fontSize: '0.72rem', lineHeight: 1.45, color: 'rgba(237,233,254,0.88)' }}>
+                      Mappe als <strong style={{ color: '#f5f3ff' }}>Quelle</strong>, fertiges Video in Stammdaten – nicht in der Besucher-Galerie. Hier: Hub, Präsentationsmappe, ök2, Vertrieb, Docs.
+                    </p>
+                    {onNavigate ? (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('promo-video-produktion')}
+                        style={{
+                          width: '100%',
+                          padding: '0.65rem 0.85rem',
+                          background: 'linear-gradient(135deg, rgba(124,58,237,0.42), rgba(91,33,182,0.24))',
+                          border: activePage === 'promo-video-produktion' ? '2px solid rgba(216,180,254,0.95)' : '1px solid rgba(167,139,250,0.65)',
+                          borderRadius: '10px',
+                          color: '#ede9fe',
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                          textAlign: 'center',
+                          boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
+                        }}
+                        title="Hub: Regeln, Ablauf, Screens"
+                      >
+                        🎬 Hub Promo-Video-Produktion
+                      </button>
+                    ) : (
+                      <Link
+                        to={PROMO_VIDEO_PRODUKTION_ROUTE}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          padding: '0.65rem 0.85rem',
+                          background: 'linear-gradient(135deg, rgba(124,58,237,0.42), rgba(91,33,182,0.24))',
+                          border: '1px solid rgba(167,139,250,0.65)',
+                          borderRadius: '10px',
+                          color: '#ede9fe',
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          textDecoration: 'none',
+                          fontFamily: 'inherit',
+                          textAlign: 'center',
+                          boxShadow: '0 2px 14px rgba(91,33,182,0.35)',
+                        }}
+                        title="Hub: Regeln, Ablauf, Screens"
+                      >
+                        🎬 Hub Promo-Video-Produktion
+                      </Link>
+                    )}
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.45rem 0 0.2rem' }}>Quelle &amp; Inhalt</div>
+                    <ul style={{ margin: '0 0 0.4rem', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(237,233,254,0.9)' }}>
+                      <li>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => navigate(PRAEMAPPE_VOLL_OEK2)}
+                            onKeyDown={e => e.key === 'Enter' && navigate(PRAEMAPPE_VOLL_OEK2)}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Präsentationsmappe Vollversion
+                          </span>
+                        ) : (
+                          <Link to={PRAEMAPPE_VOLL_OEK2} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Präsentationsmappe Vollversion
+                          </Link>
+                        )}
+                        {' '}
+                        <span style={{ color: 'rgba(237,233,254,0.55)', fontSize: '0.68rem' }}>(?context=oeffentlich)</span>
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate('galerie-oeffentlich')}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate('galerie-oeffentlich')}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            ök2-Galerie
+                          </span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            ök2-Galerie
+                          </Link>
+                        )}
+                        {' · '}
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate('galerie-oeffentlich-vorschau')}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate('galerie-oeffentlich-vorschau')}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Vorschau
+                          </span>
+                        ) : (
+                          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Vorschau
+                          </Link>
+                        )}
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => navigate(ADMIN_OEK2_EINSTELLUNGEN)}
+                            onKeyDown={e => e.key === 'Enter' && navigate(ADMIN_OEK2_EINSTELLUNGEN)}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Admin ök2 → Einstellungen
+                          </span>
+                        ) : (
+                          <Link to={ADMIN_OEK2_EINSTELLUNGEN} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Admin ök2 → Einstellungen
+                          </Link>
+                        )}
+                        {' '}
+                        <span style={{ color: 'rgba(237,233,254,0.6)', fontSize: '0.68rem' }}>(Stammdaten / Video)</span>
+                      </li>
+                    </ul>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.2rem 0 0.2rem' }}>Vertrieb &amp; Recht</div>
+                    <ul style={{ margin: '0 0 0.4rem', paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.74rem', lineHeight: 1.35, color: 'rgba(237,233,254,0.9)' }}>
+                      <li>
+                        {onNavigate ? (
+                          <span role="button" tabIndex={0} onClick={() => onNavigate('mok2')} onKeyDown={e => e.key === 'Enter' && onNavigate('mok2')} style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            mök2
+                          </span>
+                        ) : (
+                          <Link to={MOK2_ROUTE} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            mök2
+                          </Link>
+                        )}
+                        {' · '}
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => navigate(MARKETING_OEK2_PAGE)}
+                            onKeyDown={e => e.key === 'Enter' && navigate(MARKETING_OEK2_PAGE)}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Marketing ök2
+                          </span>
+                        ) : (
+                          <Link to={MARKETING_OEK2_PAGE} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Marketing ök2
+                          </Link>
+                        )}
+                      </li>
+                      <li>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate('lizenzen')}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate('lizenzen')}
+                            style={{ color: '#c4b5fd', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+                          >
+                            Lizenzen &amp; Testpilot
+                          </span>
+                        ) : (
+                          <Link to={`${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`} style={{ color: '#c4b5fd', textDecoration: 'underline', fontFamily: 'inherit' }}>
+                            Lizenzen &amp; Testpilot
+                          </Link>
+                        )}
+                      </li>
+                    </ul>
+                    <div style={{ fontSize: '0.72rem', color: 'rgba(216,180,254,0.95)', fontWeight: 700, margin: '0.2rem 0 0.2rem' }}>Doku im Repo (Cursor)</div>
+                    <p style={{ margin: '0 0 0.35rem', fontSize: '0.68rem', lineHeight: 1.4, color: 'rgba(237,233,254,0.72)' }}>
+                      <code style={{ fontSize: '0.65rem', color: 'rgba(216,180,254,0.85)' }}>docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md</code>
+                      <br />
+                      <code style={{ fontSize: '0.65rem', color: 'rgba(216,180,254,0.85)' }}>docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md</code>
+                    </p>
                   </>
                 )}
                 {mappe.id === 'galerie' && (

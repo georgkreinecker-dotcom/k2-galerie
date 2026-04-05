@@ -20,7 +20,7 @@ export default function PromoVideoProduktionPage() {
     return <Navigate to={ENTDECKEN_ROUTE} replace />
   }
 
-  const mappe = PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion
+  const mappeVollOek2 = `${PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion}?context=oeffentlich`
   const adminOek2Stammdaten = '/admin?context=oeffentlich&tab=einstellungen'
 
   return (
@@ -52,7 +52,42 @@ export default function PromoVideoProduktionPage() {
         </p>
       </header>
 
+      <nav
+        aria-label="Inhalt"
+        style={{
+          marginBottom: '1.5rem',
+          padding: '0.85rem 1rem',
+          background: 'rgba(124,58,237,0.12)',
+          borderRadius: '10px',
+          border: '1px solid rgba(167,139,250,0.35)',
+          fontSize: '0.88rem',
+          lineHeight: 1.55,
+        }}
+      >
+        <strong style={{ color: '#e9d5ff', display: 'block', marginBottom: '0.4rem' }}>Inhalt</strong>
+        <a href="#promo-regeln" style={{ color: '#c4b5fd' }}>
+          Regeln &amp; Sportwagenmodus
+        </a>
+        {' · '}
+        <a href="#promo-stimme" style={{ color: '#c4b5fd' }}>
+          Stimme &amp; Rolle
+        </a>
+        {' · '}
+        <a href="#promo-datenquelle" style={{ color: '#c4b5fd' }}>
+          Datenquelle Mappe
+        </a>
+        {' · '}
+        <a href="#promo-einspielen" style={{ color: '#c4b5fd' }}>
+          Einspielen
+        </a>
+        {' · '}
+        <a href="#promo-ablauf" style={{ color: '#c4b5fd' }}>
+          Ablauf
+        </a>
+      </nav>
+
       <section
+        id="promo-regeln"
         style={{
           marginBottom: '1.75rem',
           padding: '1rem 1.1rem',
@@ -92,7 +127,7 @@ export default function PromoVideoProduktionPage() {
         </ul>
       </section>
 
-      <section style={{ marginBottom: '1.75rem' }}>
+      <section id="promo-stimme" style={{ marginBottom: '1.75rem' }}>
         <h2 style={{ fontSize: '1.15rem', color: '#fde68a', margin: '0 0 0.5rem' }}>Stimme &amp; Rolle</h2>
         <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.6, fontSize: '0.92rem' }}>
           <li>
@@ -105,20 +140,23 @@ export default function PromoVideoProduktionPage() {
         </ul>
       </section>
 
-      <section style={{ marginBottom: '1.75rem' }}>
+      <section id="promo-datenquelle" style={{ marginBottom: '1.75rem' }}>
         <h2 style={{ fontSize: '1.15rem', color: '#fde68a', margin: '0 0 0.5rem' }}>Datenquelle</h2>
         <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.92rem' }}>
           Inhaltliche Basis: <strong>Präsentationsmappe Vollversion</strong> (Markdown unter{' '}
           <code style={{ fontSize: '0.85em' }}>public/praesentationsmappe-vollversion/</code>).
         </p>
         <p style={{ margin: 0 }}>
-          <Link to={mappe} style={{ color: '#5ffbf1', fontWeight: 600 }}>
+          <Link to={mappeVollOek2} style={{ color: '#5ffbf1', fontWeight: 600 }}>
             → Präsentationsmappe Vollversion öffnen
           </Link>
+          <span style={{ fontSize: '0.82em', color: 'rgba(255,255,255,0.55)', marginLeft: '0.35rem' }}>
+            (?context=oeffentlich)
+          </span>
         </p>
       </section>
 
-      <section style={{ marginBottom: '1.75rem' }}>
+      <section id="promo-einspielen" style={{ marginBottom: '1.75rem' }}>
         <h2 style={{ fontSize: '1.15rem', color: '#fde68a', margin: '0 0 0.5rem' }}>Fertiges Produkt einspielen</h2>
         <p style={{ margin: '0 0 0.5rem', lineHeight: 1.55, fontSize: '0.92rem' }}>
           Wenn das Video (z. B. bei YouTube) steht: <strong>Link in den Stammdaten der ök2-Demo</strong> pflegen
@@ -132,6 +170,7 @@ export default function PromoVideoProduktionPage() {
       </section>
 
       <section
+        id="promo-ablauf"
         style={{
           marginBottom: '2rem',
           padding: '1rem 1.1rem',

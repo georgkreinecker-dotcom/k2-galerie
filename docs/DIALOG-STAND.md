@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Smart Panel: Promo-Video als eigene Mappe** – `MAPPEN`-Eintrag `promo-video` (violetter Kopf, klappbar), Hub-Button + sortierte Links (Präsentationsmappe Vollversion ?context=oeffentlich, ök2, Admin ök2 Einstellungen, mök2, Marketing ök2, Lizenzen, Docs-Namen). `PromoVideoProduktionPage`: Inhaltsverzeichnis mit Ankern, Link Mappe mit `?context=oeffentlich`. Tests + Build grün. **Commit:** _(folgt nach Push)_
+
+**Was wir JETZT tun:** In der APf Smart Panel → Mappe „Promo-Video-Produktion“ aufklappen und kurz durchklicken.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Video Produktion gestartet:** `docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md` – Matrix + Drehbuch Stichpunkte V1, ök2-Routen, nächste Schritte; Georg prüft. **Commit:** **05beb9b5** ✅ GitHub
 
 **Was wir JETZT tun:** Georg liest V1; bei Rückmeldung Sprechertext oder Kürzung.
