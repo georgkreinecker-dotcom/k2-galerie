@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Sprechertext → Untertitel (SRT)** – `docs/PROMO-VIDEO-SPRECHERTEXT-90S-V1.srt` angelegt (6 Blöcke, ~90 s Richtwerte); `PROMO-VIDEO-SPRECHERTEXT-90S-V1.md` §5 mit Verweis + Hinweis iMovie/CapCut. **Automatisch möglich aus Repo:** nur Untertitel-Datei, **kein** fertiges Video mit Ton aus Cursor.
+
+**Was wir JETZT tun:** SRT in Schnittsoftware importieren; Zeiten nach echtem Sprecher/TTS justieren; Ton separat (Aufnahme oder TTS).
+
+---
+
 **Letzter Stand:** 05.04.26 – **Promo-Video: erst Mac-Vorschau, dann YouTube** – `PromoVideoProduktionPage`: **Schritt 1** „Video vom Mac“ = Datei wählen, **Blob-Vorschau** im Browser (kein Upload, keine Stammdaten); **Schritt 2** = wie bisher Highlight-URL aus Stammdaten nach YouTube. Einleitung + Nav-Anker angepasst. Tests + Build grün. **Commit:** **34d609aa** ✅ GitHub
 
 **Was wir JETZT tun:** APf → Promo-Video-Produktion → zuerst lokale Datei ansehen/besprechen; erst danach Highlight-URL in ök2-Stammdaten und ggf. YouTube.
