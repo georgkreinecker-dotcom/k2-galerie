@@ -2,11 +2,12 @@
  * Promo-Video-Produktion – APf-Werkzeug (nur localhost / ?apf=1 / ?dev=1).
  * Sportwagenmodus: eine Problemstellung = ein Standard (Datenquelle Mappe, Einspielung nur Stammdaten
  * im passenden Kontext) – keine parallelen „vielleicht so“-Wege. Siehe .cursor/rules/ein-standard-problem.mdc.
- * Vorschau-Player: dieselbe URL wie ök2-Stammdaten → Highlight-Video (keine zweite Quelle).
+ * Vorschau-Player (Stammdaten): dieselbe URL wie ök2 → Highlight-Video (keine zweite Quelle).
+ * Lokale Vorschau: Datei vom Mac (blob URL) – nur APf, nicht gespeichert, vor YouTube.
  * Öffentliche Galerie-App: weiterhin nur Links (GalerieSocialLinks), kein Embed auf der Besucher-Seite hier.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ChangeEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   ENTDECKEN_ROUTE,
@@ -21,6 +22,14 @@ import { safeExternalHref } from '../utils/socialExternalUrls'
 
 export default function PromoVideoProduktionPage() {
   const [featuredVideoUrl, setFeaturedVideoUrl] = useState('')
+  /** Nur dieser Browser-Tab: lokale Datei vom Mac, nicht in Stammdaten / nicht auf YouTube */
+  const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) URL.revokeObjectURL(localPreviewUrl)
+    }
+  }, [localPreviewUrl])
 
   useEffect(() => {
     const read = () => {
@@ -46,6 +55,22 @@ export default function PromoVideoProduktionPage() {
   const safeVideo = safeExternalHref(featuredVideoUrl)
   const embed = videoUrlToFeaturedEmbed(featuredVideoUrl)
 
+  const onLocalVideoPicked = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    setLocalPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      if (!file) return null
+      return URL.createObjectURL(file)
+    })
+  }
+
+  const clearLocalPreview = () => {
+    setLocalPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev)
+      return null
+    })
+  }
+
   return (
     <article
       style={{
@@ -61,9 +86,9 @@ export default function PromoVideoProduktionPage() {
       <header style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid rgba(95,251,241,0.25)' }}>
         <h1 style={{ fontSize: '1.5rem', margin: 0, color: '#5ffbf1' }}>Promo-Video-Produktion</h1>
         <p style={{ margin: '0.5rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>
-          Eigener Arbeitsplatz auf der APf. Unten siehst du das <strong>fertige Highlight-Video</strong>, sobald
-          der Link in den <strong>ök2-Stammdaten</strong> steht – dieselbe Quelle wie auf der öffentlichen Galerie,
-          keine zweite URL.
+          <strong>Zuerst:</strong> Video vom Mac auswählen und hier ansehen (mit mir Skript/Texte klären) –{' '}
+          <strong>ohne</strong> YouTube. <strong>Später:</strong> Wenn es passt, hochladen und den Link in den
+          ök2-Stammdaten eintragen – dann gilt die Vorschau unten für die Galerie.
         </p>
         <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
           <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none' }}>
@@ -89,8 +114,12 @@ export default function PromoVideoProduktionPage() {
         }}
       >
         <strong style={{ color: '#e9d5ff', display: 'block', marginBottom: '0.4rem' }}>Inhalt</strong>
+        <a href="#promo-lokal" style={{ color: '#c4b5fd' }}>
+          Video vom Mac
+        </a>
+        {' · '}
         <a href="#promo-vorschau" style={{ color: '#c4b5fd' }}>
-          Video-Vorschau (APf)
+          Nach YouTube (Stammdaten)
         </a>
         {' · '}
         <a href="#promo-regeln" style={{ color: '#c4b5fd' }}>
@@ -115,6 +144,82 @@ export default function PromoVideoProduktionPage() {
       </nav>
 
       <section
+        id="promo-lokal"
+        style={{
+          marginBottom: '1.75rem',
+          padding: '1rem 1.1rem',
+          background: 'rgba(59,130,246,0.1)',
+          borderRadius: '12px',
+          border: '1px solid rgba(96,165,250,0.45)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.15rem', color: '#93c5fd', margin: '0 0 0.5rem' }}>
+          Schritt 1: Dein Video vom Mac – nur Vorschau
+        </h2>
+        <p style={{ margin: '0 0 0.75rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.92)' }}>
+          So kannst du <strong>Aufnahme/Schnitt</strong> in Ruhe ansehen und Texte mit der KI abstimmen –{' '}
+          <strong>ohne</strong> vorher YouTube. Nichts wird gespeichert oder hochgeladen; nur dieser Tab im Browser.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
+          <label
+            style={{
+              display: 'inline-block',
+              padding: '0.5rem 1rem',
+              background: '#2563eb',
+              color: '#fff',
+              borderRadius: 8,
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+            }}
+          >
+            Videodatei wählen (.mp4, .webm …)
+            <input
+              type="file"
+              accept="video/*,.mp4,.webm,.mov"
+              style={{ display: 'none' }}
+              onChange={onLocalVideoPicked}
+            />
+          </label>
+          {localPreviewUrl ? (
+            <button
+              type="button"
+              onClick={clearLocalPreview}
+              style={{
+                padding: '0.45rem 0.85rem',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.35)',
+                color: 'rgba(255,245,240,0.9)',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+              }}
+            >
+              Lokale Vorschau entfernen
+            </button>
+          ) : null}
+        </div>
+        {localPreviewUrl ? (
+          <video
+            key={localPreviewUrl}
+            controls
+            playsInline
+            src={localPreviewUrl}
+            style={{
+              width: '100%',
+              maxHeight: 'min(70vh, 520px)',
+              borderRadius: 10,
+              background: '#000',
+            }}
+          />
+        ) : (
+          <p style={{ margin: 0, fontSize: '0.86rem', color: 'rgba(255,245,240,0.6)' }}>
+            Noch keine Datei gewählt – oben auf „Videodatei wählen“ klicken.
+          </p>
+        )}
+      </section>
+
+      <section
         id="promo-vorschau"
         style={{
           marginBottom: '1.75rem',
@@ -125,12 +230,13 @@ export default function PromoVideoProduktionPage() {
         }}
       >
         <h2 style={{ fontSize: '1.15rem', color: '#86efac', margin: '0 0 0.5rem' }}>
-          Fertiges Video – Vorschau auf der APf
+          Schritt 2: Nach YouTube – dieselbe Vorschau wie in der Galerie
         </h2>
         <p style={{ margin: '0 0 0.75rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.9)' }}>
-          Nach Aufnahme und Schnitt: Link unter{' '}
-          <strong>Admin → Einstellungen → Stammdaten Galerie (Kontext ök2) → Highlight-Video</strong>. Hier erscheint
-          dieselbe Vorschau (YouTube-Einbettung oder direkte .mp4/.webm-Datei).
+          Wenn du zufrieden bist: Video zu YouTube hochladen, dann den Link unter{' '}
+          <strong>Admin → Einstellungen → Stammdaten Galerie (Kontext ök2) → Highlight-Video</strong> eintragen.
+          Hier siehst du die <strong>gleiche</strong> Einbettung wie Besucher später (YouTube oder öffentliche
+          .mp4/.webm-URL).
         </p>
         {!safeVideo ? (
           <p style={{ margin: 0, fontSize: '0.88rem', color: 'rgba(255,245,240,0.65)' }}>
@@ -289,9 +395,9 @@ export default function PromoVideoProduktionPage() {
         <h2 style={{ fontSize: '1.05rem', color: '#5ffbf1', margin: '0 0 0.5rem' }}>Ablauf (Orientierung)</h2>
         <ol style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.65, fontSize: '0.88rem' }}>
           <li>Texte und Kernaussagen aus der Mappe übernehmen.</li>
-          <li>Storyboard / Kapitel mit neutraler Stimme vorschlagen (TTS oder Sprecher:in).</li>
-          <li>Video exportieren, auf YouTube hochladen (oder vergleichbar).</li>
-          <li>Öffentlichen Link in Stammdaten ök2 eintragen – Besucher sehen ihn in der Galerie-App.</li>
+          <li>Video exportieren; <strong>lokal auf der APf ansehen</strong> (Schritt 1) und Texte abstimmen.</li>
+          <li>Wenn es passt: auf YouTube hochladen (oder öffentliche Video-URL).</li>
+          <li>Link in Stammdaten ök2 eintragen – Besucher sehen ihn in der Galerie-App.</li>
         </ol>
       </section>
 

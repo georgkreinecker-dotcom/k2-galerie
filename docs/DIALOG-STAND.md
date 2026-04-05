@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Promo-Video: erst Mac-Vorschau, dann YouTube** – `PromoVideoProduktionPage`: **Schritt 1** „Video vom Mac“ = Datei wählen, **Blob-Vorschau** im Browser (kein Upload, keine Stammdaten); **Schritt 2** = wie bisher Highlight-URL aus Stammdaten nach YouTube. Einleitung + Nav-Anker angepasst. Tests + Build grün. **Commit:** _(folgt nach Push)_
+
+**Was wir JETZT tun:** APf → Promo-Video-Produktion → zuerst lokale Datei ansehen/besprechen; erst danach Highlight-URL in ök2-Stammdaten und ggf. YouTube.
+
+**Einordnung:** Georg: Video liegt schon lokal → mit dir am Mac durchgehen **vor** Veröffentlichung; YouTube bleibt zweiter Schritt.
+
+---
+
 **Letzter Stand:** 05.04.26 – **Promo-Video APf: Video-Vorschau real** – `PromoVideoProduktionPage`: Abschnitt „Fertiges Video – Vorschau“ lädt **dieselbe URL** wie ök2-Stammdaten → Highlight-Video (`loadStammdaten` + YouTube-Embed oder .mp4/.webm); Updates bei Speichern im Admin. Hilfsfunktion `videoUrlToFeaturedEmbed`, Tests. **Commit:** **d3246686** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: `/projects/k2-galerie/promo-video-produktion` – mit eingetragenem Highlight-Video soll der Player sichtbar sein.
