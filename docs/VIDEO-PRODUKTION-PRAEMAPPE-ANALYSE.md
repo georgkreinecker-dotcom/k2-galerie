@@ -1,6 +1,6 @@
 # Promo-Video-Produktion – Analyse (Präsentationsmappe als Drehbuch-Quelle)
 
-**Stand:** 05.04.26  
+**Stand:** 04.04.26 (§1a/1b: Stil Animation/KI + Ressourcen festgelegt)  
 **Zweck:** Ein gemeinsamer Orientierungsrahmen für Skript, Storyboard und Schnitt – **bevor** mit Aufnahme oder TTS gestartet wird. Kein Ersatz für kreative Entscheidung; verbindlich sind die **Projektregeln** (Kontext K2/ök2/VK2, eine Quelle, neutrale Stimme).
 
 ---
@@ -13,6 +13,22 @@
 | **Ton** | **Neutral** (Sprecher:in / TTS), nicht die persönliche Stimme von Martina & Georg – das ist in `PromoVideoProduktionPage` und mök2 verankert. |
 | **Kernbotschaft** | „Eine Plattform: Schaufenster + Zentrale + Kassa + Marketing aus einer Hand“ – **Mein Weg** und **sechs Sparten** nur so weit, wie sie in der Mappe bereits stehen (kein Marketing-Überziehen). |
 | **Call-to-Action** | Demo **ök2** ansehen, Lizenz vergleichen, Kontakt – **kein** Druck, keine aggressiven Formulierungen. |
+
+### 1a. Stil und Form (verbindlich)
+
+| Punkt | Festlegung |
+|--------|------------|
+| **Darstellung** | **Animiert / KI-gestützt** – **keine** realen Personen als Darsteller, **kein** Interview- oder „Wir vor der Kamera“-Format. Stattdessen: abstrakte Grafik, Motion Design, **Screens der ök2-Demo**, optional **eine** KI-Sprecherstimme (TTS). |
+| **Passt zu** | Neutraler Ton (Tabelle oben), **ein** Look über den ganzen Film, **wiederholbar** (Text/Screen später tauschen, Stil bleibt). |
+| **Transparenz** | Wenn gefragt: offen **Erklärfilm mit Animation und/oder KI-Stimme** – keine Täuschung als Live-Mensch; seriös und klar. |
+
+### 1b. Ressourcen und professioneller Rahmen
+
+| Punkt | Festlegung |
+|--------|------------|
+| **Was realistisch zur Verfügung steht** | Im Wesentlichen **Georgs Zeitbudget** und **Unterstützung durch die KI im Projekt** (Struktur, Skript-Stichpunkte, Abgleich mit Mappe/mök2) – **kein** externes Filmteam als Standardannahme. |
+| **Professionell in diesem Rahmen** | **Eine** inhaltliche Quelle (Mappe), **ein** klarer Ablauf (Prioritäten §3 → Skript → Screen-Aufnahmen / Voice → Schnitt), **kein** Umfang ohne Priorität; **erste Version fertig und konsistent** wichtiger als endloses Polieren. |
+| **Machbarkeit** | **Ja** – wenn Länge und Kapitel **diszipliniert** bleiben (z. B. **8–12 Min** Erklärer oder bewusst **3–5 Min** Kurzfassung) und der visuelle Anspruch **Erklärung + saubere Screens** bleibt, nicht Hollywood-Animation. |
 
 ---
 
@@ -44,6 +60,7 @@
 
 ## 4. Bild- und Ton-Logik
 
+- **Form (verbindlich):** Siehe **§1a** – Animation/Motion + App-Screens; **Ton:** eine KI-/TTS-Stimme oder rein unterlegte Musik mit Texteinblendungen – **keine** Pflicht zu echten Sprecher:innen.  
 - **B-Roll:** Screenshots und UI wie in der Mappe beschrieben (`PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md` §3) – **ök2-Demo** als öffentlich sichtbare Oberfläche, **keine** K2-Echtdaten in ök2-Kontext.  
 - **Einspielung fertiges Video:** **Ein** Link in **Stammdaten im richtigen Kontext** (öffentliche Demo → ök2-Stammdaten); siehe `PromoVideoProduktionPage` und `ein-standard-problem.mdc` (Zeile Promo-Video).
 
@@ -51,6 +68,8 @@
 
 ## 5. Checkliste vor Produktion
 
+- [ ] **Stil §1a:** Animation/KI, **keine** realen Personen vor der Kamera – einheitlicher Look.  
+- [ ] **Rahmen §1b:** Prioritäten gesetzt (Länge, Kurz- vs. Langfassung); kein Scope ohne Ende.  
 - [ ] Index `00-INDEX.md` der Vollversion gelesen – Reihenfolge der Kapitel verstanden.  
 - [ ] USP- und „Was ist“-Kapitel als **Skript-Basis** markiert (Zitate / Stichpunkte).  
 - [ ] mök2: keine widersprüchlichen Superlative gegenüber der Mappe.  
@@ -71,4 +90,4 @@
 
 ---
 
-**Kurz:** Video = **Mappe komprimiert erzählt** + **Beweis aus der App** + **ruhiger Ausstieg**. Alles andere ist Variation, keine zweite Wahrheit.
+**Kurz:** Video = **Mappe komprimiert erzählt** + **Beweis aus der App** + **ruhiger Ausstieg**; **Form** = **animiert/KI, ohne Menschen** (§1a); **Ressourcen** = Zeitbudget Georg + KI im Projekt, professionell durch **eine Quelle und klare Priorität** (§1b). Alles andere ist Variation, keine zweite Wahrheit.

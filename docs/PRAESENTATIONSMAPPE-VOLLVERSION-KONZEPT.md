@@ -173,7 +173,7 @@ Slogan und Botschaft aus mök2 (oben) übernehmen. Keine neuen Texte erfinden �
 
 ## 8. Video-Produktion (Promo)
 
-Die Vollversion liefert **Struktur und Textbasis** für ein Lizenz-/Produkt-Video – keine zweite Textwelt neben mök2. **Prioritäten, Ton (neutrale Stimme), Kapitel-Folge und Checkliste** stehen in **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`**. **Ablauf und Einspielung** des fertigen Videos: Seite **Promo-Video-Produktion** in der APf (`PromoVideoProduktionPage`), Verknüpfung `PROJECT_ROUTES['k2-galerie'].promoVideoProduktion`.
+Die Vollversion liefert **Struktur und Textbasis** für ein Lizenz-/Produkt-Video – keine zweite Textwelt neben mök2. **Prioritäten, Ton (neutrale Stimme), Kapitel-Folge und Checkliste** stehen in **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`** – dort auch **verbindlich:** **§1a** Stil (animiert/KI, keine realen Personen) und **§1b** Ressourcen (Zeitbudget Georg + KI im Projekt, professionell = eine Quelle + klare Priorität). **Ablauf und Einspielung** des fertigen Videos: Seite **Promo-Video-Produktion** in der APf (`PromoVideoProduktionPage`), Verknüpfung `PROJECT_ROUTES['k2-galerie'].promoVideoProduktion`.
 
 ---
 
