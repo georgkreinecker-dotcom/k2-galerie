@@ -87,6 +87,7 @@
 | `src/pages/PromoVideoProduktionPage.tsx` | APf-Einstieg, Ablauf, Links |
 | `.cursor/rules/prospekt-kunst-und-mein-weg.mdc` | Kunst + Mein Weg – Kommunikation |
 | `public/praesentationsmappe-vollversion/00-INDEX.md` | Kapitel-Übersicht |
+| `docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md` | Matrix + Drehbuch Stichpunkte V1, Routen für Screens |
 
 ---
 
