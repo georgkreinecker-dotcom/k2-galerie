@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **Video Produktion gestartet:** `docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md` – Matrix + Drehbuch Stichpunkte V1, ök2-Routen, nächste Schritte; Georg prüft. **Commit:** *(nach Push)*
+**Letzter Stand:** 04.04.26 – **Video Produktion gestartet:** `docs/VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md` – Matrix + Drehbuch Stichpunkte V1, ök2-Routen, nächste Schritte; Georg prüft. **Commit:** **05beb9b5** ✅ GitHub
 
 **Was wir JETZT tun:** Georg liest V1; bei Rückmeldung Sprechertext oder Kürzung.
 
