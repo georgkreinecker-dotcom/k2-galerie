@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 05.04.26 – **Promo-Video: erst Mac-Vorschau, dann YouTube** – `PromoVideoProduktionPage`: **Schritt 1** „Video vom Mac“ = Datei wählen, **Blob-Vorschau** im Browser (kein Upload, keine Stammdaten); **Schritt 2** = wie bisher Highlight-URL aus Stammdaten nach YouTube. Einleitung + Nav-Anker angepasst. Tests + Build grün. **Commit:** _(folgt nach Push)_
+**Letzter Stand:** 05.04.26 – **Promo-Video: erst Mac-Vorschau, dann YouTube** – `PromoVideoProduktionPage`: **Schritt 1** „Video vom Mac“ = Datei wählen, **Blob-Vorschau** im Browser (kein Upload, keine Stammdaten); **Schritt 2** = wie bisher Highlight-URL aus Stammdaten nach YouTube. Einleitung + Nav-Anker angepasst. Tests + Build grün. **Commit:** **34d609aa** ✅ GitHub
 
 **Was wir JETZT tun:** APf → Promo-Video-Produktion → zuerst lokale Datei ansehen/besprechen; erst danach Highlight-URL in ök2-Stammdaten und ggf. YouTube.
 
