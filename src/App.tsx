@@ -39,6 +39,7 @@ import FlyerEventBogenNeuPage from './pages/FlyerEventBogenNeuPage'
 import PilotStartPage from './pages/PilotStartPage'
 import PilotEinladungPage from './pages/PilotEinladungPage'
 import K2SoftwareentwicklungPage from './pages/K2SoftwareentwicklungPage'
+import PromoVideoProduktionPage from './pages/PromoVideoProduktionPage'
 import WerbeunterlagenPage from './pages/WerbeunterlagenPage'
 import Mok2Layout from './components/Mok2Layout'
 import GaleriePage from './pages/GaleriePage'
@@ -915,6 +916,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} element={<FlyerEventBogenNeuPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].promoVideoProduktion} element={<PromoVideoProduktionPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />

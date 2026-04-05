@@ -8,6 +8,9 @@
 
 import { PROJECT_ROUTES, getAllProjectIds, type ProjectId, K2_GALERIE_APF_EINSTIEG } from './navigation'
 
+/** Vercel: APf-Kacheln mit ?apf=1, sonst landet man auf Entdecken */
+const APF_Q = '?apf=1' as const
+
 /** Farben pro Projekt – jedes Projekt eindeutig */
 export const PROJECT_COLORS: Record<string, string> = {
   'k2-galerie': '#5ffbf1',
@@ -76,6 +79,14 @@ export function getProjectCards(): ProjectCard[] {
       description: 'Öffentliche Ansicht der K2 Galerie.',
       to: PROJECT_ROUTES['k2-galerie'].galerieOeffentlich,
       color: PROJECT_COLORS['k2-galerie-oeffentlich'] ?? PROJECT_PALETTE[1],
+      status: 'in-progress',
+    },
+    {
+      id: 'k2-galerie-promo-video-produktion',
+      title: '🎬 Promo-Video-Produktion',
+      description: 'APf-Arbeitsplatz: Mappe als Quelle, neutrale Stimme, fertiges Video in Stammdaten ök2 – nicht in der Besucher-App.',
+      to: `${PROJECT_ROUTES['k2-galerie'].promoVideoProduktion}${APF_Q}`,
+      color: '#a78bfa',
       status: 'in-progress',
     },
   ]

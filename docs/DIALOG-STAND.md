@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **APf: Promo-Video-Produktion (eigener Platz, nicht in Besucher-App)** – Route `promoVideoProduktion` (`/projects/k2-galerie/promo-video-produktion`), `PromoVideoProduktionPage.tsx`: neutrale Stimme, Datenquelle Präsentationsmappe Vollversion, fertiges Video → Admin Stammdaten ök2; Zugriff nur `shouldShowK2GalerieApfProjectHub`. Projekt-Karte + DevView-Tab. Tests + Build grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** –
+
+**Einordnung:** Georg: Arbeitsplatz APf; keine Einbindung des Players in die öffentliche Galerie – nur Link/Stammdaten.
+
+---
+
 **Letzter Stand:** 04.04.26 (Nacht) – **Session-Ende: Build-Stand + Protokoll** – Georg: Schluss für heute. `npm run build` (Tests inkl.): aktualisiert `api/build-info-payload.json`, `public/build-info.json`, `src/buildInfo.generated.ts`, `index.html`; `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` kleine Korrektur. **Commit:** **40eb5260** ✅ GitHub (Session-Ende: Build-Stand, TEST-PROTOKOLL, DIALOG-STAND, WIR-PROZESS — Kernbundle **3caa2368**)
 
 **Was wir JETZT tun:** –

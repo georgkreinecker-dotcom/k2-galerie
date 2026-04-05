@@ -30,6 +30,7 @@ import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
 import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
 import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
+import PromoVideoProduktionPage from './PromoVideoProduktionPage'
 import MobileConnectPage from './MobileConnectPage'
 import LicencesPage from './LicencesPage'
 import SmartPanel from '../components/SmartPanel'
@@ -462,6 +463,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'presse': return '/admin?tab=presse'
       case 'oeffentlichkeitsarbeit': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1'
       case 'softwareentwicklung': return PROJECT_ROUTES['k2-galerie'].softwareentwicklung
+      case 'promo-video-produktion': return PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
       case 'mobile-connect': return PROJECT_ROUTES['k2-galerie'].mobileConnect
       case 'admin-einstellungen': return '/admin?tab=einstellungen'
       default: return PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
@@ -1053,6 +1055,7 @@ end tell`
     { id: 'texte-schreibtisch', name: 'Texte-Schreibtisch', component: TexteSchreibtischPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
     { id: 'softwareentwicklung', name: 'K2 Softwareentwicklung', component: K2SoftwareentwicklungPage },
+    { id: 'promo-video-produktion', name: 'Promo-Video-Produktion', component: PromoVideoProduktionPage },
     { id: 'mobile-connect', name: 'Mobile verbinden', component: MobileConnectPage },
     { id: 'admin-einstellungen', name: 'Admin – Einstellungen & Backup', component: ScreenshotExportAdmin },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
@@ -1226,6 +1229,9 @@ end tell`
     }
     if (pageToRender === 'softwareentwicklung') {
       return <K2SoftwareentwicklungPage key={componentKey} />
+    }
+    if (pageToRender === 'promo-video-produktion') {
+      return <PromoVideoProduktionPage key={componentKey} />
     }
     if (pageToRender === 'mobile-connect') {
       return <MobileConnectPage key={componentKey} />

@@ -119,9 +119,13 @@ export const PROJECT_ROUTES = {
     platzanordnung: '/projects/k2-galerie/platzanordnung',
     produktVorschau: '/projects/k2-galerie/produkt-vorschau',
     marketingOek2: '/projects/k2-galerie/marketing-oek2',
-    /** Präsentationsmappe Kurzvariante – kombinierte Kurzform (ök2 + VK2), Teal/Weiß (Vorbild für alle Drucksorten). */
+    /**
+     * Präsentationsmappe (Kurz-URL für Flyer, mök2, Werbeunterlagen).
+     * **Standard:** App leitet ohne `?view=kurz` auf `praesentationsmappeVollversion` um → **letztgültige Mappe** = Vollversion (`public/praesentationsmappe-vollversion/`).
+     * Nur mit **`?view=kurz`** bleibt die alte einseitige Kurzform (Teal).
+     */
     praesentationsmappe: '/projects/k2-galerie/praesentationsmappe',
-    /** Präsentationsmappe Vollversion – große Mappe mit vielen Kapiteln. */
+    /** Präsentationsmappe Vollversion – dieselbe letztgültige Mappe; direkter Einstieg ohne Redirect. */
     praesentationsmappeVollversion: '/projects/k2-galerie/praesentationsmappe-vollversion',
     /** Promo A4 „Essenz“ – eigenständiger Flyer, nicht in der Präsentationsmappe */
     flyerOek2PromoA4: '/projects/k2-galerie/flyer-oek2-promo-a4',
@@ -134,6 +138,11 @@ export const PROJECT_ROUTES = {
     /** Nur Schreiben an Michael – gleicher Inhalt wie PILOT_SCHREIBEN_ROUTE, Redirect dorthin */
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
+    /**
+     * APf-only: Promo-Video-Produktion (Arbeitsplatz, Daten aus Mappe, fertiges Video in Stammdaten ök2).
+     * Nicht in der öffentlichen Galerie-App eingebunden – Zugriff nur localhost / ?apf=1 / ?dev=1.
+     */
+    promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
@@ -207,6 +216,7 @@ export const PROJECT_ROUTES = {
     plakatGalerieeroeffnung: '/projects/k2-galerie/plakat-galerieeroeffnung',
     flyerEventBogenNeu: '/projects/k2-galerie/flyer-event-bogen-neu',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
+    promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
     pilotEinladung: '/projects/k2-galerie/pilot-einladung',
@@ -256,6 +266,7 @@ export const PROJECT_ROUTES = {
     pilotStart: '/projects/k2-galerie/pilot-start',
     softwareentwicklung: '/projects/k2-galerie/softwareentwicklung',
     werbeunterlagen: '/projects/k2-galerie/werbeunterlagen',
+    promoVideoProduktion: '/projects/k2-galerie/promo-video-produktion',
     licences: '/projects/k2-galerie/licences',
     /** E-Mail-Einladung Testpilot – Token in URL, vereinfachter Einstieg */
     pilotEinladung: '/projects/k2-galerie/pilot-einladung',
