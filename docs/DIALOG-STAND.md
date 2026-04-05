@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Promo-Video APf: Video-Vorschau real** – `PromoVideoProduktionPage`: Abschnitt „Fertiges Video – Vorschau“ lädt **dieselbe URL** wie ök2-Stammdaten → Highlight-Video (`loadStammdaten` + YouTube-Embed oder .mp4/.webm); Updates bei Speichern im Admin. Hilfsfunktion `videoUrlToFeaturedEmbed`, Tests. **Commit:** **d3246686** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: `/projects/k2-galerie/promo-video-produktion` – mit eingetragenem Highlight-Video soll der Player sichtbar sein.
+
+---
+
 **Letzter Stand:** 05.04.26 – **Promo-Video: Doku in APf öffnen** – Smart Panel Mappe: zwei Buttons „Prämappe-Analyse“ / „Matrix & Drehbuch V1“ → Handbuch-Route `?page=handbuch&doc=…`; `K2TeamHandbuchPage` + Spiegel `k2team-handbuch/` + `public/k2team-handbuch/`. Tests + Build grün. **Commit:** **0d40aba9** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Vercel „Ready“: Mappe aufklappen → beide Doku-Buttons → Handbuch öffnet richtige Datei. **Inhaltlich:** Skript aus ANALYSE + Matrix/Drehbuch → Aufnahme/Schnitt → fertiges Video in ök2-Stammdaten (wie Hub beschrieben).
