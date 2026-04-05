@@ -860,6 +860,8 @@ function App() {
       <Route path="/projects/k2-galerie/k2-markt-oberflaeche" element={<Navigate to={PROJECT_ROUTES['k2-markt'].home} replace />} />
       <Route path="/projects/k2-galerie/k2-markt-tor" element={<Navigate to={PROJECT_ROUTES['k2-markt'].tor} replace />} />
       <Route path="/projects/k2-galerie/k2-markt" element={<Navigate to={PROJECT_ROUTES['k2-markt'].mappe} replace />} />
+      {/* BUG-034: konkrete k2-galerie-Unterpfade vor /projects/:projectId – sonst Catch-all / Risiko falscher Match */}
+      <Route path={PROJECT_ROUTES['k2-galerie'].promoVideoProduktion} element={<PromoVideoProduktionPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerie} element={<GaleriePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GaleriePage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].galerieOeffentlichVorschau} element={<PlatformOnlyRoute><Ok2ThemeWrapper><GalerieVorschauPage musterOnly /></Ok2ThemeWrapper></PlatformOnlyRoute>} />
@@ -916,7 +918,6 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].flyerEventBogenNeu} element={<FlyerEventBogenNeuPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].pilotStart} element={<Navigate to={PILOT_SCHREIBEN_ROUTE} replace />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].softwareentwicklung} element={<Mok2Layout><K2SoftwareentwicklungPage /></Mok2Layout>} />
-      <Route path={PROJECT_ROUTES['k2-galerie'].promoVideoProduktion} element={<PromoVideoProduktionPage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />

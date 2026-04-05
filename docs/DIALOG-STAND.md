@@ -1,5 +1,13 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **BUG-034: Promo-Video-Produktion-Route vor `/projects/:projectId`** – `App.tsx`: `promoVideoProduktion` nach `k2-markt`-Redirects, **vor** `galerie`-Routen und **vor** `ProjectStartPage`; doppelte Route unterhalb entfernt. Verhindert Catch-all `NotFoundOrRedirect` bei `/projects/k2-galerie/promo-video-produktion`. Tests grün (`npm run test`), `build:vercel` grün. **Commit:** **3e09be03** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: `/projects/k2-galerie/promo-video-produktion` und Smart-Panel-Button kurz prüfen.
+
+**Einordnung:** `docs/ANALYSE-LINK-OEFFNET-APF-STATT-UNTERSEITE.md` / Sportwagenmodus – konkrete Projekt-Unterpfade vor generischer Mandanten-Route.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Smart Panel: Promo-Video eigener violetter Button** – Nicht in Mappe „K2 Galerie“: `SmartPanel.tsx` eigener Button 🎬 unter Header (Violett-Gradient), `onNavigate('promo-video-produktion')`, aktive Route hervorgehoben. Build grün. **Commit:** **d275ca03** ✅ GitHub
 
 **Was wir JETZT tun:** –
