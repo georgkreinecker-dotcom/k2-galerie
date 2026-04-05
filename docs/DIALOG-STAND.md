@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 05.04.26 – **Promo-Video: Doku in APf öffnen** – Smart Panel Mappe: zwei Buttons „Prämappe-Analyse“ / „Matrix & Drehbuch V1“ → Handbuch-Route `?page=handbuch&doc=…`; `K2TeamHandbuchPage` + Spiegel `k2team-handbuch/` + `public/k2team-handbuch/`. Tests + Build grün. **Commit:** **0d40aba9** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Vercel „Ready“: Mappe aufklappen → beide Doku-Buttons → Handbuch öffnet richtige Datei. **Inhaltlich:** Skript aus ANALYSE + Matrix/Drehbuch → Aufnahme/Schnitt → fertiges Video in ök2-Stammdaten (wie Hub beschrieben).
+
+---
+
 **Letzter Stand:** 05.04.26 – **Smart Panel: Promo-Video als eigene Mappe** – `MAPPEN`-Eintrag `promo-video` (violetter Kopf, klappbar), Hub-Button + sortierte Links (Präsentationsmappe Vollversion ?context=oeffentlich, ök2, Admin ök2 Einstellungen, mök2, Marketing ök2, Lizenzen, Docs-Namen). `PromoVideoProduktionPage`: Inhaltsverzeichnis mit Ankern, Link Mappe mit `?context=oeffentlich`. Tests + Build grün. **Commit:** **e446f71e** ✅ GitHub
 
 **Was wir JETZT tun:** In der APf Smart Panel → Mappe „Promo-Video-Produktion“ aufklappen und kurz durchklicken.
