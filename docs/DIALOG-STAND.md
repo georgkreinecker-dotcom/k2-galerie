@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 05.04.26 – **Smart Panel: Promo-Video als eigene Mappe** – `MAPPEN`-Eintrag `promo-video` (violetter Kopf, klappbar), Hub-Button + sortierte Links (Präsentationsmappe Vollversion ?context=oeffentlich, ök2, Admin ök2 Einstellungen, mök2, Marketing ök2, Lizenzen, Docs-Namen). `PromoVideoProduktionPage`: Inhaltsverzeichnis mit Ankern, Link Mappe mit `?context=oeffentlich`. Tests + Build grün. **Commit:** _(folgt nach Push)_
+**Letzter Stand:** 05.04.26 – **Smart Panel: Promo-Video als eigene Mappe** – `MAPPEN`-Eintrag `promo-video` (violetter Kopf, klappbar), Hub-Button + sortierte Links (Präsentationsmappe Vollversion ?context=oeffentlich, ök2, Admin ök2 Einstellungen, mök2, Marketing ök2, Lizenzen, Docs-Namen). `PromoVideoProduktionPage`: Inhaltsverzeichnis mit Ankern, Link Mappe mit `?context=oeffentlich`. Tests + Build grün. **Commit:** **e446f71e** ✅ GitHub
 
 **Was wir JETZT tun:** In der APf Smart Panel → Mappe „Promo-Video-Produktion“ aufklappen und kurz durchklicken.
 
