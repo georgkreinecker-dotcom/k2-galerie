@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE:** §1a Stil fest (animiert/KI, keine Menschen), §1b Ressourcen (nur Georgs Zeit + KI im Projekt, professionell = Priorität + eine Quelle). Konzept §8 Verweis ergänzt. **Commit:** *(nach Push)*
+**Letzter Stand:** 04.04.26 – **VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE:** §1a Stil fest (animiert/KI, keine Menschen), §1b Ressourcen (nur Georgs Zeit + KI im Projekt, professionell = Priorität + eine Quelle). Konzept §8 Verweis ergänzt. **Commit:** **ead6a8ac** ✅ GitHub
 
 **Was wir JETZT tun:** Skript-Stichpunkte aus Mappe §3 ziehen, wenn Video-Produktion startet.
 
