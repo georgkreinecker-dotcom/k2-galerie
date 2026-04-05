@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 04.04.26 – **APf: Promo-Video-Produktion (eigener Platz, nicht in Besucher-App)** – Route `promoVideoProduktion` (`/projects/k2-galerie/promo-video-produktion`), `PromoVideoProduktionPage.tsx`: neutrale Stimme, Datenquelle Präsentationsmappe Vollversion, fertiges Video → Admin Stammdaten ök2; Zugriff nur `shouldShowK2GalerieApfProjectHub`. Projekt-Karte + DevView-Tab. Tests + Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 04.04.26 – **APf: Promo-Video-Produktion (eigener Platz, nicht in Besucher-App)** – Route `promoVideoProduktion` (`/projects/k2-galerie/promo-video-produktion`), `PromoVideoProduktionPage.tsx`: neutrale Stimme, Datenquelle Präsentationsmappe Vollversion, fertiges Video → Admin Stammdaten ök2; Zugriff nur `shouldShowK2GalerieApfProjectHub`. Projekt-Karte + DevView-Tab. Tests + Build grün. **Commit:** **f687780f** ✅ GitHub
 
 **Was wir JETZT tun:** –
 
