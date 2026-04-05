@@ -1,6 +1,14 @@
 # Dialog-Stand
 
-**Letzter Stand:** 05.04.26 – **BUG-034: Promo-Video-Produktion-Route vor `/projects/:projectId`** – `App.tsx`: `promoVideoProduktion` nach `k2-markt`-Redirects, **vor** `galerie`-Routen und **vor** `ProjectStartPage`; doppelte Route unterhalb entfernt. Verhindert Catch-all `NotFoundOrRedirect` bei `/projects/k2-galerie/promo-video-produktion`. Tests grün (`npm run test`), `build:vercel` grün. **Commit:** **3e09be03** ✅ GitHub
+**Letzter Stand:** 05.04.26 – **Mappe Feinschliff + Video-Analyse** – `PromoVideoProduktionPage`: Tippfehler „derselbe Weg“; neu **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`** (Story, Prioritäten, Checkliste); `public/praesentationsmappe-vollversion/00-INDEX.md` Abschnitt „Video-Produktion (Promo)“; `PRAESENTATIONSMAPPE-VOLLVERSION-KONZEPT.md` §8; `docs/00-INDEX.md` Eintrag. **Commit:** *(nach Push)*
+
+**Was wir JETZT tun:** Video-Produktion starten nach Wunsch; Skript aus ANALYSE + Mappe.
+
+**Einordnung:** Eine Quelle Mappe/mök2; neutrale Stimme; APf = `promo-video-produktion`.
+
+---
+
+**Letzter Stand:** 05.04.26 – **BUG-034: Promo-Video-Produktion-Route vor `/projects/:projectId`** – `App.tsx`: `promoVideoProduktion` nach `k2-markt`-Redirects, **vor** `galerie`-Routen und **vor** `ProjectStartPage`; doppelte Route unterhalb entfernt. Verhindert Catch-all `NotFoundOrRedirect` bei `/projects/k2-galerie/promo-video-produktion`. Tests grün (`npm run test`), `build:vercel` grün. **Commit:** **4cc03bc3** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: `/projects/k2-galerie/promo-video-produktion` und Smart-Panel-Button kurz prüfen.
 

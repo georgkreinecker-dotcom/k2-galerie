@@ -115,3 +115,9 @@ Browser, PWA, gängige Betriebssysteme – **ein** Stand überall, ohne dass du 
 19. [Kontakt und nächste Schritte](13-KONTAKT.md)
 
 Demo, QR-Code, Lizenz – und **du** entscheidest, welcher Schritt als Nächstes für dich sinnvoll ist.
+
+---
+
+## Video-Produktion (Promo)
+
+Diese Mappe ist die **inhaltliche Leitplanke** für ein Erklär- oder Promo-Video: Reihenfolge der Kapitel = mögliche Story, USPs und „Was ist die K2 Galerie“ = Hook und Kern. **Technischer Einstieg** in der APf: **Promo-Video-Produktion** (`/projects/k2-galerie/promo-video-produktion`). Ausführliche Analyse (Prioritäten, Ton, Checkliste): **`docs/VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`** (nur im Projekt, nicht Teil der öffentlichen Galerie).

@@ -1,5 +1,7 @@
 /**
  * Promo-Video-Produktion – APf-Werkzeug (nur localhost / ?apf=1 / ?dev=1).
+ * Sportwagenmodus: eine Problemstellung = ein Standard (Datenquelle Mappe, Einspielung nur Stammdaten
+ * im passenden Kontext) – keine parallelen „vielleicht so“-Wege. Siehe .cursor/rules/ein-standard-problem.mdc.
  * Kein Player in der öffentlichen Galerie-App: hier Datenquelle, Arbeitsablauf, fertiges Produkt
  * (z. B. YouTube) in Stammdaten eintragen – neutrale Stimme, nicht die Stimme des Galeristen.
  */
@@ -37,7 +39,7 @@ export default function PromoVideoProduktionPage() {
         <h1 style={{ fontSize: '1.5rem', margin: 0, color: '#5ffbf1' }}>Promo-Video-Produktion</h1>
         <p style={{ margin: '0.5rem 0 0', fontSize: '0.95rem', color: 'rgba(255,255,255,0.85)' }}>
           Eigener Arbeitsplatz auf der APf – nicht in der Besucher-App eingebunden. Hier: Inhalte und
-          Ablauf; das fertige Video verlinkst du in den Stammdaten (ök2), nicht hier.
+          Ablauf; das fertige Video verlinkst du in den Stammdaten (richtiger Kontext), nicht hier.
         </p>
         <p style={{ margin: '0.35rem 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
           <Link to={K2_GALERIE_APF_EINSTIEG} style={{ color: '#5ffbf1', textDecoration: 'none' }}>
@@ -49,6 +51,46 @@ export default function PromoVideoProduktionPage() {
           </Link>
         </p>
       </header>
+
+      <section
+        style={{
+          marginBottom: '1.75rem',
+          padding: '1rem 1.1rem',
+          background: 'rgba(251,191,36,0.08)',
+          borderRadius: '12px',
+          border: '1px solid rgba(251,191,36,0.35)',
+        }}
+      >
+        <h2 style={{ fontSize: '1.15rem', color: '#fcd34d', margin: '0 0 0.5rem' }}>
+          Sportwagenmodus &amp; Plattform-Regeln – verbindlich
+        </h2>
+        <p style={{ margin: '0 0 0.65rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.92)' }}>
+          Dieselben Prinzipien wie für <strong>K2</strong>, <strong>ök2</strong> und <strong>VK2</strong> gelten auch hier:{' '}
+          <strong>ein Standard pro Problemstellung</strong>, keine zweite stillschweigende Variante, kein „vielleicht
+          machen wir es später anders“. Was festgelegt ist (Datenquelle, Einspielweg, Kontext) ist der Weg – nicht
+          eine Option unter mehreren.
+        </p>
+        <ul style={{ margin: 0, paddingLeft: '1.25rem', lineHeight: 1.6, fontSize: '0.88rem', color: 'rgba(255,245,240,0.88)' }}>
+          <li>
+            <strong>Kontext-Trennung:</strong> Öffentliche Demo / Links für die ök2-Galerie nur über ök2-Stammdaten
+            und <code style={{ fontSize: '0.82em' }}>context=oeffentlich</code> –{' '}
+            <strong>keine K2-Echtdaten</strong> in den ök2-Kanal (eiserne Regel Projektweit).
+          </li>
+          <li>
+            <strong>VK2 / K2:</strong> Wenn du für einen anderen Kontext ein Video einspielst, gilt derselbe Weg:{' '}
+            Admin im <strong>passenden</strong> Kontext, dieselbe Stammdaten-Logik wie überall – keine Vermischung.
+          </li>
+          <li>
+            <strong>Sportwagenmodus:</strong> Mappe Vollversion = inhaltliche Quelle; fertiges Produkt ={' '}
+            <strong>eine</strong> Einspielung in Stammdaten – nicht Player und Link parallel als zwei Wahrheiten.
+          </li>
+          <li>
+            <strong>Kein Experimentiermodus:</strong> Kein nebenbei zweiter Export-Pfad oder „erst mal schnell woanders
+            hochladen“ ohne Anpassung der einen Quelle – bei Erweiterung: bestehenden Standard erweitern, nicht
+            ersetzen (siehe Regelwerk <code style={{ fontSize: '0.82em' }}>ein-standard-problem.mdc</code>).
+          </li>
+        </ul>
+      </section>
 
       <section style={{ marginBottom: '1.75rem' }}>
         <h2 style={{ fontSize: '1.15rem', color: '#fde68a', margin: '0 0 0.5rem' }}>Stimme &amp; Rolle</h2>
