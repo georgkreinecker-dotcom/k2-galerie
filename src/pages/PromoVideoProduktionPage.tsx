@@ -7,7 +7,7 @@
  * Öffentliche Galerie-App: weiterhin nur Links (GalerieSocialLinks), kein Embed auf der Besucher-Seite hier.
  */
 
-import { useEffect, useState, type ChangeEvent } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import {
   ENTDECKEN_ROUTE,
@@ -21,6 +21,7 @@ import { loadStammdaten } from '../utils/stammdatenStorage'
 import { safeExternalHref } from '../utils/socialExternalUrls'
 
 export default function PromoVideoProduktionPage() {
+  const localFileInputRef = useRef<HTMLInputElement>(null)
   const [featuredVideoUrl, setFeaturedVideoUrl] = useState('')
   /** Nur dieser Browser-Tab: lokale Datei vom Mac, nicht in Stammdaten / nicht auf YouTube */
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null)
@@ -55,13 +56,50 @@ export default function PromoVideoProduktionPage() {
   const safeVideo = safeExternalHref(featuredVideoUrl)
   const embed = videoUrlToFeaturedEmbed(featuredVideoUrl)
 
-  const onLocalVideoPicked = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const applyLocalVideoFile = (file: File) => {
     setLocalPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev)
-      if (!file) return null
       return URL.createObjectURL(file)
     })
+  }
+
+  const onLocalVideoPicked = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    applyLocalVideoFile(file)
+  }
+
+  /** Wo möglich: Dialog startet in „Downloads“ (Chrome/Edge/Safari 16.4+). Sonst klassischer Datei-Dialog. */
+  const openLocalVideoPicker = async () => {
+    const w = window as Window & {
+      showOpenFilePicker?: (opts: {
+        startIn?: 'downloads' | 'desktop' | 'documents'
+        types?: { description: string; accept: Record<string, string[]> }[]
+        multiple?: boolean
+      }) => Promise<FileSystemFileHandle[]>
+    }
+    if (typeof w.showOpenFilePicker === 'function') {
+      try {
+        const [handle] = await w.showOpenFilePicker({
+          startIn: 'downloads',
+          types: [
+            {
+              description: 'Video',
+              accept: { 'video/*': ['.mp4', '.webm', '.mov', '.m4v'] },
+            },
+          ],
+          multiple: false,
+        })
+        const file = await handle.getFile()
+        applyLocalVideoFile(file)
+        return
+      } catch (err: unknown) {
+        const name = err && typeof err === 'object' && 'name' in err ? (err as { name: string }).name : ''
+        if (name === 'AbortError') return
+      }
+    }
+    localFileInputRef.current?.click()
   }
 
   const clearLocalPreview = () => {
@@ -158,10 +196,21 @@ export default function PromoVideoProduktionPage() {
         </h2>
         <p style={{ margin: '0 0 0.75rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,245,240,0.92)' }}>
           So kannst du <strong>Aufnahme/Schnitt</strong> in Ruhe ansehen und Texte mit der KI abstimmen –{' '}
-          <strong>ohne</strong> vorher YouTube. Nichts wird gespeichert oder hochgeladen; nur dieser Tab im Browser.
+          <strong>ohne</strong> vorher YouTube. Die App <strong>legt keine Videodatei</strong> auf deinen Mac und lädt
+          nichts hoch – du wählst nur eine Datei, die du schon hast (z. B. aus Downloads).
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem', marginBottom: '0.75rem' }}>
-          <label
+          <input
+            ref={localFileInputRef}
+            type="file"
+            accept="video/*,.mp4,.webm,.mov"
+            style={{ display: 'none' }}
+            aria-hidden
+            onChange={onLocalVideoPicked}
+          />
+          <button
+            type="button"
+            onClick={() => void openLocalVideoPicker()}
             style={{
               display: 'inline-block',
               padding: '0.5rem 1rem',
@@ -171,16 +220,35 @@ export default function PromoVideoProduktionPage() {
               fontWeight: 600,
               fontSize: '0.9rem',
               cursor: 'pointer',
+              border: 'none',
             }}
           >
             Videodatei wählen (.mp4, .webm …)
-            <input
-              type="file"
-              accept="video/*,.mp4,.webm,.mov"
-              style={{ display: 'none' }}
-              onChange={onLocalVideoPicked}
-            />
-          </label>
+          </button>
+          <div
+            style={{
+              width: '100%',
+              flexBasis: '100%',
+              marginTop: '0.15rem',
+              padding: '0.65rem 0.75rem',
+              borderRadius: 8,
+              background: 'rgba(251,191,36,0.08)',
+              border: '1px solid rgba(251,191,36,0.35)',
+              fontSize: '0.84rem',
+              lineHeight: 1.5,
+              color: 'rgba(255,245,240,0.88)',
+            }}
+          >
+            <strong style={{ color: '#fcd34d' }}>Downloads ist nur ein Ordner.</strong> Dort siehst du nur Dateien, die{' '}
+            <strong>du</strong> schon hingelegt hast (z. B. Export aus Filmora/Schnitt als .mp4). Die App{' '}
+            <strong>erzeugt und speichert kein Video</strong> – sie kann nur eine vorhandene Datei abspielen.
+            <br />
+            <span style={{ color: 'rgba(255,245,240,0.72)' }}>
+              Wenn Downloads leer wirkt: Video im Schnittprogramm <strong>exportieren</strong> und Ziel z. B. Downloads oder
+              Schreibtisch wählen – oder im Dateidialog links einen <strong>anderen Ordner</strong> öffnen, wo dein Export
+              liegt.
+            </span>
+          </div>
           {localPreviewUrl ? (
             <button
               type="button"

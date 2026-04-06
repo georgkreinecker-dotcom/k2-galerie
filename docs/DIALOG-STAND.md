@@ -1,8 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Mappe: Schnellzugriff intern raus** – Block „Schnellzugriff – Präsentationsmappen“ (Repo-Pfade, URL-Parameter) aus `public/.../00-INDEX.md` entfernt; Inhalt in **`docs/PRAESENTATIONSMAPPEN-SCHNELLZUGRIFF-INTERN.md`**, `docs/00-INDEX.md` verlinkt. Vortrag/PDF/Folien zeigen das nicht mehr. Tests + Build grün. **Commit:** **ab68b46f** ✅ GitHub
-
-**Was wir JETZT tun:** Optional Deploy → Mappe/Kapitel „Inhaltsverzeichnis“ prüfen.
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe Kapitel Technik** – Abschnitt „Sicherheit nach innen & außen“ (interne Regel-Details) aus `12-TECHNIK.md` entfernt; gleiche Bereinigung in `praesentationsmappe-langversion`. Tests + Build grün. **Nächster Schritt:** commit + push.
 
 ---
 

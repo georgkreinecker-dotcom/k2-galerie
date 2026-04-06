@@ -1,44 +1,16 @@
-# Inhaltsverzeichnis – VK2 mit Musterbildern
+# Präsentationsmappe VK2 – Kurzversion
 
-Kurze Präsentationsmappe für die **Vereinsplattform VK2**: jedes Kapitel mit **Screenshot** aus der App (Muster/Demo unter `/img/oeffentlich/`).
+---
 
-## Aufbau der Mappe
+## Inhaltsverzeichnis
 
-| | Inhalt |
-|---|--------|
-| **Orientierung** | Deckblatt, Inhaltsverzeichnis, **USPs & Mitbewerb** – Argumente und Abgrenzung **ohne** Screen-Führung. |
-| **Konkret im Admin** | Ab **Ein Blick in den Admin**: Hub, Mitglieder, Kassa, Events, Lizenz, Kontakt – jeweils mit **Musterbild**. Die **Seitenleiste** trennt die Blöcke visuell. |
+- [Deckblatt](01-DECKBLATT.md)
 
-## Inhaltsverzeichnis – Kurzanleitung
-
-### Orientierung
-
-**Deckblatt** – [öffnen](01-DECKBLATT.md) *(in der Seitenleiste ohne Nummer)*  
-Einstieg und Markenzeile.
-
-1. **Inhaltsverzeichnis – Kurzanleitung** *(dieses Kapitel; erste Nummer in der Leiste)*  
-
-2. [USPs & Mitbewerb](02-USP-WETTBEWERB.md)  
-   **Fünf Gründe** + **Kreuz-Matrix** (3 Produkte vs. VK2) + Kurz-Tabelle.
-
-### Konkret im Admin
-
-3. [Ein Blick in den Admin](02-EIN-BLICK-ADMIN.md)  
-   Hub „Was möchtest du heute tun?“ – alle Bereiche auf einen Blick.
-
-4. [Mitglieder & Galerie](03-MITGLIEDER-GALERIE.md)  
-   Vereinsseite und öffentliche Darstellung.
-
-5. [Kassa & Verkauf](04-KASSA-VERKAUF.md)  
-   Verkauf vor Ort, Belege, Übersicht.
-
-6. [Events & Medien](05-EVENTS-MEDIEN.md)  
-   Gestaltung, Veröffentlichung, Werbemittel aus einem Strang.
-
-7. [Lizenz & Betrieb](06-LIZENZ-BETRIEB.md)  
-   Einstieg Lizenzlogik VK2, zuverlässiger Betrieb.
-
-8. [Kontakt](07-KONTAKT.md)  
-   Ansprechpartner und QR zum VK2-Einstieg.
-
-Button **Drucken** erstellt die Mappe als PDF.
+1. [Inhaltsverzeichnis](00-INDEX.md)
+2. [USPs & Mitbewerb](02-USP-WETTBEWERB.md)
+3. [Ein Blick in den Admin](02-EIN-BLICK-ADMIN.md)
+4. [Mitglieder & Galerie](03-MITGLIEDER-GALERIE.md)
+5. [Kassa & Verkauf](04-KASSA-VERKAUF.md)
+6. [Events & Medien](05-EVENTS-MEDIEN.md)
+7. [Lizenz & Betrieb](06-LIZENZ-BETRIEB.md)
+8. [Kontakt](07-KONTAKT.md)

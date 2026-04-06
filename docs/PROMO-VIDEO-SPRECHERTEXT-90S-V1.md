@@ -1,6 +1,7 @@
 # Promo-Video – Sprechertext ~90 Sekunden (V1)
 
 **Stand:** 05.04.26  
+**Gesamtfahrplan (von vorn):** [`PROMO-VIDEO-UMSETZUNG-KONZEPT.md`](PROMO-VIDEO-UMSETZUNG-KONZEPT.md)  
 **Zweck:** Konkreter **Sprechertext** zum Einlesen, TTS oder Schnitt – gebündelt aus `VIDEO-PRODUKTION-MATRIX-UND-DREHBUCH-V1.md` §A–F (gekürzt).  
 **Ton:** neutral, „Sie“ / unpersönlich; keine Namen der Galerieinhaber als Stimme (siehe `VIDEO-PRODUKTION-PRAEMAPPE-ANALYSE.md`).
 
@@ -57,3 +58,11 @@ Rohfassung oben: **~230 Wörter** – bei normalem Tempo **~90–100 Sekunden**.
 - **Zeiten** sind **Richtwerte** (~90 s) – nach dem **echten** Sprecher-Ton **verschieben**, bis es passt.
 
 **Hinweis:** Das ist **Untertitel**, keine automatische **Stimme**. Gesprochener Ton: selbst aufnehmen, TTS-Tool, oder Mac-„Sprecher“ – **nicht** automatisch aus dem Repo.
+
+---
+
+## 6. Runway – warum „nur der Name“ und was hilft
+
+Runway bekommt **nichts** aus Repo oder Mappe automatisch – nur dein **Prompt**. Wenn dort fast nur ein Produktname steht, wirkt die Ausgabe leer.
+
+**Ein fertiger Bild-Prompt (Englisch)** zum Kopieren: [`PROMO-VIDEO-RUNWAY-PROMPT-90S-V1.md`](PROMO-VIDEO-RUNWAY-PROMPT-90S-V1.md) – **ein Block**, Atmo/Trailer; echte App-Inhalte = weiterhin **Screen-Aufnahme ök2** + Schnitt.
