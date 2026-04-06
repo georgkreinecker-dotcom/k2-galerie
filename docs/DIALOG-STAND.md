@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe: Deckblatt bleibt** – Georg: Nur den **überflüssigen Text im Inhaltsverzeichnis** (`00-INDEX.md`) meinte, **nicht** das Deckblatt entfernen. **Deckblatt** (`01-DECKBLATT.md` + Cover in der App) und **Punkt 1 im INDEX** wieder klar; K2-Leitfaden = `00-SO-NUTZT-DU-MAPPE.md` (Split von alter LESEFUEHRUNG). TS-Fix `renderDeckblattCover` (Cast nur `name`). Tests + Build grün. **Commit:** _(nach Push eintragen)_ ✅
+
+**Was wir JETZT tun:** Optional: VK2-INDEX-Parität prüfen; Deploy → Mappe kurz durchklicken.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe Vollversion Druck/PDF** – Print-CSS straffer (Ränder `@page`, Überschriften/Listen/Absätze, Kapitel-Abstände, Artikel-Padding); Fußzeile: links `PRODUCT_BRAND_NAME` (kgm solution), rechts „Seite x / y“ (`pmv-seitenfuss-brand` + `pmv-seitenfuss-page`). Dateien: `praesentationsmappeMarkdownStyles.ts`, `PraesentationsmappeVollversionPage.tsx`. **Nächster Schritt:** Commit-Hash eintragen nach Push.
 
 ---

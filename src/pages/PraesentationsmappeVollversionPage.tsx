@@ -12,15 +12,15 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import {
   PRODUCT_BRAND_NAME,
   MUSTER_TEXTE,
+  TENANT_CONFIGS,
+  K2_STAMMDATEN_DEFAULTS,
+  K2_GALERIE_PUBLIC_BRAND,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
-  K2_GALERIE_PUBLIC_BRAND,
-  K2_STAMMDATEN_DEFAULTS,
-  TENANT_CONFIGS,
 } from '../config/tenantConfig'
+import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
-import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import { renderMarkdown } from '../utils/praesentationsmappeMarkdown'
 import { PRAESENTATIONSMAPPE_MARKDOWN_STYLES } from '../utils/praesentationsmappeMarkdownStyles'
 import {
@@ -44,22 +44,31 @@ function patchKontaktMarkdownForContext(raw: string, isOeffentlich: boolean): st
 /** Ein Dokument der Mappe; sectionTitle nur beim ersten Kapitel eines Gliederungsblocks (Zwischenüberschrift in der Seitenleiste, rein visuell). */
 type PraesMappeDoc = {
   sectionTitle?: string
-  /** Nummer wie in public/.../00-INDEX.md (ohne Prospekt-Zeile in der Sidebar = sonst Verschiebung gegenüber idx). */
+  /** Nummer wie in public/.../00-INDEX.md (K2: Prospekt nur per Link, nicht in der Seitenleiste). */
   tocChapter?: number
+  hideInNav?: boolean
   id: string
   name: string
   file: string
 }
 
-/** Leitfaden „So nutzt du …“ – K2 und VK2: dieselbe Datei `00-LESEFUEHRUNG.md` pro Ordner. */
-const PMV_LESEFUEHRUNG_FILE = '00-LESEFUEHRUNG.md'
+/** K2 Vollversion: Leitfaden. VK2-Ordner: `00-SO-NUTZT-DU.md`. */
+const PMV_SO_NUTZT_DU_MAPPE = '00-SO-NUTZT-DU-MAPPE.md'
+const PMV_SO_NUTZT_DU = '00-SO-NUTZT-DU.md'
 const PMV_DECKBLATT_FILE = '01-DECKBLATT.md'
 
+function isPmvLeitfadenFile(file: string): boolean {
+  return file === PMV_SO_NUTZT_DU_MAPPE || file === PMV_SO_NUTZT_DU
+}
+
 function renderDeckblattCover(isOeffentlich: boolean): ReactNode {
-  const gallery =
+  const gallery = (
     typeof window !== 'undefined'
-      ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>)
-      : ((isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>)
+      ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
+      : isOeffentlich
+        ? MUSTER_TEXTE.gallery
+        : K2_STAMMDATEN_DEFAULTS.gallery
+  ) as { name?: string }
   const coverTitle = isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
     : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || K2_GALERIE_PUBLIC_BRAND).replace(
@@ -91,9 +100,9 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
     file: PMV_DECKBLATT_FILE,
   },
   {
-    id: 'so-nutz-du',
+    id: 'so-nutzt-du',
     name: 'So nutzt du diese Mappe',
-    file: PMV_LESEFUEHRUNG_FILE,
+    file: PMV_SO_NUTZT_DU_MAPPE,
   },
   {
     id: 'pmv-inhaltsverzeichnis',
@@ -102,7 +111,13 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
     tocChapter: 1,
   },
   { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-UND-WETTBEWERB.md', tocChapter: 2 },
-  /** Kapitel 3 (Prospekt) nur im Index verlinkt, nicht in der Seitenleiste – Zählung springt auf 4. */
+  {
+    id: '02b-prospekt',
+    name: 'Prospekt Aufbruch & Zukunft',
+    file: '02B-PROSPEKT-ZUKUNFT.md',
+    tocChapter: 3,
+    hideInNav: true,
+  },
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md', tocChapter: 4 },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md', tocChapter: 5 },
   {
@@ -135,74 +150,72 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
 const DOCUMENTS_VK2: PraesMappeDoc[] = [
   {
     sectionTitle: 'Orientierung',
-    id: '00-lesefuehrung',
+    id: 'so-nutzt-du',
     name: 'So nutzt du diese Mappe',
-    file: PMV_LESEFUEHRUNG_FILE,
+    file: PMV_SO_NUTZT_DU,
   },
   {
     id: '00-index',
     name: 'Inhaltsverzeichnis',
     file: '00-INDEX.md',
   },
-  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
-  { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
-  { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB-VK2.md', tocChapter: 1 },
+  { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md', tocChapter: 2 },
+  { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md', tocChapter: 3 },
   {
     sectionTitle: 'Konkret im Admin',
     id: '04-mitglieder-galerie',
     name: 'Mitglieder und Galerie',
     file: '04-MITGLIEDER-UND-GALERIE.md',
+    tocChapter: 4,
   },
-  { id: '05-kassa-verkauf', name: 'Kassa und Verkauf', file: '05-KASSA-UND-VERKAUF.md' },
-  { id: '06-events-medien', name: 'Events und Medienplanung', file: '06-EVENTS-UND-MEDIENPLANUNG.md' },
-  { id: '07-lizenz-betrieb', name: 'Lizenz und Betrieb', file: '07-LIZENZ-UND-BETRIEB.md' },
-  { id: '08-kontakt', name: 'Kontakt', file: '08-KONTAKT.md' },
+  { id: '05-kassa-verkauf', name: 'Kassa und Verkauf', file: '05-KASSA-UND-VERKAUF.md', tocChapter: 5 },
+  { id: '06-events-medien', name: 'Events und Medienplanung', file: '06-EVENTS-UND-MEDIENPLANUNG.md', tocChapter: 6 },
+  { id: '07-lizenz-betrieb', name: 'Lizenz und Betrieb', file: '07-LIZENZ-UND-BETRIEB.md', tocChapter: 7 },
+  { id: '08-kontakt', name: 'Kontakt', file: '08-KONTAKT.md', tocChapter: 8 },
 ]
 
 /** Zweite VK2-Mappe: kurz, jedes Kapitel mit Muster-Screenshot unter /img/oeffentlich/. */
 const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
   {
     sectionTitle: 'Orientierung',
-    id: '00-lesefuehrung',
+    id: 'so-nutzt-du',
     name: 'So nutzt du diese Mappe',
-    file: PMV_LESEFUEHRUNG_FILE,
+    file: PMV_SO_NUTZT_DU,
   },
   {
     id: '00-index',
     name: 'Inhaltsverzeichnis',
     file: '00-INDEX.md',
   },
-  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB.md' },
+  { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB.md', tocChapter: 1 },
   {
     sectionTitle: 'Konkret im Admin',
     id: '02-ein-blick',
     name: 'Ein Blick in den Admin',
     file: '02-EIN-BLICK-ADMIN.md',
+    tocChapter: 2,
   },
-  { id: '03-mitglieder', name: 'Mitglieder & Galerie', file: '03-MITGLIEDER-GALERIE.md' },
-  { id: '04-kassa', name: 'Kassa & Verkauf', file: '04-KASSA-VERKAUF.md' },
-  { id: '05-events', name: 'Events & Medien', file: '05-EVENTS-MEDIEN.md' },
-  { id: '06-lizenz', name: 'Lizenz & Betrieb', file: '06-LIZENZ-BETRIEB.md' },
-  { id: '07-kontakt', name: 'Kontakt', file: '07-KONTAKT.md' },
+  { id: '03-mitglieder', name: 'Mitglieder & Galerie', file: '03-MITGLIEDER-GALERIE.md', tocChapter: 3 },
+  { id: '04-kassa', name: 'Kassa & Verkauf', file: '04-KASSA-VERKAUF.md', tocChapter: 4 },
+  { id: '05-events', name: 'Events & Medien', file: '05-EVENTS-MEDIEN.md', tocChapter: 5 },
+  { id: '06-lizenz', name: 'Lizenz & Betrieb', file: '06-LIZENZ-BETRIEB.md', tocChapter: 6 },
+  { id: '07-kontakt', name: 'Kontakt', file: '07-KONTAKT.md', tocChapter: 7 },
 ]
 
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
 function isPmvMetaDocFile(file: string): boolean {
-  return (
-    file === '00-INDEX.md' ||
-    file === PMV_LESEFUEHRUNG_FILE ||
-    file === PMV_DECKBLATT_FILE
-  )
+  return file === '00-INDEX.md' || isPmvLeitfadenFile(file) || file === PMV_DECKBLATT_FILE
 }
 
-/** Nummer vor der ersten H1: tocChapter wo gesetzt; sonst VK2-Promo ohne tocChapter → 1, 2, … ohne Meta-Seiten. */
+/** Nummer vor der ersten H1: Meta-Seiten ohne Nummer; Inhaltskapitel über tocChapter (K2) oder Fallback Zählung (VK2). */
 function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): number | undefined {
   const idx = docs.findIndex((d) => d.file === file)
   if (idx < 0) return undefined
+  if (isPmvMetaDocFile(file)) return undefined
   const doc = docs[idx]
   if (doc?.tocChapter != null) return doc.tocChapter
-  if (isPmvMetaDocFile(file)) return undefined
   const contentOnly = docs.filter((d) => !isPmvMetaDocFile(d.file))
   const ci = contentOnly.findIndex((d) => d.file === file)
   if (ci < 0) return undefined
@@ -210,8 +223,8 @@ function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): numbe
 }
 
 function wrapPmvMarkdownPage(file: string | null, node: ReactNode): ReactNode {
-  if (file === PMV_LESEFUEHRUNG_FILE) {
-    return <div className="pmv-lesefuehrung-page">{node}</div>
+  if (file && isPmvLeitfadenFile(file)) {
+    return <div className="pmv-leitfaden-page">{node}</div>
   }
   if (file === '00-INDEX.md') {
     return <div className="pmv-toc-only-page">{node}</div>
@@ -247,11 +260,15 @@ export default function PraesentationsmappeVollversionPage() {
   const [isMobile, setIsMobile] = useState(false)
 
   const docsMatchingAllContents = useMemo(() => {
-    const hasAll = fullPrintView || (isMobile && allDocContents.length > 0)
-    if (!hasAll) return DOCUMENTS
-    if (fullPrintView && !isAnyVk2) return DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE)
-    return DOCUMENTS
+    const bulk = fullPrintView || (isMobile && allDocContents.length > 0)
+    if (!bulk) return DOCUMENTS
+    return !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
   }, [fullPrintView, isMobile, allDocContents.length, DOCUMENTS, isAnyVk2])
+
+  const navDocuments = useMemo(
+    () => DOCUMENTS.filter((d) => !d.hideInNav),
+    [DOCUMENTS],
+  )
 
   const returnTo = searchParams.get('returnTo')
   /** Beamer/Folien: ein Kapitel pro „Folie“, Vollbild, Pfeiltasten; optional auto= Sekunden pro Folie */
@@ -427,7 +444,7 @@ export default function PraesentationsmappeVollversionPage() {
     setLoadingFullPrint(true)
     try {
       const docList =
-        forPrint && !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
+        !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
       const contents: string[] = []
       for (const doc of docList) {
         const response = await fetch(`${BASE}/${doc.file}`)
@@ -590,8 +607,6 @@ export default function PraesentationsmappeVollversionPage() {
           <article className="pmv-article pmv-a4-sheet" style={{ minHeight: 200 }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel…</div>
-            ) : selectedDoc === PMV_DECKBLATT_FILE ? (
-              renderDeckblattCover(isOeffentlich)
             ) : (
               <div>
                 {wrapPmvMarkdownPage(
@@ -691,7 +706,8 @@ export default function PraesentationsmappeVollversionPage() {
                 className={[
                   'pmv-chapter-block',
                   idx === 0 ? 'pmv-chapter-first' : '',
-                  doc.file === PMV_LESEFUEHRUNG_FILE ? 'pmv-chapter-block--lesefuehrung' : '',
+                  isPmvLeitfadenFile(doc.file) ? 'pmv-chapter-block--leitfaden' : '',
+                  doc.file === '00-INDEX.md' ? 'pmv-chapter-block--toc-only' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -727,46 +743,51 @@ export default function PraesentationsmappeVollversionPage() {
           <nav className="pmv-no-print pmv-nav" style={{ background: '#f0fdfa', padding: '1rem', borderRadius: 12, border: '1px solid #99f6e4', height: 'fit-content', position: 'sticky', top: '1rem' }}>
             <h3 style={{ margin: '0 0 0.75rem', fontSize: '0.95rem', color: '#0d9488', fontWeight: 600 }}>Kapitel</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              {DOCUMENTS.map((doc, index) => (
-                <div key={doc.id}>
-                  {doc.sectionTitle ? (
-                    <div
+              {navDocuments.map((doc, index) => {
+                const prev = index > 0 ? navDocuments[index - 1] : null
+                const showSectionHeading =
+                  !!doc.sectionTitle && doc.sectionTitle !== prev?.sectionTitle
+                return (
+                  <div key={doc.id}>
+                    {showSectionHeading ? (
+                      <div
+                        style={{
+                          fontSize: '0.68rem',
+                          fontWeight: 700,
+                          color: '#115e59',
+                          marginTop: index > 0 ? '0.75rem' : 0,
+                          paddingTop: index > 0 ? '0.65rem' : 0,
+                          borderTop: index > 0 ? '2px solid rgba(13, 148, 136, 0.35)' : 'none',
+                          marginBottom: '0.25rem',
+                          lineHeight: 1.35,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {doc.sectionTitle}
+                      </div>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => loadDocument(doc.file)}
                       style={{
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        color: '#115e59',
-                        marginTop: index > 0 ? '0.75rem' : 0,
-                        paddingTop: index > 0 ? '0.65rem' : 0,
-                        borderTop: index > 0 ? '2px solid rgba(13, 148, 136, 0.35)' : 'none',
-                        marginBottom: '0.25rem',
-                        lineHeight: 1.35,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
+                        padding: '0.5rem 0.75rem',
+                        background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        fontSize: '0.875rem',
+                        color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
+                        fontWeight: selectedDoc === doc.file ? 600 : 400,
+                        width: '100%',
                       }}
                     >
-                      {doc.sectionTitle}
-                    </div>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => loadDocument(doc.file)}
-                    style={{
-                      padding: '0.5rem 0.75rem',
-                      background: selectedDoc === doc.file ? '#ccfbf1' : 'transparent',
-                      border: 'none',
-                      borderRadius: 6,
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      fontSize: '0.875rem',
-                      color: selectedDoc === doc.file ? '#0d9488' : '#4b5563',
-                      fontWeight: selectedDoc === doc.file ? 600 : 400,
-                      width: '100%',
-                    }}
-                  >
-                    {sidebarDocLabel(DOCUMENTS, doc)}
-                  </button>
-                </div>
-              ))}
+                      {sidebarDocLabel(DOCUMENTS, doc)}
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           </nav>
 
@@ -776,7 +797,7 @@ export default function PraesentationsmappeVollversionPage() {
           >
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
-            ) : selectedDoc === PMV_DECKBLATT_FILE ? (
+            ) : selectedDoc === PMV_DECKBLATT_FILE && !isAnyVk2 ? (
               renderDeckblattCover(isOeffentlich)
             ) : (
               <div>

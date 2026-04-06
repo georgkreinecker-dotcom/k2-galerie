@@ -1,11 +1,7 @@
-# Präsentationsmappe – K2 Galerie
+# Inhaltsverzeichnis
 
----
-
-## Inhaltsverzeichnis
-
-1. [So nutzt du diese Mappe](00-LESEFUEHRUNG.md)
-2. [Inhaltsverzeichnis](00-INDEX.md)
+1. [Deckblatt](01-DECKBLATT.md)
+2. [So nutzt du diese Mappe](00-SO-NUTZT-DU-MAPPE.md)
 3. [USPs & Mitbewerb](02-USP-UND-WETTBEWERB.md)
 4. [Prospekt Aufbruch & Zukunft](02B-PROSPEKT-ZUKUNFT.md)
 5. [Was ist die K2 Galerie](02-WAS-IST-K2-GALERIE.md)

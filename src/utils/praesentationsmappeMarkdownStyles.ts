@@ -286,6 +286,10 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         page-break-after: always !important;
         margin-bottom: 0 !important;
       }
+      .pmv-chapter-block--toc-only {
+        page-break-after: always !important;
+        margin-bottom: 0 !important;
+      }
       .pmv-wrap .pmv-leitfaden-page {
         page-break-after: always !important;
         page-break-inside: avoid !important;
