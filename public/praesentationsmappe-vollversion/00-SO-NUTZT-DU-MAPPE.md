@@ -16,13 +16,7 @@ Im Kapitel **USPs und Wettbewerbsvergleich** liegen **sachliche Argumente**: Mat
 
 ---
 
-## Schritt 2 – Prospekt: vertiefen
-
-Der **Prospekt Aufbruch und Zukunft** ist die **Lesefassung** mit mehr Raum für Stimmung, Kunst und Markt – zum Innehalten, Ausdrucken oder als PDF.
-
----
-
-## Schritt 3 – Produkt, Demo, Alltag
+## Schritt 2 – Produkt, Demo, Alltag
 
 **Was ist die K2 Galerie** und **Für wen** (inkl. Sparten) zeigen die **Linie**; **Demo ök2**, **Lizenz** und **VK2** haben **eigene** Kapitel.
 
