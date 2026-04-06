@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe: Zurück zur Herkunftsseite** – „← Zurück“ auf der Vollversion: **`returnTo`** aus URL-Parameter **oder** `location.state` (bleibt beim Redirect `/praesentationsmappe` → Vollversion erhalten). **Entdecken** setzt `state.returnTo` auf den aktuellen Pfad; **Kurzversion** „Zur Vollversion →“ reicht `location.state` durch. Relative Pfade z. B. `/entdecken` per `new URL(returnTo, origin)`; ohne Ziel: **`navigate(-1)`** statt Redirect zur gleichen Mappe. **Commit:** **5df041f4** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Entdecken → Mappe → Zurück = wieder Entdecken; mök2-Prospekt-Link weiter mit `returnTo` zu mök2.
+
+---
+
 **Letzter Stand:** 04.04.26 – **Präsentationsmappe: Deckblatt bleibt** – Georg: Nur den **überflüssigen Text im Inhaltsverzeichnis** (`00-INDEX.md`) meinte, **nicht** das Deckblatt entfernen. **Deckblatt** (`01-DECKBLATT.md` + Cover in der App) und **Punkt 1 im INDEX** wieder klar; K2-Leitfaden = `00-SO-NUTZT-DU-MAPPE.md` (Split von alter LESEFUEHRUNG). TS-Fix `renderDeckblattCover` (Cast nur `name`). Tests + Build grün. **Commit:** _(nach Push eintragen)_ ✅
 
 **Was wir JETZT tun:** Optional: VK2-INDEX-Parität prüfen; Deploy → Mappe kurz durchklicken.
