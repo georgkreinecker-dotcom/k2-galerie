@@ -2749,7 +2749,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Brand linkes oberes Eck – VK2: Vereinsname; K2: kgm solution → einheitlicher Fremd-Einstieg (navigation) */}
+        {/* Brand linkes oberes Eck – K2 / ök2 / VK2: kgm solution © wie K2; ök2+VK2: Zurück bevorzugt (returnTo → history → Entdecken) */}
         {!isPraesentationModus && (
         <div
           style={{
@@ -2760,43 +2760,46 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             pointerEvents: 'auto',
           }}
         >
-          {(!musterOnly || vk2) && (
-            vk2 ? (
-              <div
-                style={{
-                  fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
-                  fontWeight: '500',
-                  color: 'var(--k2-text)',
-                  letterSpacing: '0.02em',
-                  lineHeight: 1.25,
-                  textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                  opacity: 0.92,
-                }}
-              >
-                {displayGalleryName}
-              </div>
-            ) : (
-              <Link
-                to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
-                style={{
-                  fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
-                  fontWeight: '500',
-                  color: 'var(--k2-text)',
-                  letterSpacing: '0.02em',
-                  lineHeight: 1.25,
-                  textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
-                  opacity: 0.92,
-                  textDecoration: 'none',
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                }}
-                title="Zum Eingangstor – Entdecken (jetzt starten)"
-              >
-                {PRODUCT_BRAND_NAME}{' '}
-                <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span>
-              </Link>
-            )
-          )}
+          <Link
+            to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
+            onClick={
+              musterOnly || vk2
+                ? (e) => {
+                    const st = location.state as { returnTo?: string } | null
+                    const r = st?.returnTo
+                    if (r && typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') && !r.includes('..')) {
+                      e.preventDefault()
+                      navigate(r)
+                      return
+                    }
+                    if (typeof window !== 'undefined' && window.history.length > 1) {
+                      e.preventDefault()
+                      navigate(-1)
+                    }
+                  }
+                : undefined
+            }
+            style={{
+              fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
+              fontWeight: '500',
+              color: 'var(--k2-text)',
+              letterSpacing: '0.02em',
+              lineHeight: 1.25,
+              textShadow: musterOnly ? 'none' : '0 1px 2px rgba(0,0,0,0.2)',
+              opacity: 0.92,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              display: 'inline-block',
+            }}
+            title={
+              musterOnly || vk2
+                ? 'Zurück zur vorherigen Seite oder zum Eingangstor (Entdecken)'
+                : 'Zum Eingangstor – Entdecken (jetzt starten)'
+            }
+          >
+            {PRODUCT_BRAND_NAME}{' '}
+            <span style={{ fontSize: '0.85em', opacity: 0.9 }}>©</span>
+          </Link>
         </div>
         )}
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
