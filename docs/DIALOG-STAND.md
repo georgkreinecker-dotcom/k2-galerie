@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Präsentationsmappen: Hinweis nur ök2/VK2** – Einleitung im Tab Präsentationsmappen: „nur ök2 und VK2“ als `<strong>` (kein Markdown `**` in der UI). Tests + Build grün. **Commit:** _(nach Push – `git log -1 --oneline`)_ ✅ GitHub
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe Beamer-Folien** – URL `?beamer=1` auf der Vollversion: Kapitel nacheinander, Vollbild, Pfeiltasten/Leertaste, Esc beenden; optional `&auto=60` (Sekunden pro Folie). Button „Folien (Beamer)“ auf der Mappe; Admin Tab + Event-Karten: Folien-Links ök2/VK2. `00-INDEX`, FEATURES-Doku. Tests + Build grün. **Commit:** **9338a7e6** ✅ GitHub
 
-**Was wir JETZT tun:** Kurz im Admin → Präsentationsmappen prüfen, ob der Satz lesbar ist.
+**Was wir JETZT tun:** Nach Deploy: Vollversion → Folien testen (Beamer/Vollbild).
 
 ---
 
