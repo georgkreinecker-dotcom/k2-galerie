@@ -93,8 +93,8 @@ export default function PraesentationsmappePage() {
 
   const returnTo = (location.state as { returnTo?: string } | null)?.returnTo
   const leadText = isVk2Variante
-    ? 'VK2 ist die Vereinsplattform für Kunstvereine: Mitglieder sichtbar machen, Arbeiten geordnet zeigen, Events planen, Unterlagen erstellen und die Kassa im Verein einfach führen. Eine Oberfläche, klarer Ablauf, keine doppelte Pflege. Für Vereine gedacht, für den Alltag gemacht.'
-    : 'Sechs Sparten, eine Plattform: Kunst & Galerie, Handwerk & Manufaktur, Design & Möbel, Mode & Kleinserien, Food & Genuss, Dienstleister & Portfolio. In der Demo und Lizenz wählst du „Mein Weg“ in den Stammdaten – daraus folgen passende Werktypen, Kategorien und Texte. Für die Kunst gedacht, für den Markt gemacht. Windows, Android, macOS, iOS · Browser & PWA. Lizenzen: Basic, Pro, Pro+, Pro++, VK2.'
+    ? 'VK2 bündelt Vereinsalltag in einer Oberfläche – klarer Ablauf, keine doppelte Pflege.'
+    : 'Die K2-Galerie-Software bündelt Galerie, Verkauf und Außenauftritt in einer Oberfläche – skalierbar über „Mein Weg“ und die Sparten, überall im Browser und als PWA.'
 
   const gallery = typeof window !== 'undefined'
     ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)
@@ -165,49 +165,67 @@ export default function PraesentationsmappePage() {
           {isVk2Variante ? (
             <>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Mitglieder und Vereinsprofil
+                1. Mitglieder & Vereinsprofil
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Mitglieder werden einheitlich erfasst und in der Vereinsansicht sichtbar gemacht. Die Plattform bleibt dabei klar getrennt vom Galerie-Kontext und nutzt eigene Vereinsdaten.
+                <strong>USP:</strong> Einheitliche Erfassung, klare Vereinsansicht – Daten strikt im VK2-Kontext, getrennt von der K2-Galerie-Welt.
               </p>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Kassa und Verkauf im Verein
+                2. Galerie & Sichtbarkeit
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                VK2 führt Kassa, Verkauf und Listen im selben Ablauf. Verkäufe bleiben nachvollziehbar, Drucke sind direkt verfügbar, und der Verein arbeitet mit einem klaren Standard statt mit mehreren Einzelwerkzeugen.
+                <strong>USP:</strong> Arbeiten und Vereinsseite professionell zeigen – ein Auftritt, ein Ablauf.
               </p>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Event- und Medienplanung
+                3. Kassa & Verkauf
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Aus Eventdaten entstehen direkt passende Unterlagen: Einladungen, Presse, Social und Flyer. Damit bleibt der Ablauf im Verein schnell, einheitlich und ohne doppeltes Eintippen.
+                <strong>USP:</strong> Verkauf, Belege und Listen im selben Standard – nachvollziehbar statt Insellösungen.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                4. Events & Medien
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                <strong>USP:</strong> Aus einem Termin werden Einladung, Presse und Social – ohne dieselben Daten mehrfach einzutippen.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                5. Lizenz & Betrieb
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                <strong>USP:</strong> VK2 als eigene Lizenzstufe – fairer Einstieg, verlässlicher laufender Betrieb für den Verein.
               </p>
             </>
           ) : (
             <>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Statistik und Werkkatalog
+                1. Admin &amp; Hub
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Im Admin führt der Bereich <strong>Statistik/Werkkatalog</strong> Verkaufs- und Lagerstatistik, den druckbaren Werkkatalog sowie PDF- und Speicherdaten-Exporte zusammen – inklusive schnellem Zugang zu Kundenadressen und zur Kassa. Details im Benutzerhandbuch und in der erweiterten Präsentationsmappe.
+                <strong>USP:</strong> Eine zentrale Oberfläche für Werke, Gestaltung, Kassa und Marketing – weniger Springen, mehr Arbeit in einem Fluss.
               </p>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Shop und Internetbestellung
+                2. Werke &amp; Galerie
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Über die öffentliche Galerie können Besucher in den <strong>Warenkorb</strong> legen und bestellen; die gewählte Zahlungsart ist ein <strong>Wunsch</strong> – in der App gibt es <strong>keine</strong> automatische Online-Abbuchung im Warenkorb. Ausführlich im Benutzerhandbuch (Kapitel Shop) und in der Präsentationsmappe Vollversion.
+                <strong>USP:</strong> Erfassen, kategorisieren, Etikett und Werkkatalog – Besucher sehen sofort einen professionellen Auftritt.
               </p>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Event- und Medienplanung
+                3. Design &amp; Veröffentlichen
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Der Bereich verbindet <strong>Veranstaltung</strong> und <strong>Kommunikation</strong> in einem durchgehenden Ablauf: Event erfassen, passende Werbemittel erzeugen, Verteiler nutzen und als PDF oder fuer digitale Kanaele ausgeben. Dadurch bleibt alles auf einer Datenquelle (Stammdaten + Eventdaten), ohne doppeltes Tippen in mehreren Tools.
+                <strong>USP:</strong> Willkommen und Galerie gestalten, dann veröffentlichen – ein gemeinsamer Stand für Mac, Handy und Web.
               </p>
               <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
-                Social Media und Videos im Willkommensbereich
+                4. Kassa &amp; Shop
               </h2>
               <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
-                Auf der <strong>öffentlichen Galerie</strong> können unter dem Willkommensbereich <strong>YouTube</strong>, <strong>Instagram</strong> und ein <strong>Highlight-Video</strong> erscheinen – als verlässliche Links für Besucher. Die Pflege erfolgt in den <strong>Stammdaten</strong> (Admin → <strong>Einstellungen</strong> → Stammdaten, Bereich Galerie), <strong>nicht</strong> im Tab Design. So gibt es <strong>eine Quelle</strong> für Web und passende Verweise in der Außenkommunikation.
+                <strong>USP:</strong> Verkauf vor Ort mit Belegen; Besucher bestellen aus der Galerie – ohne automatische Online-Abbuchung in der App, dafür klar und nachvollziehbar.
+              </p>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: TEAL_LIGHT, margin: '1.25rem 0 0.5rem' }}>
+                5. Events &amp; Öffentlichkeit
+              </h2>
+              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#1c1a18', margin: '0 0 1rem' }}>
+                <strong>USP:</strong> Termin und Stammdaten einmal pflegen – Flyer, Presse und Kanäle aus derselben Quelle, ohne Doppelarbeit.
               </p>
             </>
           )}
