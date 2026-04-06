@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useMemo, useCallback } from 'react'
+import React, { useEffect, useLayoutEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { beendeGuideFlow } from '../utils/k2GuideFlowStorage'
 import QRCode from 'qrcode'
@@ -26,6 +26,7 @@ import { setAdminUnlock, clearAdminUnlock } from '../utils/adminUnlockStorage'
 import { OK2_THEME } from '../config/ok2Theme'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
 import { reportPublicGalleryVisit } from '../utils/reportPublicGalleryVisit'
+import { getFullscreenElement, requestElementFullscreen, exitElementFullscreenIfActive } from '../utils/domFullscreen'
 import '../App.css'
 import '../styles/k2GaleriePublicPolish.css'
 
@@ -461,11 +462,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     if (!musterOnly || typeof window === 'undefined') return
     try {
       if (new URLSearchParams(window.location.search).get('embedded') === '1') return
+      if (new URLSearchParams(window.location.search).get('praesentation') === '1') return
       if ((location.state as any)?.fromAdmin || sessionStorage.getItem(KEY_FROM_ADMIN)) return
       if (hasFreshOek2EntrySession()) return
       navigate(ENTDECKEN_ROUTE, { replace: true })
     } catch (_) {}
-  }, [musterOnly, navigate, location.state])
+  }, [musterOnly, navigate, location.state, location.search])
   useEffect(() => {
     if (!musterOnly) return
     try {
@@ -2587,7 +2589,63 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
   }
 
   const isVorschauModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('vorschau') === '1'
+  /** Einfacher Präsentationsmodus: ruhige Ansicht für Vernissage/Schaufenster; siehe docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md */
+  const isPraesentationModus = typeof window !== 'undefined' && new URLSearchParams(location.search).get('praesentation') === '1'
   const fromAdmin = !!(location.state as { fromAdminTab?: string } | null)?.fromAdminTab
+
+  const [praesentationFsActive, setPraesentationFsActive] = useState(false)
+  const praesentationRootRef = useRef<HTMLDivElement | null>(null)
+  const exitPraesentationModus = useCallback(() => {
+    const el = praesentationRootRef.current
+    if (el) void exitElementFullscreenIfActive(el)
+    const p = new URLSearchParams(location.search)
+    p.delete('praesentation')
+    const q = p.toString()
+    navigate({ pathname: location.pathname, search: q ? `?${q}` : '' }, { replace: true })
+  }, [navigate, location.pathname, location.search])
+
+  const togglePraesentationFullscreen = useCallback(async () => {
+    const el = praesentationRootRef.current
+    if (!el) return
+    try {
+      if (getFullscreenElement() === el) {
+        await exitElementFullscreenIfActive(el)
+      } else {
+        await requestElementFullscreen(el)
+      }
+    } catch {
+      /* Vollbild nur nach Nutzeraktion – ignorieren */
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPraesentationModus) {
+      setPraesentationFsActive(false)
+      return
+    }
+    const sync = () => {
+      const el = praesentationRootRef.current
+      setPraesentationFsActive(!!el && getFullscreenElement() === el)
+    }
+    document.addEventListener('fullscreenchange', sync)
+    document.addEventListener('webkitfullscreenchange', sync as EventListener)
+    sync()
+    return () => {
+      document.removeEventListener('fullscreenchange', sync)
+      document.removeEventListener('webkitfullscreenchange', sync as EventListener)
+    }
+  }, [isPraesentationModus, location.search])
+
+  useEffect(() => {
+    if (!isPraesentationModus) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      if (plakatOverlayUrl) return
+      exitPraesentationModus()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [isPraesentationModus, exitPraesentationModus, plakatOverlayUrl])
 
   /** ök2: Sparten-Liste (FOCUS_DIRECTIONS) – ein Kasten, zwei Einbauorte (großer Fremden-Balken + Fallback). */
   const renderOek2SpartenKasten = () => (
@@ -2620,6 +2678,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
   return (
     <div
+      ref={praesentationRootRef}
       className={!musterOnly && !vk2 ? 'k2-echte-galerie-public' : undefined}
       style={{
       minHeight: '-webkit-fill-available',
@@ -2635,7 +2694,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
     }}
     >
       {/* Gelbe Leiste nur, wenn Aufruf vom Admin (fromAdminTab) – für User verboten, zur APf zu führen */}
-      {isVorschauModus && fromAdmin && (
+      {isVorschauModus && fromAdmin && !isPraesentationModus && (
         <div style={{
           position: 'sticky',
           top: 0,
@@ -2691,6 +2750,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
       {/* Content */}
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Brand linkes oberes Eck – VK2: Vereinsname; K2: kgm solution → einheitlicher Fremd-Einstieg (navigation) */}
+        {!isPraesentationModus && (
         <div
           style={{
             position: 'fixed',
@@ -2738,8 +2798,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             )
           )}
         </div>
+        )}
         {/* VK2: deutlicher Balken, damit klar ist: das ist die Vereinsplattform-Galerie, nicht K2 */}
-        {vk2 && (
+        {vk2 && !isPraesentationModus && (
           <div style={{
             position: 'sticky',
             top: 0,
@@ -2763,7 +2824,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </div>
         )}
         {/* Galerie teilen (fixed) – nicht parallel zum ök2-Fremden-Banner (sonst doppelt + „teilen“ vor dem Verständnis) */}
-        {typeof navigator !== 'undefined' && !showOek2FremdeOrientierungsBanner && (
+        {typeof navigator !== 'undefined' && !showOek2FremdeOrientierungsBanner && !isPraesentationModus && (
         <div ref={sharePopoverContainerRef} style={{ position: 'relative' }}>
         <button
           type="button"
@@ -2828,7 +2889,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         </div>
         )}
         {/* Admin-Button (fixed) – K2 wenn APf/embedded/entsperrt/Referrer; ök2/VK2 wenn von APf/Kontext (Fremde ohne Button). */}
-        {showAdminEntryOnGalerie && (
+        {showAdminEntryOnGalerie && !isPraesentationModus && (
         <button
           onClick={handleAdminButtonClick}
           style={{
@@ -3243,7 +3304,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         {/*
           ök2 Muster: Sparten-Guide nur für echte Fremde (grüner Balken). APf / embedded / fromAdmin: kein Sparten-Kasten oben – Georg arbeitet, kein „altes Guide-Fenster“.
         */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && !isGalerieUser && (
+        {musterOnly && !showOek2FremdeOrientierungsBanner && !isGalerieUser && !isPraesentationModus && (
           <div
             style={{
               margin: '0 auto',
@@ -3258,7 +3319,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </div>
         )}
         {/* ök2 Fremden-Einstieg: ein Banner – Text | Sparten | Admin (nicht bei APf/embedded/fromAdmin). */}
-        {showOek2FremdeOrientierungsBanner && (
+        {showOek2FremdeOrientierungsBanner && !isPraesentationModus && (
           <div style={{
             margin: 'clamp(0.75rem, 2vw, 1rem)',
             padding: 'clamp(0.75rem, 1.8vw, 1rem) clamp(1rem, 2.5vw, 1.5rem)',
@@ -3302,7 +3363,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           </div>
         )}
         {/* ök2 intern/APf: optional „Admin“-Zeile nur wenn kein fixer Admin-Button oben – kein CD-Button (Design über Admin / Mein Bereich). */}
-        {musterOnly && !showOek2FremdeOrientierungsBanner && !showAdminEntryOnGalerie && (
+        {musterOnly && !showOek2FremdeOrientierungsBanner && !showAdminEntryOnGalerie && !isPraesentationModus && (
           <div
             style={{
               margin: 'clamp(0.75rem, 2vw, 1rem)',
@@ -3539,7 +3600,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         }}>
 
           {/* PWA-Icon-Hinweis: Symbol legt sich nicht von selbst auf den Bildschirm – einmal aktiv hinzufügen (nur Mobile, nicht Standalone) */}
-          {showPwaIconHint && (
+          {showPwaIconHint && !isPraesentationModus && (
             <div style={{
               marginTop: 'clamp(0.75rem, 2vw, 1rem)',
               marginBottom: 'clamp(0.75rem, 2vw, 1rem)',
@@ -4066,6 +4127,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
 
 
           {/* Impressum – Schriftfarben aus Theme (lesbar auf hell und dunkel) */}
+          {!isPraesentationModus && (
           <section style={{ 
             marginTop: 'clamp(2rem, 4vw, 2.5rem)',
             paddingTop: 'clamp(1rem, 2vw, 1.5rem)',
@@ -4159,12 +4221,13 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 </p>
             </div>
           </section>
+          )}
         </main>
         </>
         )}
 
         {/* Guide nur für Fremde (Besucher), nicht wenn User von Admin/APf kommt. ök2: Name kommt aus Entdecken (useEffect musterOnly) – vorher fälschlich nur !musterOnly gerendert → Guide nie sichtbar. */}
-        {isFremder && guideVisible && guideName && (
+        {isFremder && guideVisible && guideName && !isPraesentationModus && (
           <GalerieEntdeckenGuide
             name={guideName}
             onDismiss={() => {
@@ -4174,12 +4237,12 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           />
         )}
 
-        {isFremder && !guideVisible && guideName && (
+        {isFremder && !guideVisible && guideName && !isPraesentationModus && (
           <GuideAbschlussKarte name={guideName} />
         )}
 
         {/* Willkommens-Fenster (nur öffentliche Galerie): Einstieg per QR – Optionen zentriert. Deckt oben NICHT ab, damit „Galerie teilen“ und „Mit mir in den Admin“ sichtbar bleiben. */}
-        {musterOnly && showWelcomeModal && (
+        {musterOnly && showWelcomeModal && !isPraesentationModus && (
           <div
             style={{
               position: 'fixed',
@@ -4431,6 +4494,64 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 Weiter
               </button>
             </div>
+          </div>
+        )}
+
+        {isPraesentationModus && (
+          <div
+            role="toolbar"
+            aria-label="Präsentation"
+            style={{
+              position: 'fixed',
+              bottom: 'max(1rem, env(safe-area-inset-bottom, 0px))',
+              right: 'max(1rem, env(safe-area-inset-right, 0px))',
+              zIndex: 10020,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              alignItems: 'stretch',
+              maxWidth: 'min(100vw - 2rem, 280px)',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => void togglePraesentationFullscreen()}
+              style={{
+                padding: '0.55rem 0.9rem',
+                background: 'rgba(28, 26, 24, 0.92)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                borderRadius: '10px',
+                color: '#fff',
+                fontSize: 'clamp(0.82rem, 2vw, 0.95rem)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
+              }}
+            >
+              {praesentationFsActive ? 'Vollbild beenden' : 'Vollbild'}
+            </button>
+            <button
+              type="button"
+              onClick={exitPraesentationModus}
+              style={{
+                padding: '0.55rem 0.9rem',
+                background: 'rgba(181, 74, 30, 0.95)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '10px',
+                color: '#fff',
+                fontSize: 'clamp(0.82rem, 2vw, 0.95rem)',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+              }}
+            >
+              Präsentation beenden
+            </button>
+            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.75)', textAlign: 'center', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+              Esc = beenden
+            </span>
           </div>
         )}
       </div>

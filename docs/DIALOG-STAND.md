@@ -1,5 +1,21 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmodus (einfach)** – URL `?praesentation=1` auf der Galerie (K2/ök2/VK2): ruhige Ansicht, Vollbild-Steuerung, Esc beendet; TS-Fix fehlender `praesentationRootRef` (`useRef`). Siehe `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`. Tests + Build grün. **Commit:** **62653016** ✅ GitHub (nach Push prüfen)
+
+**Was wir JETZT tun:** Im Browser Galerie mit `?praesentation=1` kurz testen; **Promo-Video** weiter pausiert (siehe nächster Block).
+
+---
+
+**Letzter Stand:** 05.04.26 – **Promo-Video / Runway: vorerst pausiert** – Georg will sich **zuerst selbst** mehr mit dem Thema beschäftigen; **kein** automatischer Session-Fokus Video, kein Druck. **Bleibt im Repo/APf** (wenn du wieder startest): [`PROMO-VIDEO-UMSETZUNG-KONZEPT.md`](PROMO-VIDEO-UMSETZUNG-KONZEPT.md), **Promo-Video-Produktion** & **Runway-Paket ~2 Min** in der APf.
+
+**Was wir JETZT tun:** Nicht Video – nächster inhaltlicher Schritt kommt von Georg.
+
+---
+
+**Letzter Stand:** 05.04.26 – **Schluss für heute (Session-Ende)** – Offene Doku (u. a. `PROMO-VIDEO-UMSETZUNG-KONZEPT`, Runway-Prompt 90s), `00-INDEX`, Protokolle, Build-Stand und `PromoVideoProduktionPage` mit Tests + Build grün committed und gepusht. ~~**Nächster Schritt:** Video~~ → **pausiert** (siehe oben).
+
+---
+
 **Letzter Stand:** 05.04.26 – **Runway-Paket ~2 Min (programmiert)** – `src/config/promoRunwayPack2min.ts` (8 Szenen: DE-Sprecher + EN-Runway-Prompt + Screen-Hinweis), `PromoRunwayPackPage`, Route `/projects/k2-galerie/promo-runway-pack`, Smart-Panel-Zweitbutton, `docs/PROMO-RUNWAY-PAKET-2MIN-V1.md`, Test `promoRunwayPack.test.ts`. Tests + Build grün. **Commit:** `git log -1 --oneline` (Runway-Paket) ✅ Push ausstehend
 
 **Was wir JETZT tun:** APf → Mappe Promo-Video → **Runway-Paket ~2 Min** → Prompts kopieren → Runway; parallel QuickTime ök2 nach Screen-Hinweisen.
@@ -8,7 +24,7 @@
 
 **Letzter Stand:** 05.04.26 – **PROMO-VIDEO-UMSETZUNG-KONZEPT.md** – klares Umsetzungskonzept von vorn (3 Schichten, Phasen 1–7, Checkliste); `docs/00-INDEX.md` ergänzt.
 
-**Was wir JETZT tun:** [`PROMO-VIDEO-UMSETZUNG-KONZEPT.md`](PROMO-VIDEO-UMSETZUNG-KONZEPT.md) lesen → Phase 2 (Screens) oder Phase 3 (Runway optional) je nach Priorität.
+**Was wir JETZT tun:** _(Video pausiert – Konzept liegt bereit, kein aktiver Auftrag.)_
 
 ---
 
