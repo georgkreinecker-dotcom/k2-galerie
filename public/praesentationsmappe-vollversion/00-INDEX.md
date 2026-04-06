@@ -2,6 +2,16 @@
 
 ---
 
+## Schnellzugriff – wo liegen die Präsentationsmappen?
+
+- **K2 – Vollversion (lesen / PDF):** [Präsentationsmappe – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion) — Einstieg: `/projects/k2-galerie/praesentationsmappe` (leitet hierher). **Kurzfassung:** [Präsentationsmappe Kurzansicht](/projects/k2-galerie/praesentationsmappe?view=kurz).
+- **K2 – Quellen im Repo:** `public/praesentationsmappe-vollversion/` — dieses Inhaltsverzeichnis: **`00-INDEX.md`**.
+- **VK2 – eigene Präsentationsmappe:** [VK2 – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2) — Quellen: `public/praesentationsmappe-vk2-vollversion/` (weitere VK2-Variante: `public/praesentationsmappe-vk2-promo/`).
+
+**Hinweis:** Die **öffentliche Galerie im Präsentationsmodus** (Vernissage, Schaufenster, ruhige Ansicht mit Vollbild – *nicht* die Präsentationsmappen als PDF) ist eine **andere** Funktion: URL-Parameter **`?praesentation=1`** an der Galerie. Beispiele: [ök2-Demo mit Präsentation](/projects/k2-galerie/galerie-oeffentlich?praesentation=1) · K2-Galerie: `/galerie?praesentation=1` · VK2: `/projects/vk2/galerie?praesentation=1`. Kurz in `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`.
+
+---
+
 ## So nutzt du diese Mappe – Schritt für Schritt
 
 Diese Mappe ist eine **Entscheidungshilfe**, keine Werbebroschüre zum Wegwerfen. Du kannst sie in Ruhe lesen, Kapitel für Kapitel – und nach jedem der ersten Schritte sollte für dich etwas **konkreter** werden: Passt diese Plattform zu dem, was du im Alltag brauchst, oder eher nicht?
