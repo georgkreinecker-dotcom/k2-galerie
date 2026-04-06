@@ -4,7 +4,7 @@
  * Ton: Du, Nutzen, klare Lesereihenfolge; Quelle: public/praesentationsmappe-vollversion/*.md
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
@@ -22,6 +22,11 @@ import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import { renderMarkdown } from '../utils/praesentationsmappeMarkdown'
 import { PRAESENTATIONSMAPPE_MARKDOWN_STYLES } from '../utils/praesentationsmappeMarkdownStyles'
+import {
+  getFullscreenElement,
+  requestElementFullscreen,
+  exitElementFullscreenIfActive,
+} from '../utils/domFullscreen'
 
 const BASE_STANDARD = '/praesentationsmappe-vollversion'
 const BASE_VK2 = '/praesentationsmappe-vk2-vollversion'
@@ -171,6 +176,13 @@ export default function PraesentationsmappeVollversionPage() {
   const [isMobile, setIsMobile] = useState(false)
 
   const returnTo = searchParams.get('returnTo')
+  /** Beamer/Folien: ein Kapitel pro „Folie“, Vollbild, Pfeiltasten; optional auto= Sekunden pro Folie */
+  const beamerMode = searchParams.get('beamer') === '1'
+  const autoSecRaw = parseInt(searchParams.get('auto') || '0', 10)
+  const autoSecBeamer =
+    Number.isFinite(autoSecRaw) && autoSecRaw > 0 ? Math.min(600, Math.max(5, autoSecRaw)) : 0
+  const beamerRootRef = useRef<HTMLDivElement | null>(null)
+  const [beamerFs, setBeamerFs] = useState(false)
   const { versionTimestamp: qrVersionTs } = useQrVersionTimestamp()
   const pageTitle = isVk2Promo
     ? 'VK2 – Präsentationsmappe mit Musterbildern'
@@ -246,6 +258,93 @@ export default function PraesentationsmappeVollversionPage() {
     }
   }
 
+  const loadDocumentRef = useRef(loadDocument)
+  loadDocumentRef.current = loadDocument
+
+  const exitBeamerMode = useCallback(() => {
+    const el = beamerRootRef.current
+    if (el) void exitElementFullscreenIfActive(el)
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('beamer')
+      next.delete('auto')
+      return next
+    }, { replace: true })
+  }, [setSearchParams])
+
+  const stepBeamer = useCallback(
+    (delta: number) => {
+      const i = DOCUMENTS.findIndex((d) => d.file === selectedDoc)
+      if (i < 0) return
+      const j = i + delta
+      if (j < 0 || j >= DOCUMENTS.length) return
+      void loadDocumentRef.current(DOCUMENTS[j].file)
+    },
+    [DOCUMENTS, selectedDoc],
+  )
+
+  const toggleBeamerFullscreen = useCallback(async () => {
+    const el = beamerRootRef.current
+    if (!el) return
+    try {
+      if (getFullscreenElement() === el) await exitElementFullscreenIfActive(el)
+      else await requestElementFullscreen(el)
+    } catch {
+      /* nur nach Nutzeraktion */
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!beamerMode) {
+      setBeamerFs(false)
+      return
+    }
+    const sync = () => {
+      const el = beamerRootRef.current
+      setBeamerFs(!!el && getFullscreenElement() === el)
+    }
+    document.addEventListener('fullscreenchange', sync)
+    document.addEventListener('webkitfullscreenchange', sync as EventListener)
+    sync()
+    return () => {
+      document.removeEventListener('fullscreenchange', sync)
+      document.removeEventListener('webkitfullscreenchange', sync as EventListener)
+    }
+  }, [beamerMode])
+
+  useEffect(() => {
+    if (!beamerMode) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        exitBeamerMode()
+        return
+      }
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || (e.key === ' ' && !e.shiftKey) || e.key === 'Enter') {
+        e.preventDefault()
+        stepBeamer(1)
+        return
+      }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault()
+        stepBeamer(-1)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [beamerMode, exitBeamerMode, stepBeamer])
+
+  useEffect(() => {
+    if (!beamerMode || autoSecBeamer <= 0) return
+    const i = DOCUMENTS.findIndex((d) => d.file === selectedDoc)
+    if (i < 0 || i >= DOCUMENTS.length - 1) return
+    const t = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      stepBeamer(1)
+    }, autoSecBeamer * 1000)
+    return () => window.clearInterval(t)
+  }, [beamerMode, autoSecBeamer, selectedDoc, DOCUMENTS, stepBeamer])
+
   const loadAllDocuments = async (forPrint: boolean) => {
     setLoadingFullPrint(true)
     try {
@@ -268,9 +367,9 @@ export default function PraesentationsmappeVollversionPage() {
   const loadAllDocumentsForPrint = () => loadAllDocuments(true)
 
   useEffect(() => {
-    if (!isMobile || allDocContents.length > 0) return
+    if (beamerMode || !isMobile || allDocContents.length > 0) return
     loadAllDocuments(false)
-  }, [isMobile, allDocContents.length])
+  }, [beamerMode, isMobile, allDocContents.length])
 
   const handleZurueck = () => {
     if (returnTo) {
@@ -334,6 +433,151 @@ export default function PraesentationsmappeVollversionPage() {
 
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
 
+  const beamerIdx = useMemo(
+    () => Math.max(0, DOCUMENTS.findIndex((d) => d.file === selectedDoc)),
+    [DOCUMENTS, selectedDoc],
+  )
+  const beamerTotal = DOCUMENTS.length
+
+  if (beamerMode) {
+    return (
+      <div
+        ref={beamerRootRef}
+        className="pmv-wrap pmv-map-page-root pmv-beamer-root"
+        lang="de"
+        style={{
+          minHeight: '100vh',
+          background: '#fffefb',
+          color: '#1c1a18',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'relative',
+        }}
+      >
+        <style>{PRAESENTATIONSMAPPE_MARKDOWN_STYLES}</style>
+        <div
+          className="pmv-no-print"
+          style={{
+            flexShrink: 0,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '0.65rem',
+            padding: '0.55rem 0.85rem',
+            background: 'rgba(28, 26, 24, 0.92)',
+            color: '#f9fafb',
+            position: 'sticky',
+            top: 0,
+            zIndex: 20,
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.92rem', lineHeight: 1.3 }}>
+              📽️ Folien · {currentDocName}
+            </div>
+            <div style={{ fontSize: '0.72rem', opacity: 0.88, marginTop: '0.15rem' }}>
+              Kapitel {beamerIdx + 1} von {beamerTotal}
+              {autoSecBeamer > 0 ? ` · Auto ${autoSecBeamer}s` : ''}
+              {' · '}← → Leertaste · Esc beenden
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem' }}>
+            <button
+              type="button"
+              onClick={() => stepBeamer(-1)}
+              disabled={beamerIdx <= 0}
+              style={{
+                padding: '0.4rem 0.75rem',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: beamerIdx <= 0 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.14)',
+                color: '#fff',
+                cursor: beamerIdx <= 0 ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+              }}
+            >
+              ← Zurück
+            </button>
+            <button
+              type="button"
+              onClick={() => void toggleBeamerFullscreen()}
+              style={{
+                padding: '0.4rem 0.75rem',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: 'rgba(13, 148, 136, 0.95)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+              }}
+            >
+              {beamerFs ? 'Vollbild beenden' : 'Vollbild'}
+            </button>
+            <button
+              type="button"
+              onClick={() => stepBeamer(1)}
+              disabled={beamerIdx >= beamerTotal - 1}
+              style={{
+                padding: '0.4rem 0.75rem',
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.25)',
+                background: beamerIdx >= beamerTotal - 1 ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.14)',
+                color: '#fff',
+                cursor: beamerIdx >= beamerTotal - 1 ? 'not-allowed' : 'pointer',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+              }}
+            >
+              Weiter →
+            </button>
+            <button
+              type="button"
+              onClick={exitBeamerMode}
+              style={{
+                padding: '0.4rem 0.75rem',
+                borderRadius: 8,
+                border: '1px solid rgba(248, 113, 113, 0.5)',
+                background: 'rgba(127, 29, 29, 0.55)',
+                color: '#fecaca',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.82rem',
+              }}
+            >
+              Folien beenden
+            </button>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, overflow: 'auto', padding: 'clamp(0.75rem, 2vw, 1.25rem) clamp(0.75rem, 4vw, 2rem) 2rem' }}>
+          <article className="pmv-article pmv-a4-sheet" style={{ minHeight: 200 }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel…</div>
+            ) : (
+              <div>
+                {selectedDoc === '01-DECKBLATT.md'
+                  ? renderDeckblattCover()
+                  : renderMarkdown(docContent, {
+                      assetBase: BASE,
+                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
+                      onInternalDocClick: (path) => loadDocument(path),
+                    })}
+                {selectedDoc === kontaktFileForVariant && qrOek2DataUrl && (
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
+                    <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
+                  </div>
+                )}
+              </div>
+            )}
+          </article>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="pmv-wrap pmv-map-page-root" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
       <style>{PRAESENTATIONSMAPPE_MARKDOWN_STYLES}</style>
@@ -374,6 +618,20 @@ export default function PraesentationsmappeVollversionPage() {
               <button type="button" onClick={() => window.print()} style={{ padding: '0.5rem 1rem', background: '#0d9488', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
                 🖨️ Drucken
               </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setSearchParams((prev) => {
+                    const next = new URLSearchParams(prev)
+                    next.set('beamer', '1')
+                    return next
+                  }, { replace: true })
+                }
+                style={{ padding: '0.5rem 1rem', background: '#1e3a5f', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                title="Kapitel nacheinander, Vollbild, Pfeiltasten – für Beamer oder großen Bildschirm"
+              >
+                📽️ Folien (Beamer)
+              </button>
               <button type="button" onClick={handleZurueck} style={{ padding: '0.5rem 1rem', background: '#f3f4f6', color: '#1c1a18', border: '1px solid #d1d5db', borderRadius: 8, fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
                 ← Zurück
               </button>
@@ -382,7 +640,7 @@ export default function PraesentationsmappeVollversionPage() {
         </div>
       </header>
 
-      {(fullPrintView || (isMobile && allDocContents.length > 0)) ? (
+      {(fullPrintView || (isMobile && allDocContents.length > 0)) && !beamerMode ? (
         <article
           className="pmv-scroll-mobile pmv-a4-sheet"
           style={{ overflow: 'visible' }}

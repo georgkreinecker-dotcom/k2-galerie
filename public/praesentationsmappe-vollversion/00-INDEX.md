@@ -29,6 +29,12 @@
 - [ök2-Demo](/projects/k2-galerie/galerie-oeffentlich?praesentation=1) · K2: `/galerie?praesentation=1` · VK2: `/projects/vk2/galerie?praesentation=1`
 - `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`
 
+### 4. Diese Mappe als Folien (Beamer / Vollbild)
+
+**Eigene Funktion:** dieselbe **Vollversion**, aber **ein Kapitel pro Folie**, Steuerung mit Pfeiltasten oder Leertaste, **Vollbild**-Button, **Esc** beendet den Folienmodus. Optional automatischer Wechsel: `&auto=60` (Sekunden pro Folie, 5–600).
+
+- [ök2 – Folien](/projects/k2-galerie/praesentationsmappe-vollversion?context=oeffentlich&beamer=1) · [VK2 – Folien](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2&beamer=1)
+
 ---
 
 ## So nutzt du diese Mappe – Schritt für Schritt

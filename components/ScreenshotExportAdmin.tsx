@@ -17625,21 +17625,34 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
 
         {/* Präsentationsmappen – eigener Tab (von Hub erreichbar) */}
         {activeTab === 'praesentationsmappen' && showPraesentationsmappenAdmin && (() => {
-          const pmTabQs = tenant.isOeffentlich
-            ? '?context=oeffentlich'
-            : tenant.isVk2
-              ? '?context=vk2'
-              : ''
-          const pmFlyerTenant: FlyerEventBogenTenantContext = tenant.isOeffentlich
-            ? 'oeffentlich'
-            : tenant.isVk2
-              ? 'vk2'
-              : 'k2'
-          const pmA3Flyer = flyerEventBogenUrl({ mode: 'a3', tenant: pmFlyerTenant, fromAdminDerivation: true })
-          const pmVk2Qs = '?variant=vk2'
-          const pmGalerieK2Pra = `${PROJECT_ROUTES['k2-galerie'].galerie}?praesentation=1`
+          const pmQsOek2 = '?context=oeffentlich'
+          const pmQsVk2 = '?variant=vk2'
+          const pmKurzQs = (qs: string) => {
+            const t = (qs || '').replace(/^\?/, '').trim()
+            if (!t) return '?view=kurz'
+            return `?${t}&view=kurz`
+          }
           const pmGalerieOek2Pra = `${PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}?praesentation=1`
           const pmGalerieVk2Pra = `${PROJECT_ROUTES.vk2.galerie}?praesentation=1`
+          const r = PROJECT_ROUTES['k2-galerie']
+          const pmBtn = {
+            padding: '0.55rem 0.8rem' as const,
+            borderRadius: '10px' as const,
+            fontSize: '0.85rem' as const,
+            color: s.accent,
+            fontWeight: 600 as const,
+            fontFamily: 'inherit' as const,
+            border: `1px solid ${s.accent}33`,
+            background: s.bgElevated,
+          }
+          const pmMapCols: { colLabel: string; qs: string }[] = [
+            { colLabel: 'ök2-Demo', qs: pmQsOek2 },
+            { colLabel: 'VK2 Verein', qs: pmQsVk2 },
+          ]
+          const pmPraCols: { colLabel: string; path: string }[] = [
+            { colLabel: 'ök2', path: pmGalerieOek2Pra },
+            { colLabel: 'VK2', path: pmGalerieVk2Pra },
+          ]
           return (
           <section style={{
             background: s.bgCard,
@@ -17652,31 +17665,25 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 600, color: s.text, margin: '0 0 0.5rem 0' }}>
               📁 Präsentationsmappen
             </h2>
-            <div style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.55 }}>
-              <p style={{ margin: '0 0 0.65rem' }}>
-                <strong style={{ color: s.text }}>Schnellzugriff – drei Ebenen</strong>
-              </p>
-              <p style={{ margin: '0 0 0.5rem' }}>
-                <strong style={{ color: s.text }}>1.</strong> Mappen zum Drucken/PDF: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (dieselbe Route wie der Flyer-Master, nur A3-Ableitung). Im Browser öffnen, als PDF drucken. Plakat-Inhalt nur über den Flyer-Master bearbeiten.
-              </p>
-              <p style={{ margin: '0 0 0.65rem' }}>
-                <strong style={{ color: s.text }}>2.</strong> Kontext- und VK2-Varianten über die Buttons unten (z. B. VK2 Kurz/Voll) – gleiche Mappe, anderer Variante-Parameter.
-              </p>
-              <p style={{ margin: 0 }}>
-                Zur Einordnung des Präsentationsmodus und der Produkt-Abhebung:{' '}
-                <a
-                  href={PROJECT_ROUTES['k2-galerie'].marketingOek2}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    navigate(PROJECT_ROUTES['k2-galerie'].marketingOek2)
-                  }}
-                  style={{ color: s.accent, fontWeight: 600, textDecoration: 'underline' }}
-                >
-                  docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md
-                </a>
-                {' '}(Stichwort Präsentationsmodus; technischer Pfad im Repo unter <code style={{ fontSize: '0.82rem', color: s.text }}>docs/</code>).
-              </p>
-            </div>
+            <p style={{ fontSize: '0.88rem', color: s.muted, margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+              Flyer, Prospekt und Plakat A3 liegen bei den Formaten / Flyer-Master. Hier nur echte Präsentationsmappen (PDF) und die Bildschirmpräsentation –{' '}
+              <strong style={{ color: s.text }}>nur ök2 und VK2</strong>, nebeneinander zum Öffnen.
+            </p>
+            <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 1.15rem', lineHeight: 1.45 }}>
+              Zur Einordnung:{' '}
+              <a
+                href={r.marketingOek2}
+                onClick={(e) => {
+                  e.preventDefault()
+                  navigate(r.marketingOek2)
+                }}
+                style={{ color: s.accent, fontWeight: 600, textDecoration: 'underline' }}
+              >
+                docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md
+              </a>
+              {' '}(Stichwort Präsentationsmodus).
+            </p>
+
             <div
               style={{
                 marginBottom: '1.25rem',
@@ -17684,106 +17691,120 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 borderBottom: `1px solid ${s.accent}18`,
               }}
             >
-              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem 0' }}>
-                3. Galerie im Präsentationsmodus
+              <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem 0' }}>
+                Präsentationsmappen (PDF)
               </h3>
               <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 0.85rem', lineHeight: 1.45 }}>
-                Öffentliche Galerie mit <strong style={{ color: s.text }}>?praesentation=1</strong> – ruhige Ansicht, Vollbild möglich; <strong>nicht</strong> die PDF-Mappen darunter.
+                Kurz öffnet die kombinierte Kurzform mit <strong style={{ color: s.text }}>view=kurz</strong>. Vollversion = schrittweise Mappe. Im Browser öffnen, als PDF drucken.
               </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <button
-                  type="button"
-                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieK2Pra, e)}
-                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  K2 Galerie (Präsentation)
-                </button>
-                <a href={BASE_APP_URL + pmGalerieK2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                  K2 Galerie (Präsentation, neuer Tab)
-                </a>
-                <button
-                  type="button"
-                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieOek2Pra, e)}
-                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  ök2-Demo (Präsentation)
-                </button>
-                <a href={BASE_APP_URL + pmGalerieOek2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                  ök2-Demo (Präsentation, neuer Tab)
-                </a>
-                <button
-                  type="button"
-                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieVk2Pra, e)}
-                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-                >
-                  VK2 Galerie (Präsentation)
-                </button>
-                <a href={BASE_APP_URL + pmGalerieVk2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                  VK2 Galerie (Präsentation, neuer Tab)
-                </a>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                {pmMapCols.map(({ colLabel, qs }) => (
+                  <div key={colLabel} style={{ flex: '1 1 200px', minWidth: 0 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>{colLabel}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(r.praesentationsmappe + pmKurzQs(qs), e)}
+                        style={{ ...pmBtn, cursor: 'pointer' }}
+                      >
+                        Kurz
+                      </button>
+                      <a
+                        href={BASE_APP_URL + r.praesentationsmappe + pmKurzQs(qs)}
+                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...pmBtn, textDecoration: 'none', display: 'inline-block' }}
+                      >
+                        Kurz · Tab
+                      </a>
+                      <button
+                        type="button"
+                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(r.praesentationsmappeVollversion + qs, e)}
+                        style={{ ...pmBtn, cursor: 'pointer' }}
+                      >
+                        Voll
+                      </button>
+                      <a
+                        href={BASE_APP_URL + r.praesentationsmappeVollversion + qs}
+                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...pmBtn, textDecoration: 'none', display: 'inline-block' }}
+                      >
+                        Voll · Tab
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Kurzvariante
-              </button>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                Kurzvariante (neuer Tab)
-              </a>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Vollversion
-              </button>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                Vollversion (neuer Tab)
-              </a>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmVk2Qs, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                VK2 Kurzversion
-              </button>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + pmVk2Qs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                VK2 Kurzversion (neuer Tab)
-              </a>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmVk2Qs, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                VK2 Vollversion
-              </button>
-              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + pmVk2Qs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                VK2 Vollversion (neuer Tab)
-              </a>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay('/prospekt-k2-galerie' + pmTabQs, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Prospekt/Flyer
-              </button>
-              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + pmTabQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                Prospekt/Flyer (neuer Tab)
-              </a>
-              <button
-                type="button"
-                onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmA3Flyer, e)}
-                style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
-              >
-                Plakat A3 (Flyer-Master-Ableitung)
-              </button>
-              <a href={BASE_APP_URL + pmA3Flyer} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
-                Plakat A3 (neuer Tab)
-              </a>
+
+            <div>
+              <h3 style={{ fontSize: '0.98rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem 0' }}>
+                Bildschirmpräsentation
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 0.85rem', lineHeight: 1.45 }}>
+                Galerie mit <strong style={{ color: s.text }}>?praesentation=1</strong> – ruhige Ansicht; das sind nicht die PDF-Mappen oben.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                {pmPraCols.map(({ colLabel, path }) => (
+                  <div key={colLabel} style={{ flex: '1 1 180px', minWidth: 0 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>{colLabel}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(path, e)}
+                        style={{ ...pmBtn, cursor: 'pointer' }}
+                      >
+                        Präsentation
+                      </button>
+                      <a
+                        href={BASE_APP_URL + path}
+                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...pmBtn, textDecoration: 'none', display: 'inline-block' }}
+                      >
+                        Neuer Tab
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: '0.82rem', color: s.muted, margin: '1rem 0 0.5rem', lineHeight: 1.45 }}>
+                <strong style={{ color: s.text }}>Präsentationsmappe als Folien</strong> (Beamer/Vollbild): Vollversion mit{' '}
+                <strong style={{ color: s.text }}>?beamer=1</strong> – Kapitel nacheinander, optional{' '}
+                <strong style={{ color: s.text }}>&amp;auto=60</strong> für automatischen Wechsel alle 60 Sekunden.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                {[
+                  { colLabel: 'ök2', path: `${r.praesentationsmappeVollversion}?context=oeffentlich&beamer=1` },
+                  { colLabel: 'VK2', path: `${r.praesentationsmappeVollversion}?variant=vk2&beamer=1` },
+                ].map(({ colLabel, path }) => (
+                  <div key={`beamer-${colLabel}`} style={{ flex: '1 1 180px', minWidth: 0 }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>{colLabel}</div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                      <button
+                        type="button"
+                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(path, e)}
+                        style={{ ...pmBtn, cursor: 'pointer' }}
+                      >
+                        Folien
+                      </button>
+                      <a
+                        href={BASE_APP_URL + path}
+                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...pmBtn, textDecoration: 'none', display: 'inline-block' }}
+                      >
+                        Folien · Tab
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
           )
@@ -23919,14 +23940,18 @@ ${name}`
                           : tenant.isVk2
                             ? 'vk2'
                             : 'k2'
-                        const mappeCtxQs = tenant.isOeffentlich
-                          ? '?context=oeffentlich'
-                          : tenant.isVk2
-                            ? '?context=vk2'
-                            : ''
-                        const pmK2GaleriePra = `${PROJECT_ROUTES['k2-galerie'].galerie}?praesentation=1`
+                        const pmQsOek2Ev = '?context=oeffentlich'
+                        const pmQsVk2Ev = '?variant=vk2'
+                        const pmKurzQsEv = (qs: string) => {
+                          const t = (qs || '').replace(/^\?/, '').trim()
+                          if (!t) return '?view=kurz'
+                          return `?${t}&view=kurz`
+                        }
+                        const rEvPm = PROJECT_ROUTES['k2-galerie']
                         const pmOek2GaleriePra = `${PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}?praesentation=1`
                         const pmVk2GaleriePra = `${PROJECT_ROUTES.vk2.galerie}?praesentation=1`
+                        const pmOek2MappeBeamerEv = `${rEvPm.praesentationsmappeVollversion}?context=oeffentlich&beamer=1`
+                        const pmVk2MappeBeamerEv = `${rEvPm.praesentationsmappeVollversion}?variant=vk2&beamer=1`
                         const listItemStyle = {
                           padding: '0.5rem 0.75rem',
                           background: s.bgElevated,
@@ -24369,151 +24394,125 @@ ${name}`
                                         </div>
 
                                         {istPraesentationsmappen && (
-                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                                             <div>
                                               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>
-                                                3. Galerie (Präsentationsmodus)
+                                                Präsentationsmappen (PDF)
                                               </div>
-                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                                <button
-                                                  type="button"
-                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmK2GaleriePra, e)}
-                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                                >
-                                                  K2
-                                                </button>
-                                                <a href={BASE_APP_URL + pmK2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                  K2 neuer Tab
-                                                </a>
-                                                <button
-                                                  type="button"
-                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmOek2GaleriePra, e)}
-                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                                >
-                                                  ök2
-                                                </button>
-                                                <a href={BASE_APP_URL + pmOek2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                  ök2 neuer Tab
-                                                </a>
-                                                <button
-                                                  type="button"
-                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmVk2GaleriePra, e)}
-                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                                >
-                                                  VK2
-                                                </button>
-                                                <a href={BASE_APP_URL + pmVk2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                  VK2 neuer Tab
-                                                </a>
+                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+                                                {[
+                                                  { colLabel: 'ök2', qs: pmQsOek2Ev },
+                                                  { colLabel: 'VK2', qs: pmQsVk2Ev },
+                                                ].map(({ colLabel, qs }) => (
+                                                  <div key={colLabel} style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: s.muted, marginBottom: '0.3rem' }}>{colLabel}</div>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) =>
+                                                          navigateFromOeffentlichkeitsarbeitOverlay(rEvPm.praesentationsmappe + pmKurzQsEv(qs), e)
+                                                        }
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                      >
+                                                        Kurz
+                                                      </button>
+                                                      <a
+                                                        href={BASE_APP_URL + rEvPm.praesentationsmappe + pmKurzQsEv(qs)}
+                                                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                                      >
+                                                        Kurz · Tab
+                                                      </a>
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) =>
+                                                          navigateFromOeffentlichkeitsarbeitOverlay(rEvPm.praesentationsmappeVollversion + qs, e)
+                                                        }
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                      >
+                                                        Voll
+                                                      </button>
+                                                      <a
+                                                        href={BASE_APP_URL + rEvPm.praesentationsmappeVollversion + qs}
+                                                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                                      >
+                                                        Voll · Tab
+                                                      </a>
+                                                    </div>
+                                                  </div>
+                                                ))}
                                               </div>
                                             </div>
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs,
-                                                    e
-                                                  )
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                Kurzvariante
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + mappeCtxQs,
-                                                    e
-                                                  )
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                Vollversion
-                                              </button>
-                                              <a href={BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                In neuem Tab
-                                              </a>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappe + '?variant=vk2',
-                                                    e
-                                                  )
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                VK2 Kurz
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion + '?variant=vk2',
-                                                    e
-                                                  )
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                VK2 Voll
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay('/prospekt-k2-galerie' + mappeCtxQs, e)
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                Prospekt/Flyer
-                                              </button>
-                                              <a href={BASE_APP_URL + '/prospekt-k2-galerie' + mappeCtxQs} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
-                                                Prospekt/Flyer (neuer Tab)
-                                              </a>
-                                              <button
-                                                type="button"
-                                                onClick={(e) =>
-                                                  navigateFromOeffentlichkeitsarbeitOverlay(
-                                                    flyerEventBogenUrl({
-                                                      mode: 'a3',
-                                                      tenant: flyerTenant,
-                                                      eventId: event?.id,
-                                                      fromAdminDerivation: true,
-                                                    }),
-                                                    e
-                                                  )
-                                                }
-                                                style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
-                                              >
-                                                Plakat A3 (Master-Ableitung)
-                                              </button>
-                                              <a
-                                                href={
-                                                  BASE_APP_URL +
-                                                  flyerEventBogenUrl({
-                                                    mode: 'a3',
-                                                    tenant: flyerTenant,
-                                                    eventId: event?.id,
-                                                    fromAdminDerivation: true,
-                                                  })
-                                                }
-                                                onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                style={{
-                                                  padding: '0.45rem 0.7rem',
-                                                  background: '#fff',
-                                                  border: '1px solid rgba(13,148,136,0.2)',
-                                                  borderRadius: '8px',
-                                                  fontSize: '0.8rem',
-                                                  color: '#0d9488',
-                                                  textDecoration: 'none',
-                                                  fontWeight: 500,
-                                                }}
-                                              >
-                                                Plakat A3 (neuer Tab)
-                                              </a>
+                                            <div>
+                                              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>
+                                                Bildschirmpräsentation
+                                              </div>
+                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+                                                {[
+                                                  { colLabel: 'ök2', path: pmOek2GaleriePra },
+                                                  { colLabel: 'VK2', path: pmVk2GaleriePra },
+                                                ].map(({ colLabel, path }) => (
+                                                  <div key={colLabel} style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: s.muted, marginBottom: '0.3rem' }}>{colLabel}</div>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(path, e)}
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                      >
+                                                        Präsentation
+                                                      </button>
+                                                      <a
+                                                        href={BASE_APP_URL + path}
+                                                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}
+                                                      >
+                                                        Tab
+                                                      </a>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>
+                                                Mappe Folien (Beamer)
+                                              </div>
+                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem' }}>
+                                                {[
+                                                  { colLabel: 'ök2', path: pmOek2MappeBeamerEv },
+                                                  { colLabel: 'VK2', path: pmVk2MappeBeamerEv },
+                                                ].map(({ colLabel, path }) => (
+                                                  <div key={`beamer-${colLabel}`} style={{ flex: '1 1 140px', minWidth: 0 }}>
+                                                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: s.muted, marginBottom: '0.3rem' }}>{colLabel}</div>
+                                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(path, e)}
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(30,58,95,0.35)', borderRadius: '8px', fontSize: '0.8rem', color: '#1e3a5f', textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                      >
+                                                        Folien
+                                                      </button>
+                                                      <a
+                                                        href={BASE_APP_URL + path}
+                                                        onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(30,58,95,0.35)', borderRadius: '8px', fontSize: '0.8rem', color: '#1e3a5f', textDecoration: 'none', fontWeight: 600 }}
+                                                      >
+                                                        Tab
+                                                      </a>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
                                             </div>
                                           </div>
                                         )}

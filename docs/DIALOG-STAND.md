@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmappen: Hinweis nur ök2/VK2** – Einleitung im Tab Präsentationsmappen: „nur ök2 und VK2“ als `<strong>` (kein Markdown `**` in der UI). Tests + Build grün. **Commit:** _(nach Push – `git log -1 --oneline`)_ ✅ GitHub
+
+**Was wir JETZT tun:** Kurz im Admin → Präsentationsmappen prüfen, ob der Satz lesbar ist.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Öffentlichkeitsarbeit / Werbemittel-Karten** – Wiederholter Fußtext („Gleicher Ablauf…“), lange Karten-Beschreibungen und Plakat-Zusatzzeilen in `ScreenshotExportAdmin.tsx` entfernt bzw. auf Kurzzeilen reduziert; Präsentationsmappen ohne Fließtext (nur Buttons). Tests + Build grün. **Commit:** **b43a18b2** ✅ GitHub
 
 **Was wir JETZT tun:** Kurz im Browser prüfen, ob die Event-Werbemittel-Karten noch klar wirken.

@@ -25,7 +25,7 @@ Damit rechtfertigen wir einen höheren Preis (siehe **MARKTCHECK-PREISE-BASIC-PR
 | **Belege / Quittungen aus der Kasse** (Druck oder PDF) | Verkauf vor Ort → Kunde bekommt was Handfestes. Kaum ein Konkurrent in der Nische bietet Kasse + Beleg aus einer Hand. | Mittel (Druck-Layout, PDF-Export) | **Stark differenzierend** |
 | **„Teilen“-Link pro Werk** (Copy-Link, optional „Für Social kopieren“) | Ein Werk schnell per Link teilen (Mail, Social, Flyer). Vermarktung ohne Umweg. | Gering | Schnell umsetzbar, hohe Sichtbarkeit |
 | **Einfache Käufer:innen- / Interessent:innen-Liste** | Aus Kasse oder „Kontakt anfragen“: Wer hat gekauft / sich gemeldet? Für Einladungen, Newsletter, nächste Ausstellung. Kein volles CRM – nur Liste mit Name, Kontakt, optional Notiz. | Mittel (neue Liste + Speicher, evtl. Export) | **Sehr zielgruppennah** |
-| **Präsentationsmodus / Ausstellungsmodus** | Galerie im Vollbild, ruhig (keine Navigation sichtbar), z. B. für Vernissage am Bildschirm oder im Schaufenster. „So zeigen wir unsere Werke.“ | **Einfache Variante umgesetzt:** Galerie-URL mit `?praesentation=1` (K2, ök2, VK2) – Chrome aus, Leiste „Vollbild“ / „Präsentation beenden“, Esc beendet. Optional später: Slideshow. | Gutes Aushängeschild |
+| **Präsentationsmodus / Ausstellungsmodus** | Galerie im Vollbild, ruhig (keine Navigation sichtbar), z. B. für Vernissage am Bildschirm oder im Schaufenster. „So zeigen wir unsere Werke.“ | **Galerie:** `?praesentation=1` (K2, ök2, VK2) – Leiste „Vollbild“ / beenden, Esc. **Präsentationsmappe (Folien):** Vollversion mit `?beamer=1` – Kapitel nacheinander, Vollbild, Pfeiltasten; optional `&auto=60` (Sekunden pro Folie). | Gutes Aushängeschild |
 
 ### Mittlere Priorität – klarer Mehrwert
 
