@@ -21,6 +21,7 @@ import {
   getEntdeckenColorsFromK2Design,
   getEntdeckenHeroPathUrl,
 } from '../config/pageContentEntdecken'
+import { ENTDECKEN_HERO_IMAGE_FALLBACK_PATH, isEntdeckenHeroVideoUrl } from '../config/entdeckenHeroMedia'
 import { loadEntdeckenHeroOverlayIfFresh } from '../utils/entdeckenHeroOverlayStorage'
 
 // ─── Erkundungs-Notizen ───────────────────────────────────────────────────────
@@ -662,6 +663,7 @@ export default function EntdeckenPage() {
   const muted = '#7a6a58'
   const heroPathUrl = useMemo(() => getEntdeckenHeroPathUrl(entdeckenContent), [entdeckenContent])
   const heroImageUrl = heroIdbUrl ?? heroPathUrl
+  const heroIsVideo = !heroIdbUrl && isEntdeckenHeroVideoUrl(heroImageUrl)
   useEffect(() => {
     if (prevHeroUrlRef.current !== heroImageUrl) {
       prevHeroUrlRef.current = heroImageUrl
@@ -822,7 +824,22 @@ export default function EntdeckenPage() {
                   position: 'relative', width: '100%', borderRadius: 'clamp(14px, 2.5vw, 18px)', overflow: 'hidden',
                   aspectRatio: '4 / 3', background: '#0a0a0c',
                 }}>
-                  {heroImageSrc === 'primary' && (
+                  {heroImageSrc === 'primary' && heroIsVideo && (
+                    <video
+                      key={heroImageUrl}
+                      src={heroImageUrl}
+                      poster={ENTDECKEN_HERO_IMAGE_FALLBACK_PATH}
+                      muted
+                      playsInline
+                      loop
+                      autoPlay
+                      preload="metadata"
+                      aria-label="Galerie auf dem Tablet"
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.88 }}
+                      onError={() => setHeroImageSrc('svg')}
+                    />
+                  )}
+                  {heroImageSrc === 'primary' && !heroIsVideo && (
                     <img
                       src={heroImageUrl}
                       alt="Galerie auf dem Tablet"

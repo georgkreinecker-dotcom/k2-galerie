@@ -3,6 +3,8 @@
  * Zwei Speicher: IndexedDB (groß) + localStorage-Fallback (wenn IDB scheitert / Safari).
  */
 
+import { ENTDECKEN_HERO_DEFAULT_PATH } from '../config/entdeckenHeroMedia'
+
 const DB_NAME = 'k2-entdecken-hero-overlay'
 const DB_VERSION = 2
 const STORE = 'overlay'
@@ -11,7 +13,8 @@ const ROW_ID = 'current' as const
 const LS_FALLBACK_KEY = 'k2-entdecken-hero-overlay-fallback'
 /** Gleicher Key wie in pageContentEntdecken.ts – ohne Zyklus importieren. */
 const ENTDECKEN_PAGE_STORAGE_KEY = 'k2-page-content-entdecken'
-const DEFAULT_HERO_PATH = '/img/oeffentlich/entdecken-hero.jpg'
+
+const DEFAULT_HERO_PATH = ENTDECKEN_HERO_DEFAULT_PATH
 
 export const ENTDECKEN_HERO_OVERLAY_MAX_MS = 48 * 3600 * 1000
 

@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { ENTDECKEN_HERO_DEFAULT_PATH } from '../config/entdeckenHeroMedia'
 import {
   readEntdeckenHeroPathFromLocalStorage,
   normalizeHeroImageUrlForOverlayMatch,
@@ -15,7 +16,7 @@ describe('entdeckenHeroOverlayStorage – Hero-Pfad aus localStorage', () => {
   })
 
   it('liefert Standard-Pfad wenn nichts gespeichert', () => {
-    expect(readEntdeckenHeroPathFromLocalStorage()).toBe('/img/oeffentlich/entdecken-hero.jpg')
+    expect(readEntdeckenHeroPathFromLocalStorage()).toBe(ENTDECKEN_HERO_DEFAULT_PATH)
   })
 
   it('liest heroImageUrl aus k2-page-content-entdecken', () => {
@@ -25,7 +26,7 @@ describe('entdeckenHeroOverlayStorage – Hero-Pfad aus localStorage', () => {
 
   it('trimmt und fällt bei leerem heroImageUrl auf Standard zurück', () => {
     localStorage.setItem(KEY, JSON.stringify({ heroImageUrl: '   ' }))
-    expect(readEntdeckenHeroPathFromLocalStorage()).toBe('/img/oeffentlich/entdecken-hero.jpg')
+    expect(readEntdeckenHeroPathFromLocalStorage()).toBe(ENTDECKEN_HERO_DEFAULT_PATH)
   })
 })
 

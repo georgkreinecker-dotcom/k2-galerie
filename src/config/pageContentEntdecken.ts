@@ -4,6 +4,7 @@
  */
 
 import { saveEntdeckenHeroOverlay } from '../utils/entdeckenHeroOverlayStorage'
+import { ENTDECKEN_HERO_DEFAULT_PATH } from './entdeckenHeroMedia'
 
 const STORAGE_KEY = 'k2-page-content-entdecken'
 const KEY_K2_DESIGN = 'k2-design-settings'
@@ -68,7 +69,7 @@ export function setPageContentEntdecken(data: Partial<PageContentEntdecken>): bo
 export function getEntdeckenHeroPathUrl(mergedOverrides?: Partial<PageContentEntdecken>): string {
   const base = getPageContentEntdecken()
   const merged = mergedOverrides ? { ...base, ...mergedOverrides } : base
-  return (merged.heroImageUrl || '').trim() || '/img/oeffentlich/entdecken-hero.jpg'
+  return (merged.heroImageUrl || '').trim() || ENTDECKEN_HERO_DEFAULT_PATH
 }
 
 /**

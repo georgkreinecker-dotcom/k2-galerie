@@ -19,6 +19,11 @@ import {
   PRODUCT_WERBESLOGAN_2,
 } from '../config/tenantConfig'
 import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
+import {
+  ENTDECKEN_HERO_DEFAULT_PATH,
+  ENTDECKEN_HERO_IMAGE_FALLBACK_PATH,
+  isEntdeckenHeroVideoUrl,
+} from '../config/entdeckenHeroMedia'
 import { loadStammdaten } from '../utils/stammdatenStorage'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 import { renderMarkdown } from '../utils/praesentationsmappeMarkdown'
@@ -75,8 +80,10 @@ function renderDeckblattCover(isOeffentlich: boolean): ReactNode {
         /&/g,
         ' & ',
       )
+  const heroPath =
+    typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : ENTDECKEN_HERO_DEFAULT_PATH
   const heroSrc =
-    typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : '/img/oeffentlich/entdecken-hero.jpg'
+    isEntdeckenHeroVideoUrl(heroPath) ? ENTDECKEN_HERO_IMAGE_FALLBACK_PATH : heroPath
   return (
     <div className="pmv-deckblatt-cover">
       <div className="pmv-deckblatt-header">

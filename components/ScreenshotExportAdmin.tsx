@@ -93,6 +93,7 @@ import {
   persistEntdeckenHeroOverlay,
   type PageContentEntdecken,
 } from '../src/config/pageContentEntdecken'
+import { ENTDECKEN_HERO_IMAGE_FALLBACK_PATH, isEntdeckenHeroVideoUrl } from '../src/config/entdeckenHeroMedia'
 import { loadEntdeckenHeroOverlayIfFresh } from '../src/utils/entdeckenHeroOverlayStorage'
 import { addPendingArtwork, ensureArtworkUid, filterK2Only, isEchteK2Werknummer, readArtworksRawByKey, readArtworksRawByKeyOrNull, saveArtworksByKey, saveArtworksByKeyWithImageStore, readArtworksWithResolvedImages, resolveArtworkImages } from '../src/utils/artworksStorage'
 import { isSupabaseConfigured, saveArtworksToSupabase, fillArtworkImageUrlsFromSupabase, fillMissingImageUrlsFromIndexedDB } from '../src/utils/supabaseClient'
@@ -13366,6 +13367,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                 entdeckenHeroLocalPreview ||
                 entdeckenHeroIdbPreview ||
                 getEntdeckenHeroPathUrl(entdeckenForm)
+              const entdeckenVorschauIsVideo =
+                !entdeckenHeroLocalPreview &&
+                !entdeckenHeroIdbPreview &&
+                isEntdeckenHeroVideoUrl(entdeckenHeroVorschauSrc)
               const k2c = getEntdeckenColorsFromK2Design()
               const { accent, accentGlow, bgDark, bgMid, textLight } = k2c
               const ec = entdeckenForm
@@ -13433,8 +13438,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                     </Link>
                 </div>
                 <p style={{ margin: '0 0 0.6rem', fontSize: '0.82rem', color: s.muted, lineHeight: 1.45 }}>
-                  <strong style={{ color: s.text }}>So sieht das Eingangstor aus</strong> (wie bei Besuchern: links Text, rechts dein Foto).{' '}
-                  Nur die <strong style={{ color: s.text }}>rechte Bildhälfte</strong>: Foto reinziehen, klicken oder „Bild wählen“.
+                  <strong style={{ color: s.text }}>So sieht das Eingangstor aus</strong> (wie bei Besuchern: links Text, rechts Bild oder Video).{' '}
+                  Nur die <strong style={{ color: s.text }}>rechte Seite</strong>: Foto reinziehen, klicken oder „Bild wählen“ (URL unten: auch .mp4).
                 </p>
                 {/* Miniatur = gleiches Split-Layout wie EntdeckenPage (step === 'hero') */}
                 <div
@@ -13528,22 +13533,47 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                       outlineOffset: -2,
                     }}
                   >
-                    <img
-                      key={entdeckenHeroVorschauSrc}
-                      src={entdeckenHeroVorschauSrc}
-                      alt=""
-                      draggable={false}
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        pointerEvents: 'none',
-                        opacity: entdeckenHeroVorschauSrc ? 0.75 : 0.35,
-                      }}
-                    />
+                    {entdeckenVorschauIsVideo ? (
+                      <video
+                        key={entdeckenHeroVorschauSrc}
+                        src={entdeckenHeroVorschauSrc}
+                        poster={ENTDECKEN_HERO_IMAGE_FALLBACK_PATH}
+                        muted
+                        playsInline
+                        loop
+                        autoPlay
+                        preload="metadata"
+                        aria-hidden
+                        draggable={false}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          pointerEvents: 'none',
+                          opacity: entdeckenHeroVorschauSrc ? 0.75 : 0.35,
+                        }}
+                      />
+                    ) : (
+                      <img
+                        key={entdeckenHeroVorschauSrc}
+                        src={entdeckenHeroVorschauSrc}
+                        alt=""
+                        draggable={false}
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          pointerEvents: 'none',
+                          opacity: entdeckenHeroVorschauSrc ? 0.75 : 0.35,
+                        }}
+                      />
+                    )}
                     <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to right, ${bgDark} 0%, transparent 38%)`, pointerEvents: 'none' }} />
                     <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, ${bgDark} 0%, transparent 42%)`, pointerEvents: 'none' }} />
                     {entdeckenHeroDragOver ? (
@@ -17300,8 +17330,8 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                         </div>
                       ))}
                       <div>
-                        <label style={{ display: 'block', fontSize: '0.85rem', color: fText, marginBottom: '0.25rem' }}>Hero-Bild (URL, leer = Standard entdecken-hero.jpg)</label>
-                        <input type="text" value={ec.heroImageUrl ?? ''} onChange={e => setEntdeckenForm(prev => ({ ...prev, heroImageUrl: e.target.value }))} placeholder="/img/oeffentlich/entdecken-hero.jpg" style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${fMuted}`, borderRadius: 8, background: s.bgCard, color: fText }} />
+                        <label style={{ display: 'block', fontSize: '0.85rem', color: fText, marginBottom: '0.25rem' }}>Hero-Medium (URL: Bild oder Video .mp4, leer = Standard-Video Eingangstor)</label>
+                        <input type="text" value={ec.heroImageUrl ?? ''} onChange={e => setEntdeckenForm(prev => ({ ...prev, heroImageUrl: e.target.value }))} placeholder="/video/entdecken-eingangstor.mp4" style={{ width: '100%', padding: '0.4rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${fMuted}`, borderRadius: 8, background: s.bgCard, color: fText }} />
                       </div>
                     </div>
                   </div>
