@@ -140,6 +140,52 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-wrap .pmv-link { color: #0d9488; text-decoration: underline; }
     .pmv-wrap .pmv-link:hover { color: #0f766e; }
     .pmv-wrap .pmv-img { max-width: 100%; height: auto; border-radius: 8px; }
+    /* Leitfaden „So nutzt du diese Mappe“ – volle erste Seite optisch klar (Screen) */
+    .pmv-wrap .pmv-leitfaden-page {
+      position: relative;
+      padding: 0.15rem 0 0.35rem;
+      margin: 0 0 0.35rem;
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(236, 253, 245, 0.9) 0%, rgba(255, 255, 255, 0) 48%);
+      box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.2);
+    }
+    .pmv-wrap .pmv-leitfaden-page::before {
+      content: '';
+      display: block;
+      height: 6px;
+      margin: 0 0 1.15rem;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #0f766e 0%, #14b8a6 42%, #5eead4 100%);
+    }
+    .pmv-wrap .pmv-leitfaden-page .pmv-h1 {
+      font-size: 1.95rem;
+      margin-top: 0;
+      margin-bottom: 0.9rem;
+      color: #0f766e;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .pmv-wrap .pmv-leitfaden-page .pmv-h2 {
+      font-size: 1.22rem;
+      margin-top: 1.4rem;
+      margin-bottom: 0.45rem;
+      padding: 0.4rem 0.65rem 0.4rem 0.75rem;
+      border-left: 4px solid #14b8a6;
+      background: rgba(20, 184, 166, 0.08);
+      border-radius: 0 10px 10px 0;
+      color: #134e4a;
+    }
+    .pmv-wrap .pmv-leitfaden-page .pmv-h2:first-of-type { margin-top: 0.85rem; }
+    .pmv-wrap .pmv-leitfaden-page .pmv-h3 { font-size: 1.06rem; color: #374151; }
+    .pmv-wrap .pmv-leitfaden-page .pmv-blockquote { margin-bottom: 1rem; }
+    .pmv-chapter-block--leitfaden { margin-bottom: 0.75rem; }
+    /* Nur Inhaltsverzeichnis (00-INDEX) – kompakt */
+    .pmv-wrap .pmv-toc-only-page { padding: 0.2rem 0 0.5rem; }
+    .pmv-wrap .pmv-toc-only-page .pmv-h1 { font-size: 1.35rem; margin: 0 0 0.65rem; color: #0f766e; }
+    .pmv-wrap .pmv-toc-only-page .pmv-h2 { font-size: 1.05rem; margin: 0.5rem 0 0.35rem; color: #134e4a; }
+    .pmv-wrap .pmv-toc-only-page .pmv-p,
+    .pmv-wrap .pmv-toc-only-page .pmv-li { font-size: 0.92rem; line-height: 1.45; }
+    .pmv-wrap .pmv-toc-only-page .pmv-ul { margin: 0.35rem 0 0.5rem 1.2rem; }
     .pmv-seitenumbruch { margin: 1rem 0; padding: 0.5rem 0; border-top: 1px dashed #d1d5db; }
     .pmv-seitenumbruch-label { font-size: 0.8rem; color: #9ca3af; }
     .pmv-leerzeile { height: 0.75rem; }
@@ -236,6 +282,52 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-deckblatt-cover .pmv-cover-img { max-height: 180mm; width: auto; margin: 0 auto; object-fit: contain; }
       .pmv-chapter-block { page-break-before: auto !important; margin-bottom: 0.35em !important; }
       .pmv-chapter-block.pmv-chapter-first { page-break-before: auto !important; }
+      .pmv-chapter-block--leitfaden {
+        page-break-after: always !important;
+        margin-bottom: 0 !important;
+      }
+      .pmv-wrap .pmv-leitfaden-page {
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        padding: 10mm 14mm 12mm !important;
+        box-sizing: border-box !important;
+        min-height: 0 !important;
+      }
+      .pmv-wrap .pmv-leitfaden-page::before {
+        height: 4pt !important;
+        margin-bottom: 0.35cm !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pmv-wrap .pmv-leitfaden-page .pmv-h1 {
+        font-size: 18pt !important;
+        color: #0f766e !important;
+        margin: 0 0 0.3cm !important;
+      }
+      .pmv-wrap .pmv-leitfaden-page .pmv-h2 {
+        font-size: 11.5pt !important;
+        margin: 0.32cm 0 0.16cm !important;
+        padding: 0.16cm 0.3cm 0.16cm 0.4cm !important;
+        border-left-width: 3pt !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .pmv-wrap .pmv-leitfaden-page .pmv-h3 { font-size: 10.5pt !important; }
+      .pmv-wrap .pmv-leitfaden-page .pmv-p,
+      .pmv-wrap .pmv-leitfaden-page .pmv-blockquote .pmv-p { font-size: 10pt !important; line-height: 1.42 !important; }
+      .pmv-wrap .pmv-toc-only-page {
+        page-break-after: always !important;
+        padding: 6mm 12mm 8mm !important;
+        box-sizing: border-box !important;
+      }
+      .pmv-wrap .pmv-toc-only-page .pmv-h1 { font-size: 14pt !important; margin: 0 0 0.35cm !important; color: #0f766e !important; }
+      .pmv-wrap .pmv-toc-only-page .pmv-h2 { font-size: 10pt !important; margin: 0.25cm 0 0.15cm !important; }
+      .pmv-wrap .pmv-toc-only-page .pmv-p,
+      .pmv-wrap .pmv-toc-only-page .pmv-li { font-size: 8.75pt !important; line-height: 1.32 !important; }
+      .pmv-wrap .pmv-toc-only-page .pmv-ul { margin: 0.15cm 0 0.25cm 0.9cm !important; }
       .pmv-no-print { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch .pmv-seitenumbruch-label { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch { page-break-before: always !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; }

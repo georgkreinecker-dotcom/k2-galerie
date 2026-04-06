@@ -4,8 +4,6 @@
 
 ## Inhaltsverzeichnis
 
-- [Deckblatt](01-DECKBLATT.md)
-
 1. [Inhaltsverzeichnis](00-INDEX.md)
 2. [USPs und Mitbewerb](02-USP-WETTBEWERB-VK2.md)
 3. [Was ist VK2](02-WAS-IST-VK2.md)

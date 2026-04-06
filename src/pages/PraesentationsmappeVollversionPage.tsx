@@ -4,17 +4,18 @@
  * Ton: Du, Nutzen, klare Lesereihenfolge; Quelle: public/praesentationsmappe-vollversion/*.md
  */
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import {
   PRODUCT_BRAND_NAME,
+  MUSTER_TEXTE,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
   K2_GALERIE_PUBLIC_BRAND,
-  MUSTER_TEXTE,
+  K2_STAMMDATEN_DEFAULTS,
   TENANT_CONFIGS,
 } from '../config/tenantConfig'
 import { loadStammdaten } from '../utils/stammdatenStorage'
@@ -50,14 +51,56 @@ type PraesMappeDoc = {
   file: string
 }
 
+/** Leitfaden „So nutzt du …“ – K2 und VK2: dieselbe Datei `00-LESEFUEHRUNG.md` pro Ordner. */
+const PMV_LESEFUEHRUNG_FILE = '00-LESEFUEHRUNG.md'
+const PMV_DECKBLATT_FILE = '01-DECKBLATT.md'
+
+function renderDeckblattCover(isOeffentlich: boolean): ReactNode {
+  const gallery =
+    typeof window !== 'undefined'
+      ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as Record<string, string>)
+      : ((isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as Record<string, string>)
+  const coverTitle = isOeffentlich
+    ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
+    : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || K2_GALERIE_PUBLIC_BRAND).replace(
+        /&/g,
+        ' & ',
+      )
+  const heroSrc =
+    typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : '/img/oeffentlich/entdecken-hero.jpg'
+  return (
+    <div className="pmv-deckblatt-cover">
+      <div className="pmv-deckblatt-header">
+        <h1 className="pmv-cover-title">{coverTitle}</h1>
+        <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
+        <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
+        <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
+      </div>
+      <div className="pmv-cover-img-wrap">
+        <img className="pmv-cover-img" src={heroSrc} alt="" />
+      </div>
+    </div>
+  )
+}
+
 const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
   {
     sectionTitle: 'Orientierung',
-    id: '01-deckblatt',
+    id: 'deckblatt',
     name: 'Deckblatt',
-    file: '01-DECKBLATT.md',
+    file: PMV_DECKBLATT_FILE,
   },
-  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md', tocChapter: 1 },
+  {
+    id: 'so-nutz-du',
+    name: 'So nutzt du diese Mappe',
+    file: PMV_LESEFUEHRUNG_FILE,
+  },
+  {
+    id: 'pmv-inhaltsverzeichnis',
+    name: 'Inhaltsverzeichnis',
+    file: '00-INDEX.md',
+    tocChapter: 1,
+  },
   { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-UND-WETTBEWERB.md', tocChapter: 2 },
   /** Kapitel 3 (Prospekt) nur im Index verlinkt, nicht in der Seitenleiste – Zählung springt auf 4. */
   { id: '02-was-ist', name: 'Was ist die K2 Galerie', file: '02-WAS-IST-K2-GALERIE.md', tocChapter: 4 },
@@ -92,11 +135,15 @@ const DOCUMENTS_STANDARD: PraesMappeDoc[] = [
 const DOCUMENTS_VK2: PraesMappeDoc[] = [
   {
     sectionTitle: 'Orientierung',
-    id: '01-deckblatt',
-    name: 'Deckblatt',
-    file: '01-DECKBLATT.md',
+    id: '00-lesefuehrung',
+    name: 'So nutzt du diese Mappe',
+    file: PMV_LESEFUEHRUNG_FILE,
   },
-  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  {
+    id: '00-index',
+    name: 'Inhaltsverzeichnis',
+    file: '00-INDEX.md',
+  },
   { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB-VK2.md' },
   { id: '02-was-ist-vk2', name: 'Was ist VK2', file: '02-WAS-IST-VK2.md' },
   { id: '03-fuer-wen', name: 'Für wen', file: '03-FUER-WEN.md' },
@@ -116,11 +163,15 @@ const DOCUMENTS_VK2: PraesMappeDoc[] = [
 const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
   {
     sectionTitle: 'Orientierung',
-    id: '01-deckblatt',
-    name: 'Deckblatt',
-    file: '01-DECKBLATT.md',
+    id: '00-lesefuehrung',
+    name: 'So nutzt du diese Mappe',
+    file: PMV_LESEFUEHRUNG_FILE,
   },
-  { id: '00-index', name: 'Inhaltsverzeichnis', file: '00-INDEX.md' },
+  {
+    id: '00-index',
+    name: 'Inhaltsverzeichnis',
+    file: '00-INDEX.md',
+  },
   { id: '02-usp-wettbewerb', name: 'USPs & Mitbewerb', file: '02-USP-WETTBEWERB.md' },
   {
     sectionTitle: 'Konkret im Admin',
@@ -137,15 +188,35 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
 
 const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
 
-/** Nummer vor der ersten H1 nur wo sinnvoll; Inhaltsverzeichnis ohne Ziffer – Seitenleiste nutzt dieselbe Logik (keine „1.“ vor Inhaltsverzeichnis). */
+function isPmvMetaDocFile(file: string): boolean {
+  return (
+    file === '00-INDEX.md' ||
+    file === PMV_LESEFUEHRUNG_FILE ||
+    file === PMV_DECKBLATT_FILE
+  )
+}
+
+/** Nummer vor der ersten H1: tocChapter wo gesetzt; sonst VK2-Promo ohne tocChapter → 1, 2, … ohne Meta-Seiten. */
 function chapterNumberForPmvMarkdown(docs: PraesMappeDoc[], file: string): number | undefined {
   const idx = docs.findIndex((d) => d.file === file)
   if (idx < 0) return undefined
   const doc = docs[idx]
   if (doc?.tocChapter != null) return doc.tocChapter
-  if (idx <= 0) return undefined
-  if (doc?.file === '00-INDEX.md') return undefined
-  return idx
+  if (isPmvMetaDocFile(file)) return undefined
+  const contentOnly = docs.filter((d) => !isPmvMetaDocFile(d.file))
+  const ci = contentOnly.findIndex((d) => d.file === file)
+  if (ci < 0) return undefined
+  return ci + 1
+}
+
+function wrapPmvMarkdownPage(file: string | null, node: ReactNode): ReactNode {
+  if (file === PMV_LESEFUEHRUNG_FILE) {
+    return <div className="pmv-lesefuehrung-page">{node}</div>
+  }
+  if (file === '00-INDEX.md') {
+    return <div className="pmv-toc-only-page">{node}</div>
+  }
+  return node
 }
 
 function sidebarDocLabel(docs: PraesMappeDoc[], doc: PraesMappeDoc): string {
@@ -174,6 +245,13 @@ export default function PraesentationsmappeVollversionPage() {
   const [allDocContents, setAllDocContents] = useState<string[]>([])
   const [loadingFullPrint, setLoadingFullPrint] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+
+  const docsMatchingAllContents = useMemo(() => {
+    const hasAll = fullPrintView || (isMobile && allDocContents.length > 0)
+    if (!hasAll) return DOCUMENTS
+    if (fullPrintView && !isAnyVk2) return DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE)
+    return DOCUMENTS
+  }, [fullPrintView, isMobile, allDocContents.length, DOCUMENTS, isAnyVk2])
 
   const returnTo = searchParams.get('returnTo')
   /** Beamer/Folien: ein Kapitel pro „Folie“, Vollbild, Pfeiltasten; optional auto= Sekunden pro Folie */
@@ -348,8 +426,10 @@ export default function PraesentationsmappeVollversionPage() {
   const loadAllDocuments = async (forPrint: boolean) => {
     setLoadingFullPrint(true)
     try {
+      const docList =
+        forPrint && !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
       const contents: string[] = []
-      for (const doc of DOCUMENTS) {
+      for (const doc of docList) {
         const response = await fetch(`${BASE}/${doc.file}`)
         let text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
         if (!isAnyVk2 && doc.file === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
@@ -383,52 +463,6 @@ export default function PraesentationsmappeVollversionPage() {
       return
     }
     navigate(FALLBACK_ROUTE)
-  }
-
-  /** Deckblatt außen: K2 Galerie groß, Slogans, kgm solution dezent als Copyright. Header-Höhe inhaltabhängig, kein Abschneiden. */
-  const renderDeckblattCover = () => {
-    if (isAnyVk2) {
-      return (
-        <div className="pmv-deckblatt-cover" lang="de">
-          <div className="pmv-deckblatt-header">
-            <h1 className="pmv-cover-title">VK2 Vereinsplattform</h1>
-            <p className="pmv-cover-slogan1">Für Vereine gedacht, für den Alltag gemacht.</p>
-            <p className="pmv-cover-slogan2">Mitglieder, Kommunikation, Kassa und Unterlagen in einer Oberfläche.</p>
-            <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
-          </div>
-          <div className="pmv-cover-img-wrap">
-            <img
-              src="/img/oeffentlich/pm-vk2-verein.png"
-              alt="VK2 Vereinsplattform – Musteransicht"
-              className="pmv-cover-img"
-            />
-          </div>
-        </div>
-      )
-    }
-    const deckTitle = isOeffentlich
-      ? MUSTER_TEXTE.gallery.firmenname || TENANT_CONFIGS.oeffentlich.galleryName
-      : K2_GALERIE_PUBLIC_BRAND
-    // Deckblatt-Foto soll immer das Eingangsbild (Eingangstor / Entdecken) sein.
-    // Quelle: Admin → Design → Eingangsseite.
-    const deckImg = getEntdeckenHeroPathUrl()
-    return (
-      <div className="pmv-deckblatt-cover" lang="de">
-        <div className="pmv-deckblatt-header">
-          <h1 className="pmv-cover-title">{deckTitle}</h1>
-          <p className="pmv-cover-slogan1">{PRODUCT_WERBESLOGAN}</p>
-          <p className="pmv-cover-slogan2">{PRODUCT_WERBESLOGAN_2}</p>
-          <p className="pmv-cover-copyright">© {PRODUCT_BRAND_NAME}</p>
-        </div>
-        <div className="pmv-cover-img-wrap">
-          <img
-            src={deckImg}
-            alt="Eingangstor / Entdecken – Deckblattbild"
-            className="pmv-cover-img"
-          />
-        </div>
-      </div>
-    )
   }
 
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
@@ -556,15 +590,18 @@ export default function PraesentationsmappeVollversionPage() {
           <article className="pmv-article pmv-a4-sheet" style={{ minHeight: 200 }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel…</div>
+            ) : selectedDoc === PMV_DECKBLATT_FILE ? (
+              renderDeckblattCover(isOeffentlich)
             ) : (
               <div>
-                {selectedDoc === '01-DECKBLATT.md'
-                  ? renderDeckblattCover()
-                  : renderMarkdown(docContent, {
-                      assetBase: BASE,
-                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
-                      onInternalDocClick: (path) => loadDocument(path),
-                    })}
+                {wrapPmvMarkdownPage(
+                  selectedDoc,
+                  renderMarkdown(docContent, {
+                    assetBase: BASE,
+                    chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
+                    onInternalDocClick: (path) => loadDocument(path),
+                  }),
+                )}
                 {selectedDoc === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
                     <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
@@ -648,16 +685,29 @@ export default function PraesentationsmappeVollversionPage() {
           {allDocContents.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Keine Kapitel geladen.</div>
           ) : (
-            DOCUMENTS.map((doc, idx) => (
-              <div key={doc.file} className={idx === 0 ? 'pmv-chapter-block pmv-chapter-first' : 'pmv-chapter-block'}>
-                {doc.file === '01-DECKBLATT.md'
-                  ? renderDeckblattCover()
-                  : renderMarkdown(allDocContents[idx] ?? '', {
-                      assetBase: BASE,
-                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, doc.file),
-                      onInternalDocClick: (path) => { setFullPrintView(false); loadDocument(path) },
-                      keyPrefix: `ch${idx}`,
-                    })}
+            docsMatchingAllContents.map((doc, idx) => (
+              <div
+                key={doc.file}
+                className={[
+                  'pmv-chapter-block',
+                  idx === 0 ? 'pmv-chapter-first' : '',
+                  doc.file === PMV_LESEFUEHRUNG_FILE ? 'pmv-chapter-block--lesefuehrung' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
+                {wrapPmvMarkdownPage(
+                  doc.file,
+                  renderMarkdown(allDocContents[idx] ?? '', {
+                    assetBase: BASE,
+                    chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, doc.file),
+                    onInternalDocClick: (path) => {
+                      setFullPrintView(false)
+                      loadDocument(path)
+                    },
+                    keyPrefix: `ch${idx}`,
+                  }),
+                )}
                 {doc.file === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
                     <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />
@@ -726,15 +776,18 @@ export default function PraesentationsmappeVollversionPage() {
           >
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
+            ) : selectedDoc === PMV_DECKBLATT_FILE ? (
+              renderDeckblattCover(isOeffentlich)
             ) : (
               <div>
-                {selectedDoc === '01-DECKBLATT.md'
-                  ? renderDeckblattCover()
-                  : renderMarkdown(docContent, {
-                      assetBase: BASE,
-                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
-                      onInternalDocClick: (path) => loadDocument(path),
-                    })}
+                {wrapPmvMarkdownPage(
+                  selectedDoc,
+                  renderMarkdown(docContent, {
+                    assetBase: BASE,
+                    chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, selectedDoc ?? ''),
+                    onInternalDocClick: (path) => loadDocument(path),
+                  }),
+                )}
                 {selectedDoc === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
                     <img src={qrOek2DataUrl} alt={isAnyVk2 ? 'QR zur VK2 Vereinsplattform' : 'QR zur Demo (ök2)'} style={{ display: 'block', width: 140, height: 140 }} />

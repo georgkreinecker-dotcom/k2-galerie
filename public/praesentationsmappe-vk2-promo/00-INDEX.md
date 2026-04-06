@@ -4,8 +4,6 @@
 
 ## Inhaltsverzeichnis
 
-- [Deckblatt](01-DECKBLATT.md)
-
 1. [Inhaltsverzeichnis](00-INDEX.md)
 2. [USPs & Mitbewerb](02-USP-WETTBEWERB.md)
 3. [Ein Blick in den Admin](02-EIN-BLICK-ADMIN.md)
