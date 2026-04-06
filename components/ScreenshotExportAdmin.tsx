@@ -10652,7 +10652,7 @@ ${'='.repeat(60)}
       backgroundColor1: design.backgroundColor1,
       textColor: design.textColor,
       mutedColor: design.mutedColor
-    }, galleryData?.name)
+    }, galleryData?.name, { includeContact: personId !== 'georg' })
     openDocumentInApp(htmlRaw, person?.name ? `Vita – ${person.name}` : 'Vita')
   }
 

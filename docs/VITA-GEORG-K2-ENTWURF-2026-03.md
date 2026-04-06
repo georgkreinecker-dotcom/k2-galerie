@@ -1,45 +1,42 @@
-# Vita Georg Kreinecker – K2 (Entwurf zur Freigabe)
+# Vita Georg Kreinecker – K2 (Freigabe / App-Standard)
 
-**Quelle:** Stichpunkte von Georg, März 2026. **Stand Redaktion:** März 2026; Fließtext März 2026 (zweite Durchgang: lebendiger, weniger Amtsdeutsch).
-
----
-
-## Kurzbiographie Georg Kreinecker
-
-**1983** – Schlossermeisterprüfung.
-
-**1985** – mit der Gründung von **Kreinecker Georg Maschinenbau (KGM)** der Schritt in die Selbstständigkeit. Daraus entwickelten sich die **kgm consulting & trading GmbH** und die **kgm Immobilien GmbH**. **kgm solution** ist **im Ruhestand** mein Projekt – K2 Galerie und die digitale Plattform.
-
-**Künstlerisch:** **2009** Einstieg über **Bildhauerei mit Steinbearbeitung**, **Bronzeguss** dazwischen, dann **Keramik** als der Teil, der blieb. **Praxiskurse** u. a. bei **Georg Niemann**, **Sabine Classen** ([ceramic4you.com](http://www.ceramic4you.com/), [sabineclassen.de](http://www.sabineclassen.de/)), **Keramikzentrum Grenzhausen** ([Keramik-Kombinat](https://natur-kultur-keramik.de/keramik-kombinat/)). **Lesen** und **Ausprobieren am Ton** – fest dabei.
+**Quelle:** Georg, März 2026. **Stand Redaktion:** April 2026 – **Epochen gegliedert**, Kontakt **nicht** im Vita-Fließtext und **nicht** im Vita-Dokument (Popup/Admin-Vorschau); Kontakt bleibt in den Stammdaten.
 
 ---
 
-## Variante als Fließtext (eine Absatzfolge)
+## Struktur (App & Druck)
 
-1983 legte ich die Schlossermeisterprüfung ab. 1985 wagte ich mit der Gründung von **Kreinecker Georg Maschinenbau (KGM)** den Schritt in die Selbstständigkeit – daraus wurden die **kgm consulting & trading GmbH** und die **kgm Immobilien GmbH**. **kgm solution** betreibe ich **im Ruhestand**; das ist mein Projekt rund um die **K2 Galerie** und die **digitale Plattform**.
-
-Mit **Stein und Bildhauerei** bin ich 2009 eingestiegen; **Bronze** war für mich nur eine zwischengelagerte Phase – bei der **Keramik** blieb ich hängen und wollte mehr. **Praxiskurse** bei **Georg Niemann**, bei **Sabine Classen** (ceramic4you, sabineclassen.de) und im **Keramikzentrum Grenzhausen** (Keramik-Kombinat) haben mich weitergebracht. Ich lese viel dazu und probiere am Ton aus – das gehört für mich einfach zum Handwerk dazu.
+1. **Einleitung** – ein Absatz (Beruf, Ruhestand, K2 / Plattform).  
+2. **Beruf und Unternehmertum** – Jahreszeilen (Überschrift + Liste).  
+3. **Kunst und Keramik** – Weg über Stein/Bronze/Keramik, Fortbildungen, Abschlussatz.
 
 ---
 
-## Plaintext für das Vita-Feld in der App (ohne Markdown)
-
-Zum Kopieren – **Variante Fließtext** (empfohlen für eine Vita-Seite):
+## Plaintext für das Vita-Feld (`K2_DEFAULT_VITA_GEORG`)
 
 ```
-1983 Schlossermeisterprüfung. 1985 mit der Gründung von Kreinecker Georg Maschinenbau (KGM) in die Selbstständigkeit; daraus kgm consulting & trading GmbH und kgm Immobilien GmbH. kgm solution im Ruhestand – mein Projekt K2 Galerie und digitale Plattform.
+Schlosserhandwerk und Unternehmertum prägen meinen Berufsweg; im Ruhestand widme ich mich kgm solution und dem gemeinsamen Projekt K2 Galerie mit der digitalen Plattform.
 
-Künstlerisch: 2009 Bildhauerei mit Steinbearbeitung, Bronze dazwischen; bei der Keramik bin ich geblieben. Praxiskurse bei Georg Niemann, Sabine Classen (ceramic4you.com, sabineclassen.de) und Keramikzentrum Grenzhausen (natur-kultur-keramik.de/keramik-kombinat/). Viel lesen und am Ton ausprobieren – so arbeite ich.
+Beruf und Unternehmertum
+
+1983 – Schlossermeisterprüfung.
+1985 – Gründung Kreinecker Georg Maschinenbau (KGM); Start in die Selbstständigkeit.
+Es folgten die kgm consulting & trading GmbH und die kgm Immobilien GmbH.
+Seit 2020 – kgm solution im Ruhestand; Schwerpunkt K2 Galerie und digitale Plattform.
+
+Kunst und Keramik
+
+2009 – Einstieg über Stein und Bildhauerei.
+Es folgten eine Phase mit Bronze; Keramik wurde der bleibende Schwerpunkt.
+2016–2018 – Praxiskurse bei Georg Niemann, bei Sabine Classen (ceramic4you, sabineclassen.de) und im Keramikzentrum Grenzhausen (Keramik-Kombinat).
+
+Heute lese ich viel und experimentiere am Ton – das gehört für mich zum Handwerk dazu.
 ```
 
 ---
 
-## Redaktionshinweise
+## Hinweise
 
-- **Firmennamen:** „consulting“ statt Tippfehler „cunsulting“; „&“ in GmbH-Bezeichnung beibehalten.  
-- **Links:** In der App sind reine URLs oft unklickbar im Fließtext – auf Wunsch können wir in einer **HTML-Vita** oder separaten Zeile „Weitere Infos: …“ arbeiten; sag Bescheid.  
-- **Martina:** Entwurf liegt in [VITA-MARTINA-K2-ENTWURF-2026-03.md](./VITA-MARTINA-K2-ENTWURF-2026-03.md).
-
----
-
-*Entwurf nur zur Prüfung – noch nicht produktiv in der App.*
+- **Jahre bei Kursen** (2016–2018) sind der grobe Rahmen; bei Bedarf im Stammdatenfeld anpassen.  
+- **Vita-Dokument Georg:** `buildVitaDocumentHtml` mit `includeContact: false` – kein Kontaktblock unter der Vita. **Martina** unverändert mit Kontaktblock, sofern Daten gesetzt.  
+- **Martina:** [VITA-MARTINA-K2-ENTWURF-2026-03.md](./VITA-MARTINA-K2-ENTWURF-2026-03.md).

@@ -236,9 +236,22 @@ Seit 2020 – jährliche Teilnahme an Sommerakademien (unter anderem in Eferding
 2023 – Gemeinschaftsausstellung der Aktgruppe in der Konditorei Vogl und in der „Kleinen Kellergalerie“
 2025 – Gastausstellung bei der Künstlergilde Eferding`
 
-export const K2_DEFAULT_VITA_GEORG = `1983 legte ich die Schlossermeisterprüfung ab. 1985 wagte ich mit der Gründung von Kreinecker Georg Maschinenbau (KGM) den Schritt in die Selbstständigkeit – daraus wurden die kgm consulting & trading GmbH und die kgm Immobilien GmbH. kgm solution betreibe ich im Ruhestand; das ist mein Projekt rund um die K2 Galerie und die digitale Plattform.
+export const K2_DEFAULT_VITA_GEORG = `Schlosserhandwerk und Unternehmertum prägen meinen Berufsweg; im Ruhestand widme ich mich kgm solution und dem gemeinsamen Projekt K2 Galerie mit der digitalen Plattform.
 
-Mit Stein und Bildhauerei bin ich 2009 eingestiegen; Bronze war für mich nur eine zwischengelagerte Phase – bei der Keramik blieb ich hängen und wollte mehr. Praxiskurse bei Georg Niemann, bei Sabine Classen (ceramic4you, sabineclassen.de) und im Keramikzentrum Grenzhausen (Keramik-Kombinat) haben mich weitergebracht. Ich lese viel dazu und probiere am Ton aus – das gehört für mich einfach zum Handwerk dazu.`
+Beruf und Unternehmertum
+
+1983 – Schlossermeisterprüfung.
+1985 – Gründung Kreinecker Georg Maschinenbau (KGM); Start in die Selbstständigkeit.
+Es folgten die kgm consulting & trading GmbH und die kgm Immobilien GmbH.
+Seit 2020 – kgm solution im Ruhestand; Schwerpunkt K2 Galerie und digitale Plattform.
+
+Kunst und Keramik
+
+2009 – Einstieg über Stein und Bildhauerei.
+Es folgten eine Phase mit Bronze; Keramik wurde der bleibende Schwerpunkt.
+2016–2018 – Praxiskurse bei Georg Niemann, bei Sabine Classen (ceramic4you, sabineclassen.de) und im Keramikzentrum Grenzhausen (Keramik-Kombinat).
+
+Heute lese ich viel und experimentiere am Ton – das gehört für mich zum Handwerk dazu.`
 
 /** Prüft ob ein Adress-Objekt mindestens ein gesetztes Feld hat. */
 function hasAddress(g: { address?: string; city?: string; country?: string } | null | undefined): boolean {

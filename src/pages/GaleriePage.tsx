@@ -2577,7 +2577,9 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         const gParsed = g ? JSON.parse(g) : {}
         galleryName = gParsed.name
       }
-      const html = buildVitaDocumentHtml(personId, data, designForVita, galleryName)
+      const html = buildVitaDocumentHtml(personId, data, designForVita, galleryName, {
+        includeContact: personId !== 'georg',
+      })
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const opened = window.open(url, '_blank')

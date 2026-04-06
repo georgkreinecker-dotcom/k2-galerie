@@ -100,6 +100,11 @@ function isDarkBackgroundHex(hex: string): boolean {
   return lum < 0.42
 }
 
+export interface VitaDocumentOptions {
+  /** false = kein Kontaktblock (z. B. Vita Georg ohne Doppelung zu Stammdaten). Standard: true. */
+  includeContact?: boolean
+}
+
 /**
  * Erzeugt eine HTML-Seite mit der Vita einer Person im Nutzer-Design.
  */
@@ -107,7 +112,8 @@ export function buildVitaDocumentHtml(
   personId: 'martina' | 'georg',
   data: VitaPersonData,
   design: VitaDesign = {},
-  galleryName?: string
+  galleryName?: string,
+  docOptions: VitaDocumentOptions = {}
 ): string {
   const d = { ...DEFAULT_DESIGN, ...design }
   const accent = d.accentColor
@@ -120,20 +126,21 @@ export function buildVitaDocumentHtml(
   const vitaHtml = buildStructuredVitaHtml(data.vita || '')
 
   const contactRows: string[] = []
-  if (data.email) {
+  const wantContact = docOptions.includeContact !== false
+  if (wantContact && data.email) {
     const raw = String(data.email).trim()
     contactRows.push(
       `<p class="contact-line"><span class="contact-label">E-Mail</span><a class="contact-value" href="mailto:${encodeURIComponent(raw)}">${esc(raw)}</a></p>`,
     )
   }
-  if (data.phone) {
+  if (wantContact && data.phone) {
     const raw = String(data.phone).trim()
     const telHref = raw.replace(/[^\d+]/g, '') || raw
     contactRows.push(
       `<p class="contact-line"><span class="contact-label">Telefon</span><a class="contact-value" href="tel:${esc(telHref)}">${esc(raw)}</a></p>`,
     )
   }
-  if (data.website) {
+  if (wantContact && data.website) {
     const w = String(data.website).trim()
     const href = normalizeWebHref(w)
     contactRows.push(
