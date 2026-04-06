@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Eingangstor /entdecken: Video statt statischem Bild** – Standard-Hero = **`/video/entdecken-eingangstor.mp4`** (Datei aus Repo `public/video/`, geloopt, stumm, `poster` = bisheriges JPG). **`isEntdeckenHeroVideoUrl`**, `EntdeckenPage` + Admin-Vorschau: `<video>`; Präsentationsmappe-Deckblatt bleibt **JPG** (Druck). Tests + Build grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 06.04.26 – **Eingangstor /entdecken: Video statt statischem Bild** – Standard-Hero = **`/video/entdecken-eingangstor.mp4`** (Datei aus Repo `public/video/`, geloopt, stumm, `poster` = bisheriges JPG). **`isEntdeckenHeroVideoUrl`**, `EntdeckenPage` + Admin-Vorschau: `<video>`; Präsentationsmappe-Deckblatt bleibt **JPG** (Druck). Tests + Build grün. **Commit:** **96d9c742** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy `/entdecken` – rechts Video; optional Hero-URL im Admin auf eigenes .mp4 setzen.
 
