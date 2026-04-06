@@ -12,6 +12,11 @@ import {
 import { loadStammdaten, saveStammdaten } from '../utils/stammdatenStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { mayEditContent } from '../utils/visitorContext'
+import {
+  lineLooksLikeVitaListItem,
+  isShortSectionTitleLine,
+  mergeHeadingBeforeListBlocks,
+} from '../utils/vitaTextStructured'
 import '../App.css'
 
 // K2: Stammdaten nur über Schicht (Phase 5.3). ök2: Vita-eigene Keys (Inhalt nur hier).
@@ -21,6 +26,127 @@ const DEFAULT_BIO = {
   martina: 'Martina bringt mit ihren Gemälden eine lebendige Vielfalt an Farben und Ausdruckskraft auf die Leinwand. ihre Werke spiegeln Jahre des Lernens, Experimentierens und der Leidenschaft für die Malerei wider.',
   georg: 'Georg verbindet in seiner Keramikarbeit technisches Können mit kreativer Gestaltung. Seine Arbeiten sind geprägt von Präzision und einer Liebe zum Detail, das Ergebnis von langjähriger Erfahrung.',
 } as const
+
+/**
+ * Vita-Lesetext: Absätze, optional Zwischenüberschrift + Liste (Jahreszeilen).
+ * Kein Markdown nötig – nutzt Leerzeilen und Zeilenumbrüche wie im Stammdaten-Text.
+ */
+function VitaReadView({ text }: { text: string }) {
+  if (!text.trim()) {
+    return <p style={{ margin: 0, opacity: 0.75 }}>Keine Vita hinterlegt.</p>
+  }
+  const paragraphs = mergeHeadingBeforeListBlocks(text.split(/\n\n+/).map((p) => p.trim()).filter(Boolean))
+  const prose: React.ReactNode[] = []
+  let firstSectionH2 = true
+
+  const pStyle: React.CSSProperties = {
+    margin: '0 0 1.2em',
+    textAlign: 'left' as const,
+    maxWidth: '62ch',
+  }
+  const sectionH2: React.CSSProperties = {
+    margin: '1.65em 0 0.65em',
+    fontSize: 'clamp(1.12rem, 2.6vw, 1.32rem)',
+    fontWeight: 600,
+    letterSpacing: '0.02em',
+    lineHeight: 1.35,
+    color: 'rgba(255, 245, 240, 0.98)',
+    borderBottom: '1px solid rgba(95, 251, 241, 0.22)',
+    paddingBottom: '0.35rem',
+  }
+  const ulStyle: React.CSSProperties = {
+    margin: '0 0 1.25em',
+    paddingLeft: '1.15rem',
+    listStylePosition: 'outside' as const,
+  }
+  const liStyle: React.CSSProperties = {
+    marginBottom: '0.45em',
+    paddingLeft: '0.25rem',
+    lineHeight: 1.65,
+  }
+
+  paragraphs.forEach((block, pi) => {
+    const lines = block.split('\n').map((l) => l.trim()).filter(Boolean)
+    if (lines.length === 0) return
+
+    // Ein Absatz: ein Satz / ein Block
+    if (lines.length === 1) {
+      prose.push(
+        <p key={`p-${pi}`} style={pStyle}>
+          {lines[0]}
+        </p>,
+      )
+      return
+    }
+
+    // Erste Zeile kurz = Zwischenüberschrift, Rest = Liste (Jahre/Kurse)
+    const [head, ...rest] = lines
+    const restAllList = rest.length >= 1 && rest.every((l) => lineLooksLikeVitaListItem(l))
+    if (isShortSectionTitleLine(head) && restAllList && rest.length >= 1) {
+      const mt = firstSectionH2 ? 0 : '1.65em'
+      firstSectionH2 = false
+      prose.push(
+        <h2 key={`h-${pi}`} style={{ ...sectionH2, marginTop: mt }}>
+          {head}
+        </h2>,
+      )
+      prose.push(
+        <ul key={`ul-${pi}`} style={ulStyle}>
+          {rest.map((line, li) => (
+            <li key={li} style={liStyle}>
+              {line}
+            </li>
+          ))}
+        </ul>,
+      )
+      return
+    }
+
+    // Ganzer Block wirkt wie reine Liste (ohne eigene Überschriftenzeile)
+    const allList = lines.length >= 2 && lines.every((l) => lineLooksLikeVitaListItem(l))
+    if (allList) {
+      prose.push(
+        <ul key={`ul-${pi}`} style={ulStyle}>
+          {lines.map((line, li) => (
+            <li key={li} style={liStyle}>
+              {line}
+            </li>
+          ))}
+        </ul>,
+      )
+      return
+    }
+
+    // Mehrzeiliger Absatz (z. B. Kontakt) – Zeilenumbrüche im Fließ
+    prose.push(
+      <p key={`p-${pi}`} style={pStyle}>
+        {lines.map((line, li) => (
+          <React.Fragment key={li}>
+            {li > 0 ? <br /> : null}
+            {line}
+          </React.Fragment>
+        ))}
+      </p>,
+    )
+  })
+
+  return (
+    <article
+      lang="de"
+      style={{
+        maxWidth: '40rem',
+        margin: '0 auto',
+        fontSize: 'clamp(1.05rem, 2.35vw, 1.125rem)',
+        lineHeight: 1.82,
+        color: 'rgba(255, 255, 255, 0.92)',
+        letterSpacing: '0.015em',
+        fontFeatureSettings: '"kern" 1, "liga" 1',
+      }}
+    >
+      {prose}
+    </article>
+  )
+}
 
 function buildInitialVita(artistId: 'martina' | 'georg', data: { name?: string; email?: string; phone?: string; bio?: string }): string {
   const name = data.name || (artistId === 'martina' ? 'Martina Kreinecker' : 'Georg Kreinecker')
@@ -135,13 +261,24 @@ export default function VitaPage() {
   }
 
   return (
-    <div className="page-container" style={{ padding: 'clamp(1rem, 4vw, 2rem)', maxWidth: '720px', margin: '0 auto' }}>
+    <div className="page-container" style={{ padding: 'clamp(1rem, 4vw, 2rem)', maxWidth: 'min(48rem, 100%)', margin: '0 auto' }}>
       <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
         <Link to={backTo} style={{ color: 'var(--k2-accent, #5ffbf1)', textDecoration: 'none', fontWeight: 600 }}>
           ← Zur Galerie
         </Link>
       </div>
-      <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', marginBottom: '1rem' }}>{title}</h1>
+      <h1
+        style={{
+          fontSize: 'clamp(1.55rem, 4vw, 2.05rem)',
+          fontWeight: 700,
+          letterSpacing: '0.02em',
+          lineHeight: 1.25,
+          margin: '0 0 1.35rem',
+          color: 'rgba(255, 248, 240, 0.98)',
+        }}
+      >
+        {title}
+      </h1>
       {canEdit ? (
         <>
           <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '1rem' }}>
@@ -154,14 +291,16 @@ export default function VitaPage() {
             style={{
               width: '100%',
               minHeight: '320px',
-              padding: '1rem',
+              padding: '1.1rem 1.15rem',
               borderRadius: '12px',
               border: '1px solid rgba(255,255,255,0.2)',
-              background: 'rgba(0,0,0,0.2)',
+              background: 'rgba(0,0,0,0.25)',
               color: '#fff',
-              fontSize: '1rem',
-              lineHeight: '1.6',
+              fontSize: 'clamp(1rem, 2.2vw, 1.05rem)',
+              lineHeight: 1.75,
+              letterSpacing: '0.01em',
               resize: 'vertical',
+              fontFamily: 'inherit',
             }}
           />
           <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -172,16 +311,7 @@ export default function VitaPage() {
           </div>
         </>
       ) : (
-        <div
-          style={{
-            whiteSpace: 'pre-wrap',
-            lineHeight: 1.6,
-            color: 'rgba(255,255,255,0.9)',
-            fontSize: '1rem',
-          }}
-        >
-          {vita || 'Keine Vita hinterlegt.'}
-        </div>
+        <VitaReadView text={vita} />
       )}
       <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.15)', textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
         <div>{PRODUCT_COPYRIGHT_BRAND_ONLY}</div>
