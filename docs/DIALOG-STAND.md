@@ -1,11 +1,5 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Mappe: Schnellzugriff intern raus** – Block „Schnellzugriff – Präsentationsmappen“ (Repo-Pfade, URL-Parameter) aus `public/.../00-INDEX.md` entfernt; Inhalt in **`docs/PRAESENTATIONSMAPPEN-SCHNELLZUGRIFF-INTERN.md`**, `docs/00-INDEX.md` verlinkt. Vortrag/PDF/Folien zeigen das nicht mehr. Tests + Build grün. **Commit:** _(nach Push)_
-
-**Was wir JETZT tun:** Optional Deploy → Mappe/Kapitel „Inhaltsverzeichnis“ prüfen.
-
----
-
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe Beamer-Folien** – URL `?beamer=1` auf der Vollversion: Kapitel nacheinander, Vollbild, Pfeiltasten/Leertaste, Esc beenden; optional `&auto=60` (Sekunden pro Folie). Button „Folien (Beamer)“ auf der Mappe; Admin Tab + Event-Karten: Folien-Links ök2/VK2. `00-INDEX`, FEATURES-Doku. Tests + Build grün. **Commit:** **9338a7e6** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Vollversion → Folien testen (Beamer/Vollbild).
@@ -190,7 +184,7 @@
 
 ---
 
-**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: „Was ist K2“ neu, Admin-Kapitel, Schritt 3+4 zusammen** – `02-WAS-IST-K2-GALERIE.md` neu redigiert; neues `04-ADMIN-HERZSTUECK.md` direkt nach Willkommen/Galerie mit Screenshot `pm-admin-uebersicht.png`; `00-INDEX.md` Schritt 3+4 verschmolzen, TOC 7–18; `PraesentationsmappeVollversionPage.tsx` neuer DOCUMENTS-Eintrag. Tests + Build grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 04.04.26 – **Präsentationsmappe Vollversion: „Was ist K2“ neu, Admin-Kapitel, Schritt 3+4 zusammen** – `02-WAS-IST-K2-GALERIE.md` neu redigiert; neues `04-ADMIN-HERZSTUECK.md` direkt nach Willkommen/Galerie mit Screenshot `pm-admin-uebersicht.png`; `00-INDEX.md` Schritt 3+4 verschmolzen, TOC 7–18; `PraesentationsmappeVollversionPage.tsx` neuer DOCUMENTS-Eintrag. Tests + Build grün. **Commit:** **ab68b46f** ✅ GitHub
 
 **Was wir JETZT tun:** Vollversion in der App kurz durchklicken (neues Kapitel **Admin – Herzstück**).
 
