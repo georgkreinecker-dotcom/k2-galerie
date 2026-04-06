@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Präsentationsmodus in Karte „Präsentationsmappen“ (APf)** – `ScreenshotExportAdmin` Tab Werbeunterlagen: eigener Block **„Galerie im Präsentationsmodus“** oberhalb der PDF-Mappen-Buttons; K2 / ök2 / VK2 je **In-App** + **neuer Tab** mit `?praesentation=1` (`PROJECT_ROUTES`). Tests + Build grün. **Commit:** `git log -1 --oneline` auf `main` (nach Push)
+**Letzter Stand:** 06.04.26 – **Öffentlichkeitsarbeit / Werbemittel-Karten** – Wiederholter Fußtext („Gleicher Ablauf…“), lange Karten-Beschreibungen und Plakat-Zusatzzeilen in `ScreenshotExportAdmin.tsx` entfernt bzw. auf Kurzzeilen reduziert; Präsentationsmappen ohne Fließtext (nur Buttons). Tests + Build grün. **Commit:** **b43a18b2** ✅ GitHub
 
-**Was wir JETZT tun:** APf → Werbeunterlagen → Karte Präsentationsmappen: oberster Bereich = Galerie-Präsentation; darunter wie bisher Kurz-/Vollversion usw.
+**Was wir JETZT tun:** Kurz im Browser prüfen, ob die Event-Werbemittel-Karten noch klar wirken.
 
 ---
 
