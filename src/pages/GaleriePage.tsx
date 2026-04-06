@@ -2762,6 +2762,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         >
           <Link
             to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE}
+            state={
+              !musterOnly && !vk2
+                ? { returnTo: `${location.pathname}${location.search || ''}` }
+                : undefined
+            }
             onClick={
               musterOnly || vk2
                 ? (e) => {
@@ -2777,7 +2782,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                       navigate(-1)
                     }
                   }
-                : undefined
+                : () => {
+                    try {
+                      sessionStorage.setItem(
+                        'k2-entdecken-return-to',
+                        `${location.pathname}${location.search || ''}`,
+                      )
+                    } catch (_) {}
+                  }
             }
             style={{
               fontSize: 'clamp(0.78rem, 1.6vw, 0.9rem)',
@@ -2794,7 +2806,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             title={
               musterOnly || vk2
                 ? 'Zurück zur vorherigen Seite oder zum Eingangstor (Entdecken)'
-                : 'Zum Eingangstor – Entdecken (jetzt starten)'
+                : 'Zum Eingangstor (Entdecken) – dort „Zurück zur Galerie“'
             }
           >
             {PRODUCT_BRAND_NAME}{' '}

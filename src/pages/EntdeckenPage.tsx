@@ -678,6 +678,27 @@ export default function EntdeckenPage() {
     cta: entdeckenContent.cta?.trim() || T_DEFAULTS.cta,
     ctaSub: entdeckenContent.ctaSub?.trim() || T_DEFAULTS.ctaSub,
   }
+
+  /** Von K2-Galerie hierher: Router-State + sessionStorage (Safari/PWA kann State verlieren) */
+  const galerieReturnTo = useMemo(() => {
+    const st = location.state as { returnTo?: string } | null
+    const r = st?.returnTo
+    if (r && typeof r === 'string' && r.startsWith('/') && !r.startsWith('//') && !r.includes('..')) {
+      return r
+    }
+    try {
+      const s = sessionStorage.getItem('k2-entdecken-return-to')
+      if (s && s.startsWith('/') && !s.startsWith('//') && !s.includes('..')) return s
+    } catch (_) {}
+    return null
+  }, [location.pathname, location.search, location.key, (location.state as { returnTo?: string } | null)?.returnTo])
+
+  const clearEntdeckenReturnHint = () => {
+    try {
+      sessionStorage.removeItem('k2-entdecken-return-to')
+    } catch (_) {}
+  }
+
   const fontHeading = WERBEUNTERLAGEN_STIL.fontHeading
   const fontBody = WERBEUNTERLAGEN_STIL.fontBody
 
@@ -771,6 +792,30 @@ export default function EntdeckenPage() {
             }}>
               <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '60%', height: '60%', background: `radial-gradient(ellipse, ${accentGlow}18 0%, transparent 70%)`, pointerEvents: 'none' }} />
               <div style={{ position: 'relative' }}>
+                {galerieReturnTo && (
+                  <div style={{ marginBottom: '1.1rem' }}>
+                    <Link
+                      to={galerieReturnTo}
+                      onClick={clearEntdeckenReturnHint}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.55rem 1rem',
+                        background: 'rgba(255,255,255,0.12)',
+                        border: '1px solid rgba(255,248,240,0.45)',
+                        borderRadius: '10px',
+                        color: '#fff5f0',
+                        fontWeight: 600,
+                        fontSize: 'clamp(0.85rem, 2vw, 0.95rem)',
+                        textDecoration: 'none',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      ← Zurück zur Galerie
+                    </Link>
+                  </div>
+                )}
                 <div style={{ fontFamily: fontHeading, fontSize: 'clamp(1.1rem, 2.8vw, 1.5rem)', fontWeight: 700, color: textLight, marginBottom: '1.25rem', lineHeight: 1.35, letterSpacing: '-0.02em', maxWidth: 480 }}>
                   {T_hero.heroTag}
                   <br />
@@ -880,6 +925,30 @@ export default function EntdeckenPage() {
             </div>
 
             <Progress />
+
+            {galerieReturnTo && (
+              <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                <Link
+                  to={galerieReturnTo}
+                  onClick={clearEntdeckenReturnHint}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.6rem 1.15rem',
+                    background: bgCard,
+                    border: `2px solid ${accent}55`,
+                    borderRadius: '12px',
+                    color: accent,
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    textDecoration: 'none',
+                  }}
+                >
+                  ← Zurück zur Galerie
+                </Link>
+              </div>
+            )}
 
             {/* Ein Klick auf die Karte öffnet direkt ök2 oder VK2 – kein Zusatzbutton */}
             <h2 style={{ fontFamily: fontHeading, fontSize: 'clamp(1.3rem, 3.5vw, 1.7rem)', fontWeight: 700, color: text, textAlign: 'center', marginBottom: '0.65rem', lineHeight: 1.3 }}>
