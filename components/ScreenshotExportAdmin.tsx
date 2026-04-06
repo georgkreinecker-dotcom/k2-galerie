@@ -73,12 +73,6 @@ const GALERIE_QR_BASE = getPublicGalerieUrl('k2', 'galerie')
 const FALLBACK_GALERIE_URL_WERBEMITTEL = getPublicGalerieUrl('k2', 'galerie')
 /** Basis-URL der App auf Vercel – eine Quelle für alle Geräte (iPad, Mac, lokal) */
 const VERCEL_APP_BASE = 'https://k2-galerie.vercel.app'
-/** Werbemittel (Marketing): Fußhinweis – eine Quelle für K2 / ök2 / VK2 */
-const WERBEMITTEL_KARTEN_FUSS_HINWEIS =
-  'Gleicher Ablauf: Dokumentname antippen oder mit der Maus drauf = Vorschau. Grüner Button = Mail (Text in der Zwischenablage); PDF bei Bedarf in Downloads. Unten „Neu erstellen“ = Dokument neu anlegen.'
-/** Plakat-Karte: Master-Listen-Hinweis */
-const WERBEMITTEL_PLAKAT_MASTER_HINWEIS =
-  'Vier Master-Ansichten (aktueller Stand) – ansehen, ankreuzen, dann Druckerei. Kein ×: stammt nicht aus dem PR-Speicher.'
 /** API: gallery-data an Vercel senden (Blob + optional GitHub-Backup) – eine URL für alle Geräte */
 const WRITE_GALLERY_DATA_API_URL = `${VERCEL_APP_BASE}/api/write-gallery-data`
 /** Primäre Datenquelle: Vercel Blob (sofort verfügbar, kein Build nötig) */
@@ -17658,9 +17652,31 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <h2 style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.5rem)', fontWeight: 600, color: s.text, margin: '0 0 0.5rem 0' }}>
               📁 Präsentationsmappen
             </h2>
-            <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
-              Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (dieselbe Route wie der Flyer-Master, nur Ableitung): im Browser öffnen, als PDF drucken. Bearbeiten des Plakats nur über den Flyer-Master.
-            </p>
+            <div style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.55 }}>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                <strong style={{ color: s.text }}>Schnellzugriff – drei Ebenen</strong>
+              </p>
+              <p style={{ margin: '0 0 0.5rem' }}>
+                <strong style={{ color: s.text }}>1.</strong> Mappen zum Drucken/PDF: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (dieselbe Route wie der Flyer-Master, nur A3-Ableitung). Im Browser öffnen, als PDF drucken. Plakat-Inhalt nur über den Flyer-Master bearbeiten.
+              </p>
+              <p style={{ margin: '0 0 0.65rem' }}>
+                <strong style={{ color: s.text }}>2.</strong> Kontext- und VK2-Varianten über die Buttons unten (z. B. VK2 Kurz/Voll) – gleiche Mappe, anderer Variante-Parameter.
+              </p>
+              <p style={{ margin: 0 }}>
+                Zur Einordnung des Präsentationsmodus und der Produkt-Abhebung:{' '}
+                <a
+                  href={PROJECT_ROUTES['k2-galerie'].marketingOek2}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    navigate(PROJECT_ROUTES['k2-galerie'].marketingOek2)
+                  }}
+                  style={{ color: s.accent, fontWeight: 600, textDecoration: 'underline' }}
+                >
+                  docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md
+                </a>
+                {' '}(Stichwort Präsentationsmodus; technischer Pfad im Repo unter <code style={{ fontSize: '0.82rem', color: s.text }}>docs/</code>).
+              </p>
+            </div>
             <div
               style={{
                 marginBottom: '1.25rem',
@@ -17669,7 +17685,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               }}
             >
               <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem 0' }}>
-                Galerie im Präsentationsmodus
+                3. Galerie im Präsentationsmodus
               </h3>
               <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 0.85rem', lineHeight: 1.45 }}>
                 Öffentliche Galerie mit <strong style={{ color: s.text }}>?praesentation=1</strong> – ruhige Ansicht, Vollbild möglich; <strong>nicht</strong> die PDF-Mappen darunter.
@@ -23360,18 +23376,11 @@ ${name}`
                     <p style={{ margin: '0 0 0.5rem' }}>
                       Nach einem <strong>neuen Event</strong> werden die Werbekarten automatisch angelegt. Zum manuellen Neustart: <strong>Neu erstellen</strong> oder Event erneut speichern.
                     </p>
-                    <p style={{ margin: '0 0 0.5rem' }}>{WERBEMITTEL_KARTEN_FUSS_HINWEIS}</p>
                     {tenant.isVk2 && (
                       <p style={{ margin: '0 0 0.5rem' }}>
                         Dokument mit K2-Daten? Mit <strong>×</strong> entfernen, dann <strong>Neu erstellen</strong> – dann nur VK2-Daten.
                       </p>
                     )}
-                    <p style={{ margin: 0 }}>
-                      <strong>Plakat:</strong> {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
-                    </p>
-                    <p style={{ margin: '0.5rem 0 0' }}>
-                      Zu jeder Karte: <strong>ⓘ</strong> neben dem Titel öffnet die Kurzerklärung.
-                    </p>
                   </div>
                 </details>
               </div>
@@ -23915,6 +23924,9 @@ ${name}`
                           : tenant.isVk2
                             ? '?context=vk2'
                             : ''
+                        const pmK2GaleriePra = `${PROJECT_ROUTES['k2-galerie'].galerie}?praesentation=1`
+                        const pmOek2GaleriePra = `${PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}?praesentation=1`
+                        const pmVk2GaleriePra = `${PROJECT_ROUTES.vk2.galerie}?praesentation=1`
                         const listItemStyle = {
                           padding: '0.5rem 0.75rem',
                           background: s.bgElevated,
@@ -23947,7 +23959,7 @@ ${name}`
                                 icon: '📧',
                                 titel: 'Newsletter',
                                 beschreibung:
-                                  'Einladung aus Event-Daten als PDF/HTML. Speichern mit „Neu erstellen“, versenden mit dem grünen Button an den Newsletter-Verteiler.',
+                                  'Event als PDF/HTML. Grüner Button = Versand.',
                                 docs: byTyp['newsletter'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -23962,7 +23974,7 @@ ${name}`
                                 icon: '🖼️',
                                 titel: 'Plakat & Druckformate',
                                 beschreibung:
-                                  'Vier Formate wie im Flyer-Master (A5, A3, A6, Visitenkarten). Liste = dieselben Seiten wie „Flyer-Master öffnen“; für die Druckerei auswählen. Bearbeiten nur im Flyer-Master.',
+                                  'A5 bis Visitenkarten wie im Flyer-Master. Checkboxen, dann Druckerei.',
                                 docs: plakatFlyerMasterDocs,
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => {
@@ -23981,7 +23993,7 @@ ${name}`
                                 icon: '📰',
                                 titel: 'Presseaussendung',
                                 beschreibung:
-                                  'Presstext aus Event und Stammdaten (Demo: Muster). Ein Weg wie bei Newsletter: „Neu erstellen“ öffnet die Bearbeitung, grüner Button sendet an den Medienspiegel.',
+                                  'Presstext. Grüner Button = Mail an Medien.',
                                 docs: byTyp['presse'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -23998,7 +24010,7 @@ ${name}`
                                 icon: '📱',
                                 titel: 'Social Media',
                                 beschreibung:
-                                  'Texte für Instagram, Facebook und WhatsApp. Nach „Neu erstellen“: grüner Button kopiert alles und kann WhatsApp öffnen (kein Mail-Verteiler).',
+                                  'Social-Texte. Grüner Button = kopieren / WhatsApp.',
                                 docs: byTyp['social'] || [],
                                 onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                 onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -24015,8 +24027,7 @@ ${name}`
                                       typ: 'praesentationsmappen' as const,
                                       icon: '📁',
                                       titel: 'Präsentationsmappen',
-                                      beschreibung:
-                                        'Vorschau: Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (gleiche Flyer-Master-Route, nur A3-Ansicht) – im Browser drucken. Plakat-Inhalt kommt aus dem Flyer-Master/Muster, nicht aus mök2. Keine getrennte Plakat-Seite mehr.',
+                                      beschreibung: '',
                                       docs: byTyp['praesentationsmappe-kurz'] || [],
                                       onOpen: (doc: any) => handleViewEventDocument(doc, event),
                                       onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
@@ -24029,8 +24040,6 @@ ${name}`
                             const fertigAnzahl = kartenFuerFortschritt.filter(k => k.docs.length > 0).length
                             const gesamtAnzahl = kartenFuerFortschritt.length
                             const progressPct = gesamtAnzahl ? Math.round((fertigAnzahl / gesamtAnzahl) * 100) : 0
-                            const werbemittelKartenFussHinweis = WERBEMITTEL_KARTEN_FUSS_HINWEIS
-
                             return (
                               <div>
                                 {/* Header: Event-Titel + Meta + eine Aktion */}
@@ -24336,16 +24345,11 @@ ${name}`
                                                       }}
                                                     >
                                                       {karte.beschreibung}
-                                                      {karte.typ === 'plakat' && (
-                                                        <p style={{ margin: '0.45rem 0 0' }}>
-                                                          <strong>Plakat-Liste:</strong> {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
-                                                        </p>
-                                                      )}
                                                     </div>
                                                   </details>
                                                 )}
                                               </div>
-                                              {!(tenant.isOeffentlich || tenant.isVk2) && (
+                                              {!(tenant.isOeffentlich || tenant.isVk2) && karte.beschreibung && (
                                                 <div style={{ fontSize: '0.75rem', color: s.muted, marginTop: '0.1rem' }}>{karte.beschreibung}</div>
                                               )}
                                             </div>
@@ -24366,6 +24370,43 @@ ${name}`
 
                                         {istPraesentationsmappen && (
                                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                            <div>
+                                              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: s.text, marginBottom: '0.35rem' }}>
+                                                3. Galerie (Präsentationsmodus)
+                                              </div>
+                                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmK2GaleriePra, e)}
+                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                >
+                                                  K2
+                                                </button>
+                                                <a href={BASE_APP_URL + pmK2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                  K2 neuer Tab
+                                                </a>
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmOek2GaleriePra, e)}
+                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                >
+                                                  ök2
+                                                </button>
+                                                <a href={BASE_APP_URL + pmOek2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                  ök2 neuer Tab
+                                                </a>
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmVk2GaleriePra, e)}
+                                                  style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}
+                                                >
+                                                  VK2
+                                                </button>
+                                                <a href={BASE_APP_URL + pmVk2GaleriePra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.45rem 0.7rem', background: '#fff', border: '1px solid rgba(13,148,136,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#0d9488', textDecoration: 'none', fontWeight: 500 }}>
+                                                  VK2 neuer Tab
+                                                </a>
+                                              </div>
+                                            </div>
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                               <button
                                                 type="button"
@@ -24481,11 +24522,6 @@ ${name}`
                                           if (karte.typ === 'plakat') {
                                             return (
                                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem' }}>
-                                                {!(tenant.isOeffentlich || tenant.isVk2) && (
-                                                <p style={{ margin: 0, fontSize: '0.75rem', color: s.muted, lineHeight: 1.45 }}>
-                                                  {WERBEMITTEL_PLAKAT_MASTER_HINWEIS}
-                                                </p>
-                                                )}
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                                   {karte.docs.map((doc: any, docIdx: number) => {
                                                     const sendK = plakatDruckformateSendRowKey(event, doc, docIdx)
@@ -24729,11 +24765,6 @@ ${name}`
                                                 >
                                                   {getWerbemittelMailActionLabel(karte.typ, primaryDoc)}
                                                 </button>
-                                              )}
-                                              {!istPraesentationsmappen && !(tenant.isOeffentlich || tenant.isVk2) && (
-                                                <div style={{ marginTop: '0.1rem', fontSize: '0.75rem', color: s.muted }}>
-                                                  {werbemittelKartenFussHinweis}
-                                                </div>
                                               )}
                                             </div>
                                           )
