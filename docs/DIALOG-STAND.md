@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Handy: Zurück von Entdecken zur K2-Galerie + PWA-Start** – **K2** (`GaleriePage`): Link kgm → `/entdecken` setzt **`state.returnTo`** (aktueller Galerie-Pfad) und **`sessionStorage` `k2-entdecken-return-to`** (Safari kann Router-State verlieren). **`EntdeckenPage`:** sichtbar **„← Zurück zur Galerie“** im Hero und bei Schritt q1, wenn Rückpfad da ist; Klick löscht den Session-Hinweis. **`public/manifest.json`:** war ungültig (Figma-HTML) → gültiges Web-App-Manifest mit **`start_url: "/galerie"`** und Icons **192/512** (Homescreen öffnet Galerie statt nur „letzte Safari-URL“). Tests + Build grün. **Commit:** **a8d0461d** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy am iPhone: Galerie → kgm → Entdecken → „Zurück zur Galerie“; PWA neu zum Homescreen legen oder einmal Seite neu laden, damit Manifest greift.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Eingangstor /entdecken: Video statt statischem Bild** – Standard-Hero = **`/video/entdecken-eingangstor.mp4`** (Datei aus Repo `public/video/`, geloopt, stumm, `poster` = bisheriges JPG). **`isEntdeckenHeroVideoUrl`**, `EntdeckenPage` + Admin-Vorschau: `<video>`; Präsentationsmappe-Deckblatt bleibt **JPG** (Druck). Tests + Build grün. **Commit:** **96d9c742** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy `/entdecken` – rechts Video; optional Hero-URL im Admin auf eigenes .mp4 setzen.
