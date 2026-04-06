@@ -80,6 +80,13 @@ const BEREICHE: Bereich[] = [
         to: textsA4('hb-vk2'),
         rotateDeg: -0.15,
       },
+      {
+        id: 'texts-andenken-erstes-projekt',
+        titel: 'Andenken · erstes gemeinsames Projekt',
+        zweck: 'K2, ök2, VK2 – würdig, druckbar (Browser → Drucken / PDF)',
+        to: '/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html',
+        rotateDeg: 0.22,
+      },
     ],
   },
   {

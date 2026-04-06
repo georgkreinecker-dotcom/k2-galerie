@@ -8,6 +8,16 @@
 
 ---
 
+## Abgehakt
+
+| Datum | Ergebnis |
+|--------|----------|
+| **06.04.26** | Georg: Smoke nach dieser Anleitung **abgehakt** (Vercel, `/g/…`, Erfassung geprüft – für den Moment ausreichend). |
+
+**Später (bewusst verschoben):** **Muster-Lizenz-Anmeldung** / erweiterter **Lizenz-Funktionstest** (Stripe-Checkout, Erfolgsseite) – siehe [PROBESSESSION-BESUCHERZAEHLER-LIZENZ.md](PROBESSESSION-BESUCHERZAEHLER-LIZENZ.md), Doku **STRIPE-ANBINDUNG**, **Lizenz kaufen**.
+
+---
+
 ## 1. Voraussetzungen
 
 - Ein **gültiger Mandanten-Slug** (nur `a-z`, `0-9`, `-`, max. 64 Zeichen), für den es bereits **Galerie-Daten** gibt (Route `/g/<slug>` zeigt Inhalt, nicht nur Fehlerseite).

@@ -5952,6 +5952,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const pBio = georgData?.bio || 'Keramik und Skulptur – handgeformte Objekte mit starker plastischer Präsenz.'
     const gName = galleryData.name || 'K2 Galerie'
     const adresse = getProminenteAdresseFormatiert(galleryData, martinaData, georgData)
+    const galleryWebK2 = (galleryData.website || galleryData.internetadresse || '').trim()
 
     const kuenstlerBlock = variant === 'lokal' ? [
       `Die ${gName} präsentiert mit dieser ${evType} eine Zusammenschau`,
@@ -5987,8 +5988,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           adresse ? `Adresse: ${adresse}` : '',
           galleryData.openingHours ? `Öffnungszeiten: ${galleryData.openingHours}` : '',
           ``,
-          `www.k2-galerie.at`,
-          ``,
+          ...(galleryWebK2 ? [galleryWebK2, ``] : []),
         ]
 
     const storyBlock = variant === 'lokal' && !tenant.isOeffentlich
@@ -6084,6 +6084,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
     const pName = georgData?.name || 'Georg Kreinecker'
     const gName = galleryData.name || 'K2 Galerie'
     const baseHashtags = `#K2Galerie #KunstInÖsterreich #Malerei #Keramik`
+    const galleryWebLine = (galleryData.website || galleryData.internetadresse || '').trim()
     if (event.type === 'galerieeröffnung') {
       return {
         instagram: [
@@ -6128,7 +6129,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
           ``,
           `🔗 Link/QR: Vorab K2, ök2 & VK2 ansehen – dann können wir konkrete Fragen beantworten.`,
           ``,
-          [gName, galleryData.email ? `✉ ${galleryData.email}` : '', '👉 www.k2-galerie.at'].filter(Boolean).join(' · '),
+          [gName, galleryData.email ? `✉ ${galleryData.email}` : '', galleryWebLine ? `👉 ${galleryWebLine}` : ''].filter(Boolean).join(' · '),
         ].filter(Boolean).join('\n'),
       }
     }
@@ -6177,7 +6178,7 @@ function ScreenshotExportAdmin(props?: AdminProps) {
         ``,
         `_${mName} & ${pName} – ${gName}_`,
         galleryData.email ? `✉ ${galleryData.email}` : '',
-        `👉 www.k2-galerie.at`,
+        ...(galleryWebLine ? [`👉 ${galleryWebLine}`] : []),
       ].filter(Boolean).join('\n'),
     }
   }
@@ -6884,7 +6885,7 @@ ${'='.repeat(60)}
         HINWEIS_LINK_QR_VORAB_SIE,
         `───────────────────────────────────────`,
         ``,
-        `www.k2-galerie.at`,
+        ...((g.website || g.internetadresse || '').trim() ? [`${(g.website || g.internetadresse || '').trim()}`] : []),
       ].filter(line => line !== null && line !== undefined).join('\n')
     }
   }
@@ -6983,7 +6984,7 @@ ${'='.repeat(60)}
         `${gName}`,
         adresse ? adresse : '',
         ``,
-        tenant.isOeffentlich ? (g.website || 'www.k2-galerie.at') : `www.k2-galerie.at`,
+        ...((g.website || g.internetadresse || '').trim() ? [`${(g.website || g.internetadresse || '').trim()}`] : []),
       ].filter(line => line !== null && line !== undefined).join('\n')
     }
   }
@@ -12869,6 +12870,10 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       month: '2-digit', 
       year: 'numeric'
     })
+    const galleryWebFooter = String(galleryData?.website || galleryData?.internetadresse || '').trim()
+    const galleryWebFooterHtml = galleryWebFooter
+      ? galleryWebFooter.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      : ''
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -12981,7 +12986,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
           
           <div class="footer">
             <div>K2 Galerie - Kunst & Keramik</div>
-            <div>www.k2-galerie.at</div>
+            ${galleryWebFooterHtml ? `<div>${galleryWebFooterHtml}</div>` : ''}
           </div>
           
           <script>
@@ -19729,7 +19734,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                           value={galleryData.email || ''}
                           onChange={(e) => setGalleryData({ ...galleryData, email: e.target.value })}
                           onFocus={(e) => { const def = tenant.isOeffentlich ? (MUSTER_TEXTE.gallery.email || '') : (K2_STAMMDATEN_DEFAULTS.gallery.email || ''); if ((galleryData.email || '').trim() === def.trim()) e.target.select(); }}
-                          placeholder="info@k2-galerie.at"
+                          placeholder="info@example.com"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>
@@ -19745,7 +19750,7 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
                               website: value
                             })
                           }}
-                          placeholder="https://k2-galerie.at"
+                          placeholder="https://example.com"
                           style={{ padding: '0.6rem', fontSize: '0.9rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.accent}33` }}
                         />
                       </div>

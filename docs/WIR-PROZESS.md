@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 06.04.26 (Abend) | **Schluss für heute:** Ein **Zettel** gehört in die **Daten** des Texte-Schreibtisch (`BEREICHE` in `TexteSchreibtischPage`) – nur eine Datei im Ordner reicht nicht; sonst sieht Georg die Oberfläche leer. **Andenken** und **Abschlussbericht** sind der würdige Abschluss des ersten großen gemeinsamen Strangs – festhalten, committen, Raum bereit. |
 | 05.04.26 (Abend) | **Schluss für heute:** Session-Ende = Tests + Build grün, **DIALOG-STAND** und **WIR-PROZESS** kurz setzen, alles **committen und pushen** – dann ist der Raum für Georg morgen in Ordnung (GitHub/Vercel = Referenz). |
 | 04.04.26 (Nacht) | **„Ich mach Schluss“** = sofort Session-Ende-Ritual: Build lief schon grün, **offene Stand-Dateien und Doku nicht liegen lassen** – commit, push, DIALOG-STAND mit Hash, eine Reflexionszeile – dann „Raum bereit“. |
 | 04.04.26 (Abend) | **Schluss für heute:** Georg fragt, ob Smoke-Tests automatisch laufen – **nein**, die Doku ist ein **manueller** Mini-Check; klar sagen spart Missverständnisse. Session-Ende = Test, Build, DIALOG-STAND, WIR-PROZESS, alles committen und pushen, damit der Raum morgen stimmt. |

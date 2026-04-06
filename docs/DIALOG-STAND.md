@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Session-Ende** – **Abschlussbericht** [`docs/ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md`](ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md); **druckfertiges Andenken** `texts/` + `public/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html`; **Texte-Schreibtisch:** Zettel **„Andenken · erstes gemeinsames Projekt“** in **Texts – Kommunikation** (`TexteSchreibtischPage`). **K2-Webadressen:** Sanitize beim Stammdaten-Laden/Speichern (`k2StammdatenWebSanitize`, Tests). **Doku:** Smoke abgehakt, HAUS-INDEX, 00-INDEX. **Tests + Build** grün. **Commit:** _(nach Push eintragen)_ ✅ GitHub
+
+**Was wir JETZT tun:** Ruhe – nächste Session nach Bedarf.
+
+---
+
+**Letzter Stand:** 06.04.26 – **Smoke Besucherzähler Lizenz** – [SMOKE-BESUCHERZAEHLER-LIZENZ.md](SMOKE-BESUCHERZAEHLER-LIZENZ.md): **abgehakt**. **Muster-Lizenz-Anmeldung** / Stripe-Funktionstest → **später**. Sicherheit/Qualität: kein zusätzlicher Pflicht-Block nur wegen Smoke; laufend: **Secrets nur Vercel**, **main + Deploy**, **Tests + Build vor Commit** ([docs/00-INDEX.md](00-INDEX.md)).
+
+**Was wir JETZT tun:** Wie zuvor (Vita/Deploy-Checks) oder nächstes von dir gewünschtes Thema.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Vita Georg: Epochen + kein Kontakt im Dokument** – **`K2_DEFAULT_VITA_GEORG`** redigiert: Einleitung, **Beruf und Unternehmertum**, **Kunst und Keramik** (Jahres-/Listenzeilen für Darstellung als Überschrift + Liste). **`buildVitaDocumentHtml`:** Option **`includeContact`**; für **Georg** `false` (Galerie `openVita`, Admin „Vita als Dokument“). **Martina** weiter mit Kontaktblock. **`public/gallery-data.json`** per Skript sync. Doku: `docs/VITA-GEORG-K2-ENTWURF-2026-03.md`. Tests + Build grün. **Commit:** **e73f8a95** ✅ GitHub
 
 **Was wir JETZT tun:** Galerie → Vita Georg im neuen Tab; lokal gespeicherte alte Vita ggf. durch Standard aus Doku ersetzen.

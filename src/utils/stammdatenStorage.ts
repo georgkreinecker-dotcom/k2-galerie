@@ -12,6 +12,7 @@ import {
   K2_DEFAULT_VITA_MARTINA,
   K2_DEFAULT_VITA_GEORG,
 } from '../config/tenantConfig'
+import { sanitizeK2ParsedStammdatenRecord, sanitizeK2WebsiteField } from './k2StammdatenWebSanitize'
 
 /** Verhindert Auto-Save-Race: noch nicht hydratisierter React-State (Repo-Defaults) darf abweichende gespeicherte Werte nicht überschreiben. */
 function pickPersonScalar(incoming: unknown, existing: unknown, def: unknown): string {
@@ -53,7 +54,16 @@ function readRawK2PersonParsed(type: 'martina' | 'georg'): Record<string, unknow
     if (!p || typeof p !== 'object') return null
     const s = JSON.stringify(p)
     if (s.length >= 100_000) return null
-    return p as Record<string, unknown>
+    const rec = p as Record<string, unknown>
+    const { data: fixed, changed } = sanitizeK2ParsedStammdatenRecord(type, rec)
+    if (changed && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(key, JSON.stringify(fixed))
+      } catch {
+        /* ignore */
+      }
+    }
+    return fixed
   } catch {
     return null
   }
@@ -251,6 +261,17 @@ export function loadStammdaten(tenant: StammdatenTenantId, type: StammdatenType)
     }
     const parsed = JSON.parse(raw)
     if (typeof parsed !== 'object' || parsed === null) return getDefaults(tenant, type)
+    if (tenant === 'k2') {
+      const { data: fixed, changed } = sanitizeK2ParsedStammdatenRecord(type, parsed as Record<string, unknown>)
+      if (changed && typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(key, JSON.stringify(fixed))
+        } catch {
+          /* ignore */
+        }
+      }
+      return fixed
+    }
     if (tenant === 'oeffentlich' && type === 'gallery') {
       const fd = Array.isArray((parsed as any).focusDirections)
         ? (parsed as any).focusDirections.filter((id: unknown) => typeof id === 'string')
@@ -281,12 +302,34 @@ export function saveStammdaten(
     const key = getStammdatenKey(tenant, type)
     const defaults = getDefaults(tenant, type)
     let toWrite = data
+    if (tenant === 'k2' && data && typeof data === 'object' && !Array.isArray(data)) {
+      if (type === 'martina' || type === 'georg') {
+        toWrite = { ...data, website: sanitizeK2WebsiteField((data as { website?: unknown }).website) }
+      } else if (type === 'gallery') {
+        toWrite = {
+          ...data,
+          website: sanitizeK2WebsiteField((data as { website?: unknown }).website),
+          internetadresse: sanitizeK2WebsiteField((data as { internetadresse?: unknown }).internetadresse),
+        }
+      }
+    }
     if (options.merge !== false) {
       const existing = loadStammdaten(tenant, type)
       if (type === 'martina' || type === 'georg') {
-        toWrite = mergeStammdatenPerson(data, existing, defaults)
+        toWrite = mergeStammdatenPerson(toWrite, existing, defaults)
       } else {
-        toWrite = mergeStammdatenGallery(data, existing, defaults)
+        toWrite = mergeStammdatenGallery(toWrite, existing, defaults)
+      }
+    }
+    if (tenant === 'k2' && toWrite && typeof toWrite === 'object' && !Array.isArray(toWrite)) {
+      if (type === 'martina' || type === 'georg') {
+        toWrite = { ...toWrite, website: sanitizeK2WebsiteField((toWrite as { website?: unknown }).website) }
+      } else if (type === 'gallery') {
+        toWrite = {
+          ...toWrite,
+          website: sanitizeK2WebsiteField((toWrite as { website?: unknown }).website),
+          internetadresse: sanitizeK2WebsiteField((toWrite as { internetadresse?: unknown }).internetadresse),
+        }
       }
     }
     const json = JSON.stringify(toWrite)

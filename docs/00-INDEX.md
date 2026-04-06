@@ -4,6 +4,12 @@ Damit nichts „verlegt“ wirkt – hier findest du jedes Doc mit einem Stichwo
 
 ---
 
+## Berichte & Resonanz
+
+- **ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md** – **Abschlussbericht (Apr. 2026):** K2, ök2, VK2, kgm solution – Leitidee, drei Welten, Marken, was gebaut wurde, Prinzipien, Menschen, Vermächtnis; **kein technisches Handbuch**, sondern **roter Faden** für Nachlesen und Weitergabe.
+
+---
+
 ## Einstieg für Informatiker (System überblicken und warten)
 
 - **EINSTIEG-INFORMATIKER-SYSTEM-WARTUNG.md** – **Zentraler Einstieg für jeden Informatiker:** Systemüberblick (Tech-Stack, Mandanten, Datenfluss), zentrale Einstiege (HAUS-INDEX, 00-INDEX, KOMMANDOZENTRALE, STRUKTUR), **alle Prozesse in einer Tabelle** (Lebenszyklus Klient, Veröffentlichen, Stand/QR, Lizenzen, Kündigung, Datentrennung, Sync, Build/Deploy, Tests, Backup, Wartung) mit Verweisen auf Code und Doku. Entwicklung (Setup, Build, Test, Deploy), Wartungsintervalle, wichtige Regeln. Damit jeder einsteigen, überblicken und warten kann.

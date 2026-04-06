@@ -131,7 +131,7 @@ const writeGalleryDataPlugin = () => {
             address: '',
             phone: '',
             email: '',
-            website: 'www.k2-galerie.at',
+            website: '',
             internetadresse: '',
             adminPassword: '',
             welcomeImage: '',

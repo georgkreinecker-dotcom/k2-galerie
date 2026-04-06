@@ -18,6 +18,7 @@ import { eventPlakatMoreInfoTitle } from '../utils/eventPlakatTooltip'
 import { loadDocuments, saveDocuments } from '../utils/documentsStorage'
 import { applyServerPayloadK2 } from '../utils/applyServerDataToLocal'
 import { saveStammdaten, loadStammdaten } from '../utils/stammdatenStorage'
+import { sanitizeK2WebsiteField } from '../utils/k2StammdatenWebSanitize'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { safeReload } from '../utils/env'
 import { getSameOriginReferrerPath, isReferrerIndicatingApfStyleSession } from '../utils/galerieOek2Referrer'
@@ -1181,7 +1182,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               name: (data.martina.name && String(data.martina.name).trim()) || (prev.name && String(prev.name).trim()) || '',
               email: (data.martina.email && String(data.martina.email).trim()) || (prev.email && String(prev.email).trim()) || '',
               phone: (data.martina.phone && String(data.martina.phone).trim()) || (prev.phone && String(prev.phone).trim()) || '',
-              website: (data.martina.website && String(data.martina.website).trim()) || (prev.website && String(prev.website).trim()) || '',
+              website: sanitizeK2WebsiteField(
+                (data.martina.website && String(data.martina.website).trim()) ||
+                  (prev.website && String(prev.website).trim()) ||
+                  '',
+              ),
               vita: srvVita || prevVita,
             }
           })
@@ -1196,7 +1201,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               name: (data.georg.name && String(data.georg.name).trim()) || (prev.name && String(prev.name).trim()) || '',
               email: (data.georg.email && String(data.georg.email).trim()) || (prev.email && String(prev.email).trim()) || '',
               phone: (data.georg.phone && String(data.georg.phone).trim()) || (prev.phone && String(prev.phone).trim()) || '',
-              website: (data.georg.website && String(data.georg.website).trim()) || (prev.website && String(prev.website).trim()) || '',
+              website: sanitizeK2WebsiteField(
+                (data.georg.website && String(data.georg.website).trim()) ||
+                  (prev.website && String(prev.website).trim()) ||
+                  '',
+              ),
               vita: srvVita || prevVita,
             }
           })
@@ -1208,8 +1217,14 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             country: (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : prev.country,
             phone: (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : prev.phone,
             email: (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : prev.email,
-            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || 'www.k2-galerie.at'),
-            internetadresse: (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim()) ? data.gallery.internetadresse : (data.gallery.website || prev.internetadresse || ''),
+            website: sanitizeK2WebsiteField(
+              (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (prev.website || ''),
+            ),
+            internetadresse: sanitizeK2WebsiteField(
+              (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim())
+                ? data.gallery.internetadresse
+                : (data.gallery.website || prev.internetadresse || ''),
+            ),
             openingHours: (data.gallery as any).openingHours ?? prev.openingHours ?? '',
             adminPassword: data.gallery.adminPassword ?? prev.adminPassword ?? '',
             welcomeImage: (data.gallery.welcomeImage && String(data.gallery.welcomeImage).trim()) ? data.gallery.welcomeImage : prev.welcomeImage,
@@ -1850,6 +1865,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         } else {
           mergedMartina = { name: dm.name, email: dm.email, phone: dm.phone, website: dm.website || '', vita: '' }
         }
+        mergedMartina = { ...mergedMartina, website: sanitizeK2WebsiteField(mergedMartina.website) }
         if (isMounted) setMartinaData(mergedMartina)
         // Nur Kontaktfelder in den Speicher schreiben – bestehende Daten (Bio etc.) nicht überschreiben
         if (loadedFromServer) {
@@ -1895,6 +1911,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
         } else {
           mergedGeorg = { name: dg.name, email: dg.email, phone: dg.phone, website: dg.website || '', vita: '' }
         }
+        mergedGeorg = { ...mergedGeorg, website: sanitizeK2WebsiteField(mergedGeorg.website) }
         if (isMounted) setGeorgData(mergedGeorg)
         if (loadedFromServer) {
           try {
@@ -1920,7 +1937,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             country: (galleryLocal.country != null && String(galleryLocal.country).trim()) ? galleryLocal.country : g.country,
             phone: (galleryLocal.phone && String(galleryLocal.phone).trim()) ? galleryLocal.phone : g.phone,
             email: (galleryLocal.email && String(galleryLocal.email).trim()) ? galleryLocal.email : g.email,
-            website: (galleryLocal.website != null && String(galleryLocal.website).trim()) ? galleryLocal.website : (g.website || galleryLocal.website || 'www.k2-galerie.at'),
+            website: (galleryLocal.website != null && String(galleryLocal.website).trim()) ? galleryLocal.website : (g.website || galleryLocal.website || ''),
             internetadresse: (galleryLocal.internetadresse != null && String(galleryLocal.internetadresse).trim()) ? galleryLocal.internetadresse : (galleryLocal.website || g.internetadresse || ''),
             openingHours: (galleryLocal as any).openingHours || g.openingHours || ''
           }
@@ -1943,7 +1960,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             country: (data.gallery.country != null && String(data.gallery.country).trim()) ? data.gallery.country : g.country,
             phone: (data.gallery.phone && String(data.gallery.phone).trim()) ? data.gallery.phone : g.phone,
             email: (data.gallery.email && String(data.gallery.email).trim()) ? data.gallery.email : g.email,
-            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (g.website || 'www.k2-galerie.at'),
+            website: (data.gallery.website != null && String(data.gallery.website).trim()) ? data.gallery.website : (g.website || ''),
             internetadresse: (data.gallery.internetadresse != null && String(data.gallery.internetadresse).trim()) ? data.gallery.internetadresse : (data.gallery.website || g.internetadresse || ''),
             openingHours: (data.gallery as any).openingHours || g.openingHours || '',
             welcomeImage: (data.gallery as any).welcomeImage || imgFallback.welcomeImage,
@@ -1968,7 +1985,7 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             country: g.country,
             phone: g.phone,
             email: g.email,
-            website: g.website || 'www.k2-galerie.at',
+            website: g.website || '',
             internetadresse: g.internetadresse || g.website || '',
             openingHours: g.openingHours,
             adminPassword: '',
@@ -1976,6 +1993,11 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
             virtualTourImage: existingImages.virtualTourImage,
             galerieCardImage: existingImages.galerieCardImage
           }
+        }
+        mergedGallery = {
+          ...mergedGallery,
+          website: sanitizeK2WebsiteField(mergedGallery.website),
+          internetadresse: sanitizeK2WebsiteField(mergedGallery.internetadresse),
         }
         if (isMounted) {
           setGalleryData(mergedGallery)
@@ -2013,12 +2035,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           const data = JSON.parse(martinaStored)
           setMartinaData(prev => {
             const v = data.vita != null ? String(data.vita) : (prev as { vita?: string }).vita
-            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name || (prev as { vita?: string }).vita !== v) {
+            const website = sanitizeK2WebsiteField(data.website ?? prev.website)
+            if (
+              prev.email !== data.email ||
+              prev.phone !== data.phone ||
+              prev.name !== data.name ||
+              (prev as { vita?: string }).vita !== v ||
+              prev.website !== website
+            ) {
               return {
                 name: data.name || 'Martina Kreinecker',
                 email: data.email || '',
                 phone: data.phone || '',
-                website: data.website ?? prev.website,
+                website,
                 vita: v,
               }
             }
@@ -2032,12 +2061,19 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
           const data = JSON.parse(georgStored)
           setGeorgData(prev => {
             const v = data.vita != null ? String(data.vita) : (prev as { vita?: string }).vita
-            if (prev.email !== data.email || prev.phone !== data.phone || prev.name !== data.name || (prev as { vita?: string }).vita !== v) {
+            const website = sanitizeK2WebsiteField(data.website ?? prev.website)
+            if (
+              prev.email !== data.email ||
+              prev.phone !== data.phone ||
+              prev.name !== data.name ||
+              (prev as { vita?: string }).vita !== v ||
+              prev.website !== website
+            ) {
               return {
                 name: data.name || 'Georg Kreinecker',
                 email: data.email || '',
                 phone: data.phone || '',
-                website: data.website ?? prev.website,
+                website,
                 vita: v,
               }
             }
@@ -2055,7 +2091,20 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
               socialInstagramUrl?: string
               socialFeaturedVideoUrl?: string
             }
-            const contactChanged = prev.address !== data.address || prev.city !== data.city || prev.country !== data.country || prev.phone !== data.phone || prev.email !== data.email || prev.website !== data.website
+            const websiteSan = sanitizeK2WebsiteField(data.website != null ? data.website : prev.website)
+            const internetSan = sanitizeK2WebsiteField(
+              (data.internetadresse != null && String(data.internetadresse).trim())
+                ? data.internetadresse
+                : ((data.website != null && String(data.website).trim()) ? data.website : prev.internetadresse),
+            )
+            const contactChanged =
+              prev.address !== data.address ||
+              prev.city !== data.city ||
+              prev.country !== data.country ||
+              prev.phone !== data.phone ||
+              prev.email !== data.email ||
+              prev.website !== websiteSan ||
+              prev.internetadresse !== internetSan
             // Bilder aus localStorage immer übernehmen – verhindert Verlust wenn State mal mit '' überschrieben wurde
             const welcomeImage = data.welcomeImage ?? prev.welcomeImage ?? ''
             const virtualTourImage = data.virtualTourImage ?? prev.virtualTourImage ?? ''
@@ -2072,7 +2121,8 @@ const GaleriePage = ({ scrollToSection, musterOnly = false, vk2 = false, fromApf
                 ...prev,
                 address: data.address || '', city: data.city || '', country: data.country || '',
                 phone: data.phone || '', email: data.email || '',
-                website: data.website || 'www.k2-galerie.at', internetadresse: data.internetadresse || data.website || '',
+                website: websiteSan,
+                internetadresse: internetSan,
                 openingHours: (data as any).openingHours ?? prev.openingHours ?? '',
                 adminPassword: data.adminPassword || '',
                 welcomeImage, virtualTourImage, galerieCardImage,

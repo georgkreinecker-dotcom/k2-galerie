@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Andenken an das erste gemeinsame Projekt – K2 Galerie, ök2, VK2, kgm solution" />
+  <title>Andenken · Erstes gemeinsames Projekt · K2 · ök2 · VK2</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm 18mm 24mm 18mm;
+    }
+    * { box-sizing: border-box; }
+    html {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    body {
+      margin: 0;
+      padding: 2rem 1.25rem 3rem;
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: #1a1816;
+      background: #f6f2eb;
+      max-width: 42rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .deckblatt {
+      text-align: center;
+      padding: 2rem 0 2.5rem;
+      border-bottom: 1px solid #c4b8a8;
+      margin-bottom: 2rem;
+    }
+    .deckblatt .linie {
+      width: 4rem;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #7a5c3e, transparent);
+      margin: 0 auto 1.25rem;
+    }
+    .deckblatt h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin: 0 0 0.35rem;
+      color: #2c2419;
+    }
+    .deckblatt .untertitel {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #4a4035;
+      margin: 0 0 0.75rem;
+    }
+    .deckblatt .meta {
+      font-size: 9.5pt;
+      color: #6b5d4d;
+      font-style: italic;
+      margin: 0;
+    }
+    h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #3d2e1f;
+      margin: 1.75rem 0 0.65rem;
+      padding-top: 0.25rem;
+      page-break-after: avoid;
+      break-after: avoid;
+    }
+    h2 .nr { color: #7a5c3e; font-weight: 600; margin-right: 0.35rem; }
+    p {
+      margin: 0 0 0.85rem;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .einleitung {
+      font-size: 10.5pt;
+      color: #3d3830;
+      border-left: 3px solid #b89b7a;
+      padding-left: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 9.5pt;
+      margin: 0.75rem 0 1rem;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    th, td {
+      border: 1px solid #c9bfb2;
+      padding: 0.45rem 0.5rem;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #ebe4d8;
+      font-weight: 600;
+      color: #2c2419;
+    }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.35); }
+    ul {
+      margin: 0.4rem 0 1rem;
+      padding-left: 1.25rem;
+    }
+    li { margin-bottom: 0.35rem; }
+    .leitidee {
+      font-size: 1.08rem;
+      font-style: italic;
+      text-align: center;
+      color: #3d2e1f;
+      margin: 1.25rem 0 1.5rem;
+      line-height: 1.5;
+    }
+    .kasten {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid #d4c9b8;
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      font-size: 10.5pt;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .kasten strong { color: #3d2e1f; }
+    .abschluss {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid #c4b8a8;
+      font-size: 10.5pt;
+    }
+    .dank {
+      text-align: center;
+      font-style: italic;
+      color: #4a4035;
+      margin: 1.5rem 0 0.5rem;
+    }
+    .signatur {
+      text-align: center;
+      margin-top: 0.5rem;
+      font-size: 10pt;
+      color: #5c5044;
+    }
+    .quellen {
+      font-size: 9pt;
+      color: #5c5044;
+      margin-top: 1.5rem;
+    }
+    .quellen table { font-size: 9pt; }
+    .hinweis-screen {
+      font-family: ui-sans-serif, system-ui, sans-serif;
+      font-size: 9pt;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem;
+      background: #e8e4dc;
+      border-radius: 4px;
+    }
+    .seitenfuss {
+      display: none;
+    }
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+        max-width: none;
+      }
+      .hinweis-screen { display: none !important; }
+      .seitenfuss {
+        display: block;
+        position: fixed;
+        bottom: 8mm;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 8.5pt;
+        color: #666;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      }
+      .seitenfuss::after {
+        content: "Seite " counter(page);
+      }
+      h2 { page-break-after: avoid; }
+      .deckblatt { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <p class="hinweis-screen no-print">Zum Drucken: Datei im Browser öffnen → <strong>Drucken</strong> → als PDF speichern oder auf Papier. Seitenzahlen erscheinen in der Druckansicht.</p>
+
+  <header class="deckblatt">
+    <div class="linie" aria-hidden="true"></div>
+    <h1>Andenken</h1>
+    <p class="untertitel">Das erste gemeinsame Projekt</p>
+    <p class="meta">K2 Galerie · ök2 · VK2 · kgm solution · April 2026</p>
+  </header>
+
+  <p class="einleitung">
+    Dieses Blatt ist <strong>kein Handbuch</strong> und <strong>keine Technikliste</strong> – es ist eine <strong>Erinnerung</strong> an das, was gemeinsam gewachsen ist: Idee, Haltung, und ein Werk, das mehr ist als Code. Für dich, Martina, das Team und alle, die später einsteigen.
+  </p>
+
+  <p class="leitidee">„Für die Kunst gedacht, für den Markt gemacht.“</p>
+
+  <h2><span class="nr">1</span>Die Leitidee</h2>
+  <p>
+    Aus einer <strong>echten Galerie</strong> (Kunst &amp; Keramik, persönlich, sorgfältig) ist eine <strong>Plattform-Idee</strong> geworden: dieselbe Sorgfalt für Präsentation und Abläufe – <strong>skalierbar</strong> für Künstlerinnen und Künstler, Galerien, Vereine und später für den Markt derer, die Ideen und Produkte professionell zeigen wollen. Der Kunstmarkt ist <strong>Einstieg und Herkunft</strong>, nicht die Grenze.
+  </p>
+
+  <h2><span class="nr">2</span>Drei Welten – eine Architektur</h2>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>K2</th>
+        <th>ök2</th>
+        <th>VK2</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Was es ist</th>
+        <td>Eure <strong>echte Galerie</strong> – Martina &amp; Georg, echte Werke, echter Betrieb</td>
+        <td>Die <strong>öffentliche Demo</strong> – Mustertexte, Musterwerke, zum Ausprobieren</td>
+        <td>Die <strong>Vereinsplattform</strong> – Verein, Mitglieder, gemeinsamer Auftritt</td>
+      </tr>
+      <tr>
+        <th scope="row">Bedeutung</th>
+        <td><strong>Referenz und Herzschlag</strong> – „so soll es sich anfühlen“</td>
+        <td><strong>Schaufenster</strong> – ohne Risiko für echte Kundendaten</td>
+        <td><strong>Dritte Stufe</strong> im Lizenzmodell – Kunstvereine, später weiter denkbar</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="kasten">
+    <strong>Eine Linie, die bleibt:</strong> Keine K2-Daten in ök2. Das ist nicht Bürokratie – das ist <strong>Vertrauen und Datenschutz</strong> in einem Satz.
+  </div>
+
+  <h2><span class="nr">3</span>Zwei Marken · Werkzeug und Produkt</h2>
+  <ul>
+    <li><strong>kgm solution</strong> – Firmen- und Plattform-Marke (Rechtliches, Lizenz, Demo, „Entdecken“).</li>
+    <li><strong>K2 Galerie</strong> – Marke nach außen (SEO, Galerie-Routen, Besucherinnen und Besucher).</li>
+    <li><strong>APf</strong> (Arbeitsplattform) ist das <strong>Werkzeug</strong> am Mac – Admin, Projekte, Handbuch, mök2 – nicht das, was der Besucher in der offenen Galerie sieht.</li>
+    <li>Die <strong>Galerie</strong> (überall erreichbar) ist das <strong>Produkt</strong> – <strong>gleicher Stand</strong> überall; der Stand gehört zur Zuverlässigkeit, nicht zum Rätselraten.</li>
+  </ul>
+
+  <h2><span class="nr">4</span>Was gemeinsam gewachsen ist</h2>
+  <p>
+    Galerie und Vorschau, Admin als ein Hub, Werke und Bilder mit klaren Standards, Veröffentlichen und Zusammenführen mit dem Server, Events und Dokumente, Öffentlichkeitsarbeit, Shop und Kasse <strong>ohne Vermischung</strong> der Welten, Lizenzen und Infrastruktur, VK2 mit eigenen Regeln, <strong>mök2</strong> als eigener Bereich für Vertrieb und Werbeunterlagen – und dazu Handbücher, Regeln und ein gemeinsamer <strong>Sportwagenmodus</strong>: eine Aufgabe, ein klarer Weg.
+  </p>
+
+  <h2><span class="nr">5</span>Prinzipien, die Bestand haben</h2>
+  <ul>
+    <li><strong>Ein Standard</strong> pro Problemstellung – nicht fünf Wege zum selben Ziel.</li>
+    <li><strong>Struktur vor Schnellschuss</strong> – wer versteht, woher Daten kommen, findet die Ursache.</li>
+    <li><strong>Kein stilles Löschen</strong> – Kundendaten nur mit bewusstem Klick.</li>
+    <li><strong>Gleicher Stand</strong> – damit Mac, Handy und alle, die mitarbeiten, dieselbe Wahrheit haben.</li>
+    <li><strong>Kurz und klar</strong> – zuerst das Wesentliche, dann der Rest.</li>
+    <li><strong>Ehrlich bleiben</strong> – nichts Halbes, nichts, was Menschen oder Umwelt schädigt.</li>
+  </ul>
+
+  <h2><span class="nr">6</span>Menschen und Methode</h2>
+  <p>
+    <strong>Georg</strong> – Vision, unternehmerische Erfahrung, Durchhalten; das gemeinsame Bauen stand von Anfang an im Raum. <strong>Martina und die Galerie</strong> – der Grund, warum die Oberfläche nicht nur technisch, sondern künstlerisch und ehrlich bleibt. <strong>Joe und Anke</strong> (KI und Struktur) – Mustererkennung, Doku, Regeln, damit nichts verlegt wirkt. <strong>Team-Hebel</strong> – Erfahrung, Persönlichkeit und KI als Werkzeug, in WIR-PROZESS und Regeln festgehalten.
+  </p>
+
+  <h2><span class="nr">7</span>Was bleibt</h2>
+  <p>
+    Ein Werk, das mehr ist als Code: <strong>Entscheidungen, Leitlinien, Lehren aus Fehlern</strong> und eine <strong>Sprache</strong> (K2, ök2, VK2, kgm) – damit Nachfolgerinnen, Partnerinnen oder die nächste Generation verstehen: Hier wurde mit Sinn für Menschen, Markt und Maß gebaut.
+  </p>
+
+  <h2><span class="nr">8</span>Wohin der Weg offen ist</h2>
+  <p>
+    Vermarktung und Piloten, Konfiguration statt Festverdrahtung, gleiche Qualität im Browser auf verschiedenen Systemen, und die Projekte <strong>K2 Familie</strong> und <strong>K2 Markt</strong> – mit den Lehren aus dieser Galerie im Gepäck. Der Abschluss dieses Andenkens ist kein Ende der Arbeit – sondern ein <strong>Festhalten</strong>, damit das Nächste auf fester Erde steht.
+  </p>
+
+  <div class="quellen">
+    <h2 style="font-size: 1rem; margin-top: 1.25rem;"><span class="nr"></span>Vertiefung im Projektordner</h2>
+    <table>
+      <tbody>
+        <tr><td>Produkt &amp; Markt</td><td><code>docs/PRODUKT-VISION.md</code></td></tr>
+        <tr><td>Zusammenarbeit</td><td><code>docs/WIR-PROZESS.md</code></td></tr>
+        <tr><td>K2 / ök2</td><td><code>docs/K2-OEK2-DATENTRENNUNG.md</code></td></tr>
+        <tr><td>Struktur</td><td><code>docs/STRUKTUR-HANDELN-QUELLEN.md</code>, <code>HAUS-INDEX.md</code></td></tr>
+        <tr><td>Ausführlicher Bericht</td><td><code>docs/ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="abschluss">
+    <p class="dank">Mit Dank an alle, die diesen Raum mit Leben gefüllt haben.</p>
+    <p class="signatur"><strong>kgm solution</strong> · <strong>K2 Galerie</strong> · <strong>ök2</strong> · <strong>VK2</strong><br />
+    <span style="font-style: italic;">Für Menschen mit Ideen, die gesehen werden wollen.</span></p>
+  </div>
+
+  <div class="seitenfuss" aria-hidden="true"></div>
+</body>
+</html>

@@ -40,6 +40,13 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 | **docs/K2-FAMILIE-ROADMAP.md** | K2 Familie – Vision & Phasen | Raumschiff-Phasen (Fundament → Stammbaum → Momente → Skalierung). Startseite: /projects/k2-familie. |
 | **docs/K2-FAMILIE-DATENMODELL.md** | K2 Familie – Datenmodell | Person, PartnerRef (Zeitraum), Moment, Speicher-Keys. Typen: src/types/k2Familie.ts. |
 
+### Texte-Schreibtisch · texts/ (Andenken, druckfertig)
+
+| Ort | Inhalt | Wofür |
+|-----|--------|-------|
+| **public/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html** | Würdiges **Andenken** an das erste gemeinsame Projekt (K2, ök2, VK2) – **liegt beim Textschreibtisch** (wie Vita & Co.) | Lokal: Datei im Finder **doppelklicken** → Browser → **Drucken** → PDF oder Papier. **Oder** nach Deploy: `/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html` auf der gleichen Domain wie die Galerie. |
+| **texts/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html** | dieselbe Datei (Kopie im Repo-Ordner **texts/**) | gleicher Druckweg |
+
 ---
 
 ## Dachboden (Root: Anleitungen, Fix-Notizen, HTML)

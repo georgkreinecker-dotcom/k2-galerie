@@ -185,8 +185,9 @@ export const K2_STAMMDATEN_DEFAULTS = {
     country: 'Österreich',
     phone: '0664 1046337',
     email: 'info@kgm.at', // Galerie-Kontakt (anpassen falls anders)
-    website: 'www.k2-galerie.at',
-    internetadresse: 'www.k2-galerie.at',
+    /** Keine erfundene Domain vorbelegen – Website nur wenn in Stammdaten eingetragen. */
+    website: '',
+    internetadresse: '',
     openingHours: 'Samstag 9.30 bis 14.00 Uhr',
     bankverbindung: '',
     /** IBAN für Rechnung/SEPA (optional; wenn gesetzt: auf Rechnung + EPC-QR-Code) */

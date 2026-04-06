@@ -1143,7 +1143,7 @@ ${bankBlock}
     const ustId = (g && (g as any).ustIdNr && String((g as any).ustIdNr).trim()) ? String((g as any).ustIdNr).trim() : ''
     const bankForReceipt = (g && (g as any).bankverbindung && String((g as any).bankverbindung).trim()) ? String((g as any).bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
     const sellerTagline = fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik'
-    const sellerWebsite = (g && (g as any).website && String((g as any).website).trim()) ? String((g as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : 'www.k2-galerie.at')
+    const sellerWebsite = (g && (g as any).website && String((g as any).website).trim()) ? String((g as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : '')
 
     const date = new Date(order.date)
     const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -1286,7 +1286,7 @@ ${bankBlock}
     const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
     const sellerNameForHeader = (gStamm && (gStamm as any).name && String((gStamm as any).name).trim()) ? String((gStamm as any).name) : defaultHeaderName
     const sellerTaglineA4 = defaultSub
-    const sellerWebsiteA4 = (gStamm && (gStamm as any).website && String((gStamm as any).website).trim()) ? String((gStamm as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : 'www.k2-galerie.at')
+    const sellerWebsiteA4 = (gStamm && (gStamm as any).website && String((gStamm as any).website).trim()) ? String((gStamm as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : '')
 
     let docTitle = fromOeffentlich ? 'Kassenbon - Galerie Muster' : 'Kassenbon - K2 Galerie'
     let headerTitle = sellerNameForHeader.toUpperCase()

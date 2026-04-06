@@ -38,7 +38,7 @@ Bei deinem Domain-Provider:
 ### 4. Code-Anpassungen
 
 Die Domain ist bereits im Code integriert:
-- ✅ Standard-Website: `www.k2-galerie.at` (in Stammdaten)
+- ✅ Galerie-Website: nur wenn in Stammdaten eingetragen (kein fester Default mehr)
 - ✅ QR-Codes verwenden automatisch `window.location.origin`
 - ✅ Alle Links sind relativ und funktionieren mit jeder Domain
 
