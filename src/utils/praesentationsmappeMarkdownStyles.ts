@@ -268,7 +268,20 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         width: auto !important;
         max-width: 100% !important;
       }
-      .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: always !important; padding: 12mm 15mm 15mm !important; background: #fff !important; min-height: 240mm; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
+      /* Einzelseite Deckblatt: kein 100vh/Grid-Mindesthöhe – sonst leere 2. Seite im Safari-Druck */
+      .pmv-wrap.pmv-map-page-root--deckblatt-only {
+        min-height: 0 !important;
+        height: auto !important;
+        padding: 0 !important;
+      }
+      .pmv-map-page-root--deckblatt-only .pmv-map-grid {
+        min-height: 0 !important;
+      }
+      .pmv-map-page-root--deckblatt-only .pmv-article.pmv-a4-sheet {
+        min-height: 0 !important;
+      }
+      /* Gesamtdruck enthält kein Deckblatt-MD; Einzeldruck: kein Umbruch NACH dem Cover (sonst leere Seite) */
+      .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: auto !important; padding: 12mm 15mm 15mm !important; background: #fff !important; min-height: auto !important; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
       .pmv-deckblatt-cover .pmv-deckblatt-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #0c5c55 !important; min-height: auto; padding: 10mm 12mm 12mm !important; margin: -12mm -15mm 12mm -15mm !important; border-radius: 0 !important; }
       .pmv-deckblatt-cover .pmv-cover-title { font-size: 24pt !important; margin-bottom: 0.35em !important; color: #fff !important; font-weight: 700 !important; }
       .pmv-deckblatt-cover .pmv-cover-copyright { font-size: 8pt !important; margin-top: 0.4em !important; color: #fff !important; }

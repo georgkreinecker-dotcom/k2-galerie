@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe: Einzelblatt-Druck = eine Seite** – Ursache leere **2. Seite:** `page-break-after: always` auf `.pmv-deckblatt-cover` im Print + **240 mm Mindesthöhe** + Root **100vh** / Article **minHeight 400**. **Fix:** Print-CSS `page-break-after: auto`, `min-height: auto` fürs Cover; bei `pmv-map-page-root--deckblatt-only` Print: **padding 0**, **min-height 0** auf Root/Grid/Article; TS: kein `minHeight: 400` am Article bei Deckblatt. **Commit:** _(nach Push)_ ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Safari → Deckblatt → Druckvorschau **1 Seite**; optional **Kopf- und Fußzeilen** aus.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe: Deckblatt Einzeldruck** – Bei **Deckblatt** (K2, Einzelansicht): **keine App-Fußzeile** (kein „Seite … / 26“ aus `counter(pages)`); Root-Klasse `pmv-map-page-root--deckblatt-only` + Print-CSS. **Druck:** Deckblatt weniger `min-height`-Zwang, Bild max. **118 mm**, `page-break-inside: avoid` – verhindert hässlichen Bild-Split. **Hinweis Safari/Chrome:** URL und „Seite x von y“ können **Browser-Kopf-/Fußzeilen** sein → im Druckdialog abschalten. **Commit:** **9864d830** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Mappe → Deckblatt → Druckvorschau prüfen.

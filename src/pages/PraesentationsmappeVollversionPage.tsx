@@ -811,7 +811,7 @@ export default function PraesentationsmappeVollversionPage() {
 
           <article
             className="pmv-article pmv-a4-sheet"
-            style={{ minHeight: 400 }}
+            style={hidePmvFooterDeckblatt ? {} : { minHeight: 400 }}
           >
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Lade Kapitel...</div>
