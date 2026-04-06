@@ -871,7 +871,11 @@ export default function EntdeckenPage() {
             <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
               {T.wegMappeVorLink}
               <Link
-                to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?context=oeffentlich`}
+                to={{
+                  pathname: PROJECT_ROUTES['k2-galerie'].praesentationsmappe,
+                  search: '?context=oeffentlich',
+                }}
+                state={{ returnTo: `${location.pathname}${location.search || ''}` }}
                 style={{ color: accent, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '2px' }}
               >
                 {T.wegMappeLinkLabel}

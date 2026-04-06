@@ -137,8 +137,9 @@ export default function PraesentationsmappePage() {
             <Link
               to={{
                 pathname: PROJECT_ROUTES['k2-galerie'].praesentationsmappeVollversion,
-                search: location.search.replace(/(^\\?|&)view=kurz(&|$)/, '$1').replace(/\\?&/, '?').replace(/\\?$/, ''),
-              } as any}
+                search: location.search.replace(/(^\?|&)view=kurz(&|$)/, '$1').replace(/\?&/, '?').replace(/\?$/, ''),
+              }}
+              state={location.state}
               style={{ color: '#fff', textDecoration: 'underline', fontSize: '0.85rem', fontWeight: 700 }}
             >
               Zur Vollversion →

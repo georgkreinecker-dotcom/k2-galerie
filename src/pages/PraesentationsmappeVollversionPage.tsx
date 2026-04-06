@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback, useMemo, type ReactNode } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import QRCode from 'qrcode'
 import { PROJECT_ROUTES, BASE_APP_URL } from '../config/navigation'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -203,8 +203,6 @@ const DOCUMENTS_VK2_PROMO: PraesMappeDoc[] = [
   { id: '07-kontakt', name: 'Kontakt', file: '07-KONTAKT.md', tocChapter: 7 },
 ]
 
-const FALLBACK_ROUTE = PROJECT_ROUTES['k2-galerie'].praesentationsmappe
-
 function isPmvMetaDocFile(file: string): boolean {
   return file === '00-INDEX.md' || isPmvLeitfadenFile(file) || file === PMV_DECKBLATT_FILE
 }
@@ -239,6 +237,7 @@ function sidebarDocLabel(docs: PraesMappeDoc[], doc: PraesMappeDoc): string {
 
 export default function PraesentationsmappeVollversionPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const variantParam = searchParams.get('variant') || ''
   const isVk2Promo = variantParam === 'vk2-promo'
@@ -270,7 +269,10 @@ export default function PraesentationsmappeVollversionPage() {
     [DOCUMENTS],
   )
 
-  const returnTo = searchParams.get('returnTo')
+  const returnTo =
+    searchParams.get('returnTo') ||
+    (location.state as { returnTo?: string } | null)?.returnTo ||
+    ''
   /** Beamer/Folien: ein Kapitel pro „Folie“, Vollbild, Pfeiltasten; optional auto= Sekunden pro Folie */
   const beamerMode = searchParams.get('beamer') === '1'
   const autoSecRaw = parseInt(searchParams.get('auto') || '0', 10)
@@ -471,15 +473,15 @@ export default function PraesentationsmappeVollversionPage() {
   const handleZurueck = () => {
     if (returnTo) {
       try {
-        const u = new URL(returnTo)
-        if (u.origin === window.location.origin) navigate(u.pathname + u.search)
+        const u = new URL(returnTo, window.location.origin)
+        if (u.origin === window.location.origin) navigate(u.pathname + u.search + u.hash)
         else window.location.href = returnTo
       } catch {
-        navigate(returnTo)
+        navigate(returnTo.startsWith('/') ? returnTo : `/${returnTo}`)
       }
       return
     }
-    navigate(FALLBACK_ROUTE)
+    navigate(-1)
   }
 
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
