@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Präsentationsmodus (einfach)** – URL `?praesentation=1` auf der Galerie (K2/ök2/VK2): ruhige Ansicht, Vollbild-Steuerung, Esc beendet; TS-Fix fehlender `praesentationRootRef` (`useRef`). Siehe `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`. Tests + Build grün. **Commit:** **62653016** ✅ GitHub (nach Push prüfen)
+**Letzter Stand:** 06.04.26 – **Präsentationsmodus (einfach)** – URL `?praesentation=1` auf der Galerie (K2/ök2/VK2): ruhige Ansicht, Vollbild-Steuerung, Esc beendet; TS-Fix fehlender `praesentationRootRef` (`useRef`). Siehe `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`. Tests + Build grün. **Commit:** **a380febc** ✅ GitHub (nach Push prüfen)
 
 **Was wir JETZT tun:** Im Browser Galerie mit `?praesentation=1` kurz testen; **Promo-Video** weiter pausiert (siehe nächster Block).
 
