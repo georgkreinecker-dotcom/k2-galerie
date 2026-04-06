@@ -2,41 +2,6 @@
 
 ---
 
-## Schnellzugriff – Präsentationsmappen
-
-**Drei Ebenen:** (1) **In der App** lesen oder als PDF drucken · (2) **Im Repo** die Markdown-Quellen · (3) **Galerie-Präsentationsmodus** = etwas anderes als diese Mappen.
-
-### 1. In der App öffnen
-
-| Mappe | Link / Kurzweg |
-|:---|:---|
-| **K2 – Vollversion** (diese Mappe) | [Öffnen](/projects/k2-galerie/praesentationsmappe-vollversion) — oder `/projects/k2-galerie/praesentationsmappe` (leitet zur Vollversion) |
-| **K2 – Kurzansicht** | [Öffnen](/projects/k2-galerie/praesentationsmappe?view=kurz) |
-| **VK2 – Vollversion** | [Öffnen](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2) |
-
-### 2. Markdown im Projektordner (Entwicklung)
-
-| Ordner | Rolle |
-|:---|:---|
-| `public/praesentationsmappe-vollversion/` | K2 · u. a. **`00-INDEX.md`** |
-| `public/praesentationsmappe-vk2-vollversion/` | VK2 · Vollversion |
-| `public/praesentationsmappe-vk2-promo/` | VK2 · kurze Promo-Mappe |
-
-### 3. Galerie „Präsentationsmodus“ — nicht die PDF-Mappen
-
-**Eigene Funktion:** nur die **öffentliche Galerie** in ruhiger Ansicht / Vollbild (Vernissage, Schaufenster). **Parameter:** `?praesentation=1` an der Galerie-URL.
-
-- [ök2-Demo](/projects/k2-galerie/galerie-oeffentlich?praesentation=1) · K2: `/galerie?praesentation=1` · VK2: `/projects/vk2/galerie?praesentation=1`
-- `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`
-
-### 4. Diese Mappe als Folien (Beamer / Vollbild)
-
-**Eigene Funktion:** dieselbe **Vollversion**, aber **ein Kapitel pro Folie**, Steuerung mit Pfeiltasten oder Leertaste, **Vollbild**-Button, **Esc** beendet den Folienmodus. Optional automatischer Wechsel: `&auto=60` (Sekunden pro Folie, 5–600).
-
-- [ök2 – Folien](/projects/k2-galerie/praesentationsmappe-vollversion?context=oeffentlich&beamer=1) · [VK2 – Folien](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2&beamer=1)
-
----
-
 ## So nutzt du diese Mappe – Schritt für Schritt
 
 Diese Mappe ist eine **Entscheidungshilfe**, keine Werbebroschüre zum Wegwerfen. Du kannst sie in Ruhe lesen, Kapitel für Kapitel – und nach jedem der ersten Schritte sollte für dich etwas **konkreter** werden: Passt diese Plattform zu dem, was du im Alltag brauchst, oder eher nicht?

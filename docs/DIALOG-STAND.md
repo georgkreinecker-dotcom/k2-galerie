@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Mappe: Schnellzugriff intern raus** – Block „Schnellzugriff – Präsentationsmappen“ (Repo-Pfade, URL-Parameter) aus `public/.../00-INDEX.md` entfernt; Inhalt in **`docs/PRAESENTATIONSMAPPEN-SCHNELLZUGRIFF-INTERN.md`**, `docs/00-INDEX.md` verlinkt. Vortrag/PDF/Folien zeigen das nicht mehr. Tests + Build grün. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Optional Deploy → Mappe/Kapitel „Inhaltsverzeichnis“ prüfen.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe Beamer-Folien** – URL `?beamer=1` auf der Vollversion: Kapitel nacheinander, Vollbild, Pfeiltasten/Leertaste, Esc beenden; optional `&auto=60` (Sekunden pro Folie). Button „Folien (Beamer)“ auf der Mappe; Admin Tab + Event-Karten: Folien-Links ök2/VK2. `00-INDEX`, FEATURES-Doku. Tests + Build grün. **Commit:** **9338a7e6** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Vollversion → Folien testen (Beamer/Vollbild).
