@@ -2,13 +2,32 @@
 
 ---
 
-## Schnellzugriff – wo liegen die Präsentationsmappen?
+## Schnellzugriff – Präsentationsmappen
 
-- **K2 – Vollversion (lesen / PDF):** [Präsentationsmappe – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion) — Einstieg: `/projects/k2-galerie/praesentationsmappe` (leitet hierher). **Kurzfassung:** [Präsentationsmappe Kurzansicht](/projects/k2-galerie/praesentationsmappe?view=kurz).
-- **K2 – Quellen im Repo:** `public/praesentationsmappe-vollversion/` — dieses Inhaltsverzeichnis: **`00-INDEX.md`**.
-- **VK2 – eigene Präsentationsmappe:** [VK2 – Vollversion](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2) — Quellen: `public/praesentationsmappe-vk2-vollversion/` (weitere VK2-Variante: `public/praesentationsmappe-vk2-promo/`).
+**Drei Ebenen:** (1) **In der App** lesen oder als PDF drucken · (2) **Im Repo** die Markdown-Quellen · (3) **Galerie-Präsentationsmodus** = etwas anderes als diese Mappen.
 
-**Hinweis:** Die **öffentliche Galerie im Präsentationsmodus** (Vernissage, Schaufenster, ruhige Ansicht mit Vollbild – *nicht* die Präsentationsmappen als PDF) ist eine **andere** Funktion: URL-Parameter **`?praesentation=1`** an der Galerie. Beispiele: [ök2-Demo mit Präsentation](/projects/k2-galerie/galerie-oeffentlich?praesentation=1) · K2-Galerie: `/galerie?praesentation=1` · VK2: `/projects/vk2/galerie?praesentation=1`. Kurz in `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`.
+### 1. In der App öffnen
+
+| Mappe | Link / Kurzweg |
+|:---|:---|
+| **K2 – Vollversion** (diese Mappe) | [Öffnen](/projects/k2-galerie/praesentationsmappe-vollversion) — oder `/projects/k2-galerie/praesentationsmappe` (leitet zur Vollversion) |
+| **K2 – Kurzansicht** | [Öffnen](/projects/k2-galerie/praesentationsmappe?view=kurz) |
+| **VK2 – Vollversion** | [Öffnen](/projects/k2-galerie/praesentationsmappe-vollversion?variant=vk2) |
+
+### 2. Markdown im Projektordner (Entwicklung)
+
+| Ordner | Rolle |
+|:---|:---|
+| `public/praesentationsmappe-vollversion/` | K2 · u. a. **`00-INDEX.md`** |
+| `public/praesentationsmappe-vk2-vollversion/` | VK2 · Vollversion |
+| `public/praesentationsmappe-vk2-promo/` | VK2 · kurze Promo-Mappe |
+
+### 3. Galerie „Präsentationsmodus“ — nicht die PDF-Mappen
+
+**Eigene Funktion:** nur die **öffentliche Galerie** in ruhiger Ansicht / Vollbild (Vernissage, Schaufenster). **Parameter:** `?praesentation=1` an der Galerie-URL.
+
+- [ök2-Demo](/projects/k2-galerie/galerie-oeffentlich?praesentation=1) · K2: `/galerie?praesentation=1` · VK2: `/projects/vk2/galerie?praesentation=1`
+- `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`
 
 ---
 
