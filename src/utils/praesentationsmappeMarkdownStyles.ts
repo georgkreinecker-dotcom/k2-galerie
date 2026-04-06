@@ -246,6 +246,28 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
     .pmv-deckblatt-cover .pmv-cover-img-wrap { margin: 1.5rem auto 0; max-width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     .pmv-deckblatt-cover .pmv-cover-img { width: 100%; height: auto; display: block; vertical-align: top; }
     @media print {
+      /* Einzelseite Deckblatt: keine App-Fußzeile (Zähler „von 26“), kein erzwungener Riesen-Rahmen */
+      .pmv-map-page-root--deckblatt-only .pmv-seitenfuss {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+      }
+      .pmv-map-page-root--deckblatt-only .pmv-deckblatt-cover {
+        min-height: 0 !important;
+        page-break-after: auto !important;
+        page-break-inside: avoid !important;
+        padding: 8mm 12mm 10mm !important;
+      }
+      .pmv-map-page-root--deckblatt-only .pmv-deckblatt-cover .pmv-cover-img-wrap {
+        flex: 0 1 auto !important;
+        max-height: none !important;
+      }
+      .pmv-map-page-root--deckblatt-only .pmv-deckblatt-cover .pmv-cover-img {
+        max-height: 118mm !important;
+        width: auto !important;
+        max-width: 100% !important;
+      }
       .pmv-deckblatt-cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-after: always !important; padding: 12mm 15mm 15mm !important; background: #fff !important; min-height: 240mm; box-sizing: border-box; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; }
       .pmv-deckblatt-cover .pmv-deckblatt-header { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: #0c5c55 !important; min-height: auto; padding: 10mm 12mm 12mm !important; margin: -12mm -15mm 12mm -15mm !important; border-radius: 0 !important; }
       .pmv-deckblatt-cover .pmv-cover-title { font-size: 24pt !important; margin-bottom: 0.35em !important; color: #fff !important; font-weight: 700 !important; }

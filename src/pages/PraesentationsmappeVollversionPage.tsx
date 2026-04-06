@@ -486,6 +486,13 @@ export default function PraesentationsmappeVollversionPage() {
 
   const currentDocName = DOCUMENTS.find((d) => d.file === selectedDoc)?.name ?? 'Präsentationsmappe – Vollversion'
 
+  /** Deckblatt (K2): keine Fußzeile – weder Bildschirm noch Druck aus Einzelansicht. */
+  const hidePmvFooterDeckblatt =
+    !fullPrintView &&
+    !(isMobile && allDocContents.length > 0) &&
+    selectedDoc === PMV_DECKBLATT_FILE &&
+    !isAnyVk2
+
   const beamerIdx = useMemo(
     () => Math.max(0, DOCUMENTS.findIndex((d) => d.file === selectedDoc)),
     [DOCUMENTS, selectedDoc],
@@ -633,7 +640,17 @@ export default function PraesentationsmappeVollversionPage() {
   }
 
   return (
-    <div className="pmv-wrap pmv-map-page-root" lang="de" style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}>
+    <div
+      className={[
+        'pmv-wrap',
+        'pmv-map-page-root',
+        hidePmvFooterDeckblatt ? 'pmv-map-page-root--deckblatt-only' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      lang="de"
+      style={{ padding: '1.5rem 1rem', background: '#fffefb', minHeight: '100vh', color: '#1c1a18' }}
+    >
       <style>{PRAESENTATIONSMAPPE_MARKDOWN_STYLES}</style>
 
       <header className="pmv-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
@@ -820,11 +837,13 @@ export default function PraesentationsmappeVollversionPage() {
           </article>
         </div>
       )}
-      <div className="pmv-seitenfuss pmv-wrap" aria-hidden>
-        <span className="pmv-seitenfuss-brand">{PRODUCT_BRAND_NAME}</span>
-        <span className="pmv-seitenfuss-preview">Präsentationsmappe · Druck: Marke links, Seitenzahl rechts</span>
-        <span className="pmv-seitenfuss-page" aria-hidden="true" />
-      </div>
+      {!hidePmvFooterDeckblatt ? (
+        <div className="pmv-seitenfuss pmv-wrap" aria-hidden>
+          <span className="pmv-seitenfuss-brand">{PRODUCT_BRAND_NAME}</span>
+          <span className="pmv-seitenfuss-preview">Präsentationsmappe · Druck: Marke links, Seitenzahl rechts</span>
+          <span className="pmv-seitenfuss-page" aria-hidden="true" />
+        </div>
+      ) : null}
     </div>
   )
 }
