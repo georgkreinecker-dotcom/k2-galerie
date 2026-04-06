@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Vita Georg: Epochen + kein Kontakt im Dokument** – **`K2_DEFAULT_VITA_GEORG`** redigiert: Einleitung, **Beruf und Unternehmertum**, **Kunst und Keramik** (Jahres-/Listenzeilen für Darstellung als Überschrift + Liste). **`buildVitaDocumentHtml`:** Option **`includeContact`**; für **Georg** `false` (Galerie `openVita`, Admin „Vita als Dokument“). **Martina** weiter mit Kontaktblock. **`public/gallery-data.json`** per Skript sync. Doku: `docs/VITA-GEORG-K2-ENTWURF-2026-03.md`. Tests + Build grün. **Commit:** **e73f8a95** ✅ GitHub
+
+**Was wir JETZT tun:** Galerie → Vita Georg im neuen Tab; lokal gespeicherte alte Vita ggf. durch Standard aus Doku ersetzen.
+
+---
+
+**Letzter Stand:** 06.04.26 – **Vita Setzung (Popup + Leseseite)** – `vitaDocument.ts`: Kicker größer, **h1** kräftiger, **Lesemaß** 62ch, Zeilenabstand 1.82, erster Absatz leicht betont; bei **dunklem Galerie-Hintergrund** (`isDarkBackgroundHex`) Klasse **`vita-dark-bg`**: hellere Kontakt-Links (`color-mix` mit Weiß), Trennlinien über **`--vita-rule`** statt nur `color-mix`; **mailto/tel/Web**-Links korrekt (`encodeURIComponent`, `tel`-Ziffern). **VitaPage** `VitaReadView`: gleiches Maß (`40rem`, `62ch` pro Absatz). Tests + Build grün. **Commit:** **e85104b5** ✅ GitHub
+
+**Was wir JETZT tun:** Galerie → „Vita“ öffnen (neues Tab): Typo prüfen; optional Route Vita im Browser.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Handy: Zurück von Entdecken zur K2-Galerie + PWA-Start** – **K2** (`GaleriePage`): Link kgm → `/entdecken` setzt **`state.returnTo`** (aktueller Galerie-Pfad) und **`sessionStorage` `k2-entdecken-return-to`** (Safari kann Router-State verlieren). **`EntdeckenPage`:** sichtbar **„← Zurück zur Galerie“** im Hero und bei Schritt q1, wenn Rückpfad da ist; Klick löscht den Session-Hinweis. **`public/manifest.json`:** war ungültig (Figma-HTML) → gültiges Web-App-Manifest mit **`start_url: "/galerie"`** und Icons **192/512** (Homescreen öffnet Galerie statt nur „letzte Safari-URL“). Tests + Build grün. **Commit:** **a8d0461d** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy am iPhone: Galerie → kgm → Entdecken → „Zurück zur Galerie“; PWA neu zum Homescreen legen oder einmal Seite neu laden, damit Manifest greift.
