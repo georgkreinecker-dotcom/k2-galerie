@@ -17643,6 +17643,9 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
               : 'k2'
           const pmA3Flyer = flyerEventBogenUrl({ mode: 'a3', tenant: pmFlyerTenant, fromAdminDerivation: true })
           const pmVk2Qs = '?variant=vk2'
+          const pmGalerieK2Pra = `${PROJECT_ROUTES['k2-galerie'].galerie}?praesentation=1`
+          const pmGalerieOek2Pra = `${PROJECT_ROUTES['k2-galerie'].galerieOeffentlich}?praesentation=1`
+          const pmGalerieVk2Pra = `${PROJECT_ROUTES.vk2.galerie}?praesentation=1`
           return (
           <section style={{
             background: s.bgCard,
@@ -17658,6 +17661,52 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
             <p style={{ fontSize: '0.9rem', color: s.muted, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
               Kurzvariante, Vollversion, Prospekt/Flyer und Plakat A3 (dieselbe Route wie der Flyer-Master, nur Ableitung): im Browser öffnen, als PDF drucken. Bearbeiten des Plakats nur über den Flyer-Master.
             </p>
+            <div
+              style={{
+                marginBottom: '1.25rem',
+                paddingBottom: '1.25rem',
+                borderBottom: `1px solid ${s.accent}18`,
+              }}
+            >
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: s.text, margin: '0 0 0.35rem 0' }}>
+                Galerie im Präsentationsmodus
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: s.muted, margin: '0 0 0.85rem', lineHeight: 1.45 }}>
+                Öffentliche Galerie mit <strong style={{ color: s.text }}>?praesentation=1</strong> – ruhige Ansicht, Vollbild möglich; <strong>nicht</strong> die PDF-Mappen darunter.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieK2Pra, e)}
+                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  K2 Galerie (Präsentation)
+                </button>
+                <a href={BASE_APP_URL + pmGalerieK2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                  K2 Galerie (Präsentation, neuer Tab)
+                </a>
+                <button
+                  type="button"
+                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieOek2Pra, e)}
+                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  ök2-Demo (Präsentation)
+                </button>
+                <a href={BASE_APP_URL + pmGalerieOek2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                  ök2-Demo (Präsentation, neuer Tab)
+                </a>
+                <button
+                  type="button"
+                  onClick={(e) => navigateFromOeffentlichkeitsarbeitOverlay(pmGalerieVk2Pra, e)}
+                  style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  VK2 Galerie (Präsentation)
+                </button>
+                <a href={BASE_APP_URL + pmGalerieVk2Pra} onClick={() => closeOeffentlichkeitsarbeitFullscreenOverlay()} target="_blank" rel="noopener noreferrer" style={{ padding: '0.75rem 1rem', background: s.bgElevated, border: `1px solid ${s.accent}33`, borderRadius: '10px', fontSize: '0.9rem', color: s.accent, textDecoration: 'none', fontWeight: 600 }}>
+                  VK2 Galerie (Präsentation, neuer Tab)
+                </a>
+              </div>
+            </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
               <button
                 type="button"

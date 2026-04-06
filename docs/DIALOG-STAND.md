@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmodus in Karte „Präsentationsmappen“ (APf)** – `ScreenshotExportAdmin` Tab Werbeunterlagen: eigener Block **„Galerie im Präsentationsmodus“** oberhalb der PDF-Mappen-Buttons; K2 / ök2 / VK2 je **In-App** + **neuer Tab** mit `?praesentation=1` (`PROJECT_ROUTES`). Tests + Build grün. **Commit:** `git log -1 --oneline` auf `main` (nach Push)
+
+**Was wir JETZT tun:** APf → Werbeunterlagen → Karte Präsentationsmappen: oberster Bereich = Galerie-Präsentation; darunter wie bisher Kurz-/Vollversion usw.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmodus (einfach)** – URL `?praesentation=1` auf der Galerie (K2/ök2/VK2): ruhige Ansicht, Vollbild-Steuerung, Esc beendet; TS-Fix fehlender `praesentationRootRef` (`useRef`). Siehe `docs/FEATURES-ABHEBUNG-ZIELGRUPPE.md`. Tests + Build grün. **Commit:** **a380febc** ✅ GitHub (nach Push prüfen)
 
 **Was wir JETZT tun:** Im Browser Galerie mit `?praesentation=1` kurz testen; **Promo-Video** weiter pausiert (siehe nächster Block).
