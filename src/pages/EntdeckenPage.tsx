@@ -68,8 +68,10 @@ const T_DEFAULTS = {
     sub: 'Dein Corporate Design: eine Linie für die Galerie, Einladungen und Druck. Im Mittelpunkt steht Galerie gestalten – Farben, Bilder, Texte – alles andere baut darauf auf.',
   },
   wegVerein: { emoji: '🏛️', label: 'Vereinsplattform', sub: 'Gemeinsamer Katalog, Mitglieder, gemeinsame Plattform – eine eigene Welt.' },
-  /** Kurzzeile unter der Weg-Frage (nur Kontext, kein Extra-Klick) */
-  wegCdHinweis: 'Tipp: Bei „eigene Plattform“ legst du mit Galerie gestalten dein Erscheinungsbild fest – das ist dein Corporate Design, durchgängig und professionell.',
+  /** Zeile unter der Weg-Frage: Link Präsentationsmappe + kurzer Erklärungsverweis */
+  wegMappeVorLink: 'Zum Einordnen: In der ',
+  wegMappeLinkLabel: 'Präsentationsmappe',
+  wegMappeNachLink: ' findest du den roten Faden – Lesen, Zeigen, Drucken.',
 
   q3: 'Wie heißt du – oder deine Galerie?',
   q3placeholder: 'Dein Künstlername oder Galeriename',
@@ -867,7 +869,14 @@ export default function EntdeckenPage() {
               {T.weg}
             </h2>
             <p style={{ fontSize: '0.82rem', color: muted, textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem', maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
-              {T.wegCdHinweis}
+              {T.wegMappeVorLink}
+              <Link
+                to={`${PROJECT_ROUTES['k2-galerie'].praesentationsmappe}?context=oeffentlich`}
+                style={{ color: accent, fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              >
+                {T.wegMappeLinkLabel}
+              </Link>
+              {T.wegMappeNachLink}
             </p>
             <ChoiceCard {...T.wegSolo} selected={answers.q1 === 'solo'} onClick={() => { setAnswers(a => ({ ...a, q1: 'solo' })); openByChoice('solo'); }} />
             <ChoiceCard {...T.wegVerein} selected={answers.q1 === 'verein'} onClick={() => { setAnswers(a => ({ ...a, q1: 'verein' })); openByChoice('verein'); }} color="#1e5cb5" />
