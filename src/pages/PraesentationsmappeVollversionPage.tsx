@@ -287,10 +287,10 @@ export default function PraesentationsmappeVollversionPage() {
       ? 'Präsentationsmappe VK2 – Vollversion'
       : 'Präsentationsmappe – Vollversion'
   const pageSubtitle = isVk2Promo
-      ? 'Zweite Mappe für VK2: kompakt, Screenshot pro Kapitel – zuerst Orientierung, dann Beispiele aus dem Admin.'
+    ? 'Kompakt: Orientierung und ein Screenshot pro Kapitel.'
     : isVk2Classic
-      ? 'VK2 Vollversion: Orientierung, danach konkrete Admin-Beispiele – die Seitenleiste zeigt den Wechsel.'
-      : 'Zuerst Orientierung, dann konkrete Beispiele aus dem Admin; die Seitenleiste trennt die Blöcke. Screenshots unter /img/oeffentlich/.'
+      ? 'Orientierung, danach Beispiele – die Seitenleiste zeigt die Kapitel.'
+      : ''
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -639,16 +639,15 @@ export default function PraesentationsmappeVollversionPage() {
       <header className="pmv-no-print" style={{ marginBottom: '1.5rem', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.5rem', color: '#1c1a18', fontWeight: 600 }}>📁 {pageTitle}</h1>
-          <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
-            {fullPrintView
-              ? 'Alle Kapitel mit Bildern – zum Drucken'
-              : isMobile && allDocContents.length > 0
-                ? 'Alle Kapitel – durchscrollen bis zur letzten Seite'
-                : pageSubtitle}
-          </p>
-          {!fullPrintView && !isMobile ? (
-            <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: '#9ca3af' }}>
-              DIN-A4-Breite · gestrichelter Innenrand = Druckkörper wie beim Druck (Kopf-/Seiten-/Fußrand) · passt zur Druckvorschau
+          {(fullPrintView ||
+            (isMobile && allDocContents.length > 0) ||
+            pageSubtitle) ? (
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.9rem', color: '#6b7280' }}>
+              {fullPrintView
+                ? 'Alle Kapitel mit Bildern – zum Drucken'
+                : isMobile && allDocContents.length > 0
+                  ? 'Alle Kapitel – durchscrollen bis zur letzten Seite'
+                  : pageSubtitle}
             </p>
           ) : null}
         </div>

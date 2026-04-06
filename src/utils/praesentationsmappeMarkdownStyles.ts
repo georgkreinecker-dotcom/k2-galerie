@@ -35,7 +35,7 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         overflow-x: auto;
         position: relative;
       }
-      /* Zweiter Rand: Druck-Margins wie @page (15mm oben, 18mm seitlich/unten) – Kopf-/Fuß-/Seitenrand sichtbar */
+      /* Leichter Rand-Schimmer wie Druck-Margins (15mm oben, 18mm seitlich/unten) – ohne gestrichelte Innenlinie */
       .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet::after {
         content: '';
         position: absolute;
@@ -49,24 +49,11 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
           linear-gradient(90deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm),
           linear-gradient(270deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm);
       }
-      .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet::before {
-        content: '';
-        position: absolute;
-        left: 18mm;
-        right: 18mm;
-        top: 15mm;
-        bottom: 18mm;
-        border: 1px dashed rgba(100, 94, 88, 0.42);
-        pointer-events: none;
-        z-index: 1;
-        box-sizing: border-box;
-        border-radius: 1px;
-      }
       .pmv-map-page-root .pmv-map-grid .pmv-a4-sheet > * {
         position: relative;
         z-index: 2;
       }
-      /* Gesamte Mappe: gleiche Blatt-Ränder wie Einzelansicht, Text = Druckkörper (mit Hilfslinien) */
+      /* Gesamte Mappe: gleiche Blatt-Ränder wie Einzelansicht, Text = Druckkörper (ohne gestrichelte Innenlinie – wie Druck/PDF) */
       .pmv-map-page-root > .pmv-a4-sheet {
         box-sizing: border-box;
         width: min(100%, 210mm);
@@ -96,19 +83,6 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
           linear-gradient(0deg, rgba(120, 113, 108, 0.07) 0, rgba(120, 113, 108, 0.07) 18mm, transparent 18mm),
           linear-gradient(90deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm),
           linear-gradient(270deg, rgba(120, 113, 108, 0.055) 0, rgba(120, 113, 108, 0.055) 18mm, transparent 18mm);
-      }
-      .pmv-map-page-root > .pmv-a4-sheet::before {
-        content: '';
-        position: absolute;
-        left: 18mm;
-        right: 18mm;
-        top: 15mm;
-        bottom: 18mm;
-        border: 1px dashed rgba(100, 94, 88, 0.42);
-        pointer-events: none;
-        z-index: 1;
-        box-sizing: border-box;
-        border-radius: 1px;
       }
       .pmv-map-page-root > .pmv-a4-sheet > * {
         position: relative;
