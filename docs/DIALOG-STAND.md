@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe Vollversion: Header & A4-Screen** – Dev-/Hilfstexte entfernt (kein Untertitel-Pfad `/img/…`, keine DIN-/Innenrand-Zeile). **K2-Standard:** nur **Titel** im Header. **VK2:** kurze Nutzerzeilen. **Screen:** gestrichelte **Innenrandlinie** (`::before` auf `.pmv-a4-sheet`) entfernt – wie Druck/PDF; leichter Rand-Schimmer (`::after`) bleibt. **Commit:** **ec2ebaf9** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Mappe Vollversion kurz ansehen (Desktop).
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe: Zurück zur Herkunftsseite** – „← Zurück“ auf der Vollversion: **`returnTo`** aus URL-Parameter **oder** `location.state` (bleibt beim Redirect `/praesentationsmappe` → Vollversion erhalten). **Entdecken** setzt `state.returnTo` auf den aktuellen Pfad; **Kurzversion** „Zur Vollversion →“ reicht `location.state` durch. Relative Pfade z. B. `/entdecken` per `new URL(returnTo, origin)`; ohne Ziel: **`navigate(-1)`** statt Redirect zur gleichen Mappe. **Commit:** **5df041f4** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Entdecken → Mappe → Zurück = wieder Entdecken; mök2-Prospekt-Link weiter mit `returnTo` zu mök2.
