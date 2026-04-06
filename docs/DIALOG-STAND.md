@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Präsentationsmappe Vollversion Druck/PDF** – Print-CSS straffer (Ränder `@page`, Überschriften/Listen/Absätze, Kapitel-Abstände, Artikel-Padding); Fußzeile: links `PRODUCT_BRAND_NAME` (kgm solution), rechts „Seite x / y“ (`pmv-seitenfuss-brand` + `pmv-seitenfuss-page`). Dateien: `praesentationsmappeMarkdownStyles.ts`, `PraesentationsmappeVollversionPage.tsx`. **Nächster Schritt:** Commit-Hash eintragen nach Push.
+
+---
+
 **Letzter Stand:** 06.04.26 – **Präsentationsmappe Kapitel Technik** – Abschnitt „Sicherheit nach innen & außen“ (interne Regel-Details) aus `12-TECHNIK.md` entfernt; gleiche Bereinigung in `praesentationsmappe-langversion`. Tests + Build grün. **Nächster Schritt:** commit + push.
 
 ---

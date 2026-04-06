@@ -234,17 +234,17 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 11pt !important; margin-bottom: 0 !important; color: #fff !important; }
       .pmv-deckblatt-cover .pmv-cover-img-wrap { flex: 1; max-width: 95%; min-height: 0; }
       .pmv-deckblatt-cover .pmv-cover-img { max-height: 180mm; width: auto; margin: 0 auto; object-fit: contain; }
-      .pmv-chapter-block { page-break-before: auto !important; }
+      .pmv-chapter-block { page-break-before: auto !important; margin-bottom: 0.35em !important; }
       .pmv-chapter-block.pmv-chapter-first { page-break-before: auto !important; }
       .pmv-no-print { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch .pmv-seitenumbruch-label { display: none !important; }
       .pmv-wrap .pmv-seitenumbruch { page-break-before: always !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; }
-      .pmv-wrap .pmv-h1 { font-size: 12pt !important; margin: 1.2em 0 0.4em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
-      .pmv-wrap .pmv-h2 { font-size: 11pt !important; margin: 1em 0 0.35em !important; color: #0f766e !important; font-weight: 700 !important; page-break-after: avoid !important; }
-      .pmv-wrap .pmv-h3 { font-size: 10pt !important; margin: 0.8em 0 0.3em !important; color: #1c1a18 !important; page-break-after: avoid !important; }
-      .pmv-wrap .pmv-p { margin: 0 0 0.5em !important; line-height: 1.45 !important; font-size: 10pt !important; color: #1c1a18 !important; text-align: justify !important; hyphens: auto !important; -webkit-hyphens: auto !important; hyphenate-limit-chars: 6 4 2 !important; orphans: 2 !important; widows: 2 !important; }
-      .pmv-wrap .pmv-ul { margin: 0.4em 0 0.6em 1.25em !important; padding-left: 0.4em !important; }
-      .pmv-wrap .pmv-li { margin-bottom: 0.25em !important; line-height: 1.45 !important; font-size: 10pt !important; }
+      .pmv-wrap .pmv-h1 { font-size: 11.5pt !important; margin: 0.8em 0 0.3em !important; color: #1c1a18 !important; font-weight: 600 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-h2 { font-size: 10.5pt !important; margin: 0.65em 0 0.28em !important; color: #0f766e !important; font-weight: 700 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-h3 { font-size: 10pt !important; margin: 0.55em 0 0.22em !important; color: #1c1a18 !important; page-break-after: avoid !important; }
+      .pmv-wrap .pmv-p { margin: 0 0 0.42em !important; line-height: 1.38 !important; font-size: 9.75pt !important; color: #1c1a18 !important; text-align: justify !important; hyphens: auto !important; -webkit-hyphens: auto !important; hyphenate-limit-chars: 6 4 2 !important; orphans: 2 !important; widows: 2 !important; }
+      .pmv-wrap .pmv-ul { margin: 0.28em 0 0.45em 1.1em !important; padding-left: 0.35em !important; }
+      .pmv-wrap .pmv-li { margin-bottom: 0.18em !important; line-height: 1.38 !important; font-size: 9.75pt !important; }
       .pmv-wrap .pmv-hr { margin: 0.6em 0 !important; }
       .pmv-wrap .pmv-blockquote {
         margin: 0.65em 0 0.85em !important;
@@ -272,7 +272,7 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-wrap .pmv-table-split tbody td { font-size: 8.5pt !important; padding: 0.25em 0.35em !important; }
       .pmv-wrap .pmv-table-split .pmv-th-split-market, .pmv-wrap .pmv-table-split .pmv-td-split-market { background: #fffbeb !important; }
       .pmv-wrap .pmv-table-split .pmv-th-split-k2, .pmv-wrap .pmv-table-split .pmv-td-split-k2 { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; }
-      .pmv-wrap article { padding: 0 0 12mm !important; border: none !important; box-shadow: none !important; }
+      .pmv-wrap article { padding: 0 0 6mm !important; border: none !important; box-shadow: none !important; }
       .pmv-map-page-root .pmv-map-grid { background: transparent !important; padding: 0 !important; border-radius: 0 !important; max-width: none !important; margin: 0 !important; }
       .pmv-map-page-root .pmv-a4-sheet {
         max-width: none !important;
@@ -296,10 +296,42 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
         margin: 0 !important;
         border-radius: 0 !important;
       }
-      .pmv-seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 6mm; padding: 2mm 8mm; font-size: 9pt; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
+      .pmv-seitenfuss {
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 0 !important;
+        padding: 1.5mm 12mm 2mm !important;
+        font-size: 7.5pt !important;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+        color: #44403c !important;
+        background: #fff !important;
+        border-top: 0.5pt solid #d6d3d1 !important;
+        line-height: 1.25 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        z-index: 99999 !important;
+      }
       .pmv-seitenfuss .pmv-seitenfuss-preview { display: none !important; }
-      .pmv-seitenfuss::after { content: "Seite " counter(page) " von " counter(pages); color: #000 !important; }
-      @page { margin: 15mm 18mm 18mm 18mm; size: A4; background: white; }
+      .pmv-seitenfuss .pmv-seitenfuss-brand {
+        display: inline !important;
+        font-weight: 600 !important;
+        color: #0f766e !important;
+        letter-spacing: 0.01em !important;
+      }
+      .pmv-seitenfuss .pmv-seitenfuss-page::after {
+        content: "Seite " counter(page) " / " counter(pages) !important;
+        color: #44403c !important;
+        font-weight: 500 !important;
+      }
+      @page { margin: 10mm 12mm 13mm 12mm; size: A4; background: white; }
       html, body { background: #fff !important; color: #1c1a18 !important; }
       .pmv-wrap { background: #fff !important; padding: 0 !important; }
     }

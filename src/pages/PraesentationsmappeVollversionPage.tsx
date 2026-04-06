@@ -746,7 +746,9 @@ export default function PraesentationsmappeVollversionPage() {
         </div>
       )}
       <div className="pmv-seitenfuss pmv-wrap" aria-hidden>
-        <span className="pmv-seitenfuss-preview">Präsentationsmappe · (Seitenzahlen beim Drucken)</span>
+        <span className="pmv-seitenfuss-brand">{PRODUCT_BRAND_NAME}</span>
+        <span className="pmv-seitenfuss-preview">Präsentationsmappe · Druck: Marke links, Seitenzahl rechts</span>
+        <span className="pmv-seitenfuss-page" aria-hidden="true" />
       </div>
     </div>
   )
