@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Mappe Leitfaden: Schritt „Prospekt vertiefen“ entfernt** – In `public/praesentationsmappe-vollversion/00-SO-NUTZT-DU-MAPPE.md` der Block **Schritt 2 – Prospekt: vertiefen** (inkl. Text zu Aufbruch und Zukunft) gestrichen; ehemaliger **Schritt 3** ist jetzt **Schritt 2 – Produkt, Demo, Alltag**. **Commit:** _(nach Push)_ ✅ GitHub
+**Letzter Stand:** 06.04.26 – **Mappe Leitfaden: Schritt „Prospekt vertiefen“ entfernt** – In `public/praesentationsmappe-vollversion/00-SO-NUTZT-DU-MAPPE.md` der Block **Schritt 2 – Prospekt: vertiefen** (inkl. Text zu Aufbruch und Zukunft) gestrichen; ehemaliger **Schritt 3** ist jetzt **Schritt 2 – Produkt, Demo, Alltag**. **Commit:** **4ac17676** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: Mappe → „So nutzt du diese Mappe“ kurz lesen.
 
