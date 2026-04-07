@@ -8,6 +8,10 @@ import { loadStammdaten, loadVk2Stammdaten } from '../utils/stammdatenStorage'
 import { readArtworksRawByKey, saveArtworksByKey } from '../utils/artworksStorage'
 import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getShopStorageKeys } from '../utils/shopContextKeys'
+import {
+  getReceiptPaperWidthMm,
+  shopTenantIdForReceipt,
+} from '../utils/receiptPaperWidthStorage'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
@@ -45,6 +49,13 @@ function injectReceiptPrintPageSizeMm(printWindow: Window, widthMm = 80): void {
   if (!body) return
   const root = doc.documentElement
   const contentRoot = doc.getElementById('k2-receipt-root')
+  try {
+    void body.offsetHeight
+    void root?.offsetHeight
+    if (contentRoot) void contentRoot.offsetHeight
+  } catch {
+    /* ignore */
+  }
   let hPx = 0
   if (contentRoot) {
     hPx = Math.ceil(Math.max(contentRoot.scrollHeight, contentRoot.offsetHeight))
@@ -95,31 +106,84 @@ function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: numbe
   }, 1000)
 }
 
-/** Wie Etikett „im neuen Tab“: Inhalt sichtbar, Druck/Teilen erst vom Nutzer (⌘P / Teilen). */
-function openBonHtmlInNewTab(html: string): void {
+/**
+ * Wie Etikett „im neuen Tab“: Bon sichtbar – dann Teilen (iPad) oder Drucken (⌘P).
+ * Safari: Blob-URL zuverlässiger als document.write auf about:blank; Fallback mit document.open/write.
+ */
+function openBonHtmlInNewTab(html: string, widthMm = 80): void {
+  const finish = (w: Window) => {
+    attachReceiptPrintPageSizing(w, widthMm)
+    try {
+      w.focus()
+    } catch {
+      /* ignore */
+    }
+  }
+  try {
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const w = window.open(url, '_blank', 'noopener,noreferrer')
+    if (!w) {
+      try {
+        URL.revokeObjectURL(url)
+      } catch {
+        /* ignore */
+      }
+      alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
+      return
+    }
+    w.addEventListener(
+      'load',
+      () => {
+        try {
+          setTimeout(() => URL.revokeObjectURL(url), 500)
+        } catch {
+          /* ignore */
+        }
+      },
+      { once: true }
+    )
+    finish(w)
+    return
+  } catch {
+    /* Blob nicht möglich → klassisch */
+  }
   const w = window.open('', '_blank')
   if (!w) {
     alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
     return
   }
-  w.document.write(html)
-  w.document.close()
-  attachReceiptPrintPageSizing(w)
   try {
-    w.focus()
-  } catch (_) {}
+    w.document.open()
+    w.document.write(html)
+    w.document.close()
+  } catch {
+    alert('Bon konnte nicht angezeigt werden. Bitte „Kassenbon – Druckdialog“ nutzen.')
+    try {
+      w.close()
+    } catch {
+      /* ignore */
+    }
+    return
+  }
+  finish(w)
 }
 
-/** Nur Druckfarben + schmale Spalte; @page-Größe kommt per injectReceiptPrintPageSizeMm (siehe oben). */
-const CSS_PRINT_80MM_ROLL = `
+/** Nur Druckfarben + schmale Spalte; feste @page-Breite (mm) = Rolle/Etikett; Höhe fein per injectReceiptPrintPageSizeMm. */
+function cssPrintRollMm(widthMm: number): string {
+  return `
 @media print {
   * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+  @page {
+    size: ${widthMm}mm auto;
+    margin: 0;
+  }
   html, body {
-    width: 80mm !important;
-    max-width: 80mm !important;
+    width: ${widthMm}mm !important;
+    max-width: ${widthMm}mm !important;
     height: auto !important;
     min-height: 0 !important;
   }
@@ -129,6 +193,7 @@ const CSS_PRINT_80MM_ROLL = `
   }
 }
 `
+}
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
 const s = {
@@ -174,12 +239,14 @@ interface CartItem {
   ceramicSubcategory?: string
 }
 
-/** HTML K2/ök2 Kassenbon 80mm – eine Quelle für Druckdialog und „Bon im neuen Tab“ (wie Etikett). */
+/** HTML K2/ök2 Kassenbon schmal (mm) – eine Quelle für Druckdialog und „Bon im neuen Tab“ (wie Etikett). */
 function buildK2Oek2ReceiptHtml(
   order: any,
   fromOeffentlich: boolean,
-  opts?: { tabHint?: boolean }
+  opts?: { tabHint?: boolean; paperWidthMm?: number }
 ): string {
+  const paperW = opts?.paperWidthMm === 62 || opts?.paperWidthMm === 80 ? opts.paperWidthMm : 80
+  const viewportPx = Math.max(200, Math.round((paperW / 25.4) * 96))
   const snap = order?.sellerSnapshot as
     | { version: 1; tenant: string; gallery?: Record<string, unknown> }
     | undefined
@@ -230,32 +297,32 @@ function buildK2Oek2ReceiptHtml(
     .join('')
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint">Wie beim Etikett im neuen Tab: Bon prüfen, dann <strong>Teilen</strong> oder <strong>Drucken</strong> (⌘P). Oft zuverlässiger am iPad als der sofortige Druckdialog.</div>`
+    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
     : ''
   return `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1">
+          <meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1">
           <title>Kassenbon</title>
           <style>
-            ${CSS_PRINT_80MM_ROLL}
+            ${cssPrintRollMm(paperW)}
             .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, -apple-system, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
             @media print { .receipt-tab-hint { display: none !important; } }
             body {
               font-family: 'Courier New', monospace;
               font-size: 9px;
               line-height: 1.25;
-              width: 80mm;
-              max-width: 80mm;
+              width: ${paperW}mm;
+              max-width: ${paperW}mm;
               margin: 0;
               padding: 4mm 3mm;
               color: #000;
               background: #fff;
             }
             @media screen {
-              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; }
+              body { width: ${paperW}mm; margin: 20px auto; border: 1px dashed #ccc; }
             }
             .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
             .header h1 { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
@@ -312,7 +379,9 @@ function buildK2Oek2ReceiptHtml(
     `
 }
 
-function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean }): string {
+function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: number }): string {
+  const paperW = opts?.paperWidthMm === 62 || opts?.paperWidthMm === 80 ? opts.paperWidthMm : 80
+  const viewportPx = Math.max(200, Math.round((paperW / 25.4) * 96))
   const snap = order?.sellerSnapshot as any
   const verein =
     snap && snap.version === 1 && snap.tenant === 'vk2' && snap.vk2Verein
@@ -339,14 +408,14 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean }): string {
   const paymentText =
     order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint">Wie beim Etikett: hier prüfen, dann Teilen oder Drucken (⌘P).</div>`
+    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
-      <style>${CSS_PRINT_80MM_ROLL}
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
+      <style>${cssPrintRollMm(paperW)}
       .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
       @media print { .receipt-tab-hint { display: none !important; } }
-      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
-      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: ${paperW}mm; max-width: ${paperW}mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: ${paperW}mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
       table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
       td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
@@ -361,7 +430,9 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean }): string {
       <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></div></body></html>`
 }
 
-function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: boolean }): string {
+function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: boolean; paperWidthMm?: number }): string {
+  const paperW = opts?.paperWidthMm === 62 || opts?.paperWidthMm === 80 ? opts.paperWidthMm : 80
+  const viewportPx = Math.max(200, Math.round((paperW / 25.4) * 96))
   const vk2 = loadVk2Stammdaten()
   const verein = vk2?.verein || {}
   const sellerName = verein.name && String(verein.name).trim() ? String(verein.name) : 'Verein'
@@ -374,14 +445,14 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
   })
   const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint">Wie beim Etikett: hier prüfen, dann Teilen oder Drucken (⌘P).</div>`
+    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Beleg unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
-      <style>${CSS_PRINT_80MM_ROLL}
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
+      <style>${cssPrintRollMm(paperW)}
       .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
       @media print { .receipt-tab-hint { display: none !important; } }
-      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
-      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: ${paperW}mm; max-width: ${paperW}mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: ${paperW}mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
       .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
       .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${tabHintBlock}<div id="k2-receipt-root">
@@ -457,8 +528,15 @@ const ShopPage = () => {
     total: number
     paymentMethodText: string
   } | null>(null)
-  /** VK2: nach Einnahme mit Bon – gleiche sichtbare Wahl. */
-  const [vk2BonSaleModal, setVk2BonSaleModal] = useState<{ order: any } | null>(null)
+  /** K2/ök2: Bon erneut drucken – ohne natives confirm (Safari bricht sonst die Druck-Geste). */
+  const [k2ReprintOrderModal, setK2ReprintOrderModal] = useState<{ order: any } | null>(null)
+  /** VK2: nach Einnahme mit Bon / Bon erneut – gleiche sichtbare Wahl (kein confirm vor print). */
+  const [vk2BonSaleModal, setVk2BonSaleModal] = useState<{
+    order: any
+    heading?: 'sale' | 'reprint'
+  } | null>(null)
+  /** VK2: Ausgabenbeleg – Druck vs. Tab ohne confirm. */
+  const [vk2AusgabeChoiceModal, setVk2AusgabeChoiceModal] = useState<{ eintrag: KassabuchEintrag } | null>(null)
   const [showVk2StornoList, setShowVk2StornoList] = useState(false)
   // VK2 Kassaausgang: Ausgabe erfassen (Betrag + Verwendungszweck → Kassabuch art: ausgang)
   const [vk2AusgangBetrag, setVk2AusgangBetrag] = useState('')
@@ -597,6 +675,10 @@ const ShopPage = () => {
     (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('k2-admin-context') === 'vk2')
   // Kontexteigene Keys (Datensicherheit: keine K2-Daten in ök2/VK2 und umgekehrt)
   const { ordersKey, soldArtworksKey } = getShopStorageKeys(fromOeffentlich, fromVk2)
+  const receiptPaperWidthMm = useMemo(
+    () => getReceiptPaperWidthMm(shopTenantIdForReceipt(fromOeffentlich, fromVk2)),
+    [fromOeffentlich, fromVk2]
+  )
   const vk2Mitglieder = (() => { try { const sd = loadVk2Stammdaten(); return Array.isArray(sd?.mitglieder) ? sd.mitglieder : [] } catch { return [] } })()
   const showVk2Mitglieder = fromVk2 && (vk2Bezeichnung === 'Spende' || vk2Bezeichnung === 'Mitgliedsbeitrag')
   const galerieLink = fromOeffentlich
@@ -785,19 +867,9 @@ const ShopPage = () => {
     return () => window.removeEventListener('customers-updated', load)
   }, [])
 
-  // Bon oder Rechnung erneut drucken
+  // Bon oder Rechnung erneut drucken – Modal statt confirm (Safari: Geste für Pop-up-Druck erhalten)
   const handleReprintOrder = (order: any) => {
-    const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung'
-    const useBon = confirm(`Bon ${order.orderNumber}\n€${(order.total || 0).toFixed(2)} · ${paymentText}\n\nKassabon (80mm) = OK\nRechnung (A4) = Abbrechen`)
-    if (useBon) {
-      const printDialog = confirm(
-        'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
-      )
-      if (printDialog) printReceipt(order)
-      else openReceiptInNewTab(order)
-    } else {
-      printReceiptA4(order, true)
-    }
+    setK2ReprintOrderModal({ order })
   }
 
   // Eintrag aus „Bon erneut drucken“-Liste entfernen (nur Anzeige, Verkauf bleibt in sold-artworks)
@@ -1201,7 +1273,7 @@ const ShopPage = () => {
         verkaufId: order.id,
         verwendungszweck: bezeichnung
       })
-      if (vk2BonDrucken) setVk2BonSaleModal({ order })
+      if (vk2BonDrucken) setVk2BonSaleModal({ order, heading: 'sale' })
       setVk2Betrag('')
       setVk2Bezeichnung('')
       setVk2MitgliedName('')
@@ -1391,7 +1463,7 @@ ${bankBlock}
   }
 
   const openVk2BonInNewTab = (order: any) => {
-    openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true }))
+    openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
   }
 
   // Kassenbon für VK2 (Vereins-Stammdaten)
@@ -1401,58 +1473,47 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildVk2BonHtml(order))
+    printWindow.document.open()
+    printWindow.document.write(buildVk2BonHtml(order, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
-    triggerPrintDialogFromPopup(printWindow, 80)
-  }
-
-  /** Wie K2/ök2: OK = Druckdialog, Abbrechen = Bon im neuen Tab (Etikett-Muster). */
-  const promptVk2BonDruckOderTab = (order: any) => {
-    const printDialog = confirm(
-      'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
-    )
-    if (printDialog) printVk2Bon(order)
-    else openVk2BonInNewTab(order)
+    triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
 
   const openVk2AusgabeBelegInNewTab = (eintrag: KassabuchEintrag) => {
-    openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true }))
+    openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
   }
 
-  // VK2: Ausgabenbeleg drucken (80mm, wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
+  // VK2: Ausgabenbeleg drucken (schmal mm wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
   const printVk2AusgabeBeleg = (eintrag: KassabuchEintrag) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag))
+    printWindow.document.open()
+    printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
-    triggerPrintDialogFromPopup(printWindow, 80)
-  }
-
-  const promptVk2AusgabeDruckOderTab = (eintrag: KassabuchEintrag) => {
-    const printDialog = confirm(
-      'OK = Druckdialog jetzt öffnen\nAbbrechen = Beleg im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
-    )
-    if (printDialog) printVk2AusgabeBeleg(eintrag)
-    else openVk2AusgabeBelegInNewTab(eintrag)
+    triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
 
   const openReceiptInNewTab = (order: any) => {
-    openBonHtmlInNewTab(buildK2Oek2ReceiptHtml(order, fromOeffentlich, { tabHint: true }))
+    openBonHtmlInNewTab(
+      buildK2Oek2ReceiptHtml(order, fromOeffentlich, { tabHint: true, paperWidthMm: receiptPaperWidthMm }),
+      receiptPaperWidthMm
+    )
   }
 
-  // Kassenbon drucken (80mm Breite, EU-normgerechter Beleg) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
+  // Kassenbon drucken (Breite mm aus Einstellungen) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
   const printReceipt = (order: any) => {
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich))
+    printWindow.document.open()
+    printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
-    triggerPrintDialogFromPopup(printWindow, 80)
+    triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
 
   // Kassenbon oder Rechnung als A4 drucken (asRechnung = Rechnung mit Rechnungsnummer) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
@@ -2092,7 +2153,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 border: `1px solid ${s.border}`
               }}
             >
-              <h2 id="vk2-bon-modal-title" style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: s.text }}>✅ Einnahme gespeichert</h2>
+              <h2 id="vk2-bon-modal-title" style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: s.text }}>
+                {vk2BonSaleModal.heading === 'reprint' ? '🖨️ Bon erneut drucken' : '✅ Einnahme gespeichert'}
+              </h2>
               <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
                 Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett, dann Teilen oder ⌘P.
               </p>
@@ -2138,6 +2201,96 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 <button
                   type="button"
                   onClick={() => setVk2BonSaleModal(null)}
+                  style={{
+                    padding: '0.5rem',
+                    background: 'transparent',
+                    color: s.muted,
+                    border: 'none',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Schließen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {vk2AusgabeChoiceModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vk2-ausgabe-modal-title"
+            onClick={() => setVk2AusgabeChoiceModal(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.55)',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: s.bgCard,
+                borderRadius: s.radius,
+                padding: '1.25rem',
+                maxWidth: '380px',
+                width: '100%',
+                boxShadow: s.shadowLg,
+                border: `1px solid ${s.border}`
+              }}
+            >
+              <h2 id="vk2-ausgabe-modal-title" style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: s.text }}>📄 Ausgabenbeleg</h2>
+              <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
+                Beleg (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    printVk2AusgabeBeleg(vk2AusgabeChoiceModal.eintrag)
+                    setVk2AusgabeChoiceModal(null)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: '#b54a1e',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: s.radiusSm,
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🖨️ Druckdialog (Beleg)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openVk2AusgabeBelegInNewTab(vk2AusgabeChoiceModal.eintrag)
+                    setVk2AusgabeChoiceModal(null)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📄 Beleg im neuen Tab
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVk2AusgabeChoiceModal(null)}
                   style={{
                     padding: '0.5rem',
                     background: 'transparent',
@@ -2250,7 +2403,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                     <li key={e.id}>{e.datum} · € {e.betrag.toFixed(2)} {e.verwendungszweck ? ` · ${e.verwendungszweck}` : ''}</li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => { if (vk2LastAusgaben[0]) promptVk2AusgabeDruckOderTab(vk2LastAusgaben[0]) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Beleg drucken (neueste)</button>
+                <button type="button" onClick={() => { if (vk2LastAusgaben[0]) setVk2AusgabeChoiceModal({ eintrag: vk2LastAusgaben[0] }) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Beleg drucken (neueste)</button>
               </div>
             )}
           </div>
@@ -2265,7 +2418,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 ))}
               </ul>
               <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                <button type="button" onClick={() => { const o = orders[0]; if (o) promptVk2BonDruckOderTab(o) }} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
+                <button type="button" onClick={() => { const o = orders[0]; if (o) setVk2BonSaleModal({ order: o, heading: 'reprint' }) }} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
                 {orders[0]?.paymentMethod === 'transfer' && (orders[0]?.rechnungEmpfaenger || '').trim() && (
                   <button type="button" onClick={handleVk2RechnungDrucken} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>🖨️ Rechnung drucken</button>
                 )}
@@ -2294,7 +2447,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                             <span>
                               {new Date(item.order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof item.order.total === 'number' ? item.order.total.toFixed(2) : item.order.total} {(item.order.items && item.order.items[0] && item.order.items[0].title) ? ` · ${item.order.items[0].title}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Einnahme)</span>
                             </span>
-                            <button type="button" onClick={() => { promptVk2BonDruckOderTab(item.order) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
+                            <button type="button" onClick={() => { setVk2BonSaleModal({ order: item.order, heading: 'reprint' }) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
                             <button type="button" title="Bon im neuen Tab – Teilen/Drucken" onClick={() => { openVk2BonInNewTab(item.order) }} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
                             <button type="button" onClick={() => handleVk2Storno(item.order)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
@@ -2303,7 +2456,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                             <span>
                               {item.eintrag.datum} · € {item.eintrag.betrag.toFixed(2)} {item.eintrag.verwendungszweck ? ` · ${item.eintrag.verwendungszweck}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Ausgabe)</span>
                             </span>
-                            <button type="button" onClick={() => promptVk2AusgabeDruckOderTab(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
+                            <button type="button" onClick={() => setVk2AusgabeChoiceModal({ eintrag: item.eintrag })} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
                             <button type="button" title="Beleg im neuen Tab" onClick={() => openVk2AusgabeBelegInNewTab(item.eintrag)} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
                             <button type="button" onClick={() => handleVk2StornoAusgabe(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
@@ -2476,6 +2629,119 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 }}
               >
                 Schließen (ohne Druck)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {k2ReprintOrderModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="k2-reprint-bon-title"
+          onClick={() => setK2ReprintOrderModal(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.55)',
+            padding: '1rem'
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: s.bgCard,
+              borderRadius: s.radius,
+              padding: '1.35rem',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: s.shadowLg,
+              border: `1px solid ${s.border}`
+            }}
+          >
+            <h2 id="k2-reprint-bon-title" style={{ margin: '0 0 0.35rem', fontSize: '1.15rem', color: s.text }}>📄 Bon erneut drucken</h2>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: s.muted }}>
+              Nr. {k2ReprintOrderModal.order?.orderNumber} · €{(k2ReprintOrderModal.order?.total || 0).toFixed(2)}
+            </p>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
+              <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – ohne Zwischen-Dialog (Safari-kompatibel).
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  printReceipt(k2ReprintOrderModal.order)
+                  setK2ReprintOrderModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: '#b54a1e',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: s.radiusSm,
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🖨️ Kassenbon – Druckdialog
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  openReceiptInNewTab(k2ReprintOrderModal.order)
+                  setK2ReprintOrderModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: s.bgElevated,
+                  color: '#1c1a18',
+                  border: `1px solid #b54a1e`,
+                  borderRadius: s.radiusSm,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                📄 Kassenbon – neuer Tab
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  printReceiptA4(k2ReprintOrderModal.order, true)
+                  setK2ReprintOrderModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: s.bgElevated,
+                  color: '#1c1a18',
+                  border: `1px solid ${s.border}`,
+                  borderRadius: s.radiusSm,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Rechnung (A4) drucken
+              </button>
+              <button
+                type="button"
+                onClick={() => setK2ReprintOrderModal(null)}
+                style={{
+                  padding: '0.5rem',
+                  background: 'transparent',
+                  color: s.muted,
+                  border: 'none',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Schließen
               </button>
             </div>
           </div>

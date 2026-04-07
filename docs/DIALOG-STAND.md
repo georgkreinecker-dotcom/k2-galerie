@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.04.26 – **Kasse: Bon „neuer Tab“ vollständig + Papierbreite** – `ShopPage`: **`receiptPaperWidthMm`** aus **`getReceiptPaperWidthMm(shopTenantIdForReceipt(…))`** (`useMemo`); **`openReceiptInNewTab` / `openVk2BonInNewTab` / `openVk2AusgabeBelegInNewTab`** → **`openBonHtmlInNewTab(…, receiptPaperWidthMm)`**; **`printReceipt` / `printVk2Bon` / `printVk2AusgabeBeleg`** mit **`document.open()`** + **`paperWidthMm`** + **`triggerPrintDialogFromPopup(…, receiptPaperWidthMm)`**. Quelle Breite: **`src/utils/receiptPaperWidthStorage.ts`**. Tests + Build grün. **Commit:** **c6e2a8c9** ✅ GitHub
+
+**Was wir JETZT tun:** Kasse: **Kassenbon – neuer Tab** prüfen (Inhalt sichtbar, Teilen/⌘P); optional Drucker 62/80 mm in Admin abstimmen.
+
+---
+
 **Letzter Stand:** 07.04.26 – **Kasse: Safari „automatischen Druck gesperrt“** – Ursache: `setTimeout` vor `print()` im Pop-up → User-Geste weg. **Fix:** `triggerPrintDialogFromPopup` – **ohne** Verzögerung vor `print()` (Kassenbon 80 mm, VK2-Bon/Beleg, A4-Bon/Rechnung, VK2-Rechnung). **Hinweis:** Rechnung mit **async** QR-Generierung kann auf iPad weiter eingeschränkt sein → ggf. **Bon im neuen Tab** nutzen. Tests + Build grün. **Commit:** **30e3844b** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy Kasse am iPad: Bon drucken – Meldung sollte nicht mehr kurz aufblitzen.
