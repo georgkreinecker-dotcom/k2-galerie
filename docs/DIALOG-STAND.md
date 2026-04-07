@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.04.26 – **Kasse: zweiter Weg Bon wie Etikett (Tab)** – `ShopPage`: **VK2** nach Einnahme und bei „Bon/Beleg“-Buttons: **`promptVk2BonDruckOderTab` / `promptVk2AusgabeDruckOderTab`** (OK = Druckdialog, Abbrechen = neuen Tab). Storno-Liste: **📄** direkt Tab. **K2/ök2** „Bon erneut drucken“: zusätzlicher **📄**-Button → `openReceiptInNewTab`. Tests + Build grün. **Commit:** **1dc98f46** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy Kasse kurz testen (Bon Tab + Druck).
+
+---
+
 **Letzter Stand:** 07.04.26 – **Kassabon 80mm iPad / Safari** – `ShopPage`: nach Layout **`@page { size: 80mm × HöheMm }`** aus Inhalt (`injectReceiptPrintPageSizeMm`), schmal **`viewport`**, kein `min-height` auf Screen-Bon (falsche Messung). **Commit:** **732ebeb3** ✅ GitHub
 
 **Letzter Stand:** 07.04.26 – **Kassa Nummernliste sortiert** – `ShopPage`: gefilterte Werke für die Antipp-Liste mit **`sortArtworksCategoryBlocksThenNumberAsc`** (wie Galerie/Werkkatalog: Kategorieblöcke malerei→…→sonstiges, innerhalb Block Nummer aufsteigend). **Commit:** **c61ab01d** ✅ GitHub
