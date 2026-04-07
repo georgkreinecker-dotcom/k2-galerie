@@ -15,6 +15,19 @@ import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
 import '../App.css'
 
+/** VK-Preis aus Werkstamm: Zahl oder deutsche Schreibweise (z. B. „15,00“), € optional */
+function parseArtworkPriceEur(raw: unknown): number {
+  if (typeof raw === 'number') return Number.isFinite(raw) ? raw : 0
+  const n = parseFloat(
+    String(raw ?? '')
+      .trim()
+      .replace(/€/g, '')
+      .replace(/\s/g, '')
+      .replace(',', '.')
+  )
+  return Number.isFinite(n) ? n : 0
+}
+
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
 const s = {
   bgDark: '#f8f7f5',          // Neutrales Warmweiß
@@ -651,16 +664,16 @@ const ShopPage = () => {
       return
     }
 
-    // Prüfe ob im Shop verfügbar
-    const priceVal = typeof artwork?.price === 'number' ? artwork.price : (parseFloat(String(artwork?.price ?? 0)) || 0)
-    if (artwork.inShop === false || priceVal <= 0) {
+    // Preis (Komma-Notation sicher parsen)
+    const priceVal = parseArtworkPriceEur(artwork?.price)
+    // Besucher-Shop: nur Werke mit Online-Shop + Preis. Kassa (Admin): alle mit Preis > 0 (Werkkatalog/Laden, auch ohne inShop).
+    if (isAdminContext) {
+      if (priceVal <= 0) {
+        alert('Dieses Werk hat keinen Preis.')
+        return
+      }
+    } else if (artwork.inShop === false || priceVal <= 0) {
       alert('Dieses Werk ist nicht im Online-Shop verfügbar oder hat keinen Preis.')
-      return
-    }
-
-    // Prüfe Preis
-    if (!artwork.price || artwork.price <= 0) {
-      alert('Dieses Werk hat keinen Preis.')
       return
     }
 
@@ -669,7 +682,7 @@ const ShopPage = () => {
       number: artwork.number || artwork.id,
       artworkUid: foundUid || undefined,
       title: artwork.title || artwork.number,
-      price: artwork.price,
+      price: priceVal,
       category: artwork.category,
       artist: artwork.artist,
       imageUrl: artwork.imageUrl,
@@ -1061,7 +1074,7 @@ ${bankBlock}
     const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     const itemsRows = (order.items || []).map((item: any, idx: number) => {
       const title = (item.title || 'Einnahme').replace(/</g, '&lt;')
-      const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+      const ep = parseArtworkPriceEur(item.price)
       return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}</td><td style="text-align:center;font-size:8px">1</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td></tr>`
     }).join('')
     const paymentText = order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
@@ -1150,7 +1163,7 @@ ${bankBlock}
     const kuenstlerFbBon = readKuenstlerFallbackShop(fromOeffentlich)
     const itemsRows = order.items.map((item: CartItem, idx: number) => {
       const menge = 1
-      const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+      const ep = parseArtworkPriceEur(item.price)
       const betrag = menge * ep
       const title = (item.title || item.number || '').replace(/</g, '&lt;')
       const sn = (item.number || '').replace(/</g, '&lt;')
@@ -1354,7 +1367,7 @@ ${bankBlock}
       const rechnungDatum = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
       const itemsRows = order.items.map((item: CartItem, idx: number) => {
         const menge = 1
-        const ep = typeof item.price === 'number' ? item.price : parseFloat(String(item.price)) || 0
+        const ep = parseArtworkPriceEur(item.price)
         const betrag = menge * ep
         const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbA4)
         const artEsc = r && r !== 'Ohne Künstler' ? ' · ' + String(r).replace(/</g, '&lt;') : ''
@@ -2478,11 +2491,13 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                 {allArtworks
                   .filter((a: any) => {
-                    const priceVal = typeof a?.price === 'number' ? a.price : (parseFloat(String(a?.price ?? 0)) || 0)
-                    return a.inShop !== false && priceVal > 0
+                    const priceVal = parseArtworkPriceEur(a?.price)
+                    if (priceVal <= 0) return false
+                    if (isAdminContext) return true
+                    return a.inShop !== false
                   })
                   .map((a: any) => {
-                    const priceVal = typeof a?.price === 'number' ? a.price : (parseFloat(String(a?.price ?? 0)) || 0)
+                    const priceVal = parseArtworkPriceEur(a?.price)
                     const num = a.number || a.id || '–'
                     const title = (a.title || num).length > 28 ? (a.title || num).slice(0, 25) + '…' : (a.title || num)
                     return (
