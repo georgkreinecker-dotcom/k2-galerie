@@ -12,8 +12,6 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import {
   PRODUCT_BRAND_NAME,
   MUSTER_TEXTE,
-  TENANT_CONFIGS,
-  K2_STAMMDATEN_DEFAULTS,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
 } from '../config/tenantConfig'
@@ -23,7 +21,6 @@ import {
   ENTDECKEN_HERO_IMAGE_FALLBACK_PATH,
   isEntdeckenHeroVideoUrl,
 } from '../config/entdeckenHeroMedia'
-import { loadStammdaten } from '../utils/stammdatenStorage'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 import { renderMarkdown } from '../utils/praesentationsmappeMarkdown'
 import { PRAESENTATIONSMAPPE_MARKDOWN_STYLES } from '../utils/praesentationsmappeMarkdownStyles'
@@ -65,18 +62,9 @@ function isPmvLeitfadenFile(file: string): boolean {
   return file === PMV_SO_NUTZT_DU_MAPPE || file === PMV_SO_NUTZT_DU
 }
 
-function renderDeckblattCover(isOeffentlich: boolean): ReactNode {
-  const gallery = (
-    typeof window !== 'undefined'
-      ? loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery')
-      : isOeffentlich
-        ? MUSTER_TEXTE.gallery
-        : K2_STAMMDATEN_DEFAULTS.gallery
-  ) as { name?: string }
-  /** K2 (nicht ök2): nur „K2“ – ohne Zusatz „Kunst & Keramik“ aus Stammdaten-Galeriename. */
-  const coverTitle = isOeffentlich
-    ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
-    : 'K2'
+function renderDeckblattCover(_isOeffentlich: boolean): ReactNode {
+  /** Immer nur „K2“ – kein Galeriename (Kunst & Keramik), gültig für K2 und ök2-Deckblatt. */
+  const coverTitle = 'K2'
   const heroPath =
     typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : ENTDECKEN_HERO_DEFAULT_PATH
   const heroSrc =
@@ -265,8 +253,9 @@ export default function PraesentationsmappeVollversionPage() {
   const docsMatchingAllContents = useMemo(() => {
     const bulk = fullPrintView || (isMobile && allDocContents.length > 0)
     if (!bulk) return DOCUMENTS
-    return !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
-  }, [fullPrintView, isMobile, allDocContents.length, DOCUMENTS, isAnyVk2])
+    /** Gesamtmappe = dieselbe Reihenfolge wie in der Navigation, inkl. Deckblatt (K2). */
+    return DOCUMENTS
+  }, [fullPrintView, isMobile, allDocContents.length, DOCUMENTS])
 
   const navDocuments = useMemo(
     () => DOCUMENTS.filter((d) => !d.hideInNav),
@@ -449,10 +438,13 @@ export default function PraesentationsmappeVollversionPage() {
   const loadAllDocuments = async (forPrint: boolean) => {
     setLoadingFullPrint(true)
     try {
-      const docList =
-        !isAnyVk2 ? DOCUMENTS.filter((d) => d.file !== PMV_DECKBLATT_FILE) : DOCUMENTS
+      const docList = DOCUMENTS
       const contents: string[] = []
       for (const doc of docList) {
+        if (!isAnyVk2 && doc.file === PMV_DECKBLATT_FILE) {
+          contents.push('')
+          continue
+        }
         const response = await fetch(`${BASE}/${doc.file}`)
         let text = response.ok ? await response.text() : `# ${doc.name}\n\nDokument nicht geladen.`
         if (!isAnyVk2 && doc.file === '13-KONTAKT.md') text = patchKontaktMarkdownForContext(text, isOeffentlich)
@@ -734,17 +726,21 @@ export default function PraesentationsmappeVollversionPage() {
                   .filter(Boolean)
                   .join(' ')}
               >
-                {wrapPmvMarkdownPage(
-                  doc.file,
-                  renderMarkdown(allDocContents[idx] ?? '', {
-                    assetBase: BASE,
-                    chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, doc.file),
-                    onInternalDocClick: (path) => {
-                      setFullPrintView(false)
-                      loadDocument(path)
-                    },
-                    keyPrefix: `ch${idx}`,
-                  }),
+                {doc.file === PMV_DECKBLATT_FILE && !isAnyVk2 ? (
+                  renderDeckblattCover(isOeffentlich)
+                ) : (
+                  wrapPmvMarkdownPage(
+                    doc.file,
+                    renderMarkdown(allDocContents[idx] ?? '', {
+                      assetBase: BASE,
+                      chapterNumber: chapterNumberForPmvMarkdown(DOCUMENTS, doc.file),
+                      onInternalDocClick: (path) => {
+                        setFullPrintView(false)
+                        loadDocument(path)
+                      },
+                      keyPrefix: `ch${idx}`,
+                    }),
+                  )
                 )}
                 {doc.file === kontaktFileForVariant && qrOek2DataUrl && (
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>

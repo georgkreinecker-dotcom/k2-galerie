@@ -12,11 +12,8 @@ import {
   PRODUCT_LIZENZ_ANFRAGE_EMAIL,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
-  K2_STAMMDATEN_DEFAULTS,
   MUSTER_TEXTE,
-  TENANT_CONFIGS,
 } from '../config/tenantConfig'
-import { loadStammdaten } from '../utils/stammdatenStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
 
@@ -96,15 +93,7 @@ export default function PraesentationsmappePage() {
     ? 'VK2 bündelt Vereinsalltag in einer Oberfläche – klarer Ablauf, keine doppelte Pflege.'
     : 'Die K2-Galerie-Software bündelt Galerie, Verkauf und Außenauftritt in einer Oberfläche – skalierbar über „Mein Weg“ und die Sparten, überall im Browser und als PWA.'
 
-  const gallery = typeof window !== 'undefined'
-    ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)
-    : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as unknown as Record<string, string>
-  /** K2 (nicht ök2): Deckblatt nur „K2“ – ohne Zusatz aus Galeriename. */
-  const coverTitle = isVk2Variante
-    ? 'VK2 Vereinsplattform'
-    : isOeffentlich
-    ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
-    : 'K2'
+  const coverTitle = isVk2Variante ? 'VK2 Vereinsplattform' : 'K2'
   const badgeText = isVk2Variante ? 'Kurzversion (VK2)' : 'Kurzversion'
 
   return (
