@@ -71,6 +71,30 @@ function attachReceiptPrintPageSizing(printWindow: Window, widthMm = 80): void {
   })
 }
 
+/**
+ * Druckdialog im Pop-up – ohne setTimeout vor print().
+ * Safari/iPad zeigt sonst kurz „automatischen Druck gesperrt“ (User-Geste geht durch Verzögerung verloren).
+ */
+function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: number): void {
+  if (typeof receiptWidthMm === 'number') {
+    attachReceiptPrintPageSizing(printWindow, receiptWidthMm)
+    injectReceiptPrintPageSizeMm(printWindow, receiptWidthMm)
+  }
+  try {
+    printWindow.focus()
+    printWindow.print()
+  } catch {
+    /* ignore */
+  }
+  setTimeout(() => {
+    try {
+      printWindow.close()
+    } catch {
+      /* ignore */
+    }
+  }, 1000)
+}
+
 /** Wie Etikett „im neuen Tab“: Inhalt sichtbar, Druck/Teilen erst vom Nutzer (⌘P / Teilen). */
 function openBonHtmlInNewTab(html: string): void {
   const w = window.open('', '_blank')
@@ -427,6 +451,14 @@ const ShopPage = () => {
   const [vk2PaymentMethod, setVk2PaymentMethod] = useState<'cash' | 'card' | 'transfer'>('cash')
   const [vk2RechnungEmpfaenger, setVk2RechnungEmpfaenger] = useState('') // bei Zahlungsart Rechnung: Name/Firma für A4-Rechnung
   const [vk2BonDrucken, setVk2BonDrucken] = useState(true)
+  /** Nach Verkauf (Admin Bar/Karte): sichtbare Wahl Bon – Druck vs. Tab vs. Rechnung (kein confirm). */
+  const [salePrintModal, setSalePrintModal] = useState<{
+    order: any
+    total: number
+    paymentMethodText: string
+  } | null>(null)
+  /** VK2: nach Einnahme mit Bon – gleiche sichtbare Wahl. */
+  const [vk2BonSaleModal, setVk2BonSaleModal] = useState<{ order: any } | null>(null)
   const [showVk2StornoList, setShowVk2StornoList] = useState(false)
   // VK2 Kassaausgang: Ausgabe erfassen (Betrag + Verwendungszweck → Kassabuch art: ausgang)
   const [vk2AusgangBetrag, setVk2AusgangBetrag] = useState('')
@@ -1169,7 +1201,7 @@ const ShopPage = () => {
         verkaufId: order.id,
         verwendungszweck: bezeichnung
       })
-      if (vk2BonDrucken) promptVk2BonDruckOderTab(order)
+      if (vk2BonDrucken) setVk2BonSaleModal({ order })
       setVk2Betrag('')
       setVk2Bezeichnung('')
       setVk2MitgliedName('')
@@ -1242,7 +1274,7 @@ ${bankBlock}
 </body></html>`
     printWindow.document.write(html)
     printWindow.document.close()
-    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 800) }, 300)
+    triggerPrintDialogFromPopup(printWindow)
     return nrValue
   }
 
@@ -1371,14 +1403,7 @@ ${bankBlock}
     }
     printWindow.document.write(buildVk2BonHtml(order))
     printWindow.document.close()
-    attachReceiptPrintPageSizing(printWindow)
-    setTimeout(() => {
-      injectReceiptPrintPageSizeMm(printWindow)
-      printWindow.print()
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 300)
+    triggerPrintDialogFromPopup(printWindow, 80)
   }
 
   /** Wie K2/ök2: OK = Druckdialog, Abbrechen = Bon im neuen Tab (Etikett-Muster). */
@@ -1403,14 +1428,7 @@ ${bankBlock}
     }
     printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag))
     printWindow.document.close()
-    attachReceiptPrintPageSizing(printWindow)
-    setTimeout(() => {
-      injectReceiptPrintPageSizeMm(printWindow)
-      printWindow.print()
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 300)
+    triggerPrintDialogFromPopup(printWindow, 80)
   }
 
   const promptVk2AusgabeDruckOderTab = (eintrag: KassabuchEintrag) => {
@@ -1434,15 +1452,7 @@ ${bankBlock}
     }
     printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich))
     printWindow.document.close()
-    attachReceiptPrintPageSizing(printWindow)
-
-    setTimeout(() => {
-      injectReceiptPrintPageSizeMm(printWindow)
-      printWindow.print()
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 300)
+    triggerPrintDialogFromPopup(printWindow, 80)
   }
 
   // Kassenbon oder Rechnung als A4 drucken (asRechnung = Rechnung mit Rechnungsnummer) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
@@ -1636,7 +1646,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
 </body></html>`
       printWindow.document.write(rechnungHtml)
       printWindow.document.close()
-      setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
+      triggerPrintDialogFromPopup(printWindow)
       return
     }
 
@@ -1849,13 +1859,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     `)
 
     printWindow.document.close()
-    
-    setTimeout(() => {
-      printWindow.print()
-      setTimeout(() => {
-        printWindow.close()
-      }, 1000)
-    }, 250)
+    triggerPrintDialogFromPopup(printWindow)
   }
 
   // Bestellung abschließen (paymentMethodOverride: bei Schnellverkauf direkt übergeben, sonst aus State)
@@ -2000,16 +2004,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       if (method === 'transfer') {
         printReceiptA4(order, true)
       } else {
-        const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassabon oder Rechnung drucken?\n\nOK = Kassabon (80mm)\nAbbrechen = Rechnung (A4)`)
-        if (printChoice) {
-          const printDialog = confirm(
-            'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
-          )
-          if (printDialog) printReceipt(order)
-          else openReceiptInNewTab(order)
-        } else {
-          printReceiptA4(order, true)
-        }
+        setSalePrintModal({ order, total, paymentMethodText })
       }
     } else {
       // Besucher: nur Bestätigung, kein Bon
@@ -2068,13 +2063,103 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
     return (
       <div style={{ minHeight: '100vh', background: s.bgDark, color: s.text, fontFamily: s.fontBody, padding: '1.5rem' }}>
         <link rel="stylesheet" href={PROMO_FONTS_URL} />
+        {vk2BonSaleModal && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vk2-bon-modal-title"
+            onClick={() => setVk2BonSaleModal(null)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 10000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(0,0,0,0.55)',
+              padding: '1rem'
+            }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: s.bgCard,
+                borderRadius: s.radius,
+                padding: '1.25rem',
+                maxWidth: '380px',
+                width: '100%',
+                boxShadow: s.shadowLg,
+                border: `1px solid ${s.border}`
+              }}
+            >
+              <h2 id="vk2-bon-modal-title" style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: s.text }}>✅ Einnahme gespeichert</h2>
+              <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
+                Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett, dann Teilen oder ⌘P.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    printVk2Bon(vk2BonSaleModal.order)
+                    setVk2BonSaleModal(null)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: '#b54a1e',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: s.radiusSm,
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🖨️ Druckdialog (Bon)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    openVk2BonInNewTab(vk2BonSaleModal.order)
+                    setVk2BonSaleModal(null)
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📄 Bon im neuen Tab
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVk2BonSaleModal(null)}
+                  style={{
+                    padding: '0.5rem',
+                    background: 'transparent',
+                    color: s.muted,
+                    border: 'none',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Schließen
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         <div style={{ maxWidth: '420px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 700, color: s.accent }}>💰 Kasse – Vereinsbetrieb</h1>
             <Link to={adminLink} style={{ fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>← Zurück</Link>
           </div>
           <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.95rem' }}>
-            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag) – Bon drucken. Ausgabe erfassen für Kassaausgänge (Material, Honorar, …).
+            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag). Mit „Bon drucken“: nach dem Speichern <strong>Druckdialog</strong> oder <strong>neuer Tab</strong> (wie Etikett). Ausgabe erfassen für Kassaausgänge (Material, Honorar, …).
           </p>
           <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1.25rem', marginBottom: '1rem', boxShadow: s.shadow }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Betrag (€)</label>
@@ -2124,13 +2209,16 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   style={{ width: '100%', padding: '0.5rem 0.6rem', fontSize: '0.9rem', border: `1px solid ${s.border}`, borderRadius: s.radiusSm, boxSizing: 'border-box', background: s.bgCard, color: s.text }} />
               </div>
             )}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', cursor: 'pointer', fontSize: '0.9rem', color: s.text }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem', cursor: 'pointer', fontSize: '0.9rem', color: s.text }}>
               <input type="checkbox" checked={vk2BonDrucken} onChange={e => setVk2BonDrucken(e.target.checked)} style={{ width: '1.1rem', height: '1.1rem' }} />
-              Bon drucken
+              Bon nach dem Erfassen (Druck oder Tab)
             </label>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.82rem', color: '#5c5650', lineHeight: 1.4 }}>
+              Zwei gleichwertige Wege – wie beim Etikett: 🖨️ Druckdialog oder 📄 neuer Tab.
+            </p>
             <button type="button" onClick={handleVk2Einnahme}
               style={{ width: '100%', padding: '0.75rem 1rem', background: s.gradientGreen, color: '#fff', border: 'none', borderRadius: s.radius, fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
-              Einnahme erfassen{vk2BonDrucken ? ' & Bon drucken' : ''}
+              {vk2BonDrucken ? 'Einnahme erfassen & Bon wählen' : 'Einnahme erfassen'}
             </button>
           </div>
           {/* VK2 Kassaausgang: Ausgabe erfassen */}
@@ -2273,6 +2361,123 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
           >
             <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: s.accentGreen, color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>✓</span>
             <p style={{ margin: 0, fontSize: '1rem', color: s.text, lineHeight: 1.4 }}>{addedToast}</p>
+          </div>
+        </div>
+      )}
+
+      {salePrintModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sale-bon-modal-title"
+          onClick={() => setSalePrintModal(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0,0,0,0.55)',
+            padding: '1rem'
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: s.bgCard,
+              borderRadius: s.radius,
+              padding: '1.35rem',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: s.shadowLg,
+              border: `1px solid ${s.border}`
+            }}
+          >
+            <h2 id="sale-bon-modal-title" style={{ margin: '0 0 0.35rem', fontSize: '1.15rem', color: s.text }}>✅ Verkauf erfolgreich</h2>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.95rem', color: s.muted }}>
+              €{salePrintModal.total.toFixed(2)} · {salePrintModal.paymentMethodText}
+              {salePrintModal.order?.orderNumber ? (
+                <span style={{ display: 'block', marginTop: '0.35rem', fontSize: '0.85rem' }}>Nr. {salePrintModal.order.orderNumber}</span>
+              ) : null}
+            </p>
+            <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
+              <strong>Kassenbon (80&nbsp;mm):</strong> Druckdialog <strong>oder</strong> neuer Tab (wie Etikett) – dann Teilen/⌘P.
+              {' '}Alternativ: <strong>Rechnung A4</strong>.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  printReceipt(salePrintModal.order)
+                  setSalePrintModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: '#b54a1e',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: s.radiusSm,
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                🖨️ Kassenbon – Druckdialog
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  openReceiptInNewTab(salePrintModal.order)
+                  setSalePrintModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: s.bgElevated,
+                  color: '#1c1a18',
+                  border: `1px solid #b54a1e`,
+                  borderRadius: s.radiusSm,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                📄 Kassenbon – im neuen Tab
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  printReceiptA4(salePrintModal.order, true)
+                  setSalePrintModal(null)
+                }}
+                style={{
+                  padding: '0.65rem 1rem',
+                  background: 'transparent',
+                  color: s.text,
+                  border: `1px solid ${s.border}`,
+                  borderRadius: s.radiusSm,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  cursor: 'pointer'
+                }}
+              >
+                📋 Rechnung (A4) drucken
+              </button>
+              <button
+                type="button"
+                onClick={() => setSalePrintModal(null)}
+                style={{
+                  padding: '0.5rem',
+                  background: 'transparent',
+                  color: s.muted,
+                  border: 'none',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Schließen (ohne Druck)
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -3378,6 +3583,15 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                   }}>
                     Zahlungsart – direkt abschließen
                   </div>
+                  <p style={{
+                    margin: '0 0 0.85rem',
+                    fontSize: '0.88rem',
+                    color: '#5c5650',
+                    lineHeight: 1.45
+                  }}>
+                    💡 Nach <strong>Bar</strong> oder <strong>Karte</strong> erscheint die Bon-Auswahl:{' '}
+                    <strong>🖨️ Druckdialog</strong> oder <strong>📄 neuer Tab</strong> (wie Etikett) – oder Rechnung A4.
+                  </p>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(3, 1fr)', 
