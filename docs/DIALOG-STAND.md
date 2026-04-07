@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.04.26 – **K2 Kassa: Werkerkennung + Auswahlliste** – `ShopPage`: **Preise** mit deutschem Komma (`15,00`) per `parseArtworkPriceEur`; **Kassa (Admin-Kontext)** verkauft Werke mit Preis auch wenn **`inShop: false`** (nur Besucher-Internetshop bleibt bei `inShop` gefiltert). Antipp-Liste gleiche Logik. Bon/Rechnung: Preiszeilen nutzen dieselbe Parser-Funktion. **Commit:** **4fdd4334** ✅ GitHub
+
 **Letzter Stand:** 06.04.26 – **Session-Ende** – **Abschlussbericht** [`docs/ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md`](ABSCHLUSSBERICHT-GEMEINSAMES-PROJEKT-K2-OEK2-VK2.md); **druckfertiges Andenken** `texts/` + `public/texte-schreibtisch/andenken-erstes-gemeinsames-projekt-k2-oek2-vk2.html`; **Texte-Schreibtisch:** Zettel **„Andenken · erstes gemeinsames Projekt“** in **Texts – Kommunikation** (`TexteSchreibtischPage`). **K2-Webadressen:** Sanitize beim Stammdaten-Laden/Speichern (`k2StammdatenWebSanitize`, Tests). **Doku:** Smoke abgehakt, HAUS-INDEX, 00-INDEX. **Tests + Build** grün. **Commit:** **fa4b7257** ✅ GitHub
 
 **Was wir JETZT tun:** Ruhe – nächste Session nach Bedarf.
