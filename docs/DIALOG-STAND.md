@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab ohne Pop-up-Block** – `openBonHtmlInNewTab`: nicht mehr `window.open(blobUrl)` (wird oft blockiert); stattdessen **`window.open('about:blank')` im Klick**, dann **`location.replace(blobUrl)`**. Tests + Build grün. **Commit:** _(folgt)_
+**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab ohne Pop-up-Block** – `openBonHtmlInNewTab`: nicht mehr `window.open(blobUrl)` (wird oft blockiert); stattdessen **`window.open('about:blank')` im Klick**, dann **`location.replace(blobUrl)`**. Tests + Build grün. **Commit:** **f12d767a** ✅ GitHub
 
 ---
 
