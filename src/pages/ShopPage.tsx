@@ -29,6 +29,52 @@ function parseArtworkPriceEur(raw: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
+/** CSS-Px → mm (96 CSS-Px = 1 Zoll) – für Bon-Höhe nach Layout (iPad/Safari ignoriert oft `size: … auto`). */
+function pxToMmCss(px: number): number {
+  return (px / 96) * 25.4
+}
+
+/**
+ * Setzt @page auf feste mm-Höhe aus Inhalt (nach Layout). iOS-AirPrint-Vorschau bleibt oft A4-ähnlich,
+ * aber Druck/Treiber bekommen eine kurze Seite → weniger „Endlos-Streifen“ als bei voller A4-Höhe.
+ */
+function injectReceiptPrintPageSizeMm(printWindow: Window, widthMm = 80): void {
+  const doc = printWindow.document
+  const body = doc.body
+  if (!body) return
+  const root = doc.documentElement
+  const hPx = Math.max(body.scrollHeight, root?.scrollHeight ?? 0, body.offsetHeight)
+  const hMm = Math.ceil(pxToMmCss(hPx) + 8)
+  const clamped = Math.min(1200, Math.max(40, hMm))
+  doc.getElementById('k2-receipt-print-page')?.remove()
+  const style = doc.createElement('style')
+  style.id = 'k2-receipt-print-page'
+  style.textContent = `@media print {
+  @page { size: ${widthMm}mm ${clamped}mm; margin: 0; }
+}`
+  doc.head.appendChild(style)
+}
+
+/** Nur Druckfarben + schmale Spalte; @page-Größe kommt per injectReceiptPrintPageSizeMm (siehe oben). */
+const CSS_PRINT_80MM_ROLL = `
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  html, body {
+    width: 80mm !important;
+    max-width: 80mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+  }
+}
+`
+
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
 const s = {
   bgDark: '#f8f7f5',          // Neutrales Warmweiß
@@ -1080,8 +1126,8 @@ ${bankBlock}
     }).join('')
     const paymentText = order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
     printWindow.document.write(`
-      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Kassenbon</title>
-      <style>@media print { @page { size: 80mm 400mm; margin: 0; } * { -webkit-print-color-adjust: exact; } body { margin: 0; padding: 0; } }
+      <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
+      <style>${CSS_PRINT_80MM_ROLL}
       body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
       @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
@@ -1097,7 +1143,13 @@ ${bankBlock}
       <div class="payment"><strong>${paymentText}</strong><br>Vielen Dank!</div>
       <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
     printWindow.document.close()
-    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
+    setTimeout(() => {
+      injectReceiptPrintPageSizeMm(printWindow)
+      printWindow.print()
+      setTimeout(() => {
+        printWindow.close()
+      }, 1000)
+    }, 300)
   }
 
   // VK2: Ausgabenbeleg drucken (80mm, wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
@@ -1115,8 +1167,8 @@ ${bankBlock}
     const dateStr = new Date(eintrag.datum + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
     const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
     printWindow.document.write(`
-      <!DOCTYPE html><html><head><meta charset="utf-8"><title>Ausgabenbeleg</title>
-      <style>@media print { @page { size: 80mm 200mm; margin: 0; } * { -webkit-print-color-adjust: exact; } body { margin: 0; padding: 0; } }
+      <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
+      <style>${CSS_PRINT_80MM_ROLL}
       body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
       @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
@@ -1128,7 +1180,13 @@ ${bankBlock}
       <div style="margin-top:4px;font-size:8px">Verwendungszweck: ${zweck}</div>
       <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
     printWindow.document.close()
-    setTimeout(() => { printWindow.print(); setTimeout(() => printWindow.close(), 1000) }, 250)
+    setTimeout(() => {
+      injectReceiptPrintPageSizeMm(printWindow)
+      printWindow.print()
+      setTimeout(() => {
+        printWindow.close()
+      }, 1000)
+    }, 300)
   }
 
   // Kassenbon drucken (80mm Breite, EU-normgerechter Beleg) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
@@ -1179,13 +1237,10 @@ ${bankBlock}
       <html>
         <head>
           <meta charset="utf-8">
+          <meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1">
           <title>Kassenbon</title>
           <style>
-            @media print {
-              @page { size: 80mm 400mm; margin: 0; padding: 0; }
-              * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-              body { margin: 0; padding: 0; }
-            }
+            ${CSS_PRINT_80MM_ROLL}
             body {
               font-family: 'Courier New', monospace;
               font-size: 9px;
@@ -1198,7 +1253,7 @@ ${bankBlock}
               background: #fff;
             }
             @media screen {
-              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; min-height: 200px; }
+              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; }
             }
             .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
             .header h1 { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
@@ -1252,16 +1307,14 @@ ${bankBlock}
     `)
 
     printWindow.document.close()
-    
-    // Warte kurz, dann drucken
+
     setTimeout(() => {
-      // Zeige Druck-Dialog mit Format-Auswahl
+      injectReceiptPrintPageSizeMm(printWindow)
       printWindow.print()
-      // Schließe Fenster nach Druck (mit Verzögerung für Druck-Dialog)
       setTimeout(() => {
         printWindow.close()
       }, 1000)
-    }, 250)
+    }, 300)
   }
 
   // Kassenbon oder Rechnung als A4 drucken (asRechnung = Rechnung mit Rechnungsnummer) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
