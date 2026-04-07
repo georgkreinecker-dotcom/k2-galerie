@@ -99,11 +99,12 @@ export default function PraesentationsmappePage() {
   const gallery = typeof window !== 'undefined'
     ? (loadStammdaten(isOeffentlich ? 'oeffentlich' : 'k2', 'gallery') as unknown as Record<string, string>)
     : (isOeffentlich ? MUSTER_TEXTE.gallery : K2_STAMMDATEN_DEFAULTS.gallery) as unknown as Record<string, string>
+  /** K2 (nicht ök2): Deckblatt nur „K2“ – ohne Zusatz aus Galeriename. */
   const coverTitle = isVk2Variante
     ? 'VK2 Vereinsplattform'
     : isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
-    : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || 'K2 Galerie').replace(/&/g, ' & ')
+    : 'K2'
   const badgeText = isVk2Variante ? 'Kurzversion (VK2)' : 'Kurzversion'
 
   return (

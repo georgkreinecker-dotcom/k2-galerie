@@ -14,7 +14,6 @@ import {
   MUSTER_TEXTE,
   TENANT_CONFIGS,
   K2_STAMMDATEN_DEFAULTS,
-  K2_GALERIE_PUBLIC_BRAND,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
 } from '../config/tenantConfig'
@@ -74,12 +73,10 @@ function renderDeckblattCover(isOeffentlich: boolean): ReactNode {
         ? MUSTER_TEXTE.gallery
         : K2_STAMMDATEN_DEFAULTS.gallery
   ) as { name?: string }
+  /** K2 (nicht ök2): nur „K2“ – ohne Zusatz „Kunst & Keramik“ aus Stammdaten-Galeriename. */
   const coverTitle = isOeffentlich
     ? (gallery?.name || TENANT_CONFIGS.oeffentlich.galleryName).replace(/&/g, ' & ')
-    : (gallery?.name || K2_STAMMDATEN_DEFAULTS.gallery.name || K2_GALERIE_PUBLIC_BRAND).replace(
-        /&/g,
-        ' & ',
-      )
+    : 'K2'
   const heroPath =
     typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : ENTDECKEN_HERO_DEFAULT_PATH
   const heroSrc =
