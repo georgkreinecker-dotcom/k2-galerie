@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 07.04.26 – **Kasse: Safari „automatischen Druck gesperrt“** – Ursache: `setTimeout` vor `print()` im Pop-up → User-Geste weg. **Fix:** `triggerPrintDialogFromPopup` – **ohne** Verzögerung vor `print()` (Kassenbon 80 mm, VK2-Bon/Beleg, A4-Bon/Rechnung, VK2-Rechnung). **Hinweis:** Rechnung mit **async** QR-Generierung kann auf iPad weiter eingeschränkt sein → ggf. **Bon im neuen Tab** nutzen. Tests + Build grün. **Commit:** **8d71bb33** ✅ GitHub
+**Letzter Stand:** 07.04.26 – **Kasse: Safari „automatischen Druck gesperrt“** – Ursache: `setTimeout` vor `print()` im Pop-up → User-Geste weg. **Fix:** `triggerPrintDialogFromPopup` – **ohne** Verzögerung vor `print()` (Kassenbon 80 mm, VK2-Bon/Beleg, A4-Bon/Rechnung, VK2-Rechnung). **Hinweis:** Rechnung mit **async** QR-Generierung kann auf iPad weiter eingeschränkt sein → ggf. **Bon im neuen Tab** nutzen. Tests + Build grün. **Commit:** **30e3844b** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy Kasse am iPad: Bon drucken – Meldung sollte nicht mehr kurz aufblitzen.
 
