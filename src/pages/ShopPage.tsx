@@ -10,6 +10,7 @@ import { isOeffentlichDisplayContext } from '../utils/oeffentlichContext'
 import { getShopStorageKeys } from '../utils/shopContextKeys'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
+import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
 import { hasKassa, hasKassabuchVoll, isKassabuchAktiv, addKassabuchEintrag, loadKassabuch, saveKassabuch, type KassabuchEintrag } from '../utils/kassabuchStorage'
 import { PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { useGamificationChecklistsUi } from '../hooks/useGamificationChecklistsUi'
@@ -2489,14 +2490,14 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             <div style={{ marginTop: '1rem', borderTop: `1px solid ${s.accent}22`, paddingTop: '1rem' }}>
               <p style={{ fontSize: '0.85rem', color: s.muted, marginBottom: '0.5rem' }}>Werk antippen → wird zur Auswahl hinzugefügt (ohne Scanner)</p>
               <div style={{ maxHeight: '220px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                {allArtworks
-                  .filter((a: any) => {
+                {sortArtworksCategoryBlocksThenNumberAsc(
+                  allArtworks.filter((a: any) => {
                     const priceVal = parseArtworkPriceEur(a?.price)
                     if (priceVal <= 0) return false
                     if (isAdminContext) return true
                     return a.inShop !== false
                   })
-                  .map((a: any) => {
+                ).map((a: any) => {
                     const priceVal = parseArtworkPriceEur(a?.price)
                     const num = a.number || a.id || '–'
                     const title = (a.title || num).length > 28 ? (a.title || num).slice(0, 25) + '…' : (a.title || num)
