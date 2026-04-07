@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab = Etikett-Workflow** – `openBonHtmlInNewTab` **1:1 wie** `handleOpenEtikettInNewTab`: Blob → `FileReader.readAsDataURL` → `window.open(dataUrl, '_blank')`; danach `attachReceiptPrintPageSizing` (Rolle). Kein about:blank/Blob-URL mehr. **Commit:** _(folgt)_
+**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab = Etikett-Workflow** – `openBonHtmlInNewTab` **1:1 wie** `handleOpenEtikettInNewTab`: Blob → `FileReader.readAsDataURL` → `window.open(dataUrl, '_blank')`; danach `attachReceiptPrintPageSizing` (Rolle). Kein about:blank/Blob-URL mehr. **Commit:** **7037b31e** ✅ GitHub
 
 ---
 
