@@ -108,7 +108,8 @@ function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: numbe
 
 /**
  * Wie Etikett „im neuen Tab“: Bon sichtbar – dann Teilen (iPad) oder Drucken (⌘P).
- * Safari: Blob-URL zuverlässiger als document.write auf about:blank; Fallback mit document.open/write.
+ * Wichtig: **Zuerst** leeres Fenster im Klick-Stack öffnen, **dann** Blob-URL zuweisen –
+ * `window.open(blob:…)` wird sonst oft als Pop-up blockiert (Safari/Chrome).
  */
 function openBonHtmlInNewTab(html: string, widthMm = 80): void {
   const finish = (w: Window) => {
@@ -119,40 +120,52 @@ function openBonHtmlInNewTab(html: string, widthMm = 80): void {
       /* ignore */
     }
   }
+  let blobUrl: string | null = null
   try {
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const w = window.open(url, '_blank', 'noopener,noreferrer')
-    if (!w) {
+    blobUrl = URL.createObjectURL(blob)
+  } catch {
+    blobUrl = null
+  }
+
+  const w = window.open('about:blank', '_blank')
+  if (!w) {
+    if (blobUrl) {
       try {
-        URL.revokeObjectURL(url)
+        URL.revokeObjectURL(blobUrl)
       } catch {
         /* ignore */
       }
-      alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
-      return
     }
-    w.addEventListener(
-      'load',
-      () => {
-        try {
-          setTimeout(() => URL.revokeObjectURL(url), 500)
-        } catch {
-          /* ignore */
-        }
-      },
-      { once: true }
-    )
-    finish(w)
-    return
-  } catch {
-    /* Blob nicht möglich → klassisch */
-  }
-  const w = window.open('', '_blank')
-  if (!w) {
     alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
     return
   }
+
+  if (blobUrl) {
+    try {
+      w.location.replace(blobUrl)
+      w.addEventListener(
+        'load',
+        () => {
+          try {
+            setTimeout(() => URL.revokeObjectURL(blobUrl as string), 500)
+          } catch {
+            /* ignore */
+          }
+        },
+        { once: true }
+      )
+      finish(w)
+      return
+    } catch {
+      try {
+        URL.revokeObjectURL(blobUrl)
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
   try {
     w.document.open()
     w.document.write(html)

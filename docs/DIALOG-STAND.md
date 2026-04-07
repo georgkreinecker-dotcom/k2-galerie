@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab ohne Pop-up-Block** – `openBonHtmlInNewTab`: nicht mehr `window.open(blobUrl)` (wird oft blockiert); stattdessen **`window.open('about:blank')` im Klick**, dann **`location.replace(blobUrl)`**. Tests + Build grün. **Commit:** _(folgt)_
+
+---
+
 **Letzter Stand:** 07.04.26 – **Kasse: Bon „neuer Tab“ vollständig + Papierbreite** – `ShopPage`: **`receiptPaperWidthMm`** aus **`getReceiptPaperWidthMm(shopTenantIdForReceipt(…))`** (`useMemo`); **`openReceiptInNewTab` / `openVk2BonInNewTab` / `openVk2AusgabeBelegInNewTab`** → **`openBonHtmlInNewTab(…, receiptPaperWidthMm)`**; **`printReceipt` / `printVk2Bon` / `printVk2AusgabeBeleg`** mit **`document.open()`** + **`paperWidthMm`** + **`triggerPrintDialogFromPopup(…, receiptPaperWidthMm)`**. Quelle Breite: **`src/utils/receiptPaperWidthStorage.ts`**. Tests + Build grün. **Commit:** **c6e2a8c9** ✅ GitHub
 
 **Was wir JETZT tun:** Kasse: **Kassenbon – neuer Tab** prüfen (Inhalt sichtbar, Teilen/⌘P); optional Drucker 62/80 mm in Admin abstimmen.
