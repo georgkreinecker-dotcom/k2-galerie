@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab = Etikett-Druck-Popup (final)** – `openBonHtmlInNewTab` **wie** `handleShareLabel` Desktop: **`window.open('', '_blank')` → `document.write(html)` → `close()`** – **ohne** `await` vor `open` (Klick-Geste / Pop-up-Blocker). Regel: **ein-standard-problem.mdc** Zeile Kassenbon „neuer Tab“. Tests 373 + Build grün. **Commit:** _(folgt)_
+
+---
+
 **Letzter Stand:** 07.04.26 – **Kasse: Bon neuer Tab = Etikett-Workflow** – `openBonHtmlInNewTab` **1:1 wie** `handleOpenEtikettInNewTab`: Blob → `FileReader.readAsDataURL` → `window.open(dataUrl, '_blank')`; danach `attachReceiptPrintPageSizing` (Rolle). Kein about:blank/Blob-URL mehr. **Commit:** **7037b31e** ✅ GitHub
 
 ---

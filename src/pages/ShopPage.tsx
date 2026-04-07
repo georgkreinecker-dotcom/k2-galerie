@@ -107,11 +107,12 @@ function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: numbe
 }
 
 /**
- * **Gleicher Ablauf wie Etikett „📄 In neuem Tab öffnen“** (`ScreenshotExportAdmin` → `handleOpenEtikettInNewTab`):
- * HTML als Blob → `FileReader.readAsDataURL` → `window.open(dataUrl, '_blank')`.
- * Danach `attachReceiptPrintPageSizing` für ⌘P auf der Rolle (Etikett braucht das nicht).
+ * **Derselbe synchrone Ablauf wie Etikett-Druck** (`ScreenshotExportAdmin` `handleShareLabel`, Desktop:
+ * `window.open('', '_blank')` → `document.write(html)` → `document.close()`).
+ * Kein `await` vor `window.open` – sonst ist die Klick-Geste weg und der Browser blockiert (5 km hin und her umsonst).
+ * Zusätzlich: `attachReceiptPrintPageSizing` für ⌘P auf der Rolle.
  */
-async function openBonHtmlInNewTab(html: string, widthMm = 80): Promise<void> {
+function openBonHtmlInNewTab(html: string, widthMm = 80): void {
   const finish = (w: Window) => {
     attachReceiptPrintPageSizing(w, widthMm)
     try {
@@ -120,22 +121,22 @@ async function openBonHtmlInNewTab(html: string, widthMm = 80): Promise<void> {
       /* ignore */
     }
   }
-  let dataUrl: string
-  try {
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-    dataUrl = await new Promise<string>((resolve, reject) => {
-      const r = new FileReader()
-      r.onload = () => resolve(r.result as string)
-      r.onerror = () => reject(new Error('HTML konnte nicht gelesen werden'))
-      r.readAsDataURL(blob)
-    })
-  } catch {
-    alert('Bon konnte nicht vorbereitet werden. Bitte „Kassenbon – Druckdialog“ nutzen.')
-    return
-  }
-  const w = window.open(dataUrl, '_blank')
+  const w = window.open('', '_blank')
   if (!w) {
     alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
+    return
+  }
+  try {
+    w.document.open()
+    w.document.write(html)
+    w.document.close()
+  } catch {
+    alert('Bon konnte nicht angezeigt werden. Bitte „Kassenbon – Druckdialog“ nutzen.')
+    try {
+      w.close()
+    } catch {
+      /* ignore */
+    }
     return
   }
   finish(w)
@@ -1435,7 +1436,7 @@ ${bankBlock}
   }
 
   const openVk2BonInNewTab = (order: any) => {
-    void openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
+    openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
   }
 
   // Kassenbon für VK2 (Vereins-Stammdaten)
@@ -1452,7 +1453,7 @@ ${bankBlock}
   }
 
   const openVk2AusgabeBelegInNewTab = (eintrag: KassabuchEintrag) => {
-    void openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
+    openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
   }
 
   // VK2: Ausgabenbeleg drucken (schmal mm wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
@@ -1469,7 +1470,7 @@ ${bankBlock}
   }
 
   const openReceiptInNewTab = (order: any) => {
-    void openBonHtmlInNewTab(
+    openBonHtmlInNewTab(
       buildK2Oek2ReceiptHtml(order, fromOeffentlich, { tabHint: true, paperWidthMm: receiptPaperWidthMm }),
       receiptPaperWidthMm
     )
