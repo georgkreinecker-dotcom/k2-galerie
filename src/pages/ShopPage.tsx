@@ -35,16 +35,24 @@ function pxToMmCss(px: number): number {
 }
 
 /**
- * Setzt @page auf feste mm-Höhe aus Inhalt (nach Layout). iOS-AirPrint-Vorschau bleibt oft A4-ähnlich,
- * aber Druck/Treiber bekommen eine kurze Seite → weniger „Endlos-Streifen“ als bei voller A4-Höhe.
+ * Setzt @page auf feste mm-Höhe aus Inhalt (nach Layout). iOS-AirPrint-Vorschau bleibt oft A4-ähnlich
+ * (System-UI) – das ist normal. Entscheidend: kurze @page-Höhe für weniger Papier am Brother-Rollendruck.
+ * beforeprint: Safari/iPad misst oft erst dann zuverlässig (Layout fertig).
  */
 function injectReceiptPrintPageSizeMm(printWindow: Window, widthMm = 80): void {
   const doc = printWindow.document
   const body = doc.body
   if (!body) return
   const root = doc.documentElement
-  const hPx = Math.max(body.scrollHeight, root?.scrollHeight ?? 0, body.offsetHeight)
-  const hMm = Math.ceil(pxToMmCss(hPx) + 8)
+  const contentRoot = doc.getElementById('k2-receipt-root')
+  let hPx = 0
+  if (contentRoot) {
+    hPx = Math.ceil(Math.max(contentRoot.scrollHeight, contentRoot.offsetHeight))
+  }
+  if (hPx < 8) {
+    hPx = Math.max(body.scrollHeight, root?.scrollHeight ?? 0, body.offsetHeight, root?.offsetHeight ?? 0)
+  }
+  const hMm = Math.ceil(pxToMmCss(hPx) + 10)
   const clamped = Math.min(1200, Math.max(40, hMm))
   doc.getElementById('k2-receipt-print-page')?.remove()
   const style = doc.createElement('style')
@@ -53,6 +61,29 @@ function injectReceiptPrintPageSizeMm(printWindow: Window, widthMm = 80): void {
   @page { size: ${widthMm}mm ${clamped}mm; margin: 0; }
 }`
   doc.head.appendChild(style)
+}
+
+function attachReceiptPrintPageSizing(printWindow: Window, widthMm = 80): void {
+  const run = () => injectReceiptPrintPageSizeMm(printWindow, widthMm)
+  printWindow.addEventListener('beforeprint', run)
+  printWindow.addEventListener('afterprint', () => {
+    printWindow.removeEventListener('beforeprint', run)
+  })
+}
+
+/** Wie Etikett „im neuen Tab“: Inhalt sichtbar, Druck/Teilen erst vom Nutzer (⌘P / Teilen). */
+function openBonHtmlInNewTab(html: string): void {
+  const w = window.open('', '_blank')
+  if (!w) {
+    alert('Pop-up-Blocker verhindert das Öffnen. Bitte Pop-ups für diese Seite erlauben.')
+    return
+  }
+  w.document.write(html)
+  w.document.close()
+  attachReceiptPrintPageSizing(w)
+  try {
+    w.focus()
+  } catch (_) {}
 }
 
 /** Nur Druckfarben + schmale Spalte; @page-Größe kommt per injectReceiptPrintPageSizeMm (siehe oben). */
@@ -117,6 +148,224 @@ interface CartItem {
   ceramicSurface?: string
   ceramicDescription?: string
   ceramicSubcategory?: string
+}
+
+/** HTML K2/ök2 Kassenbon 80mm – eine Quelle für Druckdialog und „Bon im neuen Tab“ (wie Etikett). */
+function buildK2Oek2ReceiptHtml(
+  order: any,
+  fromOeffentlich: boolean,
+  opts?: { tabHint?: boolean }
+): string {
+  const snap = order?.sellerSnapshot as
+    | { version: 1; tenant: string; gallery?: Record<string, unknown> }
+    | undefined
+  const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
+  let g: any = null
+  if (snap && snap.version === 1 && snap.tenant === tenant && snap.gallery) {
+    g = snap.gallery
+  } else {
+    try {
+      g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
+    } catch (_) {}
+  }
+  const defaultName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
+  const defaultAddress = fromOeffentlich
+    ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') ||
+      'Musterstraße 1, 12345 Musterstadt'
+    : 'Schlossergasse 4, 4070 Eferding, Österreich'
+  const sellerName = g && (g as any).name && String((g as any).name).trim() ? String((g as any).name) : defaultName
+  const sellerAddress = [g?.address, g?.city, g?.country].filter(Boolean).join(', ') || defaultAddress
+  const sellerContact = [g?.phone, g?.email].filter(Boolean).join(' · ') || ''
+  const ustId =
+    g && (g as any).ustIdNr && String((g as any).ustIdNr).trim() ? String((g as any).ustIdNr).trim() : ''
+  const bankForReceipt =
+    g && (g as any).bankverbindung && String((g as any).bankverbindung).trim()
+      ? String((g as any).bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      : ''
+  const date = new Date(order.date)
+  const dateStr = date.toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const kuenstlerFbBon = readKuenstlerFallbackShop(fromOeffentlich)
+  const items = Array.isArray(order.items) ? order.items : []
+  const itemsRows = items
+    .map((item: CartItem, idx: number) => {
+      const menge = 1
+      const ep = parseArtworkPriceEur(item.price)
+      const betrag = menge * ep
+      const title = (item.title || item.number || '').replace(/</g, '&lt;')
+      const sn = (item.number || '').replace(/</g, '&lt;')
+      const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbBon)
+      const artistLine = r && r !== 'Ohne Künstler' ? `<br><small>${String(r).replace(/</g, '&lt;')}</small>` : ''
+      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}${artistLine}<br><small>Nr. ${sn}</small></td><td style="text-align:center;font-size:8px">${menge}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:center;font-size:7px">inkl.</td><td style="text-align:right;font-size:8px">€ ${betrag.toFixed(2)}</td></tr>`
+    })
+    .join('')
+  const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
+  const tabHintBlock = opts?.tabHint
+    ? `<div class="receipt-tab-hint">Wie beim Etikett im neuen Tab: Bon prüfen, dann <strong>Teilen</strong> oder <strong>Drucken</strong> (⌘P). Oft zuverlässiger am iPad als der sofortige Druckdialog.</div>`
+    : ''
+  return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1">
+          <title>Kassenbon</title>
+          <style>
+            ${CSS_PRINT_80MM_ROLL}
+            .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, -apple-system, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
+            @media print { .receipt-tab-hint { display: none !important; } }
+            body {
+              font-family: 'Courier New', monospace;
+              font-size: 9px;
+              line-height: 1.25;
+              width: 80mm;
+              max-width: 80mm;
+              margin: 0;
+              padding: 4mm 3mm;
+              color: #000;
+              background: #fff;
+            }
+            @media screen {
+              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; }
+            }
+            .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+            .header h1 { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
+            .header .seller { font-size: 7px; margin: 1px 0 0; line-height: 1.3; }
+            .meta { margin: 4px 0; font-size: 8px; }
+            table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
+            th { text-align: left; padding: 2px 1px; border-bottom: 1px solid #000; font-size: 7px; text-transform: uppercase; }
+            th:nth-child(1), td:nth-child(1) { width: 12px; text-align: center; }
+            th:nth-child(3), td:nth-child(3) { width: 14px; text-align: center; }
+            th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) { width: 28px; text-align: right; }
+            th:nth-child(5), td:nth-child(5) { width: 18px; text-align: center; }
+            td { padding: 2px 1px; border-bottom: 1px solid #ccc; vertical-align: top; }
+            .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; }
+            .total-row { display: flex; justify-content: space-between; margin: 1px 0; }
+            .total-final { font-size: 10px; font-weight: bold; margin-top: 3px; padding-top: 2px; border-top: 1px solid #000; }
+            .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
+            .legal { margin-top: 4px; font-size: 6px; line-height: 1.3; color: #333; }
+            .bank { margin-top: 4px; font-size: 6px; text-align: left; white-space: pre-wrap; word-break: break-all; }
+            .footer { margin-top: 8px; text-align: center; font-size: 6px; line-height: 1.3; }
+            .divider { text-align: center; margin: 4px 0; font-size: 7px; }
+          </style>
+        </head>
+        <body>
+          ${tabHintBlock}
+          <div id="k2-receipt-root">
+          <div class="header">
+            <h1>KASSENBON / BELEG</h1>
+            <div class="seller"><strong>${sellerName.replace(/</g, '&lt;')}</strong><br>${sellerAddress.replace(/</g, '&lt;')}${sellerContact ? '<br>' + sellerContact.replace(/</g, '&lt;') : ''}${ustId ? '<br>UID: ' + ustId.replace(/</g, '&lt;') : ''}</div>
+          </div>
+          <div class="meta">
+            <div>Datum: ${dateStr}</div>
+            <div>Bon-Nr.: ${order.orderNumber}</div>
+          </div>
+          <table>
+            <thead><tr><th>Pos</th><th>Bezeichnung</th><th>Menge</th><th>EP</th><th>MwSt</th><th>Betrag</th></tr></thead>
+            <tbody>${itemsRows}</tbody>
+          </table>
+          <div class="total">
+            ${order.discount > 0 ? `<div class="total-row"><span>Zwischensumme:</span><span>€ ${(order.subtotal || order.total).toFixed(2)}</span></div><div class="total-row"><span>Rabatt:</span><span>-€ ${(order.discount || 0).toFixed(2)}</span></div>` : ''}
+            <div class="total-row total-final"><span>Gesamtbetrag:</span><span>€ ${order.total.toFixed(2)}</span></div>
+          </div>
+          <div class="legal">Alle Preise inkl. gesetzl. MwSt. (sofern anwendbar).${ustHinweis ? ' ' + ustHinweis + ' – keine Ausweisung der Umsatzsteuer.' : ''}</div>
+          <div class="payment">
+            <strong>${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung (Überweisung)'}</strong>
+            ${order.paymentMethod === 'transfer' ? '<div style="margin-top:3px;font-size:7px;">Zahlbar innerhalb von 14 Tagen ohne Abzug.</div>' : ''}
+            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div class="bank">Überweisung:<br>${bankForReceipt}</div>` : ''}
+            <div style="margin-top:4px;">Vielen Dank!</div>
+          </div>
+          <div class="divider">━━━━━━━━━━</div>
+          <div class="footer">${sellerName.replace(/</g, '&lt;')} · ${sellerAddress.replace(/</g, '&lt;')}<br>${PRODUCT_COPYRIGHT}</div>
+          </div>
+        </body>
+      </html>
+    `
+}
+
+function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean }): string {
+  const snap = order?.sellerSnapshot as any
+  const verein =
+    snap && snap.version === 1 && snap.tenant === 'vk2' && snap.vk2Verein
+      ? snap.vk2Verein
+      : ((loadVk2Stammdaten()?.verein || {}) as any)
+  const sellerName = verein.name && String(verein.name).trim() ? String(verein.name) : 'Verein'
+  const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
+  const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
+  const date = new Date(order.date)
+  const dateStr = date.toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const itemsRows = (order.items || [])
+    .map((item: any, idx: number) => {
+      const title = (item.title || 'Einnahme').replace(/</g, '&lt;')
+      const ep = parseArtworkPriceEur(item.price)
+      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}</td><td style="text-align:center;font-size:8px">1</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td></tr>`
+    })
+    .join('')
+  const paymentText =
+    order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
+  const tabHintBlock = opts?.tabHint
+    ? `<div class="receipt-tab-hint">Wie beim Etikett: hier prüfen, dann Teilen oder Drucken (⌘P).</div>`
+    : ''
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
+      <style>${CSS_PRINT_80MM_ROLL}
+      .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
+      @media print { .receipt-tab-hint { display: none !important; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+      table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
+      td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
+      .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
+      .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${tabHintBlock}<div id="k2-receipt-root">
+      <div class="header"><strong>KASSENBON</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
+      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div><div style="font-size:8px">Bon-Nr.: ${order.orderNumber}</div>
+      <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
+      <div class="total">Gesamtbetrag: € ${order.total.toFixed(2)}</div>
+      <div class="payment"><strong>${paymentText}</strong><br>Vielen Dank!</div>
+      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></div></body></html>`
+}
+
+function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: boolean }): string {
+  const vk2 = loadVk2Stammdaten()
+  const verein = vk2?.verein || {}
+  const sellerName = verein.name && String(verein.name).trim() ? String(verein.name) : 'Verein'
+  const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
+  const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
+  const dateStr = new Date(eintrag.datum + 'T12:00:00').toLocaleDateString('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+  const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
+  const tabHintBlock = opts?.tabHint
+    ? `<div class="receipt-tab-hint">Wie beim Etikett: hier prüfen, dann Teilen oder Drucken (⌘P).</div>`
+    : ''
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
+      <style>${CSS_PRINT_80MM_ROLL}
+      .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
+      @media print { .receipt-tab-hint { display: none !important; } }
+      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
+      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
+      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
+      .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${tabHintBlock}<div id="k2-receipt-root">
+      <div class="header"><strong>AUSGABENBELEG</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
+      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div>
+      <div class="total">Betrag: € ${eintrag.betrag.toFixed(2)}</div>
+      <div style="margin-top:4px;font-size:8px">Verwendungszweck: ${zweck}</div>
+      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></div></body></html>`
 }
 
 const ShopPage = () => {
@@ -509,7 +758,11 @@ const ShopPage = () => {
     const paymentText = order.paymentMethod === 'cash' ? 'Bar' : order.paymentMethod === 'card' ? 'Karte' : 'Rechnung'
     const useBon = confirm(`Bon ${order.orderNumber}\n€${(order.total || 0).toFixed(2)} · ${paymentText}\n\nKassabon (80mm) = OK\nRechnung (A4) = Abbrechen`)
     if (useBon) {
-      printReceipt(order)
+      const printDialog = confirm(
+        'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
+      )
+      if (printDialog) printReceipt(order)
+      else openReceiptInNewTab(order)
     } else {
       printReceiptA4(order, true)
     }
@@ -916,7 +1169,7 @@ const ShopPage = () => {
         verkaufId: order.id,
         verwendungszweck: bezeichnung
       })
-      if (vk2BonDrucken) printVk2Bon(order)
+      if (vk2BonDrucken) promptVk2BonDruckOderTab(order)
       setVk2Betrag('')
       setVk2Bezeichnung('')
       setVk2MitgliedName('')
@@ -1105,6 +1358,10 @@ ${bankBlock}
     }
   }
 
+  const openVk2BonInNewTab = (order: any) => {
+    openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true }))
+  }
+
   // Kassenbon für VK2 (Vereins-Stammdaten)
   const printVk2Bon = (order: any) => {
     const printWindow = window.open('', '_blank')
@@ -1112,37 +1369,9 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    const snap = order?.sellerSnapshot as SellerSnapshotV1 | undefined
-    const verein = (snap && snap.version === 1 && snap.tenant === 'vk2' && snap.vk2Verein) ? snap.vk2Verein : ((loadVk2Stammdaten()?.verein || {}) as any)
-    const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
-    const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
-    const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
-    const date = new Date(order.date)
-    const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    const itemsRows = (order.items || []).map((item: any, idx: number) => {
-      const title = (item.title || 'Einnahme').replace(/</g, '&lt;')
-      const ep = parseArtworkPriceEur(item.price)
-      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}</td><td style="text-align:center;font-size:8px">1</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td></tr>`
-    }).join('')
-    const paymentText = order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
-    printWindow.document.write(`
-      <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
-      <style>${CSS_PRINT_80MM_ROLL}
-      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
-      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
-      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
-      table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
-      td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
-      .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
-      .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>
-      <div class="header"><strong>KASSENBON</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
-      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div><div style="font-size:8px">Bon-Nr.: ${order.orderNumber}</div>
-      <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
-      <div class="total">Gesamtbetrag: € ${order.total.toFixed(2)}</div>
-      <div class="payment"><strong>${paymentText}</strong><br>Vielen Dank!</div>
-      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
+    printWindow.document.write(buildVk2BonHtml(order))
     printWindow.document.close()
+    attachReceiptPrintPageSizing(printWindow)
     setTimeout(() => {
       injectReceiptPrintPageSizeMm(printWindow)
       printWindow.print()
@@ -1150,6 +1379,19 @@ ${bankBlock}
         printWindow.close()
       }, 1000)
     }, 300)
+  }
+
+  /** Wie K2/ök2: OK = Druckdialog, Abbrechen = Bon im neuen Tab (Etikett-Muster). */
+  const promptVk2BonDruckOderTab = (order: any) => {
+    const printDialog = confirm(
+      'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
+    )
+    if (printDialog) printVk2Bon(order)
+    else openVk2BonInNewTab(order)
+  }
+
+  const openVk2AusgabeBelegInNewTab = (eintrag: KassabuchEintrag) => {
+    openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true }))
   }
 
   // VK2: Ausgabenbeleg drucken (80mm, wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
@@ -1159,27 +1401,9 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    const vk2 = loadVk2Stammdaten()
-    const verein = vk2?.verein || {}
-    const sellerName = (verein.name && String(verein.name).trim()) ? String(verein.name) : 'Verein'
-    const sellerAddress = [verein.address, verein.city, verein.country].filter(Boolean).join(', ') || ''
-    const sellerContact = [verein.phone, verein.email].filter(Boolean).join(' · ') || ''
-    const dateStr = new Date(eintrag.datum + 'T12:00:00').toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
-    const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
-    printWindow.document.write(`
-      <!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
-      <style>${CSS_PRINT_80MM_ROLL}
-      body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: 80mm; max-width: 80mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
-      @media screen { body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; } }
-      .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
-      .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>
-      <div class="header"><strong>AUSGABENBELEG</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
-      <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div>
-      <div class="total">Betrag: € ${eintrag.betrag.toFixed(2)}</div>
-      <div style="margin-top:4px;font-size:8px">Verwendungszweck: ${zweck}</div>
-      <div class="footer">${sellerName.replace(/</g, '&lt;')} · Vereinsbetrieb<br>${PRODUCT_COPYRIGHT}</div></body></html>`)
+    printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag))
     printWindow.document.close()
+    attachReceiptPrintPageSizing(printWindow)
     setTimeout(() => {
       injectReceiptPrintPageSizeMm(printWindow)
       printWindow.print()
@@ -1189,6 +1413,18 @@ ${bankBlock}
     }, 300)
   }
 
+  const promptVk2AusgabeDruckOderTab = (eintrag: KassabuchEintrag) => {
+    const printDialog = confirm(
+      'OK = Druckdialog jetzt öffnen\nAbbrechen = Beleg im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
+    )
+    if (printDialog) printVk2AusgabeBeleg(eintrag)
+    else openVk2AusgabeBelegInNewTab(eintrag)
+  }
+
+  const openReceiptInNewTab = (order: any) => {
+    openBonHtmlInNewTab(buildK2Oek2ReceiptHtml(order, fromOeffentlich, { tabHint: true }))
+  }
+
   // Kassenbon drucken (80mm Breite, EU-normgerechter Beleg) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
   const printReceipt = (order: any) => {
     const printWindow = window.open('', '_blank')
@@ -1196,117 +1432,9 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-
-    const snap = order?.sellerSnapshot as SellerSnapshotV1 | undefined
-    const tenant = fromOeffentlich ? 'oeffentlich' : 'k2'
-    let g: any = null
-    if (snap && snap.version === 1 && snap.tenant === tenant && snap.gallery) {
-      g = snap.gallery
-    } else {
-      try {
-        g = loadStammdaten(tenant as 'k2' | 'oeffentlich', 'gallery')
-      } catch (_) {}
-    }
-    const defaultName = fromOeffentlich ? 'Galerie Muster' : 'K2 Galerie'
-    const defaultAddress = fromOeffentlich ? [MUSTER_TEXTE.gallery.address, MUSTER_TEXTE.gallery.city, MUSTER_TEXTE.gallery.country].filter(Boolean).join(', ') || 'Musterstraße 1, 12345 Musterstadt' : 'Schlossergasse 4, 4070 Eferding, Österreich'
-    const sellerName = (g && (g as any).name && String((g as any).name).trim()) ? String((g as any).name) : defaultName
-    const sellerAddress = [g?.address, g?.city, g?.country].filter(Boolean).join(', ') || defaultAddress
-    const sellerContact = [g?.phone, g?.email].filter(Boolean).join(' · ') || ''
-    const ustId = (g && (g as any).ustIdNr && String((g as any).ustIdNr).trim()) ? String((g as any).ustIdNr).trim() : ''
-    const bankForReceipt = (g && (g as any).bankverbindung && String((g as any).bankverbindung).trim()) ? String((g as any).bankverbindung).replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''
-    const sellerTagline = fromOeffentlich ? 'Kunst & Keramik (Demo)' : 'Kunst & Keramik'
-    const sellerWebsite = (g && (g as any).website && String((g as any).website).trim()) ? String((g as any).website) : (fromOeffentlich ? (MUSTER_TEXTE.gallery.website || '') : '')
-
-    const date = new Date(order.date)
-    const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    const kuenstlerFbBon = readKuenstlerFallbackShop(fromOeffentlich)
-    const itemsRows = order.items.map((item: CartItem, idx: number) => {
-      const menge = 1
-      const ep = parseArtworkPriceEur(item.price)
-      const betrag = menge * ep
-      const title = (item.title || item.number || '').replace(/</g, '&lt;')
-      const sn = (item.number || '').replace(/</g, '&lt;')
-      const r = resolveArtistLabelForGalerieStatistik(item, kuenstlerFbBon)
-      const artistLine = r && r !== 'Ohne Künstler' ? `<br><small>${String(r).replace(/</g, '&lt;')}</small>` : ''
-      return `<tr><td style="text-align:center;font-size:8px">${idx + 1}</td><td style="font-size:8px">${title}${artistLine}<br><small>Nr. ${sn}</small></td><td style="text-align:center;font-size:8px">${menge}</td><td style="text-align:right;font-size:8px">€ ${ep.toFixed(2)}</td><td style="text-align:center;font-size:7px">inkl.</td><td style="text-align:right;font-size:8px">€ ${betrag.toFixed(2)}</td></tr>`
-    }).join('')
-    const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=302, initial-scale=1, maximum-scale=1">
-          <title>Kassenbon</title>
-          <style>
-            ${CSS_PRINT_80MM_ROLL}
-            body {
-              font-family: 'Courier New', monospace;
-              font-size: 9px;
-              line-height: 1.25;
-              width: 80mm;
-              max-width: 80mm;
-              margin: 0;
-              padding: 4mm 3mm;
-              color: #000;
-              background: #fff;
-            }
-            @media screen {
-              body { width: 80mm; margin: 20px auto; border: 1px dashed #ccc; }
-            }
-            .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
-            .header h1 { margin: 0; font-size: 12px; font-weight: bold; letter-spacing: 0.5px; }
-            .header .seller { font-size: 7px; margin: 1px 0 0; line-height: 1.3; }
-            .meta { margin: 4px 0; font-size: 8px; }
-            table { width: 100%; border-collapse: collapse; font-size: 8px; margin: 3px 0; }
-            th { text-align: left; padding: 2px 1px; border-bottom: 1px solid #000; font-size: 7px; text-transform: uppercase; }
-            th:nth-child(1), td:nth-child(1) { width: 12px; text-align: center; }
-            th:nth-child(3), td:nth-child(3) { width: 14px; text-align: center; }
-            th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) { width: 28px; text-align: right; }
-            th:nth-child(5), td:nth-child(5) { width: 18px; text-align: center; }
-            td { padding: 2px 1px; border-bottom: 1px solid #ccc; vertical-align: top; }
-            .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; }
-            .total-row { display: flex; justify-content: space-between; margin: 1px 0; }
-            .total-final { font-size: 10px; font-weight: bold; margin-top: 3px; padding-top: 2px; border-top: 1px solid #000; }
-            .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
-            .legal { margin-top: 4px; font-size: 6px; line-height: 1.3; color: #333; }
-            .bank { margin-top: 4px; font-size: 6px; text-align: left; white-space: pre-wrap; word-break: break-all; }
-            .footer { margin-top: 8px; text-align: center; font-size: 6px; line-height: 1.3; }
-            .divider { text-align: center; margin: 4px 0; font-size: 7px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>KASSENBON / BELEG</h1>
-            <div class="seller"><strong>${sellerName.replace(/</g, '&lt;')}</strong><br>${sellerAddress.replace(/</g, '&lt;')}${sellerContact ? '<br>' + sellerContact.replace(/</g, '&lt;') : ''}${ustId ? '<br>UID: ' + ustId.replace(/</g, '&lt;') : ''}</div>
-          </div>
-          <div class="meta">
-            <div>Datum: ${dateStr}</div>
-            <div>Bon-Nr.: ${order.orderNumber}</div>
-          </div>
-          <table>
-            <thead><tr><th>Pos</th><th>Bezeichnung</th><th>Menge</th><th>EP</th><th>MwSt</th><th>Betrag</th></tr></thead>
-            <tbody>${itemsRows}</tbody>
-          </table>
-          <div class="total">
-            ${order.discount > 0 ? `<div class="total-row"><span>Zwischensumme:</span><span>€ ${(order.subtotal || order.total).toFixed(2)}</span></div><div class="total-row"><span>Rabatt:</span><span>-€ ${(order.discount || 0).toFixed(2)}</span></div>` : ''}
-            <div class="total-row total-final"><span>Gesamtbetrag:</span><span>€ ${order.total.toFixed(2)}</span></div>
-          </div>
-          <div class="legal">Alle Preise inkl. gesetzl. MwSt. (sofern anwendbar).${ustHinweis ? ' ' + ustHinweis + ' – keine Ausweisung der Umsatzsteuer.' : ''}</div>
-          <div class="payment">
-            <strong>${order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung (Überweisung)'}</strong>
-            ${order.paymentMethod === 'transfer' ? '<div style="margin-top:3px;font-size:7px;">Zahlbar innerhalb von 14 Tagen ohne Abzug.</div>' : ''}
-            ${order.paymentMethod === 'transfer' && bankForReceipt ? `<div class="bank">Überweisung:<br>${bankForReceipt}</div>` : ''}
-            <div style="margin-top:4px;">Vielen Dank!</div>
-          </div>
-          <div class="divider">━━━━━━━━━━</div>
-          <div class="footer">${sellerName.replace(/</g, '&lt;')} · ${sellerAddress.replace(/</g, '&lt;')}<br>${PRODUCT_COPYRIGHT}</div>
-        </body>
-      </html>
-    `)
-
+    printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich))
     printWindow.document.close()
+    attachReceiptPrintPageSizing(printWindow)
 
     setTimeout(() => {
       injectReceiptPrintPageSizeMm(printWindow)
@@ -1874,7 +2002,11 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
       } else {
         const printChoice = confirm(`✅ Verkauf erfolgreich!\n\nBetrag: €${total.toFixed(2)}\nZahlung: ${paymentMethodText}\n\nKassabon oder Rechnung drucken?\n\nOK = Kassabon (80mm)\nAbbrechen = Rechnung (A4)`)
         if (printChoice) {
-          printReceipt(order)
+          const printDialog = confirm(
+            'OK = Druckdialog jetzt öffnen\nAbbrechen = Bon im neuen Tab (dann Teilen/Drucken – wie Etikett im neuen Tab)'
+          )
+          if (printDialog) printReceipt(order)
+          else openReceiptInNewTab(order)
         } else {
           printReceiptA4(order, true)
         }
@@ -2030,7 +2162,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                     <li key={e.id}>{e.datum} · € {e.betrag.toFixed(2)} {e.verwendungszweck ? ` · ${e.verwendungszweck}` : ''}</li>
                   ))}
                 </ul>
-                <button type="button" onClick={() => { if (vk2LastAusgaben[0]) printVk2AusgabeBeleg(vk2LastAusgaben[0]) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Beleg drucken (neueste)</button>
+                <button type="button" onClick={() => { if (vk2LastAusgaben[0]) promptVk2AusgabeDruckOderTab(vk2LastAusgaben[0]) }} style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Beleg drucken (neueste)</button>
               </div>
             )}
           </div>
@@ -2045,7 +2177,7 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 ))}
               </ul>
               <div style={{ marginTop: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                <button type="button" onClick={() => { const o = orders[0]; if (o) printVk2Bon(o) }} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
+                <button type="button" onClick={() => { const o = orders[0]; if (o) promptVk2BonDruckOderTab(o) }} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Bon erneut drucken (neueste)</button>
                 {orders[0]?.paymentMethod === 'transfer' && (orders[0]?.rechnungEmpfaenger || '').trim() && (
                   <button type="button" onClick={handleVk2RechnungDrucken} style={{ fontSize: '0.8rem', color: s.accent, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>🖨️ Rechnung drucken</button>
                 )}
@@ -2074,7 +2206,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                             <span>
                               {new Date(item.order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof item.order.total === 'number' ? item.order.total.toFixed(2) : item.order.total} {(item.order.items && item.order.items[0] && item.order.items[0].title) ? ` · ${item.order.items[0].title}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Einnahme)</span>
                             </span>
-                            <button type="button" onClick={() => { printVk2Bon(item.order) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
+                            <button type="button" onClick={() => { promptVk2BonDruckOderTab(item.order) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
+                            <button type="button" title="Bon im neuen Tab – Teilen/Drucken" onClick={() => { openVk2BonInNewTab(item.order) }} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
                             <button type="button" onClick={() => handleVk2Storno(item.order)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
                         ) : (
@@ -2082,7 +2215,8 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                             <span>
                               {item.eintrag.datum} · € {item.eintrag.betrag.toFixed(2)} {item.eintrag.verwendungszweck ? ` · ${item.eintrag.verwendungszweck}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Ausgabe)</span>
                             </span>
-                            <button type="button" onClick={() => printVk2AusgabeBeleg(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
+                            <button type="button" onClick={() => promptVk2AusgabeDruckOderTab(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
+                            <button type="button" title="Beleg im neuen Tab" onClick={() => openVk2AusgabeBelegInNewTab(item.eintrag)} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
                             <button type="button" onClick={() => handleVk2StornoAusgabe(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
                         )}
@@ -2655,6 +2789,26 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                       <span style={{ fontWeight: '600' }}>{order.orderNumber}</span>
                       <span style={{ color: s.accent }}>€{(order.total || 0).toFixed(2)}</span>
                       <span style={{ fontSize: '0.85rem' }}>🖨️</span>
+                    </button>
+                    <button
+                      type="button"
+                      title="Bon im neuen Tab (wie Etikett) – dann Teilen oder Drucken"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openReceiptInNewTab(order)
+                      }}
+                      style={{
+                        padding: '0.45rem 0.55rem',
+                        background: s.bgCard,
+                        border: `1px solid ${s.border}`,
+                        borderRadius: '8px',
+                        color: s.text,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        lineHeight: 1
+                      }}
+                    >
+                      📄
                     </button>
                     <button
                       type="button"
