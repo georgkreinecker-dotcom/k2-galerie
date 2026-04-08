@@ -1,10 +1,10 @@
 # Dialog-Stand
 
-**Letzter Stand:** 08.04.26 – **Kasse Mobil: Bon ohne „zweiten Weg“** – Handy/iPad: **kein** „Bon im neuen Tab“ / 📄 (hängende Vollbild-Overlay, Fokus); **nur 🖨️ Druckdialog** → Teilen → Drucken; `openBonHtmlInNewTab` **ohne** `focus()` auf Touch; Desktop: Tab-Button bleibt, Modal schließt per **`queueMicrotask`**. Tests + Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 08.04.26 – **Kasse Mobil: Bon ohne „zweiten Weg“** – Handy/iPad: **kein** „Bon im neuen Tab“ / 📄 (hängende Vollbild-Overlay, Fokus); **nur 🖨️ Druckdialog** → Teilen → Drucken; `openBonHtmlInNewTab` **ohne** `focus()` auf Touch; Desktop: Tab-Button bleibt, Modal schließt per **`queueMicrotask`**. Tests + Build grün. **Commit:** **131ae7b2** ✅ GitHub
 
 ---
 
-**Letzter Stand:** 07.04.26 – **Präsentationsmappe: Deckblatt „K2 Galerie“ + eine Druckseite + Kopfzeile** – Deckblatt-Titel = **`K2_GALERIE_PUBLIC_BRAND`** (nicht „Kunst & Keramik“); **`index.html` `<title>`** nur „K2 Galerie“ (Safari-Druckkopf); Gesamtmappe: Klasse **`pmv-chapter-block--deckblatt-print`** + Print-CSS **`page-break-inside: avoid`**, Bild **`max-height: 118mm`**; Mappe setzt **`document.title`** beim Besuch. Tests + Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 07.04.26 – **Präsentationsmappe: Deckblatt „K2 Galerie“ + eine Druckseite + Kopfzeile** – Deckblatt-Titel = **`K2_GALERIE_PUBLIC_BRAND`** (nicht „Kunst & Keramik“); **`index.html` `<title>`** nur „K2 Galerie“ (Safari-Druckkopf); Gesamtmappe: Klasse **`pmv-chapter-block--deckblatt-print`** + Print-CSS **`page-break-inside: avoid`**, Bild **`max-height: 118mm`**; Mappe setzt **`document.title`** beim Besuch. Tests + Build grün. **Commit:** **131ae7b2** ✅ GitHub
 
 ---
 
