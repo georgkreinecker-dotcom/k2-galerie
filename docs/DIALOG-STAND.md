@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 08.04.26 – **Kasse: Mac zeigt Brother-Papier (z. B. 54×81 mm), iOS nicht** – Georg: am Mac passt das Format perfekt (Systemdialog + Treiber); auf dem iPhone/iPad gibt es **dieselben** Papier-Einstellungen **nicht** (AirPrint, Apple). Umsetzung: `receiptTabHintTouchHtml` im Bon (K2/VK2); gelber Mac-Hinweis mit **54×81 mm** als Beispiel. Tests + Build grün.
+**Letzter Stand:** 08.04.26 – **Kasse: Mac zeigt Brother-Papier (z. B. 54×81 mm), iOS nicht** – Georg: am Mac passt das Format perfekt (Systemdialog + Treiber); auf dem iPhone/iPad gibt es **dieselben** Papier-Einstellungen **nicht** (AirPrint, Apple). Umsetzung: `receiptTabHintTouchHtml` im Bon (K2/VK2); gelber Mac-Hinweis mit **54×81 mm** als Beispiel. Tests + Build grün. **Commit:** **cb15e93e** ✅ GitHub
 
 **Was wir JETZT tun:** Erwartung: exaktes Rollenformat am **Mac**; mobil nur bestmöglich.
 
