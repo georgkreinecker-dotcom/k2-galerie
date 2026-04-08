@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 08.04.26 – **Kasse: Mac zeigt Brother-Papier (z. B. 54×81 mm), iOS nicht** – Georg: am Mac passt das Format perfekt (Systemdialog + Treiber); auf dem iPhone/iPad gibt es **dieselben** Papier-Einstellungen **nicht** (AirPrint, Apple). Umsetzung: `receiptTabHintTouchHtml` im Bon (K2/VK2); gelber Mac-Hinweis mit **54×81 mm** als Beispiel. Tests + Build grün.
+
+**Was wir JETZT tun:** Erwartung: exaktes Rollenformat am **Mac**; mobil nur bestmöglich.
+
+---
+
 **Letzter Stand:** 08.04.26 – **Kasse mobil: Bon nach Druck – Tab zu + Rolle-Hinweis** – `attachPrintPopupAutoClose` (`afterprint` + `matchMedia('print')` für iOS); Bon-HTML: Hinweis **Rolle/mm statt A4**; `printReceipt`: `tabHint` auf Touch. Tests + Build grün. **Commit:** **6756ec57** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy „Ready“: iPhone/iPad Kassenbon drucken – Tab soll sich schließen; im System-Dialog **Papier Rolle/80 mm** wählen (Vorschau kann A4-ähnlich bleiben).

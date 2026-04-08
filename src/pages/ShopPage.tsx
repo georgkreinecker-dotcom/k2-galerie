@@ -217,7 +217,7 @@ function cssPrintRollMm(widthMm: number): string {
 /** Nur Bildschirm: Safari/Brother – Papierformat im Systemdialog muss zur Rolle passen (nicht A4). */
 function receiptBrotherMacPrintHintHtml(): string {
   return `<div class="receipt-print-hint-screen" role="note">
-  <strong>Brother-Rolle / Mac:</strong> Zeigt die Vorschau <strong>A4</strong> und der Bon ist nur ein <strong>kleiner Streifen</strong> → im Druckdialog <strong>Papierformat</strong> auf die <strong>eingelegte Rolle</strong> stellen (z. B. <strong>62 mm Endlos</strong> / DK-22251), <strong>nicht</strong> „210 × 297 mm“. <strong>Kopf- und Fußzeilen drucken</strong> aus. Breite: Admin → Einstellungen → Drucker (62 oder 80 mm). Wenn Papierformat nicht wählbar: Brother-Treiber prüfen oder <strong>Chrome</strong> probieren.
+  <strong>Brother-Rolle / Mac:</strong> Zeigt die Vorschau <strong>A4</strong> und der Bon ist nur ein <strong>kleiner Streifen</strong> → im Druckdialog <strong>Papierformat</strong> auf die <strong>eingelegte Rolle</strong> stellen (z. B. <strong>54×81 mm</strong>, <strong>62 mm Endlos</strong> / DK-22251), <strong>nicht</strong> „210 × 297 mm“. <strong>Kopf- und Fußzeilen drucken</strong> aus. Breite: Admin → Einstellungen → Drucker (62 oder 80 mm). Wenn Papierformat nicht wählbar: Brother-Treiber prüfen oder <strong>Chrome</strong> probieren.
 </div>`
 }
 
@@ -225,6 +225,22 @@ function receiptBrotherMacPrintHintHtml(): string {
 function receiptBrotherMacPrintHintHtmlIfDesktop(): string {
   if (isBonTouchDevice()) return ''
   return receiptBrotherMacPrintHintHtml()
+}
+
+/**
+ * Nur Touch: Am Mac liefert der Brother-Systemdialog echte Papierformate (z. B. 54×81 mm); iOS nur AirPrint – dieselben Optionen gibt es dort nicht.
+ */
+function receiptTabHintTouchHtml(
+  paperW: number,
+  kind: 'k2-kasse' | 'vk2-bon' | 'vk2-beleg'
+): string {
+  const firstLine =
+    kind === 'k2-kasse'
+      ? 'Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.'
+      : kind === 'vk2-bon'
+        ? 'Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.'
+        : 'Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.'
+  return `<div class="receipt-tab-hint">${firstLine}<br><strong>Mac vs. Handy:</strong> Am Mac zeigt der Brother-Druckdialog die passenden <strong>Papierformate</strong> (z. B. <strong>54×81 mm</strong>) – damit passt das Layout. Auf dem iPhone/iPad gibt es <strong>dieselben</strong> Einstellungen <strong>nicht</strong> (vereinfachter Druck über AirPrint – Apple, nicht unsere App). Wenn etwas wählbar ist: <strong>Rolle</strong> / ca. <strong>${paperW} mm</strong>, nicht A4 – sonst nur ein Streifen in der Vorschau.</div>`
 }
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
@@ -446,7 +462,7 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
     order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
+      ? receiptTabHintTouchHtml(paperW, 'vk2-bon')
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
@@ -487,7 +503,7 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
   const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
+      ? receiptTabHintTouchHtml(paperW, 'vk2-beleg')
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Beleg unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>

@@ -1,6 +1,6 @@
 // Automatisch beim Build erzeugt – nicht von Hand ändern
-export const BUILD_LABEL = '08.04.26 16:33'
-export const BUILD_TIMESTAMP = 1775658797441
+export const BUILD_LABEL = '08.04.26 16:43'
+export const BUILD_TIMESTAMP = 1775659409169
 
 /** QR-URL mit Stand (Cache-Busting) – Scan liefert immer aktuellen Build */
 export function urlWithBuildVersion(url: string): string {
