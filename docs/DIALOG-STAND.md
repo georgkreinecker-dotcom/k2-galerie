@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 08.04.26 – **Kasse mobil: Bon nach Druck – Tab zu + Rolle-Hinweis** – `attachPrintPopupAutoClose` (`afterprint` + `matchMedia('print')` für iOS); Bon-HTML: Hinweis **Rolle/mm statt A4**; `printReceipt`: `tabHint` auf Touch. Tests + Build grün.
+**Letzter Stand:** 08.04.26 – **Kasse mobil: Bon nach Druck – Tab zu + Rolle-Hinweis** – `attachPrintPopupAutoClose` (`afterprint` + `matchMedia('print')` für iOS); Bon-HTML: Hinweis **Rolle/mm statt A4**; `printReceipt`: `tabHint` auf Touch. Tests + Build grün. **Commit:** **6756ec57** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy „Ready“: iPhone/iPad Kassenbon drucken – Tab soll sich schließen; im System-Dialog **Papier Rolle/80 mm** wählen (Vorschau kann A4-ähnlich bleiben).
 
