@@ -94,34 +94,28 @@ function attachReceiptPrintPageSizing(printWindow: Window, widthMm = 80): void {
 }
 
 /**
- * Druckdialog im Pop-up – ohne setTimeout vor print().
- * Safari/iPad zeigt sonst kurz „automatischen Druck gesperrt“ (User-Geste geht durch Verzögerung verloren).
+ * Wie `ScreenshotExportAdmin` **`handleShareLabel`** (Etikett teilen / Werke): nach `document.write` + `document.close`
+ * **`setTimeout(..., 500)`**, dann **`print()`** – derselbe Ablauf, gleiche User-Geste.
+ * Bon: optional `receiptWidthMm` → `attachReceiptPrintPageSizing` (beforeprint → @page-Höhe Rolle).
  */
 function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: number): void {
   if (typeof receiptWidthMm === 'number') {
     attachReceiptPrintPageSizing(printWindow, receiptWidthMm)
-    injectReceiptPrintPageSizeMm(printWindow, receiptWidthMm)
-  }
-  try {
-    printWindow.focus()
-    printWindow.print()
-  } catch {
-    /* ignore */
   }
   setTimeout(() => {
     try {
-      printWindow.close()
+      printWindow.focus()
+      printWindow.print()
     } catch {
       /* ignore */
     }
-  }, 1000)
+  }, 500)
 }
 
 /**
- * **Derselbe synchrone Ablauf wie Etikett-Druck** (`ScreenshotExportAdmin` `handleShareLabel`, Desktop:
- * `window.open('', '_blank')` → `document.write(html)` → `document.close()`).
- * Kein `await` vor `window.open` – sonst ist die Klick-Geste weg und der Browser blockiert (5 km hin und her umsonst).
- * Zusätzlich: `attachReceiptPrintPageSizing` für ⌘P auf der Rolle.
+ * Wie Etikett **`handleOpenEtikettInNewTab`**: nur Tab – kein automatischer Druck.
+ * Schreiben wie **`handleShareLabel`**: `document.write` + `document.close` (ohne separates `document.open`).
+ * `attachReceiptPrintPageSizing` für ⌘P auf der Rolle.
  */
 function openBonHtmlInNewTab(html: string, widthMm = 80): void {
   const finish = (w: Window) => {
@@ -140,7 +134,6 @@ function openBonHtmlInNewTab(html: string, widthMm = 80): void {
     return
   }
   try {
-    w.document.open()
     w.document.write(html)
     w.document.close()
   } catch {
@@ -155,8 +148,13 @@ function openBonHtmlInNewTab(html: string, widthMm = 80): void {
   finish(w)
 }
 
-/** Nur Druckfarben + schmale Spalte; feste @page-Breite (mm) = Rolle/Etikett; Höhe fein per injectReceiptPrintPageSizeMm. */
+/**
+ * Nur Druckfarben + schmale Spalte; feste @page-Breite (mm) = Rolle/Etikett.
+ * Safari ignoriert oft `size: … auto` und zeigt A4 – dann wirkt der Bon als „Schnipsel“ oben links.
+ * Deshalb: feste große Höhe (Endlos) als Fallback; exakte Höhe setzt injectReceiptPrintPageSizeMm vor print().
+ */
 function cssPrintRollMm(widthMm: number): string {
+  const rollFallbackMm = 1200
   return `
 @media print {
   * {
@@ -164,7 +162,7 @@ function cssPrintRollMm(widthMm: number): string {
     print-color-adjust: exact;
   }
   @page {
-    size: ${widthMm}mm auto;
+    size: ${widthMm}mm ${rollFallbackMm}mm;
     margin: 0;
   }
   html, body {
@@ -172,13 +170,21 @@ function cssPrintRollMm(widthMm: number): string {
     max-width: ${widthMm}mm !important;
     height: auto !important;
     min-height: 0 !important;
+    box-sizing: border-box !important;
   }
   body {
-    margin: 0;
+    margin: 0 !important;
     padding: 0;
   }
 }
 `
+}
+
+/** Nur Bildschirm: Safari/Brother – Papierformat im Systemdialog muss zur Rolle passen (nicht A4). */
+function receiptBrotherMacPrintHintHtml(): string {
+  return `<div class="receipt-print-hint-screen" role="note">
+  <strong>Brother-Rolle / Mac:</strong> Zeigt die Vorschau <strong>A4</strong> und der Bon ist nur ein <strong>kleiner Streifen</strong> → im Druckdialog <strong>Papierformat</strong> auf die <strong>eingelegte Rolle</strong> stellen (z. B. <strong>62 mm Endlos</strong> / DK-22251), <strong>nicht</strong> „210 × 297 mm“. <strong>Kopf- und Fußzeilen drucken</strong> aus. Breite: Admin → Einstellungen → Drucker (62 oder 80 mm). Wenn Papierformat nicht wählbar: Brother-Treiber prüfen oder <strong>Chrome</strong> probieren.
+</div>`
 }
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
@@ -294,6 +300,8 @@ function buildK2Oek2ReceiptHtml(
           <title>Kassenbon</title>
           <style>
             ${cssPrintRollMm(paperW)}
+            .receipt-print-hint-screen { background: #fff8e6; border: 1px solid #e6a800; color: #1c1a18; padding: 10px 12px; margin: 0 0 8px 0; font: 13px/1.45 system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+            @media print { .receipt-print-hint-screen { display: none !important; } }
             .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, -apple-system, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
             @media print { .receipt-tab-hint { display: none !important; } }
             body {
@@ -332,6 +340,7 @@ function buildK2Oek2ReceiptHtml(
           </style>
         </head>
         <body>
+          ${receiptBrotherMacPrintHintHtml()}
           ${tabHintBlock}
           <div id="k2-receipt-root">
           <div class="header">
@@ -398,6 +407,8 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
       <style>${cssPrintRollMm(paperW)}
+      .receipt-print-hint-screen { background: #fff8e6; border: 1px solid #e6a800; color: #1c1a18; padding: 10px 12px; margin: 0 0 8px 0; font: 13px/1.45 system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+      @media print { .receipt-print-hint-screen { display: none !important; } }
       .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
       @media print { .receipt-tab-hint { display: none !important; } }
       body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: ${paperW}mm; max-width: ${paperW}mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
@@ -407,7 +418,7 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
       td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
       .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
       .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${tabHintBlock}<div id="k2-receipt-root">
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtml()}${tabHintBlock}<div id="k2-receipt-root">
       <div class="header"><strong>KASSENBON</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
       <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div><div style="font-size:8px">Bon-Nr.: ${order.orderNumber}</div>
       <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
@@ -435,13 +446,15 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
       <style>${cssPrintRollMm(paperW)}
+      .receipt-print-hint-screen { background: #fff8e6; border: 1px solid #e6a800; color: #1c1a18; padding: 10px 12px; margin: 0 0 8px 0; font: 13px/1.45 system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+      @media print { .receipt-print-hint-screen { display: none !important; } }
       .receipt-tab-hint { padding: 8px 6px; background: #eef6f8; color: #1c1a18; font: 11px/1.35 system-ui, sans-serif; text-align: center; border-bottom: 1px solid #ccc; }
       @media print { .receipt-tab-hint { display: none !important; } }
       body { font-family: 'Courier New', monospace; font-size: 9px; line-height: 1.25; width: ${paperW}mm; max-width: ${paperW}mm; margin: 0; padding: 4mm 3mm; color: #000; background: #fff; }
       @media screen { body { width: ${paperW}mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
       .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${tabHintBlock}<div id="k2-receipt-root">
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtml()}${tabHintBlock}<div id="k2-receipt-root">
       <div class="header"><strong>AUSGABENBELEG</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
       <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div>
       <div class="total">Betrag: € ${eintrag.betrag.toFixed(2)}</div>
@@ -1459,7 +1472,6 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.open()
     printWindow.document.write(buildVk2BonHtml(order, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
@@ -1476,7 +1488,6 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.open()
     printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
@@ -1496,7 +1507,6 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.open()
     printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich, { paperWidthMm: receiptPaperWidthMm }))
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
