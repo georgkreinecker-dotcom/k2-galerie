@@ -3,46 +3,19 @@
  * keine Brother-Papierformate anbietet. Gleiche HTML-Quelle wie der Druck-Tab; Raster → eine PDF-Seite.
  */
 
+import { shareBlobAsFile, type SharePrintFileResult } from './sharePrintFile'
+
 export function receiptPdfHeightMmFromCanvas(canvas: HTMLCanvasElement, paperWidthMm: number): number {
   if (canvas.width < 1 || canvas.height < 1) return Math.max(25, paperWidthMm)
   const h = (canvas.height / canvas.width) * paperWidthMm
   return Math.min(5000, Math.max(25, h))
 }
 
-export type ShareReceiptPdfResult = 'shared' | 'downloaded' | 'cancelled' | 'failed'
+export type ShareReceiptPdfResult = SharePrintFileResult
 
-/**
- * Teilt die PDF (iOS: System-Dialog → Drucken / Brother / Dateien) oder lädt sie herunter.
- */
+/** Teilt die PDF (iOS: System-Dialog → Drucken / Brother / Dateien) oder lädt sie herunter. */
 export async function shareReceiptPdfBlob(blob: Blob, filename: string): Promise<ShareReceiptPdfResult> {
-  const file = new File([blob], filename, { type: 'application/pdf' })
-  try {
-    if (
-      typeof navigator !== 'undefined' &&
-      typeof navigator.share === 'function' &&
-      typeof navigator.canShare === 'function' &&
-      navigator.canShare({ files: [file] })
-    ) {
-      await navigator.share({ files: [file], title: 'Kassenbon' })
-      return 'shared'
-    }
-  } catch (e: unknown) {
-    const name = e && typeof e === 'object' && 'name' in e ? String((e as { name?: string }).name) : ''
-    if (name === 'AbortError') return 'cancelled'
-  }
-  try {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    return 'downloaded'
-  } catch {
-    return 'failed'
-  }
+  return shareBlobAsFile(blob, filename, { title: 'Kassenbon', mimeType: 'application/pdf' })
 }
 
 /**

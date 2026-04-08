@@ -109,6 +109,7 @@ import { stripBase64FromArtworks } from '../src/utils/artworkExport'
 import { parseEkFromForm } from '../src/utils/artworkEkVk'
 import { apiPost, apiGet } from '../src/utils/apiClient'
 import { safeReload } from '../src/utils/env'
+import { shareBlobAsFile } from '../src/utils/sharePrintFile'
 import { compressImageForStorage } from '../src/utils/compressImageForStorage'
 import { setKassabuchLizenzStufe } from '../src/utils/kassabuchStorage'
 import { processImageForSave } from '../src/utils/imageProcessingTool'
@@ -12525,6 +12526,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       const blob = await getEtikettBlob(lm.width, lm.height, first)
       shareFallbackBlobRef.current = blob
       if (isMobile) {
+        const name = `etikett-${String(first?.number ?? 'werk').replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
+        const r = await shareBlobAsFile(blob, name, {
+          title: `Etikett ${first?.number}`,
+          text: `${first?.title || ''} – K2 Galerie`,
+          mimeType: 'image/png',
+        })
+        if (r === 'shared' || r === 'downloaded') {
+          closeShareFallbackOverlay()
+          return
+        }
         setShareFallbackImageUrl(URL.createObjectURL(blob))
         setShowShareFallbackOverlay(true)
       } else {
@@ -12580,22 +12591,15 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     }
   }
 
-  const canUseShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
-
   const handleDownloadEtikettFromOverlay = () => {
     const blob = shareFallbackBlobRef.current
     if (!blob || !savedArtwork) return
     const name = `etikett-${savedArtwork.number}.png`.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = name
-    a.style.display = 'none'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    downloadBlobAsFile(blob, name)
   }
+
+  const canUseShareEtikett =
+    typeof navigator !== 'undefined' && typeof navigator.share === 'function'
 
   const handleShareFromFallbackOverlay = async () => {
     const blob = shareFallbackBlobRef.current
@@ -12603,20 +12607,20 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
       alert('Etikett-Bild nicht mehr verfügbar. Bitte erneut „Etikett teilen“ im Druck-Modal tippen.')
       return
     }
-    if (!canUseShare) {
-      handleDownloadEtikettFromOverlay()
+    const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
+    const r = await shareBlobAsFile(blob, name, {
+      title: `Etikett ${savedArtwork.number}`,
+      text: `${savedArtwork.title || ''} – K2 Galerie`,
+      mimeType: 'image/png',
+    })
+    if (r === 'cancelled') return
+    if (r === 'shared' || r === 'downloaded') {
+      closeShareFallbackOverlay()
       return
     }
-    const file = new File([blob], `etikett-${savedArtwork.number}.png`, { type: 'image/png' })
-    try {
-      await navigator.share({ title: `Etikett ${savedArtwork.number}`, files: [file] })
-      closeShareFallbackOverlay()
-    } catch (e) {
-      const err = e as Error
-      if (err?.name === 'AbortError') return
-      const msg = err?.message || ''
-      alert('Teilen fehlgeschlagen' + (msg ? ': ' + msg : '') + '.\n\nNutze „Etikett herunterladen“ und öffne die Datei in Brother iPrint & Label.')
-    }
+    alert(
+      'Teilen war nicht möglich.\n\nNutze „Etikett herunterladen“ und öffne die Datei in Brother iPrint & Label.'
+    )
   }
 
   /** Erzeugt Etikett als PNG-Bild in exakter Etikettengröße (widthMm x heightMm). Brother 300 DPI = 300/25.4 px/mm. Optional artwork für Queue-Druck. */
@@ -12712,44 +12716,24 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     })
   }
 
-  /** Ein Tipp → auf Mobil: Teilen-Sheet (Speichern / iPrint&Label), sonst Download. */
+  /** Ein Tipp → gleicher Standard wie Kassenbon-PDF: Teilen mit Datei, sonst Download. */
   const handleDownloadEtikettDirect = async () => {
     if (!savedArtwork) return
     try {
       const blob = await getEtikettBlob()
       const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
-      const file = new File([blob], name, { type: 'image/png' })
-
-      if (isMobile && typeof navigator !== 'undefined' && navigator.share) {
-        try {
-          await navigator.share({
-            title: `Etikett ${savedArtwork.number}`,
-            text: `${savedArtwork.title || ''} – K2 Galerie`,
-            files: [file]
-          })
-          setShowPrintModal(false)
-        } catch (shareErr: unknown) {
-          const err = shareErr as Error
-          if (err?.name === 'AbortError') return
-          const msg = err?.message || ''
-          if (/freigegeben|cannot be shared|Share canceled/i.test(msg)) {
-            alert('Teilen wurde abgebrochen oder ist hier nicht möglich.\n\nVersuche: „Etikett in neuem Tab öffnen“ (unten) → im Tab langes Drücken auf das Bild → „Bild speichern“ oder „In Fotos speichern“. Dann in Brother iPrint & Label öffnen.')
-          } else {
-            alert('Teilen fehlgeschlagen: ' + (msg || 'Unbekannter Fehler') + '.\n\nNutze „Etikett in neuem Tab öffnen“ (unten), dann Bild speichern und in iPrint & Label öffnen.')
-          }
-        }
+      const r = await shareBlobAsFile(blob, name, {
+        title: `Etikett ${savedArtwork.number}`,
+        text: `${savedArtwork.title || ''} – K2 Galerie`,
+        mimeType: 'image/png',
+      })
+      if (r === 'cancelled') return
+      if (r === 'failed') {
+        alert(
+          'Speichern/Teilen war nicht möglich.\n\nVersuche „In neuem Tab öffnen“ oder langes Drücken auf die Vorschau.'
+        )
         return
       }
-
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = name
-      a.style.display = 'none'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
       setShowPrintModal(false)
     } catch (e) {
       alert((e as Error)?.message || 'Etikett konnte nicht erzeugt werden. Bitte erneut versuchen.')
@@ -12762,6 +12746,16 @@ html, body { margin: 0; padding: 0; background: #fff; -webkit-print-color-adjust
     try {
       const blob = await getEtikettBlob()
       if (isMobile) {
+        const name = `etikett-${String(savedArtwork.number).replace(/[^a-zA-Z0-9._-]/g, '_')}.png`
+        const r = await shareBlobAsFile(blob, name, {
+          title: `Etikett ${savedArtwork.number}`,
+          text: `${savedArtwork.title || ''} – K2 Galerie`,
+          mimeType: 'image/png',
+        })
+        if (r === 'shared' || r === 'downloaded') {
+          closeShareFallbackOverlay()
+          return
+        }
         shareFallbackBlobRef.current = blob
         setShareFallbackImageUrl(URL.createObjectURL(blob))
         setShowShareFallbackOverlay(true)
@@ -29158,7 +29152,7 @@ ${name}`
         <div className="admin-modal-overlay" onClick={closeShareFallbackOverlay}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '420px', textAlign: 'center', border: '1px solid #e0e0e0', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
             <div className="admin-modal-header">
-              <h2>{canUseShare ? 'Etikett teilen' : 'Etikett herunterladen'}</h2>
+              <h2>{canUseShareEtikett ? 'Etikett teilen' : 'Etikett herunterladen'}</h2>
               <button type="button" className="admin-modal-close" onClick={closeShareFallbackOverlay} aria-label="Schließen">×</button>
             </div>
             <div className="admin-modal-content" style={{ padding: '1rem' }}>
@@ -29168,7 +29162,7 @@ ${name}`
               <div style={{ background: '#fff', padding: '1rem', borderRadius: 8, margin: '0.5rem 0' }}>
                 <img src={shareFallbackImageUrl} alt="Etikett" style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto', border: 'none', outline: 'none' }} />
               </div>
-              {canUseShare ? (
+              {canUseShareEtikett ? (
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.75rem 0' }}>→ Brother iPrint &amp; Label wählen</p>
               ) : (
                 <p style={{ fontSize: '0.85rem', color: '#666', margin: '0.75rem 0' }}>Datei öffnen → Brother iPrint &amp; Label → Drucken</p>
@@ -29188,7 +29182,7 @@ ${name}`
                   cursor: 'pointer'
                 }}
               >
-                {canUseShare ? '📤 Etikett teilen' : '⬇️ Etikett herunterladen'}
+                {canUseShareEtikett ? '📤 Etikett teilen' : '⬇️ Etikett herunterladen'}
               </button>
               <p style={{ fontSize: '0.8rem', color: '#666', margin: '0.5rem 0 0.25rem' }}>Immer zum Drucker (falls Teilen nicht geht):</p>
               <button
