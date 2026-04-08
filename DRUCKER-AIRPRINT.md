@@ -78,6 +78,22 @@ Mac-Apps, die **AirPrint auf beliebigen Druckern** aktivieren. Brother an den Ma
 
 ---
 
+## Wenn Brother + Safari trotzdem nicht – das kommt vor
+
+Stimmt: **Nicht nur du** – **Safari**, **System-Druckdialog**, **WLAN**, **Treiber** und **Gerät** hängen zusammen. Wenn der **Brother defekt** oder **nur halb erreichbar** ist, scheitern **auch** Dinge wie **One-Click** (der braucht denselben Drucker im Netz mit **IPP**).
+
+**Reihenfolge, die in der Praxis am häufigsten hilft:**
+
+| Priorität | Etikett (29×90) | Kassenbon (Rolle) |
+|-----------|-----------------|---------------------|
+| **1** | **Nicht** auf „nur Safari drucken“ verlassen. **Etikett speichern / teilen** → **Brother iPrint & Label** öffnen → dort drucken (Bluetooth oder WLAN zum QL). Das umgeht Safari. | **Chrome** statt Safari probieren – oder Drucker am **Mac** einrichten, Bon aus dem **Systemdialog** auf diesen Drucker. **K2 braucht dafür keinen Brother** – nur einen Drucker, den macOS/iOS als Rolle kennt. |
+| **2** | Brother per **IP am Mac** (Drucker & Scanner), ggf. **„für iPhone/iPad freigeben“** – dann vom iPad den **Mac** als Drucker wählen. | Gleicher Weg: Auftrag über den **Mac** zum Drucker, wenn direkt verbinden hakt. |
+| **3** | **One-Click** (`npm run print-server`) nur, wenn der Brother unter seiner **IP** erreichbar ist **und** Etikett per Netz sonst klappt – sonst zuerst 1. | One-Click betrifft **Etikett**, nicht den Bon-Dialog in der Kasse. |
+
+**Kurz:** Wenn der **Brother wirklich nicht** – zuerst **App-Weg** fürs Etikett; **Bon** über **anderen Drucker** oder **Chrome**; **Hardware** reparieren oder ersetzen, wenn nichts Vernünftiges mehr aus dem Gerät kommt.
+
+---
+
 ## Brother-Modelle
 
 | Modell | AirPrint | Verpackung |
