@@ -14,6 +14,7 @@ import {
   MUSTER_TEXTE,
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
+  K2_GALERIE_PUBLIC_BRAND,
 } from '../config/tenantConfig'
 import { getEntdeckenHeroPathUrl } from '../config/pageContentEntdecken'
 import {
@@ -63,8 +64,8 @@ function isPmvLeitfadenFile(file: string): boolean {
 }
 
 function renderDeckblattCover(_isOeffentlich: boolean): ReactNode {
-  /** Immer nur „K2“ – kein Galeriename (Kunst & Keramik), gültig für K2 und ök2-Deckblatt. */
-  const coverTitle = 'K2'
+  /** Genau öffentliche Marke „K2 Galerie“ – kein Zusatz (z. B. Kunst & Keramik). */
+  const coverTitle = K2_GALERIE_PUBLIC_BRAND
   const heroPath =
     typeof window !== 'undefined' ? getEntdeckenHeroPathUrl() : ENTDECKEN_HERO_DEFAULT_PATH
   const heroSrc =
@@ -284,6 +285,19 @@ export default function PraesentationsmappeVollversionPage() {
     : isVk2Classic
       ? 'Orientierung, danach Beispiele – die Seitenleiste zeigt die Kapitel.'
       : ''
+
+  /** Druck-Kopfzeile (Safari/Chrome): nutzt document.title – ohne „Kunst & Keramik“. */
+  useEffect(() => {
+    const prev = document.title
+    document.title = isVk2Promo
+      ? 'VK2 – Präsentationsmappe'
+      : isVk2Classic
+        ? 'Präsentationsmappe VK2'
+        : `Präsentationsmappe – ${K2_GALERIE_PUBLIC_BRAND}`
+    return () => {
+      document.title = prev
+    }
+  }, [isVk2Promo, isVk2Classic])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
@@ -722,6 +736,7 @@ export default function PraesentationsmappeVollversionPage() {
                   idx === 0 ? 'pmv-chapter-first' : '',
                   isPmvLeitfadenFile(doc.file) ? 'pmv-chapter-block--leitfaden' : '',
                   doc.file === '00-INDEX.md' ? 'pmv-chapter-block--toc-only' : '',
+                  doc.file === PMV_DECKBLATT_FILE && !isAnyVk2 ? 'pmv-chapter-block--deckblatt-print' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}

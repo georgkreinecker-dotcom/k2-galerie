@@ -13,6 +13,7 @@ import {
   PRODUCT_WERBESLOGAN,
   PRODUCT_WERBESLOGAN_2,
   MUSTER_TEXTE,
+  K2_GALERIE_PUBLIC_BRAND,
 } from '../config/tenantConfig'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { useWerbemittelPrintContext } from '../hooks/useWerbemittelPrintContext'
@@ -93,7 +94,7 @@ export default function PraesentationsmappePage() {
     ? 'VK2 bündelt Vereinsalltag in einer Oberfläche – klarer Ablauf, keine doppelte Pflege.'
     : 'Die K2-Galerie-Software bündelt Galerie, Verkauf und Außenauftritt in einer Oberfläche – skalierbar über „Mein Weg“ und die Sparten, überall im Browser und als PWA.'
 
-  const coverTitle = isVk2Variante ? 'VK2 Vereinsplattform' : 'K2'
+  const coverTitle = isVk2Variante ? 'VK2 Vereinsplattform' : K2_GALERIE_PUBLIC_BRAND
   const badgeText = isVk2Variante ? 'Kurzversion (VK2)' : 'Kurzversion'
 
   return (

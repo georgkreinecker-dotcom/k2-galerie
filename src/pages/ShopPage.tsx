@@ -33,6 +33,17 @@ function parseArtworkPriceEur(raw: unknown): number {
   return Number.isFinite(n) ? n : 0
 }
 
+/**
+ * Handy/iPad: „Bon im neuen Tab“ + Fokus aufs Pop-up kann Vollbild-Overlay hängen lassen / Bedienung blockieren.
+ * Druckdialog bleibt der zuverlässige Weg (Teilen → Drucken).
+ */
+function isBonTouchDevice(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return (
+    /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.maxTouchPoints ?? 0) > 0
+  )
+}
+
 /** CSS-Px → mm (96 CSS-Px = 1 Zoll) – für Bon-Höhe nach Layout (iPad/Safari ignoriert oft `size: … auto`). */
 function pxToMmCss(px: number): number {
   return (px / 96) * 25.4
@@ -115,10 +126,12 @@ function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: numbe
 function openBonHtmlInNewTab(html: string, widthMm = 80): void {
   const finish = (w: Window) => {
     attachReceiptPrintPageSizing(w, widthMm)
-    try {
-      w.focus()
-    } catch {
-      /* ignore */
+    if (!isBonTouchDevice()) {
+      try {
+        w.focus()
+      } catch {
+        /* ignore */
+      }
     }
   }
   const w = window.open('', '_blank')
@@ -2130,7 +2143,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 {vk2BonSaleModal.heading === 'reprint' ? '🖨️ Bon erneut drucken' : '✅ Einnahme gespeichert'}
               </h2>
               <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
-                Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett, dann Teilen oder ⌘P.
+                {isBonTouchDevice() ? (
+                  <>
+                    Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> – im Systemfenster <strong>Teilen</strong> →{' '}
+                    <strong>Drucken</strong> (oder AirPrint).
+                  </>
+                ) : (
+                  <>
+                    Kassenbon (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim
+                    Etikett, dann Teilen oder ⌘P.
+                  </>
+                )}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button
@@ -2152,25 +2175,27 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 >
                   🖨️ Druckdialog (Bon)
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    openVk2BonInNewTab(vk2BonSaleModal.order)
-                    setVk2BonSaleModal(null)
-                  }}
-                  style={{
-                    padding: '0.65rem 1rem',
-                    background: s.bgElevated,
-                    color: '#1c1a18',
-                    border: `1px solid #b54a1e`,
-                    borderRadius: s.radiusSm,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📄 Bon im neuen Tab
-                </button>
+                {!isBonTouchDevice() ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openVk2BonInNewTab(vk2BonSaleModal.order)
+                      queueMicrotask(() => setVk2BonSaleModal(null))
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: s.bgElevated,
+                      color: '#1c1a18',
+                      border: `1px solid #b54a1e`,
+                      borderRadius: s.radiusSm,
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📄 Bon im neuen Tab
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => setVk2BonSaleModal(null)}
@@ -2220,7 +2245,15 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             >
               <h2 id="vk2-ausgabe-modal-title" style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: s.text }}>📄 Ausgabenbeleg</h2>
               <p style={{ margin: '0 0 1rem', fontSize: '0.9rem', color: s.muted, lineHeight: 1.45 }}>
-                Beleg (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett.
+                {isBonTouchDevice() ? (
+                  <>
+                    Beleg (80&nbsp;mm): <strong>Druckdialog</strong> – danach <strong>Teilen</strong> → <strong>Drucken</strong>.
+                  </>
+                ) : (
+                  <>
+                    Beleg (80&nbsp;mm): <strong>Druckdialog</strong> oder <strong>im neuen Tab</strong> – wie beim Etikett.
+                  </>
+                )}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <button
@@ -2242,25 +2275,27 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                 >
                   🖨️ Druckdialog (Beleg)
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    openVk2AusgabeBelegInNewTab(vk2AusgabeChoiceModal.eintrag)
-                    setVk2AusgabeChoiceModal(null)
-                  }}
-                  style={{
-                    padding: '0.65rem 1rem',
-                    background: s.bgElevated,
-                    color: '#1c1a18',
-                    border: `1px solid #b54a1e`,
-                    borderRadius: s.radiusSm,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📄 Beleg im neuen Tab
-                </button>
+                {!isBonTouchDevice() ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      openVk2AusgabeBelegInNewTab(vk2AusgabeChoiceModal.eintrag)
+                      queueMicrotask(() => setVk2AusgabeChoiceModal(null))
+                    }}
+                    style={{
+                      padding: '0.65rem 1rem',
+                      background: s.bgElevated,
+                      color: '#1c1a18',
+                      border: `1px solid #b54a1e`,
+                      borderRadius: s.radiusSm,
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    📄 Beleg im neuen Tab
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => setVk2AusgabeChoiceModal(null)}
@@ -2285,7 +2320,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
             <Link to={adminLink} style={{ fontSize: '0.9rem', color: s.muted, textDecoration: 'none' }}>← Zurück</Link>
           </div>
           <p style={{ color: s.muted, marginBottom: '1.25rem', fontSize: '0.95rem' }}>
-            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag). Mit „Bon drucken“: nach dem Speichern <strong>Druckdialog</strong> oder <strong>neuer Tab</strong> (wie Etikett). Ausgabe erfassen für Kassaausgänge (Material, Honorar, …).
+            Einnahme erfassen (z. B. Eintritt, Spende, Mitgliedsbeitrag). Mit „Bon drucken“: nach dem Speichern{' '}
+            <strong>Druckdialog</strong>
+            {isBonTouchDevice() ? (
+              <> (Teilen → Drucken).</>
+            ) : (
+              <>
+                {' '}
+                oder <strong>neuer Tab</strong> (wie Etikett).
+              </>
+            )}{' '}
+            Ausgabe erfassen für Kassaausgänge (Material, Honorar, …).
           </p>
           <div style={{ background: s.bgCard, borderRadius: s.radius, padding: '1.25rem', marginBottom: '1rem', boxShadow: s.shadow }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: s.text, marginBottom: '0.35rem' }}>Betrag (€)</label>
@@ -2421,7 +2466,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                               {new Date(item.order.date).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })} · € {typeof item.order.total === 'number' ? item.order.total.toFixed(2) : item.order.total} {(item.order.items && item.order.items[0] && item.order.items[0].title) ? ` · ${item.order.items[0].title}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Einnahme)</span>
                             </span>
                             <button type="button" onClick={() => { setVk2BonSaleModal({ order: item.order, heading: 'reprint' }) }} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Bon</button>
-                            <button type="button" title="Bon im neuen Tab – Teilen/Drucken" onClick={() => { openVk2BonInNewTab(item.order) }} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
+                            {!isBonTouchDevice() ? (
+                              <button type="button" title="Bon im neuen Tab – Teilen/Drucken" onClick={() => { openVk2BonInNewTab(item.order) }} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
+                            ) : null}
                             <button type="button" onClick={() => handleVk2Storno(item.order)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
                         ) : (
@@ -2430,7 +2477,9 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                               {item.eintrag.datum} · € {item.eintrag.betrag.toFixed(2)} {item.eintrag.verwendungszweck ? ` · ${item.eintrag.verwendungszweck}` : ''} <span style={{ color: s.muted, fontSize: '0.8em' }}>(Ausgabe)</span>
                             </span>
                             <button type="button" onClick={() => setVk2AusgabeChoiceModal({ eintrag: item.eintrag })} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: s.accent, background: 'none', border: `1px solid ${s.accent}`, borderRadius: 4, cursor: 'pointer' }}>Beleg</button>
-                            <button type="button" title="Beleg im neuen Tab" onClick={() => openVk2AusgabeBelegInNewTab(item.eintrag)} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
+                            {!isBonTouchDevice() ? (
+                              <button type="button" title="Beleg im neuen Tab" onClick={() => openVk2AusgabeBelegInNewTab(item.eintrag)} style={{ padding: '0.2rem 0.45rem', fontSize: '0.75rem', color: s.text, background: s.bgElevated, border: `1px solid ${s.border}`, borderRadius: 4, cursor: 'pointer' }}>📄</button>
+                            ) : null}
                             <button type="button" onClick={() => handleVk2StornoAusgabe(item.eintrag)} style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', color: '#fff', background: '#b54a1e', border: 'none', borderRadius: 4, cursor: 'pointer' }}>Storno</button>
                           </>
                         )}
@@ -2528,8 +2577,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               ) : null}
             </p>
             <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
-              <strong>Kassenbon (80&nbsp;mm):</strong> Druckdialog <strong>oder</strong> neuer Tab (wie Etikett) – dann Teilen/⌘P.
-              {' '}Alternativ: <strong>Rechnung A4</strong>.
+              {isBonTouchDevice() ? (
+                <>
+                  <strong>Kassenbon (80&nbsp;mm):</strong> <strong>Druckdialog</strong> – danach <strong>Teilen</strong> →{' '}
+                  <strong>Drucken</strong>. Alternativ: <strong>Rechnung A4</strong>.
+                </>
+              ) : (
+                <>
+                  <strong>Kassenbon (80&nbsp;mm):</strong> Druckdialog <strong>oder</strong> neuer Tab (wie Etikett) – dann
+                  Teilen/⌘P. Alternativ: <strong>Rechnung A4</strong>.
+                </>
+              )}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
@@ -2551,25 +2609,27 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               >
                 🖨️ Kassenbon – Druckdialog
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  openReceiptInNewTab(salePrintModal.order)
-                  setSalePrintModal(null)
-                }}
-                style={{
-                  padding: '0.65rem 1rem',
-                  background: s.bgElevated,
-                  color: '#1c1a18',
-                  border: `1px solid #b54a1e`,
-                  borderRadius: s.radiusSm,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  cursor: 'pointer'
-                }}
-              >
-                📄 Kassenbon – im neuen Tab
-              </button>
+              {!isBonTouchDevice() ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    openReceiptInNewTab(salePrintModal.order)
+                    queueMicrotask(() => setSalePrintModal(null))
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📄 Kassenbon – im neuen Tab
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => {
@@ -2642,7 +2702,17 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               Nr. {k2ReprintOrderModal.order?.orderNumber} · €{(k2ReprintOrderModal.order?.total || 0).toFixed(2)}
             </p>
             <p style={{ margin: '0 0 1rem', fontSize: '0.88rem', color: '#5c5650', lineHeight: 1.45 }}>
-              <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – ohne Zwischen-Dialog (Safari-kompatibel).
+              {isBonTouchDevice() ? (
+                <>
+                  <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – am Handy/iPad{' '}
+                  <strong>Druckdialog</strong> nutzen (Teilen → Drucken).
+                </>
+              ) : (
+                <>
+                  <strong>Kassenbon (80&nbsp;mm)</strong> oder <strong>Rechnung A4</strong> – ohne Zwischen-Dialog
+                  (Safari-kompatibel).
+                </>
+              )}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <button
@@ -2664,25 +2734,27 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
               >
                 🖨️ Kassenbon – Druckdialog
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  openReceiptInNewTab(k2ReprintOrderModal.order)
-                  setK2ReprintOrderModal(null)
-                }}
-                style={{
-                  padding: '0.65rem 1rem',
-                  background: s.bgElevated,
-                  color: '#1c1a18',
-                  border: `1px solid #b54a1e`,
-                  borderRadius: s.radiusSm,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  cursor: 'pointer'
-                }}
-              >
-                📄 Kassenbon – neuer Tab
-              </button>
+              {!isBonTouchDevice() ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    openReceiptInNewTab(k2ReprintOrderModal.order)
+                    queueMicrotask(() => setK2ReprintOrderModal(null))
+                  }}
+                  style={{
+                    padding: '0.65rem 1rem',
+                    background: s.bgElevated,
+                    color: '#1c1a18',
+                    border: `1px solid #b54a1e`,
+                    borderRadius: s.radiusSm,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📄 Kassenbon – neuer Tab
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => {
@@ -3234,26 +3306,28 @@ ${!ustId ? '<p style="font-size: 9px;">Kleinunternehmer gem. § 6 Abs. 1 Z 27 US
                       <span style={{ color: s.accent }}>€{(order.total || 0).toFixed(2)}</span>
                       <span style={{ fontSize: '0.85rem' }}>🖨️</span>
                     </button>
-                    <button
-                      type="button"
-                      title="Bon im neuen Tab (wie Etikett) – dann Teilen oder Drucken"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openReceiptInNewTab(order)
-                      }}
-                      style={{
-                        padding: '0.45rem 0.55rem',
-                        background: s.bgCard,
-                        border: `1px solid ${s.border}`,
-                        borderRadius: '8px',
-                        color: s.text,
-                        fontSize: '0.85rem',
-                        cursor: 'pointer',
-                        lineHeight: 1
-                      }}
-                    >
-                      📄
-                    </button>
+                    {!isBonTouchDevice() ? (
+                      <button
+                        type="button"
+                        title="Bon im neuen Tab (wie Etikett) – dann Teilen oder Drucken"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openReceiptInNewTab(order)
+                        }}
+                        style={{
+                          padding: '0.45rem 0.55rem',
+                          background: s.bgCard,
+                          border: `1px solid ${s.border}`,
+                          borderRadius: '8px',
+                          color: s.text,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          lineHeight: 1
+                        }}
+                      >
+                        📄
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); handleStornoOrder(order) }}

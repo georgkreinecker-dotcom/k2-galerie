@@ -289,6 +289,22 @@ export const PRAESENTATIONSMAPPE_MARKDOWN_STYLES = `
       .pmv-deckblatt-cover .pmv-cover-slogan2 { font-size: 11pt !important; margin-bottom: 0 !important; color: #fff !important; }
       .pmv-deckblatt-cover .pmv-cover-img-wrap { flex: 1; max-width: 95%; min-height: 0; }
       .pmv-deckblatt-cover .pmv-cover-img { max-height: 180mm; width: auto; margin: 0 auto; object-fit: contain; }
+      /* Gesamtmappe (Bulk-Druck): Deckblatt eine Seite, nicht teilen; danach nächstes Kapitel */
+      .pmv-chapter-block--deckblatt-print {
+        page-break-inside: avoid !important;
+        page-break-after: always !important;
+        margin-bottom: 0 !important;
+      }
+      .pmv-chapter-block--deckblatt-print .pmv-deckblatt-cover {
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+      }
+      .pmv-chapter-block--deckblatt-print .pmv-deckblatt-cover .pmv-cover-img {
+        max-height: 118mm !important;
+      }
+      .pmv-chapter-block--deckblatt-print .pmv-deckblatt-cover .pmv-cover-img-wrap {
+        flex: 0 1 auto !important;
+      }
       .pmv-chapter-block { page-break-before: auto !important; margin-bottom: 0.35em !important; }
       .pmv-chapter-block.pmv-chapter-first { page-break-before: auto !important; }
       .pmv-chapter-block--leitfaden {
