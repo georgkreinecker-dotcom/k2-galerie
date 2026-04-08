@@ -187,6 +187,12 @@ function receiptBrotherMacPrintHintHtml(): string {
 </div>`
 }
 
+/** Nur Desktop ohne Touch: auf Handy/iPad überdeckt der Block den Bon und wirkt wie „feststecken“ – dort weglassen. */
+function receiptBrotherMacPrintHintHtmlIfDesktop(): string {
+  if (isBonTouchDevice()) return ''
+  return receiptBrotherMacPrintHintHtml()
+}
+
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
 const s = {
   bgDark: '#f8f7f5',          // Neutrales Warmweiß
@@ -289,7 +295,9 @@ function buildK2Oek2ReceiptHtml(
     .join('')
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
+    ? isBonTouchDevice()
+      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.</div>`
+      : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
     : ''
   return `
       <!DOCTYPE html>
@@ -340,7 +348,7 @@ function buildK2Oek2ReceiptHtml(
           </style>
         </head>
         <body>
-          ${receiptBrotherMacPrintHintHtml()}
+          ${receiptBrotherMacPrintHintHtmlIfDesktop()}
           ${tabHintBlock}
           <div id="k2-receipt-root">
           <div class="header">
@@ -403,7 +411,9 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
   const paymentText =
     order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
+    ? isBonTouchDevice()
+      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.</div>`
+      : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
       <style>${cssPrintRollMm(paperW)}
@@ -418,7 +428,7 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
       td { padding: 2px 1px; border-bottom: 1px solid #ccc; }
       .total { margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
       .payment { margin-top: 6px; padding-top: 4px; border-top: 1px solid #000; font-size: 8px; text-align: center; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtml()}${tabHintBlock}<div id="k2-receipt-root">
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtmlIfDesktop()}${tabHintBlock}<div id="k2-receipt-root">
       <div class="header"><strong>KASSENBON</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
       <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div><div style="font-size:8px">Bon-Nr.: ${order.orderNumber}</div>
       <table><thead><tr><th style="text-align:center">Pos</th><th>Bezeichnung</th><th style="text-align:center">Menge</th><th style="text-align:right">EP</th><th style="text-align:right">Betrag</th></tr></thead><tbody>${itemsRows}</tbody></table>
@@ -442,7 +452,9 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
   })
   const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
   const tabHintBlock = opts?.tabHint
-    ? `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Beleg unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
+    ? isBonTouchDevice()
+      ? `<div class="receipt-tab-hint">Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.</div>`
+      : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Beleg unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
       <style>${cssPrintRollMm(paperW)}
@@ -454,7 +466,7 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
       @media screen { body { width: ${paperW}mm; margin: 20px auto; border: 1px dashed #ccc; } }
       .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 3px; }
       .total { margin-top: 6px; padding-top: 3px; border-top: 1px solid #000; font-size: 9px; font-weight: bold; }
-      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtml()}${tabHintBlock}<div id="k2-receipt-root">
+      .footer { margin-top: 8px; text-align: center; font-size: 6px; }</style></head><body>${receiptBrotherMacPrintHintHtmlIfDesktop()}${tabHintBlock}<div id="k2-receipt-root">
       <div class="header"><strong>AUSGABENBELEG</strong><br><span style="font-size:7px">${sellerName.replace(/</g, '&lt;')}</span>${sellerAddress ? '<br><span style="font-size:7px">' + sellerAddress.replace(/</g, '&lt;') + '</span>' : ''}${sellerContact ? '<br><span style="font-size:7px">' + sellerContact.replace(/</g, '&lt;') + '</span>' : ''}</div>
       <div style="margin:4px 0;font-size:8px">Datum: ${dateStr}</div>
       <div class="total">Betrag: € ${eintrag.betrag.toFixed(2)}</div>
