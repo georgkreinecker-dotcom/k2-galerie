@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 08.04.26 – **Kasse mobil: Bon-Tab ohne Mac/Brother-Wand** – gelber **Brother-Rolle / Mac**-Hinweis nur noch **ohne Touch**; Handy/iPad: **kurzer** Hinweis (Teilen → Drucken, Tab schließen). Tests + Build grün. **Commit:** **019f675d** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy Kasse am Handy: Bon im Tab – oben nur eine Zeile, Bon darunter sichtbar; zurück = Tab schließen.
+
+---
+
 **Letzter Stand:** 08.04.26 – **Kasse Mac: Bon wie Etikett „Teilen / Werke“** – `triggerPrintDialogFromPopup` **1:1** wie `handleShareLabel`: nach `document.write` / `close` **`setTimeout(500)`** → **`focus()`** + **`print()`**; **kein** `document.open` vor `write`; Bon-Pfade (`printReceipt`, VK2-Bon/Beleg, `openBonHtmlInNewTab`) angeglichen. Regel: **ein-standard-problem.mdc** (Kassenbon). Tests + Build grün. **Commit:** **4729274a** ✅ GitHub
 
 **Was wir JETZT tun:** Nach **Deploy „Ready“** am Mac: Kassenbon drucken → im Dialog **Rolle / Brother** wählen (nicht nur A4); bei Bedarf gelben Hinweis (Kopf-/Fußzeilen aus).
