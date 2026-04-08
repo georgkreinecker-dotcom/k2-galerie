@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 06.04.26 – **Kasse Touch: Bon als PDF (mm-Rolle) + Teilen/Download** – `src/utils/receiptRollPdf.ts`: html2canvas + jsPDF, Seitenbreite = `receiptPaperWidthMm`; auf Touch zuerst **PDF** → `navigator.share` (Datei) oder Download; Fallback HTML-Druck wie bisher. `ShopPage`: `printReceipt`, `openReceiptInNewTab`, VK2-Bon/Beleg analog; kurzer Tab-Hinweis. Test `receiptRollPdf.test.ts`. Tests + Build grün. **Commit:** **be8dca17** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: iPhone – Kassenbon → PDF-Teilen → Drucken / Brother iPrint&Label.
+
+---
+
 **Letzter Stand:** 08.04.26 – **Kasse: Mac zeigt Brother-Papier (z. B. 54×81 mm), iOS nicht** – Georg: am Mac passt das Format perfekt (Systemdialog + Treiber); auf dem iPhone/iPad gibt es **dieselben** Papier-Einstellungen **nicht** (AirPrint, Apple). Umsetzung: `receiptTabHintTouchHtml` im Bon (K2/VK2); gelber Mac-Hinweis mit **54×81 mm** als Beispiel. Tests + Build grün. **Commit:** **cb15e93e** ✅ GitHub
 
 **Was wir JETZT tun:** Erwartung: exaktes Rollenformat am **Mac**; mobil nur bestmöglich.

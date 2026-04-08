@@ -12,6 +12,7 @@ import {
   getReceiptPaperWidthMm,
   shopTenantIdForReceipt,
 } from '../utils/receiptPaperWidthStorage'
+import { exportReceiptHtmlToRollPdfBlob, shareReceiptPdfBlob } from '../utils/receiptRollPdf'
 import { getCustomers, getCustomerById, createCustomer, updateCustomer, type Customer } from '../utils/customers'
 import { readKuenstlerFallbackShop, resolveArtistLabelForGalerieStatistik } from '../utils/artworkArtistDisplay'
 import { sortArtworksCategoryBlocksThenNumberAsc } from '../utils/artworkSort'
@@ -234,13 +235,11 @@ function receiptTabHintTouchHtml(
   paperW: number,
   kind: 'k2-kasse' | 'vk2-bon' | 'vk2-beleg'
 ): string {
-  const firstLine =
+  const back =
     kind === 'k2-kasse'
-      ? 'Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.'
-      : kind === 'vk2-bon'
-        ? 'Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.'
-        : 'Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.'
-  return `<div class="receipt-tab-hint">${firstLine}<br><strong>Mac vs. Handy:</strong> Am Mac zeigt der Brother-Druckdialog die passenden <strong>Papierformate</strong> (z. B. <strong>54×81 mm</strong>) – damit passt das Layout. Auf dem iPhone/iPad gibt es <strong>dieselben</strong> Einstellungen <strong>nicht</strong> (vereinfachter Druck über AirPrint – Apple, nicht unsere App). Wenn etwas wählbar ist: <strong>Rolle</strong> / ca. <strong>${paperW} mm</strong>, nicht A4 – sonst nur ein Streifen in der Vorschau.</div>`
+      ? 'Zurück zur Kasse.'
+      : 'Tab schließen nach dem Druck.'
+  return `<div class="receipt-tab-hint"><strong>PDF</strong> (ca. ${paperW} mm breit) → <strong>Teilen</strong> → Drucken oder Brother-App. ${back}</div>`
 }
 
 // Kassa-Stil – ruhig, edel, dezentes Terracotta als Akzent
@@ -346,7 +345,7 @@ function buildK2Oek2ReceiptHtml(
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
+      ? receiptTabHintTouchHtml(paperW, 'k2-kasse')
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
     : ''
   return `
@@ -1523,58 +1522,119 @@ ${bankBlock}
     }
   }
 
-  const openVk2BonInNewTab = (order: any) => {
-    openBonHtmlInNewTab(buildVk2BonHtml(order, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
+  const openVk2BonInNewTab = async (order: any) => {
+    const html = buildVk2BonHtml(order, { tabHint: true, paperWidthMm: receiptPaperWidthMm })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `VK2-Bon-${String(order.orderNumber ?? '').replace(/\s/g, '_') || 'bon'}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded') return
+        if (r === 'cancelled') return
+      }
+    }
+    openBonHtmlInNewTab(html, receiptPaperWidthMm)
   }
 
   // Kassenbon für VK2 (Vereins-Stammdaten)
-  const printVk2Bon = (order: any) => {
+  const printVk2Bon = async (order: any) => {
+    const html = buildVk2BonHtml(order, {
+      paperWidthMm: receiptPaperWidthMm,
+      tabHint: isBonTouchDevice(),
+    })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `VK2-Bon-${String(order.orderNumber ?? '').replace(/\s/g, '_') || 'bon'}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded' || r === 'cancelled') return
+      }
+    }
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildVk2BonHtml(order, { paperWidthMm: receiptPaperWidthMm }))
+    printWindow.document.write(html)
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
 
-  const openVk2AusgabeBelegInNewTab = (eintrag: KassabuchEintrag) => {
-    openBonHtmlInNewTab(buildVk2AusgabeBelegHtml(eintrag, { tabHint: true, paperWidthMm: receiptPaperWidthMm }), receiptPaperWidthMm)
+  const openVk2AusgabeBelegInNewTab = async (eintrag: KassabuchEintrag) => {
+    const html = buildVk2AusgabeBelegHtml(eintrag, { tabHint: true, paperWidthMm: receiptPaperWidthMm })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `VK2-Ausgabe-${String(eintrag.id || eintrag.datum).replace(/[^\w.-]/g, '_')}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded') return
+        if (r === 'cancelled') return
+      }
+    }
+    openBonHtmlInNewTab(html, receiptPaperWidthMm)
   }
 
   // VK2: Ausgabenbeleg drucken (schmal mm wie Kassenbon – Verein, Datum, Betrag, Verwendungszweck)
-  const printVk2AusgabeBeleg = (eintrag: KassabuchEintrag) => {
+  const printVk2AusgabeBeleg = async (eintrag: KassabuchEintrag) => {
+    const html = buildVk2AusgabeBelegHtml(eintrag, {
+      paperWidthMm: receiptPaperWidthMm,
+      tabHint: isBonTouchDevice(),
+    })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `VK2-Ausgabe-${String(eintrag.id || eintrag.datum).replace(/[^\w.-]/g, '_')}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded' || r === 'cancelled') return
+      }
+    }
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildVk2AusgabeBelegHtml(eintrag, { paperWidthMm: receiptPaperWidthMm }))
+    printWindow.document.write(html)
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
 
-  const openReceiptInNewTab = (order: any) => {
-    openBonHtmlInNewTab(
-      buildK2Oek2ReceiptHtml(order, fromOeffentlich, { tabHint: true, paperWidthMm: receiptPaperWidthMm }),
-      receiptPaperWidthMm
-    )
+  const openReceiptInNewTab = async (order: any) => {
+    const html = buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
+      tabHint: true,
+      paperWidthMm: receiptPaperWidthMm,
+    })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `Kassenbon-${String(order.orderNumber ?? '').replace(/\s/g, '_')}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded') return
+        if (r === 'cancelled') return
+      }
+    }
+    openBonHtmlInNewTab(html, receiptPaperWidthMm)
   }
 
   // Kassenbon drucken (Breite mm aus Einstellungen) – Stammdaten aus aktuellem Kontext (K2 vs. ök2)
-  const printReceipt = (order: any) => {
+  const printReceipt = async (order: any) => {
+    const html = buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
+      paperWidthMm: receiptPaperWidthMm,
+      tabHint: isBonTouchDevice(),
+    })
+    if (isBonTouchDevice()) {
+      const blob = await exportReceiptHtmlToRollPdfBlob(html, receiptPaperWidthMm)
+      if (blob) {
+        const fn = `Kassenbon-${String(order.orderNumber ?? '').replace(/\s/g, '_')}.pdf`
+        const r = await shareReceiptPdfBlob(blob, fn)
+        if (r === 'shared' || r === 'downloaded' || r === 'cancelled') return
+      }
+    }
     const printWindow = window.open('', '_blank')
     if (!printWindow) {
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(
-      buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
-        paperWidthMm: receiptPaperWidthMm,
-        tabHint: isBonTouchDevice(),
-      })
-    )
+    printWindow.document.write(html)
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
