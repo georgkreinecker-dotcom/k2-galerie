@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 06.04.26 – **Kasse Touch: Bon als PDF (mm-Rolle) + Teilen/Download** – `src/utils/receiptRollPdf.ts`: html2canvas + jsPDF, Seitenbreite = `receiptPaperWidthMm`; auf Touch zuerst **PDF** → `navigator.share` (Datei) oder Download; Fallback HTML-Druck wie bisher. `ShopPage`: `printReceipt`, `openReceiptInNewTab`, VK2-Bon/Beleg analog; kurzer Tab-Hinweis. Test `receiptRollPdf.test.ts`. Tests + Build grün. **Commit:** **be8dca17** ✅ GitHub
+**Letzter Stand:** 06.04.26 – **Kasse Touch: Bon als PDF (mm-Rolle) + Teilen/Download** – `src/utils/receiptRollPdf.ts`: html2canvas + jsPDF, Seitenbreite = `receiptPaperWidthMm`; auf Touch zuerst **PDF** → `navigator.share` (Datei) oder Download; Fallback HTML-Druck wie bisher. `ShopPage`: `printReceipt`, `openReceiptInNewTab`, VK2-Bon/Beleg analog; kurzer Tab-Hinweis. Test `receiptRollPdf.test.ts`. Tests + Build grün. **Commit:** **137cf6fa** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: iPhone – Kassenbon → PDF-Teilen → Drucken / Brother iPrint&Label.
 
