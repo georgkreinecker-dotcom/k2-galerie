@@ -94,6 +94,39 @@ function attachReceiptPrintPageSizing(printWindow: Window, widthMm = 80): void {
 }
 
 /**
+ * Nach dem Druckdialog: Pop-up-Tab schließen – sonst bleibt man auf Mobilgeräten im Bon-Tab hängen.
+ * `afterprint` fehlt auf iOS teils → zusätzlich `matchMedia('print')` (Ende Druckvorschau).
+ */
+function attachPrintPopupAutoClose(printWindow: Window): void {
+  let done = false
+  const doClose = () => {
+    if (done) return
+    done = true
+    try {
+      printWindow.close()
+    } catch {
+      /* ignore */
+    }
+  }
+  printWindow.addEventListener('afterprint', doClose, { once: true })
+  try {
+    const mq = printWindow.matchMedia('print')
+    let sawPrintSheet = mq.matches
+    const onChange = () => {
+      if (mq.matches) {
+        sawPrintSheet = true
+      } else if (sawPrintSheet) {
+        mq.removeEventListener('change', onChange)
+        window.setTimeout(doClose, 150)
+      }
+    }
+    mq.addEventListener('change', onChange)
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
  * Wie `ScreenshotExportAdmin` **`handleShareLabel`** (Etikett teilen / Werke): nach `document.write` + `document.close`
  * **`setTimeout(..., 500)`**, dann **`print()`** – derselbe Ablauf, gleiche User-Geste.
  * Bon: optional `receiptWidthMm` → `attachReceiptPrintPageSizing` (beforeprint → @page-Höhe Rolle).
@@ -102,6 +135,7 @@ function triggerPrintDialogFromPopup(printWindow: Window, receiptWidthMm?: numbe
   if (typeof receiptWidthMm === 'number') {
     attachReceiptPrintPageSizing(printWindow, receiptWidthMm)
   }
+  attachPrintPopupAutoClose(printWindow)
   setTimeout(() => {
     try {
       printWindow.focus()
@@ -296,7 +330,7 @@ function buildK2Oek2ReceiptHtml(
   const ustHinweis = !ustId ? 'Kleinunternehmer § 6 Abs. 1 Z 27 UStG 1994' : ''
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.</div>`
+      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen, zurück zur Kasse.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon steht unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong> / Drucken.</div>`
     : ''
   return `
@@ -412,7 +446,7 @@ function buildVk2BonHtml(order: any, opts?: { tabHint?: boolean; paperWidthMm?: 
     order.paymentMethod === 'cash' ? 'Bar bezahlt' : order.paymentMethod === 'card' ? 'Mit Karte bezahlt' : 'Rechnung'
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.</div>`
+      ? `<div class="receipt-tab-hint">Bon unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Bon unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Kassenbon</title>
@@ -453,7 +487,7 @@ function buildVk2AusgabeBelegHtml(eintrag: KassabuchEintrag, opts?: { tabHint?: 
   const zweck = (eintrag.verwendungszweck || '–').replace(/</g, '&lt;')
   const tabHintBlock = opts?.tabHint
     ? isBonTouchDevice()
-      ? `<div class="receipt-tab-hint">Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.</div>`
+      ? `<div class="receipt-tab-hint">Beleg unten: <strong>Teilen</strong> → <strong>Drucken</strong>. Fertig → Tab schließen.<br><strong>Papier:</strong> im Druckdialog <strong>Rolle / ${paperW} mm</strong> wählen – <strong>nicht A4</strong>, sonst nur ein Streifen in der Vorschau.</div>`
       : `<div class="receipt-tab-hint"><strong>Zweiter Weg</strong> – Beleg unten. iPad: <strong>Teilen</strong> → Drucken. Mac: <strong>⌘P</strong>.</div>`
     : ''
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=${viewportPx}, initial-scale=1, maximum-scale=1"><title>Ausgabenbeleg</title>
@@ -1519,7 +1553,12 @@ ${bankBlock}
       alert('Pop-up-Blocker verhindert Druck. Bitte erlaube Pop-ups für diese Seite.')
       return
     }
-    printWindow.document.write(buildK2Oek2ReceiptHtml(order, fromOeffentlich, { paperWidthMm: receiptPaperWidthMm }))
+    printWindow.document.write(
+      buildK2Oek2ReceiptHtml(order, fromOeffentlich, {
+        paperWidthMm: receiptPaperWidthMm,
+        tabHint: isBonTouchDevice(),
+      })
+    )
     printWindow.document.close()
     triggerPrintDialogFromPopup(printWindow, receiptPaperWidthMm)
   }
