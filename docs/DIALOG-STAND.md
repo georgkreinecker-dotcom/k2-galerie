@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 08.04.26 – **Teilen/Download: eine Hilfsfunktion + Etikett Mobil schneller** – `src/utils/sharePrintFile.ts`: `shareBlobAsFile` + `downloadBlobAsFile` (Sportwagenmodus: ein Standard). `receiptRollPdf`: `shareReceiptPdfBlob` → Wrapper. `ScreenshotExportAdmin`: Etikett auf **Mobil zuerst** System-Teilen/Download; **Overlay** nur bei Abbruch/Fehler oder zweiter Schritt (Batch). Tests + Build grün. **Commit:** **8e89c104** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Handy – Etikett „drucken“ → Teilen-Dialog soll direkt kommen (ohne Zwischenoverlay wenn es klappt).
+
+---
+
 **Letzter Stand:** 06.04.26 – **Kasse Touch: Bon als PDF (mm-Rolle) + Teilen/Download** – `src/utils/receiptRollPdf.ts`: html2canvas + jsPDF, Seitenbreite = `receiptPaperWidthMm`; auf Touch zuerst **PDF** → `navigator.share` (Datei) oder Download; Fallback HTML-Druck wie bisher. `ShopPage`: `printReceipt`, `openReceiptInNewTab`, VK2-Bon/Beleg analog; kurzer Tab-Hinweis. Test `receiptRollPdf.test.ts`. Tests + Build grün. **Commit:** **137cf6fa** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: iPhone – Kassenbon → PDF-Teilen → Drucken / Brother iPrint&Label.
