@@ -12,6 +12,7 @@ import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
+import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/familieDatumEingabe'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -25,6 +26,8 @@ export default function K2FamiliePersonPage() {
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
   const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
+  const [geburtsdatum, setGeburtsdatum] = useState('')
+  const [maedchenname, setMaedchenname] = useState('')
   const [shortText, setShortText] = useState('')
   const [verstorben, setVerstorben] = useState(false)
   const [verstorbenAm, setVerstorbenAm] = useState('')
@@ -60,9 +63,11 @@ export default function K2FamiliePersonPage() {
   useEffect(() => {
     if (person) {
       setName(person.name)
+      setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? '')
+      setMaedchenname(person.maedchenname ?? '')
       setShortText(person.shortText ?? '')
       setVerstorben(person.verstorben === true)
-      setVerstorbenAm(person.verstorbenAm ?? '')
+      setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? '')
       setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : '')
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
       if (person.name === 'Neue Person') setEdit(true)
@@ -71,14 +76,26 @@ export default function K2FamiliePersonPage() {
 
   const save = () => {
     if (!person) return
+    if (istFamilieDatumUngueltig(geburtsdatum)) {
+      window.alert('Geburtsdatum: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben (z. B. 1959-04-06 oder 6.4.1959).')
+      return
+    }
+    if (verstorben && verstorbenAm.trim() && istFamilieDatumUngueltig(verstorbenAm)) {
+      window.alert('Verstorben am: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben.')
+      return
+    }
     const posNum = positionAmongSiblingsInput.trim() === '' ? undefined : parseInt(positionAmongSiblingsInput.trim(), 10)
     const positionAmongSiblings = posNum != null && !Number.isNaN(posNum) && posNum >= 1 ? posNum : undefined
+    const gdNorm = normalizeFamilieDatum(geburtsdatum)
+    const vsNorm = verstorben && verstorbenAm.trim() ? normalizeFamilieDatum(verstorbenAm) : undefined
     const updated: K2FamiliePerson = {
       ...person,
       name: name.trim() || person.name,
+      geburtsdatum: gdNorm,
+      maedchenname: maedchenname.trim() || undefined,
       shortText: shortText.trim() || undefined,
       verstorben: verstorben || undefined,
-      verstorbenAm: verstorben && verstorbenAm.trim() ? verstorbenAm.trim() : undefined,
+      verstorbenAm: vsNorm,
       positionAmongSiblings,
       updatedAt: new Date().toISOString(),
     }
@@ -255,6 +272,106 @@ export default function K2FamiliePersonPage() {
     }
   }
 
+  /** Neue Person als Elternteil: Kind-Beziehung zu dieser Person, Bearbeitung der neuen Person öffnen. */
+  const addNewPersonAsParent = () => {
+    if (!id || !person) return
+    const newId = generatePersonId()
+    const now = new Date().toISOString()
+    const neu: K2FamiliePerson = {
+      id: newId,
+      name: 'Neue Person',
+      parentIds: [],
+      childIds: [id],
+      partners: [],
+      siblingIds: [],
+      wahlfamilieIds: [],
+      updatedAt: now,
+    }
+    const next = personen.map((p) =>
+      p.id === id ? { ...p, parentIds: [...p.parentIds, newId], updatedAt: now } : p
+    )
+    const withNew = [...next, neu]
+    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
+      setPersonen(withNew)
+      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
+    }
+  }
+
+  /** Neue Person als Kind: Eltern-Beziehung zu dieser Person. */
+  const addNewPersonAsChild = () => {
+    if (!id || !person) return
+    const newId = generatePersonId()
+    const now = new Date().toISOString()
+    const neu: K2FamiliePerson = {
+      id: newId,
+      name: 'Neue Person',
+      parentIds: [id],
+      childIds: [],
+      partners: [],
+      siblingIds: [],
+      wahlfamilieIds: [],
+      updatedAt: now,
+    }
+    const next = personen.map((p) =>
+      p.id === id ? { ...p, childIds: [...p.childIds, newId], updatedAt: now } : p
+    )
+    const withNew = [...next, neu]
+    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
+      setPersonen(withNew)
+      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
+    }
+  }
+
+  /** Neue Person als Geschwister: gegenseitig verknüpfen. */
+  const addNewPersonAsSibling = () => {
+    if (!id || !person) return
+    const newId = generatePersonId()
+    const now = new Date().toISOString()
+    const neu: K2FamiliePerson = {
+      id: newId,
+      name: 'Neue Person',
+      parentIds: [],
+      childIds: [],
+      partners: [],
+      siblingIds: [id],
+      wahlfamilieIds: [],
+      updatedAt: now,
+    }
+    const next = personen.map((p) =>
+      p.id === id ? { ...p, siblingIds: [...p.siblingIds, newId], updatedAt: now } : p
+    )
+    const withNew = [...next, neu]
+    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
+      setPersonen(withNew)
+      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
+    }
+  }
+
+  /** Neue Person in Wahlfamilie: gegenseitig verknüpfen. */
+  const addNewPersonAsWahlfamilie = () => {
+    if (!id || !person) return
+    const newId = generatePersonId()
+    const now = new Date().toISOString()
+    const neu: K2FamiliePerson = {
+      id: newId,
+      name: 'Neue Person',
+      parentIds: [],
+      childIds: [],
+      partners: [],
+      siblingIds: [],
+      wahlfamilieIds: [id],
+      updatedAt: now,
+    }
+    const next = personen.map((p) =>
+      p.id === id ? { ...p, wahlfamilieIds: [...p.wahlfamilieIds, newId], updatedAt: now } : p
+    )
+    const withNew = [...next, neu]
+    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
+      setPersonen(withNew)
+      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
+    }
+  }
+
   const addSibling = (otherId: string) => {
     if (!id || !person || person.siblingIds.includes(otherId)) return
     const other = personen.find((p) => p.id === otherId)
@@ -312,19 +429,24 @@ export default function K2FamiliePersonPage() {
   const openEditMoment = (m: K2FamilieMoment) => {
     setEditingMomentId(m.id)
     setMomentTitle(m.title)
-    setMomentDate(m.date ?? '')
+    setMomentDate(m.date ? m.date.slice(0, 10) : '')
     setMomentImage(m.image ?? '')
     setMomentText(m.text ?? '')
   }
   const saveMoment = () => {
     if (!id) return
+    if (momentDate.trim() && istFamilieDatumUngueltig(momentDate)) {
+      window.alert('Moment-Datum: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben – oder leer lassen.')
+      return
+    }
+    const momentDateNorm = momentDate.trim() ? normalizeFamilieDatum(momentDate) ?? null : null
     const now = new Date().toISOString()
     if (editingMomentId === 'new') {
       const newM: K2FamilieMoment = {
         id: 'moment-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
         personId: id,
         title: momentTitle.trim() || 'Ohne Titel',
-        date: momentDate.trim() || null,
+        date: momentDateNorm,
         image: momentImage.trim() || undefined,
         text: momentText.trim() || undefined,
         createdAt: now,
@@ -341,7 +463,7 @@ export default function K2FamiliePersonPage() {
           ? {
               ...m,
               title: momentTitle.trim() || m.title,
-              date: momentDate.trim() || null,
+              date: momentDateNorm,
               image: momentImage.trim() || undefined,
               text: momentText.trim() || undefined,
               updatedAt: now,
@@ -419,31 +541,63 @@ export default function K2FamiliePersonPage() {
 
   const smallBtn = { background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.4rem', fontFamily: 'inherit' } as const
   type RelationType = 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie'
+  /**
+   * Eltern/Kinder: volle Auswahl (naheliegend + weitere) – oft mehrere sinnvolle Personen.
+   * Partner, Geschwister, Wahlfamilie: nur Dropdown, wenn genau eine Person eindeutig passt (keine lange irritierende Liste).
+   */
   const renderAddSelect = (type: RelationType, excludeIds: string[], addFn: (oid: string) => void) => {
     const { suggested, rest } = getCandidatesOrdered(type, excludeIds)
     const hasAny = suggested.length + rest.length > 0
     if (!hasAny) return null
+
+    const fullList = type === 'parent' || type === 'child'
+    if (fullList) {
+      return (
+        <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Person hinzufügen">
+          <option value="">+ Hinzufügen</option>
+          {suggested.length > 0 && (
+            <optgroup label="Naheliegend (z. B. gleiche Eltern, gemeinsame Kinder)">
+              {suggested.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </optgroup>
+          )}
+          {rest.length > 0 && (
+            <optgroup label={suggested.length > 0 ? 'Weitere' : 'Person wählen'}>
+              {rest.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </optgroup>
+          )}
+        </select>
+      )
+    }
+
+    const unique: K2FamiliePerson | null =
+      suggested.length === 1
+        ? suggested[0]
+        : suggested.length === 0 && rest.length === 1
+          ? rest[0]
+          : null
+    if (!unique) return null
     return (
-      <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }}>
-        <option value="">+ Hinzufügen</option>
-        {suggested.length > 0 && (
-          <optgroup label="Naheliegend (z. B. gleiche Eltern, gemeinsame Kinder)">
-            {suggested.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </optgroup>
-        )}
-        {rest.length > 0 && (
-          <optgroup label={suggested.length > 0 ? 'Weitere' : 'Person wählen'}>
-            {rest.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </optgroup>
-        )}
+      <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Eindeutiger Vorschlag zum Verknüpfen">
+        <option value="">+ Vorschlag</option>
+        <option value={unique.id}>{unique.name}</option>
       </select>
     )
   }
-  const row = (label: string, ids: string[], addFn: (oid: string) => void, removeFn: (oid: string) => void, getIds: () => string[], relationType: RelationType) => (
+  const newPersonBtnStyle = { fontSize: '0.9rem', padding: '0.35rem 0.5rem' } as const
+  const row = (
+    label: string,
+    ids: string[],
+    addFn: (oid: string) => void,
+    removeFn: (oid: string) => void,
+    getIds: () => string[],
+    relationType: RelationType,
+    newPersonLabel: string,
+    onNewPerson: () => void
+  ) => (
     <div key={label} className="field" style={{ marginBottom: '1rem' }}>
       <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>{label}</label>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
@@ -454,6 +608,9 @@ export default function K2FamiliePersonPage() {
           </span>
         ))}
         {renderAddSelect(relationType, getIds(), addFn)}
+        <button type="button" className="btn-outline" onClick={onNewPerson} style={newPersonBtnStyle}>
+          {newPersonLabel}
+        </button>
       </div>
     </div>
   )
@@ -494,6 +651,34 @@ export default function K2FamiliePersonPage() {
                     aria-label="Name der Person"
                   />
                 </div>
+                <div className="field" style={{ marginTop: '0.75rem' }}>
+                  <label className="meta">Geburtsdatum</label>
+                  <input
+                    type="text"
+                    value={geburtsdatum}
+                    onChange={(e) => setGeburtsdatum(e.target.value)}
+                    placeholder="z. B. 1959-04-06 oder 6.4.1959"
+                    autoComplete="off"
+                    inputMode="text"
+                    aria-label="Geburtsdatum"
+                  />
+                  <span className="meta" style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.85rem' }}>
+                    Frei tippen (Jahr zuerst oder TT.MM.JJJJ) – ohne kleines Datumsfenster.
+                  </span>
+                </div>
+                <div className="field" style={{ marginTop: '0.75rem' }}>
+                  <label className="meta">Mädchenname</label>
+                  <input
+                    type="text"
+                    value={maedchenname}
+                    onChange={(e) => setMaedchenname(e.target.value)}
+                    placeholder="Geburtsname, z. B. bei Frauen (optional)"
+                    autoComplete="off"
+                    data-lpignore="true"
+                    name="ft-person-maedchenname"
+                    aria-label="Mädchenname oder Geburtsname"
+                  />
+                </div>
                 <div className="field" style={{ marginTop: '0.75rem' }}><label className="meta">Kurztext</label><textarea value={shortText} onChange={(e) => setShortText(e.target.value)} style={{ minHeight: 80 }} placeholder="Kurz beschreiben (optional)" autoComplete="off" data-lpignore="true" /></div>
                 <div className="field" style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input type="checkbox" id="verstorben" checked={verstorben} onChange={(e) => setVerstorben(e.target.checked)} />
@@ -502,7 +687,14 @@ export default function K2FamiliePersonPage() {
                 {verstorben && (
                   <div className="field" style={{ marginTop: '0.5rem' }}>
                     <label className="meta">Verstorben am (Datum)</label>
-                    <input type="date" value={verstorbenAm} onChange={(e) => setVerstorbenAm(e.target.value)} placeholder="JJJJ-MM-TT" />
+                    <input
+                      type="text"
+                      value={verstorbenAm}
+                      onChange={(e) => setVerstorbenAm(e.target.value)}
+                      placeholder="z. B. 2020-03-15 oder 15.3.2020"
+                      autoComplete="off"
+                      aria-label="Sterbedatum"
+                    />
                   </div>
                 )}
                 <div className="field" style={{ marginTop: '0.75rem' }}>
@@ -520,12 +712,12 @@ export default function K2FamiliePersonPage() {
                 </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); }}>Abbrechen</button>
+                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); }}>Abbrechen</button>
                 </div>
               </form>
             ) : (
               <>
-                <button type="button" className="btn" onClick={() => setEdit(true)}>Name & Text bearbeiten</button>
+                <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
               </>
             )}
           </div>
@@ -533,12 +725,11 @@ export default function K2FamiliePersonPage() {
 
         <div className="card" style={{ marginTop: '1.5rem' }}>
           <h2>Beziehungen</h2>
-          <p className="meta" style={{ margin: '0 0 0.75rem' }}>In den Listen erscheinen nur passende Personen (z. B. bei Partner*in nie Eltern oder Kinder). Zuerst die naheliegenden (gleiche Eltern = Geschwister, gemeinsame Kinder = Partner), dann weitere. Fehlt jemand? Bei Partner*innen: „Neue Person anlegen“.</p>
-          {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent')}
-          {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child')}
+          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Über <strong>+ Hinzufügen</strong> verknüpfst du bestehende Personen (bei Eltern/Kinder: alle passenden; bei Partner*in, Geschwister, Wahlfamilie oft nur ein eindeutiger Vorschlag). <strong>Neue Person anlegen</strong> gibt es in jeder Zeile – auch wenn gerade niemand aus der Liste passt; danach Name und Daten auf der neuen Personenseite eintragen.</p>
+          {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent', '＋ Neue Person anlegen (als Elternteil)', addNewPersonAsParent)}
+          {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child', '＋ Neue Person anlegen (als Kind)', addNewPersonAsChild)}
           <div style={{ marginBottom: '1rem' }}>
             <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Partner*innen</label>
-            <p className="meta" style={{ margin: '0 0 0.5rem', fontSize: '0.85rem' }}>Nur Personen aus der Liste wählen, die als Partner*in passen (z. B. keine Eltern/Kinder). Steht die Partnerin oder der Partner noch nicht im Stammbaum? „Neue Person anlegen“ – dann Name eintragen.</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
               {person.partners.map((pr, i) => (
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
@@ -548,13 +739,13 @@ export default function K2FamiliePersonPage() {
                 </span>
               ))}
               {renderAddSelect('partner', person.partners.map((pr) => pr.personId), addPartner)}
-              <button type="button" className="btn-outline" onClick={addNewPartnerPerson} style={{ fontSize: '0.9rem', padding: '0.35rem 0.5rem' }}>
+              <button type="button" className="btn-outline" onClick={addNewPartnerPerson} style={newPersonBtnStyle}>
                 ＋ Neue Person anlegen (als Partner*in)
               </button>
             </div>
           </div>
-          {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling')}
-          {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie')}
+          {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling', '＋ Neue Person anlegen (als Geschwister)', addNewPersonAsSibling)}
+          {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie', '＋ Neue Person anlegen (Wahlfamilie)', addNewPersonAsWahlfamilie)}
         </div>
 
         <div className="card" style={{ marginTop: '1rem' }}>
@@ -583,7 +774,17 @@ export default function K2FamiliePersonPage() {
           {editingMomentId ? (
             <div className="card" style={{ padding: '1rem', marginTop: '0.5rem' }}>
               <div className="field"><label className="meta">Titel</label><input value={momentTitle} onChange={(e) => setMomentTitle(e.target.value)} placeholder="z. B. Hochzeit, Umzug Wien" /></div>
-              <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Datum (optional)</label><input type="date" value={momentDate} onChange={(e) => setMomentDate(e.target.value)} /></div>
+              <div className="field" style={{ marginTop: '0.5rem' }}>
+                <label className="meta">Datum (optional)</label>
+                <input
+                  type="text"
+                  value={momentDate}
+                  onChange={(e) => setMomentDate(e.target.value)}
+                  placeholder="z. B. 2010-06-12 oder 12.6.2010"
+                  autoComplete="off"
+                  aria-label="Moment-Datum"
+                />
+              </div>
               <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Bild (URL oder data:…, optional)</label><input value={momentImage} onChange={(e) => setMomentImage(e.target.value)} placeholder="https://… oder data:image/…" /></div>
               <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Text (optional)</label><textarea value={momentText} onChange={(e) => setMomentText(e.target.value)} style={{ minHeight: 80 }} placeholder="Kurze Beschreibung" /></div>
               <div className="card-actions" style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
