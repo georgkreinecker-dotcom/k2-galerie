@@ -3,7 +3,7 @@
  */
 
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { getGenerations } from './FamilyTreeGraph'
+import { getGenerations, getChildIds, orderInGeneration } from './FamilyTreeGraph'
 
 function byIdMap(personen: K2FamiliePerson[]): Map<string, K2FamiliePerson> {
   return new Map(personen.map((p) => [p.id, p]))
@@ -25,18 +25,23 @@ export function StammbaumDruckNachGenerationen({
   personen,
   titel,
   ichBinPersonId,
+  ichBinPositionAmongSiblings,
 }: {
   personen: K2FamiliePerson[]
   titel: string
   ichBinPersonId?: string
+  /** Wie in der Grafik: Reihenfolge „Du“ unter Geschwistern (1…N). */
+  ichBinPositionAmongSiblings?: number
 }) {
   const levelMap = getGenerations(personen)
+  const childIds = getChildIds(personen)
   const map = byIdMap(personen)
   const maxL = Math.max(0, ...Array.from(levelMap.values()))
   const rows: { level: number; persons: K2FamiliePerson[] }[] = []
   for (let L = 0; L <= maxL; L++) {
-    const ps = personen.filter((p) => levelMap.get(p.id) === L)
-    ps.sort((a, b) => a.name.localeCompare(b.name, 'de'))
+    const ids = personen.filter((p) => levelMap.get(p.id) === L).map((p) => p.id)
+    const orderedIds = orderInGeneration(personen, ids, levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+    const ps = orderedIds.map((id) => map.get(id)).filter((p): p is K2FamiliePerson => p != null)
     if (ps.length) rows.push({ level: L, persons: ps })
   }
 

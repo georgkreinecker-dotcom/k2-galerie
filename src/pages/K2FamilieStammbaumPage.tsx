@@ -115,6 +115,29 @@ export default function K2FamilieStammbaumPage() {
     return () => window.removeEventListener('afterprint', handleAfterPrint)
   }, [handleAfterPrint])
 
+  const saveFamilyDisplayName = useCallback(() => {
+    const name = familyDisplayNameInput.trim()
+    if (saveEinstellungen(currentTenantId, { ...einstellungen, familyDisplayName: name || undefined })) {
+      setStammbaumRefresh((k) => k + 1)
+      setFamilyNameSaved(true)
+      setTimeout(() => setFamilyNameSaved(false), 2000)
+    }
+  }, [currentTenantId, einstellungen, familyDisplayNameInput])
+
+  const handleSetIchBin = useCallback((personId: string) => {
+    const p = personen.find((x) => x.id === personId)
+    const pos = p?.name?.match(/^(?:Geschwister|Kind)\s+(\d+)$/i)?.[1]
+    const einst = loadEinstellungen(currentTenantId)
+    const ichBinPositionAmongSiblings = pos ? parseInt(pos, 10) : einst.ichBinPositionAmongSiblings
+    let changed = saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: personId, ichBinPositionAmongSiblings })
+    const posNum = ichBinPositionAmongSiblings != null && ichBinPositionAmongSiblings >= 1 && ichBinPositionAmongSiblings <= 99 ? ichBinPositionAmongSiblings : (p?.positionAmongSiblings ?? null)
+    if (p != null && posNum != null) {
+      const updated = personen.map((x) => x.id === personId ? { ...x, positionAmongSiblings: posNum } : x)
+      if (savePersonen(currentTenantId, updated, { allowReduce: false })) changed = true
+    }
+    if (changed) setStammbaumRefresh((k: number) => k + 1)
+  }, [currentTenantId, personen])
+
   const openDruck = (opts: {
     format: PrintFormat
     fotos: PrintFotos
@@ -147,6 +170,7 @@ export default function K2FamilieStammbaumPage() {
             personen={forDruck}
             titel={titel}
             ichBinPersonId={einstellungen.ichBinPersonId}
+            ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings ?? undefined}
           />
         </div>
       )
@@ -192,29 +216,6 @@ export default function K2FamilieStammbaumPage() {
       </div>
     )
   }
-
-  const saveFamilyDisplayName = useCallback(() => {
-    const name = familyDisplayNameInput.trim()
-    if (saveEinstellungen(currentTenantId, { ...einstellungen, familyDisplayName: name || undefined })) {
-      setStammbaumRefresh((k) => k + 1)
-      setFamilyNameSaved(true)
-      setTimeout(() => setFamilyNameSaved(false), 2000)
-    }
-  }, [currentTenantId, einstellungen, familyDisplayNameInput])
-
-  const handleSetIchBin = useCallback((personId: string) => {
-    const p = personen.find((x) => x.id === personId)
-    const pos = p?.name?.match(/^(?:Geschwister|Kind)\s+(\d+)$/i)?.[1]
-    const einst = loadEinstellungen(currentTenantId)
-    const ichBinPositionAmongSiblings = pos ? parseInt(pos, 10) : einst.ichBinPositionAmongSiblings
-    let changed = saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: personId, ichBinPositionAmongSiblings })
-    const posNum = ichBinPositionAmongSiblings != null && ichBinPositionAmongSiblings >= 1 && ichBinPositionAmongSiblings <= 99 ? ichBinPositionAmongSiblings : (p?.positionAmongSiblings ?? null)
-    if (p != null && posNum != null) {
-      const updated = personen.map((x) => x.id === personId ? { ...x, positionAmongSiblings: posNum } : x)
-      if (savePersonen(currentTenantId, updated, { allowReduce: false })) changed = true
-    }
-    if (changed) setStammbaumRefresh((k: number) => k + 1)
-  }, [currentTenantId, personen])
 
   const addPerson = () => {
     const neu: K2FamiliePerson = {

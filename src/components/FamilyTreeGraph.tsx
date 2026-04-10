@@ -6,6 +6,7 @@
 import { Link } from 'react-router-dom'
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
 
 const NODE_W = 72
 const NODE_H = 56
@@ -27,7 +28,7 @@ function getPartnerOnlyIds(personen: K2FamiliePerson[]): Set<string> {
 }
 
 /** Hat diese Person Kinder (jemand hat sie in parentIds)? */
-function getChildIds(personen: K2FamiliePerson[]): Map<string, string[]> {
+export function getChildIds(personen: K2FamiliePerson[]): Map<string, string[]> {
   const childIds = new Map<string, string[]>()
   personen.forEach((p) => {
     p.parentIds.forEach((pid) => {
@@ -38,7 +39,8 @@ function getChildIds(personen: K2FamiliePerson[]): Map<string, string[]> {
   return childIds
 }
 
-function getGenerations(personen: K2FamiliePerson[]): Map<string, number> {
+/** Für Druck-Listen: gleiche Generationen wie in der Grafik. */
+export function getGenerations(personen: K2FamiliePerson[]): Map<string, number> {
   const byId = new Map(personen.map((p) => [p.id, p]))
   const childIds = getChildIds(personen)
   const level = new Map<string, number>()
@@ -95,7 +97,24 @@ function getPositionInRow(
   return 999
 }
 
-function orderInGeneration(
+/** ISO YYYY-MM-DD für Sortierung (älter zuerst); null wenn nicht gesetzt/nicht parsbar. */
+function sortKeyGeburtsdatum(raw?: string): string | null {
+  if (!raw?.trim()) return null
+  return normalizeFamilieDatum(raw.trim()) ?? null
+}
+
+/** Gleiche Generation: zuerst Geschwister-Reihenfolge (positionAmongSiblings / „Geschwister N“), bei gleicher Position Geburtsdatum, sonst Name. */
+function compareNachGeschwisterlinieOderGeburt(
+  a: K2FamiliePerson,
+  b: K2FamiliePerson
+): number {
+  const da = sortKeyGeburtsdatum(a.geburtsdatum)
+  const db = sortKeyGeburtsdatum(b.geburtsdatum)
+  if (da && db && da !== db) return da.localeCompare(db)
+  return a.name.localeCompare(b.name, 'de')
+}
+
+export function orderInGeneration(
   personen: K2FamiliePerson[],
   ids: string[],
   levelMap: Map<string, number>,
@@ -117,7 +136,12 @@ function orderInGeneration(
   })
   const hasAnyPosition = withPos.some((x) => x.pos < 999)
   if (hasAnyPosition) {
-    withPos.sort((a, b) => a.pos - b.pos)
+    withPos.sort((a, b) => {
+      if (a.pos !== b.pos) return a.pos - b.pos
+      const pa = byId.get(a.id)!
+      const pb = byId.get(b.id)!
+      return compareNachGeschwisterlinieOderGeburt(pa, pb)
+    })
     return withPos.map((x) => x.id)
   }
   const withParentOrder = ids.map((id) => {
@@ -126,7 +150,12 @@ function orderInGeneration(
     const parentIndex = firstParent ? ids.indexOf(firstParent) : -1
     return { id, parentIndex }
   })
-  withParentOrder.sort((a, b) => a.parentIndex - b.parentIndex || a.id.localeCompare(b.id))
+  withParentOrder.sort((a, b) => {
+    if (a.parentIndex !== b.parentIndex) return a.parentIndex - b.parentIndex
+    const pa = byId.get(a.id)!
+    const pb = byId.get(b.id)!
+    return compareNachGeschwisterlinieOderGeburt(pa, pb) || a.id.localeCompare(b.id)
+  })
   return withParentOrder.map((x) => x.id)
 }
 
