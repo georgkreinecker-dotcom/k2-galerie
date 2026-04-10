@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { PROJECT_ROUTES, PLATFORM_ROUTES, getAllProjectIds } from '../config/navigation'
 import { usePersistentBoolean } from '../hooks/usePersistentState'
 import { checkMobileUpdates } from '../utils/supabaseClient'
@@ -77,8 +77,18 @@ type PageSection =
   | { id: string; name: string; icon: string; filter: string }
   | { id: string; name: string; icon: string; path: string }
 
+/** Alte APf-Seiten-IDs → aktuelle (z. B. ein Smart-Panel-Einstieg). */
+function normalizeApfPageId(page: string | null | undefined): string | null {
+  if (page == null || !String(page).trim()) return null
+  const p = String(page).trim()
+  if (p === 'oeffentlichkeitsarbeit') return 'presse'
+  return p
+}
+
 const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const pageFromUrl = searchParams.get('page')
   const [checkingVercel, setCheckingVercel] = useState(false)
   const [diagnoseRunning, setDiagnoseRunning] = useState(false)
@@ -345,10 +355,10 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   const [viewMode, setViewMode] = useState<ViewMode>(isLocalhost ? 'desktop' : 'desktop')
   // Beim Öffnen der APf: zuletzt geöffnete Seite wiederherstellen, damit die Seite an der gearbeitet wird (nicht immer ök2).
   const [currentPage, setCurrentPage] = useState(() => {
-    if (pageFromUrl) return pageFromUrl
+    if (pageFromUrl) return normalizeApfPageId(pageFromUrl) ?? pageFromUrl
     try {
       const last = typeof window !== 'undefined' ? localStorage.getItem(APF_LAST_PAGE_KEY) : null
-      if (last && last.trim() && last !== 'desktop-leer') return last
+      if (last && last.trim() && last !== 'desktop-leer') return normalizeApfPageId(last) ?? last
     } catch (_) { /* ignore */ }
     return defaultPage || 'desktop-leer'
   })
@@ -374,9 +384,17 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
   // Nicht bei leerem pageFromUrl – sonst wird die zuletzt gemerkte Seite überschrieben
   useEffect(() => {
     if (pageFromUrl && pageFromUrl.trim()) {
-      setCurrentPage(pageFromUrl)
+      setCurrentPage(normalizeApfPageId(pageFromUrl) ?? pageFromUrl)
     }
   }, [pageFromUrl])
+
+  // Alte URL ?page=oeffentlichkeitsarbeit → ?page=presse (ein Smart-Panel-Einstieg)
+  useEffect(() => {
+    if (pageFromUrl !== 'oeffentlichkeitsarbeit') return
+    const sp = new URLSearchParams(searchParams)
+    sp.set('page', 'presse')
+    navigate({ pathname: location.pathname, search: sp.toString() }, { replace: true })
+  }, [pageFromUrl, searchParams, navigate, location.pathname])
 
   // Auf Mobile: "platform" Tab automatisch zu "galerie" umleiten
   useEffect(() => {
@@ -461,8 +479,9 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'mission-control': return PLATFORM_ROUTES.missionControl
-      case 'presse': return '/admin?tab=presse'
-      case 'oeffentlichkeitsarbeit': return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit&openModal=1'
+      case 'presse':
+      case 'oeffentlichkeitsarbeit':
+        return '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit'
       case 'softwareentwicklung': return PROJECT_ROUTES['k2-galerie'].softwareentwicklung
       case 'promo-video-produktion': return PROJECT_ROUTES['k2-galerie'].promoVideoProduktion
       case 'promo-runway-pack': return PROJECT_ROUTES['k2-galerie'].promoRunwayPack
@@ -1062,8 +1081,7 @@ end tell`
     { id: 'mobile-connect', name: 'Mobile verbinden', component: MobileConnectPage },
     { id: 'admin-einstellungen', name: 'Admin – Einstellungen & Backup', component: ScreenshotExportAdmin },
     { id: 'k2-markt', name: 'K2 Markt', component: K2MarktOberflaechePage },
-    { id: 'presse', name: 'Event- und Medienplanung (K2)', component: ScreenshotExportAdmin },
-    { id: 'oeffentlichkeitsarbeit', name: 'Öffentlichkeitsarbeit (K2)', component: ScreenshotExportAdmin },
+    { id: 'presse', name: 'Events, Medien & Öffentlichkeit (K2)', component: ScreenshotExportAdmin },
     { id: 'handbuch', name: 'Handbuch', component: K2TeamHandbuchPage },
     { id: 'handbuch-galerie', name: 'Handbuch K2 Galerie', component: K2GalerieHandbuchPage },
     { id: 'k2-familie', name: 'K2 Familie', component: () => <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--k2-muted)' }}>K2 Familie – im APf-Desktop im Browser</div> },
@@ -1251,18 +1269,8 @@ end tell`
         return <AdminPreviewPlaceholder key="presse-placeholder" />
       }
       return (
-        <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Event- und Medienplanung wird geladen…</div>}>
-          <ScreenshotExportAdmin key="admin-presse" forceTab="presse" />
-        </Suspense>
-      )
-    }
-    if (pageToRender === 'oeffentlichkeitsarbeit') {
-      if (typeof window !== 'undefined' && window.self !== window.top) {
-        return <AdminPreviewPlaceholder key="oeffentlichkeitsarbeit-placeholder" />
-      }
-      return (
-        <Suspense key="oeffentlichkeitsarbeit-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Öffentlichkeitsarbeit wird geladen…</div>}>
-          <ScreenshotExportAdmin key="admin-oeffentlichkeitsarbeit" forceTab="eventplan" forceEventplanSubTab="öffentlichkeitsarbeit" forceOeffentlichkeitsarbeitModal />
+        <Suspense key="presse-suspense" fallback={<div style={{ padding: '2rem', color: 'var(--k2-muted)' }}>Events & Öffentlichkeit wird geladen…</div>}>
+          <ScreenshotExportAdmin key="admin-presse-eventplan" forceTab="eventplan" forceEventplanSubTab="öffentlichkeitsarbeit" />
         </Suspense>
       )
     }

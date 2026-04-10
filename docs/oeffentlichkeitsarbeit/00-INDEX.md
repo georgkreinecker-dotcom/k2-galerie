@@ -2,6 +2,8 @@
 
 **Stand:** 10.04.26 · **Zweck:** Alle Dokumente für die erste Phase der Öffentlichkeitsarbeit an einem Ort. Eine Ablage – von hier aus findest du alles.
 
+**Kompass (ein Blatt):** [ZENTRALE.md](ZENTRALE.md) – App-Einstieg (Smart Panel), Repo-Ordner für versendet vs. fertig.
+
 ---
 
 ## Presseaussendung – fertige Texte (fest im Repo)
