@@ -8964,7 +8964,141 @@ ${'='.repeat(60)}
     openDocumentInApp(html, docLabel)
   }
 
-  /** Nach Bestätigung: Werbemittel-Dokumente dieses Events (Presse, Social, Newsletter, Plakat, Flyer, Sammel-PDF) löschen und wie Medienpaket-Vorschau neu als speicherbare Einträge anlegen – öffnen/bearbeiten über die Event-Karten. */
+  /** HTML für „Presse-Erinnerung“ (Folge-Mail nach Aussendung) – gleiche Datenbasis wie Presse, Kontext K2/ök2/VK2. */
+  const buildPresseErinnerungArbeitsHtml = (event: any): string => {
+    const ev = event
+    const esc = (s: string) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    const eventDateStr = formatEventDates(ev) || 'Termin folgt'
+    const isVk2 = tenant.isVk2
+    const prDocClass = isVk2 ? 'vk2-pr-doc' : 'k2-pr-doc'
+    const prDocCss = isVk2 ? getWerbeliniePrDocCssVk2('vk2-pr-doc') : getPlakatDesignPrDocCss('k2-pr-doc', designSettings)
+    const galleryName = isVk2
+      ? vk2Stammdaten?.verein?.name || 'Kunstverein Muster'
+      : galleryData?.name || (tenant.isOeffentlich ? TENANT_CONFIGS.oeffentlich.galleryName : 'K2 Galerie')
+    const galerieUrl =
+      BASE_APP_URL +
+      (tenant.isVk2
+        ? PROJECT_ROUTES.vk2.galerie
+        : tenant.isOeffentlich
+          ? PROJECT_ROUTES['k2-galerie'].galerieOeffentlich
+          : PROJECT_ROUTES['k2-galerie'].galerie)
+    const demoUrl = BASE_APP_URL + ENTDECKEN_ROUTE
+    const mappeUrl = BASE_APP_URL + PROJECT_ROUTES['k2-galerie'].praesentationsmappe
+    const ort = esc(ev.location || '')
+    const whatRaw = (typeof ev.description === 'string' && ev.description.trim()) ? ev.description.trim() : (ev.title || 'Veranstaltung')
+    const what = esc(whatRaw.length > 420 ? `${whatRaw.slice(0, 417)}…` : whatRaw)
+    let contactLines = ''
+    let signOff = ''
+    if (isVk2) {
+      const v = vk2Stammdaten?.verein
+      contactLines = [v?.email, (v as { phone?: string })?.phone, [v?.address, v?.city].filter(Boolean).join(', ')].filter(Boolean).join('<br>')
+      signOff = esc(v?.name || 'Kunstverein')
+    } else if (tenant.isOeffentlich) {
+      const g = galleryData || {}
+      contactLines = [g.email, g.phone, [g.address, g.city].filter(Boolean).join(', ')].filter(Boolean).join('<br>')
+      signOff = esc(g.name || TENANT_CONFIGS.oeffentlich.galleryName)
+    } else {
+      contactLines = [galleryData?.email, galleryData?.phone, getProminenteAdresseFormatiert(galleryData, martinaData, georgData)].filter(Boolean).map(esc).join('<br>')
+      signOff = esc(`${martinaData?.name || 'Martina'} und ${georgData?.name || 'Georg'} Kreinecker`)
+    }
+    const betreff = `Erinnerung: ${ev.title || 'Veranstaltung'} · ${eventDateStr.replace(/\n/g, ' ').slice(0, 80)}`
+    const toolbarFull = `<div class="no-print">
+    <button onclick="goBack(); return false;" class="secondary">← Zurück</button>
+    <button type="button" onclick="window.print(); return false;">🖨️ Als PDF drucken</button>
+    <p style="margin:0.35rem 0 0;font-size:0.85rem;color:#666;">Text anpassen, dann Mailprogramm oder Drucken → PDF.</p>
+  </div>`
+    const scriptFull = `<script>
+    var ADMIN_RETURN_URL = '${escapeJsStringForDoc(getAdminReturnUrl(activeTab, eventplanSubTab))}';
+    var prDocClass = '${prDocClass}';
+    function goBack() {
+      var adminUrl = (typeof ADMIN_RETURN_URL !== 'undefined' && ADMIN_RETURN_URL) ? ADMIN_RETURN_URL : (window.location.origin + '/admin');
+      if (window.opener && !window.opener.closed) {
+        try { window.opener.location.href = adminUrl; window.opener.focus(); setTimeout(function() { try { window.close(); } catch (e) {} }, 100); return; } catch (e) {}
+      }
+      window.location.href = adminUrl;
+    }
+  <\/script>`
+    const bodyInner = `
+<p>Sehr geehrte Damen und Herren,</p>
+<p>wir haben Ihnen eine <strong>Presseinformation</strong> zu <strong>${esc(ev.title || 'dieser Veranstaltung')}</strong> geschickt. Da wir bislang <strong>keine Rückmeldung</strong> erhalten haben, erlauben wir uns diese kurze <strong>Erinnerung</strong> – ohne dass sich dahinter ein Druck verbirgt.</p>
+<p><strong>Kern in Kürze</strong></p>
+<table border="1" cellpadding="8" style="border-collapse:collapse;width:100%;max-width:42rem;font-size:0.95rem;">
+<tr><td><strong>Was</strong></td><td>${what}</td></tr>
+<tr><td><strong>Wann</strong></td><td>${esc(eventDateStr)}</td></tr>
+<tr><td><strong>Wo</strong></td><td>${ort || '–'}</td></tr>
+<tr><td><strong>Galerie online</strong></td><td><a href="${galerieUrl}">${esc(galerieUrl)}</a></td></tr>
+<tr><td><strong>Demo / Eingang</strong></td><td><a href="${demoUrl}">${esc(demoUrl)}</a></td></tr>
+</table>
+<p>Wenn ein <strong>Hinweis</strong>, ein <strong>kurzer Termin</strong> oder <strong>Bildmaterial</strong> für Sie interessant ist, melden Sie sich gern.</p>
+<p>Mit freundlichen Grüßen<br><strong>${signOff}</strong></p>
+<hr style="margin:1rem 0"/>
+<p style="font-size:0.85rem;color:#555"><strong>Kontakt</strong><br>${contactLines}</p>
+<p style="font-size:0.85rem;color:#555"><strong>Links</strong><br>Galerie: <a href="${galerieUrl}">${esc(galerieUrl)}</a><br>Demo: <a href="${demoUrl}">${esc(demoUrl)}</a><br>Präsentationsmappe: <a href="${mappeUrl}">${esc(mappeUrl)}</a></p>
+<p style="font-size:0.75rem;color:#888;margin-top:1rem"><strong>Betreff (Vorschlag):</strong> ${esc(betreff)}</p>
+`
+    return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Presse-Erinnerung</title>
+  <link rel="stylesheet" href="${WERBELINIE_FONTS_URL}" />
+  <style>${prDocCss}</style>
+  <style>.presse-body a { color: inherit; text-decoration: underline; }</style>
+  <style id="print-page-size">@media print { @page { size: A4; margin: 10mm; } }</style>
+</head>
+<body class="${prDocClass} format-a4">
+  ${toolbarFull}
+  <div class="page">
+    <div class="content">
+    <div class="header">
+      <h1>${esc(galleryName)}</h1>
+      <div class="header-info">
+        ${ev.title ? '<strong>Event:</strong> ' + esc(ev.title) + '<br>' : ''}
+        ${eventDateStr ? '<strong>Datum:</strong> ' + esc(eventDateStr).replace(/\n/g, '<br>') : ''}
+      </div>
+    </div>
+    <h1>Presse-Erinnerung</h1>
+    <p class="presse-body" style="font-size:0.9rem;color:#666;margin-top:0">Folge-Mail nach der ersten Presseaussendung (Text anpassen)</p>
+    <div class="presse-body" style="margin-top: 0.75rem; line-height: 1.55;">${bodyInner}</div>
+    </div>
+  </div>
+  ${scriptFull}
+</body>
+</html>`
+  }
+
+  const buildErinnerungDocumentPayload = async (event: any): Promise<Record<string, unknown>> => {
+    const readBlobAsDataUrl = (blob: Blob) =>
+      new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onloadend = () => resolve(String(r.result ?? ''))
+        r.onerror = () => reject(new Error('Datei lesen fehlgeschlagen'))
+        r.readAsDataURL(blob)
+      })
+    const ev = event
+    const html = buildPresseErinnerungArbeitsHtml(ev)
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const dataUrl = await readBlobAsDataUrl(blob)
+    const docId = `pr-erinnerung-${ev.id}-${Date.now()}`
+    return {
+      id: docId,
+      name: getNextWerbematerialVorschlagName(ev.id, ev.title, 'presse-erinnerung', 'Presse-Erinnerung'),
+      type: 'text/html',
+      size: blob.size,
+      fileData: dataUrl,
+      data: dataUrl,
+      fileName: `presse-erinnerung-${(ev.title || 'event').replace(/\s+/g, '-').toLowerCase()}.html`,
+      uploadedAt: new Date().toISOString(),
+      isPDF: false,
+      isPlaceholder: false,
+      category: 'pr-dokumente',
+      eventId: ev.id,
+      eventTitle: ev.title,
+      werbematerialTyp: 'presse-erinnerung',
+    }
+  }
+
+  /** Nach Bestätigung: Werbemittel-Dokumente dieses Events (Presse, Presse-Erinnerung, Social, Newsletter, Plakat, Flyer, Sammel-PDF) löschen und wie Medienpaket-Vorschau neu als speicherbare Einträge anlegen – öffnen/bearbeiten über die Event-Karten. */
   const applyMedienpaketAlsGespeicherteWerbemittel = async (
     forEvent?: any,
     opts?: { skipConfirm?: boolean }
@@ -8978,11 +9112,20 @@ ${'='.repeat(60)}
     }
     const eidNorm = String(event.id)
     const titel = String(event.title || 'Event')
-    const typSet = new Set(['presse', 'social', 'newsletter', 'plakat', 'event-flyer', 'flyer', 'pr-alle'])
+    const typSet = new Set([
+      'presse',
+      'presse-erinnerung',
+      'social',
+      'newsletter',
+      'plakat',
+      'event-flyer',
+      'flyer',
+      'pr-alle',
+    ])
     if (!opts?.skipConfirm) {
       const ok = window.confirm(
         [
-          'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
+          'Alle gespeicherten Werbemittel zu DIESEM Event in den Karten (Presse, Presse-Erinnerung, Social, Newsletter, Plakat, Flyer, ggf. Sammel-PDF) werden entfernt.',
           'Danach werden sie neu aus dem gleichen Stand wie die Medienpaket-Vorschau angelegt.',
           'Dazu werden die Vorschläge für Plakat und Druckformate (Modal, „Neu erstellen“) auf denselben Stand gebracht.',
           'In der Demo (ök2) wird der Flyer-Master im Browser auf die Muster-Basis zurückgesetzt.',
@@ -9178,6 +9321,8 @@ ${'='.repeat(60)}
         werbematerialTyp: 'presse',
       }
 
+      const erinnerungPayload = await buildErinnerungDocumentPayload(event)
+
       const newsletterGen = generateNewsletterContent(event)
       const [socialPayload, newsletterPayload] = await Promise.all([
         generateEditableSocialMediaPDF(social, event, { skipOpenWindow: true, deferSave: true }) as Promise<Record<string, unknown>>,
@@ -9233,6 +9378,7 @@ ${'='.repeat(60)}
       const mergedDocs = [
         ...kept,
         pressePayload,
+        erinnerungPayload,
         socialPayload,
         newsletterPayload,
         plakatPayload,
@@ -9283,11 +9429,11 @@ ${'='.repeat(60)}
 
       if (opts?.skipConfirm) {
         alert(
-          `✅ Werbemittel für „${titel}“ automatisch angelegt (nach neuem Event): Presse, Social, Newsletter, Plakat, Flyer. In den Karten mit „Ansehen“ oder „Neu erstellen“.${tenant.isOeffentlich ? ' Flyer-Master (Demo) war zuvor auf Muster-Basis gesetzt.' : ''}`
+          `✅ Werbemittel für „${titel}“ automatisch angelegt (nach neuem Event): Presse, Presse-Erinnerung, Social, Newsletter, Plakat, Flyer. In den Karten mit „Ansehen“ oder „Neu erstellen“.${tenant.isOeffentlich ? ' Flyer-Master (Demo) war zuvor auf Muster-Basis gesetzt.' : ''}`
         )
       } else {
         alert(
-          `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Social, Newsletter, Plakat, Flyer. Vorschläge für Plakat und Druckformate sind auf denselben Stand gebracht.${tenant.isOeffentlich ? ' Demo: Flyer-Master im Browser wurde auf die Muster-Basis zurückgesetzt.' : ''} In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
+          `✅ Werbemittel für „${titel}“ neu angelegt: Presse, Presse-Erinnerung, Social, Newsletter, Plakat, Flyer. Vorschläge für Plakat und Druckformate sind auf denselben Stand gebracht.${tenant.isOeffentlich ? ' Demo: Flyer-Master im Browser wurde auf die Muster-Basis zurückgesetzt.' : ''} In den Event-Karten mit „Ansehen“ öffnen oder mit „Neu erstellen“ bearbeiten.`
         )
       }
     } catch (err) {
@@ -23955,8 +24101,8 @@ ${name}`
                           return false
                         })
                         const WERBEMATERIAL_TYPEN: readonly string[] = tenant.isOeffentlich || tenant.isVk2
-                          ? ['newsletter', 'plakat', 'event-flyer', 'presse', 'social']
-                          : ['newsletter', 'plakat', 'event-flyer', 'presse', 'social', 'praesentationsmappe-kurz']
+                          ? ['newsletter', 'plakat', 'event-flyer', 'presse', 'presse-erinnerung', 'social']
+                          : ['newsletter', 'plakat', 'event-flyer', 'presse', 'presse-erinnerung', 'social', 'praesentationsmappe-kurz']
                         const byTyp: Record<string, any[]> = {}
                         WERBEMATERIAL_TYPEN.forEach(t => { byTyp[t] = [] })
                         prDocsForEvent.forEach((d: any) => {
@@ -24057,6 +24203,42 @@ ${name}`
                                   const variant = tenant.isOeffentlich ? 'neutral' : 'lokal'
                                   const presse = evSug?.presseaussendung || generatePresseaussendungContent(ev, variant)
                                   generateEditablePresseaussendungPDF(presse, ev, '')
+                                },
+                              },
+                              {
+                                typ: 'presse-erinnerung' as const,
+                                icon: '✉️',
+                                titel: 'Presse-Erinnerung',
+                                beschreibung:
+                                  'Folge-Mail nach der Presseaussendung. Text anpassen, dann Mail oder PDF.',
+                                docs: byTyp['presse-erinnerung'] || [],
+                                onOpen: (doc: any) => handleViewEventDocument(doc, event),
+                                onDelete: (doc: any) => handleDeleteWerbematerialDocument(doc.id),
+                                onErstellen: () => {
+                                  void (async () => {
+                                    const ev = resolveEventForMediengeneratorCard(events, event)
+                                    const eidNorm = String(ev.id)
+                                    try {
+                                      const cur = loadDocuments()
+                                      const without = cur.filter(
+                                        (d: any) =>
+                                          !(
+                                            d?.category === 'pr-dokumente' &&
+                                            d?.eventId != null &&
+                                            String(d.eventId) === eidNorm &&
+                                            String(d.werbematerialTyp || '') === 'presse-erinnerung'
+                                          )
+                                      )
+                                      const payload = await buildErinnerungDocumentPayload(ev)
+                                      const merged = [...without, payload]
+                                      if (!saveDocuments(merged)) return
+                                      setDocuments(merged)
+                                      handleViewEventDocument(payload, ev)
+                                    } catch (e) {
+                                      console.error('Presse-Erinnerung:', e)
+                                      alert('Presse-Erinnerung konnte nicht erstellt werden. Bitte erneut versuchen.')
+                                    }
+                                  })()
                                 },
                               },
                               {
