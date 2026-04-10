@@ -13,6 +13,7 @@ import {
   buildStammbaumKartenState,
   buildGrossfamilieStammbaumSektionen,
   getStammbaumBranchCardStyle,
+  type StammbaumKartenSektion,
 } from '../utils/familieStammbaumKarten'
 import { addPartnersForSiblingsExceptMaria } from '../utils/familieAddPartners'
 import { ensureErsteEheVierGeschwister } from '../utils/familieErsteEheGeschwister'
@@ -51,6 +52,41 @@ function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: st
     cardBorder: v ? '2px solid rgba(0,0,0,0.92)' : `2px solid ${st.border}`,
     avatarBorder: v ? '3px solid rgba(0,0,0,0.92)' : `3px solid ${st.border}`,
   }
+}
+
+/** Ab dieser Anzahl Sektionen: Akkordeon, kompakte Karten, Sprungleiste (viele Kleinfamilien). */
+const STAMMBAUM_VIELE_SEKTIONEN_AB = 5
+
+function stammbaumSektionDomId(key: string): string {
+  return `stammbaum-sek-${key.replace(/[^a-zA-Z0-9_-]/g, '-')}`
+}
+
+function stammbaumSektionTocLabel(s: StammbaumKartenSektion): string {
+  if (s.key === 'eltern') return 'Eltern'
+  if (s.key === 'weitere') return 'Weitere'
+  if (s.key.startsWith('kleinfamilie-')) {
+    const m = s.titel.match(/^Kleinfamilie\s+(\S+)\s*[–-]\s*(.+)$/)
+    if (m) {
+      const name = m[2].trim()
+      return `${m[1]} · ${name.length > 16 ? `${name.slice(0, 16)}…` : name}`
+    }
+  }
+  return s.titel.length > 26 ? `${s.titel.slice(0, 26)}…` : s.titel
+}
+
+function defaultStammbaumSekOpen(
+  sek: StammbaumKartenSektion,
+  viele: boolean,
+  ichBinPersonId: string | undefined
+): boolean {
+  if (!viele) return true
+  if (sek.key === 'eltern') return true
+  if (sek.key === 'weitere') return false
+  if (sek.key.startsWith('kleinfamilie-')) {
+    const rootId = sek.key.slice('kleinfamilie-'.length)
+    return rootId === ichBinPersonId
+  }
+  return true
 }
 
 export default function K2FamilieStammbaumPage() {
@@ -135,6 +171,18 @@ export default function K2FamilieStammbaumPage() {
     }
     return buildGrossfamilieStammbaumSektionen(personenForGraph, ichId)
   }, [personenForGraph, einstellungen.ichBinPersonId, nurKleinfamilie])
+
+  const vieleStammbaumSektionen = Boolean(
+    stammbaumSektionen &&
+      stammbaumSektionen.length >= STAMMBAUM_VIELE_SEKTIONEN_AB &&
+      !nurKleinfamilie
+  )
+
+  const [sekExpanded, setSekExpanded] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    if (!vieleStammbaumSektionen) setSekExpanded({})
+  }, [vieleStammbaumSektionen])
+
   useEffect(() => {
     setFamilyDisplayNameInput(einstellungen.familyDisplayName ?? '')
   }, [currentTenantId, einstellungen.familyDisplayName])
@@ -588,100 +636,286 @@ export default function K2FamilieStammbaumPage() {
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
             <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Kleinfamilie 1, 2, 3 …</strong> nach Geschwisterstellung (bei 12 Geschwistern + Eltern bis zu 13 Strukturen). Pro Block eine Randfarbe; innerhalb des Blocks kannst du Personen hinzufügen und bearbeiten.{' '}
             <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
+            {vieleStammbaumSektionen && (
+              <>
+                {' '}
+                <strong>Viele Blöcke:</strong> Standard sind <strong>Eltern</strong> und <strong>deine Kleinfamilie</strong> geöffnet; Rest eingeklappt – Pfeil zum Aufklappen, unten springen per Leiste.
+              </>
+            )}
           </p>
         )}
-        {stammbaumSektionen && stammbaumSektionen.length > 0 ? (
-          stammbaumSektionen.map((sek, sekIdx) => (
-            <section key={sek.key} style={{ marginBottom: '2rem' }}>
-              <h3
-                style={{
-                  margin: '0 0 0.35rem',
-                  fontSize: '1.12rem',
-                  fontWeight: 700,
-                  color: 'rgba(255,255,255,0.95)',
-                  letterSpacing: '0.02em',
+        {vieleStammbaumSektionen && stammbaumSektionen && stammbaumSektionen.length > 0 && (
+          <div
+            className="k2-familie-stammbaum-sprungleiste"
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 6,
+              marginBottom: '0.75rem',
+              padding: '0.5rem 0',
+              background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 70%, rgba(15,23,42,0))',
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.45rem', marginBottom: '0.5rem' }}>
+              <span className="meta" style={{ marginRight: '0.25rem' }}>
+                Blöcke:
+              </span>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ fontSize: '0.82rem', padding: '0.25rem 0.65rem' }}
+                onClick={() => {
+                  if (!stammbaumSektionen) return
+                  setSekExpanded(Object.fromEntries(stammbaumSektionen.map((s) => [s.key, true])))
                 }}
               >
-                {sek.titel}
-              </h3>
-              {sek.untertitel ? (
-                <p className="meta" style={{ margin: '0 0 0.85rem' }}>
-                  {sek.untertitel}
-                </p>
-              ) : null}
-              <div
-                className="k2-familie-stammbaum-grid"
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}
+                Alle aufklappen
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ fontSize: '0.82rem', padding: '0.25rem 0.65rem' }}
+                onClick={() => {
+                  if (!stammbaumSektionen) return
+                  setSekExpanded(Object.fromEntries(stammbaumSektionen.map((s) => [s.key, false])))
+                }}
               >
-                {sek.personen.map((p, i) => {
-                  const st = getStammbaumBranchCardStyle(sek.branchIndex)
-                  const r = stammbaumKachelRaender(p, st)
-                  const delay = (sekIdx * 24 + i) * 0.06
-                  return (
-                    <Link
-                      key={p.id}
-                      to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
-                      className="familie-card-enter"
-                      style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${delay}s` }}
-                      title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
-                    >
-                      <div
-                        className="card"
+                Alle einklappen
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ fontSize: '0.82rem', padding: '0.25rem 0.65rem' }}
+                onClick={() => {
+                  if (!stammbaumSektionen) return
+                  const ichId = einstellungen.ichBinPersonId
+                  const ichKey = ichId ? `kleinfamilie-${ichId}` : null
+                  setSekExpanded(
+                    Object.fromEntries(
+                      stammbaumSektionen.map((s) => {
+                        if (s.key === 'eltern') return [s.key, true]
+                        if (ichKey && s.key === ichKey) return [s.key, true]
+                        return [s.key, false]
+                      })
+                    )
+                  )
+                }}
+              >
+                Nur Eltern + meine Kleinfamilie
+              </button>
+            </div>
+            <nav
+              aria-label="Zu einem Block springen"
+              style={{
+                display: 'flex',
+                gap: '0.35rem',
+                flexWrap: 'wrap',
+                overflowX: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingBottom: '0.15rem',
+              }}
+            >
+              {stammbaumSektionen.map((sek) => (
+                <a
+                  key={`jump-${sek.key}`}
+                  href={`#${stammbaumSektionDomId(sek.key)}`}
+                  className="meta"
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.28rem 0.65rem',
+                    borderRadius: 6,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(148,163,184,0.35)',
+                    color: 'rgba(255,255,255,0.95)',
+                    fontSize: '0.82rem',
+                    whiteSpace: 'nowrap',
+                    textDecoration: 'none',
+                  }}
+                >
+                  {stammbaumSektionTocLabel(sek)}
+                </a>
+              ))}
+            </nav>
+          </div>
+        )}
+        {stammbaumSektionen && stammbaumSektionen.length > 0 ? (
+          stammbaumSektionen.map((sek, sekIdx) => {
+            const compact = vieleStammbaumSektionen
+            const avatarPx = compact ? 64 : 96
+            const pad = compact ? '0.75rem' : '1.25rem'
+            const gapInner = compact ? '0.45rem' : '0.75rem'
+            const titleFs = compact ? '0.95rem' : '1.05rem'
+            const shortLen = compact ? 48 : 70
+            const gridMin = compact ? 'minmax(132px, 1fr)' : 'minmax(200px, 1fr)'
+            const gridGap = compact ? '0.75rem' : '1.25rem'
+            const mbSek = compact ? '1rem' : '2rem'
+
+            const open =
+              !vieleStammbaumSektionen ||
+              (sekExpanded[sek.key] !== undefined
+                ? sekExpanded[sek.key]!
+                : defaultStammbaumSekOpen(sek, true, einstellungen.ichBinPersonId))
+
+            const toggleSek = () => {
+              if (!vieleStammbaumSektionen) return
+              const cur =
+                sekExpanded[sek.key] !== undefined
+                  ? sekExpanded[sek.key]!
+                  : defaultStammbaumSekOpen(sek, true, einstellungen.ichBinPersonId)
+              setSekExpanded((prev) => ({ ...prev, [sek.key]: !cur }))
+            }
+
+            const sekDomId = stammbaumSektionDomId(sek.key)
+
+            return (
+              <section
+                key={sek.key}
+                id={sekDomId}
+                style={{ marginBottom: mbSek, scrollMarginTop: '6rem' }}
+              >
+                {vieleStammbaumSektionen ? (
+                  <button
+                    type="button"
+                    onClick={toggleSek}
+                    aria-expanded={open}
+                    style={{
+                      display: 'flex',
+                      width: '100%',
+                      alignItems: 'flex-start',
+                      gap: '0.5rem',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      padding: 0,
+                      margin: '0 0 0.35rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.9rem', opacity: 0.85, flexShrink: 0, marginTop: '0.15rem' }} aria-hidden>
+                      {open ? '▼' : '▶'}
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0 }}>
+                      <span
                         style={{
-                          padding: '1.25rem',
-                          textAlign: 'center',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          gap: '0.75rem',
-                          border: r.cardBorder,
-                          background: st.bg,
-                          boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                          display: 'block',
+                          fontSize: '1.12rem',
+                          fontWeight: 700,
+                          color: 'rgba(255,255,255,0.95)',
+                          letterSpacing: '0.02em',
                         }}
                       >
-                        {p.photo ? (
-                          <img
-                            src={p.photo}
-                            alt=""
-                            className="person-photo"
-                            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: r.avatarBorder }}
-                          />
-                        ) : (
+                        {sek.titel}
+                      </span>
+                    </span>
+                  </button>
+                ) : (
+                  <h3
+                    style={{
+                      margin: '0 0 0.35rem',
+                      fontSize: '1.12rem',
+                      fontWeight: 700,
+                      color: 'rgba(255,255,255,0.95)',
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {sek.titel}
+                  </h3>
+                )}
+                {sek.untertitel ? (
+                  <p className="meta" style={{ margin: '0 0 0.85rem' }}>
+                    {sek.untertitel}
+                    {!open && vieleStammbaumSektionen ? (
+                      <span style={{ opacity: 0.75 }}> · eingeklappt</span>
+                    ) : null}
+                  </p>
+                ) : null}
+                {open ? (
+                  <div
+                    className="k2-familie-stammbaum-grid"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: `repeat(auto-fill, ${gridMin})`,
+                      gap: gridGap,
+                    }}
+                  >
+                    {sek.personen.map((p, i) => {
+                      const st = getStammbaumBranchCardStyle(sek.branchIndex)
+                      const r = stammbaumKachelRaender(p, st)
+                      const delay = compact ? '0s' : `${(sekIdx * 24 + i) * 0.06}s`
+                      return (
+                        <Link
+                          key={p.id}
+                          to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                          className="familie-card-enter"
+                          style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
+                          title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                        >
                           <div
+                            className="card"
                             style={{
-                              width: 96,
-                              height: 96,
-                              borderRadius: '50%',
-                              background: 'rgba(13,148,136,0.25)',
+                              padding: pad,
+                              textAlign: 'center',
                               display: 'flex',
+                              flexDirection: 'column',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '2.5rem',
-                              border: r.avatarBorder,
+                              gap: gapInner,
+                              border: r.cardBorder,
+                              background: st.bg,
+                              boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
                             }}
                           >
-                            👤
+                            {p.photo ? (
+                              <img
+                                src={p.photo}
+                                alt=""
+                                className="person-photo"
+                                style={{
+                                  width: avatarPx,
+                                  height: avatarPx,
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                  border: r.avatarBorder,
+                                }}
+                              />
+                            ) : (
+                              <div
+                                style={{
+                                  width: avatarPx,
+                                  height: avatarPx,
+                                  borderRadius: '50%',
+                                  background: 'rgba(13,148,136,0.25)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: compact ? '1.8rem' : '2.5rem',
+                                  border: r.avatarBorder,
+                                }}
+                              >
+                                👤
+                              </div>
+                            )}
+                            <div style={{ width: '100%' }}>
+                              <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
+                              {p.shortText && (
+                                <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                                  {p.shortText.slice(0, shortLen)}
+                                  {p.shortText.length > shortLen ? '…' : ''}
+                                </p>
+                              )}
+                            </div>
+                            <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                              → ansehen
+                            </span>
                           </div>
-                        )}
-                        <div style={{ width: '100%' }}>
-                          <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
-                          {p.shortText && (
-                            <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
-                              {p.shortText.slice(0, 70)}
-                              {p.shortText.length > 70 ? '…' : ''}
-                            </p>
-                          )}
-                        </div>
-                        <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-                          → ansehen
-                        </span>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </section>
-          ))
+                        </Link>
+                      )
+                    })}
+                  </div>
+                ) : null}
+              </section>
+            )
+          })
         ) : (
           <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
             {stammbaumKarten.sortedPersonen.map((p, i) => {

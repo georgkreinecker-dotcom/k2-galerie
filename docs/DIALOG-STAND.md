@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: viele Kleinfamilien – Akkordeon, Sprungleiste, kompakt** – Ab **5** Sektionen (Großfamilie, nicht „nur Kleinfamilie“): **sticky** Sprungleiste mit Ankern, Buttons **Alle aufklappen / einklappen / Nur Eltern + meine Kleinfamilie**; Standard **Eltern** + **Kleinfamilie von „Ich bin“** offen, Rest zu; kompaktere Karten (kleineres Foto, kürzerer Text, kein gestaffeltes Einblend-Delay). `K2FamilieStammbaumPage.tsx`. Tests 389 grün, Build grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Stammbaum mit vielen Blöcken öffnen – Sprung, Einklappen, „Nur Eltern + meine Kleinfamilie“ kurz testen.
+
+---
+
 **Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: schwarzer Rand für Verstorbene** – Auf den Personen-Kacheln: bei **Verstorben** (Häkchen in der Personenkarte) **schwarzer Rand** um Karte und Foto-Kreis statt Zweig-Farbe; Tooltip „Verstorben – Person ansehen“; Kurzhinweis bei Großfamilie- und Kleinfamilie-Text. `K2FamilieStammbaumPage.tsx`. Build grün. **Commit:** **bd696455** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum mit echten Daten prüfen – eine Person auf „verstorben“ setzen → schwarzer Rand sichtbar.
