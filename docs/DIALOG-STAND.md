@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **APf: eine Kachel „Events, Medien & Öffentlichkeit (K2)“ + zentrale Doku** – Smart Panel: Duplikat entfernt; Presse-Tab lädt Eventplan → Öffentlichkeitsarbeit. **`docs/oeffentlichkeitsarbeit/ZENTRALE.md`** = Kompass (App-Einstieg, `presseaussendung-fertig/`, 00-INDEX). **`docs/00-INDEX.md`** verweist auf ZENTRALE. **DevView:** `normalizeApfPageId` + `useNavigate`/`useLocation` (Build-Fix); alte URL `?page=oeffentlichkeitsarbeit` → `presse`. **Commit (Stand):** **40f5679e** (DIALOG-STAND; Code **0b1b16e7**) – Push: `git push origin main`
+
+**Was wir JETZT tun:** Nach erfolgreichem Push: Vercel „Ready“ – Smart-Panel-Kachel und `?page=presse` kurz testen.
+
+---
+
 **Letzter Stand:** 10.04.26 – **Öffentlichkeitsarbeit: fertige Presseaussendungen an einem Ort** – Ordner **`docs/oeffentlichkeitsarbeit/presseaussendung-fertig/`** ([README](oeffentlichkeitsarbeit/presseaussendung-fertig/README.md), [00-INDEX](oeffentlichkeitsarbeit/presseaussendung-fertig/00-INDEX.md)): Archiv Wels + Erinnerung (1.4.) als **fertige** Volltexte; Verweise in `docs/00-INDEX`, `oeffentlichkeitsarbeit/00-INDEX`, Einladungs-Archiv. **Commit:** **80884819** ✅ GitHub
 
 **Was wir JETZT tun:** Weitere Aussendungen: neue `.md` in `presseaussendung-fertig/` + Eintrag in dessen `00-INDEX`.
