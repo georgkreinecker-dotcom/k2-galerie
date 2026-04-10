@@ -945,14 +945,16 @@ const ÖSTERREICH_MEDIEN = {
     { name: 'Trend', email: 'redaktion@trend.at' },
   ],
   tv: [
-    { name: 'ORF', email: 'presse@orf.at' },
+    /** Zentrale Pressestelle ORF – Hinweise regional oft über Landesstudio (s. regional OÖ). */
+    { name: 'ORF (Pressestelle)', email: 'presse@orf.at' },
     { name: 'ATV', email: 'presse@atv.at' },
     { name: 'Puls 4', email: 'presse@puls4.com' },
     { name: 'ServusTV', email: 'presse@servustv.com' },
   ],
   radio: [
-    { name: 'Ö1 (ORF)', email: 'oe1@orf.at' },
-    { name: 'Ö3 (ORF)', email: 'oe3@orf.at' },
+    /** Ö1/Ö3: offizielle Service-/Kontaktadressen (nicht die früheren Kurzformen @orf.at). */
+    { name: 'Ö1 (ORF)', email: 'oe1.service@orf.at' },
+    { name: 'Hitradio Ö3 (ORF)', email: 'hitradio@oe3.at' },
     { name: 'FM4 (ORF)', email: 'fm4@orf.at' },
     { name: 'KroneHit', email: 'studio@kronehit.at' },
     { name: 'Antenne Steiermark', email: 'redaktion@antenne.at' },
@@ -962,17 +964,22 @@ const ÖSTERREICH_MEDIEN = {
     { name: 'OÖ Nachrichten (OÖN)', email: 'redaktion@nachrichten.at' },
     { name: 'tips Linz / Oberösterreich', email: 'redaktion@tips.at' },
     { name: 'Bezirksblätter OÖ', email: 'redaktion@bezirksblaetter.at' },
-    { name: 'Radio Oberösterreich', email: 'redaktion@radioooe.at' },
     { name: 'Antenne Oberösterreich', email: 'redaktion@antenne.at' },
     { name: 'meinbezirk.at OÖ', email: 'redaktion@meinbezirk.at' },
     { name: 'Welser Zeitung', email: 'redaktion@wels.at' },
     { name: 'Rieder Volkszeitung', email: 'redaktion@rvz.at' },
+    /** ORF OÖ: Landesstudio Linz – für regionale Presse/Kultur sinnvoller als nur Zentrale. */
+    { name: 'ORF Oberösterreich (Landesstudio – aktuell)', email: 'aktuell.ooe@orf.at' },
+    { name: 'ORF Oberösterreich (Publikum)', email: 'publikum.ooe@orf.at' },
+    /** Vorher „Radio Oberösterreich“ mit fremder Domain – ORF-Radio OÖ = ORF-Adresse. */
+    { name: 'ORF Radio Oberösterreich', email: 'radio.ooe@orf.at' },
   ],
   /** Online & Verteilung – wichtig für Internetauftritt, Reichweite im Netz */
   online: [
     { name: 'APA (Austria Presse Agentur)', email: 'presse@apa.at' },
     { name: 'OTS (Presseaussendungen)', email: 'ots@ots.at' },
-    { name: 'ORF.at (Online)', email: 'redaktion@orf.at' },
+    /** Keine generische redaktion@orf.at – Presse über zentrale Pressestelle. */
+    { name: 'ORF.at (Online / Presse)', email: 'presse@orf.at' },
     { name: 'heute.at', email: 'redaktion@heute.at' },
     { name: 'vienna.at', email: 'redaktion@vienna.at' },
     { name: 'news.at', email: 'redaktion@news.at' },
@@ -23694,6 +23701,12 @@ ${name}`
                 </ol>
                 <div style={{ marginTop: '0.45rem', fontSize: '0.85rem', color: '#5c5650' }}>
                   Tipp: Eine Testmail an dich selbst senden, dann erst an die Medien.
+                  <br />
+                  <span style={{ fontSize: '0.82rem' }}>
+                    ORF: Adressen folgen Pressestelle / Landesstudios (nicht mehr veraltete Kurzformen). Wenn alte ORF-Zeilen
+                    gebounced sind: im Medienspiegel löschen und Kategorie <strong>TV / Radio / Regional OÖ</strong> neu
+                    einfügen.
+                  </span>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '0.8rem' }}>
