@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: übersichtliche PDF-Formate** – Neues Druckformat **Personenblätter** (eine Person pro Karte, DL-Liste); Auswahl mit **optgroup** (empfohlene PDFs vs. Grafik); Standard **personenblaetter** statt Grafik; Tabelle **ohne nowrap**; Druck-Styles `@media print`. `StammbaumDruckFormate.tsx`, `K2FamilieStammbaumPage.tsx`, `App.css`. Build grün. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Stammbaum → Druck: **Personenblätter** testen → PDF speichern; bei Tabelle **Querformat** im Dialog.
+
+---
+
 **Letzter Stand:** 10.04.26 – **Medienpaket: Presse-Erinnerung (App)** – `ScreenshotExportAdmin`: „Paket übernehmen“ legt zusätzlich **Presse-Erinnerung** (`werbematerialTyp: presse-erinnerung`) an; eigene Event-Karte mit **Neu erstellen** / Ansehen; Liste „Zum Ansehen & Drucken“ enthält den Eintrag. Repo-`.md` in `presseaussendung-fertig/` bleibt Archiv. Tests + Build grün. **Commit:** **521bab64** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Vercel „Ready“: Event → **Paket übernehmen** → **Zum Ansehen & Drucken** – Zeile **Presse-Erinnerung** sichtbar; optional Karte **Neu erstellen** testen.

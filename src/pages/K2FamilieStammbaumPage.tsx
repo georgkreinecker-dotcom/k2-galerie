@@ -15,7 +15,12 @@ import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
-import FamilyTreeGraph, { type TreeOrientation } from '../components/FamilyTreeGraph'
+import FamilyTreeGraph, { type FamilyTreeLayout, type TreeOrientation } from '../components/FamilyTreeGraph'
+import {
+  StammbaumDruckNachGenerationen,
+  StammbaumDruckPersonenblaetter,
+  StammbaumDruckRegister,
+} from '../components/StammbaumDruckFormate'
 
 function generateId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -23,6 +28,15 @@ function generateId(): string {
 
 type PrintFormat = 'a4' | 'a3' | 'poster'
 type PrintFotos = '1' | '0'
+/** Druck: Grafik oder übersichtliche Text-PDFs (ohne verschachtelte Grafik). */
+type PrintStil = 'grafik' | 'generationen' | 'register' | 'personenblaetter'
+
+const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register', 'grafik']
+
+function parsePrintStil(raw: string | null): PrintStil {
+  if (raw && PRINT_STILE.includes(raw as PrintStil)) return raw as PrintStil
+  return 'personenblaetter'
+}
 
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
@@ -53,6 +67,9 @@ export default function K2FamilieStammbaumPage() {
   const druck = searchParams.get('druck') === '1'
   const formatFromUrl = (searchParams.get('format') as PrintFormat) || 'a4'
   const fotosFromUrl = (searchParams.get('fotos') as PrintFotos) || '1'
+  const stilFromUrl = parsePrintStil(searchParams.get('stil'))
+  const oriFromUrl = (searchParams.get('ori') as TreeOrientation) || 'vertical'
+  const treeFromUrl = (searchParams.get('tree') as FamilyTreeLayout) || 'zeilen'
   const titelFromUrl = searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie')
   const format = druck ? formatFromUrl : (searchParams.get('format') as PrintFormat) || 'a4'
   const fotos = druck ? fotosFromUrl : (searchParams.get('fotos') as PrintFotos) || '1'
@@ -60,6 +77,9 @@ export default function K2FamilieStammbaumPage() {
 
   const [druckFormat, setDruckFormat] = useState<PrintFormat>(formatFromUrl)
   const [druckFotos, setDruckFotos] = useState<PrintFotos>(fotosFromUrl)
+  const [druckStil, setDruckStil] = useState<PrintStil>(stilFromUrl)
+  const [druckOri, setDruckOri] = useState<TreeOrientation>(oriFromUrl)
+  const [druckTree, setDruckTree] = useState<FamilyTreeLayout>(treeFromUrl)
   const [druckTitel, setDruckTitel] = useState(titelFromUrl)
   const [familyDisplayNameInput, setFamilyDisplayNameInput] = useState('')
   const [familyNameSaved, setFamilyNameSaved] = useState(false)
@@ -95,11 +115,21 @@ export default function K2FamilieStammbaumPage() {
     return () => window.removeEventListener('afterprint', handleAfterPrint)
   }, [handleAfterPrint])
 
-  const openDruck = (opts: { format: PrintFormat; fotos: PrintFotos; titel?: string }) => {
+  const openDruck = (opts: {
+    format: PrintFormat
+    fotos: PrintFotos
+    titel?: string
+    stil: PrintStil
+    ori: TreeOrientation
+    tree: FamilyTreeLayout
+  }) => {
     const p = new URLSearchParams()
     p.set('druck', '1')
     p.set('format', opts.format)
     p.set('fotos', opts.fotos)
+    p.set('stil', opts.stil)
+    p.set('ori', opts.ori)
+    p.set('tree', opts.tree)
     if (opts.titel?.trim()) p.set('titel', opts.titel.trim())
     setSearchParams(p)
   }
@@ -108,8 +138,44 @@ export default function K2FamilieStammbaumPage() {
 
   if (druck && personen.length > 0) {
     const forDruck = nurKleinfamilie && einstellungen.ichBinPersonId ? getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId) : personen
+    const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
+
+    if (stilFromUrl === 'generationen') {
+      return (
+        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="generationen">
+          <StammbaumDruckNachGenerationen
+            personen={forDruck}
+            titel={titel}
+            ichBinPersonId={einstellungen.ichBinPersonId}
+          />
+        </div>
+      )
+    }
+    if (stilFromUrl === 'register') {
+      return (
+        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="register">
+          <StammbaumDruckRegister
+            personen={forDruck}
+            titel={titel}
+            ichBinPersonId={einstellungen.ichBinPersonId}
+          />
+        </div>
+      )
+    }
+    if (stilFromUrl === 'personenblaetter') {
+      return (
+        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="personenblaetter">
+          <StammbaumDruckPersonenblaetter
+            personen={forDruck}
+            titel={titel}
+            ichBinPersonId={einstellungen.ichBinPersonId}
+          />
+        </div>
+      )
+    }
+
     return (
-      <div className="stammbaum-druck-view">
+      <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="grafik">
         <h1 className="stammbaum-druck-titel">{titel}</h1>
         <FamilyTreeGraph
           personen={forDruck}
@@ -117,6 +183,8 @@ export default function K2FamilieStammbaumPage() {
           printMode
           noPhotos={fotos === '0'}
           scale={printScale}
+          layout={treeFromUrl}
+          orientation={oriFromUrl}
           partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
           ichBinPersonId={einstellungen.ichBinPersonId}
           ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
@@ -302,11 +370,34 @@ export default function K2FamilieStammbaumPage() {
         {personen.length > 0 && (
           <>
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
-              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als Plakat drucken</h2>
-              <p className="meta" style={{ marginBottom: '1rem' }}>Format und Darstellung wählen, dann Drucken – die Grafik öffnet sich druckoptimiert.</p>
+              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als PDF / Plakat drucken</h2>
+              <p className="meta" style={{ marginBottom: '1rem' }}>
+                <strong>Für ein klares PDF:</strong> zuerst <strong>Personenblätter</strong>, <strong>Generationen</strong> oder <strong>Tabelle A–Z</strong> wählen – ohne verschachtelte Grafik. Die <strong>Stammbaum-Grafik</strong> eignet sich eher als Poster; im Druckdialog „Als PDF speichern“ wählen.
+              </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Format</span>
+                  <span className="meta">Inhalt</span>
+                  <select
+                    id="druck-stil"
+                    value={druckStil}
+                    onChange={(e) => {
+                      const v = parsePrintStil(e.target.value)
+                      setDruckStil(v)
+                      if (v !== 'grafik' && druckFormat === 'poster') setDruckFormat('a4')
+                    }}
+                  >
+                    <optgroup label="Übersichtliche PDFs (empfohlen)">
+                      <option value="personenblaetter">Personenblätter (A4 hoch, eine Person pro Block)</option>
+                      <option value="generationen">Liste nach Generationen</option>
+                      <option value="register">Tabelle A–Z (breit → Druck Querformat)</option>
+                    </optgroup>
+                    <optgroup label="Grafik">
+                      <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
+                    </optgroup>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Papier / Größe</span>
                   <select
                     id="druck-format"
                     value={druckFormat}
@@ -314,20 +405,48 @@ export default function K2FamilieStammbaumPage() {
                   >
                     <option value="a4">A4</option>
                     <option value="a3">A3</option>
-                    <option value="poster">Poster (größer)</option>
+                    <option value="poster" disabled={druckStil !== 'grafik'}>
+                      Poster (nur Stammbaum-Grafik)
+                    </option>
                   </select>
                 </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Darstellung</span>
-                  <select
-                    id="druck-fotos"
-                    value={druckFotos}
-                    onChange={(e) => setDruckFotos(e.target.value as PrintFotos)}
-                  >
-                    <option value="1">Mit Fotos</option>
-                    <option value="0">Nur Namen (sparsam)</option>
-                  </select>
-                </label>
+                {druckStil === 'grafik' && (
+                  <>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik-Richtung</span>
+                      <select
+                        id="druck-ori"
+                        value={druckOri}
+                        onChange={(e) => setDruckOri(e.target.value as TreeOrientation)}
+                      >
+                        <option value="vertical">Vertikal (ältere oben)</option>
+                        <option value="horizontal">Horizontal (ältere links)</option>
+                      </select>
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik-Ansicht</span>
+                      <select
+                        id="druck-tree"
+                        value={druckTree}
+                        onChange={(e) => setDruckTree(e.target.value as FamilyTreeLayout)}
+                      >
+                        <option value="zeilen">Mit Zeilen / Blöcken (übersichtlich)</option>
+                        <option value="baum">Eine Zeile pro Generation</option>
+                      </select>
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik: Fotos</span>
+                      <select
+                        id="druck-fotos"
+                        value={druckFotos}
+                        onChange={(e) => setDruckFotos(e.target.value as PrintFotos)}
+                      >
+                        <option value="1">Mit Fotos</option>
+                        <option value="0">Nur Namen (sparsam)</option>
+                      </select>
+                    </label>
+                  </>
+                )}
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <span className="meta">Titel (optional)</span>
                   <input
@@ -339,10 +458,34 @@ export default function K2FamilieStammbaumPage() {
                     style={{ minWidth: 160 }}
                   />
                 </label>
-                <button type="button" className="btn" onClick={() => openDruck({ format: druckFormat, fotos: druckFotos, titel: druckTitel || undefined })}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() =>
+                    openDruck({
+                      format: druckFormat,
+                      fotos: druckFotos,
+                      titel: druckTitel || undefined,
+                      stil: druckStil,
+                      ori: druckOri,
+                      tree: druckTree,
+                    })
+                  }
+                >
                   Druckvorschau &amp; Drucken
                 </button>
               </div>
+              {druckStil !== 'grafik' && (
+                <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+                  {druckStil === 'register' ? (
+                    <>Bei der <strong>Tabelle A–Z</strong>: im Druckdialog oft <strong>Querformat</strong> wählen, damit alle Spalten mit auf die Seite passen.</>
+                  ) : druckStil === 'personenblaetter' ? (
+                    <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
+                  ) : (
+                    <>Bei <strong>Generationen</strong>: Hoch- oder Querformat nach Geschmack; lange Namen umbrechen automatisch.</>
+                  )}
+                </p>
+              )}
             </section>
           </>
         )}
