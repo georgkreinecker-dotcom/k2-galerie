@@ -8,7 +8,7 @@
  */
 
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { getFamilienzweigPersonen } from './familieBeziehungen'
+import { getBeziehungenFromKarten, getFamilienzweigPersonen } from './familieBeziehungen'
 
 function byIdMap(personen: K2FamiliePerson[]): Map<string, K2FamiliePerson> {
   const m = new Map<string, K2FamiliePerson>()
@@ -285,6 +285,106 @@ export function getStammbaumBranchCardStyle(branchIndex: number): { border: stri
   return STAMMBAUM_BRANCH_CARD_STYLES[i]!
 }
 
+/** Unter-Block innerhalb eines Familienzweigs: Kern (Wurzel + Partner) oder Kind inkl. Partner. */
+export interface StammbaumKartenUnterSektion {
+  key: string
+  titel: string
+  untertitel?: string
+  personen: K2FamiliePerson[]
+}
+
+/**
+ * Teilt einen Familienzweig (Liste aus getFamilienzweigPersonen) in erkennbare Partner-Zweige:
+ * zuerst Kern = Wurzelperson + deren Partner (laut Karte), dann pro Kind ein Block mit Kind + Partnern.
+ * Nur Personen aus personenImZweig; eine Quelle: Kartenfelder partners / childIds.
+ */
+export function buildStammbaumPartnerUnterSektionen(
+  personen: K2FamiliePerson[],
+  anchorId: string,
+  personenImZweig: K2FamiliePerson[]
+): StammbaumKartenUnterSektion[] {
+  const byId = byIdMap(personen)
+  const g = byId.get(anchorId)
+  if (!g || personenImZweig.length === 0) return []
+
+  const kleinIds = new Set(personenImZweig.map((p) => p.id))
+  const assigned = new Set<string>()
+  const out: StammbaumKartenUnterSektion[] = []
+
+  const kern: K2FamiliePerson[] = []
+  if (kleinIds.has(g.id)) {
+    kern.push(g)
+    assigned.add(g.id)
+  }
+  for (const pr of g.partners ?? []) {
+    const q = byId.get(pr.personId)
+    if (q && kleinIds.has(q.id) && !assigned.has(q.id)) {
+      kern.push(q)
+      assigned.add(q.id)
+    }
+  }
+  if (kern.length > 0) {
+    const partnerNamen = kern
+      .filter((p) => p.id !== g.id)
+      .map((p) => p.name)
+      .join(', ')
+    out.push({
+      key: `kern-${g.id}`,
+      titel: partnerNamen ? `Kern: ${g.name} & ${partnerNamen}` : `Kern: ${g.name}`,
+      untertitel: `${kern.length} Person${kern.length === 1 ? '' : 'en'}`,
+      personen: kern,
+    })
+  }
+
+  const kinder = [...getBeziehungenFromKarten(personen, g.id).kinder]
+    .filter((k) => kleinIds.has(k.id))
+    .sort((a, b) => {
+      const pa = a.positionAmongSiblings ?? 9999
+      const pb = b.positionAmongSiblings ?? 9999
+      if (pa !== pb) return pa - pb
+      return a.name.localeCompare(b.name, 'de')
+    })
+
+  for (const k of kinder) {
+    const block: K2FamiliePerson[] = []
+    if (!assigned.has(k.id)) {
+      block.push(k)
+      assigned.add(k.id)
+    }
+    for (const pr of k.partners ?? []) {
+      const q = byId.get(pr.personId)
+      if (q && kleinIds.has(q.id) && !assigned.has(q.id)) {
+        block.push(q)
+        assigned.add(q.id)
+      }
+    }
+    if (block.length === 0) continue
+
+    const partnerDerKind = block.filter((p) => p.id !== k.id)
+    const partnerLabel =
+      partnerDerKind.length > 0 ? partnerDerKind.map((p) => p.name).join(', ') : ''
+    out.push({
+      key: `kind-${k.id}`,
+      titel: partnerLabel ? `Zweig: ${k.name} & ${partnerLabel}` : `Zweig: ${k.name}`,
+      untertitel: `${block.length} Person${block.length === 1 ? '' : 'en'}`,
+      personen: block,
+    })
+  }
+
+  const rest = personenImZweig.filter((p) => !assigned.has(p.id))
+  if (rest.length > 0) {
+    const sorted = [...rest].sort((a, b) => a.name.localeCompare(b.name, 'de'))
+    out.push({
+      key: `rest-${g.id}`,
+      titel: 'Weitere im Familienzweig',
+      untertitel: `${sorted.length} Person${sorted.length === 1 ? '' : 'en'}`,
+      personen: sorted,
+    })
+  }
+
+  return out.length > 0 ? out : []
+}
+
 /** Eine Sektion = ein Block (Eltern oder ein Geschwister-Familienzweig), eigene Farbe. */
 export interface StammbaumKartenSektion {
   key: string
@@ -293,6 +393,8 @@ export interface StammbaumKartenSektion {
   personen: K2FamiliePerson[]
   /** Index in die Farbpalette (pro Sektion eine Farbe). */
   branchIndex: number
+  /** Optional: Partner-Zweige innerhalb des Familienzweigs (Kern, Kind & Partner, …). */
+  unterSektionen?: StammbaumKartenUnterSektion[]
 }
 
 /**
@@ -344,14 +446,20 @@ export function buildGrossfamilieStammbaumSektionen(
   for (const g of geschwister) {
     const roh = getFamilienzweigPersonen(personen, g.id)
     const klein = buildStammbaumKartenState(roh, g.id).sortedPersonen
+    const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
     const pos = g.positionAmongSiblings
     const posLabel = pos != null && pos >= 1 ? String(pos) : '–'
+    const zweigTeile =
+      unterSektionen.length > 1
+        ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+        : ''
     sections.push({
       key: `kleinfamilie-${g.id}`,
       titel: `Familienzweig ${posLabel} – ${g.name}`,
-      untertitel: `${klein.length} Person${klein.length === 1 ? '' : 'en'}`,
+      untertitel: `${klein.length} Person${klein.length === 1 ? '' : 'en'}${zweigTeile}`,
       personen: klein,
       branchIndex: bi++,
+      unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
     })
     klein.forEach((p) => erfasst.add(p.id))
   }

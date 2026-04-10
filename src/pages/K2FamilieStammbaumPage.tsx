@@ -12,6 +12,7 @@ import { getBeziehungenFromKarten, getFamilienzweigPersonen } from '../utils/fam
 import {
   buildStammbaumKartenState,
   buildGrossfamilieStammbaumSektionen,
+  buildStammbaumPartnerUnterSektionen,
   getStammbaumBranchCardStyle,
   type StammbaumKartenSektion,
 } from '../utils/familieStammbaumKarten'
@@ -160,18 +161,28 @@ export default function K2FamilieStammbaumPage() {
     const ichId = einstellungen.ichBinPersonId
     if (!ichId || personenForGraph.length === 0) return null
     if (nurMeinFamilienzweig) {
+      const sortedKlein = buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen
+      const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, ichId, sortedKlein)
       return [
         {
           key: 'dein-familienzweig',
           titel: 'Dein Familienzweig',
-          untertitel: undefined,
-          personen: buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen,
+          untertitel:
+            sortedKlein.length > 0
+              ? `${sortedKlein.length} Person${sortedKlein.length === 1 ? '' : 'en'}${
+                  unterSektionen.length > 1
+                    ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+                    : ''
+                }`
+              : undefined,
+          personen: sortedKlein,
           branchIndex: 0,
+          unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
         },
       ]
     }
     return buildGrossfamilieStammbaumSektionen(personenForGraph, ichId)
-  }, [personenForGraph, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
+  }, [personen, personenForGraph, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
 
   const vieleStammbaumSektionen = Boolean(
     stammbaumSektionen &&
@@ -630,12 +641,12 @@ export default function K2FamilieStammbaumPage() {
 
         {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Innerhalb eines solchen Zweigs können mehrere <strong>Teil-Strukturen</strong> vorkommen (z.&nbsp;B. jedes Kind mit Partner) – in der <strong>Grafik</strong> als Paare erkennbar; die <strong>Kartenliste</strong> fasst sie in einem Block. Verstorbene: schwarzer Rand an der Kachel.
+            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Die <strong>Kartenliste</strong> ist in <strong>Teil-Zweige</strong> gegliedert: <strong>Kern</strong> (du &amp; deine Partner) und pro <strong>Kind</strong> ein eigener Block mit Kind &amp; Partnern – jeweils bearbeitbar über „ansehen“. In der <strong>Grafik</strong> sind Paare ebenfalls erkennbar. Verstorbene: schwarzer Rand an der Kachel.
           </p>
         )}
         {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurMeinFamilienzweig && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (Geschwister mit eigenem Ast, inkl. Paare und Kinder); bei vielen Geschwistern bis zu vielen Strukturen. Pro Block eine Randfarbe; innerhalb des Blocks kannst du Personen hinzufügen und bearbeiten.{' '}
+            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (Geschwister mit eigenem Ast). Innerhalb jedes Familienzweigs: <strong>Kern</strong> (Geschwister &amp; Partner) und <strong>pro Kind ein Teil-Zweig</strong> (Kind &amp; Partner) – klar getrennt, über „ansehen“ bearbeitbar. Pro Hauptblock eine Randfarbe.{' '}
             <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
             {vieleStammbaumSektionen && (
               <>
@@ -832,87 +843,199 @@ export default function K2FamilieStammbaumPage() {
                   </p>
                 ) : null}
                 {open ? (
-                  <div
-                    className="k2-familie-stammbaum-grid"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: `repeat(auto-fill, ${gridMin})`,
-                      gap: gridGap,
-                    }}
-                  >
-                    {sek.personen.map((p, i) => {
-                      const st = getStammbaumBranchCardStyle(sek.branchIndex)
-                      const r = stammbaumKachelRaender(p, st)
-                      const delay = compact ? '0s' : `${(sekIdx * 24 + i) * 0.06}s`
-                      return (
-                        <Link
-                          key={p.id}
-                          to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
-                          className="familie-card-enter"
-                          style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
-                          title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                  sek.unterSektionen && sek.unterSektionen.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: compact ? '0.85rem' : '1.15rem' }}>
+                      {sek.unterSektionen.map((us, usIdx) => (
+                        <div
+                          key={us.key}
+                          style={{
+                            borderLeft: '3px solid rgba(148, 163, 184, 0.5)',
+                            paddingLeft: compact ? '0.55rem' : '0.85rem',
+                          }}
                         >
-                          <div
-                            className="card"
+                          <h4
                             style={{
-                              padding: pad,
-                              textAlign: 'center',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              gap: gapInner,
-                              border: r.cardBorder,
-                              background: st.bg,
-                              boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                              margin: '0 0 0.25rem',
+                              fontSize: compact ? '0.88rem' : '0.98rem',
+                              fontWeight: 700,
+                              color: 'rgba(255,255,255,0.92)',
+                              letterSpacing: '0.02em',
                             }}
                           >
-                            {p.photo ? (
-                              <img
-                                src={p.photo}
-                                alt=""
-                                className="person-photo"
-                                style={{
-                                  width: avatarPx,
-                                  height: avatarPx,
-                                  borderRadius: '50%',
-                                  objectFit: 'cover',
-                                  border: r.avatarBorder,
-                                }}
-                              />
-                            ) : (
-                              <div
-                                style={{
-                                  width: avatarPx,
-                                  height: avatarPx,
-                                  borderRadius: '50%',
-                                  background: 'rgba(13,148,136,0.25)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  fontSize: compact ? '1.8rem' : '2.5rem',
-                                  border: r.avatarBorder,
-                                }}
-                              >
-                                👤
-                              </div>
-                            )}
-                            <div style={{ width: '100%' }}>
-                              <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
-                              {p.shortText && (
-                                <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
-                                  {p.shortText.slice(0, shortLen)}
-                                  {p.shortText.length > shortLen ? '…' : ''}
-                                </p>
-                              )}
-                            </div>
-                            <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
-                              → ansehen
-                            </span>
+                            {us.titel}
+                          </h4>
+                          {us.untertitel ? (
+                            <p className="meta" style={{ margin: '0 0 0.5rem', fontSize: compact ? '0.78rem' : '0.82rem' }}>
+                              {us.untertitel}
+                            </p>
+                          ) : null}
+                          <div
+                            className="k2-familie-stammbaum-grid"
+                            style={{
+                              display: 'grid',
+                              gridTemplateColumns: `repeat(auto-fill, ${gridMin})`,
+                              gap: gridGap,
+                            }}
+                          >
+                            {us.personen.map((p, i) => {
+                              const st = getStammbaumBranchCardStyle(sek.branchIndex)
+                              const r = stammbaumKachelRaender(p, st)
+                              const delay = compact ? '0s' : `${(sekIdx * 24 + usIdx * 10 + i) * 0.06}s`
+                              return (
+                                <Link
+                                  key={p.id}
+                                  to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                                  className="familie-card-enter"
+                                  style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
+                                  title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                                >
+                                  <div
+                                    className="card"
+                                    style={{
+                                      padding: pad,
+                                      textAlign: 'center',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'center',
+                                      gap: gapInner,
+                                      border: r.cardBorder,
+                                      background: st.bg,
+                                      boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                                    }}
+                                  >
+                                    {p.photo ? (
+                                      <img
+                                        src={p.photo}
+                                        alt=""
+                                        className="person-photo"
+                                        style={{
+                                          width: avatarPx,
+                                          height: avatarPx,
+                                          borderRadius: '50%',
+                                          objectFit: 'cover',
+                                          border: r.avatarBorder,
+                                        }}
+                                      />
+                                    ) : (
+                                      <div
+                                        style={{
+                                          width: avatarPx,
+                                          height: avatarPx,
+                                          borderRadius: '50%',
+                                          background: 'rgba(13,148,136,0.25)',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          fontSize: compact ? '1.8rem' : '2.5rem',
+                                          border: r.avatarBorder,
+                                        }}
+                                      >
+                                        👤
+                                      </div>
+                                    )}
+                                    <div style={{ width: '100%' }}>
+                                      <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
+                                      {p.shortText && (
+                                        <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                                          {p.shortText.slice(0, shortLen)}
+                                          {p.shortText.length > shortLen ? '…' : ''}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                                      → ansehen
+                                    </span>
+                                  </div>
+                                </Link>
+                              )
+                            })}
                           </div>
-                        </Link>
-                      )
-                    })}
-                  </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div
+                      className="k2-familie-stammbaum-grid"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(auto-fill, ${gridMin})`,
+                        gap: gridGap,
+                      }}
+                    >
+                      {sek.personen.map((p, i) => {
+                        const st = getStammbaumBranchCardStyle(sek.branchIndex)
+                        const r = stammbaumKachelRaender(p, st)
+                        const delay = compact ? '0s' : `${(sekIdx * 24 + i) * 0.06}s`
+                        return (
+                          <Link
+                            key={p.id}
+                            to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                            className="familie-card-enter"
+                            style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
+                            title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                          >
+                            <div
+                              className="card"
+                              style={{
+                                padding: pad,
+                                textAlign: 'center',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                gap: gapInner,
+                                border: r.cardBorder,
+                                background: st.bg,
+                                boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                              }}
+                            >
+                              {p.photo ? (
+                                <img
+                                  src={p.photo}
+                                  alt=""
+                                  className="person-photo"
+                                  style={{
+                                    width: avatarPx,
+                                    height: avatarPx,
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    border: r.avatarBorder,
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: avatarPx,
+                                    height: avatarPx,
+                                    borderRadius: '50%',
+                                    background: 'rgba(13,148,136,0.25)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: compact ? '1.8rem' : '2.5rem',
+                                    border: r.avatarBorder,
+                                  }}
+                                >
+                                  👤
+                                </div>
+                              )}
+                              <div style={{ width: '100%' }}>
+                                <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
+                                {p.shortText && (
+                                  <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                                    {p.shortText.slice(0, shortLen)}
+                                    {p.shortText.length > shortLen ? '…' : ''}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                                → ansehen
+                              </span>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )
                 ) : null}
               </section>
             )

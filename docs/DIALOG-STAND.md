@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Partner-Zweige in der Kartenliste** – **Kern** (Wurzel & Partner) + **pro Kind** ein Teil-Zweig (Kind & Partner); Großfamilie & „Nur mein Familienzweig“; bearbeitbar je Kachel. **`buildStammbaumPartnerUnterSektionen`**, `K2FamilieStammbaumPage`, Test. **Commit:** **51aaeaf8** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum mit echten Daten kurz prüfen (childIds auf Wurzel = Kinder in Teil-Zweigen).
+
+---
+
 **Letzter Stand:** 10.04.26 – **K2 Familie: Organisationsprinzip organisches Wachstum (verbindlich)** – Georg: **endlos weiterentwickelbar** – ein Muster auf allen Ebenen, Organisation aus den Karten, keine künstliche Grenze. **Doku** `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md`: Abschnitt **Organisationsprinzip: organisches Wachstum (endlos erweiterbar)**; **`docs/00-INDEX.md`**; Kommentar **`familieStammbaumKarten.ts`**. **Commit:** **bd4bcdb0** ✅ GitHub
 
 **Was wir JETZT tun:** Neue Stammbaum-/K2-Familie-Features immer gegen dieses Prinzip spiegeln (Schichten auf dem Fundament, eine Quelle).

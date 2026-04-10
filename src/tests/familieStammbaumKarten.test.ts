@@ -1,23 +1,29 @@
 import { describe, it, expect } from 'vitest'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { getFamilienzweigPersonen } from '../utils/familieBeziehungen'
 import {
   getFamilieBranchKeyLegacy,
   buildStammbaumKartenState,
   sortPersonenStammbaumKarten,
   buildGrossfamilieStammbaumSektionen,
+  buildStammbaumPartnerUnterSektionen,
 } from '../utils/familieStammbaumKarten'
 
 function p(
   id: string,
   name: string,
   parentIds: string[],
-  opts?: { pos?: number; partners?: { personId: string; from: string | null; to: string | null }[] }
+  opts?: {
+    pos?: number
+    partners?: { personId: string; from: string | null; to: string | null }[]
+    childIds?: string[]
+  }
 ): K2FamiliePerson {
   return {
     id,
     name,
     parentIds,
-    childIds: [],
+    childIds: opts?.childIds ?? [],
     siblingIds: [],
     partners: opts?.partners ?? [],
     wahlfamilieIds: [],
@@ -133,5 +139,40 @@ describe('familieStammbaumKarten', () => {
     const { getBranchKey } = buildStammbaumKartenState(personen, 'georg')
     expect(getBranchKey(rupert)).toMatch(/^geschwister-ast:/)
     expect(getBranchKey(georg)).toMatch(/^geschwister-ast:/)
+  })
+
+  it('Partner-Unter-Zweige: Kern (Wurzel & Partner) + pro Kind ein Block mit Partnern', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const georg = p('georg', 'Georg', ['m', 'f'], {
+      pos: 7,
+      partners: [{ personId: 'martina', from: null, to: null }],
+      childIds: ['eva', 'lukas'],
+    })
+    const martina = p('martina', 'Martina', [], { partners: [{ personId: 'georg', from: null, to: null }] })
+    const eva = p('eva', 'Eva', ['georg', 'martina'], {
+      pos: 1,
+      partners: [{ personId: 'michael', from: null, to: null }],
+    })
+    const michael = p('michael', 'Michael', [], { partners: [{ personId: 'eva', from: null, to: null }] })
+    const lukas = p('lukas', 'Lukas', ['georg', 'martina'], {
+      pos: 2,
+      partners: [{ personId: 'nora', from: null, to: null }],
+    })
+    const nora = p('nora', 'Nora', [], { partners: [{ personId: 'lukas', from: null, to: null }] })
+    const personen = [m, f, georg, martina, eva, michael, lukas, nora]
+
+    const roh = getFamilienzweigPersonen(personen, 'georg')
+    const klein = buildStammbaumKartenState(roh, 'georg').sortedPersonen
+    const unter = buildStammbaumPartnerUnterSektionen(personen, 'georg', klein)
+
+    const kern = unter.find((u) => u.key.startsWith('kern-'))
+    expect(kern?.personen.map((x) => x.id).sort()).toEqual(['georg', 'martina'].sort())
+
+    const evaZweig = unter.find((u) => u.key === 'kind-eva')
+    expect(evaZweig?.personen.map((x) => x.id).sort()).toEqual(['eva', 'michael'].sort())
+
+    const lukasZweig = unter.find((u) => u.key === 'kind-lukas')
+    expect(lukasZweig?.personen.map((x) => x.id).sort()).toEqual(['lukas', 'nora'].sort())
   })
 })
