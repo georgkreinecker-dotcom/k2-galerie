@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: schwarzer Rand für Verstorbene** – Auf den Personen-Kacheln: bei **Verstorben** (Häkchen in der Personenkarte) **schwarzer Rand** um Karte und Foto-Kreis statt Zweig-Farbe; Tooltip „Verstorben – Person ansehen“; Kurzhinweis bei Großfamilie- und Kleinfamilie-Text. `K2FamilieStammbaumPage.tsx`. Build grün. **Commit:** **bd696455** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum mit echten Daten prüfen – eine Person auf „verstorben“ setzen → schwarzer Rand sichtbar.
+
+---
+
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Hooks-Fix nach Druck** – React *„Rendered fewer hooks than expected“* beim **Druck** (`?druck=1`): `saveFamilyDisplayName` und `handleSetIchBin` (`useCallback`) standen **nach** dem frühen `return` der Druckansicht → bei Druck **weniger Hooks**. Beide Callbacks **vor** `if (druck && personen.length > 0) return …` verschoben. Datei: `K2FamilieStammbaumPage.tsx`. Tests grün (Session). **Commit:** *(älterer Stand; siehe oben)*
+
+**Was wir JETZT tun:** Stammbaum → **Druckvorschau & Drucken** → nach Dialog **kein** App-Fehler; optional PDF speichern.
+
+---
+
 **Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: übersichtliche PDF-Formate** – Neues Druckformat **Personenblätter** (eine Person pro Karte, DL-Liste); Auswahl mit **optgroup** (empfohlene PDFs vs. Grafik); Standard **personenblaetter** statt Grafik; Tabelle **ohne nowrap**; Druck-Styles `@media print`. `StammbaumDruckFormate.tsx`, `K2FamilieStammbaumPage.tsx`, `App.css`. Build grün. **Commit:** **a5231f65** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → Druck: **Personenblätter** testen → PDF speichern; bei Tabelle **Querformat** im Dialog.
