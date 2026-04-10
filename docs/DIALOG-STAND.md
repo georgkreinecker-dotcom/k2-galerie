@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **APf: eine Kachel „Events, Medien & Öffentlichkeit (K2)“ + zentrale Doku** – Smart Panel: Duplikat entfernt; Presse-Tab lädt Eventplan → Öffentlichkeitsarbeit. **`docs/oeffentlichkeitsarbeit/ZENTRALE.md`** = Kompass (App-Einstieg, `presseaussendung-fertig/`, 00-INDEX). **`docs/00-INDEX.md`** verweist auf ZENTRALE. **DevView:** `normalizeApfPageId` + `useNavigate`/`useLocation` (Build-Fix); alte URL `?page=oeffentlichkeitsarbeit` → `presse`. **Commit (Stand):** **40f5679e** (DIALOG-STAND; Code **0b1b16e7**) – Push: `git push origin main`
+**Letzter Stand:** 10.04.26 – **Medienpaket: Presse-Erinnerung (App)** – `ScreenshotExportAdmin`: „Paket übernehmen“ legt zusätzlich **Presse-Erinnerung** (`werbematerialTyp: presse-erinnerung`) an; eigene Event-Karte mit **Neu erstellen** / Ansehen; Liste „Zum Ansehen & Drucken“ enthält den Eintrag. Repo-`.md` in `presseaussendung-fertig/` bleibt Archiv. Tests + Build grün. **Commit:** **521bab64** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Vercel „Ready“: Event → **Paket übernehmen** → **Zum Ansehen & Drucken** – Zeile **Presse-Erinnerung** sichtbar; optional Karte **Neu erstellen** testen.
+
+---
+
+**Letzter Stand:** 10.04.26 – **APf: eine Kachel „Events, Medien & Öffentlichkeit (K2)“ + zentrale Doku** – Smart Panel: Duplikat entfernt; Presse-Tab lädt Eventplan → Öffentlichkeitsarbeit. **`docs/oeffentlichkeitsarbeit/ZENTRALE.md`** = Kompass (App-Einstieg, `presseaussendung-fertig/`, 00-INDEX). **`docs/00-INDEX.md`** verweist auf ZENTRALE. **DevView:** `normalizeApfPageId` + `useNavigate`/`useLocation` (Build-Fix); alte URL `?page=oeffentlichkeitsarbeit` → `presse`. **Commit (Spitze):** **96105572** (DIALOG nach Code **0b1b16e7**) – Push: `git push origin main`
 
 **Was wir JETZT tun:** Nach erfolgreichem Push: Vercel „Ready“ – Smart-Panel-Kachel und `?page=presse` kurz testen.
 
