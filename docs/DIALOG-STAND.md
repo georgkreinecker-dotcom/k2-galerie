@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **Presse: Erinnerung nach Aussendung 1.4. (wie wirklich raus)** – `docs/oeffentlichkeitsarbeit/PRESSE-ERINNERUNG-nach-Aussendung-2026-04-01.md`: Betreff + Fließtext + Kurzvariante, **Bezug** auf Archiv [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](./oeffentlichkeitsarbeit/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) (Versand 1.4.2026), nicht die allgemeine Vorlage. Tests + Build grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Nach Wunsch: Erinnerung an Medien/Verteiler verschicken; Betreff/Empfänger anpassen.
+
+---
+
 **Letzter Stand:** 08.04.26 – **Teilen/Download: eine Hilfsfunktion + Etikett Mobil schneller** – `src/utils/sharePrintFile.ts`: `shareBlobAsFile` + `downloadBlobAsFile` (Sportwagenmodus: ein Standard). `receiptRollPdf`: `shareReceiptPdfBlob` → Wrapper. `ScreenshotExportAdmin`: Etikett auf **Mobil zuerst** System-Teilen/Download; **Overlay** nur bei Abbruch/Fehler oder zweiter Schritt (Batch). Tests + Build grün. **Commit:** **8e89c104** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Handy – Etikett „drucken“ → Teilen-Dialog soll direkt kommen (ohne Zwischenoverlay wenn es klappt).
