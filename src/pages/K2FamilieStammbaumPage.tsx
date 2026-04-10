@@ -100,11 +100,15 @@ export default function K2FamilieStammbaumPage() {
     setFamilyDisplayNameInput(einstellungen.familyDisplayName ?? '')
   }, [currentTenantId, einstellungen.familyDisplayName])
 
+  /** Druck nur Kleinfamilie – sonst kein automatischer Druckdialog. */
   useEffect(() => {
-    if (!druck || personen.length === 0) return
+    if (!druck) return
+    if (!einstellungen.ichBinPersonId) return
+    const klein = getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
+    if (klein.length === 0) return
     const t = setTimeout(() => window.print(), 300)
     return () => clearTimeout(t)
-  }, [druck, personen.length])
+  }, [druck, personen, einstellungen.ichBinPersonId])
 
   const handleAfterPrint = useCallback(() => {
     if (druck) setSearchParams({}, { replace: true })
@@ -159,8 +163,37 @@ export default function K2FamilieStammbaumPage() {
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
 
-  if (druck && personen.length > 0) {
-    const forDruck = nurKleinfamilie && einstellungen.ichBinPersonId ? getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId) : personen
+  /** PDF/Plakat: ausschließlich Kleinfamilie (Du + Partner + Kinder + Partner der Kinder), nie die ganze Stammbaum-Datei. */
+  const personenFuerDruck = useMemo(() => {
+    if (!einstellungen.ichBinPersonId) return [] as K2FamiliePerson[]
+    return getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
+  }, [personen, einstellungen.ichBinPersonId])
+
+  if (druck) {
+    if (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0) {
+      return (
+        <div className="stammbaum-druck-view" data-stil="hinweis">
+          <div className="card" style={{ maxWidth: 420, margin: '2rem auto', padding: '1.25rem' }}>
+            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Druck nur für die Kleinfamilie</h1>
+            <p className="meta" style={{ margin: 0 }}>
+              {personen.length === 0 ? (
+                'Sobald Personen angelegt sind, kannst du dich im Stammbaum mit „Das bin ich“ festlegen – dann ist der Druck nur für deine Kleinfamilie möglich (du, Partner, Kinder, Partner der Kinder).'
+              ) : (
+                <>
+                  Bitte im Stammbaum bei deiner Person <strong>Das bin ich</strong> wählen. Danach druckst du nur diese Kleinfamilie – nicht die ganze erfasste Familie.
+                </>
+              )}
+            </p>
+            <p style={{ margin: '1rem 0 0' }}>
+              <button type="button" className="btn" onClick={() => setSearchParams({}, { replace: true })}>
+                Zurück zum Stammbaum
+              </button>
+            </p>
+          </div>
+        </div>
+      )
+    }
+    const forDruck = personenFuerDruck
     const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
 
     if (stilFromUrl === 'generationen') {
@@ -372,6 +405,9 @@ export default function K2FamilieStammbaumPage() {
           <>
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als PDF / Plakat drucken</h2>
+              <p className="meta" style={{ marginBottom: '0.75rem' }}>
+                <strong>Nur Kleinfamilie:</strong> Gedruckt wird immer nur deine Kleinfamilie (du, Partner, Kinder, Partner der Kinder) – wie bei „Nur meine Kleinfamilie“. Dafür musst du im Stammbaum <strong>Das bin ich</strong> gesetzt haben.
+              </p>
               <p className="meta" style={{ marginBottom: '1rem' }}>
                 <strong>Für ein klares PDF:</strong> zuerst <strong>Personenblätter</strong>, <strong>Generationen</strong> oder <strong>Tabelle A–Z</strong> wählen – ohne verschachtelte Grafik. Die <strong>Stammbaum-Grafik</strong> eignet sich eher als Poster; im Druckdialog „Als PDF speichern“ wählen.
               </p>
@@ -462,6 +498,8 @@ export default function K2FamilieStammbaumPage() {
                 <button
                   type="button"
                   className="btn"
+                  disabled={!einstellungen.ichBinPersonId}
+                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für die Kleinfamilie.' : undefined}
                   onClick={() =>
                     openDruck({
                       format: druckFormat,
