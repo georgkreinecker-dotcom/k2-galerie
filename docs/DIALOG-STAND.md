@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **Presse: Erinnerung nach Aussendung 1.4. (wie wirklich raus)** – `docs/oeffentlichkeitsarbeit/PRESSE-ERINNERUNG-nach-Aussendung-2026-04-01.md`: Betreff + Fließtext + Kurzvariante, **Bezug** auf Archiv [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](./oeffentlichkeitsarbeit/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) (Versand 1.4.2026), nicht die allgemeine Vorlage. Tests + Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 10.04.26 – **Presse: Erinnerung nach Aussendung 1.4. (wie wirklich raus)** – `docs/oeffentlichkeitsarbeit/PRESSE-ERINNERUNG-nach-Aussendung-2026-04-01.md`: Betreff + Fließtext + Kurzvariante, **Bezug** auf Archiv [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](./oeffentlichkeitsarbeit/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) (Versand 1.4.2026), nicht die allgemeine Vorlage. Tests + Build grün. **Commit:** **c924ea36** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Wunsch: Erinnerung an Medien/Verteiler verschicken; Betreff/Empfänger anpassen.
 
