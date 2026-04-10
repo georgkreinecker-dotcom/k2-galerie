@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: übersichtliche PDF-Formate** – Neues Druckformat **Personenblätter** (eine Person pro Karte, DL-Liste); Auswahl mit **optgroup** (empfohlene PDFs vs. Grafik); Standard **personenblaetter** statt Grafik; Tabelle **ohne nowrap**; Druck-Styles `@media print`. `StammbaumDruckFormate.tsx`, `K2FamilieStammbaumPage.tsx`, `App.css`. Build grün. **Commit:** _(nach Push)_
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: übersichtliche PDF-Formate** – Neues Druckformat **Personenblätter** (eine Person pro Karte, DL-Liste); Auswahl mit **optgroup** (empfohlene PDFs vs. Grafik); Standard **personenblaetter** statt Grafik; Tabelle **ohne nowrap**; Druck-Styles `@media print`. `StammbaumDruckFormate.tsx`, `K2FamilieStammbaumPage.tsx`, `App.css`. Build grün. **Commit:** **a5231f65** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → Druck: **Personenblätter** testen → PDF speichern; bei Tabelle **Querformat** im Dialog.
 
