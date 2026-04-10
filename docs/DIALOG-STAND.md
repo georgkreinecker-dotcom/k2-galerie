@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: viele Kleinfamilien – Akkordeon, Sprungleiste, kompakt** – Ab **5** Sektionen (Großfamilie, nicht „nur Kleinfamilie“): **sticky** Sprungleiste mit Ankern, Buttons **Alle aufklappen / einklappen / Nur Eltern + meine Kleinfamilie**; Standard **Eltern** + **Kleinfamilie von „Ich bin“** offen, Rest zu; kompaktere Karten (kleineres Foto, kürzerer Text, kein gestaffeltes Einblend-Delay). `K2FamilieStammbaumPage.tsx`. Tests 389 grün, Build grün. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: viele Kleinfamilien – Akkordeon, Sprungleiste, kompakt** – Ab **5** Sektionen (Großfamilie, nicht „nur Kleinfamilie“): **sticky** Sprungleiste mit Ankern, Buttons **Alle aufklappen / einklappen / Nur Eltern + meine Kleinfamilie**; Standard **Eltern** + **Kleinfamilie von „Ich bin“** offen, Rest zu; kompaktere Karten (kleineres Foto, kürzerer Text, kein gestaffeltes Einblend-Delay). `K2FamilieStammbaumPage.tsx`. Tests 389 grün, Build grün. **Commit:** **41655b60** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum mit vielen Blöcken öffnen – Sprung, Einklappen, „Nur Eltern + meine Kleinfamilie“ kurz testen.
 
