@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Teil-Zweige innerhalb eines Familienzweigs (Doku + Hinweis)** – Georg: in „nur mein Zweig“ z. B. **7 Personen**, darin **drei** durch Partnerschaften erkennbare **Teil-Strukturen**, die sich strukturell abspalten. **Doku** `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md`: Abschnitt **Teil-Zweige innerhalb eines Familienzweigs**; **UI** `K2FamilieStammbaumPage`: Hinweis bei „Nur mein Familienzweig“ (Grafik = Paare sichtbar, Karten = ein Block). Zuvor: Begriff Familienzweig statt Kleinfamilie (Doku/Kommentare, Keys `kleinfamilie-` unverändert). **Commit:** **aff03bc5** ✅ GitHub
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Teil-Zweige innerhalb eines Familienzweigs (Doku + Hinweis)** – Georg: in „nur mein Zweig“ z. B. **7 Personen**, darin **drei** durch Partnerschaften erkennbare **Teil-Strukturen**, die sich strukturell abspalten. **Doku** `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md`: Abschnitt **Teil-Zweige innerhalb eines Familienzweigs**; **UI** `K2FamilieStammbaumPage`: Hinweis bei „Nur mein Familienzweig“ (Grafik = Paare sichtbar, Karten = ein Block). Zuvor: Begriff Familienzweig statt Kleinfamilie (Doku/Kommentare, Keys `kleinfamilie-` unverändert). **Commit:** **39c1595f** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum mit echten Daten – „Nur mein Familienzweig“: prüfen ob Hinweis passt; optional später eigene Unter-Blöcke pro Kind (nicht umgesetzt).
 
