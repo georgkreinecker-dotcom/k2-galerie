@@ -2,6 +2,9 @@
  * Stammbaum-Karten: Zweige pro Geschwisterfamilie (Farbe), Reihenfolge nach Geschwisterstellung.
  * Wenn „Ich bin“ gesetzt ist: gemeinsame Eltern → Geschwisterkreis; jeder Geschwister + Partner + Linie = ein Ast;
  * Sortierung nach positionAmongSiblings der Geschwister (1 = zuerst, z. B. Rupert vor den anderen).
+ *
+ * Organisationsprinzip (Doku: K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md): organisches Wachstum –
+ * dasselbe Muster auf jeder Ebene, Daten eine Quelle, UI kann schichtenweise erweitern.
  */
 
 import type { K2FamiliePerson } from '../types/k2Familie'

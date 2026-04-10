@@ -10,6 +10,19 @@
 - **Eine Ebene tiefer:** Haben mehrere Kinder je einen Partner, entstehen **mehrere erkennbare Teil-Strukturen** (Kind + Partner, ggf. mit eigenen Kindern). Sie verhalten sich strukturell wie **weitere „kleine“ Familienzweige** im selben farbigen Block – sie **spalten sich** durch Partnerschaften sichtbar ab, auch wenn die Liste noch **einen** Abschnitt zeigt (z. B. sieben Personen, darin drei Paar-Linien).
 - **App-Stand:** Die **Grafik** zeigt Paare und Zeilen; bei **Nur mein Familienzweig** ist die **Kartenliste** ein zusammenhängender Block – **eigene Unter-Blöcke pro Kind/Teil-Zweig** sind eine mögliche spätere Erweiterung.
 
+### Organisationsprinzip: organisches Wachstum (endlos erweiterbar)
+
+**Verbindlich für K2 Familie Stammbaum und alles, was daran andockt.**
+
+| Prinzip | Bedeutung |
+|--------|-----------|
+| **Ein Muster, viele Ebenen** | Dasselbe Ordnungsbild (Paar → Kinder → Partner der Kinder) **wiederholt sich** auf jeder Ebene – ohne feste Tiefe. Teil-Zweige sind wieder Familienzweige im Kleinen. |
+| **Organisch** | Wachstum kommt aus den **Karten** (neue Personen, Beziehungen, Zeiträume) – nicht aus einem starren Formular, das irgendwann „voll“ ist. |
+| **Endlos** | Technik und Darstellung so auslegen, dass **weitere Generationen**, Teil-Zweige, Geschwister-Äste und **Erweiterungen der Oberfläche** (Unter-Blöcke, Filter, Druck) **nachlegen** können – **statt** das Modell neu zu erfinden. |
+| **Eine Quelle** | Beziehungen weiterhin **nur aus den Karten** (`parentIds`, `childIds`, `partners`, …); jede neue UI-Schicht **liest** dasselbe Modell – keine zweite Wahrheit. |
+
+**Konsequenz:** Features (z. B. Klapp-Blöcke pro Teil-Zweig) sind **Schichten auf demselben Fundament**, nicht ein neues Organisationsprinzip.
+
 ---
 
 ## 1. Grundregel pro Zeile (Generation)
