@@ -43,6 +43,8 @@
 | 21.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
 | 22.03.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert (letzter Faden: Shop-Handbuch Nutzer, Push prüfen). |
 | 03.04.26 | ro5 – Reopen nach Code 5; Briefing + DIALOG-STAND gelesen, orientiert. |
+| 06.04.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert. |
+| 10.04.26 | ro5 – Reopen nach Code 5; DIALOG-STAND gelesen, orientiert (Faden: K2 Familie Stammbaum Druck/Hooks-Fix; Druck testen). |
 
 ---
 

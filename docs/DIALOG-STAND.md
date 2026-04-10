@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Teil-Zweige innerhalb eines Familienzweigs (Doku + Hinweis)** – Georg: in „nur mein Zweig“ z. B. **7 Personen**, darin **drei** durch Partnerschaften erkennbare **Teil-Strukturen**, die sich strukturell abspalten. **Doku** `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md`: Abschnitt **Teil-Zweige innerhalb eines Familienzweigs**; **UI** `K2FamilieStammbaumPage`: Hinweis bei „Nur mein Familienzweig“ (Grafik = Paare sichtbar, Karten = ein Block). Zuvor: Begriff Familienzweig statt Kleinfamilie (Doku/Kommentare, Keys `kleinfamilie-` unverändert). **Commit:** **aff03bc5** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum mit echten Daten – „Nur mein Familienzweig“: prüfen ob Hinweis passt; optional später eigene Unter-Blöcke pro Kind (nicht umgesetzt).
+
+---
+
 **Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: viele Kleinfamilien – Akkordeon, Sprungleiste, kompakt** – Ab **5** Sektionen (Großfamilie, nicht „nur Kleinfamilie“): **sticky** Sprungleiste mit Ankern, Buttons **Alle aufklappen / einklappen / Nur Eltern + meine Kleinfamilie**; Standard **Eltern** + **Kleinfamilie von „Ich bin“** offen, Rest zu; kompaktere Karten (kleineres Foto, kürzerer Text, kein gestaffeltes Einblend-Delay). `K2FamilieStammbaumPage.tsx`. Tests 389 grün, Build grün. **Commit:** **41655b60** ✅ GitHub
 
-**Was wir JETZT tun:** Stammbaum mit vielen Blöcken öffnen – Sprung, Einklappen, „Nur Eltern + meine Kleinfamilie“ kurz testen.
+**Was wir JETZT tun:** Stammbaum mit vielen Blöcken öffnen – Sprung, Einklappen, „Nur Eltern + meine Familienzweig-Ansicht“ (Checkbox) kurz testen.
 
 ---
 

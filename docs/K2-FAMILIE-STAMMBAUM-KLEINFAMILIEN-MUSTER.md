@@ -1,6 +1,14 @@
-# K2 Familie – Stammbaum: Kleinfamilien-Muster (verbindlich)
+# K2 Familie – Stammbaum: Familienzweig-Muster (verbindlich)
 
-**Zweck:** Eine klare, wiederholbare Struktur für die Darstellung von Kernfamilien (Paar + Kinder + ggf. Partner der Kinder). Die Grafik folgt diesem Muster, damit es nicht zu „Martina oben links“ oder falschen Partner-Positionen kommt.
+**Begriff (Stand 10.04.26):** In der App heißt die Struktur **Familienzweig** (nicht mehr „Kleinfamilie“): ein **im Baum erkennbarer Ast** – mit Paaren, Kindern und Partnern der Kinder; derselbe Aufbau kann sich innerhalb eines Astes wiederholen. Dateiname und alte Verweise: `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md`.
+
+**Zweck:** Eine klare, wiederholbare Struktur für die Darstellung (Paar + Kinder + ggf. Partner der Kinder). Die Grafik folgt diesem Muster, damit es nicht zu „Martina oben links“ oder falschen Partner-Positionen kommt.
+
+### Teil-Zweige innerhalb eines Familienzweigs
+
+- **Großfamilie:** Pro Geschwister ein Block **Familienzweig N** – das ist der **Hauptast** dieser Person (sie selbst, Partner, Kinder, Partner der Kinder).
+- **Eine Ebene tiefer:** Haben mehrere Kinder je einen Partner, entstehen **mehrere erkennbare Teil-Strukturen** (Kind + Partner, ggf. mit eigenen Kindern). Sie verhalten sich strukturell wie **weitere „kleine“ Familienzweige** im selben farbigen Block – sie **spalten sich** durch Partnerschaften sichtbar ab, auch wenn die Liste noch **einen** Abschnitt zeigt (z. B. sieben Personen, darin drei Paar-Linien).
+- **App-Stand:** Die **Grafik** zeigt Paare und Zeilen; bei **Nur mein Familienzweig** ist die **Kartenliste** ein zusammenhängender Block – **eigene Unter-Blöcke pro Kind/Teil-Zweig** sind eine mögliche spätere Erweiterung.
 
 ---
 
@@ -12,7 +20,7 @@
 
 ---
 
-## 2. Kleinfamilie – typisches Bild
+## 2. Familienzweig – typisches Bild
 
 ```
      [Eltern-Paar: z. B. Vater | Mutter (Partner halber Icon darunter)]

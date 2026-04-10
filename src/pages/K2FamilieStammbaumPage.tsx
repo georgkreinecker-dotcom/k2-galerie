@@ -8,7 +8,7 @@ import { useMemo, useEffect, useCallback, useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
-import { getBeziehungenFromKarten, getKleinfamiliePersonen } from '../utils/familieBeziehungen'
+import { getBeziehungenFromKarten, getFamilienzweigPersonen } from '../utils/familieBeziehungen'
 import {
   buildStammbaumKartenState,
   buildGrossfamilieStammbaumSektionen,
@@ -54,7 +54,7 @@ function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: st
   }
 }
 
-/** Ab dieser Anzahl Sektionen: Akkordeon, kompakte Karten, Sprungleiste (viele Kleinfamilien). */
+/** Ab dieser Anzahl Sektionen: Akkordeon, kompakte Karten, Sprungleiste (viele Familienzweige). */
 const STAMMBAUM_VIELE_SEKTIONEN_AB = 5
 
 function stammbaumSektionDomId(key: string): string {
@@ -65,7 +65,7 @@ function stammbaumSektionTocLabel(s: StammbaumKartenSektion): string {
   if (s.key === 'eltern') return 'Eltern'
   if (s.key === 'weitere') return 'Weitere'
   if (s.key.startsWith('kleinfamilie-')) {
-    const m = s.titel.match(/^Kleinfamilie\s+(\S+)\s*[–-]\s*(.+)$/)
+    const m = s.titel.match(/^Familienzweig\s+(\S+)\s*[–-]\s*(.+)$/)
     if (m) {
       const name = m[2].trim()
       return `${m[1]} · ${name.length > 16 ? `${name.slice(0, 16)}…` : name}`
@@ -137,19 +137,20 @@ export default function K2FamilieStammbaumPage() {
   const [partnersAddedMsg, setPartnersAddedMsg] = useState(false)
   const [ersteEheMsg, setErsteEheMsg] = useState('')
   const [viewZoom, setViewZoom] = useState(1)
-  const [nurKleinfamilie, setNurKleinfamilie] = useState(false)
+  const [nurMeinFamilienzweig, setNurMeinFamilienzweig] = useState(false)
   const [viewOrientation, setViewOrientation] = useState<TreeOrientation>('vertical')
   const ZOOM_MIN = 0.25
   const ZOOM_MAX = 2
   const ZOOM_STEP = 0.25
 
-  /** Für Grafik und Druck: bei „Nur meine Kleinfamilie“ nur Du + Partner + Kinder + Partner der Kinder – eine Einheit. */
+  /** Für Grafik und Druck: bei „Nur mein Familienzweig“ nur Du + Partner + Kinder + Partner der Kinder – eine Einheit. */
   const personenForGraph = useMemo(() => {
-    if (nurKleinfamilie && einstellungen.ichBinPersonId) return getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
+    if (nurMeinFamilienzweig && einstellungen.ichBinPersonId)
+      return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
     return personen
-  }, [personen, einstellungen.ichBinPersonId, nurKleinfamilie])
+  }, [personen, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
 
-  /** Karten: ein Raster pro Sektion (Großfamilie: Eltern → Kleinfamilie 1…n → Weitere) oder klassisch eine Liste. */
+  /** Karten: ein Raster pro Sektion (Großfamilie: Eltern → Familienzweig 1…n → Weitere) oder klassisch eine Liste. */
   const stammbaumKarten = useMemo(
     () => buildStammbaumKartenState(personenForGraph, einstellungen.ichBinPersonId),
     [personenForGraph, einstellungen.ichBinPersonId]
@@ -158,11 +159,11 @@ export default function K2FamilieStammbaumPage() {
   const stammbaumSektionen = useMemo(() => {
     const ichId = einstellungen.ichBinPersonId
     if (!ichId || personenForGraph.length === 0) return null
-    if (nurKleinfamilie) {
+    if (nurMeinFamilienzweig) {
       return [
         {
-          key: 'deine-kleinfamilie',
-          titel: 'Deine Kleinfamilie',
+          key: 'dein-familienzweig',
+          titel: 'Dein Familienzweig',
           untertitel: undefined,
           personen: buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen,
           branchIndex: 0,
@@ -170,12 +171,12 @@ export default function K2FamilieStammbaumPage() {
       ]
     }
     return buildGrossfamilieStammbaumSektionen(personenForGraph, ichId)
-  }, [personenForGraph, einstellungen.ichBinPersonId, nurKleinfamilie])
+  }, [personenForGraph, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
 
   const vieleStammbaumSektionen = Boolean(
     stammbaumSektionen &&
       stammbaumSektionen.length >= STAMMBAUM_VIELE_SEKTIONEN_AB &&
-      !nurKleinfamilie
+      !nurMeinFamilienzweig
   )
 
   const [sekExpanded, setSekExpanded] = useState<Record<string, boolean>>({})
@@ -187,11 +188,11 @@ export default function K2FamilieStammbaumPage() {
     setFamilyDisplayNameInput(einstellungen.familyDisplayName ?? '')
   }, [currentTenantId, einstellungen.familyDisplayName])
 
-  /** Druck nur Kleinfamilie – sonst kein automatischer Druckdialog. */
+  /** Druck nur Familienzweig – sonst kein automatischer Druckdialog. */
   useEffect(() => {
     if (!druck) return
     if (!einstellungen.ichBinPersonId) return
-    const klein = getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
+    const klein = getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
     if (klein.length === 0) return
     const t = setTimeout(() => window.print(), 300)
     return () => clearTimeout(t)
@@ -250,10 +251,10 @@ export default function K2FamilieStammbaumPage() {
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
 
-  /** PDF/Plakat: ausschließlich Kleinfamilie (Du + Partner + Kinder + Partner der Kinder), nie die ganze Stammbaum-Datei. */
+  /** PDF/Plakat: ausschließlich Familienzweig (Du + Partner + Kinder + Partner der Kinder), nie die ganze Stammbaum-Datei. */
   const personenFuerDruck = useMemo(() => {
     if (!einstellungen.ichBinPersonId) return [] as K2FamiliePerson[]
-    return getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
+    return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
   }, [personen, einstellungen.ichBinPersonId])
 
   if (druck) {
@@ -261,13 +262,13 @@ export default function K2FamilieStammbaumPage() {
       return (
         <div className="stammbaum-druck-view" data-stil="hinweis">
           <div className="card" style={{ maxWidth: 420, margin: '2rem auto', padding: '1.25rem' }}>
-            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Druck nur für die Kleinfamilie</h1>
+            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Druck nur für deinen Familienzweig</h1>
             <p className="meta" style={{ margin: 0 }}>
               {personen.length === 0 ? (
-                'Sobald Personen angelegt sind, kannst du dich im Stammbaum mit „Das bin ich“ festlegen – dann ist der Druck nur für deine Kleinfamilie möglich (du, Partner, Kinder, Partner der Kinder).'
+                'Sobald Personen angelegt sind, kannst du dich im Stammbaum mit „Das bin ich“ festlegen – dann ist der Druck nur für deinen Familienzweig möglich (du, Partner, Kinder, Partner der Kinder).'
               ) : (
                 <>
-                  Bitte im Stammbaum bei deiner Person <strong>Das bin ich</strong> wählen. Danach druckst du nur diese Kleinfamilie – nicht die ganze erfasste Familie.
+                  Bitte im Stammbaum bei deiner Person <strong>Das bin ich</strong> wählen. Danach druckst du nur diesen Familienzweig – nicht die ganze erfasste Familie.
                 </>
               )}
             </p>
@@ -417,11 +418,11 @@ export default function K2FamilieStammbaumPage() {
                   <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
-                      checked={nurKleinfamilie}
-                      onChange={(e) => setNurKleinfamilie(e.target.checked)}
-                      aria-label="Nur meine Kleinfamilie"
+                      checked={nurMeinFamilienzweig}
+                      onChange={(e) => setNurMeinFamilienzweig(e.target.checked)}
+                      aria-label="Nur mein Familienzweig"
                     />
-                    <span className="meta">Nur meine Kleinfamilie</span>
+                    <span className="meta">Nur mein Familienzweig</span>
                   </label>
                 )}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -493,7 +494,7 @@ export default function K2FamilieStammbaumPage() {
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als PDF / Plakat drucken</h2>
               <p className="meta" style={{ marginBottom: '0.75rem' }}>
-                <strong>Nur Kleinfamilie:</strong> Gedruckt wird immer nur deine Kleinfamilie (du, Partner, Kinder, Partner der Kinder) – wie bei „Nur meine Kleinfamilie“. Dafür musst du im Stammbaum <strong>Das bin ich</strong> gesetzt haben.
+                <strong>Nur Familienzweig:</strong> Gedruckt wird immer nur dein Familienzweig (du, Partner, Kinder, Partner der Kinder) – wie bei „Nur mein Familienzweig“. Dafür musst du im Stammbaum <strong>Das bin ich</strong> gesetzt haben.
               </p>
               <p className="meta" style={{ marginBottom: '1rem' }}>
                 <strong>Für ein klares PDF:</strong> zuerst <strong>Personenblätter</strong>, <strong>Generationen</strong> oder <strong>Tabelle A–Z</strong> wählen – ohne verschachtelte Grafik. Die <strong>Stammbaum-Grafik</strong> eignet sich eher als Poster; im Druckdialog „Als PDF speichern“ wählen.
@@ -586,7 +587,7 @@ export default function K2FamilieStammbaumPage() {
                   type="button"
                   className="btn"
                   disabled={!einstellungen.ichBinPersonId}
-                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für die Kleinfamilie.' : undefined}
+                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für den Familienzweig.' : undefined}
                   onClick={() =>
                     openDruck({
                       format: druckFormat,
@@ -627,19 +628,19 @@ export default function K2FamilieStammbaumPage() {
           </div>
         )}
 
-        {nurKleinfamilie && einstellungen.ichBinPersonId && (
-          <p className="meta" style={{ marginBottom: '0.75rem' }}>
-            Nur deine Kleinfamilie – Grafik und Karten unten zeigen nur diese Personen. Verstorbene: schwarzer Rand an der Kachel.
+        {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
+          <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
+            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Innerhalb eines solchen Zweigs können mehrere <strong>Teil-Strukturen</strong> vorkommen (z.&nbsp;B. jedes Kind mit Partner) – in der <strong>Grafik</strong> als Paare erkennbar; die <strong>Kartenliste</strong> fasst sie in einem Block. Verstorbene: schwarzer Rand an der Kachel.
           </p>
         )}
-        {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurKleinfamilie && (
+        {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurMeinFamilienzweig && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Kleinfamilie 1, 2, 3 …</strong> nach Geschwisterstellung (bei 12 Geschwistern + Eltern bis zu 13 Strukturen). Pro Block eine Randfarbe; innerhalb des Blocks kannst du Personen hinzufügen und bearbeiten.{' '}
+            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (Geschwister mit eigenem Ast, inkl. Paare und Kinder); bei vielen Geschwistern bis zu vielen Strukturen. Pro Block eine Randfarbe; innerhalb des Blocks kannst du Personen hinzufügen und bearbeiten.{' '}
             <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
             {vieleStammbaumSektionen && (
               <>
                 {' '}
-                <strong>Viele Blöcke:</strong> Standard sind <strong>Eltern</strong> und <strong>deine Kleinfamilie</strong> geöffnet; Rest eingeklappt – Pfeil zum Aufklappen, unten springen per Leiste.
+                <strong>Viele Blöcke:</strong> Standard sind <strong>Eltern</strong> und <strong>dein Familienzweig</strong> geöffnet; Rest eingeklappt – Pfeil zum Aufklappen, unten springen per Leiste.
               </>
             )}
           </p>
@@ -702,7 +703,7 @@ export default function K2FamilieStammbaumPage() {
                   )
                 }}
               >
-                Nur Eltern + meine Kleinfamilie
+                Nur Eltern + mein Familienzweig
               </button>
             </div>
             <nav
@@ -988,7 +989,7 @@ export default function K2FamilieStammbaumPage() {
                 <button
                   type="button"
                   className="btn-outline"
-                  title="Fügt Rupert, Notburga, Anna und Maria mit denselben Eltern wie du ein – für vier Kleinfamilien im Stammbaum (erste Ehe Anna Stöbich)."
+                  title="Fügt Rupert, Notburga, Anna und Maria mit denselben Eltern wie du ein – für vier Familienzweige im Stammbaum (erste Ehe Anna Stöbich)."
                   onClick={() => {
                     const r = ensureErsteEheVierGeschwister(personen, einstellungen.ichBinPersonId!)
                     if (r.angelegt === 0) {

@@ -31,6 +31,14 @@ export function exportK2FamilieToGedcom(tenantId: string): string {
     const ref = idToRef.get(p.id) ?? `@I${i + 1}@`
     lines.push(`0 ${ref} INDI`)
     lines.push(`1 NAME ${escapeGedcom(p.name.trim() || 'Unbekannt')}`)
+    if (p.maedchenname?.trim()) {
+      lines.push(`1 NOTE Mädchenname: ${escapeGedcom(p.maedchenname.trim())}`)
+    }
+    if (p.geburtsdatum?.trim()) {
+      const b = p.geburtsdatum.slice(0, 10).replace(/-/g, '')
+      lines.push('1 BIRT')
+      lines.push(`2 DATE ${b}`)
+    }
     if (p.verstorben && p.verstorbenAm) {
       const date = p.verstorbenAm.slice(0, 10).replace(/-/g, '')
       lines.push('1 DEAT')

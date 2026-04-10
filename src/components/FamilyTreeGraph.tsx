@@ -58,7 +58,7 @@ export function getGenerations(personen: K2FamiliePerson[]): Map<string, number>
     }
     computing.add(id)
     try {
-      // Ohne eigene Eltern: Ebene vom Partner übernehmen, damit Paar in derselben Zeile steht (Kleinfamilie)
+      // Ohne eigene Eltern: Ebene vom Partner übernehmen, damit Paar in derselben Zeile steht (Familienzweig)
       if (p.parentIds.length === 0) {
         const hasChildren = (childIds.get(id)?.length ?? 0) > 0
         if (p.partners.length > 0) {
@@ -218,7 +218,7 @@ export default function FamilyTreeGraph({
       rows.push(orderInGeneration(personen, ids, levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings))
     }
 
-    // Kleinfamilien-Muster: Pivot (Person mit 2+ Partnern in der Zeile, z. B. Vater) zuerst → steht oben; dann Partner versetzt. Sonst: Du zuerst, dann Partner.
+    // Familienzweig-Muster: Pivot (Person mit 2+ Partnern in der Zeile, z. B. Vater) zuerst → steht oben; dann Partner versetzt. Sonst: Du zuerst, dann Partner.
     const reorderedRows = rows.map((rowIds) => {
       const seen = new Set<string>()
       const out: string[] = []

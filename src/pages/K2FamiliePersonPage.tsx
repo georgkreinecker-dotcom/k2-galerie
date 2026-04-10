@@ -4,7 +4,7 @@
  */
 
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup } from '../utils/familieStorage'
@@ -247,125 +247,67 @@ export default function K2FamiliePersonPage() {
     updateAndSave(next)
   }
 
-  /** Neue Person anlegen, sofort als Partner*in verknüpfen und zur Bearbeitung öffnen (Name eintragen). */
-  const addNewPartnerPerson = () => {
-    if (!id || !person) return
-    const newId = generatePersonId()
-    const entry = { personId: newId, from: null as string | null, to: null as string | null }
-    const entryOther = { personId: id, from: null as string | null, to: null as string | null }
-    const neu: K2FamiliePerson = {
-      id: newId,
-      name: 'Neue Person',
-      parentIds: [],
-      childIds: [],
-      partners: [entryOther],
-      siblingIds: [],
-      wahlfamilieIds: [],
-    }
-    const next = personen.map((p) =>
-      p.id === id ? { ...p, partners: [...p.partners, entry], updatedAt: new Date().toISOString() } : p
-    )
-    const withNew = [...next, neu]
-    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
-      setPersonen(withNew)
-      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
-    }
-  }
-
-  /** Neue Person als Elternteil: Kind-Beziehung zu dieser Person, Bearbeitung der neuen Person öffnen. */
-  const addNewPersonAsParent = () => {
+  /**
+   * Neue Person anlegen, symmetrisch verknüpfen wie addParent/addChild/…, speichern, zur neuen Person navigieren.
+   */
+  const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie') => {
     if (!id || !person) return
     const newId = generatePersonId()
     const now = new Date().toISOString()
-    const neu: K2FamiliePerson = {
-      id: newId,
-      name: 'Neue Person',
-      parentIds: [],
-      childIds: [id],
-      partners: [],
-      siblingIds: [],
-      wahlfamilieIds: [],
-      updatedAt: now,
-    }
-    const next = personen.map((p) =>
-      p.id === id ? { ...p, parentIds: [...p.parentIds, newId], updatedAt: now } : p
-    )
-    const withNew = [...next, neu]
-    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
-      setPersonen(withNew)
-      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
-    }
-  }
-
-  /** Neue Person als Kind: Eltern-Beziehung zu dieser Person. */
-  const addNewPersonAsChild = () => {
-    if (!id || !person) return
-    const newId = generatePersonId()
-    const now = new Date().toISOString()
-    const neu: K2FamiliePerson = {
-      id: newId,
-      name: 'Neue Person',
-      parentIds: [id],
-      childIds: [],
-      partners: [],
-      siblingIds: [],
-      wahlfamilieIds: [],
-      updatedAt: now,
-    }
-    const next = personen.map((p) =>
-      p.id === id ? { ...p, childIds: [...p.childIds, newId], updatedAt: now } : p
-    )
-    const withNew = [...next, neu]
-    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
-      setPersonen(withNew)
-      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
-    }
-  }
-
-  /** Neue Person als Geschwister: gegenseitig verknüpfen. */
-  const addNewPersonAsSibling = () => {
-    if (!id || !person) return
-    const newId = generatePersonId()
-    const now = new Date().toISOString()
-    const neu: K2FamiliePerson = {
-      id: newId,
-      name: 'Neue Person',
-      parentIds: [],
-      childIds: [],
-      partners: [],
-      siblingIds: [id],
-      wahlfamilieIds: [],
-      updatedAt: now,
-    }
-    const next = personen.map((p) =>
-      p.id === id ? { ...p, siblingIds: [...p.siblingIds, newId], updatedAt: now } : p
-    )
-    const withNew = [...next, neu]
-    if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
-      setPersonen(withNew)
-      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
-    }
-  }
-
-  /** Neue Person in Wahlfamilie: gegenseitig verknüpfen. */
-  const addNewPersonAsWahlfamilie = () => {
-    if (!id || !person) return
-    const newId = generatePersonId()
-    const now = new Date().toISOString()
-    const neu: K2FamiliePerson = {
+    const empty: K2FamiliePerson = {
       id: newId,
       name: 'Neue Person',
       parentIds: [],
       childIds: [],
       partners: [],
       siblingIds: [],
-      wahlfamilieIds: [id],
+      wahlfamilieIds: [],
       updatedAt: now,
     }
-    const next = personen.map((p) =>
-      p.id === id ? { ...p, wahlfamilieIds: [...p.wahlfamilieIds, newId], updatedAt: now } : p
-    )
-    const withNew = [...next, neu]
+    let withNew: K2FamiliePerson[]
+    if (relationType === 'parent') {
+      const neu = { ...empty, childIds: [id] }
+      withNew = [
+        ...personen.map((p) =>
+          p.id === id ? { ...p, parentIds: [...p.parentIds, newId], updatedAt: now } : p
+        ),
+        neu,
+      ]
+    } else if (relationType === 'child') {
+      const neu = { ...empty, parentIds: [id] }
+      withNew = [
+        ...personen.map((p) =>
+          p.id === id ? { ...p, childIds: [...p.childIds, newId], updatedAt: now } : p
+        ),
+        neu,
+      ]
+    } else if (relationType === 'partner') {
+      const entry = { personId: newId, from: null as string | null, to: null as string | null }
+      const entryOther = { personId: id, from: null as string | null, to: null as string | null }
+      const neu = { ...empty, partners: [entryOther] }
+      withNew = [
+        ...personen.map((p) =>
+          p.id === id ? { ...p, partners: [...p.partners, entry], updatedAt: now } : p
+        ),
+        neu,
+      ]
+    } else if (relationType === 'sibling') {
+      const neu = { ...empty, siblingIds: [id] }
+      withNew = [
+        ...personen.map((p) =>
+          p.id === id ? { ...p, siblingIds: [...p.siblingIds, newId], updatedAt: now } : p
+        ),
+        neu,
+      ]
+    } else {
+      const neu = { ...empty, wahlfamilieIds: [id] }
+      withNew = [
+        ...personen.map((p) =>
+          p.id === id ? { ...p, wahlfamilieIds: [...p.wahlfamilieIds, newId], updatedAt: now } : p
+        ),
+        neu,
+      ]
+    }
     if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
       setPersonen(withNew)
       navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
@@ -541,36 +483,45 @@ export default function K2FamiliePersonPage() {
 
   const smallBtn = { background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.4rem', fontFamily: 'inherit' } as const
   type RelationType = 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie'
+  const newPersonButtonLabels: Record<RelationType, string> = {
+    parent: '＋ Neue Person anlegen (als Elternteil)',
+    child: '＋ Neue Person anlegen (als Kind)',
+    partner: '＋ Neue Person anlegen (als Partner*in)',
+    sibling: '＋ Neue Person anlegen (als Geschwister)',
+    wahlfamilie: '＋ Neue Person anlegen (Wahlfamilie)',
+  }
   /**
    * Eltern/Kinder: volle Auswahl (naheliegend + weitere) – oft mehrere sinnvolle Personen.
    * Partner, Geschwister, Wahlfamilie: nur Dropdown, wenn genau eine Person eindeutig passt (keine lange irritierende Liste).
    */
-  const renderAddSelect = (type: RelationType, excludeIds: string[], addFn: (oid: string) => void) => {
+  const getAddSelectUI = (type: RelationType, excludeIds: string[], addFn: (oid: string) => void): { select: ReactNode } => {
     const { suggested, rest } = getCandidatesOrdered(type, excludeIds)
     const hasAny = suggested.length + rest.length > 0
-    if (!hasAny) return null
+    if (!hasAny) return { select: null }
 
     const fullList = type === 'parent' || type === 'child'
     if (fullList) {
-      return (
-        <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Person hinzufügen">
-          <option value="">+ Hinzufügen</option>
-          {suggested.length > 0 && (
-            <optgroup label="Naheliegend (z. B. gleiche Eltern, gemeinsame Kinder)">
-              {suggested.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </optgroup>
-          )}
-          {rest.length > 0 && (
-            <optgroup label={suggested.length > 0 ? 'Weitere' : 'Person wählen'}>
-              {rest.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </optgroup>
-          )}
-        </select>
-      )
+      return {
+        select: (
+          <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Person hinzufügen">
+            <option value="">+ Hinzufügen</option>
+            {suggested.length > 0 && (
+              <optgroup label="Naheliegend (z. B. gleiche Eltern, gemeinsame Kinder)">
+                {suggested.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </optgroup>
+            )}
+            {rest.length > 0 && (
+              <optgroup label={suggested.length > 0 ? 'Weitere' : 'Person wählen'}>
+                {rest.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        ),
+      }
     }
 
     const unique: K2FamiliePerson | null =
@@ -579,13 +530,15 @@ export default function K2FamiliePersonPage() {
         : suggested.length === 0 && rest.length === 1
           ? rest[0]
           : null
-    if (!unique) return null
-    return (
-      <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Eindeutiger Vorschlag zum Verknüpfen">
-        <option value="">+ Vorschlag</option>
-        <option value={unique.id}>{unique.name}</option>
-      </select>
-    )
+    if (!unique) return { select: null }
+    return {
+      select: (
+        <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Eindeutiger Vorschlag zum Verknüpfen">
+          <option value="">+ Vorschlag</option>
+          <option value={unique.id}>{unique.name}</option>
+        </select>
+      ),
+    }
   }
   const newPersonBtnStyle = { fontSize: '0.9rem', padding: '0.35rem 0.5rem' } as const
   const row = (
@@ -594,26 +547,30 @@ export default function K2FamiliePersonPage() {
     addFn: (oid: string) => void,
     removeFn: (oid: string) => void,
     getIds: () => string[],
-    relationType: RelationType,
-    newPersonLabel: string,
-    onNewPerson: () => void
-  ) => (
-    <div key={label} className="field" style={{ marginBottom: '1rem' }}>
-      <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>{label}</label>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
-        {ids.map((pid) => (
-          <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
-            <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pid)}</Link>
-            <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
-          </span>
-        ))}
-        {renderAddSelect(relationType, getIds(), addFn)}
-        <button type="button" className="btn-outline" onClick={onNewPerson} style={newPersonBtnStyle}>
-          {newPersonLabel}
-        </button>
+    relationType: RelationType
+  ) => {
+    const { select } = getAddSelectUI(relationType, getIds(), addFn)
+    return (
+      <div key={label} className="field" style={{ marginBottom: '1rem' }}>
+        <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>{label}</label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+          {ids.map((pid) => (
+            <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
+              <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pid)}</Link>
+              <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
+            </span>
+          ))}
+          {select}
+          <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink(relationType)} style={newPersonBtnStyle}>
+            {newPersonButtonLabels[relationType]}
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  const partnerExcludeIds = person.partners.map((pr) => pr.personId)
+  const { select: partnerAddSelect } = getAddSelectUI('partner', partnerExcludeIds, addPartner)
 
   return (
     <div className="mission-wrapper">
@@ -725,9 +682,14 @@ export default function K2FamiliePersonPage() {
 
         <div className="card" style={{ marginTop: '1.5rem' }}>
           <h2>Beziehungen</h2>
-          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Über <strong>+ Hinzufügen</strong> verknüpfst du bestehende Personen (bei Eltern/Kinder: alle passenden; bei Partner*in, Geschwister, Wahlfamilie oft nur ein eindeutiger Vorschlag). <strong>Neue Person anlegen</strong> gibt es in jeder Zeile – auch wenn gerade niemand aus der Liste passt; danach Name und Daten auf der neuen Personenseite eintragen.</p>
-          {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent', '＋ Neue Person anlegen (als Elternteil)', addNewPersonAsParent)}
-          {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child', '＋ Neue Person anlegen (als Kind)', addNewPersonAsChild)}
+          <p className="meta" style={{ margin: '0 0 0.75rem' }}>
+            <strong>+ Hinzufügen</strong> (bzw. <strong>+ Vorschlag</strong> bei eindeutigem Treffer) verknüpft <em>bestehende</em> Personen. <strong>Neue Person anlegen</strong> steht <em>immer</em> direkt daneben – Name und Daten trägst du auf der neuen Personenseite ein. <strong>Zwei Eltern bei einem Kind:</strong> Kind zuerst bei einem Elternteil anlegen oder verknüpfen, dann die <strong>Kinderseite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil hinzufügen (z. B. Justina). <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder unter <strong>Geschwister</strong> verknüpfen.
+          </p>
+          <p className="meta" style={{ margin: '0 0 0.75rem', padding: '0.6rem 0.75rem', background: 'rgba(13,148,136,0.12)', borderRadius: 8, border: '1px solid rgba(20,184,166,0.25)' }}>
+            <strong>Kind mit Vater und Mutter:</strong> Ein neues Kind bekommt zuerst nur den Elternteil, von dessen Seite du es anlegst (z. B. nur Rupert). Den <strong>zweiten Elternteil</strong> trägst du danach ein: <strong>Christine öffnen</strong> → unter <strong>Eltern</strong> → Justina wählen – <em>oder</em> Justina öffnen → unter <strong>Kinder</strong> → Christine wählen. Erst wenn bei Christine <strong>beide</strong> Eltern in der Karte stehen, stimmt die Linie für beide. <strong>Geschwister</strong> (z. B. Andreas): dieselben Eltern in der Karte wie beim Bruder – oder unter Geschwister verknüpfen, wenn die App keinen Vorschlag zeigt.
+          </p>
+          {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent')}
+          {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child')}
           <div style={{ marginBottom: '1rem' }}>
             <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Partner*innen</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
@@ -738,14 +700,14 @@ export default function K2FamiliePersonPage() {
                   <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
                 </span>
               ))}
-              {renderAddSelect('partner', person.partners.map((pr) => pr.personId), addPartner)}
-              <button type="button" className="btn-outline" onClick={addNewPartnerPerson} style={newPersonBtnStyle}>
-                ＋ Neue Person anlegen (als Partner*in)
+              {partnerAddSelect}
+              <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink('partner')} style={newPersonBtnStyle}>
+                {newPersonButtonLabels.partner}
               </button>
             </div>
           </div>
-          {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling', '＋ Neue Person anlegen (als Geschwister)', addNewPersonAsSibling)}
-          {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie', '＋ Neue Person anlegen (Wahlfamilie)', addNewPersonAsWahlfamilie)}
+          {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling')}
+          {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie')}
         </div>
 
         <div className="card" style={{ marginTop: '1rem' }}>

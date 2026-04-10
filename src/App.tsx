@@ -331,13 +331,16 @@ const STAND_BADGE_PATHNAMES = [
 function StandBadgeSync() {
   const location = useLocation()
   const pathname = location?.pathname ?? ''
+  /** Kein return vor Hooks – Overlay/Embed kann sich ändern (z. B. Plakat, Druck) → sonst „Rendered fewer hooks“. */
+  let hideForPlakatEmbed = false
   try {
     const sp = new URLSearchParams(location.search || '')
-    if (sp.get('k2PlakatEmbed') === '1') return null
+    hideForPlakatEmbed = sp.get('k2PlakatEmbed') === '1'
   } catch {
     /* ignore */
   }
-  if (typeof document !== 'undefined' && document.body?.getAttribute('data-k2-plakat-overlay') === '1') return null
+  const hideForPlakatOverlay =
+    typeof document !== 'undefined' && document.body?.getAttribute('data-k2-plakat-overlay') === '1'
   const showHere = STAND_BADGE_PATHNAMES.some((p) => pathname === p)
   const [serverNewer, setServerNewer] = useState(false)
   const [displayLabel, setDisplayLabel] = useState(BUILD_LABEL)
@@ -390,7 +393,7 @@ function StandBadgeSync() {
     return () => window.removeEventListener('keydown', onKey)
   }, [showStandHelp])
 
-  if (!showHere) return null
+  if (!showHere || hideForPlakatEmbed || hideForPlakatOverlay) return null
 
   // KEIN automatischer Reload bei serverNewer – verursacht in Cursor Preview Reload-Loop (Server neuer → Reload → wieder Server neuer → wieder Reload → Code-5-Crash). Nur Badge anzeigen, Nutzer tippt selbst.
   // KEIN Auto-Reload bei serverNewer (nur Badge, Nutzer tippt) – verhindert Reload-Loop in Cursor Preview.

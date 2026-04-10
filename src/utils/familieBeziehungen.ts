@@ -54,10 +54,11 @@ export function getBeziehungenFromKarten(
 }
 
 /**
- * Liefert die Personen der Kleinfamilie einer Person (Du + Partner + Kinder + Partner der Kinder).
- * Keine Enkel – nur aus den Karten. Für die Ansicht „Nur meine Kleinfamilie“ als eine Einheit.
+ * Personen eines **Familienzweigs** aus Sicht einer Person: sie selbst, Partner, Kinder, Partner der Kinder.
+ * Keine Enkel – nur aus den Karten. Ein Familienzweig kann wieder Paare und Kinder enthalten; im Stammbaum
+ * erscheint er als **eigener Block** (Farbe), innerhalb desselben Musters wie im Gesamtbaum.
  */
-export function getKleinfamiliePersonen(
+export function getFamilienzweigPersonen(
   personen: K2FamiliePerson[],
   personId: string | undefined
 ): K2FamiliePerson[] {
@@ -75,3 +76,6 @@ export function getKleinfamiliePersonen(
   })
   return personen.filter((p) => ids.has(p.id))
 }
+
+/** @deprecated Umbenannt in getFamilienzweigPersonen (gleiche Logik). */
+export const getKleinfamiliePersonen = getFamilienzweigPersonen

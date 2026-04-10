@@ -30,7 +30,7 @@
 
 **Bekannte Schwachstelle:** Reihenfolge „Martina / Maria / Lukas“ (oder andere Geschwister) stimmt nur, wenn `positionAmongSiblings` an den Personen gesetzt ist oder „Du“ + `ichBinPositionAmongSiblings` gesetzt ist. Sonst Sortierung nach parentIndex oder alphabetisch (id/name) → kann falsche Reihenfolge ergeben.
 
-**Behoben (17.03.26):** Kleinfamilien-Muster eingeführt: In jeder Zeile, in der **Du** und **ein Partner von Du** vorkommen, wird **zuerst Du ausgegeben**, dann der Partner. So steht Martina **rechts** von Georg, einen halben Icon darunter. Doku: **K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md**.
+**Behoben (17.03.26):** Familienzweig-Muster eingeführt (früher „Kleinfamilien-Muster“ genannt): In jeder Zeile, in der **Du** und **ein Partner von Du** vorkommen, wird **zuerst Du ausgegeben**, dann der Partner. So steht Martina **rechts** von Georg, einen halben Icon darunter. Doku: **K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md** (Inhalt: Familienzweig-Muster).
 
 **Nächste Schritte:**  
 - Sicherstellen, dass beim Anlegen/Bearbeiten von Personen `positionAmongSiblings` gesetzt/aktualisiert wird.  

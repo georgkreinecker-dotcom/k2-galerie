@@ -17,6 +17,10 @@ export interface K2FamiliePartnerRef {
 export interface K2FamiliePerson {
   id: string
   name: string
+  /** Geburtsdatum (ISO YYYY-MM-DD), optional. */
+  geburtsdatum?: string
+  /** Geburtsname / Mädchenname, z. B. bei Frauen – optional. */
+  maedchenname?: string
   photo?: string
   shortText?: string
   /** Verstorben – für Gedenkort (Phase 5). */

@@ -13,6 +13,8 @@ Jede Person hat eine eindeutige ID und kann mit anderen über Beziehungen verbun
 |------|-----|--------------|
 | `id` | string | Eindeutige ID (z. B. UUID oder `person-1`) |
 | `name` | string | Anzeigename |
+| `geburtsdatum` | string (ISO YYYY-MM-DD) | Geburtsdatum – optional |
+| `maedchenname` | string | Geburtsname / Mädchenname (z. B. bei Frauen) – optional |
 | `photo` | string | Bild (URL, Data-URL oder Vercel-Pfad) – optional |
 | `shortText` | string | Kurztext / Beschreibung – optional |
 | `parentIds` | string[] | IDs der Eltern (beliebig viele: biologische, soziale, Pflege) |
