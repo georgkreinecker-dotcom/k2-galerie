@@ -9,7 +9,13 @@ import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
 import { getBeziehungenFromKarten, getKleinfamiliePersonen } from '../utils/familieBeziehungen'
+import {
+  buildStammbaumKartenState,
+  buildGrossfamilieStammbaumSektionen,
+  getStammbaumBranchCardStyle,
+} from '../utils/familieStammbaumKarten'
 import { addPartnersForSiblingsExceptMaria } from '../utils/familieAddPartners'
+import { ensureErsteEheVierGeschwister } from '../utils/familieErsteEheGeschwister'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
@@ -36,6 +42,15 @@ const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register'
 function parsePrintStil(raw: string | null): PrintStil {
   if (raw && PRINT_STILE.includes(raw as PrintStil)) return raw as PrintStil
   return 'personenblaetter'
+}
+
+/** Stammbaum-Kachel: bei „Verstorben“ in der Personenkarte schwarzer Rand (statt Zweig-Farbe). */
+function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: string }) {
+  const v = p.verstorben === true
+  return {
+    cardBorder: v ? '2px solid rgba(0,0,0,0.92)' : `2px solid ${st.border}`,
+    avatarBorder: v ? '3px solid rgba(0,0,0,0.92)' : `3px solid ${st.border}`,
+  }
 }
 
 export default function K2FamilieStammbaumPage() {
@@ -84,6 +99,7 @@ export default function K2FamilieStammbaumPage() {
   const [familyDisplayNameInput, setFamilyDisplayNameInput] = useState('')
   const [familyNameSaved, setFamilyNameSaved] = useState(false)
   const [partnersAddedMsg, setPartnersAddedMsg] = useState(false)
+  const [ersteEheMsg, setErsteEheMsg] = useState('')
   const [viewZoom, setViewZoom] = useState(1)
   const [nurKleinfamilie, setNurKleinfamilie] = useState(false)
   const [viewOrientation, setViewOrientation] = useState<TreeOrientation>('vertical')
@@ -96,6 +112,29 @@ export default function K2FamilieStammbaumPage() {
     if (nurKleinfamilie && einstellungen.ichBinPersonId) return getKleinfamiliePersonen(personen, einstellungen.ichBinPersonId)
     return personen
   }, [personen, einstellungen.ichBinPersonId, nurKleinfamilie])
+
+  /** Karten: ein Raster pro Sektion (Großfamilie: Eltern → Kleinfamilie 1…n → Weitere) oder klassisch eine Liste. */
+  const stammbaumKarten = useMemo(
+    () => buildStammbaumKartenState(personenForGraph, einstellungen.ichBinPersonId),
+    [personenForGraph, einstellungen.ichBinPersonId]
+  )
+  /** Wenn „Ich bin“ + Datenlage passt: Blöcke untereinander statt einem Gemisch. */
+  const stammbaumSektionen = useMemo(() => {
+    const ichId = einstellungen.ichBinPersonId
+    if (!ichId || personenForGraph.length === 0) return null
+    if (nurKleinfamilie) {
+      return [
+        {
+          key: 'deine-kleinfamilie',
+          titel: 'Deine Kleinfamilie',
+          untertitel: undefined,
+          personen: buildStammbaumKartenState(personenForGraph, ichId).sortedPersonen,
+          branchIndex: 0,
+        },
+      ]
+    }
+    return buildGrossfamilieStammbaumSektionen(personenForGraph, ichId)
+  }, [personenForGraph, einstellungen.ichBinPersonId, nurKleinfamilie])
   useEffect(() => {
     setFamilyDisplayNameInput(einstellungen.familyDisplayName ?? '')
   }, [currentTenantId, einstellungen.familyDisplayName])
@@ -541,42 +580,197 @@ export default function K2FamilieStammbaumPage() {
         )}
 
         {nurKleinfamilie && einstellungen.ichBinPersonId && (
-          <p className="meta" style={{ marginBottom: '0.75rem' }}>Nur deine Kleinfamilie – Grafik und Karten unten zeigen nur diese Personen.</p>
+          <p className="meta" style={{ marginBottom: '0.75rem' }}>
+            Nur deine Kleinfamilie – Grafik und Karten unten zeigen nur diese Personen. Verstorbene: schwarzer Rand an der Kachel.
+          </p>
         )}
-        <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
-          {personenForGraph.map((p, i) => (
-            <Link
-              key={p.id}
-              to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
-              className="familie-card-enter"
-              style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${i * 0.06}s` }}
-            >
-              <div className="card" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-                {p.photo ? (
-                  <img
-                    src={p.photo}
-                    alt=""
-                    className="person-photo"
-                    style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(20,184,166,0.4)' }}
-                  />
-                ) : (
-                  <div style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(13,148,136,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem', border: '3px solid rgba(20,184,166,0.3)' }}>👤</div>
-                )}
-                <div style={{ width: '100%' }}>
-                  <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
-                  {p.shortText && <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>{p.shortText.slice(0, 70)}{p.shortText.length > 70 ? '…' : ''}</p>}
-                </div>
-                <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>→ ansehen</span>
+        {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurKleinfamilie && (
+          <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
+            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Kleinfamilie 1, 2, 3 …</strong> nach Geschwisterstellung (bei 12 Geschwistern + Eltern bis zu 13 Strukturen). Pro Block eine Randfarbe; innerhalb des Blocks kannst du Personen hinzufügen und bearbeiten.{' '}
+            <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
+          </p>
+        )}
+        {stammbaumSektionen && stammbaumSektionen.length > 0 ? (
+          stammbaumSektionen.map((sek, sekIdx) => (
+            <section key={sek.key} style={{ marginBottom: '2rem' }}>
+              <h3
+                style={{
+                  margin: '0 0 0.35rem',
+                  fontSize: '1.12rem',
+                  fontWeight: 700,
+                  color: 'rgba(255,255,255,0.95)',
+                  letterSpacing: '0.02em',
+                }}
+              >
+                {sek.titel}
+              </h3>
+              {sek.untertitel ? (
+                <p className="meta" style={{ margin: '0 0 0.85rem' }}>
+                  {sek.untertitel}
+                </p>
+              ) : null}
+              <div
+                className="k2-familie-stammbaum-grid"
+                style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}
+              >
+                {sek.personen.map((p, i) => {
+                  const st = getStammbaumBranchCardStyle(sek.branchIndex)
+                  const r = stammbaumKachelRaender(p, st)
+                  const delay = (sekIdx * 24 + i) * 0.06
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                      className="familie-card-enter"
+                      style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${delay}s` }}
+                      title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                    >
+                      <div
+                        className="card"
+                        style={{
+                          padding: '1.25rem',
+                          textAlign: 'center',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          gap: '0.75rem',
+                          border: r.cardBorder,
+                          background: st.bg,
+                          boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                        }}
+                      >
+                        {p.photo ? (
+                          <img
+                            src={p.photo}
+                            alt=""
+                            className="person-photo"
+                            style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: r.avatarBorder }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 96,
+                              height: 96,
+                              borderRadius: '50%',
+                              background: 'rgba(13,148,136,0.25)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '2.5rem',
+                              border: r.avatarBorder,
+                            }}
+                          >
+                            👤
+                          </div>
+                        )}
+                        <div style={{ width: '100%' }}>
+                          <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
+                          {p.shortText && (
+                            <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                              {p.shortText.slice(0, 70)}
+                              {p.shortText.length > 70 ? '…' : ''}
+                            </p>
+                          )}
+                        </div>
+                        <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+                          → ansehen
+                        </span>
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
-            </Link>
-          ))}
-        </div>
+            </section>
+          ))
+        ) : (
+          <div className="k2-familie-stammbaum-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.25rem' }}>
+            {stammbaumKarten.sortedPersonen.map((p, i) => {
+              const bi = stammbaumKarten.branchIndexByKey.get(stammbaumKarten.getBranchKey(p)) ?? 0
+              const st = getStammbaumBranchCardStyle(bi)
+              const r = stammbaumKachelRaender(p, st)
+              return (
+                <Link
+                  key={p.id}
+                  to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                  className="familie-card-enter"
+                  style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${i * 0.06}s` }}
+                  title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                >
+                  <div
+                    className="card"
+                    style={{
+                      padding: '1.25rem',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      border: r.cardBorder,
+                      background: st.bg,
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    {p.photo ? (
+                      <img
+                        src={p.photo}
+                        alt=""
+                        className="person-photo"
+                        style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: r.avatarBorder }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 96,
+                          height: 96,
+                          borderRadius: '50%',
+                          background: 'rgba(13,148,136,0.25)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '2.5rem',
+                          border: r.avatarBorder,
+                        }}
+                      >
+                        👤
+                      </div>
+                    )}
+                    <div style={{ width: '100%' }}>
+                      <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
+                      {p.shortText && <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>{p.shortText.slice(0, 70)}{p.shortText.length > 70 ? '…' : ''}</p>}
+                    </div>
+                    <span className="meta" style={{ fontSize: '0.9rem', opacity: 0.8 }}>→ ansehen</span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
 
         {personen.length > 0 && (
           <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
             <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
             {einstellungen.ichBinPersonId && (
               <>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  title="Fügt Rupert, Notburga, Anna und Maria mit denselben Eltern wie du ein – für vier Kleinfamilien im Stammbaum (erste Ehe Anna Stöbich)."
+                  onClick={() => {
+                    const r = ensureErsteEheVierGeschwister(personen, einstellungen.ichBinPersonId!)
+                    if (r.angelegt === 0) {
+                      setErsteEheMsg(r.meldung)
+                      setTimeout(() => setErsteEheMsg(''), 6000)
+                      return
+                    }
+                    if (savePersonen(currentTenantId, r.personen, { allowReduce: false })) {
+                      setStammbaumRefresh((k) => k + 1)
+                      setErsteEheMsg(r.meldung)
+                      setTimeout(() => setErsteEheMsg(''), 8000)
+                    }
+                  }}
+                >
+                  Erste Ehe: 4 Geschwister (Rupert, Notburga, Anna, Maria)
+                </button>
                 <button
                   type="button"
                   className="btn-outline"
@@ -591,6 +785,7 @@ export default function K2FamilieStammbaumPage() {
                 >
                   Partner für alle Geschwister (außer Maria) einfügen
                 </button>
+                {ersteEheMsg && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)', maxWidth: 420 }}>{ersteEheMsg}</span>}
                 {partnersAddedMsg && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Partner ergänzt (Rupert: 1. Frau verstorben, 2. Frau; Gisela: Mann verstorben)</span>}
               </>
             )}
