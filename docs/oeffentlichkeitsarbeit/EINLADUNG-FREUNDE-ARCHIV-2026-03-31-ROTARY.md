@@ -32,6 +32,6 @@ Martina & Georg
 
 ## Verknüpfung
 
-- [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) – 1. Presseaussendung (Redaktion)  
+- [presseaussendung-fertig/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](presseaussendung-fertig/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) – 1. Presseaussendung (Redaktion)  
 - [PRESSEARBEIT-STANDARD.md](../PRESSEARBEIT-STANDARD.md) – Standard Presse  
 - [00-INDEX.md](00-INDEX.md) – alle ÖA-Dokumente & Archiv

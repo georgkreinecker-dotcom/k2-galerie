@@ -98,6 +98,6 @@ Georg Kreinecker
 
 ## Verknüpfung
 
-- [PRESSEARBEIT-STANDARD.md](../PRESSEARBEIT-STANDARD.md) – Ablauf künftiger Aussendungen  
-- [MEDIENVERTEILER-EROEFFNUNG.md](../MEDIENVERTEILER-EROEFFNUNG.md) – Verteiler & Dokumentation Versand  
-- [POSITIONIERUNG-SWEET-SPOT-MARKT.md](../POSITIONIERUNG-SWEET-SPOT-MARKT.md) – Sweet-Spot-Formulierung (im Text aufgegriffen)
+- [PRESSEARBEIT-STANDARD.md](../../PRESSEARBEIT-STANDARD.md) – Ablauf künftiger Aussendungen  
+- [MEDIENVERTEILER-EROEFFNUNG.md](../../MEDIENVERTEILER-EROEFFNUNG.md) – Verteiler & Dokumentation Versand  
+- [POSITIONIERUNG-SWEET-SPOT-MARKT.md](../../POSITIONIERUNG-SWEET-SPOT-MARKT.md) – Sweet-Spot-Formulierung (im Text aufgegriffen)

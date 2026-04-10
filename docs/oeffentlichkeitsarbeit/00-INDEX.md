@@ -1,6 +1,14 @@
 # Öffentlichkeitsarbeit – Phase 1 (Inhaltsverzeichnis)
 
-**Stand:** 17.03.26 · **Zweck:** Alle Dokumente für die erste Phase der Öffentlichkeitsarbeit an einem Ort. Eine Ablage – von hier aus findest du alles.
+**Stand:** 10.04.26 · **Zweck:** Alle Dokumente für die erste Phase der Öffentlichkeitsarbeit an einem Ort. Eine Ablage – von hier aus findest du alles.
+
+---
+
+## Presseaussendung – fertige Texte (fest im Repo)
+
+**Ordner:** [presseaussendung-fertig/](presseaussendung-fertig/) – **versendete** oder **final freigegebene** Volltexte (Presseaussendung, Erinnerung …), zum Kopieren in E-Mail. **Nicht** ersetzt die Vorlagen unten – die sind Arbeitsgrundlage; **hier** liegt, was wirklich rausging.
+
+- **Übersicht:** [presseaussendung-fertig/00-INDEX.md](presseaussendung-fertig/00-INDEX.md) · **Hinweis:** [presseaussendung-fertig/README.md](presseaussendung-fertig/README.md)
 
 ---
 
@@ -27,9 +35,12 @@
 
 ## Archiv – tatsächlich versendete Presse
 
+→ **Liegt unter** [presseaussendung-fertig/](presseaussendung-fertig/) (Tabelle: [00-INDEX dort](presseaussendung-fertig/00-INDEX.md)).
+
 | Datum | Dokument | Inhalt |
 |-------|----------|--------|
-| 01.04.26 | [PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) | **1. Presseaussendung** an redaktion@wels.at – Galerieeröffnung 24.–26.04.2026, Text 1:1 wie versendet (Sweet Spot, Plattform, Künstlertexte, Links). |
+| 01.04.26 | [presseaussendung-fertig/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md](presseaussendung-fertig/PRESSE-AUSSENDUNG-ARCHIV-2026-04-01-WELS.md) | **1. Presseaussendung** an redaktion@wels.at – Galerieeröffnung 24.–26.04.2026, Text 1:1 wie versendet |
+| Folge | [presseaussendung-fertig/PRESSE-ERINNERUNG-nach-Aussendung-2026-04-01.md](presseaussendung-fertig/PRESSE-ERINNERUNG-nach-Aussendung-2026-04-01.md) | **Erinnerung** nach fehlender Rückmeldung (Bezug 1.4.) |
 
 ---
 
@@ -55,4 +66,4 @@
 
 ---
 
-**Regel:** Eine Quelle pro Information. Die ausführlichen Dokumente bleiben in docs/; dieser Ordner ist der **Einstieg** für Phase 1 und enthält die Arbeitsdokumente (Schnellstart, Checkliste, Vorlage).
+**Regel:** Eine Quelle pro Information. Die ausführlichen Dokumente bleiben in docs/; dieser Ordner ist der **Einstieg** für Phase 1 und enthält die Arbeitsdokumente (Schnellstart, Checkliste, Vorlage). **Fertige Presseaussendungen:** immer unter **presseaussendung-fertig/** ablegen.
