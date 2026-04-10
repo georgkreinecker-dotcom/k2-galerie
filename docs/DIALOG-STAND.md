@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **Öffentlichkeitsarbeit: fertige Presseaussendungen an einem Ort** – Ordner **`docs/oeffentlichkeitsarbeit/presseaussendung-fertig/`** ([README](oeffentlichkeitsarbeit/presseaussendung-fertig/README.md), [00-INDEX](oeffentlichkeitsarbeit/presseaussendung-fertig/00-INDEX.md)): Archiv Wels + Erinnerung (1.4.) als **fertige** Volltexte; Verweise in `docs/00-INDEX`, `oeffentlichkeitsarbeit/00-INDEX`, Einladungs-Archiv. **Commit:** *(folgt)*
+**Letzter Stand:** 10.04.26 – **Öffentlichkeitsarbeit: fertige Presseaussendungen an einem Ort** – Ordner **`docs/oeffentlichkeitsarbeit/presseaussendung-fertig/`** ([README](oeffentlichkeitsarbeit/presseaussendung-fertig/README.md), [00-INDEX](oeffentlichkeitsarbeit/presseaussendung-fertig/00-INDEX.md)): Archiv Wels + Erinnerung (1.4.) als **fertige** Volltexte; Verweise in `docs/00-INDEX`, `oeffentlichkeitsarbeit/00-INDEX`, Einladungs-Archiv. **Commit:** **80884819** ✅ GitHub
 
 **Was wir JETZT tun:** Weitere Aussendungen: neue `.md` in `presseaussendung-fertig/` + Eintrag in dessen `00-INDEX`.
 
