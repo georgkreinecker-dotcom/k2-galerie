@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Partner-Zweige in der Kartenliste** – **Kern** (Wurzel & Partner) + **pro Kind** ein Teil-Zweig (Kind & Partner); Großfamilie & „Nur mein Familienzweig“; bearbeitbar je Kachel. **`buildStammbaumPartnerUnterSektionen`**, `K2FamilieStammbaumPage`, Test. **Commit:** **51aaeaf8** ✅ GitHub
+**Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Partner-Zweige in der Kartenliste** – **Kern** (Wurzel & Partner) + **pro Kind** ein Teil-Zweig (Kind & Partner); Großfamilie & „Nur mein Familienzweig“; bearbeitbar je Kachel. **`buildStammbaumPartnerUnterSektionen`**, `K2FamilieStammbaumPage`, Test. **Commit:** **7446a9db** ✅ GitHub
 
-**Was wir JETZT tun:** Stammbaum mit echten Daten kurz prüfen (childIds auf Wurzel = Kinder in Teil-Zweigen).
+**Was wir JETZT tun:** Nächste Session: Stammbaum mit echten Daten kurz durchklicken (Teil-Zweige, „→ ansehen“); optional Doku `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md` um UI-Unter-Zweige ergänzen.
 
 ---
 

@@ -266,4 +266,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (10.04.26):** K2 Familie Stammbaum: Partner als eigene Teil-Zweige in der Kartenliste (Kern + pro Kind) – weiterhin eine Quelle aus den Karten; nächster sinnvoller Schritt: echte Daten kurz gegenprüfen.
+
+---
+
 *Dieser Raum gehört uns allen. Er wächst mit uns. Er überdauert uns.*
