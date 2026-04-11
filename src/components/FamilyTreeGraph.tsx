@@ -453,22 +453,8 @@ export default function FamilyTreeGraph({
     const connectors: { from: Point; to: Point; viaY?: number }[] = []
     const partnerLinks: { a: Point; b: Point }[] = []
 
-    const rowForParent = new Map<string, string[]>()
-    rows.forEach((rowIds) => rowIds.forEach((id) => rowForParent.set(id, rowIds)))
-
-    // Eine gemeinsame Brücken-Y zwischen Eltern- und Kinderzeile (Tafel-Stil), nicht viele parallele Zwischenlinien.
-    const parentViaY = new Map<string, number>()
-    personen.forEach((p) => {
-      const parentPos = nodePos.get(p.id)
-      if (!parentPos) return
-      const fromCard = p.childIds ?? []
-      const fromChildren = childIds.get(p.id) ?? []
-      const kids = Array.from(new Set([...fromCard, ...fromChildren])).filter((cid) => nodePos.has(cid))
-      if (kids.length === 0) return
-      const childYs = kids.map((cid) => nodePos.get(cid)!.y)
-      const avgChildY = childYs.reduce((a, b) => a + b, 0) / childYs.length
-      parentViaY.set(p.id, parentPos.y + (avgChildY - parentPos.y) * 0.5)
-    })
+    // Brücken-Y je Eltern–Kind-Kante: sonst teilen sich alle Kinder einer Generation dieselbe waagrechte Linie
+    // (ein „Sammelbalken“), obwohl die Zuordnung in den Daten stimmt.
 
     // Nur verbieten: Linien zwischen „meine Kinder“ und „meine Geschwister“ (von unten zu Geschwistern)
     const userParentIds = ichBinPersonId ? (byId.get(ichBinPersonId)?.parentIds ?? []) : []
@@ -479,15 +465,13 @@ export default function FamilyTreeGraph({
       ichBinPersonId ? [...(byId.get(ichBinPersonId)?.childIds ?? []), ...(childIds.get(ichBinPersonId) ?? [])] : []
     )
 
-    // Von jedem Elternteil zu jedem seiner Kinder; Vater nutzt die viaY der Mutter des Kindes
+    // Von jedem Elternteil zu jedem seiner Kindern (viaY je Kante, kein gemeinsamer Balken pro Elternzeile)
     personen.forEach((p) => {
       const parentPos = nodePos.get(p.id)
       if (!parentPos) return
       const fromCard = p.childIds ?? []
       const fromChildren = childIds.get(p.id) ?? []
       const kids = Array.from(new Set([...fromCard, ...fromChildren]))
-      const rowIds = rowForParent.get(p.id)
-      const isPivot = rowIds != null && (byId.get(p.id)?.partners.filter((pr) => rowIds.includes(pr.personId)).length ?? 0) >= 2
       kids.forEach((childId) => {
         if (userSiblingIds.has(p.id) && userChildrenIds.has(childId)) return
         if (userChildrenIds.has(p.id) && userSiblingIds.has(childId)) return
@@ -501,14 +485,8 @@ export default function FamilyTreeGraph({
         if (parentLevel >= childLevel) return
         const asChildOfPartner = child.parentIds.some((pid) => byId.get(pid)?.partners.some((pr) => pr.personId === childId))
         if (asChildOfPartner) return
-        let viaY = parentViaY.get(p.id) ?? undefined
-        if (isPivot && rowIds) {
-          const motherId = p.partners.find(
-            (pr) => rowIds.includes(pr.personId) && (child.parentIds.includes(pr.personId) || byId.get(pr.personId)?.childIds.includes(childId))
-          )?.personId
-          if (motherId) viaY = parentViaY.get(motherId)
-        }
-        connectors.push(viaY != null ? { from: parentPos, to: childPos, viaY } : { from: parentPos, to: childPos })
+        const viaY = (parentPos.y + childPos.y) / 2
+        connectors.push({ from: parentPos, to: childPos, viaY })
       })
     })
 
@@ -760,7 +738,7 @@ export default function FamilyTreeGraph({
                   {isIch && (
                     <text x={NODE_W / 2} y={NODE_H + 10} textAnchor="middle" fill="#14b8a6" fontSize="9" fontWeight="700">Du</text>
                   )}
-                  {onSetIchBin && !isIch && (
+                  {onSetIchBin && !isIch && !ichBinPersonId && (
                     <g style={{ pointerEvents: 'all' }}>
                       <title>Das bin ich (Nummerierung korrigieren)</title>
                       <foreignObject x={0} y={NODE_H} width={NODE_W} height={22} style={{ overflow: 'visible' }}>
