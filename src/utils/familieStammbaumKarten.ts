@@ -112,8 +112,11 @@ function findSiblingFamilyAnchor(
   visiting.add(p.id)
   try {
     if (geschwisterSet.has(p.id)) return p.id
+    /** Zuerst alle Eltern prüfen (direkter Geschwister-Treffer). Sonst: zuerst nicht-Geschwister-Elternteil → Rekursion kann falschen Ast wählen (z. B. Lef-Kinder: Vater zuerst, Mutter ist Geschwister). */
     for (const pid of p.parentIds) {
       if (geschwisterSet.has(pid)) return pid
+    }
+    for (const pid of p.parentIds) {
       const parent = byId.get(pid)
       if (parent) {
         const a = findSiblingFamilyAnchor(parent, byId, geschwisterSet, visiting)
@@ -307,6 +310,25 @@ export interface StammbaumKartenUnterSektion {
 }
 
 /**
+ * Kind der Wurzel **g** laut Karten: `parentIds` enthält **g**, oder (Fallback bei Import/älterem Stand)
+ * genau ein Elternteil ist eingetragen und der ist Partner von **g** bzw. umgekehrt auf der Partner-Karte.
+ * Normalfall: beide Eltern auf der Kinderkarte – dann greift die erste Zeile.
+ */
+function istKindDerWurzelNachKarten(
+  p: K2FamiliePerson,
+  g: K2FamiliePerson,
+  byId: Map<string, K2FamiliePerson>
+): boolean {
+  if (p.parentIds.includes(g.id)) return true
+  if (p.parentIds.length !== 1) return false
+  const onlyPid = p.parentIds[0]!
+  if ((g.partners ?? []).some((pr) => pr.personId === onlyPid)) return true
+  const onlyP = byId.get(onlyPid)
+  if (onlyP && (onlyP.partners ?? []).some((pr) => pr.personId === g.id)) return true
+  return false
+}
+
+/**
  * Kinder der Wurzel **g** für Teil-Zweige: `childIds` auf der Karte von **g** plus alle Personen im
  * aktuellen Zweig, die **g** in `parentIds` führen (symmetrisch – oft sind nur die Kinderkarten gepflegt).
  */
@@ -315,13 +337,14 @@ function getKinderFuerStammbaumUnterzweige(
   g: K2FamiliePerson,
   kleinIds: Set<string>
 ): K2FamiliePerson[] {
+  const byId = byIdMap(personen)
   const merged = new Map<string, K2FamiliePerson>()
   for (const k of getBeziehungenFromKarten(personen, g.id).kinder) {
     if (kleinIds.has(k.id)) merged.set(k.id, k)
   }
   for (const p of personen) {
     if (!kleinIds.has(p.id)) continue
-    if (!p.parentIds.includes(g.id)) continue
+    if (!istKindDerWurzelNachKarten(p, g, byId)) continue
     if (!merged.has(p.id)) merged.set(p.id, p)
   }
   return [...merged.values()].sort((a, b) => {
@@ -376,6 +399,8 @@ export function buildStammbaumPartnerUnterSektionen(
   }
 
   const kinder = getKinderFuerStammbaumUnterzweige(personen, g, kleinIds)
+  /** Gleicher Kreis wie „Familienzweig N – …“ oben: andere Geschwister nicht nochmal unter „Weitere im Familienzweig“. */
+  const geschwisterKreis = buildGeschwisterSetFuerIch(personen, anchorId)
 
   for (const k of kinder) {
     const block: K2FamiliePerson[] = []
@@ -403,7 +428,11 @@ export function buildStammbaumPartnerUnterSektionen(
     })
   }
 
-  const rest = personenImZweig.filter((p) => !assigned.has(p.id))
+  const rest = personenImZweig.filter((p) => {
+    if (assigned.has(p.id)) return false
+    if (p.id !== g.id && geschwisterKreis.has(p.id)) return false
+    return true
+  })
   if (rest.length > 0) {
     const sorted = [...rest].sort((a, b) => a.name.localeCompare(b.name, 'de'))
     out.push({
@@ -494,10 +523,15 @@ export function buildGrossfamilieStammbaumSektionen(
 
   let zweigNr = 1
   for (const g of geschwister) {
-    const fromFam = getFamilienzweigPersonen(personen, g.id)
+    const fromFam = getFamilienzweigPersonen(personen, g.id, { includeSiblingCircle: false })
     const ids = new Set(fromFam.map((x) => x.id))
     for (const p of personen) {
       if (anchorByPersonId.get(p.id) === g.id) ids.add(p.id)
+    }
+    /** Fallback: Kind fehlt auf der Kinderkarte ein Elternteil – trotzdem im Ast, wenn Partner im Kern verknüpft. */
+    for (const p of personen) {
+      if (ids.has(p.id)) continue
+      if (istKindDerWurzelNachKarten(p, g, byId)) ids.add(p.id)
     }
     const roh = personen.filter((p) => ids.has(p.id))
     const rohOhneDoppelEltern = roh.filter((p) => !elternIdSet.has(p.id))
