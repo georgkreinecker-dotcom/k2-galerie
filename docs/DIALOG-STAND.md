@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **K2 Familie Person: Kurzübersicht Eltern + Geschwister** – Unter **Beziehungen** ein Block **Kurzübersicht** (nur Anzeige): alle **Eltern** und **Geschwister** aus den Karten auf einen Blick, Links zur Person; Bearbeiten weiter in den Zeilen darunter. `getBeziehungenFromKarten`. **Commit:** *(nach Push)*
+**Letzter Stand:** 11.04.26 – **K2 Familie Person: Kurzübersicht Eltern + Geschwister** – Unter **Beziehungen** ein Block **Kurzübersicht** (nur Anzeige): alle **Eltern** und **Geschwister** aus den Karten auf einen Blick, Links zur Person; Bearbeiten weiter in den Zeilen darunter. `getBeziehungenFromKarten`. **Commit:** **1200a5d3** ✅ GitHub
 
 **Was wir JETZT tun:** Person mit vielen Geschwistern öffnen – Kurzübersicht oben prüfen.
 
