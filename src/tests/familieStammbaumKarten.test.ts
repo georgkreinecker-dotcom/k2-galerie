@@ -7,6 +7,7 @@ import {
   sortPersonenStammbaumKarten,
   buildGrossfamilieStammbaumSektionen,
   buildStammbaumPartnerUnterSektionen,
+  buildStammbaumSektionenOhneGrossfamilieElternpaar,
 } from '../utils/familieStammbaumKarten'
 
 function p(
@@ -88,7 +89,7 @@ describe('familieStammbaumKarten', () => {
     expect(getBranchKey(b)).toBe(getBranchKey(a))
   })
 
-  it('Großfamilie: gleiche positionAmongSiblings bei zwei Geschwistern → trotzdem eindeutige Familienzweig-Nummern; bei Gleichstand Geburtsdatum (älter zuerst)', () => {
+  it('Großfamilie: je Geschwister ein eigener Familienzweig-Block (z. B. viele Geschwister)', () => {
     const m = p('m', 'Mutter', ['gm', 'gv'])
     const f = p('f', 'Vater', ['gm', 'gv'])
     const thomas = p('thomas', 'Thomas Kreinecker', ['m', 'f'], { pos: 11, geb: '1940-05-01' })
@@ -99,11 +100,11 @@ describe('familieStammbaumKarten', () => {
     const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
     expect(sek).not.toBeNull()
     const klein = sek!.filter((s) => s.key.startsWith('kleinfamilie-'))
-    const nums = klein.map((s) => s.titel.match(/^Familienzweig\s+(\d+)\s/)?.[1])
-    expect(nums.length).toBe(klein.length)
-    expect(new Set(nums).size).toBe(nums.length)
-    expect(klein.find((s) => s.titel.includes('Thomas'))?.titel).toMatch(/^Familienzweig 2 –/)
-    expect(klein.find((s) => s.titel.includes('Clemens'))?.titel).toMatch(/^Familienzweig 3 –/)
+    expect(klein.length).toBe(3)
+    expect(klein.map((s) => s.key)).toEqual(['kleinfamilie-georg', 'kleinfamilie-thomas', 'kleinfamilie-clemens'])
+    expect(klein[0]?.titel).toMatch(/^Familienzweig 1 – Georg/)
+    expect(klein[1]?.titel).toMatch(/^Familienzweig 2 – Thomas/)
+    expect(klein[2]?.titel).toMatch(/^Familienzweig 3 – Clemens/)
   })
 
   it('Großfamilie-Sektionen: Eltern zuerst, dann Familienzweige nach Geschwisterstellung', () => {
@@ -123,11 +124,20 @@ describe('familieStammbaumKarten', () => {
     expect(sek).not.toBeNull()
     const keys = sek!.map((s) => s.key)
     expect(keys[0]).toBe('eltern')
-    expect(keys[1]).toContain('rupert')
-    expect(keys[2]).toContain('martina')
-    expect(keys[3]).toContain('georg')
+    expect(keys.slice(1, -1)).toEqual(['kleinfamilie-rupert', 'kleinfamilie-martina', 'kleinfamilie-georg'])
     expect(keys[keys.length - 1]).toBe('weitere')
     expect(sek!.find((s) => s.key === 'weitere')?.personen.map((x) => x.id)).toContain('gross')
+  })
+
+  it('Ohne zwei Eltern auf der Karte: Großfamilie null, Fallback eine strukturierte Sektion', () => {
+    const mutter = p('mutter', 'Mutter', ['gm', 'gv'])
+    const solo = p('solo', 'Solo', ['mutter'])
+    const personen = [mutter, solo]
+    expect(buildGrossfamilieStammbaumSektionen(personen, 'solo')).toBeNull()
+    const fb = buildStammbaumSektionenOhneGrossfamilieElternpaar(personen, personen, 'solo')
+    expect(fb).toHaveLength(1)
+    expect(fb[0]?.key).toBe('ohne-elternpaar-struktur')
+    expect(fb[0]?.personen.map((x) => x.id)).toContain('solo')
   })
 
   it('Großfamilie: gemeinsame Eltern nicht in jedem Geschwister-Zweig wiederholen (keine Doppelung zur Eltern-Zeile)', () => {
@@ -170,8 +180,7 @@ describe('familieStammbaumKarten', () => {
     expect(eltern).toContain('sen')
 
     const kleinKeys = sek!.filter((s) => s.key.startsWith('kleinfamilie-')).map((s) => s.key)
-    expect(kleinKeys.some((k) => k.includes('rupert'))).toBe(true)
-    expect(kleinKeys.some((k) => k.includes('georg'))).toBe(true)
+    expect(kleinKeys).toEqual(['kleinfamilie-rupert', 'kleinfamilie-georg'])
 
     const { getBranchKey } = buildStammbaumKartenState(personen, 'georg')
     expect(getBranchKey(rupert)).toMatch(/^geschwister-ast:/)

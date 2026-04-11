@@ -446,11 +446,9 @@ function compareGeschwisterNachKarten(a: K2FamiliePerson, b: K2FamiliePerson): n
 }
 
 /**
- * Großfamilie: nacheinander Eltern, dann jeder Geschwister-Familienzweig in Geschwisterreihenfolge (1, 2, …),
- * zuletzt Personen ohne Zuordnung. Voraussetzung: „Ich bin“ mit zwei Eltern in den Karten.
- *
- * Die **Nummer im Titel** ist die **laufende Nummer** nach Sortierung (1…n), nicht `positionAmongSiblings`.
- * Sonst zeigen zwei Personen mit derselben Geburtsreihenfolge-Zahl (z. B. beide 11) dieselbe Überschrift.
+ * Großfamilie: Eltern, dann **je Geschwister ein eigener** Familienzweig-Block (Ast mit Kern, Partner, Kindern …),
+ * nummeriert in Geschwister-Reihenfolge. Schlüssel pro Ast: `kleinfamilie-${geschwisterId}` (Sprungleiste / „Nur mein
+ * Familienzweig“ öffnet den Ast von „Ich bin“). Zuletzt „Weitere“.
  */
 export function buildGrossfamilieStammbaumSektionen(
   personen: K2FamiliePerson[],
@@ -494,7 +492,8 @@ export function buildGrossfamilieStammbaumSektionen(
     elternPersonen.forEach((p) => erfasst.add(p.id))
   }
 
-  geschwister.forEach((g, geschwisterIndex) => {
+  let zweigNr = 1
+  for (const g of geschwister) {
     const fromFam = getFamilienzweigPersonen(personen, g.id)
     const ids = new Set(fromFam.map((x) => x.id))
     for (const p of personen) {
@@ -504,21 +503,25 @@ export function buildGrossfamilieStammbaumSektionen(
     const rohOhneDoppelEltern = roh.filter((p) => !elternIdSet.has(p.id))
     const klein = buildStammbaumKartenState(rohOhneDoppelEltern, g.id).sortedPersonen
     const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
-    const posLabel = String(geschwisterIndex + 1)
-    const zweigTeile =
+    const teile =
       unterSektionen.length > 1
         ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
         : ''
+    const titel =
+      geschwister.length === 1
+        ? `Familienzweig 1 – ${g.name}`
+        : `Familienzweig ${zweigNr} – ${g.name}`
+    zweigNr++
     sections.push({
       key: `kleinfamilie-${g.id}`,
-      titel: `Familienzweig ${posLabel} – ${g.name}`,
-      untertitel: `${klein.length} Person${klein.length === 1 ? '' : 'en'}${zweigTeile}`,
+      titel,
+      untertitel: `${klein.length} Person${klein.length === 1 ? '' : 'en'}${teile}`,
       personen: klein,
       branchIndex: bi++,
       unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
     })
     klein.forEach((p) => erfasst.add(p.id))
-  })
+  }
 
   const weitere = personen.filter((p) => !erfasst.has(p.id))
   if (weitere.length > 0) {
@@ -534,4 +537,32 @@ export function buildGrossfamilieStammbaumSektionen(
   }
 
   return sections
+}
+
+/**
+ * Wenn die Großfamilie-Ansicht nicht aufgebaut werden kann (z. B. „Ich bin“ hat auf der Karte
+ * noch kein vollständiges Elternpaar in `parentIds`): eine Sektion mit derselben Sortierung wie
+ * klassisch plus Partner-Unterteilung – **nicht** ein einziges Raster aller Personen ohne Kontext.
+ */
+export function buildStammbaumSektionenOhneGrossfamilieElternpaar(
+  personen: K2FamiliePerson[],
+  personenForGraph: K2FamiliePerson[],
+  ichBinPersonId: string
+): StammbaumKartenSektion[] {
+  const sorted = buildStammbaumKartenState(personenForGraph, ichBinPersonId).sortedPersonen
+  const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, ichBinPersonId, sorted)
+  const teile =
+    unterSektionen.length > 1
+      ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+      : ''
+  return [
+    {
+      key: 'ohne-elternpaar-struktur',
+      titel: 'Familienzweig',
+      untertitel: `${sorted.length} Person${sorted.length === 1 ? '' : 'en'}${teile} · Zwei Eltern in deiner Karte eintragen, dann erscheinen Eltern und getrennte Geschwister-Äste`,
+      personen: sorted,
+      branchIndex: 0,
+      unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
+    },
+  ]
 }
