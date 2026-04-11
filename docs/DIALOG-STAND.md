@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Fix ReferenceError Geschwister-Anzeige** – `geschwisterDuAnzeige` → `geschwisterDuAnzeigeText` (`useMemo` mit fertigem String); vermeidet Laufzeitfehler „Can't find variable: geschwisterDuAnzeige“ in der „Du“-Beziehungsbox. **Commit:** _(nach Push)_
+
+**Was wir JETZT tun:** Stammbaum neu laden – Beziehungsbox „Geschwister“ ohne Fehler; ggf. Commit-Hash hier eintragen.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie: Geschwister aus gemeinsamen Eltern** – `getGeschwisterAusGemeinsamenEltern` / `getGeschwisterAnzeigeListe` in `familieBeziehungen.ts`: Geschwister = andere Personen mit mindestens einem gemeinsamen Elternteil (Voll- + Halbgeschwister); Anzeige = abgeleitet ∪ Legacy `siblingIds`. Personenseite: Block **Geschwister** nur Anzeige + Hinweis, kein Dropdown/„Neu als Geschwister“; ✕ nur bei reinem `siblingIds`-Rest. Kurzübersicht & Stammbaum-„Du“-Box gleiche Liste. Tests. **Commit:** **d606b4f1** ✅ GitHub
 
 **Was wir JETZT tun:** Person mit mehreren Kindern derselben Eltern öffnen – alle Geschwister in Kurzübersicht und unter Geschwister sichtbar.

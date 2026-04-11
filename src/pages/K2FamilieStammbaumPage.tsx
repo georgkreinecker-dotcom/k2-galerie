@@ -122,9 +122,11 @@ export default function K2FamilieStammbaumPage() {
     return id ? getBeziehungenFromKarten(personen, id) : null
   }, [einstellungen.ichBinPersonId, personen])
 
-  const geschwisterDuAnzeige = useMemo(() => {
+  /** Geschwister für „Du“ – gleiche Quelle wie getGeschwisterAnzeigeListe (nur Karten). */
+  const geschwisterDuAnzeigeText = useMemo(() => {
     const id = einstellungen.ichBinPersonId
-    return id ? getGeschwisterAnzeigeListe(personen, id) : []
+    const g = id ? getGeschwisterAnzeigeListe(personen, id) : []
+    return g.length ? g.map((p) => p.name).join(', ') : '–'
   }, [einstellungen.ichBinPersonId, personen])
 
   const druck = searchParams.get('druck') === '1'
@@ -506,7 +508,7 @@ export default function K2FamilieStammbaumPage() {
                 <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>
                   <li>Eltern: {beziehungenDu.eltern.length ? beziehungenDu.eltern.map((p) => p.name).join(', ') : '–'}</li>
                   <li>Kinder: {beziehungenDu.kinder.length ? beziehungenDu.kinder.map((p) => p.name).join(', ') : '–'}</li>
-                  <li>Geschwister: {geschwisterDuAnzeige.length ? geschwisterDuAnzeige.map((p) => p.name).join(', ') : '–'}</li>
+                  <li>Geschwister: {geschwisterDuAnzeigeText}</li>
                   <li>Partner: {beziehungenDu.partner.length ? beziehungenDu.partner.map((p) => p.name).join(', ') : '–'}</li>
                 </ul>
               </div>
