@@ -213,6 +213,31 @@ describe('familieStammbaumKarten', () => {
     expect(lukasZweig?.personen.map((x) => x.id).sort()).toEqual(['lukas', 'nora'].sort())
   })
 
+  it('Großfamilie: Kinder unter Geschwister-Ast auch über parentIds (ohne childIds auf Elternkarte)', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const elisabeth = p('elisabeth', 'Elisabeth', ['m', 'f'], {
+      pos: 2,
+      partners: [{ personId: 'michael', from: null, to: null }],
+    })
+    const michael = p('michael', 'Michael', [], { partners: [{ personId: 'elisabeth', from: null, to: null }] })
+    const joshua = p('joshua', 'Joshua', ['michael', 'elisabeth'])
+    const olivia = p('olivia', 'Olivia', ['michael', 'elisabeth'])
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 3 })
+    const personen = [m, f, elisabeth, michael, joshua, olivia, georg]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const elisabethSek = sek!.find((s) => s.key === 'kleinfamilie-elisabeth')
+    expect(elisabethSek).toBeDefined()
+    const unter = elisabethSek!.unterSektionen ?? []
+    expect(unter.some((u) => u.key === 'kind-joshua')).toBe(true)
+    expect(unter.some((u) => u.key === 'kind-olivia')).toBe(true)
+    const restIds = unter.find((u) => u.key === 'rest-elisabeth')?.personen.map((x) => x.id) ?? []
+    expect(restIds.includes('joshua')).toBe(false)
+    expect(restIds.includes('olivia')).toBe(false)
+  })
+
   it('Familienzweig: Eltern der Kinder sind im gefilterten Satz (Stammbaum-Linien zu beiden Eltern)', () => {
     const michael = p('michael', 'Michael', [])
     const elisabeth = p('elisabeth', 'Elisabeth', [])

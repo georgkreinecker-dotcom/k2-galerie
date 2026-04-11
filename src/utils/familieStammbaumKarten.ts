@@ -307,9 +307,35 @@ export interface StammbaumKartenUnterSektion {
 }
 
 /**
+ * Kinder der Wurzel **g** für Teil-Zweige: `childIds` auf der Karte von **g** plus alle Personen im
+ * aktuellen Zweig, die **g** in `parentIds` führen (symmetrisch – oft sind nur die Kinderkarten gepflegt).
+ */
+function getKinderFuerStammbaumUnterzweige(
+  personen: K2FamiliePerson[],
+  g: K2FamiliePerson,
+  kleinIds: Set<string>
+): K2FamiliePerson[] {
+  const merged = new Map<string, K2FamiliePerson>()
+  for (const k of getBeziehungenFromKarten(personen, g.id).kinder) {
+    if (kleinIds.has(k.id)) merged.set(k.id, k)
+  }
+  for (const p of personen) {
+    if (!kleinIds.has(p.id)) continue
+    if (!p.parentIds.includes(g.id)) continue
+    if (!merged.has(p.id)) merged.set(p.id, p)
+  }
+  return [...merged.values()].sort((a, b) => {
+    const pa = a.positionAmongSiblings ?? 9999
+    const pb = b.positionAmongSiblings ?? 9999
+    if (pa !== pb) return pa - pb
+    return a.name.localeCompare(b.name, 'de')
+  })
+}
+
+/**
  * Teilt einen Familienzweig (Liste aus getFamilienzweigPersonen) in erkennbare Partner-Zweige:
  * zuerst Kern = Wurzelperson + deren Partner (laut Karte), dann pro Kind ein Block mit Kind + Partnern.
- * Nur Personen aus personenImZweig; eine Quelle: Kartenfelder partners / childIds.
+ * Nur Personen aus personenImZweig; Quelle: partners, childIds und parentIds der Kinder (eine Wahrheit).
  */
 export function buildStammbaumPartnerUnterSektionen(
   personen: K2FamiliePerson[],
@@ -349,14 +375,7 @@ export function buildStammbaumPartnerUnterSektionen(
     })
   }
 
-  const kinder = [...getBeziehungenFromKarten(personen, g.id).kinder]
-    .filter((k) => kleinIds.has(k.id))
-    .sort((a, b) => {
-      const pa = a.positionAmongSiblings ?? 9999
-      const pb = b.positionAmongSiblings ?? 9999
-      if (pa !== pb) return pa - pb
-      return a.name.localeCompare(b.name, 'de')
-    })
+  const kinder = getKinderFuerStammbaumUnterzweige(personen, g, kleinIds)
 
   for (const k of kinder) {
     const block: K2FamiliePerson[] = []
