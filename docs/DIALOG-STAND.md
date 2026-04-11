@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie: Beziehungen vereinfacht (UX)** – Personenseite: kurzer **So geht’s**-Kasten, lange Beispiele in **ausklappbare Tipps**; Dropdowns **Person wählen …** / **Vorschlag wählen …**; Buttons **＋ Neu als …**; nach **Neu anlegen** Navigation mit **← Zurück zu [Name]** (Ausgangsperson). Stammbaum: kurzer Kopftext, Details unter **Mehr: Partner, Kinder, Reihenfolge**. `K2FamiliePersonPage.tsx`, `K2FamilieStammbaumPage.tsx`. **Commit:** **770ba2b3** ✅ GitHub
+
+**Was wir JETZT tun:** Einmal durchspielen: bestehende Person verknüpfen → Neu → Zurück; Stammbaum-Tipps aufklappen.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie: Schlusspunkt Stammbaum** – Einstellung `stammbaumSchlusspunkt` in `k2-familie`-Einstellungen: **keine neuen Personen** mehr (Stammbaum: ＋ Person / Hilfsbuttons; Personenseite: ＋ Neue Person anlegen aus); **Verknüpfen bestehender** Personen bleibt. Checkbox auf **Stammbaum** oberhalb der Überschrift. **Commit:** **04d443c8** ✅ GitHub
 
 **Was wir JETZT tun:** Schlusspunkt einmal an/aus testen; bei aktiv keine „Neue Person“-Buttons, bei aus wieder wie bisher.

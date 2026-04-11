@@ -398,7 +398,9 @@ export default function K2FamiliePersonPage() {
     }
     if (savePersonen(currentTenantId, withNew, { allowReduce: false })) {
       setPersonen(withNew)
-      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`)
+      navigate(`${PROJECT_ROUTES['k2-familie'].personen}/${newId}`, {
+        state: { familieZurueckZu: { id, name: person.name } },
+      })
     }
   }
 
@@ -569,14 +571,17 @@ export default function K2FamiliePersonPage() {
     )
   }
 
+  const familieZurueckZu = (location.state as { familieZurueckZu?: { id: string; name: string } } | null | undefined)
+    ?.familieZurueckZu
+
   const smallBtn = { background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.4rem', fontFamily: 'inherit' } as const
   type RelationType = 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie'
   const newPersonButtonLabels: Record<RelationType, string> = {
-    parent: '＋ Neue Person anlegen (als Elternteil)',
-    child: '＋ Neue Person anlegen (als Kind)',
-    partner: '＋ Neue Person anlegen (als Partner*in)',
-    sibling: '＋ Neue Person anlegen (als Geschwister)',
-    wahlfamilie: '＋ Neue Person anlegen (Wahlfamilie)',
+    parent: '＋ Neu als Elternteil',
+    child: '＋ Neu als Kind',
+    partner: '＋ Neu als Partner*in',
+    sibling: '＋ Neu als Geschwister',
+    wahlfamilie: '＋ Neu Wahlfamilie',
   }
   /**
    * Eltern/Kinder: volle Auswahl (naheliegend + weitere) – oft mehrere sinnvolle Personen.
@@ -592,7 +597,7 @@ export default function K2FamiliePersonPage() {
       return {
         select: (
           <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Person hinzufügen">
-            <option value="">+ Hinzufügen</option>
+            <option value="">Person wählen …</option>
             {suggested.length > 0 && (
               <optgroup label="Naheliegend (z. B. gleiche Eltern, gemeinsame Kinder)">
                 {suggested.map((p) => (
@@ -622,7 +627,7 @@ export default function K2FamiliePersonPage() {
     return {
       select: (
         <select className="field" value="" onChange={(e) => { const v = e.target.value; if (v) { addFn(v); e.target.value = ''; } }} style={{ padding: '0.35rem 0.5rem', fontSize: '0.9rem' }} aria-label="Eindeutiger Vorschlag zum Verknüpfen">
-          <option value="">+ Vorschlag</option>
+          <option value="">Vorschlag wählen …</option>
           <option value={unique.id}>{unique.name}</option>
         </select>
       ),
@@ -668,6 +673,13 @@ export default function K2FamiliePersonPage() {
         <header>
           <div>
             <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link>
+            {familieZurueckZu && (
+              <p className="meta" style={{ margin: '0.35rem 0 0' }}>
+                <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${familieZurueckZu.id}`} className="meta">
+                  ← Zurück zu {familieZurueckZu.name}
+                </Link>
+              </p>
+            )}
             <h1 style={{ marginTop: '0.5rem' }}>{person.name}</h1>
             {person.updatedAt && (
               <p className="meta" style={{ marginTop: '0.35rem', color: 'rgba(20,184,166,0.95)' }}>
@@ -815,19 +827,41 @@ export default function K2FamiliePersonPage() {
           }}
         >
           <h2>Beziehungen</h2>
-          <p className="meta" style={{ margin: '0 0 0.75rem' }}>
-            <strong>+ Hinzufügen</strong> (bzw. <strong>+ Vorschlag</strong> bei eindeutigem Treffer) verknüpft <em>bestehende</em> Personen.
+          <div
+            className="meta"
+            style={{
+              margin: '0 0 0.75rem',
+              padding: '0.55rem 0.75rem',
+              background: 'rgba(13,148,136,0.1)',
+              borderRadius: 8,
+              border: '1px solid rgba(20,184,166,0.22)',
+              lineHeight: 1.45,
+            }}
+          >
+            <strong>So geht’s:</strong> Oben im Menü eine <strong>bestehende</strong> Person wählen – oder <strong>＋ Neu …</strong> und Namen auf der neuen Seite eintragen.
             {!einstellungen.stammbaumSchlusspunkt && (
-              <> <strong>Neue Person anlegen</strong> steht direkt daneben – Name und Daten trägst du auf der neuen Personenseite ein.</>
+              <span> Verknüpfen speichert sofort.</span>
             )}
             {einstellungen.stammbaumSchlusspunkt && (
-              <> <strong>Schlusspunkt</strong> ist auf dem Stammbaum aktiv – hier werden keine neuen Personen mehr angelegt; zum Fortsetzen den Schlusspunkt dort aufheben.</>
-            )}{' '}
-            <strong>Zwei Eltern bei einem Kind:</strong> Kind zuerst bei einem Elternteil anlegen oder verknüpfen, dann die <strong>Kinderseite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil hinzufügen (z. B. Justina). <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder unter <strong>Geschwister</strong> verknüpfen.
-          </p>
-          <p className="meta" style={{ margin: '0 0 0.75rem', padding: '0.6rem 0.75rem', background: 'rgba(13,148,136,0.12)', borderRadius: 8, border: '1px solid rgba(20,184,166,0.25)' }}>
-            <strong>Kind mit Vater und Mutter:</strong> Ein neues Kind bekommt zuerst nur den Elternteil, von dessen Seite du es anlegst (z. B. nur Rupert). Den <strong>zweiten Elternteil</strong> trägst du danach ein: <strong>Christine öffnen</strong> → unter <strong>Eltern</strong> → Justina wählen – <em>oder</em> Justina öffnen → unter <strong>Kinder</strong> → Christine wählen. Erst wenn bei Christine <strong>beide</strong> Eltern in der Karte stehen, stimmt die Linie für beide. <strong>Geschwister</strong> (z. B. Andreas): dieselben Eltern in der Karte wie beim Bruder – oder unter Geschwister verknüpfen, wenn die App keinen Vorschlag zeigt.
-          </p>
+              <span> <strong>Schlusspunkt</strong> ist aktiv – keine neuen Personen; nur Verknüpfen. Aufheben auf dem Stammbaum.</span>
+            )}
+          </div>
+          <details className="meta" style={{ margin: '0 0 0.85rem', padding: '0.35rem 0' }}>
+            <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>
+              Zwei Eltern · Geschwister · Kind mit Vater und Mutter
+            </summary>
+            <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.2rem', lineHeight: 1.45 }}>
+              <li>
+                <strong>Zwei Eltern:</strong> Kind zuerst bei einem Elternteil verknüpfen oder neu anlegen. Dann die <strong>Kind-Seite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil ergänzen.
+              </li>
+              <li>
+                <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder hier unter Geschwister verknüpfen.
+              </li>
+              <li>
+                <strong>Kind mit beiden Eltern in der Grafik:</strong> Erst wenn bei dem Kind <strong>beide</strong> Eltern in der Karte stehen (von einer Seite Kind anlegen, von der anderen Seite den fehlenden Elternteil unter Eltern wählen), stimmen die Linien.
+              </li>
+            </ul>
+          </details>
           {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent')}
           {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child')}
           <div style={{ marginBottom: '1rem' }}>

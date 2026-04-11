@@ -480,7 +480,15 @@ export default function K2FamilieStammbaumPage() {
             {partnerHerkunftPerson && (
               <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
             )}
-            <div className="meta">Grafik der Familienstruktur – Klick auf eine Person öffnet ihre Seite. Unter jeder Person steht „Das bin ich“: damit identifizierst du dich (z. B. als Georg Kreinecker). Deine Partnerin steht automatisch neben dir, wenn du sie bei deiner Person unter Partner eingetragen hast; eure Kinder erscheinen unter euch, wenn sie bei dir (oder deiner Partnerin) unter Kinder eingetragen sind. Steht „Du“ in der falschen Reihe? Dann Person bearbeiten → Eltern anpassen (z. B. Vater + Mutter), dann erscheint sie in der Geschwister-Reihe.</div>
+            <p className="meta" style={{ margin: '0.25rem 0 0', lineHeight: 1.45 }}>
+              <strong>Klick</strong> auf eine Person öffnet die Seite. <strong>„Das bin ich“</strong> in der Grafik setzt dich als Bezugspunkt.
+            </p>
+            <details className="meta" style={{ margin: '0.35rem 0 0' }}>
+              <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Mehr: Partner, Kinder, Reihenfolge</summary>
+              <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
+                Partner neben dir: unter <strong>Partner*innen</strong> auf deiner Personenseite. Kinder darunter: unter <strong>Kinder</strong>. „Du“ in der falschen Reihe? <strong>Person öffnen</strong> → Eltern in der Karte anpassen.
+              </p>
+            </details>
             {einstellungen.ichBinPersonId && (
               <p style={{ margin: '0.5rem 0 0' }}>
                 <button type="button" className="btn-outline" style={{ fontSize: '0.9rem' }} onClick={() => { const e = loadEinstellungen(currentTenantId); if (saveEinstellungen(currentTenantId, { ...e, ichBinPersonId: undefined, ichBinPositionAmongSiblings: undefined })) setStammbaumRefresh((k) => k + 1); }}>Du zurücksetzen</button>
