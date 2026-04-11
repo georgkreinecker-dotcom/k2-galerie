@@ -9,6 +9,8 @@ import {
   buildStammbaumPartnerUnterSektionen,
   buildStammbaumSektionenOhneGrossfamilieElternpaar,
 } from '../utils/familieStammbaumKarten'
+import { normalizeAndDedupePersonen } from '../utils/familiePersonenNormalize'
+import { reconcileParentChildRelations } from '../utils/familieBeziehungen'
 
 function p(
   id: string,
@@ -105,6 +107,20 @@ describe('familieStammbaumKarten', () => {
     expect(klein[0]?.titel).toMatch(/^Familienzweig 1 – Georg/)
     expect(klein[1]?.titel).toMatch(/^Familienzweig 2 – Thomas/)
     expect(klein[2]?.titel).toMatch(/^Familienzweig 3 – Clemens/)
+  })
+
+  it('Großfamilie: Geschwister-Reihenfolge aus Eltern-childIds (z. B. Thomas vor Clemens), auch wenn positionAmongSiblings widerspricht', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'], { childIds: ['georg', 'thomas', 'clemens'] })
+    const f = p('f', 'Vater', ['gm', 'gv'], { childIds: ['georg', 'thomas', 'clemens'] })
+    const thomas = p('thomas', 'Thomas', ['m', 'f'], { pos: 12 })
+    const clemens = p('clemens', 'Clemens', ['m', 'f'], { pos: 11 })
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 1 })
+    const personen = [m, f, clemens, thomas, georg]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const klein = sek!.filter((s) => s.key.startsWith('kleinfamilie-'))
+    expect(klein.map((s) => s.key)).toEqual(['kleinfamilie-georg', 'kleinfamilie-thomas', 'kleinfamilie-clemens'])
   })
 
   it('Großfamilie-Sektionen: Eltern zuerst, dann Familienzweige nach Geschwisterstellung', () => {
@@ -234,6 +250,34 @@ describe('familieStammbaumKarten', () => {
     expect(restIds).not.toContain('rupert')
   })
 
+  it('Großfamilie: Lef – nach Normalize wie beim Laden (Whitespace in parentIds): eigene Zweige', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const elisabeth = p('elisabeth', 'Elisabeth', ['m', 'f'], {
+      pos: 2,
+      partners: [{ personId: 'michael', from: null, to: null }],
+    })
+    const michael = p('michael', 'Michael', [], { partners: [{ personId: 'elisabeth', from: null, to: null }] })
+    const philipp = p('philipp', 'Philipp', ['elisabeth', 'michael'], {
+      pos: 1,
+      partners: [{ personId: 'nora', from: null, to: null }],
+    })
+    const nora = p('nora', 'Nora', [], { partners: [{ personId: 'philipp', from: null, to: null }] })
+    const joshua = p('joshua', 'Joshua', ['michael ', ' elisabeth'])
+    const olivia = p('olivia', 'Olivia', ['elisabeth', 'michael'])
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 3 })
+    const roh = [m, f, elisabeth, michael, philipp, nora, joshua, olivia, georg]
+    const personen = reconcileParentChildRelations(normalizeAndDedupePersonen(roh))
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const elisabethSek = sek!.find((s) => s.key === 'kleinfamilie-elisabeth')
+    expect(elisabethSek).toBeDefined()
+    const unter = elisabethSek!.unterSektionen ?? []
+    expect(unter.some((u) => u.key === 'kind-joshua')).toBe(true)
+    expect(unter.some((u) => u.key === 'kind-olivia')).toBe(true)
+  })
+
   it('Großfamilie: Lef – Philipp & Nora, Joshua & Olivia mit beiden Eltern: eigene Zweige, nicht Weitere', () => {
     const m = p('m', 'Mutter', ['gm', 'gv'])
     const f = p('f', 'Vater', ['gm', 'gv'])
@@ -315,6 +359,38 @@ describe('familieStammbaumKarten', () => {
     expect(restIds.includes('olivia')).toBe(false)
   })
 
+  it('Organisches Wachstum: Urenkel im Familienzweig und unter demselben Kind-Block, nicht unter Weitere', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const elisabeth = p('elisabeth', 'Elisabeth', ['m', 'f'], {
+      pos: 2,
+      partners: [{ personId: 'michael', from: null, to: null }],
+    })
+    const michael = p('michael', 'Michael', [], { partners: [{ personId: 'elisabeth', from: null, to: null }] })
+    const joshua = p('joshua', 'Joshua', ['michael', 'elisabeth'])
+    const olivia = p('olivia', 'Olivia', ['michael', 'elisabeth'])
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 3 })
+    const emma = p('emma', 'Emma', ['joshua'])
+    const personen = [m, f, elisabeth, michael, joshua, olivia, georg, emma]
+
+    /** Enkel/Urenkel hängen am Großfamilie-Ast von „Ich bin“ (Geschwister-Teilbäume), nicht an getFamilienzweigPersonen ohne Geschwisterkreis. */
+    expect(getFamilienzweigPersonen(personen, 'georg', { includeSiblingCircle: false }).some((x) => x.id === 'emma')).toBe(
+      false
+    )
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    /** Großfamilie: gleicher Aufbau für alle Geschwister-Aste – Urenkel z. B. Emma beim Familienzweig der Mutter (Elisabeth), nicht unter Georgs Block. */
+    const elisabethSek = sek!.find((s) => s.key === 'kleinfamilie-elisabeth')
+    expect(elisabethSek).toBeDefined()
+    const unterElisabeth = elisabethSek!.unterSektionen ?? []
+    expect(unterElisabeth.some((u) => u.personen.some((p) => p.id === 'emma'))).toBe(true)
+    const georgSek = sek!.find((s) => s.key === 'kleinfamilie-georg')
+    expect(georgSek).toBeDefined()
+    const unterGeorg = georgSek!.unterSektionen ?? []
+    expect(unterGeorg.some((u) => u.personen.some((p) => p.id === 'emma'))).toBe(false)
+  })
+
   it('Geschwister-Ast: Kinder mit nicht-Geschwister-Elternteil zuerst in parentIds (Lef) nicht im „Weitere“-Block eines anderen Geschwisters', () => {
     const m = p('m', 'Mutter', ['gm', 'gv'])
     const f = p('f', 'Vater', ['gm', 'gv'])
@@ -339,13 +415,15 @@ describe('familieStammbaumKarten', () => {
   })
 
   it('Familienzweig: Eltern der Kinder sind im gefilterten Satz (Stammbaum-Linien zu beiden Eltern)', () => {
-    const michael = p('michael', 'Michael', [])
-    const elisabeth = p('elisabeth', 'Elisabeth', [])
-    const du = p('du', 'Du', [], { childIds: ['joshua'] })
-    const joshua = p('joshua', 'Joshua', ['michael', 'elisabeth'])
-    const personen = [du, joshua, michael, elisabeth]
+    const partner = p('partner', 'Partner', [])
+    const du = p('du', 'Du', [], {
+      childIds: ['joshua'],
+      partners: [{ personId: 'partner', from: null, to: null }],
+    })
+    const joshua = p('joshua', 'Joshua', ['du', 'partner'])
+    const personen = [du, joshua, partner]
     const zweig = getFamilienzweigPersonen(personen, 'du')
-    expect(zweig.map((x) => x.id).sort()).toEqual(['du', 'elisabeth', 'joshua', 'michael'].sort())
+    expect(zweig.map((x) => x.id).sort()).toEqual(['du', 'joshua', 'partner'].sort())
   })
 
   it('Großfamilie: Kind eines Geschwisters nur über parentIds (ohne childIds auf Eltern) liegt im Familienzweig, nicht unter Weitere', () => {

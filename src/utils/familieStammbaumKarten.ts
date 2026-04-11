@@ -8,7 +8,11 @@
  */
 
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { getBeziehungenFromKarten, getFamilienzweigPersonen } from './familieBeziehungen'
+import {
+  getBeziehungenFromKarten,
+  getFamilienzweigPersonen,
+  istDirektesKindDerWurzelLautKarten,
+} from './familieBeziehungen'
 
 function byIdMap(personen: K2FamiliePerson[]): Map<string, K2FamiliePerson> {
   const m = new Map<string, K2FamiliePerson>()
@@ -175,6 +179,20 @@ function withinGeschwisterFamilieVergleich(
   return a.name.localeCompare(b.name, 'de')
 }
 
+/** Zwei Eltern auf der Karte → sortierter Schlüssel (volle Geschwister). */
+function elternPaarKeyStrict(p: K2FamiliePerson): string | null {
+  if (p.parentIds.length < 2) return null
+  return [...p.parentIds].sort().join('|')
+}
+
+/** Gleiches Elternpaar wie Wurzel g, aber nicht g selbst → voller Geschwister (nicht „Kind“ der Wurzel). */
+function istVollesGeschwisterDerWurzel(k: K2FamiliePerson, g: K2FamiliePerson): boolean {
+  if (k.id === g.id) return false
+  const gEk = elternPaarKeyStrict(g)
+  const kEk = elternPaarKeyStrict(k)
+  return gEk !== null && gEk === kEk
+}
+
 function legacySortVergleich(a: K2FamiliePerson, b: K2FamiliePerson): number {
   const ba = getFamilieBranchKeyLegacy(a)
   const bb = getFamilieBranchKeyLegacy(b)
@@ -319,12 +337,23 @@ function istKindDerWurzelNachKarten(
   g: K2FamiliePerson,
   byId: Map<string, K2FamiliePerson>
 ): boolean {
-  if (p.parentIds.includes(g.id)) return true
-  if (p.parentIds.length !== 1) return false
-  const onlyPid = p.parentIds[0]!
-  if ((g.partners ?? []).some((pr) => pr.personId === onlyPid)) return true
-  const onlyP = byId.get(onlyPid)
-  if (onlyP && (onlyP.partners ?? []).some((pr) => pr.personId === g.id)) return true
+  const gId = g.id.trim()
+  const parentIds = (p.parentIds ?? []).map((x) => String(x).trim()).filter(Boolean)
+  if (parentIds.includes(gId)) return true
+  /** Zwei Eltern: exakt das Kern-Paar Wurzel + einer der Partner (Reihenfolge egal). */
+  if (parentIds.length >= 2) {
+    const pKey = [...parentIds].sort().join('|')
+    for (const pr of g.partners ?? []) {
+      const pid = pr.personId.trim()
+      if (!pid) continue
+      if ([gId, pid].sort().join('|') === pKey) return true
+    }
+  }
+  if (parentIds.length !== 1) return false
+  const onlyPid = parentIds[0]!
+  if ((g.partners ?? []).some((pr) => pr.personId.trim() === onlyPid)) return true
+  const onlyP = byId.get(onlyPid) ?? byId.get(onlyPid.trim())
+  if (onlyP && (onlyP.partners ?? []).some((pr) => pr.personId.trim() === gId)) return true
   return false
 }
 
@@ -339,15 +368,36 @@ function getKinderFuerStammbaumUnterzweige(
 ): K2FamiliePerson[] {
   const byId = byIdMap(personen)
   const merged = new Map<string, K2FamiliePerson>()
+  /** Explizit auf der Wurzel-Karte genannte Kinder-IDs (trimmed). */
+  const explicitChildIds = new Set(
+    (g.childIds ?? []).map((x) => String(x).trim()).filter(Boolean)
+  )
   for (const k of getBeziehungenFromKarten(personen, g.id).kinder) {
-    if (kleinIds.has(k.id)) merged.set(k.id, k)
+    const parentLen = (k.parentIds ?? []).map((x) => String(x).trim()).filter(Boolean).length
+    if (!istDirektesKindDerWurzelLautKarten(k, g.id)) continue
+    if (parentLen > 0 && !istKindDerWurzelNachKarten(k, g, byId)) continue
+    merged.set(k.id, k)
   }
   for (const p of personen) {
-    if (!kleinIds.has(p.id)) continue
+    if (!kleinIds.has(p.id) && !explicitChildIds.has(p.id)) continue
     if (!istKindDerWurzelNachKarten(p, g, byId)) continue
     if (!merged.has(p.id)) merged.set(p.id, p)
   }
-  return [...merged.values()].sort((a, b) => {
+  /** Volle Geschwister (gleiches Elternpaar wie Wurzel g): eigene Teil-Zweige, nicht nur „Weitere“. */
+  const gEk = elternPaarKeyStrict(g)
+  if (gEk) {
+    for (const p of personen) {
+      if (p.id === g.id) continue
+      if (!kleinIds.has(p.id)) continue
+      if (elternPaarKeyStrict(p) !== gEk) continue
+      if (!merged.has(p.id)) merged.set(p.id, p)
+    }
+  }
+  /** Nur Kinder, die im Zweig vorkommen ODER ausdrücklich in childIds der Wurzel stehen. */
+  const out = [...merged.values()].filter(
+    (k) => kleinIds.has(k.id) || explicitChildIds.has(k.id)
+  )
+  return out.sort((a, b) => {
     const pa = a.positionAmongSiblings ?? 9999
     const pb = b.positionAmongSiblings ?? 9999
     if (pa !== pb) return pa - pb
@@ -355,10 +405,92 @@ function getKinderFuerStammbaumUnterzweige(
   })
 }
 
+/** Kleinster Index in `childIds` eines Elternteils (0 = zuerst auf der Karte). Nicht gefunden → 999999. */
+function reihenfolgeKindInElternChildIds(p: K2FamiliePerson, eltern: K2FamiliePerson[]): number {
+  let min = 999999
+  for (const e of eltern) {
+    const ids = e.childIds ?? []
+    const i = ids.indexOf(p.id)
+    if (i >= 0 && i < min) min = i
+  }
+  return min
+}
+
+/**
+ * Reihenfolge: wenn `elternFuerKindReihenfolge` gesetzt ist und beide in `childIds` vorkommen → **diese**
+ * Reihenfolge zuerst (Quelle: Elternkarte). Sonst `positionAmongSiblings`, dann Geburtsdatum, dann Name.
+ */
+function compareGeschwisterNachKarten(
+  a: K2FamiliePerson,
+  b: K2FamiliePerson,
+  elternFuerKindReihenfolge?: K2FamiliePerson[]
+): number {
+  const ga = (a.geburtsdatum ?? '').trim()
+  const gb = (b.geburtsdatum ?? '').trim()
+  const pa = a.positionAmongSiblings ?? 9999
+  const pb = b.positionAmongSiblings ?? 9999
+
+  if (elternFuerKindReihenfolge && elternFuerKindReihenfolge.length > 0) {
+    const oa = reihenfolgeKindInElternChildIds(a, elternFuerKindReihenfolge)
+    const ob = reihenfolgeKindInElternChildIds(b, elternFuerKindReihenfolge)
+    const knownA = oa < 999999
+    const knownB = ob < 999999
+    if (knownA && knownB && oa !== ob) return oa - ob
+    if (knownA && !knownB) return -1
+    if (!knownA && knownB) return 1
+  }
+
+  if (pa !== pb) return pa - pb
+  if (ga && gb && ga !== gb) return ga.localeCompare(gb)
+  if (ga && !gb) return -1
+  if (!ga && gb) return 1
+  return a.name.localeCompare(b.name, 'de')
+}
+
+/**
+ * Organisches Wachstum (Doku: K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md): dasselbe Muster auf jeder Ebene,
+ * ohne feste Tiefe – nur unterhalb dieses Teil-Zweigs (Elternbezug im **Block**, nicht globaler Kern z. B. Georg).
+ */
+function expandiereNachkommenBlockImZweig(
+  block: K2FamiliePerson[],
+  personen: K2FamiliePerson[],
+  kleinIds: Set<string>,
+  assigned: Set<string>,
+  byId: Map<string, K2FamiliePerson>
+): void {
+  const inBlock = new Set(block.map((p) => p.id))
+  let changed = true
+  while (changed) {
+    changed = false
+    const candidates = personen
+      .filter((p) => kleinIds.has(p.id) && !assigned.has(p.id))
+      .filter((p) =>
+        (p.parentIds ?? []).map((x) => String(x).trim()).some((pid) => inBlock.has(pid))
+      )
+      .sort(compareGeschwisterNachKarten)
+    for (const p of candidates) {
+      if (assigned.has(p.id)) continue
+      block.push(p)
+      assigned.add(p.id)
+      inBlock.add(p.id)
+      changed = true
+      for (const pr of p.partners ?? []) {
+        const q = byId.get(pr.personId)
+        if (q && kleinIds.has(q.id) && !assigned.has(q.id)) {
+          block.push(q)
+          assigned.add(q.id)
+          inBlock.add(q.id)
+        }
+      }
+    }
+  }
+}
+
 /**
  * Teilt einen Familienzweig (Liste aus getFamilienzweigPersonen) in erkennbare Partner-Zweige:
- * zuerst Kern = Wurzelperson + deren Partner (laut Karte), dann pro Kind ein Block mit Kind + Partnern.
- * Nur Personen aus personenImZweig; Quelle: partners, childIds und parentIds der Kinder (eine Wahrheit).
+ * zuerst Kern = Wurzelperson + deren Partner (laut Karte), dann pro Kind ein Block mit Kind + Partnern
+ * und **allen weiteren Generationen** im Zweig (Nachkommen über parentIds, Partner pro Person).
+ * Nur Personen aus personenImZweig; Quelle: partners, parentIds (eine Wahrheit).
  */
 export function buildStammbaumPartnerUnterSektionen(
   personen: K2FamiliePerson[],
@@ -415,14 +547,42 @@ export function buildStammbaumPartnerUnterSektionen(
         assigned.add(q.id)
       }
     }
+
+    const partnerLabelStr = (k.partners ?? [])
+      .map((pr) => byId.get(pr.personId))
+      .filter((q): q is K2FamiliePerson => q !== undefined && kleinIds.has(q.id))
+    const titelPartner =
+      partnerLabelStr.length > 0 ? partnerLabelStr.map((p) => p.name).join(', ') : ''
+
+    const kindesKinder = personen
+      .filter(
+        (p) =>
+          kleinIds.has(p.id) &&
+          (p.parentIds ?? []).map((x) => String(x).trim()).includes(k.id)
+      )
+      .sort((x, y) => compareGeschwisterNachKarten(x, y, [k]))
+    for (const e of kindesKinder) {
+      if (assigned.has(e.id)) continue
+      block.push(e)
+      assigned.add(e.id)
+      for (const pr of e.partners ?? []) {
+        const q = byId.get(pr.personId)
+        if (q && kleinIds.has(q.id) && !assigned.has(q.id)) {
+          block.push(q)
+          assigned.add(q.id)
+        }
+      }
+    }
+
+    expandiereNachkommenBlockImZweig(block, personen, kleinIds, assigned, byId)
+
     if (block.length === 0) continue
 
-    const partnerDerKind = block.filter((p) => p.id !== k.id)
-    const partnerLabel =
-      partnerDerKind.length > 0 ? partnerDerKind.map((p) => p.name).join(', ') : ''
+    /** „Zweig“ = eigene Kinder der Wurzel; „Geschwister“ = volle Geschwister (sonst wirkt es wie „je Kind“). */
+    const astLabel = istVollesGeschwisterDerWurzel(k, g) ? 'Geschwister' : 'Zweig'
     out.push({
       key: `kind-${k.id}`,
-      titel: partnerLabel ? `Zweig: ${k.name} & ${partnerLabel}` : `Zweig: ${k.name}`,
+      titel: titelPartner ? `${astLabel}: ${k.name} & ${titelPartner}` : `${astLabel}: ${k.name}`,
       untertitel: `${block.length} Person${block.length === 1 ? '' : 'en'}`,
       personen: block,
     })
@@ -459,22 +619,6 @@ export interface StammbaumKartenSektion {
 }
 
 /**
- * Bei gleicher `positionAmongSiblings`: zuerst **Geburtsdatum** (älter zuerst), dann Name.
- * Nur Name wäre falsch (z. B. Clemens vor Thomas alphabetisch, obwohl Thomas der Ältere sein kann).
- */
-function compareGeschwisterNachKarten(a: K2FamiliePerson, b: K2FamiliePerson): number {
-  const pa = a.positionAmongSiblings ?? 9999
-  const pb = b.positionAmongSiblings ?? 9999
-  if (pa !== pb) return pa - pb
-  const ga = (a.geburtsdatum ?? '').trim()
-  const gb = (b.geburtsdatum ?? '').trim()
-  if (ga && gb && ga !== gb) return ga.localeCompare(gb)
-  if (ga && !gb) return -1
-  if (!ga && gb) return 1
-  return a.name.localeCompare(b.name, 'de')
-}
-
-/**
  * Großfamilie: Eltern, dann **je Geschwister ein eigener** Familienzweig-Block (Ast mit Kern, Partner, Kindern …),
  * nummeriert in Geschwister-Reihenfolge. Schlüssel pro Ast: `kleinfamilie-${geschwisterId}` (Sprungleiste / „Nur mein
  * Familienzweig“ öffnet den Ast von „Ich bin“). Zuletzt „Weitere“.
@@ -490,6 +634,7 @@ export function buildGrossfamilieStammbaumSektionen(
   const byId = byIdMap(personen)
   const elternKeyStrict = [...ich.parentIds].sort().join('|')
   const multiElternteil = getElternteilMitMehrerenEhen(ich, personen)
+  const elternPersonen = buildElternPersonenListe(ich, byId)
 
   const geschwister = personen
     .filter((p) => {
@@ -497,15 +642,13 @@ export function buildGrossfamilieStammbaumSektionen(
       if (multiElternteil) return p.parentIds.includes(multiElternteil)
       return [...p.parentIds].sort().join('|') === elternKeyStrict
     })
-    .sort(compareGeschwisterNachKarten)
+    .sort((a, b) => compareGeschwisterNachKarten(a, b, elternPersonen))
 
   /** Gleiche Logik wie Sortierung/Farben: Kinder über parentIds, Partner ohne Eltern-Kette, … */
   const anchorByPersonId = computeGeschwisterFamilieAnchors(personen, ichBinPersonId)
 
   const sections: StammbaumKartenSektion[] = []
   let bi = 0
-
-  const elternPersonen = buildElternPersonenListe(ich, byId)
   /** Dieselben Karten stehen oben unter „Eltern“ – nicht in jedem Geschwister-Ast unter „Weitere“ wiederholen. */
   const elternIdSet = new Set(elternPersonen.map((p) => p.id))
 
@@ -533,13 +676,24 @@ export function buildGrossfamilieStammbaumSektionen(
       if (ids.has(p.id)) continue
       if (istKindDerWurzelNachKarten(p, g, byId)) ids.add(p.id)
     }
+    /** Explizit in childIds der Wurzel – nur wenn Kinderkarte zur Wurzel passt (keine zwei anderen Eltern ohne Wurzel). */
+    for (const cid of g.childIds ?? []) {
+      const t = String(cid ?? '').trim()
+      const child = t ? byId.get(t) : undefined
+      if (!child) continue
+      const parentLen = (child.parentIds ?? []).map((x) => String(x).trim()).filter(Boolean).length
+      if (!istDirektesKindDerWurzelLautKarten(child, g.id)) continue
+      if (parentLen > 0 && !istKindDerWurzelNachKarten(child, g, byId)) continue
+      ids.add(t)
+    }
+    /** Kein Sonderfall für „Ich bin“: jeder Geschwister-Ast nutzt dieselbe schmale Logik (kein Doppel-Mix). */
     const roh = personen.filter((p) => ids.has(p.id))
     const rohOhneDoppelEltern = roh.filter((p) => !elternIdSet.has(p.id))
     const klein = buildStammbaumKartenState(rohOhneDoppelEltern, g.id).sortedPersonen
     const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
     const teile =
       unterSektionen.length > 1
-        ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+        ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Familienast)`
         : ''
     const titel =
       geschwister.length === 1
@@ -587,7 +741,7 @@ export function buildStammbaumSektionenOhneGrossfamilieElternpaar(
   const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, ichBinPersonId, sorted)
   const teile =
     unterSektionen.length > 1
-      ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+      ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Familienast)`
       : ''
   return [
     {
