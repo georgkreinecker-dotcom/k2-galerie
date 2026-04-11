@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie: Schlusspunkt Stammbaum** – Einstellung `stammbaumSchlusspunkt` in `k2-familie`-Einstellungen: **keine neuen Personen** mehr (Stammbaum: ＋ Person / Hilfsbuttons; Personenseite: ＋ Neue Person anlegen aus); **Verknüpfen bestehender** Personen bleibt. Checkbox auf **Stammbaum** oberhalb der Überschrift. **Commit:** **04d443c8** ✅ GitHub
+
+**Was wir JETZT tun:** Schlusspunkt einmal an/aus testen; bei aktiv keine „Neue Person“-Buttons, bei aus wieder wie bisher.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Referenz „Kleinfamilie“ + N Familienzweige (verbindlich)** – Aus Referenzgrafik festgehalten: **Paar-Mitte** → Senkrechte → **T‑Stück** nur über die **eigene** Geschwister-Spanne (kein Cousin-Sammelbalken); **13** (oder beliebig viele) **Familienzweige** = **dieselbe** Grundstruktur, nur **größer/kleiner**. **Doku** `docs/K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md` (neuer Abschnitt); Verweise in `FamilyTreeGraph.tsx`. Build grün (Session). **Commit:** **de65275a** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum-Grafik mit echten Daten kurz gegen Referenz prüfen (Kinder unter Elternpaar-Mitte, keine falsche Cousin-Linie).
