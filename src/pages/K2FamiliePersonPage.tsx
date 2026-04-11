@@ -4,7 +4,7 @@
  */
 
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup } from '../utils/familieStorage'
@@ -16,6 +16,46 @@ import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/famili
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
+}
+
+/** Anzeige „Zuletzt gespeichert“ (lokal de-AT). */
+function formatZuletztGespeichert(iso?: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  return d.toLocaleString('de-AT', { dateStyle: 'short', timeStyle: 'short' })
+}
+
+/** Gleiche Logik wie `save()` – true wenn Formular von den gespeicherten Stammdaten abweicht. */
+function computeStammdatenDirty(
+  person: K2FamiliePerson,
+  f: {
+    name: string
+    geburtsdatum: string
+    maedchenname: string
+    shortText: string
+    verstorben: boolean
+    verstorbenAm: string
+    positionAmongSiblingsInput: string
+  }
+): boolean {
+  const effName = f.name.trim() || person.name
+  if (effName !== person.name) return true
+  const gdNorm = normalizeFamilieDatum(f.geburtsdatum)
+  const savedGd = person.geburtsdatum?.slice(0, 10) ?? ''
+  if ((gdNorm ?? '') !== savedGd) return true
+  const maed = f.maedchenname.trim() || undefined
+  if ((person.maedchenname ?? undefined) !== maed) return true
+  const st = f.shortText.trim() || undefined
+  if ((person.shortText ?? undefined) !== st) return true
+  if (f.verstorben !== (person.verstorben === true)) return true
+  const pendingVs = f.verstorben && f.verstorbenAm.trim() ? normalizeFamilieDatum(f.verstorbenAm) : undefined
+  const savedVs = person.verstorbenAm?.slice(0, 10) ?? ''
+  if ((pendingVs ?? '') !== (savedVs || '')) return true
+  const posNum = f.positionAmongSiblingsInput.trim() === '' ? undefined : parseInt(f.positionAmongSiblingsInput.trim(), 10)
+  const pos = posNum != null && !Number.isNaN(posNum) && posNum >= 1 ? posNum : undefined
+  if (pos !== (person.positionAmongSiblings ?? undefined)) return true
+  return false
 }
 
 export default function K2FamiliePersonPage() {
@@ -73,6 +113,32 @@ export default function K2FamiliePersonPage() {
       if (person.name === 'Neue Person') setEdit(true)
     }
   }, [person])
+
+  const stammdatenDirty = useMemo(
+    () =>
+      !person || !edit
+        ? false
+        : computeStammdatenDirty(person, {
+            name,
+            geburtsdatum,
+            maedchenname,
+            shortText,
+            verstorben,
+            verstorbenAm,
+            positionAmongSiblingsInput,
+          }),
+    [person, edit, name, geburtsdatum, maedchenname, shortText, verstorben, verstorbenAm, positionAmongSiblingsInput]
+  )
+
+  useEffect(() => {
+    if (!stammdatenDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [stammdatenDirty])
 
   const save = () => {
     if (!person) return
@@ -579,6 +645,11 @@ export default function K2FamiliePersonPage() {
           <div>
             <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link>
             <h1 style={{ marginTop: '0.5rem' }}>{person.name}</h1>
+            {person.updatedAt && (
+              <p className="meta" style={{ marginTop: '0.35rem', color: 'rgba(20,184,166,0.95)' }}>
+                Zuletzt gespeichert: {formatZuletztGespeichert(person.updatedAt)}
+              </p>
+            )}
             {person.verstorben && <div className="meta" style={{ marginTop: '0.25rem' }}>† {person.verstorbenAm || '–'}</div>}
             {person.shortText && <div className="meta" style={{ marginTop: '0.25rem' }}>{person.shortText}</div>}
           </div>
@@ -667,6 +738,31 @@ export default function K2FamiliePersonPage() {
                   />
                   <span className="meta" style={{ marginLeft: '0.5rem' }}>Für die Reihenfolge im Stammbaum (1 = erster, 7 = siebter, …)</span>
                 </div>
+                <div
+                  role="status"
+                  aria-live="polite"
+                  style={{
+                    marginTop: '0.75rem',
+                    padding: '0.55rem 0.85rem',
+                    borderRadius: 8,
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    ...(stammdatenDirty
+                      ? {
+                          background: 'rgba(234, 88, 12, 0.22)',
+                          color: '#ffedd5',
+                          border: '1px solid rgba(251, 146, 60, 0.65)',
+                        }
+                      : {
+                          background: 'rgba(22, 163, 74, 0.18)',
+                          color: '#dcfce7',
+                          border: '1px solid rgba(74, 222, 128, 0.5)',
+                        }),
+                  }}
+                >
+                  {stammdatenDirty ? '⚠ Nicht gespeichert – auf Speichern tippen' : '✓ Keine offenen Änderungen'}
+                </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
                   <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); }}>Abbrechen</button>
@@ -674,6 +770,9 @@ export default function K2FamiliePersonPage() {
               </form>
             ) : (
               <>
+                <p className="meta" style={{ margin: '0 0 0.75rem', color: 'rgba(226,232,240,0.9)' }}>
+                  Stammdaten (Name, Daten …) werden erst mit <strong>Speichern</strong> sicher. Beziehungen unten speichern sich beim Verknüpfen sofort.
+                </p>
                 <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
               </>
             )}
