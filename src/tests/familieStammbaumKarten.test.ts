@@ -205,4 +205,42 @@ describe('familieStammbaumKarten', () => {
     const zweig = getFamilienzweigPersonen(personen, 'du')
     expect(zweig.map((x) => x.id).sort()).toEqual(['du', 'elisabeth', 'joshua', 'michael'].sort())
   })
+
+  it('Großfamilie: Kind eines Geschwisters nur über parentIds (ohne childIds auf Eltern) liegt im Familienzweig, nicht unter Weitere', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const peter = p('peter', 'Peter', ['m', 'f'], {
+      pos: 2,
+      partners: [{ personId: 'elisabeth', from: null, to: null }],
+    })
+    const elisabeth = p('elisabeth', 'Elisabeth', [], { partners: [{ personId: 'peter', from: null, to: null }] })
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 3 })
+    const joshua = p('joshua', 'Joshua', ['peter', 'elisabeth'])
+    const personen = [m, f, peter, elisabeth, georg, joshua]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const weitereIds = sek!.find((s) => s.key === 'weitere')?.personen.map((x) => x.id) ?? []
+    expect(weitereIds.includes('joshua')).toBe(false)
+    const peterZweig = sek!.find((s) => s.key === 'kleinfamilie-peter')
+    expect(peterZweig?.personen.map((x) => x.id)).toContain('joshua')
+  })
+
+  it('Großfamilie: Partner nur auf einer Karte (Ehefrau/Ehemann) liegt im Familienzweig, nicht unter Weitere', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const rupert = p('rupert', 'Rupert', ['m', 'f'], { pos: 1, partners: [] })
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 3 })
+    const agnes = p('agnes', 'Agnes', [], {
+      partners: [{ personId: 'rupert', from: null, to: null }],
+    })
+    const personen = [m, f, rupert, georg, agnes]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const weitereIdsA = sek!.find((s) => s.key === 'weitere')?.personen.map((x) => x.id) ?? []
+    expect(weitereIdsA.includes('agnes')).toBe(false)
+    const rupertZweig = sek!.find((s) => s.key === 'kleinfamilie-rupert')
+    expect(rupertZweig?.personen.map((x) => x.id)).toContain('agnes')
+  })
 })

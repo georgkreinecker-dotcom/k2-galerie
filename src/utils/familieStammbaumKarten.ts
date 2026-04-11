@@ -194,14 +194,13 @@ export interface StammbaumKartenState {
 }
 
 /**
- * Baut sortierte Liste + Zweig-Schlüssel.
- * Mit ichBinPersonId: Geschwisterfamilien nach positionAmongSiblings des Geschwisters (Ast 1 zuerst),
- * innerhalb Ast: Geschwisterperson → Partner → übrige nach Geschwisterstellung/Datum.
+ * Derselbe Anker wie bei Sortierung/Farben: Abstieg zu einem Geschwister von „Ich bin“,
+ * plus Partner-Propagation (Ehefrau/Ehemann am gleichen Ast ohne gemeinsame Eltern in den Karten).
  */
-export function buildStammbaumKartenState(
+export function computeGeschwisterFamilieAnchors(
   personen: K2FamiliePerson[],
-  ichBinPersonId?: string
-): StammbaumKartenState {
+  ichBinPersonId: string | undefined
+): Map<string, string | null> {
   const byId = byIdMap(personen)
   const elternKey = getElternKeyVonIchBin(personen, ichBinPersonId)
   const geschwisterSet = buildGeschwisterSetFuerIch(personen, ichBinPersonId)
@@ -218,6 +217,20 @@ export function buildStammbaumKartenState(
   if (elternKey && geschwisterSet.size > 0) {
     verknuepfePartnerAst(personen, anchorByPersonId)
   }
+  return anchorByPersonId
+}
+
+/**
+ * Baut sortierte Liste + Zweig-Schlüssel.
+ * Mit ichBinPersonId: Geschwisterfamilien nach positionAmongSiblings des Geschwisters (Ast 1 zuerst),
+ * innerhalb Ast: Geschwisterperson → Partner → übrige nach Geschwisterstellung/Datum.
+ */
+export function buildStammbaumKartenState(
+  personen: K2FamiliePerson[],
+  ichBinPersonId?: string
+): StammbaumKartenState {
+  const byId = byIdMap(personen)
+  const anchorByPersonId = computeGeschwisterFamilieAnchors(personen, ichBinPersonId)
 
   const getBranchKey = (p: K2FamiliePerson): string => {
     const anchor = anchorByPersonId.get(p.id)
@@ -440,6 +453,9 @@ export function buildGrossfamilieStammbaumSektionen(
     })
     .sort(compareGeschwisterNachKarten)
 
+  /** Gleiche Logik wie Sortierung/Farben: Kinder über parentIds, Partner ohne Eltern-Kette, … */
+  const anchorByPersonId = computeGeschwisterFamilieAnchors(personen, ichBinPersonId)
+
   const sections: StammbaumKartenSektion[] = []
   let bi = 0
 
@@ -458,7 +474,12 @@ export function buildGrossfamilieStammbaumSektionen(
   }
 
   geschwister.forEach((g, geschwisterIndex) => {
-    const roh = getFamilienzweigPersonen(personen, g.id)
+    const fromFam = getFamilienzweigPersonen(personen, g.id)
+    const ids = new Set(fromFam.map((x) => x.id))
+    for (const p of personen) {
+      if (anchorByPersonId.get(p.id) === g.id) ids.add(p.id)
+    }
+    const roh = personen.filter((p) => ids.has(p.id))
     const klein = buildStammbaumKartenState(roh, g.id).sortedPersonen
     const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
     const posLabel = String(geschwisterIndex + 1)
@@ -483,7 +504,8 @@ export function buildGrossfamilieStammbaumSektionen(
     sections.push({
       key: 'weitere',
       titel: 'Weitere Personen',
-      untertitel: 'z. B. Großeltern – keinem Familienzweig zugeordnet',
+      untertitel:
+        'nicht in einem Geschwister-Familienzweig – z. B. Großeltern, entfernte Verwandte oder Platzhalter',
       personen: sorted,
       branchIndex: bi++,
     })
