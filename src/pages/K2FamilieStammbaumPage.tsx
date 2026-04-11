@@ -444,6 +444,38 @@ export default function K2FamilieStammbaumPage() {
               <button type="button" className="btn" onClick={saveFamilyDisplayName}>Speichern</button>
               {familyNameSaved && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Gespeichert</span>}
             </div>
+            {personen.length > 0 && (
+              <div
+                className="familie-schlusspunkt"
+                style={{
+                  marginBottom: '0.75rem',
+                  padding: '0.6rem 0.85rem',
+                  borderRadius: 10,
+                  border: einstellungen.stammbaumSchlusspunkt ? '1px solid rgba(20,184,166,0.55)' : '1px solid rgba(148,163,184,0.35)',
+                  background: einstellungen.stammbaumSchlusspunkt ? 'rgba(13,148,136,0.14)' : 'rgba(15,23,42,0.35)',
+                  maxWidth: '42rem',
+                }}
+              >
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', cursor: 'pointer', margin: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={!!einstellungen.stammbaumSchlusspunkt}
+                    onChange={(e) => {
+                      const next = !!e.target.checked
+                      const e0 = loadEinstellungen(currentTenantId)
+                      if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setStammbaumRefresh((k) => k + 1)
+                    }}
+                    aria-describedby="familie-schlusspunkt-hilfe"
+                  />
+                  <span>
+                    <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Schlusspunkt</strong>
+                    <span className="meta" style={{ display: 'block', marginTop: '0.2rem', lineHeight: 1.45 }} id="familie-schlusspunkt-hilfe">
+                      Stammbaum steht – vorerst <strong>keine neuen Personen</strong> mehr anlegen (Buttons dafür aus). Bearbeiten und <strong>bestehende</strong> Personen verknüpfen geht weiter. Zum Anlegen einer neuen Person: Häkchen wieder aus.
+                    </span>
+                  </span>
+                </label>
+              </div>
+            )}
             <h1>Stammbaum</h1>
             {partnerHerkunftPerson && (
               <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
@@ -534,6 +566,17 @@ export default function K2FamilieStammbaumPage() {
               </>
             )}
           </div>
+          {personen.length > 0 && (
+            <p className="meta" style={{ margin: '0 0 0.6rem', fontSize: '0.85rem', lineHeight: 1.4 }}>
+              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '2px dashed rgba(20,184,166,0.75)', verticalAlign: 'middle', marginRight: 6 }} />
+              Partnerschaft
+              <span style={{ margin: '0 0.75rem' }} aria-hidden>
+                ·
+              </span>
+              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '1.5px solid rgba(20,184,166,0.55)', verticalAlign: 'middle', marginRight: 6 }} />
+              Eltern–Kind
+            </p>
+          )}
           {personen.length > 0 ? (
             <FamilyTreeGraph
               personen={personenForGraph}
@@ -687,7 +730,9 @@ export default function K2FamilieStammbaumPage() {
             <p className="meta" style={{ margin: 0 }}>Du und Partner, Kinder unten, Geschwister oben, Vater und Mütter – einmal die Struktur festlegen. Fehlende Personen kannst du später jederzeit einfügen.</p>
             <div style={{ marginTop: '1rem' }}>
               <Link to={PROJECT_ROUTES['k2-familie'].grundstruktur} className="btn" style={{ marginRight: '0.75rem' }}>Grundstruktur anlegen</Link>
-              <button type="button" className="btn-outline" onClick={addPerson}>＋ Einzelne Person hinzufügen</button>
+              {!einstellungen.stammbaumSchlusspunkt && (
+                <button type="button" className="btn-outline" onClick={addPerson}>＋ Einzelne Person hinzufügen</button>
+              )}
             </div>
           </div>
         )}
@@ -1242,46 +1287,59 @@ export default function K2FamilieStammbaumPage() {
 
         {personen.length > 0 && (
           <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
-            <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
-            {einstellungen.ichBinPersonId && (
+            {!einstellungen.stammbaumSchlusspunkt && (
               <>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  title="Fügt Rupert, Notburga, Anna und Maria mit denselben Eltern wie du ein – für vier Familienzweige im Stammbaum (erste Ehe Anna Stöbich)."
-                  onClick={() => {
-                    const r = ensureErsteEheVierGeschwister(personen, einstellungen.ichBinPersonId!)
-                    if (r.angelegt === 0) {
-                      setErsteEheMsg(r.meldung)
-                      setTimeout(() => setErsteEheMsg(''), 6000)
-                      return
-                    }
-                    if (savePersonen(currentTenantId, r.personen, { allowReduce: false })) {
-                      setStammbaumRefresh((k) => k + 1)
-                      setErsteEheMsg(r.meldung)
-                      setTimeout(() => setErsteEheMsg(''), 8000)
-                    }
-                  }}
-                >
-                  Erste Ehe: 4 Geschwister (Rupert, Notburga, Anna, Maria)
-                </button>
-                <button
-                  type="button"
-                  className="btn-outline"
-                  onClick={() => {
-                    const next = addPartnersForSiblingsExceptMaria(personen, einstellungen.ichBinPersonId!)
-                    if (savePersonen(currentTenantId, next, { allowReduce: false })) {
-                      setStammbaumRefresh((k) => k + 1)
-                      setPartnersAddedMsg(true)
-                      setTimeout(() => setPartnersAddedMsg(false), 3000)
-                    }
-                  }}
-                >
-                  Partner für alle Geschwister (außer Maria) einfügen
-                </button>
-                {ersteEheMsg && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)', maxWidth: 420 }}>{ersteEheMsg}</span>}
-                {partnersAddedMsg && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Partner ergänzt (Rupert: 1. Frau verstorben, 2. Frau; Gisela: Mann verstorben)</span>}
+                <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
+                {einstellungen.ichBinPersonId && (
+                  <>
+                    <button
+                      type="button"
+                      className="btn-outline"
+                      title="Fügt Rupert, Notburga, Anna und Maria mit denselben Eltern wie du ein – für vier Familienzweige im Stammbaum (erste Ehe Anna Stöbich)."
+                      onClick={() => {
+                        const r = ensureErsteEheVierGeschwister(personen, einstellungen.ichBinPersonId!)
+                        if (r.angelegt === 0) {
+                          setErsteEheMsg(r.meldung)
+                          setTimeout(() => setErsteEheMsg(''), 6000)
+                          return
+                        }
+                        if (savePersonen(currentTenantId, r.personen, { allowReduce: false })) {
+                          setStammbaumRefresh((k) => k + 1)
+                          setErsteEheMsg(r.meldung)
+                          setTimeout(() => setErsteEheMsg(''), 8000)
+                        }
+                      }}
+                    >
+                      Erste Ehe: 4 Geschwister (Rupert, Notburga, Anna, Maria)
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-outline"
+                      onClick={() => {
+                        const next = addPartnersForSiblingsExceptMaria(personen, einstellungen.ichBinPersonId!)
+                        if (savePersonen(currentTenantId, next, { allowReduce: false })) {
+                          setStammbaumRefresh((k) => k + 1)
+                          setPartnersAddedMsg(true)
+                          setTimeout(() => setPartnersAddedMsg(false), 3000)
+                        }
+                      }}
+                    >
+                      Partner für alle Geschwister (außer Maria) einfügen
+                    </button>
+                  </>
+                )}
               </>
+            )}
+            {einstellungen.stammbaumSchlusspunkt && (
+              <p className="meta" style={{ margin: 0, maxWidth: '40rem', color: 'rgba(20,184,166,0.95)' }}>
+                ✓ Schlusspunkt aktiv – hier werden keine neuen Personen mehr angelegt. Bearbeiten und Verknüpfen auf den Personenseiten bleibt möglich.
+              </p>
+            )}
+            {!einstellungen.stammbaumSchlusspunkt && ersteEheMsg && (
+              <span className="meta" style={{ color: 'rgba(20,184,166,0.95)', maxWidth: 420 }}>{ersteEheMsg}</span>
+            )}
+            {!einstellungen.stammbaumSchlusspunkt && partnersAddedMsg && (
+              <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Partner ergänzt (Rupert: 1. Frau verstorben, 2. Frau; Gisela: Mann verstorben)</span>
             )}
           </div>
         )}

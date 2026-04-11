@@ -3,11 +3,11 @@
  * Route: /projects/k2-familie/personen/:id
  */
 
-import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
-import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup } from '../utils/familieStorage'
+import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup, loadEinstellungen } from '../utils/familieStorage'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
@@ -61,8 +61,10 @@ function computeStammdatenDirty(
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId } = useFamilieTenant()
+  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key])
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
   const [edit, setEdit] = useState(false)
@@ -337,6 +339,7 @@ export default function K2FamiliePersonPage() {
    */
   const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie') => {
     if (!id || !person) return
+    if (einstellungen.stammbaumSchlusspunkt) return
     const newId = generatePersonId()
     const now = new Date().toISOString()
     const empty: K2FamiliePerson = {
@@ -646,9 +649,11 @@ export default function K2FamiliePersonPage() {
             </span>
           ))}
           {select}
-          <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink(relationType)} style={newPersonBtnStyle}>
-            {newPersonButtonLabels[relationType]}
-          </button>
+          {!einstellungen.stammbaumSchlusspunkt && (
+            <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink(relationType)} style={newPersonBtnStyle}>
+              {newPersonButtonLabels[relationType]}
+            </button>
+          )}
         </div>
       </div>
     )
@@ -811,7 +816,14 @@ export default function K2FamiliePersonPage() {
         >
           <h2>Beziehungen</h2>
           <p className="meta" style={{ margin: '0 0 0.75rem' }}>
-            <strong>+ Hinzufügen</strong> (bzw. <strong>+ Vorschlag</strong> bei eindeutigem Treffer) verknüpft <em>bestehende</em> Personen. <strong>Neue Person anlegen</strong> steht <em>immer</em> direkt daneben – Name und Daten trägst du auf der neuen Personenseite ein. <strong>Zwei Eltern bei einem Kind:</strong> Kind zuerst bei einem Elternteil anlegen oder verknüpfen, dann die <strong>Kinderseite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil hinzufügen (z. B. Justina). <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder unter <strong>Geschwister</strong> verknüpfen.
+            <strong>+ Hinzufügen</strong> (bzw. <strong>+ Vorschlag</strong> bei eindeutigem Treffer) verknüpft <em>bestehende</em> Personen.
+            {!einstellungen.stammbaumSchlusspunkt && (
+              <> <strong>Neue Person anlegen</strong> steht direkt daneben – Name und Daten trägst du auf der neuen Personenseite ein.</>
+            )}
+            {einstellungen.stammbaumSchlusspunkt && (
+              <> <strong>Schlusspunkt</strong> ist auf dem Stammbaum aktiv – hier werden keine neuen Personen mehr angelegt; zum Fortsetzen den Schlusspunkt dort aufheben.</>
+            )}{' '}
+            <strong>Zwei Eltern bei einem Kind:</strong> Kind zuerst bei einem Elternteil anlegen oder verknüpfen, dann die <strong>Kinderseite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil hinzufügen (z. B. Justina). <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder unter <strong>Geschwister</strong> verknüpfen.
           </p>
           <p className="meta" style={{ margin: '0 0 0.75rem', padding: '0.6rem 0.75rem', background: 'rgba(13,148,136,0.12)', borderRadius: 8, border: '1px solid rgba(20,184,166,0.25)' }}>
             <strong>Kind mit Vater und Mutter:</strong> Ein neues Kind bekommt zuerst nur den Elternteil, von dessen Seite du es anlegst (z. B. nur Rupert). Den <strong>zweiten Elternteil</strong> trägst du danach ein: <strong>Christine öffnen</strong> → unter <strong>Eltern</strong> → Justina wählen – <em>oder</em> Justina öffnen → unter <strong>Kinder</strong> → Christine wählen. Erst wenn bei Christine <strong>beide</strong> Eltern in der Karte stehen, stimmt die Linie für beide. <strong>Geschwister</strong> (z. B. Andreas): dieselben Eltern in der Karte wie beim Bruder – oder unter Geschwister verknüpfen, wenn die App keinen Vorschlag zeigt.
@@ -829,9 +841,11 @@ export default function K2FamiliePersonPage() {
                 </span>
               ))}
               {partnerAddSelect}
-              <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink('partner')} style={newPersonBtnStyle}>
-                {newPersonButtonLabels.partner}
-              </button>
+              {!einstellungen.stammbaumSchlusspunkt && (
+                <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink('partner')} style={newPersonBtnStyle}>
+                  {newPersonButtonLabels.partner}
+                </button>
+              )}
             </div>
           </div>
           {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling')}

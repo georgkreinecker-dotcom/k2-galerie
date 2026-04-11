@@ -125,6 +125,11 @@ export interface K2FamilieEinstellungen {
   ichBinPersonId?: string
   /** Optional: Position von „Du“ unter den Geschwister (1-basiert), für Sortierung 1…N (z. B. 7 = 6 vor mir, 6 hinter mir). */
   ichBinPositionAmongSiblings?: number
+  /**
+   * Schlusspunkt: Stammbaum inhaltlich fertig – keine **neuen** Personen mehr anlegen (Buttons aus);
+   * bestehende Karten bearbeiten und **verknüpfen** bleibt möglich. Jederzeit wieder aufhebbar.
+   */
+  stammbaumSchlusspunkt?: boolean
 }
 
 /** Storage-Key für Einstellungen pro Tenant. */
