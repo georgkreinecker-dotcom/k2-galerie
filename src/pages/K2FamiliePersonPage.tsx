@@ -13,7 +13,11 @@ import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
 import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/familieDatumEingabe'
-import { getBeziehungenFromKarten } from '../utils/familieBeziehungen'
+import {
+  getBeziehungenFromKarten,
+  getGeschwisterAnzeigeListe,
+  getGeschwisterIdsAusEltern,
+} from '../utils/familieBeziehungen'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -93,8 +97,13 @@ export default function K2FamiliePersonPage() {
   const beziehungenKurz = useMemo(() => {
     if (!id) return { eltern: [] as K2FamiliePerson[], geschwister: [] as K2FamiliePerson[] }
     const b = getBeziehungenFromKarten(personen, id)
-    return { eltern: b.eltern, geschwister: b.geschwister }
+    const geschwister = getGeschwisterAnzeigeListe(personen, id)
+    return { eltern: b.eltern, geschwister }
   }, [personen, id])
+  const geschwisterAusElternIds = useMemo(
+    () => (id ? getGeschwisterIdsAusEltern(personen, id) : new Set<string>()),
+    [personen, id]
+  )
   const fokusParam = searchParams.get('fokus')
   useEffect(() => {
     if (!person || fokusParam !== 'beziehungen') return
@@ -203,18 +212,17 @@ export default function K2FamiliePersonPage() {
   const otherPersonen = personen.filter((p) => p.id !== id)
 
   /** Kandidat passt logisch nicht zu dieser Beziehung (z. B. Eltern können keine Partner sein). */
-  const impossibleForRelation = (type: 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie', p: K2FamiliePerson): boolean => {
+  const impossibleForRelation = (type: 'parent' | 'child' | 'partner' | 'wahlfamilie', p: K2FamiliePerson): boolean => {
     if (!person) return false
     if (type === 'partner') return person.parentIds.includes(p.id) || person.childIds.includes(p.id)
     if (type === 'parent') return person.childIds.includes(p.id)
     if (type === 'child') return person.parentIds.includes(p.id)
-    if (type === 'sibling') return person.parentIds.includes(p.id) || person.childIds.includes(p.id)
     return false
   }
 
   /** Für Beziehungs-Dropdowns: nur sinnvolle Kandidaten, naheliegende zuerst (z. B. gleiche Eltern = Geschwister, gemeinsame Kinder = Partner). */
   const getCandidatesOrdered = (
-    type: 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie',
+    type: 'parent' | 'child' | 'partner' | 'wahlfamilie',
     excludeIds: string[]
   ): { suggested: K2FamiliePerson[]; rest: K2FamiliePerson[] } => {
     if (!person) return { suggested: [], rest: [] }
@@ -249,14 +257,12 @@ export default function K2FamiliePersonPage() {
       const rest = pool.filter((p) => !coParentIds.has(p.id)).sort((a, b) => a.name.localeCompare(b.name))
       return { suggested, rest }
     }
-    if (type === 'sibling') {
-      const myParentSet = new Set(person.parentIds)
-      const suggested = pool.filter((p) => p.parentIds.some((pid) => myParentSet.has(pid)))
-      const rest = pool.filter((p) => !p.parentIds.some((pid) => myParentSet.has(pid))).sort((a, b) => a.name.localeCompare(b.name))
-      return { suggested, rest }
-    }
     if (type === 'wahlfamilie') {
-      const partnerAndSiblingIds = new Set([...person.partners.map((pr) => pr.personId), ...person.siblingIds])
+      const partnerAndSiblingIds = new Set([
+        ...person.partners.map((pr) => pr.personId),
+        ...person.siblingIds,
+        ...Array.from(getGeschwisterIdsAusEltern(personen, person.id)),
+      ])
       const suggested = pool.filter((p) => partnerAndSiblingIds.has(p.id))
       const rest = pool.filter((p) => !partnerAndSiblingIds.has(p.id)).sort((a, b) => a.name.localeCompare(b.name))
       return { suggested, rest }
@@ -343,7 +349,7 @@ export default function K2FamiliePersonPage() {
   /**
    * Neue Person anlegen, symmetrisch verknüpfen wie addParent/addChild/…, speichern, zur neuen Person navigieren.
    */
-  const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie') => {
+  const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'wahlfamilie') => {
     if (!id || !person) return
     if (einstellungen.stammbaumSchlusspunkt) return
     const newId = generatePersonId()
@@ -385,14 +391,6 @@ export default function K2FamiliePersonPage() {
         ),
         neu,
       ]
-    } else if (relationType === 'sibling') {
-      const neu = { ...empty, siblingIds: [id] }
-      withNew = [
-        ...personen.map((p) =>
-          p.id === id ? { ...p, siblingIds: [...p.siblingIds, newId], updatedAt: now } : p
-        ),
-        neu,
-      ]
     } else {
       const neu = { ...empty, wahlfamilieIds: [id] }
       withNew = [
@@ -410,18 +408,6 @@ export default function K2FamiliePersonPage() {
     }
   }
 
-  const addSibling = (otherId: string) => {
-    if (!id || !person || person.siblingIds.includes(otherId)) return
-    const other = personen.find((p) => p.id === otherId)
-    if (!other) return
-    const thisId = id
-    const next = personen.map((p) => {
-      if (p.id === thisId) return { ...p, siblingIds: [...p.siblingIds, otherId], updatedAt: new Date().toISOString() }
-      if (p.id === otherId) return { ...p, siblingIds: [...p.siblingIds, thisId], updatedAt: new Date().toISOString() }
-      return p
-    })
-    updateAndSave(next)
-  }
   const removeSibling = (otherId: string) => {
     if (!id || !person) return
     const thisId = id
@@ -581,17 +567,16 @@ export default function K2FamiliePersonPage() {
     ?.familieZurueckZu
 
   const smallBtn = { background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '0.8rem', padding: '0.2rem 0.4rem', fontFamily: 'inherit' } as const
-  type RelationType = 'parent' | 'child' | 'partner' | 'sibling' | 'wahlfamilie'
+  type RelationType = 'parent' | 'child' | 'partner' | 'wahlfamilie'
   const newPersonButtonLabels: Record<RelationType, string> = {
     parent: '＋ Neu als Elternteil',
     child: '＋ Neu als Kind',
     partner: '＋ Neu als Partner*in',
-    sibling: '＋ Neu als Geschwister',
     wahlfamilie: '＋ Neu Wahlfamilie',
   }
   /**
    * Eltern/Kinder: volle Auswahl (naheliegend + weitere) – oft mehrere sinnvolle Personen.
-   * Partner, Geschwister, Wahlfamilie: nur Dropdown, wenn genau eine Person eindeutig passt (keine lange irritierende Liste).
+   * Partner, Wahlfamilie: nur Dropdown, wenn genau eine Person eindeutig passt (keine lange irritierende Liste).
    */
   const getAddSelectUI = (type: RelationType, excludeIds: string[], addFn: (oid: string) => void): { select: ReactNode } => {
     const { suggested, rest } = getCandidatesOrdered(type, excludeIds)
@@ -861,7 +846,7 @@ export default function K2FamiliePersonPage() {
                 <strong>Zwei Eltern:</strong> Kind zuerst bei einem Elternteil verknüpfen oder neu anlegen. Dann die <strong>Kind-Seite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil ergänzen.
               </li>
               <li>
-                <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder hier unter Geschwister verknüpfen.
+                <strong>Geschwister:</strong> bei allen dieselben Eltern in der Karte (mindestens ein gemeinsamer Elternteil) – dann erscheinen sie automatisch. Nicht separat als Geschwister eintragen.
               </li>
               <li>
                 <strong>Kind mit beiden Eltern in der Grafik:</strong> Erst wenn bei dem Kind <strong>beide</strong> Eltern in der Karte stehen (von einer Seite Kind anlegen, von der anderen Seite den fehlenden Elternteil unter Eltern wählen), stimmen die Linien.
@@ -941,7 +926,45 @@ export default function K2FamiliePersonPage() {
               )}
             </div>
           </div>
-          {row('Geschwister', person.siblingIds, addSibling, removeSibling, () => person.siblingIds, 'sibling')}
+          <div style={{ marginBottom: '1rem' }}>
+            <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Geschwister</label>
+            <p className="meta" style={{ margin: '0 0 0.35rem', fontSize: '0.85rem', maxWidth: '42rem' }}>
+              Ergeben sich aus gleichen Eltern auf den Karten (mindestens ein gemeinsamer Elternteil). Hier nicht separat eintragen – bei Eltern ändern.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+              {beziehungenKurz.geschwister.length === 0 ? (
+                <span className="meta">–</span>
+              ) : (
+                beziehungenKurz.geschwister.map((p) => (
+                  <span
+                    key={p.id}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      background: 'rgba(13,148,136,0.15)',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: 6,
+                    }}
+                  >
+                    <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>
+                      {p.name}
+                    </Link>
+                    {person.siblingIds.includes(p.id) && !geschwisterAusElternIds.has(p.id) && (
+                      <button
+                        type="button"
+                        onClick={() => removeSibling(p.id)}
+                        style={smallBtn}
+                        title="Alte Verknüpfung entfernen (nur in siblingIds, nicht aus Eltern)"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                ))
+              )}
+            </div>
+          </div>
           {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie')}
         </div>
 

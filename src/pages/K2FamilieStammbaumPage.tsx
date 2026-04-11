@@ -8,7 +8,7 @@ import { useMemo, useEffect, useCallback, useState, useRef, type MouseEvent as R
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
-import { getBeziehungenFromKarten, getFamilienzweigPersonen } from '../utils/familieBeziehungen'
+import { getBeziehungenFromKarten, getFamilienzweigPersonen, getGeschwisterAnzeigeListe } from '../utils/familieBeziehungen'
 import {
   buildStammbaumKartenState,
   buildGrossfamilieStammbaumSektionen,
@@ -120,6 +120,11 @@ export default function K2FamilieStammbaumPage() {
   const beziehungenDu = useMemo(() => {
     const id = einstellungen.ichBinPersonId
     return id ? getBeziehungenFromKarten(personen, id) : null
+  }, [einstellungen.ichBinPersonId, personen])
+
+  const geschwisterDuAnzeige = useMemo(() => {
+    const id = einstellungen.ichBinPersonId
+    return id ? getGeschwisterAnzeigeListe(personen, id) : []
   }, [einstellungen.ichBinPersonId, personen])
 
   const druck = searchParams.get('druck') === '1'
@@ -497,11 +502,11 @@ export default function K2FamilieStammbaumPage() {
             )}
             {beziehungenDu && (
               <div className="meta" style={{ marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
-                <strong>Beziehungen (aus deinen Karten)</strong> – nur das, was in den Personenkarten steht:
+                <strong>Beziehungen (aus deinen Karten)</strong> – Geschwister zusätzlich aus gemeinsamen Eltern:
                 <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>
                   <li>Eltern: {beziehungenDu.eltern.length ? beziehungenDu.eltern.map((p) => p.name).join(', ') : '–'}</li>
                   <li>Kinder: {beziehungenDu.kinder.length ? beziehungenDu.kinder.map((p) => p.name).join(', ') : '–'}</li>
-                  <li>Geschwister: {beziehungenDu.geschwister.length ? beziehungenDu.geschwister.map((p) => p.name).join(', ') : '–'}</li>
+                  <li>Geschwister: {geschwisterDuAnzeige.length ? geschwisterDuAnzeige.map((p) => p.name).join(', ') : '–'}</li>
                   <li>Partner: {beziehungenDu.partner.length ? beziehungenDu.partner.map((p) => p.name).join(', ') : '–'}</li>
                 </ul>
               </div>

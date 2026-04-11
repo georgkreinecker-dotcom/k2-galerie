@@ -54,6 +54,65 @@ export function getBeziehungenFromKarten(
 }
 
 /**
+ * Geschwister aus den Karten: andere Personen mit mindestens einem gemeinsamen Elternteil
+ * (Voll- und Halbgeschwister). Nur parentIds – keine siblingIds.
+ */
+export function getGeschwisterAusGemeinsamenEltern(
+  personen: K2FamiliePerson[],
+  personId: string
+): K2FamiliePerson[] {
+  const byIdMap = byId(personen)
+  const person = byIdMap.get(personId)
+  if (!person) return []
+  const myParents = new Set(
+    (person.parentIds ?? []).map((x) => String(x).trim()).filter(Boolean)
+  )
+  if (myParents.size === 0) return []
+
+  const out: K2FamiliePerson[] = []
+  for (const p of personen) {
+    if (p.id === personId) continue
+    const their = (p.parentIds ?? []).map((x) => String(x).trim()).filter(Boolean)
+    if (their.length === 0) continue
+    if (!their.some((pid) => myParents.has(pid))) continue
+    out.push(p)
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/**
+ * Geschwister zur Anzeige: aus gemeinsamen Eltern (Hauptquelle) plus Einträge nur in siblingIds (Legacy).
+ */
+export function getGeschwisterAnzeigeListe(
+  personen: K2FamiliePerson[],
+  personId: string
+): K2FamiliePerson[] {
+  const inferred = getGeschwisterAusGemeinsamenEltern(personen, personId)
+  const byIdMap = byId(personen)
+  const person = byIdMap.get(personId)
+  if (!person) return []
+  const seen = new Set(inferred.map((p) => p.id))
+  const merged = [...inferred]
+  for (const sid of person.siblingIds ?? []) {
+    if (seen.has(sid)) continue
+    const sp = byIdMap.get(sid)
+    if (sp) {
+      merged.push(sp)
+      seen.add(sid)
+    }
+  }
+  return merged.sort((a, b) => a.name.localeCompare(b.name))
+}
+
+/** IDs der Geschwister, die sich aus gemeinsamen Eltern ergeben (ohne Legacy siblingIds). */
+export function getGeschwisterIdsAusEltern(
+  personen: K2FamiliePerson[],
+  personId: string
+): Set<string> {
+  return new Set(getGeschwisterAusGemeinsamenEltern(personen, personId).map((p) => p.id))
+}
+
+/**
  * Ergänzt fehlende Gegen-Einträge: wenn A in `childIds` von B steht, bekommt B `parentIds` mit A;
  * wenn B `parentIds` mit A hat, bekommt A `childIds` mit B. Nur **hinzufügen**, nie entfernen.
  * Damit Stammbaum und Filter dieselbe „eine Wahrheit“ aus zwei Richtungen lesen können.

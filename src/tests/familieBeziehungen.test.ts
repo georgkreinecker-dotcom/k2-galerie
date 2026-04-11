@@ -3,13 +3,15 @@ import type { K2FamiliePerson } from '../types/k2Familie'
 import {
   getFamilienzweigPersonen,
   reconcileParentChildRelations,
+  getGeschwisterAusGemeinsamenEltern,
+  getGeschwisterAnzeigeListe,
 } from '../utils/familieBeziehungen'
 
 function p(
   id: string,
   name: string,
   parentIds: string[],
-  opts?: Partial<Pick<K2FamiliePerson, 'childIds' | 'partners'>>
+  opts?: Partial<Pick<K2FamiliePerson, 'childIds' | 'partners' | 'siblingIds'>>
 ): K2FamiliePerson {
   return {
     id,
@@ -17,7 +19,7 @@ function p(
     parentIds,
     childIds: opts?.childIds ?? [],
     partners: opts?.partners ?? [],
-    siblingIds: [],
+    siblingIds: opts?.siblingIds ?? [],
     wahlfamilieIds: [],
   }
 }
@@ -107,5 +109,45 @@ describe('getFamilienzweigPersonen', () => {
     expect(zweigGeorg.some((x) => x.id === 'olivia')).toBe(false)
     const zweigEli = getFamilienzweigPersonen(personen, 'elisabeth')
     expect(zweigEli.map((x) => x.id).sort()).toEqual(['elisabeth', 'joshua', 'michael', 'olivia'].sort())
+  })
+})
+
+describe('getGeschwisterAusGemeinsamenEltern', () => {
+  it('drei Kinder gleicher Eltern – jeder sieht die anderen zwei', () => {
+    const m = p('m', 'Mutter', [])
+    const v = p('v', 'Vater', [])
+    const k1 = p('k1', 'Kind 1', ['m', 'v'])
+    const k2 = p('k2', 'Kind 2', ['m', 'v'])
+    const k3 = p('k3', 'Kind 3', ['m', 'v'])
+    const personen = [m, v, k1, k2, k3]
+    expect(getGeschwisterAusGemeinsamenEltern(personen, 'k1').map((x) => x.id).sort()).toEqual(['k2', 'k3'])
+    expect(getGeschwisterAusGemeinsamenEltern(personen, 'k2').map((x) => x.id).sort()).toEqual(['k1', 'k3'])
+  })
+
+  it('Halbgeschwister: ein gemeinsamer Elternteil', () => {
+    const p1 = p('p1', 'M1', [])
+    const p2 = p('p2', 'V1', [])
+    const p3 = p('p3', 'V2', [])
+    const a = p('a', 'A', ['p1', 'p2'])
+    const b = p('b', 'B', ['p1', 'p3'])
+    const personen = [p1, p2, p3, a, b]
+    expect(getGeschwisterAusGemeinsamenEltern(personen, 'a').map((x) => x.id)).toEqual(['b'])
+  })
+
+  it('ohne gemeinsame Eltern – leer', () => {
+    const a = p('a', 'A', ['e1'])
+    const b = p('b', 'B', ['e2'])
+    expect(getGeschwisterAusGemeinsamenEltern([a, b], 'a')).toEqual([])
+  })
+})
+
+describe('getGeschwisterAnzeigeListe', () => {
+  it('Union mit Legacy siblingIds', () => {
+    const e = p('e', 'E', [])
+    const k1 = p('k1', 'K1', ['e'], { siblingIds: ['x'] })
+    const k2 = p('k2', 'K2', ['e'])
+    const x = p('x', 'X', [])
+    const personen = [e, k1, k2, x]
+    expect(getGeschwisterAnzeigeListe(personen, 'k1').map((p) => p.id).sort()).toEqual(['k2', 'x'].sort())
   })
 })
