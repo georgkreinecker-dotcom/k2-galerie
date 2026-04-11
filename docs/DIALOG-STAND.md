@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Referenz „Kleinfamilie“ + N Familienzweige (verbindlich)** – Aus Referenzgrafik festgehalten: **Paar-Mitte** → Senkrechte → **T‑Stück** nur über die **eigene** Geschwister-Spanne (kein Cousin-Sammelbalken); **13** (oder beliebig viele) **Familienzweige** = **dieselbe** Grundstruktur, nur **größer/kleiner**. **Doku** `docs/K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md` (neuer Abschnitt); Verweise in `FamilyTreeGraph.tsx`. Build grün (Session). **Commit:** **751e6d72** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum-Grafik mit echten Daten kurz gegen Referenz prüfen (Kinder unter Elternpaar-Mitte, keine falsche Cousin-Linie).
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum-Grafik: Tafel-Layout (Adels-/Stammtafel-Stil)** – Partner wurden **untereinander versetzt** gezeichnet (Treppen-Optik); **viaY** pro Elternteil gestaffelt → viele parallele Zwischenlinien. **Fix:** `FamilyTreeGraph` – alle Knoten einer **Generationszeile** gleiche **Y** (Partner **nebeneinander**, gestrichelt); **eine Brücken-Y** zwischen Eltern- und Kinderzeile aus Mittel der Kinder-Y. Zuvor: Zeilen nur bei >14 Personen umbrechen, nicht nach Cousin-Blöcken. **Commit:** **f367ea89** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum **BAUM** kurz mit Großfamilie prüfen (waagrechte Generationen, Lesbarkeit Zoomen).

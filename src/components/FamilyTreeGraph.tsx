@@ -1,13 +1,13 @@
 /**
  * K2 Familie – Stammbaum-Grafik (echter Baum mit Generationen und Linien).
  * SVG-basiert: Wurzeln oben, Kinder darunter, Partner verbunden.
+ * Verbindliches Muster (Kleinfamilie, N Zweige): docs/K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md
  */
 
 import { Link } from 'react-router-dom'
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
-
 const NODE_W = 72
 const NODE_H = 56
 const ROW_H = 176
@@ -21,6 +21,77 @@ const MAX_PERSONEN_PRO_GENERATIONSZEILE = 14
 const PERSON_LINK_PATH = '/projects/k2-familie/personen'
 
 type Point = { x: number; y: number }
+
+/** Eltern → Kind: mehrere Kanten zum selben Kind erzeugen dieselbe waagrechte Linie doppelt (Doppelstrich). */
+type ParentChildConnector = { from: Point; to: Point; viaY?: number; mergedParents?: Point[]; childId?: string }
+
+function mergeConnectorsAvoidDoubleHorizontal(
+  connectors: { from: Point; to: Point; viaY?: number; childId?: string }[]
+): ParentChildConnector[] {
+  const noVia = connectors.filter((c) => c.viaY == null)
+  const withVia = connectors.filter((c) => c.viaY != null) as { from: Point; to: Point; viaY: number; childId?: string }[]
+  const groups = new Map<string, { from: Point; to: Point; viaY: number; childId?: string }[]>()
+  for (const c of withVia) {
+    /** Eine Gruppe pro Kind: zuverlässiger als to.x/y/viaY (Rundung / minimale Abweichungen). */
+    const k = c.childId != null ? `child:${c.childId}` : `${c.to.x.toFixed(3)},${c.to.y.toFixed(3)},${c.viaY.toFixed(3)}`
+    if (!groups.has(k)) groups.set(k, [])
+    groups.get(k)!.push(c)
+  }
+  const merged: ParentChildConnector[] = []
+  for (const group of groups.values()) {
+    if (group.length <= 1) {
+      merged.push(group[0])
+      continue
+    }
+    const seen = new Map<string, Point>()
+    for (const g of group) {
+      const pk = `${g.from.x.toFixed(3)},${g.from.y.toFixed(3)}`
+      if (!seen.has(pk)) seen.set(pk, g.from)
+    }
+    const parents = [...seen.values()].sort((a, b) => a.x - b.x)
+    const viaY = group.reduce((s, g) => s + g.viaY, 0) / group.length
+    merged.push({
+      from: parents[0],
+      to: group[0].to,
+      viaY,
+      mergedParents: parents,
+      childId: group[0].childId,
+    })
+  }
+  return [...merged, ...noVia]
+}
+
+function buildMergedVerticalPath(parents: Point[], to: Point, viaY: number): string {
+  const xs = [...parents.map((p) => p.x), to.x]
+  const xMin = Math.min(...xs)
+  const xMax = Math.max(...xs)
+  let d = ''
+  for (const p of parents) {
+    d += `M ${p.x} ${p.y} L ${p.x} ${viaY} `
+  }
+  d += `M ${xMin} ${viaY} L ${xMax} ${viaY} M ${to.x} ${viaY} L ${to.x} ${to.y}`
+  return d.trim()
+}
+
+function buildMergedHorizontalPathFromVertical(parents: Point[], to: Point, viaY: number): string {
+  const flip = (p: Point) => ({ x: p.y, y: p.x })
+  const xs = [...parents.map((p) => p.x), to.x]
+  const xMin = Math.min(...xs)
+  const xMax = Math.max(...xs)
+  let d = ''
+  for (const p of parents) {
+    const a = flip(p)
+    const b = flip({ x: p.x, y: viaY })
+    d += `M ${a.x} ${a.y} L ${b.x} ${b.y} `
+  }
+  const barA = flip({ x: xMin, y: viaY })
+  const barB = flip({ x: xMax, y: viaY })
+  d += `M ${barA.x} ${barA.y} L ${barB.x} ${barB.y} `
+  const cStart = flip({ x: to.x, y: viaY })
+  const cEnd = flip(to)
+  d += `M ${cStart.x} ${cStart.y} L ${cEnd.x} ${cEnd.y}`
+  return d.trim()
+}
 
 /** Person-IDs, die nur als Partner vorkommen (in jemandes partners-Liste). */
 function getPartnerOnlyIds(personen: K2FamiliePerson[]): Set<string> {
@@ -155,21 +226,116 @@ function getPositionInRow(
   return 999
 }
 
+/**
+ * Dieselbe Logik wie in `orderInGeneration`: Partner ohne eigene Kinder übernehmen die
+ * Geschwister-Position vom Partner in derselben Zeile (nicht 999 vs 3 vergleichen).
+ */
+function getEffectivePositionInRowForSort(
+  id: string,
+  idsInRow: string[],
+  byId: Map<string, K2FamiliePerson>,
+  childIds: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): number {
+  const person = byId.get(id)
+  if (!person) return 999
+  let pos = getPositionInRow(person, ichBinPersonId, ichBinPositionAmongSiblings)
+  if (pos >= 999 && ichBinPersonId !== id) {
+    const partnerInRow = person.partners.find((pr) => idsInRow.includes(pr.personId))?.personId
+    if (partnerInRow) {
+      const hasCh = (pid: string) => (childIds.get(pid)?.length ?? 0) > 0
+      if (hasCh(partnerInRow) && !hasCh(id)) {
+        const partner = byId.get(partnerInRow)!
+        pos = getPositionInRow(partner, ichBinPersonId, ichBinPositionAmongSiblings)
+      }
+    }
+  }
+  return pos
+}
+
 /** ISO YYYY-MM-DD für Sortierung (älter zuerst); null wenn nicht gesetzt/nicht parsbar. */
 function sortKeyGeburtsdatum(raw?: string): string | null {
   if (!raw?.trim()) return null
   return normalizeFamilieDatum(raw.trim()) ?? null
 }
 
-/** Gleiche Generation: zuerst Geschwister-Reihenfolge (positionAmongSiblings / „Geschwister N“), bei gleicher Position Geburtsdatum, sonst Name. */
+/**
+ * Geschwister mit gleicher effektiver Position / 999: Reihenfolge wie auf der **Elternkarte** (`childIds`),
+ * wenn beide in derselben Liste vorkommen. Eine Quelle mit der Großfamilien-Logik (siehe familieStammbaumKarten).
+ */
+function compareSiblingOrderFromParentChildIds(
+  a: K2FamiliePerson,
+  b: K2FamiliePerson,
+  byId: Map<string, K2FamiliePerson>
+): number | null {
+  const parentsA = new Set(a.parentIds ?? [])
+  const common = (b.parentIds ?? []).filter((pid) => parentsA.has(pid))
+  for (const pid of common) {
+    const parent = byId.get(pid)
+    if (!parent) continue
+    const order = parent.childIds ?? []
+    if (order.length === 0) continue
+    const ia = order.indexOf(a.id)
+    const ib = order.indexOf(b.id)
+    if (ia >= 0 && ib >= 0 && ia !== ib) return ia - ib
+  }
+  return null
+}
+
+/** Gleiche Generation: zuerst Geschwister-Reihenfolge (positionAmongSiblings / „Geschwister N“ / Du-Position), dann Geburtsdatum, sonst Name. */
 function compareNachGeschwisterlinieOderGeburt(
   a: K2FamiliePerson,
-  b: K2FamiliePerson
+  b: K2FamiliePerson,
+  ichBinPersonId?: string,
+  ichBinPositionAmongSiblings?: number,
+  idsInRow?: string[],
+  byId?: Map<string, K2FamiliePerson>,
+  childIds?: Map<string, string[]>
 ): number {
+  const posA =
+    idsInRow && byId && childIds
+      ? getEffectivePositionInRowForSort(a.id, idsInRow, byId, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+      : getPositionInRow(a, ichBinPersonId, ichBinPositionAmongSiblings)
+  const posB =
+    idsInRow && byId && childIds
+      ? getEffectivePositionInRowForSort(b.id, idsInRow, byId, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+      : getPositionInRow(b, ichBinPersonId, ichBinPositionAmongSiblings)
+  if (posA < 999 && posB < 999 && posA !== posB) return posA - posB
+  if (posA < 999 && posB >= 999) return -1
+  if (posA >= 999 && posB < 999) return 1
+  /** Nur wenn auf der Karte keine Geschwisternummer steht (999): Eltern-childIds wie Großfamilie; sonst bei gleicher Nummer → Geburtsdatum. */
+  const rawA = getPositionInRow(a, ichBinPersonId, ichBinPositionAmongSiblings)
+  const rawB = getPositionInRow(b, ichBinPersonId, ichBinPositionAmongSiblings)
+  if (byId && rawA >= 999 && rawB >= 999) {
+    const fromParents = compareSiblingOrderFromParentChildIds(a, b, byId)
+    if (fromParents !== null) return fromParents
+  }
   const da = sortKeyGeburtsdatum(a.geburtsdatum)
   const db = sortKeyGeburtsdatum(b.geburtsdatum)
   if (da && db && da !== db) return da.localeCompare(db)
   return a.name.localeCompare(b.name, 'de')
+}
+
+/** Gleiche Geschwister-Position: in einem Partnerpaar zuerst die Person mit Kindern in der Grafik (Kernfamilie), dann der Partner. */
+function comparePartnerGeschwisterVorPartnerOhneKinder(
+  aId: string,
+  bId: string,
+  byId: Map<string, K2FamiliePerson>,
+  childIds: Map<string, string[]>
+): number {
+  const a = byId.get(aId)
+  const b = byId.get(bId)
+  if (!a || !b) return 0
+  const hasChildren = (id: string) => (childIds.get(id)?.length ?? 0) > 0
+  const aPartnerB = a.partners.some((pr) => pr.personId === bId)
+  const bPartnerA = b.partners.some((pr) => pr.personId === aId)
+  if (!aPartnerB || !bPartnerA) return 0
+  const ac = hasChildren(aId)
+  const bc = hasChildren(bId)
+  if (ac && !bc) return -1
+  if (!ac && bc) return 1
+  return 0
 }
 
 export function orderInGeneration(
@@ -182,23 +348,27 @@ export function orderInGeneration(
 ): string[] {
   if (ids.length <= 1) return ids
   const byId = new Map(personen.map((p) => [p.id, p]))
-  const hasChildren = (id: string) => (childIds.get(id)?.length ?? 0) > 0
-  const withPos = ids.map((id) => {
-    let pos = getPositionInRow(byId.get(id)!, ichBinPersonId, ichBinPositionAmongSiblings)
-    if (pos >= 999 && ichBinPersonId !== id) {
-      const p = byId.get(id)!
-      const partnerInRow = p.partners.find((pr) => ids.includes(pr.personId))?.personId
-      if (partnerInRow && hasChildren(partnerInRow) && !hasChildren(id)) pos = 0
-    }
-    return { id, pos }
-  })
+  const withPos = ids.map((id) => ({
+    id,
+    pos: getEffectivePositionInRowForSort(id, ids, byId, childIds, ichBinPersonId, ichBinPositionAmongSiblings),
+  }))
   const hasAnyPosition = withPos.some((x) => x.pos < 999)
   if (hasAnyPosition) {
     withPos.sort((a, b) => {
       if (a.pos !== b.pos) return a.pos - b.pos
+      const pp = comparePartnerGeschwisterVorPartnerOhneKinder(a.id, b.id, byId, childIds)
+      if (pp !== 0) return pp
       const pa = byId.get(a.id)!
       const pb = byId.get(b.id)!
-      return compareNachGeschwisterlinieOderGeburt(pa, pb)
+      return compareNachGeschwisterlinieOderGeburt(
+        pa,
+        pb,
+        ichBinPersonId,
+        ichBinPositionAmongSiblings,
+        ids,
+        byId,
+        childIds
+      )
     })
     return withPos.map((x) => x.id)
   }
@@ -212,12 +382,766 @@ export function orderInGeneration(
     if (a.parentIndex !== b.parentIndex) return a.parentIndex - b.parentIndex
     const pa = byId.get(a.id)!
     const pb = byId.get(b.id)!
-    return compareNachGeschwisterlinieOderGeburt(pa, pb) || a.id.localeCompare(b.id)
+    return (
+      compareNachGeschwisterlinieOderGeburt(
+        pa,
+        pb,
+        ichBinPersonId,
+        ichBinPositionAmongSiblings,
+        ids,
+        byId,
+        childIds
+      ) || a.id.localeCompare(b.id)
+    )
   })
   return withParentOrder.map((x) => x.id)
 }
 
-/** Baum = eine Zeile pro Generation (ursprüngliche Darstellung). Zeilen = Blöcke/Unterzeilen bei vielen Geschwistern. */
+/**
+ * Oberere Generationen: links nach rechts mit Mindestabstand (wie unterste Zeile).
+ * Wunsch-X aus Kinder-Mitte: nur nach rechts schieben (Math.max), nie zusammenquetschen.
+ */
+function placeRowUnderChildrenNoOverlap(
+  rowIds: string[],
+  cxPartial: Map<string, number | undefined>,
+  needsBlockGapBetween: (i: number, rowIds: string[]) => boolean,
+  y: number
+): Map<string, Point> {
+  const out = new Map<string, Point>()
+  let x = 40 + NODE_W / 2
+  rowIds.forEach((id, i) => {
+    if (i > 0 && needsBlockGapBetween(i, rowIds)) x += BLOCK_GAP
+    const t = cxPartial.get(id)
+    const cx = t != null && !Number.isNaN(t) ? Math.max(x, t) : x
+    out.set(id, { x: cx, y })
+    x = cx + NODE_W + COL_GAP
+  })
+  return out
+}
+
+/**
+ * Eltern-Zeile: zuerst Partner-Paare (nicht-Geschwister) als feste Blöcke, damit z. B. Eva nie
+ * zwischen Lukas und Stefan aufgetrennt wird. Reihenfolge der Blöcke = Durchlauf von rowIds
+ * (Geschwister 1,2,3… bleiben); keine Sortierung nach Kinder-Mitte — die würde die Reihenfolge zerstören.
+ * Ausrichtung unter den Kindern: placeRowUnderChildrenNoOverlap (Math.max mit cxPartial).
+ */
+function sortRowIdsByDesiredCx(
+  rowIds: string[],
+  _cxPartial: Map<string, number | undefined>,
+  byId: Map<string, K2FamiliePerson>
+): string[] {
+  const assigned = new Set<string>()
+  const blocks: string[][] = []
+  const rank = (id: string) => {
+    const i = rowIds.indexOf(id)
+    return i >= 0 ? i : 9999
+  }
+  const pairOrder = (a: string, b: string): [string, string] => (rank(a) <= rank(b) ? [a, b] : [b, a])
+
+  for (const id of rowIds) {
+    if (assigned.has(id)) continue
+    const p = byId.get(id)
+    if (!p) {
+      blocks.push([id])
+      assigned.add(id)
+      continue
+    }
+    let partnerId: string | undefined
+    for (const pr of p.partners ?? []) {
+      if (!rowIds.includes(pr.personId) || assigned.has(pr.personId)) continue
+      const q = byId.get(pr.personId)
+      if (!q) continue
+      if (sindGeschwisterLautKarten(p, q)) continue
+      partnerId = pr.personId
+      break
+    }
+    if (partnerId) {
+      const [a, b] = pairOrder(id, partnerId)
+      blocks.push([a, b])
+      assigned.add(a)
+      assigned.add(b)
+    } else {
+      blocks.push([id])
+      assigned.add(id)
+    }
+  }
+
+  return blocks.flat()
+}
+
+/** Nach Partner-Spread: sicherstellen, dass die Zeile nirgends überlappt (gleiche Regel wie unterste Zeile). */
+function enforceNonOverlappingRow(
+  rowIds: string[],
+  nodePos: Map<string, Point>,
+  y: number,
+  needsBlockGapBetween: (i: number, rowIds: string[]) => boolean
+): void {
+  for (let i = 0; i < rowIds.length; i++) {
+    const id = rowIds[i]
+    const p = nodePos.get(id)
+    if (!p) continue
+    let x = p.x
+    if (i === 0) {
+      const minCx = 40 + NODE_W / 2
+      if (x < minCx) x = minCx
+    } else {
+      const prev = nodePos.get(rowIds[i - 1])
+      if (!prev) continue
+      const prevRight = prev.x + NODE_W / 2
+      const gap = needsBlockGapBetween(i, rowIds) ? BLOCK_GAP : COL_GAP
+      const minCx = prevRight + gap + NODE_W / 2
+      if (x < minCx) x = minCx
+    }
+    nodePos.set(id, { x, y })
+  }
+}
+
+function yForGenerationLevel(L: number): number {
+  return 24 + ROW_H / 2 + L * ROW_H
+}
+
+/** Gleiche Eltern in der Grafik = ein Geschwister-/Familienblock (wie Großfamilien-Karten). */
+function familyClusterKeyChild(p: K2FamiliePerson, byId: Map<string, K2FamiliePerson>): string {
+  const parents = (p.parentIds ?? []).filter((pid) => byId.has(pid))
+  if (parents.length === 0) return `solo:${p.id}`
+  return [...parents].sort().join('|')
+}
+
+/** Mind. ein gemeinsames Elternteil in den Karten → Geschwister; keine Partner-Linie dazwischen. */
+function sindGeschwisterLautKarten(a: K2FamiliePerson, b: K2FamiliePerson): boolean {
+  if (a.id === b.id) return false
+  const pa = a.parentIds ?? []
+  const pb = b.parentIds ?? []
+  if (pa.length === 0 || pb.length === 0) return false
+  const sa = new Set(pa)
+  return pb.some((pid) => sa.has(pid))
+}
+
+/**
+ * Waagrechte Reihenfolge in der Grafik: **nur** aus Personenkarten-Feldern (`K2FamiliePerson`),
+ * dieselbe Logik wie `orderInGeneration` — `positionAmongSiblings`, Du-Position, „Geschwister N“,
+ * Geburtsdatum, Name. Keine zweite Quelle (z. B. Großfamilien-Karten-Sortierung).
+ * @see docs/K2-FAMILIE-DATENMODELL.md
+ */
+function orderIdsByPersonenkarte(
+  personen: K2FamiliePerson[],
+  ids: string[],
+  levelMap: Map<string, number>,
+  childIds: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): string[] {
+  if (ids.length === 0) return []
+  return orderInGeneration(personen, [...ids], levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+}
+
+/**
+ * Unterste Generation: pro Kernfamilie (gleiche parentIds in der Grafik) Kinder fest unter Eltern-Mitte setzen,
+ * dann nur bei Kollisionen mit der linken Nachbarfamilie die ganze Gruppe nach rechts schieben.
+ * Nicht: globale Zeile verschieben + enforceNonOverlappingRow (schiebt nur rechts → Zentrierung zerstört).
+ * @see docs/K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md — Referenz „Kleinfamilie“, Skalierung vieler Zweige
+ */
+function placeBottomRowFromParentCenters(
+  levelMap: Map<string, number>,
+  maxLevel: number,
+  personen: K2FamiliePerson[],
+  byId: Map<string, K2FamiliePerson>,
+  nodePos: Map<string, Point>,
+  bottomIds: string[],
+  childIdsMap: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): void {
+  const yBottom = yForGenerationLevel(maxLevel)
+  const marginCenter = 40 + NODE_W / 2
+  const step = NODE_W + COL_GAP
+
+  const groups = new Map<string, string[]>()
+  for (const id of bottomIds) {
+    const p = byId.get(id)
+    if (!p) continue
+    const k = familyClusterKeyChild(p, byId)
+    if (!groups.has(k)) groups.set(k, [])
+    groups.get(k)!.push(id)
+  }
+
+  type GEntry = { childIds: string[]; parentMidX: number }
+  const groupEntries: GEntry[] = []
+  for (const rawIds of groups.values()) {
+    const sorted = orderIdsByPersonenkarte(
+      personen,
+      rawIds,
+      levelMap,
+      childIdsMap,
+      ichBinPersonId,
+      ichBinPositionAmongSiblings
+    )
+    if (sorted.length === 0) continue
+    const first = byId.get(sorted[0])
+    if (!first) continue
+    const parentIdsInGraph = (first.parentIds ?? []).filter(
+      (pid) => byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1
+    )
+    if (parentIdsInGraph.length === 0) continue
+    const xs = parentIdsInGraph
+      .map((pid) => nodePos.get(pid)?.x)
+      .filter((x): x is number => x != null && !Number.isNaN(x))
+    if (xs.length === 0) continue
+    const parentMidX = xs.reduce((a, b) => a + b, 0) / xs.length
+    groupEntries.push({ childIds: sorted, parentMidX })
+  }
+
+  groupEntries.sort((a, b) => a.parentMidX - b.parentMidX)
+
+  let prevRight = -Infinity
+  for (const { childIds, parentMidX } of groupEntries) {
+    const n = childIds.length
+    const centers = childIds.map((_, i) => parentMidX + (i - (n - 1) / 2) * step)
+    let delta = 0
+    if (prevRight === -Infinity) {
+      if (centers[0] < marginCenter) delta = marginCenter - centers[0]
+    } else {
+      const minCenter = prevRight + BLOCK_GAP + NODE_W / 2
+      if (centers[0] < minCenter) delta = minCenter - centers[0]
+    }
+    for (let i = 0; i < n; i++) {
+      nodePos.set(childIds[i], { x: centers[i] + delta, y: yBottom })
+    }
+    const lastCenter = centers[n - 1] + delta
+    prevRight = lastCenter + NODE_W / 2
+  }
+}
+
+/**
+ * Partner mit derselben Kindergruppe (z. B. zwei Eltern von C1+C2) = ein Block in der Eltern-Zeile.
+ * Kinder von Partner in derselben Zeile mitzählen, damit das Paar nicht auseinanderfällt.
+ * Ohne gemeinsame Kinder: Fallback über eigene Eltern-IDs in der Grafik.
+ */
+function familyClusterKeyParent(
+  id: string,
+  L: number,
+  personen: K2FamiliePerson[],
+  levelMap: Map<string, number>,
+  byId: Map<string, K2FamiliePerson>,
+  idsInRow: Set<string>
+): string {
+  const p = byId.get(id)
+  const partnerIdsInRow = (p?.partners ?? []).filter((pr) => idsInRow.has(pr.personId)).map((pr) => pr.personId)
+  const elternIds = new Set<string>([id, ...partnerIdsInRow])
+  const kids = personen
+    .filter(
+      (c) =>
+        (levelMap.get(c.id) ?? -1) === L + 1 &&
+        byId.has(c.id) &&
+        (c.parentIds ?? []).some((pid) => elternIds.has(pid))
+    )
+    .map((c) => c.id)
+    .sort()
+    .join('|')
+  if (kids.length > 0) return `kids:${kids}`
+  if (!p) return `solo:${id}`
+  const par = (p.parentIds ?? []).filter((pid) => byId.has(pid))
+  if (par.length === 0) return `solo:${id}`
+  return `parents:${par.sort().join('|')}`
+}
+
+/** Eltern-IDs dieser Generation, die in Zeile L-1 liegen (für „gleiche Kernfamilie“). */
+function parentKeyAtLevel(
+  id: string,
+  L: number,
+  levelMap: Map<string, number>,
+  byId: Map<string, K2FamiliePerson>
+): string {
+  const p = byId.get(id)
+  if (!p) return ''
+  return (p.parentIds ?? []).filter((pid) => (levelMap.get(pid) ?? -1) === L - 1).sort().join('|')
+}
+
+/** Ein Block (Geschwister ± Partner): genau ein Eltern-Schlüssel → z. B. Georg|Martina. */
+function clusterRepresentativeParentKey(
+  members: string[],
+  L: number,
+  levelMap: Map<string, number>,
+  byId: Map<string, K2FamiliePerson>
+): string | null {
+  const keys = new Set<string>()
+  for (const id of members) {
+    const k = parentKeyAtLevel(id, L, levelMap, byId)
+    if (k.length > 0) keys.add(k)
+  }
+  if (keys.size !== 1) return null
+  return [...keys][0]
+}
+
+/** Kleinste effektive Geschwister-Position im Block (wie `orderInGeneration` / Partner-Übernahme). */
+function siblingOrderRankForCluster(
+  members: string[],
+  idsInRow: string[],
+  byId: Map<string, K2FamiliePerson>,
+  childIds: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): number {
+  let min = 9999
+  for (const id of members) {
+    const pos = getEffectivePositionInRowForSort(id, idsInRow, byId, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+    min = Math.min(min, pos)
+  }
+  return min
+}
+
+/** Eine Person pro Cluster zum Vergleich (niedrigste effektive Position; bei Gleichstand wie orderInGeneration). */
+function representativeSiblingForCluster(
+  members: string[],
+  idsInRow: string[],
+  byId: Map<string, K2FamiliePerson>,
+  childIds: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): K2FamiliePerson | undefined {
+  const candidates: K2FamiliePerson[] = []
+  let minPos = 9999
+  for (const id of members) {
+    const p = byId.get(id)
+    if (!p) continue
+    const pos = getEffectivePositionInRowForSort(id, idsInRow, byId, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+    if (pos < minPos) {
+      minPos = pos
+      candidates.length = 0
+      candidates.push(p)
+    } else if (pos === minPos) {
+      candidates.push(p)
+    }
+  }
+  if (candidates.length === 0) return undefined
+  if (candidates.length === 1) return candidates[0]
+  candidates.sort((a, b) => {
+    const pp = comparePartnerGeschwisterVorPartnerOhneKinder(a.id, b.id, byId, childIds)
+    if (pp !== 0) return pp
+    return compareNachGeschwisterlinieOderGeburt(
+      a,
+      b,
+      ichBinPersonId,
+      ichBinPositionAmongSiblings,
+      idsInRow,
+      byId,
+      childIds
+    )
+  })
+  return candidates[0]
+}
+
+/** Reihenfolge in einer Zeile: Familien-Cluster gruppieren, Reihenfolge aus Personenkarten (siehe `orderIdsByPersonenkarte`). */
+function orderIdsByFamilieClusterInRow(
+  personen: K2FamiliePerson[],
+  ids: string[],
+  levelMap: Map<string, number>,
+  childIds: Map<string, string[]>,
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined,
+  byId: Map<string, K2FamiliePerson>,
+  maxLevel: number,
+  L: number
+): string[] {
+  const baseOrder = orderIdsByPersonenkarte(
+    personen,
+    ids,
+    levelMap,
+    childIds,
+    ichBinPersonId,
+    ichBinPositionAmongSiblings
+  )
+  const idsInRow = new Set(ids)
+  const keyOf = (id: string) => {
+    const p = byId.get(id)
+    if (!p) return `solo:${id}`
+    return L === maxLevel ? familyClusterKeyChild(p, byId) : familyClusterKeyParent(id, L, personen, levelMap, byId, idsInRow)
+  }
+  const clusterKeys: string[] = []
+  const seenK = new Set<string>()
+  for (const id of baseOrder) {
+    const k = keyOf(id)
+    if (!seenK.has(k)) {
+      seenK.add(k)
+      clusterKeys.push(k)
+    }
+  }
+  const byCluster = new Map<string, string[]>()
+  for (const id of ids) {
+    const k = keyOf(id)
+    if (!byCluster.has(k)) byCluster.set(k, [])
+    byCluster.get(k)!.push(id)
+  }
+
+  /** Mehrere Kernfamilien-Cluster (je anderes kids:…), aber dieselben Eltern in L-1: Reihenfolge 1…n nach positionAmongSiblings, nicht nur nach Stammbaum-Karten-Reihenfolge. */
+  if (L < maxLevel && clusterKeys.length > 1) {
+    const rpks = clusterKeys.map((k) =>
+      clusterRepresentativeParentKey(byCluster.get(k) ?? [], L, levelMap, byId)
+    )
+    if (rpks.every((x) => x != null) && new Set(rpks).size === 1) {
+      clusterKeys.sort((a, b) => {
+        const ra = siblingOrderRankForCluster(
+          byCluster.get(a) ?? [],
+          ids,
+          byId,
+          childIds,
+          ichBinPersonId,
+          ichBinPositionAmongSiblings
+        )
+        const rb = siblingOrderRankForCluster(
+          byCluster.get(b) ?? [],
+          ids,
+          byId,
+          childIds,
+          ichBinPersonId,
+          ichBinPositionAmongSiblings
+        )
+        if (ra !== rb) return ra - rb
+        const pa = representativeSiblingForCluster(
+          byCluster.get(a) ?? [],
+          ids,
+          byId,
+          childIds,
+          ichBinPersonId,
+          ichBinPositionAmongSiblings
+        )
+        const pb = representativeSiblingForCluster(
+          byCluster.get(b) ?? [],
+          ids,
+          byId,
+          childIds,
+          ichBinPersonId,
+          ichBinPositionAmongSiblings
+        )
+        if (pa && pb) {
+          const c = compareNachGeschwisterlinieOderGeburt(
+            pa,
+            pb,
+            ichBinPersonId,
+            ichBinPositionAmongSiblings,
+            ids,
+            byId,
+            childIds
+          )
+          if (c !== 0) return c
+        }
+        return a.localeCompare(b)
+      })
+    }
+  }
+
+  const out: string[] = []
+  for (const k of clusterKeys) {
+    const members = byCluster.get(k) ?? []
+    /** Geschwisterblock: Reihenfolge 1…n = links nach rechts (`positionAmongSiblings` / Du-Position / „Geschwister N“). */
+    /** Innerhalb eines Clusters: immer Personenkarten-Reihenfolge (Geschwister-Cluster und gemischte Blöcke gleiche Regel). */
+    const sortedMembers = orderIdsByPersonenkarte(
+      personen,
+      members,
+      levelMap,
+      childIds,
+      ichBinPersonId,
+      ichBinPositionAmongSiblings
+    )
+    out.push(...sortedMembers)
+  }
+  return out
+}
+
+/**
+ * Kinder unter den Eltern: unterste Generation zuerst waagrecht, darüber Eltern zentriert über ihren Kindern.
+ * Kein gemeinsamer „Sammelbalken“ über alle Familien.
+ */
+function computeLayoutBaumUnterEltern(
+  personen: K2FamiliePerson[],
+  byId: Map<string, K2FamiliePerson>,
+  levelMap: Map<string, number>,
+  childIds: Map<string, string[]>,
+  reorderedRows: string[][],
+  ichBinPersonId: string | undefined,
+  ichBinPositionAmongSiblings: number | undefined
+): {
+  levelMap: Map<string, number>
+  rows: string[][]
+  width: number
+  height: number
+  nodePos: Map<string, Point>
+  connectors: ParentChildConnector[]
+  partnerLinks: { a: Point; b: Point }[]
+  initialPan: { x: number; y: number }
+  contentCx: number
+  contentCy: number
+} {
+  const maxLevel = Math.max(...Array.from(levelMap.values()))
+
+  const arePartnersInRow = (rowIds: string[], i: number, j: number): boolean => {
+    if (i < 0 || j < 0 || i >= rowIds.length || j >= rowIds.length) return false
+    const a = byId.get(rowIds[i])
+    const b = byId.get(rowIds[j])
+    if (!a || !b) return false
+    if (sindGeschwisterLautKarten(a, b)) return false
+    return Boolean(a.partners.some((pr) => pr.personId === rowIds[j]) || b.partners.some((pr) => pr.personId === rowIds[i]))
+  }
+
+  const shareSameParent = (idA: string, idB: string): boolean => {
+    const a = byId.get(idA)
+    const b = byId.get(idB)
+    if (!a || !b) return false
+    if (a.parentIds.length === 0 || b.parentIds.length === 0) return false
+    const sa = new Set(a.parentIds)
+    return b.parentIds.some((pid) => sa.has(pid))
+  }
+
+  const needsBlockGapBetween = (i: number, rowIds: string[]): boolean => {
+    if (i <= 0) return false
+    if (arePartnersInRow(rowIds, i - 1, i)) return false
+    if (shareSameParent(rowIds[i - 1], rowIds[i])) return false
+    return true
+  }
+
+  const nodePos = new Map<string, Point>()
+  const rawBottom = reorderedRows[maxLevel] ?? []
+  const bottomIds = orderIdsByFamilieClusterInRow(
+    personen,
+    rawBottom,
+    levelMap,
+    childIds,
+    ichBinPersonId,
+    ichBinPositionAmongSiblings,
+    byId,
+    maxLevel,
+    maxLevel
+  )
+
+  let currentX = 40 + NODE_W / 2
+  bottomIds.forEach((id, i) => {
+    if (needsBlockGapBetween(i, bottomIds)) currentX += BLOCK_GAP
+    nodePos.set(id, { x: currentX, y: yForGenerationLevel(maxLevel) })
+    currentX += NODE_W + COL_GAP
+  })
+
+  const partnerDoneSpread = new Set<string>()
+  const spreadPartnersAtLevel = (L: number) => {
+    const minGap = NODE_W + COL_GAP
+    personen.forEach((p) => {
+      if (levelMap.get(p.id) !== L) return
+      p.partners.forEach((pr) => {
+        const pid = pr.personId
+        if (levelMap.get(pid) !== L) return
+        const q = byId.get(pid)
+        if (!q || sindGeschwisterLautKarten(p, q)) return
+        const key = [p.id, pid].sort().join('-')
+        if (partnerDoneSpread.has(key)) return
+        partnerDoneSpread.add(key)
+        const posA = nodePos.get(p.id)
+        const posB = nodePos.get(pid)
+        if (!posA || !posB) return
+        if (Math.abs(posA.x - posB.x) >= minGap - 0.5) return
+        const cx = (posA.x + posB.x) / 2
+        const yPair = (posA.y + posB.y) / 2
+        nodePos.set(p.id, { x: cx - minGap / 2, y: yPair })
+        nodePos.set(pid, { x: cx + minGap / 2, y: yPair })
+      })
+    })
+  }
+
+  spreadPartnersAtLevel(maxLevel)
+  enforceNonOverlappingRow(bottomIds, nodePos, yForGenerationLevel(maxLevel), needsBlockGapBetween)
+
+  const layoutParentLevel = (L: number) => {
+    const rawRow = reorderedRows[L] ?? []
+    const rowIds = orderIdsByFamilieClusterInRow(
+      personen,
+      rawRow,
+      levelMap,
+      childIds,
+      ichBinPersonId,
+      ichBinPositionAmongSiblings,
+      byId,
+      maxLevel,
+      L
+    )
+    const yL = yForGenerationLevel(L)
+    const idsInRow = new Set(rowIds)
+    const cxPartial = new Map<string, number | undefined>()
+    for (const id of rowIds) {
+      const eltern = byId.get(id)
+      const partnerIdsInRow = (eltern?.partners ?? []).filter((pr) => idsInRow.has(pr.personId)).map((pr) => pr.personId)
+      const elternIds = new Set<string>([id, ...partnerIdsInRow])
+      const kids = personen.filter(
+        (c) =>
+          (levelMap.get(c.id) ?? -1) === L + 1 &&
+          byId.has(c.id) &&
+          (c.parentIds ?? []).some((pid) => elternIds.has(pid))
+      )
+      if (kids.length === 0) {
+        cxPartial.set(id, undefined)
+        continue
+      }
+      let sum = 0
+      let n = 0
+      for (const c of kids) {
+        const pos = nodePos.get(c.id)
+        if (pos) {
+          sum += pos.x
+          n++
+        }
+      }
+      cxPartial.set(id, n > 0 ? sum / n : undefined)
+    }
+    const sortedRowIds = sortRowIdsByDesiredCx(rowIds, cxPartial, byId)
+    const placed = placeRowUnderChildrenNoOverlap(sortedRowIds, cxPartial, needsBlockGapBetween, yL)
+    placed.forEach((pt, id) => {
+      nodePos.set(id, pt)
+    })
+    spreadPartnersAtLevel(L)
+    enforceNonOverlappingRow(sortedRowIds, nodePos, yL, needsBlockGapBetween)
+  }
+
+  for (let L = maxLevel - 1; L >= 0; L--) {
+    layoutParentLevel(L)
+  }
+
+  partnerDoneSpread.clear()
+  for (let L = maxLevel - 1; L >= 0; L--) {
+    layoutParentLevel(L)
+  }
+
+  placeBottomRowFromParentCenters(
+    levelMap,
+    maxLevel,
+    personen,
+    byId,
+    nodePos,
+    bottomIds,
+    childIds,
+    ichBinPersonId,
+    ichBinPositionAmongSiblings
+  )
+
+  partnerDoneSpread.clear()
+  for (let L = maxLevel - 1; L >= 0; L--) {
+    layoutParentLevel(L)
+  }
+
+  let minEdge = Infinity
+  let maxEdge = -Infinity
+  nodePos.forEach((pos) => {
+    minEdge = Math.min(minEdge, pos.x - NODE_W / 2)
+    maxEdge = Math.max(maxEdge, pos.x + NODE_W / 2)
+  })
+  if (!Number.isFinite(minEdge)) {
+    minEdge = 0
+    maxEdge = 320
+  }
+  const width = Math.max(320, maxEdge - minEdge + 80)
+  const shiftX = width / 2 - (minEdge + maxEdge) / 2
+  nodePos.forEach((pos, id) => {
+    nodePos.set(id, { x: pos.x + shiftX, y: pos.y })
+  })
+
+  const connectors: ParentChildConnector[] = []
+  const userParentIds = ichBinPersonId ? (byId.get(ichBinPersonId)?.parentIds ?? []) : []
+  const userSiblingIds = new Set(
+    ichBinPersonId
+      ? personen.filter((p) => p.id !== ichBinPersonId && p.parentIds.some((pid) => userParentIds.includes(pid))).map((p) => p.id)
+      : []
+  )
+  const userChildrenIds = new Set(
+    ichBinPersonId ? [...(byId.get(ichBinPersonId)?.childIds ?? []), ...(childIds.get(ichBinPersonId) ?? [])] : []
+  )
+
+  /** Wie Zeilen-Layout: je Kernfamilie (Eltern-Key am Kind) eigene Brücken-Y – sonst alle waagrechten Segmente auf einer Linie = ein Sammelbalken. */
+  const STRIPE_GAP = 5
+  const familyKeysSorted = Array.from(
+    new Set(
+      personen
+        .filter((p) => p.parentIds.length > 0)
+        .map((p) => [...p.parentIds].filter((pid) => byId.has(pid)).sort().join('|'))
+        .filter((k) => k.length > 0)
+    )
+  ).sort()
+  const nFamilyStripes = familyKeysSorted.length
+  const familyStripeIndex = new Map<string, number>()
+  familyKeysSorted.forEach((k, i) => familyStripeIndex.set(k, i))
+  const bridgeYOffsetForChild = (childId: string): number => {
+    if (nFamilyStripes <= 1) return 0
+    const child = byId.get(childId)
+    if (!child || child.parentIds.length === 0) return 0
+    const k = [...child.parentIds].filter((pid) => byId.has(pid)).sort().join('|')
+    const stripe = familyStripeIndex.get(k)
+    if (stripe === undefined) return 0
+    return (stripe - (nFamilyStripes - 1) / 2) * STRIPE_GAP
+  }
+
+  personen.forEach((p) => {
+    const parentPos = nodePos.get(p.id)
+    if (!parentPos) return
+    const fromCard = p.childIds ?? []
+    const fromChildren = childIds.get(p.id) ?? []
+    const kids = Array.from(new Set([...fromCard, ...fromChildren]))
+    kids.forEach((childId) => {
+      if (userSiblingIds.has(p.id) && userChildrenIds.has(childId)) return
+      if (userChildrenIds.has(p.id) && userSiblingIds.has(childId)) return
+      const childPos = nodePos.get(childId)
+      if (!childPos) return
+      const child = byId.get(childId)
+      if (!child) return
+      if (!child.parentIds.includes(p.id)) return
+      const parentLevel = levelMap.get(p.id) ?? 0
+      const childLevel = levelMap.get(childId) ?? 0
+      if (parentLevel >= childLevel) return
+      const viaY = (parentPos.y + childPos.y) / 2 + bridgeYOffsetForChild(childId)
+      connectors.push({ from: parentPos, to: childPos, viaY, childId })
+    })
+  })
+
+  const partnerLinks: { a: Point; b: Point }[] = []
+  const partnerDone = new Set<string>()
+  personen.forEach((p) => {
+    p.partners.forEach((pr) => {
+      const key = [p.id, pr.personId].sort().join('-')
+      if (partnerDone.has(key)) return
+      partnerDone.add(key)
+      const q = byId.get(pr.personId)
+      if (q && sindGeschwisterLautKarten(p, q)) return
+      const posA = nodePos.get(p.id)
+      const posB = nodePos.get(pr.personId)
+      if (posA && posB) partnerLinks.push({ a: posA, b: posB })
+    })
+  })
+
+  const EXTRA_BELOW = 14
+  const height = yForGenerationLevel(maxLevel) + NODE_H / 2 + 40
+  let minX = width
+  let maxX = 0
+  let minY = Infinity
+  let maxY = 0
+  nodePos.forEach((pos) => {
+    minX = Math.min(minX, pos.x - NODE_W / 2)
+    maxX = Math.max(maxX, pos.x + NODE_W / 2)
+    minY = Math.min(minY, pos.y - NODE_H / 2)
+    maxY = Math.max(maxY, pos.y + NODE_H / 2 + EXTRA_BELOW)
+  })
+  const contentCx = nodePos.size > 0 ? (minX + maxX) / 2 : width / 2
+  const contentCy = nodePos.size > 0 ? (minY + maxY) / 2 : height / 2
+  const initialPan = { x: width / 2 - contentCx, y: height / 2 - contentCy }
+
+  return {
+    levelMap,
+    rows: reorderedRows,
+    width,
+    height,
+    nodePos,
+    connectors: mergeConnectorsAvoidDoubleHorizontal(connectors),
+    partnerLinks,
+    initialPan,
+    contentCx,
+    contentCy,
+  }
+}
+
+/** Baum = Kinder unter den Eltern (klar). Zeilen = Blöcke/Umbruch wie bisher. */
 export type FamilyTreeLayout = 'baum' | 'zeilen'
 
 export type TreeOrientation = 'vertical' | 'horizontal'
@@ -232,7 +1156,7 @@ export default function FamilyTreeGraph({
   noPhotos = false,
   printMode = false,
   scale = 1,
-  layout = 'zeilen',
+  layout = 'baum',
   orientation = 'vertical',
   partnerHerkunftPersonId,
   ichBinPersonId,
@@ -249,7 +1173,7 @@ export default function FamilyTreeGraph({
   printMode?: boolean
   /** Skalierung (z. B. 1.2 für Poster) */
   scale?: number
-  /** Baum = eine Zeile pro Generation (unsere ursprüngliche Darstellung). Zeilen = mit Blöcken/Unterzeilen. */
+  /** Baum = Kinder unter den Eltern (Standard). Zeilen = Blöcke/Umbruch wie früher. */
   layout?: FamilyTreeLayout
   /** Vertikal = Wurzeln oben, horizontal = Wurzeln links */
   orientation?: TreeOrientation
@@ -265,7 +1189,7 @@ export default function FamilyTreeGraph({
 }) {
   const { levelMap, rows, width, height, nodePos, connectors, partnerLinks, initialPan, contentCx, contentCy } = useMemo(() => {
     if (personen.length === 0) {
-      return { levelMap: new Map<string, number>(), rows: [] as string[][], width: 400, height: 120, nodePos: new Map<string, Point>(), connectors: [] as { from: Point; to: Point; viaY?: number }[], partnerLinks: [] as { a: Point; b: Point }[], initialPan: { x: 0, y: 0 }, contentCx: 200, contentCy: 60 }
+      return { levelMap: new Map<string, number>(), rows: [] as string[][], width: 400, height: 120, nodePos: new Map<string, Point>(), connectors: [] as ParentChildConnector[], partnerLinks: [] as { a: Point; b: Point }[], initialPan: { x: 0, y: 0 }, contentCx: 200, contentCy: 60 }
     }
 
     const byId = new Map(personen.map((p) => [p.id, p]))
@@ -275,15 +1199,33 @@ export default function FamilyTreeGraph({
         : getGenerations(personen)
     const childIds = getChildIds(personen)
 
-    const rows: string[][] = []
+    const rowsPerLevel: string[][] = []
     const maxLevel = Math.max(...Array.from(levelMap.values()))
     for (let L = 0; L <= maxLevel; L++) {
       const ids = personen.filter((p) => levelMap.get(p.id) === L).map((p) => p.id)
-      rows.push(orderInGeneration(personen, ids, levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings))
+      const rowOrdered =
+        layout === 'baum'
+          ? orderIdsByFamilieClusterInRow(
+              personen,
+              ids,
+              levelMap,
+              childIds,
+              ichBinPersonId,
+              ichBinPositionAmongSiblings,
+              byId,
+              maxLevel,
+              L
+            )
+          : orderInGeneration(personen, ids, levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
+      rowsPerLevel.push(rowOrdered)
     }
 
-    // Familienzweig-Muster: Pivot (Person mit 2+ Partnern in der Zeile, z. B. Vater) zuerst → steht oben; dann Partner versetzt. Sonst: Du zuerst, dann Partner.
-    const reorderedRows = rows.map((rowIds) => {
+    // Baum: Reihenfolge = wie Großfamilie (Zweige); kein Pivot/Partner-Umbau (der hat Zeilen zerschossen).
+    // Zeilen-Layout: Pivot (2+ Partner in einer Zeile) und Du-zuerst wie bisher.
+    const reorderedRows =
+      layout === 'baum'
+        ? rowsPerLevel
+        : rowsPerLevel.map((rowIds) => {
       const seen = new Set<string>()
       const out: string[] = []
       const hasChildren = (id: string) => (childIds.get(id)?.length ?? 0) > 0
@@ -359,12 +1301,27 @@ export default function FamilyTreeGraph({
       }
       return out
     })
-    /** Zwei Personen in der Zeile sind Partner (nur aus Karten: partners-Array). */
+
+    if (layout === 'baum') {
+      return computeLayoutBaumUnterEltern(
+        personen,
+        byId,
+        levelMap,
+        childIds,
+        reorderedRows,
+        ichBinPersonId,
+        ichBinPositionAmongSiblings
+      )
+    }
+
+    /** Zwei Personen in der Zeile sind Partner (nur aus Karten: partners-Array), nicht Geschwister. */
     const arePartnersInRow = (rowIds: string[], i: number, j: number): boolean => {
       if (i < 0 || j < 0 || i >= rowIds.length || j >= rowIds.length) return false
       const a = byId.get(rowIds[i])
       const b = byId.get(rowIds[j])
-      return Boolean(a?.partners.some((pr) => pr.personId === rowIds[j]) || b?.partners.some((pr) => pr.personId === rowIds[i]))
+      if (!a || !b) return false
+      if (sindGeschwisterLautKarten(a, b)) return false
+      return Boolean(a.partners.some((pr) => pr.personId === rowIds[j]) || b.partners.some((pr) => pr.personId === rowIds[i]))
     }
 
     /** Mindestens ein gemeinsames Elternteil (echte Geschwister in derselben Generation). */
@@ -400,7 +1357,7 @@ export default function FamilyTreeGraph({
       return chunks
     }
 
-    rows.length = 0
+    const rows: string[][] = []
     const rowLevels: number[] = []
     reorderedRows.forEach((r, levelIndex) => {
       const chunks = splitIntoChunks(r)
@@ -450,11 +1407,33 @@ export default function FamilyTreeGraph({
       })
     })
 
-    const connectors: { from: Point; to: Point; viaY?: number }[] = []
+    const connectors: ParentChildConnector[] = []
     const partnerLinks: { a: Point; b: Point }[] = []
 
-    // Brücken-Y je Eltern–Kind-Kante: sonst teilen sich alle Kinder einer Generation dieselbe waagrechte Linie
-    // (ein „Sammelbalken“), obwohl die Zuordnung in den Daten stimmt.
+    /** Pro Kernfamilie (gleiche Eltern-IDs am Kind) eine eigene Brücken-Höhe – sonst liegen alle
+     *  waagrechten Segmente exakt auf derselben Y (gleiche Elternzeile + gleiche Kinderzeile) und
+     *  wirken wie ein Sammelbalken über alle Geschwisterfamilien hinweg. */
+    const STRIPE_GAP = 5
+    const familyKeysSorted = Array.from(
+      new Set(
+        personen
+          .filter((p) => p.parentIds.length > 0)
+          .map((p) => [...p.parentIds].filter((pid) => byId.has(pid)).sort().join('|'))
+          .filter((k) => k.length > 0)
+      )
+    ).sort()
+    const nFamilyStripes = familyKeysSorted.length
+    const familyStripeIndex = new Map<string, number>()
+    familyKeysSorted.forEach((k, i) => familyStripeIndex.set(k, i))
+    const bridgeYOffsetForChild = (childId: string): number => {
+      if (nFamilyStripes <= 1) return 0
+      const child = byId.get(childId)
+      if (!child || child.parentIds.length === 0) return 0
+      const k = [...child.parentIds].filter((pid) => byId.has(pid)).sort().join('|')
+      const stripe = familyStripeIndex.get(k)
+      if (stripe === undefined) return 0
+      return (stripe - (nFamilyStripes - 1) / 2) * STRIPE_GAP
+    }
 
     // Nur verbieten: Linien zwischen „meine Kinder“ und „meine Geschwister“ (von unten zu Geschwistern)
     const userParentIds = ichBinPersonId ? (byId.get(ichBinPersonId)?.parentIds ?? []) : []
@@ -483,10 +1462,8 @@ export default function FamilyTreeGraph({
         const parentLevel = levelMap.get(p.id) ?? 0
         const childLevel = levelMap.get(childId) ?? 0
         if (parentLevel >= childLevel) return
-        const asChildOfPartner = child.parentIds.some((pid) => byId.get(pid)?.partners.some((pr) => pr.personId === childId))
-        if (asChildOfPartner) return
-        const viaY = (parentPos.y + childPos.y) / 2
-        connectors.push({ from: parentPos, to: childPos, viaY })
+        const viaY = (parentPos.y + childPos.y) / 2 + bridgeYOffsetForChild(childId)
+        connectors.push({ from: parentPos, to: childPos, viaY, childId })
       })
     })
 
@@ -496,6 +1473,8 @@ export default function FamilyTreeGraph({
         const key = [p.id, pr.personId].sort().join('-')
         if (partnerDone.has(key)) return
         partnerDone.add(key)
+        const q = byId.get(pr.personId)
+        if (q && sindGeschwisterLautKarten(p, q)) return
         const posA = nodePos.get(p.id)
         const posB = nodePos.get(pr.personId)
         // Linie zeichnen wenn beide Position haben (Partner von Du wurden ggf. in Du-Reihe verschoben)
@@ -519,8 +1498,19 @@ export default function FamilyTreeGraph({
     const contentCy = nodePos.size > 0 ? (minY + maxY) / 2 : height / 2
     const initialPan = { x: width / 2 - contentCx, y: height / 2 - contentCy }
 
-    return { levelMap, rows, width, height, nodePos, connectors, partnerLinks, initialPan, contentCx, contentCy }
-  }, [personen, ichBinPersonId, ichBinPositionAmongSiblings, familienzweigWurzelPersonId])
+    return {
+      levelMap,
+      rows,
+      width,
+      height,
+      nodePos,
+      connectors: mergeConnectorsAvoidDoubleHorizontal(connectors),
+      partnerLinks,
+      initialPan,
+      contentCx,
+      contentCy,
+    }
+  }, [personen, ichBinPersonId, ichBinPositionAmongSiblings, familienzweigWurzelPersonId, layout])
 
   const isHorizontal = orientation === 'horizontal'
   const displayWidth = isHorizontal ? height : width
@@ -532,8 +1522,20 @@ export default function FamilyTreeGraph({
     return m
   }, [nodePos, isHorizontal])
   const displayConnectors = useMemo(() => {
-    if (!isHorizontal) return connectors.map((c) => ({ from: c.from, to: c.to, viaY: c.viaY, viaX: undefined as number | undefined }))
-    return connectors.map((c) => ({ from: swapPoint(c.from), to: swapPoint(c.to), viaY: undefined as number | undefined, viaX: c.viaY }))
+    if (!isHorizontal) {
+      return connectors.map((c) => ({
+        from: c.from,
+        to: c.to,
+        viaY: c.viaY,
+        viaX: undefined as number | undefined,
+      }))
+    }
+    return connectors.map((c) => ({
+      from: swapPoint(c.from),
+      to: swapPoint(c.to),
+      viaY: undefined as number | undefined,
+      viaX: c.viaY,
+    }))
   }, [connectors, isHorizontal])
   const displayPartnerLinks = useMemo(() => {
     if (!isHorizontal) return partnerLinks
@@ -650,20 +1652,25 @@ export default function FamilyTreeGraph({
           ))}
         </g>
 
-        {/* Linien: Eltern → Kinder */}
+        {/* Linien: Eltern → Kinder (zwei Eltern → ein Kind: eine gemeinsame T-Form, kein Doppelstrich) */}
         <g stroke={stroke} strokeWidth="1.5" fill="none">
-          {displayConnectors.map(({ from, to, viaY, viaX }, i) => (
-            <path
-              key={i}
-              d={
-                viaY != null
-                  ? `M ${from.x} ${from.y} L ${from.x} ${viaY} L ${to.x} ${viaY} L ${to.x} ${to.y}`
-                  : viaX != null
-                    ? `M ${from.x} ${from.y} L ${viaX} ${from.y} L ${viaX} ${to.y} L ${to.x} ${to.y}`
-                    : `M ${from.x} ${from.y} L ${from.x} ${(from.y + to.y) / 2} L ${to.x} ${(from.y + to.y) / 2} L ${to.x} ${to.y}`
-              }
-            />
-          ))}
+          {connectors.map((c, i) => {
+            const dc = displayConnectors[i]
+            const { from, to } = dc
+            let d: string
+            if (c.mergedParents && c.mergedParents.length > 1 && c.viaY != null) {
+              d = isHorizontal
+                ? buildMergedHorizontalPathFromVertical(c.mergedParents, c.to, c.viaY)
+                : buildMergedVerticalPath(c.mergedParents, c.to, c.viaY)
+            } else if (dc.viaY != null) {
+              d = `M ${from.x} ${from.y} L ${from.x} ${dc.viaY} L ${to.x} ${dc.viaY} L ${to.x} ${to.y}`
+            } else if (dc.viaX != null) {
+              d = `M ${from.x} ${from.y} L ${dc.viaX} ${from.y} L ${dc.viaX} ${to.y} L ${to.x} ${to.y}`
+            } else {
+              d = `M ${from.x} ${from.y} L ${from.x} ${(from.y + to.y) / 2} L ${to.x} ${(from.y + to.y) / 2} L ${to.x} ${to.y}`
+            }
+            return <path key={i} d={d} />
+          })}
         </g>
 
         {/* Knoten (Personen) */}

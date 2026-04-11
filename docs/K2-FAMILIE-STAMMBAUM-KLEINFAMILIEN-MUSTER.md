@@ -25,6 +25,24 @@
 
 ---
 
+## Referenz: „Kleinfamilie“ als Grundstruktur (verbindlich)
+
+**Gilt für jeden Familienzweig** – ob der Baum später **13** sichtbare Zweige oder mehr hat: **dieselbe** geometrische und logische Einheit, nur mit **mehr oder weniger** Personen und Ebenen.
+
+| Element | Bedeutung |
+|--------|-----------|
+| **Paar-Mitte** | Waagrechte **gestrichelte** Linie zwischen zwei Partnern; die **Senkrechte** nach unten startet an der **Mitte** dieser Linie (nicht am linken oder rechten Knoten allein). |
+| **Kinder einer Kernfamilie** | Alle Kinder mit **dieselben** in der Grafik vorhandenen Eltern (`parentIds` → gleicher Schlüssel `familyClusterKeyChild` im Code) bilden **eine** Gruppe. |
+| **Zentrierung** | Die **gesamte** Geschwister-Reihe (Knoten-Mitten) ist **unter der Paar-Mitte** ausgerichtet; Abstand zwischen Geschwistern = `NODE_W + COL_GAP` (ein Raster). |
+| **T-Stück / Gabel** | Pro **Eltern–Kind**-Kante: Senkrechte von den Eltern zur Brückenhöhe, dann **nur** ein waagrechter Balken über die **X-Spanne** von Elternknoten und **diesem** Kind (kein durchgehender Balken nur zwischen Cousins). Cousins verschiedener Elternpaare **teilen** keine gemeinsame waagrechte „Sammellinie“ – jede Kernfamilie hat ihr **eigenes** T-Stück. |
+| **Reihenfolge** | Links nach rechts = **Karten-Reihenfolge** (`orderInGeneration` / `childIds` auf der Elternkarte wo zutreffend) – dieselbe Quelle wie in der Personenliste. |
+
+**Skalierung (z. B. 13 Familienzweige):** Es gibt **kein** anderes Layout pro „Zweig 7“ oder „Zweig 2“. Jeder Zweig ist eine **Kette** aus wiederholten Kleinfamilien-Einheiten (Paar → Kinder → ggf. nächste Paare). Die **Grafik** skaliert durch **mehr Knoten** und **mehr Kanten**, nicht durch ein zweites Regelwerk.
+
+**Umsetzung im Code (Stichworte):** `placeBottomRowFromParentCenters` (unterste Generation: Gruppen unter Eltern-Mitte, Kollisionen nur **ganze Gruppe** nach rechts), `familyClusterKeyChild` (Gruppierung), `mergeConnectorsAvoidDoubleHorizontal` + Pfade mit `mergedParents` (Linien pro Kind/Elternset), `bridgeYOffsetForChild` (leichte Staffelung der Brücken-Y je Kernfamilie, damit Linien sich nicht zu einem optischen **einen** Balken über alle Familien summieren).
+
+---
+
 ## 1. Grundregel pro Zeile (Generation)
 
 - **Reihenfolge in der Zeile:** Zuerst die „Hauptperson“ eines Paars, **sofort daneben (rechts)** deren Partner.
@@ -52,6 +70,10 @@
 ---
 
 ## 3. Umsetzung im Code (FamilyTreeGraph)
+
+**Datei:** `src/components/FamilyTreeGraph.tsx`.
+
+**Kleinfamilie unter den Eltern (unterste sichtbare Kindergeneration):** `placeBottomRowFromParentCenters` legt Kinder **pro Kernfamilie** (gleicher `familyClusterKeyChild`) unter die **Mitte der Elternknoten** in der Zeile darüber; bei Überschneidung mit der **linken** Nachbarfamilie wird die **gesamte** Gruppe nach rechts geschoben – nicht `enforceNonOverlappingRow` auf globaler Zeile nach dem Zentrieren (das hätte nur nach rechts geschoben und die Mitte zerstört).
 
 1. **Pivot in der Zeile (z. B. Elternzeile):** Wenn in einer Zeile **eine Person 2 oder mehr Partner** hat (z. B. Vater mit Anna und Mathilde), wird diese Person **zuerst** gesetzt → steht **ganz oben**; die Partner (Frauen) stehen rechts daneben und **einen halben Icon darunter**. So steht der Vater oben, links und rechts die Frauen versetzt.
 2. **Reihenfolge in der Zeile (ohne Pivot):** Wenn in der Zeile **Du** und ein Partner von Du vorkommen, wird **zuerst Du** ausgegeben, dann alle Partner in dieser Zeile. Sonst: Person mit Kindern vor Partner ohne Kinder.
@@ -87,4 +109,4 @@
 - **Kinder-Linien:** Beide Eltern in parentIds der Kinder eintragen, damit die Verbindung von beiden sichtbar ist.
 - **Viele Geschwister:** Ab 3 Blöcken → Unterzeilen pro Block (eine kurze Zeile pro Paar/Einheit).
 
-Stand: 17.03.26
+Stand: 17.03.26 · Ergänzt Referenz Kleinfamilie + 13-Zweige-Skalierung: 10.04.26
