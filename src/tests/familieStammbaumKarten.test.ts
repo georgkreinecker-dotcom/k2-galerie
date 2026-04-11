@@ -130,6 +130,23 @@ describe('familieStammbaumKarten', () => {
     expect(sek!.find((s) => s.key === 'weitere')?.personen.map((x) => x.id)).toContain('gross')
   })
 
+  it('Großfamilie: gemeinsame Eltern nicht in jedem Geschwister-Zweig wiederholen (keine Doppelung zur Eltern-Zeile)', () => {
+    const mutter = p('mutter', 'Mutter', ['gm', 'gv'])
+    const vater = p('vater', 'Vater', ['gm', 'gv'])
+    const rupert = p('rupert', 'Rupert', ['mutter', 'vater'], { pos: 1 })
+    const martina = p('martina', 'Martina', ['mutter', 'vater'], { pos: 2 })
+    const georg = p('georg', 'Georg', ['mutter', 'vater'], { pos: 3 })
+    const personen = [mutter, vater, rupert, martina, georg]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    for (const s of sek!.filter((x) => x.key.startsWith('kleinfamilie-'))) {
+      const ids = s.personen.map((x) => x.id)
+      expect(ids).not.toContain('mutter')
+      expect(ids).not.toContain('vater')
+    }
+  })
+
   it('Halbgeschwister: gleicher Vater, zwei Mütter – Eltern zeigen Partner; alle Familienzweige', () => {
     const sen = p('sen', 'Georg Sen.', ['gv', 'gm'], {
       partners: [

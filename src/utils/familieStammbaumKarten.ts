@@ -460,6 +460,8 @@ export function buildGrossfamilieStammbaumSektionen(
   let bi = 0
 
   const elternPersonen = buildElternPersonenListe(ich, byId)
+  /** Dieselben Karten stehen oben unter „Eltern“ – nicht in jedem Geschwister-Ast unter „Weitere“ wiederholen. */
+  const elternIdSet = new Set(elternPersonen.map((p) => p.id))
 
   const erfasst = new Set<string>()
 
@@ -480,7 +482,8 @@ export function buildGrossfamilieStammbaumSektionen(
       if (anchorByPersonId.get(p.id) === g.id) ids.add(p.id)
     }
     const roh = personen.filter((p) => ids.has(p.id))
-    const klein = buildStammbaumKartenState(roh, g.id).sortedPersonen
+    const rohOhneDoppelEltern = roh.filter((p) => !elternIdSet.has(p.id))
+    const klein = buildStammbaumKartenState(rohOhneDoppelEltern, g.id).sortedPersonen
     const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
     const posLabel = String(geschwisterIndex + 1)
     const zweigTeile =
