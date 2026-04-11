@@ -86,6 +86,62 @@ export function getGenerations(personen: K2FamiliePerson[]): Map<string, number>
   return level
 }
 
+/**
+ * Generationen für einen **auf Du + Partner + Nachkommen** reduzierten Personensatz (ohne Eltern in der Liste):
+ * Wurzel = Ebene 0 (Du und eingetragene Partner in dieser Liste), Kinder = 1, …
+ * Verhindert, dass fehlende Eltern in der Liste zu falschen Ebenen führen (Klassiker: Partner Zeile 0, Du Zeile 1).
+ */
+export function getGenerationsFamilienzweigAbwaertsWurzel(
+  personen: K2FamiliePerson[],
+  wurzelPersonId: string
+): Map<string, number> {
+  const byId = new Map(personen.map((p) => [p.id, p]))
+  const level = new Map<string, number>()
+  const root = byId.get(wurzelPersonId)
+  if (!root) return level
+
+  const roots = new Set<string>([wurzelPersonId])
+  for (const pr of root.partners ?? []) {
+    if (byId.has(pr.personId)) roots.add(pr.personId)
+  }
+  roots.forEach((id) => level.set(id, 0))
+
+  let changed = true
+  let guard = 0
+  while (changed && guard++ < personen.length + 12) {
+    changed = false
+    for (const p of personen) {
+      if (level.has(p.id)) continue
+      const parentsInGraph = (p.parentIds ?? []).filter((pid) => byId.has(pid))
+      if (parentsInGraph.length === 0) {
+        const sp = p.partners?.find((pr) => byId.has(pr.personId) && level.has(pr.personId))
+        if (sp) {
+          level.set(p.id, level.get(sp.personId)!)
+          changed = true
+        }
+        continue
+      }
+      if (!parentsInGraph.every((pid) => level.has(pid))) continue
+      const pl = Math.max(...parentsInGraph.map((pid) => level.get(pid)!))
+      level.set(p.id, pl + 1)
+      changed = true
+    }
+    for (const p of personen) {
+      if (level.has(p.id)) continue
+      for (const pr of p.partners ?? []) {
+        if (!byId.has(pr.personId) || !level.has(pr.personId)) continue
+        level.set(p.id, level.get(pr.personId)!)
+        changed = true
+        break
+      }
+    }
+  }
+  for (const p of personen) {
+    if (!level.has(p.id)) level.set(p.id, 0)
+  }
+  return level
+}
+
 /** Reihenfolge in der Reihe: 1 = erster, 2 = zweiter, … Quelle: positionAmongSiblings, Du-Position oder Name „Geschwister N“. */
 function getPositionInRow(
   person: K2FamiliePerson,
@@ -182,6 +238,8 @@ export default function FamilyTreeGraph({
   ichBinPersonId,
   onSetIchBin,
   ichBinPositionAmongSiblings,
+  /** Wenn gesetzt und Person in `personen`: Generationen abwärts von Du+Partner (Ebene 0), z. B. „Nur mein Familienzweig“ ohne Eltern in der Liste. */
+  familienzweigWurzelPersonId,
 }: {
   personen: K2FamiliePerson[]
   personPathPrefix?: string
@@ -203,14 +261,18 @@ export default function FamilyTreeGraph({
   onSetIchBin?: (personId: string) => void
   /** Optional: Position von Du unter den Geschwister (1…N) für Sortierung der Reihe */
   ichBinPositionAmongSiblings?: number
+  familienzweigWurzelPersonId?: string
 }) {
   const { levelMap, rows, width, height, nodePos, connectors, partnerLinks, initialPan, contentCx, contentCy } = useMemo(() => {
     if (personen.length === 0) {
       return { levelMap: new Map<string, number>(), rows: [] as string[][], width: 400, height: 120, nodePos: new Map<string, Point>(), connectors: [] as { from: Point; to: Point; viaY?: number }[], partnerLinks: [] as { a: Point; b: Point }[], initialPan: { x: 0, y: 0 }, contentCx: 200, contentCy: 60 }
     }
 
-    const levelMap = getGenerations(personen)
     const byId = new Map(personen.map((p) => [p.id, p]))
+    const levelMap =
+      familienzweigWurzelPersonId && byId.has(familienzweigWurzelPersonId)
+        ? getGenerationsFamilienzweigAbwaertsWurzel(personen, familienzweigWurzelPersonId)
+        : getGenerations(personen)
     const childIds = getChildIds(personen)
 
     const rows: string[][] = []
@@ -480,7 +542,7 @@ export default function FamilyTreeGraph({
     const initialPan = { x: width / 2 - contentCx, y: height / 2 - contentCy }
 
     return { levelMap, rows, width, height, nodePos, connectors, partnerLinks, initialPan, contentCx, contentCy }
-  }, [personen, ichBinPersonId, ichBinPositionAmongSiblings])
+  }, [personen, ichBinPersonId, ichBinPositionAmongSiblings, familienzweigWurzelPersonId])
 
   const isHorizontal = orientation === 'horizontal'
   const displayWidth = isHorizontal ? height : width

@@ -177,10 +177,13 @@ export default function K2FamilieStammbaumPage() {
     }
   }, [kachelKontext])
 
-  /** Für Grafik und Druck: bei „Nur mein Familienzweig“ nur Du + Partner + Kinder + Partner der Kinder – eine Einheit. */
+  /** Für Grafik und Karten: bei „Nur mein Familienzweig“ Du + Partner + Nachkommen – ohne Eltern-/Geschwister-Ebene oben (Grafik: Wurzel = Du + Partner). */
   const personenForGraph = useMemo(() => {
     if (nurMeinFamilienzweig && einstellungen.ichBinPersonId)
-      return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
+      return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId, {
+        includeSiblingCircle: false,
+        includeParentsOfCore: false,
+      })
     return personen
   }, [personen, einstellungen.ichBinPersonId, nurMeinFamilienzweig])
 
@@ -204,7 +207,7 @@ export default function K2FamilieStammbaumPage() {
             sortedKlein.length > 0
               ? `${sortedKlein.length} Person${sortedKlein.length === 1 ? '' : 'en'}${
                   unterSektionen.length > 1
-                    ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
+                    ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Familienast)`
                     : ''
                 }`
               : undefined,
@@ -243,7 +246,10 @@ export default function K2FamilieStammbaumPage() {
   useEffect(() => {
     if (!druck) return
     if (!einstellungen.ichBinPersonId) return
-    const klein = getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
+    const klein = getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId, {
+      includeSiblingCircle: false,
+      includeParentsOfCore: false,
+    })
     if (klein.length === 0) return
     const t = setTimeout(() => window.print(), 300)
     return () => clearTimeout(t)
@@ -302,10 +308,13 @@ export default function K2FamilieStammbaumPage() {
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
 
-  /** PDF/Plakat: ausschließlich Familienzweig (Du + Partner + Kinder + Partner der Kinder), nie die ganze Stammbaum-Datei. */
+  /** PDF/Plakat: Familienzweig wie „Nur mein Familienzweig“ (Du + Partner + Nachkommen, ohne Eltern-/Geschwisterkreis). */
   const personenFuerDruck = useMemo(() => {
     if (!einstellungen.ichBinPersonId) return [] as K2FamiliePerson[]
-    return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId)
+    return getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId, {
+      includeSiblingCircle: false,
+      includeParentsOfCore: false,
+    })
   }, [personen, einstellungen.ichBinPersonId])
 
   if (druck) {
@@ -384,6 +393,7 @@ export default function K2FamilieStammbaumPage() {
           partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
           ichBinPersonId={einstellungen.ichBinPersonId}
           ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
+          familienzweigWurzelPersonId={einstellungen.ichBinPersonId}
         />
       </div>
     )
@@ -534,6 +544,9 @@ export default function K2FamilieStammbaumPage() {
               onSetIchBin={handleSetIchBin}
               scale={viewZoom}
               orientation={viewOrientation}
+              familienzweigWurzelPersonId={
+                nurMeinFamilienzweig && einstellungen.ichBinPersonId ? einstellungen.ichBinPersonId : undefined
+              }
             />
           ) : (
             <p className="meta" style={{ margin: 0, padding: '0.75rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind.</p>
@@ -681,12 +694,12 @@ export default function K2FamilieStammbaumPage() {
 
         {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Die <strong>Kartenliste</strong> ist in <strong>Teil-Zweige</strong> gegliedert: <strong>Kern</strong> (du &amp; deine Partner) und pro <strong>Kind</strong> ein eigener Block mit Kind &amp; Partnern – jeweils bearbeitbar über „ansehen“. In der <strong>Grafik</strong> sind Paare ebenfalls erkennbar. Verstorbene: schwarzer Rand an der Kachel.
+            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Die <strong>Kartenliste</strong> ist in <strong>Teil-Zweige</strong> gegliedert: <strong>Kern</strong> (du &amp; deine Partner), dann je <strong>Familienast</strong> ein Block – <strong>Zweig</strong> für deine Kinder mit Partnern &amp; Nachkommen, <strong>Geschwister</strong> für volle Geschwister mit deren Partnern &amp; Nachkommen (nicht verwechseln mit „deinen Kindern“). Jeweils bearbeitbar über „ansehen“. In der <strong>Grafik</strong> sind Paare ebenfalls erkennbar. Verstorbene: schwarzer Rand an der Kachel.
           </p>
         )}
         {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurMeinFamilienzweig && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (Geschwister mit eigenem Ast). Innerhalb jedes Familienzweigs: <strong>Kern</strong> (Geschwister &amp; Partner) und <strong>pro Kind ein Teil-Zweig</strong> (Kind &amp; Partner) – klar getrennt, über „ansehen“ bearbeitbar. Pro Hauptblock eine Randfarbe.{' '}
+            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (ein Geschwister pro Hauptblock). Innerhalb jedes Familienzweigs: <strong>Kern</strong> (diese Person &amp; Partner) und <strong>Teil-Zweige</strong> – beschriftet als <strong>Zweig</strong> (Kinder) oder <strong>Geschwister</strong> (volle Geschwister), jeweils mit Partnern &amp; Nachkommen – über „ansehen“ bearbeitbar. Pro Hauptblock eine Randfarbe.{' '}
             <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
             {vieleStammbaumSektionen && (
               <>

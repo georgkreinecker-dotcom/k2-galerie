@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum-Grafik: Tafel-Layout (Adels-/Stammtafel-Stil)** – Partner wurden **untereinander versetzt** gezeichnet (Treppen-Optik); **viaY** pro Elternteil gestaffelt → viele parallele Zwischenlinien. **Fix:** `FamilyTreeGraph` – alle Knoten einer **Generationszeile** gleiche **Y** (Partner **nebeneinander**, gestrichelt); **eine Brücken-Y** zwischen Eltern- und Kinderzeile aus Mittel der Kinder-Y. Zuvor: Zeilen nur bei >14 Personen umbrechen, nicht nach Cousin-Blöcken. **Commit:** **f367ea89** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum **BAUM** kurz mit Großfamilie prüfen (waagrechte Generationen, Lesbarkeit Zoomen).
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Großfamilie: Gründungseltern nicht in jedem Geschwister-Zweig** – `getFamilienzweigPersonen` zieht eine Eltern-Ebene mit → dieselben Personen wie die **Eltern**-Zeile oben landeten unter **„Weitere im Familienzweig“** in jedem Ast. **Fix:** IDs aus `buildElternPersonenListe(ich)` vor dem Aufbau jedes Geschwister-Zweigs aus `roh` filtern (`rohOhneDoppelEltern`). Test ergänzt. **Commit:** **e9c6f990** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum Großfamilie – Rita & Co.: oben „Eltern“, in den Zweigen nur noch Kern/Kinder/echte Weitere ohne doppelte Eltern-Karten.

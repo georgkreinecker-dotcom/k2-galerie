@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { orderInGeneration, getChildIds, getGenerations } from '../components/FamilyTreeGraph'
+import {
+  orderInGeneration,
+  getChildIds,
+  getGenerations,
+  getGenerationsFamilienzweigAbwaertsWurzel,
+} from '../components/FamilyTreeGraph'
 import type { K2FamiliePerson } from '../types/k2Familie'
 
 function emptyRel(): Pick<K2FamiliePerson, 'parentIds' | 'childIds' | 'partners' | 'siblingIds' | 'wahlfamilieIds'> {
@@ -63,5 +68,39 @@ describe('Stammbaum Generation – Reihenfolge Geschwisterlinie & Geburtsdatum',
     const ids = personen.filter((x) => levelMap.get(x.id) === 1).map((x) => x.id)
     const ordered = orderInGeneration(personen, ids, levelMap, childIds, undefined, undefined)
     expect(ordered).toEqual(['j', 'a'])
+  })
+})
+
+describe('Familienzweig Wurzel (ohne Eltern in der Liste)', () => {
+  it('Du und Partner Ebene 0, gemeinsames Kind Ebene 1', () => {
+    const personen: K2FamiliePerson[] = [
+      {
+        id: 'g',
+        name: 'Georg',
+        ...emptyRel(),
+        parentIds: ['gp1', 'gp2'],
+        partners: [{ personId: 'martina' }],
+        childIds: ['kind'],
+      },
+      {
+        id: 'martina',
+        name: 'Martina',
+        ...emptyRel(),
+        parentIds: [],
+        partners: [{ personId: 'g' }],
+        childIds: ['kind'],
+      },
+      {
+        id: 'kind',
+        name: 'Kind',
+        ...emptyRel(),
+        parentIds: ['g', 'martina'],
+        childIds: [],
+      },
+    ]
+    const lm = getGenerationsFamilienzweigAbwaertsWurzel(personen, 'g')
+    expect(lm.get('g')).toBe(0)
+    expect(lm.get('martina')).toBe(0)
+    expect(lm.get('kind')).toBe(1)
   })
 })

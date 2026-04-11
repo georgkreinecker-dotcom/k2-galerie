@@ -3,7 +3,12 @@
  */
 
 import type { K2FamiliePerson } from '../types/k2Familie'
-import { getGenerations, getChildIds, orderInGeneration } from './FamilyTreeGraph'
+import {
+  getGenerations,
+  getGenerationsFamilienzweigAbwaertsWurzel,
+  getChildIds,
+  orderInGeneration,
+} from './FamilyTreeGraph'
 
 function byIdMap(personen: K2FamiliePerson[]): Map<string, K2FamiliePerson> {
   return new Map(personen.map((p) => [p.id, p]))
@@ -33,7 +38,14 @@ export function StammbaumDruckNachGenerationen({
   /** Wie in der Grafik: Reihenfolge „Du“ unter Geschwistern (1…N). */
   ichBinPositionAmongSiblings?: number
 }) {
-  const levelMap = getGenerations(personen)
+  const ichP = ichBinPersonId ? personen.find((p) => p.id === ichBinPersonId) : undefined
+  const pars = ichP?.parentIds ?? []
+  const alleElternInListe =
+    pars.length === 0 || pars.every((pid) => personen.some((p) => p.id === pid))
+  const levelMap =
+    ichBinPersonId && ichP && !alleElternInListe
+      ? getGenerationsFamilienzweigAbwaertsWurzel(personen, ichBinPersonId)
+      : getGenerations(personen)
   const childIds = getChildIds(personen)
   const map = byIdMap(personen)
   const maxL = Math.max(0, ...Array.from(levelMap.values()))
