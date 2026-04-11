@@ -14,8 +14,10 @@ const ROW_H = 176
 const COL_GAP = 24
 /** Zusätzlicher Abstand zwischen zwei „Blöcken“ (Geschwister + deren Partner), damit keine Partner-Kette entsteht. */
 const BLOCK_GAP = 40
-/** Höhe einer Unterzeile, wenn eine Generation in mehrere kurze Zeilen aufgeteilt wird (übersichtlicher). */
+/** Höhe einer Unterzeile, wenn eine Generation in mehrere Zeilen umgebrochen wird (nur bei sehr vielen Personen). */
 const SUB_ROW_H = 100
+/** Max. Personen pro waagrechter Zeile einer Generation – danach Umbruch (weitere Zeile darunter), nicht „Familienblöcke“ untereinander. */
+const MAX_PERSONEN_PRO_GENERATIONSZEILE = 14
 const PERSON_LINK_PATH = '/projects/k2-familie/personen'
 
 type Point = { x: number; y: number }
@@ -303,20 +305,37 @@ export default function FamilyTreeGraph({
       return Boolean(a?.partners.some((pr) => pr.personId === rowIds[j]) || b?.partners.some((pr) => pr.personId === rowIds[i]))
     }
 
-    /** Eine lange Zeile in Blöcke (Geschwister + Partner) zerlegen. */
+    /** Mindestens ein gemeinsames Elternteil (echte Geschwister in derselben Generation). */
+    const shareSameParent = (idA: string, idB: string): boolean => {
+      const a = byId.get(idA)
+      const b = byId.get(idB)
+      if (!a || !b) return false
+      if (a.parentIds.length === 0 || b.parentIds.length === 0) return false
+      const sa = new Set(a.parentIds)
+      return b.parentIds.some((pid) => sa.has(pid))
+    }
+
+    /** Zwischen zwei nebeneinander stehenden Karten: großer Block-Abstand nur zwischen **getrennten** Familien, nicht zwischen Geschwistern. */
+    const needsBlockGapBetween = (i: number, rowIds: string[]): boolean => {
+      if (i <= 0) return false
+      if (arePartnersInRow(rowIds, i - 1, i)) return false
+      if (shareSameParent(rowIds[i - 1], rowIds[i])) return false
+      return true
+    }
+
+    /**
+     * Eine Generationszeile nur **umbrechen**, wenn sie sehr lang ist (Lesbarkeit).
+     * Früher: nach „fremden“ Nachbarn (Cousins) getrennt → viele **einzelne** Unterzeilen,
+     * alle zentriert → optisch **eine vertikale Säule** statt waagrechter Äste.
+     * Eine Generation = ein durchgehendes waagrechtes Band (ggf. 2+ Zeilen bei > MAX).
+     */
     const splitIntoChunks = (rowIds: string[]): string[][] => {
-      if (rowIds.length <= 4) return [rowIds]
+      if (rowIds.length <= MAX_PERSONEN_PRO_GENERATIONSZEILE) return [rowIds]
       const chunks: string[][] = []
-      let current: string[] = []
-      for (let i = 0; i < rowIds.length; i++) {
-        if (i > 0 && !arePartnersInRow(rowIds, i - 1, i)) {
-          chunks.push(current)
-          current = []
-        }
-        current.push(rowIds[i])
+      for (let i = 0; i < rowIds.length; i += MAX_PERSONEN_PRO_GENERATIONSZEILE) {
+        chunks.push(rowIds.slice(i, i + MAX_PERSONEN_PRO_GENERATIONSZEILE))
       }
-      if (current.length > 0) chunks.push(current)
-      return chunks.length >= 3 ? chunks : [rowIds]
+      return chunks
     }
 
     rows.length = 0
@@ -332,7 +351,7 @@ export default function FamilyTreeGraph({
     rows.forEach((rowIds) => {
       let rowW = 0
       for (let i = 0; i < rowIds.length; i++) {
-        if (i > 0 && !arePartnersInRow(rowIds, i - 1, i)) rowW += BLOCK_GAP
+        if (needsBlockGapBetween(i, rowIds)) rowW += BLOCK_GAP
         rowW += NODE_W + COL_GAP
       }
       rowW -= COL_GAP
@@ -348,8 +367,8 @@ export default function FamilyTreeGraph({
     }
     const height = currentY + 40
 
-    // Partner-Versatz: Pivot-Zeile = nur Pivot oben, Partner darunter. Sonst: Zweiter im Paar darunter.
-    const partnerOffsetY = NODE_H / 2
+    // Eine waagrechte Generationslinie wie bei klassischen Stammtafeln: alle Karten einer Zeile gleiche Y,
+    // Partner nebeneinander (gestrichelte Verbindung) – kein Versatz „Zweiter unter dem Ersten“ (sonst Säulen-Look).
     currentY = 24
     rows.forEach((rowIds, rowIndex) => {
       const rowH = rowHeights[rowIndex]
@@ -357,22 +376,14 @@ export default function FamilyTreeGraph({
       currentY += rowH
       let rowW = 0
       for (let i = 0; i < rowIds.length; i++) {
-        if (i > 0 && !arePartnersInRow(rowIds, i - 1, i)) rowW += BLOCK_GAP
+        if (needsBlockGapBetween(i, rowIds)) rowW += BLOCK_GAP
         rowW += NODE_W + COL_GAP
       }
       rowW -= COL_GAP
       let currentX = (width - rowW) / 2 + (NODE_W + COL_GAP) / 2
-      const pivotInRow = rowIds.find((id) => (byId.get(id)?.partners.filter((pr) => rowIds.includes(pr.personId)).length ?? 0) >= 2) ?? null
       rowIds.forEach((id, i) => {
-        if (i > 0 && !arePartnersInRow(rowIds, i - 1, i)) currentX += BLOCK_GAP
-        let y: number
-        if (pivotInRow != null) {
-          y = id === pivotInRow ? baseY : baseY + partnerOffsetY
-        } else {
-          const isPartnerOfPrevious = i > 0 && byId.get(rowIds[i - 1])?.partners.some((pr) => pr.personId === id)
-          y = isPartnerOfPrevious ? baseY + partnerOffsetY : baseY
-        }
-        nodePos.set(id, { x: currentX, y })
+        if (needsBlockGapBetween(i, rowIds)) currentX += BLOCK_GAP
+        nodePos.set(id, { x: currentX, y: baseY })
         currentX += NODE_W + COL_GAP
       })
     })
@@ -383,30 +394,19 @@ export default function FamilyTreeGraph({
     const rowForParent = new Map<string, string[]>()
     rows.forEach((rowIds) => rowIds.forEach((id) => rowForParent.set(id, rowIds)))
 
-    // Eltern mit Kindern: Muttern eine eigene Zwischenebene (Stamm); Vaterzeile fließt in die Mutterzeile ein (Mutter = Quelle)
-    const parentsWithKids = personen
-      .filter((p) => {
-        const pos = nodePos.get(p.id)
-        if (!pos) return false
-        const fromCard = p.childIds ?? []
-        const fromChildren = childIds.get(p.id) ?? []
-        const kids = Array.from(new Set([...fromCard, ...fromChildren]))
-        return kids.some((childId) => nodePos.has(childId))
-      })
-      .map((p) => ({ id: p.id, pos: nodePos.get(p.id)! }))
-      .sort((a, b) => a.pos.x - b.pos.x)
-    const TRUNK_STEP = 18
+    // Eine gemeinsame Brücken-Y zwischen Eltern- und Kinderzeile (Tafel-Stil), nicht viele parallele Zwischenlinien.
     const parentViaY = new Map<string, number>()
-    let stepIndex = 0
-    parentsWithKids.forEach(({ id, pos }) => {
-      const rowIds = rowForParent.get(id)
-      const isPivot = rowIds != null && (byId.get(id)?.partners.filter((pr) => rowIds.includes(pr.personId)).length ?? 0) >= 2
-      if (!isPivot) {
-        parentViaY.set(id, pos.y + TRUNK_STEP + stepIndex * TRUNK_STEP)
-        stepIndex++
-      }
+    personen.forEach((p) => {
+      const parentPos = nodePos.get(p.id)
+      if (!parentPos) return
+      const fromCard = p.childIds ?? []
+      const fromChildren = childIds.get(p.id) ?? []
+      const kids = Array.from(new Set([...fromCard, ...fromChildren])).filter((cid) => nodePos.has(cid))
+      if (kids.length === 0) return
+      const childYs = kids.map((cid) => nodePos.get(cid)!.y)
+      const avgChildY = childYs.reduce((a, b) => a + b, 0) / childYs.length
+      parentViaY.set(p.id, parentPos.y + (avgChildY - parentPos.y) * 0.5)
     })
-    // Pivot (Vater) bekommt keine eigene Ebene – fließt in Mutterzeile ein
 
     // Nur verbieten: Linien zwischen „meine Kinder“ und „meine Geschwister“ (von unten zu Geschwistern)
     const userParentIds = ichBinPersonId ? (byId.get(ichBinPersonId)?.parentIds ?? []) : []
