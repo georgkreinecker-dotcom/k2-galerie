@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Personenseite: Speicherstatus sichtbar** – Beim **Stammdaten bearbeiten**: Ampel **„Nicht gespeichert“** / **„Keine offenen Änderungen“** (dirty = gleiche Logik wie Speichern); **Zuletzt gespeichert** unter dem Namen (`updatedAt`); Hinweis Stammdaten vs. Beziehungen (sofort speichern); **beforeunload** bei ungespeicherten Stammdaten. `K2FamiliePersonPage.tsx`. **Commit:** **b6aff7b6** ✅ GitHub
+
+**Was wir JETZT tun:** Person öffnen → Stammdaten bearbeiten → tippen → Ampel prüfen → Speichern → Zeitstempel aktualisiert.
+
+---
+
 **Letzter Stand:** 10.04.26 – **K2 Familie Stammbaum: Partner-Zweige in der Kartenliste** – **Kern** (Wurzel & Partner) + **pro Kind** ein Teil-Zweig (Kind & Partner); Großfamilie & „Nur mein Familienzweig“; bearbeitbar je Kachel. **`buildStammbaumPartnerUnterSektionen`**, `K2FamilieStammbaumPage`, Test. **Commit:** **7446a9db** ✅ GitHub
 
 **Was wir JETZT tun:** Nächste Session: Stammbaum mit echten Daten kurz durchklicken (Teil-Zweige, „→ ansehen“); optional Doku `K2-FAMILIE-STAMMBAUM-KLEINFAMILIEN-MUSTER.md` um UI-Unter-Zweige ergänzen.
