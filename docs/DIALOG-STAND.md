@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Rechtsklick auf Personen-Kachel** – Kontextmenü: **Person öffnen**, **Beziehungen zuordnen…** (Navigation mit `?fokus=beziehungen` zur Beziehungskarte); Schließen mit **Escape** oder Klick außerhalb; Tooltip auf Kacheln. **`K2FamilieStammbaumPage`**. Personenseite: **`person`** vor `fokus`-Effect (TS), `setSearchParams` mit Updater. **Commit:** **21b2c9e9** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum: Rechtsklick auf eine Kachel → „Beziehungen zuordnen“ → Personenseite springt zu Beziehungen; kurz prüfen.
+
+---
+
+**Letzter Stand:** 11.04.26 – **K2 Familie Großfamilie: „Weitere Personen“ vs. Kinder/Partner am Geschwister-Ast** – Die **Großfamilie-Blöcke** bauten nur **`getFamilienzweigPersonen`** (Kern über childIds/Partner); **Kinder nur mit parentIds** (ohne childIds beim Elternteil) und **Partner nur auf einer Karte** landeten fälschlich unter **„Weitere Personen“**, obwohl die **Anker-Logik** (wie bei Sortierung/Farben) sie schon zum richtigen Geschwister-Ast zuordnet. **`computeGeschwisterFamilieAnchors`** extrahiert; **`buildGrossfamilieStammbaumSektionen`** vereinigt Familienzweig + Anker. Untertitel „Weitere Personen“ präziser. Tests. **Commit:** **c29917b9** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum **Großfamilie** mit echten Daten – Joshua/Olivia/Agnes: im Familienzweig des Bruders statt „Weitere“; Agnes: **Partner*innen** in der Personenkarte unter **Beziehungen**, nicht im Stammdaten-Block.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Eltern von Kindern im Familienzweig** – Bei **„Nur mein Familienzweig“** fehlten die **Eltern der Kinder** im gefilterten Personensatz → z. B. Joshuas Eltern nicht in der Grafik. **`getFamilienzweigPersonen`** ergänzt eine **Eltern-Ebene** (parentIds der Kernpersonen: Du, Partner, Kinder, Partner der Kinder). `familieBeziehungen.ts`, Test. **Auf GitHub:** letzter Commit auf **main** mit dieser Meldung.
 
 **Was wir JETZT tun:** Stammbaum mit „Nur mein Familienzweig“ – Kind mit zwei Eltern in der Karte → beide Eltern im Baum kurz prüfen.
