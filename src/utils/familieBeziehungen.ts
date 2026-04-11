@@ -54,9 +54,9 @@ export function getBeziehungenFromKarten(
 }
 
 /**
- * Personen eines **Familienzweigs** aus Sicht einer Person: sie selbst, Partner, Kinder, Partner der Kinder.
- * Keine Enkel – nur aus den Karten. Ein Familienzweig kann wieder Paare und Kinder enthalten; im Stammbaum
- * erscheint er als **eigener Block** (Farbe), innerhalb desselben Musters wie im Gesamtbaum.
+ * Personen eines **Familienzweigs** aus Sicht einer Person: sie selbst, Partner, Kinder, Partner der Kinder,
+ * plus **eine Ebene Eltern** für all diese Kernpersonen (parentIds aus den Karten), damit z. B. die Eltern
+ * eines Kindes im Stammbaum gezeichnet werden, wenn „Nur mein Familienzweig“ aktiv ist.
  */
 export function getFamilienzweigPersonen(
   personen: K2FamiliePerson[],
@@ -64,16 +64,22 @@ export function getFamilienzweigPersonen(
 ): K2FamiliePerson[] {
   if (!personId) return []
   const byIdMap = byId(personen)
-  const ids = new Set<string>()
   const root = byIdMap.get(personId)
   if (!root) return []
-  ids.add(personId)
-  ;(root.partners ?? []).forEach((pr) => ids.add(pr.personId))
+  const baseIds: string[] = [personId]
+  ;(root.partners ?? []).forEach((pr) => baseIds.push(pr.personId))
   const kinder = getBeziehungenFromKarten(personen, personId).kinder
   kinder.forEach((k) => {
-    ids.add(k.id)
-    ;(k.partners ?? []).forEach((pr) => ids.add(pr.personId))
+    baseIds.push(k.id)
+    ;(k.partners ?? []).forEach((pr) => baseIds.push(pr.personId))
   })
+  const ids = new Set<string>(baseIds)
+  for (const id of baseIds) {
+    const p = byIdMap.get(id)
+    for (const pid of p?.parentIds ?? []) {
+      if (byIdMap.has(pid)) ids.add(pid)
+    }
+  }
   return personen.filter((p) => ids.has(p.id))
 }
 

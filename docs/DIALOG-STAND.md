@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Eltern von Kindern im Familienzweig** – Bei **„Nur mein Familienzweig“** fehlten die **Eltern der Kinder** im gefilterten Personensatz → z. B. Joshuas Eltern nicht in der Grafik. **`getFamilienzweigPersonen`** ergänzt eine **Eltern-Ebene** (parentIds der Kernpersonen: Du, Partner, Kinder, Partner der Kinder). `familieBeziehungen.ts`, Test. **Auf GitHub:** letzter Commit auf **main** mit dieser Meldung.
+
+**Was wir JETZT tun:** Stammbaum mit „Nur mein Familienzweig“ – Kind mit zwei Eltern in der Karte → beide Eltern im Baum kurz prüfen.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Personenseite: Speicherstatus sichtbar** – Beim **Stammdaten bearbeiten**: Ampel **„Nicht gespeichert“** / **„Keine offenen Änderungen“** (dirty = gleiche Logik wie Speichern); **Zuletzt gespeichert** unter dem Namen (`updatedAt`); Hinweis Stammdaten vs. Beziehungen (sofort speichern); **beforeunload** bei ungespeicherten Stammdaten. `K2FamiliePersonPage.tsx`. **Commit:** **b6aff7b6** ✅ GitHub
 
 **Was wir JETZT tun:** Person öffnen → Stammdaten bearbeiten → tippen → Ampel prüfen → Speichern → Zeitstempel aktualisiert.

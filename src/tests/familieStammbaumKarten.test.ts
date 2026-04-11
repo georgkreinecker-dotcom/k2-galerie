@@ -195,4 +195,14 @@ describe('familieStammbaumKarten', () => {
     const lukasZweig = unter.find((u) => u.key === 'kind-lukas')
     expect(lukasZweig?.personen.map((x) => x.id).sort()).toEqual(['lukas', 'nora'].sort())
   })
+
+  it('Familienzweig: Eltern der Kinder sind im gefilterten Satz (Stammbaum-Linien zu beiden Eltern)', () => {
+    const michael = p('michael', 'Michael', [])
+    const elisabeth = p('elisabeth', 'Elisabeth', [])
+    const du = p('du', 'Du', [], { childIds: ['joshua'] })
+    const joshua = p('joshua', 'Joshua', ['michael', 'elisabeth'])
+    const personen = [du, joshua, michael, elisabeth]
+    const zweig = getFamilienzweigPersonen(personen, 'du')
+    expect(zweig.map((x) => x.id).sort()).toEqual(['du', 'elisabeth', 'joshua', 'michael'].sort())
+  })
 })
