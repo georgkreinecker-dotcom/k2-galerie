@@ -109,7 +109,7 @@ describe('familieStammbaumKarten', () => {
     expect(klein[2]?.titel).toMatch(/^Familienzweig 3 – Clemens/)
   })
 
-  it('Großfamilie: Geschwister-Reihenfolge aus Eltern-childIds (z. B. Thomas vor Clemens), auch wenn positionAmongSiblings widerspricht', () => {
+  it('Großfamilie: Familienzweige nach Position unter Geschwistern – Eltern-childIds nicht gegen Position', () => {
     const m = p('m', 'Mutter', ['gm', 'gv'], { childIds: ['georg', 'thomas', 'clemens'] })
     const f = p('f', 'Vater', ['gm', 'gv'], { childIds: ['georg', 'thomas', 'clemens'] })
     const thomas = p('thomas', 'Thomas', ['m', 'f'], { pos: 12 })
@@ -120,7 +120,7 @@ describe('familieStammbaumKarten', () => {
     const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
     expect(sek).not.toBeNull()
     const klein = sek!.filter((s) => s.key.startsWith('kleinfamilie-'))
-    expect(klein.map((s) => s.key)).toEqual(['kleinfamilie-georg', 'kleinfamilie-thomas', 'kleinfamilie-clemens'])
+    expect(klein.map((s) => s.key)).toEqual(['kleinfamilie-georg', 'kleinfamilie-clemens', 'kleinfamilie-thomas'])
   })
 
   it('Großfamilie-Sektionen: Eltern zuerst, dann Familienzweige nach Geschwisterstellung', () => {

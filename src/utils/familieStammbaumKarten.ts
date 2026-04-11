@@ -417,8 +417,9 @@ function reihenfolgeKindInElternChildIds(p: K2FamiliePerson, eltern: K2FamiliePe
 }
 
 /**
- * Reihenfolge: wenn `elternFuerKindReihenfolge` gesetzt ist und beide in `childIds` vorkommen → **diese**
- * Reihenfolge zuerst (Quelle: Elternkarte). Sonst `positionAmongSiblings`, dann Geburtsdatum, dann Name.
+ * Reihenfolge: zuerst **Position unter Geschwistern** (Personenkarte, 1 = zuerst) – damit „Familienzweig 1 … n“
+ * zu diesen Nummern passt. Bei gleicher Position / ohne Position: Reihenfolge auf der **Elternkarte** (`childIds`),
+ * wenn beide dort vorkommen; sonst Geburtsdatum, dann Name.
  */
 function compareGeschwisterNachKarten(
   a: K2FamiliePerson,
@@ -430,6 +431,8 @@ function compareGeschwisterNachKarten(
   const pa = a.positionAmongSiblings ?? 9999
   const pb = b.positionAmongSiblings ?? 9999
 
+  if (pa !== pb) return pa - pb
+
   if (elternFuerKindReihenfolge && elternFuerKindReihenfolge.length > 0) {
     const oa = reihenfolgeKindInElternChildIds(a, elternFuerKindReihenfolge)
     const ob = reihenfolgeKindInElternChildIds(b, elternFuerKindReihenfolge)
@@ -440,7 +443,6 @@ function compareGeschwisterNachKarten(
     if (!knownA && knownB) return 1
   }
 
-  if (pa !== pb) return pa - pb
   if (ga && gb && ga !== gb) return ga.localeCompare(gb)
   if (ga && !gb) return -1
   if (!ga && gb) return 1
