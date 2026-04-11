@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Großfamilie: Gründungseltern nicht in jedem Geschwister-Zweig** – `getFamilienzweigPersonen` zieht eine Eltern-Ebene mit → dieselben Personen wie die **Eltern**-Zeile oben landeten unter **„Weitere im Familienzweig“** in jedem Ast. **Fix:** IDs aus `buildElternPersonenListe(ich)` vor dem Aufbau jedes Geschwister-Zweigs aus `roh` filtern (`rohOhneDoppelEltern`). Test ergänzt. **Commit:** **e9c6f990** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum Großfamilie – Rita & Co.: oben „Eltern“, in den Zweigen nur noch Kern/Kinder/echte Weitere ohne doppelte Eltern-Karten.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Rechtsklick auf Personen-Kachel** – Kontextmenü: **Person öffnen**, **Beziehungen zuordnen…** (Navigation mit `?fokus=beziehungen` zur Beziehungskarte); Schließen mit **Escape** oder Klick außerhalb; Tooltip auf Kacheln. **`K2FamilieStammbaumPage`**. Personenseite: **`person`** vor `fokus`-Effect (TS), `setSearchParams` mit Updater. **Commit:** **21b2c9e9** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum: Rechtsklick auf eine Kachel → „Beziehungen zuordnen“ → Personenseite springt zu Beziehungen; kurz prüfen.
