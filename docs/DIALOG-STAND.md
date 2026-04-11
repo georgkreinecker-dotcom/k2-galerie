@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Fix ReferenceError Geschwister-Anzeige** – `geschwisterDuAnzeige` → `geschwisterDuAnzeigeText` (`useMemo` mit fertigem String); vermeidet Laufzeitfehler „Can't find variable: geschwisterDuAnzeige“ in der „Du“-Beziehungsbox. **Commit:** _(nach Push)_
+**Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Fix ReferenceError Geschwister-Anzeige** – `geschwisterDuAnzeige` → `geschwisterDuAnzeigeText` (`useMemo` mit fertigem String); vermeidet Laufzeitfehler „Can't find variable: geschwisterDuAnzeige“ in der „Du“-Beziehungsbox. **Commit:** **ddbdedb0** ✅ GitHub
 
-**Was wir JETZT tun:** Stammbaum neu laden – Beziehungsbox „Geschwister“ ohne Fehler; ggf. Commit-Hash hier eintragen.
+**Was wir JETZT tun:** Stammbaum neu laden – Beziehungsbox „Geschwister“ ohne Fehler.
 
 ---
 
