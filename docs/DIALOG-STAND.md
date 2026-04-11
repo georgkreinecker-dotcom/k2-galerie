@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie: Geschwister aus gemeinsamen Eltern** – `getGeschwisterAusGemeinsamenEltern` / `getGeschwisterAnzeigeListe` in `familieBeziehungen.ts`: Geschwister = andere Personen mit mindestens einem gemeinsamen Elternteil (Voll- + Halbgeschwister); Anzeige = abgeleitet ∪ Legacy `siblingIds`. Personenseite: Block **Geschwister** nur Anzeige + Hinweis, kein Dropdown/„Neu als Geschwister“; ✕ nur bei reinem `siblingIds`-Rest. Kurzübersicht & Stammbaum-„Du“-Box gleiche Liste. Tests. **Commit:** **d606b4f1** ✅ GitHub
+
+**Was wir JETZT tun:** Person mit mehreren Kindern derselben Eltern öffnen – alle Geschwister in Kurzübersicht und unter Geschwister sichtbar.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Person: Kurzübersicht Eltern + Geschwister** – Unter **Beziehungen** ein Block **Kurzübersicht** (nur Anzeige): alle **Eltern** und **Geschwister** aus den Karten auf einen Blick, Links zur Person; Bearbeiten weiter in den Zeilen darunter. `getBeziehungenFromKarten`. **Commit:** **1200a5d3** ✅ GitHub
 
 **Was wir JETZT tun:** Person mit vielen Geschwistern öffnen – Kurzübersicht oben prüfen.
