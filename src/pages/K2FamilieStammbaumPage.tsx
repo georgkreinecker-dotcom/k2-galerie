@@ -4,7 +4,7 @@
  */
 
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useMemo, useEffect, useCallback, useState } from 'react'
+import { useMemo, useEffect, useCallback, useState, useRef, type MouseEvent as ReactMouseEvent } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
@@ -143,6 +143,33 @@ export default function K2FamilieStammbaumPage() {
   const ZOOM_MIN = 0.25
   const ZOOM_MAX = 2
   const ZOOM_STEP = 0.25
+
+  /** Rechtsklick auf Personen-Kachel: Kontextmenü (Zuordnen → Personenseite Beziehungen). */
+  const [kachelKontext, setKachelKontext] = useState<{ x: number; y: number; personId: string } | null>(null)
+  const kachelKontextRef = useRef<HTMLDivElement | null>(null)
+
+  const onStammbaumKachelContextMenu = (e: ReactMouseEvent, personId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setKachelKontext({ x: e.clientX, y: e.clientY, personId })
+  }
+
+  useEffect(() => {
+    if (!kachelKontext) return
+    const onDown = (ev: MouseEvent) => {
+      if (kachelKontextRef.current?.contains(ev.target as Node)) return
+      setKachelKontext(null)
+    }
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setKachelKontext(null)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [kachelKontext])
 
   /** Für Grafik und Druck: bei „Nur mein Familienzweig“ nur Du + Partner + Kinder + Partner der Kinder – eine Einheit. */
   const personenForGraph = useMemo(() => {
@@ -887,7 +914,12 @@ export default function K2FamilieStammbaumPage() {
                                   to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
                                   className="familie-card-enter"
                                   style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
-                                  title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                                  title={
+                                    p.verstorben
+                                      ? 'Verstorben · Klick: öffnen · Rechtsklick: Zuordnen'
+                                      : 'Klick: öffnen · Rechtsklick: Zuordnen'
+                                  }
+                                  onContextMenu={(e) => onStammbaumKachelContextMenu(e, p.id)}
                                 >
                                   <div
                                     className="card"
@@ -972,7 +1004,12 @@ export default function K2FamilieStammbaumPage() {
                             to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
                             className="familie-card-enter"
                             style={{ textDecoration: 'none', color: 'inherit', animationDelay: delay }}
-                            title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                            title={
+                              p.verstorben
+                                ? 'Verstorben · Klick: öffnen · Rechtsklick: Zuordnen'
+                                : 'Klick: öffnen · Rechtsklick: Zuordnen'
+                            }
+                            onContextMenu={(e) => onStammbaumKachelContextMenu(e, p.id)}
                           >
                             <div
                               className="card"
@@ -1052,7 +1089,12 @@ export default function K2FamilieStammbaumPage() {
                   to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
                   className="familie-card-enter"
                   style={{ textDecoration: 'none', color: 'inherit', animationDelay: `${i * 0.06}s` }}
-                  title={p.verstorben ? 'Verstorben – Person ansehen' : undefined}
+                  title={
+                    p.verstorben
+                      ? 'Verstorben · Klick: öffnen · Rechtsklick: Zuordnen'
+                      : 'Klick: öffnen · Rechtsklick: Zuordnen'
+                  }
+                  onContextMenu={(e) => onStammbaumKachelContextMenu(e, p.id)}
                 >
                   <div
                     className="card"
@@ -1149,6 +1191,91 @@ export default function K2FamilieStammbaumPage() {
             )}
           </div>
         )}
+
+        {kachelKontext &&
+          (() => {
+            const menuW = 220
+            const menuH = 96
+            const ww = typeof window !== 'undefined' ? window.innerWidth : 800
+            const wh = typeof window !== 'undefined' ? window.innerHeight : 600
+            const bx = Math.max(8, Math.min(kachelKontext.x, ww - menuW - 8))
+            const by = Math.max(8, Math.min(kachelKontext.y, wh - menuH - 8))
+            const personenBase = PROJECT_ROUTES['k2-familie'].personen
+            return (
+              <div
+                ref={kachelKontextRef}
+                role="menu"
+                aria-label="Personen-Kachel"
+                style={{
+                  position: 'fixed',
+                  left: bx,
+                  top: by,
+                  zIndex: 10000,
+                  minWidth: menuW,
+                  padding: '0.35rem 0',
+                  background: 'rgba(15,23,42,0.98)',
+                  border: '1px solid rgba(148,163,184,0.45)',
+                  borderRadius: 10,
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
+                }}
+              >
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="btn-outline"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    border: 'none',
+                    borderRadius: 0,
+                    padding: '0.55rem 1rem',
+                    background: 'transparent',
+                    color: '#e2e8f0',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(148,163,184,0.18)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                  }}
+                  onClick={() => {
+                    navigate(`${personenBase}/${kachelKontext.personId}`)
+                    setKachelKontext(null)
+                  }}
+                >
+                  Person öffnen
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="btn-outline"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'left',
+                    border: 'none',
+                    borderRadius: 0,
+                    padding: '0.55rem 1rem',
+                    background: 'transparent',
+                    color: '#e2e8f0',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(148,163,184,0.18)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent'
+                  }}
+                  onClick={() => {
+                    navigate(`${personenBase}/${kachelKontext.personId}?fokus=beziehungen`)
+                    setKachelKontext(null)
+                  }}
+                >
+                  Beziehungen zuordnen…
+                </button>
+              </div>
+            )
+          })()}
       </div>
     </div>
   )

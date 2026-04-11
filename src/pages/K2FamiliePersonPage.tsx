@@ -3,7 +3,7 @@
  * Route: /projects/k2-familie/personen/:id
  */
 
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -61,6 +61,7 @@ function computeStammdatenDirty(
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId } = useFamilieTenant()
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
@@ -83,6 +84,26 @@ export default function K2FamiliePersonPage() {
   const [beitragVonWem, setBeitragVonWem] = useState('')
   const [positionAmongSiblingsInput, setPositionAmongSiblingsInput] = useState<string>('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [beziehungenFokusHighlight, setBeziehungenFokusHighlight] = useState(false)
+
+  const person = personen.find((p) => p.id === id)
+  const fokusParam = searchParams.get('fokus')
+  useEffect(() => {
+    if (!person || fokusParam !== 'beziehungen') return
+    requestAnimationFrame(() => {
+      document.getElementById('k2-familie-beziehungen')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      setBeziehungenFokusHighlight(true)
+      window.setTimeout(() => setBeziehungenFokusHighlight(false), 2600)
+    })
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('fokus')
+        return next
+      },
+      { replace: true }
+    )
+  }, [person?.id, fokusParam, person, setSearchParams])
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -97,8 +118,6 @@ export default function K2FamiliePersonPage() {
       setBeitraege(loadBeitraege(currentTenantId))
     })
   }, [id, currentTenantId])
-
-  const person = personen.find((p) => p.id === id)
 
   useEffect(() => {
     if (person) {
@@ -779,7 +798,17 @@ export default function K2FamiliePersonPage() {
           </div>
         </div>
 
-        <div className="card" style={{ marginTop: '1.5rem' }}>
+        <div
+          id="k2-familie-beziehungen"
+          className="card"
+          style={{
+            marginTop: '1.5rem',
+            transition: 'box-shadow 0.35s ease',
+            ...(beziehungenFokusHighlight
+              ? { boxShadow: '0 0 0 3px rgba(45, 212, 191, 0.75), 0 4px 24px rgba(13, 148, 136, 0.35)' }
+              : {}),
+          }}
+        >
           <h2>Beziehungen</h2>
           <p className="meta" style={{ margin: '0 0 0.75rem' }}>
             <strong>+ Hinzufügen</strong> (bzw. <strong>+ Vorschlag</strong> bei eindeutigem Treffer) verknüpft <em>bestehende</em> Personen. <strong>Neue Person anlegen</strong> steht <em>immer</em> direkt daneben – Name und Daten trägst du auf der neuen Personenseite ein. <strong>Zwei Eltern bei einem Kind:</strong> Kind zuerst bei einem Elternteil anlegen oder verknüpfen, dann die <strong>Kinderseite</strong> öffnen und unter <strong>Eltern</strong> den zweiten Elternteil hinzufügen (z. B. Justina). <strong>Geschwister:</strong> dieselben Eltern in der Karte wie beim Bruder/der Schwester – oder unter <strong>Geschwister</strong> verknüpfen.
