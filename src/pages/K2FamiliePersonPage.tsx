@@ -13,6 +13,7 @@ import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
 import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/familieDatumEingabe'
+import { getBeziehungenFromKarten } from '../utils/familieBeziehungen'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -89,6 +90,11 @@ export default function K2FamiliePersonPage() {
   const [beziehungenFokusHighlight, setBeziehungenFokusHighlight] = useState(false)
 
   const person = personen.find((p) => p.id === id)
+  const beziehungenKurz = useMemo(() => {
+    if (!id) return { eltern: [] as K2FamiliePerson[], geschwister: [] as K2FamiliePerson[] }
+    const b = getBeziehungenFromKarten(personen, id)
+    return { eltern: b.eltern, geschwister: b.geschwister }
+  }, [personen, id])
   const fokusParam = searchParams.get('fokus')
   useEffect(() => {
     if (!person || fokusParam !== 'beziehungen') return
@@ -862,6 +868,59 @@ export default function K2FamiliePersonPage() {
               </li>
             </ul>
           </details>
+          <div
+            className="meta"
+            role="region"
+            aria-label="Kurzübersicht Eltern und Geschwister"
+            style={{
+              margin: '0 0 1rem',
+              padding: '0.65rem 0.75rem',
+              background: 'rgba(0,0,0,0.18)',
+              borderRadius: 8,
+              border: '1px solid rgba(20,184,166,0.22)',
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ fontWeight: 600, marginBottom: '0.45rem', color: 'rgba(20,184,166,0.95)' }}>
+              Kurzübersicht <span className="meta" style={{ fontWeight: 400 }}>– nur Anzeige; ändern unten in den Zeilen</span>
+            </div>
+            <div style={{ display: 'grid', gap: '0.45rem' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                <span className="meta" style={{ minWidth: '5.5rem', fontWeight: 600 }}>Eltern:</span>
+                {beziehungenKurz.eltern.length === 0 ? (
+                  <span className="meta">–</span>
+                ) : (
+                  beziehungenKurz.eltern.map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                      className="btn"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}
+                    >
+                      {p.name}
+                    </Link>
+                  ))
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', alignItems: 'center' }}>
+                <span className="meta" style={{ minWidth: '5.5rem', fontWeight: 600 }}>Geschwister:</span>
+                {beziehungenKurz.geschwister.length === 0 ? (
+                  <span className="meta">–</span>
+                ) : (
+                  beziehungenKurz.geschwister.map((p) => (
+                    <Link
+                      key={p.id}
+                      to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`}
+                      className="btn"
+                      style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}
+                    >
+                      {p.name}
+                    </Link>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
           {row('Eltern', person.parentIds, addParent, removeParent, () => person.parentIds, 'parent')}
           {row('Kinder', person.childIds, addChild, removeChild, () => person.childIds, 'child')}
           <div style={{ marginBottom: '1rem' }}>

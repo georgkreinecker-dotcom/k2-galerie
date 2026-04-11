@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie Person: Kurzübersicht Eltern + Geschwister** – Unter **Beziehungen** ein Block **Kurzübersicht** (nur Anzeige): alle **Eltern** und **Geschwister** aus den Karten auf einen Blick, Links zur Person; Bearbeiten weiter in den Zeilen darunter. `getBeziehungenFromKarten`. **Commit:** *(nach Push)*
+
+**Was wir JETZT tun:** Person mit vielen Geschwistern öffnen – Kurzübersicht oben prüfen.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie: Beziehungen vereinfacht (UX)** – Personenseite: kurzer **So geht’s**-Kasten, lange Beispiele in **ausklappbare Tipps**; Dropdowns **Person wählen …** / **Vorschlag wählen …**; Buttons **＋ Neu als …**; nach **Neu anlegen** Navigation mit **← Zurück zu [Name]** (Ausgangsperson). Stammbaum: kurzer Kopftext, Details unter **Mehr: Partner, Kinder, Reihenfolge**. `K2FamiliePersonPage.tsx`, `K2FamilieStammbaumPage.tsx`. **Commit:** **82cdeb04** ✅ GitHub
 
 **Was wir JETZT tun:** Einmal durchspielen: bestehende Person verknüpfen → Neu → Zurück; Stammbaum-Tipps aufklappen.
