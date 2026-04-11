@@ -398,8 +398,27 @@ export interface StammbaumKartenSektion {
 }
 
 /**
+ * Bei gleicher `positionAmongSiblings`: zuerst **Geburtsdatum** (älter zuerst), dann Name.
+ * Nur Name wäre falsch (z. B. Clemens vor Thomas alphabetisch, obwohl Thomas der Ältere sein kann).
+ */
+function compareGeschwisterNachKarten(a: K2FamiliePerson, b: K2FamiliePerson): number {
+  const pa = a.positionAmongSiblings ?? 9999
+  const pb = b.positionAmongSiblings ?? 9999
+  if (pa !== pb) return pa - pb
+  const ga = (a.geburtsdatum ?? '').trim()
+  const gb = (b.geburtsdatum ?? '').trim()
+  if (ga && gb && ga !== gb) return ga.localeCompare(gb)
+  if (ga && !gb) return -1
+  if (!ga && gb) return 1
+  return a.name.localeCompare(b.name, 'de')
+}
+
+/**
  * Großfamilie: nacheinander Eltern, dann jeder Geschwister-Familienzweig in Geschwisterreihenfolge (1, 2, …),
  * zuletzt Personen ohne Zuordnung. Voraussetzung: „Ich bin“ mit zwei Eltern in den Karten.
+ *
+ * Die **Nummer im Titel** ist die **laufende Nummer** nach Sortierung (1…n), nicht `positionAmongSiblings`.
+ * Sonst zeigen zwei Personen mit derselben Geburtsreihenfolge-Zahl (z. B. beide 11) dieselbe Überschrift.
  */
 export function buildGrossfamilieStammbaumSektionen(
   personen: K2FamiliePerson[],
@@ -419,12 +438,7 @@ export function buildGrossfamilieStammbaumSektionen(
       if (multiElternteil) return p.parentIds.includes(multiElternteil)
       return [...p.parentIds].sort().join('|') === elternKeyStrict
     })
-    .sort((a, b) => {
-      const pa = a.positionAmongSiblings ?? 9999
-      const pb = b.positionAmongSiblings ?? 9999
-      if (pa !== pb) return pa - pb
-      return a.name.localeCompare(b.name, 'de')
-    })
+    .sort(compareGeschwisterNachKarten)
 
   const sections: StammbaumKartenSektion[] = []
   let bi = 0
@@ -443,12 +457,11 @@ export function buildGrossfamilieStammbaumSektionen(
     elternPersonen.forEach((p) => erfasst.add(p.id))
   }
 
-  for (const g of geschwister) {
+  geschwister.forEach((g, geschwisterIndex) => {
     const roh = getFamilienzweigPersonen(personen, g.id)
     const klein = buildStammbaumKartenState(roh, g.id).sortedPersonen
     const unterSektionen = buildStammbaumPartnerUnterSektionen(personen, g.id, klein)
-    const pos = g.positionAmongSiblings
-    const posLabel = pos != null && pos >= 1 ? String(pos) : '–'
+    const posLabel = String(geschwisterIndex + 1)
     const zweigTeile =
       unterSektionen.length > 1
         ? ` · ${unterSektionen.length} Teil-Zweige (Kern & Partner je Kind)`
@@ -462,7 +475,7 @@ export function buildGrossfamilieStammbaumSektionen(
       unterSektionen: unterSektionen.length > 0 ? unterSektionen : undefined,
     })
     klein.forEach((p) => erfasst.add(p.id))
-  }
+  })
 
   const weitere = personen.filter((p) => !erfasst.has(p.id))
   if (weitere.length > 0) {

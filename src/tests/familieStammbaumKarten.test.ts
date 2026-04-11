@@ -15,6 +15,7 @@ function p(
   parentIds: string[],
   opts?: {
     pos?: number
+    geb?: string
     partners?: { personId: string; from: string | null; to: string | null }[]
     childIds?: string[]
   }
@@ -28,6 +29,7 @@ function p(
     partners: opts?.partners ?? [],
     wahlfamilieIds: [],
     positionAmongSiblings: opts?.pos,
+    geburtsdatum: opts?.geb,
   }
 }
 
@@ -84,6 +86,24 @@ describe('familieStammbaumKarten', () => {
     const pList = [a, b]
     const { getBranchKey } = buildStammbaumKartenState(pList, 'a')
     expect(getBranchKey(b)).toBe(getBranchKey(a))
+  })
+
+  it('Großfamilie: gleiche positionAmongSiblings bei zwei Geschwistern → trotzdem eindeutige Familienzweig-Nummern; bei Gleichstand Geburtsdatum (älter zuerst)', () => {
+    const m = p('m', 'Mutter', ['gm', 'gv'])
+    const f = p('f', 'Vater', ['gm', 'gv'])
+    const thomas = p('thomas', 'Thomas Kreinecker', ['m', 'f'], { pos: 11, geb: '1940-05-01' })
+    const clemens = p('clemens', 'Clemens Kreinecker', ['m', 'f'], { pos: 11, geb: '1942-01-01' })
+    const georg = p('georg', 'Georg', ['m', 'f'], { pos: 1 })
+    const personen = [m, f, clemens, thomas, georg]
+
+    const sek = buildGrossfamilieStammbaumSektionen(personen, 'georg')
+    expect(sek).not.toBeNull()
+    const klein = sek!.filter((s) => s.key.startsWith('kleinfamilie-'))
+    const nums = klein.map((s) => s.titel.match(/^Familienzweig\s+(\d+)\s/)?.[1])
+    expect(nums.length).toBe(klein.length)
+    expect(new Set(nums).size).toBe(nums.length)
+    expect(klein.find((s) => s.titel.includes('Thomas'))?.titel).toMatch(/^Familienzweig 2 –/)
+    expect(klein.find((s) => s.titel.includes('Clemens'))?.titel).toMatch(/^Familienzweig 3 –/)
   })
 
   it('Großfamilie-Sektionen: Eltern zuerst, dann Familienzweige nach Geschwisterstellung', () => {
