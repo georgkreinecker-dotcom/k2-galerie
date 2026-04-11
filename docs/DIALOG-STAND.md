@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **K2 Familie: Beziehungen vereinfacht (UX)** – Personenseite: kurzer **So geht’s**-Kasten, lange Beispiele in **ausklappbare Tipps**; Dropdowns **Person wählen …** / **Vorschlag wählen …**; Buttons **＋ Neu als …**; nach **Neu anlegen** Navigation mit **← Zurück zu [Name]** (Ausgangsperson). Stammbaum: kurzer Kopftext, Details unter **Mehr: Partner, Kinder, Reihenfolge**. `K2FamiliePersonPage.tsx`, `K2FamilieStammbaumPage.tsx`. **Commit:** **770ba2b3** ✅ GitHub
+**Letzter Stand:** 11.04.26 – **K2 Familie: Beziehungen vereinfacht (UX)** – Personenseite: kurzer **So geht’s**-Kasten, lange Beispiele in **ausklappbare Tipps**; Dropdowns **Person wählen …** / **Vorschlag wählen …**; Buttons **＋ Neu als …**; nach **Neu anlegen** Navigation mit **← Zurück zu [Name]** (Ausgangsperson). Stammbaum: kurzer Kopftext, Details unter **Mehr: Partner, Kinder, Reihenfolge**. `K2FamiliePersonPage.tsx`, `K2FamilieStammbaumPage.tsx`. **Commit:** **82cdeb04** ✅ GitHub
 
 **Was wir JETZT tun:** Einmal durchspielen: bestehende Person verknüpfen → Neu → Zurück; Stammbaum-Tipps aufklappen.
 
