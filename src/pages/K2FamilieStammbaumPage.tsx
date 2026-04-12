@@ -4,7 +4,7 @@
  */
 
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useMemo, useEffect, useCallback, useState, useRef, type MouseEvent as ReactMouseEvent } from 'react'
+import { useMemo, useEffect, useLayoutEffect, useCallback, useState, useRef, type MouseEvent as ReactMouseEvent } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
@@ -52,8 +52,9 @@ function parsePrintStil(raw: string | null): PrintStil {
 type StammbaumBereich = 'uebersicht' | 'karten' | 'nach-oben' | 'grafik' | 'pdf'
 
 function parseStammbaumBereich(raw: string | null): StammbaumBereich {
-  const v = raw?.toLowerCase()
+  const v = raw?.toLowerCase()?.trim()
   if (v === 'karten' || v === 'nach-oben' || v === 'grafik' || v === 'pdf') return v
+  if (v === 'uebersicht') return 'uebersicht'
   return 'uebersicht'
 }
 
@@ -123,13 +124,13 @@ function defaultStammbaumSekOpen(
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const stammbaumBereich = parseStammbaumBereich(searchParams.get('bereich'))
+  const bereichParam = searchParams.get('bereich')
   const setStammbaumBereich = useCallback(
     (b: StammbaumBereich) => {
       setSearchParams(
         (prev) => {
           const n = new URLSearchParams(prev)
-          if (b === 'uebersicht') n.delete('bereich')
+          if (b === 'uebersicht') n.set('bereich', 'uebersicht')
           else n.set('bereich', b)
           return n
         },
@@ -138,10 +139,6 @@ export default function K2FamilieStammbaumPage() {
     },
     [setSearchParams]
   )
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [stammbaumBereich])
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const [synced, setSynced] = useState(false)
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
@@ -153,6 +150,28 @@ export default function K2FamilieStammbaumPage() {
     loadFamilieFromSupabase(currentTenantId).then(() => setSynced(true))
   }, [currentTenantId])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, synced, stammbaumRefresh])
+  const stammbaumBereich = useMemo((): StammbaumBereich => {
+    const p = parseStammbaumBereich(bereichParam)
+    if (personen.length > 0 && (bereichParam === null || bereichParam === '')) return 'karten'
+    return p
+  }, [bereichParam, personen.length])
+  useLayoutEffect(() => {
+    if (personen.length === 0) return
+    if (bereichParam === null || bereichParam === '') {
+      setSearchParams(
+        (prev) => {
+          const n = new URLSearchParams(prev)
+          n.set('bereich', 'karten')
+          return n
+        },
+        { replace: true }
+      )
+    }
+  }, [personen.length, bereichParam, setSearchParams])
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [stammbaumBereich])
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, stammbaumRefresh])
   const partnerHerkunftPerson = useMemo(() => {
     const id = einstellungen.partnerHerkunftPersonId
@@ -554,9 +573,6 @@ export default function K2FamilieStammbaumPage() {
                 {partnerHerkunftPerson && (
                   <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
                 )}
-                <p className="meta" style={{ margin: '0.35rem 0 0', lineHeight: 1.45, maxWidth: '40rem' }}>
-                  <strong>Ausgangspunkt: du.</strong> Zuerst nach <strong>unten</strong> (Partner, Kinder), dann Schritt für Schritt nach <strong>oben</strong> (Eltern …). Klick auf eine Person öffnet die Seite.
-                </p>
                 <details className="meta" style={{ margin: '0.35rem 0 0' }}>
                   <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Kurz: „Das bin ich“, Partner, Kinder</summary>
                   <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
@@ -585,36 +601,36 @@ export default function K2FamilieStammbaumPage() {
             )}
             {personen.length > 0 && !zeigeStammbaumUebersicht && (
               <div className="no-print" style={{ marginTop: '0.35rem' }}>
-                <button type="button" className="btn" style={{ marginBottom: '0.5rem' }} onClick={() => setStammbaumBereich('uebersicht')}>
-                  ← Zur Übersicht
-                </button>
-                <h1 style={{ margin: 0, fontSize: '1.12rem', color: 'rgba(255,255,255,0.96)' }}>{STAMMBAUM_BEREICH_TITEL[stammbaumBereich]}</h1>
-                <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.88rem', lineHeight: 1.45 }}>
-                  Ein Bereich nach dem anderen – nicht alles auf einer Seite.
-                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem 0.75rem', marginBottom: '0.35rem' }}>
+                  <h1 style={{ margin: 0, fontSize: '1.12rem', color: 'rgba(255,255,255,0.96)' }}>{STAMMBAUM_BEREICH_TITEL[stammbaumBereich]}</h1>
+                  <label htmlFor="k2-familie-stammbaum-bereich" className="meta" style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                    Wechseln:
+                  </label>
+                  <select
+                    id="k2-familie-stammbaum-bereich"
+                    aria-label="Stammbaum-Bereich wechseln"
+                    value={stammbaumBereich}
+                    onChange={(e) => setStammbaumBereich(e.target.value as Exclude<StammbaumBereich, 'uebersicht'>)}
+                    style={{
+                      background: 'rgba(15,23,42,0.92)',
+                      color: 'rgba(255,255,255,0.96)',
+                      border: '1px solid rgba(20,184,166,0.55)',
+                      borderRadius: 8,
+                      padding: '0.38rem 0.65rem',
+                      fontSize: '0.88rem',
+                      maxWidth: '100%',
+                      minWidth: 'min(100%, 17rem)',
+                    }}
+                  >
+                    <option value="karten">Kartenliste – Partner, Kinder</option>
+                    <option value="nach-oben">Nach oben – Eltern &amp; Vorfahren</option>
+                    <option value="grafik">Grafik</option>
+                    <option value="pdf">PDF &amp; Drucken</option>
+                  </select>
+                </div>
                 {partnerHerkunftPerson && (
                   <p className="meta" style={{ margin: '0.35rem 0 0', color: 'rgba(20,184,166,0.95)', fontSize: '0.85rem' }}>Zwei Zweige: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
                 )}
-                <nav aria-label="Bereich wechseln" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.65rem' }}>
-                  {(
-                    [
-                      ['karten', '1 · Unten'],
-                      ['nach-oben', '2 · Oben'],
-                      ['grafik', '3 · Grafik'],
-                      ['pdf', '4 · PDF'],
-                    ] as const
-                  ).map(([id, label]) => (
-                    <button
-                      key={id}
-                      type="button"
-                      className={stammbaumBereich === id ? 'btn' : 'btn-outline'}
-                      style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem' }}
-                      onClick={() => setStammbaumBereich(id)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </nav>
               </div>
             )}
           </div>
