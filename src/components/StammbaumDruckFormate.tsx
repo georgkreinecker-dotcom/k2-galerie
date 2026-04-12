@@ -1,9 +1,13 @@
 /**
  * K2 Familie – übersichtliche Druck-/PDF-Formate ohne Grafik (Liste, Register).
+ * Gliederung: immer Familienzweig-Gruppen (wie Stammbaum-Karten), innerhalb Zweig nach
+ * Geschwisterfolge oder Geburtsdatum – keine reine A–Z-Sortierung.
  */
 
 import type { ReactNode } from 'react'
+import { Fragment } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { buildStammbaumKartenState } from '../utils/familieStammbaumKarten'
 import { familienKatalogSpalteLabel, normalizeFamilieKatalogSpalten } from '../utils/familieKatalogPreferences'
 import {
   getGenerations,
@@ -43,21 +47,109 @@ function shortKartenId(id: string): string {
   return `…${id.slice(-12)}`
 }
 
-export type KatalogSortierung = 'name' | 'geburt'
+/** Innerhalb jedes Zweigs: wie im Stammbaum (Geschwisterfolge) oder nach Geburtsjahr. */
+export type KatalogSortierung = 'geschwister' | 'geburt'
 
-function sortPersonenKatalog(list: K2FamiliePerson[], sort: KatalogSortierung): K2FamiliePerson[] {
-  const copy = [...list]
-  if (sort === 'name') {
-    copy.sort((a, b) => a.name.localeCompare(b.name, 'de'))
-    return copy
+/** Aufeinanderfolgende Personen mit gleichem Zweig-Schlüssel → eine Gruppe (Reihenfolge wie Karten). */
+function groupConsecutiveByBranchKey(
+  sorted: K2FamiliePerson[],
+  getBranchKey: (p: K2FamiliePerson) => string
+): { key: string; personen: K2FamiliePerson[] }[] {
+  const groups: { key: string; personen: K2FamiliePerson[] }[] = []
+  for (const p of sorted) {
+    const k = getBranchKey(p)
+    const last = groups[groups.length - 1]
+    if (last && last.key === k) last.personen.push(p)
+    else groups.push({ key: k, personen: [p] })
   }
-  copy.sort((a, b) => {
+  return groups
+}
+
+function branchLabelFuerDruck(key: string, map: Map<string, K2FamiliePerson>): string {
+  if (key.startsWith('geschwister-ast:')) {
+    const id = key.slice('geschwister-ast:'.length)
+    const n = map.get(id)?.name?.trim()
+    return n ? `Familienzweig · ${n}` : `Familienzweig · ${shortKartenId(id)}`
+  }
+  if (key.startsWith('root:')) {
+    const id = key.slice('root:'.length)
+    const n = map.get(id)?.name?.trim()
+    return n ? `Stamm · ${n}` : `Stamm · ${shortKartenId(id)}`
+  }
+  const ids = key.split('|').filter(Boolean)
+  if (ids.length >= 2) {
+    const n1 = map.get(ids[0]!)?.name ?? '…'
+    const n2 = map.get(ids[1]!)?.name ?? '…'
+    return `Zweig · Kinder von ${n1} & ${n2}`
+  }
+  if (ids.length === 1) {
+    const n1 = map.get(ids[0]!)?.name ?? '…'
+    return `Zweig · ${n1}`
+  }
+  return `Zweig · ${key}`
+}
+
+function sortPersonenInnerhalbZweigGeburt(list: K2FamiliePerson[]): K2FamiliePerson[] {
+  return [...list].sort((a, b) => {
     const ya = geburtJahr(a.geburtsdatum)
     const yb = geburtJahr(b.geburtsdatum)
     if (ya !== yb) return ya - yb
+    const pa = a.positionAmongSiblings ?? 9999
+    const pb = b.positionAmongSiblings ?? 9999
+    if (pa !== pb) return pa - pb
+    const ga = a.geburtsdatum ?? ''
+    const gb = b.geburtsdatum ?? ''
+    if (ga !== gb) return ga.localeCompare(gb)
     return a.name.localeCompare(b.name, 'de')
   })
-  return copy
+}
+
+type KatalogZweigGruppe = { branchKey: string; branchLabel: string; personen: K2FamiliePerson[] }
+
+function buildKatalogZweigGruppen(
+  personen: K2FamiliePerson[],
+  ichBinPersonId: string | undefined,
+  sort: KatalogSortierung
+): KatalogZweigGruppe[] {
+  const state = buildStammbaumKartenState(personen, ichBinPersonId)
+  const map = byIdMap(personen)
+  const groups = groupConsecutiveByBranchKey(state.sortedPersonen, state.getBranchKey)
+  return groups.map(({ key, personen: ps }) => ({
+    branchKey: key,
+    branchLabel: branchLabelFuerDruck(key, map),
+    personen: sort === 'geburt' ? sortPersonenInnerhalbZweigGeburt(ps) : ps,
+  }))
+}
+
+function generationRowsFuerZweig(
+  groupPersonen: K2FamiliePerson[],
+  allPersonen: K2FamiliePerson[],
+  levelMap: Map<string, number>,
+  childIds: Map<string, string[]>,
+  maxL: number,
+  ichBinPersonId?: string,
+  ichBinPositionAmongSiblings?: number
+): { level: number; persons: K2FamiliePerson[] }[] {
+  const inSet = new Set(groupPersonen.map((p) => p.id))
+  const map = byIdMap(allPersonen)
+  const rows: { level: number; persons: K2FamiliePerson[] }[] = []
+  for (let L = 0; L <= maxL; L++) {
+    const ids = allPersonen
+      .filter((p) => inSet.has(p.id) && levelMap.get(p.id) === L)
+      .map((p) => p.id)
+    if (!ids.length) continue
+    const orderedIds = orderInGeneration(
+      allPersonen,
+      ids,
+      levelMap,
+      childIds,
+      ichBinPersonId,
+      ichBinPositionAmongSiblings
+    )
+    const ps = orderedIds.map((id) => map.get(id)).filter((p): p is K2FamiliePerson => p != null)
+    if (ps.length) rows.push({ level: L, persons: ps })
+  }
+  return rows
 }
 
 function nameList(ids: string[], map: Map<string, K2FamiliePerson>): string {
@@ -89,51 +181,65 @@ export function StammbaumDruckNachGenerationen({
   const childIds = getChildIds(personen)
   const map = byIdMap(personen)
   const maxL = Math.max(0, ...Array.from(levelMap.values()))
-  const rows: { level: number; persons: K2FamiliePerson[] }[] = []
-  for (let L = 0; L <= maxL; L++) {
-    const ids = personen.filter((p) => levelMap.get(p.id) === L).map((p) => p.id)
-    const orderedIds = orderInGeneration(personen, ids, levelMap, childIds, ichBinPersonId, ichBinPositionAmongSiblings)
-    const ps = orderedIds.map((id) => map.get(id)).filter((p): p is K2FamiliePerson => p != null)
-    if (ps.length) rows.push({ level: L, persons: ps })
-  }
+  const kartenState = buildStammbaumKartenState(personen, ichBinPersonId)
+  const zweigGruppen = groupConsecutiveByBranchKey(kartenState.sortedPersonen, kartenState.getBranchKey)
 
   return (
     <div className="stammbaum-print-liste stammbaum-print-nach-generationen">
       <h1 className="stammbaum-druck-titel">{titel}</h1>
-      <p className="stammbaum-print-untertitel">Übersicht nach Generationen (ohne Grafik)</p>
-      {rows.map(({ level, persons: ps }) => (
-        <section key={level} className="stammbaum-print-sektion">
-          <h2 className="stammbaum-print-h2">
-            {level === 0 ? 'Wurzel / älteste Ebene' : `Generation / Ebene ${level}`}
-          </h2>
-          <ul className="stammbaum-print-ul">
-            {ps.map((p) => (
-              <li key={p.id} className="stammbaum-print-li">
-                <strong className="stammbaum-print-name">
-                  {p.name}
-                  {ichBinPersonId === p.id && <span className="stammbaum-print-du"> (Du)</span>}
-                </strong>
-                {p.maedchenname ? (
-                  <span className="stammbaum-print-meta"> · geb. {p.maedchenname}</span>
-                ) : null}
-                {p.geburtsdatum ? (
-                  <span className="stammbaum-print-meta"> · {formatGeb(p.geburtsdatum)}</span>
-                ) : null}
-                {p.verstorben ? (
-                  <span className="stammbaum-print-meta"> · verstorben</span>
-                ) : null}
-                <div className="stammbaum-print-detail">
-                  Eltern: {nameList(p.parentIds, map)}
-                  {' · '}
-                  Kinder: {nameList(p.childIds, map)}
-                  {' · '}
-                  Partner: {nameList(p.partners.map((x) => x.personId), map)}
-                </div>
-              </li>
+      <p className="stammbaum-print-untertitel">
+        Übersicht nach Familienzweigen und Generationen (ohne Grafik)
+      </p>
+      {zweigGruppen.map(({ key, personen: gruppe }) => {
+        const rows = generationRowsFuerZweig(
+          gruppe,
+          personen,
+          levelMap,
+          childIds,
+          maxL,
+          ichBinPersonId,
+          ichBinPositionAmongSiblings
+        )
+        if (!rows.length) return null
+        return (
+          <section key={key} className="stammbaum-print-sektion stammbaum-print-sektion-zweig">
+            <h2 className="stammbaum-print-h2 stammbaum-print-h2-zweig">{branchLabelFuerDruck(key, map)}</h2>
+            {rows.map(({ level, persons: ps }) => (
+              <div key={level} className="stammbaum-print-generation-block">
+                <h3 className="stammbaum-print-h3">
+                  {level === 0 ? 'Wurzel / älteste Ebene' : `Generation / Ebene ${level}`}
+                </h3>
+                <ul className="stammbaum-print-ul">
+                  {ps.map((p) => (
+                    <li key={p.id} className="stammbaum-print-li">
+                      <strong className="stammbaum-print-name">
+                        {p.name}
+                        {ichBinPersonId === p.id && <span className="stammbaum-print-du"> (Du)</span>}
+                      </strong>
+                      {p.maedchenname ? (
+                        <span className="stammbaum-print-meta"> · geb. {p.maedchenname}</span>
+                      ) : null}
+                      {p.geburtsdatum ? (
+                        <span className="stammbaum-print-meta"> · {formatGeb(p.geburtsdatum)}</span>
+                      ) : null}
+                      {p.verstorben ? (
+                        <span className="stammbaum-print-meta"> · verstorben</span>
+                      ) : null}
+                      <div className="stammbaum-print-detail">
+                        Eltern: {nameList(p.parentIds, map)}
+                        {' · '}
+                        Kinder: {nameList(p.childIds, map)}
+                        {' · '}
+                        Partner: {nameList(p.partners.map((x) => x.personId), map)}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
-        </section>
-      ))}
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -149,44 +255,52 @@ export function StammbaumDruckPersonenblaetter({
   ichBinPersonId?: string
 }) {
   const map = byIdMap(personen)
-  const sorted = [...personen].sort((a, b) => a.name.localeCompare(b.name, 'de'))
+  const state = buildStammbaumKartenState(personen, ichBinPersonId)
+  const zweigGruppen = groupConsecutiveByBranchKey(state.sortedPersonen, state.getBranchKey)
 
   return (
     <div className="stammbaum-print-liste stammbaum-print-personenblaetter">
       <h1 className="stammbaum-druck-titel">{titel}</h1>
-      <p className="stammbaum-print-untertitel">Personenblätter – ein Block pro Person, gut lesbar als PDF</p>
-      <div className="stammbaum-print-karten-raster">
-        {sorted.map((p) => (
-          <article key={p.id} className="stammbaum-print-person-karte">
-            <h2 className="stammbaum-print-person-karte-name">
-              {p.name}
-              {ichBinPersonId === p.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
-            </h2>
-            <dl className="stammbaum-print-person-dl">
-              {p.maedchenname ? (
-                <>
-                  <dt>Geburtsname</dt>
-                  <dd>{p.maedchenname}</dd>
-                </>
-              ) : null}
-              <dt>Geboren</dt>
-              <dd>{formatGeb(p.geburtsdatum)}</dd>
-              {p.verstorben ? (
-                <>
-                  <dt>Hinweis</dt>
-                  <dd>als verstorben geführt</dd>
-                </>
-              ) : null}
-              <dt>Eltern</dt>
-              <dd>{nameList(p.parentIds, map)}</dd>
-              <dt>Kinder</dt>
-              <dd>{nameList(p.childIds, map)}</dd>
-              <dt>Partner</dt>
-              <dd>{nameList(p.partners.map((x) => x.personId), map)}</dd>
-            </dl>
-          </article>
-        ))}
-      </div>
+      <p className="stammbaum-print-untertitel">
+        Personenblätter nach Familienzweigen – ein Block pro Person, gut lesbar als PDF
+      </p>
+      {zweigGruppen.map(({ key, personen: gruppe }) => (
+        <section key={key} className="stammbaum-print-zweig-block">
+          <h2 className="stammbaum-print-h2 stammbaum-print-h2-zweig">{branchLabelFuerDruck(key, map)}</h2>
+          <div className="stammbaum-print-karten-raster">
+            {gruppe.map((p) => (
+              <article key={p.id} className="stammbaum-print-person-karte">
+                <h2 className="stammbaum-print-person-karte-name">
+                  {p.name}
+                  {ichBinPersonId === p.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
+                </h2>
+                <dl className="stammbaum-print-person-dl">
+                  {p.maedchenname ? (
+                    <>
+                      <dt>Geburtsname</dt>
+                      <dd>{p.maedchenname}</dd>
+                    </>
+                  ) : null}
+                  <dt>Geboren</dt>
+                  <dd>{formatGeb(p.geburtsdatum)}</dd>
+                  {p.verstorben ? (
+                    <>
+                      <dt>Hinweis</dt>
+                      <dd>als verstorben geführt</dd>
+                    </>
+                  ) : null}
+                  <dt>Eltern</dt>
+                  <dd>{nameList(p.parentIds, map)}</dd>
+                  <dt>Kinder</dt>
+                  <dd>{nameList(p.childIds, map)}</dd>
+                  <dt>Partner</dt>
+                  <dd>{nameList(p.partners.map((x) => x.personId), map)}</dd>
+                </dl>
+              </article>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
@@ -256,7 +370,7 @@ export function StammbaumDruckRegister({
   personen,
   titel,
   ichBinPersonId,
-  sortierung = 'name',
+  sortierung = 'geschwister',
   spalten,
 }: {
   personen: K2FamiliePerson[]
@@ -268,22 +382,27 @@ export function StammbaumDruckRegister({
 }) {
   const map = byIdMap(personen)
   const cols = normalizeFamilieKatalogSpalten(spalten)
-  const sorted = sortPersonenKatalog(personen, sortierung)
-  const sortLabel = sortierung === 'geburt' ? 'Geburtsjahr (aufsteigend), dann Name' : 'Name A–Z'
+  const zweigGruppen = buildKatalogZweigGruppen(personen, ichBinPersonId, sortierung)
+  const sortLabel =
+    sortierung === 'geburt'
+      ? 'Familienzweige; innerhalb Zweig nach Geburtsjahr'
+      : 'Familienzweige; innerhalb Zweig wie Stammbaum (Geschwisterfolge)'
   const stand =
     typeof Intl !== 'undefined'
       ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())
       : new Date().toLocaleString('de-AT')
 
+  let zeilenNr = 0
+
   return (
     <div className="stammbaum-print-liste stammbaum-print-register stammbaum-print-katalog">
       <h1 className="stammbaum-druck-titel">{titel}</h1>
       <p className="stammbaum-print-untertitel">
-        Familien-Katalog · Register ohne Grafik · Sortierung: {sortLabel}
+        Familien-Katalog · Register ohne Grafik · {sortLabel}
       </p>
       <table className="stammbaum-print-table stammbaum-print-katalog-table">
         <caption className="stammbaum-print-katalog-caption">
-          {sorted.length} Datensätze · Karten aus dem Stammbaum (Familienzweig)
+          {personen.length} Datensätze · nach Familienzweigen gegliedert
         </caption>
         <thead>
           <tr>
@@ -295,14 +414,30 @@ export function StammbaumDruckRegister({
           </tr>
         </thead>
         <tbody>
-          {sorted.map((p, i) => (
-            <tr key={p.id}>
-              {cols.map((colId) => (
-                <td key={colId} className={katalogTdClass(colId)}>
-                  {familienKatalogZelle(colId, p, i, map, ichBinPersonId)}
+          {zweigGruppen.map((g) => (
+            <Fragment key={g.branchKey}>
+              <tr className="stammbaum-print-katalog-zweig-row">
+                <td colSpan={cols.length} className="stammbaum-print-katalog-zweig-head">
+                  {g.branchLabel}
                 </td>
-              ))}
-            </tr>
+              </tr>
+              {g.personen.map((p) => {
+                const i = zeilenNr++
+                const dataClass =
+                  i % 2 === 0
+                    ? 'stammbaum-print-katalog-data stammbaum-print-katalog-data--even'
+                    : 'stammbaum-print-katalog-data stammbaum-print-katalog-data--odd'
+                return (
+                  <tr key={p.id} className={dataClass}>
+                    {cols.map((colId) => (
+                      <td key={colId} className={katalogTdClass(colId)}>
+                        {familienKatalogZelle(colId, p, i, map, ichBinPersonId)}
+                      </td>
+                    ))}
+                  </tr>
+                )
+              })}
+            </Fragment>
           ))}
         </tbody>
         <tfoot>

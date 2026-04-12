@@ -37,6 +37,7 @@ export default function FamilieBackButton({ children = '← Zurück', className 
       type="button"
       className={className}
       style={{ ...btnReset, ...style }}
+      aria-label="Zurück"
       onClick={() => navigateFamilieBack(navigate, fallback)}
     >
       {children}

@@ -33,7 +33,11 @@ export default function K2FamilieStartPage() {
             <div className="familie-toolbar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <FamilieBackButton className="meta" />
               <span className="meta">Familie:</span>
-              <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
+              <select
+                value={currentTenantId}
+                onChange={(e) => setCurrentTenantId(e.target.value)}
+                aria-label="Familie wählen"
+              >
                 {tenantList.map((id) => (
                   <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
                 ))}
@@ -45,7 +49,7 @@ export default function K2FamilieStartPage() {
               Das ist die Projekt-Erklärung. Dein persönlicher Einstieg mit Name, Zugangsnummer und QR liegt unter{' '}
               <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: '#14b8a6' }}>Meine Familie</Link>.
             </p>
-            <div className="meta">Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freud, Leid und Alltag. Basis: K2-Struktur, tenantfähig.</div>
+            <div className="meta">Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freude, Leid und Alltag. Basis: K2-Struktur, tenantfähig.</div>
           </div>
         </header>
 

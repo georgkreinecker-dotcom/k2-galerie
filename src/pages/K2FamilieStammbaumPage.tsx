@@ -48,11 +48,18 @@ type PrintFotos = '1' | '0'
 /** Druck: Grafik oder übersichtliche Text-PDFs (ohne verschachtelte Grafik). */
 type PrintStil = 'grafik' | 'generationen' | 'register' | 'personenblaetter'
 
+/** Druck/PDF: ganze Familie oder nur Familienzweig von „Das bin ich“. */
+type DruckUmfang = 'alle' | 'zweig'
+
 const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register', 'grafik']
 
 function parsePrintStil(raw: string | null): PrintStil {
   if (raw && PRINT_STILE.includes(raw as PrintStil)) return raw as PrintStil
   return 'personenblaetter'
+}
+
+function parseDruckUmfang(raw: string | null): DruckUmfang {
+  return raw === 'zweig' ? 'zweig' : 'alle'
 }
 
 /** Stammbaum: eine Kachel-Übersicht statt einer endlosen Seite (?bereich=). */
@@ -199,20 +206,22 @@ export default function K2FamilieStammbaumPage() {
   }, [einstellungen.ichBinPersonId, personen])
 
   const druck = searchParams.get('druck') === '1'
+  const umfangFromUrl = parseDruckUmfang(searchParams.get('umfang'))
   const formatFromUrl = (searchParams.get('format') as PrintFormat) || 'a4'
   const fotosFromUrl = (searchParams.get('fotos') as PrintFotos) || '1'
   const stilFromUrl = parsePrintStil(searchParams.get('stil'))
   const oriFromUrl = (searchParams.get('ori') as TreeOrientation) || 'vertical'
-  const treeFromUrl = (searchParams.get('tree') as FamilyTreeLayout) || 'zeilen'
+  const treeFromUrl = (searchParams.get('tree') as FamilyTreeLayout) || 'baum'
   const titelFromUrl = searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie')
   const katalogSortFromUrl: KatalogSortierung =
-    searchParams.get('katalogSort') === 'geburt' ? 'geburt' : 'name'
+    searchParams.get('katalogSort') === 'geburt' ? 'geburt' : 'geschwister'
   const format = druck ? formatFromUrl : (searchParams.get('format') as PrintFormat) || 'a4'
   const fotos = druck ? fotosFromUrl : (searchParams.get('fotos') as PrintFotos) || '1'
   const titel = druck ? titelFromUrl : (searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie'))
 
   const [druckFormat, setDruckFormat] = useState<PrintFormat>(formatFromUrl)
   const [druckFotos, setDruckFotos] = useState<PrintFotos>(fotosFromUrl)
+  const [druckUmfang, setDruckUmfang] = useState<DruckUmfang>(() => parseDruckUmfang(searchParams.get('umfang')))
   const [druckStil, setDruckStil] = useState<PrintStil>(stilFromUrl)
   const [druckOri, setDruckOri] = useState<TreeOrientation>(oriFromUrl)
   const [druckTree, setDruckTree] = useState<FamilyTreeLayout>(treeFromUrl)
@@ -345,18 +354,22 @@ export default function K2FamilieStammbaumPage() {
     setDruckKatalogSpalten(loadFamilienKatalogSpalten(currentTenantId))
   }, [currentTenantId])
 
-  /** Druck nur Familienzweig – sonst kein automatischer Druckdialog. */
+  /** Nach Druck-Öffnung: Druckdialog (ganze Familie oder Familienzweig je nach umfang). */
   useEffect(() => {
     if (!druck) return
-    if (!einstellungen.ichBinPersonId) return
-    const klein = getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId, {
-      includeSiblingCircle: false,
-      includeParentsOfCore: false,
-    })
-    if (klein.length === 0) return
+    if (umfangFromUrl === 'alle') {
+      if (personen.length === 0) return
+    } else {
+      if (!einstellungen.ichBinPersonId) return
+      const klein = getFamilienzweigPersonen(personen, einstellungen.ichBinPersonId, {
+        includeSiblingCircle: false,
+        includeParentsOfCore: false,
+      })
+      if (klein.length === 0) return
+    }
     const t = setTimeout(() => window.print(), 300)
     return () => clearTimeout(t)
-  }, [druck, personen, einstellungen.ichBinPersonId])
+  }, [druck, umfangFromUrl, personen, einstellungen.ichBinPersonId])
 
   const handleAfterPrint = useCallback(() => {
     if (druck) setSearchParams({}, { replace: true })
@@ -397,6 +410,7 @@ export default function K2FamilieStammbaumPage() {
     stil: PrintStil
     ori: TreeOrientation
     tree: FamilyTreeLayout
+    umfang: DruckUmfang
     katalogSort?: KatalogSortierung
   }) => {
     const p = new URLSearchParams()
@@ -406,9 +420,10 @@ export default function K2FamilieStammbaumPage() {
     p.set('stil', opts.stil)
     p.set('ori', opts.ori)
     p.set('tree', opts.tree)
+    p.set('umfang', opts.umfang)
     if (opts.titel?.trim()) p.set('titel', opts.titel.trim())
     if (opts.stil === 'register') {
-      p.set('katalogSort', opts.katalogSort === 'geburt' ? 'geburt' : 'name')
+      p.set('katalogSort', opts.katalogSort === 'geburt' ? 'geburt' : 'geschwister')
     }
     setSearchParams(p)
   }
@@ -443,6 +458,13 @@ export default function K2FamilieStammbaumPage() {
     })
   }, [personen, einstellungen.ichBinPersonId])
 
+  /** Druck/Vorschau: nach Umfang-Wahl – ganze Familie oder nur Familienzweig (URL bei druck=1, sonst Panel-State). */
+  const personenDruckInhalt = useMemo(() => {
+    const umfang = druck ? umfangFromUrl : druckUmfang
+    if (umfang === 'alle') return personen
+    return personenFuerDruck
+  }, [druck, umfangFromUrl, druckUmfang, personen, personenFuerDruck])
+
   const zeigeStammbaumUebersicht = personen.length === 0 || stammbaumBereich === 'uebersicht'
   const zeigeKarten = personen.length > 0 && stammbaumBereich === 'karten'
   const zeigeNachOben = personen.length > 0 && stammbaumBereich === 'nach-oben'
@@ -450,17 +472,33 @@ export default function K2FamilieStammbaumPage() {
   const zeigePdf = personen.length > 0 && stammbaumBereich === 'pdf'
 
   if (druck) {
-    if (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0) {
+    if (umfangFromUrl === 'alle') {
+      if (personen.length === 0) {
+        return (
+          <div className="stammbaum-druck-view" data-stil="hinweis">
+            <div className="card" style={{ maxWidth: 420, margin: '2rem auto', padding: '1.25rem' }}>
+              <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Keine Personen zum Drucken</h1>
+              <p className="meta" style={{ margin: 0 }}>Lege zuerst Personen an, dann kannst du die ganze Familie oder einen Zweig drucken.</p>
+              <p style={{ margin: '1rem 0 0' }}>
+                <button type="button" className="btn" onClick={() => setSearchParams({}, { replace: true })}>
+                  Zurück zum Stammbaum
+                </button>
+              </p>
+            </div>
+          </div>
+        )
+      }
+    } else if (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0) {
       return (
         <div className="stammbaum-druck-view" data-stil="hinweis">
           <div className="card" style={{ maxWidth: 420, margin: '2rem auto', padding: '1.25rem' }}>
-            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Druck nur für deinen Familienzweig</h1>
+            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Druck: Nur Familienzweig</h1>
             <p className="meta" style={{ margin: 0 }}>
               {personen.length === 0 ? (
-                'Sobald Personen angelegt sind, kannst du dich im Stammbaum mit „Das bin ich“ festlegen – dann ist der Druck nur für deinen Familienzweig möglich (du, Partner, Kinder, Partner der Kinder).'
+                'Sobald Personen angelegt sind, kannst du dich im Stammbaum mit „Das bin ich“ festlegen – dann ist der Druck für deinen Familienzweig möglich (du, Partner, Kinder, Partner der Kinder).'
               ) : (
                 <>
-                  Bitte im Stammbaum bei deiner Person <strong>Das bin ich</strong> wählen. Danach druckst du nur diesen Familienzweig – nicht die ganze erfasste Familie.
+                  Bitte im Stammbaum bei deiner Person <strong>Das bin ich</strong> wählen. Oder wähle in Schritt 4 beim Druck <strong>Ganze erfasste Familie</strong>.
                 </>
               )}
             </p>
@@ -473,7 +511,7 @@ export default function K2FamilieStammbaumPage() {
         </div>
       )
     }
-    const forDruck = personenFuerDruck
+    const forDruck = personenDruckInhalt
     const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
 
     if (stilFromUrl === 'generationen') {
@@ -517,7 +555,7 @@ export default function K2FamilieStammbaumPage() {
       <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="grafik">
         <h1 className="stammbaum-druck-titel">{titel}</h1>
         <FamilyTreeGraph
-          personen={forDruck}
+          personen={personenDruckInhalt}
           personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
           printMode
           noPhotos={fotos === '0'}
@@ -527,7 +565,11 @@ export default function K2FamilieStammbaumPage() {
           partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
           ichBinPersonId={einstellungen.ichBinPersonId}
           ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
-          familienzweigWurzelPersonId={einstellungen.ichBinPersonId}
+          familienzweigWurzelPersonId={
+            umfangFromUrl === 'zweig' && einstellungen.ichBinPersonId
+              ? einstellungen.ichBinPersonId
+              : undefined
+          }
         />
       </div>
     )
@@ -1626,10 +1668,21 @@ export default function K2FamilieStammbaumPage() {
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>4 · PDF &amp; Auswertung</h2>
               <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
-                Druck = immer nur dein Familienzweig (wie „Nur mein Familienzweig“) – dafür <strong>Das bin ich</strong> setzen.
+                <strong>Umfang</strong> wählen: ganze erfasste Familie oder nur deinen Familienzweig (braucht <strong>Das bin ich</strong>).
                 Übersichtliche PDFs: Personenblätter, Generationen oder Tabelle A–Z. Stammbaum-Grafik eher als Poster; im Druckdialog „Als PDF speichern“.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Umfang</span>
+                  <select
+                    id="druck-umfang"
+                    value={druckUmfang}
+                    onChange={(e) => setDruckUmfang(e.target.value as DruckUmfang)}
+                  >
+                    <option value="alle">Ganze erfasste Familie</option>
+                    <option value="zweig">Nur mein Familienzweig</option>
+                  </select>
+                </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <span className="meta">Inhalt</span>
                   <select
@@ -1659,8 +1712,8 @@ export default function K2FamilieStammbaumPage() {
                       value={druckKatalogSort}
                       onChange={(e) => setDruckKatalogSort(e.target.value as KatalogSortierung)}
                     >
-                      <option value="name">Name A–Z</option>
-                      <option value="geburt">Geburtsjahr (ältere zuerst)</option>
+                      <option value="geschwister">Geschwisterfolge wie im Stammbaum</option>
+                      <option value="geburt">Innerhalb Zweig: Geburtsjahr</option>
                     </select>
                   </label>
                 )}
@@ -1729,8 +1782,17 @@ export default function K2FamilieStammbaumPage() {
                 <button
                   type="button"
                   className="btn"
-                  disabled={!einstellungen.ichBinPersonId}
-                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für den Familienzweig.' : undefined}
+                  disabled={
+                    personen.length === 0 ||
+                    (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0))
+                  }
+                  title={
+                    personen.length === 0
+                      ? 'Zuerst Personen anlegen.'
+                      : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
+                        ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
+                        : undefined
+                  }
                   onClick={() =>
                     openDruck({
                       format: druckFormat,
@@ -1739,6 +1801,7 @@ export default function K2FamilieStammbaumPage() {
                       stil: druckStil,
                       ori: druckOri,
                       tree: druckTree,
+                      umfang: druckUmfang,
                       katalogSort: druckStil === 'register' ? druckKatalogSort : undefined,
                     })
                   }
@@ -1807,7 +1870,7 @@ export default function K2FamilieStammbaumPage() {
                     >
                       {druckStil === 'generationen' && (
                         <StammbaumDruckNachGenerationen
-                          personen={personenFuerDruck}
+                          personen={personenDruckInhalt}
                           titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
                           ichBinPersonId={einstellungen.ichBinPersonId}
                           ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings ?? undefined}
@@ -1815,7 +1878,7 @@ export default function K2FamilieStammbaumPage() {
                       )}
                       {druckStil === 'register' && (
                         <StammbaumDruckRegister
-                          personen={personenFuerDruck}
+                          personen={personenDruckInhalt}
                           titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
                           ichBinPersonId={einstellungen.ichBinPersonId}
                           sortierung={druckKatalogSort}
@@ -1824,7 +1887,7 @@ export default function K2FamilieStammbaumPage() {
                       )}
                       {druckStil === 'personenblaetter' && (
                         <StammbaumDruckPersonenblaetter
-                          personen={personenFuerDruck}
+                          personen={personenDruckInhalt}
                           titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
                           ichBinPersonId={einstellungen.ichBinPersonId}
                         />
@@ -1835,7 +1898,7 @@ export default function K2FamilieStammbaumPage() {
                             {druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
                           </h1>
                           <FamilyTreeGraph
-                            personen={personenFuerDruck}
+                            personen={personenDruckInhalt}
                             personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
                             printMode
                             noPhotos={druckFotos === '0'}
@@ -1845,7 +1908,11 @@ export default function K2FamilieStammbaumPage() {
                             partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
                             ichBinPersonId={einstellungen.ichBinPersonId}
                             ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
-                            familienzweigWurzelPersonId={einstellungen.ichBinPersonId}
+                            familienzweigWurzelPersonId={
+                              druckUmfang === 'zweig' && einstellungen.ichBinPersonId
+                                ? einstellungen.ichBinPersonId
+                                : undefined
+                            }
                           />
                         </>
                       )}

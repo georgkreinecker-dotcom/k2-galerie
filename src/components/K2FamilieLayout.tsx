@@ -7,6 +7,7 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { FamilieTenantProvider } from '../context/FamilieTenantContext'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import FamilieBackButton from './FamilieBackButton'
 
 const FAMILIE_NAV = [
@@ -26,7 +27,7 @@ function FamilieNav() {
   const path = loc.pathname
 
   return (
-    <nav className="k2-familie-nav" style={{
+    <nav className="k2-familie-nav" aria-label="K2 Familie" style={{
       display: 'flex',
       flexWrap: 'wrap',
       gap: '0.5rem',
@@ -70,8 +71,16 @@ function FamilieNav() {
 export default function K2FamilieLayout() {
   return (
     <FamilieTenantProvider>
-      <FamilieNav />
-      <Outlet />
+      <div className="k2-familie-layout-shell">
+        <FamilieNav />
+        <main id="k2-familie-main" className="k2-familie-main">
+          <Outlet />
+        </main>
+        <footer className="k2-familie-app-footer" role="contentinfo">
+          <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+          <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+        </footer>
+      </div>
     </FamilieTenantProvider>
   )
 }

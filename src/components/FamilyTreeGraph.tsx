@@ -508,6 +508,55 @@ function familyClusterKeyChild(p: K2FamiliePerson, byId: Map<string, K2FamiliePe
   return [...parents].sort().join('|')
 }
 
+/**
+ * Unterste Generation: dieselbe Kernfamilie wie `familyClusterKeyChild`, aber wenn in den Karten nur
+ * ein Elternteil eingetragen ist, ein Geschwister aber beide – oder ein Kind nur Vater, eines nur Mutter –
+ * trotzdem einen gemeinsamen Schlüssel (sonst getrennte Blöcke → waagrechte Linien kreuzen andere Zweige).
+ */
+export function familyClusterKeyChildForBottomRow(
+  p: K2FamiliePerson,
+  byId: Map<string, K2FamiliePerson>,
+  levelMap: Map<string, number>,
+  maxLevel: number,
+  allIdsAtLevel: string[]
+): string {
+  const parentsInRow = (p.parentIds ?? []).filter(
+    (pid) => byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1
+  )
+  if (parentsInRow.length === 0) return `solo:${p.id}`
+  if (parentsInRow.length >= 2) return [...parentsInRow].sort().join('|')
+
+  const singlePid = parentsInRow[0]!
+
+  for (const oid of allIdsAtLevel) {
+    if (oid === p.id) continue
+    const o = byId.get(oid)
+    if (!o) continue
+    const ops = (o.parentIds ?? []).filter(
+      (pid) => byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1
+    )
+    if (ops.length >= 2 && ops.includes(singlePid)) return [...ops].sort().join('|')
+  }
+
+  for (const oid of allIdsAtLevel) {
+    if (oid === p.id) continue
+    const o = byId.get(oid)
+    if (!o) continue
+    const ops = (o.parentIds ?? []).filter(
+      (pid) => byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1
+    )
+    if (ops.length !== 1) continue
+    const oPid = ops[0]!
+    if (oPid === singlePid) continue
+    const par = byId.get(singlePid)
+    if (par && par.partners.some((pr) => pr.personId === oPid)) {
+      return [singlePid, oPid].sort().join('|')
+    }
+  }
+
+  return singlePid
+}
+
 /** Mind. ein gemeinsames Elternteil in den Karten → Geschwister; keine Partner-Linie dazwischen. */
 function sindGeschwisterLautKarten(a: K2FamiliePerson, b: K2FamiliePerson): boolean {
   if (a.id === b.id) return false
@@ -561,7 +610,7 @@ function placeBottomRowFromParentCenters(
   for (const id of bottomIds) {
     const p = byId.get(id)
     if (!p) continue
-    const k = familyClusterKeyChild(p, byId)
+    const k = familyClusterKeyChildForBottomRow(p, byId, levelMap, maxLevel, bottomIds)
     if (!groups.has(k)) groups.set(k, [])
     groups.get(k)!.push(id)
   }
@@ -578,13 +627,16 @@ function placeBottomRowFromParentCenters(
       ichBinPositionAmongSiblings
     )
     if (sorted.length === 0) continue
-    const first = byId.get(sorted[0])
-    if (!first) continue
-    const parentIdsInGraph = (first.parentIds ?? []).filter(
-      (pid) => byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1
-    )
-    if (parentIdsInGraph.length === 0) continue
-    const xs = parentIdsInGraph
+    const unionParents = new Set<string>()
+    for (const cid of sorted) {
+      const ch = byId.get(cid)
+      if (!ch) continue
+      for (const pid of ch.parentIds ?? []) {
+        if (byId.has(pid) && (levelMap.get(pid) ?? -1) === maxLevel - 1) unionParents.add(pid)
+      }
+    }
+    if (unionParents.size === 0) continue
+    const xs = [...unionParents]
       .map((pid) => nodePos.get(pid)?.x)
       .filter((x): x is number => x != null && !Number.isNaN(x))
     if (xs.length === 0) continue
@@ -756,7 +808,9 @@ function orderIdsByFamilieClusterInRow(
   const keyOf = (id: string) => {
     const p = byId.get(id)
     if (!p) return `solo:${id}`
-    return L === maxLevel ? familyClusterKeyChild(p, byId) : familyClusterKeyParent(id, L, personen, levelMap, byId, idsInRow)
+    return L === maxLevel
+      ? familyClusterKeyChildForBottomRow(p, byId, levelMap, maxLevel, ids)
+      : familyClusterKeyParent(id, L, personen, levelMap, byId, idsInRow)
   }
   const clusterKeys: string[] = []
   const seenK = new Set<string>()

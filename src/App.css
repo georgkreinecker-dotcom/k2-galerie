@@ -2272,6 +2272,34 @@ header h1 {
   transform: translateY(-1px);
 }
 
+/* K2 Familie: Shell + einheitlicher Footer (Copyright) */
+.k2-familie-layout-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.k2-familie-main {
+  flex: 1 0 auto;
+}
+.k2-familie-app-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid rgba(13, 148, 136, 0.22);
+  background: rgba(0, 0, 0, 0.12);
+}
+.k2-familie-app-footer__line {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  text-align: center;
+}
+.k2-familie-app-footer__line--muted {
+  margin-top: 0.25rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
 /* Moment-Karten auf Personen-Seite: weicher, runder */
 .k2-familie-moment-card {
   transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -2413,8 +2441,35 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
   padding: 6px 10px;
   vertical-align: top;
 }
-.stammbaum-druck-view .stammbaum-print-table tr:nth-child(even) td {
+.stammbaum-druck-view .stammbaum-print-table tbody tr.stammbaum-print-katalog-data--even td {
   background: rgba(0, 0, 0, 0.02) !important;
+}
+.stammbaum-druck-view .stammbaum-print-table tbody tr.stammbaum-print-katalog-zweig-row td {
+  background: rgba(13, 148, 136, 0.12) !important;
+  font-weight: 700;
+  color: #0f766e !important;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+}
+.stammbaum-druck-view .stammbaum-print-h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #0f766e !important;
+  margin: 0.65rem 0 0.35rem;
+  padding-bottom: 0.15rem;
+  border-bottom: 1px solid rgba(13, 148, 136, 0.25);
+}
+.stammbaum-druck-view .stammbaum-print-generation-block {
+  margin-bottom: 0.85rem;
+}
+.stammbaum-druck-view .stammbaum-print-zweig-block {
+  margin-bottom: 1.35rem;
+}
+.stammbaum-druck-view .stammbaum-print-h2-zweig {
+  margin-top: 0.75rem;
+}
+.stammbaum-druck-view .stammbaum-print-zweig-block:first-child .stammbaum-print-h2-zweig {
+  margin-top: 0;
 }
 .stammbaum-druck-view .stammbaum-print-td-name {
   font-weight: 600;

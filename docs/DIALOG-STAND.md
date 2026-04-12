@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie Feinschliff gesamt** – Einheitlicher **Footer** unter allen K2-Familie-Routen: `PRODUCT_COPYRIGHT_BRAND_ONLY` + `PRODUCT_URHEBER_ANWENDUNG` (`K2FamilieLayout.tsx`); **Shell** `k2-familie-layout-shell` + `<main id="k2-familie-main">`; Nav `aria-label="K2 Familie"`; Zurück-Button `aria-label="Zurück"`; Startseite: **Freude** statt Freud; Familien-Dropdown `aria-label="Familie wählen"`; `App.css` Footer-Styles. (Zusammen mit offenen Änderungen Stammbaum-PDF/Zweiggruppen, Grafik – siehe Diff.)
+
+**Was wir JETZT tun:** K2-Familie-Seiten kurz durchklicken – Footer unten, Screenreader kurz; bei Bedarf Commit-Hash unten eintragen.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie PDF-Bereich: Live-Vorschau** – Unter „4 · PDF & Auswertung“ immer sichtbare **Vorschau** (gleicher Inhalt wie Druck-/PDF-Seite): Generationen, Katalog/Register, Personenblätter, Stammbaum-Grafik inkl. Fotos/Orientierung/Layout; `stammbaum-druck-view--vorschau` + `App.css` (Druck-Styles global für Bildschirm, `body:has` ohne Vorschau). **Commit:** **396629b1** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → PDF & Auswertung → Inhalt wechseln und Vorschau prüfen; bei Bedarf „Druckvorschau & Drucken“.
