@@ -4,7 +4,7 @@
  */
 
 import { useParams, Link, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
-import { useState, useEffect, useMemo, type ReactNode } from 'react'
+import { useState, useEffect, useMemo, useRef, type ReactNode, type ChangeEventHandler, type CSSProperties } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup, loadEinstellungen } from '../utils/familieStorage'
@@ -19,7 +19,14 @@ import {
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
 import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
-import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
+import { compressImageForStorage } from '../utils/compressImageForStorage'
+import {
+  getAktuellesPersonenFoto,
+  getLebensphaseFeldFuerAktuellesFoto,
+  isHttpUrlForExternalOpen,
+  DEFAULT_LEBENSPHASE_NEUES_FOTO,
+  type LebensphaseFotoFeld,
+} from '../utils/familiePersonFotos'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -48,7 +55,8 @@ function computeStammdatenDirty(
     photoJugend: string
     photoErwachsen: string
     photoAlter: string
-  }
+  },
+  photoLegacyCleared: boolean
 ): boolean {
   const effName = f.name.trim() || person.name
   if (effName !== person.name) return true
@@ -71,6 +79,7 @@ function computeStammdatenDirty(
   if (!ps(person.photoJugend, f.photoJugend)) return true
   if (!ps(person.photoErwachsen, f.photoErwachsen)) return true
   if (!ps(person.photoAlter, f.photoAlter)) return true
+  if (photoLegacyCleared && String(person.photo ?? '').trim()) return true
   return false
 }
 
@@ -112,6 +121,11 @@ export default function K2FamiliePersonPage() {
   const [photoJugend, setPhotoJugend] = useState('')
   const [photoErwachsen, setPhotoErwachsen] = useState('')
   const [photoAlter, setPhotoAlter] = useState('')
+  /** Im Bearbeiten: altes Einzelfeld `photo` entfernen, obwohl es noch in `person` steht (bis Speichern). */
+  const [photoLegacyCleared, setPhotoLegacyCleared] = useState(false)
+  const [fotoMenu, setFotoMenu] = useState<{ x: number; y: number; kind: 'haupt' | LebensphaseFotoFeld } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const fileTargetRef = useRef<LebensphaseFotoFeld | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [beziehungenFokusHighlight, setBeziehungenFokusHighlight] = useState(false)
   const [stammdatenHauptOpen, setStammdatenHauptOpen] = useState(true)
@@ -177,6 +191,7 @@ export default function K2FamiliePersonPage() {
       setPhotoJugend(person.photoJugend ?? '')
       setPhotoErwachsen(person.photoErwachsen ?? '')
       setPhotoAlter(person.photoAlter ?? '')
+      setPhotoLegacyCleared(false)
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
       if (person.name === 'Neue Person') setEdit(true)
     }
@@ -186,19 +201,23 @@ export default function K2FamiliePersonPage() {
     () =>
       !person || !edit
         ? false
-        : computeStammdatenDirty(person, {
-            name,
-            geburtsdatum,
-            maedchenname,
-            shortText,
-            verstorben,
-            verstorbenAm,
-            positionAmongSiblingsInput,
-            photoKind,
-            photoJugend,
-            photoErwachsen,
-            photoAlter,
-          }),
+        : computeStammdatenDirty(
+            person,
+            {
+              name,
+              geburtsdatum,
+              maedchenname,
+              shortText,
+              verstorben,
+              verstorbenAm,
+              positionAmongSiblingsInput,
+              photoKind,
+              photoJugend,
+              photoErwachsen,
+              photoAlter,
+            },
+            photoLegacyCleared
+          ),
     [
       person,
       edit,
@@ -213,6 +232,7 @@ export default function K2FamiliePersonPage() {
       photoJugend,
       photoErwachsen,
       photoAlter,
+      photoLegacyCleared,
     ]
   )
 
@@ -250,6 +270,7 @@ export default function K2FamiliePersonPage() {
       photoJugend: pj,
       photoErwachsen: pe,
       photoAlter: pa,
+      photo: photoLegacyCleared ? undefined : person.photo,
     })
     const updated: K2FamiliePerson = {
       ...person,
@@ -739,10 +760,11 @@ export default function K2FamiliePersonPage() {
         photoJugend: photoJugend.trim() || undefined,
         photoErwachsen: photoErwachsen.trim() || undefined,
         photoAlter: photoAlter.trim() || undefined,
+        photo: photoLegacyCleared ? undefined : person.photo,
       })
     }
     return getAktuellesPersonenFoto(person)
-  }, [person, edit, photoKind, photoJugend, photoErwachsen, photoAlter])
+  }, [person, edit, photoKind, photoJugend, photoErwachsen, photoAlter, photoLegacyCleared])
 
   const phaseThumbUrl = (
     field: 'photoKind' | 'photoJugend' | 'photoErwachsen' | 'photoAlter'
@@ -761,6 +783,93 @@ export default function K2FamiliePersonPage() {
     }
     return person[field]?.trim() || undefined
   }
+
+  const mergedForFoto = useMemo(() => {
+    if (!person) return null
+    return {
+      ...person,
+      photoKind: photoKind.trim() || undefined,
+      photoJugend: photoJugend.trim() || undefined,
+      photoErwachsen: photoErwachsen.trim() || undefined,
+      photoAlter: photoAlter.trim() || undefined,
+      photo: photoLegacyCleared ? undefined : person.photo,
+    }
+  }, [person, photoKind, photoJugend, photoErwachsen, photoAlter, photoLegacyCleared])
+
+  const resolveTargetForHaupt = (): LebensphaseFotoFeld => {
+    if (!mergedForFoto) return DEFAULT_LEBENSPHASE_NEUES_FOTO
+    const f = getLebensphaseFeldFuerAktuellesFoto(mergedForFoto)
+    if (f === 'legacy') return DEFAULT_LEBENSPHASE_NEUES_FOTO
+    return f
+  }
+
+  const applyDataUrlToField = (field: LebensphaseFotoFeld, dataUrl: string) => {
+    setPhotoLegacyCleared(false)
+    if (field === 'photoKind') setPhotoKind(dataUrl)
+    else if (field === 'photoJugend') setPhotoJugend(dataUrl)
+    else if (field === 'photoErwachsen') setPhotoErwachsen(dataUrl)
+    else setPhotoAlter(dataUrl)
+  }
+
+  const applyClearField = (kind: 'haupt' | LebensphaseFotoFeld) => {
+    if (kind !== 'haupt') {
+      if (kind === 'photoKind') setPhotoKind('')
+      else if (kind === 'photoJugend') setPhotoJugend('')
+      else if (kind === 'photoErwachsen') setPhotoErwachsen('')
+      else setPhotoAlter('')
+      setPhotoLegacyCleared(false)
+      return
+    }
+    if (!mergedForFoto) return
+    const f = getLebensphaseFeldFuerAktuellesFoto(mergedForFoto)
+    if (f === 'legacy') {
+      setPhotoLegacyCleared(true)
+    } else {
+      applyClearField(f)
+    }
+  }
+
+  const openFilePicker = (field: LebensphaseFotoFeld) => {
+    fileTargetRef.current = field
+    fileInputRef.current?.click()
+  }
+
+  const openFotoHttpExternal = (url: string | undefined) => {
+    if (!isHttpUrlForExternalOpen(url)) return
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  const onFotoFileChange: ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    const target = fileTargetRef.current
+    fileTargetRef.current = null
+    if (!file?.type.startsWith('image/') || !target) return
+    try {
+      const dataUrl = await compressImageForStorage(file, { context: 'desktop' })
+      applyDataUrlToField(target, dataUrl)
+    } catch (err) {
+      console.warn(err)
+      window.alert('Bild konnte nicht verarbeitet werden.')
+    }
+  }
+
+  useEffect(() => {
+    if (!fotoMenu) return
+    const close = (ev?: MouseEvent) => {
+      if (ev?.target && (ev.target as HTMLElement).closest?.('.k2-familie-foto-menu')) return
+      setFotoMenu(null)
+    }
+    const onKey = (ev: KeyboardEvent) => {
+      if (ev.key === 'Escape') setFotoMenu(null)
+    }
+    document.addEventListener('mousedown', close)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', close)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [fotoMenu])
 
   return (
     <div className="mission-wrapper">
@@ -797,15 +906,62 @@ export default function K2FamiliePersonPage() {
           <div className="k2-familie-haupt-inner">
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
           <div style={{ flexShrink: 0, maxWidth: 300 }}>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={onFotoFileChange}
+              aria-hidden
+            />
             {aktuellFotoSrc ? (
               <img
                 src={aktuellFotoSrc}
                 alt=""
                 className="person-photo"
-                style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(20,184,166,0.35)' }}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+                onClick={() => {
+                  if (edit) openFilePicker(resolveTargetForHaupt())
+                  else openFotoHttpExternal(aktuellFotoSrc)
+                }}
+                onContextMenu={(e) => {
+                  if (!edit && !isHttpUrlForExternalOpen(aktuellFotoSrc)) return
+                  e.preventDefault()
+                  setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
+                }}
+                style={{
+                  width: 140,
+                  height: 140,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '4px solid rgba(20,184,166,0.35)',
+                  cursor: edit || isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'pointer' : 'default',
+                }}
+                title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'Klick: Link im Browser öffnen' : undefined}
               />
             ) : (
               <div
+                role={edit ? 'button' : undefined}
+                tabIndex={edit ? 0 : undefined}
+                onClick={() => {
+                  if (edit) openFilePicker(resolveTargetForHaupt())
+                }}
+                onKeyDown={
+                  edit
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          openFilePicker(resolveTargetForHaupt())
+                        }
+                      }
+                    : undefined
+                }
+                onContextMenu={(e) => {
+                  if (!edit) return
+                  e.preventDefault()
+                  setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
+                }}
                 style={{
                   width: 140,
                   height: 140,
@@ -816,7 +972,9 @@ export default function K2FamiliePersonPage() {
                   justifyContent: 'center',
                   fontSize: '3.5rem',
                   border: '4px solid rgba(20,184,166,0.25)',
+                  cursor: edit ? 'pointer' : 'default',
                 }}
+                title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
               >
                 👤
               </div>
@@ -835,6 +993,7 @@ export default function K2FamiliePersonPage() {
             >
               {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => {
                 const src = phaseThumbUrl(field)
+                const thumbClickable = edit || (src != null && isHttpUrlForExternalOpen(src))
                 return (
                   <div key={field} style={{ textAlign: 'center', width: 66 }}>
                     <div className="meta" style={{ fontSize: '0.65rem', marginBottom: 3, lineHeight: 1.2 }}>{label}</div>
@@ -842,6 +1001,17 @@ export default function K2FamiliePersonPage() {
                       <img
                         src={src}
                         alt=""
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                        onClick={() => {
+                          if (edit) openFilePicker(field)
+                          else openFotoHttpExternal(src)
+                        }}
+                        onContextMenu={(e) => {
+                          if (!edit && !isHttpUrlForExternalOpen(src)) return
+                          e.preventDefault()
+                          setFotoMenu({ x: e.clientX, y: e.clientY, kind: field })
+                        }}
                         style={{
                           width: 56,
                           height: 56,
@@ -850,10 +1020,32 @@ export default function K2FamiliePersonPage() {
                           border: '2px solid rgba(20,184,166,0.35)',
                           display: 'block',
                           margin: '0 auto',
+                          cursor: thumbClickable ? 'pointer' : 'default',
                         }}
+                        title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(src) ? 'Klick: Link öffnen' : undefined}
                       />
                     ) : (
                       <div
+                        role={edit ? 'button' : undefined}
+                        tabIndex={edit ? 0 : undefined}
+                        onClick={() => {
+                          if (edit) openFilePicker(field)
+                        }}
+                        onKeyDown={
+                          edit
+                            ? (e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  openFilePicker(field)
+                                }
+                              }
+                            : undefined
+                        }
+                        onContextMenu={(e) => {
+                          if (!edit) return
+                          e.preventDefault()
+                          setFotoMenu({ x: e.clientX, y: e.clientY, kind: field })
+                        }}
                         style={{
                           width: 56,
                           height: 56,
@@ -866,7 +1058,9 @@ export default function K2FamiliePersonPage() {
                           fontSize: '0.75rem',
                           color: 'rgba(226,232,240,0.5)',
                           border: '1px dashed rgba(20,184,166,0.3)',
+                          cursor: edit ? 'pointer' : 'default',
                         }}
+                        title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
                       >
                         –
                       </div>
@@ -878,37 +1072,129 @@ export default function K2FamiliePersonPage() {
             {edit && (
               <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
                 <p className="meta" style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Bild-URLs wie in der Galerie (öffentlicher Link oder data:image/…). Gespeichert mit <strong>Speichern</strong>.
+                  Bild-URLs wie in der Galerie (öffentlicher Link oder data:image/…). Gespeichert mit <strong>Speichern</strong>. Fotos oben per Klick oder Rechtsklick austauschbar.
                 </p>
-                {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => (
-                  <div key={field} className="field" style={{ marginBottom: 0 }}>
-                    <label className="meta">Foto {label}</label>
-                    <input
-                      type="text"
-                      value={
-                        field === 'photoKind'
-                          ? photoKind
-                          : field === 'photoJugend'
-                            ? photoJugend
-                            : field === 'photoErwachsen'
-                              ? photoErwachsen
-                              : photoAlter
-                      }
-                      onChange={(e) => {
-                        const v = e.target.value
-                        if (field === 'photoKind') setPhotoKind(v)
-                        else if (field === 'photoJugend') setPhotoJugend(v)
-                        else if (field === 'photoErwachsen') setPhotoErwachsen(v)
-                        else setPhotoAlter(v)
-                      }}
-                      placeholder="https://… optional"
-                      autoComplete="off"
-                      data-lpignore="true"
-                    />
-                  </div>
-                ))}
+                {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => {
+                  const raw =
+                    field === 'photoKind'
+                      ? photoKind
+                      : field === 'photoJugend'
+                        ? photoJugend
+                        : field === 'photoErwachsen'
+                          ? photoErwachsen
+                          : photoAlter
+                  const trimmed = raw.trim()
+                  return (
+                    <div key={field} className="field" style={{ marginBottom: 0 }}>
+                      <label className="meta">Foto {label}</label>
+                      <input
+                        type="text"
+                        value={raw}
+                        onChange={(e) => {
+                          const v = e.target.value
+                          if (field === 'photoKind') setPhotoKind(v)
+                          else if (field === 'photoJugend') setPhotoJugend(v)
+                          else if (field === 'photoErwachsen') setPhotoErwachsen(v)
+                          else setPhotoAlter(v)
+                        }}
+                        placeholder="https://… optional"
+                        autoComplete="off"
+                        data-lpignore="true"
+                      />
+                      {isHttpUrlForExternalOpen(trimmed) && (
+                        <a
+                          href={trimmed}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="meta"
+                          style={{ display: 'inline-block', marginTop: 6, color: 'rgba(94, 234, 212, 0.95)', fontSize: '0.82rem' }}
+                        >
+                          → Im Browser öffnen (Homepage, Album …)
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
+            {fotoMenu &&
+              (() => {
+                const menuPreview = fotoMenu.kind === 'haupt' ? aktuellFotoSrc : phaseThumbUrl(fotoMenu.kind)
+                const canOpen = isHttpUrlForExternalOpen(menuPreview)
+                const canRemove = edit && !!(menuPreview && String(menuPreview).trim())
+                const menuW = 220
+                const mx = typeof window !== 'undefined' ? Math.min(fotoMenu.x, window.innerWidth - menuW - 8) : fotoMenu.x
+                const my = typeof window !== 'undefined' ? Math.min(fotoMenu.y, window.innerHeight - 130) : fotoMenu.y
+                const btnStyle: CSSProperties = {
+                  display: 'block',
+                  width: '100%',
+                  margin: 0,
+                  padding: '0.45rem 0.85rem',
+                  fontSize: '0.88rem',
+                  border: 'none',
+                  background: 'transparent',
+                  color: '#e2e8f0',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }
+                return (
+                  <div
+                    className="k2-familie-foto-menu"
+                    role="menu"
+                    style={{
+                      position: 'fixed',
+                      left: mx,
+                      top: my,
+                      zIndex: 10000,
+                      background: 'rgba(15,23,42,0.98)',
+                      border: '1px solid rgba(20,184,166,0.35)',
+                      borderRadius: 10,
+                      padding: '0.25rem 0',
+                      minWidth: menuW,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                    }}
+                  >
+                    {edit && (
+                      <button
+                        type="button"
+                        style={btnStyle}
+                        onClick={() => {
+                          const target = fotoMenu.kind === 'haupt' ? resolveTargetForHaupt() : fotoMenu.kind
+                          openFilePicker(target)
+                          setFotoMenu(null)
+                        }}
+                      >
+                        Bild von diesem Gerät wählen…
+                      </button>
+                    )}
+                    {canOpen && (
+                      <button
+                        type="button"
+                        style={btnStyle}
+                        onClick={() => {
+                          openFotoHttpExternal(menuPreview)
+                          setFotoMenu(null)
+                        }}
+                      >
+                        Link im Browser öffnen
+                      </button>
+                    )}
+                    {canRemove && (
+                      <button
+                        type="button"
+                        style={{ ...btnStyle, color: '#fecaca' }}
+                        onClick={() => {
+                          applyClearField(fotoMenu.kind === 'haupt' ? 'haupt' : fotoMenu.kind)
+                          setFotoMenu(null)
+                        }}
+                      >
+                        Bild entfernen
+                      </button>
+                    )}
+                  </div>
+                )
+              })()}
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             {edit ? (
@@ -1011,7 +1297,7 @@ export default function K2FamiliePersonPage() {
                 </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); }}>Abbrechen</button>
+                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setPhotoLegacyCleared(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); }}>Abbrechen</button>
                 </div>
               </form>
             ) : (
