@@ -431,6 +431,8 @@ export default function K2FamilieStammbaumPage() {
   )
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
+  /** Wie Druck/PDF-Seite: Skalierung der Grafik nach Papierwahl (Vorschau im PDF-Bereich). */
+  const previewPrintScale = druckFormat === 'poster' ? 1.5 : druckFormat === 'a3' ? 1.2 : 1
 
   /** PDF/Plakat: Familienzweig wie „Nur mein Familienzweig“ (Du + Partner + Nachkommen, ohne Eltern-/Geschwisterkreis). */
   const personenFuerDruck = useMemo(() => {
@@ -1786,6 +1788,71 @@ export default function K2FamilieStammbaumPage() {
                   ))}
                 </div>
               )}
+              <div className="stammbaum-pdf-vorschau-wrap" style={{ marginTop: '1rem' }}>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.95)' }}>
+                  Vorschau
+                </h3>
+                {!einstellungen.ichBinPersonId ? (
+                  <p className="meta" style={{ margin: 0 }}>
+                    Sobald du bei deiner Person <strong>Das bin ich</strong> wählst, siehst du hier die Vorschau deines Familienzweigs.
+                  </p>
+                ) : personenFuerDruck.length === 0 ? (
+                  <p className="meta" style={{ margin: 0 }}>Keine Personen im Familienzweig – Vorschau kann nicht angezeigt werden.</p>
+                ) : (
+                  <div className="stammbaum-pdf-vorschau-scroll">
+                    <div
+                      className="stammbaum-druck-view stammbaum-druck-view--vorschau"
+                      data-format={druckFormat === 'poster' ? 'poster' : druckFormat}
+                      data-stil={druckStil}
+                    >
+                      {druckStil === 'generationen' && (
+                        <StammbaumDruckNachGenerationen
+                          personen={personenFuerDruck}
+                          titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                          ichBinPersonId={einstellungen.ichBinPersonId}
+                          ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings ?? undefined}
+                        />
+                      )}
+                      {druckStil === 'register' && (
+                        <StammbaumDruckRegister
+                          personen={personenFuerDruck}
+                          titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                          ichBinPersonId={einstellungen.ichBinPersonId}
+                          sortierung={druckKatalogSort}
+                          spalten={normalizeFamilieKatalogSpalten(druckKatalogSpalten)}
+                        />
+                      )}
+                      {druckStil === 'personenblaetter' && (
+                        <StammbaumDruckPersonenblaetter
+                          personen={personenFuerDruck}
+                          titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                          ichBinPersonId={einstellungen.ichBinPersonId}
+                        />
+                      )}
+                      {druckStil === 'grafik' && (
+                        <>
+                          <h1 className="stammbaum-druck-titel">
+                            {druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                          </h1>
+                          <FamilyTreeGraph
+                            personen={personenFuerDruck}
+                            personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
+                            printMode
+                            noPhotos={druckFotos === '0'}
+                            scale={previewPrintScale}
+                            layout={druckTree}
+                            orientation={druckOri}
+                            partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
+                            ichBinPersonId={einstellungen.ichBinPersonId}
+                            ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
+                            familienzweigWurzelPersonId={einstellungen.ichBinPersonId}
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
               {druckStil !== 'grafik' && (
                 <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
                   {druckStil === 'register' ? (

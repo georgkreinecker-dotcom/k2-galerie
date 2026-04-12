@@ -2301,6 +2301,229 @@ header h1 {
   pointer-events: none;
 }
 
+/* Stammbaum Druck: Papier-Optik auf Bildschirm und Druck. Eingebettete Vorschau: .stammbaum-druck-view--vorschau färbt nicht den ganzen body weiß. */
+body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
+  background: #fff !important;
+}
+.stammbaum-druck-view.stammbaum-druck-view--vorschau {
+  min-height: 0 !important;
+  padding: 0.75rem 1rem !important;
+}
+.stammbaum-pdf-vorschau-scroll {
+  max-height: min(70vh, 560px);
+  overflow: auto;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.2);
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
+.stammbaum-druck-view.stammbaum-druck-view--vorschau[data-stil='grafik'] .family-tree-graph {
+  max-height: min(58vh, 480px) !important;
+}
+.stammbaum-druck-view.stammbaum-druck-view--vorschau .family-tree-graph-wrapper {
+  margin: 0 auto;
+  max-height: min(62vh, 520px);
+  overflow: auto;
+}
+.stammbaum-druck-view {
+  background: #fff !important;
+  color: #1c1a18 !important;
+  padding: 1rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+.stammbaum-druck-view .stammbaum-druck-titel {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: #0d9488 !important;
+  text-align: center;
+}
+.stammbaum-druck-view .family-tree-graph-wrapper {
+  margin: 0 auto;
+}
+.stammbaum-druck-view .family-tree-graph {
+  max-height: none !important;
+}
+.stammbaum-druck-view .stammbaum-print-untertitel {
+  text-align: center;
+  font-size: 0.95rem;
+  color: #5c5650 !important;
+  margin: 0 0 1.25rem;
+}
+.stammbaum-druck-view .stammbaum-print-sektion {
+  margin-bottom: 1.25rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.stammbaum-druck-view .stammbaum-print-h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0d9488 !important;
+  margin: 0 0 0.5rem;
+  border-bottom: 2px solid rgba(13, 148, 136, 0.35);
+  padding-bottom: 0.25rem;
+}
+.stammbaum-druck-view .stammbaum-print-ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  list-style: disc;
+}
+.stammbaum-druck-view .stammbaum-print-li {
+  margin-bottom: 0.65rem;
+  color: #1c1a18 !important;
+  break-inside: avoid;
+}
+.stammbaum-druck-view .stammbaum-print-name {
+  font-weight: 600;
+}
+.stammbaum-druck-view .stammbaum-print-du {
+  color: #0d9488 !important;
+  font-weight: 700;
+}
+.stammbaum-druck-view .stammbaum-print-meta {
+  font-weight: 400;
+  color: #5c5650 !important;
+}
+.stammbaum-druck-view .stammbaum-print-detail {
+  font-size: 0.88rem;
+  color: #5c5650 !important;
+  margin-top: 0.2rem;
+  line-height: 1.35;
+}
+.stammbaum-druck-view .stammbaum-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10pt;
+  color: #1c1a18 !important;
+}
+.stammbaum-druck-view .stammbaum-print-table thead {
+  display: table-header-group;
+}
+.stammbaum-druck-view .stammbaum-print-table th {
+  text-align: left;
+  background: rgba(13, 148, 136, 0.12) !important;
+  color: #1c1a18 !important;
+  border: 1px solid #ccc;
+  padding: 8px 10px;
+  font-weight: 700;
+}
+.stammbaum-druck-view .stammbaum-print-table td {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  vertical-align: top;
+}
+.stammbaum-druck-view .stammbaum-print-table tr:nth-child(even) td {
+  background: rgba(0, 0, 0, 0.02) !important;
+}
+.stammbaum-druck-view .stammbaum-print-td-name {
+  font-weight: 600;
+  white-space: normal;
+  word-break: break-word;
+  max-width: 22%;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-table {
+  font-size: 8.5pt;
+  table-layout: fixed;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-caption {
+  caption-side: top;
+  text-align: left;
+  font-size: 9pt;
+  font-weight: 600;
+  color: #5c5650 !important;
+  padding: 0 0 0.5rem;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-col-nr {
+  width: 2.25rem;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-col-id {
+  width: 6.5rem;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-nr {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #5c5650 !important;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-id {
+  font-family: ui-monospace, monospace;
+  font-size: 7.5pt;
+  word-break: break-all;
+  color: #5c5650 !important;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-katalog-foot {
+  border: 1px solid #ccc;
+  padding: 6px 10px;
+  font-size: 8.5pt;
+  color: #5c5650 !important;
+  background: rgba(13, 148, 136, 0.06) !important;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-table th,
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-table td {
+  padding: 4px 5px;
+}
+.stammbaum-druck-view[data-stil='register'] .stammbaum-print-td-name {
+  max-width: none;
+}
+.stammbaum-druck-view[data-stil='personenblaetter'] .stammbaum-print-karten-raster {
+  max-width: 520px;
+  margin: 0 auto;
+}
+.stammbaum-druck-view .stammbaum-print-person-karte {
+  border: 1px solid #c8c4bc;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background: #faf9f6 !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+.stammbaum-druck-view .stammbaum-print-person-karte-name {
+  margin: 0 0 0.55rem;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #0d9488 !important;
+  border-bottom: 1px solid rgba(13, 148, 136, 0.35);
+  padding-bottom: 0.3rem;
+}
+.stammbaum-druck-view .stammbaum-print-person-dl {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 7rem) 1fr;
+  gap: 0.35rem 0.85rem;
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.45;
+}
+.stammbaum-druck-view .stammbaum-print-person-dl dt {
+  font-weight: 600;
+  color: #5c5650 !important;
+  margin: 0;
+}
+.stammbaum-druck-view .stammbaum-print-person-dl dd {
+  margin: 0;
+  color: #1c1a18 !important;
+}
+
+@page {
+  size: auto;
+  margin: 12mm;
+}
+
+@media print {
+  .stammbaum-druck-view .stammbaum-print-person-karte {
+    background: #fff !important;
+    box-shadow: none;
+  }
+  .stammbaum-druck-view .stammbaum-print-sektion {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .stammbaum-druck-view .stammbaum-print-h2 {
+    break-after: avoid;
+  }
+}
+
 /* ========== Druck: K2 Familie & Projektseiten – gut lesbar ========== */
 @media print {
   .mission-wrapper {
@@ -2367,169 +2590,6 @@ header h1 {
   }
   .mission-wrapper button {
     color: #1c1a18 !important;
-  }
-
-  /* Stammbaum reine Druckansicht (?druck=1): nur dieser Block, hell, formatfreundlich */
-  body:has(.stammbaum-druck-view) {
-    background: #fff !important;
-  }
-  .stammbaum-druck-view {
-    background: #fff !important;
-    color: #1c1a18 !important;
-    padding: 1rem;
-    min-height: 100vh;
-    box-sizing: border-box;
-  }
-  .stammbaum-druck-view .stammbaum-druck-titel {
-    margin: 0 0 1rem;
-    font-size: 1.5rem;
-    color: #0d9488 !important;
-    text-align: center;
-  }
-  .stammbaum-druck-view .family-tree-graph-wrapper {
-    margin: 0 auto;
-  }
-  .stammbaum-druck-view .family-tree-graph {
-    max-height: none !important;
-  }
-
-  /* Stammbaum: übersichtliche PDF-Formate (Liste, Register) */
-  .stammbaum-druck-view .stammbaum-print-untertitel {
-    text-align: center;
-    font-size: 0.95rem;
-    color: #5c5650 !important;
-    margin: 0 0 1.25rem;
-  }
-  .stammbaum-druck-view .stammbaum-print-sektion {
-    margin-bottom: 1.25rem;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-  .stammbaum-druck-view .stammbaum-print-h2 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #0d9488 !important;
-    margin: 0 0 0.5rem;
-    border-bottom: 2px solid rgba(13, 148, 136, 0.35);
-    padding-bottom: 0.25rem;
-  }
-  .stammbaum-druck-view .stammbaum-print-ul {
-    margin: 0;
-    padding-left: 1.15rem;
-    list-style: disc;
-  }
-  .stammbaum-druck-view .stammbaum-print-li {
-    margin-bottom: 0.65rem;
-    color: #1c1a18 !important;
-    break-inside: avoid;
-  }
-  .stammbaum-druck-view .stammbaum-print-name {
-    font-weight: 600;
-  }
-  .stammbaum-druck-view .stammbaum-print-du {
-    color: #0d9488 !important;
-    font-weight: 700;
-  }
-  .stammbaum-druck-view .stammbaum-print-meta {
-    font-weight: 400;
-    color: #5c5650 !important;
-  }
-  .stammbaum-druck-view .stammbaum-print-detail {
-    font-size: 0.88rem;
-    color: #5c5650 !important;
-    margin-top: 0.2rem;
-    line-height: 1.35;
-  }
-  .stammbaum-druck-view .stammbaum-print-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10pt;
-    color: #1c1a18 !important;
-  }
-  .stammbaum-druck-view .stammbaum-print-table thead {
-    display: table-header-group;
-  }
-  .stammbaum-druck-view .stammbaum-print-table th {
-    text-align: left;
-    background: rgba(13, 148, 136, 0.12) !important;
-    color: #1c1a18 !important;
-    border: 1px solid #ccc;
-    padding: 8px 10px;
-    font-weight: 700;
-  }
-  .stammbaum-druck-view .stammbaum-print-table td {
-    border: 1px solid #ccc;
-    padding: 6px 10px;
-    vertical-align: top;
-  }
-  .stammbaum-druck-view .stammbaum-print-table tr:nth-child(even) td {
-    background: rgba(0, 0, 0, 0.02) !important;
-  }
-  .stammbaum-druck-view .stammbaum-print-td-name {
-    font-weight: 600;
-    white-space: normal;
-    word-break: break-word;
-    max-width: 22%;
-  }
-
-  /* Personenblätter: ein Block pro Person, A4-tauglich */
-  .stammbaum-druck-view[data-stil='personenblaetter'] .stammbaum-print-karten-raster {
-    max-width: 520px;
-    margin: 0 auto;
-  }
-  .stammbaum-druck-view .stammbaum-print-person-karte {
-    border: 1px solid #c8c4bc;
-    border-radius: 10px;
-    padding: 0.85rem 1rem;
-    margin-bottom: 1rem;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    background: #faf9f6 !important;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
-  }
-  .stammbaum-druck-view .stammbaum-print-person-karte-name {
-    margin: 0 0 0.55rem;
-    font-size: 1.12rem;
-    font-weight: 700;
-    color: #0d9488 !important;
-    border-bottom: 1px solid rgba(13, 148, 136, 0.35);
-    padding-bottom: 0.3rem;
-  }
-  .stammbaum-druck-view .stammbaum-print-person-dl {
-    display: grid;
-    grid-template-columns: minmax(5.5rem, 7rem) 1fr;
-    gap: 0.35rem 0.85rem;
-    margin: 0;
-    font-size: 0.94rem;
-    line-height: 1.45;
-  }
-  .stammbaum-druck-view .stammbaum-print-person-dl dt {
-    font-weight: 600;
-    color: #5c5650 !important;
-    margin: 0;
-  }
-  .stammbaum-druck-view .stammbaum-print-person-dl dd {
-    margin: 0;
-    color: #1c1a18 !important;
-  }
-
-  @page {
-    size: auto;
-    margin: 12mm;
-  }
-
-  @media print {
-    .stammbaum-druck-view .stammbaum-print-person-karte {
-      background: #fff !important;
-      box-shadow: none;
-    }
-    .stammbaum-druck-view .stammbaum-print-sektion {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-    .stammbaum-druck-view .stammbaum-print-h2 {
-      break-after: avoid;
-    }
   }
 
   /* Lizenzen-Seite: Beim Drucken nur Bereich „Online gekaufte Lizenzen & Abrechnung“ */
