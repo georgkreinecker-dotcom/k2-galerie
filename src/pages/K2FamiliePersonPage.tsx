@@ -19,6 +19,7 @@ import {
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
 import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
+import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -43,6 +44,10 @@ function computeStammdatenDirty(
     verstorben: boolean
     verstorbenAm: string
     positionAmongSiblingsInput: string
+    photoKind: string
+    photoJugend: string
+    photoErwachsen: string
+    photoAlter: string
   }
 ): boolean {
   const effName = f.name.trim() || person.name
@@ -61,8 +66,20 @@ function computeStammdatenDirty(
   const posNum = f.positionAmongSiblingsInput.trim() === '' ? undefined : parseInt(f.positionAmongSiblingsInput.trim(), 10)
   const pos = posNum != null && !Number.isNaN(posNum) && posNum >= 1 ? posNum : undefined
   if (pos !== (person.positionAmongSiblings ?? undefined)) return true
+  const ps = (s: string | undefined, form: string) => (s ?? '').trim() === form.trim()
+  if (!ps(person.photoKind, f.photoKind)) return true
+  if (!ps(person.photoJugend, f.photoJugend)) return true
+  if (!ps(person.photoErwachsen, f.photoErwachsen)) return true
+  if (!ps(person.photoAlter, f.photoAlter)) return true
   return false
 }
+
+const LEBENSPHASEN_FOTO_LABELS: { field: 'photoKind' | 'photoJugend' | 'photoErwachsen' | 'photoAlter'; label: string }[] = [
+  { field: 'photoKind', label: 'Kind' },
+  { field: 'photoJugend', label: 'Jugendlich' },
+  { field: 'photoErwachsen', label: 'Erwachsen' },
+  { field: 'photoAlter', label: 'Alter' },
+]
 
 export default function K2FamiliePersonPage() {
   const { id } = useParams<{ id: string }>()
@@ -91,6 +108,10 @@ export default function K2FamiliePersonPage() {
   const [beitragInhalt, setBeitragInhalt] = useState('')
   const [beitragVonWem, setBeitragVonWem] = useState('')
   const [positionAmongSiblingsInput, setPositionAmongSiblingsInput] = useState<string>('')
+  const [photoKind, setPhotoKind] = useState('')
+  const [photoJugend, setPhotoJugend] = useState('')
+  const [photoErwachsen, setPhotoErwachsen] = useState('')
+  const [photoAlter, setPhotoAlter] = useState('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [beziehungenFokusHighlight, setBeziehungenFokusHighlight] = useState(false)
   const [stammdatenHauptOpen, setStammdatenHauptOpen] = useState(true)
@@ -152,6 +173,10 @@ export default function K2FamiliePersonPage() {
       setVerstorben(person.verstorben === true)
       setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? '')
       setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : '')
+      setPhotoKind(person.photoKind ?? '')
+      setPhotoJugend(person.photoJugend ?? '')
+      setPhotoErwachsen(person.photoErwachsen ?? '')
+      setPhotoAlter(person.photoAlter ?? '')
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
       if (person.name === 'Neue Person') setEdit(true)
     }
@@ -169,8 +194,26 @@ export default function K2FamiliePersonPage() {
             verstorben,
             verstorbenAm,
             positionAmongSiblingsInput,
+            photoKind,
+            photoJugend,
+            photoErwachsen,
+            photoAlter,
           }),
-    [person, edit, name, geburtsdatum, maedchenname, shortText, verstorben, verstorbenAm, positionAmongSiblingsInput]
+    [
+      person,
+      edit,
+      name,
+      geburtsdatum,
+      maedchenname,
+      shortText,
+      verstorben,
+      verstorbenAm,
+      positionAmongSiblingsInput,
+      photoKind,
+      photoJugend,
+      photoErwachsen,
+      photoAlter,
+    ]
   )
 
   useEffect(() => {
@@ -197,6 +240,17 @@ export default function K2FamiliePersonPage() {
     const positionAmongSiblings = posNum != null && !Number.isNaN(posNum) && posNum >= 1 ? posNum : undefined
     const gdNorm = normalizeFamilieDatum(geburtsdatum)
     const vsNorm = verstorben && verstorbenAm.trim() ? normalizeFamilieDatum(verstorbenAm) : undefined
+    const pk = photoKind.trim() || undefined
+    const pj = photoJugend.trim() || undefined
+    const pe = photoErwachsen.trim() || undefined
+    const pa = photoAlter.trim() || undefined
+    const fotoAktuell = getAktuellesPersonenFoto({
+      ...person,
+      photoKind: pk,
+      photoJugend: pj,
+      photoErwachsen: pe,
+      photoAlter: pa,
+    })
     const updated: K2FamiliePerson = {
       ...person,
       name: name.trim() || person.name,
@@ -206,6 +260,11 @@ export default function K2FamiliePersonPage() {
       verstorben: verstorben || undefined,
       verstorbenAm: vsNorm,
       positionAmongSiblings,
+      photoKind: pk,
+      photoJugend: pj,
+      photoErwachsen: pe,
+      photoAlter: pa,
+      photo: fotoAktuell,
       updatedAt: new Date().toISOString(),
     }
     const next = personen.map((p) => (p.id === id ? updated : p))
@@ -671,6 +730,38 @@ export default function K2FamiliePersonPage() {
   const partnerExcludeIds = person.partners.map((pr) => pr.personId)
   const { select: partnerAddSelect } = getAddSelectUI('partner', partnerExcludeIds, addPartner)
 
+  const aktuellFotoSrc = useMemo(() => {
+    if (!person) return undefined
+    if (edit) {
+      return getAktuellesPersonenFoto({
+        ...person,
+        photoKind: photoKind.trim() || undefined,
+        photoJugend: photoJugend.trim() || undefined,
+        photoErwachsen: photoErwachsen.trim() || undefined,
+        photoAlter: photoAlter.trim() || undefined,
+      })
+    }
+    return getAktuellesPersonenFoto(person)
+  }, [person, edit, photoKind, photoJugend, photoErwachsen, photoAlter])
+
+  const phaseThumbUrl = (
+    field: 'photoKind' | 'photoJugend' | 'photoErwachsen' | 'photoAlter'
+  ): string | undefined => {
+    if (edit) {
+      const raw =
+        field === 'photoKind'
+          ? photoKind
+          : field === 'photoJugend'
+            ? photoJugend
+            : field === 'photoErwachsen'
+              ? photoErwachsen
+              : photoAlter
+      const t = raw.trim()
+      return t || undefined
+    }
+    return person[field]?.trim() || undefined
+  }
+
   return (
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page">
@@ -705,11 +796,120 @@ export default function K2FamiliePersonPage() {
           <summary className="k2-familie-haupt-summary">Stammdaten</summary>
           <div className="k2-familie-haupt-inner">
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
-          {person.photo ? (
-            <img src={person.photo} alt="" className="person-photo" style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(20,184,166,0.35)' }} />
-          ) : (
-            <div style={{ width: 140, height: 140, borderRadius: '50%', background: 'rgba(13,148,136,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', border: '4px solid rgba(20,184,166,0.25)' }}>👤</div>
-          )}
+          <div style={{ flexShrink: 0, maxWidth: 300 }}>
+            {aktuellFotoSrc ? (
+              <img
+                src={aktuellFotoSrc}
+                alt=""
+                className="person-photo"
+                style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(20,184,166,0.35)' }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 140,
+                  height: 140,
+                  borderRadius: '50%',
+                  background: 'rgba(13,148,136,0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '3.5rem',
+                  border: '4px solid rgba(20,184,166,0.25)',
+                }}
+              >
+                👤
+              </div>
+            )}
+            <p className="meta" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', textAlign: 'center', maxWidth: 140, lineHeight: 1.35 }}>
+              Zeitaktuell – neueste Lebensphase mit Bild (Alter → Erwachsen → Jugendlich → Kind)
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.4rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                marginTop: '0.55rem',
+              }}
+            >
+              {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => {
+                const src = phaseThumbUrl(field)
+                return (
+                  <div key={field} style={{ textAlign: 'center', width: 66 }}>
+                    <div className="meta" style={{ fontSize: '0.65rem', marginBottom: 3, lineHeight: 1.2 }}>{label}</div>
+                    {src ? (
+                      <img
+                        src={src}
+                        alt=""
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 8,
+                          objectFit: 'cover',
+                          border: '2px solid rgba(20,184,166,0.35)',
+                          display: 'block',
+                          margin: '0 auto',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 8,
+                          background: 'rgba(13,148,136,0.18)',
+                          margin: '0 auto',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          color: 'rgba(226,232,240,0.5)',
+                          border: '1px dashed rgba(20,184,166,0.3)',
+                        }}
+                      >
+                        –
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            {edit && (
+              <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <p className="meta" style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.4 }}>
+                  Bild-URLs wie in der Galerie (öffentlicher Link oder data:image/…). Gespeichert mit <strong>Speichern</strong>.
+                </p>
+                {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => (
+                  <div key={field} className="field" style={{ marginBottom: 0 }}>
+                    <label className="meta">Foto {label}</label>
+                    <input
+                      type="text"
+                      value={
+                        field === 'photoKind'
+                          ? photoKind
+                          : field === 'photoJugend'
+                            ? photoJugend
+                            : field === 'photoErwachsen'
+                              ? photoErwachsen
+                              : photoAlter
+                      }
+                      onChange={(e) => {
+                        const v = e.target.value
+                        if (field === 'photoKind') setPhotoKind(v)
+                        else if (field === 'photoJugend') setPhotoJugend(v)
+                        else if (field === 'photoErwachsen') setPhotoErwachsen(v)
+                        else setPhotoAlter(v)
+                      }}
+                      placeholder="https://… optional"
+                      autoComplete="off"
+                      data-lpignore="true"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div style={{ flex: 1, minWidth: 200 }}>
             {edit ? (
               <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); save(); }} style={{ display: 'contents' }}>
@@ -811,7 +1011,7 @@ export default function K2FamiliePersonPage() {
                 </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); }}>Abbrechen</button>
+                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); }}>Abbrechen</button>
                 </div>
               </form>
             ) : (
@@ -1102,17 +1302,48 @@ export default function K2FamiliePersonPage() {
         </details>
 
         {person && (
-          <div className="card" style={{ marginTop: '1.5rem', borderColor: 'rgba(220,80,80,0.5)' }}>
-            <h2 style={{ color: 'rgba(220,80,80,0.95)' }}>Person löschen</h2>
-            <p className="meta" style={{ margin: '0 0 0.75rem' }}>Diese Person und alle Verknüpfungen (Eltern, Kinder, Partner, Geschwister) werden entfernt. Momente und Beiträge dieser Person gehen verloren. „Du“ oder „Herkunft Partner“ werden zurückgesetzt, falls sie auf diese Person zeigten.</p>
+          <div
+            className="k2-familie-person-delete-footer"
+            style={{
+              marginTop: '1.75rem',
+              paddingTop: '1rem',
+              borderTop: '1px solid rgba(20, 184, 166, 0.18)',
+            }}
+          >
             {!showDeleteConfirm ? (
-              <button type="button" className="btn-outline danger" onClick={() => setShowDeleteConfirm(true)}>Person löschen…</button>
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem 1rem' }}>
+                <span className="meta" style={{ fontSize: '0.8rem', opacity: 0.88 }}>
+                  Optional – nur wenn du diese Person wirklich aus dem Stammbaum entfernen willst:
+                </span>
+                <button
+                  type="button"
+                  className="btn-outline danger"
+                  style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem', fontWeight: 500 }}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Person löschen…
+                </button>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <p style={{ margin: 0, fontWeight: 600 }}>Wirklich endgültig löschen?</p>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button type="button" className="btn danger" onClick={() => { if (deletePersonWithCleanup(currentTenantId, person.id)) navigate(PROJECT_ROUTES['k2-familie'].stammbaum); }}>Ja, endgültig löschen</button>
-                  <button type="button" className="btn-outline" onClick={() => setShowDeleteConfirm(false)}>Abbrechen</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxWidth: '36rem' }}>
+                <p className="meta" style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.45 }}>
+                  Verknüpfungen (Eltern, Kinder, Partner, Geschwister) werden entfernt, Momente und Beiträge gehen verloren. „Du“ / „Herkunft Partner“ werden zurückgesetzt, falls sie hierher zeigten.
+                </p>
+                <p style={{ margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>Wirklich endgültig löschen?</p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="btn danger"
+                    style={{ fontSize: '0.9rem', padding: '0.4rem 0.75rem' }}
+                    onClick={() => {
+                      if (deletePersonWithCleanup(currentTenantId, person.id)) navigate(PROJECT_ROUTES['k2-familie'].stammbaum)
+                    }}
+                  >
+                    Ja, endgültig löschen
+                  </button>
+                  <button type="button" className="btn-outline" style={{ fontSize: '0.9rem' }} onClick={() => setShowDeleteConfirm(false)}>
+                    Abbrechen
+                  </button>
                 </div>
               </div>
             )}

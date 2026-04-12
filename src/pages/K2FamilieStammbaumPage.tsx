@@ -24,6 +24,7 @@ import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import FamilyTreeGraph, { type FamilyTreeLayout, type TreeOrientation } from '../components/FamilyTreeGraph'
 import {
   StammbaumDruckNachGenerationen,
@@ -1087,9 +1088,11 @@ export default function K2FamilieStammbaumPage() {
                                           boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
                                         }}
                                       >
-                                        {p.photo ? (
+                                        {(() => {
+                                          const fotoAktuell = getAktuellesPersonenFoto(p)
+                                          return fotoAktuell ? (
                                           <img
-                                            src={p.photo}
+                                            src={fotoAktuell}
                                             alt=""
                                             className="person-photo"
                                             style={{
@@ -1116,7 +1119,7 @@ export default function K2FamilieStammbaumPage() {
                                           >
                                             👤
                                           </div>
-                                        )}
+                                        )})()}
                                         <div style={{ width: '100%' }}>
                                           <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
                                           {p.shortText && (
@@ -1179,9 +1182,11 @@ export default function K2FamilieStammbaumPage() {
                                 boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
                               }}
                             >
-                              {p.photo ? (
+                              {(() => {
+                                const fotoAktuell = getAktuellesPersonenFoto(p)
+                                return fotoAktuell ? (
                                 <img
-                                  src={p.photo}
+                                  src={fotoAktuell}
                                   alt=""
                                   className="person-photo"
                                   style={{
@@ -1208,7 +1213,7 @@ export default function K2FamilieStammbaumPage() {
                                 >
                                   👤
                                 </div>
-                              )}
+                              )})()}
                               <div style={{ width: '100%' }}>
                                 <h2 style={{ margin: 0, fontSize: titleFs, lineHeight: 1.2 }}>{p.name}</h2>
                                 {p.shortText && (
@@ -1264,9 +1269,11 @@ export default function K2FamilieStammbaumPage() {
                       boxShadow: '0 2px 12px rgba(0,0,0,0.2)',
                     }}
                   >
-                    {p.photo ? (
+                    {(() => {
+                      const fotoAktuell = getAktuellesPersonenFoto(p)
+                      return fotoAktuell ? (
                       <img
-                        src={p.photo}
+                        src={fotoAktuell}
                         alt=""
                         className="person-photo"
                         style={{ width: 96, height: 96, borderRadius: '50%', objectFit: 'cover', border: r.avatarBorder }}
@@ -1287,7 +1294,7 @@ export default function K2FamilieStammbaumPage() {
                       >
                         👤
                       </div>
-                    )}
+                    )})()}
                     <div style={{ width: '100%' }}>
                       <h2 style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.2 }}>{p.name}</h2>
                       {p.shortText && <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.82rem', lineHeight: 1.4 }}>{p.shortText.slice(0, 70)}{p.shortText.length > 70 ? '…' : ''}</p>}

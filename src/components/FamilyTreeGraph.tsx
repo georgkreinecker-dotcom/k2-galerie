@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom'
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
+import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 const NODE_W = 72
 const NODE_H = 56
 const ROW_H = 176
@@ -1678,7 +1679,8 @@ export default function FamilyTreeGraph({
           const pos = displayNodePos.get(p.id)
           if (!pos) return null
           const to = `${personPathPrefix}/${p.id}`
-          const showPhoto = !noPhotos && p.photo
+          const fotoAktuell = getAktuellesPersonenFoto(p)
+          const showPhoto = !noPhotos && fotoAktuell
           const initial = p.name.trim().charAt(0).toUpperCase() || '?'
           const isIch = ichBinPersonId === p.id
           const nodeContent = (
@@ -1695,7 +1697,7 @@ export default function FamilyTreeGraph({
                 />
                 {showPhoto && (
                   <image
-                    href={p.photo}
+                    href={fotoAktuell}
                     x={2}
                     y={2}
                     width={NODE_W - 4}

@@ -10,6 +10,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, loadGaben, saveGaben } from '../utils/familieStorage'
+import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import type { K2FamilieGabe } from '../types/k2Familie'
 
@@ -120,12 +121,13 @@ export default function K2FamilieGedenkortPage() {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {verstorbene.map((p) => {
               const personGaben = gabenFuerPerson(p.id)
+              const fotoAktuell = getAktuellesPersonenFoto(p)
               return (
                 <li key={p.id} className="card" style={{ marginBottom: '1rem', borderLeft: `4px solid ${C.accent}` }}>
                   <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                    {p.photo && (
+                    {fotoAktuell && (
                       <img
-                        src={p.photo}
+                        src={fotoAktuell}
                         alt=""
                         style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 8 }}
                       />

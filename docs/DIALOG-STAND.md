@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie: Lebensphasen-Fotos Kind / Jugendlich / Erwachsen / Alter** – `getAktuellesPersonenFoto` (späteste Phase mit Bild); Personenseite: großes Kreisbild = zeitaktuell, vier Mini-Vorschaubilder + URL-Felder im Bearbeiten; Stammbaum-Kacheln, Baum-Grafik, Gedenkort nutzen dieselbe Logik; `photo` bleibt Legacy/Spiegel beim Speichern. Tests `familiePersonFotos.test.ts`. **Commit:** **9fd16017** ✅ GitHub
+
+**Was wir JETZT tun:** Person → Stammdaten bearbeiten → vier URLs testen; Stammbaum/Gedenkort: Hauptbild = „neueste“ Phase.
+
+---
+
 **Letzter Stand:** 11.04.26 – **K2 Familie Stammbaum: Fix ReferenceError Geschwister-Anzeige** – `geschwisterDuAnzeige` → `geschwisterDuAnzeigeText` (`useMemo` mit fertigem String); vermeidet Laufzeitfehler „Can't find variable: geschwisterDuAnzeige“ in der „Du“-Beziehungsbox. **Commit:** **ddbdedb0** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum neu laden – Beziehungsbox „Geschwister“ ohne Fehler.

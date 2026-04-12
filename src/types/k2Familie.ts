@@ -21,7 +21,16 @@ export interface K2FamiliePerson {
   geburtsdatum?: string
   /** Geburtsname / Mädchenname, z. B. bei Frauen – optional. */
   maedchenname?: string
+  /** Legacy: gespiegelt aus dem zeitaktuellen Lebensphasen-Bild beim Speichern; Anzeige über getAktuellesPersonenFoto. */
   photo?: string
+  /** Foto als Kind (optional). */
+  photoKind?: string
+  /** Jugendlich (optional). */
+  photoJugend?: string
+  /** Erwachsen (optional). */
+  photoErwachsen?: string
+  /** Alter / Seniorenphase (optional). */
+  photoAlter?: string
   shortText?: string
   /** Verstorben – für Gedenkort (Phase 5). */
   verstorben?: boolean
