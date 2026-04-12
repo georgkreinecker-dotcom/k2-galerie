@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie Rollen (lizenzierfähig)** – `K2FamilieRolle` Inhaber:in / Bearbeiter:in / Leser:in mit Rechten (`FamilieRollenCapabilities`): Bearbeiten, Export, Wiederherstellen/Merge, Familien-Verwaltung. **Context** `FamilieRolleProvider` in `K2FamilieLayout`, Speicher `k2-familie-rolle-<tenantId>`, **Home** Rollenwahl + Hinweise, **Sicherung** Buttons je nach Rolle. Tests `k2FamilieRollen.test.ts`. Build-Stand + Test-Protokoll mit. **Commit:** **a2b623f8** ✅ GitHub (nach Push)
+
+**Was wir JETZT tun:** K2 Familie Hub → Rolle wechseln → Home/Sicherung/Stammbaum prüfen (Leser speichert nicht, Inhaber:in volle Sicherung).
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie PDF: Kontakt klar, weniger Textchaos** – `kontaktAdresse` in **Personenblättern** als eigener Block „Kontakt“ (Anschrift zeilenweise, E-Mail/Telefon mit Labels) mit Trennlinie; **Generationen** mit kompaktem Kontakt unter der Beziehungszeile; **Katalog** neue Spalte **Kontakt** (wählbar wie die anderen). Stammbaum-PDF-Bereich: Label **Typ** statt „Inhalt“, Einleitung + Fußhinweise zu Umfang/Kontakt-Spalte. `StammbaumDruckFormate.tsx`, `familieKatalogPreferences.ts`, `App.css`, `K2FamilieStammbaumPage.tsx`. **Commit:** **ab63ab25** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Stammbaum → 4 · PDF & Auswertung → Personenblätter / Generationen / Katalog mit **Kontakt**-Spalte prüfen; eine Person mit Anschrift+E-Mail testen.
