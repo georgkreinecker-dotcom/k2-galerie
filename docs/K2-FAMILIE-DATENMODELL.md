@@ -27,6 +27,18 @@ Jede Person hat eine eindeutige ID und kann mit anderen über Beziehungen verbun
 
 **Grundbotschaft:** Keine Kategorien, die ausgrenzen. Eltern/Kinder/Partner*innen/Geschwister/Wahlfamilie sind flexibel befüllbar – jede Konstellation hat Platz.
 
+### 1.1 Anschrift & Kontakt (optional)
+
+Auf der **Personenseite** als aufklappbarer Block („Anschrift & Kontakt“). Alles in einem JSON-Objekt an der Person, keine eigene Datenbanktabelle.
+
+| Feld | Beschreibung |
+|------|----------------|
+| `kontaktAdresse.zeile1` / `zeile2` | Adresszeilen |
+| `kontaktAdresse.plz` / `ort` / `land` | Postleitzahl, Ort, Land |
+| `kontaktAdresse.email` / `telefon` | E-Mail und Telefon (Lesemodus: klickbar als mailto:/tel:) |
+
+Typ: `K2FamilieKontaktAdresse` in `src/types/k2Familie.ts`. Sind alle Teilfelder leer, wird `kontaktAdresse` nicht gespeichert (`undefined`).
+
 ---
 
 ## 2. PartnerRef – Partner*innen mit Zeitraum

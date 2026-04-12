@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie Person: Anschrift & Kontakt (aufklappbar)** – Optionales JSON-Objekt `kontaktAdresse` an der Person (`K2FamilieKontaktAdresse`: Zeilen, PLZ, Ort, Land, E-Mail, Telefon). **Bearbeiten:** Block „Anschrift & Kontakt (optional)“ als `<details>` im Stammdaten-Formular; **Lesemodus:** eigener aufklappbarer Block mit `mailto:` / `tel:` wenn Daten gesetzt. `computeStammdatenDirty`, Speichern/Abbrechen. Doku `docs/K2-FAMILIE-DATENMODELL.md` §1.1. **Commit:** **46259742** ✅ GitHub (nach Push)
+
+**Was wir JETZT tun:** Person öffnen → Stammdaten bearbeiten → Block aufklappen → Kontakt speichern; ohne Bearbeiten Block mit Einträgen prüfen.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Schlusspunkt zurückhaltend, Bereiche klar** – **Schlusspunkt** in ein geschlossenes **`<details>`** mit kurzer Summary („Optional: Stammbaum abschließen…“); volle Erklärung + Checkbox erst nach Aufklappen. **Bereichswechsel** statt Dropdown „Wechseln:“: **vier Tab-Kacheln** (Nummer 1–4 wie Hub), Kurz-Hint pro Bereich, ein Satz **Untertitel** zum aktiven Bereich (`STAMMBAUM_BEREICH_UNTERTITEL`). `K2FamilieStammbaumPage.tsx`. **Commit:** **b1793a87** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Stammbaum → Bereich 1–4 antippen; Schlusspunkt nur bei Bedarf aufklappen.

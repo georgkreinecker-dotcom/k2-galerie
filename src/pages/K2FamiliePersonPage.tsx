@@ -11,6 +11,7 @@ import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, sa
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
 import { normalizeFamilieDatum, istFamilieDatumUngueltig } from '../utils/familieDatumEingabe'
 import {
@@ -60,6 +61,13 @@ function computeStammdatenDirty(
     linkWeb: string
     linkYoutube: string
     linkInstagram: string
+    kaZeile1: string
+    kaZeile2: string
+    kaPlz: string
+    kaOrt: string
+    kaLand: string
+    kaEmail: string
+    kaTelefon: string
   },
   photoLegacyCleared: boolean
 ): boolean {
@@ -89,7 +97,48 @@ function computeStammdatenDirty(
   if (!ps(person.linkYoutube, f.linkYoutube)) return true
   if (!ps(person.linkInstagram, f.linkInstagram)) return true
   if (photoLegacyCleared && String(person.photo ?? '').trim()) return true
+  const k = person.kontaktAdresse
+  const g = (x: string | undefined, form: string) => (x ?? '').trim() === form.trim()
+  if (!g(k?.zeile1, f.kaZeile1)) return true
+  if (!g(k?.zeile2, f.kaZeile2)) return true
+  if (!g(k?.plz, f.kaPlz)) return true
+  if (!g(k?.ort, f.kaOrt)) return true
+  if (!g(k?.land, f.kaLand)) return true
+  if (!g(k?.email, f.kaEmail)) return true
+  if (!g(k?.telefon, f.kaTelefon)) return true
   return false
+}
+
+function kontaktAdresseFromFormValues(f: {
+  kaZeile1: string
+  kaZeile2: string
+  kaPlz: string
+  kaOrt: string
+  kaLand: string
+  kaEmail: string
+  kaTelefon: string
+}): K2FamiliePerson['kontaktAdresse'] {
+  const ku = (s: string) => {
+    const t = s.trim()
+    return t ? t : undefined
+  }
+  const o = {
+    zeile1: ku(f.kaZeile1),
+    zeile2: ku(f.kaZeile2),
+    plz: ku(f.kaPlz),
+    ort: ku(f.kaOrt),
+    land: ku(f.kaLand),
+    email: ku(f.kaEmail),
+    telefon: ku(f.kaTelefon),
+  }
+  if (!o.zeile1 && !o.zeile2 && !o.plz && !o.ort && !o.land && !o.email && !o.telefon) return undefined
+  return o
+}
+
+function personHatKontaktAnzeige(p: K2FamiliePerson | undefined): boolean {
+  if (!p?.kontaktAdresse) return false
+  const k = p.kontaktAdresse
+  return [k.zeile1, k.zeile2, k.plz, k.ort, k.land, k.email, k.telefon].some((x) => (x ?? '').trim().length > 0)
 }
 
 const LEBENSPHASEN_FOTO_LABELS: { field: 'photoKind' | 'photoJugend' | 'photoErwachsen' | 'photoAlter'; label: string }[] = [
@@ -116,10 +165,13 @@ export default function K2FamiliePersonPage() {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannBearbeiten = capabilities.canEditFamiliendaten
+  const [edit, setEdit] = useState(false)
+  const effectiveEdit = edit && kannBearbeiten
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key])
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
-  const [edit, setEdit] = useState(false)
   const [name, setName] = useState('')
   const [geburtsdatum, setGeburtsdatum] = useState('')
   const [maedchenname, setMaedchenname] = useState('')
@@ -145,6 +197,14 @@ export default function K2FamiliePersonPage() {
   const [linkWeb, setLinkWeb] = useState('')
   const [linkYoutube, setLinkYoutube] = useState('')
   const [linkInstagram, setLinkInstagram] = useState('')
+  const [kaZeile1, setKaZeile1] = useState('')
+  const [kaZeile2, setKaZeile2] = useState('')
+  const [kaPlz, setKaPlz] = useState('')
+  const [kaOrt, setKaOrt] = useState('')
+  const [kaLand, setKaLand] = useState('')
+  const [kaEmail, setKaEmail] = useState('')
+  const [kaTelefon, setKaTelefon] = useState('')
+  const [kontaktAdresseOpen, setKontaktAdresseOpen] = useState(false)
   /** Im Bearbeiten: altes Einzelfeld `photo` entfernen, obwohl es noch in `person` steht (bis Speichern). */
   const [photoLegacyCleared, setPhotoLegacyCleared] = useState(false)
   const [fotoMenu, setFotoMenu] = useState<{ x: number; y: number; kind: 'haupt' | LebensphaseFotoFeld } | null>(null)
@@ -197,6 +257,14 @@ export default function K2FamiliePersonPage() {
   }, [person?.id, fokusParam, person, setSearchParams])
 
   useEffect(() => {
+    if (kannBearbeiten) return
+    setEdit(false)
+    setEditingMomentId(null)
+    setBeitragModal(false)
+    setShowDeleteConfirm(false)
+  }, [kannBearbeiten])
+
+  useEffect(() => {
     if (!isSupabaseConfigured()) {
       setPersonen(loadPersonen(currentTenantId))
       setMomente(loadMomente(currentTenantId))
@@ -227,15 +295,23 @@ export default function K2FamiliePersonPage() {
       setLinkWeb(person.linkWeb ?? '')
       setLinkYoutube(person.linkYoutube ?? '')
       setLinkInstagram(person.linkInstagram ?? '')
+      const ka = person.kontaktAdresse
+      setKaZeile1(ka?.zeile1 ?? '')
+      setKaZeile2(ka?.zeile2 ?? '')
+      setKaPlz(ka?.plz ?? '')
+      setKaOrt(ka?.ort ?? '')
+      setKaLand(ka?.land ?? '')
+      setKaEmail(ka?.email ?? '')
+      setKaTelefon(ka?.telefon ?? '')
       setPhotoLegacyCleared(false)
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
-      if (person.name === 'Neue Person') setEdit(true)
+      if (person.name === 'Neue Person' && kannBearbeiten) setEdit(true)
     }
-  }, [person])
+  }, [person, kannBearbeiten])
 
   const stammdatenDirty = useMemo(
     () =>
-      !person || !edit
+      !person || !effectiveEdit
         ? false
         : computeStammdatenDirty(
             person,
@@ -255,12 +331,19 @@ export default function K2FamiliePersonPage() {
               linkWeb,
               linkYoutube,
               linkInstagram,
+              kaZeile1,
+              kaZeile2,
+              kaPlz,
+              kaOrt,
+              kaLand,
+              kaEmail,
+              kaTelefon,
             },
             photoLegacyCleared
           ),
     [
       person,
-      edit,
+      effectiveEdit,
       name,
       geburtsdatum,
       maedchenname,
@@ -276,6 +359,13 @@ export default function K2FamiliePersonPage() {
       linkWeb,
       linkYoutube,
       linkInstagram,
+      kaZeile1,
+      kaZeile2,
+      kaPlz,
+      kaOrt,
+      kaLand,
+      kaEmail,
+      kaTelefon,
       photoLegacyCleared,
     ]
   )
@@ -291,7 +381,7 @@ export default function K2FamiliePersonPage() {
   }, [stammdatenDirty])
 
   const save = () => {
-    if (!person) return
+    if (!person || !kannBearbeiten) return
     if (istFamilieDatumUngueltig(geburtsdatum)) {
       window.alert('Geburtsdatum ist ungültig – bitte Tag, Monat und Jahr vollständig wählen oder alles leer lassen.')
       return
@@ -333,6 +423,15 @@ export default function K2FamiliePersonPage() {
       linkWeb: linkWeb.trim() || undefined,
       linkYoutube: linkYoutube.trim() || undefined,
       linkInstagram: linkInstagram.trim() || undefined,
+      kontaktAdresse: kontaktAdresseFromFormValues({
+        kaZeile1,
+        kaZeile2,
+        kaPlz,
+        kaOrt,
+        kaLand,
+        kaEmail,
+        kaTelefon,
+      }),
       photo: fotoAktuell,
       updatedAt: new Date().toISOString(),
     }
@@ -406,6 +505,7 @@ export default function K2FamiliePersonPage() {
   }
 
   const updateAndSave = (next: K2FamiliePerson[]) => {
+    if (!kannBearbeiten) return
     if (savePersonen(currentTenantId, next, { allowReduce: false })) setPersonen(next)
   }
 
@@ -485,7 +585,7 @@ export default function K2FamiliePersonPage() {
    * Neue Person anlegen, symmetrisch verknüpfen wie addParent/addChild/…, speichern, zur neuen Person navigieren.
    */
   const createNewPersonAndLink = (relationType: 'parent' | 'child' | 'partner' | 'wahlfamilie') => {
-    if (!id || !person) return
+    if (!id || !person || !kannBearbeiten) return
     if (einstellungen.stammbaumSchlusspunkt) return
     const newId = generatePersonId()
     const now = new Date().toISOString()
@@ -597,7 +697,7 @@ export default function K2FamiliePersonPage() {
     setMomentText(m.text ?? '')
   }
   const saveMoment = () => {
-    if (!id) return
+    if (!id || !kannBearbeiten) return
     if (momentDate.trim() && istFamilieDatumUngueltig(momentDate)) {
       window.alert('Moment-Datum: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben – oder leer lassen.')
       return
@@ -640,6 +740,7 @@ export default function K2FamiliePersonPage() {
     }
   }
   const deleteMoment = (momentId: string) => {
+    if (!kannBearbeiten) return
     const next = momente.filter((m) => m.id !== momentId)
     if (saveMomente(currentTenantId, next, { allowReduce: true })) setMomente(next)
     if (editingMomentId === momentId) setEditingMomentId(null)
@@ -655,7 +756,7 @@ export default function K2FamiliePersonPage() {
     setBeitragModal(true)
   }
   const saveBeitrag = () => {
-    if (!id || !beitragInhalt.trim()) return
+    if (!id || !beitragInhalt.trim() || !kannBearbeiten) return
     const newB: K2FamilieBeitrag = {
       id: 'beitrag-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
       personId: id,
@@ -671,6 +772,7 @@ export default function K2FamiliePersonPage() {
     }
   }
   const deleteBeitrag = (beitragId: string) => {
+    if (!kannBearbeiten) return
     const next = beitraege.filter((b) => b.id !== beitragId)
     if (saveBeitraege(currentTenantId, next)) setBeitraege(next)
   }
@@ -781,11 +883,13 @@ export default function K2FamiliePersonPage() {
           {ids.map((pid) => (
             <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
               <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pid)}</Link>
-              <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
+              {kannBearbeiten && (
+                <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
+              )}
             </span>
           ))}
-          {select}
-          {!einstellungen.stammbaumSchlusspunkt && (
+          {kannBearbeiten && select}
+          {!einstellungen.stammbaumSchlusspunkt && kannBearbeiten && (
             <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink(relationType)} style={newPersonBtnStyle}>
               {newPersonButtonLabels[relationType]}
             </button>
@@ -800,7 +904,7 @@ export default function K2FamiliePersonPage() {
 
   const aktuellFotoSrc = useMemo(() => {
     if (!person) return undefined
-    if (edit) {
+    if (effectiveEdit) {
       return getAktuellesPersonenFoto({
         ...person,
         photoKind: photoKind.trim() || undefined,
@@ -811,12 +915,12 @@ export default function K2FamiliePersonPage() {
       })
     }
     return getAktuellesPersonenFoto(person)
-  }, [person, edit, photoKind, photoJugend, photoErwachsen, photoAlter, photoLegacyCleared])
+  }, [person, effectiveEdit, photoKind, photoJugend, photoErwachsen, photoAlter, photoLegacyCleared])
 
   const phaseThumbUrl = (
     field: 'photoKind' | 'photoJugend' | 'photoErwachsen' | 'photoAlter'
   ): string | undefined => {
-    if (edit) {
+    if (effectiveEdit) {
       const raw =
         field === 'photoKind'
           ? photoKind
@@ -968,11 +1072,11 @@ export default function K2FamiliePersonPage() {
                 draggable={false}
                 onDragStart={(e) => e.preventDefault()}
                 onClick={() => {
-                  if (edit) openFilePicker(resolveTargetForHaupt())
+                  if (effectiveEdit) openFilePicker(resolveTargetForHaupt())
                   else openFotoHttpExternal(aktuellFotoSrc)
                 }}
                 onContextMenu={(e) => {
-                  if (!edit && !isHttpUrlForExternalOpen(aktuellFotoSrc)) return
+                  if (!effectiveEdit && !isHttpUrlForExternalOpen(aktuellFotoSrc)) return
                   e.preventDefault()
                   setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
                 }}
@@ -982,19 +1086,19 @@ export default function K2FamiliePersonPage() {
                   borderRadius: '50%',
                   objectFit: 'cover',
                   border: '4px solid rgba(20,184,166,0.35)',
-                  cursor: edit || isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'pointer' : 'default',
+                  cursor: effectiveEdit || isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'pointer' : 'default',
                 }}
-                title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'Klick: Link im Browser öffnen' : undefined}
+                title={effectiveEdit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(aktuellFotoSrc) ? 'Klick: Link im Browser öffnen' : undefined}
               />
             ) : (
               <div
-                role={edit ? 'button' : undefined}
-                tabIndex={edit ? 0 : undefined}
+                role={effectiveEdit ? 'button' : undefined}
+                tabIndex={effectiveEdit ? 0 : undefined}
                 onClick={() => {
-                  if (edit) openFilePicker(resolveTargetForHaupt())
+                  if (effectiveEdit) openFilePicker(resolveTargetForHaupt())
                 }}
                 onKeyDown={
-                  edit
+                  effectiveEdit
                     ? (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
@@ -1004,7 +1108,7 @@ export default function K2FamiliePersonPage() {
                     : undefined
                 }
                 onContextMenu={(e) => {
-                  if (!edit) return
+                  if (!effectiveEdit) return
                   e.preventDefault()
                   setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
                 }}
@@ -1018,9 +1122,9 @@ export default function K2FamiliePersonPage() {
                   justifyContent: 'center',
                   fontSize: '3.5rem',
                   border: '4px solid rgba(20,184,166,0.25)',
-                  cursor: edit ? 'pointer' : 'default',
+                  cursor: effectiveEdit ? 'pointer' : 'default',
                 }}
-                title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
+                title={effectiveEdit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
               >
                 👤
               </div>
@@ -1044,7 +1148,7 @@ export default function K2FamiliePersonPage() {
             >
               {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => {
                 const src = phaseThumbUrl(field)
-                const thumbClickable = edit || (src != null && isHttpUrlForExternalOpen(src))
+                const thumbClickable = effectiveEdit || (src != null && isHttpUrlForExternalOpen(src))
                 return (
                   <div key={field} style={{ textAlign: 'center', width: 66 }}>
                     <div className="meta" style={{ fontSize: '0.65rem', marginBottom: 3, lineHeight: 1.2 }}>{label}</div>
@@ -1055,11 +1159,11 @@ export default function K2FamiliePersonPage() {
                         draggable={false}
                         onDragStart={(e) => e.preventDefault()}
                         onClick={() => {
-                          if (edit) openFilePicker(field)
+                          if (effectiveEdit) openFilePicker(field)
                           else openFotoHttpExternal(src)
                         }}
                         onContextMenu={(e) => {
-                          if (!edit && !isHttpUrlForExternalOpen(src)) return
+                          if (!effectiveEdit && !isHttpUrlForExternalOpen(src)) return
                           e.preventDefault()
                           setFotoMenu({ x: e.clientX, y: e.clientY, kind: field })
                         }}
@@ -1073,17 +1177,17 @@ export default function K2FamiliePersonPage() {
                           margin: '0 auto',
                           cursor: thumbClickable ? 'pointer' : 'default',
                         }}
-                        title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(src) ? 'Klick: Link öffnen' : undefined}
+                        title={effectiveEdit ? 'Klick: Bild wählen · Rechtsklick: Menü' : isHttpUrlForExternalOpen(src) ? 'Klick: Link öffnen' : undefined}
                       />
                     ) : (
                       <div
-                        role={edit ? 'button' : undefined}
-                        tabIndex={edit ? 0 : undefined}
+                        role={effectiveEdit ? 'button' : undefined}
+                        tabIndex={effectiveEdit ? 0 : undefined}
                         onClick={() => {
-                          if (edit) openFilePicker(field)
+                          if (effectiveEdit) openFilePicker(field)
                         }}
                         onKeyDown={
-                          edit
+                          effectiveEdit
                             ? (e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                   e.preventDefault()
@@ -1093,7 +1197,7 @@ export default function K2FamiliePersonPage() {
                             : undefined
                         }
                         onContextMenu={(e) => {
-                          if (!edit) return
+                          if (!effectiveEdit) return
                           e.preventDefault()
                           setFotoMenu({ x: e.clientX, y: e.clientY, kind: field })
                         }}
@@ -1109,9 +1213,9 @@ export default function K2FamiliePersonPage() {
                           fontSize: '0.75rem',
                           color: 'rgba(226,232,240,0.5)',
                           border: '1px dashed rgba(20,184,166,0.3)',
-                          cursor: edit ? 'pointer' : 'default',
+                          cursor: effectiveEdit ? 'pointer' : 'default',
                         }}
-                        title={edit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
+                        title={effectiveEdit ? 'Klick: Bild wählen · Rechtsklick: Menü' : undefined}
                       >
                         –
                       </div>
@@ -1120,18 +1224,18 @@ export default function K2FamiliePersonPage() {
                 )
               })}
             </div>
-            {(edit ||
+            {(effectiveEdit ||
               person.linkFotoalbum?.trim() ||
               person.linkWeb?.trim() ||
               person.linkYoutube?.trim() ||
               person.linkInstagram?.trim()) && (
             <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              {edit && (
+              {effectiveEdit && (
                 <p className="meta" style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.4 }}>
                   Fotos oben per <strong>Klick</strong> oder <strong>Rechtsklick</strong> setzen – mit <strong>Speichern</strong> sichern. Unten optional: Links zu Fotoalbum, Web, YouTube oder Instagram (keine Bild-URLs).
                 </p>
               )}
-              {!edit &&
+              {!effectiveEdit &&
                 (person.linkFotoalbum?.trim() ||
                   person.linkWeb?.trim() ||
                   person.linkYoutube?.trim() ||
@@ -1166,7 +1270,7 @@ export default function K2FamiliePersonPage() {
                     })}
                   </div>
                 )}
-              {edit &&
+              {effectiveEdit &&
                 EXTERNE_LINK_FELDER.map(({ stateKey, label, placeholder }) => {
                   const raw =
                     stateKey === 'linkFotoalbum'
@@ -1217,7 +1321,7 @@ export default function K2FamiliePersonPage() {
               (() => {
                 const menuPreview = fotoMenu.kind === 'haupt' ? aktuellFotoSrc : phaseThumbUrl(fotoMenu.kind)
                 const canOpen = isHttpUrlForExternalOpen(menuPreview)
-                const canRemove = edit && !!(menuPreview && String(menuPreview).trim())
+                const canRemove = effectiveEdit && !!(menuPreview && String(menuPreview).trim())
                 const menuW = 220
                 const mx = typeof window !== 'undefined' ? Math.min(fotoMenu.x, window.innerWidth - menuW - 8) : fotoMenu.x
                 const my = typeof window !== 'undefined' ? Math.min(fotoMenu.y, window.innerHeight - 130) : fotoMenu.y
@@ -1251,7 +1355,7 @@ export default function K2FamiliePersonPage() {
                       boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                     }}
                   >
-                    {edit && (
+                    {effectiveEdit && (
                       <button
                         type="button"
                         style={btnStyle}
@@ -1293,7 +1397,7 @@ export default function K2FamiliePersonPage() {
               })()}
           </div>
           <div style={{ flex: 1, minWidth: 200 }}>
-            {edit ? (
+            {effectiveEdit ? (
               <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); save(); }} style={{ display: 'contents' }}>
                 <div className="field">
                   <label className="meta">Name</label>
@@ -1366,6 +1470,99 @@ export default function K2FamiliePersonPage() {
                   />
                   <span className="meta" style={{ marginLeft: '0.5rem' }}>Für die Reihenfolge im Stammbaum (1 = erster, 7 = siebter, …)</span>
                 </div>
+                <details
+                  className="k2-familie-details-inner"
+                  style={{ marginTop: '0.85rem' }}
+                  open={kontaktAdresseOpen}
+                  onToggle={(e) => setKontaktAdresseOpen((e.target as HTMLDetailsElement).open)}
+                >
+                  <summary className="k2-familie-details-summary k2-familie-details-summary-nested" style={{ cursor: 'pointer' }}>
+                    Anschrift & Kontakt (optional)
+                  </summary>
+                  <div style={{ marginTop: '0.65rem', display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                    <div className="field">
+                      <label className="meta">Adresszeile 1</label>
+                      <input
+                        type="text"
+                        value={kaZeile1}
+                        onChange={(e) => setKaZeile1(e.target.value)}
+                        placeholder="Straße, Hausnummer"
+                        autoComplete="street-address"
+                        data-lpignore="true"
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="meta">Adresszeile 2</label>
+                      <input
+                        type="text"
+                        value={kaZeile2}
+                        onChange={(e) => setKaZeile2(e.target.value)}
+                        placeholder="Zusatz (optional)"
+                        autoComplete="off"
+                        data-lpignore="true"
+                      />
+                    </div>
+                    <div className="field" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'flex-end' }}>
+                      <div style={{ flex: '1 1 5rem', minWidth: 80 }}>
+                        <label className="meta">PLZ</label>
+                        <input
+                          type="text"
+                          value={kaPlz}
+                          onChange={(e) => setKaPlz(e.target.value)}
+                          placeholder="PLZ"
+                          autoComplete="postal-code"
+                          data-lpignore="true"
+                        />
+                      </div>
+                      <div style={{ flex: '2 1 8rem', minWidth: 120 }}>
+                        <label className="meta">Ort</label>
+                        <input
+                          type="text"
+                          value={kaOrt}
+                          onChange={(e) => setKaOrt(e.target.value)}
+                          placeholder="Ort"
+                          autoComplete="address-level2"
+                          data-lpignore="true"
+                        />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label className="meta">Land</label>
+                      <input
+                        type="text"
+                        value={kaLand}
+                        onChange={(e) => setKaLand(e.target.value)}
+                        placeholder="z. B. Österreich"
+                        autoComplete="country-name"
+                        data-lpignore="true"
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="meta">E-Mail</label>
+                      <input
+                        type="email"
+                        value={kaEmail}
+                        onChange={(e) => setKaEmail(e.target.value)}
+                        placeholder="name@beispiel.at"
+                        autoComplete="email"
+                        data-lpignore="true"
+                        inputMode="email"
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="meta">Telefon</label>
+                      <input
+                        type="tel"
+                        value={kaTelefon}
+                        onChange={(e) => setKaTelefon(e.target.value)}
+                        placeholder="+43 …"
+                        autoComplete="tel"
+                        data-lpignore="true"
+                        inputMode="tel"
+                      />
+                    </div>
+                  </div>
+                </details>
                 <div
                   role="status"
                   aria-live="polite"
@@ -1393,7 +1590,39 @@ export default function K2FamiliePersonPage() {
                 </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setPhotoLegacyCleared(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); setLinkFotoalbum(person.linkFotoalbum ?? ''); setLinkWeb(person.linkWeb ?? ''); setLinkYoutube(person.linkYoutube ?? ''); setLinkInstagram(person.linkInstagram ?? ''); }}>Abbrechen</button>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    onClick={() => {
+                      setEdit(false)
+                      setPhotoLegacyCleared(false)
+                      setName(person.name)
+                      setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? '')
+                      setMaedchenname(person.maedchenname ?? '')
+                      setShortText(person.shortText ?? '')
+                      setVerstorben(person.verstorben === true)
+                      setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? '')
+                      setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : '')
+                      setPhotoKind(person.photoKind ?? '')
+                      setPhotoJugend(person.photoJugend ?? '')
+                      setPhotoErwachsen(person.photoErwachsen ?? '')
+                      setPhotoAlter(person.photoAlter ?? '')
+                      setLinkFotoalbum(person.linkFotoalbum ?? '')
+                      setLinkWeb(person.linkWeb ?? '')
+                      setLinkYoutube(person.linkYoutube ?? '')
+                      setLinkInstagram(person.linkInstagram ?? '')
+                      const ka = person.kontaktAdresse
+                      setKaZeile1(ka?.zeile1 ?? '')
+                      setKaZeile2(ka?.zeile2 ?? '')
+                      setKaPlz(ka?.plz ?? '')
+                      setKaOrt(ka?.ort ?? '')
+                      setKaLand(ka?.land ?? '')
+                      setKaEmail(ka?.email ?? '')
+                      setKaTelefon(ka?.telefon ?? '')
+                    }}
+                  >
+                    Abbrechen
+                  </button>
                 </div>
               </form>
             ) : (
@@ -1401,8 +1630,64 @@ export default function K2FamiliePersonPage() {
                 <p className="meta" style={{ margin: '0 0 0.75rem', color: 'rgba(226,232,240,0.9)' }}>
                   Name und Daten erst mit <strong>Speichern</strong> sicher. Beziehungen in diesem Block (aufklappen) speichern sich beim Verknüpfen sofort.
                 </p>
-                <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
+                {kannBearbeiten ? (
+                  <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
+                ) : (
+                  <p className="meta" style={{ margin: 0, color: 'rgba(251,191,36,0.95)' }}>Lesemodus – Bearbeiten ist für diese Rolle ausgeschaltet (oben Rolle wählen).</p>
+                )}
               </>
+            )}
+            {!effectiveEdit && person && personHatKontaktAnzeige(person) && (
+              <details className="k2-familie-details-inner" style={{ marginTop: '0.85rem' }}>
+                <summary className="k2-familie-details-summary k2-familie-details-summary-nested" style={{ cursor: 'pointer' }}>
+                  Anschrift & Kontakt
+                </summary>
+                <div
+                  className="meta"
+                  style={{
+                    marginTop: '0.5rem',
+                    lineHeight: 1.55,
+                    color: 'rgba(226,232,240,0.95)',
+                    fontSize: '0.95rem',
+                  }}
+                >
+                  {(() => {
+                    const k = person.kontaktAdresse!
+                    const lines: ReactNode[] = []
+                    const pushLine = (s: string | undefined) => {
+                      const t = (s ?? '').trim()
+                      if (t) lines.push(<div key={lines.length}>{t}</div>)
+                    }
+                    pushLine(k.zeile1)
+                    pushLine(k.zeile2)
+                    const plzOrt = [k.plz, k.ort].map((x) => (x ?? '').trim()).filter(Boolean).join(' ')
+                    if (plzOrt) lines.push(<div key="plz">{plzOrt}</div>)
+                    pushLine(k.land)
+                    const em = (k.email ?? '').trim()
+                    if (em) {
+                      lines.push(
+                        <div key="email">
+                          <a href={`mailto:${em}`} style={{ color: 'rgba(45,212,191,0.95)' }}>
+                            {em}
+                          </a>
+                        </div>
+                      )
+                    }
+                    const tel = (k.telefon ?? '').trim()
+                    if (tel) {
+                      const href = 'tel:' + tel.replace(/\s/g, '')
+                      lines.push(
+                        <div key="tel">
+                          <a href={href} style={{ color: 'rgba(45,212,191,0.95)' }}>
+                            {tel}
+                          </a>
+                        </div>
+                      )
+                    }
+                    return <>{lines}</>
+                  })()}
+                </div>
+              </details>
             )}
           </div>
             </div>
@@ -1519,11 +1804,13 @@ export default function K2FamiliePersonPage() {
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
                   <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pr.personId}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pr.personId)}</Link>
                   {(pr.from || pr.to) && <span className="meta" style={{ fontSize: '0.8rem' }}>({pr.from ?? '?'} – {pr.to ?? 'heute'})</span>}
-                  <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
+                  {kannBearbeiten && (
+                    <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
+                  )}
                 </span>
               ))}
-              {partnerAddSelect}
-              {!einstellungen.stammbaumSchlusspunkt && (
+              {kannBearbeiten && partnerAddSelect}
+              {!einstellungen.stammbaumSchlusspunkt && kannBearbeiten && (
                 <button type="button" className="btn-outline" onClick={() => createNewPersonAndLink('partner')} style={newPersonBtnStyle}>
                   {newPersonButtonLabels.partner}
                 </button>
@@ -1554,7 +1841,7 @@ export default function K2FamiliePersonPage() {
                     <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${p.id}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>
                       {p.name}
                     </Link>
-                    {person.siblingIds.includes(p.id) && !geschwisterAusElternIds.has(p.id) && (
+                    {kannBearbeiten && person.siblingIds.includes(p.id) && !geschwisterAusElternIds.has(p.id) && (
                       <button
                         type="button"
                         onClick={() => removeSibling(p.id)}
@@ -1592,10 +1879,12 @@ export default function K2FamiliePersonPage() {
                       {m.date && <span className="meta" style={{ marginLeft: '0.5rem' }}>{m.date.slice(0, 10)}</span>}
                       {m.text && <p className="meta" style={{ margin: '0.35rem 0 0' }}>{m.text}</p>}
                     </div>
-                    <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
-                      <button type="button" className="btn" onClick={() => openEditMoment(m)}>Bearbeiten</button>
-                      <button type="button" className="btn-outline danger" onClick={() => deleteMoment(m.id)}>Löschen</button>
-                    </div>
+                    {kannBearbeiten && (
+                      <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
+                        <button type="button" className="btn" onClick={() => openEditMoment(m)}>Bearbeiten</button>
+                        <button type="button" className="btn-outline danger" onClick={() => deleteMoment(m.id)}>Löschen</button>
+                      </div>
+                    )}
                   </div>
                 </li>
               ))}
@@ -1623,7 +1912,9 @@ export default function K2FamiliePersonPage() {
               </div>
             </div>
           ) : (
-            <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
+            kannBearbeiten && (
+              <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
+            )
           )}
         </details>
 
@@ -1646,9 +1937,11 @@ export default function K2FamiliePersonPage() {
                     <span className="meta" style={{ fontSize: '0.8rem' }}>{new Date(b.createdAt).toLocaleDateString('de-AT')}</span>
                   </div>
                   <p style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap' }}>{b.inhalt}</p>
-                  <div style={{ marginTop: '0.5rem' }}>
-                    <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
-                  </div>
+                  {kannBearbeiten && (
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -1677,13 +1970,15 @@ export default function K2FamiliePersonPage() {
               </div>
             </div>
           ) : (
-            <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
+            kannBearbeiten && (
+              <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
+            )
           )}
         </details>
           </div>
         </details>
 
-        {person && (
+        {person && kannBearbeiten && (
           <div
             className="k2-familie-person-delete-footer"
             style={{

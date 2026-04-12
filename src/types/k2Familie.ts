@@ -13,6 +13,17 @@ export interface K2FamiliePartnerRef {
   to: string | null
 }
 
+/** Optional: Anschrift und direkter Kontakt (JSON-Block pro Person). */
+export interface K2FamilieKontaktAdresse {
+  zeile1?: string
+  zeile2?: string
+  plz?: string
+  ort?: string
+  land?: string
+  email?: string
+  telefon?: string
+}
+
 /** Eine Person im Familien-Stammbaum. */
 export interface K2FamiliePerson {
   id: string
@@ -51,6 +62,8 @@ export interface K2FamiliePerson {
   wahlfamilieIds: string[]
   /** Position unter Geschwistern (1-basiert) für Sortierung im Stammbaum – z. B. 7 = 7. von 13. */
   positionAmongSiblings?: number
+  /** Optional: aufklappbarer Block Anschrift + E-Mail + Telefon auf der Personenseite. */
+  kontaktAdresse?: K2FamilieKontaktAdresse
   createdAt?: string
   updatedAt?: string
 }
