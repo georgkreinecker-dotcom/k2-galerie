@@ -8,9 +8,11 @@ import { Outlet, Link, useLocation } from 'react-router-dom'
 import { FamilieTenantProvider } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
+import { isFamilieNavSectionActive } from '../config/k2FamilieStructure'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { K2_FAMILIE_ROLLEN, K2_FAMILIE_ROLLEN_LABELS } from '../types/k2FamilieRollen'
 import FamilieBackButton from './FamilieBackButton'
+import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
 
 function FamilieRolleLeiste() {
   const { rolle, setRolle, capabilities } = useFamilieRolle()
@@ -80,14 +82,14 @@ function FamilieRolleLeiste() {
 
 const FAMILIE_NAV = [
   { to: PROJECT_ROUTES['k2-familie'].home, label: 'Meine Familie' },
-  { to: PROJECT_ROUTES['k2-familie'].uebersicht, label: 'Leitbild & Vision' },
   { to: PROJECT_ROUTES['k2-familie'].stammbaum, label: 'Stammbaum' },
   { to: PROJECT_ROUTES['k2-familie'].events, label: 'Events' },
   { to: PROJECT_ROUTES['k2-familie'].kalender, label: 'Kalender' },
   { to: PROJECT_ROUTES['k2-familie'].geschichte, label: 'Geschichte' },
   { to: PROJECT_ROUTES['k2-familie'].gedenkort, label: 'Gedenkort' },
-  { to: PROJECT_ROUTES['k2-familie'].handbuch, label: 'Handbuch' },
-  { to: PROJECT_ROUTES['k2-familie'].benutzerHandbuch, label: 'Benutzerhandbuch' },
+  /** Eigenes Nutzerhandbuch (public/k2-familie-handbuch/), nicht Team-Handbuch-Spiegel unter /projects/…/handbuch */
+  { to: PROJECT_ROUTES['k2-familie'].benutzerHandbuch, label: 'Handbuch' },
+  /** Doku & Entwicklung (docs/K2-FAMILIE-*.md): nur Smart-Panel-APf, nicht in dieser Leiste */
   { to: PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe, label: 'Präsentationsmappe' },
   { to: PROJECT_ROUTES['k2-familie'].sicherung, label: 'Sicherung' },
 ] as const
@@ -110,9 +112,9 @@ function FamilieNav() {
       <FamilieBackButton style={{ color: 'rgba(255,255,255,0.85)', marginRight: '0.25rem' }} />
       {FAMILIE_NAV.map(({ to, label }) => {
         const isStart = to === PROJECT_ROUTES['k2-familie'].home
-        const isUebersicht = to === PROJECT_ROUTES['k2-familie'].uebersicht
+        const isHandbuch = to === PROJECT_ROUTES['k2-familie'].benutzerHandbuch
         const isActive =
-          isStart || isUebersicht || to === PROJECT_ROUTES['k2-familie'].handbuch || to === PROJECT_ROUTES['k2-familie'].benutzerHandbuch
+          isStart || isHandbuch
             ? path === to || path === to + '/'
             : path.startsWith(to)
         return (
@@ -144,15 +146,18 @@ export default function K2FamilieLayout() {
     <FamilieTenantProvider>
       <FamilieRolleProvider>
         <div className="k2-familie-layout-shell">
-          <FamilieNav />
-          <FamilieRolleLeiste />
-          <main id="k2-familie-main" className="k2-familie-main">
-            <Outlet />
-          </main>
-        <footer className="k2-familie-app-footer" role="contentinfo">
-          <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-          <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-        </footer>
+          <FamilieLeitstrukturPanel />
+          <div className="k2-familie-layout-column">
+            <FamilieNav />
+            <FamilieRolleLeiste />
+            <main id="k2-familie-main" className="k2-familie-main">
+              <Outlet />
+            </main>
+            <footer className="k2-familie-app-footer" role="contentinfo">
+              <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+              <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+            </footer>
+          </div>
         </div>
       </FamilieRolleProvider>
     </FamilieTenantProvider>

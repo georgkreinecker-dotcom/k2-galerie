@@ -62,6 +62,7 @@ import K2FamilieGedenkortPage from './pages/K2FamilieGedenkortPage'
 import K2FamilieHandbuchPage from './pages/K2FamilieHandbuchPage'
 import K2FamilieBenutzerHandbuchPage from './pages/K2FamilieBenutzerHandbuchPage'
 import K2FamiliePraesentationsmappePage from './pages/K2FamiliePraesentationsmappePage'
+import K2FamilieEntwicklungDokuPage from './pages/K2FamilieEntwicklungDokuPage'
 import K2FamilieSicherungPage from './pages/K2FamilieSicherungPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
@@ -893,6 +894,7 @@ function App() {
         <Route path="geschichte" element={<K2FamilieGeschichtePage />} />
         <Route path="gedenkort" element={<K2FamilieGedenkortPage />} />
         <Route path="handbuch" element={<K2FamilieHandbuchPage />} />
+        <Route path="doku" element={<K2FamilieEntwicklungDokuPage />} />
         <Route path="praesentationsmappe" element={<K2FamiliePraesentationsmappePage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />

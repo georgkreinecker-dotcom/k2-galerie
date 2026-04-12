@@ -1,15 +1,14 @@
 /**
- * K2 Familie – Projekt-Start. Vision, Roadmap, Raumschiff.
- * Route: /projects/k2-familie
+ * K2 Familie – Projekt-Start. Vision, Roadmap (interne Seite, nicht die Familien-Homepage).
+ * Route: /projects/k2-familie/uebersicht
  */
 
 import { Link, useNavigate } from 'react-router-dom'
 import FamilieBackButton from '../components/FamilieBackButton'
 import { useState } from 'react'
 import '../App.css'
-import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
 import { seedFamilieHuber, getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 
 export default function K2FamilieStartPage() {
@@ -81,7 +80,7 @@ export default function K2FamilieStartPage() {
             <li><strong>Events</strong> (Geburtstage, Treffen): Datum, Titel, Teilnehmer aus der Familie auswählen.</li>
             <li><strong>Kalender</strong> zeigt alle Events und Momente mit Datum, nach Monat sortiert.</li>
           </ol>
-          <p className="meta" style={{ marginTop: '0.75rem' }}>Ausführlich: <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ color: '#14b8a6' }}>Handbuch Familie</Link> (Erste Schritte &amp; Zusammenfassung).</p>
+          <p className="meta" style={{ marginTop: '0.75rem' }}>Ausführlich: <Link to={PROJECT_ROUTES['k2-familie'].benutzerHandbuch} style={{ color: '#14b8a6' }}>Handbuch Familie</Link> (Erste Schritte &amp; Zusammenfassung).</p>
         </div>
 
         <div className="card" style={{ borderLeft: '4px solid rgba(95,251,241,0.6)' }}>
@@ -95,7 +94,6 @@ export default function K2FamilieStartPage() {
           <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="btn">→ Stammbaum öffnen</Link>
           <Link to={PROJECT_ROUTES['k2-familie'].events} className="btn">→ Events (Geburtstage, Treffen)</Link>
           <Link to={PROJECT_ROUTES['k2-familie'].kalender} className="btn">→ Kalender & Übersicht</Link>
-          <Link to={PROJECT_ROUTES['k2-galerie'].plan} className="btn" style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(95,251,241,0.4)' }}>K2 Galerie Plan</Link>
         </div>
 
         <p className="meta" style={{ marginTop: '1.5rem', lineHeight: 1.5 }}>Die Grundbotschaft prägt Form der App, Sprache und jede zukünftige KI-Kommunikation. Moralisches Fundament: <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-GRUNDBOTSCHAFT.md</code></p>

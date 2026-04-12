@@ -516,9 +516,6 @@ export default function K2FamilieHomePage() {
             </div>
           )}
 
-          <p className="meta" style={{ marginTop: '1.5rem' }}>
-            <Link to={PROJECT_ROUTES['k2-familie'].uebersicht} style={{ color: C.textSoft, textDecoration: 'none', transition: 'color 0.2s' }}>Leitbild & Vision →</Link>
-          </p>
         </div>
       </div>
     </div>

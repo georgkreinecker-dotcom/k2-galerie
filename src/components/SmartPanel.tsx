@@ -248,6 +248,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/projects/k2-galerie/notizen')) return 'notizen'
     if (browserPath.startsWith('/projects/k2-galerie/promo-runway-pack')) return 'promo-runway-pack'
     if (browserPath.startsWith('/projects/k2-galerie/promo-video-produktion')) return 'promo-video-produktion'
+    if (browserPath.startsWith('/k2-familie-handbuch')) return 'k2-familie-handbuch'
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
   }, [browserPath, currentPage])
@@ -1205,13 +1206,33 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                       </Link>
                     )}
                     {onNavigate ? (
-                      <span role="button" tabIndex={0} onClick={() => onNavigate('handbuch')} onKeyDown={e => e.key === 'Enter' && onNavigate('handbuch')}
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-handbuch')} onKeyDown={e => e.key === 'Enter' && onNavigate('k2-familie-handbuch')}
                         style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        📖 Handbuch Familie
+                        📖 Benutzerhandbuch (lesen)
                       </span>
                     ) : (
-                      <Link to={PROJECT_ROUTES['k2-familie'].handbuch} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
-                        📖 Handbuch Familie
+                      <Link to={PROJECT_ROUTES['k2-familie'].benutzerHandbuch} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        📖 Benutzerhandbuch (lesen)
+                      </Link>
+                    )}
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-doku')} onKeyDown={e => e.key === 'Enter' && onNavigate('k2-familie-doku')}
+                        style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.38)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        🗂️ Doku & Entwicklung (alle K2-FAMILIE-*.md)
+                      </span>
+                    ) : (
+                      <Link to={PROJECT_ROUTES['k2-familie'].entwicklungDoku} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.38)', borderRadius: '8px', color: '#14b8a6', fontWeight: 600, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        🗂️ Doku & Entwicklung (alle K2-FAMILIE-*.md)
+                      </Link>
+                    )}
+                    {onNavigate ? (
+                      <span role="button" tabIndex={0} onClick={() => onNavigate('k2-familie-praesentationsmappe')} onKeyDown={e => e.key === 'Enter' && onNavigate('k2-familie-praesentationsmappe')}
+                        style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        🗺️ Präsentationsmappe
+                      </span>
+                    ) : (
+                      <Link to={PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe} style={{ display: 'block', padding: '0.5rem 0.7rem', background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.3)', borderRadius: '8px', color: '#14b8a6', fontWeight: 500, fontSize: '0.82rem', textDecoration: 'none', fontFamily: 'inherit' }}>
+                        🗺️ Präsentationsmappe
                       </Link>
                     )}
                   </>

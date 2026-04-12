@@ -2272,14 +2272,38 @@ header h1 {
   transform: translateY(-1px);
 }
 
-/* K2 Familie: Shell + einheitlicher Footer (Copyright) */
+/* K2 Familie: Shell + Leitstruktur (wie mök2) + einheitlicher Footer */
 .k2-familie-layout-shell {
   min-height: 100vh;
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+.k2-familie-layout-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 .k2-familie-main {
   flex: 1 0 auto;
+}
+@media (max-width: 900px) {
+  .k2-familie-leitstruktur {
+    display: none !important;
+  }
+}
+@media print {
+  .k2-familie-no-print {
+    display: none !important;
+  }
+  .k2-familie-layout-shell {
+    flex-direction: column;
+  }
+  .k2-familie-layout-column {
+    min-height: auto;
+  }
 }
 .k2-familie-app-footer {
   flex-shrink: 0;

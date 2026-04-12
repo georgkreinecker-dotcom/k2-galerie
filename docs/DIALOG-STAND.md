@@ -1,5 +1,17 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie: Leitstruktur wie mök2 + Doku-Hub** – `k2FamilieStructure.ts` (Gruppen + `isFamilieNavSectionActive`), `FamilieLeitstrukturPanel.tsx` (links, Einklappen, „← Projekte“, Druck: Panel aus); `K2FamilieLayout` Flex mit Sidebar; horizontale Nav nutzt dieselbe Active-Logik; `App.css` Shell/Print/Mobile; Doku-Entwicklung `K2FamilieEntwicklungDokuPage` + `k2FamilieDevDocsBundle`, Route `entwicklungDoku`, Smart Panel; Tests `k2FamilieStructure.test.ts`. **Commit:** *(nach Push eintragen)*
+
+**Was wir JETZT tun:** K2 Familie im Browser: Sidebar durchklicken (Desktop); unter 900px ist die Leiste ausgeblendet – nur obere Nav. Optional: Mobile Drawer für Struktur wenn Bedarf.
+
+---
+
+**Letzter Stand:** 12.04.26 – **K2 Familie: Navigation & APf bereinigt (kein Team-Handbuch-Mix)** – Smart Panel „Handbuch Familie“ → **`k2-familie-handbuch`** (`/k2-familie-handbuch`), nicht K2-Team-Handbuch; `DevViewPage` `getPathForPage` + Tab-Eintrag; `K2FamilieLayout`: nur ein Eintrag **Handbuch** → `benutzerHandbuch`, **Leitbild & Vision** und doppeltes Handbuch entfernt; Homepage ohne Footer-Link Leitbild; `K2FamilieStartPage`: Handbuch-Link auf Benutzerhandbuch, **K2 Galerie Plan** entfernt. **Commit:** *(nach Push eintragen)*
+
+**Was wir JETZT tun:** Im Browser: APf Smart Panel → K2 Familie → Handbuch öffnet Familien-Handbuch; Familien-Nav prüfen. Optional: Route `/projects/k2-familie/handbuch` (alter Spiegel) nur noch intern/Doku erwähnen.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie: eigenes Benutzerhandbuch + Präsentationsmappe (Routen & Nav)** – `public/k2-familie-handbuch/` (Markdown, Standard-Index), `public/k2-familie-praesentation/README.md`; `BenutzerHandbuchViewer` + `K2FamilieBenutzerHandbuchPage` Route **`/k2-familie-handbuch`**; `K2FamiliePraesentationsmappePage` unter **`/projects/k2-familie/praesentationsmappe`**; `PROJECT_ROUTES['k2-familie'].benutzerHandbuch` / `familiePraesentationsmappe`; Nav in `K2FamilieLayout`. **Commit:** **ac912d4c** ✅ GitHub
 
 **Was wir JETZT tun:** Inhalte im Familien-Handbuch und ggf. Mappe-Kacheln ergänzen; kurz im Browser testen (`/k2-familie-handbuch`, Präsentationsmappe).

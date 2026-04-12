@@ -248,6 +248,8 @@ export const PROJECT_ROUTES = {
     handbuch: '/projects/k2-familie/handbuch',
     /** Eigenständiges Nutzerhandbuch – public/k2-familie-handbuch/ */
     benutzerHandbuch: '/k2-familie-handbuch',
+    /** Entwicklungsdoku-Hub – docs/K2-FAMILIE-*.md gebündelt */
+    entwicklungDoku: '/projects/k2-familie/doku',
     /** Eigenständige Präsentationsmappe – public/k2-familie-praesentation/ */
     familiePraesentationsmappe: '/projects/k2-familie/praesentationsmappe',
     sicherung: '/projects/k2-familie/sicherung',
