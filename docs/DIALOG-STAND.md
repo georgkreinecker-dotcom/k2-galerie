@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Stufen-Flow Kleinfamilie → Grafik → PDF** – Nach dem Header: bei 0 Personen zuerst **Grundstruktur**; ab 1 Person **Stufen-Leiste** (1 · Kleinfamilie → 2 · Grafik → 3 · PDF & Auswertung) mit Ankern `#stufe-kleinfamilie` / `#stufe-grafik` / `#stufe-pdf`. **Reihenfolge im DOM:** Karten & Buttons (Kleinfamilie), dann Grafik, dann PDF-Druck (Text gekürzt). `K2FamilieStammbaumPage.tsx`. **Commit:** **d1a468de** ✅ GitHub
+**Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Stufen-Flow Kleinfamilie → Grafik → PDF** – Nach dem Header: bei 0 Personen zuerst **Grundstruktur**; ab 1 Person **Stufen-Leiste** (1 · Kleinfamilie → 2 · Grafik → 3 · PDF & Auswertung) mit Ankern `#stufe-kleinfamilie` / `#stufe-grafik` / `#stufe-pdf`. **Reihenfolge im DOM:** Karten & Buttons (Kleinfamilie), dann Grafik, dann PDF-Druck (Text gekürzt). `K2FamilieStammbaumPage.tsx`. **Commit:** **87486b4b** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum öffnen – Stufen-Leiste antippen, Reihenfolge prüfen; PDF-Bereich testen.
 
