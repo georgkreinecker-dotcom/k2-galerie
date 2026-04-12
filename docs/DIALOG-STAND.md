@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie: Rechte Struktur vs. Organisch voll umgesetzt** – `canEditStrukturUndStammdaten` / `canEditOrganisches` / `canManageFamilienInstanz` in UI: **Stammbaum** (Familienname, Schlusspunkt, Du zurücksetzen, Personen/Magic, Grafik „Das bin ich“, PDF-Katalog-Spalten, Nur-Zweig); **Grundstruktur** nur Inhaber:in; **Events, Geschichte, Gedenkort** Schreiben nur organisch; **Layout** Kurztext Bearbeiter:in. Typen/Tests `k2FamilieRollen*`. **Commit:** (folgt nach Push)
+**Letzter Stand:** 12.04.26 – **K2 Familie: Rechte Struktur vs. Organisch voll umgesetzt** – `canEditStrukturUndStammdaten` / `canEditOrganisches` / `canManageFamilienInstanz` in UI: **Stammbaum** (Familienname, Schlusspunkt, Du zurücksetzen, Personen/Magic, Grafik „Das bin ich“, PDF-Katalog-Spalten, Nur-Zweig); **Grundstruktur** nur Inhaber:in; **Events, Geschichte, Gedenkort** Schreiben nur organisch; **Layout** Kurztext Bearbeiter:in. Typen/Tests `k2FamilieRollen*`. **Commit:** **6e503a10** ✅ GitHub
 
 **Was wir JETZT tun:** Rolle **Bearbeiter:in** → Stammbaum: keine Struktur-Buttons, PDF-Spalten/Zweig ok; Rolle **Leser:in** → nirgends Speichern.
 
