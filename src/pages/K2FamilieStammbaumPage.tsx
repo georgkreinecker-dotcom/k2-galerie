@@ -27,6 +27,7 @@ import type { K2FamilieEinstellungen, K2FamiliePerson } from '../types/k2Familie
 import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import FamilyTreeGraph, { type FamilyTreeLayout, type TreeOrientation } from '../components/FamilyTreeGraph'
 import {
+  StammbaumDruckGeburtstagsliste,
   StammbaumDruckNachGenerationen,
   StammbaumDruckPersonenblaetter,
   StammbaumDruckRegister,
@@ -46,12 +47,12 @@ function generateId(): string {
 type PrintFormat = 'a4' | 'a3' | 'poster'
 type PrintFotos = '1' | '0'
 /** Druck: Grafik oder übersichtliche Text-PDFs (ohne verschachtelte Grafik). */
-type PrintStil = 'grafik' | 'generationen' | 'register' | 'personenblaetter'
+type PrintStil = 'grafik' | 'generationen' | 'register' | 'personenblaetter' | 'geburtstagsliste'
 
 /** Druck/PDF: ganze Familie oder nur Familienzweig von „Das bin ich“. */
 type DruckUmfang = 'alle' | 'zweig'
 
-const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register', 'grafik']
+const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register', 'geburtstagsliste', 'grafik']
 
 function parsePrintStil(raw: string | null): PrintStil {
   if (raw && PRINT_STILE.includes(raw as PrintStil)) return raw as PrintStil
@@ -73,11 +74,28 @@ function parseStammbaumBereich(raw: string | null): StammbaumBereich {
 }
 
 const STAMMBAUM_BEREICH_TITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, string> = {
-  karten: 'Nach unten – Kartenliste',
-  'nach-oben': 'Nach oben – Eltern & Vorfahren',
+  karten: 'Kartenliste',
+  'nach-oben': 'Eltern & Vorfahren',
   grafik: 'Grafik',
   pdf: 'PDF & Drucken',
 }
+
+/** Ein Satz: was der aktive Bereich zeigt (ohne „Nach unten“-Jargon im Titel). */
+const STAMMBAUM_BEREICH_UNTERTITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, string> = {
+  karten: 'Partner, Kinder und Familienzweige – die Linie nach unten in der Familie.',
+  'nach-oben': 'Eltern und Vorfahren – die Linie nach oben.',
+  grafik: 'Den Stammbaum als Bild sehen, zoomen, Richtung wählen.',
+  pdf: 'Listen und PDFs: Personenblätter, Katalog, Geburtstagsliste, Grafik drucken.',
+}
+
+type StammbaumBereichTab = Exclude<StammbaumBereich, 'uebersicht'>
+
+const STAMMBAUM_BEREICH_TABS: { key: StammbaumBereichTab; label: string; hint: string }[] = [
+  { key: 'karten', label: 'Kartenliste', hint: 'nach unten: Partner, Kinder' },
+  { key: 'nach-oben', label: 'Eltern & Vorfahren', hint: 'nach oben in der Linie' },
+  { key: 'grafik', label: 'Grafik', hint: 'Stammbaum als Bild' },
+  { key: 'pdf', label: 'PDF & Drucken', hint: 'Listen, Druck, Speichern' },
+]
 
 /** Stammbaum-Kachel: bei „Verstorben“ in der Personenkarte schwarzer Rand (statt Zweig-Farbe). */
 function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: string }) {
@@ -550,6 +568,17 @@ export default function K2FamilieStammbaumPage() {
         </div>
       )
     }
+    if (stilFromUrl === 'geburtstagsliste') {
+      return (
+        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="geburtstagsliste">
+          <StammbaumDruckGeburtstagsliste
+            personen={forDruck}
+            titel={titel}
+            ichBinPersonId={einstellungen.ichBinPersonId}
+          />
+        </div>
+      )
+    }
 
     return (
       <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="grafik">
@@ -620,36 +649,52 @@ export default function K2FamilieStammbaumPage() {
               {familyNameSaved && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Gespeichert</span>}
             </div>
             {personen.length > 0 && (
-              <div
-                className="familie-schlusspunkt"
-                style={{
-                  marginBottom: '0.75rem',
-                  padding: '0.6rem 0.85rem',
-                  borderRadius: 10,
-                  border: einstellungen.stammbaumSchlusspunkt ? '1px solid rgba(20,184,166,0.55)' : '1px solid rgba(148,163,184,0.35)',
-                  background: einstellungen.stammbaumSchlusspunkt ? 'rgba(13,148,136,0.14)' : 'rgba(15,23,42,0.35)',
-                  maxWidth: '42rem',
-                }}
-              >
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', cursor: 'pointer', margin: 0 }}>
-                  <input
-                    type="checkbox"
-                    checked={!!einstellungen.stammbaumSchlusspunkt}
-                    onChange={(e) => {
-                      const next = !!e.target.checked
-                      const e0 = loadEinstellungen(currentTenantId)
-                      if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setStammbaumRefresh((k) => k + 1)
-                    }}
-                    aria-describedby="familie-schlusspunkt-hilfe"
-                  />
-                  <span>
-                    <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Schlusspunkt</strong>
-                    <span className="meta" style={{ display: 'block', marginTop: '0.2rem', lineHeight: 1.45 }} id="familie-schlusspunkt-hilfe">
-                      Stammbaum steht – vorerst <strong>keine neuen Personen</strong> mehr anlegen (Buttons dafür aus). Bearbeiten und <strong>bestehende</strong> Personen verknüpfen geht weiter. Zum Anlegen einer neuen Person: Häkchen wieder aus.
+              <details className="familie-schlusspunkt no-print" style={{ marginBottom: '0.5rem', maxWidth: '42rem' }}>
+                <summary
+                  className="meta"
+                  style={{
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                    listStyle: 'none',
+                    padding: '0.15rem 0',
+                    fontSize: '0.82rem',
+                    color: 'rgba(226,232,240,0.88)',
+                  }}
+                >
+                  Optional: Stammbaum abschließen (keine neuen Personen){' '}
+                  {einstellungen.stammbaumSchlusspunkt ? (
+                    <span style={{ color: 'rgba(52,211,153,0.95)' }}>· aktiv</span>
+                  ) : null}
+                </summary>
+                <div
+                  style={{
+                    marginTop: '0.45rem',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: 10,
+                    border: einstellungen.stammbaumSchlusspunkt ? '1px solid rgba(20,184,166,0.45)' : '1px solid rgba(148,163,184,0.32)',
+                    background: einstellungen.stammbaumSchlusspunkt ? 'rgba(13,148,136,0.1)' : 'rgba(15,23,42,0.35)',
+                  }}
+                >
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', cursor: 'pointer', margin: 0 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!einstellungen.stammbaumSchlusspunkt}
+                      onChange={(e) => {
+                        const next = !!e.target.checked
+                        const e0 = loadEinstellungen(currentTenantId)
+                        if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setStammbaumRefresh((k) => k + 1)
+                      }}
+                      aria-describedby="familie-schlusspunkt-hilfe"
+                    />
+                    <span>
+                      <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Schlusspunkt</strong>
+                      <span className="meta" style={{ display: 'block', marginTop: '0.2rem', lineHeight: 1.45 }} id="familie-schlusspunkt-hilfe">
+                        Stammbaum steht – vorerst <strong>keine neuen Personen</strong> mehr anlegen (Buttons dafür aus). Bearbeiten und <strong>bestehende</strong> Personen verknüpfen geht weiter. Zum Anlegen einer neuen Person: Häkchen wieder aus.
+                      </span>
                     </span>
-                  </span>
-                </label>
-              </div>
+                  </label>
+                </div>
+              </details>
             )}
             {zeigeStammbaumUebersicht && (
               <>
@@ -685,35 +730,61 @@ export default function K2FamilieStammbaumPage() {
             )}
             {personen.length > 0 && !zeigeStammbaumUebersicht && (
               <div className="no-print" style={{ marginTop: '0.35rem' }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem 0.75rem', marginBottom: '0.35rem' }}>
-                  <h1 style={{ margin: 0, fontSize: '1.12rem', color: 'rgba(255,255,255,0.96)' }}>{STAMMBAUM_BEREICH_TITEL[stammbaumBereich]}</h1>
-                  <label htmlFor="k2-familie-stammbaum-bereich" className="meta" style={{ fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
-                    Wechseln:
-                  </label>
-                  <select
-                    id="k2-familie-stammbaum-bereich"
-                    aria-label="Stammbaum-Bereich wechseln"
-                    value={stammbaumBereich}
-                    onChange={(e) => setStammbaumBereich(e.target.value as Exclude<StammbaumBereich, 'uebersicht'>)}
+                <nav aria-label="Stammbaum: Bereich wählen">
+                  <p className="meta" style={{ margin: '0 0 0.45rem', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                    Vier Bereiche – gleiche Reihenfolge wie auf der Übersicht (1–4). Tippe auf den passenden Bereich:
+                  </p>
+                  <div
+                    role="tablist"
+                    aria-orientation="horizontal"
                     style={{
-                      background: 'rgba(15,23,42,0.92)',
-                      color: 'rgba(255,255,255,0.96)',
-                      border: '1px solid rgba(20,184,166,0.55)',
-                      borderRadius: 8,
-                      padding: '0.38rem 0.65rem',
-                      fontSize: '0.88rem',
-                      maxWidth: '100%',
-                      minWidth: 'min(100%, 17rem)',
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '0.45rem',
+                      alignItems: 'stretch',
                     }}
                   >
-                    <option value="karten">Kartenliste – Partner, Kinder</option>
-                    <option value="nach-oben">Nach oben – Eltern &amp; Vorfahren</option>
-                    <option value="grafik">Grafik</option>
-                    <option value="pdf">PDF &amp; Drucken</option>
-                  </select>
-                </div>
+                    {STAMMBAUM_BEREICH_TABS.map((tab, idx) => {
+                      const active = stammbaumBereich === tab.key
+                      return (
+                        <button
+                          key={tab.key}
+                          type="button"
+                          role="tab"
+                          aria-selected={active}
+                          onClick={() => setStammbaumBereich(tab.key)}
+                          style={{
+                            flex: '1 1 140px',
+                            minWidth: 132,
+                            maxWidth: 220,
+                            textAlign: 'left',
+                            padding: '0.5rem 0.65rem',
+                            borderRadius: 10,
+                            border: active ? '2px solid rgba(20,184,166,0.75)' : '1px solid rgba(148,163,184,0.4)',
+                            background: active ? 'rgba(13,148,136,0.2)' : 'rgba(15,23,42,0.5)',
+                            color: 'inherit',
+                            cursor: 'pointer',
+                            font: 'inherit',
+                          }}
+                        >
+                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'rgba(255,255,255,0.96)' }}>
+                            {idx + 1}.{' '}
+                          </span>
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'rgba(255,255,255,0.96)' }}>{tab.label}</span>
+                          <span className="meta" style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.76rem', lineHeight: 1.35 }}>
+                            {tab.hint}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </nav>
+                <h1 style={{ margin: '0.65rem 0 0', fontSize: '1.12rem', color: 'rgba(255,255,255,0.96)' }}>{STAMMBAUM_BEREICH_TITEL[stammbaumBereich]}</h1>
+                <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.84rem', lineHeight: 1.45, maxWidth: '40rem' }}>
+                  {STAMMBAUM_BEREICH_UNTERTITEL[stammbaumBereich]}
+                </p>
                 {partnerHerkunftPerson && (
-                  <p className="meta" style={{ margin: '0.35rem 0 0', color: 'rgba(20,184,166,0.95)', fontSize: '0.85rem' }}>Zwei Zweige: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
+                  <p className="meta" style={{ margin: '0.4rem 0 0', color: 'rgba(20,184,166,0.95)', fontSize: '0.85rem' }}>Zwei Zweige: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
                 )}
               </div>
             )}
@@ -1698,6 +1769,7 @@ export default function K2FamilieStammbaumPage() {
                       <option value="personenblaetter">Personenblätter (A4 hoch, eine Person pro Block)</option>
                       <option value="generationen">Liste nach Generationen</option>
                       <option value="register">Katalog (Tabelle, Datenblätter → Druck oft Querformat)</option>
+                      <option value="geburtstagsliste">Geburtstagsliste (Kalenderjahr, nach Tag sortiert)</option>
                     </optgroup>
                     <optgroup label="Grafik">
                       <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
@@ -1855,11 +1927,13 @@ export default function K2FamilieStammbaumPage() {
                 <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.95)' }}>
                   Vorschau
                 </h3>
-                {!einstellungen.ichBinPersonId ? (
+                {druckUmfang === 'alle' && personen.length === 0 ? (
+                  <p className="meta" style={{ margin: 0 }}>Lege zuerst Personen an, dann erscheint die Vorschau.</p>
+                ) : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId ? (
                   <p className="meta" style={{ margin: 0 }}>
-                    Sobald du bei deiner Person <strong>Das bin ich</strong> wählst, siehst du hier die Vorschau deines Familienzweigs.
+                    Bei <strong>Nur Familienzweig</strong>: Bitte <strong>Das bin ich</strong> setzen oder Umfang <strong>Ganze erfasste Familie</strong> wählen.
                   </p>
-                ) : personenFuerDruck.length === 0 ? (
+                ) : druckUmfang === 'zweig' && personenFuerDruck.length === 0 ? (
                   <p className="meta" style={{ margin: 0 }}>Keine Personen im Familienzweig – Vorschau kann nicht angezeigt werden.</p>
                 ) : (
                   <div className="stammbaum-pdf-vorschau-scroll">
@@ -1887,6 +1961,13 @@ export default function K2FamilieStammbaumPage() {
                       )}
                       {druckStil === 'personenblaetter' && (
                         <StammbaumDruckPersonenblaetter
+                          personen={personenDruckInhalt}
+                          titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                          ichBinPersonId={einstellungen.ichBinPersonId}
+                        />
+                      )}
+                      {druckStil === 'geburtstagsliste' && (
+                        <StammbaumDruckGeburtstagsliste
                           personen={personenDruckInhalt}
                           titel={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
                           ichBinPersonId={einstellungen.ichBinPersonId}
@@ -1929,6 +2010,10 @@ export default function K2FamilieStammbaumPage() {
                     </>
                   ) : druckStil === 'personenblaetter' ? (
                     <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
+                  ) : druckStil === 'geburtstagsliste' ? (
+                    <>
+                      <strong>Geburtstagsliste</strong>: Personen mit vollständigem Datum (TT.MM.JJJJ) erscheinen nach Kalendertag sortiert; andere am Ende der Liste. Verstorbene mit †.
+                    </>
                   ) : (
                     <>Bei <strong>Generationen</strong>: Hoch- oder Querformat nach Geschmack; lange Namen umbrechen automatisch.</>
                   )}
