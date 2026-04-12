@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie: Eigenbereich – „anderes Fahrzeug“ (Doku + Regel)** – `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md`: eigener Bereich, keine Vermischung mit ök2/VK2/Galerie-Daten; Module von ök2/VK2 nur als **fertige, bewährte Bausteine** (Muster); Sportwagenmodus; klare Projekt-Trennung. Regel `.cursor/rules/k2-familie-eigenes-fahrzeug-oek2-vk2.mdc` (alwaysApply). Indizes `docs/00-INDEX.md`, `HAUS-INDEX.md`. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 12.04.26 – **K2 Familie: Eigenbereich – „anderes Fahrzeug“ (Doku + Regel)** – `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md`: eigener Bereich, keine Vermischung mit ök2/VK2/Galerie-Daten; Module von ök2/VK2 nur als **fertige, bewährte Bausteine** (Muster); Sportwagenmodus; klare Projekt-Trennung. Regel `.cursor/rules/k2-familie-eigenes-fahrzeug-oek2-vk2.mdc` (alwaysApply). Indizes `docs/00-INDEX.md`, `HAUS-INDEX.md`. **Commit:** **022d9f40** ✅ GitHub
 
 **Was wir JETZT tun:** Wie zuvor – K2 Familie Hub/Rollen testen; Leitlinie bei neuer K2-Familie-Entwicklung beachten.
 
