@@ -55,6 +55,10 @@ function computeStammdatenDirty(
     photoJugend: string
     photoErwachsen: string
     photoAlter: string
+    linkFotoalbum: string
+    linkWeb: string
+    linkYoutube: string
+    linkInstagram: string
   },
   photoLegacyCleared: boolean
 ): boolean {
@@ -79,6 +83,10 @@ function computeStammdatenDirty(
   if (!ps(person.photoJugend, f.photoJugend)) return true
   if (!ps(person.photoErwachsen, f.photoErwachsen)) return true
   if (!ps(person.photoAlter, f.photoAlter)) return true
+  if (!ps(person.linkFotoalbum, f.linkFotoalbum)) return true
+  if (!ps(person.linkWeb, f.linkWeb)) return true
+  if (!ps(person.linkYoutube, f.linkYoutube)) return true
+  if (!ps(person.linkInstagram, f.linkInstagram)) return true
   if (photoLegacyCleared && String(person.photo ?? '').trim()) return true
   return false
 }
@@ -88,6 +96,17 @@ const LEBENSPHASEN_FOTO_LABELS: { field: 'photoKind' | 'photoJugend' | 'photoErw
   { field: 'photoJugend', label: 'Jugendlich' },
   { field: 'photoErwachsen', label: 'Erwachsen' },
   { field: 'photoAlter', label: 'Alter' },
+]
+
+const EXTERNE_LINK_FELDER: {
+  stateKey: 'linkFotoalbum' | 'linkWeb' | 'linkYoutube' | 'linkInstagram'
+  label: string
+  placeholder: string
+}[] = [
+  { stateKey: 'linkFotoalbum', label: 'Fotoalbum', placeholder: 'https://… geteiltes Album' },
+  { stateKey: 'linkWeb', label: 'Web / Homepage', placeholder: 'https://…' },
+  { stateKey: 'linkYoutube', label: 'YouTube', placeholder: 'https://youtube.com/… oder youtu.be/…' },
+  { stateKey: 'linkInstagram', label: 'Instagram', placeholder: 'https://instagram.com/…' },
 ]
 
 export default function K2FamiliePersonPage() {
@@ -121,6 +140,10 @@ export default function K2FamiliePersonPage() {
   const [photoJugend, setPhotoJugend] = useState('')
   const [photoErwachsen, setPhotoErwachsen] = useState('')
   const [photoAlter, setPhotoAlter] = useState('')
+  const [linkFotoalbum, setLinkFotoalbum] = useState('')
+  const [linkWeb, setLinkWeb] = useState('')
+  const [linkYoutube, setLinkYoutube] = useState('')
+  const [linkInstagram, setLinkInstagram] = useState('')
   /** Im Bearbeiten: altes Einzelfeld `photo` entfernen, obwohl es noch in `person` steht (bis Speichern). */
   const [photoLegacyCleared, setPhotoLegacyCleared] = useState(false)
   const [fotoMenu, setFotoMenu] = useState<{ x: number; y: number; kind: 'haupt' | LebensphaseFotoFeld } | null>(null)
@@ -191,6 +214,10 @@ export default function K2FamiliePersonPage() {
       setPhotoJugend(person.photoJugend ?? '')
       setPhotoErwachsen(person.photoErwachsen ?? '')
       setPhotoAlter(person.photoAlter ?? '')
+      setLinkFotoalbum(person.linkFotoalbum ?? '')
+      setLinkWeb(person.linkWeb ?? '')
+      setLinkYoutube(person.linkYoutube ?? '')
+      setLinkInstagram(person.linkInstagram ?? '')
       setPhotoLegacyCleared(false)
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
       if (person.name === 'Neue Person') setEdit(true)
@@ -215,6 +242,10 @@ export default function K2FamiliePersonPage() {
               photoJugend,
               photoErwachsen,
               photoAlter,
+              linkFotoalbum,
+              linkWeb,
+              linkYoutube,
+              linkInstagram,
             },
             photoLegacyCleared
           ),
@@ -232,6 +263,10 @@ export default function K2FamiliePersonPage() {
       photoJugend,
       photoErwachsen,
       photoAlter,
+      linkFotoalbum,
+      linkWeb,
+      linkYoutube,
+      linkInstagram,
       photoLegacyCleared,
     ]
   )
@@ -285,6 +320,10 @@ export default function K2FamiliePersonPage() {
       photoJugend: pj,
       photoErwachsen: pe,
       photoAlter: pa,
+      linkFotoalbum: linkFotoalbum.trim() || undefined,
+      linkWeb: linkWeb.trim() || undefined,
+      linkYoutube: linkYoutube.trim() || undefined,
+      linkInstagram: linkInstagram.trim() || undefined,
       photo: fotoAktuell,
       updatedAt: new Date().toISOString(),
     }
@@ -1069,35 +1108,80 @@ export default function K2FamiliePersonPage() {
                 )
               })}
             </div>
-            {edit && (
-              <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            {(edit ||
+              person.linkFotoalbum?.trim() ||
+              person.linkWeb?.trim() ||
+              person.linkYoutube?.trim() ||
+              person.linkInstagram?.trim()) && (
+            <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              {edit && (
                 <p className="meta" style={{ margin: 0, fontSize: '0.82rem', lineHeight: 1.4 }}>
-                  Bild-URLs wie in der Galerie (öffentlicher Link oder data:image/…). Gespeichert mit <strong>Speichern</strong>. Fotos oben per Klick oder Rechtsklick austauschbar.
+                  Fotos oben per <strong>Klick</strong> oder <strong>Rechtsklick</strong> setzen – mit <strong>Speichern</strong> sichern. Unten optional: Links zu Fotoalbum, Web, YouTube oder Instagram (keine Bild-URLs).
                 </p>
-                {LEBENSPHASEN_FOTO_LABELS.map(({ field, label }) => {
+              )}
+              {!edit &&
+                (person.linkFotoalbum?.trim() ||
+                  person.linkWeb?.trim() ||
+                  person.linkYoutube?.trim() ||
+                  person.linkInstagram?.trim()) && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                    <span className="meta" style={{ fontSize: '0.78rem', marginRight: '0.25rem' }}>
+                      Externe Links:
+                    </span>
+                    {EXTERNE_LINK_FELDER.map(({ stateKey, label }) => {
+                      const url =
+                        stateKey === 'linkFotoalbum'
+                          ? person.linkFotoalbum
+                          : stateKey === 'linkWeb'
+                            ? person.linkWeb
+                            : stateKey === 'linkYoutube'
+                              ? person.linkYoutube
+                              : person.linkInstagram
+                      const t = url?.trim() ?? ''
+                      if (!t || !isHttpUrlForExternalOpen(t)) return null
+                      return (
+                        <a
+                          key={stateKey}
+                          href={t}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-outline"
+                          style={{ padding: '0.25rem 0.55rem', fontSize: '0.82rem' }}
+                        >
+                          {label}
+                        </a>
+                      )
+                    })}
+                  </div>
+                )}
+              {edit &&
+                EXTERNE_LINK_FELDER.map(({ stateKey, label, placeholder }) => {
                   const raw =
-                    field === 'photoKind'
-                      ? photoKind
-                      : field === 'photoJugend'
-                        ? photoJugend
-                        : field === 'photoErwachsen'
-                          ? photoErwachsen
-                          : photoAlter
+                    stateKey === 'linkFotoalbum'
+                      ? linkFotoalbum
+                      : stateKey === 'linkWeb'
+                        ? linkWeb
+                        : stateKey === 'linkYoutube'
+                          ? linkYoutube
+                          : linkInstagram
                   const trimmed = raw.trim()
+                  const setLink =
+                    stateKey === 'linkFotoalbum'
+                      ? setLinkFotoalbum
+                      : stateKey === 'linkWeb'
+                        ? setLinkWeb
+                        : stateKey === 'linkYoutube'
+                          ? setLinkYoutube
+                          : setLinkInstagram
                   return (
-                    <div key={field} className="field" style={{ marginBottom: 0 }}>
-                      <label className="meta">Foto {label}</label>
+                    <div key={stateKey} className="field" style={{ marginBottom: 0 }}>
+                      <label className="meta">{label}</label>
                       <input
-                        type="text"
+                        type="url"
+                        inputMode="url"
                         value={raw}
-                        onChange={(e) => {
-                          const v = e.target.value
-                          if (field === 'photoKind') setPhotoKind(v)
-                          else if (field === 'photoJugend') setPhotoJugend(v)
-                          else if (field === 'photoErwachsen') setPhotoErwachsen(v)
-                          else setPhotoAlter(v)
-                        }}
-                        placeholder="https://… optional"
+                        onChange={(e) => setLink(e.target.value)}
+                        placeholder={placeholder}
                         autoComplete="off"
                         data-lpignore="true"
                       />
@@ -1109,13 +1193,13 @@ export default function K2FamiliePersonPage() {
                           className="meta"
                           style={{ display: 'inline-block', marginTop: 6, color: 'rgba(94, 234, 212, 0.95)', fontSize: '0.82rem' }}
                         >
-                          → Im Browser öffnen (Homepage, Album …)
+                          → Im Browser öffnen
                         </a>
                       )}
                     </div>
                   )
                 })}
-              </div>
+            </div>
             )}
             {fotoMenu &&
               (() => {
@@ -1297,7 +1381,7 @@ export default function K2FamiliePersonPage() {
                 </div>
                 <div className="card-actions" style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem' }}>
                   <button type="submit" className="btn">Speichern</button>
-                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setPhotoLegacyCleared(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); }}>Abbrechen</button>
+                  <button type="button" className="btn-outline" onClick={() => { setEdit(false); setPhotoLegacyCleared(false); setName(person.name); setGeburtsdatum(person.geburtsdatum?.slice(0, 10) ?? ''); setMaedchenname(person.maedchenname ?? ''); setShortText(person.shortText ?? ''); setVerstorben(person.verstorben === true); setVerstorbenAm(person.verstorbenAm?.slice(0, 10) ?? ''); setPositionAmongSiblingsInput(person.positionAmongSiblings != null ? String(person.positionAmongSiblings) : ''); setPhotoKind(person.photoKind ?? ''); setPhotoJugend(person.photoJugend ?? ''); setPhotoErwachsen(person.photoErwachsen ?? ''); setPhotoAlter(person.photoAlter ?? ''); setLinkFotoalbum(person.linkFotoalbum ?? ''); setLinkWeb(person.linkWeb ?? ''); setLinkYoutube(person.linkYoutube ?? ''); setLinkInstagram(person.linkInstagram ?? ''); }}>Abbrechen</button>
                 </div>
               </form>
             ) : (

@@ -1,8 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **K2 Familie: Lebensphasen-Fotos Kind / Jugendlich / Erwachsen / Alter** – `getAktuellesPersonenFoto` (späteste Phase mit Bild); Personenseite: großes Kreisbild = zeitaktuell, vier Mini-Vorschaubilder + URL-Felder im Bearbeiten; Stammbaum-Kacheln, Baum-Grafik, Gedenkort nutzen dieselbe Logik; `photo` bleibt Legacy/Spiegel beim Speichern. Tests `familiePersonFotos.test.ts`. **Commit:** **9fd16017** ✅ GitHub
+**Letzter Stand:** 12.04.26 – **K2 Familie Person: externe Links (Album / Web / YouTube / Instagram)** – Statt URL-Textfelder pro Lebensphase: **vier optionale Link-Felder** (`linkFotoalbum`, `linkWeb`, `linkYoutube`, `linkInstagram`); Fotos nur per Klick/Rechtsklick. Lesemodus: beschriftete Link-Buttons. **Commit:** **0e53124a** ✅ GitHub
 
-**Was wir JETZT tun:** Person → Stammdaten bearbeiten → vier URLs testen; Stammbaum/Gedenkort: Hauptbild = „neueste“ Phase.
+**Was wir JETZT tun:** Eine Person öffnen → Bearbeiten → Links eintragen → Speichern; ohne Bearbeiten die Buttons testen.
+
+---
+
+**Letzter Stand:** 11.04.26 – **K2 Familie: Lebensphasen-Fotos Kind / Jugendlich / Erwachsen / Alter** – `getAktuellesPersonenFoto` (späteste Phase mit Bild); Personenseite: großes Kreisbild = zeitaktuell, vier Mini-Vorschaubilder; Stammbaum-Kacheln, Baum-Grafik, Gedenkort nutzen dieselbe Logik; `photo` bleibt Legacy/Spiegel beim Speichern. Tests `familiePersonFotos.test.ts`. (URL-Zeilen pro Phase → ersetzt durch externe Links, siehe 12.04.26.)
 
 ---
 

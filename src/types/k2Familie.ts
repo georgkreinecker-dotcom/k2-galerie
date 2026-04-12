@@ -31,6 +31,14 @@ export interface K2FamiliePerson {
   photoErwachsen?: string
   /** Alter / Seniorenphase (optional). */
   photoAlter?: string
+  /** Optional: Link zu einem Fotoalbum (nicht die Bilddaten selbst). */
+  linkFotoalbum?: string
+  /** Optional: Website / Homepage. */
+  linkWeb?: string
+  /** Optional: YouTube (Kanal oder Video). */
+  linkYoutube?: string
+  /** Optional: Instagram-Profil oder -Beitrag. */
+  linkInstagram?: string
   shortText?: string
   /** Verstorben – für Gedenkort (Phase 5). */
   verstorben?: boolean
