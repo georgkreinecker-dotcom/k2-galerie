@@ -64,6 +64,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-marktwert', label: 'Marktwert (grober Ansatz)' },
       { id: 'mok2-faehigkeiten-mix', label: 'Fähigkeiten-Mix (Fakten)' },
       { id: 'mok2-lizenz-pakete-aussen', label: 'Lizenzpakete (Außensicht)' },
+      { id: 'mok2-10c-haupt-neben-lizenz', label: 'Haupt- und Nebenlizenzen (Konzept)' },
       { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
     ],
   },

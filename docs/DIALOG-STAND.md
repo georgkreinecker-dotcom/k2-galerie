@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **Lizenzstruktur: Haupt- und Nebenlizenzen sichtbar** – mök2 neue Sektion `#mok2-10c-haupt-neben-lizenz` (nach Lizenzpakete Außensicht, vor VK2): Hauptlizenz vs. Nebenlizenzen (Mandant, Bearbeitende, Zusatzprodukt z. B. K2 Familie); Verweis auf `docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md`; VK2 bleibt Hauptstufe Verein. Sidebar `mok2Structure.ts`, Sprungliste mök2, Nav-Link VK2 ohne irreführendes „K2-Familie“. **LicencesPage:** Infobox + Link zu mök2-Anker. Konzept §6 aktualisiert. **Commit:** **d3658722** ✅ GitHub
+
+**Was wir JETZT tun:** Optional: AGB-Absatz Haupt vs. Neben (Konzept §6 offen); Stripe/Nebenlizenzen wenn marktreif.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie: Eigenbereich – „anderes Fahrzeug“ (Doku + Regel)** – `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md`: eigener Bereich, keine Vermischung mit ök2/VK2/Galerie-Daten; Module von ök2/VK2 nur als **fertige, bewährte Bausteine** (Muster); Sportwagenmodus; klare Projekt-Trennung. Regel `.cursor/rules/k2-familie-eigenes-fahrzeug-oek2-vk2.mdc` (alwaysApply). Indizes `docs/00-INDEX.md`, `HAUS-INDEX.md`. **Commit:** **022d9f40** ✅ GitHub
 
 **Was wir JETZT tun:** Wie zuvor – K2 Familie Hub/Rollen testen; Leitlinie bei neuer K2-Familie-Entwicklung beachten.

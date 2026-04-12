@@ -81,7 +81,7 @@ Nebenlizenzen **ergänzen** oder **splitten** Verantwortung – ohne die Hauptli
 ## 6. Nächste Schritte (wenn ihr marktreif seid)
 
 - Preise und Stripe-Produkte für definierte Nebenlizenzen (z. B. „K2 Familie Zusatzmandant“).  
-- Kurztexte auf **LicencesPage** / mök2 ergänzen (ohne bestehende Hauptstufen zu verwässern).  
-- AGB: Verweis auf Haupt- vs. Nebenleistung und Mandantentrennung.
+- **Erledigt (Apr. 2026):** Kurztexte auf **LicencesPage** (Infobox) und **mök2** (`#mok2-10c-haupt-neben-lizenz`) – Hauptstufen unverändert.  
+- **Offen:** AGB: Verweis auf Haupt- vs. Nebenleistung und Mandantentrennung.
 
 **Dieses Konzept ist die fachliche Basis; Zahlen und SKU-Namen werden bei Go-Live der jeweiligen Nebenlizenz festgelegt.**

@@ -372,9 +372,32 @@ export default function LicencesPage({ embeddedInMok2Layout, apfFocusTestpilot }
             Mustervorschau Erfolgsseite (ohne Zahlung)
           </Link>
         </p>
-        <p style={{ color: 'var(--k2-muted)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+        <p style={{ color: 'var(--k2-muted)', marginBottom: '0.75rem', fontSize: '0.95rem' }}>
           Lizenzstufen auf einen Blick – und neue Lizenzen vergeben.
         </p>
+        <div
+          style={{
+            marginBottom: '1.25rem',
+            padding: '0.75rem 1rem',
+            borderRadius: '10px',
+            border: '1px solid rgba(95,251,241,0.25)',
+            background: 'rgba(95,251,241,0.06)',
+            fontSize: '0.88rem',
+            lineHeight: 1.55,
+            color: 'var(--k2-text)',
+          }}
+        >
+          <strong style={{ color: 'var(--k2-accent)' }}>Haupt- und Nebenlizenzen:</strong> Die Stufen unten sind{' '}
+          <strong>Hauptlizenzen</strong> – je Vertrag eine klar umrissene Instanz (ein Mandant). Zusätze wie ein weiterer Mandant
+          (eigene Datenwelt), zusätzliche Bearbeitende im gleichen Mandanten oder ein Zusatzprodukt sind{' '}
+          <strong>Nebenlizenzen</strong> – wenn eingeführt, gesondert buchbar und benannt. Kurz erklärt in mök2:{' '}
+          <Link
+            to={`${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-10c-haupt-neben-lizenz`}
+            style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'none' }}
+          >
+            Haupt- und Nebenlizenzen →
+          </Link>
+        </div>
 
         {/* STATUS-BALKEN */}
         <div style={{

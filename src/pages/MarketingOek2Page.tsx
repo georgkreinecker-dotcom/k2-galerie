@@ -293,7 +293,8 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <li><a href="#mok2-10-lizenz-abschliessen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz abschließen</strong> (Online, Pilot, VK2)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenzen verwalten</strong> (APf-Seite)</Link></li>
             <li><a href="#mok2-lizenz-pakete-aussen" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Lizenz-Pakete für Außen</strong> (Werbung, Pitch, Flyer)</a></li>
-            <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform – K2-Familie)</a></li>
+            <li><a href="#mok2-10c-haupt-neben-lizenz" style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Haupt- und Nebenlizenzen</strong> (Konzept)</a></li>
+            <li><a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', textDecoration: 'none' }}><strong>Lizenzstruktur VK2</strong> (Vereinsplattform)</a></li>
             <li><Link to={PROJECT_ROUTES['k2-galerie'].empfehlungstool} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Empfehlungstool</strong> (ID + Empfehlungstext an Freund:innen)</Link></li>
             <li><Link to={OEK2_NEUER_BESUCHER_EINSTIEG_ROUTE} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>Eingangstor</strong> (Zugangsbereich, Demo-Einstieg)</Link></li>
             <li><Link to={AGB_ROUTE} state={{ returnTo: location.pathname }} style={{ color: '#5ffbf1', textDecoration: 'none' }}><strong>AGB</strong> (Allgemeine Geschäftsbedingungen)</Link></li>
@@ -1639,6 +1640,34 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>Details:</strong> Siehe Abschnitt <a href="#mok2-marktwert" style={{ color: '#5ffbf1', textDecoration: 'none' }}>Produktbewertung → Realistische Lizenzgebühren</a>: Basic <strong>15 €/Monat</strong>, Pro <strong>35 €/Monat</strong>, Pro+ <strong>45 €/Monat</strong>, Pro++ <strong>55 €/Monat</strong>, VK2 wie Pro. Ausführlich: <code>docs/MARKTCHECK-PREISE-BASIC-PRO-VERGLEICH.md</code>.
+        </p>
+      </section>
+
+      {/* 10c. Haupt- und Nebenlizenzen – fachliche Leitlinie (Doku), ergänzt die Stufen-Tabelle */}
+      <section id="mok2-10c-haupt-neben-lizenz" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          Haupt- und Nebenlizenzen (Konzept)
+        </h2>
+        <p style={{ marginBottom: '0.85rem', lineHeight: 1.65, fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
+          <strong>Hauptlizenz</strong> = der vertragliche Kern: <strong>eine</strong> definierte Produkt-Instanz in der gewählten Stufe (Basic, Pro, Pro+, Pro++ oder VK2 als Vereins-Stufe). Ein <strong>Mandant (tenantId)</strong> = eine geschlossene Daten- und Nutzungswelt – klar umrissen.
+        </p>
+        <p style={{ marginBottom: '0.65rem', lineHeight: 1.6, fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)' }}>
+          <strong>Nebenlizenzen</strong> sind <strong>Zusätze</strong>, die gesondert benannt und abrechenbar sind – nicht „still mit drin“:
+        </p>
+        <ul style={{ marginBottom: '0.85rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.93rem', color: 'rgba(255,255,255,0.88)' }}>
+          <li><strong>Zusätzlicher Mandant</strong> (eigene Seitenlinie, zweite Galerie/Familie mit eigener Datenwelt) – eigener Vertragsteil, technisch eigener <code>tenantId</code>.</li>
+          <li><strong>Zusatznutzer / Bearbeitende</strong> im <strong>gleichen</strong> Mandanten – Rechte und Rollen, keine zweite Datenwelt.</li>
+          <li><strong>Zusatzprodukt</strong> (z. B. K2 Familie zur bestehenden Galerie) – getrennte Buchung oder Bundle, wenn am Markt eingeführt.</li>
+        </ul>
+        <p style={{ marginBottom: '0.75rem', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)' }}>
+          Kein direkter 1:1-Kundensupport pro Nutzer skaliert nicht – Nebenlizenzen ändern daran nichts (bestehende Leitlinie).
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)' }}>
+          <strong>Vollständige Leitlinie:</strong>{' '}
+          <code style={{ color: '#5ffbf1' }}>docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md</code>
+        </p>
+        <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
+          <strong>VK2-Konditionen</strong> (Verein, Lizenzmitglieder, 10-Mitglieder-Regel) sind in der <a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'none' }}>Lizenzstruktur VK2</a> festgehalten – das ist die <strong>Hauptlizenz-Stufe Verein</strong>, nicht eine Nebenlizenz.
         </p>
       </section>
 
