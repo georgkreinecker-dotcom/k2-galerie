@@ -38,6 +38,7 @@ Nichts wurde weggeschmissen oder verlegt – nur diese Übersicht zum Wiederfind
 | **docs/K2-OEK2-DATENTRENNUNG.md** | K2 vs. ök2 Regeln | Pflicht bei Änderungen an Daten/Keys. |
 | **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md** | K2 Familie – moralisches Fundament | Grundbotschaft, Raumschiff-Anspruch, Gegenseitige Kontrolle, Dokumentation. Verbindlich für alle K2-Familie-Arbeit. |
 | **docs/K2-FAMILIE-ROADMAP.md** | K2 Familie – Vision & Phasen | Raumschiff-Phasen (Fundament → Stammbaum → Momente → Skalierung). Startseite: /projects/k2-familie. |
+| **docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md** | K2 Familie – Eigenbereich | Eigenes „Fahrzeug“: keine Vermischung mit ök2/VK2/Galerie-Daten; nur fertige Module als Muster; Sportwagenmodus; klare Projektgrenzen. |
 | **docs/K2-FAMILIE-DATENMODELL.md** | K2 Familie – Datenmodell | Person, PartnerRef (Zeitraum), Moment, Speicher-Keys. Typen: src/types/k2Familie.ts. |
 
 ### Texte-Schreibtisch · texts/ (Andenken, druckfertig)
@@ -124,7 +125,7 @@ Alle anderen Dateien bleiben; bei Unsicherheit wurde nichts gelöscht.
 - **Admin-Auth einrichten:** `docs/ADMIN-AUTH-SETUP.md`
 - **Crash-Fixes:** `docs/CRASH-FIXES-STAND-17-02-26.md`
 - **K2 vs. ök2:** `docs/K2-OEK2-DATENTRENNUNG.md`
-- **K2 Familie (Raumschiff):** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` (Fundament), `docs/K2-FAMILIE-ROADMAP.md` (Vision & Phasen)
+- **K2 Familie (Raumschiff):** `docs/K2-FAMILIE-GRUNDBOTSCHAFT.md` (Fundament), `docs/K2-FAMILIE-ROADMAP.md` (Vision & Phasen), `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md` (Eigenbereich, kein Mix mit ök2/VK2)
 - **Symbolwesen – gesamte Kommunikation (eiserne Regel):** Zuerst sichtbare Zeichen und Handlung, nicht Textwände; gilt für App, E-Mails, Nutzertexte und Dialog. Regel: `.cursor/rules/eiserne-regel-symbolwesen-kommunikation.mdc` (alwaysApply).
 - **Ein Standard pro Problemstellung:** Gleiche Aufgabe = eine Lösung (verschiedene Standards = Fehlerquellen). Regel: `.cursor/rules/ein-standard-problem.mdc`; Doku: `docs/STRUKTUR-HANDELN-QUELLEN.md`, `docs/00-INDEX.md`.
 - **Team-Hebel & Vermächtnis (Lernkurve):** Unternehmer + Persönlichkeit + KI = außergewöhnliche Hebelwirkung. Regel: `.cursor/rules/team-hebel-unternehmer-persoenlichkeit-ki.mdc`; Vermächtnis: `docs/WIR-PROZESS.md` (Abschnitt „Team-Hebel und Lernkurve“).

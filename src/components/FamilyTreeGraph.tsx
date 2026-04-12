@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom'
 import { useMemo, useState, useRef, useCallback, useEffect } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
-import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
+import { getAktuellesPersonenFoto, isHttpUrlForExternalOpen } from '../utils/familiePersonFotos'
 const NODE_W = 72
 const NODE_H = 56
 const ROW_H = 176
@@ -20,6 +20,17 @@ const SUB_ROW_H = 100
 /** Max. Personen pro waagrechter Zeile einer Generation – danach Umbruch (weitere Zeile darunter), nicht „Familienblöcke“ untereinander. */
 const MAX_PERSONEN_PRO_GENERATIONSZEILE = 14
 const PERSON_LINK_PATH = '/projects/k2-familie/personen'
+
+/** Gültige http(s)-Links zur Person – für Mini-Symbole im Stammbaum (Fotoalbum, Web, YouTube, Instagram). */
+function personStammbaumExternalLinks(p: K2FamiliePerson): { url: string; label: string; emoji: string }[] {
+  const out: { url: string; label: string; emoji: string }[] = []
+  const t = (s?: string) => String(s ?? '').trim()
+  if (isHttpUrlForExternalOpen(t(p.linkFotoalbum))) out.push({ url: t(p.linkFotoalbum), label: 'Fotoalbum', emoji: '📷' })
+  if (isHttpUrlForExternalOpen(t(p.linkWeb))) out.push({ url: t(p.linkWeb), label: 'Web / Homepage', emoji: '🌐' })
+  if (isHttpUrlForExternalOpen(t(p.linkYoutube))) out.push({ url: t(p.linkYoutube), label: 'YouTube', emoji: '▶️' })
+  if (isHttpUrlForExternalOpen(t(p.linkInstagram))) out.push({ url: t(p.linkInstagram), label: 'Instagram', emoji: '📸' })
+  return out
+}
 
 type Point = { x: number; y: number }
 
@@ -1737,6 +1748,8 @@ export default function FamilyTreeGraph({
           const showPhoto = !noPhotos && fotoAktuell
           const initial = p.name.trim().charAt(0).toUpperCase() || '?'
           const isIch = ichBinPersonId === p.id
+          const stammbaumLinks = personStammbaumExternalLinks(p)
+          const stammbaumLinkBarW = Math.min(62, stammbaumLinks.length * 15 + 2)
           const nodeContent = (
             <>
               <g filter={printMode ? undefined : 'url(#tree-node-shadow)'}>
@@ -1790,6 +1803,11 @@ export default function FamilyTreeGraph({
               {printMode ? (
                 <g>
                   {nodeContent}
+                  {stammbaumLinks.length > 0 && (
+                    <text x={NODE_W - 4} y={11} textAnchor="end" fill="#0d9488" fontSize="9" fontWeight="700">
+                      🔗
+                    </text>
+                  )}
                   {isIch && (
                     <text x={NODE_W / 2} y={NODE_H + 10} textAnchor="middle" fill="#0d9488" fontSize="9" fontWeight="700">Du</text>
                   )}
@@ -1798,6 +1816,61 @@ export default function FamilyTreeGraph({
                 <>
                   {/* Link nur um Knoten-Inhalt (nicht block), damit „Das bin ich“ darunter klickbar bleibt */}
                   <Link to={to} style={{ cursor: 'pointer' }}>{nodeContent}</Link>
+                  {stammbaumLinks.length > 0 && (
+                    <g style={{ pointerEvents: 'all' }}>
+                      <foreignObject
+                        x={NODE_W - 4 - stammbaumLinkBarW}
+                        y={2}
+                        width={stammbaumLinkBarW}
+                        height={16}
+                        style={{ overflow: 'visible' }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            gap: 2,
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            height: '100%',
+                            padding: 0,
+                            margin: 0,
+                          }}
+                        >
+                          {stammbaumLinks.map((item) => (
+                            <button
+                              key={item.label}
+                              type="button"
+                              title={`${item.label} öffnen`}
+                              aria-label={item.label}
+                              onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                window.open(item.url, '_blank', 'noopener,noreferrer')
+                              }}
+                              style={{
+                                fontSize: 10,
+                                lineHeight: 1,
+                                padding: 0,
+                                margin: 0,
+                                border: 'none',
+                                background: 'rgba(15,20,25,0.82)',
+                                borderRadius: 3,
+                                cursor: 'pointer',
+                                width: 14,
+                                height: 14,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.35)',
+                              }}
+                            >
+                              <span style={{ transform: 'scale(0.85)', display: 'inline-block' }}>{item.emoji}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </foreignObject>
+                    </g>
+                  )}
                   {isIch && (
                     <text x={NODE_W / 2} y={NODE_H + 10} textAnchor="middle" fill="#14b8a6" fontSize="9" fontWeight="700">Du</text>
                   )}

@@ -1,0 +1,28 @@
+---
+description: K2 Familie = eigener Bereich; Module nur als fertige Muster aus ök2/VK2; keine Vermischung.
+alwaysApply: true
+---
+
+# K2 Familie – Eigenes Fahrzeug (nicht ök2/VK2 mischen)
+
+## Regel (unveränderlich)
+
+**K2 Familie ist ein eigenes Produkt und ein eigener Bereich** – kein „Anhänger“ an ök2 oder VK2. **Nichts durcheinander:** eigene Routen, eigene Keys (`k2-familie-*`), keine Daten von ök2/VK2/Galerie in Familien-Speicher und umgekehrt.
+
+## Module aus ök2 und VK2
+
+- **Nur fertige, bewährte Bausteine** als **Muster** (Bild-Tools, Druck-Standards, UX, **ein Standard pro Problemstellung**).
+- **Nicht:** Daten, Keys oder halbfertige Parallelen übernehmen; **nicht** Vermischung der Welten.
+
+## Sportwagenmodus & Projekte
+
+- **Sportwagenmodus** innerhalb K2 Familie: eine Lösung pro Problemstellung, **klare Trennung** zu anderen Projekten (Galerie, ök2, VK2).
+- Änderungen an K2 Familie betreffen **Familien-Code und -Doku** – nicht „nebenbei“ den K2-Galerie-Kern (siehe **k2-echte-galerie-eisernes-gesetz**).
+
+## Quelle
+
+**docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md** – volle Leitlinie.
+
+## Kurzfassung
+
+**K2 Familie = anderes Fahrzeug. Eigenbereich. Module von ök2/VK2 nur als Muster, nicht als Mix. Sportwagenmodus + klare Projektgrenzen.**

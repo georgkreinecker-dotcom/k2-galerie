@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie: Eigenbereich – „anderes Fahrzeug“ (Doku + Regel)** – `docs/K2-FAMILIE-EIGENBEREICH-MODULE-OEK2-VK2.md`: eigener Bereich, keine Vermischung mit ök2/VK2/Galerie-Daten; Module von ök2/VK2 nur als **fertige, bewährte Bausteine** (Muster); Sportwagenmodus; klare Projekt-Trennung. Regel `.cursor/rules/k2-familie-eigenes-fahrzeug-oek2-vk2.mdc` (alwaysApply). Indizes `docs/00-INDEX.md`, `HAUS-INDEX.md`. **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** Wie zuvor – K2 Familie Hub/Rollen testen; Leitlinie bei neuer K2-Familie-Entwicklung beachten.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie: Rechte Struktur vs. Organisch voll umgesetzt** – `canEditStrukturUndStammdaten` / `canEditOrganisches` / `canManageFamilienInstanz` in UI: **Stammbaum** (Familienname, Schlusspunkt, Du zurücksetzen, Personen/Magic, Grafik „Das bin ich“, PDF-Katalog-Spalten, Nur-Zweig); **Grundstruktur** nur Inhaber:in; **Events, Geschichte, Gedenkort** Schreiben nur organisch; **Layout** Kurztext Bearbeiter:in. Typen/Tests `k2FamilieRollen*`. **Commit:** **6e503a10** ✅ GitHub
 
 **Was wir JETZT tun:** Rolle **Bearbeiter:in** → Stammbaum: keine Struktur-Buttons, PDF-Spalten/Zweig ok; Rolle **Leser:in** → nirgends Speichern.
