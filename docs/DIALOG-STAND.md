@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **Lizenzstruktur: Haupt- und Nebenlizenzen sichtbar** – mök2 neue Sektion `#mok2-10c-haupt-neben-lizenz` (nach Lizenzpakete Außensicht, vor VK2): Hauptlizenz vs. Nebenlizenzen (Mandant, Bearbeitende, Zusatzprodukt z. B. K2 Familie); Verweis auf `docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md`; VK2 bleibt Hauptstufe Verein. Sidebar `mok2Structure.ts`, Sprungliste mök2, Nav-Link VK2 ohne irreführendes „K2-Familie“. **LicencesPage:** Infobox + Link zu mök2-Anker. Konzept §6 aktualisiert. **Commit:** **d3658722** ✅ GitHub
+**Letzter Stand:** 12.04.26 – **Lizenzstruktur: Haupt- und Nebenlizenzen sichtbar** – mök2 neue Sektion `#mok2-10c-haupt-neben-lizenz` (nach Lizenzpakete Außensicht, vor VK2): Hauptlizenz vs. Nebenlizenzen (Mandant, Bearbeitende, Zusatzprodukt z. B. K2 Familie); Verweis auf `docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md`; VK2 bleibt Hauptstufe Verein. Sidebar `mok2Structure.ts`, Sprungliste mök2, Nav-Link VK2 ohne irreführendes „K2-Familie“. **LicencesPage:** Infobox + Link zu mök2-Anker. Konzept §6 aktualisiert. **Commit:** **2247939b** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: AGB-Absatz Haupt vs. Neben (Konzept §6 offen); Stripe/Nebenlizenzen wenn marktreif.
 
