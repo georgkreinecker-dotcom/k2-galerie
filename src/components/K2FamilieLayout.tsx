@@ -87,6 +87,8 @@ const FAMILIE_NAV = [
   { to: PROJECT_ROUTES['k2-familie'].geschichte, label: 'Geschichte' },
   { to: PROJECT_ROUTES['k2-familie'].gedenkort, label: 'Gedenkort' },
   { to: PROJECT_ROUTES['k2-familie'].handbuch, label: 'Handbuch' },
+  { to: PROJECT_ROUTES['k2-familie'].benutzerHandbuch, label: 'Benutzerhandbuch' },
+  { to: PROJECT_ROUTES['k2-familie'].familiePraesentationsmappe, label: 'Präsentationsmappe' },
   { to: PROJECT_ROUTES['k2-familie'].sicherung, label: 'Sicherung' },
 ] as const
 
@@ -109,9 +111,10 @@ function FamilieNav() {
       {FAMILIE_NAV.map(({ to, label }) => {
         const isStart = to === PROJECT_ROUTES['k2-familie'].home
         const isUebersicht = to === PROJECT_ROUTES['k2-familie'].uebersicht
-        const isActive = (isStart || isUebersicht || to === PROJECT_ROUTES['k2-familie'].handbuch)
-          ? (path === to || path === to + '/')
-          : path.startsWith(to)
+        const isActive =
+          isStart || isUebersicht || to === PROJECT_ROUTES['k2-familie'].handbuch || to === PROJECT_ROUTES['k2-familie'].benutzerHandbuch
+            ? path === to || path === to + '/'
+            : path.startsWith(to)
         return (
           <Link
             key={to}

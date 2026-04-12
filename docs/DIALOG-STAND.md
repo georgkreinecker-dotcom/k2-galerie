@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie: eigenes Benutzerhandbuch + Präsentationsmappe (Routen & Nav)** – `public/k2-familie-handbuch/` (Markdown, Standard-Index), `public/k2-familie-praesentation/README.md`; `BenutzerHandbuchViewer` + `K2FamilieBenutzerHandbuchPage` Route **`/k2-familie-handbuch`**; `K2FamiliePraesentationsmappePage` unter **`/projects/k2-familie/praesentationsmappe`**; `PROJECT_ROUTES['k2-familie'].benutzerHandbuch` / `familiePraesentationsmappe`; Nav in `K2FamilieLayout`. Nach Push: Commit-Hash hier eintragen.
+
+**Was wir JETZT tun:** Inhalte im Familien-Handbuch und ggf. Mappe-Kacheln ergänzen; kurz im Browser testen (`/k2-familie-handbuch`, Präsentationsmappe).
+
+---
+
 **Letzter Stand:** 12.04.26 – **Lizenzstruktur: Haupt- und Nebenlizenzen sichtbar** – mök2 neue Sektion `#mok2-10c-haupt-neben-lizenz` (nach Lizenzpakete Außensicht, vor VK2): Hauptlizenz vs. Nebenlizenzen (Mandant, Bearbeitende, Zusatzprodukt z. B. K2 Familie); Verweis auf `docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md`; VK2 bleibt Hauptstufe Verein. Sidebar `mok2Structure.ts`, Sprungliste mök2, Nav-Link VK2 ohne irreführendes „K2-Familie“. **LicencesPage:** Infobox + Link zu mök2-Anker. Konzept §6 aktualisiert. **Commit:** **2247939b** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: AGB-Absatz Haupt vs. Neben (Konzept §6 offen); Stripe/Nebenlizenzen wenn marktreif.

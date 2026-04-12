@@ -246,6 +246,10 @@ export const PROJECT_ROUTES = {
     geschichte: '/projects/k2-familie/geschichte',
     gedenkort: '/projects/k2-familie/gedenkort',
     handbuch: '/projects/k2-familie/handbuch',
+    /** Eigenständiges Nutzerhandbuch – public/k2-familie-handbuch/ */
+    benutzerHandbuch: '/k2-familie-handbuch',
+    /** Eigenständige Präsentationsmappe – public/k2-familie-praesentation/ */
+    familiePraesentationsmappe: '/projects/k2-familie/praesentationsmappe',
     sicherung: '/projects/k2-familie/sicherung',
     galerie: '/projects/k2-familie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
