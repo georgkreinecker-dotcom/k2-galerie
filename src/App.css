@@ -2092,6 +2092,76 @@ header h1 {
   color: #14b8a6;
 }
 
+/* Personenkarte: Hauptblock Stammdaten + verschachtelte Bereiche */
+.k2-familie-page details.k2-familie-haupt-details-block {
+  list-style: none;
+}
+.k2-familie-page .k2-familie-haupt-summary {
+  list-style: none;
+  cursor: pointer;
+  color: #14b8a6;
+  font-size: 1.55rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  padding: 0.2rem 0 0.2rem 1.45rem;
+  user-select: none;
+  position: relative;
+}
+.k2-familie-page .k2-familie-haupt-summary::-webkit-details-marker {
+  display: none;
+}
+.k2-familie-page .k2-familie-haupt-summary::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  font-size: 0.75em;
+  opacity: 0.95;
+  transition: transform 0.2s ease;
+}
+.k2-familie-page details.k2-familie-haupt-details-block[open] > .k2-familie-haupt-summary::before {
+  transform: rotate(90deg);
+}
+.k2-familie-page .k2-familie-haupt-inner {
+  padding-top: 0.15rem;
+}
+.k2-familie-page details.k2-familie-details-inner {
+  list-style: none;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(20, 184, 166, 0.22);
+}
+.k2-familie-page .k2-familie-details-summary {
+  list-style: none;
+  cursor: pointer;
+  color: #14b8a6;
+  font-size: 1.45rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+  padding: 0.15rem 0 0.15rem 1.35rem;
+  user-select: none;
+  position: relative;
+}
+.k2-familie-page .k2-familie-details-summary-nested {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.k2-familie-page .k2-familie-details-summary::-webkit-details-marker {
+  display: none;
+}
+.k2-familie-page .k2-familie-details-summary::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  font-size: 0.85em;
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+.k2-familie-page details.k2-familie-details-inner[open] > .k2-familie-details-summary::before {
+  transform: rotate(90deg);
+}
+
 /* Staggered Einstieg für Karten (Spielplatz: nacheinander sichtbar) */
 .k2-familie-page .familie-card-enter {
   opacity: 0;

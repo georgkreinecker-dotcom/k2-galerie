@@ -18,6 +18,7 @@ import {
   getGeschwisterAnzeigeListe,
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
+import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
 
 function generatePersonId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -92,6 +93,10 @@ export default function K2FamiliePersonPage() {
   const [positionAmongSiblingsInput, setPositionAmongSiblingsInput] = useState<string>('')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [beziehungenFokusHighlight, setBeziehungenFokusHighlight] = useState(false)
+  const [stammdatenHauptOpen, setStammdatenHauptOpen] = useState(true)
+  const [beziehungenOpen, setBeziehungenOpen] = useState(false)
+  const [momenteOpen, setMomenteOpen] = useState(false)
+  const [erinnerungenOpen, setErinnerungenOpen] = useState(false)
 
   const person = personen.find((p) => p.id === id)
   const beziehungenKurz = useMemo(() => {
@@ -107,6 +112,8 @@ export default function K2FamiliePersonPage() {
   const fokusParam = searchParams.get('fokus')
   useEffect(() => {
     if (!person || fokusParam !== 'beziehungen') return
+    setStammdatenHauptOpen(true)
+    setBeziehungenOpen(true)
     requestAnimationFrame(() => {
       document.getElementById('k2-familie-beziehungen')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
       setBeziehungenFokusHighlight(true)
@@ -179,11 +186,11 @@ export default function K2FamiliePersonPage() {
   const save = () => {
     if (!person) return
     if (istFamilieDatumUngueltig(geburtsdatum)) {
-      window.alert('Geburtsdatum: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben (z. B. 1959-04-06 oder 6.4.1959).')
+      window.alert('Geburtsdatum ist ungültig – bitte Tag, Monat und Jahr vollständig wählen oder alles leer lassen.')
       return
     }
     if (verstorben && verstorbenAm.trim() && istFamilieDatumUngueltig(verstorbenAm)) {
-      window.alert('Verstorben am: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben.')
+      window.alert('Sterbedatum ist ungültig – bitte Tag, Monat und Jahr vollständig wählen oder Feld leer lassen.')
       return
     }
     const posNum = positionAmongSiblingsInput.trim() === '' ? undefined : parseInt(positionAmongSiblingsInput.trim(), 10)
@@ -444,6 +451,8 @@ export default function K2FamiliePersonPage() {
 
   const personMomente = id ? momente.filter((m) => m.personId === id) : []
   const openNewMoment = () => {
+    setStammdatenHauptOpen(true)
+    setMomenteOpen(true)
     setEditingMomentId('new')
     setMomentTitle('')
     setMomentDate('')
@@ -451,6 +460,8 @@ export default function K2FamiliePersonPage() {
     setMomentText('')
   }
   const openEditMoment = (m: K2FamilieMoment) => {
+    setStammdatenHauptOpen(true)
+    setMomenteOpen(true)
     setEditingMomentId(m.id)
     setMomentTitle(m.title)
     setMomentDate(m.date ? m.date.slice(0, 10) : '')
@@ -508,6 +519,8 @@ export default function K2FamiliePersonPage() {
 
   const personBeitraege = id ? beitraege.filter((b) => b.personId === id) : []
   const openBeitragModal = () => {
+    setStammdatenHauptOpen(true)
+    setErinnerungenOpen(true)
     setBeitragArt('erinnerung')
     setBeitragInhalt('')
     setBeitragVonWem('')
@@ -682,7 +695,16 @@ export default function K2FamiliePersonPage() {
           </div>
         </header>
 
-        <div className="card familie-card-enter" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
+        <details
+          id="k2-familie-person-stammdaten"
+          className="card familie-card-enter k2-familie-haupt-details-block"
+          open={stammdatenHauptOpen}
+          onToggle={(e) => setStammdatenHauptOpen((e.target as HTMLDetailsElement).open)}
+          style={{ marginTop: '1rem' }}
+        >
+          <summary className="k2-familie-haupt-summary">Stammdaten</summary>
+          <div className="k2-familie-haupt-inner">
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
           {person.photo ? (
             <img src={person.photo} alt="" className="person-photo" style={{ width: 140, height: 140, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(20,184,166,0.35)' }} />
           ) : (
@@ -707,18 +729,16 @@ export default function K2FamiliePersonPage() {
                   />
                 </div>
                 <div className="field" style={{ marginTop: '0.75rem' }}>
-                  <label className="meta">Geburtsdatum</label>
-                  <input
-                    type="text"
+                  <span className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Geburtsdatum</span>
+                  <FamilieDatumDreiSelect
                     value={geburtsdatum}
-                    onChange={(e) => setGeburtsdatum(e.target.value)}
-                    placeholder="z. B. 1959-04-06 oder 6.4.1959"
-                    autoComplete="off"
-                    inputMode="text"
-                    aria-label="Geburtsdatum"
+                    onChange={setGeburtsdatum}
+                    idPrefix="ft-person-geburtsdatum"
+                    labelShort="Geburtsdatum"
+                    resetKey={person.id}
                   />
                   <span className="meta" style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.85rem' }}>
-                    Frei tippen (Jahr zuerst oder TT.MM.JJJJ) – ohne kleines Datumsfenster.
+                    Tag · Monat · Jahr wählen (ohne Datums-Popup; auf dem Handy wie Scrollräder).
                   </span>
                 </div>
                 <div className="field" style={{ marginTop: '0.75rem' }}>
@@ -741,14 +761,13 @@ export default function K2FamiliePersonPage() {
                 </div>
                 {verstorben && (
                   <div className="field" style={{ marginTop: '0.5rem' }}>
-                    <label className="meta">Verstorben am (Datum)</label>
-                    <input
-                      type="text"
+                    <span className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Verstorben am (Datum)</span>
+                    <FamilieDatumDreiSelect
                       value={verstorbenAm}
-                      onChange={(e) => setVerstorbenAm(e.target.value)}
-                      placeholder="z. B. 2020-03-15 oder 15.3.2020"
-                      autoComplete="off"
-                      aria-label="Sterbedatum"
+                      onChange={setVerstorbenAm}
+                      idPrefix="ft-person-verstorben"
+                      labelShort="Sterbedatum"
+                      resetKey={person.id}
                     />
                   </div>
                 )}
@@ -798,26 +817,29 @@ export default function K2FamiliePersonPage() {
             ) : (
               <>
                 <p className="meta" style={{ margin: '0 0 0.75rem', color: 'rgba(226,232,240,0.9)' }}>
-                  Stammdaten (Name, Daten …) werden erst mit <strong>Speichern</strong> sicher. Beziehungen unten speichern sich beim Verknüpfen sofort.
+                  Name und Daten erst mit <strong>Speichern</strong> sicher. Beziehungen in diesem Block (aufklappen) speichern sich beim Verknüpfen sofort.
                 </p>
                 <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
               </>
             )}
           </div>
-        </div>
+            </div>
 
-        <div
+            <details
           id="k2-familie-beziehungen"
-          className="card"
+          className="k2-familie-details-inner"
+          open={beziehungenOpen}
+          onToggle={(e) => setBeziehungenOpen((e.target as HTMLDetailsElement).open)}
           style={{
-            marginTop: '1.5rem',
             transition: 'box-shadow 0.35s ease',
             ...(beziehungenFokusHighlight
               ? { boxShadow: '0 0 0 3px rgba(45, 212, 191, 0.75), 0 4px 24px rgba(13, 148, 136, 0.35)' }
               : {}),
           }}
         >
-          <h2>Beziehungen</h2>
+          <summary className="k2-familie-details-summary k2-familie-details-summary-nested">
+            Beziehungen
+          </summary>
           <div
             className="meta"
             style={{
@@ -966,10 +988,16 @@ export default function K2FamiliePersonPage() {
             </div>
           </div>
           {row('Wahlfamilie', person.wahlfamilieIds, addWahlfamilie, removeWahlfamilie, () => person.wahlfamilieIds, 'wahlfamilie')}
-        </div>
+        </details>
 
-        <div className="card" style={{ marginTop: '1rem' }}>
-          <h2>Meine Momente</h2>
+        <details
+          className="k2-familie-details-inner"
+          open={momenteOpen}
+          onToggle={(e) => setMomenteOpen((e.target as HTMLDetailsElement).open)}
+        >
+          <summary className="k2-familie-details-summary k2-familie-details-summary-nested">
+            Meine Momente
+          </summary>
           <p className="meta" style={{ margin: '0 0 0.75rem' }}>Hochzeit, Geburt, Umzug, Reise, Abschied, Neuanfang – was dir wichtig ist.</p>
           {personMomente.length > 0 && (
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
@@ -1015,11 +1043,17 @@ export default function K2FamiliePersonPage() {
           ) : (
             <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
           )}
-        </div>
+        </details>
 
-        <div className="card" style={{ marginTop: '1rem' }}>
-          <h2>Was unsere Familie dazu weiß</h2>
-          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Erinnerungen, Korrekturen, Geschichten, Fotos oder Daten – von dir oder anderen.</p>
+        <details
+          className="k2-familie-details-inner"
+          open={erinnerungenOpen}
+          onToggle={(e) => setErinnerungenOpen((e.target as HTMLDetailsElement).open)}
+        >
+          <summary className="k2-familie-details-summary k2-familie-details-summary-nested">
+            Erinnerungen
+          </summary>
+          <p className="meta" style={{ margin: '0 0 0.75rem' }}>Was unsere Familie dazu weiß – Korrekturen, Geschichten, Fotos oder Daten, von dir oder anderen.</p>
           {personBeitraege.length > 0 && (
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1rem' }}>
               {personBeitraege.map((b) => (
@@ -1063,7 +1097,9 @@ export default function K2FamiliePersonPage() {
           ) : (
             <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
           )}
-        </div>
+        </details>
+          </div>
+        </details>
 
         {person && (
           <div className="card" style={{ marginTop: '1.5rem', borderColor: 'rgba(220,80,80,0.5)' }}>
