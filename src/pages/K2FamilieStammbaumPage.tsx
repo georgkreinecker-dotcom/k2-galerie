@@ -23,7 +23,7 @@ import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import type { K2FamiliePerson } from '../types/k2Familie'
+import type { K2FamilieEinstellungen, K2FamiliePerson } from '../types/k2Familie'
 import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import FamilyTreeGraph, { type FamilyTreeLayout, type TreeOrientation } from '../components/FamilyTreeGraph'
 import {
@@ -96,6 +96,13 @@ function stammbaumSektionTocLabel(s: StammbaumKartenSektion): string {
     }
   }
   return s.titel.length > 26 ? `${s.titel.slice(0, 26)}…` : s.titel
+}
+
+/** Jede Person sieht zuerst den eigenen Familienzweig – außer sie wählt ausdrücklich die ganze Familie. */
+function effectiveNurMeinFamilienzweig(einst: K2FamilieEinstellungen): boolean {
+  if (!einst.ichBinPersonId) return false
+  if (einst.stammbaumNurMeinFamilienzweig !== undefined) return einst.stammbaumNurMeinFamilienzweig
+  return true
 }
 
 function defaultStammbaumSekOpen(
@@ -187,7 +194,16 @@ export default function K2FamilieStammbaumPage() {
   const [partnersAddedMsg, setPartnersAddedMsg] = useState(false)
   const [ersteEheMsg, setErsteEheMsg] = useState('')
   const [viewZoom, setViewZoom] = useState(1)
-  const [nurMeinFamilienzweig, setNurMeinFamilienzweig] = useState(false)
+  const nurMeinFamilienzweig = effectiveNurMeinFamilienzweig(einstellungen)
+  const setNurMeinFamilienzweigPersist = useCallback(
+    (checked: boolean) => {
+      const e = loadEinstellungen(currentTenantId)
+      if (saveEinstellungen(currentTenantId, { ...e, stammbaumNurMeinFamilienzweig: checked })) {
+        setStammbaumRefresh((k) => k + 1)
+      }
+    },
+    [currentTenantId]
+  )
   /** Einsteiger-Karte ausblenden (nur Anzeige, localStorage). */
   const [stammbaumFuehrungAusblenden, setStammbaumFuehrungAusblenden] = useState(() => {
     try {
@@ -776,6 +792,35 @@ export default function K2FamilieStammbaumPage() {
 
         {zeigeKarten && (
         <div id="stufe-nach-unten" style={{ scrollMarginTop: '5rem' }}>
+        {einstellungen.ichBinPersonId && (
+          <div
+            className="no-print"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '0.5rem',
+              marginBottom: '0.75rem',
+              padding: '0.5rem 0.65rem',
+              borderRadius: 8,
+              background: 'rgba(20,184,166,0.12)',
+              border: '1px solid rgba(20,184,166,0.35)',
+            }}
+          >
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={nurMeinFamilienzweig}
+                onChange={(e) => setNurMeinFamilienzweigPersist(e.target.checked)}
+                aria-label="Nur mein Familienzweig in der Kartenliste"
+              />
+              <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '0.92rem' }}>Nur mein Familienzweig</span>
+            </label>
+            <span className="meta" style={{ fontSize: '0.82rem', maxWidth: '36rem', lineHeight: 1.4 }}>
+              Standard für alle: zuerst dein Zweig. Aus = <strong>gesamte Familie</strong> (alle Geschwister-Zweige).
+            </span>
+          </div>
+        )}
 
         {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
           <details className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
@@ -1432,7 +1477,7 @@ export default function K2FamilieStammbaumPage() {
                     <input
                       type="checkbox"
                       checked={nurMeinFamilienzweig}
-                      onChange={(e) => setNurMeinFamilienzweig(e.target.checked)}
+                      onChange={(e) => setNurMeinFamilienzweigPersist(e.target.checked)}
                       aria-label="Nur mein Familienzweig"
                     />
                     <span className="meta">Nur mein Familienzweig</span>

@@ -152,6 +152,11 @@ export interface K2FamilieEinstellungen {
    * bestehende Karten bearbeiten und **verknüpfen** bleibt möglich. Jederzeit wieder aufhebbar.
    */
   stammbaumSchlusspunkt?: boolean
+  /**
+   * Stammbaum: Karten + Grafik – **true** = nur der Familienzweig von „Das bin ich“ (Standard wenn gesetzt);
+   * **false** = alle Zweige (Großfamilie). **undefined** = wie **true**, sobald `ichBinPersonId` gesetzt ist.
+   */
+  stammbaumNurMeinFamilienzweig?: boolean
 }
 
 /** Storage-Key für Einstellungen pro Tenant. */
