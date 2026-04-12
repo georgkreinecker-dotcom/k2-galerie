@@ -516,229 +516,6 @@ export default function K2FamilieStammbaumPage() {
           </div>
         </header>
 
-        {/* Visualisierter Stammbaum (Grafik) – Zoomen für bessere Lesbarkeit */}
-        <div className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible' }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Stammbaum</h2>
-            {personen.length > 0 && (
-              <>
-                {einstellungen.ichBinPersonId && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
-                    <input
-                      type="checkbox"
-                      checked={nurMeinFamilienzweig}
-                      onChange={(e) => setNurMeinFamilienzweig(e.target.checked)}
-                      aria-label="Nur mein Familienzweig"
-                    />
-                    <span className="meta">Nur mein Familienzweig</span>
-                  </label>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span className="meta" style={{ marginRight: '0.2rem' }}>Ansicht:</span>
-                  <button
-                    type="button"
-                    className={viewOrientation === 'vertical' ? 'btn' : 'btn-outline'}
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.9rem' }}
-                    onClick={() => setViewOrientation('vertical')}
-                    aria-pressed={viewOrientation === 'vertical'}
-                  >
-                    Vertikal
-                  </button>
-                  <button
-                    type="button"
-                    className={viewOrientation === 'horizontal' ? 'btn' : 'btn-outline'}
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.9rem' }}
-                    onClick={() => setViewOrientation('horizontal')}
-                    aria-pressed={viewOrientation === 'horizontal'}
-                  >
-                    Horizontal
-                  </button>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <span className="meta" style={{ marginRight: '0.35rem' }}>Zoomen:</span>
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    style={{ padding: '0.25rem 0.5rem', minWidth: 32 }}
-                    onClick={() => setViewZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
-                    title="Verkleinern"
-                    aria-label="Verkleinern"
-                  >
-                    −
-                  </button>
-                  <span className="meta" style={{ minWidth: 48, textAlign: 'center' }}>{Math.round(viewZoom * 100)}%</span>
-                  <button
-                    type="button"
-                    className="btn-outline"
-                    style={{ padding: '0.25rem 0.5rem', minWidth: 32 }}
-                    onClick={() => setViewZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
-                    title="Vergrößern"
-                    aria-label="Vergrößern"
-                  >
-                    +
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-          {personen.length > 0 && (
-            <p className="meta" style={{ margin: '0 0 0.6rem', fontSize: '0.85rem', lineHeight: 1.4 }}>
-              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '2px dashed rgba(20,184,166,0.75)', verticalAlign: 'middle', marginRight: 6 }} />
-              Partnerschaft
-              <span style={{ margin: '0 0.75rem' }} aria-hidden>
-                ·
-              </span>
-              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '1.5px solid rgba(20,184,166,0.55)', verticalAlign: 'middle', marginRight: 6 }} />
-              Eltern–Kind
-            </p>
-          )}
-          {personen.length > 0 ? (
-            <FamilyTreeGraph
-              personen={personenForGraph}
-              personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
-              partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
-              ichBinPersonId={einstellungen.ichBinPersonId}
-              ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
-              onSetIchBin={handleSetIchBin}
-              scale={viewZoom}
-              orientation={viewOrientation}
-              familienzweigWurzelPersonId={
-                nurMeinFamilienzweig && einstellungen.ichBinPersonId ? einstellungen.ichBinPersonId : undefined
-              }
-            />
-          ) : (
-            <p className="meta" style={{ margin: 0, padding: '0.75rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind.</p>
-          )}
-        </div>
-
-        {personen.length > 0 && (
-          <>
-            <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
-              <h2 style={{ margin: '0 0 0.75rem', fontSize: '1rem', color: 'rgba(255,255,255,0.9)' }}>Als PDF / Plakat drucken</h2>
-              <p className="meta" style={{ marginBottom: '0.75rem' }}>
-                <strong>Nur Familienzweig:</strong> Gedruckt wird immer nur dein Familienzweig (du, Partner, Kinder, Partner der Kinder) – wie bei „Nur mein Familienzweig“. Dafür musst du im Stammbaum <strong>Das bin ich</strong> gesetzt haben.
-              </p>
-              <p className="meta" style={{ marginBottom: '1rem' }}>
-                <strong>Für ein klares PDF:</strong> zuerst <strong>Personenblätter</strong>, <strong>Generationen</strong> oder <strong>Tabelle A–Z</strong> wählen – ohne verschachtelte Grafik. Die <strong>Stammbaum-Grafik</strong> eignet sich eher als Poster; im Druckdialog „Als PDF speichern“ wählen.
-              </p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Inhalt</span>
-                  <select
-                    id="druck-stil"
-                    value={druckStil}
-                    onChange={(e) => {
-                      const v = parsePrintStil(e.target.value)
-                      setDruckStil(v)
-                      if (v !== 'grafik' && druckFormat === 'poster') setDruckFormat('a4')
-                    }}
-                  >
-                    <optgroup label="Übersichtliche PDFs (empfohlen)">
-                      <option value="personenblaetter">Personenblätter (A4 hoch, eine Person pro Block)</option>
-                      <option value="generationen">Liste nach Generationen</option>
-                      <option value="register">Tabelle A–Z (breit → Druck Querformat)</option>
-                    </optgroup>
-                    <optgroup label="Grafik">
-                      <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
-                    </optgroup>
-                  </select>
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Papier / Größe</span>
-                  <select
-                    id="druck-format"
-                    value={druckFormat}
-                    onChange={(e) => setDruckFormat(e.target.value as PrintFormat)}
-                  >
-                    <option value="a4">A4</option>
-                    <option value="a3">A3</option>
-                    <option value="poster" disabled={druckStil !== 'grafik'}>
-                      Poster (nur Stammbaum-Grafik)
-                    </option>
-                  </select>
-                </label>
-                {druckStil === 'grafik' && (
-                  <>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span className="meta">Grafik-Richtung</span>
-                      <select
-                        id="druck-ori"
-                        value={druckOri}
-                        onChange={(e) => setDruckOri(e.target.value as TreeOrientation)}
-                      >
-                        <option value="vertical">Vertikal (ältere oben)</option>
-                        <option value="horizontal">Horizontal (ältere links)</option>
-                      </select>
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span className="meta">Grafik-Ansicht</span>
-                      <select
-                        id="druck-tree"
-                        value={druckTree}
-                        onChange={(e) => setDruckTree(e.target.value as FamilyTreeLayout)}
-                      >
-                        <option value="zeilen">Mit Zeilen / Blöcken (übersichtlich)</option>
-                        <option value="baum">Eine Zeile pro Generation</option>
-                      </select>
-                    </label>
-                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <span className="meta">Grafik: Fotos</span>
-                      <select
-                        id="druck-fotos"
-                        value={druckFotos}
-                        onChange={(e) => setDruckFotos(e.target.value as PrintFotos)}
-                      >
-                        <option value="1">Mit Fotos</option>
-                        <option value="0">Nur Namen (sparsam)</option>
-                      </select>
-                    </label>
-                  </>
-                )}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Titel (optional)</span>
-                  <input
-                    type="text"
-                    id="druck-titel"
-                    placeholder={getFamilieTenantDisplayName(currentTenantId, 'Familie')}
-                    value={druckTitel}
-                    onChange={(e) => setDruckTitel(e.target.value)}
-                    style={{ minWidth: 160 }}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="btn"
-                  disabled={!einstellungen.ichBinPersonId}
-                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für den Familienzweig.' : undefined}
-                  onClick={() =>
-                    openDruck({
-                      format: druckFormat,
-                      fotos: druckFotos,
-                      titel: druckTitel || undefined,
-                      stil: druckStil,
-                      ori: druckOri,
-                      tree: druckTree,
-                    })
-                  }
-                >
-                  Druckvorschau &amp; Drucken
-                </button>
-              </div>
-              {druckStil !== 'grafik' && (
-                <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
-                  {druckStil === 'register' ? (
-                    <>Bei der <strong>Tabelle A–Z</strong>: im Druckdialog oft <strong>Querformat</strong> wählen, damit alle Spalten mit auf die Seite passen.</>
-                  ) : druckStil === 'personenblaetter' ? (
-                    <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
-                  ) : (
-                    <>Bei <strong>Generationen</strong>: Hoch- oder Querformat nach Geschmack; lange Namen umbrechen automatisch.</>
-                  )}
-                </p>
-              )}
-            </section>
-          </>
-        )}
-
         {personen.length === 0 && (
           <div className="card familie-card-enter" style={{ animationDelay: '0s', padding: '1.25rem', border: '1px solid rgba(13,148,136,0.4)' }}>
             <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: 'rgba(255,255,255,0.95)' }}>Grundstruktur anlegen</h2>
@@ -751,6 +528,43 @@ export default function K2FamilieStammbaumPage() {
             </div>
           </div>
         )}
+
+        {personen.length > 0 && (
+          <nav
+            aria-label="Stufen Stammbaum"
+            className="no-print"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+              alignItems: 'center',
+              marginBottom: '1rem',
+              padding: '0.55rem 0.85rem',
+              borderRadius: 12,
+              background: 'rgba(13,148,136,0.14)',
+              border: '1px solid rgba(20,184,166,0.4)',
+            }}
+          >
+            <span className="meta" style={{ marginRight: '0.25rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Dein Weg:</span>
+            <a href="#stufe-kleinfamilie" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
+              1 · Kleinfamilie
+            </a>
+            <span className="meta" aria-hidden>
+              →
+            </span>
+            <a href="#stufe-grafik" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
+              2 · Grafik
+            </a>
+            <span className="meta" aria-hidden>
+              →
+            </span>
+            <a href="#stufe-pdf" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
+              3 · PDF &amp; Auswertung
+            </a>
+          </nav>
+        )}
+
+        <div id="stufe-kleinfamilie" style={{ scrollMarginTop: '5rem' }}>
 
         {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
           <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
@@ -1362,6 +1176,231 @@ export default function K2FamilieStammbaumPage() {
             {!einstellungen.stammbaumSchlusspunkt && partnersAddedMsg && (
               <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Partner ergänzt (Rupert: 1. Frau verstorben, 2. Frau; Gisela: Mann verstorben)</span>
             )}
+          </div>
+        )}
+
+        </div>
+
+        {/* 2 · Grafik – nach Kleinfamilie */}
+        <div id="stufe-grafik" className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible', scrollMarginTop: '5rem' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <h2 style={{ margin: 0, fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>2 · Grafik</h2>
+            <span className="meta" style={{ fontSize: '0.85rem', opacity: 0.9 }}>Stammbaum</span>
+            {personen.length > 0 && (
+              <>
+                {einstellungen.ichBinPersonId && (
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={nurMeinFamilienzweig}
+                      onChange={(e) => setNurMeinFamilienzweig(e.target.checked)}
+                      aria-label="Nur mein Familienzweig"
+                    />
+                    <span className="meta">Nur mein Familienzweig</span>
+                  </label>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="meta" style={{ marginRight: '0.2rem' }}>Ansicht:</span>
+                  <button
+                    type="button"
+                    className={viewOrientation === 'vertical' ? 'btn' : 'btn-outline'}
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.9rem' }}
+                    onClick={() => setViewOrientation('vertical')}
+                    aria-pressed={viewOrientation === 'vertical'}
+                  >
+                    Vertikal
+                  </button>
+                  <button
+                    type="button"
+                    className={viewOrientation === 'horizontal' ? 'btn' : 'btn-outline'}
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.9rem' }}
+                    onClick={() => setViewOrientation('horizontal')}
+                    aria-pressed={viewOrientation === 'horizontal'}
+                  >
+                    Horizontal
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <span className="meta" style={{ marginRight: '0.35rem' }}>Zoomen:</span>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    style={{ padding: '0.25rem 0.5rem', minWidth: 32 }}
+                    onClick={() => setViewZoom((z) => Math.max(ZOOM_MIN, z - ZOOM_STEP))}
+                    title="Verkleinern"
+                    aria-label="Verkleinern"
+                  >
+                    −
+                  </button>
+                  <span className="meta" style={{ minWidth: 48, textAlign: 'center' }}>{Math.round(viewZoom * 100)}%</span>
+                  <button
+                    type="button"
+                    className="btn-outline"
+                    style={{ padding: '0.25rem 0.5rem', minWidth: 32 }}
+                    onClick={() => setViewZoom((z) => Math.min(ZOOM_MAX, z + ZOOM_STEP))}
+                    title="Vergrößern"
+                    aria-label="Vergrößern"
+                  >
+                    +
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          {personen.length > 0 && (
+            <p className="meta" style={{ margin: '0 0 0.6rem', fontSize: '0.85rem', lineHeight: 1.4 }}>
+              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '2px dashed rgba(20,184,166,0.75)', verticalAlign: 'middle', marginRight: 6 }} />
+              Partnerschaft
+              <span style={{ margin: '0 0.75rem' }} aria-hidden>
+                ·
+              </span>
+              <span aria-hidden style={{ display: 'inline-block', width: 28, borderBottom: '1.5px solid rgba(20,184,166,0.55)', verticalAlign: 'middle', marginRight: 6 }} />
+              Eltern–Kind
+            </p>
+          )}
+          {personen.length > 0 ? (
+            <FamilyTreeGraph
+              personen={personenForGraph}
+              personPathPrefix={PROJECT_ROUTES['k2-familie'].personen}
+              partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
+              ichBinPersonId={einstellungen.ichBinPersonId}
+              ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
+              onSetIchBin={handleSetIchBin}
+              scale={viewZoom}
+              orientation={viewOrientation}
+              familienzweigWurzelPersonId={
+                nurMeinFamilienzweig && einstellungen.ichBinPersonId ? einstellungen.ichBinPersonId : undefined
+              }
+            />
+          ) : (
+            <p className="meta" style={{ margin: 0, padding: '0.75rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind.</p>
+          )}
+        </div>
+
+        {/* 3 · PDF & Auswertung */}
+        {personen.length > 0 && (
+          <div id="stufe-pdf" style={{ scrollMarginTop: '5rem' }}>
+            <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
+              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>3 · PDF &amp; Auswertung</h2>
+              <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
+                Druck = immer nur dein Familienzweig (wie „Nur mein Familienzweig“) – dafür <strong>Das bin ich</strong> setzen.
+                Übersichtliche PDFs: Personenblätter, Generationen oder Tabelle A–Z. Stammbaum-Grafik eher als Poster; im Druckdialog „Als PDF speichern“.
+              </p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Inhalt</span>
+                  <select
+                    id="druck-stil"
+                    value={druckStil}
+                    onChange={(e) => {
+                      const v = parsePrintStil(e.target.value)
+                      setDruckStil(v)
+                      if (v !== 'grafik' && druckFormat === 'poster') setDruckFormat('a4')
+                    }}
+                  >
+                    <optgroup label="Übersichtliche PDFs (empfohlen)">
+                      <option value="personenblaetter">Personenblätter (A4 hoch, eine Person pro Block)</option>
+                      <option value="generationen">Liste nach Generationen</option>
+                      <option value="register">Tabelle A–Z (breit → Druck Querformat)</option>
+                    </optgroup>
+                    <optgroup label="Grafik">
+                      <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
+                    </optgroup>
+                  </select>
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Papier / Größe</span>
+                  <select
+                    id="druck-format"
+                    value={druckFormat}
+                    onChange={(e) => setDruckFormat(e.target.value as PrintFormat)}
+                  >
+                    <option value="a4">A4</option>
+                    <option value="a3">A3</option>
+                    <option value="poster" disabled={druckStil !== 'grafik'}>
+                      Poster (nur Stammbaum-Grafik)
+                    </option>
+                  </select>
+                </label>
+                {druckStil === 'grafik' && (
+                  <>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik-Richtung</span>
+                      <select
+                        id="druck-ori"
+                        value={druckOri}
+                        onChange={(e) => setDruckOri(e.target.value as TreeOrientation)}
+                      >
+                        <option value="vertical">Vertikal (ältere oben)</option>
+                        <option value="horizontal">Horizontal (ältere links)</option>
+                      </select>
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik-Ansicht</span>
+                      <select
+                        id="druck-tree"
+                        value={druckTree}
+                        onChange={(e) => setDruckTree(e.target.value as FamilyTreeLayout)}
+                      >
+                        <option value="zeilen">Mit Zeilen / Blöcken (übersichtlich)</option>
+                        <option value="baum">Eine Zeile pro Generation</option>
+                      </select>
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <span className="meta">Grafik: Fotos</span>
+                      <select
+                        id="druck-fotos"
+                        value={druckFotos}
+                        onChange={(e) => setDruckFotos(e.target.value as PrintFotos)}
+                      >
+                        <option value="1">Mit Fotos</option>
+                        <option value="0">Nur Namen (sparsam)</option>
+                      </select>
+                    </label>
+                  </>
+                )}
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span className="meta">Titel (optional)</span>
+                  <input
+                    type="text"
+                    id="druck-titel"
+                    placeholder={getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                    value={druckTitel}
+                    onChange={(e) => setDruckTitel(e.target.value)}
+                    style={{ minWidth: 160 }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="btn"
+                  disabled={!einstellungen.ichBinPersonId}
+                  title={!einstellungen.ichBinPersonId ? 'Zuerst bei deiner Person „Das bin ich“ wählen – Druck nur für den Familienzweig.' : undefined}
+                  onClick={() =>
+                    openDruck({
+                      format: druckFormat,
+                      fotos: druckFotos,
+                      titel: druckTitel || undefined,
+                      stil: druckStil,
+                      ori: druckOri,
+                      tree: druckTree,
+                    })
+                  }
+                >
+                  Druckvorschau &amp; Drucken
+                </button>
+              </div>
+              {druckStil !== 'grafik' && (
+                <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+                  {druckStil === 'register' ? (
+                    <>Bei der <strong>Tabelle A–Z</strong>: im Druckdialog oft <strong>Querformat</strong> wählen, damit alle Spalten mit auf die Seite passen.</>
+                  ) : druckStil === 'personenblaetter' ? (
+                    <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
+                  ) : (
+                    <>Bei <strong>Generationen</strong>: Hoch- oder Querformat nach Geschmack; lange Namen umbrechen automatisch.</>
+                  )}
+                </p>
+              )}
+            </section>
           </div>
         )}
 

@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie Person: externe Links (Album / Web / YouTube / Instagram)** – Statt URL-Textfelder pro Lebensphase: **vier optionale Link-Felder** (`linkFotoalbum`, `linkWeb`, `linkYoutube`, `linkInstagram`); Fotos nur per Klick/Rechtsklick. Lesemodus: beschriftete Link-Buttons. **Commit:** **5f0e9c3a** ✅ GitHub
+**Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Stufen-Flow Kleinfamilie → Grafik → PDF** – Nach dem Header: bei 0 Personen zuerst **Grundstruktur**; ab 1 Person **Stufen-Leiste** (1 · Kleinfamilie → 2 · Grafik → 3 · PDF & Auswertung) mit Ankern `#stufe-kleinfamilie` / `#stufe-grafik` / `#stufe-pdf`. **Reihenfolge im DOM:** Karten & Buttons (Kleinfamilie), dann Grafik, dann PDF-Druck (Text gekürzt). `K2FamilieStammbaumPage.tsx`. **Commit:** **d1a468de** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum öffnen – Stufen-Leiste antippen, Reihenfolge prüfen; PDF-Bereich testen.
+
+---
+
+**Letzter Stand:** 12.04.26 – **K2 Familie Person: externe Links (Album / Web / YouTube / Instagram)** – Statt URL-Textfelder pro Lebensphase: **vier optionale Link-Felder** (`linkFotoalbum`, `linkWeb`, `linkYoutube`, `linkInstagram`); Fotos nur per Klick/Rechtsklick. Lesemodus: beschriftete Link-Buttons. **Commit:** **666619df** ✅ GitHub
 
 **Was wir JETZT tun:** Eine Person öffnen → Bearbeiten → Links eintragen → Speichern; ohne Bearbeiten die Buttons testen.
 
