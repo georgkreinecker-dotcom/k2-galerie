@@ -22,3 +22,32 @@ export function getAktuellesPersonenFoto(
     trimUrl(p.photo)
   )
 }
+
+/** Feld, aus dem das große „zeitaktuelle“ Bild kommt (gleiche Priorität wie getAktuellesPersonenFoto). */
+export type LebensphaseFotoFeld = 'photoAlter' | 'photoErwachsen' | 'photoJugend' | 'photoKind'
+
+export function getLebensphaseFeldFuerAktuellesFoto(
+  p: Pick<K2FamiliePerson, 'photoAlter' | 'photoErwachsen' | 'photoJugend' | 'photoKind' | 'photo'>
+): LebensphaseFotoFeld | 'legacy' {
+  if (trimUrl(p.photoAlter)) return 'photoAlter'
+  if (trimUrl(p.photoErwachsen)) return 'photoErwachsen'
+  if (trimUrl(p.photoJugend)) return 'photoJugend'
+  if (trimUrl(p.photoKind)) return 'photoKind'
+  if (trimUrl(p.photo)) return 'legacy'
+  return 'legacy'
+}
+
+/** Standard-Ziel, wenn noch kein Lebensphasen-Bild gesetzt ist (Hauptbild-Klick). */
+export const DEFAULT_LEBENSPHASE_NEUES_FOTO: LebensphaseFotoFeld = 'photoAlter'
+
+/** Prüft, ob die Zeichenkette eine im Browser öffenbare http(s)-URL ist (kein data:). */
+export function isHttpUrlForExternalOpen(s: string | undefined): boolean {
+  const t = String(s ?? '').trim()
+  if (!t || t.startsWith('data:')) return false
+  try {
+    const u = new URL(t)
+    return u.protocol === 'http:' || u.protocol === 'https:'
+  } catch {
+    return false
+  }
+}

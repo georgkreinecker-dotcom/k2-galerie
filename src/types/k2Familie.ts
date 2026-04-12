@@ -140,6 +140,11 @@ export interface K2FamilieEinstellungen {
   partnerHerkunftPersonId?: string
   /** Optional: „Ich bin diese Person“ – im Stammbaum als „Du“ hervorgehoben (z. B. Stefan in Familie Hube). */
   ichBinPersonId?: string
+  /**
+   * Vom Administrator vergebene Zugangs-/Mitgliedsnummer (neben QR).
+   * Speicher nur im K2-Familie-Kontext (k2-familie-*); keine Vermischung mit K2/ök2.
+   */
+  mitgliedsNummerAdmin?: string
   /** Optional: Position von „Du“ unter den Geschwister (1-basiert), für Sortierung 1…N (z. B. 7 = 6 vor mir, 6 hinter mir). */
   ichBinPositionAmongSiblings?: number
   /**

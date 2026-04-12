@@ -39,3 +39,35 @@ export function istFamilieDatumUngueltig(raw: string): boolean {
   if (!s) return false
   return normalizeFamilieDatum(s) === undefined
 }
+
+/** Anzahl Tage im Monat (month 1–12). */
+export function daysInMonth(year: number, month: number): number {
+  if (month < 1 || month > 12) return 31
+  return new Date(year, month, 0).getDate()
+}
+
+/** ISO YYYY-MM-DD (oder leer) in drei zweistellige Teile; ungültige/leere Eingabe → alles leer. */
+export function splitIsoDateToParts(raw: string): { d: string; m: string; y: string } {
+  const s = raw.trim()
+  if (!s) return { d: '', m: '', y: '' }
+  const norm = normalizeFamilieDatum(s)
+  if (!norm) return { d: '', m: '', y: '' }
+  const iso = norm.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!iso) return { d: '', m: '', y: '' }
+  return { y: iso[1], m: iso[2], d: iso[3] }
+}
+
+/** Tag/Monat/Jahr als zweistellige Strings; liefert YYYY-MM-DD oder '' wenn ungültig oder unvollständig. */
+export function tryBuildIsoFromParts(dStr: string, mStr: string, yStr: string): string {
+  const d = dStr.trim()
+  const m = mStr.trim()
+  const y = yStr.trim()
+  if (!d || !m || !y) return ''
+  const di = parseInt(d, 10)
+  const mi = parseInt(m, 10)
+  const yi = parseInt(y, 10)
+  if (Number.isNaN(di) || Number.isNaN(mi) || Number.isNaN(yi)) return ''
+  const dt = new Date(yi, mi - 1, di)
+  if (dt.getFullYear() !== yi || dt.getMonth() !== mi - 1 || dt.getDate() !== di) return ''
+  return `${String(yi).padStart(4, '0')}-${String(mi).padStart(2, '0')}-${String(di).padStart(2, '0')}`
+}

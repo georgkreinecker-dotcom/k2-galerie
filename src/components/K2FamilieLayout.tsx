@@ -7,9 +7,10 @@
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { FamilieTenantProvider } from '../context/FamilieTenantContext'
 import { PROJECT_ROUTES } from '../config/navigation'
+import FamilieBackButton from './FamilieBackButton'
 
 const FAMILIE_NAV = [
-  { to: PROJECT_ROUTES['k2-familie'].home, label: 'Start (Homepage)' },
+  { to: PROJECT_ROUTES['k2-familie'].home, label: 'Meine Familie' },
   { to: PROJECT_ROUTES['k2-familie'].uebersicht, label: 'Leitbild & Vision' },
   { to: PROJECT_ROUTES['k2-familie'].stammbaum, label: 'Stammbaum' },
   { to: PROJECT_ROUTES['k2-familie'].events, label: 'Events' },
@@ -35,6 +36,7 @@ function FamilieNav() {
       borderBottom: '1px solid rgba(13,148,136,0.25)',
       marginBottom: 0,
     }}>
+      <FamilieBackButton style={{ color: 'rgba(255,255,255,0.85)', marginRight: '0.25rem' }} />
       {FAMILIE_NAV.map(({ to, label }) => {
         const isStart = to === PROJECT_ROUTES['k2-familie'].home
         const isUebersicht = to === PROJECT_ROUTES['k2-familie'].uebersicht

@@ -4,6 +4,7 @@
  */
 
 import { Link, useNavigate } from 'react-router-dom'
+import FamilieBackButton from '../components/FamilieBackButton'
 import { useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
@@ -30,7 +31,7 @@ export default function K2FamilieStartPage() {
         <header>
           <div>
             <div className="familie-toolbar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <Link to={PLATFORM_ROUTES.projects} className="meta">← Projekte</Link>
+              <FamilieBackButton className="meta" />
               <span className="meta">Familie:</span>
               <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
                 {tenantList.map((id) => (
@@ -40,6 +41,10 @@ export default function K2FamilieStartPage() {
               <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
             </div>
             <h1>Leitbild & Vision</h1>
+            <p className="meta" style={{ margin: '0.35rem 0 0.75rem', maxWidth: 640 }}>
+              Das ist die Projekt-Erklärung. Dein persönlicher Einstieg mit Name, Zugangsnummer und QR liegt unter{' '}
+              <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: '#14b8a6' }}>Meine Familie</Link>.
+            </p>
             <div className="meta">Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freud, Leid und Alltag. Basis: K2-Struktur, tenantfähig.</div>
           </div>
         </header>

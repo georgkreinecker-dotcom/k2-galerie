@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
+import {
+  getAktuellesPersonenFoto,
+  getLebensphaseFeldFuerAktuellesFoto,
+  isHttpUrlForExternalOpen,
+} from '../utils/familiePersonFotos'
 
 describe('getAktuellesPersonenFoto', () => {
   it('nimmt die späteste befüllte Phase (Alter vor Erwachsen …)', () => {
@@ -45,5 +49,48 @@ describe('getAktuellesPersonenFoto', () => {
         photo: undefined,
       })
     ).toBeUndefined()
+  })
+})
+
+describe('getLebensphaseFeldFuerAktuellesFoto', () => {
+  it('liefert das Feld der ersten Priorität mit Inhalt', () => {
+    expect(
+      getLebensphaseFeldFuerAktuellesFoto({
+        photoAlter: 'https://a',
+        photoErwachsen: 'https://e',
+        photoJugend: undefined,
+        photoKind: undefined,
+        photo: undefined,
+      })
+    ).toBe('photoAlter')
+    expect(
+      getLebensphaseFeldFuerAktuellesFoto({
+        photoAlter: '',
+        photoErwachsen: 'https://e',
+        photoJugend: undefined,
+        photoKind: undefined,
+        photo: undefined,
+      })
+    ).toBe('photoErwachsen')
+  })
+
+  it('legacy nur wenn nur photo gesetzt', () => {
+    expect(
+      getLebensphaseFeldFuerAktuellesFoto({
+        photoAlter: undefined,
+        photoErwachsen: undefined,
+        photoJugend: undefined,
+        photoKind: undefined,
+        photo: 'https://old',
+      })
+    ).toBe('legacy')
+  })
+})
+
+describe('isHttpUrlForExternalOpen', () => {
+  it('erkennt http(s)', () => {
+    expect(isHttpUrlForExternalOpen('https://example.com/x')).toBe(true)
+    expect(isHttpUrlForExternalOpen('data:image/jpeg;base64,xx')).toBe(false)
+    expect(isHttpUrlForExternalOpen('')).toBe(false)
   })
 })
