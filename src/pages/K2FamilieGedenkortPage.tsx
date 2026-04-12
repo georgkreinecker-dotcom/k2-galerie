@@ -100,7 +100,6 @@ export default function K2FamilieGedenkortPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
             <h1 style={{ marginTop: '0.5rem' }}>Gedenkort</h1>
             <p className="meta" style={{ marginTop: '0.35rem' }}>
               Die uns vorausgegangen sind – ein Ort der Erinnerung. Leise und würdig.
@@ -231,9 +230,6 @@ export default function K2FamilieGedenkortPage() {
           </div>
         )}
 
-        <p className="meta" style={{ marginTop: '1.5rem' }}>
-          <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: C.textSoft, textDecoration: 'none' }}>← Zur Startseite</Link>
-        </p>
       </div>
     </div>
   )

@@ -121,7 +121,6 @@ export default function K2FamilieSicherungPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
             <h1 style={{ marginTop: '0.5rem' }}>Sicherung – K2 Familie</h1>
             <p className="meta" style={{ marginTop: '0.35rem', color: MUTED }}>
               Eigenbereich getrennt von K2 Galerie, ök2 und VK2. Hier sichern und wiederherstellen nur die Familien-Daten (Personen, Momente, Events, alle Familien).

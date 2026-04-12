@@ -428,7 +428,6 @@ export default function K2FamilieStammbaumPage() {
         <header>
           <div>
             <div className="familie-toolbar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
               <span className="meta">Familie:</span>
               <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
                 {tenantList.map((id) => (

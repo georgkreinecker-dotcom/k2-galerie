@@ -18,6 +18,7 @@ import {
   getGeschwisterAnzeigeListe,
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
+import { getGraphDistanceFromIch, portraitSizeFromGraphDistance } from '../utils/familieGraphDistance'
 import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import {
@@ -157,6 +158,14 @@ export default function K2FamiliePersonPage() {
   const [erinnerungenOpen, setErinnerungenOpen] = useState(false)
 
   const person = personen.find((p) => p.id === id)
+  const graphDistanceFromDu = useMemo(() => {
+    if (!id) return null
+    return getGraphDistanceFromIch(personen, einstellungen.ichBinPersonId, id)
+  }, [personen, einstellungen.ichBinPersonId, id])
+  const portraitGroessePx = useMemo(
+    () => portraitSizeFromGraphDistance(graphDistanceFromDu),
+    [graphDistanceFromDu]
+  )
   const beziehungenKurz = useMemo(() => {
     if (!id) return { eltern: [] as K2FamiliePerson[], geschwister: [] as K2FamiliePerson[] }
     const b = getBeziehungenFromKarten(personen, id)
@@ -677,7 +686,6 @@ export default function K2FamiliePersonPage() {
     return (
       <div className="mission-wrapper">
         <div className="viewport k2-familie-page">
-          <header><Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link></header>
           <div className="card"><p className="meta" style={{ margin: 0 }}>Person nicht gefunden.</p></div>
         </div>
       </div>
@@ -915,7 +923,6 @@ export default function K2FamiliePersonPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link>
             {familieZurueckZu && (
               <p className="meta" style={{ margin: '0.35rem 0 0' }}>
                 <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${familieZurueckZu.id}`} className="meta">
@@ -944,7 +951,7 @@ export default function K2FamiliePersonPage() {
           <summary className="k2-familie-haupt-summary">Stammdaten</summary>
           <div className="k2-familie-haupt-inner">
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', flexWrap: 'wrap' }}>
-          <div style={{ flexShrink: 0, maxWidth: 300 }}>
+            <div style={{ flexShrink: 0, maxWidth: Math.max(300, portraitGroessePx + 40) }}>
             <input
               ref={fileInputRef}
               type="file"
@@ -970,8 +977,8 @@ export default function K2FamiliePersonPage() {
                   setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
                 }}
                 style={{
-                  width: 140,
-                  height: 140,
+                  width: portraitGroessePx,
+                  height: portraitGroessePx,
                   borderRadius: '50%',
                   objectFit: 'cover',
                   border: '4px solid rgba(20,184,166,0.35)',
@@ -1002,8 +1009,8 @@ export default function K2FamiliePersonPage() {
                   setFotoMenu({ x: e.clientX, y: e.clientY, kind: 'haupt' })
                 }}
                 style={{
-                  width: 140,
-                  height: 140,
+                  width: portraitGroessePx,
+                  height: portraitGroessePx,
                   borderRadius: '50%',
                   background: 'rgba(13,148,136,0.3)',
                   display: 'flex',
@@ -1018,8 +1025,13 @@ export default function K2FamiliePersonPage() {
                 👤
               </div>
             )}
-            <p className="meta" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', textAlign: 'center', maxWidth: 140, lineHeight: 1.35 }}>
+            <p className="meta" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', textAlign: 'center', maxWidth: portraitGroessePx, lineHeight: 1.35 }}>
               Zeitaktuell – neueste Lebensphase mit Bild (Alter → Erwachsen → Jugendlich → Kind)
+              {einstellungen.ichBinPersonId && graphDistanceFromDu != null && (
+                <span style={{ display: 'block', marginTop: '0.35rem', color: 'rgba(20,184,166,0.95)' }}>
+                  Tiefe zu „Du“: {graphDistanceFromDu} {graphDistanceFromDu === 1 ? 'Schritt' : 'Schritte'} – Portrait wächst mit der Entfernung im Beziehungsnetz.
+                </span>
+              )}
             </p>
             <div
               style={{

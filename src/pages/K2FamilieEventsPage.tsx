@@ -3,10 +3,8 @@
  * Route: /projects/k2-familie/events
  */
 
-import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import '../App.css'
-import { PROJECT_ROUTES } from '../config/navigation'
 import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
@@ -101,7 +99,6 @@ export default function K2FamilieEventsPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
             <h1 style={{ marginTop: '0.5rem' }}>Familien-Events</h1>
             <div className="meta">Geburtstage, Treffen, Feste – mit Datum und Teilnehmern aus der Familie.</div>
           </div>

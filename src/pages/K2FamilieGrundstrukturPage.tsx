@@ -79,7 +79,6 @@ export default function K2FamilieGrundstrukturPage() {
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ maxWidth: 560, margin: '0 auto' }}>
         <header style={{ marginBottom: '1.5rem' }}>
-          <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="meta">← Stammbaum</Link>
           <h1 style={{ margin: '0.5rem 0 0', color: C.text }}>Grundstruktur anlegen</h1>
           <p className="meta" style={{ margin: '0.35rem 0 0' }}>
             Schritt {step} von {STEPS} – die Struktur kennt jeder, fehlende Personen kannst du später einfügen.

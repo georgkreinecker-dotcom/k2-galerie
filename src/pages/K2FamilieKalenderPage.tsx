@@ -80,7 +80,6 @@ export default function K2FamilieKalenderPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <Link to={PROJECT_ROUTES['k2-familie'].home} className="meta">← K2 Familie</Link>
             <h1 style={{ marginTop: '0.5rem' }}>Kalender & Übersicht</h1>
             <div className="meta">Alle Events und Momente nach Datum – gebündelt.</div>
           </div>

@@ -5,7 +5,6 @@
 
 import { useState, useEffect, useMemo, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PROJECT_ROUTES } from '../config/navigation'
 
 const HANDBUCH_DOC_PARAM = 'doc'
 const HANDBUCH_BASE = '/k2team-handbuch'
@@ -257,7 +256,6 @@ export default function K2FamilieHandbuchPage() {
                 <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>Im Druckdialog: Format <strong>A4</strong> wählen</span>
               )}
             </div>
-            <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: '#14b8a6', textDecoration: 'none', fontSize: '0.9rem' }}>← Zur Startseite</Link>
           </div>
         </header>
 
