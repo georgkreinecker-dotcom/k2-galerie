@@ -17,7 +17,7 @@ export const K2_FAMILIE_ROLLEN_LABELS: Record<K2FamilieRolle, string> = {
 /** Kurzbeschreibung für UI / Handbuch */
 export const K2_FAMILIE_ROLLEN_KURZ: Record<K2FamilieRolle, string> = {
   inhaber: 'Volle Kontrolle inkl. Sicherung wiederherstellen und Familien-Verwaltung',
-  bearbeiter: 'Stammbaum, Personen, Events & Co. bearbeiten – keine Wiederherstellung/Merge',
+  bearbeiter: 'Organisches bearbeiten (Momente, Events, Geschichte, Gedenkort) – kein Stammbaum/Kern',
   leser: 'Nur ansehen, nichts speichern',
 }
 
@@ -25,8 +25,15 @@ export interface FamilieRollenCapabilities {
   rolle: K2FamilieRolle
   /** Immer true (Leser dürfen alles sehen) */
   canView: true
-  /** Personen, Beziehungen, Stammbaum, Events, Kalender, Geschichte, Gedenkort, Momente */
+  /**
+   * Inhaber oder Bearbeiter – Kurzform „irgendetwas speichern dürfen“.
+   * Für Stammbaum/Personenkarten immer `canEditStrukturUndStammdaten` prüfen.
+   */
   canEditFamiliendaten: boolean
+  /** Personenkarten-Stammdaten, Beziehungen, strukturelle Einstellungen, Grundstruktur – nur Inhaber:in */
+  canEditStrukturUndStammdaten: boolean
+  /** Momente, Beiträge, Events, Geschichten, Gaben, Druck-Spalten/Anzeige – Inhaber + Bearbeiter */
+  canEditOrganisches: boolean
   /** Sicherungskopie + GEDCOM herunterladen */
   canExportSicherung: boolean
   /** Aus Backup wiederherstellen oder Merge – nur Inhaber:in */
@@ -43,6 +50,8 @@ export function getFamilieRollenCapabilities(rolle: K2FamilieRolle): FamilieRoll
     rolle,
     canView: true,
     canEditFamiliendaten: canEdit,
+    canEditStrukturUndStammdaten: isInhaber,
+    canEditOrganisches: canEdit,
     canExportSicherung: canEdit,
     canRestoreSicherung: isInhaber,
     canManageFamilienInstanz: isInhaber,

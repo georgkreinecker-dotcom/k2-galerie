@@ -12,6 +12,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, loadGaben, saveGaben } from '../utils/familieStorage'
 import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieGabe } from '../types/k2Familie'
 
 const GEDENKORT_USER_KEY = 'k2-familie-gedenkort-user-id'
@@ -54,6 +55,8 @@ const C = {
 
 export default function K2FamilieGedenkortPage() {
   const { currentTenantId } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannOrganisch = capabilities.canEditOrganisches
   const myUserId = useMemo(() => getOrCreateGedenkortUserId(), [])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const verstorbene = useMemo(
@@ -74,7 +77,7 @@ export default function K2FamilieGedenkortPage() {
   }, [gaben, myUserId])
 
   const addGabe = () => {
-    if (!modal) return
+    if (!modal || !kannOrganisch) return
     const now = new Date().toISOString()
     const neu: K2FamilieGabe = {
       id: 'gabe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
@@ -178,7 +181,10 @@ export default function K2FamilieGedenkortPage() {
                         key={type}
                         type="button"
                         className="btn-outline"
+                        disabled={!kannOrganisch}
+                        title={!kannOrganisch ? 'Nur Inhaber:in und Bearbeiter:in können Gaben hinterlegen.' : undefined}
                         onClick={() => {
+                        if (!kannOrganisch) return
                         setContent('')
                         setSichtbarkeit('oeffentlich')
                         setOeffentlichName('')
@@ -209,23 +215,23 @@ export default function K2FamilieGedenkortPage() {
             <div style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Sichtbarkeit</label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'privat'} onChange={() => setSichtbarkeit('privat')} />
+                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'privat'} onChange={() => setSichtbarkeit('privat')} disabled={!kannOrganisch} />
                 <span>Nur für mich sichtbar (persönlicher Eintrag)</span>
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'oeffentlich'} onChange={() => setSichtbarkeit('oeffentlich')} />
+                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'oeffentlich'} onChange={() => setSichtbarkeit('oeffentlich')} disabled={!kannOrganisch} />
                 <span>Für die Familie sichtbar</span>
               </label>
             </div>
             {sichtbarkeit === 'oeffentlich' && (
               <div style={{ marginBottom: '0.75rem' }}>
                 <label className="meta" style={{ display: 'block', marginBottom: '0.25rem' }}>Name (optional, sonst „Anonym“)</label>
-                <input type="text" value={oeffentlichName} onChange={(e) => setOeffentlichName(e.target.value)} placeholder="Anonym" style={{ width: '100%' }} />
+                <input type="text" value={oeffentlichName} onChange={(e) => setOeffentlichName(e.target.value)} placeholder="Anonym" disabled={!kannOrganisch} style={{ width: '100%' }} />
               </div>
             )}
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button type="button" className="btn-outline" onClick={() => { setModal(null); setContent(''); setOeffentlichName(''); setSichtbarkeit('oeffentlich'); }}>Abbrechen</button>
-              <button type="button" className="btn" onClick={addGabe}>Hinterlassen</button>
+              <button type="button" className="btn" disabled={!kannOrganisch} onClick={addGabe}>Hinterlassen</button>
             </div>
           </div>
         )}

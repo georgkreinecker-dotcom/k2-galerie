@@ -23,6 +23,7 @@ import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieEinstellungen, K2FamiliePerson } from '../types/k2Familie'
 import { getAktuellesPersonenFoto } from '../utils/familiePersonFotos'
 import FamilyTreeGraph, { type FamilyTreeLayout, type TreeOrientation } from '../components/FamilyTreeGraph'
@@ -172,6 +173,10 @@ export default function K2FamilieStammbaumPage() {
     [setSearchParams]
   )
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannStruktur = capabilities.canEditStrukturUndStammdaten
+  const kannOrganisch = capabilities.canEditOrganisches
+  const kannManageFamilienInstanz = capabilities.canManageFamilienInstanz
   const [synced, setSynced] = useState(false)
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
   useEffect(() => {
@@ -256,12 +261,13 @@ export default function K2FamilieStammbaumPage() {
   const nurMeinFamilienzweig = effectiveNurMeinFamilienzweig(einstellungen)
   const setNurMeinFamilienzweigPersist = useCallback(
     (checked: boolean) => {
+      if (!kannOrganisch) return
       const e = loadEinstellungen(currentTenantId)
       if (saveEinstellungen(currentTenantId, { ...e, stammbaumNurMeinFamilienzweig: checked })) {
         setStammbaumRefresh((k) => k + 1)
       }
     },
-    [currentTenantId]
+    [currentTenantId, kannOrganisch]
   )
   /** Einsteiger-Karte ausblenden (nur Anzeige, localStorage). */
   const [stammbaumFuehrungAusblenden, setStammbaumFuehrungAusblenden] = useState(() => {
@@ -399,15 +405,17 @@ export default function K2FamilieStammbaumPage() {
   }, [handleAfterPrint])
 
   const saveFamilyDisplayName = useCallback(() => {
+    if (!kannStruktur) return
     const name = familyDisplayNameInput.trim()
     if (saveEinstellungen(currentTenantId, { ...einstellungen, familyDisplayName: name || undefined })) {
       setStammbaumRefresh((k) => k + 1)
       setFamilyNameSaved(true)
       setTimeout(() => setFamilyNameSaved(false), 2000)
     }
-  }, [currentTenantId, einstellungen, familyDisplayNameInput])
+  }, [currentTenantId, einstellungen, familyDisplayNameInput, kannStruktur])
 
   const handleSetIchBin = useCallback((personId: string) => {
+    if (!kannStruktur) return
     const p = personen.find((x) => x.id === personId)
     const pos = p?.name?.match(/^(?:Geschwister|Kind)\s+(\d+)$/i)?.[1]
     const einst = loadEinstellungen(currentTenantId)
@@ -419,7 +427,7 @@ export default function K2FamilieStammbaumPage() {
       if (savePersonen(currentTenantId, updated, { allowReduce: false })) changed = true
     }
     if (changed) setStammbaumRefresh((k: number) => k + 1)
-  }, [currentTenantId, personen])
+  }, [currentTenantId, personen, kannStruktur])
 
   const openDruck = (opts: {
     format: PrintFormat
@@ -448,6 +456,7 @@ export default function K2FamilieStammbaumPage() {
 
   const toggleDruckKatalogSpalte = useCallback(
     (id: string, checked: boolean) => {
+      if (!kannOrganisch) return
       setDruckKatalogSpalten((prev) => {
         let next: string[]
         if (checked) {
@@ -460,7 +469,7 @@ export default function K2FamilieStammbaumPage() {
         return norm
       })
     },
-    [currentTenantId]
+    [currentTenantId, kannOrganisch]
   )
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
@@ -605,6 +614,7 @@ export default function K2FamilieStammbaumPage() {
   }
 
   const addPerson = () => {
+    if (!kannStruktur) return
     const neu: K2FamiliePerson = {
       id: generateId(),
       name: 'Neue Person',
@@ -631,7 +641,17 @@ export default function K2FamilieStammbaumPage() {
                   <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
                 ))}
               </select>
-              <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
+              <button
+                type="button"
+                className="btn-outline"
+                disabled={!kannManageFamilienInstanz}
+                title={!kannManageFamilienInstanz ? 'Nur Inhaber:in kann eine neue Familie anlegen.' : undefined}
+                onClick={() => {
+                  if (kannManageFamilienInstanz) addTenant()
+                }}
+              >
+                Neue Familie
+              </button>
             </div>
             <div className="familie-name-save" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <label htmlFor="ft-family-display-name" className="meta">Anzeigename dieser Familie:</label>
@@ -643,9 +663,11 @@ export default function K2FamilieStammbaumPage() {
                 placeholder="z. B. Familie Kreinecker"
                 autoComplete="off"
                 name="ft-family-display"
+                disabled={!kannStruktur}
+                title={!kannStruktur ? 'Nur Inhaber:in kann den Anzeigenamen der Familie ändern.' : undefined}
                 style={{ minWidth: 180, padding: '0.35rem 0.5rem' }}
               />
-              <button type="button" className="btn" onClick={saveFamilyDisplayName}>Speichern</button>
+              <button type="button" className="btn" disabled={!kannStruktur} onClick={saveFamilyDisplayName}>Speichern</button>
               {familyNameSaved && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Gespeichert</span>}
             </div>
             {personen.length > 0 && (
@@ -679,7 +701,9 @@ export default function K2FamilieStammbaumPage() {
                     <input
                       type="checkbox"
                       checked={!!einstellungen.stammbaumSchlusspunkt}
+                      disabled={!kannStruktur}
                       onChange={(e) => {
+                        if (!kannStruktur) return
                         const next = !!e.target.checked
                         const e0 = loadEinstellungen(currentTenantId)
                         if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setStammbaumRefresh((k) => k + 1)
@@ -708,7 +732,7 @@ export default function K2FamilieStammbaumPage() {
                     In der <strong>Grafik</strong> unten: <strong>Das bin ich</strong> wählen. Partner: <strong>Partner*innen</strong> auf deiner Personenseite. Kinder: <strong>Kinder</strong>. Falsche Reihe? Person öffnen → Eltern in der Karte anpassen.
                   </p>
                 </details>
-                {einstellungen.ichBinPersonId && (
+                {einstellungen.ichBinPersonId && kannStruktur && (
                   <p style={{ margin: '0.5rem 0 0' }}>
                     <button type="button" className="btn-outline" style={{ fontSize: '0.9rem' }} onClick={() => { const e = loadEinstellungen(currentTenantId); if (saveEinstellungen(currentTenantId, { ...e, ichBinPersonId: undefined, ichBinPositionAmongSiblings: undefined })) setStammbaumRefresh((k) => k + 1); }}>Du zurücksetzen</button>
                     <span className="meta" style={{ marginLeft: '0.5rem' }}>– falls „Das bin ich“ falsch</span>
@@ -796,8 +820,14 @@ export default function K2FamilieStammbaumPage() {
             <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.1rem', color: 'rgba(255,255,255,0.95)' }}>Grundstruktur anlegen</h2>
             <p className="meta" style={{ margin: 0 }}>Du und Partner, Kinder unten, Geschwister oben, Vater und Mütter – einmal die Struktur festlegen. Fehlende Personen kannst du später jederzeit einfügen.</p>
             <div style={{ marginTop: '1rem' }}>
-              <Link to={PROJECT_ROUTES['k2-familie'].grundstruktur} className="btn" style={{ marginRight: '0.75rem' }}>Grundstruktur anlegen</Link>
-              {!einstellungen.stammbaumSchlusspunkt && (
+              {kannStruktur ? (
+                <Link to={PROJECT_ROUTES['k2-familie'].grundstruktur} className="btn" style={{ marginRight: '0.75rem' }}>Grundstruktur anlegen</Link>
+              ) : (
+                <p className="meta" style={{ margin: '0 0 0.75rem', maxWidth: '40rem' }}>
+                  Grundstruktur und erste Personen anlegen ist nur für Inhaber:in möglich.
+                </p>
+              )}
+              {!einstellungen.stammbaumSchlusspunkt && kannStruktur && (
                 <button type="button" className="btn-outline" onClick={addPerson}>＋ Einzelne Person hinzufügen</button>
               )}
             </div>
@@ -1557,8 +1587,10 @@ export default function K2FamilieStammbaumPage() {
           <div style={{ marginTop: '1.5rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem' }}>
             {!einstellungen.stammbaumSchlusspunkt && (
               <>
+                {kannStruktur && (
                 <button type="button" className="btn" onClick={addPerson}>＋ Person hinzufügen</button>
-                {einstellungen.ichBinPersonId && (
+                )}
+                {einstellungen.ichBinPersonId && kannStruktur && (
                   <>
                     <button
                       type="button"
@@ -1644,10 +1676,11 @@ export default function K2FamilieStammbaumPage() {
             {personen.length > 0 && (
               <>
                 {einstellungen.ichBinPersonId && (
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', cursor: kannOrganisch ? 'pointer' : 'not-allowed' }}>
                     <input
                       type="checkbox"
                       checked={nurMeinFamilienzweig}
+                      disabled={!kannOrganisch}
                       onChange={(e) => setNurMeinFamilienzweigPersist(e.target.checked)}
                       aria-label="Nur mein Familienzweig"
                     />
@@ -1720,7 +1753,7 @@ export default function K2FamilieStammbaumPage() {
               partnerHerkunftPersonId={einstellungen.partnerHerkunftPersonId}
               ichBinPersonId={einstellungen.ichBinPersonId}
               ichBinPositionAmongSiblings={einstellungen.ichBinPositionAmongSiblings}
-              onSetIchBin={handleSetIchBin}
+              onSetIchBin={kannStruktur ? handleSetIchBin : undefined}
               scale={viewZoom}
               orientation={viewOrientation}
               familienzweigWurzelPersonId={
@@ -1917,6 +1950,7 @@ export default function K2FamilieStammbaumPage() {
                       <input
                         type="checkbox"
                         checked={druckKatalogSpalten.includes(col.id)}
+                        disabled={!kannOrganisch}
                         onChange={(e) => toggleDruckKatalogSpalte(col.id, e.target.checked)}
                         style={{ accentColor: '#2dd4bf' }}
                       />

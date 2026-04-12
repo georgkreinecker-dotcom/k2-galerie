@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie: Rechte Struktur vs. Organisch voll umgesetzt** – `canEditStrukturUndStammdaten` / `canEditOrganisches` / `canManageFamilienInstanz` in UI: **Stammbaum** (Familienname, Schlusspunkt, Du zurücksetzen, Personen/Magic, Grafik „Das bin ich“, PDF-Katalog-Spalten, Nur-Zweig); **Grundstruktur** nur Inhaber:in; **Events, Geschichte, Gedenkort** Schreiben nur organisch; **Layout** Kurztext Bearbeiter:in. Typen/Tests `k2FamilieRollen*`. **Commit:** (folgt nach Push)
+
+**Was wir JETZT tun:** Rolle **Bearbeiter:in** → Stammbaum: keine Struktur-Buttons, PDF-Spalten/Zweig ok; Rolle **Leser:in** → nirgends Speichern.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie Rollen (lizenzierfähig)** – `K2FamilieRolle` Inhaber:in / Bearbeiter:in / Leser:in mit Rechten (`FamilieRollenCapabilities`): Bearbeiten, Export, Wiederherstellen/Merge, Familien-Verwaltung. **Context** `FamilieRolleProvider` in `K2FamilieLayout`, Speicher `k2-familie-rolle-<tenantId>`, **Home** Rollenwahl + Hinweise, **Sicherung** Buttons je nach Rolle. Tests `k2FamilieRollen.test.ts`. Build-Stand + Test-Protokoll mit. **Commit:** **a2b623f8** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** K2 Familie Hub → Rolle wechseln → Home/Sicherung/Stammbaum prüfen (Leser speichert nicht, Inhaber:in volle Sicherung).

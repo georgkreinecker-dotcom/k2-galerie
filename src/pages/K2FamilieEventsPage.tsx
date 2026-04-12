@@ -9,6 +9,7 @@ import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
 
 function generateEventId(): string {
@@ -17,6 +18,8 @@ function generateEventId(): string {
 
 export default function K2FamilieEventsPage() {
   const { currentTenantId } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannOrganisch = capabilities.canEditOrganisches
   const [events, setEvents] = useState<K2FamilieEvent[]>(() => loadEvents(currentTenantId))
   const [personen, setPersonen] = useState(() => loadPersonen(currentTenantId))
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
@@ -40,6 +43,7 @@ export default function K2FamilieEventsPage() {
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 
   const openNew = () => {
+    if (!kannOrganisch) return
     setEditingId('new')
     setTitle('')
     setDate('')
@@ -47,6 +51,7 @@ export default function K2FamilieEventsPage() {
     setNote('')
   }
   const openEdit = (e: K2FamilieEvent) => {
+    if (!kannOrganisch) return
     setEditingId(e.id)
     setTitle(e.title)
     setDate(e.date)
@@ -54,6 +59,7 @@ export default function K2FamilieEventsPage() {
     setNote(e.note ?? '')
   }
   const save = () => {
+    if (!kannOrganisch) return
     const now = new Date().toISOString()
     if (editingId === 'new') {
       const neu: K2FamilieEvent = {
@@ -83,6 +89,7 @@ export default function K2FamilieEventsPage() {
     }
   }
   const remove = (eventId: string) => {
+    if (!kannOrganisch) return
     const next = events.filter((e) => e.id !== eventId)
     if (saveEvents(currentTenantId, next, { allowReduce: true })) setEvents(next)
     if (editingId === eventId) setEditingId(null)
@@ -118,8 +125,8 @@ export default function K2FamilieEventsPage() {
                     {ev.note && <p style={{ margin: '0.25rem 0 0' }}>{ev.note}</p>}
                   </div>
                   <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
-                    <button type="button" className="btn" onClick={() => openEdit(ev)}>Bearbeiten</button>
-                    <button type="button" className="btn-outline danger" onClick={() => remove(ev.id)}>Löschen</button>
+                    <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(ev)}>Bearbeiten</button>
+                    <button type="button" className="btn-outline danger" disabled={!kannOrganisch} onClick={() => remove(ev.id)}>Löschen</button>
                   </div>
                 </div>
               </li>
@@ -129,28 +136,28 @@ export default function K2FamilieEventsPage() {
 
         {editingId ? (
           <div className="card" style={{ padding: '1rem' }}>
-            <div className="field"><label className="meta">Titel</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Geburtstag Anna, Familientreffen" /></div>
-            <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Datum</label><input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></div>
+            <div className="field"><label className="meta">Titel</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Geburtstag Anna, Familientreffen" disabled={!kannOrganisch} /></div>
+            <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Datum</label><input type="date" value={date} onChange={(e) => setDate(e.target.value)} disabled={!kannOrganisch} /></div>
             <div className="field" style={{ marginTop: '0.5rem' }}>
               <label className="meta">Teilnehmer (aus Familie)</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.35rem' }}>
                 {personen.map((p) => (
                   <label key={p.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    <input type="checkbox" checked={participantIds.includes(p.id)} onChange={() => toggleParticipant(p.id)} />
+                    <input type="checkbox" checked={participantIds.includes(p.id)} onChange={() => toggleParticipant(p.id)} disabled={!kannOrganisch} />
                     <span>{p.name}</span>
                   </label>
                 ))}
                 {personen.length === 0 && <span className="meta">Zuerst Personen im Stammbaum anlegen.</span>}
               </div>
             </div>
-            <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Notiz (optional)</label><textarea value={note} onChange={(e) => setNote(e.target.value)} style={{ minHeight: 60 }} placeholder="Ort, Hinweise …" /></div>
+            <div className="field" style={{ marginTop: '0.5rem' }}><label className="meta">Notiz (optional)</label><textarea value={note} onChange={(e) => setNote(e.target.value)} style={{ minHeight: 60 }} placeholder="Ort, Hinweise …" disabled={!kannOrganisch} /></div>
             <div className="card-actions" style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-              <button type="button" className="btn" onClick={save}>Speichern</button>
+              <button type="button" className="btn" disabled={!kannOrganisch} onClick={save}>Speichern</button>
               <button type="button" className="btn-outline" onClick={() => setEditingId(null)}>Abbrechen</button>
             </div>
           </div>
         ) : (
-          <button type="button" className="btn" onClick={openNew}>Event hinzufügen</button>
+          <button type="button" className="btn" disabled={!kannOrganisch} onClick={openNew}>Event hinzufügen</button>
         )}
       </div>
     </div>

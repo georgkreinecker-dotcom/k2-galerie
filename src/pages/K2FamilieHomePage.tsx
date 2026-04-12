@@ -56,6 +56,7 @@ export default function K2FamilieHomePage() {
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten
+  const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
   const [searchParams, setSearchParams] = useSearchParams()
   const [musterLoaded, setMusterLoaded] = useState(false)
@@ -141,7 +142,7 @@ export default function K2FamilieHomePage() {
   }, [mitgliedsNummer, currentTenantId])
 
   const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
-    if (!kannBearbeiten) return
+    if (!kannStruktur) return
     const einst = loadEinstellungen(currentTenantId)
     if (saveEinstellungen(currentTenantId, { ...einst, startpunktTyp: typ })) {
       setStartpunkt(typ)
@@ -149,7 +150,7 @@ export default function K2FamilieHomePage() {
   }
 
   const setPartnerHerkunft = (personId: string) => {
-    if (!kannBearbeiten) return
+    if (!kannStruktur) return
     const einst = loadEinstellungen(currentTenantId)
     const nextId = personId.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, partnerHerkunftPersonId: nextId })) {
@@ -158,7 +159,7 @@ export default function K2FamilieHomePage() {
   }
 
   const setIchBinPerson = (personId: string) => {
-    if (!kannBearbeiten) return
+    if (!kannStruktur) return
     const einst = loadEinstellungen(currentTenantId)
     const nextId = personId.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: nextId })) {
@@ -262,14 +263,14 @@ export default function K2FamilieHomePage() {
               <button
                 type="button"
                 className="btn k2-familie-action-btn"
-                disabled={!kannBearbeiten}
-                onClick={kannBearbeiten ? openAnsichtEinstellungen : undefined}
+                disabled={!kannStruktur}
+                onClick={kannStruktur ? openAnsichtEinstellungen : undefined}
                 style={{
                   ...actionBtnBase,
                   background: C.btnStammdaten,
                   boxShadow: '0 8px 28px rgba(14, 116, 144, 0.35)',
-                  opacity: kannBearbeiten ? 1 : 0.55,
-                  cursor: kannBearbeiten ? 'pointer' : 'not-allowed',
+                  opacity: kannStruktur ? 1 : 0.55,
+                  cursor: kannStruktur ? 'pointer' : 'not-allowed',
                 }}
               >
                 👤 Stammdaten – zuerst „Du“ festlegen
@@ -423,7 +424,7 @@ export default function K2FamilieHomePage() {
                 {startpunkt ? (
                   <p style={{ margin: 0, color: C.textSoft }}>
                     <strong>{STARTPUNKT_LABELS[startpunkt]}</strong>
-                    <button type="button" className="btn-outline" disabled={!kannBearbeiten} onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent, opacity: kannBearbeiten ? 1 : 0.55 }}>Ändern</button>
+                    <button type="button" className="btn-outline" disabled={!kannStruktur} onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent, opacity: kannStruktur ? 1 : 0.55 }}>Ändern</button>
                   </p>
                 ) : (
                   <>
@@ -444,7 +445,7 @@ export default function K2FamilieHomePage() {
                 <p className="meta" style={{ margin: '0 0 0.5rem' }}>Optional: zweiter Herkunfts-Zweig – „Meine Herkunft“ und „Herkunft [Partner]“ gleichwertig.</p>
                 <select
                   value={partnerHerkunftId ?? ''}
-                  disabled={!kannBearbeiten}
+                  disabled={!kannStruktur}
                   onChange={(e) => setPartnerHerkunft(e.target.value)}
                   style={{
                     background: 'rgba(0,0,0,0.25)',
@@ -455,7 +456,7 @@ export default function K2FamilieHomePage() {
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
                     minWidth: 200,
-                    opacity: kannBearbeiten ? 1 : 0.75,
+                    opacity: kannStruktur ? 1 : 0.75,
                   }}
                 >
                   <option value="">Keiner (nur ein Zweig)</option>
@@ -470,7 +471,7 @@ export default function K2FamilieHomePage() {
                 <p className="meta" style={{ margin: '0 0 0.5rem' }}>Diese Person wird im Stammbaum hervorgehoben; von hier aus gelangst du zu „Meine Stammdaten“.</p>
                 <select
                   value={ichBinPersonId ?? ''}
-                  disabled={!kannBearbeiten}
+                  disabled={!kannStruktur}
                   onChange={(e) => setIchBinPerson(e.target.value)}
                   style={{
                     background: 'rgba(0,0,0,0.25)',
@@ -481,7 +482,7 @@ export default function K2FamilieHomePage() {
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
                     minWidth: 200,
-                    opacity: kannBearbeiten ? 1 : 0.75,
+                    opacity: kannStruktur ? 1 : 0.75,
                   }}
                 >
                   <option value="">Nicht festgelegt</option>

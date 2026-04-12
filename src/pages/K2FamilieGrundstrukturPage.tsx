@@ -11,6 +11,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, saveEinstellungen, loadEinstellungen } from '../utils/familieStorage'
 import { buildGrundstrukturPersonen } from '../utils/grundstrukturBuild'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 
 const C = {
   text: '#f0f6ff',
@@ -24,6 +25,8 @@ const STEPS = 5
 export default function K2FamilieGrundstrukturPage() {
   const navigate = useNavigate()
   const { currentTenantId } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const [step, setStep] = useState(1)
   const [numKinder, setNumKinder] = useState(4)
   const [numGeschwister, setNumGeschwister] = useState(12)
@@ -41,6 +44,24 @@ export default function K2FamilieGrundstrukturPage() {
           <div className="card" style={{ padding: '1.5rem', maxWidth: 480, margin: '2rem auto' }}>
             <p style={{ margin: 0, color: C.text }}>Grundstruktur ist nur möglich, wenn noch keine Personen angelegt sind.</p>
             <p className="meta" style={{ margin: '0.75rem 0 0' }}>Du hast bereits {personen.length} Person(en). Fehlende kannst du jederzeit einzeln hinzufügen.</p>
+            <div style={{ marginTop: '1.25rem' }}>
+              <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="btn">Zum Stammbaum</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!kannStruktur) {
+    return (
+      <div className="mission-wrapper">
+        <div className="viewport k2-familie-page">
+          <div className="card" style={{ padding: '1.5rem', maxWidth: 480, margin: '2rem auto' }}>
+            <p style={{ margin: 0, color: C.text }}>Grundstruktur anlegen ist nur für Inhaber:in möglich.</p>
+            <p className="meta" style={{ margin: '0.75rem 0 0' }}>
+              Bearbeiter:innen und Leser:innen können die bestehende Struktur im Stammbaum ansehen, aber keine neue Grundstruktur per Wizard anlegen.
+            </p>
             <div style={{ marginTop: '1.25rem' }}>
               <Link to={PROJECT_ROUTES['k2-familie'].stammbaum} className="btn">Zum Stammbaum</Link>
             </div>

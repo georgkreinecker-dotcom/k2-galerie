@@ -9,6 +9,7 @@ import { PROJECT_ROUTES } from '../config/navigation'
 import { loadGeschichten, saveGeschichten, loadEvents, loadMomente, loadPersonen } from '../utils/familieStorage'
 import { buildGeschichteVorschlag } from '../utils/familieGeschichte'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieGeschichte } from '../types/k2Familie'
 
 const C = { text: '#f0f6ff', textSoft: 'rgba(255,255,255,0.78)', accent: '#14b8a6', border: 'rgba(13,148,136,0.35)' }
@@ -19,6 +20,8 @@ function generateGeschichteId(): string {
 
 export default function K2FamilieGeschichtePage() {
   const { currentTenantId } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannOrganisch = capabilities.canEditOrganisches
   const [geschichten, setGeschichten] = useState<K2FamilieGeschichte[]>(() => loadGeschichten(currentTenantId))
   const [editingId, setEditingId] = useState<string | 'new' | null>(null)
   const [abDatum, setAbDatum] = useState('')
@@ -41,6 +44,7 @@ export default function K2FamilieGeschichtePage() {
   }
 
   const openEdit = (g: K2FamilieGeschichte) => {
+    if (!kannOrganisch) return
     setEditingId(g.id)
     setAbDatum(g.abDatum)
     setTitle(g.title ?? '')
@@ -56,6 +60,7 @@ export default function K2FamilieGeschichtePage() {
   }
 
   const save = () => {
+    if (!kannOrganisch) return
     const now = new Date().toISOString()
     if (editingId === 'new') {
       const neu: K2FamilieGeschichte = {
@@ -85,6 +90,7 @@ export default function K2FamilieGeschichtePage() {
   }
 
   const remove = (id: string) => {
+    if (!kannOrganisch) return
     const next = geschichten.filter((g) => g.id !== id)
     if (saveGeschichten(currentTenantId, next)) {
       setGeschichten(next)
@@ -114,8 +120,8 @@ export default function K2FamilieGeschichtePage() {
                       <span className="meta" style={{ marginLeft: '0.5rem', color: C.textSoft }}>ab {g.abDatum}</span>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button type="button" className="btn" onClick={() => openEdit(g)} style={{ background: C.accent }}>Bearbeiten</button>
-                      <button type="button" className="btn-outline danger" onClick={() => remove(g.id)}>Löschen</button>
+                      <button type="button" className="btn" disabled={!kannOrganisch} onClick={() => openEdit(g)} style={{ background: C.accent }}>Bearbeiten</button>
+                      <button type="button" className="btn-outline danger" disabled={!kannOrganisch} onClick={() => remove(g.id)}>Löschen</button>
                     </div>
                   </div>
                 </li>
@@ -129,26 +135,26 @@ export default function K2FamilieGeschichtePage() {
             <h2 style={{ fontSize: '1rem', color: C.accent, marginBottom: '1rem' }}>{editingId === 'new' ? 'Neue Geschichte' : 'Geschichte bearbeiten'}</h2>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.25rem', color: C.textSoft }}>Ab Datum (Events/Momente ab diesem Tag)</label>
-              <input type="date" value={abDatum} onChange={(e) => setAbDatum(e.target.value)} style={{ background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
+              <input type="date" value={abDatum} onChange={(e) => setAbDatum(e.target.value)} disabled={!kannOrganisch} style={{ background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.25rem', color: C.textSoft }}>Titel (optional)</label>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Unsere Geschichte ab 1990" style={{ width: '100%', maxWidth: 400, background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="z. B. Unsere Geschichte ab 1990" disabled={!kannOrganisch} style={{ width: '100%', maxWidth: 400, background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.4rem 0.6rem' }} />
             </div>
             <div className="field" style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
                 <label className="meta" style={{ color: C.textSoft }}>Inhalt (redigierbar)</label>
-                <button type="button" className="btn-outline" onClick={generateVorschlag} style={{ borderColor: C.accent, color: C.accent, fontSize: '0.85rem' }}>Vorschlag aus Events &amp; Momente erzeugen</button>
+                <button type="button" className="btn-outline" disabled={!kannOrganisch} onClick={generateVorschlag} style={{ borderColor: C.accent, color: C.accent, fontSize: '0.85rem' }}>Vorschlag aus Events &amp; Momente erzeugen</button>
               </div>
-              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Text hier eingeben oder Vorschlag erzeugen …" rows={14} style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }} />
+              <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Text hier eingeben oder Vorschlag erzeugen …" rows={14} disabled={!kannOrganisch} style={{ width: '100%', background: 'rgba(0,0,0,0.25)', border: `1px solid ${C.border}`, borderRadius: 8, color: C.text, padding: '0.6rem', fontFamily: 'inherit', fontSize: '0.95rem', lineHeight: 1.5 }} />
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-              <button type="button" className="btn" onClick={save} style={{ background: C.accent }}>Speichern</button>
+              <button type="button" className="btn" disabled={!kannOrganisch} onClick={save} style={{ background: C.accent }}>Speichern</button>
               <button type="button" className="btn-outline" onClick={() => setEditingId(null)} style={{ borderColor: C.border, color: C.textSoft }}>Abbrechen</button>
             </div>
           </div>
         ) : (
-          <button type="button" className="btn" onClick={openNew} style={{ background: C.accent }}>Neue Geschichte anlegen</button>
+          <button type="button" className="btn" disabled={!kannOrganisch} onClick={openNew} style={{ background: C.accent }}>Neue Geschichte anlegen</button>
         )}
       </div>
     </div>

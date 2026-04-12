@@ -54,7 +54,8 @@ function FamilieRolleLeiste() {
         </select>
         <span className="meta" style={{ color: MUTED, fontSize: '0.78rem', flex: '1 1 200px' }}>
           {capabilities.rolle === 'leser' && 'Nur Lesen – nichts wird gespeichert.'}
-          {capabilities.rolle === 'bearbeiter' && 'Bearbeiten ok – keine Wiederherstellung/Merge, keine Familien-Verwaltung.'}
+          {capabilities.rolle === 'bearbeiter' &&
+            'Stammbaum-Struktur & Stammdaten nur lesen; Events, Geschichte, Gedenkort & Druck-Optionen organisch bearbeitbar. Keine Wiederherstellung/Merge, keine neue Familie.'}
           {capabilities.rolle === 'inhaber' && 'Voller Zugriff inkl. Sicherung & Familie anlegen.'}
         </span>
       </div>
