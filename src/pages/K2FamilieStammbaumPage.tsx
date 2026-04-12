@@ -48,6 +48,22 @@ function parsePrintStil(raw: string | null): PrintStil {
   return 'personenblaetter'
 }
 
+/** Stammbaum: eine Kachel-Übersicht statt einer endlosen Seite (?bereich=). */
+type StammbaumBereich = 'uebersicht' | 'karten' | 'nach-oben' | 'grafik' | 'pdf'
+
+function parseStammbaumBereich(raw: string | null): StammbaumBereich {
+  const v = raw?.toLowerCase()
+  if (v === 'karten' || v === 'nach-oben' || v === 'grafik' || v === 'pdf') return v
+  return 'uebersicht'
+}
+
+const STAMMBAUM_BEREICH_TITEL: Record<Exclude<StammbaumBereich, 'uebersicht'>, string> = {
+  karten: 'Nach unten – Kartenliste',
+  'nach-oben': 'Nach oben – Eltern & Vorfahren',
+  grafik: 'Grafik',
+  pdf: 'PDF & Drucken',
+}
+
 /** Stammbaum-Kachel: bei „Verstorben“ in der Personenkarte schwarzer Rand (statt Zweig-Farbe). */
 function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: string }) {
   const v = p.verstorben === true
@@ -100,6 +116,25 @@ function defaultStammbaumSekOpen(
 export default function K2FamilieStammbaumPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const stammbaumBereich = parseStammbaumBereich(searchParams.get('bereich'))
+  const setStammbaumBereich = useCallback(
+    (b: StammbaumBereich) => {
+      setSearchParams(
+        (prev) => {
+          const n = new URLSearchParams(prev)
+          if (b === 'uebersicht') n.delete('bereich')
+          else n.set('bereich', b)
+          return n
+        },
+        { replace: true }
+      )
+    },
+    [setSearchParams]
+  )
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [stammbaumBereich])
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const [synced, setSynced] = useState(false)
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
@@ -153,6 +188,14 @@ export default function K2FamilieStammbaumPage() {
   const [ersteEheMsg, setErsteEheMsg] = useState('')
   const [viewZoom, setViewZoom] = useState(1)
   const [nurMeinFamilienzweig, setNurMeinFamilienzweig] = useState(false)
+  /** Einsteiger-Karte ausblenden (nur Anzeige, localStorage). */
+  const [stammbaumFuehrungAusblenden, setStammbaumFuehrungAusblenden] = useState(() => {
+    try {
+      return typeof localStorage !== 'undefined' && localStorage.getItem('k2-familie-stammbaum-fuehrung-zu') === '1'
+    } catch {
+      return false
+    }
+  })
   const [viewOrientation, setViewOrientation] = useState<TreeOrientation>('vertical')
   const ZOOM_MIN = 0.25
   const ZOOM_MAX = 2
@@ -325,6 +368,12 @@ export default function K2FamilieStammbaumPage() {
     })
   }, [personen, einstellungen.ichBinPersonId])
 
+  const zeigeStammbaumUebersicht = personen.length === 0 || stammbaumBereich === 'uebersicht'
+  const zeigeKarten = personen.length > 0 && stammbaumBereich === 'karten'
+  const zeigeNachOben = personen.length > 0 && stammbaumBereich === 'nach-oben'
+  const zeigeGrafik = personen.length > 0 && stammbaumBereich === 'grafik'
+  const zeigePdf = personen.length > 0 && stammbaumBereich === 'pdf'
+
   if (druck) {
     if (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0) {
       return (
@@ -483,34 +532,73 @@ export default function K2FamilieStammbaumPage() {
                 </label>
               </div>
             )}
-            <h1>Stammbaum</h1>
-            {partnerHerkunftPerson && (
-              <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
+            {zeigeStammbaumUebersicht && (
+              <>
+                <h1>Stammbaum</h1>
+                {partnerHerkunftPerson && (
+                  <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Zweige gleichrangig: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
+                )}
+                <p className="meta" style={{ margin: '0.35rem 0 0', lineHeight: 1.45, maxWidth: '40rem' }}>
+                  <strong>Ausgangspunkt: du.</strong> Zuerst nach <strong>unten</strong> (Partner, Kinder), dann Schritt für Schritt nach <strong>oben</strong> (Eltern …). Klick auf eine Person öffnet die Seite.
+                </p>
+                <details className="meta" style={{ margin: '0.35rem 0 0' }}>
+                  <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Kurz: „Das bin ich“, Partner, Kinder</summary>
+                  <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
+                    In der <strong>Grafik</strong> unten: <strong>Das bin ich</strong> wählen. Partner: <strong>Partner*innen</strong> auf deiner Personenseite. Kinder: <strong>Kinder</strong>. Falsche Reihe? Person öffnen → Eltern in der Karte anpassen.
+                  </p>
+                </details>
+                {einstellungen.ichBinPersonId && (
+                  <p style={{ margin: '0.5rem 0 0' }}>
+                    <button type="button" className="btn-outline" style={{ fontSize: '0.9rem' }} onClick={() => { const e = loadEinstellungen(currentTenantId); if (saveEinstellungen(currentTenantId, { ...e, ichBinPersonId: undefined, ichBinPositionAmongSiblings: undefined })) setStammbaumRefresh((k) => k + 1); }}>Du zurücksetzen</button>
+                    <span className="meta" style={{ marginLeft: '0.5rem' }}>– falls „Das bin ich“ falsch</span>
+                  </p>
+                )}
+                {beziehungenDu && (
+                  <details className="meta" style={{ marginTop: '0.6rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
+                    <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Deine Beziehungen aus den Karten (Überblick)</summary>
+                    <p style={{ margin: '0.45rem 0 0', lineHeight: 1.45 }}>Geschwister auch aus gemeinsamen Eltern:</p>
+                    <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>
+                      <li>Eltern: {beziehungenDu.eltern.length ? beziehungenDu.eltern.map((p) => p.name).join(', ') : '–'}</li>
+                      <li>Kinder: {beziehungenDu.kinder.length ? beziehungenDu.kinder.map((p) => p.name).join(', ') : '–'}</li>
+                      <li>Geschwister: {geschwisterDuAnzeigeText}</li>
+                      <li>Partner: {beziehungenDu.partner.length ? beziehungenDu.partner.map((p) => p.name).join(', ') : '–'}</li>
+                    </ul>
+                  </details>
+                )}
+              </>
             )}
-            <p className="meta" style={{ margin: '0.25rem 0 0', lineHeight: 1.45 }}>
-              <strong>Klick</strong> auf eine Person öffnet die Seite. <strong>„Das bin ich“</strong> in der Grafik setzt dich als Bezugspunkt.
-            </p>
-            <details className="meta" style={{ margin: '0.35rem 0 0' }}>
-              <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Mehr: Partner, Kinder, Reihenfolge</summary>
-              <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
-                Partner neben dir: unter <strong>Partner*innen</strong> auf deiner Personenseite. Kinder darunter: unter <strong>Kinder</strong>. „Du“ in der falschen Reihe? <strong>Person öffnen</strong> → Eltern in der Karte anpassen.
-              </p>
-            </details>
-            {einstellungen.ichBinPersonId && (
-              <p style={{ margin: '0.5rem 0 0' }}>
-                <button type="button" className="btn-outline" style={{ fontSize: '0.9rem' }} onClick={() => { const e = loadEinstellungen(currentTenantId); if (saveEinstellungen(currentTenantId, { ...e, ichBinPersonId: undefined, ichBinPositionAmongSiblings: undefined })) setStammbaumRefresh((k) => k + 1); }}>Du zurücksetzen</button>
-                <span className="meta" style={{ marginLeft: '0.5rem' }}>– falls du „Das bin ich“ falsch gesetzt hast</span>
-              </p>
-            )}
-            {beziehungenDu && (
-              <div className="meta" style={{ marginTop: '0.75rem', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: 6 }}>
-                <strong>Beziehungen (aus deinen Karten)</strong> – Geschwister zusätzlich aus gemeinsamen Eltern:
-                <ul style={{ margin: '0.35rem 0 0', paddingLeft: '1.2rem' }}>
-                  <li>Eltern: {beziehungenDu.eltern.length ? beziehungenDu.eltern.map((p) => p.name).join(', ') : '–'}</li>
-                  <li>Kinder: {beziehungenDu.kinder.length ? beziehungenDu.kinder.map((p) => p.name).join(', ') : '–'}</li>
-                  <li>Geschwister: {geschwisterDuAnzeigeText}</li>
-                  <li>Partner: {beziehungenDu.partner.length ? beziehungenDu.partner.map((p) => p.name).join(', ') : '–'}</li>
-                </ul>
+            {personen.length > 0 && !zeigeStammbaumUebersicht && (
+              <div className="no-print" style={{ marginTop: '0.35rem' }}>
+                <button type="button" className="btn" style={{ marginBottom: '0.5rem' }} onClick={() => setStammbaumBereich('uebersicht')}>
+                  ← Zur Übersicht
+                </button>
+                <h1 style={{ margin: 0, fontSize: '1.12rem', color: 'rgba(255,255,255,0.96)' }}>{STAMMBAUM_BEREICH_TITEL[stammbaumBereich]}</h1>
+                <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.88rem', lineHeight: 1.45 }}>
+                  Ein Bereich nach dem anderen – nicht alles auf einer Seite.
+                </p>
+                {partnerHerkunftPerson && (
+                  <p className="meta" style={{ margin: '0.35rem 0 0', color: 'rgba(20,184,166,0.95)', fontSize: '0.85rem' }}>Zwei Zweige: Meine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
+                )}
+                <nav aria-label="Bereich wechseln" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.65rem' }}>
+                  {(
+                    [
+                      ['karten', '1 · Unten'],
+                      ['nach-oben', '2 · Oben'],
+                      ['grafik', '3 · Grafik'],
+                      ['pdf', '4 · PDF'],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={stammbaumBereich === id ? 'btn' : 'btn-outline'}
+                      style={{ fontSize: '0.82rem', padding: '0.3rem 0.65rem' }}
+                      onClick={() => setStammbaumBereich(id)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </nav>
               </div>
             )}
           </div>
@@ -529,59 +617,188 @@ export default function K2FamilieStammbaumPage() {
           </div>
         )}
 
-        {personen.length > 0 && (
-          <nav
-            aria-label="Stufen Stammbaum"
-            className="no-print"
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '0.5rem',
-              alignItems: 'center',
-              marginBottom: '1rem',
-              padding: '0.55rem 0.85rem',
-              borderRadius: 12,
-              background: 'rgba(13,148,136,0.14)',
-              border: '1px solid rgba(20,184,166,0.4)',
-            }}
-          >
-            <span className="meta" style={{ marginRight: '0.25rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Dein Weg:</span>
-            <a href="#stufe-kleinfamilie" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
-              1 · Kleinfamilie
-            </a>
-            <span className="meta" aria-hidden>
-              →
-            </span>
-            <a href="#stufe-grafik" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
-              2 · Grafik
-            </a>
-            <span className="meta" aria-hidden>
-              →
-            </span>
-            <a href="#stufe-pdf" style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 700, fontSize: '0.95rem' }}>
-              3 · PDF &amp; Auswertung
-            </a>
+        {personen.length > 0 && stammbaumBereich === 'uebersicht' && (
+          <nav className="no-print k2-familie-stammbaum-hub" aria-label="Stammbaum Bereiche" style={{ marginBottom: '1rem' }}>
+            <p className="meta" style={{ margin: '0 0 0.65rem', fontWeight: 600, color: 'rgba(255,255,255,0.9)' }}>Wohin als Nächstes?</p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(158px, 1fr))',
+                gap: '0.75rem',
+              }}
+            >
+              <button
+                type="button"
+                className="card familie-card-enter"
+                style={{
+                  margin: 0,
+                  padding: '1rem 0.85rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  border: '2px solid rgba(20,184,166,0.55)',
+                  background: 'linear-gradient(165deg, rgba(13,148,136,0.22) 0%, rgba(15,23,42,0.55) 100%)',
+                  borderRadius: 12,
+                  color: 'inherit',
+                  font: 'inherit',
+                }}
+                onClick={() => setStammbaumBereich('karten')}
+              >
+                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
+                  1
+                </span>
+                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Nach unten</span>
+                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Kartenliste: Partner, Kinder, Kern</span>
+              </button>
+              <button
+                type="button"
+                className="card familie-card-enter"
+                style={{
+                  margin: 0,
+                  padding: '1rem 0.85rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  border: '2px solid rgba(148,163,184,0.45)',
+                  background: 'rgba(15,23,42,0.45)',
+                  borderRadius: 12,
+                  color: 'inherit',
+                  font: 'inherit',
+                }}
+                onClick={() => setStammbaumBereich('nach-oben')}
+              >
+                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
+                  2
+                </span>
+                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Nach oben</span>
+                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Eltern &amp; Vorfahren in den Karten</span>
+              </button>
+              <button
+                type="button"
+                className="card familie-card-enter"
+                style={{
+                  margin: 0,
+                  padding: '1rem 0.85rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  border: '2px solid rgba(148,163,184,0.45)',
+                  background: 'rgba(15,23,42,0.45)',
+                  borderRadius: 12,
+                  color: 'inherit',
+                  font: 'inherit',
+                }}
+                onClick={() => setStammbaumBereich('grafik')}
+              >
+                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
+                  3
+                </span>
+                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Grafik</span>
+                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Stammbaum-Bild, Zoomen, Ansicht</span>
+              </button>
+              <button
+                type="button"
+                className="card familie-card-enter"
+                style={{
+                  margin: 0,
+                  padding: '1rem 0.85rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  border: '2px solid rgba(148,163,184,0.45)',
+                  background: 'rgba(15,23,42,0.45)',
+                  borderRadius: 12,
+                  color: 'inherit',
+                  font: 'inherit',
+                }}
+                onClick={() => setStammbaumBereich('pdf')}
+              >
+                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
+                  4
+                </span>
+                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>PDF</span>
+                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Drucken, Listen, Personenblätter</span>
+              </button>
+            </div>
           </nav>
         )}
 
-        <div id="stufe-kleinfamilie" style={{ scrollMarginTop: '5rem' }}>
+        {personen.length > 0 && stammbaumBereich === 'uebersicht' && !stammbaumFuehrungAusblenden && (
+          <section
+            className="card familie-card-enter no-print"
+            aria-label="Einstieg Stammbaum"
+            style={{
+              marginBottom: '1rem',
+              padding: '1rem 1.1rem',
+              border: '1px solid rgba(20,184,166,0.5)',
+              background: 'linear-gradient(165deg, rgba(13,148,136,0.18) 0%, rgba(15,23,42,0.5) 100%)',
+            }}
+          >
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <h2 style={{ margin: 0, fontSize: '1.05rem', color: 'rgba(255,255,255,0.96)' }}>Langsam einsteigen</h2>
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ fontSize: '0.85rem', flexShrink: 0 }}
+                onClick={() => {
+                  try {
+                    localStorage.setItem('k2-familie-stammbaum-fuehrung-zu', '1')
+                  } catch {
+                    /* ignore */
+                  }
+                  setStammbaumFuehrungAusblenden(true)
+                }}
+              >
+                Hinweis ausblenden
+              </button>
+            </div>
+            <p className="meta" style={{ margin: '0.5rem 0 0.65rem', lineHeight: 1.5, maxWidth: '42rem' }}>
+              Alles dreht sich um <strong>dich</strong> als Bezug. Es geht <strong>von dir nach unten</strong> (Partner, Kinder, Enkel …) und erst danach <strong>Schritt für Schritt nach oben</strong> (Eltern, Großeltern …) – nicht alles auf einmal.
+            </p>
+            <ol
+              style={{
+                margin: 0,
+                paddingLeft: '1.15rem',
+                lineHeight: 1.55,
+                color: 'rgba(255,255,255,0.92)',
+                fontSize: '0.94rem',
+                maxWidth: '44rem',
+              }}
+            >
+              <li style={{ marginBottom: '0.35rem' }}>
+                <strong>Nach unten:</strong> Personen öffnen und Partner &amp; Kinder pflegen – das siehst du in der <strong>Kartenliste</strong> (Schritt 1).
+              </li>
+              <li style={{ marginBottom: '0.35rem' }}>
+                <strong>Nach oben:</strong> Eltern und weiter in den Karten eintragen – die Liste ordnet <strong>Blöcke oben</strong> (Schritt 2).
+              </li>
+              <li>
+                <strong>Grafik &amp; PDF</strong> nutzen, wenn du den Überblick oder Ausdruck brauchst (Schritte 3–4).
+              </li>
+            </ol>
+          </section>
+        )}
+
+        {zeigeKarten && (
+        <div id="stufe-nach-unten" style={{ scrollMarginTop: '5rem' }}>
 
         {nurMeinFamilienzweig && einstellungen.ichBinPersonId && (
-          <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            Nur dein Familienzweig – Grafik und Karten unten zeigen nur diese Personen. Die <strong>Kartenliste</strong> ist in <strong>Teil-Zweige</strong> gegliedert: <strong>Kern</strong> (du &amp; deine Partner), dann je <strong>Familienast</strong> ein Block – <strong>Zweig</strong> für deine Kinder mit Partnern &amp; Nachkommen, <strong>Geschwister</strong> für volle Geschwister mit deren Partnern &amp; Nachkommen (nicht verwechseln mit „deinen Kindern“). Jeweils bearbeitbar über „ansehen“. In der <strong>Grafik</strong> sind Paare ebenfalls erkennbar. Verstorbene: schwarzer Rand an der Kachel.
-          </p>
+          <details className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
+            <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>Mehr zur Kartenliste (nur mein Familienzweig)</summary>
+            <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
+              Nur dein Familienzweig – Grafik und Karten zeigen nur diese Personen. Die <strong>Kartenliste</strong> ist in <strong>Teil-Zweige</strong> gegliedert: <strong>Kern</strong> (du &amp; deine Partner), dann je <strong>Familienast</strong> ein Block – <strong>Zweig</strong> für deine Kinder mit Partnern &amp; Nachkommen, <strong>Geschwister</strong> für volle Geschwister mit deren Partnern &amp; Nachkommen (nicht verwechseln mit „deinen Kindern“). Jeweils bearbeitbar über „ansehen“. In der <strong>Grafik</strong> sind Paare ebenfalls erkennbar. Verstorbene: schwarzer Rand an der Kachel.
+            </p>
+          </details>
         )}
         {stammbaumSektionen && stammbaumSektionen.length > 1 && !nurMeinFamilienzweig && (
-          <p className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
-            <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (ein Geschwister pro Hauptblock). Innerhalb jedes Familienzweigs: <strong>Kern</strong> (diese Person &amp; Partner) und <strong>Teil-Zweige</strong> – beschriftet als <strong>Zweig</strong> (Kinder) oder <strong>Geschwister</strong> (volle Geschwister), jeweils mit Partnern &amp; Nachkommen – über „ansehen“ bearbeitbar. Pro Hauptblock eine Randfarbe.{' '}
-            <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
-            {vieleStammbaumSektionen && (
-              <>
-                {' '}
-                <strong>Viele Blöcke:</strong> Standard sind <strong>Eltern</strong> und <strong>dein Familienzweig</strong> geöffnet; Rest eingeklappt – Pfeil zum Aufklappen, unten springen per Leiste.
-              </>
-            )}
-          </p>
+          <details className="meta" style={{ marginBottom: '0.75rem', maxWidth: '48rem' }}>
+            <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>Mehr zur Kartenliste (Großfamilie)</summary>
+            <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
+              <strong>Großfamilie:</strong> Blöcke nacheinander – zuerst <strong>Eltern</strong>, dann <strong>Familienzweig 1, 2, 3 …</strong> (ein Geschwister pro Hauptblock). Innerhalb jedes Familienzweigs: <strong>Kern</strong> (diese Person &amp; Partner) und <strong>Teil-Zweige</strong> – beschriftet als <strong>Zweig</strong> (Kinder) oder <strong>Geschwister</strong> (volle Geschwister), jeweils mit Partnern &amp; Nachkommen – über „ansehen“ bearbeitbar. Pro Hauptblock eine Randfarbe.{' '}
+              <strong>Verstorben:</strong> schwarzer Rand an der Kachel (Häkchen in der Personenkarte).
+              {vieleStammbaumSektionen && (
+                <>
+                  {' '}
+                  <strong>Viele Blöcke:</strong> Standard sind <strong>Eltern</strong> und <strong>dein Familienzweig</strong> geöffnet; Rest eingeklappt – Pfeil zum Aufklappen, unten springen per Leiste.
+                </>
+              )}
+            </p>
+          </details>
         )}
         {vieleStammbaumSektionen && stammbaumSektionen && stammbaumSektionen.length > 0 && (
           <div
@@ -1180,11 +1397,33 @@ export default function K2FamilieStammbaumPage() {
         )}
 
         </div>
+        )}
 
-        {/* 2 · Grafik – nach Kleinfamilie */}
-        <div id="stufe-grafik" className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible', scrollMarginTop: '5rem' }}>
+        {zeigeNachOben && (
+        <section
+          id="stufe-nach-oben"
+          className="card familie-card-enter no-print"
+          aria-label="Schritt Nach oben"
+          style={{
+            padding: '0.85rem 1rem',
+            marginTop: '1rem',
+            scrollMarginTop: '5rem',
+            border: '1px solid rgba(20,184,166,0.35)',
+            background: 'rgba(15,23,42,0.35)',
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: '1.02rem', color: 'rgba(255,255,255,0.95)' }}>2 · Nach oben</h2>
+          <p className="meta" style={{ margin: '0.45rem 0 0', lineHeight: 1.45, maxWidth: '44rem' }}>
+            Wenn Partner und Kinder stehen: <strong>Eltern</strong> und <strong>weitere Vorfahren</strong> in den Personenkarten eintragen – die Liste ordnet sie <strong>oben</strong> (Block „Eltern“, dann Familienzweige). Nicht alles auf einmal; eine Generation nach der anderen reicht.
+          </p>
+        </section>
+        )}
+
+        {/* 3 · Grafik */}
+        {zeigeGrafik && (
+        <div id="stufe-grafik" className="card familie-card-enter" style={{ padding: '1rem', overflow: 'visible', scrollMarginTop: '5rem', marginTop: '1rem' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-            <h2 style={{ margin: 0, fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>2 · Grafik</h2>
+            <h2 style={{ margin: 0, fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>3 · Grafik</h2>
             <span className="meta" style={{ fontSize: '0.85rem', opacity: 0.9 }}>Stammbaum</span>
             {personen.length > 0 && (
               <>
@@ -1276,12 +1515,13 @@ export default function K2FamilieStammbaumPage() {
             <p className="meta" style={{ margin: 0, padding: '0.75rem 0', textAlign: 'center' }}>Grafik erscheint, sobald Personen angelegt sind.</p>
           )}
         </div>
+        )}
 
-        {/* 3 · PDF & Auswertung */}
-        {personen.length > 0 && (
+        {/* 4 · PDF & Auswertung */}
+        {zeigePdf && (
           <div id="stufe-pdf" style={{ scrollMarginTop: '5rem' }}>
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
-              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>3 · PDF &amp; Auswertung</h2>
+              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>4 · PDF &amp; Auswertung</h2>
               <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
                 Druck = immer nur dein Familienzweig (wie „Nur mein Familienzweig“) – dafür <strong>Das bin ich</strong> setzen.
                 Übersichtliche PDFs: Personenblätter, Generationen oder Tabelle A–Z. Stammbaum-Grafik eher als Poster; im Druckdialog „Als PDF speichern“.
