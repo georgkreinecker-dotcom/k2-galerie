@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie PDF-Katalog: Spaltenwahl wie Werkkatalog** – Register-Spalten per Checkbox (Nr., Karten-ID, Name, …); Speicherung pro Mandant `k2-familie-${tenantId}-katalog-spalten`; `StammbaumDruckRegister` rendert nur gewählte Spalten; `familieKatalogPreferences.ts` + Tests. **Commit:** **bab31404** ✅ GitHub
+**Letzter Stand:** 12.04.26 – **K2 Familie PDF-Katalog: Spaltenwahl wie Werkkatalog** – Register-Spalten per Checkbox (Nr., Karten-ID, Name, …); Speicherung pro Mandant `k2-familie-${tenantId}-katalog-spalten`; `StammbaumDruckRegister` rendert nur gewählte Spalten; `familieKatalogPreferences.ts` + Tests. **Commit:** **ece9cdc1** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → 4 · PDF & Auswertung → Katalog → Spalten anpassen → Druckvorschau prüfen.
 
