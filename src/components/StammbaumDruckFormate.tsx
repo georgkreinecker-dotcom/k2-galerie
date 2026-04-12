@@ -6,7 +6,8 @@
 
 import type { ReactNode } from 'react'
 import { Fragment } from 'react'
-import type { K2FamiliePerson } from '../types/k2Familie'
+import type { K2FamilieKontaktAdresse, K2FamiliePerson } from '../types/k2Familie'
+import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
 import { buildStammbaumKartenState } from '../utils/familieStammbaumKarten'
 import { familienKatalogSpalteLabel, normalizeFamilieKatalogSpalten } from '../utils/familieKatalogPreferences'
 import {
@@ -39,6 +40,39 @@ function geburtJahr(d?: string): number {
   if (!d?.trim()) return 9999
   const m = d.trim().match(/^(\d{4})/)
   return m ? parseInt(m[1], 10) : 9999
+}
+
+function hasKontaktAdresseData(k?: K2FamilieKontaktAdresse): boolean {
+  if (!k) return false
+  return ['zeile1', 'zeile2', 'plz', 'ort', 'land', 'email', 'telefon'].some((f) => {
+    const v = k[f as keyof K2FamilieKontaktAdresse]
+    return typeof v === 'string' && v.trim().length > 0
+  })
+}
+
+/** Adresszeilen für Druck (keine leeren Zeilen). */
+function formatAnschriftZeilenDruck(k: K2FamilieKontaktAdresse): string[] {
+  const lines: string[] = []
+  if (k.zeile1?.trim()) lines.push(k.zeile1.trim())
+  if (k.zeile2?.trim()) lines.push(k.zeile2.trim())
+  const plzOrt = [k.plz?.trim(), k.ort?.trim()].filter(Boolean).join(' ')
+  if (plzOrt) lines.push(plzOrt)
+  if (k.land?.trim()) lines.push(k.land.trim())
+  return lines
+}
+
+/** Kompakt unter der Generations-Zeile: max. 2 Zeilen, gut lesbar. */
+function kontaktKompaktZeilen(p: K2FamiliePerson): string[] {
+  const k = p.kontaktAdresse
+  if (!hasKontaktAdresseData(k)) return []
+  const addr = formatAnschriftZeilenDruck(k!)
+  const out: string[] = []
+  if (addr.length) out.push(addr.join(', '))
+  const telMail: string[] = []
+  if (k!.email?.trim()) telMail.push(`E-Mail: ${k!.email.trim()}`)
+  if (k!.telefon?.trim()) telMail.push(`Tel.: ${k!.telefon.trim()}`)
+  if (telMail.length) out.push(telMail.join(' · '))
+  return out
 }
 
 /** Kurz-ID für Katalog-Spalte (lesbar, eindeutig genug zum Zuordnen). */
@@ -210,7 +244,9 @@ export function StammbaumDruckNachGenerationen({
                   {level === 0 ? 'Wurzel / älteste Ebene' : `Generation / Ebene ${level}`}
                 </h3>
                 <ul className="stammbaum-print-ul">
-                  {ps.map((p) => (
+                  {ps.map((p) => {
+                    const kontaktZeilen = kontaktKompaktZeilen(p)
+                    return (
                     <li key={p.id} className="stammbaum-print-li">
                       <strong className="stammbaum-print-name">
                         {p.name}
@@ -232,14 +268,183 @@ export function StammbaumDruckNachGenerationen({
                         {' · '}
                         Partner: {nameList(p.partners.map((x) => x.personId), map)}
                       </div>
+                      {kontaktZeilen.length > 0 ? (
+                        <div className="stammbaum-print-kontakt-kompakt-wrap" aria-label="Kontakt">
+                          {kontaktZeilen.map((line, i) => (
+                            <div key={i} className="stammbaum-print-kontakt-kompakt-line">
+                              {line}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
                     </li>
-                  ))}
+                    )
+                  })}
                 </ul>
               </div>
             ))}
           </section>
         )
       })}
+    </div>
+  )
+}
+
+const MONAT_NAMEN_DE = [
+  'Januar',
+  'Februar',
+  'März',
+  'April',
+  'Mai',
+  'Juni',
+  'Juli',
+  'August',
+  'September',
+  'Oktober',
+  'November',
+  'Dezember',
+] as const
+
+type GeburtstagEintrag = {
+  person: K2FamiliePerson
+  iso: string
+  monat: number
+  tag: number
+  jahr: number
+}
+
+function parseGeburtstagEintrag(p: K2FamiliePerson): GeburtstagEintrag | null {
+  const raw = p.geburtsdatum?.trim()
+  if (!raw) return null
+  const iso = normalizeFamilieDatum(raw)
+  if (!iso) return null
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!m) return null
+  const jahr = parseInt(m[1], 10)
+  const monat = parseInt(m[2], 10)
+  const tag = parseInt(m[3], 10)
+  if (monat < 1 || monat > 12 || tag < 1 || tag > 31) return null
+  return { person: p, iso, monat, tag, jahr }
+}
+
+/**
+ * Geburtstagsliste: alle Personen mit vollständigem Geburtsdatum, sortiert nach Kalender (Tag im Jahr).
+ * Ohne Tag/Monat: Abschnitt am Ende. Verstorbene mit † gekennzeichnet.
+ */
+export function StammbaumDruckGeburtstagsliste({
+  personen,
+  titel,
+  ichBinPersonId,
+}: {
+  personen: K2FamiliePerson[]
+  titel: string
+  ichBinPersonId?: string
+}) {
+  const mitDatum: GeburtstagEintrag[] = []
+  const ohneDatum: K2FamiliePerson[] = []
+  for (const p of personen) {
+    const e = parseGeburtstagEintrag(p)
+    if (e) mitDatum.push(e)
+    else ohneDatum.push(p)
+  }
+  mitDatum.sort((a, b) => {
+    if (a.monat !== b.monat) return a.monat - b.monat
+    if (a.tag !== b.tag) return a.tag - b.tag
+    return a.person.name.localeCompare(b.person.name, 'de')
+  })
+  ohneDatum.sort((a, b) => a.name.localeCompare(b.name, 'de'))
+
+  const byMonth = new Map<number, GeburtstagEintrag[]>()
+  for (const e of mitDatum) {
+    const list = byMonth.get(e.monat) ?? []
+    list.push(e)
+    byMonth.set(e.monat, list)
+  }
+
+  const stand =
+    typeof Intl !== 'undefined'
+      ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())
+      : new Date().toLocaleString('de-AT')
+
+  return (
+    <div className="stammbaum-print-liste stammbaum-print-geburtstagsliste">
+      <h1 className="stammbaum-druck-titel">{titel}</h1>
+      <p className="stammbaum-print-untertitel">
+        Geburtstagsliste · nach Tag im Kalenderjahr sortiert · {mitDatum.length} mit Datum
+        {ohneDatum.length > 0 ? ` · ${ohneDatum.length} ohne vollständiges Geburtsdatum` : ''}
+      </p>
+      <table className="stammbaum-print-table stammbaum-print-geburtstags-table">
+        <thead>
+          <tr>
+            <th className="stammbaum-print-geburtstags-col-datum">Datum (TT.MM.)</th>
+            <th className="stammbaum-print-geburtstags-col-name">Name</th>
+            <th className="stammbaum-print-geburtstags-col-jahr">Geburtsjahr</th>
+            <th className="stammbaum-print-geburtstags-col-hinweis">Hinweis</th>
+          </tr>
+        </thead>
+        <tbody>
+          {MONAT_NAMEN_DE.map((monatName, idx) => {
+            const monat = idx + 1
+            const rows = byMonth.get(monat)
+            if (!rows?.length) return null
+            return (
+              <Fragment key={monat}>
+                <tr className="stammbaum-print-geburtstags-monat-row">
+                  <td colSpan={4} className="stammbaum-print-geburtstags-monat-head">
+                    {monatName}
+                  </td>
+                </tr>
+                {rows.map((e) => (
+                  <tr key={e.person.id} className="stammbaum-print-geburtstags-data">
+                    <td>
+                      {String(e.tag).padStart(2, '0')}.{String(e.monat).padStart(2, '0')}.
+                    </td>
+                    <td className="stammbaum-print-td-name">
+                      <strong>
+                        {e.person.name}
+                        {ichBinPersonId === e.person.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
+                      </strong>
+                    </td>
+                    <td>{e.jahr}</td>
+                    <td className="meta">
+                      {e.person.verstorben ? '† verstorben' : '–'}
+                    </td>
+                  </tr>
+                ))}
+              </Fragment>
+            )
+          })}
+          {ohneDatum.length > 0 && (
+            <>
+              <tr className="stammbaum-print-geburtstags-monat-row">
+                <td colSpan={4} className="stammbaum-print-geburtstags-monat-head">
+                  Ohne vollständiges Geburtsdatum (Tag/Monat nicht eindeutig)
+                </td>
+              </tr>
+              {ohneDatum.map((p) => (
+                <tr key={p.id} className="stammbaum-print-geburtstags-data">
+                  <td>{p.geburtsdatum?.trim() ? formatDatumDruck(normalizeFamilieDatum(p.geburtsdatum) || p.geburtsdatum) : '–'}</td>
+                  <td className="stammbaum-print-td-name">
+                    <strong>
+                      {p.name}
+                      {ichBinPersonId === p.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
+                    </strong>
+                  </td>
+                  <td>{p.geburtsdatum?.trim() ? formatGeb(p.geburtsdatum) : '–'}</td>
+                  <td className="meta">{p.verstorben ? '† verstorben' : '–'}</td>
+                </tr>
+              ))}
+            </>
+          )}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={4} className="stammbaum-print-katalog-foot">
+              Stand: {stand}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   )
 }
@@ -262,7 +467,8 @@ export function StammbaumDruckPersonenblaetter({
     <div className="stammbaum-print-liste stammbaum-print-personenblaetter">
       <h1 className="stammbaum-druck-titel">{titel}</h1>
       <p className="stammbaum-print-untertitel">
-        Personenblätter nach Familienzweigen – ein Block pro Person, gut lesbar als PDF
+        Ein Block pro Person: Stammdaten, Beziehungen, unten optional <strong>Anschrift &amp; Kontakt</strong> (nur wenn auf der
+        Personenseite eingetragen).
       </p>
       {zweigGruppen.map(({ key, personen: gruppe }) => (
         <section key={key} className="stammbaum-print-zweig-block">
@@ -295,6 +501,32 @@ export function StammbaumDruckPersonenblaetter({
                   <dd>{nameList(p.childIds, map)}</dd>
                   <dt>Partner</dt>
                   <dd>{nameList(p.partners.map((x) => x.personId), map)}</dd>
+                  {hasKontaktAdresseData(p.kontaktAdresse) && p.kontaktAdresse ? (
+                    <>
+                      <dt className="stammbaum-print-dt-kontakt-sektion">Kontakt</dt>
+                      <dd className="stammbaum-print-dd-kontakt-block">
+                        {formatAnschriftZeilenDruck(p.kontaktAdresse).length > 0 ? (
+                          <div className="stammbaum-print-kontakt-adresse">
+                            {formatAnschriftZeilenDruck(p.kontaktAdresse).map((z, i) => (
+                              <div key={i}>{z}</div>
+                            ))}
+                          </div>
+                        ) : null}
+                        {p.kontaktAdresse.email?.trim() ? (
+                          <div className="stammbaum-print-kontakt-zeile">
+                            <span className="stammbaum-print-kontakt-label">E-Mail</span>
+                            <span>{p.kontaktAdresse.email.trim()}</span>
+                          </div>
+                        ) : null}
+                        {p.kontaktAdresse.telefon?.trim() ? (
+                          <div className="stammbaum-print-kontakt-zeile">
+                            <span className="stammbaum-print-kontakt-label">Telefon</span>
+                            <span>{p.kontaktAdresse.telefon.trim()}</span>
+                          </div>
+                        ) : null}
+                      </dd>
+                    </>
+                  ) : null}
                 </dl>
               </article>
             ))}
@@ -347,6 +579,20 @@ function familienKatalogZelle(
       return nameList(p.childIds, map)
     case 'geschwister':
       return nameList(p.siblingIds, map)
+    case 'kontakt': {
+      const k = p.kontaktAdresse
+      if (!hasKontaktAdresseData(k)) return '–'
+      const addr = formatAnschriftZeilenDruck(k!)
+      return (
+        <div className="stammbaum-print-kontakt-katalog-cell">
+          {addr.length > 0 ? (
+            <div className="stammbaum-print-kontakt-katalog-addr">{addr.join(' · ')}</div>
+          ) : null}
+          {k!.email?.trim() ? <div className="stammbaum-print-kontakt-katalog-line">E-Mail: {k!.email.trim()}</div> : null}
+          {k!.telefon?.trim() ? <div className="stammbaum-print-kontakt-katalog-line">Tel.: {k!.telefon.trim()}</div> : null}
+        </div>
+      )
+    }
     default:
       return '–'
   }
@@ -362,6 +608,7 @@ function katalogTdClass(colId: string): string | undefined {
   if (colId === 'nr') return 'stammbaum-print-katalog-nr'
   if (colId === 'id') return 'stammbaum-print-katalog-id'
   if (colId === 'name') return 'stammbaum-print-td-name'
+  if (colId === 'kontakt') return 'stammbaum-print-katalog-td-kontakt'
   return undefined
 }
 

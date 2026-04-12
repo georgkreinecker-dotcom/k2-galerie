@@ -14,6 +14,8 @@ export const FAMILIE_KATALOG_SPALTEN_OPTIONS: ReadonlyArray<{ id: string; label:
   { id: 'partner', label: 'Partner' },
   { id: 'kinder', label: 'Kinder' },
   { id: 'geschwister', label: 'Geschw.' },
+  /** Anschrift, E-Mail, Telefon – optional pro Person; in der Tabelle kompakt, Zeilenumbruch möglich */
+  { id: 'kontakt', label: 'Kontakt' },
 ]
 
 const ALLOWED = new Set(FAMILIE_KATALOG_SPALTEN_OPTIONS.map((c) => c.id))

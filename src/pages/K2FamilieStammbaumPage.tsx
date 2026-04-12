@@ -1739,8 +1739,10 @@ export default function K2FamilieStammbaumPage() {
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>4 · PDF &amp; Auswertung</h2>
               <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
-                <strong>Umfang</strong> wählen: ganze erfasste Familie oder nur deinen Familienzweig (braucht <strong>Das bin ich</strong>).
-                Übersichtliche PDFs: Personenblätter, Generationen oder Tabelle A–Z. Stammbaum-Grafik eher als Poster; im Druckdialog „Als PDF speichern“.
+                <strong>Umfang:</strong> ganze Familie oder nur deinen Familienzweig (dafür <strong>Das bin ich</strong> setzen).{' '}
+                <strong>Typ:</strong> Personenblätter und Generationen sind am leichtesten zu lesen; beim <strong>Katalog</strong> Spalten
+                anhaken (z.&nbsp;B. <strong>Kontakt</strong> für Anschrift/E-Mail/Telefon). Stammbaum als Bild eher für Poster; im
+                Druckdialog „Als PDF speichern“.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -1755,7 +1757,7 @@ export default function K2FamilieStammbaumPage() {
                   </select>
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Inhalt</span>
+                  <span className="meta">Typ</span>
                   <select
                     id="druck-stil"
                     value={druckStil}
@@ -2005,17 +2007,22 @@ export default function K2FamilieStammbaumPage() {
                 <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
                   {druckStil === 'register' ? (
                     <>
-                      <strong>Katalog</strong>: Spalten wie beim Werkkatalog wählbar; Einstellung wird pro Familie gespeichert. Im Druckdialog oft{' '}
-                      <strong>Querformat</strong> wählen. Sortierung stellst du oben ein.
+                      <strong>Katalog</strong>: Spalten per Checkbox; <strong>Kontakt</strong> zeigt Anschrift, E-Mail und Telefon kompakt
+                      (nur wenn bei der Person eingetragen). Einstellung wird gespeichert. Druck oft im <strong>Querformat</strong>.
                     </>
                   ) : druckStil === 'personenblaetter' ? (
-                    <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
+                    <>
+                      <strong>Personenblätter</strong>: <strong>Hochformat</strong> empfohlen. Kontakt erscheint am Ende des Blocks, wenn auf
+                      der Personenseite ausgefüllt.
+                    </>
                   ) : druckStil === 'geburtstagsliste' ? (
                     <>
                       <strong>Geburtstagsliste</strong>: Personen mit vollständigem Datum (TT.MM.JJJJ) erscheinen nach Kalendertag sortiert; andere am Ende der Liste. Verstorbene mit †.
                     </>
                   ) : (
-                    <>Bei <strong>Generationen</strong>: Hoch- oder Querformat nach Geschmack; lange Namen umbrechen automatisch.</>
+                    <>
+                      <strong>Generationen</strong>: Unter jeder Zeile optional 1–2 Zeilen Kontakt (Anschrift, E-Mail, Tel.), wenn erfasst.
+                    </>
                   )}
                 </p>
               )}

@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie PDF: Kontakt klar, weniger Textchaos** – `kontaktAdresse` in **Personenblättern** als eigener Block „Kontakt“ (Anschrift zeilenweise, E-Mail/Telefon mit Labels) mit Trennlinie; **Generationen** mit kompaktem Kontakt unter der Beziehungszeile; **Katalog** neue Spalte **Kontakt** (wählbar wie die anderen). Stammbaum-PDF-Bereich: Label **Typ** statt „Inhalt“, Einleitung + Fußhinweise zu Umfang/Kontakt-Spalte. `StammbaumDruckFormate.tsx`, `familieKatalogPreferences.ts`, `App.css`, `K2FamilieStammbaumPage.tsx`. **Commit:** **a4a6cfeb** ✅ GitHub (nach Push)
+
+**Was wir JETZT tun:** Stammbaum → 4 · PDF & Auswertung → Personenblätter / Generationen / Katalog mit **Kontakt**-Spalte prüfen; eine Person mit Anschrift+E-Mail testen.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie Person: Anschrift & Kontakt (aufklappbar)** – Optionales JSON-Objekt `kontaktAdresse` an der Person (`K2FamilieKontaktAdresse`: Zeilen, PLZ, Ort, Land, E-Mail, Telefon). **Bearbeiten:** Block „Anschrift & Kontakt (optional)“ als `<details>` im Stammdaten-Formular; **Lesemodus:** eigener aufklappbarer Block mit `mailto:` / `tel:` wenn Daten gesetzt. `computeStammdatenDirty`, Speichern/Abbrechen. Doku `docs/K2-FAMILIE-DATENMODELL.md` §1.1. **Commit:** **05d2085b** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Person öffnen → Stammdaten bearbeiten → Block aufklappen → Kontakt speichern; ohne Bearbeiten Block mit Einträgen prüfen.
