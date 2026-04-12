@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie PDF-Bereich: Live-Vorschau** – Unter „4 · PDF & Auswertung“ immer sichtbare **Vorschau** (gleicher Inhalt wie Druck-/PDF-Seite): Generationen, Katalog/Register, Personenblätter, Stammbaum-Grafik inkl. Fotos/Orientierung/Layout; `stammbaum-druck-view--vorschau` + `App.css` (Druck-Styles global für Bildschirm, `body:has` ohne Vorschau). **Commit:** **396629b1** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum → PDF & Auswertung → Inhalt wechseln und Vorschau prüfen; bei Bedarf „Druckvorschau & Drucken“.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie PDF-Katalog: Spaltenwahl wie Werkkatalog** – Register-Spalten per Checkbox (Nr., Karten-ID, Name, …); Speicherung pro Mandant `k2-familie-${tenantId}-katalog-spalten`; `StammbaumDruckRegister` rendert nur gewählte Spalten; `familieKatalogPreferences.ts` + Tests. **Commit:** **ece9cdc1** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → 4 · PDF & Auswertung → Katalog → Spalten anpassen → Druckvorschau prüfen.
