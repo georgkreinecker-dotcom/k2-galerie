@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie: eigenes Benutzerhandbuch + Präsentationsmappe (Routen & Nav)** – `public/k2-familie-handbuch/` (Markdown, Standard-Index), `public/k2-familie-praesentation/README.md`; `BenutzerHandbuchViewer` + `K2FamilieBenutzerHandbuchPage` Route **`/k2-familie-handbuch`**; `K2FamiliePraesentationsmappePage` unter **`/projects/k2-familie/praesentationsmappe`**; `PROJECT_ROUTES['k2-familie'].benutzerHandbuch` / `familiePraesentationsmappe`; Nav in `K2FamilieLayout`. Nach Push: Commit-Hash hier eintragen.
+**Letzter Stand:** 12.04.26 – **K2 Familie: eigenes Benutzerhandbuch + Präsentationsmappe (Routen & Nav)** – `public/k2-familie-handbuch/` (Markdown, Standard-Index), `public/k2-familie-praesentation/README.md`; `BenutzerHandbuchViewer` + `K2FamilieBenutzerHandbuchPage` Route **`/k2-familie-handbuch`**; `K2FamiliePraesentationsmappePage` unter **`/projects/k2-familie/praesentationsmappe`**; `PROJECT_ROUTES['k2-familie'].benutzerHandbuch` / `familiePraesentationsmappe`; Nav in `K2FamilieLayout`. **Commit:** **ac912d4c** ✅ GitHub
 
 **Was wir JETZT tun:** Inhalte im Familien-Handbuch und ggf. Mappe-Kacheln ergänzen; kurz im Browser testen (`/k2-familie-handbuch`, Präsentationsmappe).
 
