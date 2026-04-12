@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Schlusspunkt zurückhaltend, Bereiche klar** – **Schlusspunkt** in ein geschlossenes **`<details>`** mit kurzer Summary („Optional: Stammbaum abschließen…“); volle Erklärung + Checkbox erst nach Aufklappen. **Bereichswechsel** statt Dropdown „Wechseln:“: **vier Tab-Kacheln** (Nummer 1–4 wie Hub), Kurz-Hint pro Bereich, ein Satz **Untertitel** zum aktiven Bereich (`STAMMBAUM_BEREICH_UNTERTITEL`). `K2FamilieStammbaumPage.tsx`.
+**Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Schlusspunkt zurückhaltend, Bereiche klar** – **Schlusspunkt** in ein geschlossenes **`<details>`** mit kurzer Summary („Optional: Stammbaum abschließen…“); volle Erklärung + Checkbox erst nach Aufklappen. **Bereichswechsel** statt Dropdown „Wechseln:“: **vier Tab-Kacheln** (Nummer 1–4 wie Hub), Kurz-Hint pro Bereich, ein Satz **Untertitel** zum aktiven Bereich (`STAMMBAUM_BEREICH_UNTERTITEL`). `K2FamilieStammbaumPage.tsx`. **Commit:** **b1793a87** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Stammbaum → Bereich 1–4 antippen; Schlusspunkt nur bei Bedarf aufklappen.
 
