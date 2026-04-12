@@ -11,6 +11,7 @@ import { createK2FamilieBackup, downloadBackupAsFile, restoreK2FamilieFromBackup
 import { loadEinstellungen, loadZweige } from '../utils/familieStorage'
 import { exportK2FamilieToGedcom } from '../utils/familieGedcom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 
 const ACCENT = '#14b8a6'
 const MUTED = 'rgba(255,255,255,0.65)'
@@ -19,6 +20,9 @@ const STARTPUNKT_LABELS: Record<string, string> = { ich: 'Bei mir', eltern: 'Bei
 export default function K2FamilieSicherungPage() {
   const navigate = useNavigate()
   const { currentTenantId, refreshFromStorage } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const canExport = capabilities.canExportSicherung
+  const canRestore = capabilities.canRestoreSicherung
   const fileInputRef = useRef<HTMLInputElement>(null)
   const mergeInputRef = useRef<HTMLInputElement>(null)
   const [restoreProgress, setRestoreProgress] = useState<'idle' | 'running' | 'done'>('idle')
@@ -27,6 +31,10 @@ export default function K2FamilieSicherungPage() {
   const zweige = loadZweige(currentTenantId)
 
   const handleDownload = () => {
+    if (!canExport) {
+      alert('Keine Berechtigung: Sicherungskopie herunterladen ist für diese Rolle nicht frei.')
+      return
+    }
     try {
       const { data, filename } = createK2FamilieBackup()
       downloadBackupAsFile(data, filename)
@@ -37,6 +45,11 @@ export default function K2FamilieSicherungPage() {
   }
 
   const handleRestore = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canRestore) {
+      alert('Nur Inhaber:in darf aus einer Backup-Datei wiederherstellen.')
+      e.target.value = ''
+      return
+    }
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
@@ -73,6 +86,10 @@ export default function K2FamilieSicherungPage() {
   }
 
   const handleGedcomExport = () => {
+    if (!canExport) {
+      alert('Keine Berechtigung: GEDCOM-Export ist für diese Rolle nicht frei.')
+      return
+    }
     try {
       const ged = exportK2FamilieToGedcom(currentTenantId)
       const blob = new Blob([ged], { type: 'text/plain;charset=utf-8' })
@@ -90,6 +107,11 @@ export default function K2FamilieSicherungPage() {
   }
 
   const handleMerge = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canRestore) {
+      alert('Nur Inhaber:in darf Daten zusammenführen (Merge).')
+      e.target.value = ''
+      return
+    }
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
@@ -128,16 +150,18 @@ export default function K2FamilieSicherungPage() {
           </div>
         </header>
 
-        <section style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40` }}>
+        <section style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40`, opacity: canExport ? 1 : 0.55 }}>
           <h2 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: ACCENT }}>💾 Sicherungskopie herunterladen</h2>
           <button
             type="button"
+            disabled={!canExport}
             onClick={handleDownload}
-            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: canExport ? 'pointer' : 'not-allowed' }}
           >
             💾 Sicherungskopie herunterladen (K2 Familie)
           </button>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: MUTED }}>Lädt eine Datei mit allen K2-Familie-Daten. Datei sicher speichern – dann hast du eine echte Sicherung gegen Datenverlust.</p>
+          {!canExport && <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(251,191,36,0.95)' }}>Nur Leser:in – Download ist nicht frei. Rolle auf Bearbeiter:in oder Inhaber:in stellen.</p>}
         </section>
 
         <section style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40` }}>
@@ -156,34 +180,37 @@ export default function K2FamilieSicherungPage() {
           )}
           <button
             type="button"
-            disabled={restoreProgress !== 'idle'}
+            disabled={restoreProgress !== 'idle' || !canRestore}
             onClick={() => fileInputRef.current?.click()}
-            style={{ padding: '0.75rem 1.25rem', background: restoreProgress !== 'idle' ? 'rgba(255,255,255,0.1)' : 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: restoreProgress !== 'idle' ? 'not-allowed' : 'pointer' }}
+            style={{ padding: '0.75rem 1.25rem', background: restoreProgress !== 'idle' || !canRestore ? 'rgba(255,255,255,0.1)' : 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: restoreProgress !== 'idle' || !canRestore ? 'not-allowed' : 'pointer' }}
           >
             📂 Aus Backup-Datei wiederherstellen
           </button>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: MUTED }}>Du wählst eine zuvor heruntergeladene K2-Familie-Sicherungsdatei. Alle Familien-Daten in der App werden durch den Inhalt dieser Datei ersetzt.</p>
+          {!canRestore && <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(251,191,36,0.95)' }}>Nur Inhaber:in – Wiederherstellen ist für Bearbeiter:in und Leser:in gesperrt.</p>}
         </section>
 
-        <section style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40` }}>
+        <section style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40`, opacity: canExport ? 1 : 0.55 }}>
           <h2 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: ACCENT }}>📄 GEDCOM exportieren</h2>
           <button
             type="button"
+            disabled={!canExport}
             onClick={handleGedcomExport}
-            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: canExport ? 'pointer' : 'not-allowed' }}
           >
             📄 Als GEDCOM herunterladen
           </button>
           <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: MUTED }}>Personen und Beziehungen (Eltern, Kinder, Partner) als .ged-Datei – z. B. für andere Stammbaum-Programme. Siehe docs/K2-FAMILIE-GEDCOM-PLAN.md.</p>
         </section>
 
-        <section style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40` }}>
+        <section style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40`, opacity: canRestore ? 1 : 0.55 }}>
           <h2 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: ACCENT }}>🔀 Mit Datei zusammenführen (Merge)</h2>
           <input ref={mergeInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleMerge} />
           <button
             type="button"
+            disabled={!canRestore}
             onClick={() => mergeInputRef.current?.click()}
-            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer' }}
+            style={{ padding: '0.75rem 1.25rem', background: 'rgba(13,148,136,0.25)', border: `1px solid ${ACCENT}66`, borderRadius: 10, color: '#fff', fontSize: '0.95rem', fontWeight: 600, cursor: canRestore ? 'pointer' : 'not-allowed' }}
           >
             🔀 Aus Datei zusammenführen (Merge)
           </button>

@@ -9,6 +9,7 @@ import FamilieBackButton from '../components/FamilieBackButton'
 import '../App.css'
 import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
+import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
@@ -53,6 +54,9 @@ const STARTPUNKT_LABELS: Record<K2FamilieStartpunktTyp, string> = {
 
 export default function K2FamilieHomePage() {
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
+  const { capabilities } = useFamilieRolle()
+  const kannBearbeiten = capabilities.canEditFamiliendaten
+  const kannInstanz = capabilities.canManageFamilienInstanz
   const [searchParams, setSearchParams] = useSearchParams()
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
@@ -88,7 +92,7 @@ export default function K2FamilieHomePage() {
     }
     if (t && tenantList.includes(t)) {
       setCurrentTenantId(t)
-      if (z) {
+      if (z && kannInstanz) {
         const einst = loadEinstellungen(t)
         if (saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })) {
           setMitgliedsNummer(z)
@@ -98,13 +102,15 @@ export default function K2FamilieHomePage() {
       return
     }
     if (!t && z) {
-      const einst = loadEinstellungen(currentTenantId)
-      if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })) {
-        setMitgliedsNummer(z)
+      if (kannInstanz) {
+        const einst = loadEinstellungen(currentTenantId)
+        if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })) {
+          setMitgliedsNummer(z)
+        }
       }
       strip()
     }
-  }, [searchParams, tenantList, setCurrentTenantId, setSearchParams, currentTenantId])
+  }, [searchParams, tenantList, setCurrentTenantId, setSearchParams, currentTenantId, kannInstanz])
 
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()
@@ -135,6 +141,7 @@ export default function K2FamilieHomePage() {
   }, [mitgliedsNummer, currentTenantId])
 
   const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
+    if (!kannBearbeiten) return
     const einst = loadEinstellungen(currentTenantId)
     if (saveEinstellungen(currentTenantId, { ...einst, startpunktTyp: typ })) {
       setStartpunkt(typ)
@@ -142,6 +149,7 @@ export default function K2FamilieHomePage() {
   }
 
   const setPartnerHerkunft = (personId: string) => {
+    if (!kannBearbeiten) return
     const einst = loadEinstellungen(currentTenantId)
     const nextId = personId.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, partnerHerkunftPersonId: nextId })) {
@@ -150,6 +158,7 @@ export default function K2FamilieHomePage() {
   }
 
   const setIchBinPerson = (personId: string) => {
+    if (!kannBearbeiten) return
     const einst = loadEinstellungen(currentTenantId)
     const nextId = personId.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: nextId })) {
@@ -158,6 +167,7 @@ export default function K2FamilieHomePage() {
   }
 
   const persistMitgliedsNummer = (raw: string) => {
+    if (!kannInstanz) return
     const einst = loadEinstellungen(currentTenantId)
     const next = raw.trim() || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: next })) {
@@ -207,7 +217,9 @@ export default function K2FamilieHomePage() {
               <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
             ))}
           </select>
-          <button type="button" className="btn-outline" onClick={() => addTenant()} style={{ borderColor: C.border, color: C.accent }}>Neue Familie</button>
+          {kannInstanz && (
+            <button type="button" className="btn-outline" onClick={() => addTenant()} style={{ borderColor: C.border, color: C.accent }}>Neue Familie</button>
+          )}
         </div>
 
         {/* Hero: lebendig, mit sanftem Verlauf */}
@@ -250,11 +262,14 @@ export default function K2FamilieHomePage() {
               <button
                 type="button"
                 className="btn k2-familie-action-btn"
-                onClick={openAnsichtEinstellungen}
+                disabled={!kannBearbeiten}
+                onClick={kannBearbeiten ? openAnsichtEinstellungen : undefined}
                 style={{
                   ...actionBtnBase,
                   background: C.btnStammdaten,
                   boxShadow: '0 8px 28px rgba(14, 116, 144, 0.35)',
+                  opacity: kannBearbeiten ? 1 : 0.55,
+                  cursor: kannBearbeiten ? 'pointer' : 'not-allowed',
                 }}
               >
                 👤 Stammdaten – zuerst „Du“ festlegen
@@ -337,10 +352,12 @@ export default function K2FamilieHomePage() {
                   id="k2fam-mitgliedsnummer"
                   type="text"
                   autoComplete="off"
+                  readOnly={!kannInstanz}
                   value={mitgliedsNummer}
                   onChange={(e) => setMitgliedsNummer(e.target.value)}
                   onBlur={() => persistMitgliedsNummer(mitgliedsNummer)}
                   placeholder="z. B. KF-2026-0042"
+                  title={!kannInstanz ? 'Nur Inhaber:in kann die Zugangsnummer ändern.' : undefined}
                   style={{
                     width: '100%',
                     maxWidth: 320,
@@ -351,6 +368,7 @@ export default function K2FamilieHomePage() {
                     padding: '0.45rem 0.6rem',
                     fontFamily: 'inherit',
                     fontSize: '0.95rem',
+                    opacity: kannInstanz ? 1 : 0.85,
                   }}
                 />
               </div>
@@ -405,14 +423,14 @@ export default function K2FamilieHomePage() {
                 {startpunkt ? (
                   <p style={{ margin: 0, color: C.textSoft }}>
                     <strong>{STARTPUNKT_LABELS[startpunkt]}</strong>
-                    <button type="button" className="btn-outline" onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent }}>Ändern</button>
+                    <button type="button" className="btn-outline" disabled={!kannBearbeiten} onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent, opacity: kannBearbeiten ? 1 : 0.55 }}>Ändern</button>
                   </p>
                 ) : (
                   <>
                     <p className="meta" style={{ margin: '0 0 0.75rem' }}>Anker für Stammbaum und Übersicht.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(['ich', 'eltern', 'grosseltern'] as const).map((typ) => (
-                        <button key={typ} type="button" className="btn" onClick={() => setStartpunktTyp(typ)} style={{ background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent }}>
+                        <button key={typ} type="button" className="btn" disabled={!kannBearbeiten} onClick={() => setStartpunktTyp(typ)} style={{ background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent, opacity: kannBearbeiten ? 1 : 0.55 }}>
                           {STARTPUNKT_LABELS[typ]}
                         </button>
                       ))}
@@ -426,6 +444,7 @@ export default function K2FamilieHomePage() {
                 <p className="meta" style={{ margin: '0 0 0.5rem' }}>Optional: zweiter Herkunfts-Zweig – „Meine Herkunft“ und „Herkunft [Partner]“ gleichwertig.</p>
                 <select
                   value={partnerHerkunftId ?? ''}
+                  disabled={!kannBearbeiten}
                   onChange={(e) => setPartnerHerkunft(e.target.value)}
                   style={{
                     background: 'rgba(0,0,0,0.25)',
@@ -436,6 +455,7 @@ export default function K2FamilieHomePage() {
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
                     minWidth: 200,
+                    opacity: kannBearbeiten ? 1 : 0.75,
                   }}
                 >
                   <option value="">Keiner (nur ein Zweig)</option>
@@ -450,6 +470,7 @@ export default function K2FamilieHomePage() {
                 <p className="meta" style={{ margin: '0 0 0.5rem' }}>Diese Person wird im Stammbaum hervorgehoben; von hier aus gelangst du zu „Meine Stammdaten“.</p>
                 <select
                   value={ichBinPersonId ?? ''}
+                  disabled={!kannBearbeiten}
                   onChange={(e) => setIchBinPerson(e.target.value)}
                   style={{
                     background: 'rgba(0,0,0,0.25)',
@@ -460,6 +481,7 @@ export default function K2FamilieHomePage() {
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
                     minWidth: 200,
+                    opacity: kannBearbeiten ? 1 : 0.75,
                   }}
                 >
                   <option value="">Nicht festgelegt</option>
@@ -471,7 +493,7 @@ export default function K2FamilieHomePage() {
             </div>
           </details>
 
-          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && (
+          {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && (
             <div className="card" style={{ marginTop: '1.5rem', borderLeft: '4px solid rgba(20,184,166,0.6)' }}>
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Musterfamilie Huber</h2>
               <p className="meta" style={{ margin: 0 }}>Demo-Familie mit 16 Personen, Stammbaum und Events – zum Anschauen und Ausprobieren.</p>
