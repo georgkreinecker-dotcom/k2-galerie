@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 12.04.26 – **K2 Familie PDF-Katalog: Spaltenwahl wie Werkkatalog** – Register-Spalten per Checkbox (Nr., Karten-ID, Name, …); Speicherung pro Mandant `k2-familie-${tenantId}-katalog-spalten`; `StammbaumDruckRegister` rendert nur gewählte Spalten; `familieKatalogPreferences.ts` + Tests. **Commit:** **bab31404** ✅ GitHub
+
+**Was wir JETZT tun:** Stammbaum → 4 · PDF & Auswertung → Katalog → Spalten anpassen → Druckvorschau prüfen.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie Stammbaum: Einstieg = nur eigener Familienzweig** – Mit **„Das bin ich“** ist **Nur mein Familienzweig** jetzt **Standard** (gespeichert: `stammbaumNurMeinFamilienzweig`); Häkchen aus = gesamte Familie (alle Geschwister-Zweige). Umschalter oben in **Schritt 1 · Karten** + wie bisher in Grafik. **Commit:** **7614a651** ✅ GitHub
 
 **Was wir JETZT tun:** Stammbaum → Nach unten: nur „Dein Familienzweig“-Block; Großfamilie testen (Häkchen aus).

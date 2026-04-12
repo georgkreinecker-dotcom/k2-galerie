@@ -30,7 +30,14 @@ import {
   StammbaumDruckNachGenerationen,
   StammbaumDruckPersonenblaetter,
   StammbaumDruckRegister,
+  type KatalogSortierung,
 } from '../components/StammbaumDruckFormate'
+import {
+  FAMILIE_KATALOG_SPALTEN_OPTIONS,
+  loadFamilienKatalogSpalten,
+  normalizeFamilieKatalogSpalten,
+  saveFamilienKatalogSpalten,
+} from '../utils/familieKatalogPreferences'
 
 function generateId(): string {
   return 'person-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8)
@@ -198,6 +205,8 @@ export default function K2FamilieStammbaumPage() {
   const oriFromUrl = (searchParams.get('ori') as TreeOrientation) || 'vertical'
   const treeFromUrl = (searchParams.get('tree') as FamilyTreeLayout) || 'zeilen'
   const titelFromUrl = searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie')
+  const katalogSortFromUrl: KatalogSortierung =
+    searchParams.get('katalogSort') === 'geburt' ? 'geburt' : 'name'
   const format = druck ? formatFromUrl : (searchParams.get('format') as PrintFormat) || 'a4'
   const fotos = druck ? fotosFromUrl : (searchParams.get('fotos') as PrintFotos) || '1'
   const titel = druck ? titelFromUrl : (searchParams.get('titel') || getFamilieTenantDisplayName(currentTenantId, 'Familie'))
@@ -208,6 +217,10 @@ export default function K2FamilieStammbaumPage() {
   const [druckOri, setDruckOri] = useState<TreeOrientation>(oriFromUrl)
   const [druckTree, setDruckTree] = useState<FamilyTreeLayout>(treeFromUrl)
   const [druckTitel, setDruckTitel] = useState(titelFromUrl)
+  const [druckKatalogSort, setDruckKatalogSort] = useState<KatalogSortierung>(katalogSortFromUrl)
+  const [druckKatalogSpalten, setDruckKatalogSpalten] = useState<string[]>(() =>
+    loadFamilienKatalogSpalten(currentTenantId)
+  )
   const [familyDisplayNameInput, setFamilyDisplayNameInput] = useState('')
   const [familyNameSaved, setFamilyNameSaved] = useState(false)
   const [partnersAddedMsg, setPartnersAddedMsg] = useState(false)
@@ -328,6 +341,10 @@ export default function K2FamilieStammbaumPage() {
     setFamilyDisplayNameInput(einstellungen.familyDisplayName ?? '')
   }, [currentTenantId, einstellungen.familyDisplayName])
 
+  useEffect(() => {
+    setDruckKatalogSpalten(loadFamilienKatalogSpalten(currentTenantId))
+  }, [currentTenantId])
+
   /** Druck nur Familienzweig – sonst kein automatischer Druckdialog. */
   useEffect(() => {
     if (!druck) return
@@ -380,6 +397,7 @@ export default function K2FamilieStammbaumPage() {
     stil: PrintStil
     ori: TreeOrientation
     tree: FamilyTreeLayout
+    katalogSort?: KatalogSortierung
   }) => {
     const p = new URLSearchParams()
     p.set('druck', '1')
@@ -389,8 +407,28 @@ export default function K2FamilieStammbaumPage() {
     p.set('ori', opts.ori)
     p.set('tree', opts.tree)
     if (opts.titel?.trim()) p.set('titel', opts.titel.trim())
+    if (opts.stil === 'register') {
+      p.set('katalogSort', opts.katalogSort === 'geburt' ? 'geburt' : 'name')
+    }
     setSearchParams(p)
   }
+
+  const toggleDruckKatalogSpalte = useCallback(
+    (id: string, checked: boolean) => {
+      setDruckKatalogSpalten((prev) => {
+        let next: string[]
+        if (checked) {
+          next = prev.includes(id) ? prev : [...prev, id]
+        } else {
+          next = prev.filter((x) => x !== id)
+        }
+        const norm = normalizeFamilieKatalogSpalten(next)
+        saveFamilienKatalogSpalten(currentTenantId, norm)
+        return norm
+      })
+    },
+    [currentTenantId]
+  )
 
   const printScale = format === 'poster' ? 1.5 : format === 'a3' ? 1.2 : 1
 
@@ -455,6 +493,8 @@ export default function K2FamilieStammbaumPage() {
             personen={forDruck}
             titel={titel}
             ichBinPersonId={einstellungen.ichBinPersonId}
+            sortierung={katalogSortFromUrl}
+            spalten={loadFamilienKatalogSpalten(currentTenantId)}
           />
         </div>
       )
@@ -1602,13 +1642,26 @@ export default function K2FamilieStammbaumPage() {
                     <optgroup label="Übersichtliche PDFs (empfohlen)">
                       <option value="personenblaetter">Personenblätter (A4 hoch, eine Person pro Block)</option>
                       <option value="generationen">Liste nach Generationen</option>
-                      <option value="register">Tabelle A–Z (breit → Druck Querformat)</option>
+                      <option value="register">Katalog (Tabelle, Datenblätter → Druck oft Querformat)</option>
                     </optgroup>
                     <optgroup label="Grafik">
                       <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
                     </optgroup>
                   </select>
                 </label>
+                {druckStil === 'register' && (
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span className="meta">Katalog-Sortierung</span>
+                    <select
+                      id="druck-katalog-sort"
+                      value={druckKatalogSort}
+                      onChange={(e) => setDruckKatalogSort(e.target.value as KatalogSortierung)}
+                    >
+                      <option value="name">Name A–Z</option>
+                      <option value="geburt">Geburtsjahr (ältere zuerst)</option>
+                    </select>
+                  </label>
+                )}
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <span className="meta">Papier / Größe</span>
                   <select
@@ -1684,16 +1737,62 @@ export default function K2FamilieStammbaumPage() {
                       stil: druckStil,
                       ori: druckOri,
                       tree: druckTree,
+                      katalogSort: druckStil === 'register' ? druckKatalogSort : undefined,
                     })
                   }
                 >
                   Druckvorschau &amp; Drucken
                 </button>
               </div>
+              {druckStil === 'register' && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '0.5rem',
+                    alignItems: 'center',
+                    marginTop: '0.75rem',
+                    padding: '0.65rem 0.75rem',
+                    background: 'rgba(15,23,42,0.35)',
+                    borderRadius: 8,
+                    border: '1px solid rgba(148,163,184,0.25)',
+                  }}
+                >
+                  <span className="meta" style={{ marginRight: 4 }}>
+                    Spalten:
+                  </span>
+                  {FAMILIE_KATALOG_SPALTEN_OPTIONS.map((col) => (
+                    <label
+                      key={col.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                        color: druckKatalogSpalten.includes(col.id)
+                          ? 'rgba(255,255,255,0.92)'
+                          : 'rgba(148,163,184,0.85)',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={druckKatalogSpalten.includes(col.id)}
+                        onChange={(e) => toggleDruckKatalogSpalte(col.id, e.target.checked)}
+                        style={{ accentColor: '#2dd4bf' }}
+                      />
+                      {col.label}
+                    </label>
+                  ))}
+                </div>
+              )}
               {druckStil !== 'grafik' && (
                 <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
                   {druckStil === 'register' ? (
-                    <>Bei der <strong>Tabelle A–Z</strong>: im Druckdialog oft <strong>Querformat</strong> wählen, damit alle Spalten mit auf die Seite passen.</>
+                    <>
+                      <strong>Katalog</strong>: Spalten wie beim Werkkatalog wählbar; Einstellung wird pro Familie gespeichert. Im Druckdialog oft{' '}
+                      <strong>Querformat</strong> wählen. Sortierung stellst du oben ein.
+                    </>
                   ) : druckStil === 'personenblaetter' ? (
                     <>Bei <strong>Personenblättern</strong>: <strong>Hochformat</strong> ist meist am besten (eine Spalte, gut lesbar).</>
                   ) : (

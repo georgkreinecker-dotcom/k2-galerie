@@ -2,7 +2,9 @@
  * K2 Familie – übersichtliche Druck-/PDF-Formate ohne Grafik (Liste, Register).
  */
 
+import type { ReactNode } from 'react'
 import type { K2FamiliePerson } from '../types/k2Familie'
+import { familienKatalogSpalteLabel, normalizeFamilieKatalogSpalten } from '../utils/familieKatalogPreferences'
 import {
   getGenerations,
   getGenerationsFamilienzweigAbwaertsWurzel,
@@ -18,6 +20,44 @@ function formatGeb(d?: string): string {
   if (!d?.trim()) return '–'
   const m = d.trim().match(/^(\d{4})/)
   return m ? m[1] : d.trim()
+}
+
+/** Vollständiges Datum für Katalog/PDF (ISO → TT.MM.JJJJ). */
+function formatDatumDruck(d?: string): string {
+  if (!d?.trim()) return '–'
+  const t = d.trim()
+  const m = t.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (m) return `${m[3]}.${m[2]}.${m[1]}`
+  return t
+}
+
+function geburtJahr(d?: string): number {
+  if (!d?.trim()) return 9999
+  const m = d.trim().match(/^(\d{4})/)
+  return m ? parseInt(m[1], 10) : 9999
+}
+
+/** Kurz-ID für Katalog-Spalte (lesbar, eindeutig genug zum Zuordnen). */
+function shortKartenId(id: string): string {
+  if (id.length <= 14) return id
+  return `…${id.slice(-12)}`
+}
+
+export type KatalogSortierung = 'name' | 'geburt'
+
+function sortPersonenKatalog(list: K2FamiliePerson[], sort: KatalogSortierung): K2FamiliePerson[] {
+  const copy = [...list]
+  if (sort === 'name') {
+    copy.sort((a, b) => a.name.localeCompare(b.name, 'de'))
+    return copy
+  }
+  copy.sort((a, b) => {
+    const ya = geburtJahr(a.geburtsdatum)
+    const yb = geburtJahr(b.geburtsdatum)
+    if (ya !== yb) return ya - yb
+    return a.name.localeCompare(b.name, 'de')
+  })
+  return copy
 }
 
 function nameList(ids: string[], map: Map<string, K2FamiliePerson>): string {
@@ -151,47 +191,127 @@ export function StammbaumDruckPersonenblaetter({
   )
 }
 
-/** Alphabetisches Verzeichnis – Tabelle, ideal für Suche und A4-PDF. */
+function formatGestorbenSpalte(p: K2FamiliePerson): string {
+  if (p.verstorbenAm?.trim()) return formatDatumDruck(p.verstorbenAm)
+  if (p.verstorben) return '†'
+  return '–'
+}
+
+function familienKatalogZelle(
+  colId: string,
+  p: K2FamiliePerson,
+  rowIndex: number,
+  map: Map<string, K2FamiliePerson>,
+  ichBinPersonId?: string
+): ReactNode {
+  switch (colId) {
+    case 'nr':
+      return rowIndex + 1
+    case 'id':
+      return shortKartenId(p.id)
+    case 'name':
+      return (
+        <>
+          {p.name}
+          {ichBinPersonId === p.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
+        </>
+      )
+    case 'gebName':
+      return p.maedchenname?.trim() ? p.maedchenname : '–'
+    case 'geboren':
+      return formatDatumDruck(p.geburtsdatum)
+    case 'gestorben':
+      return formatGestorbenSpalte(p)
+    case 'eltern':
+      return nameList(p.parentIds, map)
+    case 'partner':
+      return nameList(
+        p.partners.map((x) => x.personId),
+        map
+      )
+    case 'kinder':
+      return nameList(p.childIds, map)
+    case 'geschwister':
+      return nameList(p.siblingIds, map)
+    default:
+      return '–'
+  }
+}
+
+function katalogThClass(colId: string): string | undefined {
+  if (colId === 'nr') return 'stammbaum-print-katalog-col-nr'
+  if (colId === 'id') return 'stammbaum-print-katalog-col-id'
+  return undefined
+}
+
+function katalogTdClass(colId: string): string | undefined {
+  if (colId === 'nr') return 'stammbaum-print-katalog-nr'
+  if (colId === 'id') return 'stammbaum-print-katalog-id'
+  if (colId === 'name') return 'stammbaum-print-td-name'
+  return undefined
+}
+
+/** Familien-Katalog: tabellarisches Register wie eine Datenbank-Auszugliste (Sortierung wählbar). */
 export function StammbaumDruckRegister({
   personen,
   titel,
   ichBinPersonId,
+  sortierung = 'name',
+  spalten,
 }: {
   personen: K2FamiliePerson[]
   titel: string
   ichBinPersonId?: string
+  sortierung?: KatalogSortierung
+  /** Gewählte Spalten (Reihenfolge); ohne Angabe = Standard alle Spalten. */
+  spalten?: string[]
 }) {
   const map = byIdMap(personen)
-  const sorted = [...personen].sort((a, b) => a.name.localeCompare(b.name, 'de'))
+  const cols = normalizeFamilieKatalogSpalten(spalten)
+  const sorted = sortPersonenKatalog(personen, sortierung)
+  const sortLabel = sortierung === 'geburt' ? 'Geburtsjahr (aufsteigend), dann Name' : 'Name A–Z'
+  const stand =
+    typeof Intl !== 'undefined'
+      ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())
+      : new Date().toLocaleString('de-AT')
 
   return (
-    <div className="stammbaum-print-liste stammbaum-print-register">
+    <div className="stammbaum-print-liste stammbaum-print-register stammbaum-print-katalog">
       <h1 className="stammbaum-druck-titel">{titel}</h1>
-      <p className="stammbaum-print-untertitel">Alphabetisches Verzeichnis (ohne Grafik)</p>
-      <table className="stammbaum-print-table">
+      <p className="stammbaum-print-untertitel">
+        Familien-Katalog · Register ohne Grafik · Sortierung: {sortLabel}
+      </p>
+      <table className="stammbaum-print-table stammbaum-print-katalog-table">
+        <caption className="stammbaum-print-katalog-caption">
+          {sorted.length} Datensätze · Karten aus dem Stammbaum (Familienzweig)
+        </caption>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Geb.</th>
-            <th>Eltern</th>
-            <th>Partner</th>
-            <th>Kinder</th>
+            {cols.map((colId) => (
+              <th key={colId} className={katalogThClass(colId)}>
+                {familienKatalogSpalteLabel(colId)}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {sorted.map((p) => (
+          {sorted.map((p, i) => (
             <tr key={p.id}>
-              <td className="stammbaum-print-td-name">
-                {p.name}
-                {ichBinPersonId === p.id ? <span className="stammbaum-print-du"> (Du)</span> : null}
-              </td>
-              <td>{formatGeb(p.geburtsdatum)}</td>
-              <td>{nameList(p.parentIds, map)}</td>
-              <td>{nameList(p.partners.map((x) => x.personId), map)}</td>
-              <td>{nameList(p.childIds, map)}</td>
+              {cols.map((colId) => (
+                <td key={colId} className={katalogTdClass(colId)}>
+                  {familienKatalogZelle(colId, p, i, map, ichBinPersonId)}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={cols.length} className="stammbaum-print-katalog-foot">
+              Stand: {stand}
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   )
