@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 12.04.26 – **K2 Familie Person: Anschrift & Kontakt (aufklappbar)** – Optionales JSON-Objekt `kontaktAdresse` an der Person (`K2FamilieKontaktAdresse`: Zeilen, PLZ, Ort, Land, E-Mail, Telefon). **Bearbeiten:** Block „Anschrift & Kontakt (optional)“ als `<details>` im Stammdaten-Formular; **Lesemodus:** eigener aufklappbarer Block mit `mailto:` / `tel:` wenn Daten gesetzt. `computeStammdatenDirty`, Speichern/Abbrechen. Doku `docs/K2-FAMILIE-DATENMODELL.md` §1.1. **Commit:** **46259742** ✅ GitHub (nach Push)
+**Letzter Stand:** 12.04.26 – **K2 Familie Person: Anschrift & Kontakt (aufklappbar)** – Optionales JSON-Objekt `kontaktAdresse` an der Person (`K2FamilieKontaktAdresse`: Zeilen, PLZ, Ort, Land, E-Mail, Telefon). **Bearbeiten:** Block „Anschrift & Kontakt (optional)“ als `<details>` im Stammdaten-Formular; **Lesemodus:** eigener aufklappbarer Block mit `mailto:` / `tel:` wenn Daten gesetzt. `computeStammdatenDirty`, Speichern/Abbrechen. Doku `docs/K2-FAMILIE-DATENMODELL.md` §1.1. **Commit:** **05d2085b** ✅ GitHub (nach Push)
 
 **Was wir JETZT tun:** Person öffnen → Stammdaten bearbeiten → Block aufklappen → Kontakt speichern; ohne Bearbeiten Block mit Einträgen prüfen.
 
