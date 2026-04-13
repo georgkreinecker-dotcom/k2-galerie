@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie: Lizenz strikt eigenständig (keine Verbindung zu Galerie-Lizenzen)** – `docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md` und `K2-FAMILIE-LIZENZ-KOSTEN.md` mit Klarstellung; `KONZEPT-LIZENZMODELL` §3.3 und mök2 (`#mok2-10d-k2-familie-lizenzmodell`) ohne Bundle-Story Galerie+Familie; `K2FamilieStartPage` Block `#k2-familie-lizenz-bruecke`; `k2FamilieStructure` Hash-Links + `familiePathWithoutHash` / Tests. **Commit:** **92ac2737** ✅ GitHub
+
+**Was wir JETZT tun:** Kurz im Browser: mök2-Sprungliste → K2-Familie-Abschnitt; K2 Familie → Leitbild & Vision → gelber Lizenz-Block.
+
+---
+
 **Letzter Stand:** 12.04.26 – **K2 Familie: Leitstruktur wie mök2 + Doku-Hub** – `k2FamilieStructure.ts` (Gruppen + `isFamilieNavSectionActive`), `FamilieLeitstrukturPanel.tsx` (links, Einklappen, „← Projekte“, Druck: Panel aus); `K2FamilieLayout` Flex mit Sidebar; horizontale Nav nutzt dieselbe Active-Logik; `App.css` Shell/Print/Mobile; Doku-Entwicklung `K2FamilieEntwicklungDokuPage` + `k2FamilieDevDocsBundle`, Route `entwicklungDoku`, Smart Panel; Tests `k2FamilieStructure.test.ts`. **Commit:** **99351b16** ✅ GitHub
 
 **Was wir JETZT tun:** K2 Familie im Browser: Sidebar durchklicken (Desktop); unter 900px ist die Leiste ausgeblendet – nur obere Nav. Optional: Mobile Drawer für Struktur wenn Bedarf.
