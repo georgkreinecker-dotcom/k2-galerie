@@ -1,7 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { FamilieRollenCapabilities, K2FamilieRolle } from '../types/k2FamilieRollen'
-import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
 import { loadFamilieRolleForTenant, saveFamilieRolleForTenant } from '../utils/familieRollenStorage'
+import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen } from '../utils/familieStorage'
+import { getFamilieEffectiveCapabilities } from '../utils/familieIdentitaet'
 import { useFamilieTenant } from './FamilieTenantContext'
 
 type FamilieRolleContextValue = {
@@ -30,7 +31,23 @@ export function FamilieRolleProvider({ children }: { children: React.ReactNode }
     [currentTenantId]
   )
 
-  const capabilities = useMemo(() => getFamilieRollenCapabilities(rolle), [rolle])
+  const [familieDatenTick, setFamilieDatenTick] = useState(0)
+  useEffect(() => {
+    const on = () => setFamilieDatenTick((t) => t + 1)
+    window.addEventListener(K2_FAMILIE_SESSION_UPDATED, on)
+    return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, on)
+  }, [])
+
+  const capabilities = useMemo(
+    () =>
+      getFamilieEffectiveCapabilities(
+        rolle,
+        currentTenantId,
+        loadEinstellungen(currentTenantId),
+        loadPersonen(currentTenantId),
+      ),
+    [rolle, currentTenantId, familieDatenTick],
+  )
 
   const value = useMemo(
     () => ({ rolle, setRolle, capabilities }),

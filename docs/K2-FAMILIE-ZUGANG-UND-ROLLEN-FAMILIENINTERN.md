@@ -28,8 +28,11 @@
 ## 3. Ist-Stand Technik (kurz, ehrlich)
 
 - **Einladungs-QR (`?t=tenantId&z=…`):** Auf einem **neuen Gerät** muss die Tenant-ID **automatisch zur Familienliste** hinzugefügt und aktiv geschaltet werden (`ensureTenantInListAndSelect` in `FamilieTenantContext`). Sonst bleibt nur `default` in `localStorage` → **falsche („neutrale“) Familie**, obwohl der Link stimmt.
-- **Capabilities** sind zentral beschrieben: `getFamilieRollenCapabilities` in `src/types/k2FamilieRollen.ts`; Nutzung z. B. über `FamilieRolleProvider` / `useFamilieRolle`.
-- Die **Rolle „Sitzung“** in der Oberfläche dient dem **Arbeits- und Testmodell** am Gerät; **Zielbild** ist: Rolle **gebunden an eine echte Identität** (Einladung, später z. B. Supabase) – Roadmap `docs/K2-FAMILIE-SUPABASE-EINBAU.md`.
+- **Capabilities** kommen aus **Rolle + Identität** (Sportwagenmodus, eine zentrale Funktion): `getFamilieEffectiveCapabilities` in `src/utils/familieIdentitaet.ts` baut auf `getFamilieRollenCapabilities` (`src/types/k2FamilieRollen.ts`) auf; `FamilieRolleProvider` / `useFamilieRolle` liefern diese **effektiven** Rechte.
+- **Standard-Rolle** pro Familie in der Sitzung: **Leser** (`loadFamilieRolleForTenant` in `src/utils/familieRollenStorage.ts`) – damit reicht ein Familienlink **nicht**, als Inhaber:in zu arbeiten, ohne die Rolle bewusst zu wählen.
+- **Identität für Schreib-Rechte:** Steht auf der Karte von **„Du“** ein **persönlicher Code** (`mitgliedsNummer`), gilt die Sitzung als bestätigt, wenn **`sessionStorage`** (`familieIdentitaetStorage.ts`) die **Personen-ID** trägt – nach erfolgreicher Code-Eingabe („Meine Familie“), nach **Einladungslink** `?m=`, oder wenn die **Inhaber:in** „Du“ im Stammbaum oder in der Dropdown-Liste setzt (vertrauenswürdige Pfade). Ohne Bestätigung: nur **anschauen** (gleiche Rolle wie gewählt, aber alle Schreib-Flags aus).
+- **Ohne „Du“:** Nur **Inhaber:in** darf die **Erst-Einrichtung** (Struktur, Instanz); **Leser/Bearbeiter** ohne `ichBinPersonId` haben keine Schreib-Rechte.
+- **Synchronisation:** Nach `saveEinstellungen` / `savePersonen` feuert `K2_FAMILIE_SESSION_UPDATED` (`familieStorage.ts`), damit der Rolle-Provider Personen/Einstellungen neu einliest. **Zielbild** weiter: später Server-Claims statt Session-Dropdown – Roadmap `docs/K2-FAMILIE-SUPABASE-EINBAU.md`.
 - **Zusätzlich** (später/rechtlich tief): Wer im Stammbaum **welchen Zweig** bearbeiten darf, ist ein eigenes Thema – `docs/K2-FAMILIE-RECHTE-ZWEIGE.md` (Zweige/Verwalter).
 
 ---
@@ -49,7 +52,8 @@
 
 | Thema | Datei / Ort |
 |-------|-------------|
-| Rollen-Typen & Capabilities | `src/types/k2FamilieRollen.ts` |
+| Rollen-Typen & Basis-Capabilities | `src/types/k2FamilieRollen.ts` |
+| Effektive Rechte (Rolle + Identität) | `src/utils/familieIdentitaet.ts`, `src/utils/familieIdentitaetStorage.ts` |
 | Zugangsnummer im Datenmodell | `mitgliedsNummerAdmin` in `K2FamilieEinstellungen` (`src/types/k2Familie.ts`) |
 | Zweige / Verwalter (Feinrechte Baum) | `docs/K2-FAMILIE-RECHTE-ZWEIGE.md` |
 | Sync / später Server | `docs/K2-FAMILIE-SUPABASE-EINBAU.md` |

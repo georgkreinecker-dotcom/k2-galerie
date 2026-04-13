@@ -8,6 +8,7 @@ import { useMemo, useEffect, useLayoutEffect, useCallback, useState, useRef, typ
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadEinstellungen, saveEinstellungen } from '../utils/familieStorage'
+import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { getBeziehungenFromKarten, getFamilienzweigPersonen, getGeschwisterAnzeigeListe } from '../utils/familieBeziehungen'
 import {
   buildStammbaumKartenState,
@@ -434,7 +435,10 @@ export default function K2FamilieStammbaumPage() {
       const updated = personen.map((x) => x.id === personId ? { ...x, positionAmongSiblings: posNum } : x)
       if (savePersonen(currentTenantId, updated, { allowReduce: false })) changed = true
     }
-    if (changed) setStammbaumRefresh((k: number) => k + 1)
+    if (changed) {
+      setIdentitaetBestaetigt(currentTenantId, personId)
+      setStammbaumRefresh((k: number) => k + 1)
+    }
   }, [currentTenantId, personen, kannStruktur])
 
   const openDruck = (opts: {

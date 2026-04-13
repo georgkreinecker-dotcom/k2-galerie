@@ -8,10 +8,14 @@
 
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig, K2FamilieGeschichte } from '../types/k2Familie'
 import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey, getK2FamilieGeschichtenKey } from '../types/k2Familie'
+import { clearIdentitaetBestaetigt } from './familieIdentitaetStorage'
 import { isSupabaseConfigured } from './supabaseClient'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
 export const K2_FAMILIE_DEFAULT_TENANT = 'default'
+
+/** CustomEvent-Name: Einstellungen oder Personen haben sich geändert (Layout/Rollen neu berechnen). */
+export const K2_FAMILIE_SESSION_UPDATED = 'k2-familie-einstellungen-updated'
 
 /**
  * Erlaubte Tenant-IDs für Einladungs-Links (?t=) und localStorage-Keys.
@@ -78,6 +82,9 @@ export function savePersonen(
           events: loadEvents(tenantId),
         })
       ).catch((e) => console.warn('Supabase Push (Personen) fehlgeschlagen:', e))
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId } }))
     }
     return true
   } catch (e) {
@@ -289,6 +296,7 @@ export function loadEinstellungen(tenantId: string): K2FamilieEinstellungen {
 export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen): boolean {
   const key = getK2FamilieEinstellungenKey(tenantId)
   const obj = data && typeof data === 'object' ? data : {}
+  const prev = loadEinstellungen(tenantId)
   try {
     const json = JSON.stringify(obj)
     if (json.length > MAX_JSON_SIZE) {
@@ -296,6 +304,14 @@ export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen
       return false
     }
     localStorage.setItem(key, json)
+    const prevIch = prev.ichBinPersonId?.trim() || ''
+    const nextIch = obj.ichBinPersonId?.trim() || ''
+    if (prevIch !== nextIch) {
+      clearIdentitaetBestaetigt(tenantId)
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId } }))
+    }
     return true
   } catch (e) {
     console.error('❌ familieStorage: Fehler beim Schreiben (Einstellungen)', e)

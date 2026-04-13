@@ -18,7 +18,7 @@ export function loadFamilieRolleForTenant(tenantId: string): K2FamilieRolle {
   } catch {
     /* ignore */
   }
-  return 'inhaber'
+  return 'leser'
 }
 
 export function saveFamilieRolleForTenant(tenantId: string, rolle: K2FamilieRolle): void {
