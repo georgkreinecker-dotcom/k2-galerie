@@ -18,7 +18,7 @@ import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBui
 import {
   assignMissingMitgliedsNummern,
   buildMitgliederCodesZweigGruppen,
-  MITGLIEDS_NUMMER_AUTO_PREFIX,
+  MITGLIEDS_NUMMER_AUTO_BEISPIEL,
 } from '../utils/familieMitgliedsNummer'
 
 const R = PROJECT_ROUTES['k2-familie']
@@ -162,7 +162,10 @@ export default function K2FamilieMitgliederCodesPage() {
           Mitglieder &amp; persönliche Codes
         </h1>
         <p style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.55 }}>
-          <strong style={{ color: a.text }}>Mitgliedsnummern</strong> werden beim Anlegen von Personen automatisch vergeben ({MITGLIEDS_NUMMER_AUTO_PREFIX}0001 …), sortiert nach{' '}
+          <strong style={{ color: a.text }}>Mitgliedsnummern</strong> werden beim Anlegen automatisch als{' '}
+          <strong style={{ color: a.text }}>zufällige eindeutige Kombination</strong> vergeben (z. B.{' '}
+          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{MITGLIEDS_NUMMER_AUTO_BEISPIEL}</span>
+          {' — '}2 Buchstaben + 2 Ziffern, keine fortlaufende Nummer), sortiert nach{' '}
           <strong style={{ color: a.text }}>Familienzweigen</strong> wie im Stammbaum.{' '}
           <strong style={{ color: a.text }}>Verstorbene</strong> erscheinen hier nicht. Persönliche Einladungslinks (Familien-Zugang{' '}
           <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>

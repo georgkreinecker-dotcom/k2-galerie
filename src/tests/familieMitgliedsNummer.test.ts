@@ -4,8 +4,10 @@ import {
   assignMissingMitgliedsNummern,
   buildMitgliederCodesZweigGruppen,
   findPersonIdByMitgliedsNummer,
-  maxAutoMitgliedsNummerSuffix,
+  mitgliedsNummernImGebrauch,
+  RE_AUTO_MITGLIEDS_NUMMER,
   trimMitgliedsNummerEingabe,
+  zieheEindeutigenMitgliedsCode,
 } from '../utils/familieMitgliedsNummer'
 
 function p(id: string, mitgliedsNummer?: string): K2FamiliePerson {
@@ -38,19 +40,30 @@ describe('familieMitgliedsNummer', () => {
     expect(findPersonIdByMitgliedsNummer(personen, '2')).toBe(null)
   })
 
-  it('maxAutoMitgliedsNummerSuffix: nur KF-nnnn', () => {
-    expect(maxAutoMitgliedsNummerSuffix([p('a', 'KF-0003'), p('b', 'x')])).toBe(3)
-    expect(maxAutoMitgliedsNummerSuffix([p('a', 'kf-0010')])).toBe(10)
+  it('mitgliedsNummernImGebrauch: normalisiert', () => {
+    const u = mitgliedsNummernImGebrauch([p('a', 'Ab12'), p('b', '  XY99 ')])
+    expect(u.has('ab12')).toBe(true)
+    expect(u.has('xy99')).toBe(true)
   })
 
-  it('assignMissingMitgliedsNummern: vergibt KF-… in Stammbaum-Reihenfolge', () => {
+  it('zieheEindeutigenMitgliedsCode: Format und Eindeutigkeit', () => {
+    const used = mitgliedsNummernImGebrauch([p('x', 'AA00')])
+    const c = zieheEindeutigenMitgliedsCode(used)
+    expect(c).toMatch(RE_AUTO_MITGLIEDS_NUMMER)
+    expect(c).not.toBe('AA00')
+    expect(used.size).toBe(2)
+  })
+
+  it('assignMissingMitgliedsNummern: vergibt XX12 (zufällig, eindeutig)', () => {
     const personen = [
       { ...p('root'), name: 'Oma', parentIds: [], childIds: ['c'] },
       { ...p('c'), name: 'Kind', parentIds: ['root'], childIds: [] },
     ]
     const out = assignMissingMitgliedsNummern(personen, 'c')
-    expect(out.find((x) => x.id === 'root')?.mitgliedsNummer).toMatch(/^KF-000[12]$/)
-    expect(out.find((x) => x.id === 'c')?.mitgliedsNummer).toMatch(/^KF-000[12]$/)
+    const mRoot = out.find((x) => x.id === 'root')?.mitgliedsNummer
+    const mKind = out.find((x) => x.id === 'c')?.mitgliedsNummer
+    expect(mRoot).toMatch(RE_AUTO_MITGLIEDS_NUMMER)
+    expect(mKind).toMatch(RE_AUTO_MITGLIEDS_NUMMER)
     expect(new Set(out.map((x) => x.mitgliedsNummer)).size).toBe(2)
   })
 
@@ -58,14 +71,14 @@ describe('familieMitgliedsNummer', () => {
     const personen = [p('a', 'MANUAL-1'), p('b')]
     const out = assignMissingMitgliedsNummern(personen, undefined)
     expect(out[0].mitgliedsNummer).toBe('MANUAL-1')
-    expect(out[1].mitgliedsNummer).toMatch(/^KF-/)
+    expect(out[1].mitgliedsNummer).toMatch(RE_AUTO_MITGLIEDS_NUMMER)
   })
 
-  it('assignMissingMitgliedsNummern: verstorbene ohne Nummer bleiben ohne KF-Nummer', () => {
+  it('assignMissingMitgliedsNummern: verstorbene ohne Nummer bleiben ohne Auto-Code', () => {
     const personen = [{ ...p('tot'), verstorben: true }, p('leb')]
     const out = assignMissingMitgliedsNummern(personen, 'leb')
     expect(out.find((x) => x.id === 'tot')?.mitgliedsNummer).toBeUndefined()
-    expect(out.find((x) => x.id === 'leb')?.mitgliedsNummer).toMatch(/^KF-/)
+    expect(out.find((x) => x.id === 'leb')?.mitgliedsNummer).toMatch(RE_AUTO_MITGLIEDS_NUMMER)
   })
 
   it('buildMitgliederCodesZweigGruppen: keine verstorbenen in den Zeilen', () => {

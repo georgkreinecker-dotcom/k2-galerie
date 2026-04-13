@@ -1,16 +1,33 @@
 /**
  * Persönliche Mitgliedsnummern (Produktentscheidung B): Abgleich Eingabe → Person in dieser Familie.
- * Automatische Vergabe: einheitliches Präfix + laufende Nummer (Stammbaum-Zweig-Reihenfolge).
+ * Automatische Vergabe: **2 Buchstaben (A–Z) + 2 Ziffern**, zufällig gewählt, eindeutig in der Familie (keine fortlaufende Nummernfolge).
  * Nur k2-familie-* / Personenliste; keine Vermischung mit K2/ök2/VK2.
  */
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { buildStammbaumKartenState } from './familieStammbaumKarten'
 
-/** Festes Präfix für systemvergebene Nummern (Einladungslink-Parameter m). */
-export const MITGLIEDS_NUMMER_AUTO_PREFIX = 'KF-'
+/** Für Hilfetexte in der UI (Einladungslink-Parameter m = dieser Code). */
+export const MITGLIEDS_NUMMER_AUTO_BEISPIEL = 'QA07'
+
+/** Muster systemvergebener Codes (Großbuchstaben + Ziffern). */
+export const RE_AUTO_MITGLIEDS_NUMMER = /^[A-Z]{2}\d{2}$/
 
 export function trimMitgliedsNummerEingabe(s: string | undefined | null): string {
   return String(s ?? '').trim()
+}
+
+function normKey(m: string): string {
+  return trimMitgliedsNummerEingabe(m).toLowerCase()
+}
+
+/** Alle bereits vergebenen Mitgliedsnummern (normalisiert klein) — für Eindeutigkeit neuer Zufallscodes. */
+export function mitgliedsNummernImGebrauch(personen: K2FamiliePerson[]): Set<string> {
+  const s = new Set<string>()
+  for (const p of personen) {
+    const m = trimMitgliedsNummerEingabe(p.mitgliedsNummer)
+    if (m) s.add(normKey(m))
+  }
+  return s
 }
 
 /**
@@ -31,27 +48,54 @@ export function findPersonIdByMitgliedsNummer(
   return null
 }
 
-const RE_KF_SUFFIX = /^KF-(\d+)$/i
-
-/** Höchster numerischer Suffix bei bereits vergebenen KF-nnnn-Nummern. */
-export function maxAutoMitgliedsNummerSuffix(personen: K2FamiliePerson[]): number {
-  let max = 0
-  for (const p of personen) {
-    const m = trimMitgliedsNummerEingabe(p.mitgliedsNummer)
-    const x = m.match(RE_KF_SUFFIX)
-    if (x) max = Math.max(max, parseInt(x[1], 10))
+function randomCodeLettersDigits(): string {
+  const letter = () => String.fromCharCode(65 + Math.floor(Math.random() * 26))
+  const digit = () => String(Math.floor(Math.random() * 10))
+  if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    const u = new Uint8Array(4)
+    crypto.getRandomValues(u)
+    const l1 = String.fromCharCode(65 + (u[0]! % 26))
+    const l2 = String.fromCharCode(65 + (u[1]! % 26))
+    return `${l1}${l2}${u[2]! % 10}${u[3]! % 10}`
   }
-  return max
-}
-
-function formatNextKf(n: number): string {
-  return `${MITGLIEDS_NUMMER_AUTO_PREFIX}${String(n).padStart(4, '0')}`
+  return `${letter()}${letter()}${digit()}${digit()}`
 }
 
 /**
- * Vergibt fehlende Mitgliedsnummern im Format KF-0001, KF-0002, …
- * Reihenfolge = sortierte Stammbaum-Karten-Reihenfolge (Zweigstruktur wie im Stammbaum).
- * Bereits eingetragene Nummern (manuell oder früher automatisch) bleiben unverändert.
+ * Erzeugt einen neuen Code, der noch nicht in `used` vorkommt (wird eingetragen).
+ * Format: zwei Großbuchstaben + zwei Ziffern (z. B. KX42).
+ */
+export function zieheEindeutigenMitgliedsCode(used: Set<string>): string {
+  for (let i = 0; i < 8000; i++) {
+    const c = randomCodeLettersDigits()
+    const k = normKey(c)
+    if (!used.has(k)) {
+      used.add(k)
+      return c
+    }
+  }
+  // Extrem selten: deterministisch nachlegen
+  for (let a = 0; a < 26; a++) {
+    for (let b = 0; b < 26; b++) {
+      for (let d1 = 0; d1 < 10; d1++) {
+        for (let d2 = 0; d2 < 10; d2++) {
+          const c = `${String.fromCharCode(65 + a)}${String.fromCharCode(65 + b)}${d1}${d2}`
+          const k = normKey(c)
+          if (!used.has(k)) {
+            used.add(k)
+            return c
+          }
+        }
+      }
+    }
+  }
+  throw new Error('zieheEindeutigenMitgliedsCode: kein freier Code mehr')
+}
+
+/**
+ * Vergibt fehlende Mitgliedsnummern als zufällige eindeutige Kombinationen (XX12).
+ * Reihenfolge der Personen = Stammbaum-Zweig-Reihenfolge; die Codes selbst sind nicht fortlaufend.
+ * Bereits eingetragene Nummern (manuell oder früheres Format) bleiben unverändert.
  */
 export function assignMissingMitgliedsNummern(
   personen: K2FamiliePerson[],
@@ -59,7 +103,7 @@ export function assignMissingMitgliedsNummern(
 ): K2FamiliePerson[] {
   if (personen.length === 0) return personen
   const sorted = buildStammbaumKartenState(personen, ichBinPersonId).sortedPersonen
-  let next = maxAutoMitgliedsNummerSuffix(personen) + 1
+  const used = mitgliedsNummernImGebrauch(personen)
   const byId = new Map(personen.map((p) => [p.id, p]))
   const now = new Date().toISOString()
   let changed = false
@@ -69,7 +113,8 @@ export function assignMissingMitgliedsNummern(
     if (cur.verstorben) continue
     if (trimMitgliedsNummerEingabe(cur.mitgliedsNummer)) continue
     changed = true
-    const updated = { ...cur, mitgliedsNummer: formatNextKf(next++), updatedAt: now }
+    const code = zieheEindeutigenMitgliedsCode(used)
+    const updated = { ...cur, mitgliedsNummer: code, updatedAt: now }
     byId.set(p.id, updated)
   }
   if (!changed) return personen
