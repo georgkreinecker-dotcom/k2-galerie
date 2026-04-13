@@ -246,6 +246,8 @@ export const PROJECT_ROUTES = {
     meineFamilie: '/projects/k2-familie/meine-familie',
     /** Hub: Zugang, Sicherung, Lizenz, Links Handbuch/Präsentation */
     einstellungen: '/projects/k2-familie/einstellungen',
+    /** Inhaber:in: alle Personen mit persönlicher Mitgliedsnummer, Drucken, Versand-Text */
+    mitgliederCodes: '/projects/k2-familie/mitglieder-codes',
     /** Marketing/Flyer: kurze Vorstellung, dann CTA zur Familien-App (ohne Galerie-/willkommen) */
     willkommen: K2_FAMILIE_WILLKOMMEN_ROUTE,
     uebersicht: '/projects/k2-familie/uebersicht',

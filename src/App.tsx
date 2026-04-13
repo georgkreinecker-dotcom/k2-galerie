@@ -65,6 +65,7 @@ import K2FamiliePraesentationsmappePage from './pages/K2FamiliePraesentationsmap
 import K2FamilieEntwicklungDokuPage from './pages/K2FamilieEntwicklungDokuPage'
 import K2FamilieSicherungPage from './pages/K2FamilieSicherungPage'
 import K2FamilieEinstellungenPage from './pages/K2FamilieEinstellungenPage'
+import K2FamilieMitgliederCodesPage from './pages/K2FamilieMitgliederCodesPage'
 import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
 import K2FamilieEinstiegPage from './pages/K2FamilieEinstiegPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
@@ -905,6 +906,7 @@ function App() {
         <Route path="doku" element={<K2FamilieEntwicklungDokuPage />} />
         <Route path="praesentationsmappe" element={<K2FamiliePraesentationsmappePage />} />
         <Route path="einstellungen" element={<K2FamilieEinstellungenPage />} />
+        <Route path="mitglieder-codes" element={<K2FamilieMitgliederCodesPage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />
       </Route>

@@ -12,10 +12,12 @@ import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
+import { findPersonIdByMitgliedsNummer } from '../utils/familieMitgliedsNummer'
+import { K2_FAMILIE_EINSTELLUNGEN_UPDATED } from '../components/FamilieEinladungQuerySync'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import QRCode from 'qrcode'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
-import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react'
+import { useMemo, useState, useEffect, useRef, useCallback, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 import { APP_BASE_URL } from '../config/externalUrls'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
@@ -92,6 +94,11 @@ export default function K2FamilieHomePage() {
   const [mitgliedsNummer, setMitgliedsNummer] = useState('')
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const [einladungsLinkKopiert, setEinladungsLinkKopiert] = useState(false)
+  const [persoenlicherLinkKopiert, setPersoenlicherLinkKopiert] = useState(false)
+  const [persoenlicheNummerEingabe, setPersoenlicheNummerEingabe] = useState('')
+  const [registrierungHinweis, setRegistrierungHinweis] = useState('')
+  const [registrierungErfolg, setRegistrierungErfolg] = useState('')
+  const [persoenlicherQrDataUrl, setPersoenlicherQrDataUrl] = useState('')
   const [zugangSpeichernHinweis, setZugangSpeichernHinweis] = useState('')
   /** Nummer ist mindestens einmal nicht-leer gespeichert → fest (kein Dauernd-neu-Vorschlagen). */
   const [zugangFestgelegt, setZugangFestgelegt] = useState(false)
@@ -125,7 +132,7 @@ export default function K2FamilieHomePage() {
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
   const welcomeImage = content.welcomeImage || ''
 
-  useEffect(() => {
+  const reloadEinstellungenAusSpeicher = useCallback(() => {
     const einst = loadEinstellungen(currentTenantId)
     setStartpunkt(einst.startpunktTyp)
     setPartnerHerkunftId(einst.partnerHerkunftPersonId ?? '')
@@ -136,11 +143,33 @@ export default function K2FamilieHomePage() {
     setZugangAendernModus(false)
   }, [currentTenantId])
 
+  useEffect(() => {
+    reloadEinstellungenAusSpeicher()
+  }, [reloadEinstellungenAusSpeicher])
+
+  useEffect(() => {
+    const onExtern = (ev: Event) => {
+      const d = (ev as CustomEvent<{ tenantId?: string }>).detail
+      if (d?.tenantId && d.tenantId !== currentTenantId) return
+      reloadEinstellungenAusSpeicher()
+    }
+    window.addEventListener(K2_FAMILIE_EINSTELLUNGEN_UPDATED, onExtern)
+    return () => window.removeEventListener(K2_FAMILIE_EINSTELLUNGEN_UPDATED, onExtern)
+  }, [currentTenantId, reloadEinstellungenAusSpeicher])
+
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()
     if (!id) return ''
     return personen.find((p) => p.id === id)?.name?.trim() ?? ''
   }, [personen, ichBinPersonId])
+
+  const meinePerson = useMemo(() => {
+    const id = ichBinPersonId?.trim()
+    if (!id) return undefined
+    return personen.find((p) => p.id === id)
+  }, [personen, ichBinPersonId])
+
+  const persoenlicheMitgliedsNummerAufKarte = (meinePerson?.mitgliedsNummer ?? '').trim()
 
   const { setupDu, setupZugang, setupStartpunkt, setupAllesErledigt } = useMemo(
     () => computeErsteSchritteAmpel(ichBinPersonId, mitgliedsNummer, startpunkt),
@@ -176,6 +205,18 @@ export default function K2FamilieHomePage() {
     return buildQrUrlWithBust(base.toString(), versionTimestamp)
   }, [mitgliedsNummer, currentTenantId, versionTimestamp])
 
+  /** Familie + persönliche Mitgliedsnummer: ein Scan meldet Gerät in der Familie und ordnet „Du“ zu. */
+  const familiePersoenlicheEinladungsUrl = useMemo(() => {
+    const z = mitgliedsNummer.trim()
+    const m = persoenlicheMitgliedsNummerAufKarte
+    if (!z || !m) return ''
+    const base = new URL(`${APP_BASE_URL}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
+    base.searchParams.set('t', currentTenantId)
+    base.searchParams.set('z', z)
+    base.searchParams.set('m', m)
+    return buildQrUrlWithBust(base.toString(), versionTimestamp)
+  }, [mitgliedsNummer, persoenlicheMitgliedsNummerAufKarte, currentTenantId, versionTimestamp])
+
   useEffect(() => {
     if (!familieEinladungsUrl) {
       setQrDataUrl('')
@@ -193,6 +234,24 @@ export default function K2FamilieHomePage() {
       cancelled = true
     }
   }, [familieEinladungsUrl])
+
+  useEffect(() => {
+    if (!familiePersoenlicheEinladungsUrl) {
+      setPersoenlicherQrDataUrl('')
+      return
+    }
+    let cancelled = false
+    QRCode.toDataURL(familiePersoenlicheEinladungsUrl, { width: 168, margin: 1, errorCorrectionLevel: 'M' })
+      .then((dataUrl) => {
+        if (!cancelled) setPersoenlicherQrDataUrl(dataUrl)
+      })
+      .catch(() => {
+        if (!cancelled) setPersoenlicherQrDataUrl('')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [familiePersoenlicheEinladungsUrl])
 
   const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
     if (!kannStruktur) return
@@ -285,6 +344,42 @@ export default function K2FamilieHomePage() {
       setEinladungsLinkKopiert(true)
       window.setTimeout(() => setEinladungsLinkKopiert(false), 2200)
     })
+  }
+
+  const kopierePersoenlichenEinladungslink = () => {
+    if (!familiePersoenlicheEinladungsUrl) return
+    void navigator.clipboard.writeText(familiePersoenlicheEinladungsUrl).then(() => {
+      setPersoenlicherLinkKopiert(true)
+      window.setTimeout(() => setPersoenlicherLinkKopiert(false), 2200)
+    })
+  }
+
+  const anmeldenMitPersoenlicherNummer = () => {
+    setRegistrierungErfolg('')
+    const raw = persoenlicheNummerEingabe.trim()
+    if (!raw) {
+      setRegistrierungHinweis('Bitte die Mitgliedsnummer eintragen, die du vom Administrator erhalten hast.')
+      return
+    }
+    const pid = findPersonIdByMitgliedsNummer(personen, raw)
+    if (!pid) {
+      setRegistrierungHinweis(
+        'Keine Person mit dieser Nummer in dieser Familie. Schreibweise prüfen oder Administrator fragen.',
+      )
+      return
+    }
+    const einst = loadEinstellungen(currentTenantId)
+    if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
+      setIchBinPersonIdState(pid)
+      setPersoenlicheNummerEingabe('')
+      setRegistrierungHinweis('')
+      setRegistrierungErfolg('✓ Du bist angemeldet. Dein Name und dein persönlicher QR erscheinen unten.')
+      window.dispatchEvent(
+        new CustomEvent(K2_FAMILIE_EINSTELLUNGEN_UPDATED, { detail: { tenantId: currentTenantId } }),
+      )
+    } else {
+      setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
+    }
   }
 
   const openAnsichtEinstellungen = () => {
@@ -500,22 +595,25 @@ export default function K2FamilieHomePage() {
             }}
           >
             <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>Zugang & Name</h2>
-            <p style={{ margin: '0 0 0.85rem', lineHeight: 1.55, color: a.muted, fontSize: '0.9rem' }}>
+            <p style={{ margin: '0 0 0.55rem', lineHeight: 1.55, color: a.muted, fontSize: '0.9rem' }}>
               {kannInstanz ? (
                 <>
-                  Als Inhaber:in legst du die <strong style={{ color: a.text }}>Zugangsnummer einmal</strong> fest (oder übernimmst sie vom Administrator) — sie bleibt deine Familien-Zutrittnummer, bis du sie bewusst änderst. Der <strong style={{ color: a.text }}>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong style={{ color: a.text }}>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
+                  <strong style={{ color: a.text }}>Zwei Ebenen:</strong> Die <strong style={{ color: a.text }}>Familien-Zugangsnummer</strong> (vom Administrator oder von dir als Inhaber:in festgelegt) gilt für alle — QR und Link führen in dieselbe Familie. Deine <strong style={{ color: a.text }}>persönliche Mitgliedsnummer</strong> vergibt der Administrator auf deiner Karte; damit meldest du dich als „Du“ an — dann erscheinen <strong style={{ color: a.text }}>Name</strong> und <strong style={{ color: a.text }}>dein persönlicher QR</strong>. Wer „Du“ bist, kann zusätzlich unter{' '}
                   <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
                     Stammbaum-Ansicht einstellen
-                  </button>
-                  .
+                  </button>{' '}
+                  gewählt werden (wenn du Struktur bearbeiten darfst).
                 </>
               ) : (
                 <>
-                  Die <strong style={{ color: a.text }}>Zugangsnummer</strong> legt die Inhaber:in fest; mit dem <strong style={{ color: a.text }}>QR-Code</strong> öffnet ihr dieselbe Familie inkl. Zugangscode. Eure Rolle erlaubt kein Ändern der Nummer
-                  {capabilities.rolle === 'leser' ? ' (Lesemodus).' : ' (nur Inhaber:in).'}{' '}
-                  Der Anzeigename kommt aus „Du“ im Stammbaum.
+                  Die <strong style={{ color: a.text }}>Familien-Zugangsnummer</strong> kommt von der Inhaber:in oder dem Administrator; der <strong style={{ color: a.text }}>QR Familie</strong> öffnet dieselbe Familie. <strong style={{ color: a.text }}>Deine Mitgliedsnummer</strong> trägst du unten ein (wie vom Administrator mitgeteilt) — danach siehst du deinen Namen und deinen persönlichen QR. Die Nummer der Familie kannst du
+                  {capabilities.rolle === 'leser' ? ' nicht ändern.' : ' nur als Inhaber:in ändern.'}
                 </>
               )}
+            </p>
+            <h3 style={{ margin: '0.75rem 0 0.4rem', fontSize: '0.98rem', fontWeight: 700, color: a.accent, fontFamily: a.fontHeading }}>Familien-Zugang</h3>
+            <p style={{ margin: '0 0 0.85rem', lineHeight: 1.45, color: a.muted, fontSize: '0.82rem' }}>
+              Eine Nummer für den ganzen Stammbaum — teilen per QR oder Link (nur Online-App, nicht localhost).
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div>
@@ -526,7 +624,7 @@ export default function K2FamilieHomePage() {
               </div>
               <div style={{ flex: '1 1 240px', minWidth: 180 }}>
                 <label htmlFor={kannInstanz && zugangFestgelegt && !zugangAendernModus ? undefined : 'k2fam-mitgliedsnummer'} style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
-                  Zugangsnummer (vom Administrator)
+                  Familien-Zugangsnummer (vom Administrator)
                 </label>
                 {kannInstanz && zugangFestgelegt && !zugangAendernModus ? (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
@@ -674,7 +772,7 @@ export default function K2FamilieHomePage() {
                 ) : null}
               </div>
               <div style={{ textAlign: 'left', maxWidth: 200 }}>
-                <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR zum Einstieg</div>
+                <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR Familie (Einstieg)</div>
                 {qrDataUrl ? (
                   <div>
                     <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }} />
@@ -726,6 +824,172 @@ export default function K2FamilieHomePage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: '1.15rem',
+                paddingTop: '1rem',
+                borderTop: '1px solid rgba(181, 74, 30, 0.12)',
+              }}
+            >
+              <h3 style={{ margin: '0 0 0.35rem', fontSize: '0.98rem', fontWeight: 700, color: a.accent, fontFamily: a.fontHeading }}>Persönliche Mitgliedschaft</h3>
+              {kannInstanz ? (
+                <p style={{ margin: '0 0 0.75rem', lineHeight: 1.5, color: a.muted, fontSize: '0.88rem' }}>
+                  Als <strong style={{ color: a.text }}>Inhaber:in</strong> trägst du die persönliche Mitgliedsnummer auf jeder Personenkarte ein (Stammbaum → Person). Trage deine eigene Nummer auf <strong style={{ color: a.text }}>deiner</strong> Karte ein — das ist derselbe Code für deine persönliche Einladung. Die{' '}
+                  <Link to={PROJECT_ROUTES['k2-familie'].mitgliederCodes} style={{ color: a.accent, fontWeight: 600 }}>
+                    Übersicht aller Mitglieder &amp; Codes
+                  </Link>{' '}
+                  (drucken, Text für Mail/WhatsApp) findest du unter einem eigenen Menüpunkt.
+                </p>
+              ) : (
+                <p style={{ margin: '0 0 0.75rem', lineHeight: 1.5, color: a.muted, fontSize: '0.88rem' }}>
+                  Die <strong style={{ color: a.text }}>Mitgliedsnummer auf deiner Personenkarte</strong> vergibt der Administrator. Trage sie hier ein, um dich als „Du“ zu registrieren — oder scanne einen persönlichen QR, falls du einen erhalten hast. Danach erscheinen dein Name und dein persönlicher QR mit Familien- und Mitgliedscode.
+                </p>
+              )}
+              {!ichBinPersonId?.trim() ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    value={persoenlicheNummerEingabe}
+                    onChange={(e) => {
+                      setPersoenlicheNummerEingabe(e.target.value)
+                      setRegistrierungHinweis('')
+                      setRegistrierungErfolg('')
+                    }}
+                    placeholder={kannInstanz ? 'Mitgliedsnummer (auf der Personenkarte)' : 'Mitgliedsnummer vom Administrator'}
+                    aria-label={kannInstanz ? 'Persönliche Mitgliedsnummer von der Personenkarte' : 'Persönliche Mitgliedsnummer vom Administrator'}
+                    style={{
+                      flex: '1 1 220px',
+                      minWidth: 180,
+                      maxWidth: 360,
+                      background: '#fffefb',
+                      border: '1px solid rgba(181, 74, 30, 0.28)',
+                      borderRadius: a.radius,
+                      color: a.text,
+                      padding: '0.45rem 0.6rem',
+                      fontFamily: 'ui-monospace, monospace',
+                      fontSize: '0.92rem',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={anmeldenMitPersoenlicherNummer}
+                    style={{
+                      padding: '0.45rem 0.85rem',
+                      fontSize: '0.88rem',
+                      fontFamily: 'inherit',
+                      borderRadius: a.radius,
+                      border: 'none',
+                      background: a.buttonPrimary.background,
+                      color: '#fff',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Mit Mitgliedsnummer anmelden
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
+                  <div style={{ flex: '1 1 200px', minWidth: 160 }}>
+                    <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>Angemeldet als</div>
+                    <div style={{ fontSize: '1.05rem', fontWeight: 600, color: a.text }}>{ichName || '—'}</div>
+                    {stammdatenLinkTo ? (
+                      <Link
+                        to={stammdatenLinkTo}
+                        style={{ display: 'inline-block', marginTop: '0.45rem', fontSize: '0.88rem', color: a.accent, fontWeight: 600 }}
+                      >
+                        Zur persönlichen Karte →
+                      </Link>
+                    ) : null}
+                    {!persoenlicheMitgliedsNummerAufKarte ? (
+                      <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted, lineHeight: 1.45 }}>
+                        {kannInstanz ? (
+                          <>
+                            Persönliche Mitgliedsnummer steht noch nicht auf <strong style={{ color: a.text }}>deiner</strong> Karte — trage sie in der Person ein (Stammbaum → Person). Unter{' '}
+                            <Link to={PROJECT_ROUTES['k2-familie'].mitgliederCodes} style={{ color: a.accent, fontWeight: 600 }}>
+                              Mitglieder &amp; Codes
+                            </Link>{' '}
+                            siehst du alle Personen mit Nummern.
+                          </>
+                        ) : (
+                          <>
+                            Persönliche Mitgliedsnummer steht noch nicht auf der Karte — bitte vom Administrator in der Person eintragen lassen (Stammbaum → Person), damit der persönliche QR erzeugt werden kann.
+                          </>
+                        )}
+                      </p>
+                    ) : null}
+                  </div>
+                  {persoenlicherQrDataUrl && familiePersoenlicheEinladungsUrl ? (
+                    <div style={{ textAlign: 'left', maxWidth: 200 }}>
+                      <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
+                        Dein persönlicher QR{ichName ? ` (${ichName})` : ''}
+                      </div>
+                      <img
+                        src={persoenlicherQrDataUrl}
+                        alt=""
+                        width={168}
+                        height={168}
+                        style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={kopierePersoenlichenEinladungslink}
+                        style={{
+                          marginTop: '0.5rem',
+                          width: '100%',
+                          padding: '0.4rem 0.55rem',
+                          fontSize: '0.82rem',
+                          fontFamily: 'inherit',
+                          borderRadius: a.radius,
+                          border: `1px solid rgba(181, 74, 30, 0.32)`,
+                          background: a.bgCard,
+                          color: a.accent,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {persoenlicherLinkKopiert ? '✓ Link kopiert' : 'Persönlichen Link kopieren'}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              )}
+              {registrierungHinweis ? (
+                <p
+                  role="status"
+                  style={{
+                    margin: '0.35rem 0 0',
+                    padding: '0.45rem 0.6rem',
+                    fontSize: '0.82rem',
+                    lineHeight: 1.45,
+                    borderRadius: a.radius,
+                    border: '1px solid rgba(180, 83, 9, 0.45)',
+                    background: 'rgba(254, 243, 199, 0.85)',
+                    color: '#92400e',
+                  }}
+                >
+                  {registrierungHinweis}
+                </p>
+              ) : null}
+              {registrierungErfolg ? (
+                <p
+                  role="status"
+                  style={{
+                    margin: '0.35rem 0 0',
+                    padding: '0.45rem 0.6rem',
+                    fontSize: '0.82rem',
+                    lineHeight: 1.45,
+                    borderRadius: a.radius,
+                    border: '1px solid rgba(22, 101, 52, 0.35)',
+                    background: 'rgba(220, 252, 231, 0.95)',
+                    color: '#166534',
+                  }}
+                >
+                  {registrierungErfolg}
+                </p>
+              ) : null}
             </div>
           </div>
 

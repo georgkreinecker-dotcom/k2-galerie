@@ -72,6 +72,18 @@ export default function K2FamilieEinstellungenPage() {
           </Link>
         </div>
 
+        <div style={{ ...card, borderLeftColor: '#0e7490' }}>
+          <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+            Mitglieder &amp; persönliche Codes
+          </h2>
+          <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
+            Als <strong style={{ color: a.text }}>Inhaber:in</strong>: alle Familienmitglieder mit eingetragener Mitgliedsnummer, persönliche Einladungslinks, Liste <strong style={{ color: a.text }}>drucken</strong> oder <strong style={{ color: a.text }}>Text kopieren</strong> für Mail und WhatsApp.
+          </p>
+          <Link to={R.mitgliederCodes} style={linkBtn}>
+            → Zu Mitglieder &amp; Codes
+          </Link>
+        </div>
+
         <div style={{ ...card, borderLeftColor: '#15803d' }}>
           <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
             Stammbaum-Ansicht (Du, Startpunkt, Partner-Zweig)
