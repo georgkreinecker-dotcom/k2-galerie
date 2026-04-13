@@ -1,8 +1,8 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Kachel „Einstellungen & Verwaltung“ sichtbar, Handbuch/Mappe aus dem Raster** – `K2FamilieHomePage`: große Kacheln Handbuch & Präsentationsmappe entfernt; eine Kachel **⚙️ Einstellungen & Verwaltung** → `familieR.einstellungen`; Hinweis-Zeile mit Icon-Links entfernt; `C.btnEinstellungen` / `C.btnSicherung` bereinigt. Tests 445 grün.
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Kachel „Einstellungen & Verwaltung“ sichtbar, Handbuch/Mappe aus dem Raster** – `K2FamilieHomePage`: große Kacheln Handbuch & Präsentationsmappe entfernt; eine Kachel **⚙️ Einstellungen & Verwaltung** → `familieR.einstellungen`; Hinweis-Zeile mit Icon-Links entfernt; `C.btnEinstellungen` / `C.btnSicherung` bereinigt. Tests 445 grün. **Push:** `main` → GitHub **`9cd8b289`** ✅ (2026-04-13).
 
-**Was wir JETZT tun:** `git push origin main`; im Browser „Was möchtest du tun?“ prüfen (7 Kacheln).
+**Was wir JETZT tun:** Vercel Production „Ready“; im **Browser** Route **K2 Familie → Meine Familie** „Was möchtest du tun?“ prüfen (**7 Kacheln**). **Lokal noch offen:** uncommittete Änderungen (u. a. Einstieg/Inhalte, mehrere Pages) – wenn Einheit fertig: Test + Build, dann Commit + Push.
 
 ---
 
