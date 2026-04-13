@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **AGB: Rechtsstruktur (Haupt-/Nebenlizenz, Mandant, K2 Familie)** – `src/pages/AGBPage.tsx`: §§1–12 (Vertragspartner kgm solution, Lizenzmodell, Testphase, Leistung, Haftung, Datenschutz, Urheber, Steuern/Buchhaltung, Mängel, Kündigung Nutzer, Änderungen Anbieter, Schlussbestimmungen); `docs/AGB-VORLAGE-RECHTSSTRUKTUR.md`; Verweise aktualisiert in `MarketingOek2Page`, Benutzerhandbuch 08/09, `KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN`, `OEK2-ANMELDUNG-LIZENZIERUNG-STAND`, `docs/00-INDEX`. Tests 444 grün, Build ok. **Commit:** **74d2200b** ✅ GitHub
+**Letzter Stand:** 11.04.26 – **AGB: Rechtsstruktur (Haupt-/Nebenlizenz, Mandant, K2 Familie)** – `src/pages/AGBPage.tsx`: §§1–12 (Vertragspartner kgm solution, Lizenzmodell, Testphase, Leistung, Haftung, Datenschutz, Urheber, Steuern/Buchhaltung, Mängel, Kündigung Nutzer, Änderungen Anbieter, Schlussbestimmungen); `docs/AGB-VORLAGE-RECHTSSTRUKTUR.md`; Verweise aktualisiert in `MarketingOek2Page`, Benutzerhandbuch 08/09, `KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN`, `OEK2-ANMELDUNG-LIZENZIERUNG-STAND`, `docs/00-INDEX`. Tests 444 grün, Build ok. **Commits:** AGB **74d2200b**, DIALOG-STAND/WIR-PROZESS **99fe86a7** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: Anwalts-Review AGB; bei Konflikt Produktbeschreibung vs. AGB wie in Hinweisbox.
 
