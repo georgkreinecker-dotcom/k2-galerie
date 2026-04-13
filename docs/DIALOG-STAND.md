@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie: Marketing-Willkommen (parallel zu `/willkommen` Galerie)** – Neue Route **`PROJECT_ROUTES['k2-familie'].willkommen`** = `/projects/k2-familie/willkommen`, Konstante **`K2_FAMILIE_WILLKOMMEN_ROUTE`**; Seite `K2FamilieWillkommenPage.tsx` (nur Lesen, CTAs: Familien-App, Stammbaum, Leitbild/Lizenz, Handbuch/AGB/Projekte); `App.tsx` Route vor Layout; `k2FamilieStructure` Eintrag „Einstiegsseite (Flyer/QR)“; Projektseite Zusatzkarte. Tests 444 grün, Build ok. **Commit:** **b42a085b** ✅ GitHub
+
+**Was wir JETZT tun:** Optional nächste Ausbaustufe: öffentliche Familien-„Homepage“ nur Anzeige vs. Bearbeiten weiter schärfen (Rollen/Links); QR auf Willkommen-URL testen.
+
+---
+
 **Letzter Stand:** 11.04.26 – **Homepage (/) APf: Lizenzstruktur sichtbar gemacht** – `PlatformStartPage.tsx`: Abschnitt „Lizenzstruktur“ (Haupt- vs. Nebenlizenz, Mandant, Zusatzprodukt); Unterzeile „Lizenzmodell“; Links zu Lizenzen, mök2 `#mok2-10c-haupt-neben-lizenz`, AGB §2. Tests 444 grün, Build ok. **Commits:** **fe90f0a4** (Feature), **509efea3** (DIALOG-STAND Hash) ✅ GitHub
 
 **Was wir JETZT tun:** APf im Browser `/` kurz prüfen (nur Desktop; Mobile leitet zur Galerie).
