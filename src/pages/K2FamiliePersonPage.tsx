@@ -18,7 +18,9 @@ import {
   getGeschwisterIdsAusEltern,
 } from '../utils/familieBeziehungen'
 import { getGraphDistanceFromIch, portraitSizeFromGraphDistance } from '../utils/familieGraphDistance'
+import { trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 import FamilieDatumDreiSelect from '../components/FamilieDatumDreiSelect'
+import FamiliePersoenlicherCodeFelder from '../components/FamiliePersoenlicherCodeFelder'
 import { compressImageForStorage } from '../utils/compressImageForStorage'
 import {
   getAktuellesPersonenFoto,
@@ -66,6 +68,7 @@ function computeStammdatenDirty(
     kaLand: string
     kaEmail: string
     kaTelefon: string
+    mitgliedsNummer: string
   },
   photoLegacyCleared: boolean
 ): boolean {
@@ -104,6 +107,7 @@ function computeStammdatenDirty(
   if (!g(k?.land, f.kaLand)) return true
   if (!g(k?.email, f.kaEmail)) return true
   if (!g(k?.telefon, f.kaTelefon)) return true
+  if (trimMitgliedsNummerEingabe(f.mitgliedsNummer) !== trimMitgliedsNummerEingabe(person.mitgliedsNummer)) return true
   return false
 }
 
@@ -213,6 +217,7 @@ export default function K2FamiliePersonPage() {
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten || capabilities.canEditEigenesProfil
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
+  const kannInstanz = capabilities.canManageFamilienInstanz
   const kannOrganisch = capabilities.canEditOrganisches
   const [edit, setEdit] = useState(false)
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key])
@@ -256,6 +261,7 @@ export default function K2FamiliePersonPage() {
   const [kaLand, setKaLand] = useState('')
   const [kaEmail, setKaEmail] = useState('')
   const [kaTelefon, setKaTelefon] = useState('')
+  const [mitgliedsNummer, setMitgliedsNummer] = useState('')
   const [kontaktAdresseOpen, setKontaktAdresseOpen] = useState(false)
   /** Im Bearbeiten: altes Einzelfeld `photo` entfernen, obwohl es noch in `person` steht (bis Speichern). */
   const [photoLegacyCleared, setPhotoLegacyCleared] = useState(false)
@@ -359,6 +365,7 @@ export default function K2FamiliePersonPage() {
       setKaLand(ka?.land ?? '')
       setKaEmail(ka?.email ?? '')
       setKaTelefon(ka?.telefon ?? '')
+      setMitgliedsNummer(person.mitgliedsNummer ?? '')
       setPhotoLegacyCleared(false)
       // Neue Person (gerade angelegt): sofort Bearbeiten öffnen, damit Name getippt werden kann – keine Kontakt-Vorschläge
       if (person.name === 'Neue Person' && kannStruktur) setEdit(true)
@@ -417,6 +424,7 @@ export default function K2FamiliePersonPage() {
           kaLand,
           kaEmail,
           kaTelefon,
+          mitgliedsNummer,
         },
         photoLegacyCleared
       )
@@ -448,6 +456,7 @@ export default function K2FamiliePersonPage() {
       kaLand,
       kaEmail,
       kaTelefon,
+      mitgliedsNummer,
       photoLegacyCleared,
     ]
   )
@@ -516,6 +525,18 @@ export default function K2FamiliePersonPage() {
       window.alert('Sterbedatum ist ungültig – bitte Tag, Monat und Jahr vollständig wählen oder Feld leer lassen.')
       return
     }
+    const mNext = trimMitgliedsNummerEingabe(mitgliedsNummer)
+    if (kannInstanz && mNext) {
+      const conflict = personen.find(
+        (p) =>
+          p.id !== id &&
+          trimMitgliedsNummerEingabe(p.mitgliedsNummer).toLowerCase() === mNext.toLowerCase()
+      )
+      if (conflict) {
+        window.alert(`Diese Mitgliedsnummer hat bereits ${conflict.name}.`)
+        return
+      }
+    }
     const posNum = positionAmongSiblingsInput.trim() === '' ? undefined : parseInt(positionAmongSiblingsInput.trim(), 10)
     const positionAmongSiblings = posNum != null && !Number.isNaN(posNum) && posNum >= 1 ? posNum : undefined
     const gdNorm = normalizeFamilieDatum(geburtsdatum)
@@ -541,6 +562,7 @@ export default function K2FamiliePersonPage() {
       verstorben: verstorben || undefined,
       verstorbenAm: vsNorm,
       positionAmongSiblings,
+      ...(kannInstanz ? { mitgliedsNummer: mNext || undefined } : {}),
       photoKind: pk,
       photoJugend: pj,
       photoErwachsen: pe,
@@ -1171,6 +1193,44 @@ export default function K2FamiliePersonPage() {
           </div>
         </header>
 
+        {(kannInstanz || effectiveEditStammdaten) && (
+          <section
+            id="k2-familie-person-persoenlicher-code"
+            className="card familie-card-enter"
+            style={{ marginTop: '1rem', padding: '0.85rem 1rem' }}
+            aria-labelledby="k2-familie-pers-code-heading"
+          >
+            <h2
+              id="k2-familie-pers-code-heading"
+              style={{
+                margin: 0,
+                fontSize: '1.05rem',
+                fontWeight: 700,
+                color: 'rgba(94, 234, 212, 0.98)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              Persönlicher Code
+            </h2>
+            <p id="k2-familie-pers-code-hint" className="meta" style={{ margin: '0.35rem 0 0.65rem', lineHeight: 1.45, fontSize: '0.82rem' }}>
+              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Vergibt nur die Inhaber:in</strong> (Administrator).{' '}
+              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Format:</strong> zwei Buchstaben (A–Z) und zwei Ziffern — dafür sind die{' '}
+              <strong>vier Plätze</strong> da; sie bleiben leer, bis die Inhaber:in einen Code einträgt (optional, kein Pflichtfeld). Beim ersten Anmelden mit
+              Familienlink: wer ist diese Person. Andere Rollen tragen hier nichts ein — nicht wie Name oder Geburtsdatum.
+            </p>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <FamiliePersoenlicherCodeFelder
+                idPrefix="k2-familie-pers-code"
+                value={kannInstanz && effectiveEditStammdaten ? mitgliedsNummer : person.mitgliedsNummer ?? ''}
+                onChange={setMitgliedsNummer}
+                readOnly={!(kannInstanz && effectiveEditStammdaten)}
+                ariaLabelledBy="k2-familie-pers-code-heading"
+                ariaDescribedBy="k2-familie-pers-code-hint"
+              />
+            </div>
+          </section>
+        )}
+
         <details
           id="k2-familie-person-stammdaten"
           className="card familie-card-enter k2-familie-haupt-details-block"
@@ -1255,14 +1315,6 @@ export default function K2FamiliePersonPage() {
                 👤
               </div>
             )}
-            <p className="meta" style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', textAlign: 'center', maxWidth: portraitGroessePx, lineHeight: 1.35 }}>
-              Zeitaktuell – neueste Lebensphase mit Bild (Alter → Erwachsen → Jugendlich → Kind)
-              {einstellungen.ichBinPersonId && graphDistanceFromDu != null && (
-                <span style={{ display: 'block', marginTop: '0.35rem', color: 'rgba(20,184,166,0.95)' }}>
-                  Tiefe zu „Du“: {graphDistanceFromDu} {graphDistanceFromDu === 1 ? 'Schritt' : 'Schritte'} – Portrait wächst mit der Entfernung im Beziehungsnetz.
-                </span>
-              )}
-            </p>
             <div
               style={{
                 display: 'flex',
@@ -1757,6 +1809,7 @@ export default function K2FamiliePersonPage() {
                       setKaLand(ka?.land ?? '')
                       setKaEmail(ka?.email ?? '')
                       setKaTelefon(ka?.telefon ?? '')
+                      setMitgliedsNummer(person.mitgliedsNummer ?? '')
                     }}
                   >
                     Abbrechen
