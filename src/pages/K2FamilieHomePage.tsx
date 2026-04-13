@@ -1,13 +1,12 @@
 /**
  * K2 Familie – Fertige Homepage (nutzerorientiert).
- * Route: /projects/k2-familie (Index).
+ * Route: /projects/k2-familie/meine-familie („Meine Familie“, C).
  * Willkommen + Bild + erste Aktionen (Stammbaum, Events, Kalender). Pro Tenant Texte/Bilder.
  */
 
 import { Link, useSearchParams } from 'react-router-dom'
-import FamilieBackButton from '../components/FamilieBackButton'
 import '../App.css'
-import { PROJECT_ROUTES, PLATFORM_ROUTES } from '../config/navigation'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
@@ -119,13 +118,21 @@ export default function K2FamilieHomePage() {
     return personen.find((p) => p.id === id)?.name?.trim() ?? ''
   }, [personen, ichBinPersonId])
 
+  const setupDu = useMemo(() => Boolean(ichBinPersonId?.trim()), [ichBinPersonId])
+  const setupZugang = useMemo(() => Boolean(mitgliedsNummer.trim()), [mitgliedsNummer])
+  const setupStartpunkt = useMemo(() => startpunkt !== undefined, [startpunkt])
+  const setupAllesErledigt = useMemo(
+    () => setupDu && setupZugang && setupStartpunkt,
+    [setupDu, setupZugang, setupStartpunkt],
+  )
+
   useEffect(() => {
     const z = mitgliedsNummer.trim()
     if (!z) {
       setQrDataUrl('')
       return
     }
-    const url = new URL(`${window.location.origin}${PROJECT_ROUTES['k2-familie'].home}`)
+    const url = new URL(`${window.location.origin}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
     url.searchParams.set('t', currentTenantId)
     url.searchParams.set('z', z)
     let cancelled = false
@@ -189,7 +196,7 @@ export default function K2FamilieHomePage() {
   return (
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ padding: 0, maxWidth: '100%' }}>
-        {/* Toolbar: Projekte, Familie wählen (APf-Kontext) */}
+        {/* Toolbar: nur Familie wählen – „Zurück“ sitzt einmal im Layout (kein Doppel) */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -199,7 +206,6 @@ export default function K2FamilieHomePage() {
           background: 'rgba(13,148,136,0.12)',
           borderBottom: `1px solid ${C.border}`,
         }}>
-          <FamilieBackButton className="meta" style={{ color: C.textSoft }} />
           <span className="meta" style={{ color: C.textSoft }}>Familie:</span>
           <select
             value={currentTenantId}
@@ -219,7 +225,15 @@ export default function K2FamilieHomePage() {
             ))}
           </select>
           {kannInstanz && (
-            <button type="button" className="btn-outline" onClick={() => addTenant()} style={{ borderColor: C.border, color: C.accent }}>Neue Familie</button>
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={() => addTenant()}
+              title="Legt eine neue, leere Familie an. Du wechselst automatisch dorthin und kannst im Dropdown oben zwischen allen Familien wechseln."
+              style={{ borderColor: C.border, color: C.accent }}
+            >
+              Neue Familie
+            </button>
           )}
         </div>
 
@@ -242,8 +256,46 @@ export default function K2FamilieHomePage() {
           </div>
         </div>
 
-        {/* Hauptaktionen zuerst – Stammbaum-Ansicht nur unter „mehr“ */}
         <div style={{ padding: '1.75rem 1.25rem', maxWidth: 760, margin: '0 auto' }}>
+          <p style={{ margin: '0 0 1.1rem', fontSize: '0.98rem', lineHeight: 1.55, color: C.textSoft }}>
+            {texts.introText}
+          </p>
+
+          {/* Ampel: erste Einrichtung (nur Hinweis, keine Pflichtlogik) */}
+          <div
+            className="card"
+            style={{
+              marginBottom: '1.15rem',
+              padding: '0.85rem 1rem',
+              borderLeft: `4px solid ${setupAllesErledigt ? 'rgba(34,197,94,0.75)' : 'rgba(251,191,36,0.65)'}`,
+              background: setupAllesErledigt ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.07)',
+            }}
+          >
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: C.accent, marginBottom: '0.5rem' }}>
+              {setupAllesErledigt ? 'Erste Einrichtung: grundlegend erledigt' : 'Erste Schritte – zum Start'}
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '1.15rem', color: C.textSoft, fontSize: '0.88rem', lineHeight: 1.5 }}>
+              <li style={{ color: setupDu ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+                {setupDu ? '✓' : '○'} „Du“ im Stammbaum gewählt
+              </li>
+              <li style={{ color: setupZugang ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+                {setupZugang ? '✓' : '○'} Zugangsnummer für den QR-Code eingetragen
+              </li>
+              <li style={{ color: setupStartpunkt ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+                {setupStartpunkt ? '✓' : '○'} Startpunkt für die Stammbaum-Ansicht gewählt
+              </li>
+            </ul>
+            {!setupAllesErledigt && (
+              <p className="meta" style={{ margin: '0.55rem 0 0', fontSize: '0.78rem' }}>
+                Details unten bei{' '}
+                <button type="button" className="meta" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                  Stammbaum-Ansicht einstellen
+                </button>{' '}
+                und im Bereich Zugang &amp; Name.
+              </p>
+            )}
+          </div>
+
           <h2 style={{ margin: '0 0 0.85rem', fontSize: '1.12rem', fontWeight: 700, color: C.accent }}>Was möchtest du tun?</h2>
 
           <div className="k2-familie-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.35rem' }}>
@@ -322,10 +374,6 @@ export default function K2FamilieHomePage() {
             </Link>
           </div>
 
-          <p style={{ margin: '0 0 1.35rem', fontSize: '0.95rem', lineHeight: 1.55, color: C.textSoft }}>
-            {texts.introText}
-          </p>
-
           <div
             className="card"
             style={{
@@ -336,7 +384,21 @@ export default function K2FamilieHomePage() {
           >
             <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: C.accent }}>Zugang & Name</h2>
             <p className="meta" style={{ margin: '0 0 0.85rem', lineHeight: 1.45 }}>
-              Nummer vom Administrator; QR öffnet dieselbe Familie mit Zugangscode. Anzeigename kommt aus der Person „Du“ (siehe Stammbaum-Ansicht einstellen).
+              {kannInstanz ? (
+                <>
+                  Als Inhaber:in trägst du die <strong>Zugangsnummer</strong> selbst ein (oder nimmst sie vom Administrator). Der <strong>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
+                  <button type="button" className="meta" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                    Stammbaum-Ansicht einstellen
+                  </button>
+                  .
+                </>
+              ) : (
+                <>
+                  Die <strong>Zugangsnummer</strong> legt die Inhaber:in fest; mit dem <strong>QR-Code</strong> öffnet ihr dieselbe Familie inkl. Zugangscode. Eure Rolle erlaubt kein Ändern der Nummer
+                  {capabilities.rolle === 'leser' ? ' (Lesemodus).' : ' (nur Inhaber:in).'}{' '}
+                  Der Anzeigename kommt aus „Du“ im Stammbaum.
+                </>
+              )}
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div>
@@ -373,27 +435,36 @@ export default function K2FamilieHomePage() {
                   }}
                 />
               </div>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: 'left', maxWidth: 200 }}>
                 <div className="meta" style={{ marginBottom: 6 }}>QR zum Einstieg</div>
                 {qrDataUrl ? (
-                  <img src={qrDataUrl} alt="" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: `1px solid ${C.border}` }} />
+                  <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: `1px solid ${C.border}` }} />
                 ) : (
                   <div
+                    role="status"
                     style={{
-                      width: 168,
-                      height: 168,
+                      maxWidth: 200,
+                      minHeight: 96,
                       borderRadius: 12,
                       border: `1px dashed ${C.border}`,
                       display: 'flex',
-                      alignItems: 'center',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
                       justifyContent: 'center',
+                      gap: '0.35rem',
                       color: C.textSoft,
                       fontSize: '0.82rem',
-                      padding: '0 0.5rem',
-                      lineHeight: 1.35,
+                      padding: '0.65rem 0.75rem',
+                      lineHeight: 1.4,
+                      background: 'rgba(0,0,0,0.12)',
                     }}
                   >
-                    Nummer eintragen, dann erscheint der Code
+                    <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>
+                      📋
+                    </span>
+                    <span>
+                      Zuerst links die <strong>Zugangsnummer</strong> speichern – dann erscheint der QR-Code für Handy &amp; Gäste.
+                    </span>
                   </div>
                 )}
               </div>

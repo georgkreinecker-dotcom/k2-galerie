@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Ampel „Erste Schritte“ – fehlende Variablen (Build-Fix)** – `K2FamilieHomePage.tsx`: `setupDu` / `setupZugang` / `setupStartpunkt` / `setupAllesErledigt` per `useMemo` aus State; ungenutzten Import `PLATFORM_ROUTES` entfernt. `tsc:build` ok. **Commit:** **320299f1** ✅ GitHub
+
+**Was wir JETZT tun:** Restliche lokale K2-Familie-/Projekt-Änderungen gesondert committen oder weiter bearbeiten; Hub „Meine Familie“ kurz im Browser prüfen (Ampel).
+
+---
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Marketing-Willkommen (parallel zu `/willkommen` Galerie)** – Neue Route **`PROJECT_ROUTES['k2-familie'].willkommen`** = `/projects/k2-familie/willkommen`, Konstante **`K2_FAMILIE_WILLKOMMEN_ROUTE`**; Seite `K2FamilieWillkommenPage.tsx` (nur Lesen, CTAs: Familien-App, Stammbaum, Leitbild/Lizenz, Handbuch/AGB/Projekte); `App.tsx` Route vor Layout; `k2FamilieStructure` Eintrag „Einstiegsseite (Flyer/QR)“; Projektseite Zusatzkarte. Tests 444 grün, Build ok. **Commit:** **b42a085b** ✅ GitHub
 
 **Was wir JETZT tun:** Optional nächste Ausbaustufe: öffentliche Familien-„Homepage“ nur Anzeige vs. Bearbeiten weiter schärfen (Rollen/Links); QR auf Willkommen-URL testen.
