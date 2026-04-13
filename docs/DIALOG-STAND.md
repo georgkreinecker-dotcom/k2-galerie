@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Ampel „Erste Schritte“ – fehlende Variablen (Build-Fix)** – `K2FamilieHomePage.tsx`: `setupDu` / `setupZugang` / `setupStartpunkt` / `setupAllesErledigt` per `useMemo` aus State; ungenutzten Import `PLATFORM_ROUTES` entfernt. `tsc:build` ok. **Commit:** **320299f1** ✅ GitHub
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Ampel „Erste Schritte“ – fehlende Variablen (Build-Fix)** – `K2FamilieHomePage.tsx`: `setupDu` / `setupZugang` / `setupStartpunkt` / `setupAllesErledigt` per `useMemo` aus State; ungenutzten Import `PLATFORM_ROUTES` entfernt. `tsc:build` ok. **Commit:** **83222efb** ✅ GitHub
 
 **Was wir JETZT tun:** Restliche lokale K2-Familie-/Projekt-Änderungen gesondert committen oder weiter bearbeiten; Hub „Meine Familie“ kurz im Browser prüfen (Ampel).
 
