@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.04.26 – **K2 Familie Einladungs-QR: richtiger Tenant auf neuem Gerät** – Ursache: `?t=` wirkte nur wenn die ID schon in `tenantList` (localStorage) stand. **Fix:** `ensureTenantInListAndSelect` in `FamilieTenantContext`, `K2FamilieHomePage` Einladungs-Effekt; `isValidFamilieTenantId` in `familieStorage`; Test `familieTenantId.test.ts`; Doku-Zeile in **K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN**. Commit folgt.
+**Letzter Stand:** 13.04.26 – **K2 Familie Einladungs-QR: richtiger Tenant auf neuem Gerät** – Ursache: `?t=` wirkte nur wenn die ID schon in `tenantList` (localStorage) stand. **Fix:** `ensureTenantInListAndSelect` in `FamilieTenantContext`, `K2FamilieHomePage` Einladungs-Effekt; `isValidFamilieTenantId` in `familieStorage`; Test `familieTenantId.test.ts`; Doku-Zeile in **K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN**. **Commit:** **`ae73fd25`** ✅ GitHub.
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Doku: Zugang vs. Rollen, familienintern** – Neue Datei **`docs/K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md`:** Zugangsnummer/QR = richtige Familie; **Rollen** (Inhaber/Bearbeiter/Leser) **familienintern** definieren und zuweisen; Querverweise Typen, zweige, Supabase; Eintrag **`docs/00-INDEX.md`**. Commit folgt.
 
