@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie: Lizenzkosten-Doku endgültig ohne Bundle/Galerie-Vergleich** – `docs/K2-FAMILIE-LIZENZ-KOSTEN.md`: §2 „Wo zahlt man?“ nur K2-Familie-Checkout; Bullet „Galerie-Lizenz Bundle“ entfernt; Roadmap §6 ohne „analog K2 Galerie“. `K2-FAMILIE-LIZENZMODELL-BRUECKE.md` Stand 13.04.26. Tests 444 grün, Build ok. **Commit:** **55812151** ✅ GitHub
+
+**Was wir JETZT tun:** Optional: mök2 / Konzept nur bei Bedarf auf Hinweise „Zusatzprodukt“ vs. getrennte Kaufwege kurz prüfen.
+
+---
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Lizenz strikt eigenständig (keine Verbindung zu Galerie-Lizenzen)** – `docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md` und `K2-FAMILIE-LIZENZ-KOSTEN.md` mit Klarstellung; `KONZEPT-LIZENZMODELL` §3.3 und mök2 (`#mok2-10d-k2-familie-lizenzmodell`) ohne Bundle-Story Galerie+Familie; `K2FamilieStartPage` Block `#k2-familie-lizenz-bruecke`; `k2FamilieStructure` Hash-Links + `familiePathWithoutHash` / Tests. **Commit:** **92ac2737** ✅ GitHub
 
 **Was wir JETZT tun:** Kurz im Browser: mök2-Sprungliste → K2-Familie-Abschnitt; K2 Familie → Leitbild & Vision → gelber Lizenz-Block.
