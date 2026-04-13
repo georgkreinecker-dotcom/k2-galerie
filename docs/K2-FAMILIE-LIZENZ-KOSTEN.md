@@ -1,7 +1,7 @@
 # K2 Familie – Lizenzprodukt: Cloud & faire Kostenstruktur
 
-**Stand:** 02.03.26  
-**Zweck:** K2 Familie ist ein Lizenzprodukt. Der gemeinsame Ort liegt in der Cloud. Faire Struktur für Kosten: wer, wann, wo, wie Lizenzgebühren zahlt.
+**Stand:** 13.04.26  
+**Zweck:** K2 Familie ist ein **eigenes** Lizenzprodukt. Der gemeinsame Ort soll in der Cloud liegen. Faire Struktur für Kosten: wer, wann, wo, wie Lizenzgebühren zahlt.
 
 **Quelle:** Georg – „Auf jeden Fall soll der gemeinsame Ort in der Cloud liegen. Da es ein Lizenzprodukt ist, sollten wir uns Gedanken machen, wie eine faire Struktur der Kosten aussehen könnte – wer wann wo und wie Lizenzgebühren zahlt.“
 
@@ -41,13 +41,12 @@
 
 ### Wo zahlt man?
 
-- **In der App** – z. B. nach Anlegen einer Familie oder beim ersten „Einladen“: Hinweis „Gemeinsamer Ort in der Cloud – Lizenz erforderlich“, Button **„Lizenz abschließen“** → Weiterleitung zu Checkout (wie bei K2 Galerie: Stripe).
-- **Oder** über bestehende K2-Galerie-Lizenz (Bundle): Wer K2 Galerie lizenziert hat, kann K2 Familie dazu buchen (optional).
+- **In der App** – z. B. nach Anlegen einer Familie oder beim ersten „Einladen“: Hinweis „Gemeinsamer Ort in der Cloud – Lizenz erforderlich“, Button **„Lizenz abschließen“** → Weiterleitung zum **K2-Familie-Checkout** (z. B. Stripe – **nur** dieses Produkt, siehe §4).
 - **Transparent:** Preise und Intervalle (jährlich/monatlich) klar anzeigen; keine versteckten Kosten.
 
 ### Wie zahlt man?
 
-- **Technisch:** Wie bei K2 Galerie – **Stripe Checkout** (Kreditkarte, SEPA, etc.); Lizenz wird nach Zahlung gespeichert (z. B. in Supabase `licences` mit `product: 'k2-familie'` oder ähnlich).
+- **Technisch:** **Stripe Checkout** (oder vergleichbar); Lizenz nach Zahlung speichern (z. B. in Supabase `licences` mit eigenem Produktkennzeichen nur für K2 Familie – **nicht** mit Galerie-Lizenz vermischen).
 - **Ablauf:** Nutzer legt Familie an (oder will Cloud aktivieren) → „Lizenz für gemeinsamen Ort“ → Checkout → nach Erfolg: Familie wird in Cloud angelegt, Einladungslink aktiv.
 - **Verlängerung:** Bei jährlicher/monatlicher Lizenz: Erinnerung vor Ablauf; Verlängerung im Account oder per Link.
 
@@ -57,17 +56,17 @@
 
 | Stufe | Inhalt | Preis (Beispiel) |
 |-------|--------|-------------------|
-| **K2 Familie Basic** | Eine Familie, gemeinsamer Ort in der Cloud, bis z. B. X eingeladene Nutzer oder Y Personen im Stammbaum. Einladungslink, Beiträge, Gedenkort. | z. B. einmalig oder jährlich – an K2 Galerie Preise anlehnen (Basic 15 €/Jahr o. ä.). |
-| **K2 Familie Pro** | Mehr Familien (z. B. für Berater/innen, Vereine) oder mehr Nutzer/Speicher; oder erweiterte Features. | Höhere Gebühr – analog Pro/Pro+ K2 Galerie. |
+| **K2 Familie Basic** | Eine Familie, gemeinsamer Ort in der Cloud, bis z. B. X eingeladene Nutzer oder Y Personen im Stammbaum. Einladungslink, Beiträge, Gedenkort. | Preis später festlegen (nur K2-Familie-Produkt; kein Mix mit Galerie-Stufen). |
+| **K2 Familie Pro** | Mehr Familien oder mehr Nutzer/Speicher; erweiterte Features. | Höhere Gebühr – **eigenes** Preismodell K2 Familie. |
 
-Preise und Limits später festlegen; die **Struktur** (eine Lizenz pro Familie, Gründer zahlt; wo/wie = in der App, Stripe) bleibt.
+Preise und Limits später festlegen; die **Struktur** (eine Lizenz pro Familie, Gründer zahlt; wo/wie = in der App, eigener Checkout) bleibt.
 
 ---
 
-## 4. Verknüpfung mit K2 Galerie
+## 4. Abgrenzung zu K2 Galerie (verbindlich)
 
-- **Getrennte Produkte, gleiche Infrastruktur:** K2 Galerie-Lizenzen (Galerie, Shop, Werke) und K2-Familie-Lizenzen können getrennt angeboten werden; Zahlung und Speicher (Supabase `licences`, Stripe) können dieselbe Infrastruktur nutzen (z. B. `product: 'k2-galerie'` vs. `product: 'k2-familie'`).
-- **Bundle optional:** „K2 Galerie + K2 Familie“ als Paket – einmal zahlen, beide nutzen. Später, wenn beides lizenziert wird.
+- **Lizenzen:** K2 Familie und K2 Galerie sind **getrennte Lizenzprodukte** – keine gemeinsame Rechnung, kein Bundle als Bestandteil dieser Produktdefinition. Details: **docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md**.
+- **Technik (nur intern):** Später können Stripe/Supabase **dieselbe Plattform-Infrastruktur** nutzen – das ist **Buchhaltung/Code-Trennung** (`product`-Kennzeichen getrennt), **keine** inhaltliche oder vertragliche „Verknüpfung“ der Lizenzen.
 
 ---
 
@@ -82,7 +81,7 @@ Preise und Limits später festlegen; die **Struktur** (eine Lizenz pro Familie, 
 - [ ] **Cloud-Backend für K2 Familie** umsetzen (Supabase oder API): Familiendaten pro Tenant in der Cloud; Einladungslink/Code; Sync für alle Geräte.
 - [ ] **Export & Druck** jederzeit anbieten und **Datensouveränität** kommunizieren („Deine Daten gehören dir – exportieren, ausdrucken, privat aufbewahren“); siehe **docs/K2-FAMILIE-DATENSOUVERAENITAET.md**.
 - [ ] **Lizenzmodell K2 Familie** festlegen: eine Lizenz pro Familie, Gründer zahlt; Stufe (Basic/Pro) und Intervall (jährlich/monatlich); Preise.
-- [ ] **Checkout K2 Familie** anbinden (Stripe, analog K2 Galerie); Lizenz-Check vor „Cloud aktivieren“ oder „Familie einladen“.
+- [ ] **Checkout K2 Familie** anbinden (Stripe oder vergleichbar, **eigenes** Produkt/Preis – nicht mit Galerie-Lizenz verknüpft); Lizenz-Check vor „Cloud aktivieren“ oder „Familie einladen“.
 - [ ] **Doku mök2/Handbuch:** K2 Familie als Lizenzprodukt, faire Kostenstruktur, wer/wann/wo/wie – für Vertrieb und Nutzer.
 
 ---

@@ -1,6 +1,6 @@
 # K2 Familie – Lizenz & Orientierung (eigenständig)
 
-**Stand:** 12.04.26  
+**Stand:** 13.04.26  
 
 ## Eiserne Klarstellung
 
