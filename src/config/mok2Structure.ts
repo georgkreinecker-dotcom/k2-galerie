@@ -65,6 +65,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-faehigkeiten-mix', label: 'Fähigkeiten-Mix (Fakten)' },
       { id: 'mok2-lizenz-pakete-aussen', label: 'Lizenzpakete (Außensicht)' },
       { id: 'mok2-10c-haupt-neben-lizenz', label: 'Haupt- und Nebenlizenzen (Konzept)' },
+      { id: 'mok2-10d-k2-familie-lizenzmodell', label: 'K2 Familie – Lizenz (eigenständig, Doku-Orientierung)' },
       { id: 'mok2-10b-vk2-lizenz', label: 'Lizenzstruktur VK2 (Vereinsplattform)' },
     ],
   },

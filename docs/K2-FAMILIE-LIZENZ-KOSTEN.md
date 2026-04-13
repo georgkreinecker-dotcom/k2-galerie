@@ -5,6 +5,8 @@
 
 **Quelle:** Georg – „Auf jeden Fall soll der gemeinsame Ort in der Cloud liegen. Da es ein Lizenzprodukt ist, sollten wir uns Gedanken machen, wie eine faire Struktur der Kosten aussehen könnte – wer wann wo und wie Lizenzgebühren zahlt.“
 
+**Abgrenzung:** Lizenz- und Kostenthemen **nur für K2 Familie** – **keine** Verbindung zu K2-Galerie-Lizenzen. Zur Begriffs-Orientierung (optional): **docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md**.
+
 ---
 
 ## 1. Gemeinsamer Ort = Cloud (verbindlich)

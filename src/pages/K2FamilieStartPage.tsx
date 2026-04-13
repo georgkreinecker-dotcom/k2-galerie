@@ -62,6 +62,17 @@ export default function K2FamilieStartPage() {
           <p>Jede Form des Zusammenlebens = ein Mandant. Jede Person = eine Seite (Foto, Text, Momente). Beziehungen = der Baum. Modern, app-tauglich, für jede Konstellation.</p>
         </div>
 
+        <div id="k2-familie-lizenz-bruecke" className="card" style={{ borderLeft: '4px solid rgba(251, 191, 36, 0.45)' }}>
+          <h2>Lizenz & Kosten – nur K2 Familie</h2>
+          <p>
+            <strong>Keine Verbindung zu K2-Galerie-Lizenzen.</strong> K2 Familie ist ein eigenes Lizenzprodukt; Abrechnung und Kostenstruktur stehen in der Projekt-Doku im Repo:{' '}
+            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md</code>{' '}
+            und{' '}
+            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZ-KOSTEN.md</code>.
+            mök2 und die allgemeine Plattform-Doku dienen nur zum <em>gleichen Sprachgebrauch</em> – nicht zur Koppelung mit der Galerie.
+          </p>
+        </div>
+
         <div className="card" style={{ borderLeft: '4px solid rgba(20,184,166,0.6)' }}>
           <h2>Musterfamilie Huber anzeigen</h2>
           <p>Eine bunte Demo-Familie: Paul & Antonia, 4 Kinder (2 Söhne, 2 Töchter), 6 Enkel, 3 Urenkel. Maria lebt mit Lebenspartnerin Sophie und adoptiertem Sohn Leon. Mit Platzhalter-Bildern und einer kleinen Jahresgeschichte (Events & Momente).</p>

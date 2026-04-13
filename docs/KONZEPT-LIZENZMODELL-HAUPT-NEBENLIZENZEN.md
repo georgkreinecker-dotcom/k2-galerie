@@ -51,8 +51,8 @@ Nebenlizenzen **ergänzen** oder **splitten** Verantwortung – ohne die Hauptli
 
 ### 3.3 Zusatzprodukt (Cross-Sell)
 
-- **Beispiel:** Kunde hat Galerie **Pro+**, möchte **K2 Familie** dazu.  
-- **Lizenz:** **Nebenlizenz „K2 Familie“** oder **Bundle** „Galerie + Familie“ – **getrennte Buchung**, damit Leistung und Support klar bleiben.
+- **Beispiel (nur Plattformlogik):** Kunde hat eine **Hauptlizenz Produkt A** und erwirbt **zusätzlich** ein **anderes benanntes Produkt B** – dann **getrennte oder gebündelte Buchung** je nach Angebot, damit Leistung und Support klar bleiben.
+- **K2 Familie (eigenes Kapitel):** Das Produkt **K2 Familie** hat **eigenständige** Lizenz- und Kostendokumentation (**docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md**, **docs/K2-FAMILIE-LIZENZ-KOSTEN.md**). **Keine Verknüpfung** zu Galerie-Lizenzen – weder vertraglich noch als Produktstory; die Plattform-Doku beschreibt hier nur **allgemeine** Zusatzprodukt-Typen.
 
 ### 3.4 Organisation / Verein (VK2)
 

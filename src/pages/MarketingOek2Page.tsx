@@ -1657,7 +1657,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         <ul style={{ marginBottom: '0.85rem', paddingLeft: '1.5em', lineHeight: 1.65, fontSize: '0.93rem', color: 'rgba(255,255,255,0.88)' }}>
           <li><strong>Zusätzlicher Mandant</strong> (eigene Seitenlinie, zweite Galerie/Familie mit eigener Datenwelt) – eigener Vertragsteil, technisch eigener <code>tenantId</code>.</li>
           <li><strong>Zusatznutzer / Bearbeitende</strong> im <strong>gleichen</strong> Mandanten – Rechte und Rollen, keine zweite Datenwelt.</li>
-          <li><strong>Zusatzprodukt</strong> (z. B. K2 Familie zur bestehenden Galerie) – getrennte Buchung oder Bundle, wenn am Markt eingeführt.</li>
+          <li><strong>Zusatzprodukt</strong> – weiteres benanntes Produkt der Plattform, getrennte oder gebündelte Buchung je nach Angebot (siehe Konzept-Doku).</li>
         </ul>
         <p style={{ marginBottom: '0.75rem', lineHeight: 1.55, fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)' }}>
           Kein direkter 1:1-Kundensupport pro Nutzer skaliert nicht – Nebenlizenzen ändern daran nichts (bestehende Leitlinie).
@@ -1668,6 +1668,24 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
         </p>
         <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.75)' }}>
           <strong>VK2-Konditionen</strong> (Verein, Lizenzmitglieder, 10-Mitglieder-Regel) sind in der <a href="#mok2-10b-vk2-lizenz" style={{ color: 'var(--k2-accent)', fontWeight: 600, textDecoration: 'none' }}>Lizenzstruktur VK2</a> festgehalten – das ist die <strong>Hauptlizenz-Stufe Verein</strong>, nicht eine Nebenlizenz.
+        </p>
+      </section>
+
+      {/* 10d. K2 Familie – eigenständige Lizenz-Doku (keine Koppelung an Galerie-Lizenzen) */}
+      <section id="mok2-10d-k2-familie-lizenzmodell" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
+        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
+          K2 Familie – Lizenz (eigenständig)
+        </h2>
+        <p style={{ marginBottom: '0.75rem', lineHeight: 1.65, fontSize: '0.95rem', color: 'rgba(255,255,255,0.92)' }}>
+          <strong>Keine Verbindung</strong> zwischen Lizenzen von <strong>K2 Familie</strong> und <strong>K2 Galerie</strong> – vertraglich und inhaltlich getrennte Produkte. mök2 und die Plattform-Konzept-Doku nutzen wir nur für <strong>denselben Begriffsrahmen</strong> (Hauptlizenz, Mandant, …); die verbindliche Lizenz-Beschreibung für K2 Familie steht <strong>nur</strong> in der K2-Familie-Projektdoku.
+        </p>
+        <p style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'rgba(255,255,255,0.85)' }}>
+          <strong>Quellen im Repo:</strong>{' '}
+          <code style={{ color: '#5ffbf1' }}>docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md</code>,{' '}
+          <code style={{ color: '#5ffbf1' }}>docs/K2-FAMILIE-LIZENZ-KOSTEN.md</code>
+        </p>
+        <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.78)' }}>
+          In der App: Projekt K2 Familie → <Link to={`${PROJECT_ROUTES['k2-familie'].uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: '#5ffbf1', textDecoration: 'none', fontWeight: 600 }}>Leitbild &amp; Vision</Link> (Kurzblock zur Abgrenzung).
         </p>
       </section>
 

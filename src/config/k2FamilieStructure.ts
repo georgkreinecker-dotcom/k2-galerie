@@ -20,7 +20,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     chapterTitle: 'Start & Orientierung',
     sections: [
       { id: 'fam-home', label: 'Meine Familie', to: R.home },
-      { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: R.uebersicht },
+      { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
     ],
   },
   {
@@ -55,16 +55,23 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
   },
 ]
 
+/** Pfad ohne Hash – für aktiven Zustand bei Links mit Anker (#) */
+export function familiePathWithoutHash(to: string): string {
+  const i = to.indexOf('#')
+  return i >= 0 ? to.slice(0, i) : to
+}
+
 /** Aktiver Eintrag: eine Regel für horizontale Nav und Leitstruktur-Panel */
 export function isFamilieNavSectionActive(pathname: string, to: string): boolean {
-  if (to === R.home) {
+  const pathTo = familiePathWithoutHash(to)
+  if (pathTo === R.home) {
     return pathname === R.home || pathname === `${R.home}/`
   }
-  if (to === R.benutzerHandbuch) {
+  if (pathTo === R.benutzerHandbuch) {
     return pathname === R.benutzerHandbuch || pathname.startsWith(`${R.benutzerHandbuch}/`)
   }
-  if (to === R.stammbaum) {
+  if (pathTo === R.stammbaum) {
     return pathname.startsWith(R.stammbaum) || pathname.startsWith(`${R.home}/personen`)
   }
-  return pathname === to || pathname.startsWith(`${to}/`)
+  return pathname === pathTo || pathname.startsWith(`${pathTo}/`)
 }
