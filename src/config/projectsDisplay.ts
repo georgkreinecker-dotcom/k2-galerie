@@ -89,6 +89,14 @@ export function getProjectCards(): ProjectCard[] {
       color: '#a78bfa',
       status: 'in-progress',
     },
+    {
+      id: 'k2-familie-willkommen',
+      title: 'K2 Familie – Einstieg',
+      description: 'Kurz erklärt: Stammbaum, Homepage-Gefühl, dann ein Klick zur Familien-App.',
+      to: PROJECT_ROUTES['k2-familie'].willkommen,
+      color: PROJECT_COLORS['k2-familie'],
+      status: 'in-progress',
+    },
   ]
 
   return [...cards, ...extraCards]

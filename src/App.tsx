@@ -64,6 +64,7 @@ import K2FamilieBenutzerHandbuchPage from './pages/K2FamilieBenutzerHandbuchPage
 import K2FamiliePraesentationsmappePage from './pages/K2FamiliePraesentationsmappePage'
 import K2FamilieEntwicklungDokuPage from './pages/K2FamilieEntwicklungDokuPage'
 import K2FamilieSicherungPage from './pages/K2FamilieSicherungPage'
+import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
@@ -884,6 +885,8 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<PlatformOnlyRoute><Navigate to="/admin?context=vk2" replace /></PlatformOnlyRoute>} />
       {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
       <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
+      {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
+      <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
         <Route index element={<K2FamilieHomePage />} />
         <Route path="uebersicht" element={<K2FamilieStartPage />} />

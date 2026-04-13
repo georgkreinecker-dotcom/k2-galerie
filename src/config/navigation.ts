@@ -11,6 +11,9 @@ export const MOK2_ROUTE = '/mok2'
 /** Willkommensseite für Werbung/Flyer: Zugangsbereich (Anmelden / Zur Ansicht / Erster Entwurf) */
 export const WILLKOMMEN_ROUTE = '/willkommen'
 
+/** Marketing-Einstieg K2 Familie (Flyer/QR) – nicht mit {WILLKOMMEN_ROUTE} verwechseln */
+export const K2_FAMILIE_WILLKOMMEN_ROUTE = '/projects/k2-familie/willkommen'
+
 /** Allgemeine Geschäftsbedingungen – rechtliche Absicherung */
 export const AGB_ROUTE = '/agb'
 
@@ -237,6 +240,8 @@ export const PROJECT_ROUTES = {
     id: 'k2-familie',
     name: 'K2 Familie',
     home: '/projects/k2-familie',
+    /** Marketing/Flyer: kurze Vorstellung, dann CTA zur Familien-App (ohne Galerie-/willkommen) */
+    willkommen: K2_FAMILIE_WILLKOMMEN_ROUTE,
     uebersicht: '/projects/k2-familie/uebersicht',
     stammbaum: '/projects/k2-familie/stammbaum',
     grundstruktur: '/projects/k2-familie/grundstruktur',

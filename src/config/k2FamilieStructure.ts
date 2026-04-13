@@ -19,6 +19,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
   {
     chapterTitle: 'Start & Orientierung',
     sections: [
+      { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
       { id: 'fam-home', label: 'Meine Familie', to: R.home },
       { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
     ],
