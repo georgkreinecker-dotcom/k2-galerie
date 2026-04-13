@@ -1,10 +1,11 @@
 /**
  * K2 Familie – Inhaber:in: alle Personen mit persönlicher Mitgliedsnummer, Drucken, Text für Mail/WhatsApp.
  * Route: /projects/k2-familie/mitglieder-codes
+ * Reihenfolge & Gruppierung wie Stammbaum-Zweige (s. buildMitgliederCodesZweigGruppen).
  */
 
 import { Link } from 'react-router-dom'
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, Fragment } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
@@ -12,8 +13,13 @@ import { adminTheme } from '../config/theme'
 import { APP_BASE_URL } from '../config/externalUrls'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
-import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
+import { loadEinstellungen, loadPersonen, savePersonen } from '../utils/familieStorage'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
+import {
+  assignMissingMitgliedsNummern,
+  buildMitgliederCodesZweigGruppen,
+  MITGLIEDS_NUMMER_AUTO_PREFIX,
+} from '../utils/familieMitgliedsNummer'
 
 const R = PROJECT_ROUTES['k2-familie']
 
@@ -38,19 +44,16 @@ export default function K2FamilieMitgliederCodesPage() {
   const kannInstanz = capabilities.canManageFamilienInstanz
   const { versionTimestamp } = useQrVersionTimestamp()
   const [kopiert, setKopiert] = useState(false)
+  const [listenRefresh, setListenRefresh] = useState(0)
 
-  const { familienZ, rows } = useMemo(() => {
+  const { familienZ, zweigGruppen, alleRows } = useMemo(() => {
     const einst = loadEinstellungen(currentTenantId)
     const z = (einst.mitgliedsNummerAdmin ?? '').trim()
     const personen = loadPersonen(currentTenantId)
-    const sorted = [...personen].sort((p, q) => (p.name || '').localeCompare(q.name || '', 'de'))
-    const r = sorted.map((p) => ({
-      id: p.id,
-      name: p.name?.trim() || '—',
-      mitgliedsNummer: (p.mitgliedsNummer ?? '').trim(),
-    }))
-    return { familienZ: z, rows: r }
-  }, [currentTenantId])
+    const gruppen = buildMitgliederCodesZweigGruppen(personen, einst.ichBinPersonId)
+    const rows = gruppen.flatMap((g) => g.rows)
+    return { familienZ: z, zweigGruppen: gruppen, alleRows: rows }
+  }, [currentTenantId, listenRefresh])
 
   const buildUrlForPerson = useCallback(
     (m: string) => {
@@ -61,26 +64,39 @@ export default function K2FamilieMitgliederCodesPage() {
   )
 
   const listeText = useMemo(() => {
-    const header = `K2 Familie – Mitglieder & persönliche Codes\nFamilien-Zugang: ${familienZ || '—'}\n`
-    const lines = rows
-      .filter((r) => r.mitgliedsNummer)
-      .map((r) => {
+    const header = `K2 Familie – Mitglieder & persönliche Codes\nFamilien-Zugang: ${familienZ || '—'}\n(Sortierung: Familienzweige wie im Stammbaum)\n`
+    const blocks: string[] = []
+    for (const g of zweigGruppen) {
+      const mit = g.rows.filter((r) => r.mitgliedsNummer)
+      if (mit.length === 0) continue
+      blocks.push(`\n── ${g.branchLabel} ──`)
+      for (const r of mit) {
         const url = buildUrlForPerson(r.mitgliedsNummer)
-        return `${r.name}\t${r.mitgliedsNummer}\t${url}`
-      })
-    const ohne = rows.filter((r) => !r.mitgliedsNummer)
+        blocks.push(`${r.name}\t${r.mitgliedsNummer}\t${url}`)
+      }
+    }
+    const ohne = alleRows.filter((r) => !r.mitgliedsNummer)
     const footer =
       ohne.length > 0
-        ? `\nOhne Mitgliedsnummer (${ohne.length}): ${ohne.map((o) => o.name).join(', ')}`
+        ? `\n\nOhne Mitgliedsnummer (${ohne.length}): ${ohne.map((o) => o.name).join(', ')} — Button „Fehlende Nummern vergeben“ oder auf der Personenkarte eintragen.`
         : ''
-    return header + lines.join('\n') + footer
-  }, [rows, familienZ, buildUrlForPerson])
+    return header + blocks.join('\n') + footer
+  }, [zweigGruppen, alleRows, familienZ, buildUrlForPerson])
 
   const copyListe = () => {
     void navigator.clipboard.writeText(listeText).then(() => {
       setKopiert(true)
       window.setTimeout(() => setKopiert(false), 2400)
     })
+  }
+
+  const fehlendeVergaben = () => {
+    const personen = loadPersonen(currentTenantId)
+    const einst = loadEinstellungen(currentTenantId)
+    const next = assignMissingMitgliedsNummern(personen, einst.ichBinPersonId)
+    if (savePersonen(currentTenantId, next, { allowReduce: false })) {
+      setListenRefresh((k) => k + 1)
+    }
   }
 
   if (!kannInstanz) {
@@ -119,8 +135,8 @@ export default function K2FamilieMitgliederCodesPage() {
     )
   }
 
-  const mitNummer = rows.filter((r) => r.mitgliedsNummer)
-  const ohneNummer = rows.filter((r) => !r.mitgliedsNummer)
+  const mitNummer = alleRows.filter((r) => r.mitgliedsNummer)
+  const ohneNummer = alleRows.filter((r) => !r.mitgliedsNummer)
 
   return (
     <div className="mission-wrapper">
@@ -146,9 +162,11 @@ export default function K2FamilieMitgliederCodesPage() {
           Mitglieder &amp; persönliche Codes
         </h1>
         <p style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.55 }}>
-          Alle Personen mit eingetragener <strong style={{ color: a.text }}>Mitgliedsnummer</strong> auf der Karte — mit persönlichem Einladungslink (Familien-Zugang{' '}
+          <strong style={{ color: a.text }}>Mitgliedsnummern</strong> werden beim Anlegen von Personen automatisch vergeben ({MITGLIEDS_NUMMER_AUTO_PREFIX}0001 …), sortiert nach{' '}
+          <strong style={{ color: a.text }}>Familienzweigen</strong> wie im Stammbaum.{' '}
+          <strong style={{ color: a.text }}>Verstorbene</strong> erscheinen hier nicht. Persönliche Einladungslinks (Familien-Zugang{' '}
           <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>
-          ). Liste ausdrucken oder Text kopieren für Mail und WhatsApp.
+          ) — Liste drucken oder Text kopieren.
         </p>
 
         <div className="no-print-familie-codes" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -185,6 +203,25 @@ export default function K2FamilieMitgliederCodesPage() {
           >
             {kopiert ? '✓ In Zwischenablage kopiert' : 'Text für Mail & WhatsApp kopieren'}
           </button>
+          {ohneNummer.length > 0 ? (
+            <button
+              type="button"
+              onClick={fehlendeVergaben}
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+                borderRadius: a.radius,
+                border: `1px solid rgba(22, 101, 52, 0.45)`,
+                background: 'rgba(22, 101, 52, 0.12)',
+                color: '#166534',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
+            >
+              Fehlende Nummern jetzt vergeben ({ohneNummer.length})
+            </button>
+          ) : null}
         </div>
 
         {!familienZ ? (
@@ -214,47 +251,81 @@ export default function K2FamilieMitgliederCodesPage() {
               </tr>
             </thead>
             <tbody>
-              {mitNummer.map((r) => {
-                const url = buildUrlForPerson(r.mitgliedsNummer)
-                return (
-                  <tr key={r.id} style={{ borderBottom: '1px solid rgba(181, 74, 30, 0.08)' }} title={url || undefined}>
-                    <td style={{ padding: '0.5rem 0.65rem', color: a.text }}>{r.name}</td>
-                    <td style={{ padding: '0.5rem 0.65rem', fontFamily: 'ui-monospace, monospace', color: a.text }}>{r.mitgliedsNummer}</td>
-                    <td style={{ padding: '0.5rem 0.65rem' }} className="no-print-familie-codes">
-                      <Link to={`${R.personen}/${r.id}`} style={{ color: a.accent, fontWeight: 600, fontSize: '0.85rem' }}>
-                        Person öffnen
-                      </Link>
+              {zweigGruppen.map((g, gi) => (
+                <Fragment key={`${g.branchKey}-${gi}`}>
+                  <tr style={{ background: a.bgDark }}>
+                    <td
+                      colSpan={3}
+                      style={{
+                        padding: '0.45rem 0.65rem',
+                        fontSize: '0.82rem',
+                        fontWeight: 700,
+                        color: a.accent,
+                        borderBottom: '1px solid rgba(181, 74, 30, 0.15)',
+                      }}
+                    >
+                      {g.branchLabel}
                     </td>
                   </tr>
-                )
-              })}
+                  {g.rows.map((r) => {
+                    const url = r.mitgliedsNummer ? buildUrlForPerson(r.mitgliedsNummer) : ''
+                    return (
+                      <tr key={r.id} style={{ borderBottom: '1px solid rgba(181, 74, 30, 0.08)' }} title={url || undefined}>
+                        <td style={{ padding: '0.5rem 0.65rem', color: a.text }}>{r.name}</td>
+                        <td style={{ padding: '0.5rem 0.65rem', fontFamily: 'ui-monospace, monospace', color: a.text }}>
+                          {r.mitgliedsNummer || '—'}
+                        </td>
+                        <td style={{ padding: '0.5rem 0.65rem' }} className="no-print-familie-codes">
+                          <Link to={`${R.personen}/${r.id}`} style={{ color: a.accent, fontWeight: 600, fontSize: '0.85rem' }}>
+                            Person öffnen
+                          </Link>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </Fragment>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {mitNummer.length === 0 ? (
+        {mitNummer.length === 0 && alleRows.length > 0 ? (
           <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
-            Noch keine Mitgliedsnummern eingetragen. Auf jeder Personenkarte unter Stammbaum → Person die Nummer setzen.
+            Noch keine Mitgliedsnummern — oben „Fehlende Nummern jetzt vergeben“ wählen oder einzeln auf der Personenkarte eintragen.
           </p>
         ) : null}
 
-        {/* Druck: volle URLs pro Zeile */}
+        {alleRows.length === 0 ? (
+          <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
+            Noch keine Personen im Stammbaum.
+          </p>
+        ) : null}
+
+        {/* Druck: volle URLs pro Zeile, nach Zweigen */}
         <div className="print-only-familie-codes" style={{ display: 'none' }}>
-          {mitNummer.map((r) => {
-            const url = buildUrlForPerson(r.mitgliedsNummer)
-            return (
-              <p key={`p-${r.id}`} style={{ margin: '0.35rem 0', fontSize: '10pt', wordBreak: 'break-all' }}>
-                <strong>{r.name}</strong> · {r.mitgliedsNummer} · {url}
-              </p>
-            )
-          })}
+          {zweigGruppen.map((g, gi) => (
+            <div key={`print-${g.branchKey}-${gi}`} style={{ marginBottom: '0.75rem' }}>
+              <p style={{ margin: '0 0 0.25rem', fontSize: '10pt', fontWeight: 700 }}>{g.branchLabel}</p>
+              {g.rows
+                .filter((r) => r.mitgliedsNummer)
+                .map((r) => {
+                  const url = buildUrlForPerson(r.mitgliedsNummer)
+                  return (
+                    <p key={`p-${r.id}`} style={{ margin: '0.35rem 0', fontSize: '10pt', wordBreak: 'break-all' }}>
+                      <strong>{r.name}</strong> · {r.mitgliedsNummer} · {url}
+                    </p>
+                  )
+                })}
+            </div>
+          ))}
         </div>
 
         {ohneNummer.length > 0 ? (
           <div style={{ marginTop: '1.15rem', padding: '0.75rem 0.9rem', borderRadius: a.radius, background: a.bgDark, border: '1px solid rgba(181, 74, 30, 0.12)' }}>
             <div style={{ fontSize: '0.88rem', fontWeight: 700, color: a.text, marginBottom: '0.35rem' }}>Ohne Mitgliedsnummer ({ohneNummer.length})</div>
             <p style={{ margin: 0, fontSize: '0.82rem', color: a.muted, lineHeight: 1.45 }}>
-              {ohneNummer.map((o) => o.name).join(', ')} — Nummer in der Personenkarte eintragen, dann erscheint die Person in der Tabelle oben.
+              {ohneNummer.map((o) => o.name).join(', ')} —{' '}
+              <strong style={{ color: a.text }}>Fehlende Nummern jetzt vergeben</strong> (gleiche Reihenfolge wie Stammbaum-Zweige) oder einzeln auf der Personenkarte eintragen.
             </p>
           </div>
         ) : null}
