@@ -6,6 +6,8 @@
 
 import type { ReactNode } from 'react'
 import { Fragment } from 'react'
+import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import { FAMILIE_DRUCK_RECHTE_ZEILEN } from '../types/k2FamilieRollen'
 import type { K2FamilieKontaktAdresse, K2FamiliePerson } from '../types/k2Familie'
 import { normalizeFamilieDatum } from '../utils/familieDatumEingabe'
 import { buildStammbaumKartenState } from '../utils/familieStammbaumKarten'
@@ -695,6 +697,63 @@ export function StammbaumDruckRegister({
           </tr>
         </tfoot>
       </table>
+    </div>
+  )
+}
+
+/** Eine Seite: Schreib- und Leserechte für die Familie (PDF/Druck aus dem Stammbaum, ohne Personendaten). */
+export function StammbaumDruckSchreibLeserechte({ familienName }: { familienName: string }) {
+  const stand =
+    typeof Intl !== 'undefined'
+      ? new Intl.DateTimeFormat('de-AT', { dateStyle: 'short', timeStyle: 'short' }).format(new Date())
+      : new Date().toLocaleString('de-AT')
+
+  return (
+    <div className="stammbaum-print-liste stammbaum-print-schreib-leserechte">
+      <h1 className="stammbaum-druck-titel">{familienName}</h1>
+      <p className="stammbaum-print-untertitel">Schreib- und Leserechte · komprimiert (für die Familie)</p>
+      <p className="stammbaum-print-meta" style={{ marginTop: '0.35rem', lineHeight: 1.45 }}>
+        Gleiche drei Rollen wie in der App (oben wählbar). Zum Ausdrucken oder „Als PDF speichern“ im
+        Druckdialog – ohne Personendaten.
+      </p>
+      <h2 className="stammbaum-print-h2" style={{ marginTop: '0.75rem', marginBottom: '0.35rem' }}>
+        Lesen und Schreiben nach Rolle
+      </h2>
+      <table className="stammbaum-print-table stammbaum-print-rechte-pdf-table">
+        <thead>
+          <tr>
+            <th scope="col">Rolle</th>
+            <th scope="col">Lesen</th>
+            <th scope="col">Schreiben</th>
+          </tr>
+        </thead>
+        <tbody>
+          {FAMILIE_DRUCK_RECHTE_ZEILEN.map((z) => (
+            <tr key={z.rolle}>
+              <td className="stammbaum-print-td-name">
+                <strong>{z.rolle}</strong>
+              </td>
+              <td>{z.lesen}</td>
+              <td>{z.schreiben}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="stammbaum-print-meta" style={{ marginTop: '0.65rem', lineHeight: 1.45 }}>
+        <strong>Eigene Karte:</strong> Fotos und Texte auf der eigenen Personenkarte – soweit die Rolle
+        Speichern erlaubt. Beziehungen und Stammbaum-Struktur nur mit Inhaber:in.
+      </p>
+      <p className="stammbaum-print-meta" style={{ marginTop: '0.45rem', lineHeight: 1.45, fontSize: '0.78rem' }}>
+        Spätere Erweiterung (z.&nbsp;B. Rechte nach Familienzweig): K2 Familie → Benutzerhandbuch, Kapitel zu
+        Rollen &amp; Rechten.
+      </p>
+      <p className="stammbaum-print-meta stammbaum-print-rechte-fuss" style={{ marginTop: '0.85rem', fontSize: '0.72rem', lineHeight: 1.4 }}>
+        {PRODUCT_COPYRIGHT_BRAND_ONLY}
+        <br />
+        {PRODUCT_URHEBER_ANWENDUNG}
+        <br />
+        Stand: {stand}
+      </p>
     </div>
   )
 }

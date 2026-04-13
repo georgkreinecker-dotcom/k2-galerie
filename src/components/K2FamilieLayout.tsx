@@ -9,12 +9,18 @@ import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenan
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { K2_FAMILIE_ROLLEN, K2_FAMILIE_ROLLEN_LABELS } from '../types/k2FamilieRollen'
+import {
+  K2_FAMILIE_ROLLEN,
+  K2_FAMILIE_ROLLEN_AMPEL,
+  K2_FAMILIE_ROLLEN_EINZEILER,
+  K2_FAMILIE_ROLLEN_LABELS,
+} from '../types/k2FamilieRollen'
 import { adminTheme } from '../config/theme'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import FamilieBackButton from './FamilieBackButton'
 import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
 import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
+import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
 
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
@@ -99,7 +105,7 @@ function FamilieRolleLeiste() {
         }}
       >
         <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
-          Rolle (Sitzung):
+          Deine Rolle:
         </span>
         <select
           id="k2-familie-rolle-select"
@@ -123,26 +129,43 @@ function FamilieRolleLeiste() {
             </option>
           ))}
         </select>
-        <span className="meta" style={{ color: t.muted, fontSize: '0.78rem', flex: '1 1 200px' }}>
-          {capabilities.rolle === 'leser' && 'Nur Lesen – nichts wird gespeichert.'}
-          {capabilities.rolle === 'bearbeiter' &&
-            'Stammbaum & Stammdaten nur lesen; Events, Geschichte, Gedenkort bearbeitbar. Kein Merge, keine neue Familie.'}
-          {capabilities.rolle === 'inhaber' && 'Voller Zugriff; neue Familien anlegen.'}
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            color: t.text,
+            fontSize: '0.84rem',
+            flex: '1 1 220px',
+            lineHeight: 1.35,
+          }}
+        >
+          <span
+            aria-hidden
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              background: K2_FAMILIE_ROLLEN_AMPEL[rolle],
+              flexShrink: 0,
+              boxShadow: '0 0 0 1px rgba(0,0,0,0.06)',
+            }}
+          />
+          {K2_FAMILIE_ROLLEN_EINZEILER[rolle]}
         </span>
       </div>
       {capabilities.rolle === 'leser' && (
         <div
           role="status"
           style={{
-            padding: '0.5rem 1rem',
-            background: 'rgba(181, 74, 30, 0.1)',
+            padding: '0.45rem 1rem',
+            background: 'rgba(100, 116, 139, 0.12)',
             borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
-            fontSize: '0.88rem',
+            fontSize: '0.82rem',
             color: t.text,
-            fontWeight: 600,
           }}
         >
-          Lesemodus: Speichern und Bearbeiten sind ausgeschaltet. Zum Ausprobieren Rolle oben auf Inhaber:in oder Bearbeiter:in stellen.
+          Lesemodus – zum Mitgestalten oben auf Inhaber:in oder Bearbeiter:in stellen.
         </div>
       )}
     </>
@@ -259,6 +282,7 @@ export default function K2FamilieLayout() {
     <FamilieTenantProvider>
       <FamilieRolleProvider>
         <FamilieEinladungQuerySync />
+        <FamilieCloudAutoSync />
         <div className="k2-familie-layout-shell">
           <FamilieLeitstrukturPanel />
           <div className="k2-familie-layout-column">

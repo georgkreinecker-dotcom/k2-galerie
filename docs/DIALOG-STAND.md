@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie: Rollen smart & eine Quelle** – `k2FamilieRollen.ts`: `K2_FAMILIE_ROLLEN_EINZEILER`, `K2_FAMILIE_ROLLEN_AMPEL`, `FAMILIE_DRUCK_RECHTE_ZEILEN` (3 Rollen). `K2FamilieLayout`: Ampelpunkt + eine Zeile statt drei Fachtexte; Leser-Banner kürzer. `StammbaumDruckSchreibLeserechte`: Tabelle aus derselben Quelle; kurzer Handbuch-Hinweis für spätere Zweige. Test `k2FamilieRollen.test.ts`. **Commit:** **`8ba82762`** ✅ GitHub (nach Push)
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Einladung `?t=`/`?z=` auf allen Layout-Routen** – Bisher nur auf „Meine Familie“ verarbeitet → falsche/generische Familie bei Einstieg/Index/Marketing-URL. **Fix:** `FamilieEinladungQuerySync` in `K2FamilieLayout` (zentral); `K2FamilieWillkommenPage` → sofort nach `meine-familie` mit gleicher Query; `K2FamilieRootIndexRedirect` für `/projects/k2-familie` mit `location.search`; Duplikat aus `K2FamilieHomePage` entfernt. **Commit:** **`4f8d0888`** ✅ GitHub
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Einladungs-QR: richtiger Tenant auf neuem Gerät** – Ursache: `?t=` wirkte nur wenn die ID schon in `tenantList` (localStorage) stand. **Fix:** `ensureTenantInListAndSelect` in `FamilieTenantContext`, `K2FamilieHomePage` Einladungs-Effekt; `isValidFamilieTenantId` in `familieStorage`; Test `familieTenantId.test.ts`; Doku-Zeile in **K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN**. **Commit:** **`ae73fd25`** ✅ GitHub.

@@ -21,6 +21,45 @@ export const K2_FAMILIE_ROLLEN_KURZ: Record<K2FamilieRolle, string> = {
   leser: 'Nur ansehen, nichts speichern',
 }
 
+/** Eine Zeile unter der Rollenwahl – Alltagssprache, keine Fachliste (Sportwagenmodus: sofort klar). */
+export const K2_FAMILIE_ROLLEN_EINZEILER: Record<K2FamilieRolle, string> = {
+  inhaber: 'Du kannst alles bearbeiten – Stammbaum, Daten und Sicherung.',
+  bearbeiter: 'Du bearbeitest Texte und Termine; den Stammbaum siehst du, änderst du nicht.',
+  leser: 'Du schaust nur zu – nichts wird gespeichert.',
+}
+
+/** Ampel-Punkt neben der Erklärung (Leser = zurückhaltend, Inhaber = klar „darf“). */
+export const K2_FAMILIE_ROLLEN_AMPEL: Record<K2FamilieRolle, string> = {
+  inhaber: '#0d9488',
+  bearbeiter: '#d97706',
+  leser: '#64748b',
+}
+
+/** Druck-PDF „Schreib- und Leserechte“ – gleiche Rollen wie in der App, eine Tabelle. */
+export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
+  rolle: string
+  lesen: string
+  schreiben: string
+}[] = [
+  {
+    rolle: 'Inhaber:in',
+    lesen: 'Alles ansehen, was in der Familie eingetragen ist.',
+    schreiben:
+      'Stammbaum und Stammdaten, Momente, Events, Geschichte, Gedenkort; Sicherung und neue Familie – volle Verantwortung für die Instanz.',
+  },
+  {
+    rolle: 'Bearbeiter:in',
+    lesen: 'Wie Inhaber:in – alles ansehen.',
+    schreiben:
+      'Geschichte, Events, Gedenkort und persönliche Texte auf Karten; kein Stammbaum/Beziehungen ändern, kein Backup einspielen oder neue Familie.',
+  },
+  {
+    rolle: 'Leser:in',
+    lesen: 'Alles ansehen.',
+    schreiben: 'Nichts – Speichern ist aus.',
+  },
+]
+
 export interface FamilieRollenCapabilities {
   rolle: K2FamilieRolle
   /** Immer true (Leser dürfen alles sehen) */

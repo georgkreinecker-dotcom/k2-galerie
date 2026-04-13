@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
+import {
+  FAMILIE_DRUCK_RECHTE_ZEILEN,
+  K2_FAMILIE_ROLLEN,
+  K2_FAMILIE_ROLLEN_AMPEL,
+  K2_FAMILIE_ROLLEN_EINZEILER,
+  getFamilieRollenCapabilities,
+} from '../types/k2FamilieRollen'
 
 describe('K2 Familie Rollen', () => {
   it('Inhaber:in: alle Rechte', () => {
@@ -28,5 +34,13 @@ describe('K2 Familie Rollen', () => {
     expect(c.canExportSicherung).toBe(false)
     expect(c.canRestoreSicherung).toBe(false)
     expect(c.canManageFamilienInstanz).toBe(false)
+  })
+  it('Einzeiler, Ampel und Druck-Tabelle: drei Rollen, eine Quelle', () => {
+    for (const r of K2_FAMILIE_ROLLEN) {
+      expect(K2_FAMILIE_ROLLEN_EINZEILER[r].length).toBeGreaterThan(10)
+      expect(K2_FAMILIE_ROLLEN_AMPEL[r]).toMatch(/^#[0-9a-f]{6}$/i)
+    }
+    expect(FAMILIE_DRUCK_RECHTE_ZEILEN).toHaveLength(3)
+    expect(FAMILIE_DRUCK_RECHTE_ZEILEN.every((z) => z.rolle && z.lesen && z.schreiben)).toBe(true)
   })
 })
