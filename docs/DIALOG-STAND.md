@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **AGB: Rechtsstruktur (Haupt-/Nebenlizenz, Mandant, K2 Familie)** – `src/pages/AGBPage.tsx`: §§1–12 (Vertragspartner kgm solution, Lizenzmodell, Testphase, Leistung, Haftung, Datenschutz, Urheber, Steuern/Buchhaltung, Mängel, Kündigung Nutzer, Änderungen Anbieter, Schlussbestimmungen); `docs/AGB-VORLAGE-RECHTSSTRUKTUR.md`; Verweise aktualisiert in `MarketingOek2Page`, Benutzerhandbuch 08/09, `KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN`, `OEK2-ANMELDUNG-LIZENZIERUNG-STAND`, `docs/00-INDEX`. Tests 444 grün, Build ok. **Commit:** **74d2200b** ✅ GitHub
+
+**Was wir JETZT tun:** Optional: Anwalts-Review AGB; bei Konflikt Produktbeschreibung vs. AGB wie in Hinweisbox.
+
+---
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Lizenzkosten-Doku endgültig ohne Bundle/Galerie-Vergleich** – `docs/K2-FAMILIE-LIZENZ-KOSTEN.md`: §2 „Wo zahlt man?“ nur K2-Familie-Checkout; Bullet „Galerie-Lizenz Bundle“ entfernt; Roadmap §6 ohne „analog K2 Galerie“. `K2-FAMILIE-LIZENZMODELL-BRUECKE.md` Stand 13.04.26. Tests 444 grün, Build ok. **Commit:** **55812151** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: mök2 / Konzept nur bei Bedarf auf Hinweise „Zusatzprodukt“ vs. getrennte Kaufwege kurz prüfen.

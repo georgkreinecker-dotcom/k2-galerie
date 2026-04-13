@@ -267,6 +267,8 @@ Wenn nein: wir lassen es.
 
 ---
 
+**Session-Reflexion (11.04.26):** AGB in der App und Doku mit Lizenzmodell (Haupt-/Nebenlizenz, Mandant, K2 Familie) abgebildet; eine Referenz-Datei gegen Textdrift; Verweise im Marketing und Handbuch angeglichen – Rechtssicherheit stützt Anwalt + konsistente Quellen.
+
 **Session-Reflexion (10.04.26):** K2 Familie Stammbaum: Partner als eigene Teil-Zweige in der Kartenliste (Kern + pro Kind) – weiterhin eine Quelle aus den Karten; nächster sinnvoller Schritt: echte Daten kurz gegenprüfen.
 
 ---
