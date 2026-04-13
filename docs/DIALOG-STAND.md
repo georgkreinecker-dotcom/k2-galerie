@@ -1,6 +1,12 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **AGB: Rechtsstruktur (Haupt-/Nebenlizenz, Mandant, K2 Familie)** – `src/pages/AGBPage.tsx`: §§1–12 (Vertragspartner kgm solution, Lizenzmodell, Testphase, Leistung, Haftung, Datenschutz, Urheber, Steuern/Buchhaltung, Mängel, Kündigung Nutzer, Änderungen Anbieter, Schlussbestimmungen); `docs/AGB-VORLAGE-RECHTSSTRUKTUR.md`; Verweise aktualisiert in `MarketingOek2Page`, Benutzerhandbuch 08/09, `KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN`, `OEK2-ANMELDUNG-LIZENZIERUNG-STAND`, `docs/00-INDEX`. Tests 444 grün, Build ok. **Commits:** AGB **74d2200b**, DIALOG-STAND/WIR-PROZESS **99fe86a7** ✅ GitHub
+**Letzter Stand:** 11.04.26 – **Homepage (/) APf: Lizenzstruktur sichtbar gemacht** – `PlatformStartPage.tsx`: Abschnitt „Lizenzstruktur“ (Haupt- vs. Nebenlizenz, Mandant, Zusatzprodukt); Unterzeile „Lizenzmodell“; Links zu Lizenzen, mök2 `#mok2-10c-haupt-neben-lizenz`, AGB §2. Tests 444 grün, Build ok. **Commit:** *folgt nach Push* ✅
+
+**Was wir JETZT tun:** APf im Browser `/` kurz prüfen (nur Desktop; Mobile leitet zur Galerie).
+
+---
+
+**Letzter Stand:** 11.04.26 – **AGB: Rechtsstruktur (Haupt-/Nebenlizenz, Mandant, K2 Familie)** – `src/pages/AGBPage.tsx`: §§1–12 (Vertragspartner kgm solution, Lizenzmodell, Testphase, Leistung, Haftung, Datenschutz, Urheber, Steuern/Buchhaltung, Mängel, Kündigung Nutzer, Änderungen Anbieter, Schlussbestimmungen); `docs/AGB-VORLAGE-RECHTSSTRUKTUR.md`; Verweise aktualisiert in `MarketingOek2Page`, Benutzerhandbuch 08/09, `KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN`, `OEK2-ANMELDUNG-LIZENZIERUNG-STAND`, `docs/00-INDEX`. Tests 444 grün, Build ok. **Commit (main, Gesamtpaket AGB+Doku):** **00a2dc24** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: Anwalts-Review AGB; bei Konflikt Produktbeschreibung vs. AGB wie in Hinweisbox.
 

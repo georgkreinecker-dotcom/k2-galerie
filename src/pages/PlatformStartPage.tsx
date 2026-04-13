@@ -2,7 +2,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import '../App.css'
-import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
+import { AGB_ROUTE, PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE } from '../config/navigation'
+
+/** Gleicher Anker wie LicencesPage / mök2-Sidebar – Haupt- und Nebenlizenzen */
+const MOK2_LIZENZSTRUKTUR_ANCHOR = `${PROJECT_ROUTES['k2-galerie'].marketingOek2}#mok2-10c-haupt-neben-lizenz`
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 import { getPublicGalerieUrl } from '../utils/publicLinks'
 import { fetchVisitCount } from '../utils/visitCountApiOrigin'
@@ -230,6 +233,85 @@ export default function PlatformStartPage() {
             )}
           </div>
         </header>
+
+        {/* Lizenzstruktur – eine Quelle mit Konzept-Doku & AGB */}
+        <section
+          aria-labelledby="home-lizenzstruktur-heading"
+          style={{
+            marginTop: '1.5rem',
+            padding: '1.25rem 1.35rem',
+            borderRadius: '16px',
+            background: 'rgba(95, 251, 241, 0.06)',
+            border: '1px solid rgba(95, 251, 241, 0.28)',
+            maxWidth: '720px',
+          }}
+        >
+          <h2
+            id="home-lizenzstruktur-heading"
+            style={{
+              margin: '0 0 0.5rem',
+              fontSize: '1.15rem',
+              fontWeight: 700,
+              color: '#e8fbfa',
+            }}
+          >
+            Lizenzstruktur
+          </h2>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.92rem', lineHeight: 1.55, color: 'rgba(255,255,255,0.88)' }}>
+            <strong style={{ color: '#fff' }}>Hauptlizenz</strong> = ein gekaufter Umfang (z. B. Galerie Basic bis VK2) mit <strong>einem Mandanten</strong> – eine abgegrenzte Datenwelt.
+            <br />
+            <strong style={{ color: '#fff' }}>Nebenlizenzen</strong> = klar benannte Zusätze: weiterer Mandant, Bearbeitende oder ein eigenes Zusatzprodukt (z. B. K2 Familie) – <strong>gesondert</strong> buchbar, nicht versteckt „mit drin“.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center' }}>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].licences}
+              style={{
+                display: 'inline-block',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '10px',
+                background: '#b54a1e',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none',
+              }}
+            >
+              Lizenzen & Stufen
+            </Link>
+            <Link
+              to={MOK2_LIZENZSTRUKTUR_ANCHOR}
+              style={{
+                display: 'inline-block',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '10px',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(95, 251, 241, 0.35)',
+                color: '#a5f3fc',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none',
+              }}
+            >
+              Vertiefung (mök2)
+            </Link>
+            <Link
+              to={AGB_ROUTE}
+              style={{
+                display: 'inline-block',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '10px',
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#e2e8f0',
+                fontWeight: 600,
+                fontSize: '0.88rem',
+                textDecoration: 'none',
+              }}
+            >
+              AGB (§2 Lizenzmodell)
+            </Link>
+          </div>
+        </section>
 
         {/* Ein Klick: Pilot-Zettel – Name/URL eintragen, dann Drucken */}
         <Link
