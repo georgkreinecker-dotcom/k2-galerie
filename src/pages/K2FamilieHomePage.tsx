@@ -17,7 +17,7 @@ import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../ut
 import { K2_FAMILIE_EINSTELLUNGEN_UPDATED } from '../components/FamilieEinladungQuerySync'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import QRCode from 'qrcode'
-import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID, getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useMemo, useState, useEffect, useRef, useCallback, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 import { APP_BASE_URL } from '../config/externalUrls'
@@ -109,6 +109,8 @@ export default function K2FamilieHomePage() {
   const [zugangFestgelegt, setZugangFestgelegt] = useState(false)
   /** Inhaber:in hat „Nummer ändern“ gewählt → Feld wieder editierbar bis Speichern/Abbrechen. */
   const [zugangAendernModus, setZugangAendernModus] = useState(false)
+  /** Wie die Familie in Auswahl und Texten heißt (z. B. Familie Kreinecker) — nicht die technische Tenant-ID. */
+  const [familyDisplayNameInput, setFamilyDisplayNameInput] = useState('')
   const zugangVorAenderungRef = useRef('')
   const [ansichtEinstellungenOpen, setAnsichtEinstellungenOpen] = useState(false)
   const { versionTimestamp } = useQrVersionTimestamp()
@@ -146,6 +148,7 @@ export default function K2FamilieHomePage() {
     setMitgliedsNummer(z)
     setZugangFestgelegt(Boolean(z.trim()))
     setZugangAendernModus(false)
+    setFamilyDisplayNameInput(einst.familyDisplayName ?? '')
   }, [currentTenantId])
 
   useEffect(() => {
@@ -344,6 +347,21 @@ export default function K2FamilieHomePage() {
     const s = suggestFamilieZugangsnummer()
     setMitgliedsNummer(s)
     persistMitgliedsNummer(s)
+  }
+
+  const persistFamilyDisplayName = () => {
+    if (!kannInstanz) return
+    const name = familyDisplayNameInput.trim()
+    const einst = loadEinstellungen(currentTenantId)
+    if (saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: name || undefined })) {
+      zeigeZugangSpeichernHinweis(
+        name
+          ? '✓ Familienname ist gespeichert — erscheint in der Auswahl oben und überall im Text.'
+          : '✓ Anzeigename entfernt — es gilt wieder der Standard.',
+      )
+    } else {
+      zeigeZugangSpeichernHinweis('⚠️ Speichern ist fehlgeschlagen. Bitte später erneut versuchen.', 7000)
+    }
   }
 
   const kopiereFamilieEinladungslink = () => {
@@ -901,6 +919,49 @@ export default function K2FamilieHomePage() {
                 </>
               )}
             </p>
+            {kannInstanz ? (
+              <div
+                style={{
+                  marginBottom: '0.85rem',
+                  padding: '0.65rem 0.75rem',
+                  borderRadius: a.radius,
+                  background: 'rgba(181, 74, 30, 0.06)',
+                  border: '1px solid rgba(181, 74, 30, 0.18)',
+                }}
+              >
+                <label htmlFor="k2fam-family-display-name" style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
+                  Wie heißt eure Familie in der App? (z. B. Familie Kreinecker)
+                </label>
+                <input
+                  id="k2fam-family-display-name"
+                  type="text"
+                  autoComplete="organization"
+                  value={familyDisplayNameInput}
+                  onChange={(e) => setFamilyDisplayNameInput(e.target.value)}
+                  onBlur={persistFamilyDisplayName}
+                  placeholder="Familie Kreinecker"
+                  style={{
+                    width: '100%',
+                    maxWidth: 420,
+                    padding: '0.45rem 0.6rem',
+                    borderRadius: a.radius,
+                    border: '1px solid rgba(181, 74, 30, 0.28)',
+                    fontFamily: 'inherit',
+                    fontSize: '0.95rem',
+                    color: a.text,
+                    background: '#fffefb',
+                  }}
+                />
+                <p style={{ margin: '0.45rem 0 0', fontSize: '0.78rem', lineHeight: 1.45, color: a.muted }}>
+                  Sichtbar in der Familien-Auswahl oben. Der QR-Code und der Link bleiben mit Zugangsnummer und Codes technisch eindeutig — der Familienname steht nicht in der URL.
+                </p>
+              </div>
+            ) : (
+              <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: a.text }}>
+                <span style={{ color: a.muted }}>Diese Familie:</span>{' '}
+                <strong>{getFamilieTenantDisplayName(currentTenantId, 'Familie')}</strong>
+              </p>
+            )}
             <h3 style={{ margin: '0.75rem 0 0.4rem', fontSize: '0.98rem', fontWeight: 700, color: a.accent, fontFamily: a.fontHeading }}>Familien-Zugang</h3>
             <p style={{ margin: '0 0 0.85rem', lineHeight: 1.45, color: a.muted, fontSize: '0.82rem' }}>
               {kannInstanz ? (
@@ -1129,6 +1190,20 @@ export default function K2FamilieHomePage() {
               }}
             >
               <h3 style={{ margin: '0 0 0.35rem', fontSize: '0.98rem', fontWeight: 700, color: a.accent, fontFamily: a.fontHeading }}>Persönliche Mitgliedschaft</h3>
+              {ichBinPersonId?.trim() && ichName ? (
+                <p
+                  style={{
+                    margin: '0 0 0.65rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: a.text,
+                    lineHeight: 1.45,
+                    fontFamily: a.fontBody,
+                  }}
+                >
+                  Willkommen, {ichName}. Das ist dein persönlicher Bereich — der Code oben hat dich dieser Familie zugeordnet; QR und Link gelten für dich.
+                </p>
+              ) : null}
               {kannInstanz ? (
                 <p style={{ margin: '0 0 0.75rem', lineHeight: 1.5, color: a.muted, fontSize: '0.88rem' }}>
                   Codes vergeben: Personenkarte oder{' '}

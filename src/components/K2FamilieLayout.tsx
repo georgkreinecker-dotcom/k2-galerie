@@ -5,6 +5,7 @@
  */
 
 import { Outlet, Link, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -21,6 +22,7 @@ import FamilieBackButton from './FamilieBackButton'
 import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
 import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
+import { K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
@@ -29,10 +31,17 @@ function FamilieTenantToolbar() {
   const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannInstanz = capabilities.canManageFamilienInstanz
+  /** Dropdown-Labels lesen Anzeigenamen aus dem Speicher — ohne Re-Render bleibt alter Text nach Speichern. */
+  const [, setEinstellungenTick] = useState(0)
+  useEffect(() => {
+    const onUpd = () => setEinstellungenTick((n) => n + 1)
+    window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onUpd)
+    return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onUpd)
+  }, [])
 
   return (
     <div
-      className="k2-familie-tenant-toolbar"
+      className="k2-familie-tenant-toolbar k2-familie-no-print"
       style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -92,7 +101,7 @@ function FamilieTenantToolbar() {
 function FamilieRolleLeiste() {
   const { rolle, setRolle, capabilities } = useFamilieRolle()
   return (
-    <>
+    <div className="k2-familie-no-print">
       <div
         style={{
           display: 'flex',
@@ -168,7 +177,7 @@ function FamilieRolleLeiste() {
           Lesemodus – zum Mitgestalten oben auf Inhaber:in oder Bearbeiter:in stellen.
         </div>
       )}
-    </>
+    </div>
   )
 }
 
@@ -213,7 +222,7 @@ function FamilieNav() {
 
   return (
     <nav
-      className="k2-familie-nav"
+      className="k2-familie-nav k2-familie-no-print"
       aria-label="K2 Familie"
       style={{
         display: 'flex',
@@ -292,7 +301,7 @@ export default function K2FamilieLayout() {
             <main id="k2-familie-main" className="k2-familie-main">
               <Outlet />
             </main>
-            <footer className="k2-familie-app-footer" role="contentinfo">
+            <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
               <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
               <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
             </footer>

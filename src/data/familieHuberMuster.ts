@@ -7,17 +7,23 @@
 
 import type { K2FamiliePerson, K2FamilieEvent, K2FamilieMoment } from '../types/k2Familie'
 import { savePersonen, saveEvents, saveMomente, loadEinstellungen } from '../utils/familieStorage'
+import { assignMissingMitgliedsNummern } from '../utils/familieMitgliedsNummer'
 import { setFamilyPageTexts } from '../config/pageTextsFamilie'
 import { setFamilyPageContent } from '../config/pageContentFamilie'
 
 export const FAMILIE_HUBER_TENANT_ID = 'huber'
 
-/** Anzeigename für Tenant im Dropdown. Gespeicherter Name (Einstellungen) hat Priorität, sonst Muster/Default/ID. */
+/**
+ * Anzeigename für Tenant im Dropdown und Überschriften.
+ * Gespeicherter `familyDisplayName` hat Priorität — nie die rohe technische ID (z. B. familie-1738…) zeigen.
+ * Der Einladungslink/QR nutzt weiter `?t=<tenantId>&z=…&m=…`; Klartext nur hier, nicht in der URL.
+ */
 export function getFamilieTenantDisplayName(tenantId: string, defaultLabel: string = 'Standard'): string {
   const stored = loadEinstellungen(tenantId).familyDisplayName?.trim()
   if (stored) return stored
   if (tenantId === FAMILIE_HUBER_TENANT_ID) return 'Familie Huber'
   if (tenantId === 'default') return defaultLabel
+  if (/^familie-\d+$/.test(tenantId)) return 'Neue Familie (Name unten eintragen)'
   return tenantId
 }
 
@@ -127,7 +133,7 @@ function addTenantToList(tenantId: string): void {
  */
 export function seedFamilieHuber(): boolean {
   const tenantId = FAMILIE_HUBER_TENANT_ID
-  const personen = getFamilieHuberPersonen()
+  const personen = assignMissingMitgliedsNummern(getFamilieHuberPersonen(), undefined)
   const events = getFamilieHuberEvents()
   const momente = getFamilieHuberMomente()
 
