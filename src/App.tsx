@@ -68,6 +68,7 @@ import K2FamilieEinstellungenPage from './pages/K2FamilieEinstellungenPage'
 import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
 import K2FamilieEinstiegPage from './pages/K2FamilieEinstiegPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
+import { K2FamilieRootIndexRedirect } from './components/K2FamilieRootIndexRedirect'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
 import ShopPage from './pages/ShopPage'
@@ -890,7 +891,7 @@ function App() {
       {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
-        <Route index element={<Navigate to={PROJECT_ROUTES['k2-familie'].einstieg} replace />} />
+        <Route index element={<K2FamilieRootIndexRedirect />} />
         <Route path="einstieg" element={<K2FamilieEinstiegPage />} />
         <Route path="meine-familie" element={<K2FamilieHomePage />} />
         <Route path="uebersicht" element={<K2FamilieStartPage />} />

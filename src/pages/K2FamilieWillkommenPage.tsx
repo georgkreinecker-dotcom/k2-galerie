@@ -2,9 +2,11 @@
  * K2 Familie – Marketing-Einstieg (Flyer/QR).
  * Analog zur Galerie-Willkommensseite, aber eigene URL und Inhalt: Familie ≠ Galerie.
  * Kein Bearbeiten hier – nur Lesen und klare Wege zur Familien-App.
+ * Einladungs-QR mit ?t=/ ?z= landet hier ohne Layout – sofort zur App mit gleicher Query (Tenant-Sync im Layout).
  */
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useLayoutEffect } from 'react'
 import { AGB_ROUTE, PLATFORM_ROUTES, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 
@@ -17,6 +19,18 @@ const ACCENT_HOVER = '#5eead4'
 
 export default function K2FamilieWillkommenPage() {
   const R = PROJECT_ROUTES['k2-familie']
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+
+  useLayoutEffect(() => {
+    const t = searchParams.get('t')?.trim()
+    const z = searchParams.get('z')?.trim()
+    if (!t && !z) return
+    const next = new URLSearchParams()
+    if (t) next.set('t', t)
+    if (z) next.set('z', z)
+    navigate(`${R.meineFamilie}?${next.toString()}`, { replace: true })
+  }, [searchParams, navigate, R.meineFamilie])
 
   return (
     <div
@@ -53,7 +67,7 @@ export default function K2FamilieWillkommenPage() {
           <p style={{ fontWeight: 700, marginBottom: '0.85rem', color: ACCENT }}>Ein Klick weiter</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             <Link
-              to={R.home}
+              to={R.einstieg}
               style={{
                 display: 'block',
                 textAlign: 'center',
@@ -66,7 +80,7 @@ export default function K2FamilieWillkommenPage() {
                 fontSize: '1.05rem',
               }}
             >
-              Zur Familien-App → Meine Familie
+              Weiter zum Familien-Einstieg
             </Link>
             <Link
               to={R.stammbaum}

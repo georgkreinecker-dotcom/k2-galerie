@@ -4,7 +4,7 @@
  * Willkommen + Bild + erste Aktionen (Stammbaum, Events & Kalender, …). Pro Tenant Texte/Bilder.
  */
 
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
@@ -81,13 +81,11 @@ function computeErsteSchritteAmpel(
 
 export default function K2FamilieHomePage() {
   const a = adminTheme
-  const { currentTenantId, tenantList, setCurrentTenantId, ensureTenantInListAndSelect, refreshFromStorage } =
-    useFamilieTenant()
+  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
-  const [searchParams, setSearchParams] = useSearchParams()
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
   const [partnerHerkunftId, setPartnerHerkunftId] = useState<string>('')
@@ -138,64 +136,6 @@ export default function K2FamilieHomePage() {
     setZugangFestgelegt(Boolean(z.trim()))
     setZugangAendernModus(false)
   }, [currentTenantId])
-
-  /** QR-Link (?t=tenant&z=nummer): Familie wählen und Zugangsnummer übernehmen. */
-  useEffect(() => {
-    const t = searchParams.get('t')?.trim()
-    const z = searchParams.get('z')?.trim()
-    if (!t && !z) return
-    const strip = () => {
-      const next = new URLSearchParams(searchParams)
-      next.delete('t')
-      next.delete('z')
-      next.delete('v')
-      next.delete('_')
-      setSearchParams(next, { replace: true })
-    }
-    if (t) {
-      // Neu-Gerät: ?t= steht oft noch nicht in tenantList – sonst bleibt „default“ → falsche/generische Familie.
-      let switched: boolean
-      if (tenantList.includes(t)) {
-        setCurrentTenantId(t)
-        switched = true
-      } else {
-        switched = ensureTenantInListAndSelect(t)
-      }
-      if (!switched) {
-        strip()
-        return
-      }
-      if (z && kannInstanz) {
-        const einst = loadEinstellungen(t)
-        if (saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })) {
-          setMitgliedsNummer(z)
-          setZugangFestgelegt(Boolean(z.trim()))
-          setZugangAendernModus(false)
-        }
-      }
-      strip()
-      return
-    }
-    if (!t && z) {
-      if (kannInstanz) {
-        const einst = loadEinstellungen(currentTenantId)
-        if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })) {
-          setMitgliedsNummer(z)
-          setZugangFestgelegt(Boolean(z.trim()))
-          setZugangAendernModus(false)
-        }
-      }
-      strip()
-    }
-  }, [
-    searchParams,
-    tenantList,
-    setCurrentTenantId,
-    ensureTenantInListAndSelect,
-    setSearchParams,
-    currentTenantId,
-    kannInstanz,
-  ])
 
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()

@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie: Einladung `?t=`/`?z=` auf allen Layout-Routen** – Bisher nur auf „Meine Familie“ verarbeitet → falsche/generische Familie bei Einstieg/Index/Marketing-URL. **Fix:** `FamilieEinladungQuerySync` in `K2FamilieLayout` (zentral); `K2FamilieWillkommenPage` → sofort nach `meine-familie` mit gleicher Query; `K2FamilieRootIndexRedirect` für `/projects/k2-familie` mit `location.search`; Duplikat aus `K2FamilieHomePage` entfernt. **Commit:** (folgt)
+
 **Letzter Stand:** 13.04.26 – **K2 Familie Einladungs-QR: richtiger Tenant auf neuem Gerät** – Ursache: `?t=` wirkte nur wenn die ID schon in `tenantList` (localStorage) stand. **Fix:** `ensureTenantInListAndSelect` in `FamilieTenantContext`, `K2FamilieHomePage` Einladungs-Effekt; `isValidFamilieTenantId` in `familieStorage`; Test `familieTenantId.test.ts`; Doku-Zeile in **K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN**. **Commit:** **`ae73fd25`** ✅ GitHub.
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Doku: Zugang vs. Rollen, familienintern** – Neue Datei **`docs/K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md`:** Zugangsnummer/QR = richtige Familie; **Rollen** (Inhaber/Bearbeiter/Leser) **familienintern** definieren und zuweisen; Querverweise Typen, zweige, Supabase; Eintrag **`docs/00-INDEX.md`**. Commit folgt.
@@ -10,7 +12,7 @@
 
 **Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
-**Was wir JETZT tun:** Doku **Zugang & Rollen** im Repo gelesen; optional später Handbuch-Kapitel um einen Absatz ergänzen. Nach Deploy: feste Nummer + „Nummer ändern…“ kurz ausprobieren.
+**Was wir JETZT tun:** Nach Deploy/Push: Einladungs-Link mit `?t=` testen (Willkommen-URL, kurzer Pfad `/projects/k2-familie`, Einstieg) – Toolbar soll **dieselbe** Familie zeigen. **Hinweis:** Anzeigename „Kreinecker“ kommt aus gespeicherten Stammdaten; auf **neuem Gerät ohne Backup** bleibt der Inhalt leer, nur die **Tenant-Auswahl** springt mit `?t=`.
 
 ---
 

@@ -14,6 +14,7 @@ import { adminTheme } from '../config/theme'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import FamilieBackButton from './FamilieBackButton'
 import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
+import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
 
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
@@ -257,6 +258,7 @@ export default function K2FamilieLayout() {
   return (
     <FamilieTenantProvider>
       <FamilieRolleProvider>
+        <FamilieEinladungQuerySync />
         <div className="k2-familie-layout-shell">
           <FamilieLeitstrukturPanel />
           <div className="k2-familie-layout-column">
