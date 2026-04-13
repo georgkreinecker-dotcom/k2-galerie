@@ -2220,10 +2220,26 @@ header h1 {
   50% { opacity: 1; }
 }
 
-/* Bunte Action-Buttons auf Homepage: Hover noch stärker */
+/* Meine Familie: Hub-Kacheln wie Galerie-Admin (hell, Terrakotta-Akzent) */
+.k2-familie-page a.familie-admin-hub-karte:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(28, 26, 24, 0.1);
+  border-color: rgba(181, 74, 30, 0.22);
+}
+.k2-familie-page button.familie-admin-hub-karte:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(28, 26, 24, 0.1);
+  border-color: rgba(181, 74, 30, 0.22);
+}
+.k2-familie-page .k2-familie-toolbar-admin select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(181, 74, 30, 0.25);
+}
+
+/* Legacy: alte bunte Kacheln (falls noch irgendwo .k2-familie-action-btn) */
 .k2-familie-action-btn:hover {
-  filter: brightness(1.08);
-  transform: translateY(-4px) scale(1.03);
+  filter: brightness(1.05);
+  transform: translateY(-2px);
 }
 
 .k2-familie-page .familie-toolbar select {
@@ -2265,11 +2281,16 @@ header h1 {
   border-color: rgba(13, 148, 136, 0.35);
 }
 
-/* Nav-Links: Hover lebendig */
-.k2-familie-nav a:hover {
-  background: rgba(13, 148, 136, 0.18) !important;
-  color: #2dd4bf !important;
+/* Nav-Links: heller Admin-Stil (terra); aktiver Link bleibt lesbar */
+.k2-familie-nav a.k2-familie-nav-link:not(.k2-familie-nav-link--active):hover {
+  background: rgba(181, 74, 30, 0.12) !important;
+  color: #1c1a18 !important;
   transform: translateY(-1px);
+}
+.k2-familie-nav a.k2-familie-nav-link--active:hover {
+  background: #b54a1e !important;
+  color: #fff !important;
+  opacity: 0.96;
 }
 
 /* K2 Familie: Shell + Leitstruktur (wie mök2) + einheitlicher Footer */
@@ -2309,19 +2330,19 @@ header h1 {
   flex-shrink: 0;
   margin-top: auto;
   padding: 1rem 1.25rem 1.25rem;
-  border-top: 1px solid rgba(13, 148, 136, 0.22);
-  background: rgba(0, 0, 0, 0.12);
+  border-top: 1px solid rgba(181, 74, 30, 0.14);
+  background: #ebe8e2;
 }
 .k2-familie-app-footer__line {
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.82);
+  color: #1c1a18;
   text-align: center;
 }
 .k2-familie-app-footer__line--muted {
   margin-top: 0.25rem;
-  color: rgba(255, 255, 255, 0.55);
+  color: #5c5650;
 }
 
 /* Moment-Karten auf Personen-Seite: weicher, runder */
@@ -2552,6 +2573,44 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
 }
 .stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-col-jahr {
   width: 4rem;
+}
+
+/* K2 Familie Stammbaum: PDF-Bereich – Steuerung (Umfang, Typ, Papier, Titel …) ca. 50 % größer, nicht die Vorschau */
+.stammbaum-pdf-steuerung {
+  --stammbaum-pdf-ui-fs: 1.425rem;
+}
+.stammbaum-pdf-steuerung p.meta {
+  font-size: var(--stammbaum-pdf-ui-fs);
+}
+.stammbaum-pdf-steuerung .meta {
+  font-size: var(--stammbaum-pdf-ui-fs);
+}
+.stammbaum-pdf-steuerung select {
+  font-size: var(--stammbaum-pdf-ui-fs);
+  min-height: 2.35rem;
+  padding: 0.35rem 0.5rem;
+}
+/* Titel + Druckvorschau: normale Größe (nur Umfang/Typ/Papier & Co. bleiben größer) */
+.stammbaum-pdf-steuerung .stammbaum-pdf-steuerung-titel-norm .meta {
+  font-size: 0.95rem;
+}
+.stammbaum-pdf-steuerung input#druck-titel {
+  font-size: 0.95rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.5rem;
+}
+.stammbaum-pdf-steuerung .stammbaum-pdf-katalog-spalten label {
+  font-size: calc(0.82rem * 1.5) !important;
+}
+.stammbaum-pdf-steuerung-hint.meta {
+  font-size: 1.425rem;
+}
+.stammbaum-druck-view[data-stil='rechte'] .stammbaum-print-rechte-pdf-table th,
+.stammbaum-druck-view[data-stil='rechte'] .stammbaum-print-rechte-pdf-table td {
+  font-size: 8.5pt;
+  line-height: 1.35;
+  padding: 5px 6px;
+  vertical-align: top;
 }
 .stammbaum-druck-view[data-stil='register'] .stammbaum-print-table th,
 .stammbaum-druck-view[data-stil='register'] .stammbaum-print-table td {

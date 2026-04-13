@@ -1,5 +1,7 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie Leser:in – lesen überall, schreiben nur persönlich** – Wie von Georg beschrieben: Familienmitglied mit Rolle **Leser:in** hat **Lesezugriff** auf die Familien-Inhalte und **Schreibzugriff** auf den **eigenen Bereich** (Social-Media, Fotos, Kurztexte/Momente, **Gedenkort** mit Gaben). Umsetzung: `canEditEigenesProfil` in `k2FamilieRollen.ts`; `K2FamiliePersonPage` (nur persönliche Felder speichern auf eigener Karte, Struktur/Stammbaum-Felder gesperrt); `K2FamilieGedenkortPage` (`kannGabenHinterlegen`); `K2FamilieHomePage` Startpunkt ohne Stammbaum-Freigabe für Leser; Doku/Handbuch-Druck wo angepasst. Tests inkl. `k2FamilieRollen.test.ts`, `npm run build` ok. **Commit:** *(folgt nach Push)*
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Rollen smart & eine Quelle** – `k2FamilieRollen.ts`: `K2_FAMILIE_ROLLEN_EINZEILER`, `K2_FAMILIE_ROLLEN_AMPEL`, `FAMILIE_DRUCK_RECHTE_ZEILEN` (3 Rollen). `K2FamilieLayout`: Ampelpunkt + eine Zeile statt drei Fachtexte; Leser-Banner kürzer. `StammbaumDruckSchreibLeserechte`: Tabelle aus derselben Quelle; kurzer Handbuch-Hinweis für spätere Zweige. Test `k2FamilieRollen.test.ts`. **Commit:** **`007fdc46`** ✅ GitHub (nach Push)
 
 **Letzter Stand:** 13.04.26 – **K2 Familie: Einladung `?t=`/`?z=` auf allen Layout-Routen** – Bisher nur auf „Meine Familie“ verarbeitet → falsche/generische Familie bei Einstieg/Index/Marketing-URL. **Fix:** `FamilieEinladungQuerySync` in `K2FamilieLayout` (zentral); `K2FamilieWillkommenPage` → sofort nach `meine-familie` mit gleicher Query; `K2FamilieRootIndexRedirect` für `/projects/k2-familie` mit `location.search`; Duplikat aus `K2FamilieHomePage` entfernt. **Commit:** **`4f8d0888`** ✅ GitHub
@@ -14,7 +16,7 @@
 
 **Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
-**Was wir JETZT tun:** Nach Deploy/Push: Einladungs-Link mit `?t=` testen (Willkommen-URL, kurzer Pfad `/projects/k2-familie`, Einstieg) – Toolbar soll **dieselbe** Familie zeigen. **Hinweis:** Anzeigename „Kreinecker“ kommt aus gespeicherten Stammdaten; auf **neuem Gerät ohne Backup** bleibt der Inhalt leer, nur die **Tenant-Auswahl** springt mit `?t=`.
+**Was wir JETZT tun:** Nach Deploy: Rolle **Leser:in** kurz prüfen – eigene Karte bearbeiten (persönliche Felder), Gedenkort Gaben, **kein** Stammbaum-Struktur ändern. Optional: Einladungs-Link `?t=` wie zuvor testen.
 
 ---
 

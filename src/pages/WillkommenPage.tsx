@@ -170,6 +170,47 @@ function VariantA({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckb
           </p>
           <p style={{ textAlign: 'center', marginTop: '0.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
 
+          {/* Klarer Kaufweg für neue Lizenznehmer: eine Aufgabe = ein Haupt-Button */}
+          <div
+            style={{
+              marginTop: '1.35rem',
+              padding: '1rem 1.1rem',
+              borderRadius: 14,
+              background: bgCard,
+              border: `1px solid ${accent}35`,
+              boxShadow: '0 8px 28px rgba(60,30,10,0.08)',
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', fontWeight: 700, color: text }}>Eigene Galerie-Lizenz?</p>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen}
+              style={{
+                display: 'inline-block',
+                padding: '0.65rem 1.25rem',
+                borderRadius: 12,
+                background: `linear-gradient(135deg, ${accent}, ${accentLight})`,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                textDecoration: 'none',
+                boxShadow: `0 4px 14px ${accent}44`,
+              }}
+            >
+              Lizenz wählen & kaufen →
+            </Link>
+            <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: muted, lineHeight: 1.5 }}>
+              Infos zu Stufen & Modell:{' '}
+              <Link to={MOK2_ROUTE} style={{ color: accent, fontWeight: 600, textDecoration: 'none' }}>mök2</Link>
+              {' · '}
+              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: accent, fontWeight: 600, textDecoration: 'none' }}>
+                Übersicht Lizenzen
+              </Link>
+              {' · '}
+              <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>AGB</Link>
+            </p>
+          </div>
+
           {/* Fußzeile – Handbuch, AGB/Legal nur unten, nicht im Fokus */}
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>
             <Link to={BENUTZER_HANDBUCH_ROUTE} style={{ color: muted, textDecoration: 'none' }}>Handbuch</Link>
@@ -243,6 +284,46 @@ function VariantC({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckb
             <Link to={ENTDECKEN_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>In 1 Min. entdecken</Link>
           </p>
           <p style={{ textAlign: 'center', marginBottom: '1.5rem', fontSize: '0.72rem', color: muted }}>Empfehlungsprogramm: 10 % Rabatt für dich, 10 % Gutschrift für den Empfehler – Empfehler-ID beim Lizenzkauf angeben.</p>
+
+          <div
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem 1.1rem',
+              borderRadius: 14,
+              background: bgCard,
+              border: `1px solid ${accent}40`,
+              boxShadow: `0 8px 28px ${accentDeep}12`,
+              textAlign: 'center',
+            }}
+          >
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', fontWeight: 700, color: text }}>Eigene Galerie-Lizenz?</p>
+            <Link
+              to={PROJECT_ROUTES['k2-galerie'].lizenzKaufen}
+              style={{
+                display: 'inline-block',
+                padding: '0.65rem 1.25rem',
+                borderRadius: 12,
+                background: `linear-gradient(135deg, ${accentDeep}, ${accent})`,
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '0.95rem',
+                textDecoration: 'none',
+                boxShadow: `0 4px 14px ${accent}55`,
+              }}
+            >
+              Lizenz wählen & kaufen →
+            </Link>
+            <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: muted, lineHeight: 1.5 }}>
+              Infos zu Stufen & Modell:{' '}
+              <Link to={MOK2_ROUTE} style={{ color: accentDeep, fontWeight: 600, textDecoration: 'none' }}>mök2</Link>
+              {' · '}
+              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: accentDeep, fontWeight: 600, textDecoration: 'none' }}>
+                Übersicht Lizenzen
+              </Link>
+              {' · '}
+              <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>AGB</Link>
+            </p>
+          </div>
 
           {/* Fußzeile */}
           <p style={{ textAlign: 'center', fontSize: '0.75rem', color: muted, lineHeight: 2 }}>

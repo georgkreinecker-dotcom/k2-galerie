@@ -58,6 +58,11 @@ type ContextValue = {
   ensureTenantInListAndSelect: (id: string) => boolean
   /** Liest tenant list und current aus localStorage/sessionStorage neu (z. B. nach Seed Musterfamilie). */
   refreshFromStorage: () => void
+  /**
+   * Erhöht sich nach Cloud-Sync (Supabase → Merge in localStorage), damit Seiten Daten neu aus dem Speicher lesen.
+   */
+  familieStorageRevision: number
+  bumpFamilieStorageRevision: () => void
 }
 
 const FamilieTenantContext = createContext<ContextValue | null>(null)
@@ -65,6 +70,10 @@ const FamilieTenantContext = createContext<ContextValue | null>(null)
 export function FamilieTenantProvider({ children }: { children: ReactNode }) {
   const [currentTenantId, setCurrentTenantIdState] = useState(loadCurrent)
   const [tenantList, setTenantList] = useState(loadList)
+  const [familieStorageRevision, setFamilieStorageRevision] = useState(0)
+  const bumpFamilieStorageRevision = useCallback(() => {
+    setFamilieStorageRevision((n) => n + 1)
+  }, [])
 
   const setCurrentTenantId = useCallback((id: string) => {
     if (!tenantList.includes(id)) return
@@ -118,6 +127,8 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     addTenant,
     ensureTenantInListAndSelect,
     refreshFromStorage,
+    familieStorageRevision,
+    bumpFamilieStorageRevision,
   }
 
   return (
@@ -137,6 +148,8 @@ export function useFamilieTenant(): ContextValue {
       addTenant: () => K2_FAMILIE_DEFAULT_TENANT,
       ensureTenantInListAndSelect: () => false,
       refreshFromStorage: () => {},
+      familieStorageRevision: 0,
+      bumpFamilieStorageRevision: () => {},
     }
   }
   return ctx

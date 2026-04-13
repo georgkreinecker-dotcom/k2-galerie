@@ -57,6 +57,7 @@ export default function K2FamilieGedenkortPage() {
   const { currentTenantId } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannOrganisch = capabilities.canEditOrganisches
+  const kannGabenHinterlegen = kannOrganisch || capabilities.canEditEigenesProfil
   const myUserId = useMemo(() => getOrCreateGedenkortUserId(), [])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const verstorbene = useMemo(
@@ -77,7 +78,7 @@ export default function K2FamilieGedenkortPage() {
   }, [gaben, myUserId])
 
   const addGabe = () => {
-    if (!modal || !kannOrganisch) return
+    if (!modal || !kannGabenHinterlegen) return
     const now = new Date().toISOString()
     const neu: K2FamilieGabe = {
       id: 'gabe-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
@@ -181,10 +182,10 @@ export default function K2FamilieGedenkortPage() {
                         key={type}
                         type="button"
                         className="btn-outline"
-                        disabled={!kannOrganisch}
-                        title={!kannOrganisch ? 'Nur Inhaber:in und Bearbeiter:in können Gaben hinterlegen.' : undefined}
+                        disabled={!kannGabenHinterlegen}
+                        title={!kannGabenHinterlegen ? 'Nur mit passender Rolle können Gaben hinterlegt werden.' : undefined}
                         onClick={() => {
-                        if (!kannOrganisch) return
+                        if (!kannGabenHinterlegen) return
                         setContent('')
                         setSichtbarkeit('oeffentlich')
                         setOeffentlichName('')
@@ -215,7 +216,7 @@ export default function K2FamilieGedenkortPage() {
             <div style={{ marginBottom: '0.75rem' }}>
               <label className="meta" style={{ display: 'block', marginBottom: '0.35rem' }}>Sichtbarkeit</label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'privat'} onChange={() => setSichtbarkeit('privat')} disabled={!kannOrganisch} />
+                <input type="radio" name="sichtbarkeit" checked={sichtbarkeit === 'privat'} onChange={() => setSichtbarkeit('privat')} disabled={!kannGabenHinterlegen} />
                 <span>Nur für mich sichtbar (persönlicher Eintrag)</span>
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -226,12 +227,12 @@ export default function K2FamilieGedenkortPage() {
             {sichtbarkeit === 'oeffentlich' && (
               <div style={{ marginBottom: '0.75rem' }}>
                 <label className="meta" style={{ display: 'block', marginBottom: '0.25rem' }}>Name (optional, sonst „Anonym“)</label>
-                <input type="text" value={oeffentlichName} onChange={(e) => setOeffentlichName(e.target.value)} placeholder="Anonym" disabled={!kannOrganisch} style={{ width: '100%' }} />
+                <input type="text" value={oeffentlichName} onChange={(e) => setOeffentlichName(e.target.value)} placeholder="Anonym" disabled={!kannGabenHinterlegen} style={{ width: '100%' }} />
               </div>
             )}
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button type="button" className="btn-outline" onClick={() => { setModal(null); setContent(''); setOeffentlichName(''); setSichtbarkeit('oeffentlich'); }}>Abbrechen</button>
-              <button type="button" className="btn" disabled={!kannOrganisch} onClick={addGabe}>Hinterlassen</button>
+              <button type="button" className="btn" disabled={!kannGabenHinterlegen} onClick={addGabe}>Hinterlassen</button>
             </div>
           </div>
         )}

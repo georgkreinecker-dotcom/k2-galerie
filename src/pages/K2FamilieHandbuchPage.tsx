@@ -9,10 +9,14 @@ import { Link, useSearchParams } from 'react-router-dom'
 const HANDBUCH_DOC_PARAM = 'doc'
 const HANDBUCH_BASE = '/k2team-handbuch'
 const PROJEKT_ZUSAMMENFASSUNG_FILE = '18-K2-FAMILIE-PROJEKT-ZUSAMMENFASSUNG.md'
+const SEITENKONZEPT_DRUCK_FILE = '20-K2-FAMILIE-SEITENKONZEPT-ROLLEN-KREINECKER-DRUCK.md'
+
+const LESEFASSUNG_DRUCK_FILES = new Set<string>([PROJEKT_ZUSAMMENFASSUNG_FILE, SEITENKONZEPT_DRUCK_FILE])
 
 const FAMILIE_DOCUMENTS = [
   { id: '17-erste-schritte', name: 'Erste Schritte', file: '17-K2-FAMILIE-ERSTE-SCHRITTE.md' },
   { id: '18-zusammenfassung', name: 'Projekt-Zusammenfassung', file: PROJEKT_ZUSAMMENFASSUNG_FILE },
+  { id: '20-seitenkonzept-druck', name: 'Seitenkonzept Rollen + Rechte kompakt (Druck)', file: SEITENKONZEPT_DRUCK_FILE },
 ] as const
 
 /** Ersetzt `docs/...md`-Verweise durch Fußnoten-Ziffern und sammelt Fußnoten. */
@@ -68,11 +72,11 @@ export default function K2FamilieHandbuchPage() {
     setSearchParams({ [HANDBUCH_DOC_PARAM]: file }, { replace: true })
   }
 
-  const isProjektZusammenfassung = selectedDoc === PROJEKT_ZUSAMMENFASSUNG_FILE
-  const zusammenfassungData = useMemo(() => {
-    if (!isProjektZusammenfassung || !docContent) return null
+  const isLeseFassungDruck = Boolean(selectedDoc && LESEFASSUNG_DRUCK_FILES.has(selectedDoc))
+  const lesefassungData = useMemo(() => {
+    if (!isLeseFassungDruck || !docContent) return null
     return extractFootnotes(docContent)
-  }, [isProjektZusammenfassung, docContent])
+  }, [isLeseFassungDruck, docContent])
 
   const renderMarkdown = (text: string, options?: { allowHtml?: boolean }) => {
     const allowHtml = options?.allowHtml ?? false
@@ -82,6 +86,48 @@ export default function K2FamilieHandbuchPage() {
     while (i < lines.length) {
       const line = lines[i]
       const key = i
+      if (line.trim() === '[SEITENUMBRUCH]') {
+        out.push(
+          <div
+            key={`pagebreak-${key}`}
+            style={{ breakAfter: 'page', pageBreakAfter: 'always', height: 0 }}
+            aria-hidden
+          />
+        )
+        i++
+        continue
+      }
+      if (line.startsWith('```')) {
+        i++
+        const codeLines: string[] = []
+        while (i < lines.length && !lines[i].startsWith('```')) {
+          codeLines.push(lines[i])
+          i++
+        }
+        if (i < lines.length) i++
+        out.push(
+          <pre
+            key={`code-${key}`}
+            className="k2-familie-handbuch-pre"
+            style={{
+              whiteSpace: 'pre',
+              fontFamily: 'ui-monospace, system-ui, monospace',
+              fontSize: '0.85rem',
+              lineHeight: 1.35,
+              overflow: 'auto',
+              padding: '0.75rem 1rem',
+              background: 'rgba(13,148,136,0.08)',
+              border: '1px solid rgba(13,148,136,0.25)',
+              borderRadius: 8,
+              marginBottom: '1rem',
+              color: 'inherit',
+            }}
+          >
+            {codeLines.join('\n')}
+          </pre>
+        )
+        continue
+      }
       if (line.startsWith('# ')) {
         out.push(<h1 key={key} style={{ fontSize: '2rem', marginTop: '2rem', marginBottom: '1rem', color: '#14b8a6' }}>{line.substring(2)}</h1>)
         i++; continue
@@ -238,13 +284,15 @@ export default function K2FamilieHandbuchPage() {
           .k2-familie-page .seitenfuss::after { content: "Seite " counter(page); }
           @page { margin: 12mm 14mm 10mm 14mm; size: A4; }
         }
-        ${isProjektZusammenfassung ? lesefassungStyles : ''}
+        ${isLeseFassungDruck ? lesefassungStyles : ''}
       `}</style>
       <div className="viewport" style={{ padding: '1.5rem 2rem' }}>
         <header className="no-print" style={{ marginBottom: '1.5rem' }}>
           <div>
             <h1 style={{ margin: 0, color: '#14b8a6', fontSize: '1.75rem' }}>📖 K2 Familie Handbuch</h1>
-            <p className="meta" style={{ marginTop: '0.35rem' }}>Alles Wichtige für K2 Familie – Erste Schritte, Zusammenfassung.</p>
+            <p className="meta" style={{ marginTop: '0.35rem' }}>
+              Alles Wichtige für K2 Familie – Erste Schritte, Zusammenfassung, druckfertiges Seitenkonzept.
+            </p>
             <p className="handbuch-team-ref meta" style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
               Team-Regeln und volles Handbuch: <Link to="/k2team-handbuch" style={{ color: '#5ffbf1', textDecoration: 'underline' }}>K2Team Handbuch öffnen</Link>
             </p>
@@ -252,7 +300,7 @@ export default function K2FamilieHandbuchPage() {
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.75rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', alignItems: 'flex-start' }}>
               <button type="button" onClick={() => window.print()} className="btn small-btn" style={{ background: '#0d9488', color: '#fff', border: 'none', cursor: 'pointer' }} title="Seite drucken – im Druckdialog A4 wählen">🖨️ Drucken (A4)</button>
-              {isProjektZusammenfassung && (
+              {isLeseFassungDruck && (
                 <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)' }}>Im Druckdialog: Format <strong>A4</strong> wählen</span>
               )}
             </div>
@@ -286,17 +334,17 @@ export default function K2FamilieHandbuchPage() {
             </nav>
           </aside>
 
-          <article style={isProjektZusammenfassung ? undefined : { background: 'rgba(13,148,136,0.06)', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid rgba(13,148,136,0.2)', minHeight: 400 }}>
+          <article style={isLeseFassungDruck ? undefined : { background: 'rgba(13,148,136,0.06)', padding: '1.5rem 2rem', borderRadius: 12, border: '1px solid rgba(13,148,136,0.2)', minHeight: 400 }}>
             {loading ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.6)' }}>Lade Dokument...</div>
-            ) : isProjektZusammenfassung && zusammenfassungData ? (
+            ) : isLeseFassungDruck && lesefassungData ? (
               <div className="projekt-zusammenfassung-lesefassung">
-                <div>{renderMarkdown(zusammenfassungData.content, { allowHtml: true })}</div>
-                {zusammenfassungData.footnotes.length > 0 && (
+                <div>{renderMarkdown(lesefassungData.content, { allowHtml: true })}</div>
+                {lesefassungData.footnotes.length > 0 && (
                   <footer className="fußnoten-block" style={{ pageBreakInside: 'avoid' }}>
                     <h3>Fußnoten</h3>
                     <ol>
-                      {zusammenfassungData.footnotes.map((path, idx) => (
+                      {lesefassungData.footnotes.map((path, idx) => (
                         <li key={idx} id={`fn-${idx + 1}`}><code style={{ fontSize: '0.85em', color: 'var(--lese-muted)' }}>{path}</code></li>
                       ))}
                     </ol>

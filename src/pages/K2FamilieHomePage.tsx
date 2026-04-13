@@ -83,7 +83,6 @@ export default function K2FamilieHomePage() {
   const a = adminTheme
   const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
-  const kannBearbeiten = capabilities.canEditFamiliendaten
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
   const [musterLoaded, setMusterLoaded] = useState(false)
@@ -768,7 +767,7 @@ export default function K2FamilieHomePage() {
                     <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: a.muted }}>Anker für Stammbaum und Übersicht.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(['ich', 'eltern', 'grosseltern'] as const).map((typ) => (
-                        <button key={typ} type="button" disabled={!kannBearbeiten} onClick={() => setStartpunktTyp(typ)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.88rem', borderRadius: a.radius, background: a.accentSoft, border: `1px solid rgba(181, 74, 30, 0.28)`, color: a.accent, opacity: kannBearbeiten ? 1 : 0.55, cursor: kannBearbeiten ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>
+                        <button key={typ} type="button" disabled={!kannStruktur} onClick={() => setStartpunktTyp(typ)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.88rem', borderRadius: a.radius, background: a.accentSoft, border: `1px solid rgba(181, 74, 30, 0.28)`, color: a.accent, opacity: kannStruktur ? 1 : 0.55, cursor: kannStruktur ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>
                           {STARTPUNKT_LABELS[typ]}
                         </button>
                       ))}

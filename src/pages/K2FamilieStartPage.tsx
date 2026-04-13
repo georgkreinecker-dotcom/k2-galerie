@@ -20,7 +20,7 @@ export default function K2FamilieStartPage() {
     if (seedFamilieHuber()) {
       refreshFromStorage()
       setSeedDone(true)
-      navigate(PROJECT_ROUTES['k2-familie'].home)
+      navigate(PROJECT_ROUTES['k2-familie'].meineFamilie)
     }
   }
 
@@ -46,7 +46,7 @@ export default function K2FamilieStartPage() {
             <h1>Leitbild & Vision</h1>
             <p className="meta" style={{ margin: '0.35rem 0 0.75rem', maxWidth: 640 }}>
               Das ist die Projekt-Erklärung. Dein persönlicher Einstieg mit Name, Zugangsnummer und QR liegt unter{' '}
-              <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: '#14b8a6' }}>Meine Familie</Link>.
+              <Link to={PROJECT_ROUTES['k2-familie'].meineFamilie} style={{ color: '#14b8a6' }}>Meine Familie</Link>.
             </p>
             <div className="meta">Zusammenleben sichtbar machen – jede Form von Familie, wechselnde Partnerschaften, Freude, Leid und Alltag. Basis: K2-Struktur, tenantfähig.</div>
           </div>

@@ -21,7 +21,7 @@ export default function K2FamiliePraesentationsmappePage() {
       `}</style>
 
       <nav className="k2fam-pm-no-print" style={{ marginBottom: '1.25rem' }}>
-        <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: ACCENT, textDecoration: 'none', fontWeight: 600 }}>
+        <Link to={PROJECT_ROUTES['k2-familie'].meineFamilie} style={{ color: ACCENT, textDecoration: 'none', fontWeight: 600 }}>
           ← Zurück zu K2 Familie
         </Link>
       </nav>

@@ -16,7 +16,7 @@ export default function K2FamilieBenutzerHandbuchPage() {
     <BenutzerHandbuchViewer
       handbuchBase="/k2-familie-handbuch"
       documents={DOCUMENTS}
-      fallbackRoute={PROJECT_ROUTES['k2-familie'].home}
+      fallbackRoute={PROJECT_ROUTES['k2-familie'].meineFamilie}
       routePathForBack="/k2-familie-handbuch"
       headerTitle="📖 Benutzerhandbuch K2 Familie"
       headerSubtitle="Eigenständiges Handbuch – Familie, Stammbaum, Momente. Inhalte werden hier ergänzt."

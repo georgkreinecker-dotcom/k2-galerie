@@ -72,7 +72,7 @@ export default function K2FamilieSicherungPage() {
           return
         }
         setRestoreProgress('done')
-        setTimeout(() => navigate(PROJECT_ROUTES['k2-familie'].home, { replace: true }), 800)
+        setTimeout(() => navigate(PROJECT_ROUTES['k2-familie'].meineFamilie, { replace: true }), 800)
       } catch (err) {
         setRestoreProgress('idle')
         alert('❌ Datei konnte nicht gelesen werden: ' + (err instanceof Error ? err.message : String(err)))
@@ -223,7 +223,7 @@ export default function K2FamilieSicherungPage() {
           <p style={{ margin: 0, fontSize: '0.9rem', color: MUTED }}>
             <strong>Startpunkt:</strong> {einstellungen.startpunktTyp ? STARTPUNKT_LABELS[einstellungen.startpunktTyp] : 'Noch nicht gewählt'}
             {einstellungen.startpunktTyp && ' – '}
-            <Link to={PROJECT_ROUTES['k2-familie'].home} style={{ color: ACCENT }}>Auf der Startseite ändern</Link>
+            <Link to={PROJECT_ROUTES['k2-familie'].meineFamilie} style={{ color: ACCENT }}>Auf der Startseite ändern</Link>
           </p>
           <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: MUTED }}>
             <strong>Zweige (Option C):</strong> Ein Tenant, Zweig = verwalteter Bereich (Personenliste + Verwalter). Datenmodell aktiv.

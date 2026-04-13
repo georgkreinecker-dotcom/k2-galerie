@@ -1,7 +1,20 @@
 # K2 Familie – Organisches Wachstum & Rechte pro Zweig
 
-**Stand:** 02.03.26  
+**Stand:** 13.04.26  
 **Zweck:** Konzept, wie eine Familie wachsen kann und wer in welchem „Zweig“ schreiben/löschen darf. **Wir arbeiten an der Architektur – der Baumeister (konkrete Umsetzung) kommt später.** Erst Struktur und Entscheidungen, dann bauen.
+
+---
+
+## Verbindliche Festlegung – Verwalter, Administrator, höchstpersönlicher Bereich (Georg)
+
+| Regel | Inhalt |
+|--------|--------|
+| **Zweigverwalter automatisch** | Das **Paar an der Spitze** eines Astes **oder** einer **Kleinfamilie** ist **immer automatisch** Verwalter:in dieses Zweigs – keine separate „Verwalter ernennen“-Pflicht für diese Ebene. |
+| **Administrator:in** | **Ausnahme** von der reinen Zweig-Logik: nur die Rolle **Administrator:in (Inhaber:in)** hat **übergeordnete** Befugnisse für die Familien-Instanz (Einladungen, Sicherung, globale Leseregeln, Sperren … – wie in der Roadmap/Produkt definiert). |
+| **Höchstpersönlicher Bereich – auch ohne Admin-Schreibrecht** | Alles, was **über Grunddaten** (Namen, Geburtsdaten, **Beziehungen**) **hinausgeht** und **höchstpersönlich** ist (z. B. tiefe Lebensgeschichte, sensible Momente, Intimität): **auch Administrator:in hat dort keine Schreibrechte** – weder auf fremden Karten noch durch „Überschreiben“ aus der Ferne. |
+| **Beziehungen nach Festlegung gesperrt** | Sind Beziehungen **einmal grundsätzlich festgelegt**, wird die Funktion **Beziehungen / Struktur ändern** **von der Administrator:in gesperrt** – dann **niemand** mehr (einschließlich Administrator:in): **keine nachträgliche Umverknüpfung** der Grundstruktur. Korrekturen nur noch in einem bewusst freigegebenen Ausnahmeverfahren (falls ihr das später definieren wollt), nicht im laufenden Alltag. |
+
+**Kurz:** Zweig = Paar/Kleinfamilie oben **führt** automatisch. Administrator **verwaltet die Instanz und Sperren**, aber **nicht** den intimsten Inhalt fremder Personen; **Struktur/Beziehungen** sind nach dem Festlegen **dauerhaft gesichert**.
 
 ---
 

@@ -10,6 +10,7 @@ import {
 describe('K2 Familie Rollen', () => {
   it('Inhaber:in: alle Rechte', () => {
     const c = getFamilieRollenCapabilities('inhaber')
+    expect(c.canEditEigenesProfil).toBe(false)
     expect(c.canEditFamiliendaten).toBe(true)
     expect(c.canEditStrukturUndStammdaten).toBe(true)
     expect(c.canEditOrganisches).toBe(true)
@@ -19,6 +20,7 @@ describe('K2 Familie Rollen', () => {
   })
   it('Bearbeiter:in: organisches ja, Struktur/Stammdaten nein; kein Restore/Merge', () => {
     const c = getFamilieRollenCapabilities('bearbeiter')
+    expect(c.canEditEigenesProfil).toBe(false)
     expect(c.canEditFamiliendaten).toBe(true)
     expect(c.canEditStrukturUndStammdaten).toBe(false)
     expect(c.canEditOrganisches).toBe(true)
@@ -26,9 +28,10 @@ describe('K2 Familie Rollen', () => {
     expect(c.canRestoreSicherung).toBe(false)
     expect(c.canManageFamilienInstanz).toBe(false)
   })
-  it('Leser:in: nur Ansehen', () => {
+  it('Leser:in: eigenes Profil + Gedenkort, kein Stammbaum', () => {
     const c = getFamilieRollenCapabilities('leser')
     expect(c.canEditFamiliendaten).toBe(false)
+    expect(c.canEditEigenesProfil).toBe(true)
     expect(c.canEditStrukturUndStammdaten).toBe(false)
     expect(c.canEditOrganisches).toBe(false)
     expect(c.canExportSicherung).toBe(false)

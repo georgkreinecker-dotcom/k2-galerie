@@ -8,8 +8,6 @@ import { useState, useEffect, useMemo, useRef, type ReactNode, type ChangeEventH
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { loadPersonen, savePersonen, loadMomente, saveMomente, loadBeitraege, saveBeitraege, deletePersonWithCleanup, loadEinstellungen } from '../utils/familieStorage'
-import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
-import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieBeitrag } from '../types/k2Familie'
@@ -109,6 +107,53 @@ function computeStammdatenDirty(
   return false
 }
 
+/** Nur persönliche Felder (Leser:in / Bearbeiter:in auf eigener Karte) – ohne Name, Daten, Stammbaum. */
+function computeStammdatenDirtyPersoenlich(
+  person: K2FamiliePerson,
+  f: {
+    shortText: string
+    photoKind: string
+    photoJugend: string
+    photoErwachsen: string
+    photoAlter: string
+    linkFotoalbum: string
+    linkWeb: string
+    linkYoutube: string
+    linkInstagram: string
+    kaZeile1: string
+    kaZeile2: string
+    kaPlz: string
+    kaOrt: string
+    kaLand: string
+    kaEmail: string
+    kaTelefon: string
+  },
+  photoLegacyCleared: boolean
+): boolean {
+  const st = f.shortText.trim() || undefined
+  if ((person.shortText ?? undefined) !== st) return true
+  const ps = (s: string | undefined, form: string) => (s ?? '').trim() === form.trim()
+  if (!ps(person.photoKind, f.photoKind)) return true
+  if (!ps(person.photoJugend, f.photoJugend)) return true
+  if (!ps(person.photoErwachsen, f.photoErwachsen)) return true
+  if (!ps(person.photoAlter, f.photoAlter)) return true
+  if (!ps(person.linkFotoalbum, f.linkFotoalbum)) return true
+  if (!ps(person.linkWeb, f.linkWeb)) return true
+  if (!ps(person.linkYoutube, f.linkYoutube)) return true
+  if (!ps(person.linkInstagram, f.linkInstagram)) return true
+  if (photoLegacyCleared && String(person.photo ?? '').trim()) return true
+  const k = person.kontaktAdresse
+  const g = (x: string | undefined, form: string) => (x ?? '').trim() === form.trim()
+  if (!g(k?.zeile1, f.kaZeile1)) return true
+  if (!g(k?.zeile2, f.kaZeile2)) return true
+  if (!g(k?.plz, f.kaPlz)) return true
+  if (!g(k?.ort, f.kaOrt)) return true
+  if (!g(k?.land, f.kaLand)) return true
+  if (!g(k?.email, f.kaEmail)) return true
+  if (!g(k?.telefon, f.kaTelefon)) return true
+  return false
+}
+
 function kontaktAdresseFromFormValues(f: {
   kaZeile1: string
   kaZeile2: string
@@ -164,14 +209,19 @@ export default function K2FamiliePersonPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
-  const kannBearbeiten = capabilities.canEditFamiliendaten
+  const kannBearbeiten = capabilities.canEditFamiliendaten || capabilities.canEditEigenesProfil
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannOrganisch = capabilities.canEditOrganisches
   const [edit, setEdit] = useState(false)
-  const effectiveEditStammdaten = edit && kannStruktur
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, location.key])
+  const istEigeneKarte = Boolean(id && einstellungen.ichBinPersonId === id)
+  const rolle = capabilities.rolle
+  const effectiveEditPersoenlich = Boolean(edit && istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser'))
+  const effectiveEditStammdaten = Boolean((edit && kannStruktur) || effectiveEditPersoenlich)
+  const kannOrganischHier = kannOrganisch || (istEigeneKarte && capabilities.canEditEigenesProfil)
+  const feldStrukturNurLesen = Boolean(effectiveEditPersoenlich && !kannStruktur)
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
   const [momente, setMomente] = useState<K2FamilieMoment[]>(() => loadMomente(currentTenantId))
   const [name, setName] = useState('')
@@ -267,29 +317,22 @@ export default function K2FamiliePersonPage() {
   }, [kannBearbeiten])
 
   useEffect(() => {
-    if (!kannStruktur) setEdit(false)
-  }, [kannStruktur])
+    if (kannStruktur) return
+    if (istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser')) return
+    setEdit(false)
+  }, [kannStruktur, istEigeneKarte, rolle])
 
   useEffect(() => {
-    if (!kannOrganisch) {
-      setEditingMomentId(null)
-      setBeitragModal(false)
-    }
-  }, [kannOrganisch])
+    if (kannOrganischHier) return
+    setEditingMomentId(null)
+    setBeitragModal(false)
+  }, [kannOrganischHier])
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      setPersonen(loadPersonen(currentTenantId))
-      setMomente(loadMomente(currentTenantId))
-      setBeitraege(loadBeitraege(currentTenantId))
-      return
-    }
-    loadFamilieFromSupabase(currentTenantId).then((d) => {
-      setPersonen(d.personen)
-      setMomente(d.momente)
-      setBeitraege(loadBeitraege(currentTenantId))
-    })
-  }, [id, currentTenantId])
+    setPersonen(loadPersonen(currentTenantId))
+    setMomente(loadMomente(currentTenantId))
+    setBeitraege(loadBeitraege(currentTenantId))
+  }, [id, currentTenantId, familieStorageRevision])
 
   useEffect(() => {
     if (person) {
@@ -323,40 +366,66 @@ export default function K2FamiliePersonPage() {
   }, [person, kannStruktur])
 
   const stammdatenDirty = useMemo(
-    () =>
-      !person || !effectiveEditStammdaten
-        ? false
-        : computeStammdatenDirty(
-            person,
-            {
-              name,
-              geburtsdatum,
-              maedchenname,
-              shortText,
-              verstorben,
-              verstorbenAm,
-              positionAmongSiblingsInput,
-              photoKind,
-              photoJugend,
-              photoErwachsen,
-              photoAlter,
-              linkFotoalbum,
-              linkWeb,
-              linkYoutube,
-              linkInstagram,
-              kaZeile1,
-              kaZeile2,
-              kaPlz,
-              kaOrt,
-              kaLand,
-              kaEmail,
-              kaTelefon,
-            },
-            photoLegacyCleared
-          ),
+    () => {
+      if (!person || !effectiveEditStammdaten) return false
+      if (effectiveEditPersoenlich && !kannStruktur) {
+        return computeStammdatenDirtyPersoenlich(
+          person,
+          {
+            shortText,
+            photoKind,
+            photoJugend,
+            photoErwachsen,
+            photoAlter,
+            linkFotoalbum,
+            linkWeb,
+            linkYoutube,
+            linkInstagram,
+            kaZeile1,
+            kaZeile2,
+            kaPlz,
+            kaOrt,
+            kaLand,
+            kaEmail,
+            kaTelefon,
+          },
+          photoLegacyCleared
+        )
+      }
+      return computeStammdatenDirty(
+        person,
+        {
+          name,
+          geburtsdatum,
+          maedchenname,
+          shortText,
+          verstorben,
+          verstorbenAm,
+          positionAmongSiblingsInput,
+          photoKind,
+          photoJugend,
+          photoErwachsen,
+          photoAlter,
+          linkFotoalbum,
+          linkWeb,
+          linkYoutube,
+          linkInstagram,
+          kaZeile1,
+          kaZeile2,
+          kaPlz,
+          kaOrt,
+          kaLand,
+          kaEmail,
+          kaTelefon,
+        },
+        photoLegacyCleared
+      )
+    },
     [
       person,
       effectiveEditStammdaten,
+      effectiveEditPersoenlich,
+      kannStruktur,
       name,
       geburtsdatum,
       maedchenname,
@@ -394,7 +463,51 @@ export default function K2FamiliePersonPage() {
   }, [stammdatenDirty])
 
   const save = () => {
-    if (!person || !kannStruktur) return
+    if (!person) return
+    if (effectiveEditPersoenlich && !kannStruktur) {
+      const pk = photoKind.trim() || undefined
+      const pj = photoJugend.trim() || undefined
+      const pe = photoErwachsen.trim() || undefined
+      const pa = photoAlter.trim() || undefined
+      const fotoAktuell = getAktuellesPersonenFoto({
+        ...person,
+        photoKind: pk,
+        photoJugend: pj,
+        photoErwachsen: pe,
+        photoAlter: pa,
+        photo: photoLegacyCleared ? undefined : person.photo,
+      })
+      const updated: K2FamiliePerson = {
+        ...person,
+        shortText: shortText.trim() || undefined,
+        photoKind: pk,
+        photoJugend: pj,
+        photoErwachsen: pe,
+        photoAlter: pa,
+        linkFotoalbum: linkFotoalbum.trim() || undefined,
+        linkWeb: linkWeb.trim() || undefined,
+        linkYoutube: linkYoutube.trim() || undefined,
+        linkInstagram: linkInstagram.trim() || undefined,
+        kontaktAdresse: kontaktAdresseFromFormValues({
+          kaZeile1,
+          kaZeile2,
+          kaPlz,
+          kaOrt,
+          kaLand,
+          kaEmail,
+          kaTelefon,
+        }),
+        photo: fotoAktuell,
+        updatedAt: new Date().toISOString(),
+      }
+      const next = personen.map((p) => (p.id === id ? updated : p))
+      if (savePersonen(currentTenantId, next, { allowReduce: false })) {
+        setPersonen(next)
+        setEdit(false)
+      }
+      return
+    }
+    if (!kannStruktur) return
     if (istFamilieDatumUngueltig(geburtsdatum)) {
       window.alert('Geburtsdatum ist ungültig – bitte Tag, Monat und Jahr vollständig wählen oder alles leer lassen.')
       return
@@ -710,7 +823,7 @@ export default function K2FamiliePersonPage() {
     setMomentText(m.text ?? '')
   }
   const saveMoment = () => {
-    if (!id || !kannOrganisch) return
+    if (!id || !kannOrganischHier) return
     if (momentDate.trim() && istFamilieDatumUngueltig(momentDate)) {
       window.alert('Moment-Datum: bitte als JJJJ-MM-TT oder TT.MM.JJJJ eingeben – oder leer lassen.')
       return
@@ -753,7 +866,7 @@ export default function K2FamiliePersonPage() {
     }
   }
   const deleteMoment = (momentId: string) => {
-    if (!kannOrganisch) return
+    if (!kannOrganischHier) return
     const next = momente.filter((m) => m.id !== momentId)
     if (saveMomente(currentTenantId, next, { allowReduce: true })) setMomente(next)
     if (editingMomentId === momentId) setEditingMomentId(null)
@@ -769,7 +882,7 @@ export default function K2FamiliePersonPage() {
     setBeitragModal(true)
   }
   const saveBeitrag = () => {
-    if (!id || !beitragInhalt.trim() || !kannOrganisch) return
+    if (!id || !beitragInhalt.trim() || !kannOrganischHier) return
     const newB: K2FamilieBeitrag = {
       id: 'beitrag-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
       personId: id,
@@ -785,7 +898,7 @@ export default function K2FamiliePersonPage() {
     }
   }
   const deleteBeitrag = (beitragId: string) => {
-    if (!kannOrganisch) return
+    if (!kannOrganischHier) return
     const next = beitraege.filter((b) => b.id !== beitragId)
     if (saveBeitraege(currentTenantId, next)) setBeitraege(next)
   }
@@ -897,7 +1010,7 @@ export default function K2FamiliePersonPage() {
             <span key={pid} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: 'rgba(13,148,136,0.15)', padding: '0.25rem 0.5rem', borderRadius: 6 }}>
               <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pid}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pid)}</Link>
               {kannStruktur && (
-                <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
+              <button type="button" onClick={() => removeFn(pid)} style={smallBtn} title="Entfernen">✕</button>
               )}
             </span>
           ))}
@@ -1412,6 +1525,11 @@ export default function K2FamiliePersonPage() {
           <div style={{ flex: 1, minWidth: 200 }}>
             {effectiveEditStammdaten ? (
               <form autoComplete="off" onSubmit={(e) => { e.preventDefault(); save(); }} style={{ display: 'contents' }}>
+                {feldStrukturNurLesen && (
+                  <p className="meta" style={{ margin: '0 0 0.75rem', color: 'rgba(226,232,240,0.92)', lineHeight: 1.45 }}>
+                    Name, Geburtsdaten und Stammbaum nur durch Inhaber:in. Hier bearbeitest du <strong>Fotos</strong>, <strong>Links</strong>, <strong>Kurztext</strong> und <strong>Kontakt</strong>.
+                  </p>
+                )}
                 <div className="field">
                   <label className="meta">Name</label>
                   <input
@@ -1425,6 +1543,8 @@ export default function K2FamiliePersonPage() {
                     name="ft-person-name"
                     id="ft-person-display"
                     aria-label="Name der Person"
+                    readOnly={feldStrukturNurLesen}
+                    style={feldStrukturNurLesen ? { opacity: 0.85 } : undefined}
                   />
                 </div>
                 <div className="field" style={{ marginTop: '0.75rem' }}>
@@ -1435,6 +1555,7 @@ export default function K2FamiliePersonPage() {
                     idPrefix="ft-person-geburtsdatum"
                     labelShort="Geburtsdatum"
                     resetKey={person.id}
+                    disabled={feldStrukturNurLesen}
                   />
                   <span className="meta" style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.85rem' }}>
                     Tag · Monat · Jahr wählen (ohne Datums-Popup; auf dem Handy wie Scrollräder).
@@ -1451,11 +1572,13 @@ export default function K2FamiliePersonPage() {
                     data-lpignore="true"
                     name="ft-person-maedchenname"
                     aria-label="Mädchenname oder Geburtsname"
+                    readOnly={feldStrukturNurLesen}
+                    style={feldStrukturNurLesen ? { opacity: 0.85 } : undefined}
                   />
                 </div>
                 <div className="field" style={{ marginTop: '0.75rem' }}><label className="meta">Kurztext</label><textarea value={shortText} onChange={(e) => setShortText(e.target.value)} style={{ minHeight: 80 }} placeholder="Kurz beschreiben (optional)" autoComplete="off" data-lpignore="true" /></div>
                 <div className="field" style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input type="checkbox" id="verstorben" checked={verstorben} onChange={(e) => setVerstorben(e.target.checked)} />
+                  <input type="checkbox" id="verstorben" checked={verstorben} onChange={(e) => setVerstorben(e.target.checked)} disabled={feldStrukturNurLesen} />
                   <label htmlFor="verstorben" className="meta">Verstorben (erscheint am Gedenkort)</label>
                 </div>
                 {verstorben && (
@@ -1467,6 +1590,7 @@ export default function K2FamiliePersonPage() {
                       idPrefix="ft-person-verstorben"
                       labelShort="Sterbedatum"
                       resetKey={person.id}
+                      disabled={feldStrukturNurLesen}
                     />
                   </div>
                 )}
@@ -1479,7 +1603,8 @@ export default function K2FamiliePersonPage() {
                     value={positionAmongSiblingsInput}
                     onChange={(e) => setPositionAmongSiblingsInput(e.target.value)}
                     placeholder="z. B. 7"
-                    style={{ width: '4rem' }}
+                    style={{ width: '4rem', ...(feldStrukturNurLesen ? { opacity: 0.85 } : {}) }}
+                    readOnly={feldStrukturNurLesen}
                   />
                   <span className="meta" style={{ marginLeft: '0.5rem' }}>Für die Reihenfolge im Stammbaum (1 = erster, 7 = siebter, …)</span>
                 </div>
@@ -1644,13 +1769,21 @@ export default function K2FamiliePersonPage() {
                   Name und Daten erst mit <strong>Speichern</strong> sicher. Beziehungen in diesem Block (aufklappen) speichern sich beim Verknüpfen sofort.
                 </p>
                 {kannStruktur ? (
-                  <button type="button" className="btn" onClick={() => setEdit(true)}>Stammdaten bearbeiten</button>
+                  <button type="button" className="btn" onClick={() => setEdit(true)}>
+                    Stammdaten bearbeiten
+                  </button>
+                ) : istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser') ? (
+                  <button type="button" className="btn" onClick={() => setEdit(true)}>
+                    Persönliche Angaben bearbeiten
+                  </button>
                 ) : kannOrganisch ? (
                   <p className="meta" style={{ margin: 0, color: 'rgba(226,232,240,0.92)', lineHeight: 1.5 }}>
                     <strong>Bearbeiter:in:</strong> Stammdaten und Beziehungen nur für Inhaber:in änderbar. Momente und Erinnerungen kannst du unten bearbeiten.
                   </p>
                 ) : (
-                  <p className="meta" style={{ margin: 0, color: 'rgba(251,191,36,0.95)' }}>Lesemodus – Bearbeiten ist für diese Rolle ausgeschaltet (oben Rolle wählen).</p>
+                  <p className="meta" style={{ margin: 0, color: 'rgba(251,191,36,0.95)' }}>
+                    Lesemodus – auf fremden Karten ist Bearbeiten ausgeschaltet (oben Rolle wählen).
+                  </p>
                 )}
               </>
             )}
@@ -1707,9 +1840,9 @@ export default function K2FamiliePersonPage() {
               </details>
             )}
           </div>
-            </div>
+        </div>
 
-            <details
+        <details
           id="k2-familie-beziehungen"
           className="k2-familie-details-inner"
           open={beziehungenOpen}
@@ -1822,7 +1955,7 @@ export default function K2FamiliePersonPage() {
                   <Link to={`${PROJECT_ROUTES['k2-familie'].personen}/${pr.personId}`} className="btn" style={{ padding: '0.2rem 0.5rem', fontSize: '0.9rem' }}>{getPersonName(pr.personId)}</Link>
                   {(pr.from || pr.to) && <span className="meta" style={{ fontSize: '0.8rem' }}>({pr.from ?? '?'} – {pr.to ?? 'heute'})</span>}
                   {kannStruktur && (
-                    <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
+                  <button type="button" onClick={() => removePartner(pr.personId)} style={smallBtn} title="Entfernen">✕</button>
                   )}
                 </span>
               ))}
@@ -1896,11 +2029,11 @@ export default function K2FamiliePersonPage() {
                       {m.date && <span className="meta" style={{ marginLeft: '0.5rem' }}>{m.date.slice(0, 10)}</span>}
                       {m.text && <p className="meta" style={{ margin: '0.35rem 0 0' }}>{m.text}</p>}
                     </div>
-                    {kannOrganisch && (
-                      <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
-                        <button type="button" className="btn" onClick={() => openEditMoment(m)}>Bearbeiten</button>
-                        <button type="button" className="btn-outline danger" onClick={() => deleteMoment(m.id)}>Löschen</button>
-                      </div>
+                    {kannOrganischHier && (
+                    <div className="card-actions" style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button type="button" className="btn" onClick={() => openEditMoment(m)}>Bearbeiten</button>
+                      <button type="button" className="btn-outline danger" onClick={() => deleteMoment(m.id)}>Löschen</button>
+                    </div>
                     )}
                   </div>
                 </li>
@@ -1929,8 +2062,8 @@ export default function K2FamiliePersonPage() {
               </div>
             </div>
           ) : (
-            kannOrganisch && (
-              <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
+            kannOrganischHier && (
+            <button type="button" className="btn" onClick={openNewMoment} style={{ marginTop: '0.5rem' }}>Moment hinzufügen</button>
             )
           )}
         </details>
@@ -1954,10 +2087,10 @@ export default function K2FamiliePersonPage() {
                     <span className="meta" style={{ fontSize: '0.8rem' }}>{new Date(b.createdAt).toLocaleDateString('de-AT')}</span>
                   </div>
                   <p style={{ margin: '0.5rem 0 0', whiteSpace: 'pre-wrap' }}>{b.inhalt}</p>
-                  {kannOrganisch && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
-                    </div>
+                  {kannOrganischHier && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <button type="button" className="btn-outline danger" style={{ fontSize: '0.85rem' }} onClick={() => deleteBeitrag(b.id)}>Löschen</button>
+                  </div>
                   )}
                 </li>
               ))}
@@ -1987,12 +2120,12 @@ export default function K2FamiliePersonPage() {
               </div>
             </div>
           ) : (
-            kannOrganisch && (
-              <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
+            kannOrganischHier && (
+            <button type="button" className="btn" onClick={openBeitragModal} style={{ marginTop: '0.5rem' }}>Was ich dazu weiß, hinzufügen</button>
             )
           )}
         </details>
-          </div>
+        </div>
         </details>
 
         {person && kannStruktur && (

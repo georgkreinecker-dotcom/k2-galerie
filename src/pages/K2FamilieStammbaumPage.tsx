@@ -19,8 +19,6 @@ import {
 } from '../utils/familieStammbaumKarten'
 import { addPartnersForSiblingsExceptMaria } from '../utils/familieAddPartners'
 import { ensureErsteEheVierGeschwister } from '../utils/familieErsteEheGeschwister'
-import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
-import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { getFamilieTenantDisplayName } from '../data/familieHuberMuster'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
@@ -32,6 +30,7 @@ import {
   StammbaumDruckNachGenerationen,
   StammbaumDruckPersonenblaetter,
   StammbaumDruckRegister,
+  StammbaumDruckSchreibLeserechte,
   type KatalogSortierung,
 } from '../components/StammbaumDruckFormate'
 import {
@@ -48,12 +47,25 @@ function generateId(): string {
 type PrintFormat = 'a4' | 'a3' | 'poster'
 type PrintFotos = '1' | '0'
 /** Druck: Grafik oder übersichtliche Text-PDFs (ohne verschachtelte Grafik). */
-type PrintStil = 'grafik' | 'generationen' | 'register' | 'personenblaetter' | 'geburtstagsliste'
+type PrintStil =
+  | 'grafik'
+  | 'generationen'
+  | 'register'
+  | 'personenblaetter'
+  | 'geburtstagsliste'
+  | 'rechte'
 
 /** Druck/PDF: ganze Familie oder nur Familienzweig von „Das bin ich“. */
 type DruckUmfang = 'alle' | 'zweig'
 
-const PRINT_STILE: PrintStil[] = ['personenblaetter', 'generationen', 'register', 'geburtstagsliste', 'grafik']
+const PRINT_STILE: PrintStil[] = [
+  'personenblaetter',
+  'generationen',
+  'register',
+  'geburtstagsliste',
+  'rechte',
+  'grafik',
+]
 
 function parsePrintStil(raw: string | null): PrintStil {
   if (raw && PRINT_STILE.includes(raw as PrintStil)) return raw as PrintStil
@@ -86,7 +98,7 @@ const STAMMBAUM_BEREICH_UNTERTITEL: Record<Exclude<StammbaumBereich, 'uebersicht
   karten: 'Partner, Kinder und Familienzweige – die Linie nach unten in der Familie.',
   'nach-oben': 'Eltern und Vorfahren – die Linie nach oben.',
   grafik: 'Den Stammbaum als Bild sehen, zoomen, Richtung wählen.',
-  pdf: 'Listen und PDFs: Personenblätter, Katalog, Geburtstagsliste, Grafik drucken.',
+  pdf: 'Listen, Grafik, Schreib- und Leserechte als eine Seite für die Familie – Druckdialog „Als PDF speichern“.',
 }
 
 type StammbaumBereichTab = Exclude<StammbaumBereich, 'uebersicht'>
@@ -172,21 +184,13 @@ export default function K2FamilieStammbaumPage() {
     },
     [setSearchParams]
   )
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannOrganisch = capabilities.canEditOrganisches
   const kannManageFamilienInstanz = capabilities.canManageFamilienInstanz
-  const [synced, setSynced] = useState(false)
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
-  useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      setSynced(true)
-      return
-    }
-    loadFamilieFromSupabase(currentTenantId).then(() => setSynced(true))
-  }, [currentTenantId])
-  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, synced, stammbaumRefresh])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision, stammbaumRefresh])
   const stammbaumBereich = useMemo((): StammbaumBereich => {
     const p = parseStammbaumBereich(bereichParam)
     if (personen.length > 0 && (bereichParam === null || bereichParam === '')) return 'karten'
@@ -209,7 +213,7 @@ export default function K2FamilieStammbaumPage() {
     if (typeof window === 'undefined') return
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [stammbaumBereich])
-  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, stammbaumRefresh])
+  const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision, stammbaumRefresh])
   const partnerHerkunftPerson = useMemo(() => {
     const id = einstellungen.partnerHerkunftPersonId
     return id ? personen.find((p) => p.id === id) : null
@@ -381,6 +385,10 @@ export default function K2FamilieStammbaumPage() {
   /** Nach Druck-Öffnung: Druckdialog (ganze Familie oder Familienzweig je nach umfang). */
   useEffect(() => {
     if (!druck) return
+    if (stilFromUrl === 'rechte') {
+      const t = setTimeout(() => window.print(), 300)
+      return () => clearTimeout(t)
+    }
     if (umfangFromUrl === 'alle') {
       if (personen.length === 0) return
     } else {
@@ -393,7 +401,7 @@ export default function K2FamilieStammbaumPage() {
     }
     const t = setTimeout(() => window.print(), 300)
     return () => clearTimeout(t)
-  }, [druck, umfangFromUrl, personen, einstellungen.ichBinPersonId])
+  }, [druck, stilFromUrl, umfangFromUrl, personen, einstellungen.ichBinPersonId])
 
   const handleAfterPrint = useCallback(() => {
     if (druck) setSearchParams({}, { replace: true })
@@ -492,13 +500,22 @@ export default function K2FamilieStammbaumPage() {
     return personenFuerDruck
   }, [druck, umfangFromUrl, druckUmfang, personen, personenFuerDruck])
 
-  const zeigeStammbaumUebersicht = personen.length === 0 || stammbaumBereich === 'uebersicht'
+  const zeigeStammbaumUebersicht =
+    (personen.length === 0 && stammbaumBereich !== 'pdf') || stammbaumBereich === 'uebersicht'
   const zeigeKarten = personen.length > 0 && stammbaumBereich === 'karten'
   const zeigeNachOben = personen.length > 0 && stammbaumBereich === 'nach-oben'
   const zeigeGrafik = personen.length > 0 && stammbaumBereich === 'grafik'
-  const zeigePdf = personen.length > 0 && stammbaumBereich === 'pdf'
+  const zeigePdf = stammbaumBereich === 'pdf'
 
   if (druck) {
+    const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
+    if (stilFromUrl === 'rechte') {
+      return (
+        <div className="stammbaum-druck-view" data-format={dataFormatAttr} data-stil="rechte">
+          <StammbaumDruckSchreibLeserechte familienName={titel} />
+        </div>
+      )
+    }
     if (umfangFromUrl === 'alle') {
       if (personen.length === 0) {
         return (
@@ -539,7 +556,6 @@ export default function K2FamilieStammbaumPage() {
       )
     }
     const forDruck = personenDruckInhalt
-    const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
 
     if (stilFromUrl === 'generationen') {
       return (
@@ -752,7 +768,7 @@ export default function K2FamilieStammbaumPage() {
                 )}
               </>
             )}
-            {personen.length > 0 && !zeigeStammbaumUebersicht && (
+            {(personen.length > 0 || stammbaumBereich === 'pdf') && !zeigeStammbaumUebersicht && (
               <div className="no-print" style={{ marginTop: '0.35rem' }}>
                 <nav aria-label="Stammbaum: Bereich wählen">
                   <p className="meta" style={{ margin: '0 0 0.45rem', fontSize: '0.82rem', lineHeight: 1.4 }}>
@@ -831,6 +847,18 @@ export default function K2FamilieStammbaumPage() {
                 <button type="button" className="btn-outline" onClick={addPerson}>＋ Einzelne Person hinzufügen</button>
               )}
             </div>
+            <p className="meta" style={{ margin: '0.85rem 0 0', lineHeight: 1.45, maxWidth: '40rem' }}>
+              Auch ohne Personen:{' '}
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ fontSize: '0.88rem', marginLeft: 4 }}
+                onClick={() => setStammbaumBereich('pdf')}
+              >
+                PDF &amp; Drucken
+              </button>
+              <span className="meta" style={{ marginLeft: 6 }}>– z.&nbsp;B. Schreib- und Leserechte für die Familie (eine Seite).</span>
+            </p>
           </div>
         )}
 
@@ -1771,24 +1799,28 @@ export default function K2FamilieStammbaumPage() {
           <div id="stufe-pdf" style={{ scrollMarginTop: '5rem' }}>
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>4 · PDF &amp; Auswertung</h2>
+              <div className="stammbaum-pdf-steuerung">
               <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
-                <strong>Umfang:</strong> ganze Familie oder nur deinen Familienzweig (dafür <strong>Das bin ich</strong> setzen).{' '}
+                <strong>Umfang:</strong> ganze Familie oder nur deinen Familienzweig (dafür <strong>Das bin ich</strong> setzen) – gilt für
+                Listen und Grafik, nicht für <strong>Schreib- und Leserechte</strong>.{' '}
                 <strong>Typ:</strong> Personenblätter und Generationen sind am leichtesten zu lesen; beim <strong>Katalog</strong> Spalten
                 anhaken (z.&nbsp;B. <strong>Kontakt</strong> für Anschrift/E-Mail/Telefon). Stammbaum als Bild eher für Poster; im
                 Druckdialog „Als PDF speichern“.
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                  <span className="meta">Umfang</span>
-                  <select
-                    id="druck-umfang"
-                    value={druckUmfang}
-                    onChange={(e) => setDruckUmfang(e.target.value as DruckUmfang)}
-                  >
-                    <option value="alle">Ganze erfasste Familie</option>
-                    <option value="zweig">Nur mein Familienzweig</option>
-                  </select>
-                </label>
+                {druckStil !== 'rechte' && (
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <span className="meta">Umfang</span>
+                    <select
+                      id="druck-umfang"
+                      value={druckUmfang}
+                      onChange={(e) => setDruckUmfang(e.target.value as DruckUmfang)}
+                    >
+                      <option value="alle">Ganze erfasste Familie</option>
+                      <option value="zweig">Nur mein Familienzweig</option>
+                    </select>
+                  </label>
+                )}
                 <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                   <span className="meta">Typ</span>
                   <select
@@ -1805,6 +1837,9 @@ export default function K2FamilieStammbaumPage() {
                       <option value="generationen">Liste nach Generationen</option>
                       <option value="register">Katalog (Tabelle, Datenblätter → Druck oft Querformat)</option>
                       <option value="geburtstagsliste">Geburtstagsliste (Kalenderjahr, nach Tag sortiert)</option>
+                    </optgroup>
+                    <optgroup label="Familie">
+                      <option value="rechte">Schreib- und Leserechte (eine Seite, ohne Personendaten)</option>
                     </optgroup>
                     <optgroup label="Grafik">
                       <option value="grafik">Stammbaum als Bild (bei vielen Personen unübersichtlich)</option>
@@ -1875,7 +1910,10 @@ export default function K2FamilieStammbaumPage() {
                     </label>
                   </>
                 )}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                <label
+                  className="stammbaum-pdf-steuerung-titel-norm"
+                  style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}
+                >
                   <span className="meta">Titel (optional)</span>
                   <input
                     type="text"
@@ -1890,15 +1928,19 @@ export default function K2FamilieStammbaumPage() {
                   type="button"
                   className="btn"
                   disabled={
-                    personen.length === 0 ||
-                    (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0))
+                    druckStil === 'rechte'
+                      ? false
+                      : personen.length === 0 ||
+                        (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0))
                   }
                   title={
-                    personen.length === 0
-                      ? 'Zuerst Personen anlegen.'
-                      : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
-                        ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
-                        : undefined
+                    druckStil === 'rechte'
+                      ? undefined
+                      : personen.length === 0
+                        ? 'Zuerst Personen anlegen.'
+                        : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
+                          ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
+                          : undefined
                   }
                   onClick={() =>
                     openDruck({
@@ -1918,6 +1960,7 @@ export default function K2FamilieStammbaumPage() {
               </div>
               {druckStil === 'register' && (
                 <div
+                  className="stammbaum-pdf-katalog-spalten"
                   style={{
                     display: 'flex',
                     flexWrap: 'wrap',
@@ -1959,11 +2002,24 @@ export default function K2FamilieStammbaumPage() {
                   ))}
                 </div>
               )}
+              </div>
               <div className="stammbaum-pdf-vorschau-wrap" style={{ marginTop: '1rem' }}>
                 <h3 style={{ margin: '0 0 0.5rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.95)' }}>
                   Vorschau
                 </h3>
-                {druckUmfang === 'alle' && personen.length === 0 ? (
+                {druckStil === 'rechte' ? (
+                  <div className="stammbaum-pdf-vorschau-scroll">
+                    <div
+                      className="stammbaum-druck-view stammbaum-druck-view--vorschau"
+                      data-format={druckFormat === 'poster' ? 'poster' : druckFormat}
+                      data-stil="rechte"
+                    >
+                      <StammbaumDruckSchreibLeserechte
+                        familienName={druckTitel.trim() || getFamilieTenantDisplayName(currentTenantId, 'Familie')}
+                      />
+                    </div>
+                  </div>
+                ) : druckUmfang === 'alle' && personen.length === 0 ? (
                   <p className="meta" style={{ margin: 0 }}>Lege zuerst Personen an, dann erscheint die Vorschau.</p>
                 ) : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId ? (
                   <p className="meta" style={{ margin: 0 }}>
@@ -2038,7 +2094,7 @@ export default function K2FamilieStammbaumPage() {
                 )}
               </div>
               {druckStil !== 'grafik' && (
-                <p className="meta" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
+                <p className="meta stammbaum-pdf-steuerung-hint" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
                   {druckStil === 'register' ? (
                     <>
                       <strong>Katalog</strong>: Spalten per Checkbox; <strong>Kontakt</strong> zeigt Anschrift, E-Mail und Telefon kompakt
@@ -2052,6 +2108,10 @@ export default function K2FamilieStammbaumPage() {
                   ) : druckStil === 'geburtstagsliste' ? (
                     <>
                       <strong>Geburtstagsliste</strong>: Personen mit vollständigem Datum (TT.MM.JJJJ) erscheinen nach Kalendertag sortiert; andere am Ende der Liste. Verstorbene mit †.
+                    </>
+                  ) : druckStil === 'rechte' ? (
+                    <>
+                      <strong>Schreib- und Leserechte</strong>: eine Seite für die Familie – im Druckdialog „Als PDF speichern“ oder Papier wählen. Keine Personendaten nötig.
                     </>
                   ) : (
                     <>

@@ -477,7 +477,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'handbuch-galerie': return '/k2-galerie-handbuch'
       case 'produkt-vorschau': return PROJECT_ROUTES['k2-galerie'].produktVorschau
       case 'platzanordnung': return PROJECT_ROUTES['k2-galerie'].platzanordnung
-      case 'k2-familie': return PROJECT_ROUTES['k2-familie'].home
+      case 'k2-familie': return PROJECT_ROUTES['k2-familie'].einstieg
       case 'uebersicht': return PROJECT_ROUTES['k2-galerie'].uebersicht
       case 'lizenzen': return `${PROJECT_ROUTES['k2-galerie'].licences}#testpilot-einladen`
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen

@@ -18,14 +18,14 @@ export const K2_FAMILIE_ROLLEN_LABELS: Record<K2FamilieRolle, string> = {
 export const K2_FAMILIE_ROLLEN_KURZ: Record<K2FamilieRolle, string> = {
   inhaber: 'Volle Kontrolle inkl. Sicherung wiederherstellen und Familien-Verwaltung',
   bearbeiter: 'Organisches bearbeiten (Momente, Events, Geschichte, Gedenkort) – kein Stammbaum/Kern',
-  leser: 'Nur ansehen, nichts speichern',
+  leser: 'Alles lesen; auf der eigenen Karte Fotos, Links, Momente und Gedenkort-Einträge speichern',
 }
 
 /** Eine Zeile unter der Rollenwahl – Alltagssprache, keine Fachliste (Sportwagenmodus: sofort klar). */
 export const K2_FAMILIE_ROLLEN_EINZEILER: Record<K2FamilieRolle, string> = {
   inhaber: 'Du kannst alles bearbeiten – Stammbaum, Daten und Sicherung.',
   bearbeiter: 'Du bearbeitest Texte und Termine; den Stammbaum siehst du, änderst du nicht.',
-  leser: 'Du schaust nur zu – nichts wird gespeichert.',
+  leser: 'Du liest alles; auf deiner eigenen Karte kannst du persönliche Angaben, Momente und Gedenkort hinterlegen.',
 }
 
 /** Ampel-Punkt neben der Erklärung (Leser = zurückhaltend, Inhaber = klar „darf“). */
@@ -56,7 +56,8 @@ export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
   {
     rolle: 'Leser:in',
     lesen: 'Alles ansehen.',
-    schreiben: 'Nichts – Speichern ist aus.',
+    schreiben:
+      'Auf der eigenen Personenkarte: Fotos, Links, Kurztext, Kontakt; Momente und Erinnerungen dort; Gaben am Gedenkort. Kein Stammbaum, keine fremden Karten ändern.',
   },
 ]
 
@@ -69,6 +70,8 @@ export interface FamilieRollenCapabilities {
    * Für Stammbaum/Personenkarten immer `canEditStrukturUndStammdaten` prüfen.
    */
   canEditFamiliendaten: boolean
+  /** Leser:in: eigene Karte (Fotos, Links, Kontakt), Momente/Erinnerungen auf eigener Karte, Gedenkort – ohne Stammbaum */
+  canEditEigenesProfil: boolean
   /** Personenkarten-Stammdaten, Beziehungen, strukturelle Einstellungen, Grundstruktur – nur Inhaber:in */
   canEditStrukturUndStammdaten: boolean
   /** Momente, Beiträge, Events, Geschichten, Gaben, Druck-Spalten/Anzeige – Inhaber + Bearbeiter */
@@ -84,11 +87,13 @@ export interface FamilieRollenCapabilities {
 export function getFamilieRollenCapabilities(rolle: K2FamilieRolle): FamilieRollenCapabilities {
   const isInhaber = rolle === 'inhaber'
   const isBearbeiter = rolle === 'bearbeiter'
+  const isLeser = rolle === 'leser'
   const canEdit = isInhaber || isBearbeiter
   return {
     rolle,
     canView: true,
     canEditFamiliendaten: canEdit,
+    canEditEigenesProfil: isLeser,
     canEditStrukturUndStammdaten: isInhaber,
     canEditOrganisches: canEdit,
     canExportSicherung: canEdit,

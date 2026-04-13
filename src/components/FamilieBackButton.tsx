@@ -28,9 +28,13 @@ const btnReset: CSSProperties = {
 export default function FamilieBackButton({ children = '← Zurück', className = 'meta', style }: Props) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const home = PROJECT_ROUTES['k2-familie'].home
-  const isFamilieHome = pathname === home || pathname === `${home}/`
-  const fallback = isFamilieHome ? PLATFORM_ROUTES.projects : home
+  const R = PROJECT_ROUTES['k2-familie']
+  const norm = pathname.replace(/\/$/, '') || pathname
+  const isFamilieTop =
+    norm === R.home ||
+    norm === R.einstieg ||
+    norm === R.meineFamilie
+  const fallback = isFamilieTop ? PLATFORM_ROUTES.projects : R.meineFamilie
 
   return (
     <button

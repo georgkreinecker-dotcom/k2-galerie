@@ -6,8 +6,6 @@
 import { useState, useEffect } from 'react'
 import '../App.css'
 import { loadEvents, saveEvents, loadPersonen } from '../utils/familieStorage'
-import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
-import { isSupabaseConfigured } from '../utils/supabaseClient'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import type { K2FamilieEvent } from '../types/k2Familie'
@@ -17,7 +15,7 @@ function generateEventId(): string {
 }
 
 export default function K2FamilieEventsPage() {
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannOrganisch = capabilities.canEditOrganisches
   const [events, setEvents] = useState<K2FamilieEvent[]>(() => loadEvents(currentTenantId))
@@ -29,16 +27,9 @@ export default function K2FamilieEventsPage() {
   const [note, setNote] = useState('')
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      setEvents(loadEvents(currentTenantId))
-      setPersonen(loadPersonen(currentTenantId))
-      return
-    }
-    loadFamilieFromSupabase(currentTenantId).then((d) => {
-      setEvents(d.events)
-      setPersonen(d.personen)
-    })
-  }, [currentTenantId])
+    setEvents(loadEvents(currentTenantId))
+    setPersonen(loadPersonen(currentTenantId))
+  }, [currentTenantId, familieStorageRevision])
 
   const getPersonName = (personId: string) => personen.find((p) => p.id === personId)?.name ?? personId
 

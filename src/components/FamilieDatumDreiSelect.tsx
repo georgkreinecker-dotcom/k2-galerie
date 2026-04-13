@@ -30,9 +30,11 @@ type Props = {
   labelShort: string
   /** Bei Personenwechsel: gleicher Key wie Person-Id → lokale Felder zurücksetzen */
   resetKey?: string
+  /** z. B. Leser:in auf eigener Karte: strukturelle Daten nur Anzeige */
+  disabled?: boolean
 }
 
-export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labelShort, resetKey }: Props) {
+export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labelShort, resetKey, disabled }: Props) {
   const [d, setD] = useState(() => splitIsoDateToParts(value).d)
   const [m, setM] = useState(() => splitIsoDateToParts(value).m)
   const [y, setY] = useState(() => splitIsoDateToParts(value).y)
@@ -69,6 +71,7 @@ export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labe
   for (let i = 1; i <= n; i++) dayOptions.push(i)
 
   const apply = (nextD: string, nextM: string, nextY: string) => {
+    if (disabled) return
     let nd = nextD
     let nm = nextM
     let ny = nextY
@@ -106,7 +109,8 @@ export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labe
         value={d}
         onChange={(e) => apply(e.target.value, m, y)}
         aria-label={`${labelShort}: Tag`}
-        style={{ minWidth: '4.25rem' }}
+        disabled={disabled}
+        style={{ minWidth: '4.25rem', opacity: disabled ? 0.75 : undefined }}
       >
         <option value="">—</option>
         {dayOptions.map((day) => {
@@ -126,7 +130,8 @@ export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labe
         value={m}
         onChange={(e) => apply(d, e.target.value, y)}
         aria-label={`${labelShort}: Monat`}
-        style={{ minWidth: '9rem' }}
+        disabled={disabled}
+        style={{ minWidth: '9rem', opacity: disabled ? 0.75 : undefined }}
       >
         <option value="">—</option>
         {MONATE.map(([val, name]) => (
@@ -143,7 +148,8 @@ export default function FamilieDatumDreiSelect({ value, onChange, idPrefix, labe
         value={y}
         onChange={(e) => apply(d, m, e.target.value)}
         aria-label={`${labelShort}: Jahr`}
-        style={{ minWidth: '5.25rem' }}
+        disabled={disabled}
+        style={{ minWidth: '5.25rem', opacity: disabled ? 0.75 : undefined }}
       >
         <option value="">—</option>
         {years.map((yr) => (
