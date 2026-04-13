@@ -1,6 +1,6 @@
 # K2 Familie – Datenmodell (Phase 1.1)
 
-**Stand:** 02.03.26  
+**Stand:** 13.04.26  
 **Zweck:** Verbindliche Definition von Person, Beziehungen und Momenten. Grundlage für `familieStorage.ts` und alle K2-Familie-UI.
 
 ---
@@ -22,8 +22,11 @@ Jede Person hat eine eindeutige ID und kann mit anderen über Beziehungen verbun
 | `partners` | PartnerRef[] | Partner*innen – **mit Zeitraum** für wechselnde Partnerschaften (siehe unten) |
 | `siblingIds` | string[] | IDs der Geschwister |
 | `wahlfamilieIds` | string[] | IDs von Menschen aus der Wahlfamilie („wer gehört für mich dazu“) |
+| `mitgliedsNummer` | string | **Persönliche** Mitgliedsnummer – Zutritt zur **eigenen** Karte innerhalb der Familie (Produktentscheidung **B**). Vergeben von Inhaber:in/Bearbeiter:in; innerhalb des Tenants eindeutig; getrennt von der **familienweiten** Zugangsnummer in den Einstellungen. Optional bis Vergabe. |
 | `createdAt` | string (ISO) | Erstellungszeit – optional |
 | `updatedAt` | string (ISO) | Letzte Änderung – optional |
+
+**Zugang in zwei Schritten (B):** (1) Allgemeiner Link/QR mit Tenant → **Familie**. (2) Eingabe der **persönlichen** `mitgliedsNummer` → Zuordnung zu genau einer Person (`ichBinPersonId` in den Einstellungen). Hilfsfunktion: `findPersonIdByMitgliedsNummer` in `src/utils/familieMitgliedsNummer.ts`.
 
 **Grundbotschaft:** Keine Kategorien, die ausgrenzen. Eltern/Kinder/Partner*innen/Geschwister/Wahlfamilie sind flexibel befüllbar – jede Konstellation hat Platz.
 

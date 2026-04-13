@@ -62,6 +62,12 @@ export interface K2FamiliePerson {
   wahlfamilieIds: string[]
   /** Position unter Geschwistern (1-basiert) für Sortierung im Stammbaum – z. B. 7 = 7. von 13. */
   positionAmongSiblings?: number
+  /**
+   * Persönliche **Mitgliedsnummer** (Zutritt zur eigenen Identität innerhalb der Familie).
+   * Verbindliche Produktentscheidung: **B** – getrennt von der **familienweiten** Zugangsnummer (`mitgliedsNummerAdmin` in den Einstellungen).
+   * Von der Inhaber:in (oder Bearbeiter:in) pro Karte vergeben; innerhalb eines Tenants eindeutig; Eingabe nach dem allgemeinen Familienlink ordnet „Du“ zu (`ichBinPersonId`).
+   */
+  mitgliedsNummer?: string
   /** Optional: aufklappbarer Block Anschrift + E-Mail + Telefon auf der Personenseite. */
   kontaktAdresse?: K2FamilieKontaktAdresse
   createdAt?: string

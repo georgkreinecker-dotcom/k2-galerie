@@ -1,18 +1,19 @@
 # K2 Familie – Zugang, Zugangsnummer und familieninterne Rollen
 
 **Stand:** 13.04.26  
-**Zweck:** Festhalten, wie **Zutritt** (Zugangsnummer, QR) und **Rechte** (Rollen) zusammenspielen – und dass die **Familie** ihre Rollen **innen** definiert. Verbindlich für Konzept, Handbuch und spätere Umsetzung (Einladung, ggf. Supabase).
+**Zweck:** Festhalten, wie **Zutritt** (Zugangsnummer, QR), **persönliche Mitgliedsnummer** und **Rechte** (Rollen) zusammenspielen – und dass die **Familie** ihre Rollen **innen** definiert. Verbindlich für Konzept, Handbuch und spätere Umsetzung (Einladung, ggf. Supabase).
 
 ---
 
-## 1. Zwei Ebenen – nicht verwechseln
+## 1. Drei Ebenen – nicht verwechseln
 
 | Ebene | Was | Wer legt fest |
 |--------|-----|----------------|
-| **Zutritt zur Familie** | Eine **Zugangsnummer pro Familie (Tenant)** + QR/Einladung: Gäste landen in **dieser** Familie. | **Inhaber:in** (oder übernommene Nummer vom Administrator eintragen). |
+| **Zutritt zur Familie** | Eine **Zugangsnummer pro Familie (Tenant)** + QR/Einladung: alle landen in **dieser** Familie (allgemeiner Zugangslink). | **Inhaber:in** (oder übernommene Nummer vom Administrator eintragen). Feld: `mitgliedsNummerAdmin` in den Einstellungen. |
+| **Zutritt zur eigenen Person** | **Persönliche Mitgliedsnummer** pro Familienmitglied (Karte) – nach dem Familienlink die **eindeutige** Nummer, die **diese** Person identifiziert und den privaten Bereich (Platz in Groß- und Kleinfamilie) freischaltet. | **Verbindliche Produktentscheidung B** (Georg): die einzig vernünftige Lösung. Vergeben von **Inhaber:in / Bearbeiter:in** auf der Personenkarte; Feld: `mitgliedsNummer` an `K2FamiliePerson`. |
 | **Rechte in der Familie** | **Inhaber:in / Bearbeiter:in / Leser:in** – was darf jemand (Stammbaum/Struktur, Organisches, nur Lesen, Sicherung …). | **Familienintern** – geführt von der **Inhaber:in** (Zuweisung, Vertrauen, später technisch: Konto/Einladung). |
 
-**Wichtig:** Die Zugangsnummer **definiert keine feingliedrigen Rechte**. Sie öffnet nur den Weg **in die richtige Familie**. **Was** jemand dort darf, kommt aus den **Rollen** – und die müssen **innerhalb der Familie** geklärt und (langfristig) zugewiesen werden.
+**Wichtig:** Die **Familien-Zugangsnummer** öffnet nur den Weg **in die richtige Familie**. Die **persönliche Mitgliedsnummer** ordnet danach **wer** du im Baum bist – ohne die familienweite Nummer mit der Identität zu verwechseln. **Was** jemand inhaltlich darf, kommt aus den **Rollen**.
 
 ---
 
@@ -37,7 +38,8 @@
 
 | Priorität | Schritt |
 |-----------|---------|
-| **Doku / Nutzerklärheit** | Im Benutzerhandbuch klar schreiben: *Zugangsnummer = Familie finden; Rechte = Rolle, familienintern von der Inhaber:in gedacht.* |
+| **Doku / Nutzerklärheit** | Im Benutzerhandbuch klar schreiben: *Familien-Zugangsnummer = welche Familie; persönliche Mitgliedsnummer = wer du bist; Rechte = Rolle.* |
+| **Produkt** | UI nach **B**: Nach dem Öffnen der Familie **Eingabefeld Mitgliedsnummer** → speichert `ichBinPersonId`; Inhaber/Bearbeiter: Feld **Mitgliedsnummer** auf der Personenkarte pflegen (Eindeutigkeit pro Tenant). |
 | **Produkt** | Einladungs-Flow: **Einladung annehmen → Rolle zuweisen** (nur Inhaber), sobald Identität technisch möglich ist. |
 | **Architektur** | Rollen nicht nur „Dropdown Sitzung“, sondern persistiert **pro Person/Konto** pro `tenantId`, konsistent mit Datentrennung `k2-familie-*`. |
 
@@ -55,4 +57,4 @@
 
 ---
 
-**Kurz merken:** **Zugang** = welche Familie. **Rollen** = was darf man dort – **von der Familie bzw. Inhaber:in definiert**, nicht durch die Nummer allein.
+**Kurz merken:** **Familien-Zugang** = welche Familie. **Persönliche Mitgliedsnummer** = wer du in dieser Familie bist. **Rollen** = was du dort darfst – **von der Familie bzw. Inhaber:in definiert**.
