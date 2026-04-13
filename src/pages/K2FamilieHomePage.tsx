@@ -32,8 +32,9 @@ const C = {
   btnEventsKalender: 'linear-gradient(135deg, #d97706 0%, #14b8a6 100%)',
   btnGeschichte: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
   btnGedenkort: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
-  /** Einstellungen-Hub: Zugang, Sicherung, Lizenz, Handbuch/Mappe */
-  btnEinstellungen: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
+  /** Einstellungen-Hub: Zugang, Ansicht, Sicherung, Lizenz, Handbuch & Präsentationsmappe */
+  btnEinstellungen: 'linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #6366f1 100%)',
+  btnSicherung: 'linear-gradient(135deg, #991b1b 0%, #dc2626 45%, #f87171 100%)',
 }
 
 const actionBtnBase: CSSProperties = {
@@ -310,60 +311,6 @@ export default function K2FamilieHomePage() {
               Hier groß und klar zum Tippen – dieselben Bereiche erreichst du zusätzlich in der oberen Menüleiste, wenn du schon auf einer anderen Seite bist.
             </p>
             <div
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '1rem',
-              }}
-              aria-label="Kurzlinks Handbuch und Präsentationsmappe"
-            >
-              <span style={{ fontSize: '0.78rem', color: a.muted }}>Hinweise:</span>
-              <Link
-                to={familieR.benutzerHandbuch}
-                title="Nutzerhandbuch K2 Familie"
-                aria-label="Handbuch öffnen"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 38,
-                  height: 38,
-                  borderRadius: 999,
-                  border: '1px solid rgba(181, 74, 30, 0.28)',
-                  background: a.bgCard,
-                  fontSize: '1.05rem',
-                  textDecoration: 'none',
-                  lineHeight: 1,
-                  boxShadow: a.shadow,
-                }}
-              >
-                📚
-              </Link>
-              <Link
-                to={familieR.familiePraesentationsmappe}
-                title="Präsentationsmappe K2 Familie"
-                aria-label="Präsentationsmappe öffnen"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 38,
-                  height: 38,
-                  borderRadius: 999,
-                  border: '1px solid rgba(181, 74, 30, 0.28)',
-                  background: a.bgCard,
-                  fontSize: '1.05rem',
-                  textDecoration: 'none',
-                  lineHeight: 1,
-                  boxShadow: a.shadow,
-                }}
-              >
-                🗂️
-              </Link>
-            </div>
-            <div
               className="k2-familie-action-grid"
               style={{
                 display: 'grid',
@@ -447,26 +394,16 @@ export default function K2FamilieHomePage() {
                 🕯️ Gedenkort
               </Link>
               <Link
-                to={familieR.benutzerHandbuch}
+                to={familieR.einstellungen}
                 className="btn k2-familie-action-btn"
                 style={{
                   ...actionBtnBase,
-                  background: C.btnHandbuch,
-                  boxShadow: '0 8px 28px rgba(180, 83, 9, 0.35)',
+                  background: C.btnEinstellungen,
+                  boxShadow: '0 8px 28px rgba(79, 70, 229, 0.42)',
                 }}
+                title="Zugang &amp; Name, Stammbaum-Ansicht, Sicherung, Lizenz, Handbuch und Präsentationsmappe"
               >
-                📚 Handbuch
-              </Link>
-              <Link
-                to={familieR.familiePraesentationsmappe}
-                className="btn k2-familie-action-btn"
-                style={{
-                  ...actionBtnBase,
-                  background: C.btnPraesentation,
-                  boxShadow: '0 8px 28px rgba(15, 118, 110, 0.35)',
-                }}
-              >
-                🗂️ Präsentationsmappe
+                ⚙️ Einstellungen &amp; Verwaltung
               </Link>
               <Link
                 to={familieR.sicherung}
