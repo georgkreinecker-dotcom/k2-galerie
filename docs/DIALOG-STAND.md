@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 11.04.26 – **Homepage (/) APf: Lizenzstruktur sichtbar gemacht** – `PlatformStartPage.tsx`: Abschnitt „Lizenzstruktur“ (Haupt- vs. Nebenlizenz, Mandant, Zusatzprodukt); Unterzeile „Lizenzmodell“; Links zu Lizenzen, mök2 `#mok2-10c-haupt-neben-lizenz`, AGB §2. Tests 444 grün, Build ok. **Commit:** **fe90f0a4** ✅ GitHub
+**Letzter Stand:** 11.04.26 – **Homepage (/) APf: Lizenzstruktur sichtbar gemacht** – `PlatformStartPage.tsx`: Abschnitt „Lizenzstruktur“ (Haupt- vs. Nebenlizenz, Mandant, Zusatzprodukt); Unterzeile „Lizenzmodell“; Links zu Lizenzen, mök2 `#mok2-10c-haupt-neben-lizenz`, AGB §2. Tests 444 grün, Build ok. **Commits:** **fe90f0a4** (Feature), **509efea3** (DIALOG-STAND Hash) ✅ GitHub
 
 **Was wir JETZT tun:** APf im Browser `/` kurz prüfen (nur Desktop; Mobile leitet zur Galerie).
 
