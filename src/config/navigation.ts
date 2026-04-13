@@ -240,6 +240,12 @@ export const PROJECT_ROUTES = {
     id: 'k2-familie',
     name: 'K2 Familie',
     home: '/projects/k2-familie',
+    /** Einstieg B – immer vor „Meine Familie“ (C); eigene Inhalte, nicht Flyer-Texte */
+    einstieg: '/projects/k2-familie/einstieg',
+    /** Dashboard / Stammbaum-Hub (C) – nach Einstieg B */
+    meineFamilie: '/projects/k2-familie/meine-familie',
+    /** Hub: Zugang, Sicherung, Lizenz, Links Handbuch/Präsentation */
+    einstellungen: '/projects/k2-familie/einstellungen',
     /** Marketing/Flyer: kurze Vorstellung, dann CTA zur Familien-App (ohne Galerie-/willkommen) */
     willkommen: K2_FAMILIE_WILLKOMMEN_ROUTE,
     uebersicht: '/projects/k2-familie/uebersicht',

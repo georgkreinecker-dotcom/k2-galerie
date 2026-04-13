@@ -64,7 +64,9 @@ import K2FamilieBenutzerHandbuchPage from './pages/K2FamilieBenutzerHandbuchPage
 import K2FamiliePraesentationsmappePage from './pages/K2FamiliePraesentationsmappePage'
 import K2FamilieEntwicklungDokuPage from './pages/K2FamilieEntwicklungDokuPage'
 import K2FamilieSicherungPage from './pages/K2FamilieSicherungPage'
+import K2FamilieEinstellungenPage from './pages/K2FamilieEinstellungenPage'
 import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
+import K2FamilieEinstiegPage from './pages/K2FamilieEinstiegPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
 import VitaPage from './pages/VitaPage'
@@ -888,7 +890,9 @@ function App() {
       {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
-        <Route index element={<K2FamilieHomePage />} />
+        <Route index element={<Navigate to={PROJECT_ROUTES['k2-familie'].einstieg} replace />} />
+        <Route path="einstieg" element={<K2FamilieEinstiegPage />} />
+        <Route path="meine-familie" element={<K2FamilieHomePage />} />
         <Route path="uebersicht" element={<K2FamilieStartPage />} />
         <Route path="stammbaum" element={<K2FamilieStammbaumPage />} />
         <Route path="grundstruktur" element={<K2FamilieGrundstrukturPage />} />
@@ -899,6 +903,7 @@ function App() {
         <Route path="handbuch" element={<K2FamilieHandbuchPage />} />
         <Route path="doku" element={<K2FamilieEntwicklungDokuPage />} />
         <Route path="praesentationsmappe" element={<K2FamiliePraesentationsmappePage />} />
+        <Route path="einstellungen" element={<K2FamilieEinstellungenPage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />
       </Route>

@@ -1,7 +1,7 @@
 /**
  * K2 Familie – Fertige Homepage (nutzerorientiert).
  * Route: /projects/k2-familie/meine-familie („Meine Familie“, C).
- * Willkommen + Bild + erste Aktionen (Stammbaum, Events, Kalender). Pro Tenant Texte/Bilder.
+ * Willkommen + Bild + erste Aktionen (Stammbaum, Events & Kalender, …). Pro Tenant Texte/Bilder.
  */
 
 import { Link, useSearchParams } from 'react-router-dom'
@@ -14,8 +14,9 @@ import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import QRCode from 'qrcode'
-import { getFamilieTenantDisplayName, seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react'
+import { adminTheme } from '../config/theme'
 
 const C = {
   text: '#f0f6ff',
@@ -23,12 +24,16 @@ const C = {
   accent: '#14b8a6',
   accentHover: '#2dd4bf',
   border: 'rgba(13,148,136,0.35)',
-  heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(15,20,25,0.6) 50%, rgba(15,20,25,0.96) 100%)',
-  /* Bunte Buttons wie Spielplatz */
+  heroOverlay: 'linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(15,20,25,0.55) 55%, rgba(15,20,25,0.88) 100%)',
   btnStammdaten: 'linear-gradient(135deg, #0e7490 0%, #14b8a6 100%)',
   btnStammbaum: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
   btnEvents: 'linear-gradient(135deg, #ea580c 0%, #fb923c 100%)',
-  btnKalender: 'linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)',
+  /** Events + Kalender – eine Kachel (Link führt zur Event-Übersicht) */
+  btnEventsKalender: 'linear-gradient(135deg, #d97706 0%, #14b8a6 100%)',
+  btnGeschichte: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
+  btnGedenkort: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
+  /** Einstellungen-Hub: Zugang, Sicherung, Lizenz, Handbuch/Mappe */
+  btnEinstellungen: 'linear-gradient(135deg, #475569 0%, #64748b 100%)',
 }
 
 const actionBtnBase: CSSProperties = {
@@ -51,8 +56,22 @@ const STARTPUNKT_LABELS: Record<K2FamilieStartpunktTyp, string> = {
   grosseltern: 'Bei meinen Großeltern',
 }
 
+/** Reine Logik (außerhalb der Komponente): vermeidet ReferenceError bei HMR / fragmentierter Ausführung. */
+function computeErsteSchritteAmpel(
+  ichBinPersonId: string,
+  mitgliedsNummer: string,
+  startpunkt: K2FamilieStartpunktTyp | undefined,
+) {
+  const setupDu = Boolean(ichBinPersonId?.trim())
+  const setupZugang = Boolean(mitgliedsNummer.trim())
+  const setupStartpunkt = startpunkt !== undefined
+  const setupAllesErledigt = setupDu && setupZugang && setupStartpunkt
+  return { setupDu, setupZugang, setupStartpunkt, setupAllesErledigt }
+}
+
 export default function K2FamilieHomePage() {
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
+  const a = adminTheme
+  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
@@ -118,13 +137,29 @@ export default function K2FamilieHomePage() {
     return personen.find((p) => p.id === id)?.name?.trim() ?? ''
   }, [personen, ichBinPersonId])
 
-  const setupDu = useMemo(() => Boolean(ichBinPersonId?.trim()), [ichBinPersonId])
-  const setupZugang = useMemo(() => Boolean(mitgliedsNummer.trim()), [mitgliedsNummer])
-  const setupStartpunkt = useMemo(() => startpunkt !== undefined, [startpunkt])
-  const setupAllesErledigt = useMemo(
-    () => setupDu && setupZugang && setupStartpunkt,
-    [setupDu, setupZugang, setupStartpunkt],
+  const { setupDu, setupZugang, setupStartpunkt, setupAllesErledigt } = useMemo(
+    () => computeErsteSchritteAmpel(ichBinPersonId, mitgliedsNummer, startpunkt),
+    [ichBinPersonId, mitgliedsNummer, startpunkt],
   )
+
+  /** Sprung von Einstellungen-Seite (#anker): Stammbaum-Details öffnen bzw. Zugang-Bereich scrollen */
+  useEffect(() => {
+    const applyHash = () => {
+      const raw = window.location.hash.replace(/^#/, '')
+      if (raw === 'k2-familie-ansicht-einstellungen') {
+        setAnsichtEinstellungenOpen(true)
+        requestAnimationFrame(() => {
+          ansichtEinstellungenRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        })
+      }
+      if (raw === 'k2-familie-zugang-name') {
+        document.getElementById('k2-familie-zugang-name')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }
+    applyHash()
+    window.addEventListener('hashchange', applyHash)
+    return () => window.removeEventListener('hashchange', applyHash)
+  }, [])
 
   useEffect(() => {
     const z = mitgliedsNummer.trim()
@@ -190,52 +225,14 @@ export default function K2FamilieHomePage() {
     })
   }
 
+  const familieR = PROJECT_ROUTES['k2-familie']
   const stammdatenLinkTo =
-    ichBinPersonId?.trim() ? `${PROJECT_ROUTES['k2-familie'].personen}/${ichBinPersonId.trim()}` : null
+    ichBinPersonId?.trim() ? `${familieR.personen}/${ichBinPersonId.trim()}` : null
 
   return (
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ padding: 0, maxWidth: '100%' }}>
-        {/* Toolbar: nur Familie wählen – „Zurück“ sitzt einmal im Layout (kein Doppel) */}
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.6rem 1rem',
-          background: 'rgba(13,148,136,0.12)',
-          borderBottom: `1px solid ${C.border}`,
-        }}>
-          <span className="meta" style={{ color: C.textSoft }}>Familie:</span>
-          <select
-            value={currentTenantId}
-            onChange={(e) => setCurrentTenantId(e.target.value)}
-            style={{
-              background: 'rgba(0,0,0,0.25)',
-              border: `1px solid ${C.border}`,
-              borderRadius: 8,
-              color: C.text,
-              padding: '0.35rem 0.6rem',
-              fontSize: '0.88rem',
-              fontFamily: 'inherit',
-            }}
-          >
-            {tenantList.map((id) => (
-              <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
-            ))}
-          </select>
-          {kannInstanz && (
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={() => addTenant()}
-              title="Legt eine neue, leere Familie an. Du wechselst automatisch dorthin und kannst im Dropdown oben zwischen allen Familien wechseln."
-              style={{ borderColor: C.border, color: C.accent }}
-            >
-              Neue Familie
-            </button>
-          )}
-        </div>
+        {/* Familie wählen / Neue Familie: einmal im Layout (K2FamilieLayout) */}
 
         {/* Hero: lebendig, mit sanftem Verlauf */}
         <div className="k2-familie-hero" style={{ position: 'relative', width: '100%', height: 'clamp(260px, 44vh, 420px)', overflow: 'hidden', borderRadius: '0 0 28px 28px' }}>
@@ -250,45 +247,54 @@ export default function K2FamilieHomePage() {
             <p style={{ margin: '0 0 0.35rem', fontSize: '0.82rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.88)', fontWeight: 600 }}>
               {texts.welcomeSubtitle}
             </p>
-            <h1 style={{ margin: 0, fontSize: 'clamp(1.85rem, 5vw, 2.9rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 2px 20px rgba(0,0,0,0.5)' }}>
+            <h1 style={{ margin: 0, fontSize: 'clamp(1.75rem, 4.5vw, 2.6rem)', fontWeight: 700, color: '#fff', lineHeight: 1.12, textShadow: '0 1px 12px rgba(0,0,0,0.45)' }}>
               {texts.welcomeTitle}
             </h1>
           </div>
         </div>
 
-        <div style={{ padding: '1.75rem 1.25rem', maxWidth: 760, margin: '0 auto' }}>
-          <p style={{ margin: '0 0 1.1rem', fontSize: '0.98rem', lineHeight: 1.55, color: C.textSoft }}>
+        <div
+          style={{
+            background: a.bgDark,
+            fontFamily: a.fontBody,
+            padding: '1.75rem 1.25rem 2.5rem',
+          }}
+        >
+          <div style={{ maxWidth: 920, margin: '0 auto' }}>
+          <p style={{ margin: '0 0 1.15rem', fontSize: '0.98rem', lineHeight: 1.6, color: a.muted }}>
             {texts.introText}
           </p>
 
           {/* Ampel: erste Einrichtung (nur Hinweis, keine Pflichtlogik) */}
           <div
-            className="card"
             style={{
-              marginBottom: '1.15rem',
-              padding: '0.85rem 1rem',
-              borderLeft: `4px solid ${setupAllesErledigt ? 'rgba(34,197,94,0.75)' : 'rgba(251,191,36,0.65)'}`,
-              background: setupAllesErledigt ? 'rgba(34,197,94,0.08)' : 'rgba(251,191,36,0.07)',
+              marginBottom: '1.25rem',
+              padding: '1rem 1.15rem',
+              borderRadius: a.radius,
+              background: a.bgCard,
+              boxShadow: a.shadow,
+              border: '1px solid rgba(181, 74, 30, 0.12)',
+              borderLeft: `4px solid ${setupAllesErledigt ? '#15803d' : a.accent}`,
             }}
           >
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: C.accent, marginBottom: '0.5rem' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: a.accent, marginBottom: '0.5rem' }}>
               {setupAllesErledigt ? 'Erste Einrichtung: grundlegend erledigt' : 'Erste Schritte – zum Start'}
             </div>
-            <ul style={{ margin: 0, paddingLeft: '1.15rem', color: C.textSoft, fontSize: '0.88rem', lineHeight: 1.5 }}>
-              <li style={{ color: setupDu ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+            <ul style={{ margin: 0, paddingLeft: '1.15rem', color: a.muted, fontSize: '0.88rem', lineHeight: 1.55 }}>
+              <li style={{ color: setupDu ? '#15803d' : a.muted }}>
                 {setupDu ? '✓' : '○'} „Du“ im Stammbaum gewählt
               </li>
-              <li style={{ color: setupZugang ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+              <li style={{ color: setupZugang ? '#15803d' : a.muted }}>
                 {setupZugang ? '✓' : '○'} Zugangsnummer für den QR-Code eingetragen
               </li>
-              <li style={{ color: setupStartpunkt ? 'rgba(167,243,208,0.95)' : C.textSoft }}>
+              <li style={{ color: setupStartpunkt ? '#15803d' : a.muted }}>
                 {setupStartpunkt ? '✓' : '○'} Startpunkt für die Stammbaum-Ansicht gewählt
               </li>
             </ul>
             {!setupAllesErledigt && (
-              <p className="meta" style={{ margin: '0.55rem 0 0', fontSize: '0.78rem' }}>
+              <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted }}>
                 Details unten bei{' '}
-                <button type="button" className="meta" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
                   Stammbaum-Ansicht einstellen
                 </button>{' '}
                 und im Bereich Zugang &amp; Name.
@@ -296,105 +302,211 @@ export default function K2FamilieHomePage() {
             )}
           </div>
 
-          <h2 style={{ margin: '0 0 0.85rem', fontSize: '1.12rem', fontWeight: 700, color: C.accent }}>Was möchtest du tun?</h2>
-
-          <div className="k2-familie-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.35rem' }}>
-            {stammdatenLinkTo ? (
+          <section style={{ marginBottom: '1.35rem' }}>
+            <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+              Was möchtest du tun?
+            </h2>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', lineHeight: 1.55, color: a.muted }}>
+              Hier groß und klar zum Tippen – dieselben Bereiche erreichst du zusätzlich in der oberen Menüleiste, wenn du schon auf einer anderen Seite bist.
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem',
+              }}
+              aria-label="Kurzlinks Handbuch und Präsentationsmappe"
+            >
+              <span style={{ fontSize: '0.78rem', color: a.muted }}>Hinweise:</span>
               <Link
-                to={stammdatenLinkTo}
-                className="btn k2-familie-action-btn"
+                to={familieR.benutzerHandbuch}
+                title="Nutzerhandbuch K2 Familie"
+                aria-label="Handbuch öffnen"
                 style={{
-                  ...actionBtnBase,
-                  background: C.btnStammdaten,
-                  boxShadow: '0 8px 28px rgba(14, 116, 144, 0.45)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 38,
+                  height: 38,
+                  borderRadius: 999,
+                  border: '1px solid rgba(181, 74, 30, 0.28)',
+                  background: a.bgCard,
+                  fontSize: '1.05rem',
+                  textDecoration: 'none',
+                  lineHeight: 1,
+                  boxShadow: a.shadow,
                 }}
               >
-                👤 Meine Stammdaten
+                📚
               </Link>
-            ) : (
-              <button
-                type="button"
-                className="btn k2-familie-action-btn"
-                disabled={!kannStruktur}
-                onClick={kannStruktur ? openAnsichtEinstellungen : undefined}
+              <Link
+                to={familieR.familiePraesentationsmappe}
+                title="Präsentationsmappe K2 Familie"
+                aria-label="Präsentationsmappe öffnen"
                 style={{
-                  ...actionBtnBase,
-                  background: C.btnStammdaten,
-                  boxShadow: '0 8px 28px rgba(14, 116, 144, 0.35)',
-                  opacity: kannStruktur ? 1 : 0.55,
-                  cursor: kannStruktur ? 'pointer' : 'not-allowed',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 38,
+                  height: 38,
+                  borderRadius: 999,
+                  border: '1px solid rgba(181, 74, 30, 0.28)',
+                  background: a.bgCard,
+                  fontSize: '1.05rem',
+                  textDecoration: 'none',
+                  lineHeight: 1,
+                  boxShadow: a.shadow,
                 }}
               >
-                👤 Stammdaten – zuerst „Du“ festlegen
-              </button>
-            )}
-            <Link
-              to={PROJECT_ROUTES['k2-familie'].stammbaum}
-              className="btn k2-familie-action-btn"
+                🗂️
+              </Link>
+            </div>
+            <div
+              className="k2-familie-action-grid"
               style={{
-                ...actionBtnBase,
-                background: C.btnStammbaum,
-                boxShadow: '0 8px 28px rgba(5, 150, 105, 0.4)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem',
+                marginBottom: '0.25rem',
               }}
             >
-              🌳 {texts.buttonStammbaum}
-            </Link>
-            <Link
-              to={PROJECT_ROUTES['k2-familie'].events}
-              className="btn k2-familie-action-btn"
-              style={{
-                ...actionBtnBase,
-                background: C.btnEvents,
-                boxShadow: '0 8px 28px rgba(234, 88, 12, 0.35)',
-              }}
-            >
-              🎉 {texts.buttonEvents}
-            </Link>
-            <Link
-              to={PROJECT_ROUTES['k2-familie'].kalender}
-              className="btn k2-familie-action-btn"
-              style={{
-                ...actionBtnBase,
-                background: C.btnKalender,
-                boxShadow: '0 8px 28px rgba(13, 148, 136, 0.4)',
-              }}
-            >
-              📆 {texts.buttonKalender}
-            </Link>
-            <Link
-              to={PROJECT_ROUTES['k2-familie'].gedenkort}
-              className="btn k2-familie-action-btn"
-              style={{
-                ...actionBtnBase,
-                background: 'rgba(100,116,139,0.5)',
-                boxShadow: '0 8px 28px rgba(71,85,105,0.35)',
-              }}
-            >
-              🕯️ Gedenkort
-            </Link>
-          </div>
+              {stammdatenLinkTo ? (
+                <Link
+                  to={stammdatenLinkTo}
+                  className="btn k2-familie-action-btn"
+                  style={{
+                    ...actionBtnBase,
+                    background: C.btnStammdaten,
+                    boxShadow: '0 8px 28px rgba(14, 116, 144, 0.45)',
+                  }}
+                >
+                  👤 Meine Stammdaten
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="btn k2-familie-action-btn"
+                  disabled={!kannStruktur}
+                  onClick={kannStruktur ? openAnsichtEinstellungen : undefined}
+                  style={{
+                    ...actionBtnBase,
+                    background: C.btnStammdaten,
+                    boxShadow: '0 8px 28px rgba(14, 116, 144, 0.35)',
+                    opacity: kannStruktur ? 1 : 0.55,
+                    cursor: kannStruktur ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  👤 Stammdaten – zuerst „Du“ festlegen
+                </button>
+              )}
+              <Link
+                to={familieR.stammbaum}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnStammbaum,
+                  boxShadow: '0 8px 28px rgba(5, 150, 105, 0.4)',
+                }}
+              >
+                🌳 {texts.buttonStammbaum}
+              </Link>
+              <Link
+                to={familieR.events}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnEventsKalender,
+                  boxShadow: '0 8px 28px rgba(217, 119, 6, 0.38)',
+                }}
+                title="Zur Event-Übersicht; Kalender über denselben Menüpunkt in der oberen Leiste oder von der Events-Seite aus."
+              >
+                🎉📆 Events &amp; Kalender
+              </Link>
+              <Link
+                to={familieR.geschichte}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnGeschichte,
+                  boxShadow: '0 8px 28px rgba(109, 40, 217, 0.35)',
+                }}
+              >
+                📖 Geschichte
+              </Link>
+              <Link
+                to={familieR.gedenkort}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnGedenkort,
+                  boxShadow: '0 8px 28px rgba(71, 85, 105, 0.35)',
+                }}
+              >
+                🕯️ Gedenkort
+              </Link>
+              <Link
+                to={familieR.benutzerHandbuch}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnHandbuch,
+                  boxShadow: '0 8px 28px rgba(180, 83, 9, 0.35)',
+                }}
+              >
+                📚 Handbuch
+              </Link>
+              <Link
+                to={familieR.familiePraesentationsmappe}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnPraesentation,
+                  boxShadow: '0 8px 28px rgba(15, 118, 110, 0.35)',
+                }}
+              >
+                🗂️ Präsentationsmappe
+              </Link>
+              <Link
+                to={familieR.sicherung}
+                className="btn k2-familie-action-btn"
+                style={{
+                  ...actionBtnBase,
+                  background: C.btnSicherung,
+                  boxShadow: '0 8px 28px rgba(153, 27, 27, 0.35)',
+                }}
+              >
+                💾 Sicherung
+              </Link>
+            </div>
+          </section>
 
           <div
-            className="card"
+            id="k2-familie-zugang-name"
             style={{
               marginBottom: '1.25rem',
-              borderLeft: '4px solid rgba(45,212,191,0.75)',
-              background: 'rgba(13,148,136,0.08)',
+              padding: '1.15rem 1.2rem',
+              borderRadius: a.radius,
+              background: a.bgCard,
+              boxShadow: a.shadow,
+              border: '1px solid rgba(181, 74, 30, 0.12)',
+              borderLeft: `4px solid ${a.accent}`,
             }}
           >
-            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: C.accent }}>Zugang & Name</h2>
-            <p className="meta" style={{ margin: '0 0 0.85rem', lineHeight: 1.45 }}>
+            <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>Zugang & Name</h2>
+            <p style={{ margin: '0 0 0.85rem', lineHeight: 1.55, color: a.muted, fontSize: '0.9rem' }}>
               {kannInstanz ? (
                 <>
-                  Als Inhaber:in trägst du die <strong>Zugangsnummer</strong> selbst ein (oder nimmst sie vom Administrator). Der <strong>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
-                  <button type="button" className="meta" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                  Als Inhaber:in trägst du die <strong style={{ color: a.text }}>Zugangsnummer</strong> selbst ein (oder nimmst sie vom Administrator). Der <strong style={{ color: a.text }}>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong style={{ color: a.text }}>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
+                  <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
                     Stammbaum-Ansicht einstellen
                   </button>
                   .
                 </>
               ) : (
                 <>
-                  Die <strong>Zugangsnummer</strong> legt die Inhaber:in fest; mit dem <strong>QR-Code</strong> öffnet ihr dieselbe Familie inkl. Zugangscode. Eure Rolle erlaubt kein Ändern der Nummer
+                  Die <strong style={{ color: a.text }}>Zugangsnummer</strong> legt die Inhaber:in fest; mit dem <strong style={{ color: a.text }}>QR-Code</strong> öffnet ihr dieselbe Familie inkl. Zugangscode. Eure Rolle erlaubt kein Ändern der Nummer
                   {capabilities.rolle === 'leser' ? ' (Lesemodus).' : ' (nur Inhaber:in).'}{' '}
                   Der Anzeigename kommt aus „Du“ im Stammbaum.
                 </>
@@ -402,13 +514,13 @@ export default function K2FamilieHomePage() {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div>
-                <div className="meta" style={{ marginBottom: 6 }}>Name</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: C.text }}>
+                <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>Name</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: a.text }}>
                   {ichName || '— sobald „Du“ gesetzt ist'}
                 </div>
               </div>
               <div style={{ flex: '1 1 200px', minWidth: 180 }}>
-                <label className="meta" htmlFor="k2fam-mitgliedsnummer" style={{ display: 'block', marginBottom: 6 }}>
+                <label htmlFor="k2fam-mitgliedsnummer" style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
                   Zugangsnummer (vom Administrator)
                 </label>
                 <input
@@ -424,10 +536,10 @@ export default function K2FamilieHomePage() {
                   style={{
                     width: '100%',
                     maxWidth: 320,
-                    background: 'rgba(0,0,0,0.25)',
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 8,
-                    color: C.text,
+                    background: '#fffefb',
+                    border: '1px solid rgba(181, 74, 30, 0.28)',
+                    borderRadius: a.radius,
+                    color: a.text,
                     padding: '0.45rem 0.6rem',
                     fontFamily: 'inherit',
                     fontSize: '0.95rem',
@@ -436,9 +548,9 @@ export default function K2FamilieHomePage() {
                 />
               </div>
               <div style={{ textAlign: 'left', maxWidth: 200 }}>
-                <div className="meta" style={{ marginBottom: 6 }}>QR zum Einstieg</div>
+                <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR zum Einstieg</div>
                 {qrDataUrl ? (
-                  <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: `1px solid ${C.border}` }} />
+                  <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }} />
                 ) : (
                   <div
                     role="status"
@@ -446,24 +558,24 @@ export default function K2FamilieHomePage() {
                       maxWidth: 200,
                       minHeight: 96,
                       borderRadius: 12,
-                      border: `1px dashed ${C.border}`,
+                      border: '1px dashed rgba(181, 74, 30, 0.35)',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'flex-start',
                       justifyContent: 'center',
                       gap: '0.35rem',
-                      color: C.textSoft,
+                      color: a.muted,
                       fontSize: '0.82rem',
                       padding: '0.65rem 0.75rem',
                       lineHeight: 1.4,
-                      background: 'rgba(0,0,0,0.12)',
+                      background: a.bgElevated,
                     }}
                   >
                     <span aria-hidden="true" style={{ fontSize: '1.1rem' }}>
                       📋
                     </span>
                     <span>
-                      Zuerst links die <strong>Zugangsnummer</strong> speichern – dann erscheint der QR-Code für Handy &amp; Gäste.
+                      Zuerst links die <strong style={{ color: a.text }}>Zugangsnummer</strong> speichern – dann erscheint der QR-Code für Handy &amp; Gäste.
                     </span>
                   </div>
                 )}
@@ -476,33 +588,40 @@ export default function K2FamilieHomePage() {
             id="k2-familie-ansicht-einstellungen"
             open={ansichtEinstellungenOpen}
             onToggle={(e) => setAnsichtEinstellungenOpen((e.target as HTMLDetailsElement).open)}
-            className="card"
-            style={{ marginBottom: '1.5rem', border: `1px solid ${C.border}`, background: 'rgba(0,0,0,0.12)' }}
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem 1.15rem',
+              borderRadius: a.radius,
+              background: a.bgCard,
+              boxShadow: a.shadow,
+              border: '1px solid rgba(181, 74, 30, 0.12)',
+            }}
           >
             <summary
               style={{
                 cursor: 'pointer',
                 fontWeight: 700,
                 fontSize: '0.98rem',
-                color: C.accent,
+                color: a.accent,
+                fontFamily: a.fontHeading,
               }}
             >
               Stammbaum-Ansicht einstellen (Startpunkt, Partner-Zweig, wer „Du“ bist)
             </summary>
-            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              <div className="card" style={{ margin: 0, borderLeft: '4px solid rgba(20,184,166,0.5)' }}>
-                <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Wo beginnt deine Familie?</h2>
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ margin: 0, padding: '0.85rem 1rem', borderRadius: a.radius, background: a.bgElevated, borderLeft: `4px solid ${a.accent}` }}>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 700, color: a.text }}>Wo beginnt deine Familie?</h3>
                 {startpunkt ? (
-                  <p style={{ margin: 0, color: C.textSoft }}>
-                    <strong>{STARTPUNKT_LABELS[startpunkt]}</strong>
-                    <button type="button" className="btn-outline" disabled={!kannStruktur} onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', borderColor: C.border, color: C.accent, opacity: kannStruktur ? 1 : 0.55 }}>Ändern</button>
+                  <p style={{ margin: 0, color: a.muted, fontSize: '0.9rem' }}>
+                    <strong style={{ color: a.text }}>{STARTPUNKT_LABELS[startpunkt]}</strong>
+                    <button type="button" disabled={!kannStruktur} onClick={() => setStartpunkt(undefined)} style={{ marginLeft: '0.75rem', fontSize: '0.85rem', padding: '0.35rem 0.65rem', borderRadius: a.radius, border: '1px solid rgba(181, 74, 30, 0.35)', background: a.bgCard, color: a.accent, opacity: kannStruktur ? 1 : 0.55, cursor: kannStruktur ? 'pointer' : 'not-allowed' }}>Ändern</button>
                   </p>
                 ) : (
                   <>
-                    <p className="meta" style={{ margin: '0 0 0.75rem' }}>Anker für Stammbaum und Übersicht.</p>
+                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.88rem', color: a.muted }}>Anker für Stammbaum und Übersicht.</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {(['ich', 'eltern', 'grosseltern'] as const).map((typ) => (
-                        <button key={typ} type="button" className="btn" disabled={!kannBearbeiten} onClick={() => setStartpunktTyp(typ)} style={{ background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent, opacity: kannBearbeiten ? 1 : 0.55 }}>
+                        <button key={typ} type="button" disabled={!kannBearbeiten} onClick={() => setStartpunktTyp(typ)} style={{ padding: '0.4rem 0.75rem', fontSize: '0.88rem', borderRadius: a.radius, background: a.accentSoft, border: `1px solid rgba(181, 74, 30, 0.28)`, color: a.accent, opacity: kannBearbeiten ? 1 : 0.55, cursor: kannBearbeiten ? 'pointer' : 'not-allowed', fontFamily: 'inherit' }}>
                           {STARTPUNKT_LABELS[typ]}
                         </button>
                       ))}
@@ -511,18 +630,18 @@ export default function K2FamilieHomePage() {
                 )}
               </div>
 
-              <div className="card" style={{ margin: 0, borderLeft: '4px solid rgba(234,88,12,0.5)' }}>
-                <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Familie des Partners gleichrangig?</h2>
-                <p className="meta" style={{ margin: '0 0 0.5rem' }}>Optional: zweiter Herkunfts-Zweig – „Meine Herkunft“ und „Herkunft [Partner]“ gleichwertig.</p>
+              <div style={{ margin: 0, padding: '0.85rem 1rem', borderRadius: a.radius, background: a.bgElevated, borderLeft: '4px solid #c2410c' }}>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 700, color: a.text }}>Familie des Partners gleichrangig?</h3>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', color: a.muted }}>Optional: zweiter Herkunfts-Zweig – „Meine Herkunft“ und „Herkunft [Partner]“ gleichwertig.</p>
                 <select
                   value={partnerHerkunftId ?? ''}
                   disabled={!kannStruktur}
                   onChange={(e) => setPartnerHerkunft(e.target.value)}
                   style={{
-                    background: 'rgba(0,0,0,0.25)',
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 8,
-                    color: C.text,
+                    background: '#fffefb',
+                    border: '1px solid rgba(181, 74, 30, 0.28)',
+                    borderRadius: a.radius,
+                    color: a.text,
                     padding: '0.4rem 0.6rem',
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
@@ -537,18 +656,18 @@ export default function K2FamilieHomePage() {
                 </select>
               </div>
 
-              <div className="card" style={{ margin: 0, borderLeft: '4px solid rgba(5,150,105,0.6)' }}>
-                <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Dein Platz im Stammbaum („Du“)</h2>
-                <p className="meta" style={{ margin: '0 0 0.5rem' }}>Diese Person wird im Stammbaum hervorgehoben; von hier aus gelangst du zu „Meine Stammdaten“.</p>
+              <div style={{ margin: 0, padding: '0.85rem 1rem', borderRadius: a.radius, background: a.bgElevated, borderLeft: '4px solid #15803d' }}>
+                <h3 style={{ margin: '0 0 0.5rem', fontSize: '1rem', fontWeight: 700, color: a.text }}>Dein Platz im Stammbaum („Du“)</h3>
+                <p style={{ margin: '0 0 0.5rem', fontSize: '0.88rem', color: a.muted }}>Diese Person wird im Stammbaum hervorgehoben; von hier aus gelangst du zu „Meine Stammdaten“.</p>
                 <select
                   value={ichBinPersonId ?? ''}
                   disabled={!kannStruktur}
                   onChange={(e) => setIchBinPerson(e.target.value)}
                   style={{
-                    background: 'rgba(0,0,0,0.25)',
-                    border: `1px solid ${C.border}`,
-                    borderRadius: 8,
-                    color: C.text,
+                    background: '#fffefb',
+                    border: '1px solid rgba(181, 74, 30, 0.28)',
+                    borderRadius: a.radius,
+                    color: a.text,
                     padding: '0.4rem 0.6rem',
                     fontSize: '0.9rem',
                     fontFamily: 'inherit',
@@ -566,12 +685,21 @@ export default function K2FamilieHomePage() {
           </details>
 
           {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && (
-            <div className="card" style={{ marginTop: '1.5rem', borderLeft: '4px solid rgba(20,184,166,0.6)' }}>
-              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1rem', color: C.accent }}>Musterfamilie Huber</h2>
-              <p className="meta" style={{ margin: 0 }}>Demo-Familie mit 16 Personen, Stammbaum und Events – zum Anschauen und Ausprobieren.</p>
+            <div
+              style={{
+                marginTop: '1.5rem',
+                padding: '1rem 1.15rem',
+                borderRadius: a.radius,
+                background: a.bgCard,
+                boxShadow: a.shadow,
+                border: '1px solid rgba(181, 74, 30, 0.12)',
+                borderLeft: `4px solid ${a.accent}`,
+              }}
+            >
+              <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>Musterfamilie Huber</h2>
+              <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.5 }}>Demo-Familie mit 16 Personen, Stammbaum und Events – zum Anschauen und Ausprobieren.</p>
               <button
                 type="button"
-                className="btn"
                 onClick={() => {
                   if (seedFamilieHuber()) {
                     refreshFromStorage()
@@ -579,14 +707,24 @@ export default function K2FamilieHomePage() {
                     setMusterLoaded(true)
                   }
                 }}
-                style={{ marginTop: '0.75rem', background: 'rgba(20,184,166,0.25)', border: `1px solid ${C.border}`, color: C.accent }}
+                style={{
+                  marginTop: '0.75rem',
+                  padding: '0.55rem 1.1rem',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  borderRadius: a.radius,
+                  border: 'none',
+                  cursor: 'pointer',
+                  ...a.buttonPrimary,
+                }}
               >
-                → Musterfamilie laden und anzeigen
+                Musterfamilie laden und anzeigen
               </button>
-              {musterLoaded && <p className="meta" style={{ marginTop: '0.5rem', color: C.accent }}>Familie Huber geladen. Im Dropdown oben kannst du sie auswählen.</p>}
+              {musterLoaded && <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: a.muted }}>Familie Huber geladen. Im Dropdown „Familie:“ in der Leiste kannst du sie auswählen.</p>}
             </div>
           )}
 
+          </div>
         </div>
       </div>
     </div>
