@@ -32,7 +32,7 @@ Mit der Lizenzstufe **Pro++** haben Sie zusätzlich zur **Rechnung (§ 11 UStG)*
 ## Aufbewahrung und Rechtliches
 
 - **Buchungsunterlagen und Belege** müssen Sie **7 Jahre** aufbewahren (in Österreich). Die App hilft Ihnen, die Unterlagen zu sammeln und auszugeben; die Aufbewahrung obliegt Ihnen.
-- **Steuern und Buchhaltung:** Die K2 Galerie dient der **Vorarbeit** (Daten, CSVs, Belege). Rechtliche Verantwortung für Steuererklärungen, UStVA und Buchführung trägt der Nutzer bzw. der Steuerberater. Details siehe **AGB § 6** (Steuern, Buchhaltung und Finanzen).
+- **Steuern und Buchhaltung:** Die K2 Galerie dient der **Vorarbeit** (Daten, CSVs, Belege). Rechtliche Verantwortung für Steuererklärungen, UStVA und Buchführung trägt der Nutzer bzw. der Steuerberater. Details siehe **AGB §8** (Steuern, Buchhaltung und Finanzen).
 
 ---
 

@@ -1363,7 +1363,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           10. Lizenzen (Konditionen & Vergebung)
         </h2>
         <p style={{ marginBottom: '1rem', lineHeight: 1.6 }}>
-          Lizenz-Stufen (Basic, Pro, Pro+, Pro++, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §7). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
+          Lizenz-Stufen (Basic, Pro, Pro+, Pro++, VK2), Preismodelle und die <strong>Vergabe von Lizenzen</strong> gehören zur Vertriebs-Arbeitsplattform. Beim Vergeben kann optional eine <strong>Empfehler-ID</strong> erfasst werden – Grundlage für die automatisierte Abrechnung des Empfehlungs-Programms (Multi-Level-Vergütung). <strong>Lizenz jederzeit durch den Nutzer beendbar</strong>, keine Mindestlaufzeit, keine Bindung – Ausstieg so einfach wie Einstieg (AGB §10). Doku: <code>docs/LICENCE-STRUKTUR.md</code>, <code>docs/ABRECHNUNGSSTRUKTUR-EMPFEHLUNGSPROGRAMM.md</code>.
         </p>
         <h3
           id="mok2-10-lizenz-abschliessen"
@@ -1524,7 +1524,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>Pro++</td>
               <td style={{ padding: '0.5rem 0.6rem' }}><strong>55 €/Monat</strong></td>
-              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater; Aufbewahrung 7 Jahre. Keine Haftung für Buchführung/Steuern (AGB § 6).</td>
+              <td style={{ padding: '0.5rem 0.6rem' }}>Alles aus Pro+ + <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater; Aufbewahrung 7 Jahre. Keine Haftung für Buchführung/Steuern (AGB §8).</td>
             </tr>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
               <td style={{ padding: '0.5rem 0.6rem', fontWeight: 600 }}>VK2 (Verein)</td>
@@ -1978,7 +1978,7 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
           14. 💎 Pro+ & Pro++ – Marketingbereich, Rechnung & Buchhaltung
         </h2>
         <p style={{ lineHeight: 1.7, marginBottom: '1rem', color: 'rgba(255,255,255,0.85)' }}>
-          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; dazu Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre. Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB § 6).
+          Neben Basic (15 €), Pro (35 €) und Kunstvereine (VK2, wie Pro) gibt es <strong style={{ color: '#fbbf24' }}>Pro+ (45 €/Monat)</strong> – Pro inklusive gesamten Marketingbereich: Events, Galeriepräsentation, Flyer, Presse, Social Media, Plakat, PR-Dokumente aus einem Guss. <strong style={{ color: '#fbbf24' }}>Pro++ (55 €/Monat)</strong> ergänzt Pro+ um <strong>Rechnung (§ 11 UStG)</strong> und <strong>vollständige Buchhaltung</strong>: fortlaufende Rechnungsnummer, Pflichtangaben, USt-Aufschlüsselung; dazu Kassabuch- und Verkäufe-CSV, Belege als PDF pro Zeitraum – Vorarbeit für den Steuerberater, Aufbewahrung 7 Jahre. Rechtliche Verantwortung für Buchführung und Steuern trägt der Nutzer/Steuerberater (AGB §8).
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

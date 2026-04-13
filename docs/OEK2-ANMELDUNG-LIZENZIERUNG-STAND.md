@@ -103,7 +103,7 @@
 
 **Vereinbartes Modell:** 2 Wochen kostenlose Testphase → danach Zahlungspflicht; wenn nicht gezahlt: Lizenz und Daten verfallen.
 
-**AGB:** In **AGBPage.tsx** ist §2 „Testphase (2 Wochen kostenlos) und Umgang mit Daten“ ergänzt:
+**AGB:** In **AGBPage.tsx** sind u. a. **§2** (Lizenzmodell) und **§3** „Testphase (2 Wochen kostenlos) und Umgang mit Daten“ ergänzt:
 - Nutzer gibt erforderliche Daten (z. B. E-Mail) ein.
 - Versicherung: Daten nur für Testphase und Lizenzabwicklung; **wenn nach 2 Wochen keine Lizenz abgeschlossen wird, werden die Testdaten unverzüglich gelöscht**, Lizenz erlischt.
 - Bestätigung „AGB gelesen und akzeptiert“ wie üblich (WillkommenPage: AGB-Modal mit Checkbox vor Eintritt).

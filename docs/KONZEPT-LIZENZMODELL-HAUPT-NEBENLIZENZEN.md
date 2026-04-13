@@ -1,6 +1,6 @@
 # Lizenzmodell – Hauptlizenzen und Nebenlizenzen
 
-**Stand:** 12.04.26  
+**Stand:** 11.04.26  
 **Zweck:** Ein klares, vertretbares Modell für **Abgrenzung**, **Skalierung** und **Kommunikation** (Website, mök2, Vertrag). Technische Umsetzung (Stripe-Produkte, tenantId) folgt Markt und Priorität – **dieses Dokument ist die fachliche Leitlinie**.
 
 **Verknüpfung:** `docs/SKALIERUNG-KONZEPT.md` (Mandant = tenantId), bestehende Galerie-Stufen in `src/config/licencePricing.ts` und `LicencesPage`.
@@ -82,6 +82,6 @@ Nebenlizenzen **ergänzen** oder **splitten** Verantwortung – ohne die Hauptli
 
 - Preise und Stripe-Produkte für definierte Nebenlizenzen (z. B. „K2 Familie Zusatzmandant“).  
 - **Erledigt (Apr. 2026):** Kurztexte auf **LicencesPage** (Infobox) und **mök2** (`#mok2-10c-haupt-neben-lizenz`) – Hauptstufen unverändert.  
-- **Offen:** AGB: Verweis auf Haupt- vs. Nebenleistung und Mandantentrennung.
+- **Erledigt (Apr. 2026):** AGB unter `/agb` (`src/pages/AGBPage.tsx`): **§2** Haupt-/Nebenlizenz, Mandant, K2 Familie eigenständig, Empfehlungs-Programm; ausführliche Referenz **docs/AGB-VORLAGE-RECHTSSTRUKTUR.md**.
 
 **Dieses Konzept ist die fachliche Basis; Zahlen und SKU-Namen werden bei Go-Live der jeweiligen Nebenlizenz festgelegt.**
