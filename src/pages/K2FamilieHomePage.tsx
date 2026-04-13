@@ -17,6 +17,7 @@ import QRCode from 'qrcode'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
+import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const C = {
   text: '#f0f6ff',
@@ -57,6 +58,13 @@ const STARTPUNKT_LABELS: Record<K2FamilieStartpunktTyp, string> = {
   grosseltern: 'Bei meinen Großeltern',
 }
 
+/** Einheitliches Format für frei vergebene Zugangsnummern (Inhaber:in / Administrator). */
+function suggestFamilieZugangsnummer(): string {
+  const y = new Date().getFullYear()
+  const n = Math.floor(1000 + Math.random() * 9000)
+  return `KF-${y}-${n}`
+}
+
 /** Reine Logik (außerhalb der Komponente): vermeidet ReferenceError bei HMR / fragmentierter Ausführung. */
 function computeErsteSchritteAmpel(
   ichBinPersonId: string,
@@ -84,7 +92,9 @@ export default function K2FamilieHomePage() {
   const [ichBinPersonId, setIchBinPersonIdState] = useState<string>('')
   const [mitgliedsNummer, setMitgliedsNummer] = useState('')
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
+  const [einladungsLinkKopiert, setEinladungsLinkKopiert] = useState(false)
   const [ansichtEinstellungenOpen, setAnsichtEinstellungenOpen] = useState(false)
+  const { versionTimestamp } = useQrVersionTimestamp()
   const ansichtEinstellungenRef = useRef<HTMLDetailsElement>(null)
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
@@ -108,6 +118,8 @@ export default function K2FamilieHomePage() {
       const next = new URLSearchParams(searchParams)
       next.delete('t')
       next.delete('z')
+      next.delete('v')
+      next.delete('_')
       setSearchParams(next, { replace: true })
     }
     if (t && tenantList.includes(t)) {
@@ -162,17 +174,23 @@ export default function K2FamilieHomePage() {
     return () => window.removeEventListener('hashchange', applyHash)
   }, [])
 
-  useEffect(() => {
+  /** Gleiche Logik wie Galerie-QR: Server-Stand + Cache-Bust, damit Scan am Handy die aktuelle App lädt. */
+  const familieEinladungsUrl = useMemo(() => {
     const z = mitgliedsNummer.trim()
-    if (!z) {
+    if (!z || typeof window === 'undefined') return ''
+    const base = new URL(`${window.location.origin}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
+    base.searchParams.set('t', currentTenantId)
+    base.searchParams.set('z', z)
+    return buildQrUrlWithBust(base.toString(), versionTimestamp)
+  }, [mitgliedsNummer, currentTenantId, versionTimestamp])
+
+  useEffect(() => {
+    if (!familieEinladungsUrl) {
       setQrDataUrl('')
       return
     }
-    const url = new URL(`${window.location.origin}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
-    url.searchParams.set('t', currentTenantId)
-    url.searchParams.set('z', z)
     let cancelled = false
-    QRCode.toDataURL(url.toString(), { width: 168, margin: 1, errorCorrectionLevel: 'M' })
+    QRCode.toDataURL(familieEinladungsUrl, { width: 168, margin: 1, errorCorrectionLevel: 'M' })
       .then((dataUrl) => {
         if (!cancelled) setQrDataUrl(dataUrl)
       })
@@ -182,7 +200,7 @@ export default function K2FamilieHomePage() {
     return () => {
       cancelled = true
     }
-  }, [mitgliedsNummer, currentTenantId])
+  }, [familieEinladungsUrl])
 
   const setStartpunktTyp = (typ: K2FamilieStartpunktTyp) => {
     if (!kannStruktur) return
@@ -217,6 +235,21 @@ export default function K2FamilieHomePage() {
     if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: next })) {
       setMitgliedsNummer(raw.trim())
     }
+  }
+
+  const vorschlagZugangsnummerUebernehmen = () => {
+    if (!kannInstanz) return
+    const s = suggestFamilieZugangsnummer()
+    setMitgliedsNummer(s)
+    persistMitgliedsNummer(s)
+  }
+
+  const kopiereFamilieEinladungslink = () => {
+    if (!familieEinladungsUrl) return
+    void navigator.clipboard.writeText(familieEinladungsUrl).then(() => {
+      setEinladungsLinkKopiert(true)
+      window.setTimeout(() => setEinladungsLinkKopiert(false), 2200)
+    })
   }
 
   const openAnsichtEinstellungen = () => {
@@ -456,38 +489,83 @@ export default function K2FamilieHomePage() {
                   {ichName || '— sobald „Du“ gesetzt ist'}
                 </div>
               </div>
-              <div style={{ flex: '1 1 200px', minWidth: 180 }}>
+              <div style={{ flex: '1 1 240px', minWidth: 180 }}>
                 <label htmlFor="k2fam-mitgliedsnummer" style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
                   Zugangsnummer (vom Administrator)
                 </label>
-                <input
-                  id="k2fam-mitgliedsnummer"
-                  type="text"
-                  autoComplete="off"
-                  readOnly={!kannInstanz}
-                  value={mitgliedsNummer}
-                  onChange={(e) => setMitgliedsNummer(e.target.value)}
-                  onBlur={() => persistMitgliedsNummer(mitgliedsNummer)}
-                  placeholder="z. B. KF-2026-0042"
-                  title={!kannInstanz ? 'Nur Inhaber:in kann die Zugangsnummer ändern.' : undefined}
-                  style={{
-                    width: '100%',
-                    maxWidth: 320,
-                    background: '#fffefb',
-                    border: '1px solid rgba(181, 74, 30, 0.28)',
-                    borderRadius: a.radius,
-                    color: a.text,
-                    padding: '0.45rem 0.6rem',
-                    fontFamily: 'inherit',
-                    fontSize: '0.95rem',
-                    opacity: kannInstanz ? 1 : 0.85,
-                  }}
-                />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    id="k2fam-mitgliedsnummer"
+                    type="text"
+                    autoComplete="off"
+                    readOnly={!kannInstanz}
+                    value={mitgliedsNummer}
+                    onChange={(e) => setMitgliedsNummer(e.target.value)}
+                    onBlur={() => persistMitgliedsNummer(mitgliedsNummer)}
+                    placeholder="z. B. KF-2026-0042"
+                    title={!kannInstanz ? 'Nur Inhaber:in kann die Zugangsnummer ändern.' : undefined}
+                    style={{
+                      flex: '1 1 200px',
+                      minWidth: 160,
+                      maxWidth: 320,
+                      background: '#fffefb',
+                      border: '1px solid rgba(181, 74, 30, 0.28)',
+                      borderRadius: a.radius,
+                      color: a.text,
+                      padding: '0.45rem 0.6rem',
+                      fontFamily: 'inherit',
+                      fontSize: '0.95rem',
+                      opacity: kannInstanz ? 1 : 0.85,
+                    }}
+                  />
+                  {kannInstanz && (
+                    <button
+                      type="button"
+                      onClick={vorschlagZugangsnummerUebernehmen}
+                      style={{
+                        padding: '0.45rem 0.75rem',
+                        fontSize: '0.85rem',
+                        fontFamily: 'inherit',
+                        borderRadius: a.radius,
+                        border: `1px solid rgba(181, 74, 30, 0.35)`,
+                        background: a.bgElevated,
+                        color: a.accent,
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Nummer vorschlagen
+                    </button>
+                  )}
+                </div>
+                <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: a.muted, lineHeight: 1.45 }}>
+                  Sobald eine Nummer im Feld steht, erscheint rechts der QR-Code. Dauerhaft gespeichert wird beim Verlassen des Feldes oder nach „Nummer vorschlagen“.
+                </p>
               </div>
               <div style={{ textAlign: 'left', maxWidth: 200 }}>
                 <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR zum Einstieg</div>
                 {qrDataUrl ? (
-                  <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }} />
+                  <div>
+                    <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }} />
+                    <button
+                      type="button"
+                      onClick={kopiereFamilieEinladungslink}
+                      style={{
+                        marginTop: '0.5rem',
+                        width: '100%',
+                        padding: '0.4rem 0.55rem',
+                        fontSize: '0.82rem',
+                        fontFamily: 'inherit',
+                        borderRadius: a.radius,
+                        border: `1px solid rgba(181, 74, 30, 0.32)`,
+                        background: a.bgCard,
+                        color: a.accent,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {einladungsLinkKopiert ? '✓ Link kopiert' : 'Einladungslink kopieren'}
+                    </button>
+                  </div>
                 ) : (
                   <div
                     role="status"
@@ -512,7 +590,7 @@ export default function K2FamilieHomePage() {
                       📋
                     </span>
                     <span>
-                      Zuerst links die <strong style={{ color: a.text }}>Zugangsnummer</strong> speichern – dann erscheint der QR-Code für Handy &amp; Gäste.
+                      <strong style={{ color: a.text }}>Zugangsnummer</strong> eintragen oder „Nummer vorschlagen“ – dann erscheint der QR-Code (und optional der kopierbare Link) für Handy &amp; Gäste.
                     </span>
                   </div>
                 )}

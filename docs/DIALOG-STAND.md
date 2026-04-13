@@ -1,8 +1,10 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Zugangsnummer & QR weiter** – `K2FamilieHomePage` „Zugang & Name“: Einladungs-URL wie Galerie-Standard **`buildQrUrlWithBust`** + **`useQrVersionTimestamp`** (Scan = aktueller Server-Stand); Button **„Nummer vorschlagen“** (`KF-Jahr-NNNN`); **„Einladungslink kopieren“**; klare Kurztexte (QR sobald Nummer im Feld; Speichern bei Blur/Vorschlag); Query-Cleanup **`v`**/**`_`** nach Einladungs-Scan. Tests 445 grün, Build ok. **Commit:** (nach Push).
+
 **Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
-**Was wir JETZT tun:** Vercel neu deployen bis **Ready**; **`/projects/k2-familie/einstieg`** + **`/projects/k2-familie/meine-familie`** kurz prüfen. **Lokal noch offen:** andere uncommittete K2-Familie-/Projekt-Änderungen – gesondert fertigstellen oder verwerfen.
+**Was wir JETZT tun:** Push; Vercel **Ready**; **Meine Familie** → Zugangsnummer testen (Vorschlag, QR, Link kopieren, Scan). **Lokal noch offen:** sonstige uncommittete Änderungen – gesondert.
 
 ---
 
