@@ -22,7 +22,9 @@ import FamilieBackButton from './FamilieBackButton'
 import FamilieLeitstrukturPanel from './FamilieLeitstrukturPanel'
 import { FamilieEinladungQuerySync } from './FamilieEinladungQuerySync'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
-import { K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
+
+/** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
+const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
 
 const t = adminTheme
 const FAMILIE_NAV_BORDER = 'rgba(181, 74, 30, 0.14)'
@@ -35,8 +37,8 @@ function FamilieTenantToolbar() {
   const [, setEinstellungenTick] = useState(0)
   useEffect(() => {
     const onUpd = () => setEinstellungenTick((n) => n + 1)
-    window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onUpd)
-    return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onUpd)
+    window.addEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
+    return () => window.removeEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
   }, [])
 
   return (
