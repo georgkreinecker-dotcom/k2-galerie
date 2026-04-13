@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`479fa1a2`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
+**Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
 **Was wir JETZT tun:** Vercel neu deployen bis **Ready**; **`/projects/k2-familie/einstieg`** + **`/projects/k2-familie/meine-familie`** kurz prüfen. **Lokal noch offen:** andere uncommittete K2-Familie-/Projekt-Änderungen – gesondert fertigstellen oder verwerfen.
 
