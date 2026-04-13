@@ -21,7 +21,9 @@ export function FamilieEinladungQuerySync() {
   const kannInstanz = capabilities.canManageFamilienInstanz
 
   useLayoutEffect(() => {
-    const t = searchParams.get('t')?.trim()
+    const tRaw = searchParams.get('t')?.trim()
+    /** Gleiche Schreibweise wie in Keys (u. a. UUID aus Einladung in Kleinbuchstaben). */
+    const t = tRaw ? tRaw.toLowerCase() : undefined
     const z = searchParams.get('z')?.trim()
     const m = searchParams.get('m')?.trim()
     if (!t && !z && !m) return

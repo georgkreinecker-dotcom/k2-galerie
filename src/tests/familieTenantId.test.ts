@@ -14,4 +14,8 @@ describe('isValidFamilieTenantId', () => {
     expect(isValidFamilieTenantId('foo bar')).toBe(false)
     expect(isValidFamilieTenantId('x/../y')).toBe(false)
   })
+
+  it('lehnt Null-UUID ab (fehlerhafter Platzhalter in Links/QR)', () => {
+    expect(isValidFamilieTenantId('00000000-0000-0000-0000-000000000000')).toBe(false)
+  })
 })
