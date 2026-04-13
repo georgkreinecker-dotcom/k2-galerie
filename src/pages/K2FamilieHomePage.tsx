@@ -17,6 +17,7 @@ import QRCode from 'qrcode'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { useMemo, useState, useEffect, useRef, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
+import { APP_BASE_URL } from '../config/externalUrls'
 import { buildQrUrlWithBust, useQrVersionTimestamp } from '../hooks/useServerBuildTimestamp'
 
 const C = {
@@ -93,9 +94,34 @@ export default function K2FamilieHomePage() {
   const [mitgliedsNummer, setMitgliedsNummer] = useState('')
   const [qrDataUrl, setQrDataUrl] = useState<string>('')
   const [einladungsLinkKopiert, setEinladungsLinkKopiert] = useState(false)
+  const [zugangSpeichernHinweis, setZugangSpeichernHinweis] = useState('')
+  /** Nummer ist mindestens einmal nicht-leer gespeichert → fest (kein Dauernd-neu-Vorschlagen). */
+  const [zugangFestgelegt, setZugangFestgelegt] = useState(false)
+  /** Inhaber:in hat „Nummer ändern“ gewählt → Feld wieder editierbar bis Speichern/Abbrechen. */
+  const [zugangAendernModus, setZugangAendernModus] = useState(false)
+  const zugangVorAenderungRef = useRef('')
   const [ansichtEinstellungenOpen, setAnsichtEinstellungenOpen] = useState(false)
   const { versionTimestamp } = useQrVersionTimestamp()
   const ansichtEinstellungenRef = useRef<HTMLDetailsElement>(null)
+  const zugangHinweisTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const zeigeZugangSpeichernHinweis = (text: string, ms = 5200) => {
+    if (zugangHinweisTimerRef.current) {
+      clearTimeout(zugangHinweisTimerRef.current)
+      zugangHinweisTimerRef.current = null
+    }
+    setZugangSpeichernHinweis(text)
+    zugangHinweisTimerRef.current = setTimeout(() => {
+      setZugangSpeichernHinweis('')
+      zugangHinweisTimerRef.current = null
+    }, ms)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (zugangHinweisTimerRef.current) clearTimeout(zugangHinweisTimerRef.current)
+    }
+  }, [])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
@@ -106,7 +132,10 @@ export default function K2FamilieHomePage() {
     setStartpunkt(einst.startpunktTyp)
     setPartnerHerkunftId(einst.partnerHerkunftPersonId ?? '')
     setIchBinPersonIdState(einst.ichBinPersonId ?? '')
-    setMitgliedsNummer(einst.mitgliedsNummerAdmin ?? '')
+    const z = einst.mitgliedsNummerAdmin ?? ''
+    setMitgliedsNummer(z)
+    setZugangFestgelegt(Boolean(z.trim()))
+    setZugangAendernModus(false)
   }, [currentTenantId])
 
   /** QR-Link (?t=tenant&z=nummer): Familie wählen und Zugangsnummer übernehmen. */
@@ -128,6 +157,8 @@ export default function K2FamilieHomePage() {
         const einst = loadEinstellungen(t)
         if (saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })) {
           setMitgliedsNummer(z)
+          setZugangFestgelegt(Boolean(z.trim()))
+          setZugangAendernModus(false)
         }
       }
       strip()
@@ -138,6 +169,8 @@ export default function K2FamilieHomePage() {
         const einst = loadEinstellungen(currentTenantId)
         if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })) {
           setMitgliedsNummer(z)
+          setZugangFestgelegt(Boolean(z.trim()))
+          setZugangAendernModus(false)
         }
       }
       strip()
@@ -174,11 +207,11 @@ export default function K2FamilieHomePage() {
     return () => window.removeEventListener('hashchange', applyHash)
   }, [])
 
-  /** Gleiche Logik wie Galerie-QR: Server-Stand + Cache-Bust, damit Scan am Handy die aktuelle App lädt. */
+  /** Wie Galerie-QR (`publicLinks`): immer Produktions-Host (`APP_BASE_URL`), nie localhost — Scan am Handy sonst wertlos. */
   const familieEinladungsUrl = useMemo(() => {
     const z = mitgliedsNummer.trim()
-    if (!z || typeof window === 'undefined') return ''
-    const base = new URL(`${window.location.origin}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
+    if (!z) return ''
+    const base = new URL(`${APP_BASE_URL}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
     base.searchParams.set('t', currentTenantId)
     base.searchParams.set('z', z)
     return buildQrUrlWithBust(base.toString(), versionTimestamp)
@@ -231,14 +264,57 @@ export default function K2FamilieHomePage() {
   const persistMitgliedsNummer = (raw: string) => {
     if (!kannInstanz) return
     const einst = loadEinstellungen(currentTenantId)
-    const next = raw.trim() || undefined
+    const trimmed = raw.trim()
+    const next = trimmed || undefined
     if (saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: next })) {
-      setMitgliedsNummer(raw.trim())
+      setMitgliedsNummer(trimmed)
+      setZugangFestgelegt(Boolean(trimmed))
+      setZugangAendernModus(false)
+      if (trimmed) {
+        zeigeZugangSpeichernHinweis(
+          '✓ Zugangsnummer ist gespeichert. QR-Code und Einladungslink gelten für diese Nummer — Gäste landen in derselben Familie mit diesem Code.',
+        )
+      } else {
+        zeigeZugangSpeichernHinweis('✓ Gespeichert. Ohne Nummer erscheint kein QR-Code.')
+      }
+    } else {
+      zeigeZugangSpeichernHinweis('⚠️ Speichern ist fehlgeschlagen. Bitte später erneut versuchen.', 7000)
     }
   }
 
-  const vorschlagZugangsnummerUebernehmen = () => {
+  const handleMitgliedsNummerBlur = () => {
     if (!kannInstanz) return
+    if (zugangAendernModus) {
+      const t = mitgliedsNummer.trim()
+      if (!t) {
+        setMitgliedsNummer(zugangVorAenderungRef.current)
+        setZugangAendernModus(false)
+        zeigeZugangSpeichernHinweis('Änderung verworfen — Zugangsnummer bleibt wie zuvor.', 4000)
+        return
+      }
+    }
+    persistMitgliedsNummer(mitgliedsNummer)
+  }
+
+  const starteZugangAendern = () => {
+    if (
+      !window.confirm(
+        'Zugangsnummer wirklich ändern? Bereits geteilte QR-Codes und Links mit der bisherigen Nummer sind danach ungültig.',
+      )
+    ) {
+      return
+    }
+    zugangVorAenderungRef.current = mitgliedsNummer
+    setZugangAendernModus(true)
+  }
+
+  const abbrecheZugangAendern = () => {
+    setMitgliedsNummer(zugangVorAenderungRef.current)
+    setZugangAendernModus(false)
+  }
+
+  const vorschlagZugangsnummerUebernehmen = () => {
+    if (!kannInstanz || zugangFestgelegt) return
     const s = suggestFamilieZugangsnummer()
     setMitgliedsNummer(s)
     persistMitgliedsNummer(s)
@@ -468,7 +544,7 @@ export default function K2FamilieHomePage() {
             <p style={{ margin: '0 0 0.85rem', lineHeight: 1.55, color: a.muted, fontSize: '0.9rem' }}>
               {kannInstanz ? (
                 <>
-                  Als Inhaber:in trägst du die <strong style={{ color: a.text }}>Zugangsnummer</strong> selbst ein (oder nimmst sie vom Administrator). Der <strong style={{ color: a.text }}>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong style={{ color: a.text }}>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
+                  Als Inhaber:in legst du die <strong style={{ color: a.text }}>Zugangsnummer einmal</strong> fest (oder übernimmst sie vom Administrator) — sie bleibt deine Familien-Zutrittnummer, bis du sie bewusst änderst. Der <strong style={{ color: a.text }}>QR-Code</strong> führt Familienmitglieder mit dieser Nummer in dieselbe Familie. Der <strong style={{ color: a.text }}>Anzeigename</strong> kommt aus der Person „Du“ – festlegen unter{' '}
                   <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
                     Stammbaum-Ansicht einstellen
                   </button>
@@ -490,57 +566,153 @@ export default function K2FamilieHomePage() {
                 </div>
               </div>
               <div style={{ flex: '1 1 240px', minWidth: 180 }}>
-                <label htmlFor="k2fam-mitgliedsnummer" style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
+                <label htmlFor={kannInstanz && zugangFestgelegt && !zugangAendernModus ? undefined : 'k2fam-mitgliedsnummer'} style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
                   Zugangsnummer (vom Administrator)
                 </label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                  <input
-                    id="k2fam-mitgliedsnummer"
-                    type="text"
-                    autoComplete="off"
-                    readOnly={!kannInstanz}
-                    value={mitgliedsNummer}
-                    onChange={(e) => setMitgliedsNummer(e.target.value)}
-                    onBlur={() => persistMitgliedsNummer(mitgliedsNummer)}
-                    placeholder="z. B. KF-2026-0042"
-                    title={!kannInstanz ? 'Nur Inhaber:in kann die Zugangsnummer ändern.' : undefined}
-                    style={{
-                      flex: '1 1 200px',
-                      minWidth: 160,
-                      maxWidth: 320,
-                      background: '#fffefb',
-                      border: '1px solid rgba(181, 74, 30, 0.28)',
-                      borderRadius: a.radius,
-                      color: a.text,
-                      padding: '0.45rem 0.6rem',
-                      fontFamily: 'inherit',
-                      fontSize: '0.95rem',
-                      opacity: kannInstanz ? 1 : 0.85,
-                    }}
-                  />
-                  {kannInstanz && (
+                {kannInstanz && zugangFestgelegt && !zugangAendernModus ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <div
+                      id="k2fam-mitgliedsnummer-lesen"
+                      style={{
+                        flex: '1 1 200px',
+                        minWidth: 160,
+                        maxWidth: 360,
+                        background: '#fffefb',
+                        border: '1px solid rgba(181, 74, 30, 0.28)',
+                        borderRadius: a.radius,
+                        color: a.text,
+                        padding: '0.45rem 0.6rem',
+                        fontFamily: 'ui-monospace, monospace',
+                        fontSize: '0.95rem',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {mitgliedsNummer.trim() || '—'}
+                    </div>
                     <button
                       type="button"
-                      onClick={vorschlagZugangsnummerUebernehmen}
+                      onClick={starteZugangAendern}
                       style={{
                         padding: '0.45rem 0.75rem',
                         fontSize: '0.85rem',
                         fontFamily: 'inherit',
                         borderRadius: a.radius,
-                        border: `1px solid rgba(181, 74, 30, 0.35)`,
-                        background: a.bgElevated,
-                        color: a.accent,
+                        border: `1px solid rgba(181, 74, 30, 0.45)`,
+                        background: a.buttonPrimary.background,
+                        color: '#fff',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Nummer vorschlagen
+                      Nummer ändern…
                     </button>
-                  )}
-                </div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <input
+                      id="k2fam-mitgliedsnummer"
+                      type="text"
+                      autoComplete="off"
+                      readOnly={!kannInstanz}
+                      value={mitgliedsNummer}
+                      onChange={(e) => setMitgliedsNummer(e.target.value)}
+                      onBlur={handleMitgliedsNummerBlur}
+                      placeholder="z. B. KF-2026-0042"
+                      title={!kannInstanz ? 'Nur Inhaber:in kann die Zugangsnummer ändern.' : undefined}
+                      style={{
+                        flex: '1 1 200px',
+                        minWidth: 160,
+                        maxWidth: 320,
+                        background: '#fffefb',
+                        border: '1px solid rgba(181, 74, 30, 0.28)',
+                        borderRadius: a.radius,
+                        color: a.text,
+                        padding: '0.45rem 0.6rem',
+                        fontFamily: 'inherit',
+                        fontSize: '0.95rem',
+                        opacity: kannInstanz ? 1 : 0.85,
+                      }}
+                    />
+                    {kannInstanz && !zugangFestgelegt && (
+                      <button
+                        type="button"
+                        onClick={vorschlagZugangsnummerUebernehmen}
+                        style={{
+                          padding: '0.45rem 0.75rem',
+                          fontSize: '0.85rem',
+                          fontFamily: 'inherit',
+                          borderRadius: a.radius,
+                          border: `1px solid rgba(181, 74, 30, 0.35)`,
+                          background: a.bgElevated,
+                          color: a.accent,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Nummer vorschlagen
+                      </button>
+                    )}
+                    {kannInstanz && zugangAendernModus && (
+                      <button
+                        type="button"
+                        onClick={abbrecheZugangAendern}
+                        style={{
+                          padding: '0.45rem 0.75rem',
+                          fontSize: '0.85rem',
+                          fontFamily: 'inherit',
+                          borderRadius: a.radius,
+                          border: `1px solid rgba(181, 74, 30, 0.35)`,
+                          background: a.bgCard,
+                          color: a.muted,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Abbrechen
+                      </button>
+                    )}
+                  </div>
+                )}
                 <p style={{ margin: '0.4rem 0 0', fontSize: '0.78rem', color: a.muted, lineHeight: 1.45 }}>
-                  Sobald eine Nummer im Feld steht, erscheint rechts der QR-Code. Dauerhaft gespeichert wird beim Verlassen des Feldes oder nach „Nummer vorschlagen“.
+                  {!kannInstanz ? (
+                    <>QR und Einladungslink funktionieren mit der von der Inhaber:in festgelegten Nummer.</>
+                  ) : zugangFestgelegt && !zugangAendernModus ? (
+                    <>
+                      Das ist <strong style={{ color: a.text }}>deine feste Zugangsnummer</strong> für diesen Stammbaum — Gäste nutzen QR oder Link mit genau dieser Nummer.
+                    </>
+                  ) : zugangFestgelegt && zugangAendernModus ? (
+                    <>
+                      Neue Nummer eintragen und Feld verlassen zum Speichern — oder <strong style={{ color: a.text }}>Abbrechen</strong>. Alte QR/Links werden mit der neuen Nummer ungültig.
+                    </>
+                  ) : (
+                    <>
+                      Sobald du die Nummer das erste Mal speicherst, bleibt sie fest — nur noch über „Nummer ändern…“ mit Absicherung. Vor dem ersten Speichern: rechts erscheint der QR (Vorschau);{' '}
+                      <strong style={{ color: a.text }}>fest</strong> wird sie beim Verlassen des Feldes. QR und Link zeigen auf die <strong style={{ color: a.text }}>Online-App</strong>, nicht auf localhost.
+                    </>
+                  )}
                 </p>
+                {kannInstanz && zugangSpeichernHinweis ? (
+                  <p
+                    role="status"
+                    aria-live="polite"
+                    style={{
+                      margin: '0.55rem 0 0',
+                      padding: '0.5rem 0.65rem',
+                      fontSize: '0.82rem',
+                      lineHeight: 1.45,
+                      borderRadius: a.radius,
+                      border: zugangSpeichernHinweis.startsWith('⚠️')
+                        ? '1px solid rgba(180, 83, 9, 0.45)'
+                        : '1px solid rgba(22, 101, 52, 0.35)',
+                      background: zugangSpeichernHinweis.startsWith('⚠️')
+                        ? 'rgba(254, 243, 199, 0.85)'
+                        : 'rgba(220, 252, 231, 0.95)',
+                      color: zugangSpeichernHinweis.startsWith('⚠️') ? '#92400e' : '#166534',
+                    }}
+                  >
+                    {zugangSpeichernHinweis}
+                  </p>
+                ) : null}
               </div>
               <div style={{ textAlign: 'left', maxWidth: 200 }}>
                 <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR zum Einstieg</div>
