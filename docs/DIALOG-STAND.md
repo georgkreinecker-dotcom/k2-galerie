@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 11.04.26 – **K2 Familie: Einstellungen-Hub (Zugang, Sicherung, Lizenz)** – Route **`/projects/k2-familie/einstellungen`** (`K2FamilieEinstellungenPage.tsx`), `PROJECT_ROUTES['k2-familie'].einstellungen`; Startseite Kachel „Einstellungen & Verwaltung“, Hashes/Scroll Zugang & Ansicht; **`K2FamilieLayout`**: Nav-Eintrag **Einstellungen** (gebündelt statt mehrerer Einzel-Links); `App.tsx`, `navigation.ts`. **Commit:** **e8f6ab04** (Einstellungen-Hub, Nav, Startseite). DIALOG-STAND angepasst (zweiter Commit auf `main`). **`git push origin main`** einmal (**ahead 2**), bis Remote = lokal.
+
+**Was wir JETZT tun:** Nach Push: Vercel „Ready“; im Browser Route Einstellungen + Sprünge zu Meine Familie prüfen.
+
+---
+
 **Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Ampel „Erste Schritte“ – fehlende Variablen (Build-Fix)** – `K2FamilieHomePage.tsx`: `setupDu` / `setupZugang` / `setupStartpunkt` / `setupAllesErledigt` per `useMemo` aus State; ungenutzten Import `PLATFORM_ROUTES` entfernt. `tsc:build` ok. **Commit:** **83222efb** ✅ GitHub
 
 **Was wir JETZT tun:** Restliche lokale K2-Familie-/Projekt-Änderungen gesondert committen oder weiter bearbeiten; Hub „Meine Familie“ kurz im Browser prüfen (Ampel).
