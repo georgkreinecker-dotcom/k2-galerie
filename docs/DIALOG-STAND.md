@@ -1,12 +1,16 @@
 # Dialog-Stand
 
+**Letzter Stand:** 13.04.26 – **K2 Familie Einladungs-QR: richtiger Tenant auf neuem Gerät** – Ursache: `?t=` wirkte nur wenn die ID schon in `tenantList` (localStorage) stand. **Fix:** `ensureTenantInListAndSelect` in `FamilieTenantContext`, `K2FamilieHomePage` Einladungs-Effekt; `isValidFamilieTenantId` in `familieStorage`; Test `familieTenantId.test.ts`; Doku-Zeile in **K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN**. Commit folgt.
+
+**Letzter Stand:** 13.04.26 – **K2 Familie Doku: Zugang vs. Rollen, familienintern** – Neue Datei **`docs/K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md`:** Zugangsnummer/QR = richtige Familie; **Rollen** (Inhaber/Bearbeiter/Leser) **familienintern** definieren und zuweisen; Querverweise Typen, zweige, Supabase; Eintrag **`docs/00-INDEX.md`**. Commit folgt.
+
 **Letzter Stand:** 13.04.26 – **K2 Familie: Zugangsnummer einmal fest, nicht endlos neu** – `K2FamilieHomePage`: nach erstem Speichern **feste Anzeige** + **„Nummer ändern…“** mit Bestätigung; **„Nummer vorschlagen“** nur bei noch leerer Nummer; Abbrechen / Verwerfen bei leerem Feld im Ändern-Modus; QR-Link bereits **`APP_BASE_URL`** (nicht localhost). **Commit:** **`d7ca5e3e`** ✅ GitHub.
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: Zugangsnummer & QR weiter** – `K2FamilieHomePage` „Zugang & Name“: Einladungs-URL wie Galerie-Standard **`buildQrUrlWithBust`** + **`useQrVersionTimestamp`** (Scan = aktueller Server-Stand); Button **„Nummer vorschlagen“** (`KF-Jahr-NNNN`); **„Einladungslink kopieren“**; klare Kurztexte (QR sobald Nummer im Feld; Speichern bei Blur/Vorschlag); Query-Cleanup **`v`**/**`_`** nach Einladungs-Scan. Tests 445 grün, Build ok. **Commit:** **`2be139b7`** ✅ GitHub.
 
 **Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
-**Was wir JETZT tun:** Nach Deploy: feste Nummer + „Nummer ändern…“ kurz ausprobieren. **Lokal:** sonstige Änderungen ggf. gesondert committen.
+**Was wir JETZT tun:** Doku **Zugang & Rollen** im Repo gelesen; optional später Handbuch-Kapitel um einen Absatz ergänzen. Nach Deploy: feste Nummer + „Nummer ändern…“ kurz ausprobieren.
 
 ---
 

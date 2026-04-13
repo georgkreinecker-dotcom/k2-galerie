@@ -13,6 +13,16 @@ import { isSupabaseConfigured } from './supabaseClient'
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
 export const K2_FAMILIE_DEFAULT_TENANT = 'default'
 
+/**
+ * Erlaubte Tenant-IDs für Einladungs-Links (?t=) und localStorage-Keys.
+ * Kleinschreibung, Ziffern, Bindestrich; keine Leerzeichen/sonstigen Zeichen.
+ */
+export function isValidFamilieTenantId(id: string): boolean {
+  const t = id?.trim()
+  if (!t || t.length > 64) return false
+  return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(t)
+}
+
 /** Max. 10 MB pro Key (localStorage). Großfamilien: Fotos komprimieren oder extern; siehe docs/K2-FAMILIE-SKALIERUNG-GROSSFAMILIEN.md */
 const MAX_JSON_SIZE = 10_000_000
 

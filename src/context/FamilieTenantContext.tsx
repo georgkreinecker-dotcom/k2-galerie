@@ -4,7 +4,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
-import { K2_FAMILIE_DEFAULT_TENANT } from '../utils/familieStorage'
+import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId } from '../utils/familieStorage'
 
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -51,6 +51,11 @@ type ContextValue = {
   tenantList: string[]
   setCurrentTenantId: (id: string) => void
   addTenant: () => string
+  /**
+   * Einladungs-QR (?t=): Tenant zur Liste hinzufügen (falls noch nicht da) und aktiv schalten.
+   * Nötig auf neuem Gerät – sonst bleibt nur „default“ und die falsche Familie erscheint.
+   */
+  ensureTenantInListAndSelect: (id: string) => boolean
   /** Liest tenant list und current aus localStorage/sessionStorage neu (z. B. nach Seed Musterfamilie). */
   refreshFromStorage: () => void
 }
@@ -79,6 +84,19 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     return newId
   }, [tenantList])
 
+  const ensureTenantInListAndSelect = useCallback((id: string): boolean => {
+    if (!isValidFamilieTenantId(id)) return false
+    const list = loadList()
+    const next = list.includes(id) ? list : [...list, id]
+    if (next.length !== list.length) {
+      persistList(next)
+    }
+    setTenantList(next)
+    setCurrentTenantIdState(id)
+    persistCurrent(id)
+    return true
+  }, [])
+
   const refreshFromStorage = useCallback(() => {
     const list = loadList()
     setTenantList(list)
@@ -98,6 +116,7 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     tenantList,
     setCurrentTenantId,
     addTenant,
+    ensureTenantInListAndSelect,
     refreshFromStorage,
   }
 
@@ -116,6 +135,7 @@ export function useFamilieTenant(): ContextValue {
       tenantList: [K2_FAMILIE_DEFAULT_TENANT],
       setCurrentTenantId: () => {},
       addTenant: () => K2_FAMILIE_DEFAULT_TENANT,
+      ensureTenantInListAndSelect: () => false,
       refreshFromStorage: () => {},
     }
   }

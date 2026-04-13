@@ -81,7 +81,8 @@ function computeErsteSchritteAmpel(
 
 export default function K2FamilieHomePage() {
   const a = adminTheme
-  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
+  const { currentTenantId, tenantList, setCurrentTenantId, ensureTenantInListAndSelect, refreshFromStorage } =
+    useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannBearbeiten = capabilities.canEditFamiliendaten
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
@@ -151,8 +152,19 @@ export default function K2FamilieHomePage() {
       next.delete('_')
       setSearchParams(next, { replace: true })
     }
-    if (t && tenantList.includes(t)) {
-      setCurrentTenantId(t)
+    if (t) {
+      // Neu-Gerät: ?t= steht oft noch nicht in tenantList – sonst bleibt „default“ → falsche/generische Familie.
+      let switched: boolean
+      if (tenantList.includes(t)) {
+        setCurrentTenantId(t)
+        switched = true
+      } else {
+        switched = ensureTenantInListAndSelect(t)
+      }
+      if (!switched) {
+        strip()
+        return
+      }
       if (z && kannInstanz) {
         const einst = loadEinstellungen(t)
         if (saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })) {
@@ -175,7 +187,15 @@ export default function K2FamilieHomePage() {
       }
       strip()
     }
-  }, [searchParams, tenantList, setCurrentTenantId, setSearchParams, currentTenantId, kannInstanz])
+  }, [
+    searchParams,
+    tenantList,
+    setCurrentTenantId,
+    ensureTenantInListAndSelect,
+    setSearchParams,
+    currentTenantId,
+    kannInstanz,
+  ])
 
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()
