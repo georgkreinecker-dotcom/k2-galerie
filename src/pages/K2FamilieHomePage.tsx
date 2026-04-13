@@ -11,9 +11,9 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
-import { loadEinstellungen, saveEinstellungen, loadPersonen } from '../utils/familieStorage'
-import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
-import { findPersonIdByMitgliedsNummer } from '../utils/familieMitgliedsNummer'
+import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
+import { loadIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
+import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 import { K2_FAMILIE_EINSTELLUNGEN_UPDATED } from '../components/FamilieEinladungQuerySync'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import QRCode from 'qrcode'
@@ -97,6 +97,10 @@ export default function K2FamilieHomePage() {
   const [einladungsLinkKopiert, setEinladungsLinkKopiert] = useState(false)
   const [persoenlicherLinkKopiert, setPersoenlicherLinkKopiert] = useState(false)
   const [persoenlicheNummerEingabe, setPersoenlicheNummerEingabe] = useState('')
+  /** Wenn „Du“ schon gesetzt, Sitzung aber nicht: erneut Code eingeben (sonst keine Leiste). */
+  const [identitaetSessionEingabe, setIdentitaetSessionEingabe] = useState('')
+  const [identitaetSessionHinweis, setIdentitaetSessionHinweis] = useState('')
+  const [identitaetSessionOk, setIdentitaetSessionOk] = useState('')
   const [registrierungHinweis, setRegistrierungHinweis] = useState('')
   const [registrierungErfolg, setRegistrierungErfolg] = useState('')
   const [persoenlicherQrDataUrl, setPersoenlicherQrDataUrl] = useState('')
@@ -358,6 +362,31 @@ export default function K2FamilieHomePage() {
     })
   }
 
+  const bestaetigeIdentitaetFuerSession = () => {
+    setIdentitaetSessionOk('')
+    setIdentitaetSessionHinweis('')
+    const raw = identitaetSessionEingabe.trim()
+    if (!raw) {
+      setIdentitaetSessionHinweis('Bitte deinen persönlichen Code eintragen.')
+      return
+    }
+    const ich = ichBinPersonId?.trim()
+    if (!ich) return
+    const pid = findPersonIdByMitgliedsNummer(personen, raw)
+    if (pid !== ich) {
+      setIdentitaetSessionHinweis('Der Code passt nicht zu deiner Person „Du“. Schreibweise prüfen.')
+      return
+    }
+    setIdentitaetBestaetigt(currentTenantId, ich)
+    setIdentitaetSessionEingabe('')
+    setIdentitaetSessionHinweis('')
+    setIdentitaetSessionOk('✓ Sitzung bestätigt. Bearbeiten ist wieder möglich.')
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId: currentTenantId } }))
+    }
+    window.setTimeout(() => setIdentitaetSessionOk(''), 6000)
+  }
+
   const anmeldenMitPersoenlicherNummer = () => {
     setRegistrierungErfolg('')
     const raw = persoenlicheNummerEingabe.trim()
@@ -395,10 +424,131 @@ export default function K2FamilieHomePage() {
   const stammdatenLinkTo =
     ichBinPersonId?.trim() ? `${familieR.personen}/${ichBinPersonId.trim()}` : null
 
+  const ichIdSession = ichBinPersonId?.trim()
+  const ichPersonFuerSession = ichIdSession ? personen.find((p) => p.id === ichIdSession) : undefined
+  const codeAufDuKarteSession = trimMitgliedsNummerEingabe(ichPersonFuerSession?.mitgliedsNummer ?? '')
+  const needsIdentitaetSessionBanner = Boolean(
+    ichIdSession && codeAufDuKarteSession && loadIdentitaetBestaetigt(currentTenantId) !== ichIdSession,
+  )
+
   return (
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ padding: 0, maxWidth: '100%' }}>
         {/* Familie wählen / Neue Familie: einmal im Layout (K2FamilieLayout) */}
+
+        {needsIdentitaetSessionBanner ? (
+          <div
+            id="k2-familie-identitaet-bestaetigen"
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: '0.65rem clamp(0.85rem, 4vw, 1.25rem)',
+              background: 'linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%)',
+              borderBottom: '2px solid rgba(180, 83, 9, 0.35)',
+              boxShadow: '0 4px 16px rgba(15, 23, 42, 0.06)',
+            }}
+          >
+            <div
+              style={{
+                maxWidth: 920,
+                margin: '0 auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+              }}
+            >
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '0.9rem',
+                  color: '#78350f',
+                  lineHeight: 1.45,
+                  fontFamily: a.fontBody,
+                }}
+              >
+                <strong>Sitzung nicht bestätigt.</strong> Auf deiner Karte ist ein persönlicher Code – bitte gib ihn
+                hier einmal ein, damit Bearbeiten und Stammdaten wieder freigeschaltet werden (z. B. nach neuem Tab
+                oder anderem Gerät).
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: '0.5rem 0.75rem',
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 800,
+                    fontSize: '0.95rem',
+                    color: '#78350f',
+                    fontFamily: a.fontHeading,
+                    flex: '0 0 auto',
+                  }}
+                >
+                  Dein Code
+                </span>
+                <input
+                  type="text"
+                  autoComplete="off"
+                  value={identitaetSessionEingabe}
+                  onChange={(e) => {
+                    setIdentitaetSessionEingabe(e.target.value)
+                    setIdentitaetSessionHinweis('')
+                    setIdentitaetSessionOk('')
+                  }}
+                  placeholder="persönlicher Code"
+                  aria-label="Persönlicher Code zur Sitzungsbestätigung"
+                  style={{
+                    flex: '1 1 160px',
+                    minWidth: 140,
+                    maxWidth: 280,
+                    minHeight: 46,
+                    background: '#fff',
+                    border: '2px solid rgba(180, 83, 9, 0.45)',
+                    borderRadius: 10,
+                    color: a.text,
+                    padding: '0.5rem 0.65rem',
+                    fontFamily: 'ui-monospace, monospace',
+                    fontSize: '1.05rem',
+                    fontWeight: 600,
+                    boxSizing: 'border-box',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={bestaetigeIdentitaetFuerSession}
+                  style={{
+                    minHeight: 46,
+                    padding: '0.5rem 1rem',
+                    fontSize: '0.95rem',
+                    fontFamily: 'inherit',
+                    borderRadius: 10,
+                    border: 'none',
+                    background: '#b45309',
+                    color: '#fff',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Bestätigen
+                </button>
+              </div>
+              {identitaetSessionHinweis ? (
+                <p role="status" style={{ margin: 0, fontSize: '0.88rem', color: '#991b1b', fontWeight: 600 }}>
+                  {identitaetSessionHinweis}
+                </p>
+              ) : null}
+              {identitaetSessionOk ? (
+                <p role="status" style={{ margin: 0, fontSize: '0.88rem', color: '#166534', fontWeight: 600 }}>
+                  {identitaetSessionOk}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         {!ichBinPersonId?.trim() ? (
           <div
