@@ -131,6 +131,7 @@ function computeStammdatenDirtyPersoenlich(
     kaLand: string
     kaEmail: string
     kaTelefon: string
+    mitgliedsNummer: string
   },
   photoLegacyCleared: boolean
 ): boolean {
@@ -155,6 +156,7 @@ function computeStammdatenDirtyPersoenlich(
   if (!g(k?.land, f.kaLand)) return true
   if (!g(k?.email, f.kaEmail)) return true
   if (!g(k?.telefon, f.kaTelefon)) return true
+  if (trimMitgliedsNummerEingabe(f.mitgliedsNummer) !== trimMitgliedsNummerEingabe(person.mitgliedsNummer)) return true
   return false
 }
 
@@ -225,6 +227,8 @@ export default function K2FamiliePersonPage() {
   const rolle = capabilities.rolle
   const effectiveEditPersoenlich = Boolean(edit && istEigeneKarte && (rolle === 'bearbeiter' || rolle === 'leser'))
   const effectiveEditStammdaten = Boolean((edit && kannStruktur) || effectiveEditPersoenlich)
+  /** Code: Administrator stellt ihn bereit; das Mitglied trägt ihn auf der eigenen Karte ein. Inhaber:in kann zusätzlich auf anderen Karten pflegen. */
+  const canEditPersoenlicherCode = Boolean(effectiveEditStammdaten && (kannInstanz || istEigeneKarte))
   const kannOrganischHier = kannOrganisch || (istEigeneKarte && capabilities.canEditEigenesProfil)
   const feldStrukturNurLesen = Boolean(effectiveEditPersoenlich && !kannStruktur)
   const [personen, setPersonen] = useState<K2FamiliePerson[]>(() => loadPersonen(currentTenantId))
@@ -395,6 +399,7 @@ export default function K2FamiliePersonPage() {
             kaLand,
             kaEmail,
             kaTelefon,
+            mitgliedsNummer,
           },
           photoLegacyCleared
         )
@@ -474,6 +479,18 @@ export default function K2FamiliePersonPage() {
   const save = () => {
     if (!person) return
     if (effectiveEditPersoenlich && !kannStruktur) {
+      const mNext = trimMitgliedsNummerEingabe(mitgliedsNummer)
+      if (mNext) {
+        const conflict = personen.find(
+          (p) =>
+            p.id !== id &&
+            trimMitgliedsNummerEingabe(p.mitgliedsNummer).toLowerCase() === mNext.toLowerCase()
+        )
+        if (conflict) {
+          window.alert(`Dieser Personencode ist bereits bei ${conflict.name} eingetragen.`)
+          return
+        }
+      }
       const pk = photoKind.trim() || undefined
       const pj = photoJugend.trim() || undefined
       const pe = photoErwachsen.trim() || undefined
@@ -489,6 +506,7 @@ export default function K2FamiliePersonPage() {
       const updated: K2FamiliePerson = {
         ...person,
         shortText: shortText.trim() || undefined,
+        mitgliedsNummer: mNext || undefined,
         photoKind: pk,
         photoJugend: pj,
         photoErwachsen: pe,
@@ -526,14 +544,15 @@ export default function K2FamiliePersonPage() {
       return
     }
     const mNext = trimMitgliedsNummerEingabe(mitgliedsNummer)
-    if (kannInstanz && mNext) {
+    const persistMitgliedsNummer = kannInstanz || istEigeneKarte
+    if (persistMitgliedsNummer && mNext) {
       const conflict = personen.find(
         (p) =>
           p.id !== id &&
           trimMitgliedsNummerEingabe(p.mitgliedsNummer).toLowerCase() === mNext.toLowerCase()
       )
       if (conflict) {
-        window.alert(`Diese Mitgliedsnummer hat bereits ${conflict.name}.`)
+        window.alert(`Dieser Personencode ist bereits bei ${conflict.name} eingetragen.`)
         return
       }
     }
@@ -562,7 +581,7 @@ export default function K2FamiliePersonPage() {
       verstorben: verstorben || undefined,
       verstorbenAm: vsNorm,
       positionAmongSiblings,
-      ...(kannInstanz ? { mitgliedsNummer: mNext || undefined } : {}),
+      ...(persistMitgliedsNummer ? { mitgliedsNummer: mNext || undefined } : {}),
       photoKind: pk,
       photoJugend: pj,
       photoErwachsen: pe,
@@ -1193,7 +1212,7 @@ export default function K2FamiliePersonPage() {
           </div>
         </header>
 
-        {(kannInstanz || effectiveEditStammdaten) && (
+        {(istEigeneKarte || kannInstanz) && (
           <section
             id="k2-familie-person-persoenlicher-code"
             className="card familie-card-enter"
@@ -1213,17 +1232,18 @@ export default function K2FamiliePersonPage() {
               Persönlicher Code
             </h2>
             <p id="k2-familie-pers-code-hint" className="meta" style={{ margin: '0.35rem 0 0.65rem', lineHeight: 1.45, fontSize: '0.82rem' }}>
-              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Vergibt nur die Inhaber:in</strong> (Administrator).{' '}
-              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Format:</strong> zwei Buchstaben (A–Z) und zwei Ziffern — dafür sind die{' '}
-              <strong>vier Plätze</strong> da; sie bleiben leer, bis die Inhaber:in einen Code einträgt (optional, kein Pflichtfeld). Beim ersten Anmelden mit
-              Familienlink: wer ist diese Person. Andere Rollen tragen hier nichts ein — nicht wie Name oder Geburtsdatum.
+              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Sichtbarkeit:</strong> Nur <strong>diese Person selbst</strong> auf der <strong>eigenen</strong> Karte
+              und die <strong>Inhaber:in</strong> (Verwaltung) sehen den Code — <strong>andere Familienmitglieder sehen ihn auf fremden Karten nicht</strong>, sonst
+              bräuchte es keinen Code. Die Verwaltung stellt den Code bereit; die Person trägt ihn auf der <strong>eigenen</strong> Karte ein und bestätigt damit Platz
+              und Rolle in der Familie. <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Format:</strong> zwei Buchstaben und zwei Ziffern — die <strong>vier Plätze</strong>{' '}
+              zum Eintragen; leer lassen, bis der Code vorliegt.
             </p>
             <div className="field" style={{ marginBottom: 0 }}>
               <FamiliePersoenlicherCodeFelder
                 idPrefix="k2-familie-pers-code"
-                value={kannInstanz && effectiveEditStammdaten ? mitgliedsNummer : person.mitgliedsNummer ?? ''}
+                value={canEditPersoenlicherCode ? mitgliedsNummer : person.mitgliedsNummer ?? ''}
                 onChange={setMitgliedsNummer}
-                readOnly={!(kannInstanz && effectiveEditStammdaten)}
+                readOnly={!canEditPersoenlicherCode}
                 ariaLabelledBy="k2-familie-pers-code-heading"
                 ariaDescribedBy="k2-familie-pers-code-hint"
               />
