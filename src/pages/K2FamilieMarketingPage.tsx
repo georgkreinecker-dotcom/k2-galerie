@@ -124,6 +124,31 @@ export default function K2FamilieMarketingPage() {
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
             Kein Ranking einzelner Marken – ein sachlicher Überblick, wo sich <strong>K2 Familie</strong> von typischen Angeboten unterscheidet. Konkurrenten sind oft gut für ihre Zielgruppe; unser Versprechen ist ein anderes.
           </p>
+          <div
+            style={{
+              marginBottom: '0.85rem',
+              padding: '0.75rem 0.95rem',
+              background: 'rgba(0,0,0,0.03)',
+              borderRadius: 8,
+              border: '1px solid rgba(0,0,0,0.08)',
+            }}
+          >
+            <p style={{ margin: '0 0 0.45rem 0', fontSize: '0.9rem', fontWeight: 600, color: t.text }}>
+              Mitbewerber im Marktüberblick (Beispiele zur Einordnung)
+            </p>
+            <ul style={{ margin: 0, paddingLeft: '1.2rem', lineHeight: 1.55, fontSize: '0.88rem', color: t.muted }}>
+              <li>
+                <strong style={{ color: t.text }}>Ahnenforschung &amp; Stammbäume:</strong> z. B.{' '}
+                <strong>Ancestry</strong>, <strong>MyHeritage</strong>, <strong>FamilySearch</strong>, <strong>Geneanet</strong> – Schwerpunkt oft Dokumente, DNA-Zusatzangebote, große Nutzerpools; Geschäftsmodell häufig Abo oder Zusatzgeschäft.
+              </li>
+              <li style={{ marginTop: '0.35rem' }}>
+                <strong style={{ color: t.text }}>Soziale Netzwerke &amp; Messenger:</strong> z. B. <strong>Meta</strong> (Facebook, Instagram), <strong>WhatsApp</strong>, <strong>Telegram</strong> – Austausch und Gruppen, aber kein konsistenter Stammbaum aus einer gemeinsamen „Quelle der Wahrheit“ wie bei K2 Familie.
+              </li>
+              <li style={{ marginTop: '0.35rem' }}>
+                <strong style={{ color: t.text }}>Weitere Nischen:</strong> lokale Vereine, Pfarreien oder Archive mit eigenen Portalen – oft punktuell, nicht als durchgängige Familien-App gedacht.
+              </li>
+            </ul>
+          </div>
           <div style={{ overflowX: 'auto', marginTop: '0.5rem' }}>
             <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse', fontSize: '0.82rem' }}>
               <thead>
@@ -163,7 +188,7 @@ export default function K2FamilieMarketingPage() {
             </table>
           </div>
           <p style={{ margin: '0.75rem 0 0 0', lineHeight: 1.5, fontSize: '0.88rem', color: t.muted }}>
-            <strong>Hinweis:</strong> Namen von Wettbewerbern können in Präsentationen bei Bedarf ergänzt werden – hier bewusst typologisch, ohne einzelne Marken zu benennen, um sachlich zu bleiben und nicht in Werbeclaims abzurutschen.
+            <strong>Hinweis:</strong> Die genannten Mitbewerber dienen der <strong>Markteinordnung</strong>, nicht einer Wertung oder einem Ranking. Angebote ändern sich – vor Präsentationen kurz die aktuelle Positionierung der jeweiligen Anbieter prüfen.
           </p>
         </section>
 
@@ -172,8 +197,103 @@ export default function K2FamilieMarketingPage() {
             4. Marktanalyse &amp; realistischer Marktanteil
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
-            Seriöse Marktzahlen brauchen <strong>Quellen</strong> (Statistikämter, Branchenstudien, eigene Nutzerzahlen). Hier der <strong>Rahmen</strong>, in den ihr später konkrete Zahlen einsetzt – ohne vorgegaukelte Prozentwerte.
+            Seriöse Marktzahlen brauchen <strong>Quellen</strong>. Unten: <strong>amtlich veröffentlichte Rahmenzahlen</strong> (2024) als Denominator für TAM/SAM – plus eine <strong>reine Rechenhilfe</strong> zur Marktanteils-Einschätzung (Prozente nur als Beispiel, keine Prognose).
           </p>
+          <p style={{ margin: '0 0 0.45rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Rahmenzahlen (öffentlich, Stand 2024)</p>
+          <div style={{ overflowX: 'auto', marginBottom: '0.85rem' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Bezug</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Kennzahl</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Quelle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>EU-27</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>
+                    449,2 Mio Einwohnerinnen und Einwohner (1. 1. 2024)
+                  </td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', fontSize: '0.78rem', color: t.muted }}>
+                    Eurostat (News 11. 7. 2024, demo_gind)
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Deutschland</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>
+                    ca. 83,6 Mio Einwohner (31. 12. 2024);{' '}
+                    <strong>41,211 Mio Privathaushalte</strong> (Mikrozensus 2024); davon 11,8 Mio Familien mit Kindern
+                  </td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', fontSize: '0.78rem', color: t.muted }}>
+                    Destatis / Umweltbundesamt (Bevölkerung); Destatis Tabelle 12211-01 (Haushalte, Familien)
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Österreich</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>
+                    <strong>4,158 Mio Privathaushalte</strong> (2024)
+                  </td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', fontSize: '0.78rem', color: t.muted }}>
+                    Statistik Austria (Privathaushalte, Mikrozensus AKE)
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Schweiz</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>
+                    rund <strong>4,1 Mio Privathaushalte</strong> (Ende 2024)
+                  </td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', fontSize: '0.78rem', color: t.muted }}>
+                    BFS (Haushalte und Lebensformen)
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>DACH (grobe Summe)</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>
+                    ca. <strong>49,5 Mio</strong> Privathaushalte (41,211 + 4,158 + 4,1; keine grenzüberschreitende Doppelzählung berücksichtigt – nur Größenordnung)
+                  </td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', fontSize: '0.78rem', color: t.muted }}>
+                    Summe aus den drei Länderzeilen
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Marktanteil – Einschätzung mit den Zahlen</p>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem' }}>
+            <strong>Marktanteil an SAM</strong> = (eure aktiven Kundinnen/Kunden bzw. Instanzen) ÷ (in Geschäftsplan/Investor-Deck <strong>definiertes SAM</strong>). TAM kann z. B. EU-Bevölkerung oder DACH-Haushalte sein – je nach Story; entscheidend ist eine <strong>ehrliche Definition</strong> von SAM (wer wirklich angesprochen wird).
+          </p>
+          <div style={{ padding: '0.75rem 0.9rem', background: 'rgba(15, 118, 104, 0.07)', borderRadius: 8, border: '1px solid rgba(15, 118, 104, 0.22)', marginBottom: '0.85rem' }}>
+            <p style={{ margin: '0 0 0.45rem 0', fontSize: '0.88rem', fontWeight: 600, color: t.text }}>Rechenbeispiele (nur Mathematik auf Destatis-Denominator DE)</p>
+            <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.5, fontSize: '0.86rem', color: t.muted }}>
+              Basis: <strong>41,211 Mio Privathaushalte</strong> in Deutschland (2024). Die Prozente sind <strong>keine Marktprognose</strong>, sondern zeigen die <strong>Größenordnung</strong>, die sich aus einem angenommenen Anteil an <em>allen</em> deutschen Haushalten ergäbe:
+            </p>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Angenommener Anteil an allen DE-Privathaushalten</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Entspricht grob Haushalten</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>0,01 %</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>ca. 4.100</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>0,1 %</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>ca. 41.000</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>1 %</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>ca. 412.000</td>
+                </tr>
+              </tbody>
+            </table>
+            <p style={{ margin: '0.55rem 0 0 0', lineHeight: 1.45, fontSize: '0.82rem', color: t.muted }}>
+              Wenn ihr SAM realistisch als Bruchteil der <strong>Familien mit Kindern</strong> (11,8 Mio in DE) statt aller Haushalte definiert, die gleiche Logik mit neuem Nenner anwenden – oder SAM direkt aus Zielgruppenrecherche befüllen.
+            </p>
+          </div>
           <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Drei Ebenen (gängiges Schema)</p>
           <ul style={{ margin: '0 0 0.85rem 0', paddingLeft: '1.25rem', lineHeight: 1.55 }}>
             <li><strong>TAM</strong> (Total Addressable Market): Gesamtinteresse an digitaler Familien- und Ahnenforschung bzw. „Familie organisieren“ – sehr groß, aber größtenteils von großen Plattformen und anderen Modellen abgedeckt.</li>
@@ -210,7 +330,7 @@ export default function K2FamilieMarketingPage() {
             </table>
           </div>
           <p style={{ margin: '0.75rem 0 0 0', lineHeight: 1.5, fontSize: '0.85rem', color: t.muted }}>
-            <strong>Nächster Schritt:</strong> Bevölkerungs-/Haushaltszahlen (z. B. Destatis) und ggf. Branchennotizen zu Genealogie-Software mit Quellenangabe in eine Tabelle übernehmen – dann sind TAM/SAM schätzbar und der erwartbare Anteil an SAM ehrlich begründbar.
+            <strong>Nächster Schritt:</strong> Eigenes SAM und SOM im Geschäftsplan mit konkreten Annahmen füllen; bei Präsentationen Jahresstände der Statistikämter prüfen (Zahlen werden jährlich fortgeschrieben). Branchenzahlen zu Genealogie nur mit Studienquelle.
           </p>
         </section>
 
