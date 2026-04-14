@@ -1,6 +1,6 @@
 # K2 Familie – **Bearbeiter:innen** und **Leser:innen**
 
-Dieses Kapitel beschreibt die Rollen **Bearbeiter:in** und **Leser:in** in **K2 Familie**: was Sie **sehen**, was Sie **bearbeiten** dürfen – und was **nicht**. So finden Sie sich sofort zurecht, ohne alle Funktionen der Inhaber:in zu brauchen. **Nur K2 Familie** – keine Vermischung mit anderen Produkten.
+Dieses Kapitel beschreibt die Rollen **Bearbeiter:in** und **Leser:in** in **K2 Familie**: was Sie **sehen**, was Sie **bearbeiten** dürfen – und was **nicht**. So finden Sie sich sofort zurecht, ohne alle Funktionen der Inhaber:in zu brauchen.
 
 ---
 
@@ -54,13 +54,7 @@ Wenn Sie unsicher sind, ob ein Bereich für Sie **schreibbar** ist: Wenn kein Sp
 
 [SEITENUMBRUCH]
 
-## 5. Andere Produkte (nur zur Einordnung)
-
-**K2 Familie** ist **eigenständig**. Falls Sie **zusätzlich** eine **Vereinsplattform** oder andere Angebote nutzen (eigene Regeln, eigene Daten), gelten dort **andere** Anleitungen – **nicht** dieses Handbuch. Hier geht es nur um Ihre **Familien-Instanz**.
-
-[SEITENUMBRUCH]
-
-## 6. Kurz-Checkliste
+## 5. Kurz-Checkliste
 
 **Bearbeiter:in**
 

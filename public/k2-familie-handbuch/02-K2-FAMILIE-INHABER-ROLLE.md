@@ -1,8 +1,6 @@
 # K2 Familie – Rolle **Inhaber:in** (ausführlich)
 
-Dieses Kapitel richtet sich an **Sie**, wenn Sie in **K2 Familie** die Rolle **Inhaber:in** haben: Sie tragen die Verantwortung für die Familien-Instanz, die Stammdaten, die Struktur (Stammbaum, Beziehungen) und alles, was mit **Sicherung**, **Zugang** und **Übergabe** zusammenhängt.
-
-**Hinweis zur Galerie:** Bei der **K2 Galerie** (Ausstellung online) gibt es **kein** gleiches Drei-Rollen-Modell in der App. Dort steuern Sie den Zugang zum Admin über **Passwort und Einladung** – inhaltlich sind Sie die „Inhaber:in“ Ihrer Lizenz. Die **Rollen** Inhaber, Bearbeiter und Leser gelten **in diesem Handbuch ausführlich** für das Produkt **K2 Familie**.
+Dieses Kapitel richtet sich an **Sie**, wenn Sie in **K2 Familie** die Rolle **Inhaber:in** haben: Sie tragen die Verantwortung für die Familien-Instanz, die Stammdaten, die Struktur (Stammbaum, Beziehungen) und alles, was mit **Sicherung**, **Zugang** und **Übergabe** zusammenhängt. **Alles** hier gilt **nur** für **K2 Familie**.
 
 ---
 
@@ -51,7 +49,7 @@ Das ist **kein** Wechsel der **gespeicherten Rolle**, sondern eine **Ansicht** f
 2. Vor **großen** Änderungen (viele Karten, Import, Wiederherstellung): **zusätzlich** sichern.
 3. **Wiederherstellen** nur, wenn Sie den Inhalt der Datei **kennen** – ein Merge kann bestehende Einträge verändern; das ist bewusst für **Inhaber:innen** reserviert.
 
-Weitere technische Hinweise finden Sie bei Bedarf im **K2Team-Handbuch** oder in der **Entwicklungs-Doku** – in der App steuern Sie Sicherung unter **Einstellungen**.
+**Sicherung** und zugehörige Optionen steuern Sie in der App unter **Einstellungen**; die Hilfetexte dort gehören zu **K2 Familie** und zu Ihrer Familien-Instanz.
 
 [SEITENUMBRUCH]
 
@@ -91,7 +89,7 @@ Die **Inhaber-Rolle** selbst sollte **sparsam** vergeben werden: in der Regel **
 | „Bearbeiter:in kann auch Stammbaum.“ | **Nein** – nur Inhaber:in strukturiert den Stammbaum voll. |
 | „Leser:in sieht weniger.“ | **Lesen** ist überall möglich; **Schreiben** ist eingeschränkt (eigene Karte, Gedenkort). |
 | „Backup reicht auf einem Handy.“ | **Nein** – legen Sie Kopien **zusätzlich** sicher ab (Rechner, externes Medium), wie Sie es gewohnt sind. |
-| „Der persönliche Code ist ein Passwort.“ | Er ist ein **Zuordnungscode** zur Person in **Ihrer** Familie – behandeln Sie ihn **vertraulich**; er ist nicht dasselbe wie ein Admin-Passwort der K2 Galerie. |
+| „Der persönliche Code ist ein Passwort.“ | Er ist ein **Zuordnungscode** zur Person in **Ihrer** Familie – behandeln Sie ihn **vertraulich**; er ersetzt keinen **Verwaltungs-Zugang** (z. B. zu geschützten Einstellungen), sondern dient der **Zuordnung** zu Ihrer Karte. |
 
 [SEITENUMBRUCH]
 
