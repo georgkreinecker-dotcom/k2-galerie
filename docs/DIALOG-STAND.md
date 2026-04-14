@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2-Welt Strategie (strategisch, nicht mök2): eigene Seite + Smart-Board-Mappe** – Block aus **Marketing ök2** ausgelagert; **Route** `/projects/k2-galerie/k2-welt-strategie`, **Smart Panel:** Mappe **K2-Welt – Strategie & Portfolio**. **Commit:** **`6f4b7990`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: APf → Smart Board → Mappe **K2-Welt**; Inhalt/PDF kurz prüfen.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Familien zusammenführen (Feature)** – `mergeQuelleFamilieInZielFamilie`: Rollback bei Speicher-/Listen-Fehler; UI auf **Einstellungen** (Instanz-Verwaltung, ≥2 Familien): Quelle wählen, optional Anzeigename, Bestätigung. Doku `docs/K2-FAMILIE-DATENMODELL.md` §7. **Commit:** **`1b5e5fd0`** ✅ GitHub
 
 **Was wir JETZT tun:** Mit zwei Test-Familien: Zusammenführen kurz durchspielen; vorher Sicherung.
