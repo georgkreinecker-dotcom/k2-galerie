@@ -189,6 +189,8 @@ export default function K2FamilieStammbaumPage() {
   const { capabilities } = useFamilieRolle()
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannOrganisch = capabilities.canEditOrganisches
+  /** Druck / PDF: wie Schreibrecht – Inhaber:in + Bearbeiter:in (nicht Leser:in; Inhaber in Leser-Ansicht ebenfalls nicht). */
+  const kannDrucken = capabilities.canEditFamiliendaten
   const kannManageFamilienInstanz = capabilities.canManageFamilienInstanz
   const [stammbaumRefresh, setStammbaumRefresh] = useState(0)
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision, stammbaumRefresh])
@@ -385,7 +387,7 @@ export default function K2FamilieStammbaumPage() {
 
   /** Nach Druck-Öffnung: Druckdialog (ganze Familie oder Familienzweig je nach umfang). */
   useEffect(() => {
-    if (!druck) return
+    if (!druck || !kannDrucken) return
     if (stilFromUrl === 'rechte') {
       const t = setTimeout(() => window.print(), 300)
       return () => clearTimeout(t)
@@ -451,6 +453,7 @@ export default function K2FamilieStammbaumPage() {
     umfang: DruckUmfang
     katalogSort?: KatalogSortierung
   }) => {
+    if (!kannDrucken) return
     const p = new URLSearchParams()
     p.set('druck', '1')
     p.set('format', opts.format)
@@ -512,6 +515,24 @@ export default function K2FamilieStammbaumPage() {
   const zeigePdf = stammbaumBereich === 'pdf'
 
   if (druck) {
+    if (!kannDrucken) {
+      return (
+        <div className="stammbaum-druck-view" data-stil="hinweis">
+          <div className="card" style={{ maxWidth: 440, margin: '2rem auto', padding: '1.25rem' }}>
+            <h1 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem' }}>Drucken nicht verfügbar</h1>
+            <p className="meta" style={{ margin: 0, lineHeight: 1.45 }}>
+              <strong>Drucken und PDF</strong> sind nur mit <strong>Schreibrecht</strong> möglich (Inhaber:in oder Bearbeiter:in).{' '}
+              <strong>Listen und Vorschau</strong> in Schritt 4 kannst du als Leser:in weiterhin ansehen.
+            </p>
+            <p style={{ margin: '1rem 0 0' }}>
+              <button type="button" className="btn" onClick={() => setSearchParams({}, { replace: true })}>
+                Zurück zum Stammbaum
+              </button>
+            </p>
+          </div>
+        </div>
+      )
+    }
     const dataFormatAttr = formatFromUrl === 'poster' ? 'poster' : formatFromUrl
     if (stilFromUrl === 'rechte') {
       return (
@@ -1780,13 +1801,29 @@ export default function K2FamilieStammbaumPage() {
             <section className="card familie-card-enter" style={{ padding: '1rem', marginTop: '1rem' }} aria-label="Druckvorlagen">
               <h2 style={{ margin: '0 0 0.5rem', fontSize: '1.05rem', color: 'rgba(255,255,255,0.95)' }}>4 · PDF &amp; Auswertung</h2>
               <div className="stammbaum-pdf-steuerung">
-              <p className="meta" style={{ marginBottom: '0.75rem', lineHeight: 1.45 }}>
-                <strong>Umfang:</strong> ganze Familie oder nur deinen Familienzweig (dafür <strong>Das bin ich</strong> setzen) – gilt für
-                Listen und Grafik, nicht für <strong>Schreib- und Leserechte</strong>.{' '}
-                <strong>Typ:</strong> Personenblätter und Generationen sind am leichtesten zu lesen; beim <strong>Katalog</strong> Spalten
-                anhaken (z.&nbsp;B. <strong>Kontakt</strong> für Anschrift/E-Mail/Telefon). Stammbaum als Bild eher für Poster; im
-                Druckdialog „Als PDF speichern“.
-              </p>
+              <ul
+                className="meta"
+                style={{
+                  margin: '0 0 0.75rem',
+                  paddingLeft: '1.1rem',
+                  fontSize: '0.8rem',
+                  lineHeight: 1.38,
+                  color: 'rgba(226,232,240,0.88)',
+                  listStyleType: 'disc',
+                }}
+              >
+                <li style={{ marginBottom: '0.28rem' }}>
+                  <strong>Umfang</strong> (ganze Familie / nur Zweig): für Vorschau – Zweig braucht <strong>Das bin ich</strong>.
+                </li>
+                <li style={{ marginBottom: '0.28rem' }}>
+                  <strong>Leser:innen</strong>: Vorschau &amp; Typ wählen. <strong>Druck / PDF</strong> (Button):{' '}
+                  <strong>Inhaber:in</strong> und <strong>Bearbeiter:in</strong>.
+                </li>
+                <li style={{ marginBottom: '0.28rem' }}>
+                  <strong>Katalog:</strong> Spalten speichern nur mit Schreibrecht. Personenblätter &amp; Generationen gut lesbar; Grafik eher fürs Poster.
+                </li>
+                <li>Im System-Druckdialog: <strong>Als PDF speichern</strong>.</li>
+              </ul>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'flex-end' }}>
                 {druckStil !== 'rechte' && (
                   <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
@@ -1908,19 +1945,22 @@ export default function K2FamilieStammbaumPage() {
                   type="button"
                   className="btn"
                   disabled={
-                    druckStil === 'rechte'
+                    !kannDrucken ||
+                    (druckStil === 'rechte'
                       ? false
                       : personen.length === 0 ||
-                        (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0))
+                        (druckUmfang === 'zweig' && (!einstellungen.ichBinPersonId || personenFuerDruck.length === 0)))
                   }
                   title={
-                    druckStil === 'rechte'
-                      ? undefined
-                      : personen.length === 0
-                        ? 'Zuerst Personen anlegen.'
-                        : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
-                          ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
-                          : undefined
+                    !kannDrucken
+                      ? 'Drucken und PDF nur mit Schreibrecht (Inhaber:in oder Bearbeiter:in). Vorschau kannst du ansehen.'
+                      : druckStil === 'rechte'
+                        ? undefined
+                        : personen.length === 0
+                          ? 'Zuerst Personen anlegen.'
+                          : druckUmfang === 'zweig' && !einstellungen.ichBinPersonId
+                            ? 'Bei „Nur Familienzweig“: „Das bin ich“ setzen oder Umfang „Ganze Familie“ wählen.'
+                            : undefined
                   }
                   onClick={() =>
                     openDruck({
@@ -1974,6 +2014,7 @@ export default function K2FamilieStammbaumPage() {
                         type="checkbox"
                         checked={druckKatalogSpalten.includes(col.id)}
                         disabled={!kannOrganisch}
+                        title={!kannOrganisch ? 'Spalten speichern nur mit Schreibrecht (Inhaber:in oder Bearbeiter:in).' : undefined}
                         onChange={(e) => toggleDruckKatalogSpalte(col.id, e.target.checked)}
                         style={{ accentColor: '#2dd4bf' }}
                       />
