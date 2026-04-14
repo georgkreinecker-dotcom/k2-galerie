@@ -4,7 +4,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
-import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId } from '../utils/familieStorage'
+import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -138,6 +138,23 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
       setTenantList(list)
     }
   }, [])
+
+  /** Personen/Einstellungen im selben Tab: Seiten sollen `loadPersonen` neu ziehen (nicht nur nach Cloud-Sync). */
+  useEffect(() => {
+    const onSession = () => bumpFamilieStorageRevision()
+    window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onSession)
+    return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onSession)
+  }, [bumpFamilieStorageRevision])
+
+  /** Anderes Tab/Fenster schreibt k2-familie-* in localStorage → gleicher Browser, Daten neu. */
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      const k = e.key ?? ''
+      if (k.startsWith('k2-familie-')) bumpFamilieStorageRevision()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [bumpFamilieStorageRevision])
 
   const value: ContextValue = {
     currentTenantId,

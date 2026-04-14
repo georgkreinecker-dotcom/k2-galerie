@@ -9,7 +9,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
-import { findPersonIdByMitgliedsNummer } from '../utils/familieMitgliedsNummer'
+import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 
 /** @deprecated Namensgleich mit Event-String; nutze K2_FAMILIE_SESSION_UPDATED aus familieStorage. */
 export const K2_FAMILIE_EINSTELLUNGEN_UPDATED = K2_FAMILIE_SESSION_UPDATED
@@ -40,9 +40,10 @@ export function FamilieEinladungQuerySync() {
     }
 
     const applyPersoenlicheMitgliedsNummer = (tenantId: string, mParam: string | undefined) => {
-      if (!mParam) return
+      const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
+      if (!mNorm) return
       const personen = loadPersonen(tenantId)
-      const pid = findPersonIdByMitgliedsNummer(personen, mParam)
+      const pid = findPersonIdByMitgliedsNummer(personen, mNorm)
       if (!pid) return
       const einst = loadEinstellungen(tenantId)
       if (saveEinstellungen(tenantId, { ...einst, ichBinPersonId: pid })) {

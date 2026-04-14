@@ -94,7 +94,8 @@ function computeErsteSchritteAmpel(
 
 export default function K2FamilieHomePage() {
   const a = adminTheme
-  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
+  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage, familieStorageRevision } =
+    useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const rolle = capabilities.rolle
   const isInhaber = rolle === 'inhaber'
@@ -151,7 +152,7 @@ export default function K2FamilieHomePage() {
       if (zugangHinweisTimerRef.current) clearTimeout(zugangHinweisTimerRef.current)
     }
   }, [])
-  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
   /** Erste Seite: Leser minimal, Bearbeiter mittel, Inhaber voller Text aus den Seitentexten. */

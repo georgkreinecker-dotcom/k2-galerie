@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Mobile Identifikation / Code-Bestätigung wirkte kaputt** – Ursache: **`personen` auf „Meine Familie“** wurde nur bei **Tenant-Wechsel** aus dem Speicher gelesen; nach Speichern/Einladung war **localStorage** schon neu, die **React-Liste** noch alt → **gelber Balken**, `tryRestoreIdentitaetFromGerat` und Abgleich sahen **keinen/veralteten Code** auf „Du“. **Fix:** `familieStorageRevision` im **TenantContext** bei **`k2-familie-einstellungen-updated`** und bei **`storage`** (anderes Tab); **HomePage** + **Gedenkort** hängen `personen` an dieser Revision; **Einladung `?m=`** mit **`trimMitgliedsNummerEingabe`**. Tests grün, Build ok.
+
+**Was wir JETZT tun:** Nach Deploy am **iPhone** (Vercel, Stand-Badge): Meine Familie → Code bestätigen; bei zweitem Tab am Mac soll **storage**-Sync greifen.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Rolle-Anzeige „Leser:in“ obwohl Einrichtung passt** – Ursache: **ohne gespeicherte Rolle** war Default **`leser`**; alte Speicherung **`leser`** blieb. **Fix:** Default **`inhaber`** wenn kein Eintrag; Leiste **Ein-Klick** „Ich richte die Familie ein → Inhaber:in“ (`setRolle('inhaber')`); Tests `familieRollenStorage`; Doku **`docs/K2-FAMILIE-ROLLEN-UEBERSICHT.md`**. **Commit:** **`dfa7bbdb`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: **einmal** Button in der grauen Leiste **oder** **Einstellungen → Rolle → Inhaber:in**; wer noch „Leser:in“ sieht, hatte oft schon **`leser`** im Speicher – ein Klick setzt es.

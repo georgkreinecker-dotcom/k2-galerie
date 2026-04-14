@@ -54,12 +54,12 @@ const C = {
 }
 
 export default function K2FamilieGedenkortPage() {
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannOrganisch = capabilities.canEditOrganisches
   const kannGabenHinterlegen = kannOrganisch || capabilities.canEditEigenesProfil
   const myUserId = useMemo(() => getOrCreateGedenkortUserId(), [])
-  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
   const verstorbene = useMemo(
     () => personen.filter((p) => p.verstorben === true),
     [personen]
@@ -67,7 +67,7 @@ export default function K2FamilieGedenkortPage() {
   const [gaben, setGaben] = useState<K2FamilieGabe[]>(() => loadGaben(currentTenantId))
   useEffect(() => {
     setGaben(loadGaben(currentTenantId))
-  }, [currentTenantId])
+  }, [currentTenantId, familieStorageRevision])
   const [modal, setModal] = useState<{ personId: string; personName: string; type: K2FamilieGabe['type'] } | null>(null)
   const [content, setContent] = useState('')
   const [sichtbarkeit, setSichtbarkeit] = useState<'privat' | 'oeffentlich'>('oeffentlich')
