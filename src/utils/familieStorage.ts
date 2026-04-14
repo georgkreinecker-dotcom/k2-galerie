@@ -8,7 +8,7 @@
 
 import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieGabe, K2FamilieBeitrag, K2FamilieEinstellungen, K2FamilieZweig, K2FamilieGeschichte } from '../types/k2Familie'
 import { getK2FamiliePersonenKey, getK2FamilieMomenteKey, getK2FamilieEventsKey, getK2FamilieGabenKey, getK2FamilieBeitraegeKey, getK2FamilieEinstellungenKey, getK2FamilieZweigeKey, getK2FamilieGeschichtenKey } from '../types/k2Familie'
-import { clearIdentitaetBestaetigt } from './familieIdentitaetStorage'
+import { clearIdentitaetBestaetigt, clearGerateVertrauen } from './familieIdentitaetStorage'
 import { isSupabaseConfigured } from './supabaseClient'
 
 /** Erster Tenant (eine Familie) für den Start. Später: mehrere TenantIds pro Lizenz. */
@@ -313,6 +313,7 @@ export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen
     const nextIch = obj.ichBinPersonId?.trim() || ''
     if (prevIch !== nextIch) {
       clearIdentitaetBestaetigt(tenantId)
+      clearGerateVertrauen(tenantId)
     }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId } }))

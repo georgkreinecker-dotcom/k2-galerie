@@ -12,7 +12,13 @@ import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
-import { loadIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
+import {
+  clearGerateVertrauen,
+  loadIdentitaetBestaetigt,
+  saveGerateVertrauen,
+  setIdentitaetBestaetigt,
+  tryRestoreIdentitaetFromGerat,
+} from '../utils/familieIdentitaetStorage'
 import {
   findPersonIdByMitgliedsNummer,
   persoenlicherCodePasstZuKarte,
@@ -105,6 +111,8 @@ export default function K2FamilieHomePage() {
   const [identitaetSessionEingabe, setIdentitaetSessionEingabe] = useState('')
   const [identitaetSessionHinweis, setIdentitaetSessionHinweis] = useState('')
   const [identitaetSessionOk, setIdentitaetSessionOk] = useState('')
+  /** Nach Code-Bestätigung: Gerät merken (localStorage-Fingerprint), damit kein Neuteippen pro Sitzung. */
+  const [merkGeraetIdentitaet, setMerkGeraetIdentitaet] = useState(true)
   const [registrierungHinweis, setRegistrierungHinweis] = useState('')
   const [registrierungErfolg, setRegistrierungErfolg] = useState('')
   const [persoenlicherQrDataUrl, setPersoenlicherQrDataUrl] = useState('')
@@ -182,6 +190,27 @@ export default function K2FamilieHomePage() {
   }, [personen, ichBinPersonId])
 
   const persoenlicheMitgliedsNummerAufKarte = (meinePerson?.mitgliedsNummer ?? '').trim()
+
+  /** Wenn schon „Du“ + Code auf Karte: aus Geräte-Speicher Sitzung wiederherstellen (kein Neuteippen). */
+  useEffect(() => {
+    let cancelled = false
+    const ich = ichBinPersonId?.trim()
+    if (!ich) return
+    const code = trimMitgliedsNummerEingabe(personen.find((p) => p.id === ich)?.mitgliedsNummer ?? '')
+    if (!code) return
+    if (loadIdentitaetBestaetigt(currentTenantId) === ich) return
+
+    void (async () => {
+      const ok = await tryRestoreIdentitaetFromGerat(currentTenantId, ich, code)
+      if (cancelled || !ok) return
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId: currentTenantId } }))
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [currentTenantId, ichBinPersonId, personen])
 
   const { setupDu, setupZugang, setupStartpunkt, setupAllesErledigt } = useMemo(
     () => computeErsteSchritteAmpel(ichBinPersonId, mitgliedsNummer, startpunkt),
@@ -435,6 +464,11 @@ export default function K2FamilieHomePage() {
       return
     }
     setIdentitaetBestaetigt(currentTenantId, ich)
+    if (merkGeraetIdentitaet) {
+      void saveGerateVertrauen(currentTenantId, ich, raw)
+    } else {
+      clearGerateVertrauen(currentTenantId)
+    }
     setIdentitaetSessionEingabe('')
     setIdentitaetSessionHinweis('')
     setIdentitaetSessionOk(
@@ -470,6 +504,11 @@ export default function K2FamilieHomePage() {
         '✓ Du bist eingerichtet. Name und persönlicher QR erscheinen unten – den Code kannst du später auf deiner Personenkarte ändern, wenn du möchtest.',
       )
       setIdentitaetBestaetigt(currentTenantId, pid)
+      if (merkGeraetIdentitaet) {
+        void saveGerateVertrauen(currentTenantId, pid, raw)
+      } else {
+        clearGerateVertrauen(currentTenantId)
+      }
     } else {
       setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
     }
@@ -529,8 +568,9 @@ export default function K2FamilieHomePage() {
                 }}
               >
                 <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
-                Karte) – danach bist du eingerichtet; den Code kannst du später auf deiner Personenkarte ändern. So
-                werden Bearbeiten und Stammdaten wieder freigeschaltet (z. B. nach neuem Tab oder anderem Gerät).
+                Karte). Optional: &quot;Auf diesem Gerät merken&quot; – dann musst du auf <strong>diesem</strong>{' '}
+                Browser nicht bei jedem Besuch neu tippen (anderes Gerät = erneut eingeben). Den Code kannst du später
+                auf deiner Personenkarte ändern; dann gilt die Merkung hier nicht mehr.
               </p>
               <div
                 style={{
@@ -598,6 +638,28 @@ export default function K2FamilieHomePage() {
                   Bestätigen
                 </button>
               </div>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.45rem',
+                  marginTop: '0.35rem',
+                  fontSize: '0.86rem',
+                  color: '#78350f',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  lineHeight: 1.4,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={merkGeraetIdentitaet}
+                  onChange={(e) => setMerkGeraetIdentitaet(e.target.checked)}
+                  aria-label="Auf diesem Gerät merken"
+                  style={{ marginTop: '0.12rem', flexShrink: 0 }}
+                />
+                <span>Auf diesem Gerät merken (persönlicher Code nicht jedes Mal neu)</span>
+              </label>
               {identitaetSessionHinweis ? (
                 <p role="status" style={{ margin: 0, fontSize: '0.88rem', color: '#991b1b', fontWeight: 600 }}>
                   {identitaetSessionHinweis}
@@ -692,6 +754,28 @@ export default function K2FamilieHomePage() {
                 Bestätigen
               </button>
             </div>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.45rem',
+                marginTop: '0.35rem',
+                fontSize: '0.86rem',
+                color: a.text,
+                cursor: 'pointer',
+                userSelect: 'none',
+                lineHeight: 1.4,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={merkGeraetIdentitaet}
+                onChange={(e) => setMerkGeraetIdentitaet(e.target.checked)}
+                aria-label="Auf diesem Gerät merken"
+                style={{ marginTop: '0.12rem', flexShrink: 0 }}
+              />
+              <span>Auf diesem Gerät merken (persönlicher Code nicht jedes Mal neu)</span>
+            </label>
           </div>
         ) : null}
         {registrierungHinweis ? (

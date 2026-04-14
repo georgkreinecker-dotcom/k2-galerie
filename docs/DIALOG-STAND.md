@@ -1,8 +1,14 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code + Gerät merken** – Nach einmaliger Bestätigung optional **„Auf diesem Gerät merken“** (Standard an): stabile **Geräte-ID** in `localStorage`, **SHA-256-Fingerabdruck** des Codes (kein Klartext). Beim nächsten Besuch wird die Sitzung wiederhergestellt, solange derselbe Browser + derselbe Code auf der „Du“-Karte – neuer Tab/Session ohne Neuteippen. Wechsel „Du“ oder Code auf der Karte → Vertrauen ungültig. `clearGerateVertrauen` bei `ichBinPersonId`-Wechsel in `saveEinstellungen`. Tests `familieIdentitaetStorage.test.ts`. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Deploy abwarten → Meine Familie: Code bestätigen mit Häkchen → Tab schließen, neu öffnen → kein gelber Balken (gleicher Browser). Anderes Gerät → wieder eingeben.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code – Bestätigung schlug fehl trotz richtiger Familie** – Ursache: Abgleich nur über `useMemo`-Personenliste (veraltet). **Fix:** `loadPersonen` beim Klick; Zusatz `persoenlicherCodePasstZuKarte` (Eingabe = Code auf der Karte von „Du“). Hinweise: persönlicher Code vs. Familien-Zugangsnummer KF-…; Erfolgstext: eingerichtet, Code optional auf Personenkarte ändern. **Commit:** **`211f0711`** ✅ GitHub
 
-**Was wir JETZT tun:** Nach Deploy: Meine Familie → gelber Balken „Sitzung nicht bestätigt“ mit echtem persönlichen Code testen; bei nur KF-…-Eingabe muss der neue Hinweis erscheinen.
+**Was wir JETZT tun:** (Erledigt durch Geräte-Merkung oben.) Gelber Balken mit echtem Code / KF-…-Hinweis bei Bedarf nochmal prüfen.
 
 ---
 
