@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.04.26 – **Feinschliff / Ordnung** – `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` erzeugte oft **nur Zeitstempel-Diffs** nach Tests. **Fix:** fester Hinweis in der **generierten** Datei (Test schreibt mit) + Eintrag in **docs/00-INDEX.md**; kein weiteres Root-Aufräumen (HAUS-INDEX listet Root-Markdown absichtlich). **Commit:** *(folgt)*
+**Letzter Stand:** 14.04.26 – **Feinschliff / Ordnung** – `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` erzeugte oft **nur Zeitstempel-Diffs** nach Tests. **Fix:** fester Hinweis in der **generierten** Datei (Test schreibt mit) + Eintrag in **docs/00-INDEX.md**; kein weiteres Root-Aufräumen (HAUS-INDEX listet Root-Markdown absichtlich). **Commit:** **`957363fe`** ✅ GitHub
 
 **Was wir JETZT tun:** Wie zuvor K2 Familie (Inhaber-Ansicht / Deploy / Mobil testen); Arbeitsbaum soll nach `npm run test` nicht mehr „nur Protokoll-Zeit“ irritieren.
 
