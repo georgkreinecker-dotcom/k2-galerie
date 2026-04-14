@@ -22,6 +22,8 @@ const printStyles = `
     .k2-fam-marketing-page h2 { font-size: 0.98rem; margin: 0.5rem 0 0.25rem 0 !important; }
     .k2-fam-marketing-page p, .k2-fam-marketing-page li { font-size: 9.5pt; }
     .k2-fam-marketing-page a { color: #1c1a18 !important; text-decoration: underline; }
+    .k2-fam-marketing-page table { font-size: 7.5pt !important; }
+    .k2-fam-marketing-page table th, .k2-fam-marketing-page table td { padding: 0.2rem 0.25rem !important; }
     .seitenfuss { position: fixed; bottom: 6mm; right: 14mm; font-size: 8pt; color: #5c5650; }
   }
 `
@@ -115,9 +117,59 @@ export default function K2FamilieMarketingPage() {
           </ul>
         </section>
 
+        <section id="fam-mkt-mitbewerb" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
+            3. Produktvergleich (Marktüberblick)
+          </h2>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
+            Kein Ranking einzelner Marken – ein sachlicher Überblick, wo sich <strong>K2 Familie</strong> von typischen Angeboten unterscheidet. Konkurrenten sind oft gut für ihre Zielgruppe; unser Versprechen ist ein anderes.
+          </p>
+          <div style={{ overflowX: 'auto', marginTop: '0.5rem' }}>
+            <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <th style={{ textAlign: 'left', padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', width: '18%' }}>Kriterium</th>
+                  <th style={{ textAlign: 'left', padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)' }}>Typische Stammbuch-/Forschungs-Apps</th>
+                  <th style={{ textAlign: 'left', padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)' }}>Soziale Netzwerke & Messenger</th>
+                  <th style={{ textAlign: 'left', padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(15, 118, 104, 0.07)' }}>K2 Familie</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Hauptzweck</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Ahnenforschung, Dokumente, oft DNA/Zusatzangebote; Geschäftsmodell häufig Abo oder Datenökonomie.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Austausch, Fotos, Gruppen – kein konsistenter Stammbaum aus einer Quelle.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', background: 'rgba(15, 118, 104, 0.06)' }}>Lebendige Familienstruktur mit einer klaren Regel: Beziehungen nur aus den Karten – für Vertrauen und Nachvollziehbarkeit.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Daten &amp; Werbung</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Nutzungsbedingungen und Hosting oft außerhalb des EU-Raums; Werbung und Zusatzgeschäft sind üblich.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Finanzierung über Werbung und Profiling; Familieninhalte sind Nebenprodukt.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', background: 'rgba(15, 118, 104, 0.06)' }}>Daten gehören der Familie; <strong>keine kommerzielle Verwertung</strong> der Familiendaten – verbindlich im Produktgenom.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Lebensformen</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Oft traditionelles Stammbaum-Bild; Patchwork und wechselnde Partnerschaften nur bedingt abbildbar.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Kein strukturiertes Modell – alles fließt.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', background: 'rgba(15, 118, 104, 0.06)' }}>Offene Gesellschaft: viele Konstellationen sichtbar, ohne zu werten; keine „Mittelalter-Schubladen“.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Technik</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>Eigene Apps, teils schwerer Einstieg.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top' }}>App des jeweiligen Anbieters.</td>
+                  <td style={{ padding: '0.4rem 0.45rem', border: '1px solid rgba(0,0,0,0.08)', verticalAlign: 'top', background: 'rgba(15, 118, 104, 0.06)' }}>Web-App / PWA, skalierbar als Instanz – ein Aufbau, viele Familien.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '0.75rem 0 0 0', lineHeight: 1.5, fontSize: '0.88rem', color: t.muted }}>
+            <strong>Hinweis:</strong> Namen von Wettbewerbern können in Präsentationen bei Bedarf ergänzt werden – hier bewusst typologisch, ohne einzelne Marken zu benennen, um sachlich zu bleiben und nicht in Werbeclaims abzurutschen.
+          </p>
+        </section>
+
         <section id="fam-mkt-zielgruppe" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            3. Zielgruppe & Kanäle
+            4. Zielgruppe & Kanäle
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55 }}>
             <strong>Zielgruppe:</strong> Familien und Personen, die Stammbaum, Erinnerungen und Außenauftritt (Einladungen, Einblicke für Vertraute) sicher und würdevoll bündeln wollen – ohne Social-Media-Druck und ohne Daten als Ware.
@@ -172,7 +224,7 @@ export default function K2FamilieMarketingPage() {
         </section>
 
         <section style={{ marginBottom: '1.25rem', breakInside: 'avoid' as const }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>5. Tonfall</h2>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>6. Tonfall</h2>
           <p style={{ margin: 0, lineHeight: 1.55 }}>
             Ruhig, respektvoll, klar. Keine aggressive Verkaufssprache, keine „Affiliate“-Logik. Wenn wir Einladungen oder Texte formulieren, immer: einfache Sprache, ehrlich, ohne Druck – im Einklang mit dem Benutzerhandbuch und der Präsentationsmappe.
           </p>

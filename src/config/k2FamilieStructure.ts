@@ -53,6 +53,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     sections: [
       { id: 'fam-mkt-ueberblick', label: 'Überblick', to: `${R.familienMarketing}#fam-mkt-ueberblick` },
       { id: 'fam-mkt-usp', label: 'USP & Positionierung', to: `${R.familienMarketing}#fam-mkt-usp` },
+      { id: 'fam-mkt-mitbewerb', label: 'Produktvergleich', to: `${R.familienMarketing}#fam-mkt-mitbewerb` },
       { id: 'fam-mkt-ziel', label: 'Zielgruppe & Kanäle', to: `${R.familienMarketing}#fam-mkt-zielgruppe` },
       { id: 'fam-mkt-abgrenzung', label: 'Abgrenzung', to: `${R.familienMarketing}#fam-mkt-abgrenzung` },
     ],
