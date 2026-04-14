@@ -167,9 +167,56 @@ export default function K2FamilieMarketingPage() {
           </p>
         </section>
 
+        <section id="fam-mkt-markt" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
+            4. Marktanalyse &amp; realistischer Marktanteil
+          </h2>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
+            Seriöse Marktzahlen brauchen <strong>Quellen</strong> (Statistikämter, Branchenstudien, eigene Nutzerzahlen). Hier der <strong>Rahmen</strong>, in den ihr später konkrete Zahlen einsetzt – ohne vorgegaukelte Prozentwerte.
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Drei Ebenen (gängiges Schema)</p>
+          <ul style={{ margin: '0 0 0.85rem 0', paddingLeft: '1.25rem', lineHeight: 1.55 }}>
+            <li><strong>TAM</strong> (Total Addressable Market): Gesamtinteresse an digitaler Familien- und Ahnenforschung bzw. „Familie organisieren“ – sehr groß, aber größtenteils von großen Plattformen und anderen Modellen abgedeckt.</li>
+            <li><strong>SAM</strong> (Serviceable Addressable Market): Personen und Familien, die <strong>explizit</strong> Datenschutz, Datenhoheit bei der Familie und unser Nutzungsmodell ansprechend finden – deutlich kleiner, dafür passender.</li>
+            <li><strong>SOM</strong> (Serviceable Obtainable Market): Was in den nächsten Jahren <strong>realistisch erreichbar</strong> ist (Vertrieb, Reichweite, Lizenzmodell) – immer noch eine Nische, aber planbar.</li>
+          </ul>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Was „Marktanteil“ hier bedeutet</p>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55 }}>
+            K2 Familie konkurriert <strong>nicht</strong> um den gesamten globalen Stammbaum-Markt wie ein Massenanbieter. Ein sinnvoller Marktanteil ist der Anteil an der <strong>Zielgruppe SAM</strong> (bzw. an aktiven Haushalten in DACH/EU, die ihr mit Marketing und Partnerschaften erreichen könnt). Ein einstelliges bis niedriges zweistelliges Prozent von SAM kann bei konsequenter Positionierung langfristig realistisch sein – <strong>ohne</strong> dass wir hier eine konkrete Zahl behaupten; die kommt aus Recherche + Geschäftsplan.
+          </p>
+          <div style={{ padding: '0.75rem 0.9rem', background: 'rgba(181, 74, 30, 0.06)', borderRadius: 8, border: '1px solid rgba(181, 74, 30, 0.18)' }}>
+            <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.88rem', fontWeight: 600, color: t.text }}>Szenario-Denken (zum Ausfüllen mit Zahlen)</p>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.84rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Szenario</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Bedeutung für Marktanteil</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Vorsichtig</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Nische, Mundpropaganda, wenig Budget – Anteil an SAM bleibt klein, aber tragfähig, wenn Kosten passen.</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Basis</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Klare Ansprache, wiedererkennbares Produkt, stabile Einnahmen pro Instanz – schrittweise Ausweitung des erreichbaren Marktes (SOM).</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)', fontWeight: 600 }}>Optimistisch</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Partnerschaften, Presse, Empfehlung – SAM wird besser erreicht; Marktanteil an SAM steigt, bleibt aber von außen begrenzt (Qualität vor Massenwachstum).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '0.75rem 0 0 0', lineHeight: 1.5, fontSize: '0.85rem', color: t.muted }}>
+            <strong>Nächster Schritt:</strong> Bevölkerungs-/Haushaltszahlen (z. B. Destatis) und ggf. Branchennotizen zu Genealogie-Software mit Quellenangabe in eine Tabelle übernehmen – dann sind TAM/SAM schätzbar und der erwartbare Anteil an SAM ehrlich begründbar.
+          </p>
+        </section>
+
         <section id="fam-mkt-zielgruppe" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            4. Zielgruppe & Kanäle
+            5. Zielgruppe & Kanäle
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55 }}>
             <strong>Zielgruppe:</strong> Familien und Personen, die Stammbaum, Erinnerungen und Außenauftritt (Einladungen, Einblicke für Vertraute) sicher und würdevoll bündeln wollen – ohne Social-Media-Druck und ohne Daten als Ware.
@@ -193,7 +240,7 @@ export default function K2FamilieMarketingPage() {
 
         <section id="fam-mkt-abgrenzung" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            4. Abgrenzung
+            6. Abgrenzung
           </h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginTop: '0.5rem' }}>
             <thead>
@@ -224,7 +271,7 @@ export default function K2FamilieMarketingPage() {
         </section>
 
         <section style={{ marginBottom: '1.25rem', breakInside: 'avoid' as const }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>6. Tonfall</h2>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>7. Tonfall</h2>
           <p style={{ margin: 0, lineHeight: 1.55 }}>
             Ruhig, respektvoll, klar. Keine aggressive Verkaufssprache, keine „Affiliate“-Logik. Wenn wir Einladungen oder Texte formulieren, immer: einfache Sprache, ehrlich, ohne Druck – im Einklang mit dem Benutzerhandbuch und der Präsentationsmappe.
           </p>
