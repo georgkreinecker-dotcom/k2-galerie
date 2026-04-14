@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Rolle-Anzeige „Leser:in“ obwohl Einrichtung passt** – Ursache: **ohne gespeicherte Rolle** war Default **`leser`**; alte Speicherung **`leser`** blieb. **Fix:** Default **`inhaber`** wenn kein Eintrag; Leiste **Ein-Klick** „Ich richte die Familie ein → Inhaber:in“ (`setRolle('inhaber')`); Tests `familieRollenStorage`; Doku **`docs/K2-FAMILIE-ROLLEN-UEBERSICHT.md`**. **Commit:** **`dfa7bbdb`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: **einmal** Button in der grauen Leiste **oder** **Einstellungen → Rolle → Inhaber:in**; wer noch „Leser:in“ sieht, hatte oft schon **`leser`** im Speicher – ein Klick setzt es.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Identifikation Mobil – Normalisierung + Session-Fallback** – Handy: iOS-Tastatur kann **Vollbreite-Ziffern**, unsichtbare Zeichen oder Leerzeichen im Code liefern → Abgleich schief. **Fix:** `normalizeMitgliedsNummerInput` / `trimMitgliedsNummerEingabe` (NFKC, Zero-Width, Vollbreite→ASCII, Leerzeichen entfernen); **Fingerabdruck** nutzt dieselbe Norm. **sessionStorage** blockiert (Privatmodus): **Fallback** `localStorage` `k2-familie-identitaet-ls-*`; `loadIdentitaetBestaetigt` liest beides; nach `setIdentitaetBestaetigt` prüfen, sonst Hinweis. Code-Felder: `autoCapitalize="none"`, `spellCheck={false}`, `autoCorrect="off"`. Tests: `familieMitgliedsNummer`, `familieIdentitaetStorage`. **Commit:** **`ab6c7e72`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy **iPhone** (normales Safari): gleichen Code wie am Mac eingeben → Bestätigen; optional Privatmodus kurz prüfen (Hinweis statt stilles Scheitern).
