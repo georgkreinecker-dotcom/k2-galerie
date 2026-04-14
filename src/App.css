@@ -2321,9 +2321,15 @@ header h1 {
   }
   .k2-familie-layout-shell {
     flex-direction: column;
+    min-height: auto !important;
   }
   .k2-familie-layout-column {
-    min-height: auto;
+    min-height: auto !important;
+  }
+  /* Mitglieder-Codes & Co.: keine künstlichen Leerseiten durch 100vh */
+  body:has(.k2-familie-mitglieder-codes-print) .k2-familie-main {
+    flex: none !important;
+    min-height: 0 !important;
   }
 }
 .k2-familie-app-footer {
@@ -2742,6 +2748,7 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
     background: #fff !important;
     padding: 1rem;
     color: #1c1a18 !important;
+    min-height: auto !important;
   }
   .mission-wrapper .viewport {
     background: #fafaf9 !important;

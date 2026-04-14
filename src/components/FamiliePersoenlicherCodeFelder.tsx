@@ -1,6 +1,7 @@
 /**
- * Persönlicher Code: Produktstandard **2 Buchstaben + 2 Ziffern** (vier Positionen),
- * siehe `familieMitgliedsNummer.ts`. Vier sichtbare Plätze — leer = noch nicht vergeben.
+ * Persönlicher Code: Produktstandard 2 Buchstaben + 2 Ziffern (vier Positionen),
+ * siehe `familieMitgliedsNummer.ts`. Vier sichtbare Plätze — leer = noch nicht eingetragen.
+ * Mitglied trägt den von der Verwaltung mitgeteilten Code selbst ein (Legitimation).
  * Abweichende Legacy-Werte: ein Zeilenfeld.
  */
 import { useRef, type CSSProperties, type KeyboardEvent, type ClipboardEvent } from 'react'
@@ -11,6 +12,14 @@ export type FamiliePersoenlicherCodeFelderProps = {
   onChange: (next: string) => void
   /** Nur Anzeige (keine Eingabe) */
   readOnly?: boolean
+  /**
+   * Eigene Karte: Code ist gespeichert, aber **nicht** in den vier Feldern im Klartext anzeigen (Symbolflächen leer).
+   * Bearbeiten nur über `onEntsperrenPersCode` (z. B. „Code ändern“).
+   */
+  maskClearText?: boolean
+  onEntsperrenPersCode?: () => void
+  /** Standard: „Code ändern“; bei nur Leserecht z. B. „Code anzeigen“. */
+  entsperrenButtonLabel?: string
   idPrefix?: string
   ariaLabelledBy?: string
   ariaDescribedBy?: string
@@ -63,6 +72,9 @@ export default function FamiliePersoenlicherCodeFelder({
   value,
   onChange,
   readOnly = false,
+  maskClearText = false,
+  onEntsperrenPersCode,
+  entsperrenButtonLabel = 'Code ändern',
   idPrefix = 'k2fam-pers-code',
   ariaLabelledBy,
   ariaDescribedBy,
@@ -100,6 +112,72 @@ export default function FamiliePersoenlicherCodeFelder({
       onChange(p)
       inputsRef.current[3]?.focus()
     }
+  }
+
+  /** Eigene Karte: hinterlegter Code — Plätze absichtlich leer, kein Klartext auf dem Bildschirm. */
+  if (maskClearText) {
+    if (isLegacy) {
+      return (
+        <div role="group" aria-labelledby={ariaLabelledBy} aria-describedby={ariaDescribedBy}>
+          <p className="meta" style={{ margin: '0 0 0.65rem', fontSize: '0.82rem', lineHeight: 1.45, color: 'rgba(148,163,184,0.98)' }}>
+            Persönlicher Code ist hinterlegt — aus Sicherheit <strong style={{ color: 'rgba(226,232,240,0.95)' }}>nicht im Klartext</strong> angezeigt (anderes
+            Format).
+          </p>
+          {onEntsperrenPersCode ? (
+            <button
+              type="button"
+              className="btn-outline"
+              style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', borderRadius: 8 }}
+              onClick={onEntsperrenPersCode}
+            >
+              {entsperrenButtonLabel}
+            </button>
+          ) : null}
+        </div>
+      )
+    }
+    return (
+      <div
+        role="group"
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <div
+                style={{
+                  ...emptyReadCellStyle,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '2.35rem',
+                }}
+                aria-hidden
+              />
+              <span className="meta" style={{ fontSize: '0.62rem', opacity: 0.85 }}>
+                {i < 2 ? 'Bst.' : 'Ziff.'}
+              </span>
+            </div>
+          ))}
+        </div>
+        {onEntsperrenPersCode ? (
+          <button
+            type="button"
+            className="btn-outline"
+            style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', borderRadius: 8 }}
+            onClick={onEntsperrenPersCode}
+          >
+            {entsperrenButtonLabel}
+          </button>
+        ) : (
+          <span className="meta" style={{ fontSize: '0.78rem', color: 'rgba(148,163,184,0.95)' }}>
+            Gespeicherter Code — Bearbeitung nur mit passendem Recht.
+          </span>
+        )}
+      </div>
+    )
   }
 
   if (readOnly) {
@@ -150,7 +228,7 @@ export default function FamiliePersoenlicherCodeFelder({
         ))}
         {!anyFilled && (
           <span className="meta" style={{ width: '100%', marginTop: 6, fontSize: '0.82rem', fontStyle: 'italic', color: 'rgba(148,163,184,0.95)' }}>
-            Noch nicht vergeben — vier Plätze, von der Inhaber:in auszufüllen
+            Noch nicht eingetragen — Code von der Verwaltung erhalten und hier eintragen
           </span>
         )}
       </div>
@@ -193,7 +271,7 @@ export default function FamiliePersoenlicherCodeFelder({
       aria-describedby={ariaDescribedBy}
     >
       <span className="meta" style={{ display: 'block', marginBottom: '0.45rem', fontSize: '0.72rem', letterSpacing: '0.03em' }}>
-        Vier Plätze: Buchstabe · Buchstabe · Ziffer · Ziffer — leer lassen, bis du einen Code vergibst
+        Vier Plätze: Buchstabe · Buchstabe · Ziffer · Ziffer — den von der Verwaltung mitgeteilten Code hier eintragen
       </span>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.45rem', flexWrap: 'wrap' }}>
         {[0, 1, 2, 3].map((i) => (

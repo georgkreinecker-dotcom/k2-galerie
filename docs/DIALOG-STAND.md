@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Inhaberschaft an andere Person übertragbar** – Feld **`inhaberPersonId`** in den Familien-Einstellungen; **effektive Rolle** in `familieIdentitaet.ts` (wenn eine andere Person als Inhaber:in festgelegt ist, wirkt die lokale Rolle „Inhaber:in“ für Rechte wie **Bearbeiter**); **Supabase** Edge Function **`familie`**: `data_type` **einstellungen** GET/POST; Client-Merge in `familieSupabaseClient` / Push aus `familieStorage`; **Einstellungen-Seite**: Block „Inhaberschaft übertragen“ (nur mit Verwaltungsrecht, „Du“ gesetzt, andere Person wählbar); nach Übertragung lokale Rolle **Bearbeiter** – neue Inhaber:in stellt **Rolle Inhaber:in** ein. Tests `familieIdentitaet.test.ts`. **Commit:** **`COMMIT_PLACEHOLDER_INHABERSCHAFT`** ✅ GitHub
+
+**Was wir JETZT tun:** Edge Function **`familie`** auf Supabase **deployen**, damit `einstellungen` live mitläuft; danach Übertragung einmal im Browser testen.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Mobile Identifikation / Code-Bestätigung wirkte kaputt** – Ursache: **`personen` auf „Meine Familie“** wurde nur bei **Tenant-Wechsel** aus dem Speicher gelesen; nach Speichern/Einladung war **localStorage** schon neu, die **React-Liste** noch alt → **gelber Balken**, `tryRestoreIdentitaetFromGerat` und Abgleich sahen **keinen/veralteten Code** auf „Du“. **Fix:** `familieStorageRevision` im **TenantContext** bei **`k2-familie-einstellungen-updated`** und bei **`storage`** (anderes Tab); **HomePage** + **Gedenkort** hängen `personen` an dieser Revision; **Einladung `?m=`** mit **`trimMitgliedsNummerEingabe`**. Tests grün, Build ok. **Commit:** **`44f8a3ea`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy am **iPhone** (Vercel, Stand-Badge): Meine Familie → Code bestätigen; bei zweitem Tab am Mac soll **storage**-Sync greifen.

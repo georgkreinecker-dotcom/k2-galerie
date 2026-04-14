@@ -63,9 +63,11 @@ export interface K2FamiliePerson {
   /** Position unter Geschwistern (1-basiert) für Sortierung im Stammbaum – z. B. 7 = 7. von 13. */
   positionAmongSiblings?: number
   /**
-   * Persönliche **Mitgliedsnummer** (Zutritt zur eigenen Identität innerhalb der Familie).
-   * Verbindliche Produktentscheidung: **B** – getrennt von der **familienweiten** Zugangsnummer (`mitgliedsNummerAdmin` in den Einstellungen).
-   * Von der Inhaber:in (oder Bearbeiter:in) pro Karte vergeben; innerhalb eines Tenants eindeutig; Eingabe nach dem allgemeinen Familienlink ordnet „Du“ zu (`ichBinPersonId`).
+   * Persönlicher Code (in der UI „Mitgliedsnummer“): **Schlüssel** zum persönlichen Bereich und **erste Identifikation**
+   * beim Eintritt in die Plattform (Einladung mit `?m=` oder Eintrag auf der eigenen Karte). Danach reicht der
+   * gespeicherte **persönliche QR oder Link** auf dem Gerät — kein erneutes Legitimieren bei jedem Besuch.
+   * Produktentscheidung **B**, getrennt von `mitgliedsNummerAdmin`. Innerhalb des Tenants eindeutig; nach dem
+   * Familienlink ordnet die Eingabe „Du“ zu (`ichBinPersonId`). Verwaltung kann vergeben; die Person trägt auf der **eigenen** Karte ein.
    */
   mitgliedsNummer?: string
   /** Optional: aufklappbarer Block Anschrift + E-Mail + Telefon auf der Personenseite. */
@@ -166,6 +168,11 @@ export interface K2FamilieEinstellungen {
   mitgliedsNummerAdmin?: string
   /** Optional: Position von „Du“ unter den Geschwister (1-basiert), für Sortierung 1…N (z. B. 7 = 6 vor mir, 6 hinter mir). */
   ichBinPositionAmongSiblings?: number
+  /**
+   * Wer die **Inhaber:in** dieser Familien-Instanz ist (Personen-ID), familienweit – mit Backup/Cloud abgleichbar.
+   * Ist sie gesetzt und „Du“ ist eine **andere** Person, zählt die lokale Rollenwahl „Inhaber:in“ für Rechte nur wie **Bearbeiter:in**.
+   */
+  inhaberPersonId?: string
   /**
    * Schlusspunkt: Stammbaum inhaltlich fertig – keine **neuen** Personen mehr anlegen (Buttons aus);
    * bestehende Karten bearbeiten und **verknüpfen** bleibt möglich. Jederzeit wieder aufhebbar.

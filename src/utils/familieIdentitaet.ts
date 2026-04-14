@@ -10,6 +10,27 @@ import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
 import { trimMitgliedsNummerEingabe } from './familieMitgliedsNummer'
 import { loadIdentitaetBestaetigt } from './familieIdentitaetStorage'
 
+/**
+ * Lokale Rollenwahl vs. festgelegte Inhaber:in in den Familien-Daten.
+ * Ohne „Du“ wird nicht eingegriffen (Erst-Einrichtung).
+ */
+export function getEffectiveRolleForFamilieDaten(
+  rolle: K2FamilieRolle,
+  einst: K2FamilieEinstellungen,
+  personen: K2FamiliePerson[],
+  ichBinPersonId: string | undefined,
+): K2FamilieRolle {
+  const ich = ichBinPersonId?.trim()
+  if (!ich) return rolle
+  const designated = einst.inhaberPersonId?.trim()
+  if (!designated) return rolle
+  if (!personen.some((p) => p.id === designated)) return rolle
+  if (rolle === 'inhaber' && ich !== designated) {
+    return 'bearbeiter'
+  }
+  return rolle
+}
+
 /** Keine Schreib-Rechte (nur Ansehen), alle Flags aus. */
 function capabilitiesNurLesen(rolle: K2FamilieRolle): FamilieRollenCapabilities {
   return {
@@ -38,14 +59,15 @@ export function getFamilieEffectiveCapabilities(
   einst: K2FamilieEinstellungen,
   personen: K2FamiliePerson[],
 ): FamilieRollenCapabilities {
-  const base = getFamilieRollenCapabilities(rolle)
   const ich = einst.ichBinPersonId?.trim()
+  const effectiveRolle = getEffectiveRolleForFamilieDaten(rolle, einst, personen, ich)
+  const base = getFamilieRollenCapabilities(effectiveRolle)
 
   if (!ich) {
-    if (rolle === 'inhaber') {
+    if (effectiveRolle === 'inhaber') {
       return base
     }
-    return capabilitiesNurLesen(rolle)
+    return capabilitiesNurLesen(effectiveRolle)
   }
 
   const ichPerson = personen.find((p) => p.id === ich)
@@ -57,7 +79,7 @@ export function getFamilieEffectiveCapabilities(
 
   const sessionPid = loadIdentitaetBestaetigt(tenantId)
   if (sessionPid !== ich) {
-    return capabilitiesNurLesen(rolle)
+    return capabilitiesNurLesen(effectiveRolle)
   }
 
   return base

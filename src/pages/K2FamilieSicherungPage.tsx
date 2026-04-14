@@ -71,6 +71,7 @@ export default function K2FamilieSicherungPage() {
           alert('Diese Datei ist keine gültige K2-Familie-Sicherung. Bitte eine Datei wählen, die du zuvor hier mit „Sicherungskopie herunterladen“ erstellt hast.')
           return
         }
+        refreshFromStorage()
         setRestoreProgress('done')
         setTimeout(() => navigate(PROJECT_ROUTES['k2-familie'].meineFamilie, { replace: true }), 800)
       } catch (err) {
@@ -150,6 +151,39 @@ export default function K2FamilieSicherungPage() {
           </div>
         </header>
 
+        <section
+          style={{
+            marginTop: '1.25rem',
+            padding: '0.85rem 1rem',
+            background: 'rgba(15,23,42,0.35)',
+            borderRadius: 12,
+            border: '1px solid rgba(251,191,36,0.35)',
+          }}
+          aria-label="Hinweis Sicherungskopie"
+        >
+          <h2 style={{ fontSize: '0.95rem', margin: '0 0 0.5rem', color: 'rgba(254,243,199,0.95)', fontWeight: 700 }}>
+            📌 Datensouveränität: eine Datei = kompletter K2-Familie-Stand
+          </h2>
+          <ul style={{ margin: 0, paddingLeft: '1.15rem', fontSize: '0.82rem', lineHeight: 1.55, color: MUTED }}>
+            <li>
+              <strong style={{ color: 'rgba(255,255,255,0.88)' }}>In der JSON-Datei steckt alles,</strong> was K2 Familie in <strong style={{ color: 'rgba(255,255,255,0.88)' }}>diesem Browser</strong> unter{' '}
+              <code style={{ fontSize: '0.78em' }}>k2-familie-…</code> gespeichert hat – inklusive Fotos und Texte, die wirklich im Speicher liegen (auch große Daten; nur bei extrem großen Einzelfällen kann der Browser eine Grenze haben).
+            </li>
+            <li>
+              <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Zusätzlich</strong> wird die zuletzt gewählte Familie (Sitzung) mit abgelegt, damit nach dem Einspielen dieselbe Familie aktiv ist.
+            </li>
+            <li>
+              <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Andere Produkte</strong> (K2 Galerie, ök2, VK2) sind bewusst getrennt – dafür gibt es im <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Admin → Einstellungen</strong> eigene Sicherungen. Das ist kein „Weglassen“ von Familiendaten, sondern eigene Datenhaltung pro Produkt.
+            </li>
+            <li>
+              <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Nur Links:</strong> Wenn ein Foto nur als <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Internet-Adresse</strong> eingetragen ist, liegt die Datei auf dem fremden Server – in der Sicherung steht dann der Link (wie in der App), keine Kopie von dort. Das ist normal und entspricht dem, was du gespeichert hast.
+            </li>
+            <li>
+              <strong style={{ color: 'rgba(255,255,255,0.88)' }}>Regelmäßig</strong> herunterladen und die Datei an einem <strong style={{ color: 'rgba(255,255,255,0.88)' }}>zweiten Ort</strong> ablegen (PC, USB-Stick, backupmicro) – ohne Cloud-Zwang.
+            </li>
+          </ul>
+        </section>
+
         <section style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(13,148,136,0.12)', borderRadius: 12, border: `1px solid ${ACCENT}40`, opacity: canExport ? 1 : 0.55 }}>
           <h2 style={{ fontSize: '1rem', marginBottom: '0.75rem', color: ACCENT }}>💾 Sicherungskopie herunterladen</h2>
           <button
@@ -160,7 +194,9 @@ export default function K2FamilieSicherungPage() {
           >
             💾 Sicherungskopie herunterladen (K2 Familie)
           </button>
-          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: MUTED }}>Lädt eine Datei mit allen K2-Familie-Daten. Datei sicher speichern – dann hast du eine echte Sicherung gegen Datenverlust.</p>
+          <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', color: MUTED }}>
+            Eine JSON-Datei mit dem <strong style={{ color: 'rgba(255,255,255,0.88)' }}>vollständigen</strong> K2-Familie-Datenbestand aus diesem Browser (siehe Kasten oben).
+          </p>
           {!canExport && <p style={{ margin: '0.5rem 0 0', fontSize: '0.8rem', color: 'rgba(251,191,36,0.95)' }}>Nur Leser:in – Download ist nicht frei. Rolle auf Bearbeiter:in oder Inhaber:in stellen.</p>}
         </section>
 

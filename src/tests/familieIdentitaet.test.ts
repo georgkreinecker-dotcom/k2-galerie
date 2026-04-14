@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { getFamilieEffectiveCapabilities } from '../utils/familieIdentitaet'
+import { getEffectiveRolleForFamilieDaten, getFamilieEffectiveCapabilities } from '../utils/familieIdentitaet'
 import { clearIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import type { K2FamiliePerson } from '../types/k2Familie'
 
@@ -63,5 +63,26 @@ describe('getFamilieEffectiveCapabilities', () => {
     const p = person('p1', 'AB12')
     const caps = getFamilieEffectiveCapabilities('inhaber', TID, { ichBinPersonId: 'p1' }, [p])
     expect(caps.canManageFamilienInstanz).toBe(false)
+  })
+
+  it('getEffectiveRolleForFamilieDaten: andere Person ist Inhaber:in → lokales Inhaber wird zu Bearbeiter', () => {
+    const p1 = person('p1')
+    const p2 = person('p2')
+    expect(getEffectiveRolleForFamilieDaten('inhaber', { inhaberPersonId: 'p2', ichBinPersonId: 'p1' }, [p1, p2], 'p1')).toBe(
+      'bearbeiter',
+    )
+    expect(getEffectiveRolleForFamilieDaten('inhaber', { inhaberPersonId: 'p1', ichBinPersonId: 'p1' }, [p1, p2], 'p1')).toBe(
+      'inhaber',
+    )
+  })
+
+  it('festgelegte Inhaber:in ≠ Du: keine Instanz-Verwaltung trotz Rolle Inhaber im Speicher', () => {
+    setIdentitaetBestaetigt(TID, 'p1')
+    const p1 = person('p1', 'AB12')
+    const p2 = person('p2')
+    const caps = getFamilieEffectiveCapabilities('inhaber', TID, { ichBinPersonId: 'p1', inhaberPersonId: 'p2' }, [p1, p2])
+    expect(caps.canManageFamilienInstanz).toBe(false)
+    expect(caps.canEditStrukturUndStammdaten).toBe(false)
+    expect(caps.rolle).toBe('bearbeiter')
   })
 })

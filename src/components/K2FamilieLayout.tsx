@@ -101,6 +101,7 @@ function FamilieTenantToolbar() {
 
 function FamilieRolleLeiste() {
   const { rolle, setRolle, capabilities } = useFamilieRolle()
+  const eff = capabilities.rolle
   const rolleEinstellungenHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-rolle-wahl`
   return (
     <div className="k2-familie-no-print">
@@ -127,7 +128,7 @@ function FamilieRolleLeiste() {
             minWidth: '7.5rem',
           }}
         >
-          {K2_FAMILIE_ROLLEN_LABELS[rolle]}
+          {K2_FAMILIE_ROLLEN_LABELS[eff]}
         </strong>
         <span
           style={{
@@ -146,14 +147,30 @@ function FamilieRolleLeiste() {
               width: 10,
               height: 10,
               borderRadius: '50%',
-              background: K2_FAMILIE_ROLLEN_AMPEL[rolle],
+              background: K2_FAMILIE_ROLLEN_AMPEL[eff],
               flexShrink: 0,
               boxShadow: '0 0 0 1px rgba(0,0,0,0.06)',
             }}
           />
-          {K2_FAMILIE_ROLLEN_EINZEILER[rolle]}
+          {K2_FAMILIE_ROLLEN_EINZEILER[eff]}
         </span>
       </div>
+      {rolle !== eff && (
+        <div
+          role="status"
+          style={{
+            padding: '0.4rem 1rem',
+            background: 'rgba(217, 119, 6, 0.12)',
+            borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+            fontSize: '0.8rem',
+            color: t.muted,
+            lineHeight: 1.35,
+          }}
+        >
+          <strong style={{ color: t.text }}>Hinweis:</strong> In den Familien-Daten ist eine andere Person als Inhaber:in festgelegt – für Rechte siehst du{' '}
+          <strong style={{ color: t.text }}>{K2_FAMILIE_ROLLEN_LABELS[eff]}</strong> (nicht die Auswahl in den Einstellungen).
+        </div>
+      )}
       {capabilities.rolle === 'leser' && (
         <div
           role="status"

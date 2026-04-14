@@ -50,8 +50,13 @@ serve(async (req) => {
 
       if (error) throw error
       const byType: Record<string, unknown[]> = { personen: [], momente: [], events: [] }
+      let einstellungen: Record<string, unknown> | null = null
       for (const row of rows || []) {
         const t = row.data_type
+        if (t === 'einstellungen' && row.payload && typeof row.payload === 'object' && !Array.isArray(row.payload)) {
+          einstellungen = row.payload as Record<string, unknown>
+          continue
+        }
         if (t && Array.isArray(row.payload)) byType[t] = row.payload
       }
       return new Response(
@@ -59,6 +64,7 @@ serve(async (req) => {
           personen: byType.personen || [],
           momente: byType.momente || [],
           events: byType.events || [],
+          ...(einstellungen ? { einstellungen } : {}),
           timestamp: new Date().toISOString(),
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
@@ -81,6 +87,15 @@ serve(async (req) => {
           })
         }
       }
+      const einst = body.einstellungen
+      if (einst && typeof einst === 'object' && !Array.isArray(einst)) {
+        toUpsert.push({
+          tenant_id: tenantId,
+          data_type: 'einstellungen',
+          payload: einst,
+          updated_at: now,
+        })
+      }
       if (toUpsert.length === 0) {
         return new Response(
           JSON.stringify({ personen: [], momente: [], events: [], count: 0 }),
@@ -93,7 +108,10 @@ serve(async (req) => {
       if (error) throw error
       const out: Record<string, unknown[]> = { personen: [], momente: [], events: [] }
       for (const row of toUpsert) {
-        out[row.data_type as keyof typeof out] = row.payload as unknown[]
+        if (row.data_type === 'einstellungen') continue
+        if (row.data_type in out) {
+          out[row.data_type as keyof typeof out] = row.payload as unknown[]
+        }
       }
       return new Response(
         JSON.stringify({

@@ -266,6 +266,8 @@ export default function K2FamiliePersonPage() {
   const [kaEmail, setKaEmail] = useState('')
   const [kaTelefon, setKaTelefon] = useState('')
   const [mitgliedsNummer, setMitgliedsNummer] = useState('')
+  /** Eigene Karte: Klartext in den vier Plätzen nur nach „Code ändern“; nach Speichern wieder ausgeblendet. */
+  const [persCodeUnlocked, setPersCodeUnlocked] = useState(false)
   const [kontaktAdresseOpen, setKontaktAdresseOpen] = useState(false)
   /** Im Bearbeiten: altes Einzelfeld `photo` entfernen, obwohl es noch in `person` steht (bis Speichern). */
   const [photoLegacyCleared, setPhotoLegacyCleared] = useState(false)
@@ -280,6 +282,11 @@ export default function K2FamiliePersonPage() {
   const [erinnerungenOpen, setErinnerungenOpen] = useState(false)
 
   const person = personen.find((p) => p.id === id)
+  const rawSavedPersCode = trimMitgliedsNummerEingabe(person?.mitgliedsNummer ?? '')
+  /** Gespeicherter Code: nirgends Klartext in den vier Feldern, bis „Code anzeigen“ / „Code ändern“ (auch wenn ichBinPersonId noch nicht gesetzt ist). */
+  const maskPersCodeKlartext = Boolean(rawSavedPersCode && !persCodeUnlocked)
+  /** Eigene Karte oder Inhaber:in: Code einblenden dürfen auch ohne aktives Stammdaten-Bearbeiten (Leser, nur Ansicht). */
+  const kannPersCodeKlartextEinblenden = Boolean(kannInstanz || istEigeneKarte)
   const graphDistanceFromDu = useMemo(() => {
     if (!id) return null
     return getGraphDistanceFromIch(personen, einstellungen.ichBinPersonId, id)
@@ -299,6 +306,10 @@ export default function K2FamiliePersonPage() {
     [personen, id]
   )
   const fokusParam = searchParams.get('fokus')
+  useEffect(() => {
+    setPersCodeUnlocked(false)
+  }, [id])
+
   useEffect(() => {
     if (!person || fokusParam !== 'beziehungen') return
     setStammdatenHauptOpen(true)
@@ -531,6 +542,7 @@ export default function K2FamiliePersonPage() {
       if (savePersonen(currentTenantId, next, { allowReduce: false })) {
         setPersonen(next)
         setEdit(false)
+        setPersCodeUnlocked(false)
       }
       return
     }
@@ -606,6 +618,7 @@ export default function K2FamiliePersonPage() {
     if (savePersonen(currentTenantId, next, { allowReduce: false })) {
       setPersonen(next)
       setEdit(false)
+      setPersCodeUnlocked(false)
     }
   }
 
@@ -1232,11 +1245,7 @@ export default function K2FamiliePersonPage() {
               Persönlicher Code
             </h2>
             <p id="k2-familie-pers-code-hint" className="meta" style={{ margin: '0.35rem 0 0.65rem', lineHeight: 1.45, fontSize: '0.82rem' }}>
-              <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Sichtbarkeit:</strong> Nur <strong>diese Person selbst</strong> auf der <strong>eigenen</strong> Karte
-              und die <strong>Inhaber:in</strong> (Verwaltung) sehen den Code — <strong>andere Familienmitglieder sehen ihn auf fremden Karten nicht</strong>, sonst
-              bräuchte es keinen Code. Die Verwaltung stellt den Code bereit; die Person trägt ihn auf der <strong>eigenen</strong> Karte ein und bestätigt damit Platz
-              und Rolle in der Familie. <strong style={{ color: 'rgba(226,232,240,0.98)' }}>Format:</strong> zwei Buchstaben und zwei Ziffern — die <strong>vier Plätze</strong>{' '}
-              zum Eintragen; leer lassen, bis der Code vorliegt.
+              Die Verwaltung teilt den Code mit; er ist der <strong>Schlüssel</strong> zum persönlichen Bereich und die <strong>erste Identifikation</strong> beim Eintritt.
             </p>
             <div className="field" style={{ marginBottom: 0 }}>
               <FamiliePersoenlicherCodeFelder
@@ -1244,10 +1253,36 @@ export default function K2FamiliePersonPage() {
                 value={canEditPersoenlicherCode ? mitgliedsNummer : person.mitgliedsNummer ?? ''}
                 onChange={setMitgliedsNummer}
                 readOnly={!canEditPersoenlicherCode}
+                maskClearText={maskPersCodeKlartext}
+                onEntsperrenPersCode={
+                  maskPersCodeKlartext && kannPersCodeKlartextEinblenden ? () => setPersCodeUnlocked(true) : undefined
+                }
+                entsperrenButtonLabel={canEditPersoenlicherCode ? 'Code ändern' : 'Code anzeigen'}
                 ariaLabelledBy="k2-familie-pers-code-heading"
                 ariaDescribedBy="k2-familie-pers-code-hint"
               />
             </div>
+            {persCodeUnlocked && kannPersCodeKlartextEinblenden ? (
+              <div style={{ marginTop: '0.65rem' }}>
+                <button
+                  type="button"
+                  className="btn-outline"
+                  style={{ fontSize: '0.82rem', padding: '0.35rem 0.65rem' }}
+                  onClick={() => {
+                    if (
+                      canEditPersoenlicherCode &&
+                      trimMitgliedsNummerEingabe(mitgliedsNummer) !== trimMitgliedsNummerEingabe(person.mitgliedsNummer ?? '')
+                    ) {
+                      if (!window.confirm('Ungespeicherte Änderungen am Code verwerfen und wieder ausblenden?')) return
+                    }
+                    setMitgliedsNummer(person.mitgliedsNummer ?? '')
+                    setPersCodeUnlocked(false)
+                  }}
+                >
+                  Code wieder ausblenden
+                </button>
+              </div>
+            ) : null}
           </section>
         )}
 

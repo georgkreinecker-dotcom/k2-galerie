@@ -5,8 +5,8 @@
  */
 
 import { isSupabaseConfigured } from './supabaseClient'
-import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent } from '../types/k2Familie'
-import { loadPersonen, loadMomente, loadEvents, savePersonen, saveMomente, saveEvents } from './familieStorage'
+import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieEinstellungen } from '../types/k2Familie'
+import { loadPersonen, loadMomente, loadEvents, loadEinstellungen, savePersonen, saveMomente, saveEvents, saveEinstellungen } from './familieStorage'
 
 let SUPABASE_URL = ''
 try {
@@ -46,6 +46,8 @@ export interface FamilieData {
   personen: K2FamiliePerson[]
   momente: K2FamilieMoment[]
   events: K2FamilieEvent[]
+  /** Optional: Familien-Einstellungen (u. a. Inhaber:in) – ein Objekt pro Tenant. */
+  einstellungen?: K2FamilieEinstellungen
 }
 
 /**
@@ -72,6 +74,10 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     const serverPersonen = Array.isArray(data.personen) ? data.personen : []
     const serverMomente = Array.isArray(data.momente) ? data.momente : []
     const serverEvents = Array.isArray(data.events) ? data.events : []
+    const serverEinst =
+      data.einstellungen && typeof data.einstellungen === 'object' && !Array.isArray(data.einstellungen)
+        ? (data.einstellungen as K2FamilieEinstellungen)
+        : null
     const localPersonen = loadPersonen(tenantId)
     const localMomente = loadMomente(tenantId)
     const localEvents = loadEvents(tenantId)
@@ -81,6 +87,10 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
     if (mergedPersonen.length >= localPersonen.length) savePersonen(tenantId, mergedPersonen, { allowReduce: true })
     if (mergedMomente.length >= localMomente.length) saveMomente(tenantId, mergedMomente, { allowReduce: true })
     if (mergedEvents.length >= localEvents.length) saveEvents(tenantId, mergedEvents, { allowReduce: true })
+    if (serverEinst) {
+      const mergedEinst = { ...loadEinstellungen(tenantId), ...serverEinst }
+      saveEinstellungen(tenantId, mergedEinst)
+    }
     return { personen: mergedPersonen, momente: mergedMomente, events: mergedEvents }
   } catch (e) {
     console.warn('loadFamilieFromSupabase fehlgeschlagen:', e)
@@ -109,6 +119,9 @@ export async function saveFamilieToSupabase(tenantId: string, payload: FamilieDa
         personen: payload.personen ?? [],
         momente: payload.momente ?? [],
         events: payload.events ?? [],
+        ...(payload.einstellungen && typeof payload.einstellungen === 'object' && !Array.isArray(payload.einstellungen)
+          ? { einstellungen: payload.einstellungen }
+          : {}),
       }),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)

@@ -37,6 +37,19 @@ function buildPersonalEinladungsUrl(
   return buildQrUrlWithBust(base.toString(), versionTs)
 }
 
+/** Kurzlink nur für Papier/PDF: gleiche Ziel-URL ohne lange Cache-Bust-Parameter (weniger Zeilen pro Person). */
+function buildShortEinladungsUrlForPrint(
+  tenantId: string,
+  familienZ: string,
+  mitgliedsNummer: string,
+): string {
+  const base = new URL(`${APP_BASE_URL}${R.meineFamilie}`)
+  base.searchParams.set('t', tenantId)
+  base.searchParams.set('z', familienZ)
+  base.searchParams.set('m', mitgliedsNummer)
+  return base.toString()
+}
+
 export default function K2FamilieMitgliederCodesPage() {
   const a = adminTheme
   const { currentTenantId } = useFamilieTenant()
@@ -161,15 +174,14 @@ export default function K2FamilieMitgliederCodesPage() {
         >
           Mitglieder &amp; persönliche Codes
         </h1>
-        <p style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.55 }}>
-          <strong style={{ color: a.text }}>Mitgliedsnummern</strong> werden beim Anlegen automatisch als{' '}
-          <strong style={{ color: a.text }}>zufällige eindeutige Kombination</strong> vergeben (z. B.{' '}
+        <p className="no-print-familie-codes" style={{ margin: '0 0 1rem', fontSize: '0.92rem', color: a.muted, lineHeight: 1.5 }}>
+          <strong style={{ color: a.text }}>Nur Verwaltung (Inhaber:in):</strong> Diese Übersicht ist nicht für alle sichtbar — Codes vertraulich weitergeben.{' '}
+          <strong style={{ color: a.text }}>Inhaber:in</strong> erzeugt oder trägt Codes ein und gibt sie an die Mitglieder weiter.{' '}
+          <strong style={{ color: a.text }}>Erstes Mal:</strong> Mitglied nutzt den Code als Schlüssel und erste Identifikation —{' '}
+          <strong style={{ color: a.text }}>danach</strong> reicht QR oder Link auf dem Gerät. Optional: Platzhalter-Button für fehlende Karten (
           <span style={{ fontFamily: 'ui-monospace, monospace' }}>{MITGLIEDS_NUMMER_AUTO_BEISPIEL}</span>
-          {' — '}2 Buchstaben + 2 Ziffern, keine fortlaufende Nummer), sortiert nach{' '}
-          <strong style={{ color: a.text }}>Familienzweigen</strong> wie im Stammbaum.{' '}
-          <strong style={{ color: a.text }}>Verstorbene</strong> erscheinen hier nicht. Persönliche Einladungslinks (Familien-Zugang{' '}
-          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>
-          ) — Liste drucken oder Text kopieren.
+          ). Liste wie Stammbaum, ohne Verstorbene. Familien-Zugang:{' '}
+          <span style={{ fontFamily: 'ui-monospace, monospace' }}>{familienZ || '—'}</span>.
         </p>
 
         <div className="no-print-familie-codes" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -222,7 +234,7 @@ export default function K2FamilieMitgliederCodesPage() {
                 fontWeight: 600,
               }}
             >
-              Fehlende Nummern jetzt vergeben ({ohneNummer.length})
+              Platzhalter erzeugen ({ohneNummer.length})
             </button>
           ) : null}
         </div>
@@ -293,13 +305,13 @@ export default function K2FamilieMitgliederCodesPage() {
         </div>
 
         {mitNummer.length === 0 && alleRows.length > 0 ? (
-          <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
+          <p className="no-print-familie-codes" style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
             Noch keine Mitgliedsnummern — oben „Fehlende Nummern jetzt vergeben“ wählen oder einzeln auf der Personenkarte eintragen.
           </p>
         ) : null}
 
         {alleRows.length === 0 ? (
-          <p style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
+          <p className="no-print-familie-codes" style={{ marginTop: '0.85rem', fontSize: '0.88rem', color: a.muted }}>
             Noch keine Personen im Stammbaum.
           </p>
         ) : null}
@@ -312,9 +324,12 @@ export default function K2FamilieMitgliederCodesPage() {
               {g.rows
                 .filter((r) => r.mitgliedsNummer)
                 .map((r) => {
-                  const url = buildUrlForPerson(r.mitgliedsNummer)
+                  const url =
+                    familienZ && r.mitgliedsNummer
+                      ? buildShortEinladungsUrlForPrint(currentTenantId, familienZ, r.mitgliedsNummer)
+                      : ''
                   return (
-                    <p key={`p-${r.id}`} style={{ margin: '0.35rem 0', fontSize: '10pt', wordBreak: 'break-all' }}>
+                    <p key={`p-${r.id}`} style={{ margin: '0.35rem 0', fontSize: '10pt', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       <strong>{r.name}</strong> · {r.mitgliedsNummer} · {url}
                     </p>
                   )
@@ -336,6 +351,7 @@ export default function K2FamilieMitgliederCodesPage() {
         <style>{`
           @media print {
             .no-print-familie-codes { display: none !important; }
+            .familie-codes-tabelle-nur-bildschirm { display: none !important; }
             .print-only-familie-codes { display: block !important; }
             .k2-familie-mitglieder-codes-print { padding: 12mm !important; max-width: none !important; }
           }

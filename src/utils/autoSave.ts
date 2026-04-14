@@ -652,6 +652,28 @@ export function createVk2Backup(): { data: Record<string, any>; filename: string
 
 const K2_FAMILIE_PREFIX = 'k2-familie-'
 
+/** Nur K2-Familie-Backup: volle localStorage-Werte (kein 8-MB-Cutoff wie bei readAllKeys). Schutz nur vor kaputtgespeicherten Riesenstrings. */
+const K2_FAMILIE_BACKUP_MAX_BYTES_PER_KEY = 512 * 1024 * 1024
+
+/** Liest einen Key für K2-Familie-Sicherung: vollständig, bis auf harte Obergrenze pro Key. */
+function readLocalStorageValueForFamilieBackup(key: string): unknown {
+  try {
+    const raw = localStorage.getItem(key)
+    if (raw == null || raw.length === 0) return undefined
+    if (raw.length > K2_FAMILIE_BACKUP_MAX_BYTES_PER_KEY) {
+      console.warn(`[K2-Familie-Backup] Key zu groß (>${K2_FAMILIE_BACKUP_MAX_BYTES_PER_KEY} Bytes), übersprungen: ${key}`)
+      return undefined
+    }
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return raw
+    }
+  } catch (_) {
+    return undefined
+  }
+}
+
 /** Sammelt alle localStorage-Keys die mit k2-familie- beginnen (für Backup). */
 function getK2FamilieStorageKeys(): string[] {
   const keys: string[] = []
@@ -664,17 +686,52 @@ function getK2FamilieStorageKeys(): string[] {
   return keys
 }
 
+/** Session-Felder, die in der Sicherungsdatei mitgenommen werden (wiederherstellbar). */
+const K2_FAMILIE_SESSION_KEYS_FOR_BACKUP = ['k2-familie-current-tenant'] as const
+
+function readK2FamilieSessionSnapshotForBackup(): Record<string, string> | undefined {
+  const out: Record<string, string> = {}
+  try {
+    for (const k of K2_FAMILIE_SESSION_KEYS_FOR_BACKUP) {
+      const v = sessionStorage.getItem(k)
+      if (v != null && v !== '') out[k] = v
+    }
+  } catch (_) {
+    return undefined
+  }
+  return Object.keys(out).length > 0 ? out : undefined
+}
+
+/** Wendet gespeicherte Session-Snapshot aus einer Backup-Datei an (nach vollständiger Wiederherstellung). */
+export function applyK2FamilieSessionSnapshotFromBackup(backup: Record<string, any>): void {
+  const snap = backup._k2FamilieSessionSnapshot
+  if (!snap || typeof snap !== 'object') return
+  const o = snap as Record<string, unknown>
+  try {
+    for (const k of K2_FAMILIE_SESSION_KEYS_FOR_BACKUP) {
+      const v = o[k]
+      if (typeof v === 'string' && v.length > 0) sessionStorage.setItem(k, v)
+    }
+  } catch (_) {}
+}
+
 /** K2-Familie-Vollbackup: alle k2-familie-* Keys (Tenant-Liste, pro Familie: Personen, Momente, Events, Seitentexte). */
 export function createK2FamilieBackup(): { data: Record<string, any>; filename: string } {
   const keys = getK2FamilieStorageKeys()
-  const raw = readAllKeys(keys)
-  const data = {
+  const raw: Record<string, any> = {}
+  for (const key of keys) {
+    const v = readLocalStorageValueForFamilieBackup(key)
+    if (v !== undefined) raw[key] = v
+  }
+  const sessionSnap = readK2FamilieSessionSnapshotForBackup()
+  const data: Record<string, any> = {
     kontext: 'k2-familie',
     exportedAt: new Date().toISOString(),
-    version: '1.0',
-    label: 'K2 Familie – Backup (alle Familien, Personen, Momente, Events)',
+    version: '1.1',
+    label: 'K2 Familie – vollständige Sicherung (alle gespeicherten Familiendaten dieses Browsers)',
     ...raw,
   }
+  if (sessionSnap) data._k2FamilieSessionSnapshot = sessionSnap
   const filename = `k2-familie-backup-${new Date().toISOString().slice(0, 10)}-${Date.now()}.json`
   return { data, filename }
 }
@@ -805,6 +862,7 @@ export function restoreK2FamilieFromBackup(backup: Record<string, any>): { ok: b
       restored.push(key)
     } catch (_) {}
   }
+  applyK2FamilieSessionSnapshotFromBackup(backup)
   return { ok: restored.length > 0, restored }
 }
 

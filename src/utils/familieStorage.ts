@@ -85,6 +85,7 @@ export function savePersonen(
           personen: arr,
           momente: loadMomente(tenantId),
           events: loadEvents(tenantId),
+          einstellungen: loadEinstellungen(tenantId),
         })
       ).catch((e) => console.warn('Supabase Push (Personen) fehlgeschlagen:', e))
     }
@@ -144,6 +145,7 @@ export function saveMomente(
           personen: loadPersonen(tenantId),
           momente: arr,
           events: loadEvents(tenantId),
+          einstellungen: loadEinstellungen(tenantId),
         })
       ).catch((e) => console.warn('Supabase Push (Momente) fehlgeschlagen:', e))
     }
@@ -200,6 +202,7 @@ export function saveEvents(
           personen: loadPersonen(tenantId),
           momente: loadMomente(tenantId),
           events: arr,
+          einstellungen: loadEinstellungen(tenantId),
         })
       ).catch((e) => console.warn('Supabase Push (Events) fehlgeschlagen:', e))
     }
@@ -315,6 +318,16 @@ export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen
     if (prevIch && prevIch !== nextIch) {
       clearIdentitaetBestaetigt(tenantId)
       clearGerateVertrauen(tenantId)
+    }
+    if (isSupabaseConfigured()) {
+      import('./familieSupabaseClient').then((m) =>
+        m.saveFamilieToSupabase(tenantId, {
+          personen: loadPersonen(tenantId),
+          momente: loadMomente(tenantId),
+          events: loadEvents(tenantId),
+          einstellungen: obj,
+        })
+      ).catch((e) => console.warn('Supabase Push (Einstellungen) fehlgeschlagen:', e))
     }
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId } }))

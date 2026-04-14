@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 13.04.26 (Abend) | **Schluss für heute:** „Wir suchen Familie Kreinecker“ = **sichtbar machen**, welche Familie QR/Link trifft (Anzeigename + `t=`); Session-Ende: Build grün, DIALOG-STAND mit Hash, WIR-PROZESS, **commit + push** – Raum bereit für morgen. |
 | 12.04.26 (Abend) | **Schluss für heute:** K2 Familie braucht dieselbe **Leitstruktur** wie mök2 – **eine** Strukturdatei + Sidebar + gemeinsame Active-Logik mit der oberen Nav; Session-Ende: Tests/Build grün, DIALOG-STAND mit Commit-Hash, WIR-PROZESS, alles pushen – Raum bereit. |
 | 08.04.26 (Abend) | **Schluss für heute:** **Eine Hilfsfunktion** für PDF/PNG-Teilen (`sharePrintFile`) vermeidet doppelten Code und macht **Etikett auf Mobil** oft **ohne Extra-Overlay** – Sportwagenmodus; Importnamen nicht mit bestehenden lokalen Hilfen kollidieren lassen. Session-Ende: DIALOG-STAND + Hash, WIR-PROZESS, commit, push. |
 | 06.04.26 (Abend) | **Schluss für heute:** Ein **Zettel** gehört in die **Daten** des Texte-Schreibtisch (`BEREICHE` in `TexteSchreibtischPage`) – nur eine Datei im Ordner reicht nicht; sonst sieht Georg die Oberfläche leer. **Andenken** und **Abschlussbericht** sind der würdige Abschluss des ersten großen gemeinsamen Strangs – festhalten, committen, Raum bereit. |
