@@ -5,6 +5,7 @@ import {
   buildMitgliederCodesZweigGruppen,
   findPersonIdByMitgliedsNummer,
   mitgliedsNummernImGebrauch,
+  persoenlicherCodePasstZuKarte,
   RE_AUTO_MITGLIEDS_NUMMER,
   trimMitgliedsNummerEingabe,
   zieheEindeutigenMitgliedsCode,
@@ -38,6 +39,12 @@ describe('familieMitgliedsNummer', () => {
     const personen = [p('a', '1')]
     expect(findPersonIdByMitgliedsNummer(personen, '')).toBe(null)
     expect(findPersonIdByMitgliedsNummer(personen, '2')).toBe(null)
+  })
+
+  it('persoenlicherCodePasstZuKarte: case-insensitive, trim', () => {
+    expect(persoenlicherCodePasstZuKarte('  ab12  ', 'AB12')).toBe(true)
+    expect(persoenlicherCodePasstZuKarte('x', 'y')).toBe(false)
+    expect(persoenlicherCodePasstZuKarte('', 'AB12')).toBe(false)
   })
 
   it('mitgliedsNummernImGebrauch: normalisiert', () => {

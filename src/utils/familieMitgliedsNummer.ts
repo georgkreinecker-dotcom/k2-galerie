@@ -1,7 +1,7 @@
 /**
- * Persönliche Mitgliedsnummern (Produktentscheidung B): Abgleich Eingabe → Person in dieser Familie.
- * Automatische Vergabe: **2 Buchstaben (A–Z) + 2 Ziffern**, zufällig gewählt, eindeutig in der Familie (keine fortlaufende Nummernfolge).
- * Nur k2-familie-* / Personenliste; keine Vermischung mit K2/ök2/VK2.
+ * Persönliche Codes (Produktentscheidung B): Abgleich Eingabe → Person; **Schlüssel** + **erste Plattform-Identifikation**;
+ * danach nutzt das Mitglied gespeicherten QR/Link. Automatische Vergabe: **2 Buchstaben (A–Z) + 2 Ziffern**, zufällig,
+ * eindeutig in der Familie. Nur k2-familie-*; keine Vermischung mit K2/ök2/VK2.
  */
 import type { K2FamiliePerson } from '../types/k2Familie'
 import { buildStammbaumKartenState } from './familieStammbaumKarten'
@@ -46,6 +46,20 @@ export function findPersonIdByMitgliedsNummer(
     if (m && m.toLowerCase() === want) return p.id
   }
   return null
+}
+
+/**
+ * Eingabe gegen den auf der Karte gespeicherten persönlichen Code (ohne zweite Liste zu durchsuchen).
+ * Gleiche Normalisierung wie findPersonIdByMitgliedsNummer.
+ */
+export function persoenlicherCodePasstZuKarte(
+  eingegeben: string,
+  mitgliedsNummerAufKarte: string | undefined | null
+): boolean {
+  const a = trimMitgliedsNummerEingabe(eingegeben)
+  const b = trimMitgliedsNummerEingabe(mitgliedsNummerAufKarte)
+  if (!a || !b) return false
+  return a.toLowerCase() === b.toLowerCase()
 }
 
 function randomCodeLettersDigits(): string {

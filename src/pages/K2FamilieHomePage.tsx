@@ -13,7 +13,11 @@ import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import { loadIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
-import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
+import {
+  findPersonIdByMitgliedsNummer,
+  persoenlicherCodePasstZuKarte,
+  trimMitgliedsNummerEingabe,
+} from '../utils/familieMitgliedsNummer'
 import { K2_FAMILIE_EINSTELLUNGEN_UPDATED } from '../components/FamilieEinladungQuerySync'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import QRCode from 'qrcode'
@@ -414,19 +418,32 @@ export default function K2FamilieHomePage() {
     }
     const ich = ichBinPersonId?.trim()
     if (!ich) return
-    const pid = findPersonIdByMitgliedsNummer(personen, raw)
-    if (pid !== ich) {
-      setIdentitaetSessionHinweis('Der Code passt nicht zu deiner Person „Du“. Schreibweise prüfen.')
+    /** Immer aktuell aus dem Speicher – nicht nur useMemo-Stand (vermeidet „Code stimmt, Bestätigung fehl“). */
+    const personenAktuell = loadPersonen(currentTenantId)
+    const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
+    const ichPerson = personenAktuell.find((p) => p.id === ich)
+    const codePasstZuDu =
+      pid === ich || (ichPerson ? persoenlicherCodePasstZuKarte(raw, ichPerson.mitgliedsNummer) : false)
+    if (!codePasstZuDu) {
+      if (!pid && ichPerson?.mitgliedsNummer && trimMitgliedsNummerEingabe(raw)) {
+        setIdentitaetSessionHinweis(
+          'Kein Treffer. Hier den persönlichen Code eintragen (z. B. AB12) – nicht die Familien-Zugangsnummer (KF-…).',
+        )
+      } else {
+        setIdentitaetSessionHinweis('Der Code passt nicht zu deiner Person „Du“. Schreibweise prüfen.')
+      }
       return
     }
     setIdentitaetBestaetigt(currentTenantId, ich)
     setIdentitaetSessionEingabe('')
     setIdentitaetSessionHinweis('')
-    setIdentitaetSessionOk('✓ Sitzung bestätigt. Bearbeiten ist wieder möglich.')
+    setIdentitaetSessionOk(
+      '✓ Du bist eingerichtet. Bearbeiten ist frei – du kannst den Code später auf deiner Personenkarte ändern, wenn du möchtest.',
+    )
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent(K2_FAMILIE_SESSION_UPDATED, { detail: { tenantId: currentTenantId } }))
     }
-    window.setTimeout(() => setIdentitaetSessionOk(''), 6000)
+    window.setTimeout(() => setIdentitaetSessionOk(''), 8000)
   }
 
   const anmeldenMitPersoenlicherNummer = () => {
@@ -436,10 +453,11 @@ export default function K2FamilieHomePage() {
       setRegistrierungHinweis('Bitte deinen persönlichen Code eintragen (wie mit der Inhaber:in oder dem Administrator vereinbart).')
       return
     }
-    const pid = findPersonIdByMitgliedsNummer(personen, raw)
+    const personenAktuell = loadPersonen(currentTenantId)
+    const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
     if (!pid) {
       setRegistrierungHinweis(
-        'Keine Person mit dieser Nummer in dieser Familie. Schreibweise prüfen oder Administrator fragen.',
+        'Keine Person mit diesem Code in dieser Familie. Persönlicher Code (z. B. AB12), nicht die Familien-Zugangsnummer (KF-…). Sonst Schreibweise prüfen oder Administrator fragen.',
       )
       return
     }
@@ -448,7 +466,9 @@ export default function K2FamilieHomePage() {
       setIchBinPersonIdState(pid)
       setPersoenlicheNummerEingabe('')
       setRegistrierungHinweis('')
-      setRegistrierungErfolg('✓ Du bist angemeldet. Dein Name und dein persönlicher QR erscheinen unten.')
+      setRegistrierungErfolg(
+        '✓ Du bist eingerichtet. Name und persönlicher QR erscheinen unten – den Code kannst du später auf deiner Personenkarte ändern, wenn du möchtest.',
+      )
       setIdentitaetBestaetigt(currentTenantId, pid)
     } else {
       setRegistrierungHinweis('Speichern ist fehlgeschlagen. Bitte später erneut versuchen.')
@@ -508,9 +528,9 @@ export default function K2FamilieHomePage() {
                   fontFamily: a.fontBody,
                 }}
               >
-                <strong>Sitzung nicht bestätigt.</strong> Auf deiner Karte ist ein persönlicher Code – bitte gib ihn
-                hier einmal ein, damit Bearbeiten und Stammdaten wieder freigeschaltet werden (z. B. nach neuem Tab
-                oder anderem Gerät).
+                <strong>Sitzung nicht bestätigt.</strong> Trage hier deinen persönlichen Code ein (wie auf deiner
+                Karte) – danach bist du eingerichtet; den Code kannst du später auf deiner Personenkarte ändern. So
+                werden Bearbeiten und Stammdaten wieder freigeschaltet (z. B. nach neuem Tab oder anderem Gerät).
               </p>
               <div
                 style={{
