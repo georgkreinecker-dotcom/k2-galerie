@@ -416,6 +416,11 @@ export function saveGeschichten(tenantId: string, list: K2FamilieGeschichte[]): 
  * Returns true wenn alles gespeichert wurde.
  */
 export function deletePersonWithCleanup(tenantId: string, personId: string): boolean {
+  const einstGuard = loadEinstellungen(tenantId)
+  if (einstGuard.stammbaumPersonenLoeschenGesperrt) {
+    console.warn('⚠️ familieStorage: Personen löschen ist gesperrt (Inhaber:in unter Einstellungen)')
+    return false
+  }
   const personen = loadPersonen(tenantId).filter((p) => p.id !== personId)
   if (personen.length === loadPersonen(tenantId).length) return false // Person war nicht vorhanden
 

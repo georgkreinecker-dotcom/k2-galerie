@@ -1981,7 +1981,7 @@ export default function K2FamiliePersonPage() {
               <span> Verknüpfen speichert sofort.</span>
             )}
             {einstellungen.stammbaumSchlusspunkt && (
-              <span> <strong>Schlusspunkt</strong> ist aktiv – keine neuen Personen; nur Verknüpfen. Aufheben auf dem Stammbaum.</span>
+              <span> Keine neuen Personen (Inhaber:in unter Einstellungen) – nur Verknüpfen bestehender Karten.</span>
             )}
           </div>
           <details className="meta" style={{ margin: '0 0 0.85rem', padding: '0.35rem 0' }}>
@@ -2245,7 +2245,15 @@ export default function K2FamiliePersonPage() {
               borderTop: '1px solid rgba(20, 184, 166, 0.18)',
             }}
           >
-            {!showDeleteConfirm ? (
+            {einstellungen.stammbaumPersonenLoeschenGesperrt ? (
+              <p className="meta" style={{ margin: 0, fontSize: '0.85rem', lineHeight: 1.45, maxWidth: '40rem' }}>
+                <strong>Personen löschen</strong> ist für diese Familie gesperrt – die Stammbaum-Struktur soll nicht auseinanderfallen. Nur die <strong>Inhaber:in</strong> kann das unter{' '}
+                <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(20,184,166,0.95)', fontWeight: 600 }}>
+                  Einstellungen
+                </Link>{' '}
+                wieder freigeben.
+              </p>
+            ) : !showDeleteConfirm ? (
               <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.65rem 1rem' }}>
                 <span className="meta" style={{ fontSize: '0.8rem', opacity: 0.88 }}>
                   Optional – nur wenn du diese Person wirklich aus dem Stammbaum entfernen willst:

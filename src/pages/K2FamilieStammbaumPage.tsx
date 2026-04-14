@@ -690,57 +690,14 @@ export default function K2FamilieStammbaumPage() {
               <button type="button" className="btn" disabled={!kannStruktur} onClick={saveFamilyDisplayName}>Speichern</button>
               {familyNameSaved && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Gespeichert</span>}
             </div>
-            {personen.length > 0 && (
-              <details className="familie-schlusspunkt no-print" style={{ marginBottom: '0.5rem', maxWidth: '42rem' }}>
-                <summary
-                  className="meta"
-                  style={{
-                    cursor: 'pointer',
-                    userSelect: 'none',
-                    listStyle: 'none',
-                    padding: '0.15rem 0',
-                    fontSize: '0.82rem',
-                    color: 'rgba(226,232,240,0.88)',
-                  }}
-                >
-                  Stammbaum fertig – vorerst keine neuen Personen{' '}
-                  {einstellungen.stammbaumSchlusspunkt ? (
-                    <span style={{ color: 'rgba(52,211,153,0.95)' }}>(an)</span>
-                  ) : (
-                    <span className="meta">(optional, aufklappen)</span>
-                  )}
-                </summary>
-                <div
-                  style={{
-                    marginTop: '0.45rem',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: 10,
-                    border: einstellungen.stammbaumSchlusspunkt ? '1px solid rgba(20,184,166,0.45)' : '1px solid rgba(148,163,184,0.32)',
-                    background: einstellungen.stammbaumSchlusspunkt ? 'rgba(13,148,136,0.1)' : 'rgba(15,23,42,0.35)',
-                  }}
-                >
-                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.55rem', cursor: 'pointer', margin: 0 }}>
-                    <input
-                      type="checkbox"
-                      checked={!!einstellungen.stammbaumSchlusspunkt}
-                      disabled={!kannStruktur}
-                      onChange={(e) => {
-                        if (!kannStruktur) return
-                        const next = !!e.target.checked
-                        const e0 = loadEinstellungen(currentTenantId)
-                        if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setStammbaumRefresh((k) => k + 1)
-                      }}
-                      aria-describedby="familie-schlusspunkt-hilfe"
-                    />
-                    <span>
-                      <strong style={{ color: 'rgba(255,255,255,0.95)' }}>Keine neuen Personen</strong>
-                      <span className="meta" style={{ display: 'block', marginTop: '0.2rem', lineHeight: 1.45 }} id="familie-schlusspunkt-hilfe">
-                        Wenn angehakt: Buttons zum <strong>Neu anlegen</strong> sind aus. Bestehende Karten bearbeiten und verknüpfen geht weiter. Zum Wieder-Anlegen: Häkchen aus.
-                      </span>
-                    </span>
-                  </label>
-                </div>
-              </details>
+            {personen.length > 0 && (einstellungen.stammbaumSchlusspunkt || einstellungen.stammbaumPersonenLoeschenGesperrt) && (
+              <p className="meta no-print" style={{ marginBottom: '0.5rem', maxWidth: '44rem', fontSize: '0.82rem', lineHeight: 1.45, color: 'rgba(226,232,240,0.9)' }}>
+                {einstellungen.stammbaumSchlusspunkt && <span>Keine neuen Personen · </span>}
+                {einstellungen.stammbaumPersonenLoeschenGesperrt && <span>Löschen gesperrt · </span>}
+                <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45,212,191,0.95)', fontWeight: 600 }}>
+                  Nur Inhaber:in: Einstellungen
+                </Link>
+              </p>
             )}
             {zeigeStammbaumUebersicht && (
               <>
@@ -1673,9 +1630,17 @@ export default function K2FamilieStammbaumPage() {
                 )}
               </>
             )}
-            {einstellungen.stammbaumSchlusspunkt && (
-              <p className="meta" style={{ margin: 0, maxWidth: '40rem', color: 'rgba(20,184,166,0.95)' }}>
-                ✓ Schlusspunkt aktiv – hier werden keine neuen Personen mehr angelegt. Bearbeiten und Verknüpfen auf den Personenseiten bleibt möglich.
+            {(einstellungen.stammbaumSchlusspunkt || einstellungen.stammbaumPersonenLoeschenGesperrt) && (
+              <p className="meta" style={{ margin: 0, maxWidth: '42rem', color: 'rgba(20,184,166,0.95)', lineHeight: 1.45 }}>
+                {einstellungen.stammbaumSchlusspunkt && (
+                  <>✓ Keine neuen Personen – nur Inhaber:in kann das in den Einstellungen ändern. Bearbeiten und Verknüpfen bleibt.<br /></>
+                )}
+                {einstellungen.stammbaumPersonenLoeschenGesperrt && (
+                  <>✓ Personen löschen – gesperrt (Struktur schützen).<br /></>
+                )}
+                <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45,212,191,0.98)', fontWeight: 600 }}>
+                  → Einstellungen
+                </Link>
               </p>
             )}
             {!einstellungen.stammbaumSchlusspunkt && ersteEheMsg && (

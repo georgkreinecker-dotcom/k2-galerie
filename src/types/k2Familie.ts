@@ -174,10 +174,16 @@ export interface K2FamilieEinstellungen {
    */
   inhaberPersonId?: string
   /**
-   * Schlusspunkt: Stammbaum inhaltlich fertig – keine **neuen** Personen mehr anlegen (Buttons aus);
-   * bestehende Karten bearbeiten und **verknüpfen** bleibt möglich. Jederzeit wieder aufhebbar.
+   * Nur **Inhaber:in** stellt das unter **Einstellungen** ein (nicht auf der Stammbaum-Seite).
+   * Keine **neuen** Personen mehr anlegen (Buttons „Hinzufügen“ / Hilfsfunktionen aus);
+   * bestehende Karten bearbeiten und **verknüpfen** bleibt möglich.
    */
   stammbaumSchlusspunkt?: boolean
+  /**
+   * Nur **Inhaber:in** stellt das unter **Einstellungen** ein.
+   * Wenn **true**: Personen **nicht mehr löschen** (Stammbaum-Struktur bleibt stimmig; Verknüpfungen ändern geht weiter).
+   */
+  stammbaumPersonenLoeschenGesperrt?: boolean
   /**
    * Stammbaum: Karten + Grafik – **true** = nur der Familienzweig von „Das bin ich“ (Standard wenn gesetzt);
    * **false** = alle Zweige (Großfamilie). **undefined** = wie **true**, sobald `ichBinPersonId` gesetzt ist.

@@ -4,7 +4,7 @@
  */
 
 import type { CSSProperties } from 'react'
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import K2FamilieVerwaltungZugangUndAnsicht from '../components/K2FamilieVerwaltungZugangUndAnsicht'
 import '../App.css'
@@ -13,7 +13,7 @@ import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../conf
 import { adminTheme } from '../config/theme'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
-import { loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
+import { loadEinstellungen, loadPersonen, saveEinstellungen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
 import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -73,10 +73,16 @@ export default function K2FamilieEinstellungenPage() {
   const isBearbeiter = effRolle === 'bearbeiter'
   const showInhaberArbeitsansichtKarte = rolle === 'inhaber' && capabilities.inhaberArbeitsansicht != null
 
-  const einstSnapshot = loadEinstellungen(currentTenantId)
+  const [einstTick, setEinstTick] = useState(0)
+  const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, einstTick])
+  useEffect(() => {
+    const onUp = () => setEinstTick((t) => t + 1)
+    window.addEventListener(K2_FAMILIE_SESSION_UPDATED, onUp)
+    return () => window.removeEventListener(K2_FAMILIE_SESSION_UPDATED, onUp)
+  }, [])
   const personen = loadPersonen(currentTenantId)
-  const ichId = einstSnapshot.ichBinPersonId?.trim() || ''
-  const designatedId = einstSnapshot.inhaberPersonId?.trim() || ''
+  const ichId = einst.ichBinPersonId?.trim() || ''
+  const designatedId = einst.inhaberPersonId?.trim() || ''
   const designatedName = designatedId ? personen.find((p) => p.id === designatedId)?.name?.trim() || '' : ''
   const transferCandidates = ichId ? personen.filter((p) => p.id !== ichId) : []
   const [transferToId, setTransferToId] = useState('')
@@ -242,6 +248,77 @@ export default function K2FamilieEinstellungenPage() {
                 </span>
               )}
             </p>
+          </div>
+        )}
+
+        {kannInstanz && (
+          <div id="k2-familie-stammbaum-festlegen" style={{ ...card, borderLeftColor: '#047857' }}>
+            <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+              Stammbaum – festlegen (nur Inhaber:in)
+            </h2>
+            <p style={{ margin: '0 0 0.75rem', fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
+              Zwei getrennte Entscheidungen: ob noch <strong style={{ color: a.text }}>Personen</strong> angelegt werden dürfen, und ob <strong style={{ color: a.text }}>Löschen</strong> gesperrt ist – damit die Struktur nicht mehr auseinanderfällt.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.55rem',
+                  cursor: 'pointer',
+                  margin: 0,
+                  fontSize: '0.92rem',
+                  color: a.text,
+                  lineHeight: 1.45,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!einst.stammbaumSchlusspunkt}
+                  onChange={(e) => {
+                    const next = !!e.target.checked
+                    const e0 = loadEinstellungen(currentTenantId)
+                    if (saveEinstellungen(currentTenantId, { ...e0, stammbaumSchlusspunkt: next })) setEinstTick((t) => t + 1)
+                  }}
+                  style={{ marginTop: '0.2rem', flexShrink: 0 }}
+                />
+                <span>
+                  <strong>Keine neuen Personen mehr</strong>
+                  <span style={{ display: 'block', marginTop: '0.2rem', fontSize: '0.86rem', color: a.muted, fontWeight: 400 }}>
+                    Buttons zum Anlegen (Stammbaum, Personenseiten, Hilfsfunktionen) sind aus. Bestehende Karten bearbeiten und verknüpfen geht weiter.
+                  </span>
+                </span>
+              </label>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.55rem',
+                  cursor: 'pointer',
+                  margin: 0,
+                  fontSize: '0.92rem',
+                  color: a.text,
+                  lineHeight: 1.45,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!einst.stammbaumPersonenLoeschenGesperrt}
+                  onChange={(e) => {
+                    const next = !!e.target.checked
+                    const e0 = loadEinstellungen(currentTenantId)
+                    if (saveEinstellungen(currentTenantId, { ...e0, stammbaumPersonenLoeschenGesperrt: next })) setEinstTick((t) => t + 1)
+                  }}
+                  style={{ marginTop: '0.2rem', flexShrink: 0 }}
+                />
+                <span>
+                  <strong>Personen löschen sperren</strong>
+                  <span style={{ display: 'block', marginTop: '0.2rem', fontSize: '0.86rem', color: a.muted, fontWeight: 400 }}>
+                    Niemand kann eine Person mehr endgültig aus dem Stammbaum entfernen – sonst werden Linien und Verknüpfungen falsch. Bearbeiten und Beziehungen ändern bleibt möglich.
+                  </span>
+                </span>
+              </label>
+            </div>
           </div>
         )}
 
