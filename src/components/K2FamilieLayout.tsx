@@ -11,7 +11,6 @@ import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleCo
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import {
-  K2_FAMILIE_ROLLEN,
   K2_FAMILIE_ROLLEN_AMPEL,
   K2_FAMILIE_ROLLEN_EINZEILER,
   K2_FAMILIE_ROLLEN_LABELS,
@@ -101,7 +100,8 @@ function FamilieTenantToolbar() {
 }
 
 function FamilieRolleLeiste() {
-  const { rolle, setRolle, capabilities } = useFamilieRolle()
+  const { rolle, capabilities } = useFamilieRolle()
+  const rolleEinstellungenHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-rolle-wahl`
   return (
     <div className="k2-familie-no-print">
       <div
@@ -118,28 +118,17 @@ function FamilieRolleLeiste() {
         <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
           Deine Rolle:
         </span>
-        <select
-          id="k2-familie-rolle-select"
-          aria-label="Rolle für diese Familie wählen"
-          value={rolle}
-          onChange={(e) => setRolle(e.target.value as typeof rolle)}
+        <strong
           style={{
-            background: '#fffefb',
-            border: '1px solid rgba(181, 74, 30, 0.28)',
-            borderRadius: t.radius,
+            fontSize: '0.9rem',
+            fontWeight: 700,
             color: t.text,
-            padding: '0.35rem 0.55rem',
-            fontSize: '0.88rem',
-            fontFamily: 'inherit',
-            maxWidth: 'min(100%, 220px)',
+            fontFamily: t.fontHeading,
+            minWidth: '7.5rem',
           }}
         >
-          {K2_FAMILIE_ROLLEN.map((r) => (
-            <option key={r} value={r}>
-              {K2_FAMILIE_ROLLEN_LABELS[r]}
-            </option>
-          ))}
-        </select>
+          {K2_FAMILIE_ROLLEN_LABELS[rolle]}
+        </strong>
         <span
           style={{
             display: 'inline-flex',
@@ -176,7 +165,11 @@ function FamilieRolleLeiste() {
             color: t.text,
           }}
         >
-          Lesemodus – zum Mitgestalten oben auf Inhaber:in oder Bearbeiter:in stellen.
+          Lesemodus – zum Mitgestalten die Rolle unter{' '}
+          <Link to={rolleEinstellungenHash} style={{ color: t.accent, fontWeight: 600 }}>
+            Einstellungen → Rolle in dieser Familie
+          </Link>{' '}
+          anpassen (nur für diese Browser-Sitzung; später familienintern durch die Inhaber:in).
         </div>
       )}
     </div>
