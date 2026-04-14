@@ -1,6 +1,8 @@
 # Upload-Download-Simulation – Test-Protokoll
 
-**Erstellt:** 2026-04-14T13:58:45.636Z
+> **Hinweis:** Wird bei diesem Testlauf neu geschrieben. Oft ändert sich nur der Zeitstempel — dann Arbeitsbaum mit `git restore docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` räumen oder den Stand bewusst committen.
+
+**Erstellt:** 2026-04-14T14:34:06.793Z
 
 ## Zusammenfassung
 

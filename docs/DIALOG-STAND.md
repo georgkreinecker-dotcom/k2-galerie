@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **Feinschliff / Ordnung** – `docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` erzeugte oft **nur Zeitstempel-Diffs** nach Tests. **Fix:** fester Hinweis in der **generierten** Datei (Test schreibt mit) + Eintrag in **docs/00-INDEX.md**; kein weiteres Root-Aufräumen (HAUS-INDEX listet Root-Markdown absichtlich). **Commit:** *(folgt)*
+
+**Was wir JETZT tun:** Wie zuvor K2 Familie (Inhaber-Ansicht / Deploy / Mobil testen); Arbeitsbaum soll nach `npm run test` nicht mehr „nur Protokoll-Zeit“ irritieren.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Inhaber-Arbeitsansicht** (voll / wie Bearbeiter / wie Leser) – **lokal pro Familie** (`familieInhaberAnsichtStorage`); **wirkt erst mit „Du“** (Erst-Einrichtung ohne Du = volle Inhaber-Rechte). **UI:** Leiste + Einstellungen-Karte; **Hinweis-Banner** „andere Inhaber:in“ nicht bei reduzierter Ansicht. **Context:** fehlender `inhaberArbeitsansicht`-State behoben. Tests `familieIdentitaet.test.ts`. **Commit:** **`5d4a2918`** ✅ GitHub
 
 **Was wir JETZT tun:** In K2 Familie als Inhaber:in **Einstellungen** oder **Leiste** – Arbeitsansicht wählen und im Alltag prüfen; bei Bedarf weiter Edge **`familie`** deployen (älterer offener Schritt).

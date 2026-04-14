@@ -320,6 +320,8 @@ describe('Upload-Download-Simulation (Protokoll)', () => {
       const lines: string[] = [
         '# Upload-Download-Simulation – Test-Protokoll',
         '',
+        '> **Hinweis:** Wird bei diesem Testlauf neu geschrieben. Oft ändert sich nur der Zeitstempel — dann Arbeitsbaum mit `git restore docs/TEST-PROTOKOLL-UPLOAD-DOWNLOAD.md` räumen oder den Stand bewusst committen.',
+        '',
         `**Erstellt:** ${new Date().toISOString()}`,
         '',
         '## Zusammenfassung',
