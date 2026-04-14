@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.04.26 – **K2 Familie: Stammbaum-Regeln nur Inhaber:in in Einstellungen** – Zwei getrennte Haken: **keine neuen Personen** (`stammbaumSchlusspunkt`) und **Personen löschen sperren** (`stammbaumPersonenLoeschenGesperrt`, Struktur schützen). Steuerung von der Stammbaum-Seite entfernt; dort nur Kurz-Hinweis + Link zu Einstellungen. `deletePersonWithCleanup` respektiert Sperre. Test `familieDeleteGuard.test.ts`. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 14.04.26 – **K2 Familie: Stammbaum-Regeln nur Inhaber:in in Einstellungen** – Zwei getrennte Haken: **keine neuen Personen** (`stammbaumSchlusspunkt`) und **Personen löschen sperren** (`stammbaumPersonenLoeschenGesperrt`, Struktur schützen). Steuerung von der Stammbaum-Seite entfernt; dort nur Kurz-Hinweis + Link zu Einstellungen. `deletePersonWithCleanup` respektiert Sperre. Test `familieDeleteGuard.test.ts`. **Commit:** **`7dd28b9e`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Einstellungen als Inhaber:in – beide Optionen kurz prüfen; Person löschen mit/ohne Sperre.
 
