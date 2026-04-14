@@ -205,18 +205,34 @@ export default function K2FamilieHomePage() {
     return () => window.removeEventListener('hashchange', applyHash)
   }, [])
 
+  /** Anzeigename für Einladungs-URL: Gäste haben keinen gemeinsamen Speicher — ?fn= setzt den Namen beim ersten Öffnen. */
+  const familienAnzeigenameFuerEinladung = useMemo(() => {
+    const ausInput = familyDisplayNameInput.trim()
+    if (ausInput) return ausInput
+    return loadEinstellungen(currentTenantId).familyDisplayName?.trim() ?? ''
+  }, [currentTenantId, familyDisplayNameInput])
+
   /** Wie Galerie-QR (`publicLinks`): immer Produktions-Host (`APP_BASE_URL`), nie localhost — Scan am Handy sonst wertlos. */
-  const familieEinladungsUrl = useMemo(() => {
+  /** Kanonische URL mit t, z und optional fn — fürs Kopieren/Teilen (ohne v/_). */
+  const familieEinladungsUrlCanonical = useMemo(() => {
     const z = mitgliedsNummer.trim()
     if (!z) return ''
     const base = new URL(`${APP_BASE_URL}${PROJECT_ROUTES['k2-familie'].meineFamilie}`)
     base.searchParams.set('t', currentTenantId)
     base.searchParams.set('z', z)
-    return buildQrUrlWithBust(base.toString(), versionTimestamp)
-  }, [mitgliedsNummer, currentTenantId, versionTimestamp])
+    const fn = familienAnzeigenameFuerEinladung
+    if (fn) base.searchParams.set('fn', fn)
+    return base.toString()
+  }, [mitgliedsNummer, currentTenantId, familienAnzeigenameFuerEinladung])
+
+  /** QR: gleiche URL + Server-Stand + Cache-Bust (Regel Stand/QR). */
+  const familieEinladungsUrl = useMemo(() => {
+    if (!familieEinladungsUrlCanonical) return ''
+    return buildQrUrlWithBust(familieEinladungsUrlCanonical, versionTimestamp)
+  }, [familieEinladungsUrlCanonical, versionTimestamp])
 
   /** Familie + persönliche Mitgliedsnummer: ein Scan meldet Gerät in der Familie und ordnet „Du“ zu. */
-  const familiePersoenlicheEinladungsUrl = useMemo(() => {
+  const familiePersoenlicheEinladungsUrlCanonical = useMemo(() => {
     const z = mitgliedsNummer.trim()
     const m = persoenlicheMitgliedsNummerAufKarte
     if (!z || !m) return ''
@@ -224,8 +240,15 @@ export default function K2FamilieHomePage() {
     base.searchParams.set('t', currentTenantId)
     base.searchParams.set('z', z)
     base.searchParams.set('m', m)
-    return buildQrUrlWithBust(base.toString(), versionTimestamp)
-  }, [mitgliedsNummer, persoenlicheMitgliedsNummerAufKarte, currentTenantId, versionTimestamp])
+    const fn = familienAnzeigenameFuerEinladung
+    if (fn) base.searchParams.set('fn', fn)
+    return base.toString()
+  }, [mitgliedsNummer, persoenlicheMitgliedsNummerAufKarte, currentTenantId, familienAnzeigenameFuerEinladung])
+
+  const familiePersoenlicheEinladungsUrl = useMemo(() => {
+    if (!familiePersoenlicheEinladungsUrlCanonical) return ''
+    return buildQrUrlWithBust(familiePersoenlicheEinladungsUrlCanonical, versionTimestamp)
+  }, [familiePersoenlicheEinladungsUrlCanonical, versionTimestamp])
 
   useEffect(() => {
     if (!familieEinladungsUrl) {
@@ -365,16 +388,16 @@ export default function K2FamilieHomePage() {
   }
 
   const kopiereFamilieEinladungslink = () => {
-    if (!familieEinladungsUrl) return
-    void navigator.clipboard.writeText(familieEinladungsUrl).then(() => {
+    if (!familieEinladungsUrlCanonical) return
+    void navigator.clipboard.writeText(familieEinladungsUrlCanonical).then(() => {
       setEinladungsLinkKopiert(true)
       window.setTimeout(() => setEinladungsLinkKopiert(false), 2200)
     })
   }
 
   const kopierePersoenlichenEinladungslink = () => {
-    if (!familiePersoenlicheEinladungsUrl) return
-    void navigator.clipboard.writeText(familiePersoenlicheEinladungsUrl).then(() => {
+    if (!familiePersoenlicheEinladungsUrlCanonical) return
+    void navigator.clipboard.writeText(familiePersoenlicheEinladungsUrlCanonical).then(() => {
       setPersoenlicherLinkKopiert(true)
       window.setTimeout(() => setPersoenlicherLinkKopiert(false), 2200)
     })
@@ -963,6 +986,35 @@ export default function K2FamilieHomePage() {
               </p>
             )}
             <h3 style={{ margin: '0.75rem 0 0.4rem', fontSize: '0.98rem', fontWeight: 700, color: a.accent, fontFamily: a.fontHeading }}>Familien-Zugang</h3>
+            <p
+              style={{
+                margin: '0 0 0.5rem',
+                lineHeight: 1.45,
+                color: a.text,
+                fontSize: '0.9rem',
+              }}
+            >
+              <span style={{ color: a.muted }}>Gilt für diese Familie:</span>{' '}
+              <strong style={{ color: a.text }}>{getFamilieTenantDisplayName(currentTenantId, 'Familie')}</strong>
+            </p>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.76rem', lineHeight: 1.45, color: a.muted }}>
+              Im Link/QR steht die technische Kennung{' '}
+              <code
+                style={{
+                  fontFamily: 'ui-monospace, monospace',
+                  fontSize: '0.85em',
+                  color: a.text,
+                  background: a.bgElevated,
+                  padding: '0.1rem 0.35rem',
+                  borderRadius: 4,
+                  border: '1px solid rgba(181, 74, 30, 0.2)',
+                }}
+              >
+                t={currentTenantId}
+              </code>{' '}
+              — die muss zu genau dieser Familie gehören. Steht unten ein Name, ist er zusätzlich als{' '}
+              <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85em' }}>fn=…</code> im Link — damit Gäste denselben Namen sehen (ohne euren Speicher).
+            </p>
             <p style={{ margin: '0 0 0.85rem', lineHeight: 1.45, color: a.muted, fontSize: '0.82rem' }}>
               {kannInstanz ? (
                 <>
@@ -1131,7 +1183,13 @@ export default function K2FamilieHomePage() {
                 <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>QR Familie (Einstieg)</div>
                 {qrDataUrl ? (
                   <div>
-                    <img src={qrDataUrl} alt="QR-Code zum Öffnen dieser Familie mit Zugangscode" width={168} height={168} style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }} />
+                    <img
+                      src={qrDataUrl}
+                      alt={`Einladung ${getFamilieTenantDisplayName(currentTenantId, 'Familie')}: App öffnen mit Zugangsnummer`}
+                      width={168}
+                      height={168}
+                      style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }}
+                    />
                     <button
                       type="button"
                       onClick={kopiereFamilieEinladungslink}
@@ -1248,14 +1306,14 @@ export default function K2FamilieHomePage() {
                       </p>
                     ) : null}
                   </div>
-                  {persoenlicherQrDataUrl && familiePersoenlicheEinladungsUrl ? (
+                  {persoenlicherQrDataUrl && familiePersoenlicheEinladungsUrlCanonical ? (
                     <div style={{ textAlign: 'left', maxWidth: 200 }}>
                       <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
                         Dein persönlicher QR{ichName ? ` (${ichName})` : ''}
                       </div>
                       <img
                         src={persoenlicherQrDataUrl}
-                        alt=""
+                        alt={`Persönlicher Zugang ${getFamilieTenantDisplayName(currentTenantId, 'Familie')}${ichName ? `, ${ichName}` : ''}`}
                         width={168}
                         height={168}
                         style={{ display: 'block', borderRadius: 12, border: '1px solid rgba(181, 74, 30, 0.25)' }}

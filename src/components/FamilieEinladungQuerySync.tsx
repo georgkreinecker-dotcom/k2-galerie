@@ -1,12 +1,12 @@
 /**
- * Verarbeitet ?t= (Tenant), ?z= (Familien-Zugangsnummer) und ?m= (persönliche Mitgliedsnummer) für alle K2-Familie-Routen im Layout.
+ * Verarbeitet ?t= (Tenant), ?z= (Familien-Zugangsnummer), ?m= (persönliche Mitgliedsnummer)
+ * und optional ?fn= (Familien-Anzeigename für Empfänger:innen ohne eure localStorage-Daten).
  * Vorher nur auf „Meine Familie“ – ein Scan auf /einstieg oder nach Index-Redirect landete ohne Umschalten.
  */
 
 import { useLayoutEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { findPersonIdByMitgliedsNummer } from '../utils/familieMitgliedsNummer'
@@ -17,22 +17,23 @@ export const K2_FAMILIE_EINSTELLUNGEN_UPDATED = K2_FAMILIE_SESSION_UPDATED
 export function FamilieEinladungQuerySync() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { currentTenantId, tenantList, setCurrentTenantId, ensureTenantInListAndSelect } = useFamilieTenant()
-  const { capabilities } = useFamilieRolle()
-  const kannInstanz = capabilities.canManageFamilienInstanz
-
   useLayoutEffect(() => {
     const tRaw = searchParams.get('t')?.trim()
     /** Gleiche Schreibweise wie in Keys (u. a. UUID aus Einladung in Kleinbuchstaben). */
     const t = tRaw ? tRaw.toLowerCase() : undefined
     const z = searchParams.get('z')?.trim()
     const m = searchParams.get('m')?.trim()
-    if (!t && !z && !m) return
+    /** Kurz: Anzeigename mitschicken, damit Gäste nicht „Neue Familie …“ sehen (kein gemeinsamer Speicher). */
+    const fnRaw = searchParams.get('fn')?.trim()
+    const fn = fnRaw ? fnRaw.slice(0, 240) : ''
+    if (!t && !z && !m && !fn) return
 
     const strip = () => {
       const next = new URLSearchParams(searchParams)
       next.delete('t')
       next.delete('z')
       next.delete('m')
+      next.delete('fn')
       next.delete('v')
       next.delete('_')
       setSearchParams(next, { replace: true })
@@ -61,18 +62,29 @@ export function FamilieEinladungQuerySync() {
         strip()
         return
       }
-      if (z && kannInstanz) {
+      /** Einladung: `z` gilt für alle (Gäste brauchen die Nummer im Speicher, nicht nur Inhaber:innen). */
+      if (z) {
         const einst = loadEinstellungen(t)
         saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })
+      }
+      if (fn) {
+        const einst = loadEinstellungen(t)
+        if (!einst.familyDisplayName?.trim()) {
+          saveEinstellungen(t, { ...einst, familyDisplayName: fn })
+        }
       }
       applyPersoenlicheMitgliedsNummer(t, m)
       strip()
       return
     }
     if (!t && z) {
-      if (kannInstanz) {
-        const einst = loadEinstellungen(currentTenantId)
-        saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })
+      const einst = loadEinstellungen(currentTenantId)
+      saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })
+      if (fn) {
+        const e2 = loadEinstellungen(currentTenantId)
+        if (!e2.familyDisplayName?.trim()) {
+          saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })
+        }
       }
       applyPersoenlicheMitgliedsNummer(currentTenantId, m)
       strip()
@@ -80,6 +92,14 @@ export function FamilieEinladungQuerySync() {
     }
     if (!t && !z && m) {
       applyPersoenlicheMitgliedsNummer(currentTenantId, m)
+      strip()
+      return
+    }
+    if (!t && !z && !m && fn) {
+      const einst = loadEinstellungen(currentTenantId)
+      if (!einst.familyDisplayName?.trim()) {
+        saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: fn })
+      }
       strip()
     }
   }, [
@@ -89,7 +109,6 @@ export function FamilieEinladungQuerySync() {
     ensureTenantInListAndSelect,
     setSearchParams,
     currentTenantId,
-    kannInstanz,
   ])
 
   return null
