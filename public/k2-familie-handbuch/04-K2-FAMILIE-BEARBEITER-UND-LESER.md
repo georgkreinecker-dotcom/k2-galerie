@@ -21,7 +21,6 @@ Hier geht es um die Rollen **Bearbeiter:in** und **Leser:in**: was Sie **sehen**
 
 Einzelheiten können sich je nach **App-Version** leicht unterscheiden. Maßgeblich sind die **Beschriftungen** und **Sperren** auf dem Bildschirm.
 
-[SEITENUMBRUCH]
 
 ## 2. Rolle **Bearbeiter:in**
 
@@ -33,7 +32,6 @@ Einzelheiten können sich je nach **App-Version** leicht unterscheiden. Maßgebl
 
 Unsicher, ob ein Bereich für Sie **schreibbar** ist? Fehlt ein Speichern für strukturelle Änderungen oder weist ein Hinweis auf die **Inhaber:in** – dann ist das **so gewollt**.
 
-[SEITENUMBRUCH]
 
 ## 3. Rolle **Leser:in**
 
@@ -45,7 +43,6 @@ Unsicher, ob ein Bereich für Sie **schreibbar** ist? Fehlt ein Speichern für s
 
 **Merksatz:** *Überall lesen – schreiben dort, wo es **Ihre** Karte oder der Gedenkort ist.*
 
-[SEITENUMBRUCH]
 
 ## 4. Persönlicher Code und Einladungslink
 
@@ -53,7 +50,6 @@ Unsicher, ob ein Bereich für Sie **schreibbar** ist? Fehlt ein Speichern für s
 - Ein **Einladungslink** (mit Familien- und ggf. persönlichen Angaben in der Adresse) kann Sie **direkt** zu Ihrer Rolle und Karte führen, wenn die Daten auf dem **Server** aktuell sind.
 - **Tipp:** Code und Link **nicht** öffentlich teilen – nur an Menschen, die wirklich dazugehören.
 
-[SEITENUMBRUCH]
 
 ## 5. Kurz-Checkliste
 

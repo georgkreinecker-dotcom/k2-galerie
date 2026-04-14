@@ -12,7 +12,6 @@
 
 **Merksatz:** Grafik = **ansehen und verstehen**, nicht tippen wie in einem Formular.
 
-[SEITENUMBRUCH]
 
 ## 2. **Drucken und PDF** (Bereich 4)
 
@@ -24,7 +23,6 @@
 
 **Merksatz:** Druck = **Ausgabe** dessen, was in den Karten steht – vorher Daten prüfen, dann passt der Ausdruck.
 
-[SEITENUMBRUCH]
 
 ## 3. Kurz-Checkliste
 

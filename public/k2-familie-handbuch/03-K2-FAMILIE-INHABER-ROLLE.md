@@ -17,7 +17,6 @@ Die folgenden Abschnitte beschreiben, was das **praktisch** bedeutet. **Grundlag
 
 Als **Inhaber:in** sehen Sie alle Bereiche, die für Bearbeiter:innen oder Leser:innen **gesperrt** oder nur **lesbar** sind – **zusätzlich** zu den Flächen, die alle nutzen dürfen.
 
-[SEITENUMBRUCH]
 
 ## 2. Familienstruktur – der **einfachste** Weg
 
@@ -32,7 +31,6 @@ Als Inhaber:in bauen Sie den Stammbaum am **wenigsten fehleranfällig** auf, wen
 
 **Kurz:** Am schnellsten zum stimmigen Bild = **Grundstruktur** bei **null Personen**; am **präzisesten beim Nachziehen** = **Neu als …** auf der Karte. Technische Details und alle Orte: [Die Personenkarte – wo Karten angelegt werden](02-DIE-PERSONENKARTE.md) und [Stammbaum – Funktionen](05-STAMMBAUM-FUNKTIONEN.md).
 
-[SEITENUMBRUCH]
 
 ## 3. Nur für die Inhaber:in
 
@@ -44,7 +42,6 @@ Als Inhaber:in bauen Sie den Stammbaum am **wenigsten fehleranfällig** auf, wen
 
 **Struktur** an fremden Karten (wer gehört wohin, Beziehungen, Löschen im erlaubten Rahmen) ist Ihre Aufgabe. **Bearbeiter:innen** pflegen vor allem **Inhalte** – Texte, Geschichte, Termine –, nicht den **Kern** des Stammbaums.
 
-[SEITENUMBRUCH]
 
 ## 4. Arbeitsansicht (ohne die Rolle zu wechseln)
 
@@ -58,7 +55,6 @@ Manche Inhaber:innen möchten zeitweise **nur lesen** oder **wie ein Bearbeiter*
 
 Das ist eine **Ansicht** für den Alltag – kein Wechsel der **gespeicherten** Rolle. Praktisch, wenn Sie prüfen wollen, was andere sehen.
 
-[SEITENUMBRUCH]
 
 ## 4. Sicherung – ruhig und vorsichtig
 
@@ -68,7 +64,6 @@ Das ist eine **Ansicht** für den Alltag – kein Wechsel der **gespeicherten** 
 
 Unter **Einstellungen** in der App finden Sie **Sicherung** und die dazugehörigen Hinweise.
 
-[SEITENUMBRUCH]
 
 ## 6. Zugang, persönliche Codes, Einladungen
 
@@ -76,7 +71,6 @@ Unter **Einstellungen** in der App finden Sie **Sicherung** und die dazugehörig
 - **Links** in der Adresse können Gäste **zu Ihrer Familie** und optional **direkt zur richtigen Karte** führen, wenn der Code passt.
 - Wenn jemand „kommt nicht hin“: Prüfen Sie, ob die Daten auf dem **Server** den **gleichen Stand** haben wie bei Ihnen – nach **Speichern** und **Sync** gilt der Code überall.
 
-[SEITENUMBRUCH]
 
 ## 7. Anfang und Alltag
 
@@ -86,7 +80,6 @@ Unter **Einstellungen** in der App finden Sie **Sicherung** und die dazugehörig
 
 **Im Team:** Sprechen Sie **einmal** ab, wer welche Rolle hat. Viele Irritationen kommen daher, dass jemand meint, als Bearbeiter:in den **ganzen** Stammbaum ändern zu dürfen – die App verhindert das bewusst.
 
-[SEITENUMBRUCH]
 
 ## 7. Andere einbinden – ohne die Hoheit zu verlieren
 
@@ -97,7 +90,6 @@ Sie können **Bearbeiter:innen** und **Leser:innen** einladen und behalten die *
 
 Die Rolle **Inhaber:in** sollte **knapp** besetzt sein: oft **eine** Person pro Familie – außer Sie planen eine **Übergabe** (siehe **Einstellungen** in der App).
 
-[SEITENUMBRUCH]
 
 ## 9. Häufige Missverständnisse
 
@@ -108,7 +100,6 @@ Die Rolle **Inhaber:in** sollte **knapp** besetzt sein: oft **eine** Person pro 
 | „Eine Sicherung auf dem Handy reicht.“ | **Nein.** Legen Sie Kopien **zusätzlich** an einem zweiten Ort ab (Rechner, externes Medium). |
 | „Der persönliche Code ist ein Passwort.“ | Es ist ein **Zuordnungscode** zur Person in **Ihrer** Familie. **Vertraulich** behandeln. Er ersetzt **keinen** geschützten Verwaltungs-Zugang; er ordnet Sie Ihrer **Karte** zu. |
 
-[SEITENUMBRUCH]
 
 ## 10. Kurz-Checkliste für Inhaber:innen
 

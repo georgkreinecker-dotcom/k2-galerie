@@ -14,7 +14,6 @@ Wenn Sie dieses eine Prinzip verstanden haben, wird der Rest der App **viel klar
 
 **Kurz:** Die App **speichert und zeigt** die Familie **kartenweise**. Die Personenkarte ist die **Quelle**; der Baum ist die **Darstellung**.
 
-[SEITENUMBRUCH]
 
 ## 2. Wo und wie werden Personenkarten angelegt?
 
@@ -41,7 +40,6 @@ Nach dem Anlegen landen Sie in der Regel **direkt auf der Personenkarte** der ne
 
 *Hinweis:* Wenn die Inhaber:in den Stammbaum mit einem **Schlusspunkt** abgeschlossen hat, können manche „Neu anlegen“-Schritte eingeschränkt sein – dann gilt die vereinbarte Arbeitsweise in der Familie.
 
-[SEITENUMBRUCH]
 
 ## 3. Was auf der Karte lebt (Überblick)
 
@@ -58,7 +56,6 @@ Je nach App-Stand finden Sie auf oder an der Personenkarte unter anderem:
 
 **Wichtig:** Was **strukturell** ist (wer ist wessen Elternteil, wer ist Partner von wem), gehört zur **Karte und ihren Verknüpfungen** – das steuert vor allem die **Inhaber:in**. Was **inhaltlich** ist (Texte, Termine, Chronik), können **Bearbeiter:innen** mit pflegen – **Leser:innen** vor allem auf der **eigenen** Karte.
 
-[SEITENUMBRUCH]
 
 ## 4. Beziehungen – nur aus den Karten
 
@@ -69,7 +66,6 @@ Je nach App-Stand finden Sie auf oder an der Personenkarte unter anderem:
 
 Wenn Sie unsicher sind: **Erst** die Karten und Beziehungen prüfen, **dann** Texte und Geschichten ergänzen.
 
-[SEITENUMBRUCH]
 
 ## 5. Eigene Karte, fremde Karte – was darf wer?
 
@@ -81,7 +77,6 @@ Wenn Sie unsicher sind: **Erst** die Karten und Beziehungen prüfen, **dann** Te
 
 Die **Rollen** schneiden genau hier an: **Leser** an der eigenen Karte, **Bearbeiter** am Inhalt, **Inhaber** an der **Struktur** der Karten insgesamt. Details: [Bearbeiter und Leser](04-K2-FAMILIE-BEARBEITER-UND-LESER.md).
 
-[SEITENUMBRUCH]
 
 ## 6. Persönlicher Code und „meine“ Karte
 
@@ -90,7 +85,6 @@ Der **persönliche Code** (Kürzel aus Buchstaben und Ziffern) ordnet **Sie** Ih
 - **Einladungslinks** in der App können Familie **und** optional **Ihre Karte** adressieren – damit neue Menschen **landen**, wo sie hingehören.
 - Ohne passende Karte und Zuordnung wird aus der schönsten Oberfläche kein verlässlicher Stammbaum – **deshalb** ist die Personenkarte die **Quelle**.
 
-[SEITENUMBRUCH]
 
 ## 7. Kurz-Checkliste
 

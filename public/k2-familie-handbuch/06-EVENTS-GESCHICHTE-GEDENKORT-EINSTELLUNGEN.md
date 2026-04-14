@@ -16,7 +16,6 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wer darf:** **Bearbeiter:innen** und **Inhaber:innen** pflegen die „organischen“ Inhalte (Events gehören dazu); **Leser:innen** lesen mit, bearbeiten hier in der Regel nicht. Details: [Bearbeiter und Leser](04-K2-FAMILIE-BEARBEITER-UND-LESER.md).
 
-[SEITENUMBRUCH]
 
 ## 2. **Kalender** (Übersicht nach Datum)
 
@@ -24,7 +23,6 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wofür:** **Zeitliche Übersicht** – die App zeigt **Familien-Events** und **Momente** (von den Personenkarten) **nach Datum** gruppiert. Das ist eine **Leseliste** zum Durchblättern, kein separater Eingabeort: neue Events legen Sie unter **Events** an, Momente an der **Personenkarte**.
 
-[SEITENUMBRUCH]
 
 ## 3. **Zusammenfassende Geschichte**
 
@@ -36,7 +34,6 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wer darf:** wie bei Events – **organische** Bearbeitung durch Bearbeiter:innen und Inhaber:innen (siehe Rollen-Kapitel).
 
-[SEITENUMBRUCH]
 
 ## 4. **Gedenkort**
 
@@ -48,7 +45,6 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wer darf:** **Inhaber:innen** und **Bearbeiter:innen** wie andere organische Inhalte; **Leser:innen** können je nach Freigabe **eigene** Gaben eintragen (z. B. private Erinnerung), wenn die App das vorsieht.
 
-[SEITENUMBRUCH]
 
 ## 5. **Einstellungen**
 
@@ -69,7 +65,6 @@ Neben **Stammbaum** und **Personenkarten** finden Sie in K2 Familie weitere Bere
 
 **Wer was sieht:** **Leser:innen** sehen z. B. keine vollständige Verwaltung; **Sicherung wiederherstellen** bleibt der **Inhaber:in**. Orientierung: [Rolle Inhaber:in](03-K2-FAMILIE-INHABER-ROLLE.md).
 
-[SEITENUMBRUCH]
 
 ## 6. Kurz-Checkliste
 

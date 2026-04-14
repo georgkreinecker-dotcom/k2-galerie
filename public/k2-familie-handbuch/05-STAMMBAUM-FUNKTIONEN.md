@@ -26,7 +26,6 @@ Oben sehen Sie den **Anzeigenamen** Ihrer Familie (z. B. „Familie …“). M
 
 **Merksatz:** *Nach unten / Nach oben* = **sortierte Kartenlisten**. *Grafik / Drucken* = **Überblick oder Ausdruck**, weniger Tippen auf der Listen-Seite.
 
-[SEITENUMBRUCH]
 
 ## 3. Wenn noch **keine Person** angelegt ist
 
@@ -53,7 +52,6 @@ Schalter **„Nur mein Zweig in der Liste“** (mit **Info**-Icon):
 
 Das **blendet keine Daten aus dem Speicher** – es **filtert nur die Anzeige** der Kartenliste.
 
-[SEITENUMBRUCH]
 
 ## 6. **Kartenliste:** Blöcke, Farben, **Verstorbene**
 
@@ -78,7 +76,6 @@ Mit **Strukturrecht** finden Sie u. a.:
 - **Wo** Sie außerdem Karten anlegen (Grundstruktur-Assistent, erste Person, **Neu als …** auf einer Karte): [Die Personenkarte](02-DIE-PERSONENKARTE.md), Abschnitt *Wo und wie werden Personenkarten angelegt?*
 - Je nach Datenlage können **zusätzliche Hilfs-Buttons** erscheinen (z. B. zum **Ergänzen von Partnern** oder **Geschwistern** in einem definierten Muster). Das sind **Abkürzungen beim Aufbau**, keine Pflicht – Ihre Familie kann auch **nur manuell** gewachsen werden.
 
-[SEITENUMBRUCH]
 
 ## 9. **Grafik** (Bereich 3)
 
@@ -125,7 +122,6 @@ Nach **„Druckvorschau & Drucken“** öffnet sich die **Druckansicht**; im Sys
 
 **Katalog-Spalten** dauerhaft anpassen: nur mit **Schreibrecht** (Häkchen werden gespeichert).
 
-[SEITENUMBRUCH]
 
 ## 11. Kurz-Checkliste Stammbaum
 

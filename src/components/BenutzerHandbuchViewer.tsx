@@ -215,7 +215,7 @@ export default function BenutzerHandbuchViewer({
         i++; continue
       }
       if (trimmed.toUpperCase() === '[SEITENUMBRUCH]') {
-        out.push(<div key={key()} className="benutzer-seitenumbruch" aria-hidden><span className="benutzer-seitenumbruch-label">— Seitenumbruch (beim Drucken: neue Seite) —</span></div>)
+        out.push(<div key={key()} className="benutzer-seitenumbruch" aria-hidden><span className="benutzer-seitenumbruch-label">— Abschnitt —</span></div>)
         i++; continue
       }
       if (line.startsWith('# ')) {
@@ -346,7 +346,7 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-druck-inhalt { font-size: 10.5pt; line-height: 1.5; }
     .benutzer-print-preview .benutzer-seitenfuss-zeile { display: block !important; margin-top: 1.5rem; padding-top: 0.5rem; border-top: 1px solid #e5e7eb; font-size: 0.8rem; color: #6b7280; }
     .benutzer-deckblatt { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 2rem; page-break-after: always; background: linear-gradient(160deg, #1c1a18 0%, #2d2a26 50%, #1c1a18 100%); color: #fff; }
-    .benutzer-druck-kapitel { page-break-before: always; padding: 1.5rem 1.5rem 3rem; }
+    .benutzer-druck-kapitel { page-break-before: auto; padding: 1.5rem 1.5rem 3rem; }
     .benutzer-druck-kapitel:first-of-type { page-break-before: auto; }
     .benutzer-impressum-seite { page-break-before: always; }
     .benutzer-handbuch-wrapper .seitenfuss { display: none; }
@@ -362,7 +362,7 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-druck-inhalt .benutzer-hr { margin: 0.4rem 0; }
     .benutzer-print-preview .benutzer-druck-inhalt .benutzer-ul { margin: 0.25rem 0 0.4rem 1.25rem; }
     .benutzer-print-preview .benutzer-druck-inhalt .benutzer-li { margin-bottom: 0.15rem; }
-    .benutzer-print-preview .benutzer-druck-kapitel { page-break-before: unset; padding: 0.75rem 1rem 0.25rem; }
+    .benutzer-print-preview .benutzer-druck-kapitel { page-break-before: unset; padding: 0.4rem 0.75rem 0.15rem; }
     .benutzer-print-preview .benutzer-druck-kapitel:first-of-type { padding: 0.4rem 1rem 0.2rem; }
     .benutzer-print-preview .benutzer-druck-kapitel:first-of-type .benutzer-h1 { margin: 0.35rem 0 0.2rem; font-size: 1.15rem; }
     .benutzer-print-preview .benutzer-druck-kapitel:first-of-type .benutzer-h2 { margin: 0.25rem 0 0.2rem; font-size: 1rem; padding-bottom: 0.2rem; }
@@ -373,9 +373,20 @@ export default function BenutzerHandbuchViewer({
     .benutzer-print-preview .benutzer-druck-kapitel h2 { font-size: 1.1rem; margin: 0 0 0.5rem; padding-bottom: 0.35rem; }
     .benutzer-print-preview .benutzer-leerzeile { height: 0.25rem; }
     .benutzer-print-preview .benutzer-impressum-seite { page-break-before: unset; }
-    .benutzer-print-preview { background: #9ca3af !important; padding: 1.5rem 1rem !important; }
+    .benutzer-print-preview { background: #9ca3af !important; padding: 0.75rem 0.5rem !important; }
     .benutzer-print-preview .benutzer-handbuch-wrapper { max-width: none; }
-    .benutzer-print-preview .benutzer-a4-vorschau { width: 210mm; max-width: 100%; margin: 0 auto 2rem; min-height: 297mm; padding: 0 10mm 2rem; background: #fff; border: 2px solid #6b7280; box-shadow: 0 4px 20px rgba(0,0,0,0.2); box-sizing: border-box; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(297mm - 1px), #9ca3af calc(297mm - 1px), #9ca3af 297mm); }
+    /* Kein min-height A4 + kein Streifenmuster – sonst wirken riesige Leerflächen in der Vorschau */
+    .benutzer-print-preview .benutzer-a4-vorschau {
+      width: 210mm;
+      max-width: 100%;
+      margin: 0 auto 1rem;
+      min-height: 0;
+      padding: 8mm 10mm 10mm;
+      background: #fff;
+      border: 1px solid #9ca3af;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      box-sizing: border-box;
+    }
     @media (max-width: 768px) {
       .benutzer-handbuch-wrapper { padding: 0.75rem 0.5rem !important; }
       .benutzer-handbuch-wrapper .benutzer-header-wrap { flex-direction: column; align-items: stretch; gap: 0.75rem; margin-bottom: 1rem; }
@@ -406,42 +417,44 @@ export default function BenutzerHandbuchViewer({
       .benutzer-handbuch-wrapper .benutzer-h2 { font-size: 1rem !important; margin: 0.25rem 0 0.15rem !important; }
       .benutzer-handbuch-wrapper .benutzer-h3 { font-size: 0.9rem !important; margin: 0.2rem 0 0.12rem !important; }
       .benutzer-handbuch-wrapper .benutzer-hr { margin: 0.2rem 0 !important; }
-      .benutzer-handbuch-wrapper .benutzer-p { margin: 0 0 0.1rem !important; line-height: 1.26 !important; font-size: 8.5pt !important; }
+      .benutzer-handbuch-wrapper .benutzer-p { margin: 0 0 0.08rem !important; line-height: 1.2 !important; font-size: 7.5pt !important; }
       .benutzer-handbuch-wrapper .benutzer-strong, .benutzer-handbuch-wrapper .benutzer-em { margin: 0 0 0.1rem !important; }
       .benutzer-handbuch-wrapper .benutzer-ul { margin: 0.12rem 0 0.18rem 1rem !important; padding-left: 0.2rem !important; }
       .benutzer-handbuch-wrapper .benutzer-li { margin-bottom: 0.05rem !important; line-height: 1.3 !important; }
       .benutzer-handbuch-wrapper .benutzer-hr { margin: 0.15rem 0 !important; }
       .benutzer-handbuch-wrapper .benutzer-table-wrap { margin: 0.2rem 0 !important; }
-      .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.12rem 0.3rem !important; font-size: 8.5pt !important; }
+      .benutzer-handbuch-wrapper .benutzer-table th, .benutzer-handbuch-wrapper .benutzer-table td { padding: 0.08rem 0.25rem !important; font-size: 7.5pt !important; }
       .benutzer-handbuch-wrapper .benutzer-leerzeile { height: 0.1rem !important; }
       .benutzer-handbuch-grid { display: block !important; }
       .benutzer-handbuch-article { max-width: 100% !important; padding: 0 0 4mm !important; border: none !important; box-shadow: none !important; }
-      .benutzer-druck-inhalt { font-size: 8.5pt !important; line-height: 1.26 !important; }
-      .benutzer-druck-kapitel { padding: 0.1rem 0 0.25rem !important; break-inside: avoid !important; }
+      .benutzer-druck-inhalt { font-size: 7.5pt !important; line-height: 1.2 !important; }
+      .benutzer-druck-kapitel { padding: 0.08rem 0 0.2rem !important; break-inside: auto !important; page-break-before: auto !important; }
       .benutzer-druck-kapitel:first-of-type { padding: 0.1rem 0 0.25rem !important; }
       .benutzer-druck-kapitel:first-of-type .benutzer-h1 { margin: 0.2rem 0 0.12rem !important; font-size: 1.1rem !important; }
       .benutzer-druck-kapitel:first-of-type .benutzer-h2 { margin: 0.15rem 0 0.1rem !important; font-size: 0.95rem !important; padding-bottom: 0.08rem !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-p { margin: 0 0 0.08rem !important; line-height: 1.24 !important; font-size: 8pt !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-p { margin: 0 0 0.08rem !important; line-height: 1.2 !important; font-size: 7.5pt !important; }
       .benutzer-druck-kapitel:first-of-type .benutzer-hr { margin: 0.12rem 0 !important; }
       .benutzer-druck-kapitel:first-of-type .benutzer-table-wrap { margin: 0.12rem 0 !important; }
-      .benutzer-druck-kapitel:first-of-type .benutzer-table th, .benutzer-druck-kapitel:first-of-type .benutzer-table td { padding: 0.1rem 0.25rem !important; font-size: 8pt !important; }
+      .benutzer-druck-kapitel:first-of-type .benutzer-table th, .benutzer-druck-kapitel:first-of-type .benutzer-table td { padding: 0.08rem 0.2rem !important; font-size: 7.5pt !important; }
       .benutzer-druck-kapitel:first-of-type .benutzer-strong { margin: 0 0 0.1rem !important; }
-      .benutzer-impressum-seite { page-break-before: always !important; }
+      .benutzer-impressum-seite { page-break-before: auto !important; }
       .benutzer-druck-kapitel h2 { font-size: 1rem !important; margin: 0 0 0.2rem !important; padding-bottom: 0.1rem !important; }
-      .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.5rem 0.75rem !important; }
+      .benutzer-deckblatt { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0.35rem 0.6rem !important; page-break-after: auto !important; }
       .benutzer-deckblatt h1 { margin: 0.4rem 0 0.25rem !important; font-size: 1.2rem !important; }
       .benutzer-deckblatt p { margin: 0 !important; }
       .benutzer-deckblatt .benutzer-deckblatt-fuss { margin-top: 0.5rem !important; padding-top: 0.35rem !important; }
       .benutzer-seitenfuss-zeile { margin-top: 0.35rem; padding-top: 0.15rem; font-size: 6.5pt; color: #6b7280; }
       .benutzer-seitenfuss-zeile::after { content: " · Seite " counter(page) " von " counter(pages); }
       .benutzer-table-wrap, .benutzer-fussnote-block { break-inside: avoid; }
-      .benutzer-seitenumbruch { page-break-before: always !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; }
+      /* Keine harten Seitenumbrüche aus [SEITENUMBRUCH] – sonst explodiert die Seitenzahl (Handbuch kompakt) */
+      .benutzer-seitenumbruch { page-break-before: auto !important; margin: 0 !important; padding: 0 !important; border: none !important; min-height: 0 !important; height: 0 !important; overflow: hidden !important; }
       .benutzer-seitenumbruch .benutzer-seitenumbruch-label { display: none !important; }
       .benutzer-handbuch-wrapper .seitenfuss { display: block !important; position: fixed; bottom: 0; left: 0; right: 0; width: 100%; min-height: 5mm; padding: 2mm 8mm; font-size: 8pt; font-family: system-ui, sans-serif; color: #000 !important; background: #fff !important; border-top: 1px solid #ccc; line-height: 1.3; -webkit-print-color-adjust: exact; print-color-adjust: exact; z-index: 99999; }
       .benutzer-handbuch-wrapper .seitenfuss .seitenfuss-preview { display: none !important; }
       .benutzer-handbuch-wrapper .seitenfuss::after { content: "Seite " counter(page) " von " counter(pages); color: #000 !important; }
-      .benutzer-print-voll { padding-bottom: 8mm !important; }
-      @page { margin: 5mm 6mm 12mm 6mm; background: white; }
+      .benutzer-print-voll { padding-bottom: 6mm !important; }
+      .benutzer-a4-vorschau { min-height: 0 !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; width: 100% !important; max-width: 100% !important; background: #fff !important; background-image: none !important; }
+      @page { margin: 3mm 4mm 8mm 4mm; background: white; }
       html, body { background: #fff !important; color: #1c1a18 !important; }
       .benutzer-handbuch-wrapper { background: #fff !important; }
     }
@@ -476,10 +489,10 @@ export default function BenutzerHandbuchViewer({
       {printPreview ? (
         <>
           <p className="benutzer-no-print" style={{ maxWidth: '210mm', margin: '0 auto 0.75rem', fontSize: '0.85rem', color: '#374151', background: '#f3f4f6', padding: '0.5rem 0.75rem', borderRadius: 8, border: '1px solid #e5e7eb' }}>
-            <strong>Seitenumbruch festlegen:</strong> In den Handbuch-Dateien unter <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> an der gewünschten Stelle eine <strong>eigene Zeile</strong> einfügen: <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> – dort beginnt beim Drucken eine neue Seite.
+            <strong>Kompaktes Drucken:</strong> PDF nutzt <strong>fließenden Text</strong> (weniger Seiten). Optional eine Zeile <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>[SEITENUMBRUCH]</code> in <code style={{ background: '#e5e7eb', padding: '0.1rem 0.3rem', borderRadius: 4 }}>{printHintFolder}</code> nur als sichtbare <strong>Abschnittsmarkierung</strong> in der Vorschau – <strong>kein</strong> erzwungener Seitenumbruch im Druck.
           </p>
           <div className="benutzer-a4-vorschau">
-          <div className="benutzer-print-voll" style={{ paddingBottom: '3rem' }}>
+          <div className="benutzer-print-voll" style={{ paddingBottom: '1rem' }}>
           {printPreviewLoading ? (
             <div style={{ textAlign: 'center', padding: '4rem 2rem', color: '#6b7280' }}>Lade alle Kapitel für die Druckvorschau…</div>
           ) : (
