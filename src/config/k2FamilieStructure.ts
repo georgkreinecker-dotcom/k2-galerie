@@ -20,7 +20,7 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     chapterTitle: 'Start & Orientierung',
     sections: [
       { id: 'fam-willkommen', label: 'Einstiegsseite (Flyer/QR)', to: R.willkommen },
-      { id: 'fam-einstieg', label: 'Familien-Einstieg', to: R.einstieg },
+      { id: 'fam-einstieg', label: 'Musterfamilie (Umschauen)', to: `${R.einstieg}?t=huber` },
       { id: 'fam-home', label: 'Meine Familie', to: R.meineFamilie },
       { id: 'fam-uebersicht', label: 'Projekt & Leitbild', to: `${R.uebersicht}#k2-familie-lizenz-bruecke` },
     ],
@@ -57,10 +57,13 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
   },
 ]
 
-/** Pfad ohne Hash – für aktiven Zustand bei Links mit Anker (#) */
+/** Pfad ohne Query und Hash – für aktiven Zustand bei Links mit ?t=… oder Anker (#) */
 export function familiePathWithoutHash(to: string): string {
-  const i = to.indexOf('#')
-  return i >= 0 ? to.slice(0, i) : to
+  let s = to
+  const qi = s.indexOf('?')
+  if (qi >= 0) s = s.slice(0, qi)
+  const hi = s.indexOf('#')
+  return hi >= 0 ? s.slice(0, hi) : s
 }
 
 /** Aktiver Eintrag: eine Regel für horizontale Nav und Leitstruktur-Panel */

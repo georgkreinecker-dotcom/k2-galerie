@@ -1,13 +1,14 @@
 /**
  * K2 Familie – Einstieg B (gestaltbar, eigene Speicher-Keys).
- * Zwischen Marketing-Flyer (A) und „Meine Familie“ (C); Pflichtstation im gewünschten Besucherweg.
+ * Nur **Musterfamilie Huber** (Umschauen). Mit anderem Mandanten → Redirect „Meine Familie“ (tägliches Erlebnis).
  */
 
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useMemo } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilieEinstiegContent, getFamilieEinstiegTexts } from '../config/einstiegContentFamilie'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import '../App.css'
 
 const C = {
@@ -24,6 +25,10 @@ export default function K2FamilieEinstiegPage() {
   const texts = useMemo(() => getFamilieEinstiegTexts(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilieEinstiegContent(currentTenantId), [currentTenantId])
   const R = PROJECT_ROUTES['k2-familie']
+  /** Einstieg B = nur Musterfamilie (Umschauen). Mit gewählter eigener Familie direkt ins tägliche Erlebnis. */
+  if (currentTenantId !== FAMILIE_HUBER_TENANT_ID) {
+    return <Navigate to={R.meineFamilie} replace />
+  }
   const hero = content.heroImage?.trim() || ''
 
   return (

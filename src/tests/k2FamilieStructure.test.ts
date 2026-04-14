@@ -27,4 +27,10 @@ describe('isFamilieNavSectionActive', () => {
     expect(isFamilieNavSectionActive(`${R.uebersicht}/`, to)).toBe(true)
     expect(isFamilieNavSectionActive(R.home, to)).toBe(false)
   })
+
+  it('Link mit Query: Pfad für Aktiv-Vergleich ohne ?t=…', () => {
+    const to = `${R.einstieg}?t=huber`
+    expect(familiePathWithoutHash(to)).toBe(R.einstieg)
+    expect(isFamilieNavSectionActive(R.einstieg, to)).toBe(true)
+  })
 })

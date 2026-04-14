@@ -6,6 +6,7 @@
 import type { CSSProperties } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import K2FamilieVerwaltungZugangUndAnsicht from '../components/K2FamilieVerwaltungZugangUndAnsicht'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
@@ -66,7 +67,6 @@ export default function K2FamilieEinstellungenPage() {
   const { currentTenantId } = useFamilieTenant()
   const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const effRolle = capabilities.rolle
-  const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
   const showSicherung = capabilities.canExportSicherung
   const isLeser = effRolle === 'leser'
@@ -303,25 +303,7 @@ export default function K2FamilieEinstellungenPage() {
           </div>
         )}
 
-        <div style={card}>
-          <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
-            Zugang &amp; Name, QR-Code
-          </h2>
-          <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
-            {isLeser ? (
-              <>
-                Zugangsnummer, QR und „Du“: auf <strong style={{ color: a.text }}>Meine Familie</strong> unter „Zugang &amp; Name“.
-              </>
-            ) : (
-              <>
-                Zugangsnummer, QR für Familienmitglieder und Anzeigename („Du“) werden auf der Seite <strong style={{ color: a.text }}>Meine Familie</strong> im Bereich „Zugang &amp; Name“ gepflegt.
-              </>
-            )}
-          </p>
-          <Link to={`${R.meineFamilie}#k2-familie-zugang-name`} style={linkBtn}>
-            → Zu Zugang &amp; Name auf „Meine Familie“
-          </Link>
-        </div>
+        <K2FamilieVerwaltungZugangUndAnsicht />
 
         {kannInstanz && (
           <div style={{ ...card, borderLeftColor: '#0e7490' }}>
@@ -336,35 +318,6 @@ export default function K2FamilieEinstellungenPage() {
               → Zu Mitglieder &amp; Codes
             </Link>
           </div>
-        )}
-
-        {kannStruktur ? (
-          <div style={{ ...card, borderLeftColor: '#15803d' }}>
-            <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
-              Stammbaum-Ansicht (Du, Startpunkt, Partner-Zweig)
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
-              Startpunkt, Partner-Herkunft und wer „Du“ bist – auf „Meine Familie“ unter den einklappbaren Einstellungen.
-            </p>
-            <Link to={`${R.meineFamilie}#k2-familie-ansicht-einstellungen`} style={linkBtn}>
-              → Stammbaum-Ansicht einstellen
-            </Link>
-          </div>
-        ) : (
-          <p
-            style={{
-              margin: '0 0 1.15rem',
-              fontSize: '0.88rem',
-              color: a.muted,
-              lineHeight: 1.5,
-              padding: '0.65rem 0.85rem',
-              borderRadius: a.radius,
-              background: a.bgElevated,
-              border: '1px solid rgba(181, 74, 30, 0.12)',
-            }}
-          >
-            <strong style={{ color: a.text }}>Stammbaum-Ansicht</strong> (Startpunkt, „Du“) kann nur die Inhaber:in ändern. Den Stammbaum siehst du unter „Stammbaum“; persönliche Angaben auf deiner Karte unter „Meine Familie“.
-          </p>
         )}
 
         {showSicherung ? (

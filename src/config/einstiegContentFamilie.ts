@@ -1,6 +1,6 @@
 /**
- * K2 Familie – Einstiegsseite B (zwischen Flyer A und „Meine Familie“ C).
- * Eigene Keys – kein Teilen mit Marketing-Texten (A) und kein Teilen mit Homepage (C).
+ * K2 Familie – Texte für Einstieg B (nur Mandant huber / Musterfamilie).
+ * Eigene Keys pro Tenant – kein Teilen mit Marketing-Flyer (A) oder „Meine Familie“-Homepage (C).
  */
 
 export interface FamilieEinstiegTexts {
@@ -14,12 +14,13 @@ export interface FamilieEinstiegContent {
   heroImage?: string
 }
 
+/** Nur sichtbar bei Mandant „huber“ (Musterfamilie) – Umschauen ohne eigene Daten. */
 const DEFAULT_EINSTIEG_TEXTS: FamilieEinstiegTexts = {
-  title: 'Willkommen in eurer Familien-App',
-  subtitle: 'Hier startet euer gemeinsamer Bereich',
+  title: 'K2 Familie – Musterfamilie zum Umschauen',
+  subtitle: 'Demo: Familie Huber',
   body:
-    'Im nächsten Schritt gelangt ihr zur Übersicht „Meine Familie“ mit Stammbaum, Kalender und mehr. Diese Seite könnt ihr später unter Familie gestalten anpassen.',
-  ctaLabel: 'Weiter zu Meine Familie',
+    'Hier kannst du ohne eigene Daten stöbern: Stammbaum, Kalender und mehr. Für eure echte Familie legst du mit „Neue Familie“ eine Instanz an oder wählst sie oben im Menü.',
+  ctaLabel: 'Weiter zur Übersicht',
 }
 
 function textsKey(tenantId: string): string {

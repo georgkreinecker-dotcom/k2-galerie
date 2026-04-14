@@ -73,7 +73,7 @@ export default function K2FamilieWillkommenPage() {
           <p style={{ fontWeight: 700, marginBottom: '0.85rem', color: ACCENT }}>Ein Klick weiter</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
             <Link
-              to={R.einstieg}
+              to={`${R.einstieg}?t=huber`}
               style={{
                 display: 'block',
                 textAlign: 'center',
