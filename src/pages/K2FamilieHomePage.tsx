@@ -96,8 +96,13 @@ export default function K2FamilieHomePage() {
   const a = adminTheme
   const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
+  const rolle = capabilities.rolle
+  const isInhaber = rolle === 'inhaber'
+  const isBearbeiter = rolle === 'bearbeiter'
+  const isLeser = rolle === 'leser'
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
+  const showSicherungKachel = capabilities.canExportSicherung
   const [musterLoaded, setMusterLoaded] = useState(false)
   const [startpunkt, setStartpunkt] = useState<K2FamilieStartpunktTyp | undefined>(undefined)
   const [partnerHerkunftId, setPartnerHerkunftId] = useState<string>('')
@@ -149,6 +154,14 @@ export default function K2FamilieHomePage() {
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId])
   const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
   const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
+  /** Erste Seite: Leser minimal, Bearbeiter mittel, Inhaber voller Text aus den Seitentexten. */
+  const introForRole = useMemo(() => {
+    if (isInhaber) return texts.introText
+    if (isBearbeiter) {
+      return 'Du bearbeitest Texte, Events und Geschichten. Der Stammbaum ist lesbar; Struktur und Familien-Zugang richtet die Inhaber:in ein.'
+    }
+    return 'Hier liest du die Familie. Auf deiner eigenen Karte ergänzt du persönliches – ohne den Stammbaum zu verändern.'
+  }, [isInhaber, isBearbeiter, texts.introText])
   const welcomeImage = content.welcomeImage || ''
 
   const reloadEinstellungenAusSpeicher = useCallback(() => {
@@ -895,53 +908,82 @@ export default function K2FamilieHomePage() {
         >
           <div style={{ maxWidth: 920, margin: '0 auto' }}>
           <p style={{ margin: '0 0 1.15rem', fontSize: '0.98rem', lineHeight: 1.6, color: a.muted }}>
-            {texts.introText}
+            {introForRole}
           </p>
 
-          {/* Ampel: erste Einrichtung (nur Hinweis, keine Pflichtlogik) */}
-          <div
-            style={{
-              marginBottom: '1.25rem',
-              padding: '1rem 1.15rem',
-              borderRadius: a.radius,
-              background: a.bgCard,
-              boxShadow: a.shadow,
-              border: '1px solid rgba(181, 74, 30, 0.12)',
-              borderLeft: `4px solid ${setupAllesErledigt ? '#15803d' : a.accent}`,
-            }}
-          >
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', color: a.accent, marginBottom: '0.5rem' }}>
-              {setupAllesErledigt ? 'Erste Einrichtung: grundlegend erledigt' : 'Erste Schritte – zum Start'}
+          {/* Ampel: volle erste Einrichtung nur Inhaber:in; Leser/Bearbeiter eine kurze Zeile */}
+          {isInhaber ? (
+            <div
+              style={{
+                marginBottom: '1.25rem',
+                padding: '1rem 1.15rem',
+                borderRadius: a.radius,
+                background: a.bgCard,
+                boxShadow: a.shadow,
+                border: '1px solid rgba(181, 74, 30, 0.12)',
+                borderLeft: `4px solid ${setupAllesErledigt ? '#15803d' : a.accent}`,
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: a.accent, marginBottom: '0.5rem' }}>
+                {setupAllesErledigt ? 'Erste Einrichtung: grundlegend erledigt' : 'Erste Schritte – zum Start'}
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '1.15rem', color: a.muted, fontSize: '0.88rem', lineHeight: 1.55 }}>
+                <li style={{ color: setupDu ? '#15803d' : a.muted }}>
+                  {setupDu ? '✓' : '○'} „Du“ im Stammbaum gewählt
+                </li>
+                <li style={{ color: setupZugang ? '#15803d' : a.muted }}>
+                  {setupZugang ? '✓' : '○'} Zugangsnummer für den QR-Code eingetragen
+                </li>
+                <li style={{ color: setupStartpunkt ? '#15803d' : a.muted }}>
+                  {setupStartpunkt ? '✓' : '○'} Startpunkt für die Stammbaum-Ansicht gewählt
+                </li>
+              </ul>
+              {!setupAllesErledigt && (
+                <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted }}>
+                  {!setupDu ? 'Code oben eintragen. ' : null}
+                  <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
+                    Stammbaum-Ansicht
+                  </button>
+                  {' · '}
+                  Zugang &amp; Name unten.
+                </p>
+              )}
             </div>
-            <ul style={{ margin: 0, paddingLeft: '1.15rem', color: a.muted, fontSize: '0.88rem', lineHeight: 1.55 }}>
-              <li style={{ color: setupDu ? '#15803d' : a.muted }}>
-                {setupDu ? '✓' : '○'} „Du“ im Stammbaum gewählt
-              </li>
-              <li style={{ color: setupZugang ? '#15803d' : a.muted }}>
-                {setupZugang ? '✓' : '○'} Zugangsnummer für den QR-Code eingetragen
-              </li>
-              <li style={{ color: setupStartpunkt ? '#15803d' : a.muted }}>
-                {setupStartpunkt ? '✓' : '○'} Startpunkt für die Stammbaum-Ansicht gewählt
-              </li>
-            </ul>
-            {!setupAllesErledigt && (
-              <p style={{ margin: '0.55rem 0 0', fontSize: '0.8rem', color: a.muted }}>
-                {!setupDu ? 'Code oben eintragen. ' : null}
-                <button type="button" onClick={openAnsichtEinstellungen} style={{ background: 'none', border: 'none', color: a.accent, cursor: 'pointer', padding: 0, textDecoration: 'underline', font: 'inherit' }}>
-                  Stammbaum-Ansicht
-                </button>
-                {' · '}
-                Zugang &amp; Name unten.
+          ) : (
+            <div
+              style={{
+                marginBottom: '1.1rem',
+                padding: '0.75rem 1rem',
+                borderRadius: a.radius,
+                background: a.bgCard,
+                border: '1px solid rgba(100, 116, 139, 0.2)',
+                borderLeft: `4px solid ${isLeser ? '#64748b' : '#d97706'}`,
+              }}
+            >
+              <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.5, color: a.muted }}>
+                {isLeser ? (
+                  <>
+                    <strong style={{ color: a.text }}>Leser:in</strong> – du siehst alles; schreiben auf deiner eigenen Karte und am Gedenkort. Stammbaum-Struktur und Zugang richtet die Inhaber:in ein.
+                  </>
+                ) : (
+                  <>
+                    <strong style={{ color: a.text }}>Bearbeiter:in</strong> – du gestaltest Inhalte (Geschichte, Events, Gedenkort). Stammbaum und Zugang sind nur für die Inhaber:in.
+                  </>
+                )}
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           <section style={{ marginBottom: '1.35rem' }}>
             <h2 style={{ margin: '0 0 0.35rem', fontSize: '1.35rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
-              Was möchtest du tun?
+              {isLeser ? 'Wohin geht’s?' : 'Was möchtest du tun?'}
             </h2>
             <p style={{ margin: '0 0 0.65rem', fontSize: '0.88rem', lineHeight: 1.55, color: a.muted }}>
-              Hier groß und klar zum Tippen – dieselben Bereiche erreichst du zusätzlich in der oberen Menüleiste, wenn du schon auf einer anderen Seite bist.
+              {isInhaber
+                ? 'Hier groß und klar zum Tippen – dieselben Bereiche erreichst du zusätzlich in der oberen Menüleiste, wenn du schon auf einer anderen Seite bist.'
+                : isLeser
+                  ? 'Die wichtigsten Einstiege – ohne Ballast. Mehr findest du in der Menüleiste oben.'
+                  : 'Kernbereiche zum Bearbeiten und Lesen – Details und Verwaltung in der Menüleiste oder unter Einstellungen.'}
             </p>
             <div
               className="k2-familie-action-grid"
@@ -1034,21 +1076,29 @@ export default function K2FamilieHomePage() {
                   background: C.btnEinstellungen,
                   boxShadow: '0 8px 28px rgba(79, 70, 229, 0.42)',
                 }}
-                title="Zugang &amp; Name, Stammbaum-Ansicht, Sicherung, Lizenz, Handbuch und Präsentationsmappe"
+                title={
+                  isInhaber
+                    ? 'Zugang &amp; Name, Stammbaum-Ansicht, Sicherung, Lizenz, Handbuch und Präsentationsmappe'
+                    : isBearbeiter
+                      ? 'Rolle, Ansicht, Sicherung kopieren, Handbuch'
+                      : 'Rolle und persönliche Einstellungen'
+                }
               >
-                ⚙️ Einstellungen &amp; Verwaltung
+                ⚙️ {isLeser ? 'Einstellungen' : 'Einstellungen &amp; Verwaltung'}
               </Link>
-              <Link
-                to={familieR.sicherung}
-                className="btn k2-familie-action-btn"
-                style={{
-                  ...actionBtnBase,
-                  background: C.btnSicherung,
-                  boxShadow: '0 8px 28px rgba(153, 27, 27, 0.35)',
-                }}
-              >
-                💾 Sicherung
-              </Link>
+              {showSicherungKachel ? (
+                <Link
+                  to={familieR.sicherung}
+                  className="btn k2-familie-action-btn"
+                  style={{
+                    ...actionBtnBase,
+                    background: C.btnSicherung,
+                    boxShadow: '0 8px 28px rgba(153, 27, 27, 0.35)',
+                  }}
+                >
+                  💾 Sicherung
+                </Link>
+              ) : null}
             </div>
           </section>
 
@@ -1074,10 +1124,13 @@ export default function K2FamilieHomePage() {
                   </button>{' '}
                   ein.
                 </>
+              ) : isLeser ? (
+                <>
+                  <strong style={{ color: a.text }}>Kurz:</strong> Familien-Zugang und QR kommen von der Inhaber:in. Deinen <strong style={{ color: a.text }}>persönlichen Code</strong> trägst du unten ein – danach Name und persönlicher QR. Die Familien-Nummer kannst du nicht ändern.
+                </>
               ) : (
                 <>
-                  Die <strong style={{ color: a.text }}>Familien-Zugangsnummer</strong> kommt von der Inhaber:in oder dem Administrator; der <strong style={{ color: a.text }}>QR Familie</strong> öffnet dieselbe Familie. <strong style={{ color: a.text }}>Deinen persönlichen Code</strong> trägst du unten ein (wie mitgeteilt) — das ist die <strong style={{ color: a.text }}>erste Identifikation</strong> beim Eintritt; <strong style={{ color: a.text }}>danach</strong> reicht der gespeicherte persönliche QR oder Link auf dem Gerät. Sobald „Du“ gesetzt ist, siehst du deinen Namen. Die Nummer der Familie kannst du
-                  {capabilities.rolle === 'leser' ? ' nicht ändern.' : ' nur als Inhaber:in ändern.'}
+                  Die <strong style={{ color: a.text }}>Familien-Zugangsnummer</strong> kommt von der Inhaber:in; der <strong style={{ color: a.text }}>QR Familie</strong> öffnet dieselbe Familie. <strong style={{ color: a.text }}>Persönlichen Code</strong> unten eintragen – danach reicht der gespeicherte QR oder Link. Die Nummer der Familie kannst du nur als Inhaber:in ändern.
                 </>
               )}
             </p>
@@ -1136,33 +1189,65 @@ export default function K2FamilieHomePage() {
               <span style={{ color: a.muted }}>Gilt für diese Familie:</span>{' '}
               <strong style={{ color: a.text }}>{getFamilieTenantDisplayName(currentTenantId, 'Familie')}</strong>
             </p>
-            <p style={{ margin: '0 0 0.65rem', fontSize: '0.76rem', lineHeight: 1.45, color: a.muted }}>
-              Im Link/QR steht die technische Kennung{' '}
-              <code
-                style={{
-                  fontFamily: 'ui-monospace, monospace',
-                  fontSize: '0.85em',
-                  color: a.text,
-                  background: a.bgElevated,
-                  padding: '0.1rem 0.35rem',
-                  borderRadius: 4,
-                  border: '1px solid rgba(181, 74, 30, 0.2)',
-                }}
-              >
-                t={currentTenantId}
-              </code>{' '}
-              — die muss zu genau dieser Familie gehören. Steht unten ein Name, ist er zusätzlich als{' '}
-              <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85em' }}>fn=…</code> im Link — damit Gäste denselben Namen sehen (ohne euren Speicher).
-            </p>
-            <p style={{ margin: '0 0 0.85rem', lineHeight: 1.45, color: a.muted, fontSize: '0.82rem' }}>
-              {kannInstanz ? (
-                <>
+            {isInhaber ? (
+              <>
+                <p style={{ margin: '0 0 0.65rem', fontSize: '0.76rem', lineHeight: 1.45, color: a.muted }}>
+                  Im Link/QR steht die technische Kennung{' '}
+                  <code
+                    style={{
+                      fontFamily: 'ui-monospace, monospace',
+                      fontSize: '0.85em',
+                      color: a.text,
+                      background: a.bgElevated,
+                      padding: '0.1rem 0.35rem',
+                      borderRadius: 4,
+                      border: '1px solid rgba(181, 74, 30, 0.2)',
+                    }}
+                  >
+                    t={currentTenantId}
+                  </code>{' '}
+                  — die muss zu genau dieser Familie gehören. Steht unten ein Name, ist er zusätzlich als{' '}
+                  <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85em' }}>fn=…</code> im Link — damit Gäste denselben Namen sehen (ohne euren Speicher).
+                </p>
+                <p style={{ margin: '0 0 0.85rem', lineHeight: 1.45, color: a.muted, fontSize: '0.82rem' }}>
                   <strong style={{ color: a.text }}>Deine Aufgabe als Inhaber:in:</strong> Diese eine Nummer für den ganzen Stammbaum festlegen und weitergeben — QR oder Link (nur Online-App, nicht localhost).
-                </>
-              ) : (
-                <>Eine Nummer für den ganzen Stammbaum — teilen per QR oder Link (nur Online-App, nicht localhost).</>
-              )}
-            </p>
+                </p>
+              </>
+            ) : (
+              <details style={{ margin: '0 0 0.85rem' }}>
+                <summary
+                  style={{
+                    cursor: 'pointer',
+                    fontSize: '0.84rem',
+                    fontWeight: 600,
+                    color: a.accent,
+                    fontFamily: a.fontHeading,
+                  }}
+                >
+                  {isLeser ? 'Nur bei Fragen: Link, QR und Kennung' : 'Technik zu Link und QR (optional)'}
+                </summary>
+                <p style={{ margin: '0.55rem 0 0.45rem', fontSize: '0.76rem', lineHeight: 1.45, color: a.muted }}>
+                  Im Link/QR steht{' '}
+                  <code
+                    style={{
+                      fontFamily: 'ui-monospace, monospace',
+                      fontSize: '0.85em',
+                      color: a.text,
+                      background: a.bgElevated,
+                      padding: '0.1rem 0.35rem',
+                      borderRadius: 4,
+                      border: '1px solid rgba(181, 74, 30, 0.2)',
+                    }}
+                  >
+                    t={currentTenantId}
+                  </code>{' '}
+                  — Zugehörigkeit zur Familie. Optional <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: '0.85em' }}>fn=…</code> für den Anzeigenamen bei Gästen.
+                </p>
+                <p style={{ margin: 0, lineHeight: 1.45, color: a.muted, fontSize: '0.8rem' }}>
+                  Eine Nummer für den ganzen Stammbaum — teilen per QR oder Link (nur Online-App, nicht localhost).
+                </p>
+              </details>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem', alignItems: 'flex-start' }}>
               <div>
                 <div style={{ marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>Name</div>
@@ -1482,6 +1567,7 @@ export default function K2FamilieHomePage() {
             </div>
           </div>
 
+          {kannStruktur ? (
           <details
             ref={ansichtEinstellungenRef}
             id="k2-familie-ansicht-einstellungen"
@@ -1582,6 +1668,27 @@ export default function K2FamilieHomePage() {
               </div>
             </div>
           </details>
+          ) : (
+            <p
+              id="k2-familie-ansicht-einstellungen"
+              style={{
+                marginBottom: '1.5rem',
+                fontSize: '0.88rem',
+                lineHeight: 1.5,
+                color: a.muted,
+                padding: '0.75rem 1rem',
+                borderRadius: a.radius,
+                background: a.bgElevated,
+                border: '1px solid rgba(181, 74, 30, 0.1)',
+              }}
+            >
+              <strong style={{ color: a.text }}>Stammbaum-Ansicht</strong> (Startpunkt, Partner-Zweig, wer „Du“ ist) richtet die Inhaber:in unter{' '}
+              <Link to={familieR.einstellungen} style={{ color: a.accent, fontWeight: 600 }}>
+                Einstellungen
+              </Link>{' '}
+              ein – hier keine weiteren Felder nötig.
+            </p>
+          )}
 
           {!tenantList.includes(FAMILIE_HUBER_TENANT_ID) && kannInstanz && (
             <div
