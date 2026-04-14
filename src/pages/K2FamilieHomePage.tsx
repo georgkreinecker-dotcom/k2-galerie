@@ -388,16 +388,17 @@ export default function K2FamilieHomePage() {
   }
 
   const kopiereFamilieEinladungslink = () => {
-    if (!familieEinladungsUrlCanonical) return
-    void navigator.clipboard.writeText(familieEinladungsUrlCanonical).then(() => {
+    /** Gleiche Daten wie QR: Server-Stand + Cache-Bust (Regel Stand/QR). */
+    if (!familieEinladungsUrl) return
+    void navigator.clipboard.writeText(familieEinladungsUrl).then(() => {
       setEinladungsLinkKopiert(true)
       window.setTimeout(() => setEinladungsLinkKopiert(false), 2200)
     })
   }
 
   const kopierePersoenlichenEinladungslink = () => {
-    if (!familiePersoenlicheEinladungsUrlCanonical) return
-    void navigator.clipboard.writeText(familiePersoenlicheEinladungsUrlCanonical).then(() => {
+    if (!familiePersoenlicheEinladungsUrl) return
+    void navigator.clipboard.writeText(familiePersoenlicheEinladungsUrl).then(() => {
       setPersoenlicherLinkKopiert(true)
       window.setTimeout(() => setPersoenlicherLinkKopiert(false), 2200)
     })

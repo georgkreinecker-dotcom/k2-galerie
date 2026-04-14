@@ -25,10 +25,16 @@ export default function K2FamilieWillkommenPage() {
   useLayoutEffect(() => {
     const t = searchParams.get('t')?.trim()
     const z = searchParams.get('z')?.trim()
+    const m = searchParams.get('m')?.trim()
+    /** Wie Meine Familie / Einladungs-QR: Anzeigename für Geräte ohne gemeinsamen Speicher — nicht verwerfen. */
+    const fnRaw = searchParams.get('fn')?.trim()
+    const fn = fnRaw ? fnRaw.slice(0, 240) : ''
     if (!t && !z) return
     const next = new URLSearchParams()
     if (t) next.set('t', t)
     if (z) next.set('z', z)
+    if (m) next.set('m', m)
+    if (fn) next.set('fn', fn)
     navigate(`${R.meineFamilie}?${next.toString()}`, { replace: true })
   }, [searchParams, navigate, R.meineFamilie])
 
