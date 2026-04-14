@@ -217,10 +217,6 @@ export default function K2FamilieStammbaumPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [stammbaumBereich])
   const einstellungen = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision, stammbaumRefresh])
-  const partnerHerkunftPerson = useMemo(() => {
-    const id = einstellungen.partnerHerkunftPersonId
-    return id ? personen.find((p) => p.id === id) : null
-  }, [einstellungen.partnerHerkunftPersonId, personen])
 
   /** Beziehungen von „Du“ – ausschließlich aus den Karten (eine Quelle der Wahrheit). */
   const beziehungenDu = useMemo(() => {
@@ -711,21 +707,9 @@ export default function K2FamilieStammbaumPage() {
               <button type="button" className="btn" disabled={!kannStruktur} onClick={saveFamilyDisplayName}>Speichern</button>
               {familyNameSaved && <span className="meta" style={{ color: 'rgba(20,184,166,0.95)' }}>✓ Gespeichert</span>}
             </div>
-            {personen.length > 0 && (einstellungen.stammbaumSchlusspunkt || einstellungen.stammbaumPersonenLoeschenGesperrt) && (
-              <p className="meta no-print" style={{ marginBottom: '0.5rem', maxWidth: '44rem', fontSize: '0.82rem', lineHeight: 1.45, color: 'rgba(226,232,240,0.9)' }}>
-                {einstellungen.stammbaumSchlusspunkt && <span>Keine neuen Personen · </span>}
-                {einstellungen.stammbaumPersonenLoeschenGesperrt && <span>Löschen gesperrt · </span>}
-                <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45,212,191,0.95)', fontWeight: 600 }}>
-                  Nur Inhaber:in: Einstellungen
-                </Link>
-              </p>
-            )}
             {zeigeStammbaumUebersicht && (
               <>
                 <h1>Stammbaum</h1>
-                {partnerHerkunftPerson && (
-                  <p className="meta" style={{ margin: '0.25rem 0 0', color: 'rgba(20,184,166,0.95)' }}>Zwei Linien: deine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
-                )}
                 <details className="meta" style={{ margin: '0.35rem 0 0' }}>
                   <summary style={{ cursor: 'pointer', color: 'rgba(20,184,166,0.95)' }}>Kurz: „Das bin ich“, Partner, Kinder</summary>
                   <p style={{ margin: '0.5rem 0 0', lineHeight: 1.45 }}>
@@ -807,9 +791,6 @@ export default function K2FamilieStammbaumPage() {
                 <p className="meta" style={{ margin: '0.35rem 0 0', fontSize: '0.84rem', lineHeight: 1.45, maxWidth: '40rem' }}>
                   {STAMMBAUM_BEREICH_UNTERTITEL[stammbaumBereich]}
                 </p>
-                {partnerHerkunftPerson && (
-                  <p className="meta" style={{ margin: '0.4rem 0 0', color: 'rgba(20,184,166,0.95)', fontSize: '0.85rem' }}>Zwei Linien: deine Herkunft · Herkunft {partnerHerkunftPerson.name}</p>
-                )}
               </div>
             )}
           </div>
@@ -1651,19 +1632,6 @@ export default function K2FamilieStammbaumPage() {
                 )}
               </>
             )}
-            {(einstellungen.stammbaumSchlusspunkt || einstellungen.stammbaumPersonenLoeschenGesperrt) && (
-              <p className="meta" style={{ margin: 0, maxWidth: '42rem', color: 'rgba(20,184,166,0.95)', lineHeight: 1.45 }}>
-                {einstellungen.stammbaumSchlusspunkt && (
-                  <>✓ Keine neuen Personen – nur Inhaber:in kann das in den Einstellungen ändern. Bearbeiten und Verknüpfen bleibt.<br /></>
-                )}
-                {einstellungen.stammbaumPersonenLoeschenGesperrt && (
-                  <>✓ Personen löschen – gesperrt (Struktur schützen).<br /></>
-                )}
-                <Link to={PROJECT_ROUTES['k2-familie'].einstellungen} style={{ color: 'rgba(45,212,191,0.98)', fontWeight: 600 }}>
-                  → Einstellungen
-                </Link>
-              </p>
-            )}
             {!einstellungen.stammbaumSchlusspunkt && ersteEheMsg && (
               <span className="meta" style={{ color: 'rgba(20,184,166,0.95)', maxWidth: 420 }}>{ersteEheMsg}</span>
             )}
@@ -2114,17 +2082,12 @@ export default function K2FamilieStammbaumPage() {
                   </div>
                 )}
               </div>
-              {druckStil !== 'grafik' && (
+              {druckStil !== 'grafik' && druckStil !== 'personenblaetter' && (
                 <p className="meta stammbaum-pdf-steuerung-hint" style={{ marginTop: '0.75rem', marginBottom: 0 }}>
                   {druckStil === 'register' ? (
                     <>
                       <strong>Katalog</strong>: Spalten per Checkbox; <strong>Kontakt</strong> zeigt Anschrift, E-Mail und Telefon kompakt
                       (nur wenn bei der Person eingetragen). Einstellung wird gespeichert. Druck oft im <strong>Querformat</strong>.
-                    </>
-                  ) : druckStil === 'personenblaetter' ? (
-                    <>
-                      <strong>Personenblätter</strong>: <strong>Hochformat</strong> empfohlen. Kontakt erscheint am Ende des Blocks, wenn auf
-                      der Personenseite ausgefüllt.
                     </>
                   ) : druckStil === 'geburtstagsliste' ? (
                     <>
