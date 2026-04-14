@@ -5,25 +5,51 @@
  */
 
 import { useLayoutEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
 import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 
+const R_PERSONEN = PROJECT_ROUTES['k2-familie'].personen
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
+/** URL-Parameter sicher lesen (Scan/Messenger können encodieren). */
+function mitgliedsCodeFromSearchParam(raw: string | null | undefined): string {
+  if (raw == null || raw === '') return ''
+  let s = raw.trim()
+  try {
+    s = decodeURIComponent(s.replace(/\+/g, ' '))
+  } catch {
+    /* ignore */
+  }
+  return trimMitgliedsNummerEingabe(s)
+}
+
 /** @deprecated Namensgleich mit Event-String; nutze K2_FAMILIE_SESSION_UPDATED aus familieStorage. */
 export const K2_FAMILIE_EINSTELLUNGEN_UPDATED = K2_FAMILIE_SESSION_UPDATED
 
 export function FamilieEinladungQuerySync() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { currentTenantId, tenantList, setCurrentTenantId, ensureTenantInListAndSelect } = useFamilieTenant()
+  const {
+    currentTenantId,
+    tenantList,
+    setCurrentTenantId,
+    ensureTenantInListAndSelect,
+    bumpFamilieStorageRevision,
+  } = useFamilieTenant()
   useLayoutEffect(() => {
     const tRaw = searchParams.get('t')?.trim()
     /** Gleiche Schreibweise wie in Keys (u. a. UUID aus Einladung in Kleinbuchstaben). */
     const t = tRaw ? tRaw.toLowerCase() : undefined
     const z = searchParams.get('z')?.trim()
-    const m = searchParams.get('m')?.trim()
+    const m = mitgliedsCodeFromSearchParam(searchParams.get('m'))
     /** Kurz: Anzeigename mitschicken, damit Gäste nicht „Neue Familie …“ sehen (kein gemeinsamer Speicher). */
     const fnRaw = searchParams.get('fn')?.trim()
     const fn = fnRaw ? fnRaw.slice(0, 240) : ''
@@ -42,26 +68,46 @@ export function FamilieEinladungQuerySync() {
       setSearchParams(next, { replace: true })
     }
 
-    const applyPersoenlicheMitgliedsNummer = (tenantId: string, mParam: string | undefined) => {
-      const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
-      if (!mNorm) return
-      const personen = loadPersonen(tenantId)
-      const pid = findPersonIdByMitgliedsNummer(personen, mNorm)
-      if (!pid) return
+    /** Speichert ichBinPersonId + Identität; gibt die Personen-ID zurück. */
+    const persistIchBinNachCode = (tenantId: string, pid: string): boolean => {
       const einst = loadEinstellungen(tenantId)
       if (saveEinstellungen(tenantId, { ...einst, ichBinPersonId: pid })) {
         setIdentitaetBestaetigt(tenantId, pid)
+        return true
       }
+      return false
     }
 
     /**
-     * Mobil: Personenliste war oft noch leer, weil Cloud-Sync (useEffect) erst nach diesem Effect lief.
-     * Dann schlug die Zuordnung fehl und `m` wurde aus der URL entfernt – ohne zweiten Versuch.
+     * Abgleich persönlicher Code: immer zuerst die **gemergte Server-Antwort** nutzen (nicht nur localStorage),
+     * damit ein fehlgeschlagenes savePersonen oder verzögertes Schreiben die Zuordnung nicht bricht.
+     * Danach mehrfach erneut von Supabase laden (Mobil / langsames Netz).
      */
-    const maybeLoadBeforeApplyM = async (tenantId: string, mParam: string | undefined) => {
+    const applyPersoenlicheMitgliedsNummerWithRetries = async (
+      tenantId: string,
+      mParam: string | undefined,
+    ): Promise<string | null> => {
       const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
-      if (!mNorm) return
-      await loadFamilieFromSupabase(tenantId)
+      if (!mNorm) return null
+      const delaysMs = [0, 200, 500, 1200, 2000]
+      for (let i = 0; i < delaysMs.length; i++) {
+        if (i > 0) await sleep(delaysMs[i])
+        if (cancelled) return null
+        const data = await loadFamilieFromSupabase(tenantId)
+        bumpFamilieStorageRevision()
+        const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
+        if (pid) {
+          persistIchBinNachCode(tenantId, pid)
+          return pid
+        }
+        /** Fallback: Speicher, falls Merge schon lokal war */
+        const pidLocal = findPersonIdByMitgliedsNummer(loadPersonen(tenantId), mNorm)
+        if (pidLocal) {
+          persistIchBinNachCode(tenantId, pidLocal)
+          return pidLocal
+        }
+      }
+      return null
     }
 
     const run = async () => {
@@ -88,10 +134,11 @@ export function FamilieEinladungQuerySync() {
             saveEinstellungen(t, { ...einst, familyDisplayName: fn })
           }
         }
-        if (m) await maybeLoadBeforeApplyM(t, m)
         if (cancelled) return
-        applyPersoenlicheMitgliedsNummer(t, m)
+        let pidFromM: string | null = null
+        if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(t, m)
         strip()
+        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         return
       }
       if (!t && z) {
@@ -103,17 +150,18 @@ export function FamilieEinladungQuerySync() {
             saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })
           }
         }
-        if (m) await maybeLoadBeforeApplyM(currentTenantId, m)
         if (cancelled) return
-        applyPersoenlicheMitgliedsNummer(currentTenantId, m)
+        let pidFromM: string | null = null
+        if (m) pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
+        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         return
       }
       if (!t && !z && m) {
-        await maybeLoadBeforeApplyM(currentTenantId, m)
         if (cancelled) return
-        applyPersoenlicheMitgliedsNummer(currentTenantId, m)
+        const pidFromM = await applyPersoenlicheMitgliedsNummerWithRetries(currentTenantId, m)
         strip()
+        if (pidFromM) navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         return
       }
       if (!t && !z && !m && fn) {
@@ -136,6 +184,8 @@ export function FamilieEinladungQuerySync() {
     ensureTenantInListAndSelect,
     setSearchParams,
     currentTenantId,
+    bumpFamilieStorageRevision,
+    navigate,
   ])
 
   return null

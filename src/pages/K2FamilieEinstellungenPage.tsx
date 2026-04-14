@@ -26,6 +26,12 @@ import {
 } from '../types/k2FamilieRollen'
 
 const a = adminTheme
+/** Direkt auf dunklem Viewport (K2-Familie mission-wrapper) – nicht adminTheme.text (nur für helle Karten) */
+const onViewport = {
+  text: 'var(--k2-text)',
+  muted: 'var(--k2-muted)',
+  accentLink: 'var(--k2-accent)',
+} as const
 const R = PROJECT_ROUTES['k2-familie']
 
 const card: CSSProperties = {
@@ -156,28 +162,30 @@ export default function K2FamilieEinstellungenPage() {
   const intro =
     isLeser ? (
       <>
-        <strong style={{ color: a.text }}>Deine Rolle</strong> steht oben in der Leiste. Hier kannst du sie für{' '}
-        <strong style={{ color: a.text }}>diese Sitzung</strong> anpassen und den Zugang zu „Meine Familie“ öffnen.
+        <strong style={{ color: onViewport.text }}>Deine Rolle</strong> steht oben in der Leiste. Hier kannst du sie für{' '}
+        <strong style={{ color: onViewport.text }}>diese Sitzung</strong> anpassen und den Zugang zu „Meine Familie“ öffnen.
       </>
     ) : isBearbeiter ? (
       <>
-        Zugang, Stammbaum-Ansicht (nur lesen) und Sicherung – gebündelt. Oben: <strong style={{ color: a.text }}>aktuelle Rolle</strong>;{' '}
-        hier die Rolle für <strong style={{ color: a.text }}>diese Sitzung</strong> wählen, bis die Inhaber:in Rechte festlegt.
+        Zugang, Stammbaum-Ansicht (nur lesen) und Sicherung – gebündelt. Oben:{' '}
+        <strong style={{ color: onViewport.text }}>aktuelle Rolle</strong>; hier die Rolle für{' '}
+        <strong style={{ color: onViewport.text }}>diese Sitzung</strong> wählen, bis die Inhaber:in Rechte festlegt.
       </>
     ) : (
       <>
-        Zugangsdaten, Stammbaum-Ansicht, Mitglieder-Codes, Sicherung und Lizenz – zentral. Oben: <strong style={{ color: a.text }}>aktuelle Rolle</strong>; hier{' '}
-        für <strong style={{ color: a.text }}>diese Sitzung</strong> änderbar (Zielbild: feste Rollen durch die Inhaber:in).
+        Zugangsdaten, Stammbaum-Ansicht, Mitglieder-Codes, Sicherung und Lizenz – zentral. Oben:{' '}
+        <strong style={{ color: onViewport.text }}>aktuelle Rolle</strong>; hier für{' '}
+        <strong style={{ color: onViewport.text }}>diese Sitzung</strong> änderbar (Zielbild: feste Rollen durch die Inhaber:in).
       </>
     )
 
   return (
     <div className="mission-wrapper">
       <div className="viewport k2-familie-page" style={{ padding: '1.25rem 1rem 2rem', maxWidth: 720, margin: '0 auto' }}>
-        <h1 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+        <h1 style={{ margin: '0 0 0.35rem', fontSize: '1.5rem', fontWeight: 700, color: onViewport.text, fontFamily: a.fontHeading }}>
           {isLeser ? 'Einstellungen' : 'Einstellungen & Verwaltung'}
         </h1>
-        <p style={{ margin: '0 0 1.25rem', fontSize: '0.95rem', color: a.muted, lineHeight: 1.55 }}>
+        <p style={{ margin: '0 0 1.25rem', fontSize: '0.95rem', color: onViewport.muted, lineHeight: 1.55 }}>
           {intro}
         </p>
 
@@ -542,7 +550,7 @@ export default function K2FamilieEinstellungenPage() {
             style={{
               margin: '0 0 1.15rem',
               fontSize: '0.88rem',
-              color: a.muted,
+              color: onViewport.muted,
               lineHeight: 1.5,
               padding: '0.65rem 0.85rem',
               borderRadius: a.radius,
@@ -550,14 +558,14 @@ export default function K2FamilieEinstellungenPage() {
               border: '1px solid rgba(100, 116, 139, 0.2)',
             }}
           >
-            <strong style={{ color: a.text }}>Sicherungskopie</strong> ist für diese Rolle oder Sitzung nicht frei – nur Bearbeiter:in oder Inhaber:in (mit bestätigter Identität).
+            <strong style={{ color: onViewport.text }}>Sicherungskopie</strong> ist für diese Rolle oder Sitzung nicht frei – nur Bearbeiter:in oder Inhaber:in (mit bestätigter Identität).
           </p>
         )}
 
         {isLeser ? (
-          <p style={{ margin: '0 0 1.15rem', fontSize: '0.88rem', color: a.muted, lineHeight: 1.5 }}>
+          <p style={{ margin: '0 0 1.15rem', fontSize: '0.88rem', color: onViewport.muted, lineHeight: 1.5 }}>
             Lizenz &amp; Kosten:{' '}
-            <Link to={`${R.uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: a.accent, fontWeight: 600 }}>
+            <Link to={`${R.uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
               Übersicht K2 Familie
             </Link>
           </p>
@@ -601,10 +609,10 @@ export default function K2FamilieEinstellungenPage() {
           </div>
         </div>
 
-        <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: a.muted, lineHeight: 1.45 }}>
+        <p style={{ marginTop: '1.5rem', fontSize: '0.78rem', color: onViewport.muted, lineHeight: 1.45 }}>
           {PRODUCT_COPYRIGHT_BRAND_ONLY}
         </p>
-        <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: a.muted, lineHeight: 1.45 }}>
+        <p style={{ marginTop: '0.35rem', fontSize: '0.78rem', color: onViewport.muted, lineHeight: 1.45 }}>
           {PRODUCT_URHEBER_ANWENDUNG}
         </p>
       </div>

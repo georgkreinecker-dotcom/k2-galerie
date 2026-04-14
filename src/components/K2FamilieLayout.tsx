@@ -60,9 +60,12 @@ function FamilieTenantToolbar() {
         fontFamily: t.fontBody,
       }}
     >
-      <span style={{ fontSize: '0.88rem', color: t.muted }}>Familie:</span>
+      <span style={{ fontSize: '0.88rem', color: t.muted }} title="Hier wechselst du zwischen Familien auf diesem Gerät – kein Umbenennen.">
+        Aktive Familie wählen:
+      </span>
       <select
-        aria-label="Familie wählen"
+        aria-label="Aktive Familie wählen"
+        title="Zu welcher Familie soll die App gerade gehören? Umbenennen: Stammbaum oder Einstellungen → Anzeigename."
         value={currentTenantId}
         onChange={(e) => setCurrentTenantId(e.target.value)}
         style={{

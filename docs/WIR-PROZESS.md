@@ -126,6 +126,7 @@ Das ist keine Theorie. Das sind 65 Jahre gelebte Erfahrung.
 
 | Datum | Was ich gelernt habe |
 |---|---|
+| 14.04.26 (Abend) | **Schluss für heute:** **K2-Welt Strategie** gehört **nicht** in mök2 – eigene Seite + Smart-Board-Mappe (`6f4b7990`); danach **K2 Familie**-Rest (Stammbaum, Einladung, Einstellungen, Layout) mit **Tests + Build grün** committed und gepusht – Raum aufgeräumt, GitHub = Referenz. |
 | 13.04.26 (Abend) | **Schluss für heute:** „Wir suchen Familie Kreinecker“ = **sichtbar machen**, welche Familie QR/Link trifft (Anzeigename + `t=`); Session-Ende: Build grün, DIALOG-STAND mit Hash, WIR-PROZESS, **commit + push** – Raum bereit für morgen. |
 | 12.04.26 (Abend) | **Schluss für heute:** K2 Familie braucht dieselbe **Leitstruktur** wie mök2 – **eine** Strukturdatei + Sidebar + gemeinsame Active-Logik mit der oberen Nav; Session-Ende: Tests/Build grün, DIALOG-STAND mit Commit-Hash, WIR-PROZESS, alles pushen – Raum bereit. |
 | 08.04.26 (Abend) | **Schluss für heute:** **Eine Hilfsfunktion** für PDF/PNG-Teilen (`sharePrintFile`) vermeidet doppelten Code und macht **Etikett auf Mobil** oft **ohne Extra-Overlay** – Sportwagenmodus; Importnamen nicht mit bestehenden lokalen Hilfen kollidieren lassen. Session-Ende: DIALOG-STAND + Hash, WIR-PROZESS, commit, push. |

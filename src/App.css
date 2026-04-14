@@ -2175,6 +2175,33 @@ header h1 {
   }
 }
 
+/* Stammbaum: „i“-Hinweis (title-Tooltip) */
+.k2-familie-page .stammbaum-bereich-info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-left: 0.28rem;
+  border-radius: 50%;
+  border: 1px solid rgba(20, 184, 166, 0.65);
+  background: rgba(13, 148, 136, 0.28);
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 0.62rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1;
+  cursor: help;
+  flex-shrink: 0;
+  user-select: none;
+}
+.k2-familie-page .stammbaum-bereich-info-icon--corner {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  margin-left: 0;
+}
+
 /* Animierte Bilder: Fade-in + leichter Hover-Zoom */
 @keyframes k2-familie-fade-in {
   from { opacity: 0; transform: scale(0.96); }

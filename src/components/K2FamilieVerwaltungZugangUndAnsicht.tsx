@@ -415,7 +415,7 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
             }}
           >
             <label htmlFor="k2fam-family-display-name" style={{ display: 'block', marginBottom: 6, fontSize: '0.82rem', color: a.muted }}>
-              Wie heißt eure Familie in der App? (z. B. Familie Kreinecker)
+              Anzeigename bearbeiten (nur diese Familie) – z. B. Familie Kreinecker
             </label>
             <input
               id="k2fam-family-display-name"
@@ -438,7 +438,8 @@ export default function K2FamilieVerwaltungZugangUndAnsicht() {
               }}
             />
             <p style={{ margin: '0.45rem 0 0', fontSize: '0.78rem', lineHeight: 1.45, color: a.muted }}>
-              Sichtbar in der Familien-Auswahl oben. Der QR-Code und der Link bleiben mit Zugangsnummer und Codes technisch eindeutig — der Familienname steht nicht in der URL.
+              <strong style={{ color: a.text }}>Wählen</strong> (welche Familie aktiv ist): oben „Aktive Familie wählen“.{' '}
+              <strong style={{ color: a.text }}>Hier</strong> nur den Namen ändern. Sichtbar in der Auswahl oben. QR/Link bleiben über Zugangsnummer eindeutig – der Name steht nicht in der URL.
             </p>
           </div>
         ) : (
