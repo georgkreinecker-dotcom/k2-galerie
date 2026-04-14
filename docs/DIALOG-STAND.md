@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.04.26 – **K2 Familie Stammbaum: klarere Oberfläche + Einladung `?m=`** – Stammbaum: weniger Fachbegriffe (Tabs „Nach unten“, „Drucken“, „Zwei Linien“, Hilfe gekürzt, Springen/Listen in `<details>`), Schlusspunkt-Text **„Keine neuen Personen“** statt „Schlusspunkt“. **FamilieEinladungQuerySync:** vor persönlichem Code **`loadFamilieFromSupabase`** (Race mit leeren Personen). Tests 483 grün, Build ok. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 14.04.26 – **K2 Familie Stammbaum: klarere Oberfläche + Einladung `?m=`** – Stammbaum: weniger Fachbegriffe (Tabs „Nach unten“, „Drucken“, „Zwei Linien“, Hilfe gekürzt, Springen/Listen in `<details>`), Schlusspunkt-Text **„Keine neuen Personen“** statt „Schlusspunkt“. **FamilieEinladungQuerySync:** vor persönlichem Code **`loadFamilieFromSupabase`** (Race mit leeren Personen). Tests 483 grün, Build ok. **Commit:** **`3cdc3484`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Stammbaum subjektiv prüfen; Einladungslink mit `?m=` am Handy testen.
 
