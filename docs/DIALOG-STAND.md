@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Inhaber-Arbeitsansicht** (voll / wie Bearbeiter / wie Leser) – **lokal pro Familie** (`familieInhaberAnsichtStorage`); **wirkt erst mit „Du“** (Erst-Einrichtung ohne Du = volle Inhaber-Rechte). **UI:** Leiste + Einstellungen-Karte; **Hinweis-Banner** „andere Inhaber:in“ nicht bei reduzierter Ansicht. **Context:** fehlender `inhaberArbeitsansicht`-State behoben. Tests `familieIdentitaet.test.ts`. **Commit:** **`5d4a2918`** ✅ GitHub
+
+**Was wir JETZT tun:** In K2 Familie als Inhaber:in **Einstellungen** oder **Leiste** – Arbeitsansicht wählen und im Alltag prüfen; bei Bedarf weiter Edge **`familie`** deployen (älterer offener Schritt).
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Inhaberschaft an andere Person übertragbar** – Feld **`inhaberPersonId`** in den Familien-Einstellungen; **effektive Rolle** in `familieIdentitaet.ts` (wenn eine andere Person als Inhaber:in festgelegt ist, wirkt die lokale Rolle „Inhaber:in“ für Rechte wie **Bearbeiter**); **Supabase** Edge Function **`familie`**: `data_type` **einstellungen** GET/POST; Client-Merge in `familieSupabaseClient` / Push aus `familieStorage`; **Einstellungen-Seite**: Block „Inhaberschaft übertragen“ (nur mit Verwaltungsrecht, „Du“ gesetzt, andere Person wählbar); nach Übertragung lokale Rolle **Bearbeiter** – neue Inhaber:in stellt **Rolle Inhaber:in** ein. Tests `familieIdentitaet.test.ts`. **Commit:** **`209f16e7`** ✅ GitHub
 
 **Was wir JETZT tun:** Edge Function **`familie`** auf Supabase **deployen**, damit `einstellungen` live mitläuft; danach Übertragung einmal im Browser testen.
