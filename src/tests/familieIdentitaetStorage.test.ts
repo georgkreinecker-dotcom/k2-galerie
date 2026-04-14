@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
   buildIdentitaetFingerprint,
   clearGerateVertrauen,
@@ -6,6 +6,7 @@ import {
   getOrCreateDeviceId,
   loadIdentitaetBestaetigt,
   saveGerateVertrauen,
+  setIdentitaetBestaetigt,
   tryRestoreIdentitaetFromGerat,
 } from '../utils/familieIdentitaetStorage'
 
@@ -62,5 +63,17 @@ describe('familieIdentitaetStorage Geräte-Vertrauen', () => {
     const ok = await tryRestoreIdentitaetFromGerat(TID, PID, 'cd34')
     expect(ok).toBe(true)
     expect(loadIdentitaetBestaetigt(TID)).toBe(PID)
+  })
+
+  it('setIdentitaetBestaetigt nutzt localStorage wenn sessionStorage fehlschlägt', () => {
+    const spy = vi.spyOn(sessionStorage, 'setItem').mockImplementation(() => {
+      throw new Error('blocked')
+    })
+    try {
+      setIdentitaetBestaetigt(TID, PID)
+      expect(loadIdentitaetBestaetigt(TID)).toBe(PID)
+    } finally {
+      spy.mockRestore()
+    }
   })
 })

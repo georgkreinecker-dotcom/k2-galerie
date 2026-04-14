@@ -12,8 +12,33 @@ export const MITGLIEDS_NUMMER_AUTO_BEISPIEL = 'QA07'
 /** Muster systemvergebener Codes (Großbuchstaben + Ziffern). */
 export const RE_AUTO_MITGLIEDS_NUMMER = /^[A-Z]{2}\d{2}$/
 
+/**
+ * Eingabe für Abgleich mit persönlichem Code normalisieren (Mobil: iOS-Tastatur, Vollbreite-Zeichen,
+ * unsichtbare Zeichen, Leerstellen mitten im Code).
+ */
+export function normalizeMitgliedsNummerInput(s: string | undefined | null): string {
+  if (s == null || s === '') return ''
+  let t = String(s)
+  try {
+    t = t.normalize('NFKC')
+  } catch {
+    /* ältere Umgebungen */
+  }
+  t = t.replace(/[\u200B-\u200D\uFEFF\u2060]/g, '')
+  const out: string[] = []
+  for (let i = 0; i < t.length; i++) {
+    const c = t.charCodeAt(i)!
+    if (c >= 0xff10 && c <= 0xff19) out.push(String.fromCharCode(c - 0xff10 + 0x30))
+    else if (c >= 0xff21 && c <= 0xff3a) out.push(String.fromCharCode(c - 0xff21 + 0x41))
+    else if (c >= 0xff41 && c <= 0xff5a) out.push(String.fromCharCode(c - 0xff41 + 0x61))
+    else out.push(t[i]!)
+  }
+  t = out.join('')
+  return t.trim().replace(/\s+/g, '')
+}
+
 export function trimMitgliedsNummerEingabe(s: string | undefined | null): string {
-  return String(s ?? '').trim()
+  return normalizeMitgliedsNummerInput(s)
 }
 
 function normKey(m: string): string {

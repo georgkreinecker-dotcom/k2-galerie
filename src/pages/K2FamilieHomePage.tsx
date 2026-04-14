@@ -440,7 +440,7 @@ export default function K2FamilieHomePage() {
   const bestaetigeIdentitaetFuerSession = () => {
     setIdentitaetSessionOk('')
     setIdentitaetSessionHinweis('')
-    const raw = identitaetSessionEingabe.trim()
+    const raw = trimMitgliedsNummerEingabe(identitaetSessionEingabe)
     if (!raw) {
       setIdentitaetSessionHinweis('Bitte deinen persönlichen Code eintragen.')
       return
@@ -464,6 +464,12 @@ export default function K2FamilieHomePage() {
       return
     }
     setIdentitaetBestaetigt(currentTenantId, ich)
+    if (loadIdentitaetBestaetigt(currentTenantId) !== ich) {
+      setIdentitaetSessionHinweis(
+        'Die Bestätigung konnte nicht gespeichert werden (z. B. strenger Privatmodus oder Speicher voll). Bitte normalen Tab nutzen oder Speicher prüfen.',
+      )
+      return
+    }
     if (merkGeraetIdentitaet) {
       void saveGerateVertrauen(currentTenantId, ich, raw)
     } else {
@@ -482,7 +488,7 @@ export default function K2FamilieHomePage() {
 
   const anmeldenMitPersoenlicherNummer = () => {
     setRegistrierungErfolg('')
-    const raw = persoenlicheNummerEingabe.trim()
+    const raw = trimMitgliedsNummerEingabe(persoenlicheNummerEingabe)
     if (!raw) {
       setRegistrierungHinweis('Bitte deinen persönlichen Code eintragen (wie mit der Inhaber:in oder dem Administrator vereinbart).')
       return
@@ -498,12 +504,18 @@ export default function K2FamilieHomePage() {
     const einst = loadEinstellungen(currentTenantId)
     if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
       setIchBinPersonIdState(pid)
-      setPersoenlicheNummerEingabe('')
       setRegistrierungHinweis('')
+      setIdentitaetBestaetigt(currentTenantId, pid)
+      if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
+        setRegistrierungHinweis(
+          'Die Bestätigung konnte nicht gespeichert werden (z. B. strenger Privatmodus). Bitte normalen Tab nutzen oder Speicher prüfen.',
+        )
+        return
+      }
+      setPersoenlicheNummerEingabe('')
       setRegistrierungErfolg(
         '✓ Du bist eingerichtet. Name und persönlicher QR erscheinen unten – den Code kannst du später auf deiner Personenkarte ändern, wenn du möchtest.',
       )
-      setIdentitaetBestaetigt(currentTenantId, pid)
       if (merkGeraetIdentitaet) {
         void saveGerateVertrauen(currentTenantId, pid, raw)
       } else {
@@ -594,6 +606,11 @@ export default function K2FamilieHomePage() {
                 <input
                   type="text"
                   autoComplete="off"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="text"
+                  enterKeyHint="done"
                   value={identitaetSessionEingabe}
                   onChange={(e) => {
                     setIdentitaetSessionEingabe(e.target.value)
@@ -710,6 +727,11 @@ export default function K2FamilieHomePage() {
               <input
                 type="text"
                 autoComplete="off"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="text"
+                enterKeyHint="done"
                 value={persoenlicheNummerEingabe}
                 onChange={(e) => {
                   setPersoenlicheNummerEingabe(e.target.value)

@@ -5,6 +5,7 @@ import {
   buildMitgliederCodesZweigGruppen,
   findPersonIdByMitgliedsNummer,
   mitgliedsNummernImGebrauch,
+  normalizeMitgliedsNummerInput,
   persoenlicherCodePasstZuKarte,
   RE_AUTO_MITGLIEDS_NUMMER,
   trimMitgliedsNummerEingabe,
@@ -28,6 +29,12 @@ describe('familieMitgliedsNummer', () => {
   it('trimMitgliedsNummerEingabe', () => {
     expect(trimMitgliedsNummerEingabe('  ab12  ')).toBe('ab12')
     expect(trimMitgliedsNummerEingabe('')).toBe('')
+  })
+
+  it('normalizeMitgliedsNummerInput: Vollbreite, Zero-Width, Leerzeichen innen', () => {
+    expect(normalizeMitgliedsNummerInput('ＡＢ１２')).toBe('AB12')
+    expect(normalizeMitgliedsNummerInput('ab\u200b12')).toBe('ab12')
+    expect(normalizeMitgliedsNummerInput('ab 12')).toBe('ab12')
   })
 
   it('findPersonIdByMitgliedsNummer: Treffer, case-insensitive', () => {

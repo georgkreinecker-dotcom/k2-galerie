@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Identifikation Mobil – Normalisierung + Session-Fallback** – Handy: iOS-Tastatur kann **Vollbreite-Ziffern**, unsichtbare Zeichen oder Leerzeichen im Code liefern → Abgleich schief. **Fix:** `normalizeMitgliedsNummerInput` / `trimMitgliedsNummerEingabe` (NFKC, Zero-Width, Vollbreite→ASCII, Leerzeichen entfernen); **Fingerabdruck** nutzt dieselbe Norm. **sessionStorage** blockiert (Privatmodus): **Fallback** `localStorage` `k2-familie-identitaet-ls-*`; `loadIdentitaetBestaetigt` liest beides; nach `setIdentitaetBestaetigt` prüfen, sonst Hinweis. Code-Felder: `autoCapitalize="none"`, `spellCheck={false}`, `autoCorrect="off"`. Tests: `familieMitgliedsNummer`, `familieIdentitaetStorage`. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Nach Deploy **iPhone** (normales Safari): gleichen Code wie am Mac eingeben → Bestätigen; optional Privatmodus kurz prüfen (Hinweis statt stilles Scheitern).
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code + Gerät merken** – Nach einmaliger Bestätigung optional **„Auf diesem Gerät merken“** (Standard an): stabile **Geräte-ID** in `localStorage`, **SHA-256-Fingerabdruck** des Codes (kein Klartext). Beim nächsten Besuch wird die Sitzung wiederhergestellt, solange derselbe Browser + derselbe Code auf der „Du“-Karte – neuer Tab/Session ohne Neuteippen. Wechsel „Du“ oder Code auf der Karte → Vertrauen ungültig. `clearGerateVertrauen` bei `ichBinPersonId`-Wechsel in `saveEinstellungen`. Tests `familieIdentitaetStorage.test.ts`. **Commit:** *(folgt nach Push)*
 
 **Was wir JETZT tun:** Deploy abwarten → Meine Familie: Code bestätigen mit Häkchen → Tab schließen, neu öffnen → kein gelber Balken (gleicher Browser). Anderes Gerät → wieder eingeben.

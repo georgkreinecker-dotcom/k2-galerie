@@ -8,7 +8,11 @@
  * oder von „Du“ invalidiert das Vertrauen.
  */
 
+import { normalizeMitgliedsNummerInput } from './familieMitgliedsNummer'
+
 const PREFIX = 'k2-familie-identitaet-'
+/** Wenn sessionStorage nicht beschreibbar (z. B. iOS Privatmodus), gleiche Info hier – wird bei clear mitgeräumt. */
+const PREFIX_LS_IDENT = 'k2-familie-identitaet-ls-'
 const DEVICE_ID_KEY = 'k2-familie-geraet-id'
 /** Pro Tenant: { v, deviceId, personId, fp } – fp = SHA-256(tenant|person|device|codeNorm) */
 const GERAT_TRUST_PREFIX = 'k2-familie-identitaet-geraet-v1-'
@@ -16,6 +20,12 @@ const GERAT_TRUST_PREFIX = 'k2-familie-identitaet-geraet-v1-'
 export function loadIdentitaetBestaetigt(tenantId: string): string | null {
   try {
     const raw = sessionStorage.getItem(PREFIX + tenantId)?.trim()
+    if (raw) return raw
+  } catch {
+    /* sessionStorage u. a. in strengem Privatmodus blockiert */
+  }
+  try {
+    const raw = localStorage.getItem(PREFIX_LS_IDENT + tenantId)?.trim()
     return raw || null
   } catch {
     return null
@@ -25,8 +35,19 @@ export function loadIdentitaetBestaetigt(tenantId: string): string | null {
 export function setIdentitaetBestaetigt(tenantId: string, personId: string): void {
   const id = personId?.trim()
   if (!id) return
+  let sessionOk = false
   try {
     sessionStorage.setItem(PREFIX + tenantId, id)
+    sessionOk = true
+  } catch {
+    /* ignore */
+  }
+  try {
+    if (sessionOk) {
+      localStorage.removeItem(PREFIX_LS_IDENT + tenantId)
+    } else {
+      localStorage.setItem(PREFIX_LS_IDENT + tenantId, id)
+    }
   } catch {
     /* ignore */
   }
@@ -35,6 +56,11 @@ export function setIdentitaetBestaetigt(tenantId: string, personId: string): voi
 export function clearIdentitaetBestaetigt(tenantId: string): void {
   try {
     sessionStorage.removeItem(PREFIX + tenantId)
+  } catch {
+    /* ignore */
+  }
+  try {
+    localStorage.removeItem(PREFIX_LS_IDENT + tenantId)
   } catch {
     /* ignore */
   }
@@ -59,7 +85,7 @@ export function getOrCreateDeviceId(): string {
 }
 
 function normCodeFingerprint(raw: string): string {
-  return String(raw ?? '').trim().toLowerCase()
+  return normalizeMitgliedsNummerInput(raw).toLowerCase()
 }
 
 async function sha256Hex(text: string): Promise<string> {
