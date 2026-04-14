@@ -51,11 +51,15 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
   {
     chapterTitle: 'K2 Familien Marketing',
     sections: [
+      { id: 'fam-mkt-konzept', label: 'Marketingkonzept', to: `${R.familienMarketing}#fam-mkt-konzept` },
       { id: 'fam-mkt-ueberblick', label: 'Überblick', to: `${R.familienMarketing}#fam-mkt-ueberblick` },
       { id: 'fam-mkt-usp', label: 'USP & Positionierung', to: `${R.familienMarketing}#fam-mkt-usp` },
       { id: 'fam-mkt-mitbewerb', label: 'Produktvergleich', to: `${R.familienMarketing}#fam-mkt-mitbewerb` },
+      { id: 'fam-mkt-markt', label: 'Marktanalyse', to: `${R.familienMarketing}#fam-mkt-markt` },
+      { id: 'fam-mkt-preis', label: 'Preis & Lizenz (10 €)', to: `${R.familienMarketing}#fam-mkt-preis` },
       { id: 'fam-mkt-ziel', label: 'Zielgruppe & Kanäle', to: `${R.familienMarketing}#fam-mkt-zielgruppe` },
       { id: 'fam-mkt-abgrenzung', label: 'Abgrenzung', to: `${R.familienMarketing}#fam-mkt-abgrenzung` },
+      { id: 'fam-mkt-tonfall', label: 'Tonfall', to: `${R.familienMarketing}#fam-mkt-tonfall` },
     ],
   },
   {
