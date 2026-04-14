@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 14.04.26 – **K2 Familie: Familien zusammenführen (Feature)** – `mergeQuelleFamilieInZielFamilie`: Rollback bei Speicher-/Listen-Fehler; UI auf **Einstellungen** (Instanz-Verwaltung, ≥2 Familien): Quelle wählen, optional Anzeigename, Bestätigung. Doku `docs/K2-FAMILIE-DATENMODELL.md` §7. **Commit:** _(nach Push eintragen)_
+**Letzter Stand:** 14.04.26 – **K2 Familie: Familien zusammenführen (Feature)** – `mergeQuelleFamilieInZielFamilie`: Rollback bei Speicher-/Listen-Fehler; UI auf **Einstellungen** (Instanz-Verwaltung, ≥2 Familien): Quelle wählen, optional Anzeigename, Bestätigung. Doku `docs/K2-FAMILIE-DATENMODELL.md` §7. **Commit:** **`1b5e5fd0`** ✅ GitHub
 
 **Was wir JETZT tun:** Mit zwei Test-Familien: Zusammenführen kurz durchspielen; vorher Sicherung.
 
