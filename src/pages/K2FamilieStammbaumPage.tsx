@@ -104,12 +104,58 @@ const STAMMBAUM_BEREICH_UNTERTITEL: Record<Exclude<StammbaumBereich, 'uebersicht
 
 type StammbaumBereichTab = Exclude<StammbaumBereich, 'uebersicht'>
 
-const STAMMBAUM_BEREICH_TABS: { key: StammbaumBereichTab; label: string; hint: string }[] = [
-  { key: 'karten', label: 'Nach unten', hint: 'Du, Partner, Kinder' },
-  { key: 'nach-oben', label: 'Nach oben', hint: 'Eltern & Vorfahren' },
-  { key: 'grafik', label: 'Grafik', hint: 'Als Bild' },
-  { key: 'pdf', label: 'Drucken', hint: 'PDF & Listen' },
+/** Kurzinfos für Tooltip am „i“-Icon (Tabs + Start-Kacheln). */
+const STAMMBAUM_BEREICH_TABS: {
+  key: StammbaumBereichTab
+  label: string
+  hint: string
+  /** Untertitel auf der Start-Übersicht (optional, sonst = hint) */
+  hintHub?: string
+  info: string
+}[] = [
+  {
+    key: 'karten',
+    label: 'Nach unten',
+    hint: 'Du, Partner, Kinder',
+    info: 'Nach unten: Personen öffnen, Partner und Kinder pflegen.',
+  },
+  {
+    key: 'nach-oben',
+    label: 'Nach oben',
+    hint: 'Eltern & Vorfahren',
+    info: 'Nach oben: Eltern und Vorfahren in den Karten – wer über dir in der Linie steht.',
+  },
+  {
+    key: 'grafik',
+    label: 'Grafik',
+    hint: 'Als Bild',
+    hintHub: 'Bild, Zoomen',
+    info: 'Stammbaum als Bild: zoomen, Richtung wählen – für den Überblick.',
+  },
+  {
+    key: 'pdf',
+    label: 'Drucken',
+    hint: 'PDF & Listen',
+    info: 'Listen, Seiten und Grafik zum Drucken oder als PDF speichern.',
+  },
 ]
+
+const NUR_MEIN_ZWEIG_INFO =
+  'Ein: nur dein Ast (du, Partner, Kinder). Aus: alle Äste – auch Geschwister mit ihren Familien.'
+
+function StammbaumBereichInfoIcon({ text, corner }: { text: string; corner?: boolean }) {
+  return (
+    <span
+      className={['stammbaum-bereich-info-icon', corner ? 'stammbaum-bereich-info-icon--corner' : '']
+        .filter(Boolean)
+        .join(' ')}
+      title={text}
+      aria-hidden="true"
+    >
+      i
+    </span>
+  )
+}
 
 /** Stammbaum-Kachel: bei „Verstorben“ in der Personenkarte schwarzer Rand (statt Zweig-Farbe). */
 function stammbaumKachelRaender(p: K2FamiliePerson, st: { border: string; bg: string }) {
@@ -185,7 +231,7 @@ export default function K2FamilieStammbaumPage() {
     },
     [setSearchParams]
   )
-  const { currentTenantId, familieStorageRevision, tenantList, setCurrentTenantId, addTenant } = useFamilieTenant()
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannOrganisch = capabilities.canEditOrganisches
@@ -671,25 +717,7 @@ export default function K2FamilieStammbaumPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
-            <div className="familie-toolbar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              <span className="meta">Familie:</span>
-              <select value={currentTenantId} onChange={(e) => setCurrentTenantId(e.target.value)}>
-                {tenantList.map((id) => (
-                  <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="btn-outline"
-                disabled={!kannManageFamilienInstanz}
-                title={!kannManageFamilienInstanz ? 'Nur Inhaber:in kann eine neue Familie anlegen.' : undefined}
-                onClick={() => {
-                  if (kannManageFamilienInstanz) addTenant()
-                }}
-              >
-                Neue Familie
-              </button>
-            </div>
+            {/** Familie wählen / Neue Familie: nur in K2FamilieLayout (keine zweite Zeile) */}
             <div className="familie-name-save" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <label htmlFor="ft-family-display-name" className="meta">Anzeigename dieser Familie:</label>
               <input
@@ -760,6 +788,7 @@ export default function K2FamilieStammbaumPage() {
                           type="button"
                           role="tab"
                           aria-selected={active}
+                          title={tab.info}
                           onClick={() => setStammbaumBereich(tab.key)}
                           style={{
                             flex: '1 1 140px',
@@ -775,10 +804,23 @@ export default function K2FamilieStammbaumPage() {
                             font: 'inherit',
                           }}
                         >
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'rgba(255,255,255,0.96)' }}>
-                            {idx + 1}.{' '}
+                          <span
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              justifyContent: 'space-between',
+                              gap: '0.35rem',
+                              width: '100%',
+                            }}
+                          >
+                            <span style={{ minWidth: 0 }}>
+                              <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'rgba(255,255,255,0.96)' }}>
+                                {idx + 1}.{' '}
+                              </span>
+                              <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'rgba(255,255,255,0.96)' }}>{tab.label}</span>
+                            </span>
+                            <StammbaumBereichInfoIcon text={tab.info} />
                           </span>
-                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'rgba(255,255,255,0.96)' }}>{tab.label}</span>
                           <span className="meta" style={{ display: 'block', marginTop: '0.25rem', fontSize: '0.76rem', lineHeight: 1.35 }}>
                             {tab.hint}
                           </span>
@@ -837,94 +879,53 @@ export default function K2FamilieStammbaumPage() {
                 gap: '0.75rem',
               }}
             >
-              <button
-                type="button"
-                className="card familie-card-enter"
-                style={{
-                  margin: 0,
-                  padding: '1rem 0.85rem',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  border: '2px solid rgba(20,184,166,0.55)',
-                  background: 'linear-gradient(165deg, rgba(13,148,136,0.22) 0%, rgba(15,23,42,0.55) 100%)',
-                  borderRadius: 12,
-                  color: 'inherit',
-                  font: 'inherit',
-                }}
-                onClick={() => setStammbaumBereich('karten')}
-              >
-                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
-                  1
-                </span>
-                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Nach unten</span>
-                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Du, Partner, Kinder</span>
-              </button>
-              <button
-                type="button"
-                className="card familie-card-enter"
-                style={{
-                  margin: 0,
-                  padding: '1rem 0.85rem',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  border: '2px solid rgba(148,163,184,0.45)',
-                  background: 'rgba(15,23,42,0.45)',
-                  borderRadius: 12,
-                  color: 'inherit',
-                  font: 'inherit',
-                }}
-                onClick={() => setStammbaumBereich('nach-oben')}
-              >
-                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
-                  2
-                </span>
-                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Nach oben</span>
-                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Eltern &amp; Vorfahren</span>
-              </button>
-              <button
-                type="button"
-                className="card familie-card-enter"
-                style={{
-                  margin: 0,
-                  padding: '1rem 0.85rem',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  border: '2px solid rgba(148,163,184,0.45)',
-                  background: 'rgba(15,23,42,0.45)',
-                  borderRadius: 12,
-                  color: 'inherit',
-                  font: 'inherit',
-                }}
-                onClick={() => setStammbaumBereich('grafik')}
-              >
-                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
-                  3
-                </span>
-                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Grafik</span>
-                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>Bild, Zoomen</span>
-              </button>
-              <button
-                type="button"
-                className="card familie-card-enter"
-                style={{
-                  margin: 0,
-                  padding: '1rem 0.85rem',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  border: '2px solid rgba(148,163,184,0.45)',
-                  background: 'rgba(15,23,42,0.45)',
-                  borderRadius: 12,
-                  color: 'inherit',
-                  font: 'inherit',
-                }}
-                onClick={() => setStammbaumBereich('pdf')}
-              >
-                <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
-                  4
-                </span>
-                <span style={{ display: 'block', marginTop: '0.35rem', fontWeight: 700, fontSize: '0.98rem', color: 'rgba(255,255,255,0.96)' }}>Drucken</span>
-                <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>PDF &amp; Listen</span>
-              </button>
+              {STAMMBAUM_BEREICH_TABS.map((tab, idx) => {
+                const hubHint = tab.hintHub ?? tab.hint
+                const first = idx === 0
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    className="card familie-card-enter"
+                    title={tab.info}
+                    style={{
+                      margin: 0,
+                      padding: '1rem 0.85rem',
+                      paddingRight: '1.75rem',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      position: 'relative',
+                      border: first ? '2px solid rgba(20,184,166,0.55)' : '2px solid rgba(148,163,184,0.45)',
+                      background: first
+                        ? 'linear-gradient(165deg, rgba(13,148,136,0.22) 0%, rgba(15,23,42,0.55) 100%)'
+                        : 'rgba(15,23,42,0.45)',
+                      borderRadius: 12,
+                      color: 'inherit',
+                      font: 'inherit',
+                    }}
+                    onClick={() => setStammbaumBereich(tab.key)}
+                  >
+                    <StammbaumBereichInfoIcon text={tab.info} corner />
+                    <span style={{ fontSize: '1.35rem', lineHeight: 1 }} aria-hidden>
+                      {idx + 1}
+                    </span>
+                    <span
+                      style={{
+                        display: 'block',
+                        marginTop: '0.35rem',
+                        fontWeight: 700,
+                        fontSize: '0.98rem',
+                        color: 'rgba(255,255,255,0.96)',
+                      }}
+                    >
+                      {tab.label}
+                    </span>
+                    <span className="meta" style={{ display: 'block', marginTop: '0.35rem', lineHeight: 1.4, fontSize: '0.82rem' }}>
+                      {hubHint}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </nav>
         )}
@@ -1009,6 +1010,7 @@ export default function K2FamilieStammbaumPage() {
                 aria-label="Nur meinen Familienzweig in der Liste anzeigen"
               />
               <span style={{ color: 'rgba(255,255,255,0.95)', fontSize: '0.92rem', fontWeight: 600 }}>Nur mein Zweig</span>
+              <StammbaumBereichInfoIcon text={NUR_MEIN_ZWEIG_INFO} />
             </label>
             <span className="meta" style={{ fontSize: '0.82rem', maxWidth: '34rem', lineHeight: 1.4 }}>
               Ein = nur dein Ast. Aus = <strong>alle</strong> Äste (auch Geschwister mit ihren Familien).

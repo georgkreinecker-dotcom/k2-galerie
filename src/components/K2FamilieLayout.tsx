@@ -43,6 +43,9 @@ function FamilieTenantToolbar() {
     return () => window.removeEventListener(FAMILIE_SESSION_UPDATED_EVENT, onUpd)
   }, [])
 
+  /** Nach Zusammenführen oft nur noch eine Familie – dann keine redundanten Auswahl-UI. */
+  if (tenantList.length <= 1) return null
+
   return (
     <div
       className="k2-familie-tenant-toolbar k2-familie-no-print"

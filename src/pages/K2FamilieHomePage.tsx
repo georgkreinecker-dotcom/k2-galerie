@@ -930,7 +930,11 @@ export default function K2FamilieHomePage() {
               >
                 Musterfamilie laden und anzeigen
               </button>
-              {musterLoaded && <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: a.muted }}>Familie Huber geladen. Im Dropdown „Familie:“ in der Leiste kannst du sie auswählen.</p>}
+              {musterLoaded && (
+                <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: a.muted }}>
+                  Familie Huber geladen. Oben in der Leiste ist die aktuelle Familie sichtbar (mehrere Mandanten: dort wechseln).
+                </p>
+              )}
             </div>
           )}
 

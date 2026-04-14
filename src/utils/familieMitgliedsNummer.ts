@@ -34,7 +34,11 @@ export function normalizeMitgliedsNummerInput(s: string | undefined | null): str
     else out.push(t[i]!)
   }
   t = out.join('')
-  return t.trim().replace(/\s+/g, '')
+  t = t.trim().replace(/\s+/g, '')
+  /** Mobil: AB-12 / AB–12 (Bindestrich, Gedankenstrich) → AB12; nur dieses 2+2-Format, KF-… & Co. bleiben. */
+  const vier = t.match(/^([A-Za-z]{2})[\u002D\u2010-\u2015\u2212\uFE63\uFF0D]?(\d{2})$/)
+  if (vier) return `${vier[1]}${vier[2]}`
+  return t
 }
 
 export function trimMitgliedsNummerEingabe(s: string | undefined | null): string {

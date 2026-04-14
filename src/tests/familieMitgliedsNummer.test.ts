@@ -37,6 +37,13 @@ describe('familieMitgliedsNummer', () => {
     expect(normalizeMitgliedsNummerInput('ab 12')).toBe('ab12')
   })
 
+  it('normalizeMitgliedsNummerInput: optionaler Bindestrich bei XX12 (Mobil)', () => {
+    expect(normalizeMitgliedsNummerInput('AB-12')).toBe('AB12')
+    expect(normalizeMitgliedsNummerInput('ab–12')).toBe('ab12')
+    expect(normalizeMitgliedsNummerInput('XY99')).toBe('XY99')
+    expect(normalizeMitgliedsNummerInput('KF-M-1001')).toBe('KF-M-1001')
+  })
+
   it('findPersonIdByMitgliedsNummer: Treffer, case-insensitive', () => {
     const personen = [p('a', 'KF-M-1001'), p('b', 'x')]
     expect(findPersonIdByMitgliedsNummer(personen, 'kf-m-1001')).toBe('a')

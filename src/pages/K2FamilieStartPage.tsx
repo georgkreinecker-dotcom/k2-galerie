@@ -9,11 +9,11 @@ import { useState } from 'react'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
-import { seedFamilieHuber, getFamilieTenantDisplayName } from '../data/familieHuberMuster'
+import { seedFamilieHuber } from '../data/familieHuberMuster'
 
 export default function K2FamilieStartPage() {
   const navigate = useNavigate()
-  const { currentTenantId, tenantList, setCurrentTenantId, addTenant, refreshFromStorage } = useFamilieTenant()
+  const { refreshFromStorage } = useFamilieTenant()
   const [seedDone, setSeedDone] = useState(false)
 
   const handleLoadMusterfamilie = () => {
@@ -29,19 +29,9 @@ export default function K2FamilieStartPage() {
       <div className="viewport k2-familie-page">
         <header>
           <div>
+            {/** Familie wählen: K2FamilieLayout – hier nur Zurück */}
             <div className="familie-toolbar" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
               <FamilieBackButton className="meta" />
-              <span className="meta">Familie:</span>
-              <select
-                value={currentTenantId}
-                onChange={(e) => setCurrentTenantId(e.target.value)}
-                aria-label="Familie wählen"
-              >
-                {tenantList.map((id) => (
-                  <option key={id} value={id}>{getFamilieTenantDisplayName(id, 'Standard')}</option>
-                ))}
-              </select>
-              <button type="button" className="btn-outline" onClick={() => addTenant()}>Neue Familie</button>
             </div>
             <h1>Leitbild & Vision</h1>
             <p className="meta" style={{ margin: '0.35rem 0 0.75rem', maxWidth: 640 }}>
@@ -85,7 +75,9 @@ export default function K2FamilieStartPage() {
         <div className="card">
           <h2>Erste Schritte</h2>
           <ol style={{ margin: '0 0 0 1.2rem', padding: 0, lineHeight: 1.7 }}>
-            <li><strong>Familie wählen</strong> (Dropdown oben): „Standard“ oder eine andere Familie. „Neue Familie“ legt einen leeren Stammbaum an.</li>
+            <li>
+              <strong>Familie wählen</strong> (Leiste oben, wenn mehrere Mandanten): „Standard“ oder eine andere Familie. „Neue Familie“ legt einen leeren Stammbaum an. Bei nur einer Familie entfällt die Auswahl.
+            </li>
             <li><strong>Stammbaum</strong> → „Person hinzufügen“ → Person anlegen, Klick auf sie öffnet die Personen-Seite.</li>
             <li><strong>Personen-Seite:</strong> Name, Kurztext, Foto; Beziehungen (Eltern, Kinder, Partner*innen, Geschwister, Wahlfamilie); <strong>Momente</strong> (Hochzeit, Geburt, Reise, …).</li>
             <li><strong>Events</strong> (Geburtstage, Treffen): Datum, Titel, Teilnehmer aus der Familie auswählen.</li>
