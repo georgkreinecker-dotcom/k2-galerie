@@ -1,8 +1,8 @@
-# Benutzerhandbuch – K2 Familie
+# Benutzerhandbuch K2 Familie
 
-Willkommen. Für **K2 Familie** gibt es **dieses eine** Benutzerhandbuch. Inhalt und Begriffe beziehen sich **ausschließlich** auf **K2 Familie** – Familie, Stammbaum, Rollen, Zugang und Sicherung.
+Willkommen. Dieses Handbuch gehört zu **K2 Familie**. Im Zentrum steht die **Personenkarte** – daraus leiten sich **Stammbaum**, **Rollen** und **Zugang** ab. Ergänzend: **Grafik und Druck** (Stammbaum als Bild und Ausdruck), **Events**, **Geschichte**, **Gedenkort**, **Einstellungen** sowie **Sicherung** und **Zusammenarbeit** im Alltag.
 
-**Übersicht:** Links unter **Kapitel** ein Thema antippen – dort steht der **volle Text**. Diese Seite ist das **Inhaltsverzeichnis** (kurz). Beim ersten Öffnen des Handbuchs erscheint oft direkt das Kapitel **Rolle Inhaber:in**; die Übersicht erreichen Sie über **Inhaltsverzeichnis** in der linken Leiste.
+**So navigieren Sie:** Links unter **Kapitel** tippen Sie ein Thema an; der Text erscheint rechts. Diese Seite ist die **Kurzübersicht**. Über **Inhaltsverzeichnis** kommen Sie jederzeit zurück.
 
 ---
 
@@ -10,16 +10,32 @@ Willkommen. Für **K2 Familie** gibt es **dieses eine** Benutzerhandbuch. Inhalt
 
 1. [Erste Schritte](01-ERSTE-SCHRITTE.md)
 
-Einstieg, Projektstartseite, was als Nächstes folgt.
+Einstieg und Orientierung in K2 Familie.
 
-2. [K2 Familie – Rolle Inhaber:in](02-K2-FAMILIE-INHABER-ROLLE.md)
+2. [Die Personenkarte](02-DIE-PERSONENKARTE.md)
 
-Ausführlich für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang und Einladungen, Delegation, Missverständnisse vermeiden.
+**Herz und Quelle der App:** eine Karte pro Person, **Stammbaum & Grundstruktur – wo Karten entstehen**, Beziehungen, eigene und fremde Karte, Code und Einladung.
 
-3. [K2 Familie – Bearbeiter:innen und Leser:innen](03-K2-FAMILIE-BEARBEITER-UND-LESER.md)
+3. [K2 Familie – Rolle Inhaber:in](03-K2-FAMILIE-INHABER-ROLLE.md)
 
-Was **Bearbeiter:innen** und **Leser:innen** sehen und bearbeiten dürfen; persönlicher Code; Checklisten.
+Für **Inhaber:innen**: **einfachster Aufbau** der Familienstruktur (Grundstruktur, Karten anlegen), Verantwortung, Bereiche nur für Sie, Arbeitsansicht, Sicherung, Zugang und Einladungen, Zusammenarbeit im Team, typische Missverständnisse.
+
+4. [K2 Familie – Bearbeiter:innen und Leser:innen](04-K2-FAMILIE-BEARBEITER-UND-LESER.md)
+
+Was **Bearbeiter:innen** und **Leser:innen** sehen und ändern dürfen; persönlicher Code; Checklisten.
+
+5. [Stammbaum – Funktionen und Bereiche](05-STAMMBAUM-FUNKTIONEN.md)
+
+**Stammbaum-Seite:** vier Bereiche (Nach unten, Nach oben, Grafik, Druck), „Das bin ich“, nur mein Zweig, Karten, Druck/PDF – alles in Alltagssprache erklärt.
+
+6. [Events, Geschichte, Gedenkort und Einstellungen](06-EVENTS-GESCHICHTE-GEDENKORT-EINSTELLUNGEN.md)
+
+**Momente & Zeit:** Familien-Events, Kalender-Übersicht, zusammenfassende Geschichte aus Events und Momenten, Gedenkort für Verstorbene. **Einstellungen:** Rolle, Zugang, Sicherung, Verwaltung.
+
+7. [Grafik und Druck](07-GRAFIK-UND-DRUCK.md)
+
+**Stammbaum als Bild** (zoomen, Richtung) und **Ausdruck/PDF** (Listen, Blätter, Katalog) – Kurzfassung mit Verweis auf das ausführliche Stammbaum-Kapitel.
 
 ---
 
-**Drucken:** Button „Drucken“ in der App – einzelnes Kapitel oder gesamtes Handbuch als PDF.
+**Drucken:** In der App den Button **Drucken** – ein Kapitel oder das ganze Handbuch als PDF.
