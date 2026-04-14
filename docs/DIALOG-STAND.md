@@ -1,5 +1,23 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie QR/Einladung: `fn` bei Willkommen-Redirect; Kopieren = gleiche URL wie QR** – `K2FamilieWillkommenPage`: Redirect zu `meine-familie` behält `fn` (Anzeigename Gast, max. 240 Zeichen). `K2FamilieHomePage`: „Einladungslink kopieren“ nutzt dieselben gebusteten URLs wie der QR (`familieEinladungsUrl` / `familiePersoenlicheEinladungsUrl`). **Commit:** **`c8e2d083`** ✅ GitHub
+
+**Was wir JETZT tun:** Optional: Einladung mit Flyer-Route `/projects/k2-familie/willkommen?…` inkl. `fn` testen; QR scannen und kopierten Link vergleichen. Wenn noch „falsch“: konkretes Symptom notieren (z. B. alter Stand, falsche Familie, `fn` fehlt).
+
+---
+
+**Letzter Stand:** 13.04.26 (Session-Ende) – **K2 Familie Meine Familie: „Gilt für diese Familie“ + `t=` sichtbar** – Unter „Familien-Zugang“ Anzeigename (`getFamilieTenantDisplayName`) und technische Kennung `t=`; QR-`alt` mit Familienname; dazu Session-Paket: Einladungs-Query-Sync, persönliche Codes/Mitgliedsnummern, Backup-Tests, Einstellungen/Sicherung. **Commit:** **`COMMIT_PLACEHOLDER`** ✅ GitHub
+
+**Was wir JETZT tun:** Nächste Session: optional **Meine Familie** im Browser prüfen (Name + `t=` stimmen für Familie Kreinecker); sonst wie geplant weiter.
+
+---
+
+**Letzter Stand:** 13.04.26 – **K2 Familie: Anzeigename (z. B. Familie Kreinecker), kein Roh-Tenant in der Auswahl** – `getFamilieTenantDisplayName`: ohne `familyDisplayName` bei `familie-<Zeitstempel>` → freundlicher Text statt technischer ID; QR/Link bleiben `?t=&z=&m=` (technisch eindeutig). **Meine Familie** → **Zugang & Name**: Feld Anzeigename für Inhaber:in; Mitglieder sehen „Diese Familie: …“. `K2FamilieLayout`: Dropdown nach `K2_FAMILIE_SESSION_UPDATED` neu zeichnen. **Commit:** **`ab3fb288`** ✅ GitHub
+
+**Letzter Stand:** 13.04.26 – **K2 Familie: Rolle + Identität (Sportwagenmodus)** – `getFamilieEffectiveCapabilities` (`familieIdentitaet.ts`): Schreib-Rechte nur, wenn „Du“ gesetzt ist und (kein persönlicher Code auf der Karte **oder** Session-Bestätigung in `familieIdentitaetStorage`). Standard-Rolle **Leser** (`familieRollenStorage`). Vertrauenspfade setzen Bestätigung: Code-Eingabe Meine Familie, `?m=`, Inhaber:in „Du“-Dropdown / Stammbaum. `saveEinstellungen`/`savePersonen` → `K2_FAMILIE_SESSION_UPDATED`; bei Wechsel von `ichBinPersonId` Session-Bestätigung gelöscht. Tests `familieIdentitaet.test.ts`. Doku: `K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md` §3. **Commit:** **`e28ff59b`** ✅ GitHub
+
+**Letzter Stand:** 13.04.26 – **K2 Familie Meine Familie: „Zugang & Name“ für Inhaber:in** – `K2FamilieHomePage` (`kannInstanz`): Einleitung, Untertitel **Familien-Zugang**, Label **Familien-Zugangsnummer** und Hilfetexte durchgängig als **Inhaber:in / Administrator** (du legst die Nummer und Codes fest; Mitglieder/Gäste nutzen QR/Link). Mitglieder ohne Verwaltungsrecht: Texte unverändert. `npm run test` grün. **Commit:** *(folgt nach Push)*
+
 **Letzter Stand:** 13.04.26 – **K2 Familie Zugang: Entscheidung B verbindlich** – Persönliche **Mitgliedsnummer** pro Person (`mitgliedsNummer` an `K2FamiliePerson`), getrennt von der **familienweiten** Zugangsnummer (`mitgliedsNummerAdmin`). Hilfsfunktion `findPersonIdByMitgliedsNummer` in `familieMitgliedsNummer.ts`; Tests `familieMitgliedsNummer.test.ts`. Doku: `K2-FAMILIE-ZUGANG-UND-ROLLEN-FAMILIENINTERN.md`, `K2-FAMILIE-DATENMODELL.md`. **Nächster Schritt:** UI (Eingabe nach Familienlink + Pflege auf Personenkarte). **Commit:** **`b0e4682e`** ✅ GitHub (nach Push)
 
 **Letzter Stand:** 13.04.26 – **K2 Familie Leser:in – lesen überall, schreiben nur persönlich** – Wie von Georg beschrieben: Familienmitglied mit Rolle **Leser:in** hat **Lesezugriff** auf die Familien-Inhalte und **Schreibzugriff** auf den **eigenen Bereich** (Social-Media, Fotos, Kurztexte/Momente, **Gedenkort** mit Gaben). Umsetzung: `canEditEigenesProfil` in `k2FamilieRollen.ts`; `K2FamiliePersonPage` (nur persönliche Felder speichern auf eigener Karte, Struktur/Stammbaum-Felder gesperrt); `K2FamilieGedenkortPage` (`kannGabenHinterlegen`); `K2FamilieHomePage` Startpunkt ohne Stammbaum-Freigabe für Leser; Doku/Handbuch-Druck wo angepasst. Tests inkl. `k2FamilieRollen.test.ts`, `npm run build` ok. **Commit:** **`28ad1da3`** ✅ GitHub (nach Push)
@@ -18,7 +36,7 @@
 
 **Letzter Stand:** 13.04.26 – **Vercel Build TS2307: K2-Familie-Einstieg-Module nachgetragen** – Commit **`e8f6ab04`** importierte `K2FamilieEinstiegPage` und Route **`/projects/k2-familie/einstieg`**, die drei Dateien lagen nur lokal: jetzt im Repo **`K2FamilieEinstiegPage.tsx`**, **`einstiegContentFamilie.ts`**, **`einstiegContentFamilie.test.ts`**. Tests 445 grün, Build ok. **Commit:** **`41f90533`** ✅ GitHub. Zuvor (selber Tag): Meine Familie **Einstellungen-Kachel** statt Handbuch/Mappe im Raster – **`9cd8b289`** ✅.
 
-**Was wir JETZT tun:** Nach Deploy: Rolle **Leser:in** kurz prüfen – eigene Karte bearbeiten (persönliche Felder), Gedenkort Gaben, **kein** Stammbaum-Struktur ändern. Optional: Einladungs-Link `?t=` wie zuvor testen.
+**Was wir JETZT tun:** Optional: Im Browser **Meine Familie** → **Zugang & Name** als Inhaber:in gegenlesen; sonst wie zuvor Leser:in kurz prüfen oder Einladung `?t=` testen.
 
 ---
 
