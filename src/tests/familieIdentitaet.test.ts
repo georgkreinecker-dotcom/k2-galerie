@@ -85,4 +85,21 @@ describe('getFamilieEffectiveCapabilities', () => {
     expect(caps.canEditStrukturUndStammdaten).toBe(false)
     expect(caps.rolle).toBe('bearbeiter')
   })
+
+  it('Inhaber mit Du, Arbeitsansicht Leser (ohne Code): Rechte wie Leser:in', () => {
+    const p = person('p1')
+    const caps = getFamilieEffectiveCapabilities('inhaber', TID, { ichBinPersonId: 'p1' }, [p], 'leser')
+    expect(caps.rolle).toBe('leser')
+    expect(caps.canEditStrukturUndStammdaten).toBe(false)
+    expect(caps.canManageFamilienInstanz).toBe(false)
+    expect(caps.rolleGewaehlt).toBe('inhaber')
+    expect(caps.inhaberArbeitsansicht).toBe('leser')
+  })
+
+  it('Inhaber ohne „Du“, Arbeitsansicht Leser: weiterhin volle Inhaber-Rechte (Ansicht erst mit Du wirksam)', () => {
+    const caps = getFamilieEffectiveCapabilities('inhaber', TID, {}, [], 'leser')
+    expect(caps.canManageFamilienInstanz).toBe(true)
+    expect(caps.canEditStrukturUndStammdaten).toBe(true)
+    expect(caps.rolle).toBe('inhaber')
+  })
 })

@@ -6,6 +6,20 @@
 /** Rolle der aktuellen Sitzung für die gewählte Familie (lokal / später Server-Token). */
 export type K2FamilieRolle = 'inhaber' | 'bearbeiter' | 'leser'
 
+/**
+ * Nur wenn die gewählte Rolle **Inhaber:in** ist: welche Oberfläche/Rechte wirken (wie die anderen Rollen),
+ * ohne die gespeicherte Rolle zu wechseln. **voll** = bisheriges Verhalten.
+ */
+export type K2FamilieInhaberArbeitsansicht = 'voll' | 'bearbeiter' | 'leser'
+
+export const K2_FAMILIE_INHABER_ANSICHT: K2FamilieInhaberArbeitsansicht[] = ['voll', 'bearbeiter', 'leser']
+
+export const K2_FAMILIE_INHABER_ANSICHT_LABELS: Record<K2FamilieInhaberArbeitsansicht, string> = {
+  voll: 'Alle Bereiche bearbeiten (Standard Inhaber:in)',
+  bearbeiter: 'Wie Bearbeiter:in – Stammbaum nur ansehen',
+  leser: 'Wie Leser:in – überall lesen, schreiben nur eigenes Profil',
+}
+
 export const K2_FAMILIE_ROLLEN: K2FamilieRolle[] = ['inhaber', 'bearbeiter', 'leser']
 
 export const K2_FAMILIE_ROLLEN_LABELS: Record<K2FamilieRolle, string> = {
@@ -63,6 +77,13 @@ export const FAMILIE_DRUCK_RECHTE_ZEILEN: readonly {
 
 export interface FamilieRollenCapabilities {
   rolle: K2FamilieRolle
+  /** Rollenwahl im Dropdown (Speicher); kann von `rolle` abweichen bei Inhaber-Arbeitsansicht. */
+  rolleGewaehlt?: K2FamilieRolle
+  /**
+   * Nur bei gewählter Rolle Inhaber:in und effektiver Inhaber-Position: gespeicherte Arbeitsansicht.
+   * `null` = nicht Inhaber oder Inhaber:in laut Familie ist eine andere Person.
+   */
+  inhaberArbeitsansicht?: K2FamilieInhaberArbeitsansicht | null
   /** Immer true (Leser dürfen alles sehen) */
   canView: true
   /**

@@ -5,7 +5,11 @@
  */
 
 import type { K2FamilieEinstellungen, K2FamiliePerson } from '../types/k2Familie'
-import type { FamilieRollenCapabilities, K2FamilieRolle } from '../types/k2FamilieRollen'
+import type {
+  FamilieRollenCapabilities,
+  K2FamilieInhaberArbeitsansicht,
+  K2FamilieRolle,
+} from '../types/k2FamilieRollen'
 import { getFamilieRollenCapabilities } from '../types/k2FamilieRollen'
 import { trimMitgliedsNummerEingabe } from './familieMitgliedsNummer'
 import { loadIdentitaetBestaetigt } from './familieIdentitaetStorage'
@@ -46,41 +50,72 @@ function capabilitiesNurLesen(rolle: K2FamilieRolle): FamilieRollenCapabilities 
   }
 }
 
+function metaInhaberAnsicht(
+  rolle: K2FamilieRolle,
+  effectiveRolle: K2FamilieRolle,
+  inhaberArbeitsansicht: K2FamilieInhaberArbeitsansicht,
+): Pick<FamilieRollenCapabilities, 'rolleGewaehlt' | 'inhaberArbeitsansicht'> {
+  return {
+    rolleGewaehlt: rolle,
+    inhaberArbeitsansicht:
+      effectiveRolle === 'inhaber' && rolle === 'inhaber' ? inhaberArbeitsansicht : null,
+  }
+}
+
+function mergeCaps(
+  c: FamilieRollenCapabilities,
+  rolle: K2FamilieRolle,
+  effectiveRolle: K2FamilieRolle,
+  inhaberArbeitsansicht: K2FamilieInhaberArbeitsansicht,
+): FamilieRollenCapabilities {
+  return {
+    ...c,
+    ...metaInhaberAnsicht(rolle, effectiveRolle, inhaberArbeitsansicht),
+  }
+}
+
 /**
  * Effektive Berechtigungen für die aktuelle Sitzung.
  *
  * - Ohne „Du“: nur Inhaber:in darf Erst-Einrichtung (Struktur + Instanz); Leser/Bearbeiter nur lesen.
  * - Mit „Du“ und Code auf der Karte: Schreib-Rechte der Rolle nur, wenn die Sitzung die Identität bestätigt hat.
  * - Mit „Du“ ohne Code auf der Karte: Rolle gilt (Einrichtungsphase bis Codes vergeben sind).
+ * - **Inhaber:in + Arbeitsansicht** (mit „Du“): Rechte wie Bearbeiter:in oder Leser:in, Rolle im Speicher bleibt Inhaber:in.
  */
 export function getFamilieEffectiveCapabilities(
   rolle: K2FamilieRolle,
   tenantId: string,
   einst: K2FamilieEinstellungen,
   personen: K2FamiliePerson[],
+  inhaberArbeitsansicht: K2FamilieInhaberArbeitsansicht = 'voll',
 ): FamilieRollenCapabilities {
   const ich = einst.ichBinPersonId?.trim()
   const effectiveRolle = getEffectiveRolleForFamilieDaten(rolle, einst, personen, ich)
-  const base = getFamilieRollenCapabilities(effectiveRolle)
 
+  /** Erst-Einrichtung ohne „Du“: volle Inhaber-Rechte; Arbeitsansicht erst mit „Du“ wirksam. */
   if (!ich) {
     if (effectiveRolle === 'inhaber') {
-      return base
+      return mergeCaps(getFamilieRollenCapabilities('inhaber'), rolle, effectiveRolle, inhaberArbeitsansicht)
     }
-    return capabilitiesNurLesen(effectiveRolle)
+    return mergeCaps(capabilitiesNurLesen(effectiveRolle), rolle, effectiveRolle, inhaberArbeitsansicht)
   }
+
+  const inhaberAnsichtWirksam =
+    effectiveRolle === 'inhaber' && rolle === 'inhaber' && inhaberArbeitsansicht !== 'voll'
+
+  const rolleForCaps: K2FamilieRolle = inhaberAnsichtWirksam ? inhaberArbeitsansicht : effectiveRolle
 
   const ichPerson = personen.find((p) => p.id === ich)
   const codeAufKarte = ichPerson ? trimMitgliedsNummerEingabe(ichPerson.mitgliedsNummer) : ''
 
   if (!codeAufKarte) {
-    return base
+    return mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
   }
 
   const sessionPid = loadIdentitaetBestaetigt(tenantId)
   if (sessionPid !== ich) {
-    return capabilitiesNurLesen(effectiveRolle)
+    return mergeCaps(capabilitiesNurLesen(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
   }
 
-  return base
+  return mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
 }

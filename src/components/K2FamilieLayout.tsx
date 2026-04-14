@@ -10,7 +10,10 @@ import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenan
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
+import type { K2FamilieInhaberArbeitsansicht } from '../types/k2FamilieRollen'
 import {
+  K2_FAMILIE_INHABER_ANSICHT,
+  K2_FAMILIE_INHABER_ANSICHT_LABELS,
   K2_FAMILIE_ROLLEN_AMPEL,
   K2_FAMILIE_ROLLEN_EINZEILER,
   K2_FAMILIE_ROLLEN_LABELS,
@@ -100,9 +103,17 @@ function FamilieTenantToolbar() {
 }
 
 function FamilieRolleLeiste() {
-  const { rolle, setRolle, capabilities } = useFamilieRolle()
+  const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const eff = capabilities.rolle
+  const gewaehlt = capabilities.rolleGewaehlt ?? rolle
+  const ia = capabilities.inhaberArbeitsansicht
+  const isInhaberMitReduzierterAnsicht =
+    gewaehlt === 'inhaber' && ia != null && ia !== 'voll'
+  const showInhaberAnsichtSteuerung = rolle === 'inhaber' && ia != null
+  const showFremdeInhaberHinweis =
+    rolle !== eff && !(rolle === 'inhaber' && ia != null && ia !== 'voll')
   const rolleEinstellungenHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-rolle-wahl`
+  const inhaberAnsichtHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-inhaber-ansicht`
   return (
     <div className="k2-familie-no-print">
       <div
@@ -119,17 +130,25 @@ function FamilieRolleLeiste() {
         <span className="meta" style={{ color: t.muted, fontSize: '0.82rem' }}>
           Deine Rolle:
         </span>
-        <strong
-          style={{
-            fontSize: '0.9rem',
-            fontWeight: 700,
-            color: t.text,
-            fontFamily: t.fontHeading,
-            minWidth: '7.5rem',
-          }}
-        >
-          {K2_FAMILIE_ROLLEN_LABELS[eff]}
-        </strong>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem', minWidth: '7.5rem' }}>
+          <strong
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              color: t.text,
+              fontFamily: t.fontHeading,
+            }}
+          >
+            {isInhaberMitReduzierterAnsicht ? (
+              <>
+                {K2_FAMILIE_ROLLEN_LABELS.inhaber}
+                <span style={{ fontWeight: 500, color: t.muted }}> · Ansicht: {K2_FAMILIE_ROLLEN_LABELS[eff]}</span>
+              </>
+            ) : (
+              K2_FAMILIE_ROLLEN_LABELS[eff]
+            )}
+          </strong>
+        </div>
         <span
           style={{
             display: 'inline-flex',
@@ -154,8 +173,46 @@ function FamilieRolleLeiste() {
           />
           {K2_FAMILIE_ROLLEN_EINZEILER[eff]}
         </span>
+        {showInhaberAnsichtSteuerung && (
+          <label
+            style={{
+              display: 'inline-flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '0.35rem 0.5rem',
+              fontSize: '0.8rem',
+              color: t.muted,
+            }}
+          >
+            <span>Arbeitsansicht (für dich gespeichert):</span>
+            <select
+              aria-label="Arbeitsansicht als Inhaber:in"
+              value={inhaberArbeitsansicht}
+              onChange={(e) => setInhaberArbeitsansicht(e.target.value as K2FamilieInhaberArbeitsansicht)}
+              style={{
+                background: '#fffefb',
+                border: '1px solid rgba(181, 74, 30, 0.28)',
+                borderRadius: t.radius,
+                color: t.text,
+                padding: '0.3rem 0.5rem',
+                fontSize: '0.82rem',
+                fontFamily: 'inherit',
+                maxWidth: 280,
+              }}
+            >
+              {K2_FAMILIE_INHABER_ANSICHT.map((a) => (
+                <option key={a} value={a}>
+                  {K2_FAMILIE_INHABER_ANSICHT_LABELS[a]}
+                </option>
+              ))}
+            </select>
+            <Link to={inhaberAnsichtHash} style={{ color: t.accent, fontWeight: 600 }}>
+              Erklärung
+            </Link>
+          </label>
+        )}
       </div>
-      {rolle !== eff && (
+      {showFremdeInhaberHinweis && (
         <div
           role="status"
           style={{

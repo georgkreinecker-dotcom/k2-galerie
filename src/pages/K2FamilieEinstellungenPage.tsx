@@ -13,8 +13,10 @@ import { adminTheme } from '../config/theme'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
-import type { K2FamilieRolle } from '../types/k2FamilieRollen'
+import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
+  K2_FAMILIE_INHABER_ANSICHT,
+  K2_FAMILIE_INHABER_ANSICHT_LABELS,
   K2_FAMILIE_ROLLEN,
   K2_FAMILIE_ROLLEN_AMPEL,
   K2_FAMILIE_ROLLEN_EINZEILER,
@@ -62,12 +64,14 @@ const iconLink: CSSProperties = {
 
 export default function K2FamilieEinstellungenPage() {
   const { currentTenantId } = useFamilieTenant()
-  const { rolle, setRolle, capabilities } = useFamilieRolle()
+  const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
+  const effRolle = capabilities.rolle
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
   const showSicherung = capabilities.canExportSicherung
-  const isLeser = rolle === 'leser'
-  const isBearbeiter = rolle === 'bearbeiter'
+  const isLeser = effRolle === 'leser'
+  const isBearbeiter = effRolle === 'bearbeiter'
+  const showInhaberArbeitsansichtKarte = rolle === 'inhaber' && capabilities.inhaberArbeitsansicht != null
 
   const einstSnapshot = loadEinstellungen(currentTenantId)
   const personen = loadPersonen(currentTenantId)
@@ -173,15 +177,54 @@ export default function K2FamilieEinstellungenPage() {
                   width: 10,
                   height: 10,
                   borderRadius: '50%',
-                  background: K2_FAMILIE_ROLLEN_AMPEL[rolle],
+                  background: K2_FAMILIE_ROLLEN_AMPEL[effRolle],
                   flexShrink: 0,
                   boxShadow: '0 0 0 1px rgba(0,0,0,0.06)',
                 }}
               />
-              {K2_FAMILIE_ROLLEN_EINZEILER[rolle]}
+              {K2_FAMILIE_ROLLEN_EINZEILER[effRolle]}
             </span>
           </div>
         </div>
+
+        {showInhaberArbeitsansichtKarte && (
+          <div id="k2-familie-inhaber-ansicht" style={{ ...card, borderLeftColor: '#0e7490' }}>
+            <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+              Arbeitsansicht als Inhaber:in
+            </h2>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
+              Deine <strong style={{ color: a.text }}>Rolle</strong> bleibt „Inhaber:in“ – du kannst jederzeit wieder die volle Bearbeitung wählen. Die Ansicht gilt{' '}
+              <strong style={{ color: a.text }}>nur für dich</strong> auf diesem Gerät und wird pro Familie gespeichert. Sobald „Du“ gesetzt ist, wirken die Rechte wie bei Bearbeiter:in oder Leser:in – praktisch für den Alltag, wenn du nicht mehr alles ändern musst.
+            </p>
+            <label htmlFor="k2-familie-inhaber-ansicht-select" style={{ fontSize: '0.88rem', color: a.muted }}>
+              Priorität
+            </label>
+            <select
+              id="k2-familie-inhaber-ansicht-select"
+              aria-label="Arbeitsansicht als Inhaber:in"
+              value={inhaberArbeitsansicht}
+              onChange={(e) => setInhaberArbeitsansicht(e.target.value as K2FamilieInhaberArbeitsansicht)}
+              style={{
+                display: 'block',
+                marginTop: '0.35rem',
+                background: '#fffefb',
+                border: '1px solid rgba(181, 74, 30, 0.28)',
+                borderRadius: a.radius,
+                color: a.text,
+                padding: '0.4rem 0.65rem',
+                fontSize: '0.92rem',
+                fontFamily: 'inherit',
+                maxWidth: 'min(100%, 420px)',
+              }}
+            >
+              {K2_FAMILIE_INHABER_ANSICHT.map((opt) => (
+                <option key={opt} value={opt}>
+                  {K2_FAMILIE_INHABER_ANSICHT_LABELS[opt]}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {designatedId && designatedName && (
           <div style={{ ...card, borderLeftColor: '#0d9488' }}>
