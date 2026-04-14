@@ -100,7 +100,7 @@ function FamilieTenantToolbar() {
 }
 
 function FamilieRolleLeiste() {
-  const { rolle, capabilities } = useFamilieRolle()
+  const { rolle, setRolle, capabilities } = useFamilieRolle()
   const rolleEinstellungenHash = `${PROJECT_ROUTES['k2-familie'].einstellungen}#k2-familie-rolle-wahl`
   return (
     <div className="k2-familie-no-print">
@@ -158,18 +158,42 @@ function FamilieRolleLeiste() {
         <div
           role="status"
           style={{
-            padding: '0.45rem 1rem',
-            background: 'rgba(100, 116, 139, 0.12)',
+            padding: '0.35rem 1rem',
+            background: 'rgba(100, 116, 139, 0.1)',
             borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
-            fontSize: '0.82rem',
-            color: t.text,
+            fontSize: '0.8rem',
+            color: t.muted,
+            lineHeight: 1.35,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '0.5rem 0.75rem',
           }}
         >
-          Lesemodus – zum Mitgestalten die Rolle unter{' '}
-          <Link to={rolleEinstellungenHash} style={{ color: t.accent, fontWeight: 600 }}>
-            Einstellungen → Rolle in dieser Familie
-          </Link>{' '}
-          anpassen (nur für diese Browser-Sitzung; später familienintern durch die Inhaber:in).
+          <span>
+            Lesemodus · Rolle zum Mitgestalten:{' '}
+            <Link to={rolleEinstellungenHash} style={{ color: t.accent, fontWeight: 600 }}>
+              Einstellungen
+            </Link>{' '}
+            (nur diese Sitzung)
+          </span>
+          <button
+            type="button"
+            onClick={() => setRolle('inhaber')}
+            style={{
+              padding: '0.3rem 0.65rem',
+              fontSize: '0.78rem',
+              fontFamily: 'inherit',
+              fontWeight: 600,
+              borderRadius: t.radius,
+              border: `1px solid ${t.accent}`,
+              background: '#fffefb',
+              color: t.accent,
+              cursor: 'pointer',
+            }}
+          >
+            Ich richte die Familie ein → Inhaber:in
+          </button>
         </div>
       )}
     </div>
@@ -211,9 +235,15 @@ const FAMILIE_NAV_MEINE_FAMILIE_HOME: FamilieNavItem[] = [
 function FamilieNav() {
   const loc = useLocation()
   const path = loc.pathname
+  const { capabilities } = useFamilieRolle()
   const isMeineFamilieHome =
     path === familieRoutes.meineFamilie || path === `${familieRoutes.meineFamilie}/`
-  const navItems = isMeineFamilieHome ? FAMILIE_NAV_MEINE_FAMILIE_HOME : FAMILIE_NAV
+  /** Auf der Startseite: „Sicherung“ nur, wenn Export erlaubt (Leser / eingeschränkte Sitzung: weniger Klicks). */
+  const navItems = isMeineFamilieHome
+    ? capabilities.canExportSicherung
+      ? FAMILIE_NAV_MEINE_FAMILIE_HOME
+      : FAMILIE_NAV_MEINE_FAMILIE_HOME.filter((i) => i.to !== familieRoutes.sicherung)
+    : FAMILIE_NAV
 
   return (
     <nav
