@@ -10,6 +10,7 @@ import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { K2_FAMILIE_SESSION_UPDATED, loadEinstellungen, loadPersonen, saveEinstellungen } from '../utils/familieStorage'
 import { setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import { findPersonIdByMitgliedsNummer, trimMitgliedsNummerEingabe } from '../utils/familieMitgliedsNummer'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 
 /** @deprecated Namensgleich mit Event-String; nutze K2_FAMILIE_SESSION_UPDATED aus familieStorage. */
 export const K2_FAMILIE_EINSTELLUNGEN_UPDATED = K2_FAMILIE_SESSION_UPDATED
@@ -27,6 +28,8 @@ export function FamilieEinladungQuerySync() {
     const fnRaw = searchParams.get('fn')?.trim()
     const fn = fnRaw ? fnRaw.slice(0, 240) : ''
     if (!t && !z && !m && !fn) return
+
+    let cancelled = false
 
     const strip = () => {
       const next = new URLSearchParams(searchParams)
@@ -51,57 +54,80 @@ export function FamilieEinladungQuerySync() {
       }
     }
 
-    if (t) {
-      let switched: boolean
-      if (tenantList.includes(t)) {
-        setCurrentTenantId(t)
-        switched = true
-      } else {
-        switched = ensureTenantInListAndSelect(t)
-      }
-      if (!switched) {
+    /**
+     * Mobil: Personenliste war oft noch leer, weil Cloud-Sync (useEffect) erst nach diesem Effect lief.
+     * Dann schlug die Zuordnung fehl und `m` wurde aus der URL entfernt – ohne zweiten Versuch.
+     */
+    const maybeLoadBeforeApplyM = async (tenantId: string, mParam: string | undefined) => {
+      const mNorm = trimMitgliedsNummerEingabe(mParam ?? '')
+      if (!mNorm) return
+      await loadFamilieFromSupabase(tenantId)
+    }
+
+    const run = async () => {
+      if (t) {
+        let switched: boolean
+        if (tenantList.includes(t)) {
+          setCurrentTenantId(t)
+          switched = true
+        } else {
+          switched = ensureTenantInListAndSelect(t)
+        }
+        if (!switched) {
+          strip()
+          return
+        }
+        /** Einladung: `z` gilt für alle (Gäste brauchen die Nummer im Speicher, nicht nur Inhaber:innen). */
+        if (z) {
+          const einst = loadEinstellungen(t)
+          saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })
+        }
+        if (fn) {
+          const einst = loadEinstellungen(t)
+          if (!einst.familyDisplayName?.trim()) {
+            saveEinstellungen(t, { ...einst, familyDisplayName: fn })
+          }
+        }
+        if (m) await maybeLoadBeforeApplyM(t, m)
+        if (cancelled) return
+        applyPersoenlicheMitgliedsNummer(t, m)
         strip()
         return
       }
-      /** Einladung: `z` gilt für alle (Gäste brauchen die Nummer im Speicher, nicht nur Inhaber:innen). */
-      if (z) {
-        const einst = loadEinstellungen(t)
-        saveEinstellungen(t, { ...einst, mitgliedsNummerAdmin: z })
+      if (!t && z) {
+        const einst = loadEinstellungen(currentTenantId)
+        saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })
+        if (fn) {
+          const e2 = loadEinstellungen(currentTenantId)
+          if (!e2.familyDisplayName?.trim()) {
+            saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })
+          }
+        }
+        if (m) await maybeLoadBeforeApplyM(currentTenantId, m)
+        if (cancelled) return
+        applyPersoenlicheMitgliedsNummer(currentTenantId, m)
+        strip()
+        return
       }
-      if (fn) {
-        const einst = loadEinstellungen(t)
+      if (!t && !z && m) {
+        await maybeLoadBeforeApplyM(currentTenantId, m)
+        if (cancelled) return
+        applyPersoenlicheMitgliedsNummer(currentTenantId, m)
+        strip()
+        return
+      }
+      if (!t && !z && !m && fn) {
+        const einst = loadEinstellungen(currentTenantId)
         if (!einst.familyDisplayName?.trim()) {
-          saveEinstellungen(t, { ...einst, familyDisplayName: fn })
+          saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: fn })
         }
+        strip()
       }
-      applyPersoenlicheMitgliedsNummer(t, m)
-      strip()
-      return
     }
-    if (!t && z) {
-      const einst = loadEinstellungen(currentTenantId)
-      saveEinstellungen(currentTenantId, { ...einst, mitgliedsNummerAdmin: z })
-      if (fn) {
-        const e2 = loadEinstellungen(currentTenantId)
-        if (!e2.familyDisplayName?.trim()) {
-          saveEinstellungen(currentTenantId, { ...e2, familyDisplayName: fn })
-        }
-      }
-      applyPersoenlicheMitgliedsNummer(currentTenantId, m)
-      strip()
-      return
-    }
-    if (!t && !z && m) {
-      applyPersoenlicheMitgliedsNummer(currentTenantId, m)
-      strip()
-      return
-    }
-    if (!t && !z && !m && fn) {
-      const einst = loadEinstellungen(currentTenantId)
-      if (!einst.familyDisplayName?.trim()) {
-        saveEinstellungen(currentTenantId, { ...einst, familyDisplayName: fn })
-      }
-      strip()
+
+    void run()
+    return () => {
+      cancelled = true
     }
   }, [
     searchParams,
