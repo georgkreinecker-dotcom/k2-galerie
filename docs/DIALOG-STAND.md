@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: persönlicher Code – Bestätigung schlug fehl trotz richtiger Familie** – Ursache: Abgleich nur über `useMemo`-Personenliste (veraltet). **Fix:** `loadPersonen` beim Klick; Zusatz `persoenlicherCodePasstZuKarte` (Eingabe = Code auf der Karte von „Du“). Hinweise: persönlicher Code vs. Familien-Zugangsnummer KF-…; Erfolgstext: eingerichtet, Code optional auf Personenkarte ändern. **Commit:** **`211f0711`** ✅ GitHub
+
+**Was wir JETZT tun:** Nach Deploy: Meine Familie → gelber Balken „Sitzung nicht bestätigt“ mit echtem persönlichen Code testen; bei nur KF-…-Eingabe muss der neue Hinweis erscheinen.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie QR/Einladung: `fn` bei Willkommen-Redirect; Kopieren = gleiche URL wie QR** – `K2FamilieWillkommenPage`: Redirect zu `meine-familie` behält `fn` (Anzeigename Gast, max. 240 Zeichen). `K2FamilieHomePage`: „Einladungslink kopieren“ nutzt dieselben gebusteten URLs wie der QR (`familieEinladungsUrl` / `familiePersoenlicheEinladungsUrl`). **Commit:** **`c8e2d083`** ✅ GitHub
 
 **Was wir JETZT tun:** Optional: Einladung mit Flyer-Route `/projects/k2-familie/willkommen?…` inkl. `fn` testen; QR scannen und kopierten Link vergleichen. Wenn noch „falsch“: konkretes Symptom notieren (z. B. alter Stand, falsche Familie, `fn` fehlt).
