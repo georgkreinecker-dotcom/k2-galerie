@@ -30,6 +30,7 @@ import K2FamilieBenutzerHandbuchPage from './K2FamilieBenutzerHandbuchPage'
 import K2FamilieEntwicklungDokuPage from './K2FamilieEntwicklungDokuPage'
 import K2FamiliePraesentationsmappePage from './K2FamiliePraesentationsmappePage'
 import KampagneMarketingStrategiePage from './KampagneMarketingStrategiePage'
+import K2WeltStrategiePage from './K2WeltStrategiePage'
 import K2MarktPage from './K2MarktPage'
 import K2MarktOberflaechePage from './K2MarktOberflaechePage'
 import K2SoftwareentwicklungPage from './K2SoftwareentwicklungPage'
@@ -483,6 +484,7 @@ const DevViewPage = ({ defaultPage }: { defaultPage?: string }) => {
       case 'notizen': return PROJECT_ROUTES['k2-galerie'].notizen
       case 'texte-schreibtisch': return PROJECT_ROUTES['k2-galerie'].texteSchreibtisch
       case 'kampagne': return PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie
+      case 'k2-welt-strategie': return PROJECT_ROUTES['k2-galerie'].k2WeltStrategie
       case 'k2-markt': return PROJECT_ROUTES['k2-markt'].home
       case 'mission-control': return PLATFORM_ROUTES.missionControl
       case 'presse':
@@ -1081,6 +1083,7 @@ end tell`
     { id: 'notizen', name: 'Notizen', component: NotizenPage },
     { id: 'texte-schreibtisch', name: 'Texte-Schreibtisch', component: TexteSchreibtischPage },
     { id: 'kampagne', name: 'Kampagne Marketing-Strategie', component: KampagneMarketingStrategiePage },
+    { id: 'k2-welt-strategie', name: 'K2-Welt – Strategie & Portfolio', component: K2WeltStrategiePage },
     { id: 'softwareentwicklung', name: 'K2 Softwareentwicklung', component: K2SoftwareentwicklungPage },
     { id: 'promo-video-produktion', name: 'Promo-Video-Produktion', component: PromoVideoProduktionPage },
     { id: 'promo-runway-pack', name: 'Runway-Paket ~2 Min', component: PromoRunwayPackPage },

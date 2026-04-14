@@ -21,6 +21,7 @@ import ZettelPilotPage from './pages/ZettelPilotPage'
 import ZettelPilotFormPage from './pages/ZettelPilotFormPage'
 import K2GalerieHandbuchPage from './pages/K2GalerieHandbuchPage'
 import KampagneMarketingStrategiePage from './pages/KampagneMarketingStrategiePage'
+import K2WeltStrategiePage from './pages/K2WeltStrategiePage'
 import K2MarktPage from './pages/K2MarktPage'
 import K2MarktOberflaechePage from './pages/K2MarktOberflaechePage'
 import K2MarktSchichtPage from './pages/K2MarktSchichtPage'
@@ -944,6 +945,7 @@ function App() {
       <Route path={PROJECT_ROUTES['k2-galerie'].werbeunterlagen} element={<Mok2Layout><WerbeunterlagenPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].uebersicht} element={<Mok2Layout><UebersichtBoardPage /></Mok2Layout>} />
       <Route path={PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie} element={<KampagneMarketingStrategiePage />} />
+      <Route path={PROJECT_ROUTES['k2-galerie'].k2WeltStrategie} element={<K2WeltStrategiePage />} />
       <Route path={PROJECT_ROUTES['k2-galerie'].licences} element={<Mok2Layout><LicencesPage embeddedInMok2Layout /></Mok2Layout>} />
       <Route
         path={PROJECT_ROUTES['k2-galerie'].pilotEinladung}

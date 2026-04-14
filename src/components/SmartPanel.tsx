@@ -93,6 +93,7 @@ const DEFAULT_ITEMS: PanelItem[] = [
   { id: 'vk2', label: '🎨 VK2 Vereinsplattform', page: 'vk2', url: VK2_GALERIE_URL, color: 'linear-gradient(135deg, rgba(230,122,42,0.2), rgba(255,140,66,0.15))', border: 'rgba(255,140,66,0.4)' },
   { id: 'mok2', label: '📋 mök2 – Vertrieb & Promotion', page: 'mok2', url: MOK2_ROUTE, color: 'linear-gradient(135deg, rgba(251,191,36,0.12), rgba(245,158,11,0.08))', border: 'rgba(251,191,36,0.3)' },
   { id: 'kampagne', label: '📁 Kampagne Marketing-Strategie', page: 'kampagne', url: PROJECT_ROUTES['k2-galerie'].kampagneMarketingStrategie, color: 'linear-gradient(135deg, rgba(95,251,241,0.15), rgba(60,200,190,0.08))', border: 'rgba(95,251,241,0.35)' },
+  { id: 'k2-welt-strategie', label: '📐 K2-Welt – Strategie & Portfolio', page: 'k2-welt-strategie', url: PROJECT_ROUTES['k2-galerie'].k2WeltStrategie, color: 'linear-gradient(135deg, rgba(129,140,248,0.2), rgba(99,102,241,0.12))', border: 'rgba(129,140,248,0.45)' },
   { id: 'k2-markt', label: '🎯 K2 Markt', page: 'k2-markt', url: PROJECT_ROUTES['k2-markt'].home, color: 'linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.08))', border: 'rgba(34,197,94,0.35)' },
   { id: 'presse', label: '📰 Events, Medien & Öffentlichkeit (K2)', page: 'presse', url: '/admin?tab=eventplan&eventplan=öffentlichkeitsarbeit', color: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.08))', border: 'rgba(59,130,246,0.35)' },
   { id: 'notizen', label: '📝 Notizen', page: 'notizen', url: PROJECT_ROUTES['k2-galerie'].notizen, color: 'linear-gradient(135deg, rgba(196,181,253,0.15), rgba(139,92,246,0.08))', border: 'rgba(196,181,253,0.35)' },
@@ -114,7 +115,7 @@ function loadOrder(): string[] {
       return order
     }
   } catch { /* ignore */ }
-  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-markt', 'presse', 'notizen', 'handbuch']
+  return ['k2', 'oek2', 'k2-familie', 'vk2', 'mok2', 'kampagne', 'k2-welt-strategie', 'k2-markt', 'presse', 'notizen', 'handbuch']
 }
 
 function saveOrder(order: string[]) {
@@ -135,6 +136,12 @@ const MAPPEN = [
     icon: '🎬',
     itemIds: [] as const,
   },
+  {
+    id: 'k2-welt-strategie-mappe',
+    label: 'K2-Welt – Strategie & Portfolio',
+    icon: '📐',
+    itemIds: ['k2-welt-strategie'] as const,
+  },
   { id: 'galerie', label: 'K2 Galerie', icon: '🎨', itemIds: [...GALERIE_ITEM_IDS] },
   { id: 'k2-markt', label: 'K2 Markt', icon: '🏪', itemIds: ['k2-markt'] },
   { id: 'familie', label: 'K2 Familie', icon: '👨‍👩‍👧‍👦', itemIds: ['k2-familie'] },
@@ -147,7 +154,7 @@ function loadMappenOpen(): Record<string, boolean> {
     const v = localStorage.getItem(MAPPEN_OPEN_KEY)
     if (v) return JSON.parse(v)
   } catch { /* ignore */ }
-  return { 'ready-to-go': true, 'promo-video': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
+  return { 'ready-to-go': true, 'promo-video': true, 'k2-welt-strategie-mappe': true, galerie: true, 'k2-markt': true, familie: true, notizen: true, vermaechtnis: true }
 }
 
 function saveMappenOpen(open: Record<string, boolean>) {
@@ -248,6 +255,7 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
     if (browserPath.startsWith('/projects/k2-galerie/notizen')) return 'notizen'
     if (browserPath.startsWith('/projects/k2-galerie/promo-runway-pack')) return 'promo-runway-pack'
     if (browserPath.startsWith('/projects/k2-galerie/promo-video-produktion')) return 'promo-video-produktion'
+    if (browserPath.startsWith('/projects/k2-galerie/k2-welt-strategie')) return 'k2-welt-strategie'
     if (browserPath.startsWith('/k2-familie-handbuch')) return 'k2-familie-handbuch'
     if (browserPath.startsWith('/k2team-handbuch')) return 'handbuch'
     return currentPage || ''
@@ -495,11 +503,17 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                       border: '1px solid rgba(167,139,250,0.45)',
                       color: '#e9d5ff',
                     }
-                  : {
-                      background: 'rgba(95,251,241,0.06)',
-                      border: '1px solid rgba(95,251,241,0.2)',
-                      color: '#5ffbf1',
-                    }),
+                  : mappe.id === 'k2-welt-strategie-mappe'
+                    ? {
+                        background: 'linear-gradient(135deg, rgba(129,140,248,0.22), rgba(99,102,241,0.12))',
+                        border: '1px solid rgba(165,180,252,0.45)',
+                        color: '#c7d2fe',
+                      }
+                    : {
+                        background: 'rgba(95,251,241,0.06)',
+                        border: '1px solid rgba(95,251,241,0.2)',
+                        color: '#5ffbf1',
+                      }),
                 borderRadius: '8px',
                 fontWeight: 600,
                 fontSize: '0.9rem',
@@ -1177,6 +1191,61 @@ export default function SmartPanel({ currentPage, onNavigate }: SmartPanelProps)
                               border: `1px solid ${item.border}`,
                               borderRadius: '8px',
                               color: '#22c55e',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              textDecoration: 'none',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </>
+                )}
+                {mappe.id === 'k2-welt-strategie-mappe' && (
+                  <>
+                    <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.72rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>
+                      Strategisches Gesamtbild (ök2, VK2, K2 Familie) – <strong style={{ color: 'rgba(255,255,255,0.75)' }}>nicht</strong> Vertriebstexte in mök2.
+                    </p>
+                    {items.map(item => (
+                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {onNavigate ? (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => onNavigate(item.page)}
+                            onKeyDown={e => e.key === 'Enter' && onNavigate(item.page)}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#a5b4fc',
+                              fontWeight: 600,
+                              fontSize: '0.88rem',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              fontFamily: 'inherit',
+                              display: 'block',
+                            }}
+                          >
+                            {item.label}
+                          </span>
+                        ) : (
+                          <Link
+                            to={item.url}
+                            style={{
+                              flex: 1,
+                              padding: '0.65rem 0.85rem',
+                              background: item.color,
+                              border: `1px solid ${item.border}`,
+                              borderRadius: '8px',
+                              color: '#a5b4fc',
                               fontWeight: 600,
                               fontSize: '0.88rem',
                               textAlign: 'center',

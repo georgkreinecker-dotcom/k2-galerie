@@ -519,53 +519,6 @@ export default function MarketingOek2Page({ embeddedInMok2Layout }: MarketingOek
       </section>
 
       {/* Portfolio ök2 + VK2 + K2 Familie: sachlicher Außentext, Kundenkreis, Wert/Strategie (Stand Diskussion) */}
-      <section id="mok2-portfolio-k2-welt-wert" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
-        <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
-          Portfolio K2-Welt: Marketingtext, Kundenkreis, Wert (sachlich)
-        </h2>
-        <p style={{ marginBottom: '0.65rem', fontSize: '0.82rem', color: 'rgba(255,255,255,0.65)' }}>
-          Drei Produkte unter einer technischen und gestalterischen Linie (kgm solution): öffentliche Galerie &amp; Geschäftsprozesse (ök2), Vereinsplattform (VK2), digitale Familienheimat mit klarer Datenhoheit (K2 Familie). Keine Vermischung sensibler Daten zwischen den Welten – das ist Teil des Versprechens.
-        </p>
-
-        <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Kurztext für Außenkommunikation</h3>
-        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Die K2-Welt bündelt, was viele Einzeltools nur fragmentiert abdecken: <strong>sichtbar werden</strong> mit professioneller Präsentation und Verkauf (ök2), <strong>Gemeinschaften organisieren</strong> mit Vereinsstruktur und gemeinsamem Auftritt (VK2), <strong>Beziehungen und Erinnerungen</strong> verlässlich abbilden, ohne Familiendaten in Werbe- oder Datenökonomien zu geben (K2 Familie). Entstanden aus der Kunst und dem Galerie-Alltag, ausgebaut für den breiteren Markt – konfigurierbar, skalierbar, mit einem gemeinsamen Qualitätsanspruch.
-        </p>
-        <p style={{ marginBottom: '0.75rem', fontSize: '0.95rem', color: 'rgba(255,255,255,0.9)', lineHeight: 1.55 }}>
-          Für Nutzer:innen bedeutet das: ein Partner mit durchgängiger Oberfläche statt einer Ansammlung uneinheitlicher Apps. Für Organisationen bedeutet es: klare Rollen, nachvollziehbare Prozesse und ein Angebot, das vom Einzelkünstler bis zum Verein reicht – ohne die jeweiligen Datenbereiche zu vermischen.
-        </p>
-
-        <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Möglicher Kundenkreis (Einordnung)</h3>
-        <ul style={{ margin: '0 0 0.85rem', paddingLeft: '1.25rem', lineHeight: 1.55, fontSize: '0.9rem', color: 'rgba(255,255,255,0.88)' }}>
-          <li>
-            <strong>ök2 / Galerie-Lizenz:</strong> Selbstständige, Werkstätten, kleine Galerien und alle, die Ideen oder Produkte professionell zeigen wollen; Bedarf an Webpräsenenz, Werken, Events, optional Shop – ohne eigene IT-Abteilung.
-          </li>
-          <li>
-            <strong>VK2:</strong> Vereine mit regelmäßigem Außenauftritt und Mitgliederverwaltung (Einstieg z. B. Kunstvereine; dieselbe Struktur ist für andere Vereinstypen denkbar). Entscheider: Vorstände, ehrenamtlich Organisierende.
-          </li>
-          <li>
-            <strong>K2 Familie:</strong> Haushalte und Familien, die Stammbaum und Beziehungen sauber aus den Karten ableiten wollen, mit hohen Ansprüchen an Datenschutz und ohne kommerzielle Verwertung sensibler Familiendaten durch Dritte.
-          </li>
-          <li>
-            <strong>Überschneidungen:</strong> Wenige Personen nutzen alle drei Produkte privat; häufiger sind <strong>organisatorische</strong> Überschneidungen (z. B. Verein plus ausstellende Mitglieder; berufliche Präsentation plus privater Familienbereich) – technisch und vertraglich klar getrennte Mandanten, eine Marke.
-          </li>
-        </ul>
-
-        <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: '1rem 0 0.5rem', fontWeight: 600 }}>Wert- und strategische Analyse (ohne Kursziele)</h3>
-        <p style={{ marginBottom: '0.65rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55 }}>
-          <strong>Wirtschaftlicher Wert</strong> zeigt sich vor allem in <strong>wiederkehrenden Einnahmen</strong> (Lizenzen, Abos, gestaffelte Vereinsmodelle), nicht in einer einmaligen „Softwarebewertung“. Vergleichbare europäische Nischen-SaaS erreichen bei tragfähigem Vertrieb und niedrigem Wechsel oft Größenordnungen im <strong>sechs- bis siebenstelligen Euro-Bereich Jahresumsatz</strong>, bevor sie zum Massenmarkt werden; genaue Zahlen hängen von Akquise, Supportlast und Preisgestaltung ab.
-        </p>
-        <p style={{ marginBottom: '0.65rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55 }}>
-          <strong>Strategischer Wert</strong> liegt im <strong>Bündel</strong>: weniger Wechselkosten für Kund:innen, die mehrere Bedürfnisse (Öffentlichkeit, Verein, Familie) adressieren; höhere Wechselbereitschaft zum Wettbewerb, wenn Daten und Arbeitsabläufe in einem konsistenten System liegen. Die bewusste <strong>Trennung</strong> der Datenräume (keine K2-Stammdaten in der Demo, keine Vermischung Familie/Galerie) ist langfristig <strong>Vertrauenskapital</strong> und unterscheidet das Angebot von generischen Social- oder reinen Shop-Lösungen.
-        </p>
-        <p style={{ marginBottom: '0.5rem', fontSize: '0.92rem', color: 'rgba(255,255,255,0.88)', lineHeight: 1.55 }}>
-          <strong>Bewertung / Übernahme (Marktüblich):</strong> Bei investierenden oder kaufenenden Dritten werden oft Vielfache des wiederkehrenden Umsatzes diskutiert (grobe Größenordnung in der Branche häufig etwa <strong>3–8× jährlicher wiederkehrender Umsatz</strong>, stark abhängig von Wachstum, Rentabilität und Abhängigkeit von Einzelpersonen). Das ist keine Prognose für dieses Projekt, sondern eine <strong>Einordnung</strong>, wie der Markt solche Angebote lesen kann.
-        </p>
-        <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.55)' }}>
-          Quelle: interne Abstimmung; Produktlinie siehe docs/PRODUKT-VISION.md. Keine Anlageberatung.
-        </p>
-      </section>
-
       {/* K2 Galerie Prospekt – fertige Form zum Herzeigen, 1 Seite */}
       <section id="mok2-prospekt" style={{ marginBottom: '2rem', breakInside: 'avoid' }}>
         <h2 style={{ fontSize: '1.25rem', color: '#5ffbf1', marginBottom: '0.75rem', borderBottom: '1px solid rgba(95,251,241,0.3)', paddingBottom: '0.35rem' }}>
