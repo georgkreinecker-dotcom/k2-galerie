@@ -259,12 +259,14 @@ export const PROJECT_ROUTES = {
     geschichte: '/projects/k2-familie/geschichte',
     gedenkort: '/projects/k2-familie/gedenkort',
     handbuch: '/projects/k2-familie/handbuch',
-    /** Eigenständiges Nutzerhandbuch – public/k2-familie-handbuch/ */
+    /** Benutzerhandbuch K2 Familie – public/k2-familie-handbuch/ */
     benutzerHandbuch: '/k2-familie-handbuch',
     /** Entwicklungsdoku-Hub – docs/K2-FAMILIE-*.md gebündelt */
     entwicklungDoku: '/projects/k2-familie/doku',
     /** Eigenständige Präsentationsmappe – public/k2-familie-praesentation/ */
     familiePraesentationsmappe: '/projects/k2-familie/praesentationsmappe',
+    /** USP & Marketing-Konzept – analog mök2, eigenständig für K2 Familie */
+    familienMarketing: '/projects/k2-familie/marketing',
     sicherung: '/projects/k2-familie/sicherung',
     galerie: '/projects/k2-familie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',

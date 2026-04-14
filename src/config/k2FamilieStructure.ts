@@ -49,6 +49,15 @@ export const k2FamilieLeitGroups: FamilieLeitGroup[] = [
     ],
   },
   {
+    chapterTitle: 'K2 Familien Marketing',
+    sections: [
+      { id: 'fam-mkt-ueberblick', label: 'Überblick', to: `${R.familienMarketing}#fam-mkt-ueberblick` },
+      { id: 'fam-mkt-usp', label: 'USP & Positionierung', to: `${R.familienMarketing}#fam-mkt-usp` },
+      { id: 'fam-mkt-ziel', label: 'Zielgruppe & Kanäle', to: `${R.familienMarketing}#fam-mkt-zielgruppe` },
+      { id: 'fam-mkt-abgrenzung', label: 'Abgrenzung', to: `${R.familienMarketing}#fam-mkt-abgrenzung` },
+    ],
+  },
+  {
     chapterTitle: 'Entwicklung & Sicherheit',
     sections: [
       { id: 'fam-doku', label: 'Doku (Entwicklung)', to: R.entwicklungDoku },
@@ -77,6 +86,9 @@ export function isFamilieNavSectionActive(pathname: string, to: string): boolean
   }
   if (pathTo === R.stammbaum) {
     return pathname.startsWith(R.stammbaum) || pathname.startsWith(`${R.home}/personen`)
+  }
+  if (pathTo === R.familienMarketing) {
+    return pathname === R.familienMarketing || pathname.startsWith(`${R.familienMarketing}/`)
   }
   return pathname === pathTo || pathname.startsWith(`${pathTo}/`)
 }
