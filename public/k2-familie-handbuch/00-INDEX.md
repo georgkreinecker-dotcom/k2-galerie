@@ -1,6 +1,8 @@
 # Benutzerhandbuch – K2 Familie
 
-Willkommen. Dieses Handbuch ist **eigenständig** – getrennt von der K2 Galerie und vom K2Team-Handbuch. Es führt Sie durch **K2 Familie**: Stammbaum, Rollen, Zugang und Sicherung.
+Willkommen. Für **K2 Familie** gibt es **dieses eine** Benutzerhandbuch. Inhalt und Begriffe beziehen sich **ausschließlich** auf **K2 Familie** – Familie, Stammbaum, Rollen, Zugang und Sicherung.
+
+**Übersicht:** Links unter **Kapitel** ein Thema antippen – dort steht der **volle Text**. Diese Seite ist das **Inhaltsverzeichnis** (kurz). Beim ersten Öffnen des Handbuchs erscheint oft direkt das Kapitel **Rolle Inhaber:in**; die Übersicht erreichen Sie über **Inhaltsverzeichnis** in der linken Leiste.
 
 ---
 
@@ -16,7 +18,7 @@ Ausführlich für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeit
 
 3. [K2 Familie – Bearbeiter:innen und Leser:innen](03-K2-FAMILIE-BEARBEITER-UND-LESER.md)
 
-Was **Bearbeiter:innen** und **Leser:innen** sehen und bearbeiten dürfen; persönlicher Code; Kurzverweis Vereinsplattform; Checklisten.
+Was **Bearbeiter:innen** und **Leser:innen** sehen und bearbeiten dürfen; persönlicher Code; Checklisten.
 
 ---
 

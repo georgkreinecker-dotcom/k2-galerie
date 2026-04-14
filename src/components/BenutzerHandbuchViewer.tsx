@@ -27,6 +27,8 @@ export type BenutzerHandbuchViewerProps = {
   deckblattFooterTagline: string
   footerPreviewLine: string
   printCurrentDocPrefix: string
+  /** Ohne `?doc=` in der URL dieses Kapitel laden (z. B. Inhaber-Text statt nur Inhaltsverzeichnis). */
+  defaultDocWhenNoParam?: string
 }
 
 const HANDBUCH_DOC_PARAM = 'doc'
@@ -47,6 +49,7 @@ export default function BenutzerHandbuchViewer({
   deckblattFooterTagline,
   footerPreviewLine,
   printCurrentDocPrefix,
+  defaultDocWhenNoParam,
 }: BenutzerHandbuchViewerProps) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -127,11 +130,22 @@ export default function BenutzerHandbuchViewer({
 
   useEffect(() => {
     const docFromUrl = searchParams.get(HANDBUCH_DOC_PARAM)
-    const fileToLoad = docFromUrl && documents.some((d) => d.file === docFromUrl)
-      ? docFromUrl
-      : documents[0]?.file
+    const isValidFile = (f: string | null): f is string =>
+      !!f && documents.some((d) => d.file === f)
+    const defaultWhenEmpty =
+      defaultDocWhenNoParam && documents.some((d) => d.file === defaultDocWhenNoParam)
+        ? defaultDocWhenNoParam
+        : documents[0]?.file
+    let fileToLoad: string | undefined
+    if (isValidFile(docFromUrl)) {
+      fileToLoad = docFromUrl
+    } else if (docFromUrl === null || docFromUrl === '') {
+      fileToLoad = defaultWhenEmpty
+    } else {
+      fileToLoad = documents[0]?.file
+    }
     if (fileToLoad) loadDocument(fileToLoad)
-  }, [searchParams, documents, loadDocument])
+  }, [searchParams, documents, loadDocument, defaultDocWhenNoParam])
 
   useEffect(() => {
     if (!printPreview) return

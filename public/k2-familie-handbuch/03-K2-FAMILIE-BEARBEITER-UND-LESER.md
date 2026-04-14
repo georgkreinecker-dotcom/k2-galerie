@@ -1,8 +1,6 @@
 # K2 Familie – **Bearbeiter:innen** und **Leser:innen**
 
-Dieses Kapitel beschreibt die Rollen **Bearbeiter:in** und **Leser:in** in **K2 Familie**: was Sie **sehen**, was Sie **bearbeiten** dürfen – und was **nicht**. So finden Sie sich sofort zurecht, ohne alle Funktionen der Inhaber:in zu brauchen.
-
-**Galerie und Besucher:** Auf der **öffentlichen Galerie** (ohne Admin) sind alle **Besucher:innen** automatisch im Modus **nur lesen** – keine Eingaben in Ihre Galerie-Daten. Das ist **unabhängig** von den Rollen in K2 Familie.
+Dieses Kapitel beschreibt die Rollen **Bearbeiter:in** und **Leser:in** in **K2 Familie**: was Sie **sehen**, was Sie **bearbeiten** dürfen – und was **nicht**. So finden Sie sich sofort zurecht, ohne alle Funktionen der Inhaber:in zu brauchen. **Nur K2 Familie** – keine Vermischung mit anderen Produkten.
 
 ---
 
@@ -56,9 +54,9 @@ Wenn Sie unsicher sind, ob ein Bereich für Sie **schreibbar** ist: Wenn kein Sp
 
 [SEITENUMBRUCH]
 
-## 5. Vereinsplattform (VK2) – Kurzverweis
+## 5. Andere Produkte (nur zur Einordnung)
 
-Nutzen Sie zusätzlich die **Vereinsplattform** für einen Verein: Dort gelten **eigene** Regeln (Mitglieder, Katalog, ggf. Kassa). Ein **ausführliches** Handbuch dazu ist bei der **K2 Galerie** unter dem Thema Vereinsplattform vorgesehen – **K2 Familie** und **VK2** sind inhaltlich getrennt; hier geht es nur um Ihre **Familien-Instanz**.
+**K2 Familie** ist **eigenständig**. Falls Sie **zusätzlich** eine **Vereinsplattform** oder andere Angebote nutzen (eigene Regeln, eigene Daten), gelten dort **andere** Anleitungen – **nicht** dieses Handbuch. Hier geht es nur um Ihre **Familien-Instanz**.
 
 [SEITENUMBRUCH]
 

@@ -1,6 +1,6 @@
 /**
- * Eigenständiges Benutzerhandbuch K2 Familie.
- * Quelle: public/k2-familie-handbuch/*.md – getrennt von K2 Galerie und Team-Handbuch.
+ * Benutzerhandbuch nur für K2 Familie (eine Quelle: public/k2-familie-handbuch/).
+ * Kein Bezug zu anderen Produkten – Inhalte ausschließlich K2 Familie.
  */
 
 import BenutzerHandbuchViewer from '../components/BenutzerHandbuchViewer'
@@ -31,6 +31,7 @@ export default function K2FamilieBenutzerHandbuchPage() {
       deckblattFooterTagline="Zum Lesen und Drucken · Daten bleiben in eurem Mandantenraum"
       footerPreviewLine="K2 Familie – Benutzerhandbuch · (Seitenzahlen beim Drucken)"
       printCurrentDocPrefix="K2 Familie – Benutzerhandbuch"
+      defaultDocWhenNoParam="02-K2-FAMILIE-INHABER-ROLLE.md"
     />
   )
 }
