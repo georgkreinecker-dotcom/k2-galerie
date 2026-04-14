@@ -12,6 +12,9 @@ import { adminTheme } from '../config/theme'
 const R = PROJECT_ROUTES['k2-familie']
 const t = adminTheme
 
+/** Einheitliche Planungsannahme für dieses Marketingkonzept (netto/Brutto im Geschäftsplan klären). */
+const K2_FAMILIE_PREIS_ANNAHME_EUR = 10
+
 const printStyles = `
   @media print {
     @page { margin: 12mm 14mm 14mm 14mm; }
@@ -89,11 +92,49 @@ export default function K2FamilieMarketingPage() {
         </h1>
         <p style={{ margin: '0 0 1.25rem 0', fontSize: '0.95rem', color: t.muted, lineHeight: 1.5 }}>
           Ein klarer Rahmen für USP, Außenauftritt und Kommunikation rund um <strong>K2 Familie</strong> – vergleichbar mit der Rolle von{' '}
-          <strong>mök2</strong> (Marketing ök2), aber <strong>eigenständig</strong> und nur für dieses Produkt.
+          <strong>mök2</strong> (Marketing ök2), aber <strong>eigenständig</strong> und nur für dieses Produkt. Den <strong>roten Faden</strong> liefert Abschnitt 1; Details folgen in den nummerierten Kapiteln.
         </p>
 
+        <section id="fam-mkt-konzept" style={{ marginBottom: '1.5rem', padding: '1rem 1.15rem', background: 'linear-gradient(180deg, rgba(15, 118, 104, 0.09) 0%, rgba(181, 74, 30, 0.05) 100%)', borderRadius: 10, border: '1px solid rgba(15, 118, 104, 0.25)' }}>
+          <h2 style={{ margin: '0 0 0.6rem 0', fontSize: '1.08rem', color: '#0f7668' }}>1. Marketingkonzept (durchgängiger roter Faden)</h2>
+          <p style={{ margin: '0 0 0.55rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>
+            Positionierung in einem Satz:
+          </p>
+          <p style={{ margin: '0 0 0.75rem 0', lineHeight: 1.6, fontSize: '0.92rem' }}>
+            <strong>K2 Familie</strong> ist die verlässliche digitale Heimat für <strong>Beziehungen und Erinnerungen</strong> – mit Beziehungen nur aus den Karten, Datenhoheit bei der Familie und ohne Werbe- oder Datenökonomie wie bei großen Stammbuch- oder Social-Anbietern.
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Drei Säulen der Botschaft</p>
+          <ul style={{ margin: '0 0 0.75rem 0', paddingLeft: '1.25rem', lineHeight: 1.55, fontSize: '0.92rem' }}>
+            <li><strong>Vertrauen:</strong> eine Quelle der Wahrheit für Eltern, Kinder, Partner – nachvollziehbar, nicht geraten.</li>
+            <li><strong>Würde:</strong> viele Lebensformen abbildbar, respektvoll, ohne Ausgrenzung (siehe Grundbotschaft).</li>
+            <li><strong>Eigenständigkeit:</strong> eigenes Produkt – keine Vermischung mit K2 Galerie, ök2 oder VK2-Daten.</li>
+          </ul>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Markt &amp; Spielraum</p>
+          <p style={{ margin: '0 0 0.75rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
+            Der globale Markt für Ahnenforschung und Social ist riesig; <strong>unser Spielfeld</strong> ist die <strong>Nische</strong> derer, die Datenschutz und klare Familienstruktur bewusst wollen (SAM). Amtliche Rahmenzahlen zu DACH/EU und Größenordnungen für Marktanteile stehen in Abschnitt 5 – damit bleibt die Planung ehrlich und nachprüfbar.
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Preis-Leitplanke für dieses Konzept</p>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem' }}>
+            Für alle folgenden <strong>Überschlagsrechnungen</strong> gilt: <strong>{K2_FAMILIE_PREIS_ANNAHME_EUR} € pro Monat</strong> pro zahlendem Haushalt bzw. pro Instanz (Annahme zur Planung – keine öffentliche Preisbindung). Details und Umsatzbeispiele: Abschnitt 6.
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Kommunikation &amp; Kanäle (ein Auftritt)</p>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
+            <strong>Erklären</strong> über das Benutzerhandbuch, <strong>überzeugen</strong> über die Präsentationsmappe, <strong>entdecken</strong> über die Einstiegsseite (Flyer/QR) – verknüpft mit dem Projekt &amp; Leitbild für Kontext. Kein lautes Marketing; Tonfall ruhig und klar (Abschnitt 9).
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Phasen der Kundenreise (Orientierung)</p>
+          <ol style={{ margin: '0 0 0.5rem 0', paddingLeft: '1.35rem', lineHeight: 1.55, fontSize: '0.88rem', color: t.muted }}>
+            <li><strong>Aufmerksamkeit:</strong> Problem „Familie digital organisieren“ ohne Datenverkauf – trifft Zielgruppe (Abschnitt 7).</li>
+            <li><strong>Vertrauen:</strong> Vergleich zu Mitbewerbern sachlich nutzen (Abschnitt 4), nicht schlechtreden.</li>
+            <li><strong>Entscheidung:</strong> Nutzen und Preisrahmen transparent; Preisannahme {K2_FAMILIE_PREIS_ANNAHME_EUR} €/Monat als Planungsgröße (Abschnitt 6).</li>
+            <li><strong>Bindung:</strong> Qualität, Support-Erwartung klar; keine „Affiliate“- oder Druck-Logik.</li>
+          </ol>
+          <p style={{ margin: 0, lineHeight: 1.45, fontSize: '0.82rem', color: t.muted }}>
+            <strong>Abgrenzung</strong> zu mök2/Galerie/ök2: Abschnitt 8. – Technische Details und Rechtliches zum Lizenzmodell im Geschäftsplan bzw. AGB, wenn produktiv.
+          </p>
+        </section>
+
         <section id="fam-mkt-ueberblick" style={{ marginBottom: '1.5rem', padding: '1rem 1.1rem', background: 'rgba(15, 118, 104, 0.06)', borderRadius: 10, border: '1px solid rgba(15, 118, 104, 0.2)' }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>1. Überblick</h2>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>2. Überblick</h2>
           <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55 }}>
             <strong>K2 Familien Marketing</strong> ist die verbindliche Sammelstelle für Positionierung, Nutzenversprechen und Kanäle von K2 Familie: was wir einzigartig macht, wen wir ansprechen, wie wir sichtbar werden – ohne die sensiblen Familiendaten zu vermischen mit anderen Produkten (Galerie, ök2, Vereinsplattform).
           </p>
@@ -104,7 +145,7 @@ export default function K2FamilieMarketingPage() {
 
         <section id="fam-mkt-usp" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            2. USP & Positionierung
+            3. USP & Positionierung
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55 }}>
             <strong>Kernversprechen:</strong> Eine moderne, respektvolle Heimat für die eigene Familienstruktur – sichtbar, vernetzt, mit klaren Beziehungen aus den Karten (keine Vermutungen), mit Raum für Geschichte, Gedenken und Alltag.
@@ -119,7 +160,7 @@ export default function K2FamilieMarketingPage() {
 
         <section id="fam-mkt-mitbewerb" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            3. Produktvergleich (Marktüberblick)
+            4. Produktvergleich (Marktüberblick)
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
             Kein Ranking einzelner Marken – ein sachlicher Überblick, wo sich <strong>K2 Familie</strong> von typischen Angeboten unterscheidet. Konkurrenten sind oft gut für ihre Zielgruppe; unser Versprechen ist ein anderes.
@@ -194,7 +235,7 @@ export default function K2FamilieMarketingPage() {
 
         <section id="fam-mkt-markt" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            4. Marktanalyse &amp; realistischer Marktanteil
+            5. Marktanalyse &amp; realistischer Marktanteil
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
             Seriöse Marktzahlen brauchen <strong>Quellen</strong>. Unten: <strong>amtlich veröffentlichte Rahmenzahlen</strong> (2024) als Denominator für TAM/SAM – plus eine <strong>reine Rechenhilfe</strong> zur Marktanteils-Einschätzung (Prozente nur als Beispiel, keine Prognose).
@@ -334,9 +375,65 @@ export default function K2FamilieMarketingPage() {
           </p>
         </section>
 
+        <section id="fam-mkt-preis" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
+            6. Preis &amp; Lizenzmodell (Planungsannahme {K2_FAMILIE_PREIS_ANNAHME_EUR} € pro Monat)
+          </h2>
+          <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55, fontSize: '0.92rem', color: t.muted }}>
+            Für ein durchgängiges Wirtschafts- und Marketingmodell setzen wir <strong>eine</strong> einfache Größe:{' '}
+            <strong>{K2_FAMILIE_PREIS_ANNAHME_EUR} € pro Monat</strong> je zahlendem Haushalt bzw. je aktiver Produktinstanz (im Geschäftsplan klären: netto/brutto, Zahlungsweise, was „ein Haushalt“ technisch umfasst).
+          </p>
+          <p style={{ margin: '0 0 0.5rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Einordnung</p>
+          <ul style={{ margin: '0 0 0.75rem 0', paddingLeft: '1.25rem', lineHeight: 1.55, fontSize: '0.9rem' }}>
+            <li>Liegt im üblichen Rahmen für ein Nischen-SaaS mit hohem Vertrauensbedarf (vergleichbar kleinerer Software- oder Cloud-Tarife).</li>
+            <li>Die <strong>K2-Galerie-Lizenzen</strong> (z. B. Basic/Pro in der Plattform) sind ein <strong>anderes Produkt</strong> – dort gelten andere Leistungen und Preise; K2 Familie bewusst <strong>nicht</strong> daran koppeln im Nutzerversprechen.</li>
+            <li>Optional später: Jahreszahl mit Rabatt, Familien-Staffel oder Vereins-Pauschale – erst nach klarer Regel im Produkt.</li>
+          </ul>
+          <p style={{ margin: '0 0 0.45rem 0', lineHeight: 1.55, fontWeight: 600, color: t.text }}>Umsatz-Illustration bei {K2_FAMILIE_PREIS_ANNAHME_EUR} €/Monat (nur Rechnung, keine Prognose)</p>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: 'rgba(0,0,0,0.04)' }}>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Annahme: zahlende Einheiten</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Umsatz pro Monat</th>
+                  <th style={{ textAlign: 'left', padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>Umsatz pro Jahr (×12)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>500</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>5.000 €</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>60.000 €</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>1.000</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>10.000 €</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>120.000 €</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>5.000</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>50.000 €</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>600.000 €</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>10.000</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>100.000 €</td>
+                  <td style={{ padding: '0.35rem 0.4rem', border: '1px solid rgba(0,0,0,0.08)' }}>1,2 Mio €</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p style={{ margin: '0.65rem 0 0.5rem 0', lineHeight: 1.5, fontSize: '0.86rem', color: t.muted }}>
+            Bezug zu Abschnitt 5: Wenn man <strong>0,01 %</strong> der deutschen Privathaushalte (≈ 4.100) als <strong>rein rechnerische</strong> Größenordnung nimmt und jede Einheit {K2_FAMILIE_PREIS_ANNAHME_EUR} €/Monat zahlt, liegt das Brutto-Umsatz-Äquivalent bei etwa <strong>41.000 €/Monat</strong> – nur Mathematik, kein Zielwert.
+          </p>
+          <p style={{ margin: 0, lineHeight: 1.5, fontSize: '0.85rem', color: t.muted }}>
+            <strong>Hinweis:</strong> Kosten (Hosting, Support, Weiterentwicklung), Steuern und Zahlungsgebühren sind im Geschäftsplan gegenzurechnen; diese Seite ist das Marketingkonzept, keine Bilanz.
+          </p>
+        </section>
+
         <section id="fam-mkt-zielgruppe" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            5. Zielgruppe & Kanäle
+            7. Zielgruppe & Kanäle
           </h2>
           <p style={{ margin: '0 0 0.65rem 0', lineHeight: 1.55 }}>
             <strong>Zielgruppe:</strong> Familien und Personen, die Stammbaum, Erinnerungen und Außenauftritt (Einladungen, Einblicke für Vertraute) sicher und würdevoll bündeln wollen – ohne Social-Media-Druck und ohne Daten als Ware.
@@ -360,7 +457,7 @@ export default function K2FamilieMarketingPage() {
 
         <section id="fam-mkt-abgrenzung" style={{ marginBottom: '1.5rem', breakInside: 'avoid' as const }}>
           <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668', borderBottom: '1px solid rgba(181, 74, 30, 0.15)', paddingBottom: '0.35rem' }}>
-            6. Abgrenzung
+            8. Abgrenzung
           </h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', marginTop: '0.5rem' }}>
             <thead>
@@ -390,8 +487,8 @@ export default function K2FamilieMarketingPage() {
           </table>
         </section>
 
-        <section style={{ marginBottom: '1.25rem', breakInside: 'avoid' as const }}>
-          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>7. Tonfall</h2>
+        <section id="fam-mkt-tonfall" style={{ marginBottom: '1.25rem', breakInside: 'avoid' as const }}>
+          <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', color: '#0f7668' }}>9. Tonfall</h2>
           <p style={{ margin: 0, lineHeight: 1.55 }}>
             Ruhig, respektvoll, klar. Keine aggressive Verkaufssprache, keine „Affiliate“-Logik. Wenn wir Einladungen oder Texte formulieren, immer: einfache Sprache, ehrlich, ohne Druck – im Einklang mit dem Benutzerhandbuch und der Präsentationsmappe.
           </p>
