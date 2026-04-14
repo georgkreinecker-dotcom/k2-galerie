@@ -14,6 +14,7 @@ import { adminTheme } from '../config/theme'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { loadEinstellungen, loadPersonen, saveEinstellungen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
+import { mergeQuelleFamilieInZielFamilie } from '../utils/familieMergeFamilien'
 import type { K2FamilieInhaberArbeitsansicht, K2FamilieRolle } from '../types/k2FamilieRollen'
 import {
   K2_FAMILIE_INHABER_ANSICHT,
@@ -64,7 +65,7 @@ const iconLink: CSSProperties = {
 }
 
 export default function K2FamilieEinstellungenPage() {
-  const { currentTenantId } = useFamilieTenant()
+  const { currentTenantId, tenantList, refreshFromStorage, setCurrentTenantId } = useFamilieTenant()
   const { rolle, setRolle, capabilities, inhaberArbeitsansicht, setInhaberArbeitsansicht } = useFamilieRolle()
   const effRolle = capabilities.rolle
   const kannInstanz = capabilities.canManageFamilienInstanz
@@ -87,6 +88,53 @@ export default function K2FamilieEinstellungenPage() {
   const transferCandidates = ichId ? personen.filter((p) => p.id !== ichId) : []
   const [transferToId, setTransferToId] = useState('')
   const canShowTransfer = kannInstanz && !!ichId && transferCandidates.length > 0
+
+  const mergeQuelleKandidaten = useMemo(
+    () =>
+      tenantList
+        .filter((id) => id !== currentTenantId)
+        .map((id) => ({
+          id,
+          label: loadEinstellungen(id).familyDisplayName?.trim() || id,
+        })),
+    [tenantList, currentTenantId, einstTick],
+  )
+  const showFamilienZusammenfuehren = kannInstanz && tenantList.length >= 2
+  const [mergeQuelleId, setMergeQuelleId] = useState('')
+  const [mergeDisplayName, setMergeDisplayName] = useState('')
+  const [mergeBusy, setMergeBusy] = useState(false)
+
+  const handleFamilienZusammenfuehren = () => {
+    if (!mergeQuelleId || mergeBusy) return
+    const quelleLabel = mergeQuelleKandidaten.find((x) => x.id === mergeQuelleId)?.label || mergeQuelleId
+    const zielLabel = einst.familyDisplayName?.trim() || currentTenantId
+    const ok = window.confirm(
+      `Familien wirklich zusammenführen?\n\n` +
+        `• In diese Familie (Ziel): „${zielLabel}“\n` +
+        `• Wird eingegliedert (Quelle): „${quelleLabel}“\n\n` +
+        `Alle Personen und Daten der Quelle werden in die Ziel-Familie übernommen; die Quelle verschwindet aus der Auswahl und wird auf diesem Gerät gelöscht. ` +
+        `Das lässt sich nicht rückgängig machen. Vorher Sicherung empfohlen.\n\n` +
+        `Fortfahren?`,
+    )
+    if (!ok) return
+    setMergeBusy(true)
+    try {
+      const r = mergeQuelleFamilieInZielFamilie(mergeQuelleId, currentTenantId, {
+        finalDisplayName: mergeDisplayName.trim() || undefined,
+      })
+      if (!r.ok) {
+        window.alert(r.reason)
+        return
+      }
+      refreshFromStorage()
+      setCurrentTenantId(r.zielTenantId)
+      setMergeQuelleId('')
+      setMergeDisplayName('')
+      setEinstTick((t) => t + 1)
+    } finally {
+      setMergeBusy(false)
+    }
+  }
 
   const handleInhaberschaftUebertragen = () => {
     if (!transferToId || transferToId === designatedId) return
@@ -375,6 +423,86 @@ export default function K2FamilieEinstellungenPage() {
                 }}
               >
                 Übertragen
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showFamilienZusammenfuehren && (
+          <div style={{ ...card, borderLeftColor: '#991b1b' }}>
+            <h2 style={{ margin: '0 0 0.45rem', fontSize: '1.05rem', fontWeight: 700, color: a.text, fontFamily: a.fontHeading }}>
+              Familien zusammenführen
+            </h2>
+            <p style={{ margin: '0 0 0.65rem', fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
+              Wenn du versehentlich zwei Familien angelegt hast: eine <strong style={{ color: a.text }}>Quelle</strong> in die{' '}
+              <strong style={{ color: a.text }}>aktuelle Familie</strong> (Ziel) übernehmen. Die Quelle wird aus der Geräte-Auswahl entfernt; vorher eine{' '}
+              <strong style={{ color: a.text }}>Sicherung</strong> erstellen.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', maxWidth: 'min(100%, 420px)' }}>
+              <label htmlFor="k2-familie-merge-quelle" style={{ fontSize: '0.88rem', color: a.muted }}>
+                Quelle (wird eingegliedert und entfernt)
+              </label>
+              <select
+                id="k2-familie-merge-quelle"
+                aria-label="Quell-Familie zum Zusammenführen"
+                value={mergeQuelleId}
+                onChange={(e) => setMergeQuelleId(e.target.value)}
+                style={{
+                  background: '#fffefb',
+                  border: '1px solid rgba(181, 74, 30, 0.28)',
+                  borderRadius: a.radius,
+                  color: a.text,
+                  padding: '0.4rem 0.65rem',
+                  fontSize: '0.92rem',
+                  fontFamily: 'inherit',
+                }}
+              >
+                <option value="">— Familie wählen —</option>
+                {mergeQuelleKandidaten.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {x.label}
+                  </option>
+                ))}
+              </select>
+              <label htmlFor="k2-familie-merge-name" style={{ fontSize: '0.88rem', color: a.muted }}>
+                Anzeigename nach dem Zusammenführen (optional)
+              </label>
+              <input
+                id="k2-familie-merge-name"
+                type="text"
+                value={mergeDisplayName}
+                onChange={(e) => setMergeDisplayName(e.target.value)}
+                placeholder={einst.familyDisplayName?.trim() || 'Name der Familie'}
+                autoComplete="off"
+                style={{
+                  background: '#fffefb',
+                  border: '1px solid rgba(181, 74, 30, 0.28)',
+                  borderRadius: a.radius,
+                  color: a.text,
+                  padding: '0.4rem 0.65rem',
+                  fontSize: '0.92rem',
+                  fontFamily: 'inherit',
+                }}
+              />
+              <button
+                type="button"
+                disabled={!mergeQuelleId || mergeBusy}
+                onClick={handleFamilienZusammenfuehren}
+                style={{
+                  marginTop: '0.25rem',
+                  padding: '0.45rem 1rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  fontFamily: 'inherit',
+                  borderRadius: a.radius,
+                  border: '1px solid rgba(127, 29, 29, 0.45)',
+                  background: !mergeQuelleId || mergeBusy ? a.bgElevated : '#991b1b',
+                  color: !mergeQuelleId || mergeBusy ? a.muted : '#fff',
+                  cursor: !mergeQuelleId || mergeBusy ? 'not-allowed' : 'pointer',
+                  alignSelf: 'flex-start',
+                }}
+              >
+                {mergeBusy ? '… wird ausgeführt' : 'Jetzt zusammenführen'}
               </button>
             </div>
           </div>

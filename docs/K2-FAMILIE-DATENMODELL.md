@@ -107,13 +107,24 @@ Speicher: `k2-familie-{tenantId}-events`. `loadEvents(tenantId)`, `saveEvents(te
 
 ---
 
-## 5. Beziehungen konsistent halten
+## 6. Beziehungen konsistent halten
 
 Wenn Person A `childIds: [B]` hat, soll Person B `parentIds: [A]` haben (oder umgekehrt gepflegt). UI/Validierung kann darauf hinweisen – aber **niemals** still automatisch „aufräumen“ und überschreiben (Datenschutz). Lieber einmalige manuelle Bereinigung anbieten.
 
 ---
 
-## 6. Nächste Schritte (nach 1.1)
+## 7. Familien zusammenführen (zwei Tenants → einer)
+
+Nur nach **expliziter** Aktion in **Einstellungen & Verwaltung** (Inhaber:in, Instanz verwalten), wenn mindestens **zwei** Familien in der Geräte-Auswahl (`k2-familie-tenant-list`) stehen.
+
+- **Ziel** = die **aktuell gewählte** Familie (diese Seite). **Quelle** = eine andere Familie aus der Liste.
+- Implementierung: `mergeQuelleFamilieInZielFamilie` in `src/utils/familieMergeFamilien.ts` – Personen der Quelle erhalten neue IDs, Verweise (Momente, Events, …) werden umgeschrieben und an den Ziel-Tenant angehängt; die Quelle wird aus der Liste entfernt und der zugehörige Speicher geleert.
+- Optional: **Anzeigename** der Familie nach dem Merge setzen (`familyDisplayName`).
+- Bei einem fehlgeschlagenen Zwischenschritt wird der **Ziel-Tenant** aus einem localStorage-Snapshot wiederhergestellt (kein halber Stand).
+
+---
+
+## 8. Nächste Schritte (nach 1.1)
 
 - **1.2** Tenant anlegen – **erledigt:** `K2_FAMILIE_DEFAULT_TENANT = 'default'` in `src/utils/familieStorage.ts`.
 - **1.3** `familieStorage.ts` – **erledigt:** `loadPersonen(tenantId)`, `savePersonen(tenantId, list, { allowReduce })` mit gleichen Schutzregeln wie artworksStorage.
@@ -122,4 +133,4 @@ Wenn Person A `childIds: [B]` hat, soll Person B `parentIds: [A]` haben (oder um
 
 ---
 
-**Quelle:** `docs/K2-FAMILIE-ROADMAP.md` Phase 1. Typen: `src/types/k2Familie.ts`. Storage: `src/utils/familieStorage.ts`.
+**Quelle:** `docs/K2-FAMILIE-ROADMAP.md` Phase 1. Typen: `src/types/k2Familie.ts`. Storage: `src/utils/familieStorage.ts`. Tenant-Merge: `src/utils/familieMergeFamilien.ts`.

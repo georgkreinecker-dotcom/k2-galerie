@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 14.04.26 – **K2 Familie: Familien zusammenführen (Feature)** – `mergeQuelleFamilieInZielFamilie`: Rollback bei Speicher-/Listen-Fehler; UI auf **Einstellungen** (Instanz-Verwaltung, ≥2 Familien): Quelle wählen, optional Anzeigename, Bestätigung. Doku `docs/K2-FAMILIE-DATENMODELL.md` §7. **Commit:** _(nach Push eintragen)_
+
+**Was wir JETZT tun:** Mit zwei Test-Familien: Zusammenführen kurz durchspielen; vorher Sicherung.
+
+---
+
 **Letzter Stand:** 14.04.26 – **K2 Familie: Stammbaum-Regeln nur Inhaber:in in Einstellungen** – Zwei getrennte Haken: **keine neuen Personen** (`stammbaumSchlusspunkt`) und **Personen löschen sperren** (`stammbaumPersonenLoeschenGesperrt`, Struktur schützen). Steuerung von der Stammbaum-Seite entfernt; dort nur Kurz-Hinweis + Link zu Einstellungen. `deletePersonWithCleanup` respektiert Sperre. Test `familieDeleteGuard.test.ts`. **Commit:** **`7dd28b9e`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Einstellungen als Inhaber:in – beide Optionen kurz prüfen; Person löschen mit/ohne Sperre.
