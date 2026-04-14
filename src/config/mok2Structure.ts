@@ -21,6 +21,7 @@ export const mok2Groups: Mok2Group[] = [
       { id: 'mok2-leitvision-k2-markt', label: 'Leitvision – Mein Weg & sechs Sparten' },
       { id: 'mok2-was-kann-die-app', label: 'Was kann die App? (ök2 | VK2)' },
       { id: 'mok2-produktbeschreibung', label: 'Genaue Produktbeschreibung' },
+      { id: 'mok2-portfolio-k2-welt-wert', label: 'Portfolio K2-Welt: Text, Kunden, Wert' },
       { id: 'mok2-prospekt', label: 'K2 Galerie Prospekt' },
       { id: 'mok2-prospekt-galerieeroeffnung', label: 'Prospekt Galerieeröffnung K2' },
       { id: 'mok2-verkauf-map-drei-ebenen', label: 'Präsentationsmappe (Entscheidungshilfe)' },
