@@ -19,6 +19,8 @@ const DOCUMENTS = [
   { id: '08-kassa-buchhaltung', name: 'Kassa und Buchhaltung', file: '08-KASSA-BUCHHALTUNG.md' },
   { id: '12-shop-internet', name: 'Shop und Internetbestellung', file: '12-SHOP-INTERNET-BESTELLUNG.md' },
   { id: '10-einstellungen', name: 'Einstellungen', file: '10-EINSTELLUNGEN.md' },
+  { id: '13-k2-familie-inhaber', name: 'K2 Familie – Rolle Inhaber:in', file: '13-K2-FAMILIE-INHABER-ROLLE.md' },
+  { id: '14-k2-familie-bearbeiter-leser', name: 'K2 Familie – Bearbeiter und Leser', file: '14-K2-FAMILIE-BEARBEITER-UND-LESER.md' },
   { id: '04-faq', name: 'Häufige Fragen', file: '04-HAEUFIGE-FRAGEN.md' },
 ] as const
 

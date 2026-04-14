@@ -46,7 +46,15 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Video unter Stammdaten. Backup, Veröffentlichen, Drucker. **Admin-Zugang:** Link und QR in den Stammdaten je nach Galerie-Typ; **Passwort** getrennt erklärt. Vereine: Verein anlegen, Kategorien.
 
-11. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+11. [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md)
+
+Ausführlich für **Inhaber:innen** der Familien-Instanz: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang und Einladungen, Delegation, Missverständnisse vermeiden.
+
+12. [K2 Familie – Bearbeiter:innen und Leser:innen](14-K2-FAMILIE-BEARBEITER-UND-LESER.md)
+
+Was **Bearbeiter:innen** und **Leser:innen** sehen und bearbeiten dürfen; persönlicher Code; Kurzverweis Vereinsplattform; Checklisten.
+
+13. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

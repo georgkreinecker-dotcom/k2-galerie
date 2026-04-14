@@ -1,6 +1,6 @@
 # Handbuch bearbeiten (nur für Redaktion)
 
-## Anrede in den Kapiteln (1–12)
+## Anrede in den Kapiteln (1–13 im Inhaltsverzeichnis)
 
 Die **nummerierten Kapitel** im Benutzerhandbuch sind für **Lizenznehmer:innen** gedacht und redaktionell durchgängig **„Sie“** („Sie öffnen“, „Ihre Galerie“). Das gehört **nicht** in die Nutzer-Einleitung im **00-INDEX** (kein Meta-Hinweis für Leser) – nur hier als Regel für Bearbeitung und Prüfung.
 
