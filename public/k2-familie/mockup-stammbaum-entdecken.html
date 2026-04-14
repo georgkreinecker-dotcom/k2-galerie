@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>K2 Familie – Vorschau Stammbaum entdecken (Mockup)</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      background: #f5f0e8;
+      color: #2a241c;
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1rem 2rem;
+    }
+    .band {
+      background: linear-gradient(180deg, #ebe4d8 0%, #f5f0e8 100%);
+      border-bottom: 1px solid #d4c9b8;
+      padding: 0.75rem 1rem;
+    }
+    .band-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem 1rem;
+      justify-content: space-between;
+    }
+    h1 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    .sub {
+      font-size: 0.8rem;
+      color: #5c5346;
+      margin: 0.35rem 0 0;
+    }
+    .mock-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #8a7d6a;
+      margin-bottom: 0.5rem;
+    }
+    .shell {
+      background: #fffefb;
+      border-radius: 12px;
+      box-shadow: 0 8px 28px rgba(42, 36, 28, 0.08);
+      border: 1px solid #e8e0d4;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+    .shell-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.65rem 0.85rem;
+      background: #faf7f2;
+      border-bottom: 1px solid #ebe4d8;
+    }
+    .shell-top p {
+      margin: 0;
+      font-size: 0.88rem;
+      flex: 1 1 200px;
+      color: #4a4338;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-family: system-ui, sans-serif;
+      cursor: default;
+      border: 1px solid #c4b49a;
+      background: #fff;
+      color: #3d362c;
+    }
+    .btn-primary {
+      background: #6b5344;
+      color: #fff;
+      border-color: #6b5344;
+    }
+    .canvas {
+      position: relative;
+      min-height: 320px;
+      background: linear-gradient(160deg, #fbf9f5 0%, #efe8de 100%);
+    }
+    .canvas svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 300px;
+    }
+    .node {
+      fill: #fff;
+      stroke: #b8a990;
+      stroke-width: 2;
+    }
+    .node.du {
+      stroke: #6b5344;
+      stroke-width: 3;
+      fill: #faf3ea;
+    }
+    .node:hover { filter: brightness(1.03); }
+    .path-line {
+      fill: none;
+      stroke: #a67c52;
+      stroke-width: 3;
+      stroke-dasharray: 8 6;
+      opacity: 0.85;
+    }
+    .tree-line {
+      stroke: #c4b8a4;
+      stroke-width: 2;
+      fill: none;
+    }
+    .tag {
+      font-family: system-ui, sans-serif;
+      font-size: 11px;
+      fill: #3d362c;
+      text-anchor: middle;
+    }
+    .hint {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: #7a7165;
+      font-family: system-ui, sans-serif;
+      white-space: nowrap;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1fr;
+      border-top: 1px solid #ebe4d8;
+    }
+    @media (min-width: 720px) {
+      .split {
+        grid-template-columns: 1fr 280px;
+      }
+    }
+    .card {
+      padding: 1rem 1rem 1.25rem;
+      background: #fffefb;
+    }
+    .card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.05rem;
+    }
+    .card .role {
+      font-size: 0.8rem;
+      color: #6b6358;
+      margin: 0 0 0.75rem;
+    }
+    .card .fake-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: #e8e2d8;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #8a8072;
+    }
+    .card ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      font-size: 0.88rem;
+    }
+    .footer-note {
+      margin-top: 1.25rem;
+      padding: 0.75rem 1rem;
+      background: #ebe4d8;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #4a4338;
+    }
+    @media print {
+      .band { break-after: avoid; }
+      .shell { box-shadow: none; }
+      .hint { position: static; transform: none; margin-top: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="band">
+    <div class="band-inner">
+      <div>
+        <h1>Stammbaum – Entdecken (Gesamtvorschau)</h1>
+        <p class="sub">Nur Layout-Idee für K2 Familie · nicht die echte App · ein Blick = Zusammenspiel</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <p class="mock-label">So könnte es als eine Fläche wirken</p>
+
+    <div class="shell" aria-label="Mockup Stammbaum">
+      <div class="shell-top">
+        <p>Tippe eine Person an · ziehen zum Spazieren · <strong>Zu mir</strong> springt zum Startpunkt</p>
+        <span class="btn btn-primary">Zu mir</span>
+        <span class="btn">Weg anzeigen</span>
+      </div>
+
+      <div class="split">
+        <div class="canvas">
+          <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <!-- Stammlinien -->
+            <path class="tree-line" d="M280 48 L280 88" />
+            <path class="tree-line" d="M200 88 L360 88" />
+            <path class="tree-line" d="M200 88 L200 130" />
+            <path class="tree-line" d="M280 88 L280 130" />
+            <path class="tree-line" d="M360 88 L360 130" />
+            <path class="tree-line" d="M200 130 L200 175" />
+            <path class="tree-line" d="M280 130 L280 175" />
+            <path class="tree-line" d="M360 130 L360 175" />
+            <path class="tree-line" d="M240 175 L320 175" />
+            <path class="tree-line" d="M280 175 L280 218" />
+
+            <!-- Weg (gestrichelt): Oma → Du -->
+            <path class="path-line" d="M200 130 L200 175 L280 175 L280 218" />
+
+            <!-- Knoten: Großeltern -->
+            <circle class="node" cx="200" cy="40" r="22" />
+            <text class="tag" x="200" y="44">OM</text>
+            <circle class="node" cx="360" cy="40" r="22" />
+            <text class="tag" x="360" y="44">OP</text>
+
+            <!-- Eltern -->
+            <circle class="node" cx="200" cy="118" r="22" />
+            <text class="tag" x="200" y="122">M</text>
+            <circle class="node" cx="280" cy="118" r="22" />
+            <text class="tag" x="280" y="122">V</text>
+            <circle class="node" cx="360" cy="118" r="22" />
+            <text class="tag" x="360" y="122">T</text>
+
+            <!-- Kind / Du -->
+            <circle class="node du" cx="280" cy="200" r="26" />
+            <text class="tag" x="280" y="205" style="font-weight:600">Du</text>
+
+            <circle class="node" cx="240" cy="200" r="20" />
+            <text class="tag" x="240" y="203">G</text>
+            <circle class="node" cx="320" cy="200" r="20" />
+            <text class="tag" x="320" y="203">P</text>
+          </svg>
+          <div class="hint">Gestrichelter Weg = gemeinsamer Rundgang (Animation in der echten App)</div>
+        </div>
+
+        <aside class="card">
+          <h2>Maria</h2>
+          <p class="role">Großmutter · eine Karte statt Technik-Liste</p>
+          <div class="fake-img">Foto oder Platzhalter</div>
+          <ul>
+            <li>Geburtstag, Ort – kurz</li>
+            <li>Link: Momente (wenn vorhanden)</li>
+            <li>Ein Klick = genug für den ersten Blick</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <strong>Gesamtbild:</strong> Oben kurze Erklärung · Mitte <strong>beweglicher Baum</strong> · rechts (oder unten am Handy) die <strong>Personenkarte</strong>.
+      Kein zweites Fenster nötig – alles wirkt wie <strong>ein Raum</strong>.
+      Zum Ansehen: diese Datei im Browser öffnen (lokal oder nach Deploy unter <code>/k2-familie/mockup-stammbaum-entdecken.html</code>).
+    </div>
+  </div>
+</body>
+</html>
