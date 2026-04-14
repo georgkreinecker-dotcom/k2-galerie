@@ -21,13 +21,27 @@ function loadList(): string[] {
 }
 
 function loadCurrent(): string {
+  const list = loadList()
   try {
-    const id = sessionStorage.getItem(STORAGE_CURRENT)
-    const list = loadList()
-    return id && list.includes(id) ? id : list[0] ?? K2_FAMILIE_DEFAULT_TENANT
+    const id = sessionStorage.getItem(STORAGE_CURRENT)?.trim()
+    if (id && list.includes(id)) return id
   } catch {
-    return K2_FAMILIE_DEFAULT_TENANT
+    /* Session z. B. blockiert */
   }
+  try {
+    const id = localStorage.getItem(STORAGE_CURRENT)?.trim()
+    if (id && list.includes(id)) {
+      try {
+        sessionStorage.setItem(STORAGE_CURRENT, id)
+      } catch {
+        /* ignore */
+      }
+      return id
+    }
+  } catch {
+    /* ignore */
+  }
+  return list[0] ?? K2_FAMILIE_DEFAULT_TENANT
 }
 
 function persistList(list: string[]) {
@@ -43,6 +57,11 @@ function persistCurrent(id: string) {
     sessionStorage.setItem(STORAGE_CURRENT, id)
   } catch (e) {
     console.error('FamilieTenant: aktuellen Tenant speichern fehlgeschlagen', e)
+  }
+  try {
+    localStorage.setItem(STORAGE_CURRENT, id)
+  } catch (e) {
+    console.error('FamilieTenant: aktuellen Tenant (Gerät) speichern fehlgeschlagen', e)
   }
 }
 

@@ -311,7 +311,8 @@ export function saveEinstellungen(tenantId: string, data: K2FamilieEinstellungen
     localStorage.setItem(key, json)
     const prevIch = prev.ichBinPersonId?.trim() || ''
     const nextIch = obj.ichBinPersonId?.trim() || ''
-    if (prevIch !== nextIch) {
+    /** Nur bei echtem Wechsel des „Du“ (nicht Erst-Registrierung leer → Person): sonst unnötiges Leeren + Event vor setIdentitaet – auf Mobilgeräten problematisch. */
+    if (prevIch && prevIch !== nextIch) {
       clearIdentitaetBestaetigt(tenantId)
       clearGerateVertrauen(tenantId)
     }

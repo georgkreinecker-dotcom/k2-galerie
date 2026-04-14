@@ -612,10 +612,16 @@ export default function K2FamilieHomePage() {
                   inputMode="text"
                   enterKeyHint="done"
                   value={identitaetSessionEingabe}
-                  onChange={(e) => {
-                    setIdentitaetSessionEingabe(e.target.value)
-                    setIdentitaetSessionHinweis('')
-                    setIdentitaetSessionOk('')
+                onChange={(e) => {
+                  setIdentitaetSessionEingabe(e.target.value)
+                  setIdentitaetSessionHinweis('')
+                  setIdentitaetSessionOk('')
+                }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      bestaetigeIdentitaetFuerSession()
+                    }
                   }}
                   placeholder="persönlicher Code"
                   aria-label="Persönlicher Code zur Sitzungsbestätigung"
@@ -737,6 +743,12 @@ export default function K2FamilieHomePage() {
                   setPersoenlicheNummerEingabe(e.target.value)
                   setRegistrierungHinweis('')
                   setRegistrierungErfolg('')
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    anmeldenMitPersoenlicherNummer()
+                  }
                 }}
                 placeholder={kannInstanz ? 'z. B. AB12' : 'vom Administrator'}
                 aria-label="Persönlicher Mitgliedscode"
