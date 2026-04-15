@@ -9,15 +9,33 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ALLOWED_ORIGINS = [
   'https://k2-galerie.vercel.app',
+  'https://www.k2-galerie.vercel.app',
   'http://localhost:5177',
   'http://localhost:5178',
   'http://127.0.0.1:5177',
   'http://127.0.0.1:5178',
 ]
 
+/** Exakte Liste + alle Vercel-Deployments, deren Host mit k2-galerie beginnt (Preview, Branch). */
+function resolveAllowOrigin(origin: string): string {
+  const fallback = ALLOWED_ORIGINS[0]
+  if (!origin) return fallback
+  if (ALLOWED_ORIGINS.includes(origin)) return origin
+  try {
+    const u = new URL(origin)
+    if (u.protocol !== 'https:') return fallback
+    const h = u.hostname
+    if (h === 'k2-galerie.vercel.app' || h === 'www.k2-galerie.vercel.app') return origin
+    if (h.endsWith('.vercel.app') && h.startsWith('k2-galerie')) return origin
+  } catch {
+    /* ignore */
+  }
+  return fallback
+}
+
 function getCorsHeaders(req: Request): Record<string, string> {
   const origin = req.headers.get('Origin') || ''
-  const allowOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  const allowOrigin = resolveAllowOrigin(origin)
   return {
     'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',

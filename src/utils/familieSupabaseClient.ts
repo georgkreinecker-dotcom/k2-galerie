@@ -9,11 +9,25 @@ import type { K2FamiliePerson, K2FamilieMoment, K2FamilieEvent, K2FamilieEinstel
 import { loadPersonen, loadMomente, loadEvents, loadEinstellungen, savePersonen, saveMomente, saveEvents, saveEinstellungen } from './familieStorage'
 
 let SUPABASE_URL = ''
+let SUPABASE_ANON = ''
 try {
   const env = import.meta.env || {}
   SUPABASE_URL = String(env.VITE_SUPABASE_URL || '')
+  SUPABASE_ANON = String(env.VITE_SUPABASE_ANON_KEY || '')
 } catch { /* ignore */ }
 const FAMILIE_API_URL = SUPABASE_URL ? `${SUPABASE_URL}/functions/v1/familie` : null
+
+function familieApiHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${SUPABASE_ANON}`,
+    apikey: SUPABASE_ANON,
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
+}
 
 function getUpdated(item: { updatedAt?: string; createdAt?: string }): number {
   const u = item?.updatedAt ? new Date(item.updatedAt).getTime() : 0
@@ -102,14 +116,25 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
       reason: 'not_configured',
     })
   }
+  const url = `${FAMILIE_API_URL}?tenantId=${encodeURIComponent(tenantId)}`
+  const maxAttempts = 3
   try {
-    const res = await fetch(`${FAMILIE_API_URL}?tenantId=${encodeURIComponent(tenantId)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env?.VITE_SUPABASE_ANON_KEY ?? ''}`,
-      },
-    })
+    let res: Response | null = null
+    let lastNetworkErr: unknown
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (attempt > 0) await sleep(350 * attempt)
+      try {
+        res = await fetch(url, {
+          method: 'GET',
+          headers: familieApiHeaders(),
+        })
+        break
+      } catch (e) {
+        lastNetworkErr = e
+        if (attempt === maxAttempts - 1) throw e
+      }
+    }
+    if (!res) throw lastNetworkErr ?? new Error('fetch leer')
     if (!res.ok) {
       console.warn('loadFamilieFromSupabase HTTP', res.status)
       return withMeta(localSnapshot(tenantId), {
@@ -174,10 +199,7 @@ export async function saveFamilieToSupabase(tenantId: string, payload: FamilieDa
   try {
     const res = await fetch(FAMILIE_API_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env?.VITE_SUPABASE_ANON_KEY ?? ''}`,
-      },
+      headers: familieApiHeaders(),
       body: JSON.stringify({
         tenantId,
         personen: payload.personen ?? [],
