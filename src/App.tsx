@@ -106,6 +106,7 @@ import MeinBereichPage from './pages/MeinBereichPage'
 import KundenPage from './pages/KundenPage'
 import { PLATFORM_ROUTES, PROJECT_ROUTES, MOK2_ROUTE, WILLKOMMEN_ROUTE, AGB_ROUTE, ENTDECKEN_ROUTE, shouldRedirectRootUrlToEntdecken, PILOT_SCHREIBEN_ROUTE, MEIN_BEREICH_ROUTE, KREATIVWERKSTATT_ROUTE, K2_GALERIE_APF_EINSTIEG } from './config/navigation'
 import { getPageMeta, applyPageMeta } from './config/seoPageMeta'
+import { applyK2FamiliePwaBranding } from './utils/k2FamiliePwaBranding'
 import { TenantProvider } from './context/TenantContext'
 import WillkommenPage from './pages/WillkommenPage'
 import EntdeckenPage from './pages/EntdeckenPage'
@@ -766,6 +767,7 @@ function App() {
   useEffect(() => {
     const meta = getPageMeta(location.pathname)
     applyPageMeta(meta)
+    applyK2FamiliePwaBranding(location.pathname)
   }, [location.pathname])
 
   // Beim Start: Gespeicherten Admin-Login wiederherstellen (Mobil: Kasse/Admin bleibt gültig)
@@ -893,6 +895,8 @@ function App() {
       <Route path={PROJECT_ROUTES.vk2.vollversion} element={<PlatformOnlyRoute><Navigate to="/admin?context=vk2" replace /></PlatformOnlyRoute>} />
       {/* Dynamischer Mandant (Lizenz-URL nach Checkout): /g/:tenantId */}
       <Route path="/g/:tenantId" element={<GalerieTenantPage />} />
+      {/* K2 Familie: kurze Teilen-URL (lokal + Vercel; Manifest-Start in index.html für /familie) */}
+      <Route path="/familie" element={<Navigate to={PROJECT_ROUTES['k2-familie'].meineFamilie} replace />} />
       {/* K2 Familie: Marketing-Einstieg (ohne Layout – nur Lesen / CTA, vergleichbar /willkommen bei der Galerie) */}
       <Route path={PROJECT_ROUTES['k2-familie'].willkommen} element={<K2FamilieWillkommenPage />} />
       <Route path={PROJECT_ROUTES['k2-familie'].home} element={<K2FamilieLayout />}>
