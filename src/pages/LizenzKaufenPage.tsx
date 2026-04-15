@@ -3,10 +3,10 @@
  * Design wie ök2/Willkommensseite: klare Kartenauswahl, danach Formular → Stripe Checkout.
  */
 import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import '../App.css'
 import { LIZENZPREISE } from '../config/licencePricing'
-import { BASE_APP_URL, PROJECT_ROUTES, WILLKOMMEN_ROUTE } from '../config/navigation'
+import { AGB_ROUTE, BASE_APP_URL, PROJECT_ROUTES } from '../config/navigation'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import LizenzZeitplanPilotStripeInfo from '../components/LizenzZeitplanPilotStripeInfo'
@@ -21,6 +21,7 @@ const LICENCE_OPTIONS = [
 ]
 
 export default function LizenzKaufenPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const empfehlerFromUrl = searchParams.get('empfehler')?.trim() || ''
 
@@ -32,6 +33,7 @@ export default function LizenzKaufenPage() {
   const [error, setError] = useState<string | null>(null)
   /** true = Stripe-Checkout wurde in neuem Tab geöffnet (z. B. Cursor-Vorschau/iframe) */
   const [checkoutStripeOpenedNewTab, setCheckoutStripeOpenedNewTab] = useState(false)
+  const [agbAccepted, setAgbAccepted] = useState(false)
 
   const stripeTestLiveUrl = `${BASE_APP_URL}${PROJECT_ROUTES['k2-galerie'].lizenzKaufen}`
 
@@ -45,6 +47,10 @@ export default function LizenzKaufenPage() {
     setCheckoutStripeOpenedNewTab(false)
     if (!email.trim() || !name.trim()) {
       setError('Bitte E-Mail und Name angeben.')
+      return
+    }
+    if (!agbAccepted) {
+      setError('Bitte die AGB lesen und bestätigen.')
       return
     }
     setLoading(true)
@@ -275,6 +281,34 @@ export default function LizenzKaufenPage() {
             )}
           </div>
 
+          <div style={{ marginBottom: '1rem' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.55rem',
+                fontSize: '0.88rem',
+                lineHeight: 1.45,
+                cursor: 'pointer',
+                color: text,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={agbAccepted}
+                onChange={(e) => setAgbAccepted(e.target.checked)}
+                style={{ marginTop: '0.2rem', width: '1.05rem', height: '1.05rem', flexShrink: 0 }}
+              />
+              <span>
+                Ich habe die{' '}
+                <Link to={AGB_ROUTE} style={{ color: accentDeep, fontWeight: 700 }}>
+                  Allgemeinen Geschäftsbedingungen
+                </Link>{' '}
+                gelesen und akzeptiere sie. *
+              </span>
+            </label>
+          </div>
+
           {checkoutStripeOpenedNewTab && (
             <p
               style={{
@@ -297,16 +331,16 @@ export default function LizenzKaufenPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !agbAccepted}
             style={{
               width: '100%',
               padding: '1rem 1rem',
-              background: loading ? muted : `linear-gradient(135deg, ${accent} 0%, ${accentDeep} 100%)`,
+              background: loading || !agbAccepted ? muted : `linear-gradient(135deg, ${accent} 0%, ${accentDeep} 100%)`,
               color: '#fff',
               border: 'none',
               borderRadius: '10px',
               fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: loading || !agbAccepted ? 'not-allowed' : 'pointer',
               fontFamily: fontBody,
               fontSize: '1.05rem',
             }}
@@ -316,9 +350,21 @@ export default function LizenzKaufenPage() {
         </form>
 
         <p style={{ fontSize: '0.85rem', color: muted, margin: 0 }}>
-          <Link to={PROJECT_ROUTES['k2-galerie'].galerieOeffentlich} style={{ color: accent, textDecoration: 'underline' }}>← Zur Galerie</Link>
-          {' · '}
-          <Link to={WILLKOMMEN_ROUTE} style={{ color: accent, textDecoration: 'underline' }}>Willkommen</Link>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: accent,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              font: 'inherit',
+            }}
+          >
+            ← Zurück
+          </button>
         </p>
       </main>
     </div>

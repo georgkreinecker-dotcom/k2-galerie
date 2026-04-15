@@ -203,10 +203,6 @@ function VariantA({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckb
               Infos zu Stufen & Modell:{' '}
               <Link to={MOK2_ROUTE} style={{ color: accent, fontWeight: 600, textDecoration: 'none' }}>mök2</Link>
               {' · '}
-              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: accent, fontWeight: 600, textDecoration: 'none' }}>
-                Übersicht Lizenzen
-              </Link>
-              {' · '}
               <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>AGB</Link>
             </p>
           </div>
@@ -316,10 +312,6 @@ function VariantC({ slogan, startEntry, showAgbModal, setShowAgbModal, agbCheckb
             <p style={{ margin: '0.75rem 0 0', fontSize: '0.72rem', color: muted, lineHeight: 1.5 }}>
               Infos zu Stufen & Modell:{' '}
               <Link to={MOK2_ROUTE} style={{ color: accentDeep, fontWeight: 600, textDecoration: 'none' }}>mök2</Link>
-              {' · '}
-              <Link to={PROJECT_ROUTES['k2-galerie'].licences} style={{ color: accentDeep, fontWeight: 600, textDecoration: 'none' }}>
-                Übersicht Lizenzen
-              </Link>
               {' · '}
               <Link to={AGB_ROUTE} style={{ color: muted, textDecoration: 'underline' }}>AGB</Link>
             </p>
