@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie Mobil-Scan Einladungs-QR: nur Anmelde-/Zugangs-Fokus** – Ursache: Default-Rolle **Inhaber** + noch kein „Du“ → `nurMitgliedEinstieg` war **false** → volle Homepage. **Fix:** `isFamilieEinladungPersonalCodeOffen` (URL `?m=` / Pending); `isK2FamilieNurMitgliedEinstiegModus` 5. Parameter; Layout + HomePage + `FamilieTenantContext` (Event → Revision). Tests `familieEinladungPending`, `familieIdentitaet`. **Commit:** *(folgt nach Push)*
+**Letzter Stand:** 15.04.26 – **K2 Familie Mobil-Scan Einladungs-QR: nur Anmelde-/Zugangs-Fokus** – Ursache: Default-Rolle **Inhaber** + noch kein „Du“ → `nurMitgliedEinstieg` war **false** → volle Homepage. **Fix:** `isFamilieEinladungPersonalCodeOffen` (URL `?m=` / Pending); `isK2FamilieNurMitgliedEinstiegModus` 5. Parameter; Layout + HomePage + `FamilieTenantContext` (Event → Revision). Tests `familieEinladungPending`, `familieIdentitaet`. **Commit:** **`537ac466`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: Einladungs-QR mit `?m=` am Handy scannen → bis Code bestätigt: **kompakte** Kopfzeile „Persönlicher Zugang“, keine volle Meine-Familie-Homepage.
 
