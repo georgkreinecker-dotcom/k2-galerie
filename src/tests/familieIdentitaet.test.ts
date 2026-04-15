@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { getEffectiveRolleForFamilieDaten, getFamilieEffectiveCapabilities } from '../utils/familieIdentitaet'
+import {
+  getEffectiveRolleForFamilieDaten,
+  getFamilieEffectiveCapabilities,
+  isK2FamilieNurMitgliedEinstiegModus,
+} from '../utils/familieIdentitaet'
 import { clearIdentitaetBestaetigt, setIdentitaetBestaetigt } from '../utils/familieIdentitaetStorage'
 import type { K2FamiliePerson } from '../types/k2Familie'
 
@@ -101,5 +105,34 @@ describe('getFamilieEffectiveCapabilities', () => {
     expect(caps.canManageFamilienInstanz).toBe(true)
     expect(caps.canEditStrukturUndStammdaten).toBe(true)
     expect(caps.rolle).toBe('inhaber')
+  })
+})
+
+describe('isK2FamilieNurMitgliedEinstiegModus', () => {
+  beforeEach(() => {
+    clearIdentitaetBestaetigt(TID)
+  })
+
+  const p1 = person('p1', 'LI36')
+
+  it('Inhaber ohne Du: volle Oberfläche (nicht Nur-Mitglied-Modus)', () => {
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, {}, [])).toBe(false)
+  })
+
+  it('Inhaber mit Du, ohne Code auf Karte: volle Oberfläche', () => {
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [person('p1')])).toBe(false)
+  })
+
+  it('Inhaber mit Du und Code, Sitzung offen: kompakte Nur-Zugang-Oberfläche', () => {
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(true)
+  })
+
+  it('Inhaber mit Du und Code, Sitzung bestätigt: volle Oberfläche', () => {
+    setIdentitaetBestaetigt(TID, 'p1')
+    expect(isK2FamilieNurMitgliedEinstiegModus('inhaber', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(false)
+  })
+
+  it('Leser mit Du und Code, Sitzung offen: kompakt', () => {
+    expect(isK2FamilieNurMitgliedEinstiegModus('leser', TID, { ichBinPersonId: 'p1' }, [p1])).toBe(true)
   })
 })

@@ -121,9 +121,12 @@ export function getFamilieEffectiveCapabilities(
 }
 
 /**
- * Volle Oberfläche (Navigation, Familienwahl, Muster, Kacheln) ausblenden: Erst-Anmeldung als Mitglied
- * (Leser/Bearbeiter), bis „Du“ feststeht und die Sitzung den persönlichen Code bestätigt hat.
- * Inhaber:in bei Erst-Einrichtung behält die volle Oberfläche (Familie anlegen, Zugang, …).
+ * Volle Oberfläche (Navigation, Familienwahl, Rollen-Leiste, Kacheln) ausblenden, bis der private
+ * Zugang passt:
+ * - Leser/Bearbeiter: bis „Du“ feststeht und die Sitzung den persönlichen Code bestätigt hat (wenn auf der Karte einer steht).
+ * - Inhaber:in: volle Leiste bei Erst-Einrichtung ohne „Du“ oder ohne Code auf der Karte; **nicht** solange
+ *   „Du“ + Code auf der Karte existieren, die Sitzung den Code aber noch nicht bestätigt hat (gleiche kompakte
+ *   Ansicht wie bei anderen Rollen – kein Familien-Dropdown hinter dem Zugangs-Dialog).
  */
 export function isK2FamilieNurMitgliedEinstiegModus(
   rolle: K2FamilieRolle,
@@ -131,10 +134,17 @@ export function isK2FamilieNurMitgliedEinstiegModus(
   einst: K2FamilieEinstellungen,
   personen: K2FamiliePerson[],
 ): boolean {
-  if (rolle === 'inhaber') return false
   const ich = einst.ichBinPersonId?.trim()
+  const codeAufDuKarte = ich
+    ? trimMitgliedsNummerEingabe(personen.find((p) => p.id === ich)?.mitgliedsNummer ?? '')
+    : ''
+  const sessionBestaetigtFuerIch = Boolean(ich && loadIdentitaetBestaetigt(tenantId) === ich)
+  const wartetAufPersoenlicheCodeBestaetigung = Boolean(ich && codeAufDuKarte && !sessionBestaetigtFuerIch)
+
+  if (rolle === 'inhaber') {
+    return wartetAufPersoenlicheCodeBestaetigung
+  }
   if (!ich) return true
-  const code = trimMitgliedsNummerEingabe(personen.find((p) => p.id === ich)?.mitgliedsNummer ?? '')
-  if (!code) return false
-  return loadIdentitaetBestaetigt(tenantId) !== ich
+  if (!codeAufDuKarte) return false
+  return !sessionBestaetigtFuerIch
 }
