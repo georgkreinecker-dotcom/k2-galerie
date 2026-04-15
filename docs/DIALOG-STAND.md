@@ -1,6 +1,6 @@
 # Dialog-Stand
 
-**Letzter Stand:** 15.04.26 – **K2 Familie PWA: Icon startete immer „Meine Familie“** – `manifest` liefert nur **`/familie`**; iOS/Android merken sich **keine** letzte React-Route. **Fix:** **`familiePwaLastPath.ts`** speichert die letzte K2-Familie-URL; **`K2FamilieLayout`** stellt sie beim Kaltstart auf **`/familie`** per **`useLayoutEffect`** wieder her (vor dem Speichern-Effekt). **Kein** Resume bei Einladungs-Query **`t`/`z`/`m`/`fn`** oder **`getFamilieEinladungPending()`**. Tests **`familiePwaLastPath.test.ts`**. **Build** grün. **Commit:** **`3203d76d`** ✅ GitHub
+**Letzter Stand:** 15.04.26 – **K2 Familie PWA: Icon startete immer „Meine Familie“** – `manifest` liefert nur **`/familie`**; iOS/Android merken sich **keine** letzte React-Route. **Fix:** **`familiePwaLastPath.ts`** speichert die letzte K2-Familie-URL; **`K2FamilieLayout`** stellt sie beim Kaltstart auf **`/familie`** per **`useLayoutEffect`** wieder her (vor dem Speichern-Effekt). **Kein** Resume bei Einladungs-Query **`t`/`z`/`m`/`fn`** oder **`getFamilieEinladungPending()`**. Tests **`familiePwaLastPath.test.ts`**. **Build** grün. **Commit:** **`a552cd4e`** ✅ GitHub
 
 **Was wir JETZT tun:** Nach Deploy: z. B. **Stammbaum** öffnen → App schließen → **Icon** → wieder **Stammbaum**.
 
