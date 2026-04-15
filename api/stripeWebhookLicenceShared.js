@@ -66,6 +66,8 @@ export function rowsFromCheckoutSession(session, baseUrl) {
     empfehler_id: empfehlerId,
     stripe_session_id: session.id,
   }
+  const subId = typeof session.subscription === 'string' ? session.subscription.trim() : ''
+  if (subId) licenceInsert.stripe_subscription_id = subId
   if (tenantId) licenceInsert.tenant_id = tenantId
   if (galerieUrl) licenceInsert.galerie_url = galerieUrl
 

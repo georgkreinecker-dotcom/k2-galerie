@@ -11,6 +11,11 @@
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { rowsFromCheckoutSession } from './stripeWebhookLicenceShared.js'
+import {
+  buildRenewalGutschriftInsert,
+  buildRenewalPaymentRow,
+  isSubscriptionRenewalInvoice,
+} from './stripeInvoiceRenewalShared.js'
 
 /** Raw-Body aus Request-Stream lesen (für Stripe-Signaturprüfung erforderlich). */
 function getRawBody(req) {
@@ -81,6 +86,97 @@ export default async function handler(req, res) {
         }
       }
     }
+    return res.status(200).json({ received: true })
+  }
+
+  // Abo-Verlängerung (Monat/Jahr): Zahlung in payments + ggf. Empfehler-Gutschrift
+  if (event.type === 'invoice.paid') {
+    const invoice = event.data.object
+    if (!isSubscriptionRenewalInvoice(invoice)) {
+      return res.status(200).json({ received: true })
+    }
+
+    const subRaw = invoice.subscription
+    let subscriptionId = ''
+    if (typeof subRaw === 'string') subscriptionId = subRaw.trim()
+    else if (subRaw && typeof subRaw === 'object' && typeof subRaw.id === 'string') {
+      subscriptionId = subRaw.id.trim()
+    }
+    if (!subscriptionId) {
+      console.warn('webhook-stripe: invoice.paid renewal ohne subscription', invoice?.id)
+      return res.status(200).json({ received: true })
+    }
+
+    const supabaseUrl = process.env.SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('webhook-stripe: invoice.paid SUPABASE_URL oder SUPABASE_SERVICE_ROLE_KEY fehlt')
+      return res.status(500).end()
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const invoiceId = invoice.id
+
+    try {
+      const { data: existingPay } = await supabase
+        .from('payments')
+        .select('id')
+        .eq('stripe_session_id', invoiceId)
+        .maybeSingle()
+
+      if (existingPay?.id) {
+        console.log('webhook-stripe: renewal invoice already recorded', invoiceId)
+        return res.status(200).json({ received: true, duplicate: true })
+      }
+
+      const { data: licence, error: errLic } = await supabase
+        .from('licences')
+        .select('id, empfehler_id')
+        .eq('stripe_subscription_id', subscriptionId)
+        .maybeSingle()
+
+      if (errLic) {
+        console.error('webhook-stripe: licence lookup renewal', errLic)
+        return res.status(500).end()
+      }
+      if (!licence?.id) {
+        console.warn('webhook-stripe: keine Lizenz für subscription', subscriptionId)
+        return res.status(200).json({ received: true, noLicence: true })
+      }
+
+      const payRow = buildRenewalPaymentRow(invoice, licence)
+      const { data: payment, error: errPayment } = await supabase
+        .from('payments')
+        .insert(payRow)
+        .select('id')
+        .single()
+
+      if (errPayment) {
+        if (errPayment.code === '23505') {
+          console.log('webhook-stripe: renewal payment race', invoiceId)
+          return res.status(200).json({ received: true, duplicate: true })
+        }
+        console.error('webhook-stripe: payments renewal insert failed', errPayment)
+        return res.status(500).end()
+      }
+
+      const gut = buildRenewalGutschriftInsert(invoice, licence, payment.id)
+      if (gut) {
+        const { error: errG } = await supabase.from('empfehler_gutschriften').insert(gut)
+        if (errG) console.error('webhook-stripe: empfehler_gutschriften renewal failed', errG)
+      }
+
+      console.log('webhook-stripe: invoice.paid renewal', {
+        invoiceId,
+        subscriptionId,
+        licenceId: licence.id,
+        paymentId: payment.id,
+      })
+    } catch (err) {
+      console.error('webhook-stripe: invoice.paid', err)
+      return res.status(500).end()
+    }
+
     return res.status(200).json({ received: true })
   }
 

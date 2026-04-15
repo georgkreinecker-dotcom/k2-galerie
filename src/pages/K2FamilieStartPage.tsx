@@ -54,19 +54,27 @@ export default function K2FamilieStartPage() {
         </div>
 
         <div id="k2-familie-lizenz-bruecke" className="card" style={{ borderLeft: '4px solid rgba(251, 191, 36, 0.45)' }}>
-          <h2>Lizenz & Kosten – nur K2 Familie</h2>
+          <h2>Lizenz für K2 Familie</h2>
           <p>
-            <strong>Keine Verbindung zu K2-Galerie-Lizenzen.</strong> K2 Familie ist ein eigenes Lizenzprodukt; Abrechnung und Kostenstruktur stehen in der Projekt-Doku im Repo:{' '}
-            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md</code>{' '}
-            und{' '}
-            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZ-KOSTEN.md</code>.
-            mök2 und die allgemeine Plattform-Doku dienen nur zum <em>gleichen Sprachgebrauch</em> – nicht zur Koppelung mit der Galerie.
+            <strong>Eigenes Produkt</strong> – nicht mit anderen Lizenzen der Plattform vermischt. <strong>Inhaber:in = Lizenznehmer:in</strong> – wer die Instanz führt und die Lizenz bezahlt;
+            Bearbeiter:innen und Leser:innen sind nicht automatisch Lizenznehmer:innen.
+          </p>
+          <p style={{ marginTop: '0.65rem', lineHeight: 1.6 }}>
+            <strong>Kündigung:</strong> <strong>keine Bindung</strong> (siehe AGB); Monatsabo über <strong>Stripe</strong>; vor Ende <strong>Daten sichern</strong>.{' '}
+            <Link to={PROJECT_ROUTES['k2-familie'].lizenzKuendigen} style={{ color: '#fbbf24', fontWeight: 700 }}>
+              → Lizenz kündigen
+            </Link>
           </p>
           <p style={{ marginTop: '0.75rem', lineHeight: 1.6 }}>
-            <strong>Zahlung (Stripe):</strong> {K2_FAMILIE_LIZENZPREISE.familie_monat.price} oder {K2_FAMILIE_LIZENZPREISE.familie_jahr.price} – dieselbe Checkout-Technik wie die K2-Galerie-Lizenz.{' '}
+            <strong>Zahlung (Stripe):</strong> {K2_FAMILIE_LIZENZPREISE.familie_monat.price} oder {K2_FAMILIE_LIZENZPREISE.familie_jahr.price}.{' '}
             <Link to={PROJECT_ROUTES['k2-familie'].lizenzErwerben} style={{ color: '#fbbf24', fontWeight: 700 }}>
               → Lizenz erwerben
             </Link>
+          </p>
+          <p className="meta" style={{ marginTop: '0.65rem', lineHeight: 1.5 }}>
+            Technische Kosten-/Modell-Notizen für Entwicklung:{' '}
+            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZMODELL-BRUECKE.md</code>,{' '}
+            <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZ-KOSTEN.md</code>.
           </p>
         </div>
 

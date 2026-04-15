@@ -2,12 +2,10 @@
  * Allgemeine Geschäftsbedingungen (AGB) – rechtliche Absicherung für Nutzung, Demo, Datenschutz, Steuern.
  * Struktur in Einklang mit docs/KONZEPT-LIZENZMODELL-HAUPT-NEBENLIZENZEN.md (Haupt-/Nebenlizenz, Mandant).
  * Bei Eintritt über die Willkommensseite muss die Bestätigung erfolgen (üblich).
- * Navigation: Kein fester „Zurück“-Link – der Browser führt zurück (woher man kam). mök2 / Willkommensseite nur als Zusatz-Links.
+ * Keine Navigations-Links auf dieser Seite (kein mök2, keine festen Sprünge) – Zurück nur über den Browser.
  */
 
-import { Link } from 'react-router-dom'
 import { PRODUCT_BRAND_NAME, PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
-import { WILLKOMMEN_ROUTE, MOK2_ROUTE } from '../config/navigation'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 
 const s = WERBEUNTERLAGEN_STIL
@@ -26,11 +24,6 @@ export default function AGBPage() {
     >
       <link rel="stylesheet" href={PROMO_FONTS_URL} />
       <div style={{ maxWidth: 720, margin: '0 auto', width: '100%', padding: '0 0.25rem' }}>
-        <p style={{ margin: '0 0 1rem', fontSize: '0.9rem' }}>
-          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>mök2</Link>
-          {' · '}
-          <Link to={WILLKOMMEN_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>Willkommensseite</Link>
-        </p>
         <h1
           style={{
             fontFamily: s.fontHeading,
@@ -155,12 +148,7 @@ export default function AGBPage() {
           </p>
         </section>
 
-        <p style={{ marginTop: '2rem', fontSize: '0.85rem', color: s.muted }}>
-          <Link to={MOK2_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>mök2</Link>
-          {' · '}
-          <Link to={WILLKOMMEN_ROUTE} style={{ color: s.accent, textDecoration: 'none' }}>Willkommensseite</Link>
-        </p>
-        <p style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: s.muted }}>
+        <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: s.muted }}>
           {PRODUCT_COPYRIGHT_BRAND_ONLY}
         </p>
         <p style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: s.muted, opacity: 0.95 }}>

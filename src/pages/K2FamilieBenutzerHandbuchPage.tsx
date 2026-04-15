@@ -16,6 +16,7 @@ const DOCUMENTS = [
     file: '06-EVENTS-GESCHICHTE-GEDENKORT-EINSTELLUNGEN.md',
   },
   { id: '07-grafik-und-druck', name: 'Grafik und Druck', file: '07-GRAFIK-UND-DRUCK.md' },
+  { id: '08-lizenz-kuendigung', name: 'Lizenz und Kündigung', file: '08-LIZENZ-UND-KUENDIGUNG.md' },
 ] as const
 
 export default function K2FamilieBenutzerHandbuchPage() {

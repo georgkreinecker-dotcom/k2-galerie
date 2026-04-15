@@ -271,8 +271,10 @@ export const PROJECT_ROUTES = {
     /** USP & Marketing-Konzept – analog mök2, eigenständig für K2 Familie */
     familienMarketing: '/projects/k2-familie/marketing',
     sicherung: '/projects/k2-familie/sicherung',
-    /** Lizenz erwerben – Stripe wie K2 Galerie (Monat/Jahr) */
+    /** Lizenz erwerben – Stripe (Monat/Jahr) */
     lizenzErwerben: '/projects/k2-familie/lizenz-erwerben',
+    /** Monatsabo: Kündigung über Stripe-Kundenlogin */
+    lizenzKuendigen: '/projects/k2-familie/lizenz-kuendigen',
     galerie: '/projects/k2-familie',
     galerieOeffentlich: '/projects/k2-galerie/galerie-oeffentlich',
     galerieOeffentlichVorschau: '/projects/k2-galerie/galerie-oeffentlich-vorschau',

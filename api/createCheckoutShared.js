@@ -71,7 +71,7 @@ export async function createStripeCheckoutSession(opts) {
 
     if (lt === 'familie_jahr') {
       const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
+        mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [
           {
@@ -79,15 +79,24 @@ export async function createStripeCheckoutSession(opts) {
               currency: 'eur',
               product_data: {
                 name: 'K2 Familie – Jahreslizenz',
-                description: '100 € einmalig pro Jahr',
+                description: '100 € pro Jahr (automatische Verlängerung; Wechsel Monat/Jahr im Stripe-Kundenportal, wenn dort eingerichtet)',
               },
               unit_amount: STRIPE_FAMILIE_LICENCE_PRICE_CENTS.familie_jahr,
+              recurring: { interval: 'year' },
             },
             quantity: 1,
           },
         ],
         customer_email: email.trim(),
         metadata: metaBase,
+        subscription_data: {
+          metadata: {
+            tenantId,
+            licenceType: 'familie_jahr',
+            productLine: 'k2_familie',
+            ...empMeta,
+          },
+        },
         success_url: successUrl,
         cancel_url: cancelUrl,
       })

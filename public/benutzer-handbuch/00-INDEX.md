@@ -48,13 +48,17 @@ Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Vid
 
 11. [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md)
 
-Ausführlich für **Inhaber:innen** der Familien-Instanz: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang und Einladungen, Delegation, Missverständnisse vermeiden.
+Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang; **Rollen auf Karten** im nächsten Kapitel.
 
 12. [K2 Familie – Bearbeiter:innen und Leser:innen](14-K2-FAMILIE-BEARBEITER-UND-LESER.md)
 
-Was **Bearbeiter:innen** und **Leser:innen** sehen und bearbeiten dürfen; persönlicher Code; Kurzverweis Vereinsplattform; Checklisten.
+**Eine** Rechte-Tabelle und zwei Merksätze; persönlicher Code und Einladung; Kurzverweis Vereinsplattform; Checklisten.
 
-13. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+13. [K2 Familie – Lizenz und Kündigung](15-K2-FAMILIE-LIZENZ.md)
+
+**Für alle Mitglieder:** Wer ist **Lizenznehmer:in** (Inhaber:in), **Kündigung** wie bei der Galerie – ohne Bindung, Daten vorher sichern.
+
+14. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

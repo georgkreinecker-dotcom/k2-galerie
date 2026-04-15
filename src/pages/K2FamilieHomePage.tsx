@@ -4,7 +4,7 @@
  * Willkommen + Bild + erste Aktionen (Stammbaum, Events & Kalender, …). Pro Tenant Texte/Bilder.
  */
 
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
@@ -12,6 +12,12 @@ import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
+import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import {
+  clearFamilieEinladungPending,
+  getFamilieEinladungPending,
+  K2_FAMILIE_EINLADUNG_PENDING_EVENT,
+} from '../utils/familieEinladungPending'
 import {
   clearGerateVertrauen,
   loadIdentitaetBestaetigt,
@@ -26,6 +32,7 @@ import {
 } from '../utils/familieMitgliedsNummer'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
 import { adminTheme } from '../config/theme'
 const C = {
@@ -78,8 +85,15 @@ export default function K2FamilieHomePage() {
   const a = adminTheme
   const navigate = useNavigate()
   const familieR = PROJECT_ROUTES['k2-familie']
-  const { currentTenantId, tenantList, setCurrentTenantId, refreshFromStorage, familieStorageRevision } =
-    useFamilieTenant()
+  const {
+    currentTenantId,
+    tenantList,
+    setCurrentTenantId,
+    ensureTenantInListAndSelect,
+    refreshFromStorage,
+    familieStorageRevision,
+    bumpFamilieStorageRevision,
+  } = useFamilieTenant()
   const { capabilities } = useFamilieRolle()
   const rolle = capabilities.rolle
   const isInhaber = rolle === 'inhaber'
@@ -98,13 +112,15 @@ export default function K2FamilieHomePage() {
   const [merkGeraetIdentitaet, setMerkGeraetIdentitaet] = useState(true)
   const [registrierungHinweis, setRegistrierungHinweis] = useState('')
   const [registrierungErfolg, setRegistrierungErfolg] = useState('')
+  /** Mobil/erstes Gerät: Personen kommen erst nach Cloud-Sync – einmaliger Lade-Button + Spinner. */
+  const [familieCloudSyncBusy, setFamilieCloudSyncBusy] = useState(false)
 
   const einstAmpel = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const ichBinPersonId = einstAmpel.ichBinPersonId ?? ''
 
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
-  const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId])
-  const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId])
+  const content = useMemo(() => getFamilyPageContent(currentTenantId), [currentTenantId, familieStorageRevision])
+  const texts = useMemo(() => getFamilyPageTexts(currentTenantId), [currentTenantId, familieStorageRevision])
   /** Erste Seite: Leser minimal, Bearbeiter mittel, Inhaber voller Text aus den Seitentexten. */
   const introForRole = useMemo(() => {
     if (isInhaber) return texts.introText
@@ -150,6 +166,70 @@ export default function K2FamilieHomePage() {
     }
   }, [currentTenantId, ichBinPersonId, personen])
 
+  /** QR-Link: wenn der Abgleich im Layout nicht reichte, Pending hier nochmal (Cloud) oder Code vorbefüllen. */
+  useEffect(() => {
+    let cancelled = false
+
+    const run = async () => {
+      const p = getFamilieEinladungPending()
+      if (!p) return
+      if (p.tenantInvalid) {
+        setRegistrierungHinweis(
+          'Der Link zur Familie passt nicht (Kennung in der URL). Bitte den QR-Code erneut scannen oder die Inhaber:in fragen.',
+        )
+        clearFamilieEinladungPending()
+        return
+      }
+      const mNorm = trimMitgliedsNummerEingabe(p.m ?? '')
+      if (!mNorm) {
+        clearFamilieEinladungPending()
+        return
+      }
+      if (p.t && p.t !== currentTenantId) {
+        if (p.t !== FAMILIE_HUBER_TENANT_ID) {
+          clearFamilieNurMusterSession()
+        }
+        const switched = ensureTenantInListAndSelect(p.t)
+        if (!switched) {
+          setRegistrierungHinweis(
+            'Der Link zur Familie passt nicht (Kennung in der URL). Bitte den QR-Code erneut scannen oder die Inhaber:in fragen.',
+          )
+          clearFamilieEinladungPending()
+        }
+        return
+      }
+
+      const data = await loadFamilieFromSupabase(currentTenantId)
+      if (cancelled) return
+      bumpFamilieStorageRevision()
+      const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
+      if (pid) {
+        const einst = loadEinstellungen(currentTenantId)
+        if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
+          setIdentitaetBestaetigt(currentTenantId, pid)
+          clearFamilieEinladungPending()
+          navigate(`${familieR.personen}/${pid}`, { replace: true })
+          return
+        }
+      }
+      setPersoenlicheNummerEingabe(mNorm)
+      setRegistrierungHinweis(
+        'Automatik konnte nicht sofort zuordnen (Netzwerk oder Cloud). Dein persönlicher Code steht unten – „Bestätigen“ tippen oder kurz warten und die Seite neu öffnen.',
+      )
+      clearFamilieEinladungPending()
+    }
+
+    void run()
+    const onPending = () => {
+      void run()
+    }
+    window.addEventListener(K2_FAMILIE_EINLADUNG_PENDING_EVENT, onPending)
+    return () => {
+      cancelled = true
+      window.removeEventListener(K2_FAMILIE_EINLADUNG_PENDING_EVENT, onPending)
+    }
+  }, [currentTenantId, familieR.personen, navigate, bumpFamilieStorageRevision, ensureTenantInListAndSelect])
+
   const { setupDu, setupZugang, setupStartpunkt, setupAllesErledigt } = useMemo(
     () =>
       computeErsteSchritteAmpel(
@@ -160,13 +240,14 @@ export default function K2FamilieHomePage() {
     [einstAmpel],
   )
 
-  /** Alte Lesezeichen: Meine Familie#… → Verwaltung unter Einstellungen */
+  /** Alte Lesezeichen: Meine Familie#… → Verwaltung unter Einstellungen (nicht bei Einladungs-QR ?t=&z=&m= – sonst geht die Query verloren). */
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, '')
-    if (raw === 'k2-familie-zugang-name' || raw === 'k2-familie-ansicht-einstellungen') {
-      navigate(`${familieR.einstellungen}#${raw}`, { replace: true })
-    }
-  }, [navigate, familieR.einstellungen])
+    if (raw !== 'k2-familie-zugang-name' && raw !== 'k2-familie-ansicht-einstellungen') return
+    const sp = new URLSearchParams(location.search)
+    if (sp.get('t') || sp.get('z') || sp.get('m') || sp.get('fn')) return
+    navigate(`${familieR.einstellungen}#${raw}`, { replace: true })
+  }, [navigate, familieR.einstellungen, location.search])
 
   const openEinstellungenAnsicht = () => {
     navigate(`${familieR.einstellungen}#k2-familie-ansicht-einstellungen`)
@@ -225,14 +306,38 @@ export default function K2FamilieHomePage() {
     window.setTimeout(() => setIdentitaetSessionOk(''), 8000)
   }
 
-  const anmeldenMitPersoenlicherNummer = () => {
+  const ladeFamilieDatenVomServer = async () => {
+    setFamilieCloudSyncBusy(true)
+    setRegistrierungHinweis('')
+    try {
+      await loadFamilieFromSupabase(currentTenantId)
+      bumpFamilieStorageRevision()
+    } finally {
+      setFamilieCloudSyncBusy(false)
+    }
+  }
+
+  const anmeldenMitPersoenlicherNummer = async () => {
     setRegistrierungErfolg('')
     const raw = trimMitgliedsNummerEingabe(persoenlicheNummerEingabe)
     if (!raw) {
       setRegistrierungHinweis('Bitte deinen persönlichen Code eintragen (wie mit der Inhaber:in oder dem Administrator vereinbart).')
       return
     }
+    setFamilieCloudSyncBusy(true)
+    try {
+      await loadFamilieFromSupabase(currentTenantId)
+      bumpFamilieStorageRevision()
+    } finally {
+      setFamilieCloudSyncBusy(false)
+    }
     const personenAktuell = loadPersonen(currentTenantId)
+    if (personenAktuell.length === 0) {
+      setRegistrierungHinweis(
+        'Es sind noch keine Personen für diese Familie geladen. WLAN prüfen, „Daten vom Server laden“ erneut tippen oder warten, bis die Inhaber:in Personen angelegt und synchronisiert hat.',
+      )
+      return
+    }
     const pid = findPersonIdByMitgliedsNummer(personenAktuell, raw)
     if (!pid) {
       setRegistrierungHinweis(
@@ -243,6 +348,7 @@ export default function K2FamilieHomePage() {
     const einst = loadEinstellungen(currentTenantId)
     if (saveEinstellungen(currentTenantId, { ...einst, ichBinPersonId: pid })) {
       setRegistrierungHinweis('')
+      clearFamilieEinladungPending()
       setIdentitaetBestaetigt(currentTenantId, pid)
       if (loadIdentitaetBestaetigt(currentTenantId) !== pid) {
         setRegistrierungHinweis(
@@ -477,7 +583,7 @@ export default function K2FamilieHomePage() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
-                    anmeldenMitPersoenlicherNummer()
+                    void anmeldenMitPersoenlicherNummer()
                   }
                 }}
                 placeholder={kannInstanz ? 'z. B. AB12' : 'vom Administrator'}
@@ -500,7 +606,8 @@ export default function K2FamilieHomePage() {
               />
               <button
                 type="button"
-                onClick={anmeldenMitPersoenlicherNummer}
+                onClick={() => void anmeldenMitPersoenlicherNummer()}
+                disabled={familieCloudSyncBusy}
                 style={{
                   minHeight: 46,
                   padding: '0.5rem 1rem',
@@ -510,14 +617,42 @@ export default function K2FamilieHomePage() {
                   border: 'none',
                   background: a.buttonPrimary.background,
                   color: '#fff',
-                  cursor: 'pointer',
+                  cursor: familieCloudSyncBusy ? 'wait' : 'pointer',
                   fontWeight: 700,
                   whiteSpace: 'nowrap',
+                  opacity: familieCloudSyncBusy ? 0.85 : 1,
                 }}
               >
-                Bestätigen
+                {familieCloudSyncBusy ? 'Lade …' : 'Bestätigen'}
               </button>
             </div>
+            {!ichBinPersonId && personen.length === 0 ? (
+              <div style={{ marginTop: '0.5rem', width: '100%' }}>
+                <button
+                  type="button"
+                  id="k2-familie-daten-vom-server"
+                  onClick={() => void ladeFamilieDatenVomServer()}
+                  disabled={familieCloudSyncBusy}
+                  style={{
+                    minHeight: 42,
+                    padding: '0.45rem 0.9rem',
+                    fontSize: '0.88rem',
+                    fontFamily: 'inherit',
+                    borderRadius: 10,
+                    border: '1px solid rgba(13, 148, 136, 0.45)',
+                    background: 'rgba(13, 148, 136, 0.12)',
+                    color: a.text,
+                    cursor: familieCloudSyncBusy ? 'wait' : 'pointer',
+                    fontWeight: 700,
+                  }}
+                >
+                  {familieCloudSyncBusy ? 'Lade …' : 'Daten vom Server laden'}
+                </button>
+                <p style={{ margin: '0.35rem 0 0', fontSize: '0.8rem', lineHeight: 1.4, color: a.muted }}>
+                  Wichtig auf einem neuen Handy: erst die Personen holen, dann den persönlichen Code bestätigen.
+                </p>
+              </div>
+            ) : null}
             <label
               style={{
                 display: 'flex',

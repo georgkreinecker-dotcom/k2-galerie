@@ -3,12 +3,13 @@
  * Nur **Musterfamilie Huber** (Umschauen). Mit anderem Mandanten → Redirect „Meine Familie“ (tägliches Erlebnis).
  */
 
-import { Link, Navigate } from 'react-router-dom'
-import { useMemo } from 'react'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { useLayoutEffect, useMemo } from 'react'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { getFamilieEinstiegContent, getFamilieEinstiegTexts } from '../config/einstiegContentFamilie'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
+import { setFamilieNurMusterSession } from '../utils/familieMusterSession'
 import '../App.css'
 
 const C = {
@@ -21,12 +22,23 @@ const C = {
 }
 
 export default function K2FamilieEinstiegPage() {
-  const { currentTenantId } = useFamilieTenant()
-  const texts = useMemo(() => getFamilieEinstiegTexts(currentTenantId), [currentTenantId])
-  const content = useMemo(() => getFamilieEinstiegContent(currentTenantId), [currentTenantId])
+  const [searchParams] = useSearchParams()
+  const { currentTenantId, ensureTenantInListAndSelect } = useFamilieTenant()
+  /** Flyer/Sidebar: `?t=huber` = explizit Musterfamilie – nie sofort nach „Meine Familie“ schicken, nur weil zuvor Kreinecker aktiv war. */
+  const tParam = searchParams.get('t')?.trim().toLowerCase() ?? ''
+  const huberDemoFromUrl = tParam === FAMILIE_HUBER_TENANT_ID
+  useLayoutEffect(() => {
+    setFamilieNurMusterSession(true)
+    if (huberDemoFromUrl) {
+      ensureTenantInListAndSelect(FAMILIE_HUBER_TENANT_ID)
+    }
+  }, [huberDemoFromUrl, ensureTenantInListAndSelect])
+  const tenantForContent = huberDemoFromUrl ? FAMILIE_HUBER_TENANT_ID : currentTenantId
+  const texts = useMemo(() => getFamilieEinstiegTexts(tenantForContent), [tenantForContent])
+  const content = useMemo(() => getFamilieEinstiegContent(tenantForContent), [tenantForContent])
   const R = PROJECT_ROUTES['k2-familie']
-  /** Einstieg B = nur Musterfamilie (Umschauen). Mit gewählter eigener Familie direkt ins tägliche Erlebnis. */
-  if (currentTenantId !== FAMILIE_HUBER_TENANT_ID) {
+  /** Ohne Huber-URL: wer eine andere Familie gewählt hat, kommt ins tägliche Erlebnis (Meine Familie). */
+  if (!huberDemoFromUrl && currentTenantId !== FAMILIE_HUBER_TENANT_ID) {
     return <Navigate to={R.meineFamilie} replace />
   }
   const hero = content.heroImage?.trim() || ''
@@ -57,7 +69,7 @@ export default function K2FamilieEinstiegPage() {
       <div style={{ padding: '1.25rem 1.25rem 2rem', maxWidth: 720, margin: '0 auto' }}>
         <p style={{ color: C.textSoft, lineHeight: 1.65, marginBottom: '1.5rem', fontSize: '1.02rem' }}>{texts.body}</p>
         <Link
-          to={R.meineFamilie}
+          to={`${R.meineFamilie}?t=huber`}
           className="btn"
           style={{
             display: 'block',

@@ -4,7 +4,9 @@
  */
 
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react'
+import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { K2_FAMILIE_DEFAULT_TENANT, isValidFamilieTenantId, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
+import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
 
 const STORAGE_CURRENT = 'k2-familie-current-tenant'
 const STORAGE_LIST = 'k2-familie-tenant-list'
@@ -95,12 +97,16 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const setCurrentTenantId = useCallback((id: string) => {
+    if (isFamilieNurMusterSession() && id !== FAMILIE_HUBER_TENANT_ID) return
     if (!tenantList.includes(id)) return
     setCurrentTenantIdState(id)
     persistCurrent(id)
   }, [tenantList])
 
   const addTenant = useCallback((): string => {
+    if (isFamilieNurMusterSession()) {
+      return currentTenantId
+    }
     const newId = 'familie-' + Date.now()
     const next = [...tenantList]
     if (next.includes(newId)) return newId
@@ -110,9 +116,10 @@ export function FamilieTenantProvider({ children }: { children: ReactNode }) {
     setCurrentTenantIdState(newId)
     persistCurrent(newId)
     return newId
-  }, [tenantList])
+  }, [tenantList, currentTenantId])
 
   const ensureTenantInListAndSelect = useCallback((id: string): boolean => {
+    if (isFamilieNurMusterSession() && id !== FAMILIE_HUBER_TENANT_ID) return false
     if (!isValidFamilieTenantId(id)) return false
     const list = loadList()
     const next = list.includes(id) ? list : [...list, id]

@@ -36,6 +36,10 @@ Was **Bearbeiter:innen** und **Leser:innen** sehen und ändern dürfen; persönl
 
 **Stammbaum als Bild** (zoomen, Richtung) und **Ausdruck/PDF** (Listen, Blätter, Katalog) – Kurzfassung mit Verweis auf das ausführliche Stammbaum-Kapitel.
 
+8. [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md)
+
+**Für alle Mitglieder:** **Inhaber:in = Lizenznehmer:in**; **Kündigung** mit denselben Grundsätzen wie die Galerie-Lizenz; Daten vorher sichern.
+
 ---
 
 **Drucken:** In der App den Button **Drucken** – ein Kapitel oder das ganze Handbuch als PDF.

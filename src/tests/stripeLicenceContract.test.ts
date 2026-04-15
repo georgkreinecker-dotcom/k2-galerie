@@ -13,6 +13,11 @@ import {
   STRIPE_LICENCE_PRICE_CENTS,
 } from '../../api/stripePriceCents.js'
 import {
+  buildRenewalGutschriftInsert,
+  buildRenewalPaymentRow,
+  isSubscriptionRenewalInvoice,
+} from '../../api/stripeInvoiceRenewalShared.js'
+import {
   buildGalerieUrl,
   computeEmpfehlerGutschrift,
   normalizeWebhookTenantId,
@@ -179,6 +184,37 @@ describe('Webhook-Zeilen aus Session', () => {
       amount_eur: '10.00',
       payment_id: 'pay-uuid',
       licence_id: 'lic-uuid',
+    })
+  })
+})
+
+describe('Stripe invoice.paid – Verlängerung', () => {
+  it('nur subscription_cycle zählt als Verlängerung', () => {
+    expect(isSubscriptionRenewalInvoice({ billing_reason: 'subscription_cycle' })).toBe(true)
+    expect(isSubscriptionRenewalInvoice({ billing_reason: 'subscription_create' })).toBe(false)
+  })
+
+  it('buildRenewalPaymentRow nutzt invoice.id als stripe_session_id', () => {
+    const row = buildRenewalPaymentRow(
+      { id: 'in_1abc', amount_paid: 9900, currency: 'eur' },
+      { id: 'lic-1', empfehler_id: 'e1' },
+    )
+    expect(row.stripe_session_id).toBe('in_1abc')
+    expect(row.amount_cents).toBe(9900)
+    expect(row.licence_id).toBe('lic-1')
+  })
+
+  it('buildRenewalGutschriftInsert: 10 % wie bei erster Zahlung', () => {
+    const gut = buildRenewalGutschriftInsert(
+      { amount_paid: 10000 },
+      { id: 'lic-1', empfehler_id: 'ref12' },
+      'pay-renew',
+    )
+    expect(gut).toEqual({
+      empfehler_id: 'ref12',
+      amount_eur: '10.00',
+      payment_id: 'pay-renew',
+      licence_id: 'lic-1',
     })
   })
 })

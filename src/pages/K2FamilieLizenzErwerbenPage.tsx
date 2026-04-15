@@ -1,12 +1,12 @@
 /**
- * K2 Familie – Lizenz erwerben (Stripe, gleiche Checkout-API wie K2 Galerie).
+ * K2 Familie – Lizenz erwerben (Stripe Checkout).
  * Route: /projects/k2-familie/lizenz-erwerben
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../App.css'
 import { K2_FAMILIE_LIZENZPREISE } from '../config/licencePricing'
-import { PROJECT_ROUTES } from '../config/navigation'
+import { AGB_ROUTE, PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
 import { WERBEUNTERLAGEN_STIL, PROMO_FONTS_URL } from '../config/marketingWerbelinie'
 import { isValidEmpfehlerIdFormat } from '../utils/empfehlerId'
@@ -40,6 +40,7 @@ export default function K2FamilieLizenzErwerbenPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [checkoutNewTab, setCheckoutNewTab] = useState(false)
+  const [agbAccepted, setAgbAccepted] = useState(false)
 
   const a = adminTheme
   const accent = '#b54a1e'
@@ -55,6 +56,10 @@ export default function K2FamilieLizenzErwerbenPage() {
     setCheckoutNewTab(false)
     if (!email.trim() || !name.trim()) {
       setError('Bitte E-Mail und Name angeben.')
+      return
+    }
+    if (!agbAccepted) {
+      setError('Bitte die AGB lesen und bestätigen.')
       return
     }
     setLoading(true)
@@ -142,6 +147,61 @@ export default function K2FamilieLizenzErwerbenPage() {
               <strong>Familie Jahreslizenz:</strong> {K2_FAMILIE_LIZENZPREISE.familie_jahr.price}
             </li>
           </ul>
+        </div>
+
+        <div
+          style={{
+            marginBottom: '1.1rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(30, 41, 59, 0.06)',
+            border: '1px solid rgba(30, 41, 59, 0.12)',
+            borderRadius: 12,
+            fontSize: '0.86rem',
+            lineHeight: 1.55,
+            color: text,
+          }}
+        >
+          <strong style={{ color: accent }}>Wer ist Lizenznehmer:in?</strong>
+          <p style={{ margin: '0.4rem 0 0' }}>
+            Die <strong>Inhaber:in</strong> der Familien-Instanz ist die <strong>Lizenznehmer:in</strong> (dieser Kauf). <strong>Bearbeiter:innen</strong> und{' '}
+            <strong>Leser:innen</strong> sind das nicht automatisch – sie werden eingeladen.
+          </p>
+        </div>
+
+        <div
+          style={{
+            marginBottom: '1.25rem',
+            padding: '0.75rem 1rem',
+            background: 'rgba(30, 41, 59, 0.06)',
+            border: '1px solid rgba(30, 41, 59, 0.12)',
+            borderRadius: 12,
+            fontSize: '0.86rem',
+            lineHeight: 1.55,
+            color: text,
+          }}
+        >
+          <strong style={{ color: accent }}>Kündigung</strong>
+          <p style={{ margin: '0.4rem 0 0' }}>
+            Keine Bindung – <strong>jederzeit</strong> Ausstieg möglich (siehe AGB). Monatslizenz: Abo über{' '}
+            <strong>Stripe</strong> kündigen. Jahreslizenz: Einmalzahlung, keine automatische App-Verlängerung.{' '}
+            <strong>Vor</strong> dem Ende: <strong>Sicherung</strong> unter Einstellungen.
+          </p>
+          <Link
+            to={R.lizenzKuendigen}
+            style={{
+              display: 'inline-block',
+              marginTop: '0.65rem',
+              padding: '0.55rem 0.9rem',
+              background: `linear-gradient(135deg, ${accentSoft} 0%, ${accent} 100%)`,
+              color: '#fff',
+              borderRadius: 10,
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              textDecoration: 'none',
+            }}
+          >
+            → Lizenz kündigen (Stripe)
+          </Link>
         </div>
 
         <div style={{ marginBottom: '1.5rem' }}>
@@ -240,6 +300,34 @@ export default function K2FamilieLizenzErwerbenPage() {
             )}
           </div>
 
+          <div style={{ marginBottom: '0.9rem' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.55rem',
+                fontSize: '0.88rem',
+                lineHeight: 1.45,
+                cursor: 'pointer',
+                color: text,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={agbAccepted}
+                onChange={(e) => setAgbAccepted(e.target.checked)}
+                style={{ marginTop: '0.2rem', width: '1.05rem', height: '1.05rem', flexShrink: 0 }}
+              />
+              <span>
+                Ich habe die{' '}
+                <Link to={AGB_ROUTE} style={{ color: accent, fontWeight: 700 }}>
+                  Allgemeinen Geschäftsbedingungen
+                </Link>{' '}
+                gelesen und akzeptiere sie. *
+              </span>
+            </label>
+          </div>
+
           {checkoutNewTab && (
             <p
               style={{
@@ -263,16 +351,16 @@ export default function K2FamilieLizenzErwerbenPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !agbAccepted}
             style={{
               width: '100%',
               padding: '0.95rem 1rem',
-              background: loading ? muted : `linear-gradient(135deg, ${accentSoft} 0%, ${accent} 100%)`,
+              background: loading || !agbAccepted ? muted : `linear-gradient(135deg, ${accentSoft} 0%, ${accent} 100%)`,
               color: '#fff',
               border: 'none',
               borderRadius: 10,
               fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
+              cursor: loading || !agbAccepted ? 'not-allowed' : 'pointer',
               fontFamily: a.fontBody,
               fontSize: '1.02rem',
             }}

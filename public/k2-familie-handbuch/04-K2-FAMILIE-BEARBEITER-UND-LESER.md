@@ -2,6 +2,8 @@
 
 Hier geht es um die Rollen **Bearbeiter:in** und **Leser:in**: was Sie **sehen**, was Sie **ändern** dürfen – und was **nicht**. So finden Sie sich zurecht, ohne alle Rechte der Inhaber:in zu brauchen.
 
+**Lizenz:** Mit Bearbeiter- oder Leser-Rolle sind Sie **nicht** automatisch Lizenznehmer:in – die **Inhaber:in** trägt die Lizenz. Für alle dasselbe Kapitel: [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md).
+
 ---
 
 ## 1. Übersicht

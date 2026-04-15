@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react'
 import { useState, useMemo, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import K2FamilieVerwaltungZugangUndAnsicht from '../components/K2FamilieVerwaltungZugangUndAnsicht'
+import K2FamilieStartseiteGestalten from '../components/K2FamilieStartseiteGestalten'
 import '../App.css'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { PRODUCT_COPYRIGHT_BRAND_ONLY, PRODUCT_URHEBER_ANWENDUNG } from '../config/tenantConfig'
@@ -248,6 +249,8 @@ export default function K2FamilieEinstellungenPage() {
             </span>
           </div>
         </div>
+
+        <K2FamilieStartseiteGestalten />
 
         {showInhaberArbeitsansichtKarte && (
           <div id="k2-familie-inhaber-ansicht" style={{ ...card, borderLeftColor: '#0e7490' }}>
@@ -563,14 +566,15 @@ export default function K2FamilieEinstellungenPage() {
         )}
 
         {isLeser ? (
-          <p style={{ margin: '0 0 1.15rem', fontSize: '0.88rem', color: onViewport.muted, lineHeight: 1.5 }}>
-            Lizenz &amp; Kosten:{' '}
-            <Link to={`${R.uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
-              Übersicht K2 Familie
+          <p style={{ margin: '0 0 1.15rem', fontSize: '0.88rem', color: onViewport.muted, lineHeight: 1.55 }}>
+            <strong style={{ color: onViewport.text }}>Lizenz:</strong> Die <strong style={{ color: onViewport.text }}>Inhaber:in</strong> ist die{' '}
+            <strong style={{ color: onViewport.text }}>Lizenznehmer:in</strong> – nicht automatisch jede eingeladene Rolle.{' '}
+            <Link to={R.lizenzKuendigen} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
+              Lizenz kündigen
             </Link>
             {' · '}
             <Link to={R.lizenzErwerben} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
-              Lizenz erwerben (Stripe)
+              Lizenz erwerben
             </Link>
           </p>
         ) : (
@@ -579,14 +583,15 @@ export default function K2FamilieEinstellungenPage() {
               Lizenz &amp; Produkt (nur K2 Familie)
             </h2>
             <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
-              K2 Familie ist ein eigenes Lizenzprodukt (keine Koppelung an die Galerie-Lizenzen). Kurzinfo und Verweise auf die Doku stehen unter Leitbild &amp; Vision.
+              Eigenes Produkt. <strong style={{ color: a.text }}>Inhaber:in = Lizenznehmer:in</strong> für diese Familie. Kündigung: keine Bindung (siehe AGB), Monatsabo über
+              Stripe; vor Ende <strong style={{ color: a.text }}>Sicherung</strong> anlegen.
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.75rem', alignItems: 'center' }}>
               <Link to={R.lizenzErwerben} style={linkBtn}>
                 → Lizenz erwerben (Stripe)
               </Link>
               <Link
-                to={`${R.uebersicht}#k2-familie-lizenz-bruecke`}
+                to={R.lizenzKuendigen}
                 style={{
                   ...linkBtn,
                   background: a.bgElevated,
@@ -594,7 +599,7 @@ export default function K2FamilieEinstellungenPage() {
                   border: '1px solid rgba(181, 74, 30, 0.35)',
                 }}
               >
-                → Lizenz &amp; Kosten in der Übersicht
+                → Lizenz kündigen
               </Link>
             </div>
           </div>

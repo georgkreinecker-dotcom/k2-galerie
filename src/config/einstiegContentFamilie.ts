@@ -19,7 +19,7 @@ const DEFAULT_EINSTIEG_TEXTS: FamilieEinstiegTexts = {
   title: 'K2 Familie – Musterfamilie zum Umschauen',
   subtitle: 'Demo: Familie Huber',
   body:
-    'Hier kannst du ohne eigene Daten stöbern: Stammbaum, Kalender und mehr. Für eure echte Familie legst du mit „Neue Familie“ eine Instanz an oder wählst sie oben im Menü.',
+    'Hier kannst du ohne eigene Daten stöbern: Stammbaum, Kalender und mehr. Eure eigene Familie schaltet ihr frei mit einem Einladungs-Link von einer Inhaber:in oder einem Mitglied – nicht über diese Umschauen-Sitzung.',
   ctaLabel: 'Weiter zur Übersicht',
 }
 

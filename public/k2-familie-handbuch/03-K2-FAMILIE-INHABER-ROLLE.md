@@ -4,6 +4,8 @@ Sie haben die Rolle **Inhaber:in**? Dann tragen Sie die Verantwortung für Ihre 
 
 Die folgenden Abschnitte beschreiben, was das **praktisch** bedeutet. **Grundlage** bleibt immer die **Personenkarte** – siehe dazu das eigene Kapitel [Die Personenkarte](02-DIE-PERSONENKARTE.md).
 
+**Lizenz:** Sie sind als Inhaber:in die **Lizenznehmer:in** (wer die Lizenz bezahlt). Das betrifft alle Mitglieder: [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md).
+
 ---
 
 ## 1. Was „Inhaber:in“ bedeutet
