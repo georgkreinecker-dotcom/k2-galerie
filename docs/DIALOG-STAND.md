@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Supabase-Check (Feinschliff):** `getFamilieLoadHinweisFuerNutzer` bei `not_configured` – kein Wort mehr **„Galerie-App“** (nur K2 Familie / veröffentlichte Website). **Doku:** `K2-FAMILIE-SUPABASE-EINBAU.md` – welche Daten die Edge-Function `familie` synchronisiert vs. nur lokal. **Test** erweitert. **Tests + Build** grün. **Commit:** **`e307f456`** ✅ GitHub
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Nav:** Hinweistext **„Weitere Bereiche ↓ Startseite“** auf **Meine Familie** entfernt. **Commit:** **`d4a19bb9`** ✅ GitHub
 
 ---
