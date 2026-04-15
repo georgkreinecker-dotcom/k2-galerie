@@ -15,6 +15,7 @@ import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import {
   clearFamilieEinladungPending,
   setFamilieEinladungPending,
+  setFamilieFamilienQrKompaktSession,
 } from '../utils/familieEinladungPending'
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
@@ -182,6 +183,11 @@ export function FamilieEinladungQuerySync() {
         } else if (m) {
           setFamilieEinladungPending({ t, z, m, fn })
           goMeineFamilieIfNeeded()
+        } else if (z) {
+          /** Allgemeine Familien-QR (t+z, kein m): kompakte Nur-Zugangs-Ansicht, nicht volle Homepage. */
+          setFamilieFamilienQrKompaktSession(t)
+          bumpFamilieStorageRevision()
+          goMeineFamilieIfNeeded()
         }
         return
       }
@@ -203,6 +209,10 @@ export function FamilieEinladungQuerySync() {
           navigate(`${R_PERSONEN}/${pidFromM}`, { replace: true })
         } else if (m) {
           setFamilieEinladungPending({ z, m, fn })
+          goMeineFamilieIfNeeded()
+        } else {
+          setFamilieFamilienQrKompaktSession(currentTenantId)
+          bumpFamilieStorageRevision()
           goMeineFamilieIfNeeded()
         }
         return

@@ -29,7 +29,7 @@ import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
 import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
-import { isFamilieEinladungPersonalCodeOffen } from '../utils/familieEinladungPending'
+import { isFamilieEinladungNurZugangAnsicht } from '../utils/familieEinladungPending'
 import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
@@ -599,14 +599,14 @@ function FamilieLayoutInner() {
   const { rolle } = useFamilieRolle()
   const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
   const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
-  const einladungPersonalCodeOffen = useMemo(
-    () => isFamilieEinladungPersonalCodeOffen(currentTenantId),
+  const einladungNurZugangAnsicht = useMemo(
+    () => isFamilieEinladungNurZugangAnsicht(currentTenantId),
     [currentTenantId, location.search, familieStorageRevision],
   )
   const nurMitgliedEinstieg = useMemo(
     () =>
-      isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einst, personen, einladungPersonalCodeOffen),
-    [rolle, currentTenantId, einst, personen, einladungPersonalCodeOffen],
+      isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht),
+    [rolle, currentTenantId, einst, personen, einladungNurZugangAnsicht],
   )
 
   return (
