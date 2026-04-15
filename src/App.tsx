@@ -70,6 +70,7 @@ import K2FamilieMitgliederCodesPage from './pages/K2FamilieMitgliederCodesPage'
 import K2FamilieWillkommenPage from './pages/K2FamilieWillkommenPage'
 import K2FamilieEinstiegPage from './pages/K2FamilieEinstiegPage'
 import K2FamilieMarketingPage from './pages/K2FamilieMarketingPage'
+import K2FamilieLizenzErwerbenPage from './pages/K2FamilieLizenzErwerbenPage'
 import K2FamilieLayout from './components/K2FamilieLayout'
 import { K2FamilieRootIndexRedirect } from './components/K2FamilieRootIndexRedirect'
 import PlatzanordnungPage from './pages/PlatzanordnungPage'
@@ -911,6 +912,7 @@ function App() {
         <Route path="mitglieder-codes" element={<K2FamilieMitgliederCodesPage />} />
         <Route path="sicherung" element={<K2FamilieSicherungPage />} />
         <Route path="marketing" element={<K2FamilieMarketingPage />} />
+        <Route path="lizenz-erwerben" element={<K2FamilieLizenzErwerbenPage />} />
         <Route path="personen/:id" element={<K2FamiliePersonPage />} />
       </Route>
       <Route path="/projects/:projectId" element={<ProjectStartPage />} />

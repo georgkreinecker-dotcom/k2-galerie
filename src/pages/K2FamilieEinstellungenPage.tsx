@@ -568,6 +568,10 @@ export default function K2FamilieEinstellungenPage() {
             <Link to={`${R.uebersicht}#k2-familie-lizenz-bruecke`} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
               Übersicht K2 Familie
             </Link>
+            {' · '}
+            <Link to={R.lizenzErwerben} style={{ color: onViewport.accentLink, fontWeight: 600 }}>
+              Lizenz erwerben (Stripe)
+            </Link>
           </p>
         ) : (
           <div style={{ ...card, borderLeftColor: '#ca8a04' }}>
@@ -577,9 +581,22 @@ export default function K2FamilieEinstellungenPage() {
             <p style={{ margin: 0, fontSize: '0.9rem', color: a.muted, lineHeight: 1.55 }}>
               K2 Familie ist ein eigenes Lizenzprodukt (keine Koppelung an die Galerie-Lizenzen). Kurzinfo und Verweise auf die Doku stehen unter Leitbild &amp; Vision.
             </p>
-            <Link to={`${R.uebersicht}#k2-familie-lizenz-bruecke`} style={linkBtn}>
-              → Lizenz &amp; Kosten in der Übersicht
-            </Link>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.65rem', marginTop: '0.75rem', alignItems: 'center' }}>
+              <Link to={R.lizenzErwerben} style={linkBtn}>
+                → Lizenz erwerben (Stripe)
+              </Link>
+              <Link
+                to={`${R.uebersicht}#k2-familie-lizenz-bruecke`}
+                style={{
+                  ...linkBtn,
+                  background: a.bgElevated,
+                  color: a.text,
+                  border: '1px solid rgba(181, 74, 30, 0.35)',
+                }}
+              >
+                → Lizenz &amp; Kosten in der Übersicht
+              </Link>
+            </div>
           </div>
         )}
 

@@ -5,9 +5,11 @@ import {
   STRIPE_WEBHOOK_PATH,
   getStripeWebhookUrlProduction,
 } from '../../api/stripeLicenceChainConstants.js'
-import { LIZENZPREISE } from '../config/licencePricing'
+import { K2_FAMILIE_LIZENZPREISE, LIZENZPREISE } from '../config/licencePricing'
 import {
   STRIPE_CHECKOUT_LICENCE_TYPES,
+  STRIPE_FAMILIE_CHECKOUT_TYPES,
+  STRIPE_FAMILIE_LICENCE_PRICE_CENTS,
   STRIPE_LICENCE_PRICE_CENTS,
 } from '../../api/stripePriceCents.js'
 import {
@@ -16,7 +18,11 @@ import {
   normalizeWebhookTenantId,
   rowsFromCheckoutSession,
 } from '../../api/stripeWebhookLicenceShared.js'
-import { createStripeCheckoutSession, generateTenantId } from '../../api/createCheckoutShared.js'
+import {
+  createStripeCheckoutSession,
+  generateFamilieTenantId,
+  generateTenantId,
+} from '../../api/createCheckoutShared.js'
 
 describe('Stripe Lizenz – Kette: Konstanten = eine Quelle (bombensicher)', () => {
   it('Production-Webhook-URL und Pfade stabil (Doku/Stripe Dashboard)', () => {
@@ -36,6 +42,17 @@ describe('Stripe Lizenz – Preise = eine Quelle mit licencePricing', () => {
       const euro = LIZENZPREISE[key as keyof typeof LIZENZPREISE]?.priceEur
       expect(typeof euro).toBe('number')
       expect(STRIPE_LICENCE_PRICE_CENTS[key as keyof typeof STRIPE_LICENCE_PRICE_CENTS]).toBe(
+        (euro as number) * 100,
+      )
+    }
+  })
+
+  it('K2 Familie: Cent = K2_FAMILIE_LIZENZPREISE.priceEur * 100', () => {
+    expect(STRIPE_FAMILIE_CHECKOUT_TYPES).toEqual(['familie_monat', 'familie_jahr'])
+    for (const key of STRIPE_FAMILIE_CHECKOUT_TYPES) {
+      const euro = K2_FAMILIE_LIZENZPREISE[key as keyof typeof K2_FAMILIE_LIZENZPREISE]?.priceEur
+      expect(typeof euro).toBe('number')
+      expect(STRIPE_FAMILIE_LICENCE_PRICE_CENTS[key as keyof typeof STRIPE_FAMILIE_LICENCE_PRICE_CENTS]).toBe(
         (euro as number) * 100,
       )
     }
@@ -66,6 +83,14 @@ describe('generateTenantId', () => {
   it('ohne @: nutzt Fallback galerie', () => {
     const id = generateTenantId('keinemail')
     expect(id.startsWith('galerie-')).toBe(true)
+  })
+})
+
+describe('generateFamilieTenantId', () => {
+  it('liefert Präfix familie- und Slug aus E-Mail', () => {
+    const id = generateFamilieTenantId('  Anna.Test@Familie.de  ')
+    expect(id).toMatch(/^familie-[a-z0-9-]+-[a-z0-9]+$/)
+    expect(id).toContain('anna-test')
   })
 })
 
@@ -108,6 +133,27 @@ describe('Webhook-Zeilen aus Session', () => {
     expect(pack.licenceInsert.tenant_id).toBe('galerie-test-abc12')
     expect(pack.licenceInsert.galerie_url).toBe(
       'https://k2-galerie.vercel.app/g/galerie-test-abc12',
+    )
+  })
+
+  it('K2 Familie Jahreslizenz → galerie_url Meine Familie', () => {
+    const base = 'https://k2-galerie.vercel.app'
+    const pack = rowsFromCheckoutSession(
+      {
+        id: 'cs_fam',
+        amount_total: 10000,
+        customer_email: 'k@fam.de',
+        metadata: {
+          licenceType: 'familie_jahr',
+          customerName: 'K',
+          tenantId: 'familie-test-abc12',
+        },
+      },
+      base,
+    )
+    expect(pack.licenceInsert.tenant_id).toBe('familie-test-abc12')
+    expect(pack.licenceInsert.galerie_url).toBe(
+      'https://k2-galerie.vercel.app/projects/k2-familie/meine-familie',
     )
   })
 

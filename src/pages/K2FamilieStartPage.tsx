@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import FamilieBackButton from '../components/FamilieBackButton'
 import { useState } from 'react'
 import '../App.css'
+import { K2_FAMILIE_LIZENZPREISE } from '../config/licencePricing'
 import { PROJECT_ROUTES } from '../config/navigation'
 import { useFamilieTenant } from '../context/FamilieTenantContext'
 import { seedFamilieHuber } from '../data/familieHuberMuster'
@@ -60,6 +61,12 @@ export default function K2FamilieStartPage() {
             und{' '}
             <code style={{ background: 'rgba(0,0,0,0.2)', padding: '0.15rem 0.4rem', borderRadius: 4 }}>docs/K2-FAMILIE-LIZENZ-KOSTEN.md</code>.
             mök2 und die allgemeine Plattform-Doku dienen nur zum <em>gleichen Sprachgebrauch</em> – nicht zur Koppelung mit der Galerie.
+          </p>
+          <p style={{ marginTop: '0.75rem', lineHeight: 1.6 }}>
+            <strong>Zahlung (Stripe):</strong> {K2_FAMILIE_LIZENZPREISE.familie_monat.price} oder {K2_FAMILIE_LIZENZPREISE.familie_jahr.price} – dieselbe Checkout-Technik wie die K2-Galerie-Lizenz.{' '}
+            <Link to={PROJECT_ROUTES['k2-familie'].lizenzErwerben} style={{ color: '#fbbf24', fontWeight: 700 }}>
+              → Lizenz erwerben
+            </Link>
           </p>
         </div>
 
