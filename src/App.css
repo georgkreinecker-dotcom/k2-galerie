@@ -2605,7 +2605,29 @@ body:has(.stammbaum-druck-view:not(.stammbaum-druck-view--vorschau)) {
   width: 5.5rem;
 }
 .stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-col-jahr {
-  width: 4rem;
+  width: 4.5rem;
+}
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-col-name {
+  width: 30%;
+  min-width: 7rem;
+}
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-col-hinweis {
+  min-width: 8.5rem;
+  width: 26%;
+}
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-table th,
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-table td {
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  vertical-align: top;
+}
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-geburtstags-hinweis-zelle {
+  font-size: 8.5pt;
+  line-height: 1.35;
+}
+.stammbaum-druck-view[data-stil='geburtstagsliste'] .stammbaum-print-td-name {
+  max-width: none;
 }
 
 /* K2 Familie Stammbaum: PDF-Bereich – Steuerung (Umfang, Typ, Papier …) lesbar, nicht überdimensioniert */

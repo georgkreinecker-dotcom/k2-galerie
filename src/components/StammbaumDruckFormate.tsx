@@ -329,6 +329,18 @@ function parseGeburtstagEintrag(p: K2FamiliePerson): GeburtstagEintrag | null {
   return { person: p, iso, monat, tag, jahr }
 }
 
+/** Hinweis-Spalte Geburtstagsliste: Todestag aus Stammdaten, sonst Kennzeichnung verstorben. */
+function formatGeburtstagslisteHinweis(p: K2FamiliePerson): string {
+  const raw = p.verstorbenAm?.trim()
+  if (raw) {
+    const iso = normalizeFamilieDatum(raw) || raw
+    const d = formatDatumDruck(iso)
+    return d !== '–' ? `Todestag: ${d}` : '† verstorben'
+  }
+  if (p.verstorben) return '† verstorben'
+  return '–'
+}
+
 /**
  * Geburtstagsliste: alle Personen mit vollständigem Geburtsdatum, sortiert nach Kalender (Tag im Jahr).
  * Ohne Tag/Monat: Abschnitt am Ende. Verstorbene mit † gekennzeichnet.
@@ -408,8 +420,8 @@ export function StammbaumDruckGeburtstagsliste({
                       </strong>
                     </td>
                     <td>{e.jahr}</td>
-                    <td className="meta">
-                      {e.person.verstorben ? '† verstorben' : '–'}
+                    <td className="meta stammbaum-print-geburtstags-hinweis-zelle">
+                      {formatGeburtstagslisteHinweis(e.person)}
                     </td>
                   </tr>
                 ))}
@@ -433,7 +445,7 @@ export function StammbaumDruckGeburtstagsliste({
                     </strong>
                   </td>
                   <td>{p.geburtsdatum?.trim() ? formatGeb(p.geburtsdatum) : '–'}</td>
-                  <td className="meta">{p.verstorben ? '† verstorben' : '–'}</td>
+                  <td className="meta stammbaum-print-geburtstags-hinweis-zelle">{formatGeburtstagslisteHinweis(p)}</td>
                 </tr>
               ))}
             </>
