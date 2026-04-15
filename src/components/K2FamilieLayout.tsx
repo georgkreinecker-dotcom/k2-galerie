@@ -5,7 +5,7 @@
  */
 
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { FamilieTenantProvider, useFamilieTenant } from '../context/FamilieTenantContext'
 import { FamilieRolleProvider, useFamilieRolle } from '../context/FamilieRolleContext'
 import { PROJECT_ROUTES } from '../config/navigation'
@@ -28,6 +28,8 @@ import { FamilieMusterSessionEnforcer } from './FamilieMusterSessionEnforcer'
 import { FamilieCloudAutoSync } from './K2Familie/FamilieCloudAutoSync'
 import { isFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { isK2FamilieApfLocalhost, resolveApfMeineFamilieTenantId } from '../config/k2FamilieApfDefaults'
+import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
+import { loadEinstellungen, loadPersonen } from '../utils/familieStorage'
 
 /** Gleicher String wie `K2_FAMILIE_SESSION_UPDATED` in `familieStorage.ts` — hier als Literal, damit kein Laufzeit-ReferenceError (z. B. HMR). */
 const FAMILIE_SESSION_UPDATED_EVENT = 'k2-familie-einstellungen-updated'
@@ -590,29 +592,75 @@ function FamilieNav() {
   )
 }
 
+function FamilieLayoutInner() {
+  const { currentTenantId, familieStorageRevision } = useFamilieTenant()
+  const { rolle } = useFamilieRolle()
+  const einst = useMemo(() => loadEinstellungen(currentTenantId), [currentTenantId, familieStorageRevision])
+  const personen = useMemo(() => loadPersonen(currentTenantId), [currentTenantId, familieStorageRevision])
+  const nurMitgliedEinstieg = useMemo(
+    () => isK2FamilieNurMitgliedEinstiegModus(rolle, currentTenantId, einst, personen),
+    [rolle, currentTenantId, einst, personen],
+  )
+
+  return (
+    <>
+      <FamilieEinladungQuerySync />
+      <FamilieApfMeineFamilieSync />
+      <FamilieMusterSessionEnforcer />
+      <FamilieCloudAutoSync />
+      <div className="k2-familie-layout-shell">
+        {!nurMitgliedEinstieg ? <FamilieLeitstrukturPanel /> : null}
+        <div className="k2-familie-layout-column">
+          {nurMitgliedEinstieg ? (
+            <div
+              className="k2-familie-no-print"
+              style={{
+                padding: '0.65rem 1rem',
+                background: t.bgDark,
+                borderBottom: `1px solid ${FAMILIE_NAV_BORDER}`,
+                fontFamily: t.fontHeading,
+                color: t.text,
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', lineHeight: 1.3 }}>K2 Familie · Persönlicher Zugang</div>
+              <p
+                style={{
+                  margin: '0.35rem 0 0',
+                  fontSize: '0.82rem',
+                  lineHeight: 1.45,
+                  color: t.muted,
+                  fontFamily: t.fontBody,
+                  fontWeight: 500,
+                }}
+              >
+                Privater Familienraum – Betreten nur mit deiner persönlichen ID, dem Code auf deiner Karte.
+              </p>
+            </div>
+          ) : (
+            <>
+              <FamilieNav />
+              <FamilieTenantToolbar />
+              <FamilieRolleLeiste />
+            </>
+          )}
+          <main id="k2-familie-main" className="k2-familie-main">
+            <Outlet />
+          </main>
+          <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
+            <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
+            <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
+          </footer>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function K2FamilieLayout() {
   return (
     <FamilieTenantProvider>
       <FamilieRolleProvider>
-        <FamilieEinladungQuerySync />
-        <FamilieApfMeineFamilieSync />
-        <FamilieMusterSessionEnforcer />
-        <FamilieCloudAutoSync />
-        <div className="k2-familie-layout-shell">
-          <FamilieLeitstrukturPanel />
-          <div className="k2-familie-layout-column">
-            <FamilieNav />
-            <FamilieTenantToolbar />
-            <FamilieRolleLeiste />
-            <main id="k2-familie-main" className="k2-familie-main">
-              <Outlet />
-            </main>
-            <footer className="k2-familie-app-footer k2-familie-no-print" role="contentinfo">
-              <p className="k2-familie-app-footer__line">{PRODUCT_COPYRIGHT_BRAND_ONLY}</p>
-              <p className="k2-familie-app-footer__line k2-familie-app-footer__line--muted">{PRODUCT_URHEBER_ANWENDUNG}</p>
-            </footer>
-          </div>
-        </div>
+        <FamilieLayoutInner />
       </FamilieRolleProvider>
     </FamilieTenantProvider>
   )

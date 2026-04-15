@@ -4,6 +4,8 @@ Hier geht es um die Rollen **Bearbeiter:in** und **Leser:in**: was Sie **sehen**
 
 **Lizenz:** Mit Bearbeiter- oder Leser-Rolle sind Sie **nicht** automatisch Lizenznehmer:in – die **Inhaber:in** trägt die Lizenz. Für alle dasselbe Kapitel: [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md).
 
+**Vertrauen:** Egal welche Rolle – **hinein** in den Familienraum geht es **nur mit Ihrer persönlichen ID** auf der Karte; der Raum ist **privat**. Details: [Vertrauen: privater Familienraum](09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md).
+
 ---
 
 ## 1. Übersicht

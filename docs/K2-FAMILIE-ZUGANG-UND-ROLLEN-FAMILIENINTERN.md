@@ -3,6 +3,8 @@
 **Stand:** 13.04.26  
 **Zweck:** Festhalten, wie **Zutritt** (Zugangsnummer, QR), **persönliche Mitgliedsnummer** und **Rechte** (Rollen) zusammenspielen – und dass die **Familie** ihre Rollen **innen** definiert. Verbindlich für Konzept, Handbuch und spätere Umsetzung (Einladung, ggf. Supabase).
 
+**Kommunikation:** Die Nutzer:innen sollen **überall** dieselbe klare Botschaft erhalten: **privater Familienraum**, **hinein nur mit persönlicher ID** auf der Karte – siehe auch Kapitel *Vertrauen: privater Familienraum* im K2-Familie-Handbuch in der App und **docs/K2-FAMILIE-GRUNDBOTSCHAFT.md** (Abschnitt „Vertrauen und privater Familienraum“).
+
 ---
 
 ## 1. Drei Ebenen – nicht verwechseln

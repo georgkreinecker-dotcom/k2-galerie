@@ -6,6 +6,8 @@
 
 **Im Mittelpunkt** steht die **Personenkarte**: Jede Person hat eine Karte; daraus entsteht der Stammbaum und daran hängen Einladung und persönlicher Bereich. Lesen Sie dazu zuerst [Die Personenkarte](02-DIE-PERSONENKARTE.md).
 
+**Vertrauen:** Der Familienraum ist **privat** und **nur mit Ihrer persönlichen ID** auf der Karte voll zugänglich – ausführlich und mit Begründung: [Vertrauen: privater Familienraum](09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md).
+
 ## Was dieses Handbuch bietet
 
 - **Die Personenkarte** – was sie ist, **wo und wie** Sie sie anlegen, und warum alles darauf aufbaut.
@@ -14,6 +16,7 @@
 - **Rolle Inhaber:in** – wenn Sie die Familie führen und strukturieren.
 - **Bearbeiter und Leser** – kompakt, wenn Sie mitgestalten oder mitlesen.
 - **Events, Geschichte, Gedenkort, Einstellungen** – Termine, Chronik, Erinnerung an Verstorbene, Rolle und Sicherung.
+- **Vertrauen, privater Raum, Zugang nur mit ID** – eine **Vertrauenssache**, einheitlich erklärt.
 
 Die App selbst zeigt **Buttons**, **Hinweise** und **Einstellungen** dort, wo Sie sie brauchen. Dieses Handbuch **ergänzt** das mit **Hintergrund** und **Rollenlogik**.
 

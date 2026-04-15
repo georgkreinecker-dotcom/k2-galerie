@@ -31,6 +31,10 @@ Jede KI, jeder Agent, jede zukünftige Betreiberin oder jeder Betreiber, die ode
 
 ## Wo die Grundbotschaft wirkt
 
+### Vertrauen und privater Familienraum (überall dieselbe Aussage)
+
+K2 Familie kommuniziert **eine** klare Linie: **privater Familienraum**. **Hinein** kommen Nutzer:innen **nur mit der persönlichen ID auf der Personenkarte** (zusammen mit Familien-Zugang und Einladung). Diese Aussage **steht in der App, in den Handbüchern und in der Produktdoku** – nicht „mal so, mal anders“. Das ist **Vertrauenssache** und gehört zu den festen Erwartungen an Texte, Hilfen und KI-Kommunikation. Ausführliches Kapitel im K2-Familie-Handbuch in der App: *Vertrauen: privater Familienraum*.
+
 ### 1. Form der App
 
 Die Grundbotschaft soll sich **in der Form der App** niederschlagen:

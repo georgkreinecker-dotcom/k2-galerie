@@ -17,6 +17,11 @@ const DOCUMENTS = [
   },
   { id: '07-grafik-und-druck', name: 'Grafik und Druck', file: '07-GRAFIK-UND-DRUCK.md' },
   { id: '08-lizenz-kuendigung', name: 'Lizenz und Kündigung', file: '08-LIZENZ-UND-KUENDIGUNG.md' },
+  {
+    id: '09-vertrauen-privater-familienraum',
+    name: 'Vertrauen, privater Familienraum',
+    file: '09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md',
+  },
 ] as const
 
 export default function K2FamilieBenutzerHandbuchPage() {

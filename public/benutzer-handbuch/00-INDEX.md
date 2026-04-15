@@ -46,19 +46,23 @@ Besucher: Warenkorb, Bestellung, **Wunsch-Zahlungsart** (keine automatische Abbu
 
 Stammdaten (Galerie/Verein, Kontakt, Adresse). YouTube, Instagram, Highlight-Video unter Stammdaten. Backup, Veröffentlichen, Drucker. **Admin-Zugang:** Link und QR in den Stammdaten je nach Galerie-Typ; **Passwort** getrennt erklärt. Vereine: Verein anlegen, Kategorien.
 
-11. [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md)
+11. [K2 Familie – Vertrauen, privater Raum](16-K2-FAMILIE-VERTRAUEN-PRIVATER-RAUM.md)
+
+**Für alle:** Familienraum **privat**; **hinein** nur mit **persönlicher ID** auf der Karte – **Vertrauenssache**, einheitlich in App, Handbuch und Doku.
+
+12. [K2 Familie – Rolle Inhaber:in](13-K2-FAMILIE-INHABER-ROLLE.md)
 
 Für **Inhaber:innen**: Verantwortung, nur-Inhaber-Bereiche, Arbeitsansicht, Sicherung, Zugang; **Rollen auf Karten** im nächsten Kapitel.
 
-12. [K2 Familie – Bearbeiter:innen und Leser:innen](14-K2-FAMILIE-BEARBEITER-UND-LESER.md)
+13. [K2 Familie – Bearbeiter:innen und Leser:innen](14-K2-FAMILIE-BEARBEITER-UND-LESER.md)
 
 **Eine** Rechte-Tabelle und zwei Merksätze; persönlicher Code und Einladung; Kurzverweis Vereinsplattform; Checklisten.
 
-13. [K2 Familie – Lizenz und Kündigung](15-K2-FAMILIE-LIZENZ.md)
+14. [K2 Familie – Lizenz und Kündigung](15-K2-FAMILIE-LIZENZ.md)
 
 **Für alle Mitglieder:** Wer ist **Lizenznehmer:in** (Inhaber:in), **Kündigung** wie bei der Galerie – ohne Bindung, Daten vorher sichern.
 
-14. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
+15. [Häufige Fragen](04-HAEUFIGE-FRAGEN.md)
 
 **Gleiche URL auf PC und Handy**, Stand aktualisieren, Drucken, QR-Code, Passwort vergessen, Hilfe.
 

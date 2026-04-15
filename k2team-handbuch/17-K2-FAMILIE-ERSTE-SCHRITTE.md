@@ -8,6 +8,8 @@ Kurzanleitung für Nutzer:innen. Stand: 02.03.26.
 
 Ein Tool, um Zusammenleben sichtbar zu machen – Stammbaum, Personen, Beziehungen, Momente (Hochzeit, Geburt, Reise, …) und Events (Geburtstage, Treffen). Jede Form von Familie hat Platz; wechselnde Partnerschaften, Freud und Leid und Alltag.
 
+**Vertrauen:** Der Familienraum ist **privat**. **Hinein** kommen Sie **nur mit Ihrer persönlichen ID** auf der Personenkarte – dieselbe Aussage in App, Benutzerhandbuch und interner Doku.
+
 ---
 
 ## Erste Schritte

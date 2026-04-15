@@ -119,3 +119,22 @@ export function getFamilieEffectiveCapabilities(
 
   return mergeCaps(getFamilieRollenCapabilities(rolleForCaps), rolle, effectiveRolle, inhaberArbeitsansicht)
 }
+
+/**
+ * Volle Oberfläche (Navigation, Familienwahl, Muster, Kacheln) ausblenden: Erst-Anmeldung als Mitglied
+ * (Leser/Bearbeiter), bis „Du“ feststeht und die Sitzung den persönlichen Code bestätigt hat.
+ * Inhaber:in bei Erst-Einrichtung behält die volle Oberfläche (Familie anlegen, Zugang, …).
+ */
+export function isK2FamilieNurMitgliedEinstiegModus(
+  rolle: K2FamilieRolle,
+  tenantId: string,
+  einst: K2FamilieEinstellungen,
+  personen: K2FamiliePerson[],
+): boolean {
+  if (rolle === 'inhaber') return false
+  const ich = einst.ichBinPersonId?.trim()
+  if (!ich) return true
+  const code = trimMitgliedsNummerEingabe(personen.find((p) => p.id === ich)?.mitgliedsNummer ?? '')
+  if (!code) return false
+  return loadIdentitaetBestaetigt(tenantId) !== ich
+}

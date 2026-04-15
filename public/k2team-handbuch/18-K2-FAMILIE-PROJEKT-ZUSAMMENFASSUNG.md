@@ -11,6 +11,8 @@ Jede „Familie“ (in welcher Form auch immer Menschen zusammenleben) = ein Man
 
 **Leitlinie:** *„Wir nehmen, was zu uns passt – und machen etwas ganz Persönliches für jede einzelne Familie: originell und einzigartig.“*
 
+**Vertrauen:** **Privater Familienraum**; **Zugang nur mit persönlicher ID** auf der Karte – überall gleich kommuniziert (App, Handbuch, AGB, Doku).
+
 ---
 
 ## Grundbotschaft (moralisches Fundament)

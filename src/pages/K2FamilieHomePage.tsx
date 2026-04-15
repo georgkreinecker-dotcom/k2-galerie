@@ -12,7 +12,7 @@ import { useFamilieRolle } from '../context/FamilieRolleContext'
 import { getFamilyPageContent } from '../config/pageContentFamilie'
 import { getFamilyPageTexts } from '../config/pageTextsFamilie'
 import { loadEinstellungen, saveEinstellungen, loadPersonen, K2_FAMILIE_SESSION_UPDATED } from '../utils/familieStorage'
-import { loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
+import { getFamilieLoadHinweisFuerNutzer, loadFamilieFromSupabase } from '../utils/familieSupabaseClient'
 import {
   clearFamilieEinladungPending,
   getFamilieEinladungPending,
@@ -31,6 +31,7 @@ import {
   trimMitgliedsNummerEingabe,
 } from '../utils/familieMitgliedsNummer'
 import type { K2FamilieStartpunktTyp } from '../types/k2Familie'
+import { isK2FamilieNurMitgliedEinstiegModus } from '../utils/familieIdentitaet'
 import { seedFamilieHuber, FAMILIE_HUBER_TENANT_ID } from '../data/familieHuberMuster'
 import { clearFamilieNurMusterSession } from '../utils/familieMusterSession'
 import { useMemo, useState, useEffect, type CSSProperties } from 'react'
@@ -94,11 +95,11 @@ export default function K2FamilieHomePage() {
     familieStorageRevision,
     bumpFamilieStorageRevision,
   } = useFamilieTenant()
-  const { capabilities } = useFamilieRolle()
-  const rolle = capabilities.rolle
-  const isInhaber = rolle === 'inhaber'
-  const isBearbeiter = rolle === 'bearbeiter'
-  const isLeser = rolle === 'leser'
+  const { capabilities, rolle: rolleGewaehlt } = useFamilieRolle()
+  const effRolle = capabilities.rolle
+  const isInhaber = effRolle === 'inhaber'
+  const isBearbeiter = effRolle === 'bearbeiter'
+  const isLeser = effRolle === 'leser'
   const kannStruktur = capabilities.canEditStrukturUndStammdaten
   const kannInstanz = capabilities.canManageFamilienInstanz
   const showSicherungKachel = capabilities.canExportSicherung
@@ -130,6 +131,12 @@ export default function K2FamilieHomePage() {
     return 'Hier liest du die Familie. Auf deiner eigenen Karte ergänzt du persönliches – ohne den Stammbaum zu verändern.'
   }, [isInhaber, isBearbeiter, texts.introText])
   const welcomeImage = content.welcomeImage || ''
+
+  /** Volle Seite erst nach Einrichtung – vermeidet Verwechslung mit Musterfamilie in Leisten/Dropdown. */
+  const nurMitgliedEinstieg = useMemo(
+    () => isK2FamilieNurMitgliedEinstiegModus(rolleGewaehlt, currentTenantId, einstAmpel, personen),
+    [rolleGewaehlt, currentTenantId, einstAmpel, personen],
+  )
 
   const ichName = useMemo(() => {
     const id = ichBinPersonId?.trim()
@@ -202,6 +209,11 @@ export default function K2FamilieHomePage() {
       const data = await loadFamilieFromSupabase(currentTenantId)
       if (cancelled) return
       bumpFamilieStorageRevision()
+      if (!data.loadMeta.ok) {
+        setRegistrierungHinweis(getFamilieLoadHinweisFuerNutzer(data.loadMeta))
+        clearFamilieEinladungPending()
+        return
+      }
       const pid = findPersonIdByMitgliedsNummer(data.personen, mNorm)
       if (pid) {
         const einst = loadEinstellungen(currentTenantId)
@@ -310,8 +322,17 @@ export default function K2FamilieHomePage() {
     setFamilieCloudSyncBusy(true)
     setRegistrierungHinweis('')
     try {
-      await loadFamilieFromSupabase(currentTenantId)
+      const result = await loadFamilieFromSupabase(currentTenantId)
       bumpFamilieStorageRevision()
+      if (!result.loadMeta.ok) {
+        setRegistrierungHinweis(getFamilieLoadHinweisFuerNutzer(result.loadMeta))
+        return
+      }
+      if (result.personen.length === 0) {
+        setRegistrierungHinweis(
+          'Vom Server sind noch keine Personen für diese Familie da. Prüfen: richtige Familie aktiv? Hat die Inhaber:in am Mac gespeichert und mit der Cloud abgeglichen?',
+        )
+      }
     } finally {
       setFamilieCloudSyncBusy(false)
     }
@@ -326,8 +347,12 @@ export default function K2FamilieHomePage() {
     }
     setFamilieCloudSyncBusy(true)
     try {
-      await loadFamilieFromSupabase(currentTenantId)
+      const result = await loadFamilieFromSupabase(currentTenantId)
       bumpFamilieStorageRevision()
+      if (!result.loadMeta.ok) {
+        setRegistrierungHinweis(getFamilieLoadHinweisFuerNutzer(result.loadMeta))
+        return
+      }
     } finally {
       setFamilieCloudSyncBusy(false)
     }
@@ -545,6 +570,18 @@ export default function K2FamilieHomePage() {
               boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)',
             }}
           >
+            <p
+              style={{
+                margin: '0 auto 0.55rem',
+                maxWidth: 920,
+                width: '100%',
+                fontSize: '0.86rem',
+                lineHeight: 1.45,
+                color: a.muted,
+              }}
+            >
+              Der Familienraum ist privat und nur für eure Familie. Zugang hast du mit deiner persönlichen ID – dem Code auf deiner Karte.
+            </p>
             <div
               style={{
                 maxWidth: 920,
@@ -732,6 +769,8 @@ export default function K2FamilieHomePage() {
           </div>
         ) : null}
 
+        {!nurMitgliedEinstieg ? (
+          <>
         {/* Hero: lebendig, mit sanftem Verlauf */}
         <div className="k2-familie-hero" style={{ position: 'relative', width: '100%', height: 'clamp(260px, 44vh, 420px)', overflow: 'hidden', borderRadius: '0 0 28px 28px' }}>
           {welcomeImage ? (
@@ -1075,6 +1114,8 @@ export default function K2FamilieHomePage() {
 
           </div>
         </div>
+          </>
+        ) : null}
       </div>
     </div>
   )

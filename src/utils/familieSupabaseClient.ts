@@ -50,16 +50,54 @@ export interface FamilieData {
   einstellungen?: K2FamilieEinstellungen
 }
 
+/** Ob und wie der letzte Ladevorgang lief (für sichtbare Hinweise – nicht nur „leere Liste“). */
+export type FamilieLoadMeta = {
+  ok: boolean
+  source: 'server' | 'local_only'
+  reason?: 'not_configured' | 'network' | 'http' | 'parse'
+  httpStatus?: number
+}
+
+export type FamilieLoadResult = FamilieData & { loadMeta: FamilieLoadMeta }
+
+function localSnapshot(tenantId: string): FamilieData {
+  return {
+    personen: loadPersonen(tenantId),
+    momente: loadMomente(tenantId),
+    events: loadEvents(tenantId),
+  }
+}
+
+function withMeta(data: FamilieData, loadMeta: FamilieLoadMeta): FamilieLoadResult {
+  return { ...data, loadMeta }
+}
+
+/** Kurzer Nutzertext, wenn loadMeta.ok === false (Button „Daten vom Server laden“, Anmeldung, …). */
+export function getFamilieLoadHinweisFuerNutzer(loadMeta: FamilieLoadMeta): string {
+  if (loadMeta.ok) return ''
+  if (loadMeta.reason === 'not_configured') {
+    return 'Cloud ist in dieser Umgebung nicht eingebunden (Supabase fehlt). Bitte die veröffentlichte Galerie-App im Browser öffnen – nur dort ist K2 Familie mit dem Server verbunden.'
+  }
+  if (loadMeta.reason === 'http') {
+    return `Der Server hat nicht geantwortet (Fehler ${String(loadMeta.httpStatus ?? '?')}). Kurz warten und „Daten vom Server laden“ erneut tippen.`
+  }
+  if (loadMeta.reason === 'parse') {
+    return 'Die Server-Antwort war unlesbar. Bitte „Daten vom Server laden“ erneut tippen.'
+  }
+  return 'Keine Verbindung zum Server (WLAN oder Mobilfunk prüfen). Dann „Daten vom Server laden“ erneut tippen.'
+}
+
 /**
  * Lädt Familie-Daten von Supabase, mergt mit lokal, schreibt nur wenn merged.length >= local.length, gibt merged zurück.
+ * **loadMeta:** Bei Fehler oder fehlender Konfiguration bleibt die Anzeige oft leer – dann zeigt die UI den Grund.
  */
-export async function loadFamilieFromSupabase(tenantId: string): Promise<FamilieData> {
+export async function loadFamilieFromSupabase(tenantId: string): Promise<FamilieLoadResult> {
   if (!isSupabaseConfigured() || !FAMILIE_API_URL) {
-    return {
-      personen: loadPersonen(tenantId),
-      momente: loadMomente(tenantId),
-      events: loadEvents(tenantId),
-    }
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'not_configured',
+    })
   }
   try {
     const res = await fetch(`${FAMILIE_API_URL}?tenantId=${encodeURIComponent(tenantId)}`, {
@@ -69,21 +107,39 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
         'Authorization': `Bearer ${import.meta.env?.VITE_SUPABASE_ANON_KEY ?? ''}`,
       },
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    const serverPersonen = Array.isArray(data.personen) ? data.personen : []
-    const serverMomente = Array.isArray(data.momente) ? data.momente : []
-    const serverEvents = Array.isArray(data.events) ? data.events : []
+    if (!res.ok) {
+      console.warn('loadFamilieFromSupabase HTTP', res.status)
+      return withMeta(localSnapshot(tenantId), {
+        ok: false,
+        source: 'local_only',
+        reason: 'http',
+        httpStatus: res.status,
+      })
+    }
+    let data: unknown
+    try {
+      data = await res.json()
+    } catch {
+      return withMeta(localSnapshot(tenantId), {
+        ok: false,
+        source: 'local_only',
+        reason: 'parse',
+      })
+    }
+    const d = data as Record<string, unknown>
+    const serverPersonen = Array.isArray(d.personen) ? d.personen : []
+    const serverMomente = Array.isArray(d.momente) ? d.momente : []
+    const serverEvents = Array.isArray(d.events) ? d.events : []
     const serverEinst =
-      data.einstellungen && typeof data.einstellungen === 'object' && !Array.isArray(data.einstellungen)
-        ? (data.einstellungen as K2FamilieEinstellungen)
+      d.einstellungen && typeof d.einstellungen === 'object' && !Array.isArray(d.einstellungen)
+        ? (d.einstellungen as K2FamilieEinstellungen)
         : null
     const localPersonen = loadPersonen(tenantId)
     const localMomente = loadMomente(tenantId)
     const localEvents = loadEvents(tenantId)
-    const mergedPersonen = mergeById(serverPersonen, localPersonen)
-    const mergedMomente = mergeById(serverMomente, localMomente)
-    const mergedEvents = mergeById(serverEvents, localEvents)
+    const mergedPersonen = mergeById(serverPersonen as K2FamiliePerson[], localPersonen)
+    const mergedMomente = mergeById(serverMomente as K2FamilieMoment[], localMomente)
+    const mergedEvents = mergeById(serverEvents as K2FamilieEvent[], localEvents)
     if (mergedPersonen.length >= localPersonen.length) savePersonen(tenantId, mergedPersonen, { allowReduce: true })
     if (mergedMomente.length >= localMomente.length) saveMomente(tenantId, mergedMomente, { allowReduce: true })
     if (mergedEvents.length >= localEvents.length) saveEvents(tenantId, mergedEvents, { allowReduce: true })
@@ -91,14 +147,17 @@ export async function loadFamilieFromSupabase(tenantId: string): Promise<Familie
       const mergedEinst = { ...loadEinstellungen(tenantId), ...serverEinst }
       saveEinstellungen(tenantId, mergedEinst)
     }
-    return { personen: mergedPersonen, momente: mergedMomente, events: mergedEvents }
+    return withMeta(
+      { personen: mergedPersonen, momente: mergedMomente, events: mergedEvents },
+      { ok: true, source: 'server' },
+    )
   } catch (e) {
     console.warn('loadFamilieFromSupabase fehlgeschlagen:', e)
-    return {
-      personen: loadPersonen(tenantId),
-      momente: loadMomente(tenantId),
-      events: loadEvents(tenantId),
-    }
+    return withMeta(localSnapshot(tenantId), {
+      ok: false,
+      source: 'local_only',
+      reason: 'network',
+    })
   }
 }
 

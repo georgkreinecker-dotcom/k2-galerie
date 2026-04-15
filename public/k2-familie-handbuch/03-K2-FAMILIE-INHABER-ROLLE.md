@@ -6,6 +6,8 @@ Die folgenden Abschnitte beschreiben, was das **praktisch** bedeutet. **Grundlag
 
 **Lizenz:** Sie sind als Inhaber:in die **Lizenznehmer:in** (wer die Lizenz bezahlt). Das betrifft alle Mitglieder: [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md).
 
+**Vertrauen:** Der Familienraum ist **privat**; **Zugang nur mit persönlicher ID** auf der Karte – eine **Vertrauenssache**, einheitlich erklärt: [Vertrauen: privater Familienraum](09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md).
+
 ---
 
 ## 1. Was „Inhaber:in“ bedeutet

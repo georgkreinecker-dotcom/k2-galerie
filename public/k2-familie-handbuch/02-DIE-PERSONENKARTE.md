@@ -4,6 +4,8 @@ In K2 Familie dreht sich **alles** um die **Personenkarte**. Sie ist kein Nebend
 
 Wenn Sie dieses eine Prinzip verstanden haben, wird der Rest der App **viel klarer**.
 
+**Vertrauen:** Ihre Familie hat einen **privaten Raum** in der App. **Voll hinein** kommen Sie **nur mit Ihrer persönlichen ID** auf der Karte – das ist **überall** dieselbe Aussage (Startseite, Handbuch, rechtliche Texte). Ausführlich: [Vertrauen: privater Familienraum](09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md).
+
 ---
 
 ## 1. Eine Person = eine Karte

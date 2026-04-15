@@ -1,6 +1,6 @@
 # Benutzerhandbuch K2 Familie
 
-Willkommen. Dieses Handbuch gehört zu **K2 Familie**. Im Zentrum steht die **Personenkarte** – daraus leiten sich **Stammbaum**, **Rollen** und **Zugang** ab. Ergänzend: **Grafik und Druck** (Stammbaum als Bild und Ausdruck), **Events**, **Geschichte**, **Gedenkort**, **Einstellungen** sowie **Sicherung** und **Zusammenarbeit** im Alltag.
+Willkommen. Dieses Handbuch gehört zu **K2 Familie**. Im Zentrum steht die **Personenkarte** – daraus leiten sich **Stammbaum**, **Rollen** und **Zugang** ab. **Vertrauen:** Der Familienraum ist **privat**; **hinein** kommen Sie **nur mit Ihrer persönlichen ID** auf der Karte – das sagt die App und dieses Handbuch **überall gleich**. Ergänzend: **Grafik und Druck** (Stammbaum als Bild und Ausdruck), **Events**, **Geschichte**, **Gedenkort**, **Einstellungen** sowie **Sicherung** und **Zusammenarbeit** im Alltag.
 
 **So navigieren Sie:** Links unter **Kapitel** tippen Sie ein Thema an; der Text erscheint rechts. Diese Seite ist die **Kurzübersicht**. Über **Inhaltsverzeichnis** kommen Sie jederzeit zurück.
 
@@ -39,6 +39,10 @@ Was **Bearbeiter:innen** und **Leser:innen** sehen und ändern dürfen; persönl
 8. [Lizenz und Kündigung](08-LIZENZ-UND-KUENDIGUNG.md)
 
 **Für alle Mitglieder:** **Inhaber:in = Lizenznehmer:in**; **Kündigung** mit denselben Grundsätzen wie die Galerie-Lizenz; Daten vorher sichern.
+
+9. [Vertrauen: privater Familienraum, Zugang nur mit ID](09-VERTRAUEN-PRIVATER-FAMILIENRAUM.md)
+
+**Für alle:** Warum der Raum **privat** ist und **Zugang nur mit persönlicher ID** möglich ist – **Vertrauenssache**, einheitlich in App und Doku.
 
 ---
 

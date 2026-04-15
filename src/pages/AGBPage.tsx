@@ -64,6 +64,9 @@ export default function AGBPage() {
             <strong>Produkt „K2 Familie“</strong> (Familienraum, Stammbaum) ist ein <strong>eigenständiges</strong> Lizenzprodukt mit eigener Produkt- und Kostendokumentation. Es besteht <strong>keine</strong> automatische vertragliche oder buchhalterische Verknüpfung mit einer Galerie-Lizenz; eine Buchung beider Produkte ist nur wirksam, wenn beide klar getrennt bestellt wurden.
           </p>
           <p style={{ margin: '1rem 0 0', lineHeight: 1.7, fontSize: '0.95rem' }}>
+            <strong>K2 Familie – Privatheit und Zugang:</strong> Der Familienraum ist <strong>privat</strong>; <strong>vollständiger Zugang</strong> zur eigenen Personenkarte und die damit verbundenen Rechte setzen <strong>neben</strong> dem Familien-Zugang die <strong>persönliche ID</strong> auf der jeweiligen Personenkarte voraus, wie in der Anwendung und den zugehörigen Nutzerunterlagen beschrieben.
+          </p>
+          <p style={{ margin: '1rem 0 0', lineHeight: 1.7, fontSize: '0.95rem' }}>
             <strong>Empfehlungs-Programm:</strong> Werbung durch Nutzerinnen und Nutzer (Empfehler-ID, Vergütung/Rabatt) richtet sich nach den in der Anwendung und den dazugehörigen beschreibenden Unterlagen genannten Regeln; Missbrauch (z. B. unzulässige Selbstempfehlung) ist ausgeschlossen.
           </p>
         </section>
