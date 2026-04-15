@@ -1,5 +1,9 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Raumschiff – ableiten & Selbsterklärung:** Neues Doku **`docs/K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md`** – Kriterien **M1–M9** aus Grundbotschaft/Technik, Analyse **Selbsterklärung** (Stärken/Lücken), **Lösungsvorschläge** A–C (Einstellungen-Info „Datenlage“, Handbuch-Link, „Du bist hier“, Cloud-Buttons). Querverweis in **K2-FAMILIE-GRUNDBOTSCHAFT.md** (Raumschiff-Abschnitt); Eintrag in **docs/00-INDEX.md**. **Commit:** *(folgt nach Push)*
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Supabase-Check (Feinschliff):** `getFamilieLoadHinweisFuerNutzer` bei `not_configured` – kein Wort mehr **„Galerie-App“** (nur K2 Familie / veröffentlichte Website). **Doku:** `K2-FAMILIE-SUPABASE-EINBAU.md` – welche Daten die Edge-Function `familie` synchronisiert vs. nur lokal. **Test** erweitert. **Tests + Build** grün. **Commit:** **`e307f456`** ✅ GitHub
 
 ---
