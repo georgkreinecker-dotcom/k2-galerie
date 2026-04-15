@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Handy: Scroll hängt nicht mehr, Ränder tippbar** – **Ursache:** doppeltes Scrollen (`.mission-wrapper` + `.viewport`) und Padding außerhalb des Scrollbereichs → iOS wirkte „klebrig“, Rand wirkte tot. **Fix** (`App.css` ≤768px): Shell/Spalte **`100dvh`**, **`overflow: hidden`**; nur **`k2-familie-main`** scrollt (`overflow-y: auto`, Touch/Overscroll); **`mission-wrapper`** ohne eigenes Scroll-Padding, Inhalt mit **Safe-Area**; **Print:** Shell/Main wieder **`height: auto` / `overflow: visible`**. **Tests + Build** grün. **Commit:** *(folgt nach Push)*
+
+**Was wir JETZT tun:** Vercel **Ready** → am Handy **langes Scrollen**, **Tippen am linken/rechten Rand** (neben Inhalt), **Stammbaum** prüfen; melden falls noch eine Seite klemmt.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Handy: besser bedienbar + Muster-Überschrift** – **Mobile-CSS** (`App.css` ≤768px): Safe-Area, Nav/Zurück/Toolbar mind. **44–48px** Tap-Ziele, **16px** Inputs (weniger iOS-Zoom), **`100dvh`**. **`K2FamilieLayout`:** Klassen **`k2-familie-rolle-leiste`** / **`k2-familie-rolle-hinweis`**. **Seitentexte:** Wenn Mandant ≠ **huber** aber Titel noch exakt Huber-Seed → **`familyDisplayName`** / Default (`pageTextsFamilie.ts`). Test **`pageTextsFamilieSanitize.test.ts`**. **Tests + Build** grün. **Commit:** **`9ea3a372`** ✅ GitHub
 
 **Was wir JETZT tun:** Vercel **Ready** → am Handy **Navigation, Rolle, Zurück, Formulare** kurz prüfen; bei konkreten Problemen (Stammbaum, Tastatur, …) melden.
