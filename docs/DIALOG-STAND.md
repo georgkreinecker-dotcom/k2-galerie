@@ -1,5 +1,11 @@
 # Dialog-Stand
 
+**Letzter Stand:** 15.04.26 – **K2 Familie Kurz-URL `/familie` für Icon / PWA:** SPA rendert **Meine Familie** unter **`/familie`** ohne Sprung zur langen URL; **`manifest-k2-familie.json`** mit **`start_url: /familie`**, eigenes **`id`** + Familie-Icons; Nav/APf/SmartPanel auf Kurz-URL; Vercel-Redirect **`/familie` → lang** entfernt. **Tests + Build** grün. **Commit:** **`2fccdef7`** ✅ GitHub
+
+**Was wir JETZT tun:** Vercel **Ready** → **`…/familie`** im Browser öffnen → **Zum Home-Bildschirm** testen; Adresszeile bleibt **`/familie`**.
+
+---
+
 **Letzter Stand:** 15.04.26 – **K2 Familie Raumschiff – ableiten & Selbsterklärung:** Neues Doku **`docs/K2-FAMILIE-RAUMSCHIFF-KRITERIEN-UND-SELBSTKLAERUNG.md`** – Kriterien **M1–M9** aus Grundbotschaft/Technik, Analyse **Selbsterklärung** (Stärken/Lücken), **Lösungsvorschläge** A–C (Einstellungen-Info „Datenlage“, Handbuch-Link, „Du bist hier“, Cloud-Buttons). Querverweis in **K2-FAMILIE-GRUNDBOTSCHAFT.md** (Raumschiff-Abschnitt); Eintrag in **docs/00-INDEX.md**. **Commit:** **`38cc39b4`** ✅ GitHub
 
 ---
